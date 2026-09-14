@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { decryptValue, getPrivateKey } from './crypto'
 import { parse } from './parser'
+import { isEncryptedValue, plaintextEnv } from './plaintext-env'
 
 export interface EnvPluginOptions {
   /**
@@ -50,10 +51,6 @@ export interface EnvPluginOptions {
    * @default process.cwd()
    */
   cwd?: string
-}
-
-function isEncryptedValue(value: string | undefined): boolean {
-  return typeof value === 'string' && (value.startsWith('encrypted:') || value.startsWith('enc:'))
 }
 
 function normalizeEnvName(value: string | undefined): string | undefined {
@@ -226,8 +223,8 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
   // Values loaded from an earlier file in this call are also not external, so
   // a later, more-specific file can override them without `overload: true`.
   const externalOverrides = new Set(
-    Object.entries(process.env)
-      .filter(([, value]) => value !== undefined && !isEncryptedValue(value))
+    Object.entries(plaintextEnv(process.env))
+      .filter(([, value]) => value !== undefined)
       .map(([key]) => key),
   )
 
@@ -281,7 +278,7 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
 
       errors.push(...parseErrors)
 
-      // Encrypted entries with no available key were skipped by the parser.
+      // Encrypted entries with no usable key were skipped by the parser.
       // Scrub any ciphertext Bun preloaded natively for the same keys (Bun
       // auto-loads .env/.env.<NODE_ENV> without knowing about encryption),
       // so config falls back to defaults instead of validating against
@@ -289,15 +286,19 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
       // quiet mode, because running on defaults in what the user believes
       // is a configured environment is a correctness issue, not noise.
       if (skippedEncrypted.length > 0) {
-        for (const key of skippedEncrypted) {
-          if (isEncryptedValue(process.env[key]))
+        // Remove dependent copies before forgetting their encrypted source,
+        // or a later file can expand them after the source has been scrubbed.
+        const usable = plaintextEnv(process.env, skippedEncrypted)
+        for (const key of Object.keys(process.env)) {
+          if (!Object.hasOwn(usable, key))
             delete process.env[key]
         }
 
         const keyName = envName ? `DOTENV_PRIVATE_KEY_${envName.toUpperCase()}` : 'DOTENV_PRIVATE_KEY'
+        const reason = privateKey ? 'decryption failed' : `${keyName} not set`
         const preview = skippedEncrypted.slice(0, 5).join(', ')
         const rest = skippedEncrypted.length > 5 ? `, … +${skippedEncrypted.length - 5} more` : ''
-        console.warn(`[env] warning: skipped ${skippedEncrypted.length} encrypted value(s) in ${envPath} (${keyName} not set; defaults apply): ${preview}${rest}`)
+        console.warn(`[env] warning: skipped ${skippedEncrypted.length} encrypted value(s) in ${envPath} (${reason}; existing plaintext or defaults apply): ${preview}${rest}`)
       }
 
       // Inject parsed values into process.env

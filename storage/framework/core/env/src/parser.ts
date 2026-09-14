@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs'
 import { arch, hostname, platform, release, userInfo } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
 import { decryptValue } from './crypto'
+import { plaintextEnv } from './plaintext-env'
 
 export interface ParseOptions {
   privateKey?: string
@@ -18,8 +19,8 @@ export interface ParseResult {
   parsed: Record<string, string>
   errors: string[]
   /**
-   * Keys holding encrypted values that were skipped because no private
-   * key was available to decrypt them. Surfaced so callers can warn and
+   * Keys holding encrypted values that could not be decrypted, either because
+   * no private key was available or decryption failed. Callers can warn and
    * scrub stale ciphertext from process.env.
    */
   skippedEncrypted: string[]
@@ -33,6 +34,10 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
   const errors: string[] = []
   const skippedEncrypted: string[] = []
   const lines = src.split('\n')
+  // Bun may preload ciphertext before this parser runs. It is not a usable
+  // expansion source, including for references appearing before its assignment.
+  // Successfully decrypted entries in `parsed` still override this snapshot.
+  const processEnv = plaintextEnv(options.processEnv || process.env)
 
   for (const rawLine of lines) {
     const line = rawLine.trim()
@@ -94,11 +99,13 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
       }
       catch (error) {
         errors.push(`Failed to decrypt ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        skippedEncrypted.push(key)
+        continue
       }
     }
 
     // Handle variable expansion ${VAR}
-    value = expandVariables(value, { ...(options.processEnv || process.env), ...parsed })
+    value = expandVariables(value, { ...processEnv, ...parsed })
 
     // Handle command substitution $(command)
     value = expandCommands(value)
