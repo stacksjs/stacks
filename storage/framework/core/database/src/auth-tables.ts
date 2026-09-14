@@ -22,7 +22,7 @@ import { env as envVars } from '@stacksjs/env'
 import { makeHash } from '@stacksjs/security'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { indexSqlForDialect, isDuplicateIndexError } from './dialect'
+import { indexSqlForDialect, isDuplicateColumnError, isDuplicateIndexError } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
@@ -237,6 +237,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_clients (
         ${pkColumn},
+        user_id BIGINT,
         name VARCHAR(255) NOT NULL,
         secret VARCHAR(100),
         provider VARCHAR(255),
@@ -248,6 +249,15 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         updated_at ${nullableTimestamp}
       )
     `).execute()
+
+    // Older clients did not carry ownership. Keep those rows ownerless;
+    // adding a nullable column must not rewrite their secrets or provider.
+    try {
+      await db.unsafe('ALTER TABLE oauth_clients ADD COLUMN user_id BIGINT').execute()
+    }
+    catch (error) {
+      if (!isDuplicateColumnError(error)) throw error
+    }
 
     if (options.verbose) log.info('Creating oauth_access_tokens table...')
     await db.unsafe(`
@@ -520,7 +530,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // CREATE IF NOT EXISTS cannot repair an arbitrary partial table. Verify
     // the token API's required columns before reporting a usable auth schema.
     // LIMIT 0 checks the schema without reading any stored credentials.
-    await db.unsafe(`SELECT id, name, secret, provider, redirect, personal_access_client,
+    await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, personal_access_client,
       password_client, revoked, created_at, updated_at FROM oauth_clients LIMIT 0`).execute()
     await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,
       token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at

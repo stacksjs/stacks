@@ -1070,29 +1070,18 @@ export async function findClient(clientId: number): Promise<OAuthClient | null> 
 export async function createClient(options: CreateClientOptions): Promise<CreateClientResult> {
   const secret = generateSecureToken(40)
 
-  if (isPostgres) {
-    await db.unsafe(`
-      INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-      VALUES ($1, $2, 'local', $3, $4, $5, false, ${appNow()})
-    `, [
-      options.name,
-      secret,
-      options.redirect,
-      options.personalAccessClient || false,
-      options.passwordClient || false,
-    ])
-  } else {
-    await db.unsafe(`
-      INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-      VALUES (?, ?, 'local', ?, ?, ?, 0, ${appNow()})
-    `, [
-      options.name,
-      secret,
-      options.redirect,
-      options.personalAccessClient ? 1 : 0,
-      options.passwordClient ? 1 : 0,
-    ])
-  }
+  await db.unsafe(`
+    INSERT INTO oauth_clients (user_id, name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
+    VALUES (${param(1)}, ${param(2)}, ${param(3)}, ${param(4)}, ${param(5)}, ${param(6)}, ${param(7)}, ${boolFalse}, ${appNow()})
+  `, [
+    options.userId ?? null,
+    options.name,
+    secret,
+    options.provider ?? 'local',
+    options.redirect,
+    isPostgres ? !!options.personalAccessClient : options.personalAccessClient ? 1 : 0,
+    isPostgres ? !!options.passwordClient : options.passwordClient ? 1 : 0,
+  ])
 
   const inserted = await db.unsafe(`
     SELECT * FROM oauth_clients WHERE secret = ${param(1)} LIMIT 1
