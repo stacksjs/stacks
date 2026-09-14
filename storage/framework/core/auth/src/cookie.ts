@@ -218,8 +218,15 @@ export function authCookieToken(request: Request | { headers: Headers }, options
     if (pair.slice(0, index).trim() !== wanted)
       continue
 
-    const value = decodeURIComponent(pair.slice(index + 1).trim())
-    return value.length > 0 ? value : undefined
+    try {
+      const value = decodeURIComponent(pair.slice(index + 1).trim())
+      return value.length > 0 ? value : undefined
+    }
+    catch {
+      // Malformed encoding is not an authentication token. Keep the first
+      // matching cookie authoritative instead of trying a later duplicate.
+      return undefined
+    }
   }
 
   return undefined

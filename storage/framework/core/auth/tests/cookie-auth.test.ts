@@ -121,4 +121,16 @@ describe('authCookieToken', () => {
   it('does not match a cookie whose name merely ends with the wanted one', () => {
     expect(authCookieToken(requestWith('other_auth-token=abc123'))).toBeUndefined()
   })
+
+  it.each(['%', '%GG', '%E0%A4%A', '%C0%AF'])('rejects malformed encoding %s without throwing', (value) => {
+    expect(authCookieToken(requestWith(`auth-token=${value}`))).toBeUndefined()
+  })
+
+  it('does not fall through to a second auth cookie after a malformed first match', () => {
+    expect(authCookieToken(requestWith('auth-token=%; auth-token=second'))).toBeUndefined()
+  })
+
+  it('does not decode unrelated cookies or decode the token twice', () => {
+    expect(authCookieToken(requestWith('theme=%GG; auth-token=12%7Ctoken%25'))).toBe('12|token%')
+  })
 })
