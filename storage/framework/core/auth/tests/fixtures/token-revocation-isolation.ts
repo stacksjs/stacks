@@ -21,7 +21,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken, revokeToken, revokeTokenById, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken } = await import('../../src/tokens')
+const { createToken, revokeToken, revokeTokenById, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken, currentAccessToken, tokenCan, tokenCant, tokenCanAll, tokenCanAny, tokenAbilities } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const { authCookie, logoutCookie } = await import('../../src/cookie-auth')
 const { enhanceRequest } = await import('@stacksjs/router')
@@ -136,19 +136,59 @@ try {
     await assertPairLive(author, false)
     await assertPairLive(user, true)
   })
-  await check('revokeOtherTokens keeps the current pair and revokes the other pair', async () => {
-    for (const tokenableType of ['users', 'authors']) {
-      const current = await createToken(42, 'current', ['*'], { tokenableType })
-      const other = await createToken(42, 'other', ['*'], { tokenableType })
-      const unrelated = await createToken(43, 'different-id', ['*'], { tokenableType })
-      const otherOwner = await createToken(42, 'different-type', ['*'], { tokenableType: 'guests' })
-      const request = enhanceRequest(new Request('https://revocation.test/', { headers: { authorization: `Bearer ${current.plainTextToken}` } }))
-      await runWithRequest(request, () => revokeOtherTokens(42, tokenableType))
-      await assertPairLive(other, false)
-      await assertPairLive(current, true)
-      await assertPairLive(unrelated, true)
-      await assertPairLive(otherOwner, true)
-    }
+  for (const transport of ['bearer', 'cookie', 'both'] as const) {
+    await check(`${transport}: standalone ability helpers resolve the current credential`, async () => {
+      const current = await createToken(42, 'current', ['posts:read'])
+      const different = await createToken(42, 'cookie-fallback', ['admin'])
+      const headers = transport === 'bearer'
+        ? { authorization: `Bearer ${current.plainTextToken}` }
+        : transport === 'cookie'
+          ? { cookie: authCookie(current.plainTextToken).split(';')[0]! }
+          : { authorization: `Bearer ${current.plainTextToken}`, cookie: authCookie(different.plainTextToken).split(';')[0]! }
+      const request = enhanceRequest(new Request('https://revocation.test/', { headers }))
+      await runWithRequest(request, async () => {
+        const active = await currentAccessToken()
+        assert.equal(active?.id, current.accessToken.id)
+        assert.equal(await currentAccessToken(), active, 'Resolved token remains cached on this request')
+        assert.equal(await tokenCan('posts:read'), true)
+        assert.equal(await tokenCant('posts:read'), false)
+        assert.equal(await tokenCanAll(['posts:read']), true)
+        assert.equal(await tokenCanAny(['posts:read', 'admin']), true)
+        assert.equal(await tokenCan('admin'), false, 'The cookie cannot override an explicit bearer')
+        assert.deepEqual(await tokenAbilities(), ['posts:read'])
+      })
+    })
+    await check(`${transport}: revokeOtherTokens keeps the current pair and revokes the other pair`, async () => {
+      for (const tokenableType of ['users', 'authors']) {
+        const current = await createToken(42, 'current', ['*'], { tokenableType })
+        const other = await createToken(42, 'other', ['*'], { tokenableType })
+        const unrelated = await createToken(43, 'different-id', ['*'], { tokenableType })
+        const otherOwner = await createToken(42, 'different-type', ['*'], { tokenableType: 'guests' })
+        const headers = transport === 'bearer'
+          ? { authorization: `Bearer ${current.plainTextToken}` }
+          : transport === 'cookie'
+            ? { cookie: authCookie(current.plainTextToken).split(';')[0]! }
+            : { authorization: `Bearer ${current.plainTextToken}`, cookie: authCookie(other.plainTextToken).split(';')[0]! }
+        const request = enhanceRequest(new Request('https://revocation.test/', { headers }))
+        await runWithRequest(request, () => revokeOtherTokens(42, tokenableType))
+        await assertPairLive(other, false)
+        await assertPairLive(current, true)
+        await assertPairLive(unrelated, true)
+        await assertPairLive(otherOwner, true)
+      }
+    })
+  }
+  await check('an invalid bearer cannot fall back to a valid cookie', async () => {
+    const valid = await createToken(42, 'cookie', ['*'])
+    const request = enhanceRequest(new Request('https://revocation.test/', {
+      headers: { authorization: 'Bearer not-issued', cookie: authCookie(valid.plainTextToken).split(';')[0]! },
+    }))
+    await runWithRequest(request, async () => {
+      assert.equal(await currentAccessToken(), null)
+      assert.equal(await tokenCan('posts:read'), false)
+      assert.deepEqual(await tokenAbilities(), [])
+    })
+    await assertPairLive(valid, true)
   })
   await check('Auth.revokeOtherTokens revokes the paired refresh token', async () => {
     const current = await createToken(42, 'current', ['*'])

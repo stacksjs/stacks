@@ -26,6 +26,7 @@ import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
 import { revokeTokenPair, revokeTokenPairs } from './token-revocation'
+import { requestToken } from './request-token'
 
 // ============================================================================
 // DATABASE DRIVER DETECTION & SQL HELPERS
@@ -319,8 +320,9 @@ export async function currentAccessToken(): Promise<AccessToken | null> {
   const attached = request._currentAccessToken as AccessToken | undefined
   if (attached) return attached
 
-  // Try to get from bearer token
-  const bearerToken = request.bearerToken?.()
+  // Match authentication's bearer-first, auth-cookie fallback. A cookie-only
+  // session must not make revokeOtherTokens mistake it for "no current token".
+  const bearerToken = requestToken(request)
   if (!bearerToken) return null
 
   const token = await findToken(bearerToken)
