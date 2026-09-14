@@ -120,6 +120,18 @@ describe('the manifest describes the corpus on disk', () => {
     expect(split).toEqual({})
   })
 
+  it('installs every built-in model whose table a feature owns (#2583)', () => {
+    const missing: Record<string, string> = {}
+    for (const model of models) {
+      if (!model.table) continue
+      const owner = tableOwner(model.table)
+      if (owner !== null && model.fileOwner !== owner)
+        missing[model.rel] = owner
+    }
+
+    expect(missing).toEqual({})
+  })
+
 })
 
 describe('migrationTable', () => {
