@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { SQL } from 'bun'
+import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
 assert(dialect === 'sqlite' || dialect === 'mysql' || dialect === 'postgres')
-assert.equal(process.env.DB_DATABASE_PATH, ':memory:', 'Use only a disposable fixture')
-if (dialect !== 'sqlite') {
+if (dialect === 'sqlite') {
+  assert(process.env.DB_DATABASE_PATH && basename(dirname(process.env.DB_DATABASE_PATH)).startsWith('stacks-token-test-'))
+}
+else {
+  assert.equal(process.env.DB_DATABASE_PATH, ':memory:', 'Use only a disposable fixture')
   assert(process.env.DB_DATABASE?.startsWith('stacks_token_test_'))
   assert(['localhost', '127.0.0.1', '[::1]'].includes(process.env.DB_HOST!))
 }
@@ -15,11 +19,15 @@ const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnect
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect,
-  connections: dialect === 'sqlite' ? { sqlite: { database: ':memory:' } } : {
+  connections: dialect === 'sqlite' ? { sqlite: { database: process.env.DB_DATABASE_PATH } } : {
     [dialect]: { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD },
   },
   queryLogging: { enabled: false },
 } })
+const { configureOrm, releaseOrm } = await import('bun-query-builder')
+if (dialect === 'sqlite') configureOrm({ database: process.env.DB_DATABASE_PATH })
+const { ormReady } = await import('@stacksjs/orm')
+await ormReady
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { createToken, revokeToken, revokeTokenById, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken, currentAccessToken, tokenCan, tokenCant, tokenCanAll, tokenCanAny, tokenAbilities, createClient, revokeClient } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
@@ -288,6 +296,37 @@ try {
       }
     })
   }
+  for (const method of ['user', 'validate', 'abilities-bearer', 'abilities-cookie', 'rotate', 'rotate-legacy'] as const) {
+    await check(`${method}: another model's token cannot represent the same-id user`, async () => {
+      const user = await createToken(42, 'user-session', ['read'])
+      assert.equal(Number((await Auth.getUserFromToken(user.plainTextToken))?.id), 42)
+      const author = await createToken(42, 'author-session', ['read'], { tokenableType: 'authors' })
+      const before = await db.selectFrom('oauth_access_tokens').selectAll().orderBy('id').get()
+      if (method === 'user')
+        assert.equal((await Auth.getUserFromToken(author.plainTextToken))?.id, undefined)
+      else if (method === 'validate')
+        assert.equal(await Auth.validateToken(author.plainTextToken), false)
+      else if (method === 'rotate' || method === 'rotate-legacy')
+        assert.equal(await Auth.rotateToken(`${author.plainTextToken}${method === 'rotate-legacy' ? ':legacy-suffix' : ''}`), null)
+      else {
+        const headers = method === 'abilities-bearer'
+          ? { authorization: `Bearer ${author.plainTextToken}` }
+          : { cookie: authCookie(author.plainTextToken).split(';')[0]! }
+        const request = enhanceRequest(new Request('https://revocation.test/', { headers }))
+        await runWithRequest(request, async () => {
+          assert.equal(await Auth.currentAccessToken(), undefined)
+          assert.equal(await Auth.tokenCan('read'), false)
+          assert.deepEqual(await Auth.tokenAbilities(), [])
+          assert.equal(await Auth.user(), undefined)
+          // Standalone helpers deliberately support non-user owners.
+          assert.equal(await tokenCan('read'), true)
+        })
+      }
+      assert.deepEqual(await db.selectFrom('oauth_access_tokens').selectAll().orderBy('id').get(), before)
+      await assertPairLive(user, true)
+      await assertPairLive(author, true)
+    })
+  }
   // Revoking the installation's personal client must stop new token issuance,
   // even when an unrelated, active OAuth client is still present.
   const personalClients = await db.selectFrom('oauth_clients').select('id').where('personal_access_client', '=', true).get()
@@ -319,6 +358,7 @@ try {
   })
 }
 finally {
+  await releaseOrm()
   resetDatabaseConnection()
 }
 assert.deepEqual(failures, [], failures.join('\n'))

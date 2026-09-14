@@ -621,7 +621,7 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken)
+    if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
       return false
 
     log.debug(`[auth] Token validated for token#${accessToken.id}`)
@@ -674,7 +674,9 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken)
+    // This facade resolves User records. A polymorphic token's numeric owner
+    // ID alone must never select an unrelated user from a different table.
+    if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
       return undefined
 
     if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
@@ -771,7 +773,7 @@ export class Auth {
       .where('token', '=', hashToken(bearerToken))
       .selectAll()
       .executeTakeFirst()
-    if (!accessToken || accessToken.revoked)
+    if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE || accessToken.revoked)
       return undefined
 
     if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
@@ -979,6 +981,15 @@ export class Auth {
     const { findToken: findRawToken, revokeToken: revokeRawToken } = await import('./tokens')
     const existing = await findRawToken(oldToken)
     if (!existing) return null
+
+    // The raw lookup intentionally accepts every owner type, including legacy
+    // bearer shapes. Check ownership before revoking or minting a User token.
+    const owner = await db.selectFrom('oauth_access_tokens')
+      .where('id', '=', existing.id)
+      .select('tokenable_type')
+      .executeTakeFirst()
+    if (owner?.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
+      return null
 
     const expiresAt = existing.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 60 * 60 * 1000))
 

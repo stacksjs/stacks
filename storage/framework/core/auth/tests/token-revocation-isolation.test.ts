@@ -1,5 +1,8 @@
 import { expect, test } from 'bun:test'
 import { SQL } from 'bun'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 async function checkRevocation(dialect: 'sqlite' | 'mysql' | 'postgres', connection?: string): Promise<void> {
   const url = connection ? new URL(connection) : undefined
@@ -9,14 +12,18 @@ async function checkRevocation(dialect: 'sqlite' | 'mysql' | 'postgres', connect
   const admin = url ? new SQL(url.href) : undefined
   const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
   let created = false
+  const directory = await mkdtemp(join(tmpdir(), 'stacks-token-test-'))
   try {
+    const config = join(directory, 'bunfig.toml')
+    await writeFile(config, 'preload = []\n')
     if (admin) {
       await admin.unsafe(`CREATE DATABASE ${quoted}`)
       created = true
     }
-    const child = Bun.spawn([process.execPath, `${import.meta.dir}/fixtures/token-revocation-isolation.ts`], {
+    const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/token-revocation-isolation.ts`], {
       env: {
-        ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_DATABASE_PATH: ':memory:',
+        ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect,
+        DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'tokens.sqlite') : ':memory:',
         ...(url ? {
           DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
           DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
@@ -41,7 +48,10 @@ async function checkRevocation(dialect: 'sqlite' | 'mysql' | 'postgres', connect
       if (created)
         await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`)
     }
-    finally { await admin?.close() }
+    finally {
+      try { await admin?.close() }
+      finally { await rm(directory, { recursive: true, force: true }) }
+    }
   }
 }
 
