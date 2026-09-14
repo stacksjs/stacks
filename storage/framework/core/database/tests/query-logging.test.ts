@@ -4,6 +4,24 @@ import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
 
 describe('database query logging', () => {
+  it('does not roll back application writes when background log batches fail', async () => {
+    const child = Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/query-log-write-isolation.ts')], {
+      cwd: join(import.meta.dir, '..'),
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:', DB_QUERY_LOGGING_ENABLED: 'false' },
+      stdout: 'pipe', stderr: 'pipe',
+    })
+    const watchdog = setTimeout(() => child.kill(), 4000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(exitCode, `${stdout}\n${stderr}`).toBe(0)
+      expect(stdout).toContain('query-log-write-isolation-ok')
+    }
+    finally {
+      clearTimeout(watchdog)
+      child.kill()
+    }
+  })
+
   it('installs query hooks only for profiles that consume diagnostics', async () => {
     const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-hook-profile.ts')], {
       cwd: join(import.meta.dir, '..'),

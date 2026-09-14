@@ -5,7 +5,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { normalizeQuery, parseQuery } from './query-parser'
-import { db } from './utils'
+import { db, getDatabaseDialect } from './utils'
 
 /**
  * Soft dependency on the router's query tracker. Importing it directly
@@ -580,6 +580,27 @@ async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true
     const values = logRecords as unknown as Record<string, unknown>[]
     if (values.length === 1) {
       await db.insertInto('query_logs').values(values).execute()
+    }
+    else if (getDatabaseDialect() === 'sqlite') {
+      // SQLite shares one connection. An awaited transaction lets unrelated
+      // application writes join this batch and be undone by its rollback.
+      // Keep the savepoint, INSERT and release synchronous as one operation.
+      // The savepoint also protects partial RAISE(FAIL) inserts before retry.
+      const columns = Object.keys(values[0]!)
+      const identifiers = columns.map(column => `"${column.replaceAll('"', '""')}"`).join(', ')
+      const row = `(${columns.map(() => '?').join(', ')})`
+      const statement = `INSERT INTO query_logs (${identifiers}) VALUES ${values.map(() => row).join(', ')}`
+      const bindings = values.flatMap(value => columns.map(column => value[column] ?? null))
+      db.unsafe('SAVEPOINT stacks_query_log_batch').executeSync()
+      try {
+        db.unsafe(statement, bindings).executeSync()
+        db.unsafe('RELEASE SAVEPOINT stacks_query_log_batch').executeSync()
+      }
+      catch (error) {
+        db.unsafe('ROLLBACK TO SAVEPOINT stacks_query_log_batch').executeSync()
+        db.unsafe('RELEASE SAVEPOINT stacks_query_log_batch').executeSync()
+        throw error
+      }
     }
     else {
       await db.transaction(async (rawTrx) => {
