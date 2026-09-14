@@ -524,92 +524,97 @@ export async function createToken(
   const issuedAt = Date.now()
   const expiresAt = new Date(options.expiresAt?.getTime() ?? issuedAt + expiresInMinutes * 60_000)
 
-  // Get the personal access client
-  const clients = await db.unsafe(`
-    SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} AND revoked = ${boolFalse} LIMIT 1
-  `)
+  // A failed refresh insert or read-back must roll back the access row too.
+  const result = await db.transaction(async (trx) => {
+    // Get the personal access client
+    const clients = await trx.unsafe(`
+      SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} AND revoked = ${boolFalse} LIMIT 1
+    `)
 
-  const client = (clients as unknown as OAuthClientRow[])[0]
-  if (!client) {
-    throw new HttpError(500, 'No personal access client found. Run ./buddy auth:setup first.')
-  }
-
-  // Generate and hash access token
-  const plainTextToken = generateSecureToken(40)
-  const hashedToken = hashToken(plainTextToken)
-
-  // Truncated to what the columns hold rather than left to the driver, which
-  // errors on Postgres and silently cuts on MySQL - two behaviours for one
-  // over-long header is worse than either.
-  const agent = userAgent ? String(userAgent).slice(0, 255) : null
-  const address = ipAddress ? String(ipAddress).slice(0, 45) : null
-
-  // Insert access token
-  if (isPostgres) {
-    await db.unsafe(`
-      INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
-      VALUES ($1, $2, $2, $3, $4, $5, $6, false, $7, $8, $9, ${appNow()}, ${appNow()})
-    `, [tokenableType, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
-  } else {
-    await db.unsafe(`
-      INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ${appNow()}, ${appNow()})
-    `, [tokenableType, userId, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
-  }
-
-  // Get the inserted token
-  const inserted = await db.unsafe(`
-    SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
-  `, [hashedToken])
-
-  const row = (inserted as unknown as AccessTokenRow[])[0]
-  if (!row) {
-    throw new HttpError(500, 'Failed to create access token - inserted row not found')
-  }
-
-  const accessToken: AccessToken = {
-    id: row.id,
-    userId: row.user_id,
-    clientId: row.oauth_client_id,
-    name: row.name,
-    scopes: parseScopes(row.scopes),
-    revoked: false,
-    expiresAt: expiresAt,
-    createdAt: new Date(row.created_at),
-    // `updated_at` is nullable in the schema, and `new Date(null)` is not an
-    // error - it is 1970-01-01. A token that has never been updated was being
-    // reported as updated at the epoch.
-    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
-  }
-
-  // Create refresh token if requested
-  let refreshTokenPlain: string | undefined
-  if (withRefreshToken) {
-    refreshTokenPlain = generateSecureToken(40)
-    const hashedRefreshToken = hashToken(refreshTokenPlain)
-
-    const refreshExpiresAt = new Date()
-    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
-
-    if (isPostgres) {
-      await db.unsafe(`
-        INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES ($1, $2, false, $3, ${appNow()})
-      `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
-    } else {
-      await db.unsafe(`
-        INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES (?, ?, 0, ?, ${appNow()})
-      `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
+    const client = (clients as unknown as OAuthClientRow[])[0]
+    if (!client) {
+      throw new HttpError(500, 'No personal access client found. Run ./buddy auth:setup first.')
     }
-  }
 
-  return {
-    accessToken,
-    plainTextToken,
-    refreshToken: refreshTokenPlain,
-    expiresIn: Math.max(0, Math.floor((expiresAt.getTime() - issuedAt) / 1000)),
-  }
+    // Generate and hash access token
+    const plainTextToken = generateSecureToken(40)
+    const hashedToken = hashToken(plainTextToken)
+
+    // Truncated to what the columns hold rather than left to the driver, which
+    // errors on Postgres and silently cuts on MySQL - two behaviours for one
+    // over-long header is worse than either.
+    const agent = userAgent ? String(userAgent).slice(0, 255) : null
+    const address = ipAddress ? String(ipAddress).slice(0, 45) : null
+
+    // Insert access token
+    if (isPostgres) {
+      await trx.unsafe(`
+        INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
+        VALUES ($1, $2, $2, $3, $4, $5, $6, false, $7, $8, $9, ${appNow()}, ${appNow()})
+      `, [tokenableType, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
+    } else {
+      await trx.unsafe(`
+        INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ${appNow()}, ${appNow()})
+      `, [tokenableType, userId, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
+    }
+
+    // Get the inserted token
+    const inserted = await trx.unsafe(`
+      SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
+    `, [hashedToken])
+
+    const row = (inserted as unknown as AccessTokenRow[])[0]
+    if (!row) {
+      throw new HttpError(500, 'Failed to create access token - inserted row not found')
+    }
+
+    const accessToken: AccessToken = {
+      id: row.id,
+      userId: row.user_id,
+      clientId: row.oauth_client_id,
+      name: row.name,
+      scopes: parseScopes(row.scopes),
+      revoked: false,
+      expiresAt: expiresAt,
+      createdAt: new Date(row.created_at),
+      // `updated_at` is nullable in the schema, and `new Date(null)` is not an
+      // error - it is 1970-01-01. A token that has never been updated was being
+      // reported as updated at the epoch.
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
+    }
+
+    // Create refresh token if requested
+    let refreshTokenPlain: string | undefined
+    if (withRefreshToken) {
+      refreshTokenPlain = generateSecureToken(40)
+      const hashedRefreshToken = hashToken(refreshTokenPlain)
+
+      const refreshExpiresAt = new Date()
+      refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+
+      if (isPostgres) {
+        await trx.unsafe(`
+          INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+          VALUES ($1, $2, false, $3, ${appNow()})
+        `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
+      } else {
+        await trx.unsafe(`
+          INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+          VALUES (?, ?, 0, ?, ${appNow()})
+        `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
+      }
+    }
+
+    return {
+      accessToken,
+      plainTextToken,
+      refreshToken: refreshTokenPlain,
+      expiresIn: Math.max(0, Math.floor((expiresAt.getTime() - issuedAt) / 1000)),
+    }
+  })
+  markContextWrote()
+  return result
 }
 
 // ============================================================================
