@@ -15,7 +15,7 @@ else {
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, sqlHelpers } = await import('@stacksjs/database')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, migrateAuthTables, resetDatabaseConnection, sqlHelpers } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect,
@@ -30,6 +30,12 @@ async function verifySetup(): Promise<void> {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
   const mode = process.env.STACKS_AUTH_SETUP_MODE
+  let revokedBefore: Record<string, unknown> | undefined
+  if (mode === 'revoked-client') {
+    assert.equal((await migrateAuthTables()).success, true)
+    await db.updateTable('oauth_clients').set({ revoked: true }).execute()
+    revokedBefore = await db.selectFrom('oauth_clients').selectAll().executeTakeFirstOrThrow()
+  }
   const duplicateTable = mode === 'reset-duplicates' ? 'password_resets' : mode === 'verification-duplicates' ? 'email_verifications' : undefined
   let duplicateRows: Record<string, unknown>[] | undefined
   if (duplicateTable) {
@@ -102,8 +108,12 @@ async function verifySetup(): Promise<void> {
     }
     finally { clearTimeout(watchdog); child.kill() }
     const clients = await db.selectFrom('oauth_clients').selectAll().get()
-    assert.equal(clients.length, 1, 'setup must not duplicate or rotate the existing client')
-    const client = clients[0]!
+    assert.equal(clients.length, revokedBefore ? 2 : 1, 'setup must preserve existing clients and only add a missing active client')
+    if (revokedBefore)
+      assert.deepEqual(clients.find(client => Number(client.id) === Number(revokedBefore!.id)), revokedBefore, 'revoked client credentials and state must stay unchanged')
+    const activeClients = clients.filter(client => !client.revoked && client.personal_access_client)
+    assert.equal(activeClients.length, 1, 'successful setup must provide one usable personal client')
+    const client = activeClients[0]!
     if (mode === 'legacy') {
       assert.equal(Number(client.id), 37)
       assert.equal(client.secret, 'synthetic-existing-secret')
@@ -120,6 +130,8 @@ async function verifySetup(): Promise<void> {
     assert((await tokens(42)).some(token => Number(token.id) === Number(previous.id)), 'existing tokens must receive their polymorphic owner backfill')
   }
   const pair = await createToken(42, 'after-setup', ['read'], { userAgent: 'setup-fixture', ipAddress: '127.0.0.1' })
+  const issued = await db.selectFrom('oauth_access_tokens').where('id', '=', pair.accessToken.id).selectAll().executeTakeFirstOrThrow()
+  assert.equal(Number(issued.oauth_client_id), Number(clientBefore!.id), 'issuance must use the active client established by setup')
   assert(await findToken(pair.plainTextToken))
   const replacement = await refreshToken(pair.refreshToken!)
   assert(await findToken(replacement.plainTextToken))

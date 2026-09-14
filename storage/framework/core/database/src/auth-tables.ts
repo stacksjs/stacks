@@ -541,7 +541,8 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     if (options.verbose) log.info('Ensuring personal access client exists...')
 
     const existing = await db.unsafe(`
-      SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
+      SELECT id FROM oauth_clients
+      WHERE personal_access_client = ${boolTrue} AND revoked = ${sql.boolFalse} LIMIT 1
     `).execute()
 
     if ((existing as unknown[])?.length === 0) {

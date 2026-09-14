@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
-  for (const mode of ['fresh', 'legacy', 'invalid', 'invalid-token', 'failed-backfill', 'reset-duplicates', 'verification-duplicates'] as const) {
+  for (const mode of ['fresh', 'legacy', 'revoked-client', 'invalid', 'invalid-token', 'failed-backfill', 'reset-duplicates', 'verification-duplicates'] as const) {
     test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} auth setup handles a ${mode} schema`, async () => {
       const url = dialect === 'sqlite' ? undefined : new URL(connection!)
       if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
