@@ -56,9 +56,14 @@ describe('default preloader', () => {
       'storage/framework/defaults/app/Controllers',
     ].map(path => mkdir(resolve(tempDir, path), { recursive: true })))
     await Bun.write(isolatedPreloader, Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')))
-    await Promise.all(['plugin.ts', 'crypto.ts', 'parser.ts'].map(file =>
-      Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file))),
-    ))
+    // Like path below, env is a source graph, not a frozen three-file bundle.
+    // Missing plaintext-env.ts made this fixture load a cached npm package
+    // instead of the vendored source it was meant to exercise.
+    await Promise.all(
+      (await readdir(envRoot))
+        .filter(file => file.endsWith('.ts'))
+        .map(file => Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file)))),
+    )
     // Every source file, not just `index.ts`. The package was one file when
     // this fixture was written; `index.ts` now imports `./project`, and copying
     // the entry alone left the isolated tree unable to resolve
@@ -70,7 +75,12 @@ describe('default preloader', () => {
         .filter(file => file.endsWith('.ts'))
         .map(file => Bun.write(resolve(isolatedPathRoot, file), Bun.file(resolve(pathSrc, file)))),
     )
-    await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
+    await Bun.write(resolve(tempDir, '.env'), 'STACKS_PRELOADER_FIXTURE=vendored-source\n')
+    await Bun.write(isolatedRunner, `
+      import assert from 'node:assert/strict'
+      await import('./storage/framework/defaults/resources/plugins/preloader.ts')
+      assert.equal(process.env.STACKS_PRELOADER_FIXTURE, 'vendored-source')
+    `)
 
     // A curated environment rather than the developer's. This test is about
     // whether the preloader resolves with nothing linked, and it asserts on
@@ -79,11 +89,14 @@ describe('default preloader', () => {
     // configured: a local `DB_CONNECTION=postgres` is enough to put a
     // bun-query-builder dialect warning on stderr and fail a test that has
     // nothing to do with databases.
-    const child = Bun.spawn([process.execPath, isolatedRunner], {
+    // No automatic npm fallback and no native dotenv loading: the vendored
+    // preloader must load the fixture env itself, without a global cache.
+    const child = Bun.spawn([process.execPath, '--no-install', '--no-env-file', isolatedRunner], {
       cwd: tempDir,
       env: {
         PATH: process.env.PATH ?? '',
         HOME: process.env.HOME ?? tempDir,
+        BUN_INSTALL_CACHE_DIR: resolve(tempDir, 'bun-cache'),
         // Passed through deliberately. Code in this graph gates on it, and a
         // child that believes it is interactive can sit on a prompt instead of
         // exiting, which reads as a hang rather than a failure.
