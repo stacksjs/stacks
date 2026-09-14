@@ -1,7 +1,6 @@
 import process from 'node:process'
-import { randomBytes, scryptSync } from 'node:crypto'
-import { db } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { createClient } from '@stacksjs/auth'
+import { ensureDatabaseConfigLoaded } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // Parse arguments from process.argv
@@ -34,33 +33,20 @@ const isPasswordClient = hasFlag('password')
 
 log.info(`Creating OAuth client: ${name}`)
 
-const secret = randomBytes(40).toString('hex')
-const salt = randomBytes(16).toString('hex')
-const hashedSecret = `${salt}:${scryptSync(secret, salt, 64).toString('hex')}`
-
-const result = await db.insertInto('oauth_clients')
-  .values({
-    name,
-    secret: hashedSecret,
-    provider: 'local',
-    redirect,
-    personal_access_client: isPersonalAccess,
-    password_client: isPasswordClient,
-    revoked: false,
-  })
-  .executeTakeFirst()
-
-const insertId = result?.insertId || Number(result?.numInsertedOrUpdatedRows)
-
-if (!insertId)
-  throw new HttpError(500, 'Failed to create OAuth client')
+await ensureDatabaseConfigLoaded()
+const { client, plainTextSecret } = await createClient({
+  name,
+  redirect,
+  personalAccessClient: isPersonalAccess,
+  passwordClient: isPasswordClient,
+})
 
 log.success('OAuth client created successfully')
 log.info('')
 log.info('Client Details:')
-log.info(`  Client ID: ${insertId}`)
+log.info(`  Client ID: ${client.id}`)
 log.info('  Client Secret: [REDACTED]')
-process.stdout.write(`Client Secret (save now, shown once): ${secret}\n`)
+process.stdout.write(`Client Secret (save now, shown once): ${plainTextSecret}\n`)
 log.info(`  Redirect URI: ${redirect}`)
 log.info('')
 log.warn('Make sure to save the client secret. You will not be able to retrieve it again.')

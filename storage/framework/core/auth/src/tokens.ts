@@ -22,9 +22,10 @@ import type {
   TokenScopes,
 } from '@stacksjs/types'
 import { createHash, randomBytes } from 'node:crypto'
-import { db } from '@stacksjs/database'
+import { db, markContextWrote } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
+import { makeHash } from '@stacksjs/security'
 import { revokeTokenPair, revokeTokenPairs } from './token-revocation'
 import { requestToken } from './request-token'
 
@@ -1069,30 +1070,34 @@ export async function findClient(clientId: number): Promise<OAuthClient | null> 
  */
 export async function createClient(options: CreateClientOptions): Promise<CreateClientResult> {
   const secret = generateSecureToken(40)
+  const hashedSecret = await makeHash(secret, { algorithm: 'bcrypt' })
 
-  await db.unsafe(`
-    INSERT INTO oauth_clients (user_id, name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-    VALUES (${param(1)}, ${param(2)}, ${param(3)}, ${param(4)}, ${param(5)}, ${param(6)}, ${param(7)}, ${boolFalse}, ${appNow()})
-  `, [
-    options.userId ?? null,
-    options.name,
-    secret,
-    options.provider ?? 'local',
-    options.redirect,
-    isPostgres ? !!options.personalAccessClient : options.personalAccessClient ? 1 : 0,
-    isPostgres ? !!options.passwordClient : options.passwordClient ? 1 : 0,
-  ])
+  // The configured connection owns SQL rendering. DB_CONNECTION can be
+  // absent or stale when an application's database config selects a driver.
+  // Read our own insert on the primary even outside a request context (CLI).
+  // A failed read-back must not leave a client whose secret was never delivered.
+  const createdClient = await db.transaction(async (trx) => {
+    await trx.insertInto('oauth_clients').values({
+      user_id: options.userId ?? null,
+      name: options.name,
+      secret: hashedSecret,
+      provider: options.provider ?? 'local',
+      redirect: options.redirect,
+      personal_access_client: !!options.personalAccessClient,
+      password_client: !!options.passwordClient,
+      revoked: false,
+      created_at: sqlDateTime(),
+    }).execute()
 
-  const inserted = await db.unsafe(`
-    SELECT * FROM oauth_clients WHERE secret = ${param(1)} LIMIT 1
-  `, [secret])
+    const inserted = await trx.selectFrom('oauth_clients')
+      .where('secret', '=', hashedSecret)
+      .executeTakeFirst()
+    if (!inserted)
+      throw new HttpError(500, 'Failed to read back the OAuth client that was just created.')
 
-  const createdClient = (inserted as unknown as OAuthClientRow[])[0]
-
-  // Same read-back guard as the access-token path: an empty result threw a
-  // bare TypeError inside the mapper.
-  if (!createdClient)
-    throw new HttpError(500, 'Failed to read back the OAuth client that was just created.')
+    return inserted as unknown as OAuthClientRow
+  })
+  markContextWrote()
 
   return {
     client: mapToOAuthClient(createdClient),
