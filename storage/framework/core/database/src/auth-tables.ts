@@ -19,9 +19,10 @@
 import { randomBytes } from 'node:crypto'
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
+import { makeHash } from '@stacksjs/security'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { indexSqlForDialect } from './dialect'
+import { indexSqlForDialect, isDuplicateIndexError } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
@@ -310,14 +311,9 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     }
 
     for (const backfillSql of oauthAccessTokenTokenableBackfillSql()) {
-      try {
-        await db.unsafe(backfillSql).execute()
-      }
-      catch (err) {
-        // A fresh install has no `user_id` column to read from, which is the
-        // one expected failure here. Anything else is worth seeing.
-        if (options.verbose) log.debug(`[auth-tables] Tokenable backfill skipped: ${(err as Error)?.message}`)
-      }
+      // Every supported schema retains user_id. A failed upgrade must not
+      // strand existing tokens with null owners and still report success.
+      await db.unsafe(backfillSql).execute()
     }
 
     if (options.verbose) log.info('Creating oauth_refresh_tokens table...')
@@ -363,10 +359,11 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     }
 
     try {
-      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`, dbDriver)).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE UNIQUE INDEX IF NOT EXISTS idx_password_resets_email_unique ON password_resets(email)`, dbDriver)).execute()
     }
-    catch {
-      // Index might already exist
+    catch (error) {
+      // Only an existing index is a successful replay, not duplicate tokens.
+      if (!isDuplicateIndexError(error)) throw error
     }
 
     /*
@@ -398,10 +395,10 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       // One outstanding verification per user is what the code assumes: the
       // send deletes by `user_id` before inserting, and the verify selects one
       // row by it.
-      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_email_verifications_user_id ON email_verifications(user_id)`, dbDriver)).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE UNIQUE INDEX IF NOT EXISTS idx_email_verifications_user_id_unique ON email_verifications(user_id)`, dbDriver)).execute()
     }
-    catch {
-      // Index might already exist
+    catch (error) {
+      if (!isDuplicateIndexError(error)) throw error
     }
 
     // `passkeys` — id is the WebAuthn credential ID itself (a
@@ -520,6 +517,17 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     if (options.verbose) log.info('Ensuring users auth columns exist (users may not exist yet on a fresh install - see ensureUsersAuthColumns)...')
     await ensureUsersAuthColumns(sql, options)
 
+    // CREATE IF NOT EXISTS cannot repair an arbitrary partial table. Verify
+    // the token API's required columns before reporting a usable auth schema.
+    // LIMIT 0 checks the schema without reading any stored credentials.
+    await db.unsafe(`SELECT id, name, secret, provider, redirect, personal_access_client,
+      password_client, revoked, created_at, updated_at FROM oauth_clients LIMIT 0`).execute()
+    await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,
+      token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at
+      FROM oauth_access_tokens LIMIT 0`).execute()
+    await db.unsafe(`SELECT id, access_token_id, token, revoked, expires_at, created_at
+      FROM oauth_refresh_tokens LIMIT 0`).execute()
+
     if (options.verbose) log.info('Ensuring personal access client exists...')
 
     const existing = await db.unsafe(`
@@ -528,18 +536,19 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
 
     if ((existing as unknown[])?.length === 0) {
       const secret = randomBytes(40).toString('hex')
+      const hashedSecret = await makeHash(secret, { algorithm: 'bcrypt' })
 
       if (isPostgres) {
         await db.unsafe(`
           INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-        `, ['Personal Access Client', secret, 'local', 'http://localhost', true, false, false]).execute()
+        `, ['Personal Access Client', hashedSecret, 'local', 'http://localhost', true, false, false]).execute()
       }
       else {
         await db.unsafe(`
           INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ${now})
-        `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0]).execute()
+        `, ['Personal Access Client', hashedSecret, 'local', 'http://localhost', 1, 0, 0]).execute()
       }
 
       if (options.verbose) log.success('Personal access client created')
