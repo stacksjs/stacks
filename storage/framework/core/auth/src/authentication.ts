@@ -243,8 +243,10 @@ export class Auth {
     if (!result)
       return null
 
-    const token = result as Record<string, unknown>
+    return this.tokenFromRow(result as Record<string, unknown>)
+  }
 
+  private static tokenFromRow(token: Record<string, unknown>): PersonalAccessToken {
     return {
       id: token.id as number,
       userId: token.user_id as number,
@@ -253,8 +255,8 @@ export class Auth {
       scopes: parseScopes(token.scopes as string),
       abilities: parseScopes(token.scopes as string),
       expiresAt: parseSqlDateTime(token.expires_at),
-      createdAt: token.created_at ? new Date(String(token.created_at)) : new Date(),
-      updatedAt: token.updated_at ? new Date(String(token.updated_at)) : new Date(),
+      createdAt: parseSqlDateTime(token.created_at) ?? new Date(),
+      updatedAt: parseSqlDateTime(token.updated_at) ?? new Date(),
       revoked: !!token.revoked,
     }
   }
@@ -717,20 +719,12 @@ export class Auth {
       }
     }
 
-    // Cache the current token for ability checks (per-request).
-    const stateForToken = authStateOrNull()
-    if (stateForToken)
-      stateForToken.currentToken = await this.getTokenFromId(accessToken.id as number) ?? undefined
-
-    await db.updateTable('oauth_access_tokens')
-      .set({ updated_at: formatDate(new Date()) })
-      .where('id', '=', accessToken.id)
-      .execute()
-
     if (!accessToken?.tokenable_id)
       return undefined
 
     const user = await User.find(accessToken.tokenable_id as number)
+    if (!user)
+      return undefined
 
     // Reject tokens issued before the user last changed their password
     // (stacksjs/stacks#1957). The previous code read
@@ -744,6 +738,17 @@ export class Auth {
     // legacy-allow on a missing column/table. See stacksjs/stacks#1985.
     if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
       return undefined
+
+    const updatedAt = formatDate(new Date())
+    await db.updateTable('oauth_access_tokens')
+      .set({ updated_at: updatedAt })
+      .where('id', '=', accessToken.id)
+      .execute()
+
+    // Only an accepted credential may populate the request's ability cache.
+    const stateForToken = authStateOrNull()
+    if (stateForToken)
+      stateForToken.currentToken = this.tokenFromRow({ ...accessToken, updated_at: updatedAt })
 
     return user
   }
@@ -766,16 +771,27 @@ export class Auth {
     // doc for context (stacksjs/stacks#1867 follow-up).
     const accessToken = await db.selectFrom('oauth_access_tokens')
       .where('token', '=', hashToken(bearerToken))
-      .select(['id'])
+      .selectAll()
       .executeTakeFirst()
-    if (!accessToken)
+    if (!accessToken || accessToken.revoked)
       return undefined
 
-    const token = await this.getTokenFromId(Number(accessToken.id))
-    if (token && state)
+    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
+      return undefined
+
+    const idleMs = config.auth?.idleTimeout ?? 0
+    const lastSeen = parseSqlDateTime(accessToken.updated_at ?? accessToken.created_at)
+    if (idleMs > 0 && lastSeen && Date.now() - lastSeen.getTime() > idleMs)
+      return undefined
+
+    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
+      return undefined
+
+    const token = this.tokenFromRow(accessToken)
+    if (state)
       state.currentToken = token
 
-    return token ?? undefined
+    return token
   }
 
   // ============================================================================
