@@ -293,7 +293,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
-    expiresAt: row.expires_at ? new Date(row.expires_at) : null,
+    expiresAt: parseSqlDateTime(row.expires_at),
     createdAt: new Date(row.created_at),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
   }
@@ -440,6 +440,7 @@ export async function tokenAbilities(): Promise<string[]> {
  * @param scopes - Array of scopes/abilities for the token
  * @param options - Additional options
  * @param options.expiresInMinutes - Token expiry in minutes (default: 60)
+ * @param options.expiresAt - Absolute deadline, taking precedence over expiresInMinutes
  * @param options.withRefreshToken - Whether to create a refresh token (default: true)
  * @param options.refreshExpiresInDays - Refresh token expiry in days (default: 30)
  *
@@ -455,6 +456,7 @@ export async function createToken(
   scopes: string[] = ['*'],
   options: {
     expiresInMinutes?: number
+    expiresAt?: Date
     withRefreshToken?: boolean
     refreshExpiresInDays?: number
     /**
@@ -486,6 +488,11 @@ export async function createToken(
     tokenableType = DEFAULT_TOKENABLE_TYPE,
   } = options
 
+  // Keep absolute deadlines absolute. Rebuilding them from rounded minutes
+  // extends short/expired tokens and truncates fractional-duration tokens.
+  const issuedAt = Date.now()
+  const expiresAt = new Date(options.expiresAt?.getTime() ?? issuedAt + expiresInMinutes * 60_000)
+
   // Get the personal access client
   const clients = await db.unsafe(`
     SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
@@ -499,10 +506,6 @@ export async function createToken(
   // Generate and hash access token
   const plainTextToken = generateSecureToken(40)
   const hashedToken = hashToken(plainTextToken)
-
-  // Calculate expiry
-  const expiresAt = new Date()
-  expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
 
   // Truncated to what the columns hold rather than left to the driver, which
   // errors on Postgres and silently cuts on MySQL - two behaviours for one
@@ -574,7 +577,7 @@ export async function createToken(
     accessToken,
     plainTextToken,
     refreshToken: refreshTokenPlain,
-    expiresIn: expiresInMinutes * 60, // Return in seconds for consistency with OAuth2
+    expiresIn: Math.max(0, Math.floor((expiresAt.getTime() - issuedAt) / 1000)),
   }
 }
 
@@ -683,8 +686,8 @@ export async function refreshToken(
     const plainTextToken = generateSecureToken(40)
     const hashedToken = hashToken(plainTextToken)
 
-    const expiresAt = new Date()
-    expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
+    const issuedAt = Date.now()
+    const expiresAt = new Date(issuedAt + expiresInMinutes * 60_000)
 
     if (isPostgres) {
       await trx.unsafe(`
@@ -756,7 +759,7 @@ export async function refreshToken(
       accessToken,
       plainTextToken,
       refreshToken: newRefreshTokenPlain,
-      expiresIn: expiresInMinutes * 60,
+      expiresIn: Math.max(0, Math.floor((expiresAt.getTime() - issuedAt) / 1000)),
     }
   })
 }

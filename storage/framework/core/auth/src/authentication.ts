@@ -516,9 +516,7 @@ export class Auth {
     const accessTtlMs = options?.expiresInMinutes !== undefined
       ? options.expiresInMinutes * 60 * 1000
       : (config.auth.tokenExpiry ?? 60 * 60 * 1000)
-    const explicitExpiresAt = options?.expiresAt
-    const expiresAt = explicitExpiresAt ?? new Date(Date.now() + accessTtlMs)
-    const expiresInMinutes = Math.max(1, Math.floor((expiresAt.getTime() - Date.now()) / (60 * 1000)))
+    const expiresAt = new Date(options?.expiresAt?.getTime() ?? Date.now() + accessTtlMs)
     const refreshExpiresInDays = options?.refreshExpiresInDays
       ?? Math.max(1, Math.round((config.auth.refreshTokenExpiry ?? 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)))
 
@@ -537,7 +535,7 @@ export class Auth {
       name,
       abilities,
       {
-        expiresInMinutes,
+        expiresAt,
         withRefreshToken: options?.withRefreshToken !== false,
         refreshExpiresInDays,
         // Passed straight through. A caller with a request in hand supplies
@@ -982,8 +980,7 @@ export class Auth {
     const existing = await findRawToken(oldToken)
     if (!existing) return null
 
-    const remainingMs = existing.expiresAt ? existing.expiresAt.getTime() - Date.now() : (config.auth.tokenExpiry ?? 60 * 60 * 1000)
-    const expiresInMinutes = Math.max(1, Math.floor(remainingMs / (60 * 1000)))
+    const expiresAt = existing.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 60 * 60 * 1000))
 
     // Revoke the old row before minting the new one. Sequencing
     // matters: a crash between the two leaves the user without a
@@ -997,7 +994,7 @@ export class Auth {
     const result = await this.createTokenForUser(user, {
       name: existing.name,
       abilities: existing.scopes ?? ['*'],
-      expiresInMinutes,
+      expiresAt,
       withRefreshToken: false,
     })
 
