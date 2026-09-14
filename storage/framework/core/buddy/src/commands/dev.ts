@@ -71,34 +71,39 @@ async function actions(): Promise<typeof import('@stacksjs/actions')> {
 }
 
 /**
- * Say so when the vendored framework defaults and the installed package
- * disagree about which release the app is running.
+ * Refuse to start a mixed release of vendored and installed framework defaults.
  *
  * Only `buddy upgrade` writes `storage/framework/defaults`, so moving `stacks`
  * forward the ordinary way (edit package.json, `bun install`) advances
  * `node_modules/@stacksjs/defaults` and leaves the vendored tree where it was.
  *
- * A tree with a recorded version is no longer load-bearing in that state:
- * `frameworkDefaultsDir` resolves to the package instead, so the warning is
- * telling you where the code came from rather than reporting a fault. A tree
- * with no stamp still wins, so there the warning is a real one.
+ * Auto-imports can select the installed package while routes and other boot
+ * paths still read the vendored tree. A stamped mismatch must stop before any
+ * watcher starts; selecting the package in one resolver cannot make it safe.
+ * An unstamped tree has no reliable version, so retain its drift warning.
  *
  * Cheap on the common path: two manifest reads and a marker read. The file
  * comparison only runs for a tree written before stamping existed, and it
  * compares sizes rather than contents to stay off the boot budget.
  */
-async function warnOnStaleFrameworkDefaults(): Promise<void> {
+async function checkFrameworkDefaults(): Promise<void> {
+  let skew: ReturnType<typeof inspectDefaultsProvenance>
   try {
-    const skew = inspectDefaultsProvenance(projectPath())
-    if (skew.status === 'not-applicable' || skew.status === 'current')
-      return
+    skew = inspectDefaultsProvenance(projectPath())
+  }
+  catch {
+    // An unreadable provenance probe is not evidence of incompatible versions.
+    return
+  }
 
-    if (skew.status === 'stale') {
-      log.warn(`storage/framework/defaults is from ${skew.vendored}, but @stacksjs/defaults ${skew.installed} is installed.`)
-      log.warn('Booting the installed package instead. Run `buddy upgrade` to bring the tree up to date.')
-      return
-    }
+  if (skew.status === 'not-applicable' || skew.status === 'current')
+    return
 
+  if (skew.status === 'stale') {
+    throw new Error(`Framework defaults version mismatch: storage/framework/defaults is from ${skew.vendored}, but @stacksjs/defaults ${skew.installed} is installed. Run \`buddy upgrade\` to synchronize them before starting development servers.`)
+  }
+
+  try {
     // Unstamped, so the tree carries no version to compare and resolution stays
     // on it. Only a file comparison can say whether it is actually behind, and
     // most are not, so stay silent unless one really differs.
@@ -111,7 +116,7 @@ async function warnOnStaleFrameworkDefaults(): Promise<void> {
     log.warn('The app runs the vendored copy. Run `buddy upgrade` to sync it, or `buddy doctor` for the file counts.')
   }
   catch {
-    // Provenance is a courtesy. It must never stop a dev server from starting.
+    // The unstamped-tree comparison is advisory; probe failures stay non-fatal.
   }
 }
 
@@ -387,7 +392,7 @@ export function dev(buddy: CLI): void {
       const perf = Bun.nanoseconds()
       process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
 
-      await warnOnStaleFrameworkDefaults()
+      await checkFrameworkDefaults()
 
       // log.info('Ensuring web server/s running...')
 
@@ -484,6 +489,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
 
+      await checkFrameworkDefaults()
       const perf = await intro('buddy dev:components')
       const result = await runCommand('bun run dev', {
         cwd: libsPath('components/stx'),
@@ -513,6 +519,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
 
+      await checkFrameworkDefaults()
       const perf = await intro('buddy dev:docs')
       const result = await (await actions()).runAction(Action.DevDocs, options)
 
@@ -535,6 +542,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
+      await checkFrameworkDefaults()
       const perf = await intro('buddy dev:native')
       await startDevelopmentServer({ ...options, native: true }, perf)
     })
@@ -544,6 +552,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
+      await checkFrameworkDefaults()
       const perf = await intro('buddy dev:desktop')
       await startDevelopmentServer({ ...options, native: true }, perf)
     })
@@ -554,6 +563,7 @@ export function dev(buddy: CLI): void {
     .option('--no-watch-types', 'Skip the model/config type-regeneration watcher', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions & { watchTypes?: boolean }) => {
+      await checkFrameworkDefaults()
       const a = await actions()
 
       // Spawn the model/config watcher as a sidecar. Fire-and-forget:
@@ -591,6 +601,7 @@ export function dev(buddy: CLI): void {
     .option('--site', descriptions.site, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
+      await checkFrameworkDefaults()
       process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
       await (await actions()).runFrontendDevServer(options)
     })
@@ -601,6 +612,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
+      await checkFrameworkDefaults()
       await (await actions()).runDashboardDevServer(options)
     })
 
@@ -610,6 +622,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
+      await checkFrameworkDefaults()
       await (await actions()).runSystemTrayDevServer(options)
     })
 
