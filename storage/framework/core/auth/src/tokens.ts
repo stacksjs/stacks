@@ -177,15 +177,31 @@ interface AccessTokenRow {
 
 
 export async function getPasswordChangedAt(
-  userId: unknown,
+  ownerId: unknown,
   q: { unsafe: (sql: string, params?: any[]) => any } = db,
+  ownerType: string = DEFAULT_TOKENABLE_TYPE,
 ): Promise<Date | null> {
-  if (userId === null || userId === undefined)
+  if (ownerId === null || ownerId === undefined)
     return null
+  // The polymorphic discriminator is a table name, not SQL. Escape its quote
+  // delimiter while keeping the owner ID bound as a query parameter.
+  const quote = isMysql ? '`' : '"'
+  const table = `${quote}${ownerType.replaceAll(quote, quote + quote)}${quote}`
   try {
+    if (isPostgres && q !== db) {
+      // A missing optional column aborts a PostgreSQL transaction even when
+      // its error is caught. Probe without raising before using a tx runner.
+      const columns = await q.unsafe(`
+        SELECT 1 FROM pg_attribute
+        WHERE attrelid = to_regclass($1) AND attname = 'password_changed_at'
+        AND attnum > 0 AND NOT attisdropped
+      `, [table])
+      if ((columns as unknown[]).length === 0)
+        return null
+    }
     const rows = await q.unsafe(`
-      SELECT password_changed_at FROM users WHERE id = ${param(1)} LIMIT 1
-    `, [userId])
+      SELECT password_changed_at FROM ${table} WHERE id = ${param(1)} LIMIT 1
+    `, [ownerId])
     const value = (rows as unknown as AccessTokenRow[])[0]?.password_changed_at
     if (value === null || value === undefined)
       return null
@@ -284,7 +300,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
   // Reject any token issued before the user last changed their password
   // (stacksjs/stacks#1957). This is the use-time backstop that makes the
   // post-reset revocation sweep no longer load-bearing.
-  if (isIssuedBeforePasswordChange(row.created_at, await getPasswordChangedAt(row.user_id)))
+  if (isIssuedBeforePasswordChange(row.created_at, await getPasswordChangedAt(row.tokenable_id ?? row.user_id, db, row.tokenable_type ?? DEFAULT_TOKENABLE_TYPE)))
     return null
 
   return {
@@ -659,7 +675,7 @@ export async function refreshToken(
     // Reject a refresh token issued before the user last changed their
     // password. Same generic message as the not-found branch so the
     // endpoint never becomes a token-state oracle (#1957).
-    if (isIssuedBeforePasswordChange(refreshRow.created_at, await getPasswordChangedAt(refreshRow.tokenable_id, trx))) {
+    if (isIssuedBeforePasswordChange(refreshRow.created_at, await getPasswordChangedAt(refreshRow.tokenable_id, trx, refreshRow.tokenable_type ?? DEFAULT_TOKENABLE_TYPE))) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
 
@@ -734,7 +750,7 @@ export async function refreshToken(
     // committed between the first read and the mint, the freshly minted
     // pair would otherwise survive the sweep — throwing here rolls the
     // whole exchange back (#1957).
-    if (isIssuedBeforePasswordChange(row.created_at, await getPasswordChangedAt(refreshRow.user_id, trx))) {
+    if (isIssuedBeforePasswordChange(row.created_at, await getPasswordChangedAt(refreshRow.tokenable_id, trx, refreshRow.tokenable_type ?? DEFAULT_TOKENABLE_TYPE))) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
 

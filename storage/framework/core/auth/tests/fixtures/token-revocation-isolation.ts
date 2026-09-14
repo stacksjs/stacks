@@ -15,7 +15,7 @@ else {
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, withRoutingContext, shouldRouteToReplica } = await import('@stacksjs/database')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, withRoutingContext, shouldRouteToReplica, sqlDateTime } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect,
@@ -327,6 +327,87 @@ try {
       await assertPairLive(author, true)
     })
   }
+  await db.unsafe('CREATE TABLE authors (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
+  await db.insertInto('authors').values({ id: 42 }).execute()
+  for (const owner of ['users', 'authors']) {
+    for (const changed of ['users', 'authors']) {
+      for (const method of ['find', 'refresh']) {
+        await check(`${method}: ${owner} credentials bind only to ${owner} password changes (${changed} changed)`, async () => {
+          await db.updateTable('users').set({ password_changed_at: null }).execute()
+          await db.updateTable('authors').set({ password_changed_at: null }).execute()
+          const pair = await createToken(42, 'owner-password', ['read'], { tokenableType: owner })
+          await db.updateTable(changed).set({ password_changed_at: sqlDateTime(new Date(Date.now() + 3_600_000)) }).where('id', '=', 42).execute()
+          const live = owner !== changed
+          const before = await db.selectFrom('oauth_access_tokens').selectAll().get()
+          if (method === 'find')
+            assert.equal(Boolean(await findToken(pair.plainTextToken)), live)
+          else if (live) {
+            const replacement = await refreshToken(pair.refreshToken!)
+            assert(await findToken(replacement.plainTextToken))
+            const row = await db.selectFrom('oauth_access_tokens').where('id', '=', replacement.accessToken.id).selectAll().executeTakeFirstOrThrow()
+            assert.equal(row.tokenable_type, owner)
+            assert.equal(Number(row.tokenable_id), 42)
+          }
+          else
+            await assert.rejects(refreshToken(pair.refreshToken!), /Invalid or expired refresh token/)
+          if (method === 'find' || !live)
+            assert.deepEqual(await db.selectFrom('oauth_access_tokens').selectAll().get(), before)
+        })
+      }
+    }
+  }
+  await db.updateTable('users').set({ password_changed_at: null }).execute()
+  await db.updateTable('authors').set({ password_changed_at: null }).execute()
+  for (const owner of ['users', 'authors']) {
+    await check(`${owner}: a password change during refresh rolls back the replacement pair`, async () => {
+      const pair = await createToken(42, 'owner-stamp-race', ['read'], { tokenableType: owner })
+      const future = sqlDateTime(new Date(Date.now() + 3_600_000))
+      if (dialect === 'postgres') {
+        await db.unsafe(`CREATE FUNCTION stamp_refresh_owner() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN UPDATE ${owner} SET password_changed_at = '${future}' WHERE id = 42; RETURN NEW; END; $$`).execute()
+        await db.unsafe('CREATE TRIGGER stamp_refresh_owner AFTER INSERT ON oauth_access_tokens FOR EACH ROW EXECUTE FUNCTION stamp_refresh_owner()').execute()
+      }
+      else if (dialect === 'mysql')
+        await db.unsafe(`CREATE TRIGGER stamp_refresh_owner AFTER INSERT ON oauth_access_tokens FOR EACH ROW UPDATE ${owner} SET password_changed_at = '${future}' WHERE id = 42`).execute()
+      else
+        await db.unsafe(`CREATE TRIGGER stamp_refresh_owner AFTER INSERT ON oauth_access_tokens BEGIN UPDATE ${owner} SET password_changed_at = '${future}' WHERE id = 42; END`).execute()
+      const beforeAccess = await db.selectFrom('oauth_access_tokens').selectAll().get()
+      const beforeRefresh = await db.selectFrom('oauth_refresh_tokens').selectAll().get()
+      try {
+        await assert.rejects(refreshToken(pair.refreshToken!), /Invalid or expired refresh token/)
+        assert.deepEqual(await db.selectFrom('oauth_access_tokens').selectAll().get(), beforeAccess)
+        assert.deepEqual(await db.selectFrom('oauth_refresh_tokens').selectAll().get(), beforeRefresh)
+      }
+      finally {
+        await db.unsafe(`DROP TRIGGER stamp_refresh_owner${dialect === 'postgres' ? ' ON oauth_access_tokens' : ''}`).execute()
+        if (dialect === 'postgres') await db.unsafe('DROP FUNCTION stamp_refresh_owner()').execute()
+        await db.updateTable(owner).set({ password_changed_at: null }).execute()
+      }
+      await assertPairLive(pair, true)
+    })
+  }
+  await db.unsafe('CREATE TABLE legacy_owner_rows (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('legacy_owner_rows').values({ id: 42 }).execute()
+  for (const owner of ['legacy_owner_rows', 'never_installed_owner_rows']) {
+    await check(`${owner}: a missing optional stamp must not abort refresh`, async () => {
+      const pair = await createToken(42, 'legacy-owner', ['read'], { tokenableType: owner })
+      assert(await findToken(pair.plainTextToken))
+      const replacement = await refreshToken(pair.refreshToken!)
+      await assertPairLive(pair, false)
+      await assertPairLive(replacement, true)
+    })
+  }
+  // Both quote styles occur in the literal table name. The stamp lookup must
+  // treat it as one identifier rather than invalid SQL or an absent column.
+  const quotedOwner = 'author"archive`old'
+  await db.unsafe(dialect === 'mysql'
+    ? 'CREATE TABLE `author"archive``old` (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)'
+    : 'CREATE TABLE "author""archive`old" (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
+  await db.insertInto(quotedOwner).values({ id: 42, password_changed_at: sqlDateTime(new Date(Date.now() + 3_600_000)) }).execute()
+  await check('password binding safely quotes a custom owner table', async () => {
+    const pair = await createToken(42, 'quoted-owner', ['read'], { tokenableType: quotedOwner })
+    assert.equal(await findToken(pair.plainTextToken), null)
+    await assert.rejects(refreshToken(pair.refreshToken!), /Invalid or expired refresh token/)
+  })
   // Revoking the installation's personal client must stop new token issuance,
   // even when an unrelated, active OAuth client is still present.
   const personalClients = await db.selectFrom('oauth_clients').select('id').where('personal_access_client', '=', true).get()
