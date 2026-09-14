@@ -384,13 +384,17 @@ function forwardDatabaseQuery(event: DatabaseQueryLogEvent): void {
   // Keep delivery asynchronous without resolving the same module per query.
   // Failed imports remain retryable, so an unavailable logger cannot poison
   // diagnostics for the rest of the process.
-  queryLoggerModule ??= import('./query-logger').catch((error) => {
-    queryLoggerModule = undefined
-    throw error
+  // Diagnostics run later and own their persistence, not the caller's
+  // transaction connection. Preserve other ALS state (request/recursion).
+  transactionConnection.exit(() => {
+    queryLoggerModule ??= import('./query-logger').catch((error) => {
+      queryLoggerModule = undefined
+      throw error
+    })
+    void queryLoggerModule
+      .then(({ logQuery }) => logQuery(event))
+      .catch(() => {})
   })
-  void queryLoggerModule
-    .then(({ logQuery }) => logQuery(event))
-    .catch(() => {})
 }
 
 let unregisterDatabaseQueryHooks: (() => void) | undefined
@@ -654,33 +658,129 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
  */
 const dispatchScopedBuilders = new WeakSet<object>()
 
+interface TransactionConnectionScope {
+  connection: RawQueryBuilder
+  parent?: TransactionConnectionScope
+  active: boolean
+  nested: boolean
+}
+
+const transactionConnection = new AsyncLocalStorage<TransactionConnectionScope>()
+
+function activeTransactionConnection(): RawQueryBuilder | undefined {
+  const scope = transactionConnection.getStore()
+  if (!scope) return
+  assertTransactionConnection(scope)
+  return scope.connection
+}
+
+function assertTransactionConnection(scope: TransactionConnectionScope): void {
+  for (let owner: TransactionConnectionScope | undefined = scope; owner; owner = owner.parent) {
+    if (!owner.active)
+      throw new Error('Database work cannot continue from a closed transaction callback.')
+  }
+  // Sibling savepoints share one connection, not independent transactions.
+  // Reject overlap rather than let one rollback erase another caller's work.
+  if (scope.nested)
+    throw new Error('Await the active nested transaction before issuing more database work.')
+}
+
+/** Check retained fluent/lazy statements when invoked, not only when built. */
+function guardTransactionQuery<T>(value: T): T {
+  const scope = transactionConnection.getStore()
+  if (!scope || !value || typeof value !== 'object' || typeof (value as { execute?: unknown }).execute !== 'function')
+    return value
+  const wrappers = new WeakMap<object, object>()
+  const wrap = (target: object): object => {
+    const cached = wrappers.get(target)
+    if (cached) return cached
+    const proxy = new Proxy(target, {
+      get(object, property) {
+        const member = Reflect.get(object, property, object)
+        if (typeof member !== 'function') return member
+        return (...args: unknown[]) => {
+          assertTransactionConnection(scope)
+          if (transactionConnection.getStore() !== scope)
+            throw new Error('A transaction query must execute in the callback that created it.')
+          // Fluent helpers pass their raw builder to callbacks (tap, when,
+          // pipe, $call). Keep that escape hatch inside the same ownership.
+          const guardedArgs = args.map(arg => typeof arg === 'function'
+            ? function (this: unknown, ...values: unknown[]) {
+                return Reflect.apply(arg, this, values.map(value => value && typeof value === 'object'
+                  && typeof Reflect.get(value, 'execute') === 'function' ? wrap(value) : value))
+              }
+            : arg)
+          const result = Reflect.apply(member, object, guardedArgs)
+          if (result === object) return proxy
+          if (result && typeof result === 'object' && !nodeUtilTypes.isPromise(result)
+            && (typeof Reflect.get(result, 'execute') === 'function' || typeof Reflect.get(result, 'next') === 'function'))
+            return wrap(result)
+          return result
+        }
+      },
+    })
+    wrappers.set(target, proxy)
+    return proxy
+  }
+  return wrap(value) as T
+}
+
 function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
   if (dispatchScopedBuilders.has(instance))
     return
   dispatchScopedBuilders.add(instance)
 
-  let defaultAfterCommit: (() => void) | undefined
+  let defaultOptions: NonNullable<Parameters<RawQueryBuilder['transaction']>[1]> = {}
   const setDefaults = instance.setTransactionDefaults.bind(instance)
   instance.setTransactionDefaults = (defaults) => {
     setDefaults(defaults)
-    defaultAfterCommit = { afterCommit: defaultAfterCommit, ...defaults }.afterCommit
+    defaultOptions = { ...defaultOptions, ...defaults }
   }
 
   for (const method of ['transaction', 'savepoint'] as const) {
     const original = instance[method].bind(instance) as RawQueryBuilder['transaction']
     instance[method] = async (callback, options?: Parameters<RawQueryBuilder['transaction']>[1]) => {
-      const effectiveOptions = { afterCommit: defaultAfterCommit, ...options }
+      const active = activeTransactionConnection()
+      // Retained db.transaction functions and pre-created transactional()
+      // helpers must resolve the connection at invocation, not capture root.
+      if (active && active !== instance)
+        return active[method](callback, options)
+      const parent = transactionConnection.getStore()
+      const effectiveOptions = { ...defaultOptions, ...options }
       const afterCommit = method === 'transaction' ? effectiveOptions.afterCommit : undefined
+      // Upstream invokes these synchronous observers after rollback, before
+      // original() settles. Their parent connection is usable at that point.
+      const parentObserver = <TArgs extends unknown[]>(listener?: (...args: TArgs) => void) => listener
+        ? (...args: TArgs) => {
+            const nested = parent?.nested
+            if (parent) parent.nested = false
+            try { listener(...args) }
+            finally { if (parent) parent.nested = nested! }
+          }
+        : undefined
       const result = await runInTransactionScope(async (runAttempt) => {
         const owner = sqliteTxOwner.getStore()
         if (owner) owner.transactions++
+        if (parent) parent.nested = true
         try {
           return await original(tx => runAttempt(async () => {
             applyTransactionDispatchScope(tx)
-            return callback(tx)
-          }), method === 'transaction' ? { ...options, afterCommit: undefined } : options)
+            const scope: TransactionConnectionScope = { connection: tx, parent, active: true, nested: false }
+            return transactionConnection.run(scope, async () => {
+              try { return await callback(tx) }
+              finally { scope.active = false }
+            })
+          }), method === 'transaction' ? {
+            ...options, afterCommit: undefined,
+            onRollback: parentObserver(effectiveOptions.onRollback),
+            afterRollback: parentObserver(effectiveOptions.afterRollback),
+            onRetry: parentObserver(effectiveOptions.onRetry),
+          } : options)
         }
-        finally { if (owner) owner.transactions-- }
+        finally {
+          if (parent) parent.nested = false
+          if (owner) owner.transactions--
+        }
       })
       // Observer failures happen after the real commit. They must not make
       // the dispatch scope discard work or make the driver retry that commit.
@@ -710,6 +810,8 @@ function applyTransactionRoutingContext(instance: RawQueryBuilder): void {
 }
 
 function getDb(): ReturnType<typeof createQueryBuilder> {
+  const active = activeTransactionConnection()
+  if (active) return active
   if (!_dbInstance) {
     updateQueryBuilderConfig()
     // stacksjs/stacks#1951 — the wrapped createQueryBuilder applies the
@@ -802,6 +904,8 @@ function getReplicaDb(replica: ReplicaConfig): ReturnType<typeof createQueryBuil
  * carve-outs exists.
  */
 function getReadDb(): ReturnType<typeof createQueryBuilder> {
+  const active = activeTransactionConnection()
+  if (active) return active
   const replicas = getReplicas()
   if (replicas.length === 0)
     return getDb()
@@ -825,6 +929,8 @@ function getReadDb(): ReturnType<typeof createQueryBuilder> {
  * how it was requested.
  */
 function getExplicitReadDb(): ReturnType<typeof createQueryBuilder> {
+  const active = activeTransactionConnection()
+  if (active) return active
   const replicas = getReplicas()
   if (!replicas.length || contextInTransaction())
     return getDb()
@@ -2431,63 +2537,71 @@ function selectFromDatabase(table: string): unknown {
   const dialect = getDialect()
   const instance = dialect === 'sqlite' ? getDb() : getReadDb()
   if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && isSimpleSqliteTable(table))
-    return createDeferredSqliteSelect(instance, table)
-  return instance.selectFrom(table)
+    return guardTransactionQuery(createDeferredSqliteSelect(instance, table))
+  return guardTransactionQuery(instance.selectFrom(table))
 }
 
 function selectFromExplicitReadDatabase(table: string): unknown {
   const dialect = getDialect()
   const instance = getExplicitReadDb()
   if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && isSimpleSqliteTable(table))
-    return createDeferredSqliteSelect(instance, table)
-  return instance.selectFrom(table)
+    return guardTransactionQuery(createDeferredSqliteSelect(instance, table))
+  return guardTransactionQuery(instance.selectFrom(table))
 }
 
 function unsafeDatabase(query: string, params?: unknown[]): UnsafeReturn {
-  return getDb().unsafe(query, params) as unknown as UnsafeReturn
+  return guardTransactionQuery(getDb().unsafe(query, params)) as unknown as UnsafeReturn
 }
 
 function unsafeExplicitReadDatabase(query: string, params?: unknown[]): UnsafeReturn {
-  return getExplicitReadDb().unsafe(query, params) as unknown as UnsafeReturn
+  return guardTransactionQuery(getExplicitReadDb().unsafe(query, params)) as unknown as UnsafeReturn
 }
 
 function insertIntoDatabase(table: string): unknown {
   markContextWrote()
-  return getDb().insertInto(table)
+  return guardTransactionQuery(getDb().insertInto(table))
 }
 
 function updateTableDatabase(table: string): unknown {
   markContextWrote()
-  return getDb().updateTable(table)
+  return guardTransactionQuery(getDb().updateTable(table))
 }
 
 function deleteFromDatabase(table: string): unknown {
   markContextWrote()
-  return getDb().deleteFrom(table)
+  return guardTransactionQuery(getDb().deleteFrom(table))
 }
 
 function tableDatabase(table: string): unknown {
-  return getDb().table(table)
+  return guardTransactionQuery(getDb().table(table))
 }
 
 function selectDatabase(table: string, ...columns: string[]): unknown {
-  return getReadDb().select(table, ...columns)
+  return guardTransactionQuery(getReadDb().select(table, ...columns))
 }
 
 function selectFromSubDatabase(subquery: unknown, alias: string): unknown {
-  return getReadDb().selectFromSub(subquery as { toSQL: () => string }, alias)
+  return guardTransactionQuery(getReadDb().selectFromSub(subquery as { toSQL: () => string }, alias))
 }
 
 function tableExplicitReadDatabase(table: string): unknown {
-  return getExplicitReadDb().table(table)
+  return guardTransactionQuery(getExplicitReadDb().table(table))
 }
 
 function selectExplicitReadDatabase(table: string, ...columns: string[]): unknown {
-  return getExplicitReadDb().select(table, ...columns)
+  return guardTransactionQuery(getExplicitReadDb().select(table, ...columns))
 }
 
 function selectFromSubExplicitReadDatabase(subquery: unknown, alias: string): unknown {
-  return getExplicitReadDb().selectFromSub(subquery as { toSQL: () => string }, alias)
+  return guardTransactionQuery(getExplicitReadDb().selectFromSub(subquery as { toSQL: () => string }, alias))
+}
+
+/** A reusable decorator owns no connection until it is invoked. */
+function transactionalDatabase<TArgs extends unknown[], R>(
+  callback: (tx: RawQueryBuilder, ...args: TArgs) => Promise<R> | R,
+  options?: Parameters<RawQueryBuilder['transaction']>[1],
+): (...args: TArgs) => Promise<R> {
+  return (...args) => getDb().transaction(tx => callback(tx, ...args), options)
 }
 
 /**
@@ -2497,28 +2611,36 @@ function selectFromSubExplicitReadDatabase(subquery: unknown, alias: string): un
  */
 const dbFallback = new Proxy({} as Db, {
   get(_target, prop) {
-    // A write pins this async context's later reads to the primary, so a
-    // request that reads back what it just wrote cannot be served a stale
-    // row. Marked before dispatch: the flag must be visible to a read
-    // issued while this statement is still in flight.
-    if (typeof prop === 'string' && WRITE_ENTRY_POINTS.has(prop))
-      markContextWrote()
-
     // Reads consult the router; everything else (transactions, DDL, raw
     // `unsafe`) stays on the primary unconditionally. `unsafe` is a
     // deliberate omission — its SQL is opaque here, so it could be a write,
     // and routing it on a guess would be the worst kind of wrong.
-    const instance = typeof prop === 'string' && READ_ENTRY_POINTS.has(prop)
-      ? getReadDb()
-      : getDb()
+    const resolveInstance = typeof prop === 'string' && READ_ENTRY_POINTS.has(prop) ? getReadDb : getDb
+    const instance = resolveInstance()
 
     const value = (instance as unknown as Record<string | symbol, unknown>)[prop]
     if (typeof value === 'function') {
-      return value.bind(instance)
+      return forwardDatabaseMethod(prop, resolveInstance)
     }
     return value
   },
 })
+
+/** Retained eager helpers must resolve and validate before they issue SQL. */
+function forwardDatabaseMethod(prop: string | symbol, resolveInstance: () => RawQueryBuilder): (...args: unknown[]) => unknown {
+  const scope = transactionConnection.getStore()
+  return (...args) => {
+    if (scope) {
+      assertTransactionConnection(scope)
+      if (transactionConnection.getStore() !== scope)
+        throw new Error('A transaction query must execute in the callback that created it.')
+    }
+    const instance = resolveInstance()
+    if (typeof prop === 'string' && WRITE_ENTRY_POINTS.has(prop))
+      markContextWrote()
+    return guardTransactionQuery(Reflect.apply(Reflect.get(instance, prop), instance, args))
+  }
+}
 
 /**
  * Lazy query-builder facade. Own properties bypass the Proxy prototype while
@@ -2534,6 +2656,7 @@ Object.defineProperties(db, {
   selectFrom: { value: selectFromDatabase },
   selectFromSub: { value: selectFromSubDatabase },
   table: { value: tableDatabase },
+  transactional: { value: transactionalDatabase },
   unsafe: { value: unsafeDatabase },
   updateTable: { value: updateTableDatabase },
 })
@@ -2550,7 +2673,7 @@ const readDbFallback = new Proxy({} as Db, {
     const instance = getExplicitReadDb()
     const value = (instance as unknown as Record<string | symbol, unknown>)[prop]
     if (typeof value === 'function') {
-      return value.bind(instance)
+      return forwardDatabaseMethod(prop, getExplicitReadDb)
     }
     return value
   },
@@ -2563,6 +2686,7 @@ Object.defineProperties(readDb, {
   selectFrom: { value: selectFromExplicitReadDatabase },
   selectFromSub: { value: selectFromSubExplicitReadDatabase },
   table: { value: tableExplicitReadDatabase },
+  transactional: { value: transactionalDatabase },
   unsafe: { value: unsafeExplicitReadDatabase },
 })
 

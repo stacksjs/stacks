@@ -121,7 +121,7 @@ export function markContextWrote(): void {
 export async function withTransactionContext<T>(fn: () => Promise<T>): Promise<T> {
   const store = routingContext.getStore()
   if (!store)
-    return fn()
+    return routingContext.run({ wroteInContext: false, inTransaction: true }, fn)
 
   const previous = store.inTransaction
   store.inTransaction = true
