@@ -68,4 +68,5 @@ export async function revokeTokenPairs(userId: number, ownerType: string, except
       }
     }
   }, { retries: 2, sqlStates: ['40001', '40P01'] })
+  markContextWrote()
 }

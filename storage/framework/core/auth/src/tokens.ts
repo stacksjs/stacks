@@ -847,6 +847,11 @@ export async function revokeRefreshToken(refreshTokenPlain: string): Promise<voi
     SET revoked = ${boolTrue}
     WHERE token = ${param(1)}
   `, [hashedRefreshToken])
+  // Raw SQL is deliberately not parsed into write classifications, so a
+  // statement issued through `db.unsafe` is invisible to replica routing.
+  // Without this the next fluent read in the same request is replica-eligible
+  // and can miss the revocation that just committed on primary.
+  markContextWrote()
 }
 
 /**
@@ -864,6 +869,7 @@ export async function revokeAllRefreshTokens(userId: number, tokenableType: stri
       SELECT id FROM oauth_access_tokens WHERE tokenable_id = ${param(1)} AND tokenable_type = ${param(2)}
     )
   `, [userId, tokenableType])
+  markContextWrote()
 }
 
 /**
@@ -1134,6 +1140,7 @@ export async function revokeClient(clientId: number): Promise<void> {
     SET revoked = ${boolTrue}, updated_at = ${appNow()}
     WHERE id = ${param(1)}
   `, [clientId])
+  markContextWrote()
 }
 
 // ============================================================================

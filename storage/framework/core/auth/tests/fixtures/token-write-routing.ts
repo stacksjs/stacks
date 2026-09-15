@@ -33,7 +33,7 @@ function configureRouting(enabled = false) {
   } })
 }
 configureRouting()
-const { createToken, findToken, refreshToken } = await import('../../src/tokens')
+const { createToken, findToken, refreshToken, revokeAllTokens, revokeRefreshToken, revokeAllRefreshTokens, createClient, revokeClient } = await import('../../src/tokens')
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
@@ -50,6 +50,45 @@ try {
     assert.equal(contextHasWritten(), true, 'refresh must pin subsequent request reads')
   })
   assert.equal(replicaConnections, 0, 'post-refresh reads must not reach a replica')
+  const bulk = await createToken(42, 'bulk routing fixture', ['read'])
+  await withRoutingContext(async () => {
+    assert.equal(contextHasWritten(), false)
+    await revokeAllTokens(42)
+    assert.equal(await findToken(bulk.plainTextToken), null, 'bulk revocation must commit on primary')
+    console.log('PASS bulk revocation committed on primary')
+    const row = await db.selectFrom('oauth_access_tokens').where('id', '=', bulk.accessToken.id).selectAll().executeTakeFirst()
+    assert.equal(Boolean(row?.revoked), true, 'the revoking request must read back its own mutation')
+    assert.equal(contextHasWritten(), true, 'bulk revocation must pin subsequent request reads')
+  })
+  assert.equal(replicaConnections, 0, 'post-revocation reads must not reach a replica')
+  const failures: string[] = []
+  async function verifyMutation(name: string, mutate: () => Promise<unknown>, readBack: () => Promise<void>) {
+    try {
+      await withRoutingContext(async () => {
+        assert.equal(contextHasWritten(), false)
+        await mutate()
+        await readBack()
+        assert.equal(contextHasWritten(), true, `${name} must pin later request reads`)
+      })
+    }
+    catch (error) { failures.push(`${name}: ${error instanceof Error ? error.message : String(error)}`) }
+  }
+  for (const bulkRefresh of [false, true]) {
+    const sample = await createToken(42, 'refresh revocation routing', ['read'])
+    await verifyMutation(bulkRefresh ? 'revokeAllRefreshTokens' : 'revokeRefreshToken',
+      () => bulkRefresh ? revokeAllRefreshTokens(42) : revokeRefreshToken(sample.refreshToken!),
+      async () => {
+        const row = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', sample.accessToken.id).selectAll().executeTakeFirst()
+        assert.equal(Boolean(row?.revoked), true)
+      })
+  }
+  const client = await createClient({ name: 'routing fixture', redirect: 'https://example.test/callback' })
+  await verifyMutation('revokeClient', () => revokeClient(client.client.id), async () => {
+    const row = await db.selectFrom('oauth_clients').where('id', '=', client.client.id).selectAll().executeTakeFirst()
+    assert.equal(Boolean(row?.revoked), true)
+  })
+  assert.deepEqual(failures, [], 'every auth mutation must read back its committed state')
+  assert.equal(replicaConnections, 0, 'auth mutation read-backs must not reach a replica')
   await withRoutingContext(async () => {
     assert.equal(contextHasWritten(), false, 'one request must not pin unrelated readers')
     await assert.rejects(refreshToken(original.refreshToken!), { status: 401 })

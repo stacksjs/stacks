@@ -6,7 +6,7 @@ import { expect, test } from 'bun:test'
 
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
-  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} token refresh preserves request read-your-writes`, async () => {
+  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} token mutations preserve request read-your-writes`, async () => {
     const url = dialect === 'sqlite' ? undefined : new URL(connection!)
     if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
       throw new Error('Token routing tests require a local disposable database server')
