@@ -674,6 +674,8 @@ export async function refreshToken(
     // `revoked = true` (its WHERE no longer matches → 401). SQLite has no
     // `FOR UPDATE` and does not need it, so it is appended only for the
     // server dialects. See stacksjs/stacks#1985.
+    // Check the client with EXISTS, not another outer locking join: personal
+    // access tokens from unrelated users can all share this client (#2631).
     const forUpdate = (isPostgres || isMysql) ? ' FOR UPDATE' : ''
     const refreshRows = await trx.unsafe(`
       SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.name, t.scopes
@@ -681,6 +683,9 @@ export async function refreshToken(
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
       WHERE r.token = ${param(1)}
       AND r.revoked = ${boolFalse}
+      AND EXISTS (
+        SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
+      )
       AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
       LIMIT 1${forUpdate}
     `, [hashedRefreshToken])
@@ -811,10 +816,14 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
   const hashedRefreshToken = hashToken(refreshTokenPlain)
 
   const rows = await db.unsafe(`
-    SELECT id FROM oauth_refresh_tokens
-    WHERE token = ${param(1)}
-    AND revoked = ${boolFalse}
-    AND (expires_at IS NULL OR expires_at > ${appNow()})
+    SELECT r.id FROM oauth_refresh_tokens r
+    JOIN oauth_access_tokens t ON r.access_token_id = t.id
+    WHERE r.token = ${param(1)}
+    AND r.revoked = ${boolFalse}
+    AND EXISTS (
+      SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
+    )
+    AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
     LIMIT 1
   `, [hashedRefreshToken])
 
