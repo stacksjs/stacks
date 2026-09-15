@@ -95,4 +95,56 @@ describe('framework release artifact staging', () => {
     expect(source()).toContain('the committed lockfile predates the Bun this repository declares')
     expect(source()).toContain("this machine's Bun is older than the one that wrote the committed lockfile")
   })
+
+  /**
+   * The guard above can only work if its baseline predates every step that can
+   * rewrite a lockfile.
+   *
+   * `refreshPantryLock()` runs `pantry install`, which reaches for Bun and
+   * rewrites bun.lock once `pinLockstepDeps` has changed the manifests. While
+   * the baseline was read after that call, a machine whose Bun predates the
+   * committed format produced the same downgraded version on both sides of the
+   * comparison - so the guard passed on exactly the lockfile it exists to
+   * reject. v0.74.33 committed a v1 lockfile into a repository that requires
+   * v2, and CI failed on the release commit.
+   */
+  test('captures the lockfile baseline before anything can rewrite it', () => {
+    const src = source()
+    const captured = src.indexOf('const committedBunLock')
+    const pantryRefresh = src.indexOf('await refreshPantryLock()')
+    const regenerated = src.indexOf("['bun', 'install', '--lockfile-only']")
+
+    expect(captured).toBeGreaterThan(-1)
+    expect(pantryRefresh).toBeGreaterThan(-1)
+    expect(captured).toBeLessThan(pantryRefresh)
+    expect(captured).toBeLessThan(regenerated)
+
+    // The comparison must read that pre-refresh capture, not the working tree.
+    expect(src).toContain('const previousLock = committedBunLock')
+  })
+
+  /**
+   * An aborted release has to leave the lockfiles exactly as it found them.
+   * Only bun.lock was restored before, so a release that stopped after the
+   * Pantry refresh left a rewritten pantry.lock behind - and on a machine that
+   * cannot download the pinned toolchain, that rewrite silently drops the
+   * `bun.sh` pin from it.
+   */
+  test('every abort path restores both committed lockfiles', () => {
+    const src = source()
+
+    expect(src).toContain('function restoreCommittedLockfiles()')
+    expect(src).toContain('writeFileSync(bunLockPath, committedBunLock)')
+    expect(src).toContain('writeFileSync(pantryLockPath, committedPantryLock)')
+
+    // All three aborts inside the lockfile block: a failed regeneration, a
+    // regeneration that wrote nothing, and a format mismatch.
+    const block = src.slice(src.indexOf('const committedBunLock'))
+    expect(block.split('restoreCommittedLockfiles()').length - 1).toBeGreaterThanOrEqual(4)
+
+    // And none of them may fall back to the single-file restore this replaced.
+    // Scoped to this block: refreshPantryLock keeps its own local restore for
+    // its own failure, which is correct and unrelated.
+    expect(block).not.toContain('writeFileSync(lockPath, previousLock)')
+  })
 })
