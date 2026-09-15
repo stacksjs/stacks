@@ -33,7 +33,7 @@ function configureRouting(enabled = false) {
   } })
 }
 configureRouting()
-const { createToken, findToken, refreshToken, revokeAllTokens, revokeRefreshToken, revokeAllRefreshTokens, createClient, revokeClient } = await import('../../src/tokens')
+const { createToken, findToken, refreshToken, revokeAllTokens, revokeRefreshToken, revokeAllRefreshTokens, createClient, revokeClient, deleteExpiredTokens, deleteRevokedTokens, deleteExpiredRefreshTokens, deleteRevokedRefreshTokens } = await import('../../src/tokens')
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
@@ -87,6 +87,53 @@ try {
     const row = await db.selectFrom('oauth_clients').where('id', '=', client.client.id).selectAll().executeTakeFirst()
     assert.equal(Boolean(row?.revoked), true)
   })
+  // The pruning helpers write through `db.unsafe` too. Each case seeds rows the
+  // helper will really delete and asserts a non-zero count, so a helper that
+  // matched nothing cannot satisfy this vacuously.
+  // Seed through the real write path rather than stamping columns afterwards,
+  // so the stored timestamp format is whatever the source itself writes on each
+  // dialect. Backdating by hand wrote a value Postgres and MySQL then did not
+  // match, and every prune silently deleted nothing.
+  async function seedPrunable(mode: 'expired' | 'revoked') {
+    const seeded = await createToken(42, 'prune routing fixture', ['read'], mode === 'expired'
+      ? { expiresAt: new Date(Date.now() - 86_400_000), refreshExpiresInDays: -1 }
+      : {})
+    if (mode === 'revoked')
+      await revokeAllTokens(42)
+    return seeded
+  }
+  // Count the rows rather than trusting the helper's return value: on Postgres
+  // these helpers delete correctly but report 0, because the driver's write
+  // result carries `count`/`affectedRows` while the helper reads
+  // `changes`/`rowCount`. Asserting on the returned number would fail here for
+  // a reason that has nothing to do with routing.
+  async function tokenRowCount() {
+    const access = await db.selectFrom('oauth_access_tokens').selectAll().execute()
+    const refresh = await db.selectFrom('oauth_refresh_tokens').selectAll().execute()
+    return (access as unknown[]).length + (refresh as unknown[]).length
+  }
+  async function verifyPrune(name: string, mode: 'expired' | 'revoked', prune: () => Promise<number>) {
+    let before = 0
+    // Seeding writes, which pins this context, so the baseline read is served
+    // by the primary rather than the deliberately unavailable replica.
+    await withRoutingContext(async () => {
+      await seedPrunable(mode)
+      before = await tokenRowCount()
+    })
+    try {
+      await withRoutingContext(async () => {
+        assert.equal(contextHasWritten(), false)
+        await prune()
+        assert.equal(contextHasWritten(), true, `${name} must pin later request reads`)
+        assert(await tokenRowCount() < before, `${name} deleted nothing, so this case would prove nothing`)
+      })
+    }
+    catch (error) { failures.push(`${name}: ${error instanceof Error ? error.message : String(error)}`) }
+  }
+  await verifyPrune('deleteExpiredRefreshTokens', 'expired', () => deleteExpiredRefreshTokens())
+  await verifyPrune('deleteRevokedRefreshTokens', 'revoked', () => deleteRevokedRefreshTokens(-1))
+  await verifyPrune('deleteExpiredTokens', 'expired', () => deleteExpiredTokens())
+  await verifyPrune('deleteRevokedTokens', 'revoked', () => deleteRevokedTokens(-1))
   assert.deepEqual(failures, [], 'every auth mutation must read back its committed state')
   assert.equal(replicaConnections, 0, 'auth mutation read-backs must not reach a replica')
   await withRoutingContext(async () => {
@@ -97,6 +144,36 @@ try {
       await assert.rejects(db.selectFrom('oauth_access_tokens').selectAll().get())
   })
   if (replica) assert(replicaConnections > 0, 'the read-only control must actually attempt the configured replica')
+  // Partial success. The two sequential prunes issue their statements with no
+  // transaction around them, so the refresh delete can commit while the
+  // access-token delete fails. A trigger forces exactly that. The call throws,
+  // but a write has committed, so the request must still be pinned to primary.
+  const partial = await seedPrunable('expired')
+  const guards = dialect === 'postgres'
+    ? ['CREATE FUNCTION prune_guard() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION \'blocked\'; END; $$ LANGUAGE plpgsql',
+        'CREATE TRIGGER prune_guard BEFORE DELETE ON oauth_access_tokens FOR EACH ROW EXECUTE FUNCTION prune_guard()']
+    : dialect === 'mysql'
+      ? ['CREATE TRIGGER prune_guard BEFORE DELETE ON oauth_access_tokens FOR EACH ROW SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'blocked\'']
+      : ['CREATE TRIGGER prune_guard BEFORE DELETE ON oauth_access_tokens BEGIN SELECT RAISE(ABORT, \'blocked\'); END']
+  for (const statement of guards)
+    await db.unsafe(statement).execute()
+  try {
+    await withRoutingContext(async () => {
+      assert.equal(contextHasWritten(), false)
+      await assert.rejects(deleteExpiredTokens(), 'the guarded access-token delete must fail')
+      const orphan = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', partial.accessToken.id).selectAll().executeTakeFirst()
+      assert(!orphan, 'the first delete must have committed before the second failed')
+      assert.equal(contextHasWritten(), true, 'a partially committed prune must still pin the request')
+    })
+    console.log('PASS partially committed prune still pins the request')
+  }
+  finally {
+    const drops = dialect === 'postgres'
+      ? ['DROP TRIGGER IF EXISTS prune_guard ON oauth_access_tokens', 'DROP FUNCTION IF EXISTS prune_guard()']
+      : ['DROP TRIGGER IF EXISTS prune_guard']
+    for (const statement of drops)
+      await db.unsafe(statement).execute()
+  }
   console.log('token write routing OK')
 }
 finally { replica?.stop(true); resetDatabaseConnection() }

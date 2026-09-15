@@ -884,6 +884,7 @@ export async function deleteExpiredRefreshTokens(): Promise<number> {
     DELETE FROM oauth_refresh_tokens
     WHERE expires_at < ${appNow()}
   `)
+  markContextWrote()
 
   // A write statement resolves to the driver's result object, not the rows
 
@@ -910,6 +911,7 @@ export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<n
     DELETE FROM oauth_refresh_tokens
     WHERE revoked = ${boolTrue} AND created_at < ${param(1)}
   `, [sqlDateTime(cutoffDate)])
+  markContextWrote()
 
   // A write statement resolves to the driver's result object, not the rows
 
@@ -992,6 +994,10 @@ export async function deleteExpiredTokens(): Promise<number> {
       SELECT id FROM oauth_access_tokens WHERE expires_at < ${appNow()}
     )
   `)
+  // Marked here, not after the second statement: these are two statements with
+  // no transaction around them. If the access-token delete below fails, this
+  // one has already committed, and the request must still read from primary.
+  markContextWrote()
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
@@ -1026,6 +1032,7 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
       SELECT id FROM oauth_access_tokens WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
     )
   `, [sqlDateTime(cutoffDate)])
+  markContextWrote()
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
