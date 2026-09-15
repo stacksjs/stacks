@@ -67,7 +67,7 @@
     "ts-pantry": "^0.11.35"
   },
   "peerDependencies": {
-    "web-ext": ">=8"
+    "web-ext": ">=10.6.0"
   },
   "peerDependenciesMeta": {
     "web-ext": {
