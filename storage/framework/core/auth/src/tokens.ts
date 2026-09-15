@@ -658,7 +658,7 @@ export async function refreshToken(
   // by isIssuedBeforePasswordChange — the post-reset sweep is no longer
   // load-bearing) or it runs after (then the in-transaction stamp read
   // below sees the committed change and 401s, rolling back the mint).
-  return await db.transaction(async (rawTrx) => {
+  const result = await db.transaction(async (rawTrx) => {
     // The transaction callback receives bun-query-builder's raw
     // QueryBuilder<DB>; `unsafe` is present and returns an awaitable
     // directly (same call shape as the top-level db proxy used above).
@@ -803,6 +803,8 @@ export async function refreshToken(
       expiresIn: Math.max(0, Math.floor((expiresAt.getTime() - issuedAt) / 1000)),
     }
   })
+  markContextWrote()
+  return result
 }
 
 /**
