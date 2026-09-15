@@ -49,10 +49,10 @@ export interface DependenciesOptions {
   /**
    * **Redis**
    *
-   * @default '^7.0.11'
+   * @default '^8.4.0'
    * @link https://redis.io
    */
-  'redis.io'?: string | '^7.0.11'
+  'redis.io'?: string | '^8.4.0'
 
   /**
    * **AWS CLI**

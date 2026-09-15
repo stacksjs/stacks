@@ -36,7 +36,7 @@ export const config: PantryConfig = {
     // craft is not declared here: it ships inside @stacksjs/stx (its `./craft`
     // export), so pantry installing it again is a second copy nothing uses.
     // Uncomment as needed:
-    // 'redis.io': '^7.4.1',
+    // 'redis.io': '^8.4.0',
     // 'openjdk.org': '^21.0.3.6',
     // 'rust-lang.org': '^1.74.1',
   },
