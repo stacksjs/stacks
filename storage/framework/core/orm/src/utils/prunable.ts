@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { db, mutationCount } from '@stacksjs/database'
 
 export interface PrunableOptions {
   olderThanDays?: number
@@ -17,9 +17,10 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
     if (query) {
       let qb = db.deleteFrom(tableName)
       qb = query(qb)
-      const result = await qb.execute()
-      const rows = Array.isArray(result) ? result : [result]
-      const count = Number((rows[0])?.numDeletedRows ?? rows.length ?? 0)
+      // A delete's execute() resolves to the count itself. Reading
+      // `numDeletedRows` off that number missed, and the fallback counted the
+      // one-element array it had been wrapped in, so every prune reported 1.
+      const count = mutationCount(await qb.execute())
       log.info(`Pruned ${count} records from ${tableName}`)
       return count
     }
@@ -32,8 +33,7 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
       .where(column, '<', cutoffDate.toISOString())
       .execute()
 
-    const rows = Array.isArray(result) ? result : [result]
-    const count = Number((rows[0])?.numDeletedRows ?? rows.length ?? 0)
+    const count = mutationCount(result)
     log.info(`Pruned ${count} records from ${tableName} older than ${olderThanDays} days`)
     return count
   }
