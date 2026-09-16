@@ -15,7 +15,7 @@
  * degrade when the table isn't migrated yet.
  */
 
-import { db } from '@stacksjs/database'
+import { db, mutationCount } from '@stacksjs/database'
 import { isMissingTableError } from './missing-table'
 
 export type DeadLetterReason = 'repeat-failure' | 'poison-detected' | 'circuit-broken' | 'manual'
@@ -184,11 +184,11 @@ export async function purgeDeadLetterJobs(olderThanDays: number = 30): Promise<n
   try {
     const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000)
       .toISOString().slice(0, 19).replace('T', ' ')
-    const result: any = await db
+    const result = await db
       .deleteFrom('dead_letter_jobs')
       .where('dead_lettered_at', '<', cutoff)
       .execute()
-    return Number(result?.numDeletedRows ?? result?.[0]?.numDeletedRows ?? result?.affectedRows ?? 0)
+    return mutationCount(result)
   }
   catch (err) {
     if (isMissingTableError(err)) {

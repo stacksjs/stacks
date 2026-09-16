@@ -1,4 +1,5 @@
 import type { QueueOption } from '@stacksjs/types'
+import { mutationCount } from '@stacksjs/database'
 import { createEnvelope, serializeEnvelope } from './envelope'
 
 /**
@@ -10,14 +11,12 @@ import { createEnvelope, serializeEnvelope } from './envelope'
  * jobs were reserved then discarded, one per poll, forever, with nothing
  * processed and nothing logged (found on stacksjs/status production,
  * 2026-07-04, 1,600+ jobs stuck reserved).
+ *
+ * The plain number is what a fluent `.execute()` returns, and the previous
+ * reader turned it into 0, so it delegates to the shared reader now.
  */
 export function updatedRowCount(result: unknown): number {
-  const raw = (result as { numUpdatedRows?: unknown } | null | undefined)?.numUpdatedRows
-  if (raw === null || raw === undefined)
-    return 0
-  if (typeof raw === 'object')
-    return Number((raw as { changes?: number | bigint }).changes ?? 0)
-  return Number(raw)
+  return mutationCount(result)
 }
 
 /** The `jobs` row a scheduled dispatch becomes. */
