@@ -996,18 +996,25 @@ export type UnsafeRowsResult = UnsafeRow[] | { rows?: UnsafeRow[] } | undefined
  *
  * `UnsafeReturn` above describes a SELECT - the rows. An UPDATE, INSERT or
  * DELETE resolves to the driver's own result object instead, and every driver
- * spells the affected-row count differently, which is why callers read all of
- * these in turn. They were reaching for the fields off a value typed as
- * `UnsafeRow[]`, which has none of them, behind a `(db)`.
+ * spells the affected-row count differently.
+ *
+ * **Do not read the count off these fields yourself.** Use `mutationCount`
+ * from `./affected-rows`. Hand-rolled readers here were wrong on two of three
+ * dialects: `changes ?? rowCount` reads 0 on both PostgreSQL and MySQL, and
+ * reading `count` before `affectedRows` reads 0 on MySQL.
  */
 export interface DbWriteResult {
+  /** bun:sqlite. */
   changes?: number
   numUpdatedRows?: number | bigint
   numAffectedRows?: number | bigint
   numDeletedRows?: number | bigint
-  affectedRows?: number
+  /** Bun's MySQL client sets the real count here. `null` on PostgreSQL. */
+  affectedRows?: number | null
+  /** Bun's PostgreSQL client sets the count here. Always `0` for a MySQL write. */
+  count?: number | null
   rowsAffected?: number
-  /** Postgres. */
+  /** node-postgres. Bun's PostgreSQL client never sets it. */
   rowCount?: number
   lastInsertRowid?: number | bigint
   insertId?: number | bigint

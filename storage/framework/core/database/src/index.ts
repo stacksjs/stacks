@@ -78,6 +78,10 @@ export { setQueryTracker, logQuery } from './query-logger'
 // Zero-downtime migration helpers
 export { addColumnSafely, backfillInBatches, renameColumnSafely } from './safe-migrations'
 
+// Affected-row counts. Read every write result through this: each driver spells
+// the count differently and the hand-rolled readers were wrong on two of three.
+export { mutationCount } from './affected-rows'
+
 // Seeding
 export * from './seeder'
 
