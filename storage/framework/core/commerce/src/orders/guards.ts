@@ -7,9 +7,9 @@
  * allowed to proceed?"
  */
 
-import type { DbWriteResult } from '@stacksjs/database'
 import { db, sqlHelpers } from '@stacksjs/database'
 import { env } from '@stacksjs/env'
+import { mutationCount } from '../utils/mutation-count'
 
 // ============================================================================
 // Co-7: coupon stacking guard
@@ -224,21 +224,9 @@ export async function cleanupAbandonedCarts(
       `DELETE FROM carts WHERE updated_at < ${p(1)} AND id IN (SELECT id FROM carts WHERE updated_at < ${p(2)} LIMIT ${p(3)})`,
       [cutoffAt, cutoffAt, limit],
     )
-    // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
-    // result: the ternary that used to be here always took its else branch. What
-    // a write statement resolves to is a driver result carrying an affected-row
-    // count, which `UnsafeReturn` does not describe - it is declared as the rows
-    // a SELECT returns. Narrowed to what is actually read, at the boundary where
-    // the declared type and the driver disagree.
-    const result = statement as unknown as DbWriteResult
-    const deleted = Number(
-      result?.changes
-      ?? result?.numDeletedRows
-      ?? result?.[0]?.numDeletedRows
-      ?? result?.affectedRows
-      ?? 0,
-    )
-    return { deleted, cutoffAt }
+    // A write resolves to the driver's result, not the rows `db.unsafe` is
+    // declared to return, and each driver names the count differently.
+    return { deleted: mutationCount(statement), cutoffAt }
   }
   catch {
     // Fallback: select-then-delete by id. Slower but driver-portable.
@@ -251,17 +239,11 @@ export async function cleanupAbandonedCarts(
         .execute() as Array<{ id: number }>
       if (rows.length === 0) return { deleted: 0, cutoffAt }
       const ids = rows.map(r => r.id)
-      const result: any = await db
+      const result = await db
         .deleteFrom('carts')
         .where('id', 'in', ids)
         .execute()
-      const deleted = Number(
-        result?.numDeletedRows
-        ?? result?.[0]?.numDeletedRows
-        ?? result?.affectedRows
-        ?? rows.length,
-      )
-      return { deleted, cutoffAt }
+      return { deleted: mutationCount(result), cutoffAt }
     }
     catch {
       return { deleted: 0, cutoffAt }

@@ -4,6 +4,7 @@ type NewReceipt = NewModelData<typeof Receipt>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { asModelRow } from '../utils/model-row'
+import { mutationCount } from '../utils/mutation-count'
 import { receiptTimestamp } from './timestamp'
 
 /**
@@ -68,25 +69,10 @@ export async function bulkStore(data: NewReceipt[]): Promise<number> {
       .values(receiptDataArray)
       .executeTakeFirst()
 
-    /*
-     * Four field names, because drivers disagree about what an insert reports -
-     * and the receipt itself can be absent, which this read straight through
-     * before the types said so.
-     */
-    const receipt = (result ?? {}) as {
-      numInsertedOrUpdatedRows?: unknown
-      numAffectedRows?: unknown
-      affectedRows?: unknown
-      changes?: unknown
-    }
-
-    return Number(
-      receipt.numInsertedOrUpdatedRows
-      ?? receipt.numAffectedRows
-      ?? receipt.affectedRows
-      ?? receipt.changes
-      ?? 0,
-    )
+    // An insert's executeTakeFirst() is the raw driver result, and each driver
+    // names the count differently: PostgreSQL's is `count`, which this used to
+    // miss, so every bulk insert there reported 0.
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
