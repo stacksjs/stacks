@@ -14,6 +14,24 @@ export default defineModel({
     { name: 'categorizables_type_slug_unique', columns: ['categorizable_type', 'slug'], unique: true },
     { name: 'categorizables_owner_slug_unique', columns: ['categorizable_type', 'categorizable_id', 'slug'], unique: true },
   ],
+  // The inverse of Post.belongsToMany.categories, mirroring Tag.belongsToMany.posts.
+  // It lives here because this model owns the ids `category_id` stores, and the
+  // declaring model's table is what the generator references for `foreignKey`.
+  belongsToMany: {
+    posts: {
+      model: 'Post',
+      table: 'categorizable_models',
+      foreignKey: 'category_id',
+      relatedKey: 'categorizable_id',
+      pivot: {
+        columns: {
+          categorizable_type: { default: 'posts' },
+        },
+        timestamps: true,
+        uniques: [['category_id', 'categorizable_id', 'categorizable_type']],
+      },
+    },
+  },
   attributes: {
     name: {
       required: true,

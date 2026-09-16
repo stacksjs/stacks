@@ -41,21 +41,12 @@ export default defineModel({
   },
 
   hasMany: ['Product'],
-  belongsToMany: {
-    posts: {
-      model: 'Post',
-      table: 'categorizable_models',
-      foreignKey: 'category_id',
-      relatedKey: 'categorizable_id',
-      pivot: {
-        columns: {
-          categorizable_type: { default: 'posts' },
-        },
-        timestamps: true,
-        uniques: [['category_id', 'categorizable_id', 'categorizable_type']],
-      },
-    },
-  },
+
+  // No `belongsToMany.posts` here. Post categories live in the CMS pivot
+  // `categorizable_models`, whose `category_id` holds `categorizables` ids, so
+  // the inverse belongs on Categorizable. Declaring it on this model made the
+  // generator emit `category_id REFERENCES "categories"`, which rejected every
+  // CMS category link once foreign keys were enforced (stacksjs/stacks#2593).
 
   attributes: {
     name: {

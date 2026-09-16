@@ -8724,7 +8724,7 @@
             "isNullable": false,
             "hasDefault": false,
             "references": {
-              "table": "categories",
+              "table": "categorizables",
               "column": "id"
             }
           },
@@ -13182,7 +13182,7 @@
       }
     ]
   },
-  "hash": "b1c8a348345b2d677c7f59acc9b39955829be1d73e452d32f774e47e544d84b8",
+  "hash": "d8fe65d210b638adf9df00d977ceb0cb3507f311204f5b87c2b7a64b3346cbd5",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-10T01:17:37.667Z"
+  "updatedAt": "2026-09-16T11:23:18.688Z"
 }
