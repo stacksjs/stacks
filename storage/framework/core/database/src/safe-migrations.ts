@@ -16,7 +16,7 @@
  * just call them from inside the `up()` of a migration file.
  */
 
-import type { DbWriteResult } from './utils'
+import { mutationCount } from './affected-rows'
 import { db } from './utils'
 
 type Database = typeof db
@@ -112,19 +112,17 @@ export async function addColumnSafely(
  * What these helpers need off the connection to run DDL.
  *
  * Matches `Db.unsafe`'s own signature. Its declared result is the ROWS a
- * SELECT returns, while a DDL statement resolves to the driver's write result
- * - which is what `DbWriteResult` describes and what the caller below reads an
- * affected-row count from.
+ * SELECT returns, while a write resolves to the driver's own result, so it is
+ * returned untyped and read through mutationCount.
  */
 interface DdlRunner {
   unsafe?: (_query: string, _params?: unknown[]) => Promise<unknown>
 }
 
-async function execRaw(dbAny: DdlRunner, statement: string): Promise<{ numAffectedRows?: number | bigint }> {
-  if (typeof dbAny.unsafe === 'function') {
-    const result = await dbAny.unsafe(statement) as DbWriteResult | undefined
-    return result ?? {}
-  }
+async function execRaw(dbAny: DdlRunner, statement: string): Promise<unknown> {
+  if (typeof dbAny.unsafe === 'function')
+    return await dbAny.unsafe(statement)
+
   /*
    * No `unsafe()` on this connection, and nothing else here can run raw DDL.
    *
@@ -155,9 +153,14 @@ export async function backfillInBatches(
   value: string | number | boolean | null,
   batchSize = 1000,
 ): Promise<void> {
+  // Filling NULLs with NULL changes nothing, and it would never finish: SQLite
+  // and PostgreSQL count the rows an UPDATE matches, so every pass would match
+  // the same rows again.
+  if (value === null)
+    return
+
   const dbAny = db
   let updated = 0
-  let total = 0
   do {
     // The DBs we support all expose a `LIMIT` on UPDATE either natively
     // or via a CTE workaround. Postgres' standard syntax is
@@ -173,9 +176,9 @@ export async function backfillInBatches(
           LIMIT ${batchSize}
         )
     `
-    const result = await execRaw(dbAny, batchSql)
-    updated = result.numAffectedRows != null ? Number(result.numAffectedRows) : 0
-    total += updated
+    // No driver sets `numAffectedRows`, which this used to read, so every
+    // backfill stopped after its first batch and left the rest NULL.
+    updated = mutationCount(await execRaw(dbAny, batchSql))
   }
   while (updated > 0)
 }
