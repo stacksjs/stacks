@@ -9,7 +9,6 @@
  * - Refresh tokens for token renewal without re-authentication
  */
 
-import type { DbWriteResult } from '@stacksjs/database'
 import type {
   AccessToken,
   CreateClientOptions,
@@ -22,7 +21,7 @@ import type {
   TokenScopes,
 } from '@stacksjs/types'
 import { createHash, randomBytes } from 'node:crypto'
-import { db, markContextWrote } from '@stacksjs/database'
+import { db, markContextWrote, mutationCount } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
 import { makeHash } from '@stacksjs/security'
@@ -886,14 +885,7 @@ export async function deleteExpiredRefreshTokens(): Promise<number> {
   `)
   markContextWrote()
 
-  // A write statement resolves to the driver's result object, not the rows
-
-  // `db.unsafe` is declared to return. See DbWriteResult.
-
-  const written = result as unknown as DbWriteResult
-
-
-  return Number(written?.changes ?? written?.rowCount ?? 0)
+  return mutationCount(result)
 }
 
 /**
@@ -913,14 +905,7 @@ export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<n
   `, [sqlDateTime(cutoffDate)])
   markContextWrote()
 
-  // A write statement resolves to the driver's result object, not the rows
-
-  // `db.unsafe` is declared to return. See DbWriteResult.
-
-  const written = result as unknown as DbWriteResult
-
-
-  return Number(written?.changes ?? written?.rowCount ?? 0)
+  return mutationCount(result)
 }
 
 // ============================================================================
@@ -1004,14 +989,7 @@ export async function deleteExpiredTokens(): Promise<number> {
     WHERE expires_at < ${appNow()}
   `)
 
-  // A write statement resolves to the driver's result object, not the rows
-
-  // `db.unsafe` is declared to return. See DbWriteResult.
-
-  const written = result as unknown as DbWriteResult
-
-
-  return Number(written?.changes ?? written?.rowCount ?? 0)
+  return mutationCount(result)
 }
 
 /**
@@ -1039,14 +1017,7 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
     WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
   `, [sqlDateTime(cutoffDate)])
 
-  // A write statement resolves to the driver's result object, not the rows
-
-  // `db.unsafe` is declared to return. See DbWriteResult.
-
-  const written = result as unknown as DbWriteResult
-
-
-  return Number(written?.changes ?? written?.rowCount ?? 0)
+  return mutationCount(result)
 }
 
 // ============================================================================

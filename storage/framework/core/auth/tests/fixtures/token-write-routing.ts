@@ -102,11 +102,10 @@ try {
       await revokeAllTokens(42)
     return seeded
   }
-  // Count the rows rather than trusting the helper's return value: on Postgres
-  // these helpers delete correctly but report 0, because the driver's write
-  // result carries `count`/`affectedRows` while the helper reads
-  // `changes`/`rowCount`. Asserting on the returned number would fail here for
-  // a reason that has nothing to do with routing.
+  // Count the rows rather than asserting on the helper's return value. This
+  // test is about routing, so it proves a write really happened from the table
+  // itself; whether each helper reports that count correctly is
+  // token-prune-counts.test.ts's job.
   async function tokenRowCount() {
     const access = await db.selectFrom('oauth_access_tokens').selectAll().execute()
     const refresh = await db.selectFrom('oauth_refresh_tokens').selectAll().execute()
