@@ -1,6 +1,5 @@
-import type { DbWriteResult } from '@stacksjs/database'
 import type { GiftCard, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db, sqlHelpers } from '@stacksjs/database'
+import { db, mutationCount, sqlHelpers } from '@stacksjs/database'
 import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
@@ -104,6 +103,17 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
   // computed inline via CASE so the status update is part of the
   // same statement.
   //
+  // `status` is assigned FIRST because MySQL evaluates SET assignments left to
+  // right against values already updated: after the balance, its CASE saw the
+  // new balance, so a card spent to exactly 0 stayed ACTIVE. PostgreSQL and
+  // SQLite read the old row whatever the order.
+  //
+  // The never-taken `WHEN 1 = 0 THEN status` branch types the CASE. A CASE of
+  // bare literals is text, and PostgreSQL will not assign text to the enum
+  // type `status` is there, so every balance change threw. With one branch
+  // typed as the column, PostgreSQL resolves the literals to that type, without
+  // this code having to name it.
+  //
   // Issued via `db.unsafe` with bound parameters: the fluent update
   // builder binds every `.set()` value (raw expressions arrive as
   // unbindable objects) and silently drops where-callbacks, which
@@ -119,9 +129,9 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
 
   const statement = await db.unsafe(
     `UPDATE gift_cards
-    SET current_balance = current_balance + ${bind(amount)},
-        ${isRedemption ? `last_used_date = ${bind(now)},\n        ` : ''}status = CASE WHEN current_balance + ${bind(amount)} = 0 THEN 'USED' ELSE 'ACTIVE' END,
-        updated_at = ${bind(now)}
+    SET status = CASE WHEN current_balance + ${bind(amount)} = 0 THEN 'USED' WHEN 1 = 0 THEN status ELSE 'ACTIVE' END,
+        current_balance = current_balance + ${bind(amount)},
+        ${isRedemption ? `last_used_date = ${bind(now)},\n        ` : ''}updated_at = ${bind(now)}
     WHERE id = ${bind(id)}
       AND is_active = ${dialect.boolTrue}
       AND ${statusPredicate}
@@ -129,16 +139,10 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
       AND current_balance + ${bind(amount)} >= 0`,
     values,
   )
-  // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
-  // result: the ternary that used to be here always took its else branch. What
-  // a write statement resolves to is a driver result carrying an affected-row
-  // count, which `UnsafeReturn` does not describe - it is declared as the rows
-  // a SELECT returns. Narrowed to what is actually read, at the boundary where
-  // the declared type and the driver disagree.
-  const result = statement as unknown as DbWriteResult
-
-  const affected = Number(result?.changes ?? result?.numUpdatedRows ?? result?.affectedRows ?? 0)
-  if (affected > 0) {
+  // A write resolves to the driver's result, not the rows `db.unsafe` is
+  // declared to return. PostgreSQL carries the count in `count`, which the
+  // reader here used to miss, so a committed change was diagnosed as a failure.
+  if (mutationCount(statement) > 0) {
     return await fetchById(id)
   }
 

@@ -29,7 +29,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 
 // The schema comes from the model definitions, as the package's SQLite harness
 // (../setup.ts) builds it, but for this dialect and only the tables under test.
-const TABLES = ['carts', 'receipts']
+const TABLES = ['carts', 'gift_cards', 'payments', 'receipts']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -54,11 +54,19 @@ finally {
   rmSync(scratch, { recursive: true, force: true })
 }
 
+const { updateBalance } = await import('../../gift-cards/update')
+const { store: storeGiftCard } = await import('../../gift-cards/store')
 const { cleanupAbandonedCarts } = await import('../../orders/guards')
+const { recordRefund } = await import('../../payments/update')
+const { store: storePayment } = await import('../../payments/store')
 const { bulkStore } = await import('../../receipts/store')
 
 async function count(table: string): Promise<number> {
   return (await db.selectFrom(table).selectAll().execute() as unknown[]).length
+}
+async function column(table: string, id: unknown, name: string): Promise<unknown> {
+  const row = await db.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst() as Record<string, unknown> | undefined
+  return row?.[name]
 }
 
 const failures: string[] = []
@@ -88,6 +96,33 @@ try {
     assert.equal(deleted, removed, `cleanupAbandonedCarts reported ${deleted} but removed ${removed} carts`)
   })
 
+  // Both run a guarded UPDATE whose `status` is a CASE over string literals. On
+  // PostgreSQL `status` is an enum type, and a CASE of literals is text.
+  await check('gift cards updateBalance', async () => {
+    const card = await storeGiftCard({ code: `GC-WRITE-COUNTS-${dialect}`, initial_balance: 100, current_balance: 100, currency: 'USD', status: 'ACTIVE', is_active: true } as never)
+    assert(card?.id, 'seed gift card')
+    const spent = await updateBalance(Number(card.id), -40)
+    assert.equal(Number(await column('gift_cards', card.id, 'current_balance')), 60)
+    assert.equal(Number((spent as Record<string, unknown> | undefined)?.current_balance), 60)
+    // Spending the rest has to flip the status, which is what the CASE is for.
+    const used = await updateBalance(Number(card.id), -60)
+    assert.equal(await column('gift_cards', card.id, 'status'), 'USED')
+    assert.equal(used?.status, 'USED')
+    await assert.rejects(updateBalance(Number(card.id), -1), /not active/, 'a spent card rejects another redemption')
+  })
+
+  await check('payments recordRefund', async () => {
+    const payment = await storePayment({ amount: 1000, method: 'creditCard', status: 'completed', transaction_id: `TXN-WRITE-COUNTS-${dialect}` } as never)
+    assert(payment?.id, 'seed payment')
+    const partial = await recordRefund(Number(payment.id), 250)
+    assert.equal(Number(await column('payments', payment.id, 'refund_amount')), 250)
+    assert.equal(partial.status, 'partiallyRefunded')
+    const full = await recordRefund(Number(payment.id), 750)
+    assert.equal(await column('payments', payment.id, 'status'), 'refunded')
+    assert.equal(full.status, 'refunded')
+    await assert.rejects(recordRefund(Number(payment.id), 1), /cannot be refunded/, 'a fully refunded payment rejects another refund')
+  })
+
   await check('receipts bulkStore', async () => {
     const receipt = (index: number) => ({ printer: 'Front Counter', document: `Receipt #${index}`, timestamp: Date.parse('2026-01-10T12:00:00Z'), status: 'success', size: 12, pages: 1, duration: 2 })
     const before = await count('receipts')
@@ -97,7 +132,7 @@ try {
     assert.equal(reported, inserted, `bulkStore reported ${reported} but inserted ${inserted} receipts`)
   })
 
-  assert.deepEqual(failures, [], `${dialect}: every commerce write must report the rows it changed`)
+  assert.deepEqual(failures, [], `${dialect}: every commerce write must apply and report the rows it changed`)
   console.log('commerce write counts OK')
 }
 finally { resetDatabaseConnection() }

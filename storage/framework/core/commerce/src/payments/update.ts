@@ -1,6 +1,5 @@
-import type { DbWriteResult } from '@stacksjs/database'
 import type { ModelRow, Payment, UpdateModelData } from '@stacksjs/orm'
-import { db, sqlHelpers } from '@stacksjs/database'
+import { db, mutationCount, sqlHelpers } from '@stacksjs/database'
 import { env } from '@stacksjs/env'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -61,6 +60,13 @@ const REFUNDABLE_STATUSES = new Set(['completed', 'succeeded', 'partiallyRefunde
  * Amounts are integer minor units. A single conditional update performs the
  * increment and remaining-balance check atomically, so concurrent operators
  * cannot record more than the captured amount.
+ *
+ * `status` is assigned before `refund_amount` because MySQL evaluates SET
+ * assignments left to right against values already updated, so a CASE placed
+ * after the increment recorded a full refund as `partiallyRefunded`. Its never-
+ * taken `WHEN 1 = 0 THEN status` branch types the CASE as the column: a CASE of
+ * bare literals is text, which PostgreSQL will not assign to the enum type
+ * `status` has there.
  */
 export async function recordRefund(id: number, amount: number): Promise<PaymentJsonResponse> {
   if (!Number.isSafeInteger(id) || id <= 0)
@@ -73,33 +79,19 @@ export async function recordRefund(id: number, amount: number): Promise<PaymentJ
   const now = formatDate(new Date())
   const statement = await db.unsafe(
     `UPDATE payments
-    SET refund_amount = COALESCE(refund_amount, 0) + ${p(1)},
-        status = CASE WHEN COALESCE(refund_amount, 0) + ${p(2)} = amount
-          THEN 'refunded' ELSE 'partiallyRefunded' END,
+    SET status = CASE WHEN COALESCE(refund_amount, 0) + ${p(1)} = amount THEN 'refunded'
+          WHEN 1 = 0 THEN status ELSE 'partiallyRefunded' END,
+        refund_amount = COALESCE(refund_amount, 0) + ${p(2)},
         updated_at = ${p(3)}
     WHERE id = ${p(4)}
       AND status IN ('completed', 'succeeded', 'partiallyRefunded')
       AND COALESCE(refund_amount, 0) + ${p(5)} <= amount`,
     [amount, amount, now, id, amount],
   )
-  // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
-  // result: the ternary that used to be here always took its else branch. What
-  // a write statement resolves to is a driver result carrying an affected-row
-  // count, which `UnsafeReturn` does not describe - it is declared as the rows
-  // a SELECT returns. Narrowed to what is actually read, at the boundary where
-  // the declared type and the driver disagree.
-  const result = statement as unknown as DbWriteResult
-
-  const affected = Number(
-    result?.numUpdatedRows
-    ?? result?.[0]?.numUpdatedRows
-    ?? result?.numAffectedRows
-    ?? result?.affectedRows
-    ?? result?.[0]?.affectedRows
-    ?? result?.changes
-    ?? 0,
-  )
-  if (affected > 0) {
+  // A write resolves to the driver's result, not the rows `db.unsafe` is
+  // declared to return. PostgreSQL carries the count in `count`, which the
+  // reader here used to miss, so a committed refund was diagnosed as a failure.
+  if (mutationCount(statement) > 0) {
     const updated = await fetchById(id)
     if (updated)
       return updated
