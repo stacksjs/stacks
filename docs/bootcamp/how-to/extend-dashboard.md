@@ -138,9 +138,9 @@ const state = await queuedJobState()
 </script>
 
 <template>
-  <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-800">
-    <h3 class="text-sm font-medium text-gray-500">Queue depth</h3>
-    <p class="mt-1 text-2xl font-semibold">{{ state.pending }}</p>
+  <div class="p-4 border border-gray-200 rounded-lg dark:border-gray-800">
+    <h3 class="font-medium text-gray-500 text-sm">Queue depth</h3>
+    <p class="mt-1 font-semibold text-2xl">{{ state.pending }}</p>
   </div>
 </template>
 ```
