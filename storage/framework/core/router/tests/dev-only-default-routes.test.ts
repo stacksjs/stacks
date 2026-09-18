@@ -10,10 +10,16 @@
  * Since `dashboard` is the only feature that defaults to ON, every app that
  * didn't opt out shipped both endpoints to production.
  *
- * Now both registrations sit behind the same local-env allowlist as
- * dashboard-api.ts (unset/local/development/dev/test/testing), and
- * TestErrorAction additionally short-circuits to 404 in production so even
- * a userland re-registration can't expose the exception generator there.
+ * Now both registrations sit behind the same `isLocalDeployment()` gate as
+ * dashboard-api.ts, and TestErrorAction additionally short-circuits to 404 in
+ * production so even a userland re-registration can't expose the exception
+ * generator there.
+ *
+ * That gate used to be an environment-name allowlist that counted
+ * `development` as local. `.env.example` ships `APP_ENV=development`, so the
+ * name alone re-opened this issue for every app that never edited the line;
+ * the decision now comes from `APP_URL`'s host, as the auth cookie's has
+ * since stacksjs/stacks#2275. See core/env/tests/local-deployment.test.ts.
  *
  * The registration gate is evaluated at module-import time and bun caches
  * modules per process (and `bun test` shares one process across files —
@@ -29,16 +35,20 @@ import process from 'node:process'
 const projectRoot = join(import.meta.dir, '../../../../..')
 const fixture = join(import.meta.dir, 'fixtures/print-dashboard-routes.ts')
 
-async function routesFor(appEnv?: string, appUrl?: string): Promise<string[]> {
-  const env: Record<string, string | undefined> = { ...process.env }
-  // Scrub inherited values so each scenario controls the gate's input.
-  delete env.APP_ENV
-  delete env.NODE_ENV
-  delete env.APP_URL
-  if (appEnv !== undefined)
-    env.APP_ENV = appEnv
-  if (appUrl !== undefined)
-    env.APP_URL = appUrl
+/**
+ * Every scenario states all three inputs, including the ones it wants empty.
+ *
+ * Deleting them is not enough. The bunfig env preload fills whatever is
+ * absent from the checkout's own `.env`, which ships `APP_ENV=development`
+ * and `APP_URL=stacks.localhost`, so a deleted `APP_URL` came back a loopback
+ * host and the gate read this machine rather than the scenario. CI has no
+ * `.env` and so disagreed: this suite passed here while `APP_ENV=development`
+ * failed there. A value that is present but empty is passed through untouched
+ * - the preload only fills what is missing - and empty is what
+ * `isLocalDeployment()` sees for a variable nobody set.
+ */
+async function routesFor(appEnv: string = '', appUrl: string = ''): Promise<string[]> {
+  const env: Record<string, string | undefined> = { ...process.env, APP_ENV: appEnv, NODE_ENV: '', APP_URL: appUrl }
 
   const proc = Bun.spawn(['bun', fixture], {
     cwd: projectRoot,
@@ -101,10 +111,18 @@ describe('dev-only default routes - registration gate (#1955)', () => {
     expect(routes).toContain('GET /test-error')
   }, 30000)
 
-  test('APP_ENV=development keeps both', async () => {
+  test('APP_ENV=development alone no longer keeps them', async () => {
+    // This assertion used to be the reverse, and that was the hole itself:
+    // `development` is the name every app that never edited `.env.example`
+    // reports, so accepting it as proof of localness is what shipped both
+    // endpoints to production. With no URL to check there is no evidence of
+    // localness left, so the gate closes rather than guessing.
     const routes = await routesFor('development')
-    expect(routes).toContain('GET /install')
-    expect(routes).toContain('GET /test-error')
+
+    expect(routes).not.toContain('GET /install')
+    expect(routes).not.toContain('GET /test-error')
+    // The file still registered - the gate fired, not a broken import.
+    expect(routes).toContain('POST /ai/ask')
   }, 30000)
 
   test('APP_ENV=test keeps both (e2e suites exercising the error tester)', async () => {
