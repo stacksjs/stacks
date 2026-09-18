@@ -29,7 +29,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 
 // The schema comes from the model definitions, as the package's SQLite harness
 // (../setup.ts) builds it, but for this dialect and only the tables under test.
-const TABLES = ['carts', 'gift_cards', 'payments', 'receipts']
+const TABLES = ['carts', 'coupons', 'gift_cards', 'payments', 'receipts']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -54,6 +54,8 @@ finally {
   rmSync(scratch, { recursive: true, force: true })
 }
 
+const { redeem } = await import('../../coupons/update')
+const { store: storeCoupon } = await import('../../coupons/store')
 const { updateBalance } = await import('../../gift-cards/update')
 const { store: storeGiftCard } = await import('../../gift-cards/store')
 const { cleanupAbandonedCarts } = await import('../../orders/guards')
@@ -94,6 +96,25 @@ try {
     const removed = before - await count('carts')
     assert.equal(removed, 2, 'the two abandoned carts were deleted')
     assert.equal(deleted, removed, `cleanupAbandonedCarts reported ${deleted} but removed ${removed} carts`)
+  })
+
+  await check('coupons redeem', async () => {
+    const today = new Date()
+    const day = (offset: number) => new Date(today.getTime() + offset * 86_400_000).toISOString().slice(0, 10)
+    const coupon = await storeCoupon({ code: `REDEEM-${dialect}`, discount_type: 'percentage', discount_value: 10, product_id: 1, start_date: day(-1), end_date: day(30), is_active: true, usage_limit: 2 } as never)
+    assert(coupon?.id, 'seed coupon')
+    const id = Number(coupon.id)
+
+    const first = await redeem(id)
+    assert.equal(Number(await column('coupons', id, 'usage_count')), 1, 'the redemption was committed')
+    assert.equal(first.ok, true, `redeem reported ${JSON.stringify(first)} for a redemption it committed`)
+
+    // The cap is the column the schema has, so the third attempt must fail.
+    assert.equal((await redeem(id)).ok, true)
+    const third = await redeem(id)
+    assert.equal(third.ok, false)
+    assert.equal(third.ok === false && third.reason, 'limit-reached')
+    assert.equal(Number(await column('coupons', id, 'usage_count')), 2, 'a rejected redemption must not count')
   })
 
   // Both run a guarded UPDATE whose `status` is a CASE over string literals. On

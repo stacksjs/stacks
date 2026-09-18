@@ -1,6 +1,5 @@
-import type { DbWriteResult } from '@stacksjs/database'
 import type { Coupon, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db, sqlHelpers } from '@stacksjs/database'
+import { db, mutationCount, sqlHelpers } from '@stacksjs/database'
 import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
@@ -63,14 +62,14 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
  * Atomically redeem a coupon (stacksjs/stacks#1879 Co-5).
  *
  * Pre-fix: callers fetched the coupon, checked `usage_count <
- * max_uses`, then bumped `usage_count` via `update()`. Two concurrent
- * redemption requests against a coupon with `max_uses=1` both saw
+ * usage_limit`, then bumped `usage_count` via `update()`. Two concurrent
+ * redemption requests against a coupon with `usage_limit=1` both saw
  * `usage_count=0`, both incremented, both succeeded. The coupon
  * was redeemed twice — direct revenue loss equal to `discount_value`
  * times the over-redemption count.
  *
  * Post-fix: single conditional UPDATE that bumps `usage_count` and
- * enforces `max_uses` / `is_active` / expiry in the WHERE clause.
+ * enforces `usage_limit` / `is_active` / expiry in the WHERE clause.
  * The database guarantees only one writer wins the race. Returns a
  * discriminated result so callers can surface a useful reason
  * ("limit reached" vs "expired" vs "inactive") instead of a generic
@@ -87,14 +86,19 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
  */
 export async function redeem(id: number): Promise<CouponRedemptionResult> {
   // Single atomic UPDATE — increment usage_count and enforce every
-  // redemption precondition in the WHERE clause. `max_uses IS NULL`
+  // redemption precondition in the WHERE clause. `usage_limit IS NULL`
   // means "unlimited" so coupons without an explicit cap aren't
   // accidentally rejected.
+  //
+  // The cap is `usage_limit`, which is what the model, the migrations and the
+  // dashboard all call it. This guarded on `max_uses`, a column no schema has,
+  // taking the name from the wording of the #1879 audit rather than from the
+  // table: every redemption threw "no such column: max_uses" on every dialect.
   //
   // Issued via `db.unsafe` with bound parameters: the fluent update
   // builder can neither render raw SET expressions (`usage_count + 1`)
   // nor OR-grouped WHERE predicates, and its where-callback form is
-  // silently dropped by the runtime — which would drop the max_uses
+  // silently dropped by the runtime — which would drop the usage_limit
   // guard entirely. One parameterized statement keeps the whole
   // precondition set atomic and injection-safe.
   //
@@ -110,25 +114,20 @@ export async function redeem(id: number): Promise<CouponRedemptionResult> {
     `UPDATE coupons
     SET usage_count = COALESCE(usage_count, 0) + 1, updated_at = ${p(1)}
     WHERE id = ${p(2)}
-      AND (max_uses IS NULL OR usage_count < max_uses)
+      AND (usage_limit IS NULL OR COALESCE(usage_count, 0) < usage_limit)
       AND is_active = ${dialect.boolTrue}
       AND (start_date IS NULL OR start_date <= ${p(3)})
       AND (end_date IS NULL OR end_date >= ${p(4)})`,
     [now, id, now, now],
   )
-  // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
-  // result: the ternary that used to be here always took its else branch. What
-  // a write statement resolves to is a driver result carrying an affected-row
-  // count, which `UnsafeReturn` does not describe - it is declared as the rows
-  // a SELECT returns. Narrowed to what is actually read, at the boundary where
-  // the declared type and the driver disagree.
-  const result = statement as unknown as DbWriteResult
-
+  // A write resolves to the driver's result, not the rows `db.unsafe` is
+  // declared to return. PostgreSQL carries the count in `count`, which the
+  // reader here used to miss, so a committed redemption read as a failure.
+  //
   // If the UPDATE matched zero rows, the redemption failed
   // (precondition mismatch); diagnose which one to give the caller a
   // useful reason.
-  const affected = Number(result?.changes ?? result?.numUpdatedRows ?? result?.affectedRows ?? 0)
-  if (affected > 0) {
+  if (mutationCount(statement) > 0) {
     const refreshed = await fetchById(id)
     if (refreshed)
       return { ok: true, coupon: refreshed }
