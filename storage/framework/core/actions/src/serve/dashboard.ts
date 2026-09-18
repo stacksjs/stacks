@@ -46,7 +46,7 @@ import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, publicPath } from '@stacksjs/path'
-import { resolveDefaultsRoot } from '../dev/defaults-resources'
+import { resolveComponentsLibraryRoot, resolveDefaultsRoot } from '../dev/defaults-resources'
 import { decideDashboardAccess } from './dashboard-gate'
 
 process.env.APP_ENV ||= 'production'
@@ -113,6 +113,10 @@ await serve({
   layoutsDir: frameworkDashboard,
   partialsDir: frameworkDashboard,
   componentsDir: join(defaultsRoot, 'resources/components/Dashboard'),
+  // Same as the dev server: the layout's sidebar tags come from
+  // `@stacksjs/components`, searched after the dashboard's own directory
+  // (stacksjs/stacks#2641).
+  fallbackComponentsDir: resolveComponentsLibraryRoot(),
   // Assets belong to the application even when the page came from framework
   // storage.
   publicDir: publicPath(),

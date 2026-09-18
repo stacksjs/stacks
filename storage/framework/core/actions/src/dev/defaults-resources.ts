@@ -78,6 +78,37 @@ export function resolveDefaultsRoot(): string {
   }
 }
 
+/**
+ * The component library's source root, or `undefined` when it is not installed.
+ *
+ * The dashboard layout in defaults renders `<Sidebar>` and `<SidebarHeader>`,
+ * which live in `@stacksjs/components`. Nothing in the framework pointed the
+ * renderer at that package: registration came only from an app's own
+ * `config/ui.ts` plugins key, which apps scaffolded before that key existed do
+ * not have, cannot gain by upgrading (defaults ships no `config/ui.ts`), and
+ * whose absence surfaces as an ENOENT dump in place of the whole dashboard
+ * (stacksjs/stacks#2641).
+ *
+ * `src`, not `dist`: the published `dist/*.stx` filenames carry a content hash
+ * (`Sidebar-f1tff5p3.stx`), so name-based component resolution never matches
+ * them. The package declares `['./src/ui', './src/components']` for its own stx
+ * plugin, and no `.stx` lives under `src` outside those two, so this single
+ * root covers both.
+ *
+ * Resolved relative to THIS module rather than the working directory: the dev
+ * server is started from wherever the developer happens to be, and the package
+ * may be hoisted anywhere above this file.
+ */
+export function resolveComponentsLibraryRoot(): string | undefined {
+  try {
+    return join(dirname(Bun.resolveSync('@stacksjs/components/stx-plugin', import.meta.dir)), 'src')
+  }
+  catch {
+    // Not installed. The caller omits the option, leaving today's search list.
+    return undefined
+  }
+}
+
 export function resolveDefaultsResources(): string {
   /*
    * Located from this file, not the working directory.

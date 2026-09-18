@@ -4,6 +4,7 @@ import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, publicPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
+import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
 import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
@@ -392,6 +393,10 @@ async function startStxServer(): Promise<void> {
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
     componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),
+    // The layout's `<Sidebar>` and `<SidebarHeader>` ship in
+    // `@stacksjs/components`. Searched last, so an app's own component of
+    // the same name still wins (stacksjs/stacks#2641).
+    fallbackComponentsDir: resolveComponentsLibraryRoot(),
     layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
     // Pin the app's canonical public root. Dashboard pages can be discovered
