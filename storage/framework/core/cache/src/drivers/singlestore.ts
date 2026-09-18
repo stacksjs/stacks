@@ -251,7 +251,28 @@ export class SingleStoreCacheStore {
       `UPDATE ${this.qualified} SET expires_at = ? WHERE cache_key = ?`,
       [expiresAt, this.k(key)],
     ) as { affectedRows?: number }
-    return (result.affectedRows ?? 0) > 0
+    if ((result.affectedRows ?? 0) > 0)
+      return true
+
+    /*
+     * A count of zero does not mean the key is missing.
+     *
+     * The MySQL wire protocol reports rows CHANGED, not rows MATCHED, so
+     * writing an expiry a key already carries reports zero - and
+     * `ttl(key, 0)` on a key that never had one writes NULL over NULL, which
+     * is the most ordinary call there is. Measured over that protocol,
+     * `ttl(key, 60)` answered true and an immediate repeat answered false,
+     * for a key sitting in the table with exactly the requested expiry
+     * (stacksjs/stacks#2639).
+     *
+     * The question this method is being asked is whether the key is there, so
+     * ask that. Only the zero path pays for the extra read.
+     */
+    const rows = await this.sql.unsafe(
+      `SELECT 1 FROM ${this.qualified} WHERE cache_key = ? LIMIT 1`,
+      [this.k(key)],
+    ) as Array<unknown>
+    return Array.isArray(rows) && rows.length > 0
   }
 
   async take<T>(key: string): Promise<T | undefined> {
