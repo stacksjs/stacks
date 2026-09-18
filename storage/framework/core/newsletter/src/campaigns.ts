@@ -1,5 +1,5 @@
 import type { CreateCampaignInput, SendCampaignOptions } from './types'
-import { db, sqlDateTime } from '@stacksjs/database'
+import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database'
 import { lists } from './lists'
 
 /**
@@ -74,17 +74,30 @@ function campaignValue(campaign: CampaignLike | null | undefined, snakeKey: stri
   return campaign?.[snakeKey] ?? campaign?.[camelKey]
 }
 
+/**
+ * A timestamp as the framework stores it, whatever shape the driver returned.
+ *
+ * These values are bound back into the compare-and-set WHERE clause, so they
+ * have to be comparable to the stored column. `String(value)` is only right
+ * for the string SQLite hands back: PostgreSQL and MySQL return these columns
+ * as `Date` objects, and `String(date)` is `Fri Sep 18 2026 04:21:25 GMT-0700
+ * (Pacific Daylight Time)`, which neither accepts. Every transition threw
+ * there, on any campaign that had ever been written.
+ */
+function snapshotTimestamp(value: unknown): string | null {
+  if (value === null || value === undefined || value === '')
+    return null
+  if (typeof value === 'string')
+    return value
+  const parsed = parseSqlDateTime(value)
+  return parsed === null ? null : sqlDateTime(parsed)
+}
+
 export function campaignDeliverySnapshot(campaign: CampaignLike | null | undefined): CampaignDeliverySnapshot {
-  const scheduledAt = campaignValue(campaign, 'scheduled_at', 'scheduledAt')
-  const updatedAt = campaignValue(campaign, 'updated_at', 'updatedAt')
   return {
     status: String(campaignValue(campaign, 'status', 'status') || ''),
-    scheduledAt: scheduledAt === null || scheduledAt === undefined || scheduledAt === ''
-      ? null
-      : String(scheduledAt),
-    updatedAt: updatedAt === null || updatedAt === undefined || updatedAt === ''
-      ? null
-      : String(updatedAt),
+    scheduledAt: snapshotTimestamp(campaignValue(campaign, 'scheduled_at', 'scheduledAt')),
+    updatedAt: snapshotTimestamp(campaignValue(campaign, 'updated_at', 'updatedAt')),
   }
 }
 
