@@ -1,4 +1,5 @@
 import type { PageBlock } from '../blocks/types'
+import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
 import { parseStoredBlocks, validateBlocks } from '../blocks/registry'
@@ -257,6 +258,26 @@ export interface EditablePageDocument {
 }
 
 /**
+ * A timestamp column as the framework stores it, whatever the driver returned.
+ *
+ * This is an editing payload: the editor hands these values straight back to
+ * `updatePageDocument`, which writes them to the column. `String(value)` is
+ * only right for the strings SQLite returns. PostgreSQL and MySQL hand these
+ * columns back as `Date` objects, and `String(date)` is `Sat Sep 19 2026
+ * 07:27:36 GMT-0700 (Pacific Daylight Time)` - which PostgreSQL then rejects
+ * on save with `time zone "gmt-0700" not recognized`, so loading a scheduled
+ * page and saving it unchanged failed there.
+ */
+function storedTimestamp(value: unknown): string | null {
+  if (value === null || value === undefined || value === '')
+    return null
+  if (typeof value === 'string')
+    return value
+  const parsed = parseSqlDateTime(value)
+  return parsed === null ? null : sqlDateTime(parsed)
+}
+
+/**
  * Load one page for editing, scoped to its site.
  *
  * `pages.fetchById` returns the raw row, which leaves every caller to parse
@@ -290,9 +311,9 @@ export async function fetchPageDocument(siteId: number, pageId: number): Promise
     template: row.template === null || row.template === undefined ? null : String(row.template),
     metaDescription: row.meta_description === null || row.meta_description === undefined ? null : String(row.meta_description),
     status: String(row.status ?? 'draft'),
-    scheduledAt: row.scheduled_at === null || row.scheduled_at === undefined ? null : String(row.scheduled_at),
-    publishedAt: row.published_at === null || row.published_at === undefined ? null : String(row.published_at),
-    updatedAt: row.updated_at === null || row.updated_at === undefined ? null : String(row.updated_at),
+    scheduledAt: storedTimestamp(row.scheduled_at),
+    publishedAt: storedTimestamp(row.published_at),
+    updatedAt: storedTimestamp(row.updated_at),
     blocks: parseStoredBlocks(row.blocks),
   }
 }
