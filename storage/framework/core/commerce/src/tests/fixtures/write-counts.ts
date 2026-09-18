@@ -17,7 +17,8 @@ else {
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection } = await import('@stacksjs/database')
+const { Database } = await import('bun:sqlite')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, sqlDateTime } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect,
@@ -29,7 +30,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 
 // The schema comes from the model definitions, as the package's SQLite harness
 // (../setup.ts) builds it, but for this dialect and only the tables under test.
-const TABLES = ['carts', 'coupons', 'gift_cards', 'payments', 'receipts']
+const TABLES = ['carts', 'categories', 'coupons', 'gift_cards', 'payments', 'receipts']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -54,6 +55,8 @@ finally {
   rmSync(scratch, { recursive: true, force: true })
 }
 
+const { deactivate, deactivateChildCategories } = await import('../../products/categories/destroy')
+const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const { redeem } = await import('../../coupons/update')
 const { store: storeCoupon } = await import('../../coupons/store')
 const { updateBalance } = await import('../../gift-cards/update')
@@ -69,6 +72,33 @@ async function count(table: string): Promise<number> {
 async function column(table: string, id: unknown, name: string): Promise<unknown> {
   const row = await db.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst() as Record<string, unknown> | undefined
   return row?.[name]
+}
+
+/**
+ * Delete a category on a SECOND connection, synchronously, so it commits while
+ * a query hook holds the pending UPDATE. bun:sqlite is synchronous in process;
+ * the server dialects get a short-lived child process, as
+ * auth/tests/fixtures/session-refresh-mysql.ts does.
+ */
+function deleteOnAnotherConnection(id: number): boolean {
+  if (dialect === 'sqlite') {
+    const handle = new Database(process.env.DB_DATABASE_PATH!)
+    try { handle.run('DELETE FROM categories WHERE id = ?', [id]) }
+    finally { handle.close() }
+    return true
+  }
+  const adapter = dialect === 'postgres' ? 'postgres' : 'mysql'
+  const child = Bun.spawnSync([process.execPath, '-e', `
+    const db = new Bun.SQL({ adapter: '${adapter}', hostname: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
+      username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+      tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+    try { await db.unsafe('DELETE FROM categories WHERE id = ${id}') }
+    finally { await db.close() }
+  `], { cwd: tmpdir(), env: process.env, stdout: 'pipe', stderr: 'pipe', timeout: 5000 })
+  if (child.exitCode !== 0)
+    console.error(new TextDecoder().decode(child.stderr))
+  return child.exitCode === 0
 }
 
 const failures: string[] = []
@@ -142,6 +172,54 @@ try {
     assert.equal(await column('payments', payment.id, 'status'), 'refunded')
     assert.equal(full.status, 'refunded')
     await assert.rejects(recordRefund(Number(payment.id), 1), /cannot be refunded/, 'a fully refunded payment rejects another refund')
+  })
+
+  await check('product categories deactivate', async () => {
+    // Seeded directly rather than through categories/store.ts, which uses
+    // returningAll() and therefore cannot run on MySQL (stacksjs/stacks#2637).
+    let next = 0
+    const seedCategory = async (name: string, parentId: number | null) => {
+      next += 1
+      await db.insertInto('categories').values({
+        uuid: crypto.randomUUID(), name, slug: `${name}-${dialect}-${next}`, display_order: next,
+        is_active: true, parent_category_id: parentId, created_at: sqlDateTime(), updated_at: sqlDateTime(),
+      } as never).execute()
+      const rows = await db.selectFrom('categories').selectAll().execute() as Array<{ id: number }>
+      return Number(rows[rows.length - 1].id)
+    }
+
+    const id = await seedCategory('parent', null)
+    assert.equal(await deactivate(id), true, 'deactivating a category that exists')
+    assert.equal(Boolean(await column('categories', id, 'is_active')), false)
+    // Twice in a row writes the same values, which MySQL counts as zero rows
+    // changed. The row is still there, so this is still a success.
+    assert.equal(await deactivate(id), true, 'deactivating a category that is already inactive')
+
+    for (const child of ['a', 'b'])
+      await seedCategory(`child-${child}`, id)
+    assert.equal(await deactivateChildCategories(String(id)), 2)
+
+    // The reported race: the category is removed after deactivate() has
+    // checked that it exists, and before its UPDATE lands. A result object is
+    // truthy even for zero rows, so this used to report success.
+    const doomed = await seedCategory('doomed', null)
+    let removed = false
+    const unregister = registerPersistentQueryHooks({
+      onQueryStart(event: { kind?: string }) {
+        // MySQL does not pass the SQL text through this hook
+        // (stacksjs/bun-query-builder#1142), so match on the kind.
+        if (event.kind !== 'update' || removed)
+          return
+        removed = deleteOnAnotherConnection(doomed)
+      },
+    })
+    try {
+      const claimed = await deactivate(doomed)
+      assert.equal(removed, true, 'the competing delete must have run')
+      assert.equal(claimed, false, `${dialect}: deactivate must not report success for a row that is gone`)
+    }
+    finally { unregister() }
+    assert.equal(await db.selectFrom('categories').selectAll().where('id', '=', doomed).executeTakeFirst(), undefined)
   })
 
   await check('receipts bulkStore', async () => {

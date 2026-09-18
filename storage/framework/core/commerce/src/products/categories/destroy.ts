@@ -1,4 +1,5 @@
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 import { mutationCount } from '../../utils/mutation-count'
 
@@ -63,17 +64,26 @@ export async function deactivate(id: number): Promise<boolean> {
     throw new Error(`Category with ID ${id} not found`)
   }
 
-  // Update the category status
-  const result = await db
+  // `returning('id')` answers with the row itself, so a category removed
+  // between the check above and this write reports failure. The result object
+  // this used to test is truthy even when it carries `numUpdatedRows: 0`, and
+  // its count would be no better on MySQL, which counts CHANGED rows:
+  // deactivating an already inactive category writes nothing and reports 0.
+  //
+  // The timestamp goes through `formatDate` like the rest of the module.
+  // `toISOString()` writes `2026-09-17T11:31:40.219Z`, which MySQL rejects
+  // under its default strict sql_mode, so this threw there for every category.
+  const updated = await db
     .updateTable('categories')
     .set({
       is_active: false,
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     })
     .where('id', '=', id)
+    .returning('id')
     .executeTakeFirst()
 
-  return !!result
+  return Boolean(updated)
 }
 
 /**
@@ -87,7 +97,7 @@ export async function deactivateChildCategories(parentId: string): Promise<numbe
     .updateTable('categories')
     .set({
       is_active: false,
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     })
     .where('parent_category_id', '=', parentId)
     .execute()
