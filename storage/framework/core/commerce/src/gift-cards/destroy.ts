@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 import { mutationCount } from '../utils/mutation-count'
@@ -70,19 +70,23 @@ export async function deactivate(id: number): Promise<boolean> {
   }
 
   // Update the gift card status
-  const result = await db
+  //
+  // `executeTakeFirst()` resolves to a driver result object, which is truthy
+  // whether it updated one row or none, so `!!result` once reported success
+  // for a deactivation that did nothing. Its affected-row count is not the
+  // answer either: MySQL counts rows CHANGED, so deactivating an already
+  // deactivated card reported 0, and `formatDate`'s second precision means a
+  // repeat inside one second writes no new `updated_at` to save it
+  // (stacksjs/stacks#2639). The card's existence was settled by fetchById
+  // above; what is left to ask is what the predicate matched.
+  const matched = await matchedRows(db
     .updateTable('gift_cards')
     .set({
       is_active: false,
       status: 'DEACTIVATED',
       updated_at: formatDate(new Date()),
     })
-    .where('id', '=', id)
-    .executeTakeFirst()
+    .where('id', '=', id))
 
-  // `executeTakeFirst()` resolves to a driver result object, which is truthy
-  // whether it updated one row or none - so `!!result` reported success for a
-  // deactivation that did nothing. `mutationCount` reads the affected-row count
-  // the way `destroy` above it already does.
-  return mutationCount(result) > 0
+  return matched.length > 0
 }

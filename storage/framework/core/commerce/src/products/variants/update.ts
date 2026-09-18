@@ -1,5 +1,5 @@
 import type { ModelRow, ProductVariant, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ProductVariantJsonResponse = ModelRow<typeof ProductVariant>
@@ -54,16 +54,18 @@ export async function bulkUpdate(data: ProductVariantUpdate[]): Promise<number> 
       if (!(variant as Record<string, unknown>).id)
         continue
 
-      const result = await db
+      // MySQL counts rows CHANGED, and `formatDate` has second precision, so a
+      // variant re-saved with the values it already holds inside the same
+      // second changed nothing and went uncounted (stacksjs/stacks#2639).
+      const matched = await matchedRows(db
         .updateTable('product_variants')
         .set({
           ...variant,
           updated_at: formatDate(new Date()),
         })
-        .where('id', '=', (variant as Record<string, unknown>).id)
-        .executeTakeFirst()
+        .where('id', '=', (variant as Record<string, unknown>).id))
 
-      if (Number(result.numUpdatedRows) > 0)
+      if (matched.length > 0)
         updatedCount++
     }
 
@@ -86,16 +88,20 @@ export async function bulkUpdate(data: ProductVariantUpdate[]): Promise<number> 
  */
 export async function updateStatus(id: number, status: string): Promise<boolean> {
   try {
-    const result = await db
+    // Setting the status a variant already has changes nothing, and MySQL
+    // counts rows CHANGED, so this reported failure for a variant that is
+    // right there in the requested state (stacksjs/stacks#2639). `updated_at`
+    // does not save it either: `formatDate` has second precision, so a repeat
+    // within the same second writes the same value too.
+    const matched = await matchedRows(db
       .updateTable('product_variants')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
-      .where('id', '=', id)
-      .executeTakeFirst()
+      .where('id', '=', id))
 
-    return Number(result.numUpdatedRows) > 0
+    return matched.length > 0
   }
   catch (error) {
     if (error instanceof Error)

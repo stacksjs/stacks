@@ -1,12 +1,16 @@
 /**
- * Soft delete must not read an affected-row count as "does this row exist".
- * stacksjs/stacks#2639.
+ * A write that puts a row into a state must not read an affected-row count as
+ * "does this row exist". stacksjs/stacks#2639.
  *
  * MySQL counts rows a statement CHANGED; PostgreSQL and SQLite count rows it
- * MATCHED. Every soft delete here writes a status the row may already hold, so
- * on MySQL the UPDATE reported 0 for a row that was right there:
- * `softDelete()` on an order already CANCELED answered false, and
- * `bulkSoftDelete()` left every already-inactive row out of its total.
+ * MATCHED. Every write here sets a state the row may already be in, so on
+ * MySQL the UPDATE reported 0 for a row that was right there: `softDelete()`
+ * on an order already CANCELED answered false, `bulkSoftDelete()` left every
+ * already-inactive row out of its total, and re-deactivating a gift card or
+ * re-applying a variant's status reported failure. `updated_at` does not save
+ * those last two: `formatDate` has second precision, so a repeat inside one
+ * second writes the same value. The clock is frozen for that section, which
+ * is what makes "the same second" a fact rather than a race.
  *
  * Runs against a disposable database of the given dialect, with the tables
  * built from the model definitions rather than hand-written DDL, so a column
@@ -44,7 +48,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 
-const TABLES = ['digital_deliveries', 'license_keys', 'orders', 'shipping_methods', 'shipping_zones']
+const TABLES = ['digital_deliveries', 'gift_cards', 'license_keys', 'orders', 'product_variants', 'shipping_methods', 'shipping_zones']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -74,6 +78,8 @@ const digitalDeliveries = await import('../../shippings/digital-deliveries/destr
 const licenseKeys = await import('../../shippings/license-keys/destroy')
 const shippingMethods = await import('../../shippings/shipping-methods/destroy')
 const shippingZones = await import('../../shippings/shipping-zones/destroy')
+const { deactivate: deactivateGiftCard } = await import('../../gift-cards/destroy')
+const { bulkUpdate: bulkUpdateVariants, updateStatus: updateVariantStatus } = await import('../../products/variants/update')
 
 /**
  * Each module, the status its soft delete writes, and four seed rows: 1 and 3
@@ -166,7 +172,51 @@ try {
     })
   }
 
-  assert.deepEqual(failures, [], `${dialect}: every soft delete must report the rows its predicate matched`)
+  // The clock stops here so "within the same second" is a fact rather than a
+  // race: both writes below put `formatDate(new Date())` into `updated_at`,
+  // and with the clock moving the second can tick between them and hide the
+  // defect. bun:test's setSystemTime works in a plain `bun` run too.
+  const { setSystemTime } = await import('bun:test')
+  setSystemTime(new Date('2030-01-02T03:04:05.000Z'))
+  try {
+    await check('gift card deactivate is idempotent within one second', async () => {
+      await db.insertInto('gift_cards').values({ id: 1, code: 'GC-1', initial_balance: 5000, current_balance: 5000, status: 'ACTIVE' }).execute()
+
+      assert.equal(await deactivateGiftCard(1), true, `${dialect}: deactivating an active gift card must report success`)
+      // Same second, same values: MySQL changed nothing and reported 0, so
+      // this answered false for a card that is deactivated exactly as asked.
+      assert.equal(await deactivateGiftCard(1), true, `${dialect}: deactivating an already deactivated gift card must report success`)
+      assert.equal(await statusOf('gift_cards', 1), 'DEACTIVATED')
+    })
+
+    await check('variant updateStatus reports success for the status it already has', async () => {
+      await db.insertInto('product_variants').values({ id: 1, variant: 'Size', type: 'dropdown', status: 'active' }).execute()
+      await db.insertInto('product_variants').values({ id: 2, variant: 'Colour', type: 'dropdown', status: 'draft' }).execute()
+
+      // The first call still writes `updated_at`, which is a change even when
+      // the status is not, so it is the SECOND that is the true no-op and the
+      // one MySQL reported as zero.
+      assert.equal(await updateVariantStatus(1, 'active'), true, `${dialect}: re-applying a variant's current status must report success`)
+      assert.equal(await updateVariantStatus(1, 'active'), true, `${dialect}: re-applying it again in the same second must report success`)
+      assert.equal(await updateVariantStatus(2, 'active'), true, `${dialect}: changing a variant's status must report success`)
+      assert.equal(await statusOf('product_variants', 2), 'active')
+      assert.equal(await updateVariantStatus(404, 'active'), false, `${dialect}: a variant that does not exist must report failure`)
+    })
+
+    await check('variant bulkUpdate counts rows already holding the values', async () => {
+      // Re-saving the two variants exactly as they now stand. Every column in
+      // the SET, `updated_at` included, already holds what is being written,
+      // so MySQL changed nothing and counted nothing.
+      const rows = await db.selectFrom('product_variants').selectAll().where('id', 'in', [1, 2]).execute() as Array<Record<string, unknown>>
+      assert.equal(rows.length, 2)
+
+      const resaved = await bulkUpdateVariants(rows.map(row => ({ id: row.id, status: row.status })) as never)
+      assert.equal(resaved, 2, `${dialect}: bulk update must count rows that already hold the values written`)
+    })
+  }
+  finally { setSystemTime() }
+
+  assert.deepEqual(failures, [], `${dialect}: every write must report the rows its predicate matched`)
   console.log('commerce soft delete counts OK')
 }
 finally { resetDatabaseConnection() }
