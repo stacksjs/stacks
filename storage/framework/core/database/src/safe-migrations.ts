@@ -16,7 +16,10 @@
  * just call them from inside the `up()` of a migration file.
  */
 
+import process from 'node:process'
+import { env as envVars } from '@stacksjs/env'
 import { mutationCount } from './affected-rows'
+import { dialectCapabilities, isKnownDialect } from './dialect'
 import { db } from './utils'
 
 type Database = typeof db
@@ -56,8 +59,9 @@ interface AddColumnSafelyOptions {
  *     handle the rerun case — wrap in `if (!columnExists)` if you need that)
  *
  * Caveats:
- *   - SQLite doesn't support adding NOT NULL columns to existing tables
- *     without a default; we work around it by always supplying one
+ *   - SQLite has no `ALTER COLUMN`, so a NOT NULL column is added in one
+ *     statement and needs a `defaultValue` to fill the existing rows; without
+ *     one this throws before touching the table
  *   - Postgres < 11 rewrites the entire table when a default is added;
  *     this helper assumes ≥ 11
  *
@@ -78,27 +82,51 @@ export async function addColumnSafely(
 ): Promise<void> {
   const { type, defaultValue, notNull = false, batchSize = 1000 } = options
   const dbAny = db
+  const wire = wireProtocol()
+  const defaultSql = defaultValue === undefined
+    ? ''
+    : ` DEFAULT ${formatDefault(defaultValue)}`
+
+  // SQLite cannot add a constraint to an existing column: `ALTER TABLE ...
+  // ALTER COLUMN` is not syntax it has, and the previous code emitted it
+  // anyway, so `notNull: true` always threw there, AFTER the column had been
+  // added and left nullable. What SQLite does allow is adding the column NOT
+  // NULL in one statement, as long as a default fills the existing rows.
+  if (wire === 'sqlite') {
+    if (notNull && defaultValue === undefined) {
+      throw new Error(
+        `Cannot add NOT NULL column ${JSON.stringify(columnName)} to ${JSON.stringify(tableName)} on SQLite without a defaultValue: `
+        + 'SQLite has no ALTER COLUMN, so the constraint has to be part of the ADD COLUMN, which needs a value for the existing rows.',
+      )
+    }
+    const notNullSql = notNull ? ' NOT NULL' : ''
+    await execRaw(dbAny, `ALTER TABLE ${quote(tableName)} ADD COLUMN ${quote(columnName)} ${type}${notNullSql}${defaultSql}`)
+    return
+  }
 
   // 1. Add the column as nullable + with default. Default-bearing column
   //    additions are O(1) on Postgres ≥ 11 and MySQL ≥ 8 because the
   //    default is stored as table metadata, not written into every row.
-  const defaultSql = defaultValue === undefined
-    ? ''
-    : ` DEFAULT ${formatDefault(defaultValue)}`
   await execRaw(dbAny, `ALTER TABLE ${quote(tableName)} ADD COLUMN ${quote(columnName)} ${type}${defaultSql}`)
 
   if (defaultValue !== undefined) {
     // 2. Backfill any rows that were inserted *before* the metadata
     //    default was wired (rare: Postgres >= 11 covers this with the
     //    fast-path default; we still do an explicit UPDATE in batches
-    //    to handle the older-DB and SQLite fallback).
+    //    to handle the older-DB fallback).
     await backfillInBatches(db, tableName, columnName, defaultValue, batchSize)
   }
 
   // 3. Add the NOT NULL constraint at the end. By now every row has
   //    a value, so the validation phase is fast.
+  //
+  // MySQL has no `ALTER COLUMN ... SET NOT NULL`. Its MODIFY COLUMN restates
+  // the whole definition, and a restatement that leaves the default out drops
+  // it, so the default is repeated here.
   if (notNull) {
-    await execRaw(dbAny, `ALTER TABLE ${quote(tableName)} ALTER COLUMN ${quote(columnName)} SET NOT NULL`)
+    await execRaw(dbAny, wire === 'mysql'
+      ? `ALTER TABLE ${quote(tableName)} MODIFY COLUMN ${quote(columnName)} ${type} NOT NULL${defaultSql}`
+      : `ALTER TABLE ${quote(tableName)} ALTER COLUMN ${quote(columnName)} SET NOT NULL`)
   }
 }
 
@@ -160,18 +188,25 @@ export async function backfillInBatches(
     return
 
   const dbAny = db
+  const wire = wireProtocol()
   let updated = 0
   do {
-    // The DBs we support all expose a `LIMIT` on UPDATE either natively
-    // or via a CTE workaround. Postgres' standard syntax is
-    // `WHERE ctid IN (SELECT ... LIMIT N)`; MySQL allows `UPDATE ... LIMIT`;
-    // SQLite needs `WHERE rowid IN (SELECT rowid ... LIMIT N)`. The CTE
-    // form below works on all three.
-    const batchSql = `
+    // MySQL takes a LIMIT on UPDATE directly. It rejects one inside an IN
+    // subquery (error 1235) and rejects selecting from the table being
+    // updated (error 1093), so the form the other two use cannot run there.
+    // PostgreSQL and SQLite have no LIMIT on UPDATE, but do have a system
+    // row identifier to select on.
+    const batchSql = wire === 'mysql'
+      ? `
       UPDATE ${quote(tableName)} SET ${quote(columnName)} = ${formatDefault(value)}
       WHERE ${quote(columnName)} IS NULL
-        AND ${rowIdColumnFor(dbAny)} IN (
-          SELECT ${rowIdColumnFor(dbAny)} FROM ${quote(tableName)}
+      LIMIT ${batchSize}
+    `
+      : `
+      UPDATE ${quote(tableName)} SET ${quote(columnName)} = ${formatDefault(value)}
+      WHERE ${quote(columnName)} IS NULL
+        AND ${rowIdColumn(wire)} IN (
+          SELECT ${rowIdColumn(wire)} FROM ${quote(tableName)}
           WHERE ${quote(columnName)} IS NULL
           LIMIT ${batchSize}
         )
@@ -231,12 +266,31 @@ export async function renameColumnSafely(
   // the schema half.
 }
 
-/** Quote an identifier (table or column name) for safe inclusion in raw SQL. */
+/**
+ * The wire protocol of the configured connection.
+ *
+ * These helpers emit DDL by hand, and DDL is where the dialects differ most,
+ * so every statement below is built for one of these three. SingleStore and
+ * Vitess collapse onto `mysql`, which is what their DDL wants too.
+ */
+function wireProtocol(): 'sqlite' | 'mysql' | 'postgres' {
+  const driver = String(process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite').toLowerCase()
+  return isKnownDialect(driver) ? dialectCapabilities(driver).wire : 'sqlite'
+}
+
+/**
+ * Quote an identifier (table or column name) for safe inclusion in raw SQL.
+ *
+ * MySQL reads `"name"` as a string literal rather than an identifier unless
+ * the session runs with ANSI_QUOTES, which Stacks does not set, so every
+ * statement in this file used to fail there with a syntax error.
+ */
 function quote(name: string): string {
   if (!/^[a-z_][a-z0-9_]*$/i.test(name)) {
     throw new Error(`Refusing to quote unsafe identifier: ${JSON.stringify(name)}`)
   }
-  return `"${name}"`
+  const quoteChar = wireProtocol() === 'mysql' ? '`' : '"'
+  return `${quoteChar}${name}${quoteChar}`
 }
 
 function formatDefault(value: string | number | boolean | null): string {
@@ -247,15 +301,13 @@ function formatDefault(value: string | number | boolean | null): string {
 }
 
 /**
- * Picks the right "row id" column for the running database. Postgres
- * uses `ctid` (system column), SQLite uses `rowid`, MySQL uses `id` (the
- * primary key by convention; if the table doesn't have one, this helper
- * isn't safe — but that's true of every batched-update strategy).
+ * The row identifier a batched UPDATE can select on: PostgreSQL's `ctid` and
+ * SQLite's `rowid` are system columns every table has. MySQL has no such
+ * column, and needs none, because it accepts `UPDATE ... LIMIT` directly.
+ *
+ * This used to return `'id'` for every dialect, which assumed a primary key
+ * by that name: a table keyed by `uuid` failed with `no such column: id`.
  */
-function rowIdColumnFor(_db: unknown): string {
-  // We don't have a clean way to detect dialect from `db` alone here,
-  // so we use the universal-ish identifier `id`. Callers using a
-  // non-`id` primary key should use `addColumnSafely` only on tables
-  // where the standard naming convention applies.
-  return 'id'
+function rowIdColumn(wire: 'sqlite' | 'postgres'): string {
+  return wire === 'postgres' ? 'ctid' : 'rowid'
 }
