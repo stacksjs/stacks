@@ -1,5 +1,5 @@
 import { config } from '@stacksjs/config'
-import { db, sql } from '@stacksjs/database'
+import { db, mutationCount, sql, sqlDateTime } from '@stacksjs/database'
 import { Controller } from '@stacksjs/server'
 
 export default class QueryController extends Controller {
@@ -397,16 +397,23 @@ export default class QueryController extends Controller {
     try {
       const retentionDays = config.database?.queryLogging?.retention || 7
 
-      // Parameterized via db.unsafe: the delete builder can neither
-      // bind a datetime() expression nor render raw WHERE fragments.
-      const statement = await (db as any).unsafe(
-        `DELETE FROM query_logs WHERE executed_at < datetime("now", ?)`,
-        [`-${retentionDays} day`],
-      )
-      const result = typeof statement?.execute === 'function' ? await statement.execute() : statement
+      // The cutoff is computed here rather than in SQL. `datetime("now", ?)`
+      // is SQLite syntax, so this statement was a syntax error on PostgreSQL
+      // and MySQL and pruned nothing there. It was not right on SQLite either:
+      // `datetime()` renders `2026-09-10 11:00:00` while the logger writes
+      // `sqlDateTime()`'s `2026-09-10T11:00:00.000`, and comparing those as
+      // text keeps rows up to a day past their retention, because 'T' > ' '.
+      // A bound cutoff in the stored format compares correctly everywhere.
+      const cutoff = sqlDateTime(new Date(Date.now() - retentionDays * 86_400_000))
+      const result = await db
+        .deleteFrom('query_logs')
+        .where('executed_at', '<', cutoff)
+        .executeTakeFirst()
 
       return {
-        pruned: Number(result?.changes ?? result?.numDeletedRows ?? 0),
+        // Each driver names the affected-row count differently, and the pair
+        // read here covered only SQLite.
+        pruned: mutationCount(result),
         retentionDays,
       }
     }

@@ -244,6 +244,11 @@ jobs:
       - name: Test Suite
         env:
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
+          # Same disposable services the core loop below uses. Without these,
+          # a `tests/**` fixture that wants a real server silently runs its
+          # SQLite case only.
+          STACKS_TEST_MYSQL_URL: mysql://root:root@127.0.0.1:3306/mysql?ssl=true
+          STACKS_TEST_POSTGRES_URL: postgres://postgres:postgres@127.0.0.1:5432/test_db
         run: bun run test
 
       # `bun run test` shells out to `buddy test`, which only globs
