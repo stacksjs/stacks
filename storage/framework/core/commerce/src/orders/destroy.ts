@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { mutationCount } from '../utils/mutation-count'
 
 /**
@@ -33,15 +33,15 @@ export async function destroy(id: number): Promise<boolean> {
  */
 export async function softDelete(id: number): Promise<boolean> {
   try {
-    // Update the status to CANCELED instead of deleting
-    const result = await db
+    // Update the status to CANCELED instead of deleting. MySQL counts rows
+    // CHANGED, so an order already CANCELED reports 0 there; matchedRows asks what
+    // the predicate matched instead (stacksjs/stacks#2639).
+    const matched = await matchedRows(db
       .updateTable('orders')
       .set({ status: 'CANCELED' })
-      .where('id', '=', id)
-      .executeTakeFirst()
+      .where('id', '=', id))
 
-    // Return true if any row was affected (updated)
-    return Number(result.numUpdatedRows) > 0
+    return matched.length > 0
   }
   catch (error) {
     if (error instanceof Error) {
@@ -92,15 +92,14 @@ export async function bulkSoftDelete(ids: number[]): Promise<number> {
     return 0
 
   try {
-    // Update the status to CANCELED instead of deleting
-    const result = await db
+    // Same as softDelete: on MySQL the rows already holding CANCELED
+    // would otherwise be left out of the count (stacksjs/stacks#2639).
+    const matched = await matchedRows(db
       .updateTable('orders')
       .set({ status: 'CANCELED' })
-      .where('id', 'in', ids)
-      .executeTakeFirst()
+      .where('id', 'in', ids))
 
-    // Return the number of updated rows
-    return Number(result.numUpdatedRows)
+    return matched.length
   }
   catch (error) {
     if (error instanceof Error) {

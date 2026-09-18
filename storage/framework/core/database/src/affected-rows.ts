@@ -48,3 +48,33 @@ export function mutationCount(result: unknown): number {
     return result.reduce((total, item) => total + mutationCount(item), 0)
   return 0
 }
+
+/**
+ * The rows an UPDATE matched, which is not what its affected-row count says.
+ *
+ * MySQL counts rows a statement CHANGED; PostgreSQL and SQLite count rows it
+ * MATCHED. An UPDATE writing values a row already holds therefore reports 0
+ * on MySQL while the row is sitting right there, and Bun's MySQL client
+ * exposes no `CLIENT_FOUND_ROWS` for a connection setting to fix it. So any
+ * call site reading a count of 0 as "no such row" is wrong on MySQL:
+ * soft-deleting an order that is already CANCELED answered false, and bulk
+ * soft delete undercounted by however many rows were already in the target
+ * state (stacksjs/stacks#2639).
+ *
+ * `returning(key)` answers MATCHED on all three. Measured through Stacks `db`
+ * against SQLite, PostgreSQL 16 and MySQL 8.4.5, updating a row to the value
+ * it already holds: `.executeTakeFirst()` gave 1, 1 and 0, while this gave the
+ * id on all three. An id that does not exist gave none on all three.
+ *
+ * NOT for compare-and-set. On MySQL bun-query-builder emulates `returning` as
+ * SELECT-then-UPDATE-then-SELECT, so the ids are read before the write and a
+ * row another session changed in between still reports as matched. Guard those
+ * with a locking read inside a transaction instead.
+ */
+export async function matchedRows<T = { id: number }>(
+  update: { returning: (column: string) => { execute: () => Promise<unknown> } },
+  key: string = 'id',
+): Promise<T[]> {
+  const rows = await update.returning(key).execute()
+  return Array.isArray(rows) ? rows as T[] : []
+}

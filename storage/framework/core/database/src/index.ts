@@ -80,7 +80,7 @@ export { addColumnSafely, backfillInBatches, renameColumnSafely } from './safe-m
 
 // Affected-row counts. Read every write result through this: each driver spells
 // the count differently and the hand-rolled readers were wrong on two of three.
-export { mutationCount } from './affected-rows'
+export { matchedRows, mutationCount } from './affected-rows'
 
 // Seeding
 export * from './seeder'
