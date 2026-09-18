@@ -48,7 +48,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 
-const TABLES = ['digital_deliveries', 'gift_cards', 'license_keys', 'orders', 'product_variants', 'shipping_methods', 'shipping_zones']
+const TABLES = ['carts', 'digital_deliveries', 'gift_cards', 'license_keys', 'orders', 'product_units', 'product_variants', 'products', 'shipping_methods', 'shipping_rates', 'shipping_zones']
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const modelsDir = join(import.meta.dir, '../../../../../defaults/app/Models')
 const models = { ...(await loadModels({ modelsDir })), ...(await loadModels({ modelsDir: join(modelsDir, 'commerce') })) }
@@ -80,6 +80,10 @@ const shippingMethods = await import('../../shippings/shipping-methods/destroy')
 const shippingZones = await import('../../shippings/shipping-zones/destroy')
 const { deactivate: deactivateGiftCard } = await import('../../gift-cards/destroy')
 const { bulkUpdate: bulkUpdateVariants, updateStatus: updateVariantStatus } = await import('../../products/variants/update')
+const { bulkUpdate: bulkUpdateCarts } = await import('../../carts/update')
+const { updateByZone: updateRatesByZone } = await import('../../shippings/shipping-rates/update')
+const { bulkUpdate: bulkUpdateItems } = await import('../../products/items/update')
+const { bulkUpdate: bulkUpdateUnits } = await import('../../products/units/update')
 
 /**
  * Each module, the status its soft delete writes, and four seed rows: 1 and 3
@@ -212,6 +216,46 @@ try {
 
       const resaved = await bulkUpdateVariants(rows.map(row => ({ id: row.id, status: row.status })) as never)
       assert.equal(resaved, 2, `${dialect}: bulk update must count rows that already hold the values written`)
+    })
+
+    await check('cart bulkUpdate counts rows already holding the values, inside a transaction', async () => {
+      // bulkUpdate runs its writes through `db.transaction`, so this is also
+      // the check that reading the matched ids works on a transaction handle
+      // and not only on `db`.
+      for (const id of [1, 2])
+        await db.insertInto('carts').values({ id, status: 'active', expires_at: '2030-02-01 00:00:00', applied_coupon_id: 'none' }).execute()
+
+      const rows = [{ id: 1, status: 'active' }, { id: 2, status: 'active' }]
+      // The first pass still writes `updated_at`; the second changes nothing.
+      assert.equal(await bulkUpdateCarts(rows as never), 2)
+      assert.equal(await bulkUpdateCarts(rows as never), 2, `${dialect}: bulk update must count carts that already hold the values written`)
+    })
+
+    await check('shipping rate updateByZone counts rates already at that rate', async () => {
+      // A predicate that is not the primary key, matching more than one row.
+      for (const id of [1, 2])
+        await db.insertInto('shipping_rates').values({ id, weight_from: 0, weight_to: 10, rate: 250, shipping_zone_id: 7 }).execute()
+
+      assert.equal(await updateRatesByZone(7, { rate: 250 } as never), 2)
+      assert.equal(await updateRatesByZone(7, { rate: 250 } as never), 2, `${dialect}: updateByZone must count rates already at the requested rate`)
+    })
+
+    await check('product bulkUpdate counts rows already holding the values', async () => {
+      for (const id of [1, 2])
+        await db.insertInto('products').values({ id, name: `product-${id}`, price: 100, preparation_time: 5 }).execute()
+
+      const rows = [{ id: 1, name: 'product-1' }, { id: 2, name: 'product-2' }]
+      assert.equal(await bulkUpdateItems(rows as never), 2)
+      assert.equal(await bulkUpdateItems(rows as never), 2, `${dialect}: bulk update must count products that already hold the values written`)
+    })
+
+    await check('product unit bulkUpdate counts rows already holding the values', async () => {
+      for (const id of [1, 2])
+        await db.insertInto('product_units').values({ id, name: `unit-${id}`, abbreviation: `u${id}`, type: 'weight' }).execute()
+
+      const rows = [{ id: 1, name: 'unit-1' }, { id: 2, name: 'unit-2' }]
+      assert.equal(await bulkUpdateUnits(rows as never), 2)
+      assert.equal(await bulkUpdateUnits(rows as never), 2, `${dialect}: bulk update must count units that already hold the values written`)
     })
   }
   finally { setSystemTime() }

@@ -1,5 +1,5 @@
 import type { ModelRow, Product, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
@@ -61,16 +61,18 @@ export async function bulkUpdate(data: ProductUpdate[]): Promise<number> {
         if (!(item as Record<string, unknown>).id)
           continue
 
-        const result = await trx
+        // See carts bulkUpdate: on MySQL a product re-saved as it already
+        // stands changes nothing and was left out of the count
+        // (stacksjs/stacks#2639).
+        const matched = await matchedRows(trx
           .updateTable('products')
           .set({
             ...item,
             updated_at: formatDate(new Date()),
           })
-          .where('id', '=', (item as Record<string, unknown>).id)
-          .executeTakeFirst()
+          .where('id', '=', (item as Record<string, unknown>).id))
 
-        if (Number(result.numUpdatedRows) > 0)
+        if (matched.length > 0)
           updatedCount++
       }
     })

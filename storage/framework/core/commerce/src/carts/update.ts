@@ -1,5 +1,5 @@
 import type { Cart, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type CartJsonResponse = ModelRow<typeof Cart>
@@ -55,16 +55,18 @@ export async function bulkUpdate(data: CartUpdate[]): Promise<number> {
         if (!(cart as Record<string, unknown>).id)
           continue
 
-        const result = await trx
+        // MySQL counts rows CHANGED, so a cart re-saved with the values it
+        // already holds went uncounted. `formatDate` has second precision, so
+        // `updated_at` does not make it a change either (stacksjs/stacks#2639).
+        const matched = await matchedRows(trx
           .updateTable('carts')
           .set({
             ...cart,
             updated_at: formatDate(new Date()),
           })
-          .where('id', '=', (cart as Record<string, unknown>).id)
-          .executeTakeFirst()
+          .where('id', '=', (cart as Record<string, unknown>).id))
 
-        if (Number(result.numUpdatedRows) > 0)
+        if (matched.length > 0)
           updatedCount++
       }
     })

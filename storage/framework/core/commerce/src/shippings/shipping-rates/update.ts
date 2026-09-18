@@ -1,8 +1,7 @@
 import type { ModelRow, ShippingRate, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
-import { mutationCount } from '../../utils/mutation-count'
 import { shippingRateWriteData } from '../write-data'
 import { ShippingRateInputError, validateShippingRateWrite } from './validate-write'
 type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
@@ -74,16 +73,17 @@ export async function bulkUpdate(updates: Array<{
     let updatedCount = 0
 
     for (const { id, data } of updates) {
-      const result = await db
+      // See carts bulkUpdate: on MySQL a rate re-saved as it already stands
+      // changes nothing and was left out of the count (stacksjs/stacks#2639).
+      const matched = await matchedRows(db
         .updateTable('shipping_rates')
         .set({
           ...shippingRateWriteData(data as Record<string, unknown>),
           updated_at: formatDate(new Date()),
         })
-        .where('id', '=', id)
-        .executeTakeFirst()
+        .where('id', '=', id))
 
-      if (mutationCount(result) > 0)
+      if (matched.length > 0)
         updatedCount++
     }
 
@@ -107,16 +107,18 @@ export async function bulkUpdate(updates: Array<{
  */
 export async function updateByZone(zone: number, data: ShippingRateUpdate): Promise<number> {
   try {
-    const result = await db
+    // The rates in a zone that already hold these values are still rates
+    // this call applied to; MySQL left them out of the total
+    // (stacksjs/stacks#2639).
+    const matched = await matchedRows(db
       .updateTable('shipping_rates')
       .set({
         ...shippingRateWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
-      .where('shipping_zone_id', '=', zone)
-      .executeTakeFirst()
+      .where('shipping_zone_id', '=', zone))
 
-    return mutationCount(result)
+    return matched.length
   }
   catch (error) {
     if (error instanceof Error) {
@@ -136,16 +138,16 @@ export async function updateByZone(zone: number, data: ShippingRateUpdate): Prom
  */
 export async function updateByMethod(method: number, data: ShippingRateUpdate): Promise<number> {
   try {
-    const result = await db
+    // Same as updateByZone.
+    const matched = await matchedRows(db
       .updateTable('shipping_rates')
       .set({
         ...shippingRateWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
-      .where('shipping_method_id', '=', method)
-      .executeTakeFirst()
+      .where('shipping_method_id', '=', method))
 
-    return mutationCount(result)
+    return matched.length
   }
   catch (error) {
     if (error instanceof Error) {

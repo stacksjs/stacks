@@ -1,5 +1,5 @@
 import type { ModelRow, ProductUnit, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import type { ProductUnitWriteData } from './types'
@@ -88,14 +88,15 @@ export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
         : { ...unitRecord }
       delete (updateFields as Record<string, unknown>).id
 
-      const result = await db
+      // See carts bulkUpdate: on MySQL a unit re-saved as it already stands
+      // changes nothing and was left out of the count (stacksjs/stacks#2639).
+      const matched = await matchedRows(db
         .updateTable('product_units')
         .set({
           ...updateFields,
           updated_at: formatDate(new Date()),
         })
-        .where('id', '=', unitRecord.id)
-        .executeTakeFirst()
+        .where('id', '=', unitRecord.id))
 
       // If this unit is set as default, update all other units of the same type
       const fields = updateFields as Record<string, unknown>
@@ -108,7 +109,7 @@ export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
           .execute()
       }
 
-      if (Number(result.numUpdatedRows) > 0)
+      if (matched.length > 0)
         updatedCount++
     }
 
