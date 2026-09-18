@@ -29,13 +29,16 @@ import process from 'node:process'
 const projectRoot = join(import.meta.dir, '../../../../..')
 const fixture = join(import.meta.dir, 'fixtures/print-dashboard-routes.ts')
 
-async function routesFor(appEnv?: string): Promise<string[]> {
+async function routesFor(appEnv?: string, appUrl?: string): Promise<string[]> {
   const env: Record<string, string | undefined> = { ...process.env }
   // Scrub inherited values so each scenario controls the gate's input.
   delete env.APP_ENV
   delete env.NODE_ENV
+  delete env.APP_URL
   if (appEnv !== undefined)
     env.APP_ENV = appEnv
+  if (appUrl !== undefined)
+    env.APP_URL = appUrl
 
   const proc = Bun.spawn(['bun', fixture], {
     cwd: projectRoot,
@@ -56,6 +59,23 @@ async function routesFor(appEnv?: string): Promise<string[]> {
 }
 
 describe('dev-only default routes - registration gate (#1955)', () => {
+  test('a public URL omits them even when the environment calls itself development', async () => {
+    // `.env.example` ships `APP_ENV=development`, so the environment name on
+    // its own put both endpoints into production for every app that never
+    // edited that line. The URL is what decides now.
+    const routes = await routesFor('development', 'https://app.example.com')
+
+    expect(routes).not.toContain('GET /install')
+    expect(routes).not.toContain('GET /test-error')
+  })
+
+  test('a loopback URL keeps them for local development', async () => {
+    const routes = await routesFor('development', 'stacks.localhost')
+
+    expect(routes).toContain('GET /install')
+    expect(routes).toContain('GET /test-error')
+  })
+
   test('APP_ENV=production omits /install and /test-error', async () => {
     const routes = await routesFor('production')
     expect(routes).not.toContain('GET /install')

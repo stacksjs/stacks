@@ -985,7 +985,7 @@ export function listNamedRoutes(): Record<string, string> {
  * taking no input at all. The registry has known the real answer the whole
  * time; it was simply not being reported.
  */
-export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> {
+export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction, middleware?: string[] }> {
   // Index once per snapshot, preserving the first alias in insertion order.
   // Rebuild on every call so assigning an existing name to a new path is live.
   const namesByPath = namedRouteRegistry ? new Map<string, string>() : undefined
@@ -995,7 +995,7 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
         namesByPath.set(named.path, name)
     }
   }
-  const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> = []
+  const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction, middleware?: string[] }> = []
   // Route-state keys look like 'METHOD:/path'. We intentionally walk them
   // (not bunRouter.routes) so this works before serve() is called.
   const seen = new Set<string>()
@@ -1014,6 +1014,10 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
         name: routeName,
         handler: routeHandlerKeyRegistry.get(key),
         action: routeActionRegistry?.get(key),
+        // What guards the route, which is what a registration-time gate has
+        // to be checked against: whether a route ended up with `auth` is not
+        // visible from its path (stacksjs/stacks#1955 follow-up).
+        middleware: registry.get(key)?.middleware,
       })
     }
   }

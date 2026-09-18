@@ -155,6 +155,7 @@ export function requireEnv(keys: ReadonlyArray<string>, envProxy: StacksEnv = en
   return envProxy
 }
 
+export * from './deployment'
 export * from './types'
 export * from './crypto'
 export * from './parser'

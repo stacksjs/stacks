@@ -16,6 +16,7 @@
  * unauthenticated.
  */
 
+import { isLocalDeployment } from '@stacksjs/env'
 import { route } from '@stacksjs/router'
 
 // The `/api/dashboard/*` surface is unauthenticated by design for the local
@@ -25,8 +26,15 @@ import { route } from '@stacksjs/router'
 // (assign-any-role-to-any-user = privilege escalation) and the model-row dump
 // (arbitrary DB read) — must be gated server-side. In a local/dev/test env the
 // guard is a no-op so the dev dashboard keeps working without a token.
-const APP_ENV = (process.env.APP_ENV ?? process.env.NODE_ENV ?? '').toLowerCase()
-const IS_LOCAL_ENV = APP_ENV === '' || APP_ENV === 'local' || APP_ENV === 'development' || APP_ENV === 'dev' || APP_ENV === 'test' || APP_ENV === 'testing'
+//
+// The gate is the deployment, not the environment NAME. `.env.example` ships
+// `APP_ENV=development`, so every app that never edited that line called
+// itself development in production - and this gate then attached no
+// middleware at all to the 300-plus routes below, including the ones that
+// read and rewrite the project's `.env`, write the deploy script, sync RBAC
+// roles and dump arbitrary model rows. `@stacksjs/auth`'s cookie policy hit
+// the same shape in stacksjs/stacks#2275 and moved to the URL; this follows.
+const IS_LOCAL_ENV = isLocalDeployment()
 
 // Apply auth + admin-role middleware to a sensitive route outside local envs.
 // Returns the route builder so calls read as `guard(route.post(...))`.

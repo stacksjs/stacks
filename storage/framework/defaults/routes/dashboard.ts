@@ -15,7 +15,7 @@
  * ```
  */
 
-import process from 'node:process'
+import { isLocalDeployment } from '@stacksjs/env'
 import { route } from '@stacksjs/router'
 
 // ============================================================================
@@ -86,8 +86,10 @@ route.health()
 // Apps that intentionally want either route in production can
 // re-register the path in `routes/api.ts` — user routes load first,
 // so their copy wins.
-const APP_ENV = (process.env.APP_ENV ?? process.env.NODE_ENV ?? '').toLowerCase()
-const IS_LOCAL_ENV = APP_ENV === '' || APP_ENV === 'local' || APP_ENV === 'development' || APP_ENV === 'dev' || APP_ENV === 'test' || APP_ENV === 'testing'
+// Same rule as dashboard-api.ts: a deployment is local when its URL says so.
+// The environment name alone sent these two to production in any app whose
+// `.env` still carried the `APP_ENV=development` that `.env.example` ships.
+const IS_LOCAL_ENV = isLocalDeployment()
 
 if (IS_LOCAL_ENV) {
   route.get('/install', 'Actions/InstallAction')
