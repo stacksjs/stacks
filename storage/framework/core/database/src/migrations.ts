@@ -318,19 +318,19 @@ export function withoutProtectedTableDropSql(
  * standalone index file is the only uniqueness enforcement on SQLite
  * (stacksjs/stacks#1952).
  *
- * Two flavours of "no-op on SQLite" need different handling:
+ * Two flavours of "no-op on SQLite", both of which keep the file:
  *
- *   - **Skip-and-keep** (`skipMigration`): the file is portable — it would
- *     run cleanly on MySQL/Postgres — but doesn't apply to SQLite. Record
- *     it as executed in the migrations tracking table so it doesn't replay,
- *     but **leave the file on disk** so a future `DB_CONNECTION` flip can
- *     pick it up. This is the right path for FK constraint files.
- *     (stacksjs/stacks#1916)
+ *   - **Skip** (`skipMigration`): the file is portable — it would run
+ *     cleanly on MySQL/Postgres — but doesn't apply to SQLite. Record it as
+ *     executed in the migrations tracking table so it doesn't replay, and
+ *     leave the file on disk so a future `DB_CONNECTION` flip can pick it up.
+ *     This is the right path for FK constraint files. (stacksjs/stacks#1916)
  *
- *   - **Drop-and-delete** (`deleteMigration`): the file is genuinely dead
- *     — currently limited to an unrecorded duplicate CREATE TABLE created by
- *     `buddy generate:migrations`. Recorded files are immutable migration
- *     history, regardless of the current live schema.
+ *   - **Retire** (`retireMigration`): the file cannot run against this
+ *     schema — an unrecorded duplicate CREATE TABLE, or a DROP COLUMN whose
+ *     columns are already gone. Also recorded as executed and also left on
+ *     disk: the corpus is tracked source, and this sweep cannot tell a
+ *     generated file from a hand-written one (stacksjs/stacks#2234).
  */
 /**
  * Split a migration file into its statements.
@@ -657,11 +657,24 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
     return 'quarantined'
   }
 
-  const deleteMigration = (file: string, filePath: string, reason: string): void => {
-    // Genuinely dead file — duplicate or unreachable. Safe to remove.
-    log.info(`Dropping no-op migration (${reason}): ${file}`)
-    try { unlinkSync(filePath) }
-    catch { /* already gone */ }
+  /**
+   * A file this run must not execute, left on disk.
+   *
+   * It used to be deleted, on the reasoning that a duplicate or unreachable
+   * file is dead weight. The corpus is tracked source, though, and nothing
+   * here can tell a generated file from one a developer wrote: a hand-written
+   * migration that no model describes reads as unreachable precisely because
+   * it is the only record of that schema change (stacksjs/stacks#2234). The
+   * deletions also landed staged-ready in a tracked directory, so a later
+   * `git add -A` committed them unseen, and `buddy dev`'s auto-migrate runs
+   * this sweep, which is how 248 tracked migrations disappeared during a dev
+   * session.
+   *
+   * Recording it as executed is all the runner needed: it is skipped exactly
+   * as before, and the file stays where its author put it.
+   */
+  const retireMigration = (file: string, reason: string): void => {
+    log.info(`Not running no-op migration (${reason}): ${file}`)
     droppedMigrations.push(file)
   }
 
@@ -801,7 +814,7 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
       // emitted for the same table - and deleting it would take the package's
       // own schema with it.
       if (earliest && earliest !== file && !isPackageMigration(file)) {
-        deleteMigration(file, filePath, `duplicate create-table for "${tableName}" (kept ${earliest})`)
+        retireMigration(file, `duplicate create-table for "${tableName}" (kept ${earliest})`)
         continue
       }
     }
@@ -975,10 +988,11 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
 
       if (modified) {
         if (filteredStatements.length === 0) {
-          // The entire DROP COLUMN file is unreachable — column already
-          // gone, table never existed. Safe to delete: a future
-          // driver-switch replay wouldn't find the column either.
-          deleteMigration(file, filePath, 'columns already absent from table')
+          // Every DROP COLUMN in the file is unreachable: the column is gone
+          // already, or the table never existed. Recorded as executed and
+          // left alone. This is the exact shape of a hand-authored idempotent
+          // drop, which is why it is not deleted.
+          retireMigration(file, 'columns already absent from table')
         }
         else {
           writeFileSync(filePath, `${filteredStatements.join(';\n')};\n`)

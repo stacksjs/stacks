@@ -67,17 +67,21 @@ describe('preprocessSqliteMigrations - keep portable files (stacksjs/stacks#1916
     expect(existsSync(idxFile)).toBe(true)
   })
 
-  it('still deletes duplicate CREATE TABLE files (genuinely dead)', () => {
+  it('keeps duplicate CREATE TABLE files on disk (stacksjs/stacks#2234)', () => {
     const earlier = join(migrationsDir, '0000000001-create-users-table.sql')
     const later = join(migrationsDir, '0000000050-create-users-table.sql')
-    writeFileSync(earlier, 'CREATE TABLE "users" ("id" INTEGER PRIMARY KEY);')
-    writeFileSync(later, 'CREATE TABLE "users" ("id" INTEGER PRIMARY KEY);')
+    const sql = 'CREATE TABLE "users" ("id" INTEGER PRIMARY KEY);'
+    writeFileSync(earlier, sql)
+    writeFileSync(later, sql)
 
     preprocessSqliteMigrations()
 
-    // Earlier survives; the duplicate is gone.
+    // The duplicate used to be unlinked. It is recorded as executed instead:
+    // the corpus is tracked source, and this sweep cannot tell a generated
+    // file from one a developer wrote by hand.
     expect(existsSync(earlier)).toBe(true)
-    expect(existsSync(later)).toBe(false)
+    expect(existsSync(later)).toBe(true)
+    expect(readFileSync(later, 'utf-8')).toBe(sql)
   })
 
   it('does not touch normal CREATE TABLE / CREATE INDEX migrations', () => {
