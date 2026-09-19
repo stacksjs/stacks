@@ -106,7 +106,7 @@
     "@stacksjs/build": "^0.74.46",
     "@stacksjs/cache": "^0.74.46",
     "@stacksjs/chat": "^0.74.46",
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/clapp": "^0.2.16",
     "@stacksjs/cli": "^0.74.46",
     "@stacksjs/cloud": "^0.74.46",
     "@stacksjs/cms": "^0.74.46",
@@ -145,7 +145,7 @@
     "@stacksjs/skills": "^0.74.46",
     "@stacksjs/storage": "^0.74.46",
     "@stacksjs/strings": "^0.74.46",
-    "@stacksjs/stx": "^0.2.286",
+    "@stacksjs/stx": "^0.2.287",
     "@stacksjs/testing": "^0.74.46",
     "@stacksjs/tinker": "^0.74.46",
     "@stacksjs/tlsx": "^0.13.19",
@@ -157,8 +157,8 @@
     "@stacksjs/validation": "^0.74.46",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "bun-plugin-stx": "^0.2.286",
-    "ts-pantry": "^0.11.35"
+    "bun-plugin-stx": "^0.2.287",
+    "ts-pantry": "^0.11.60"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
