@@ -1,14 +1,25 @@
 /**
- * Spread each target evenly across early, middle, and late positions in the
- * three-run publication profile. A simple one-place rotation leaves a
- * seven-target memory run strongly biased because only three of seven
- * positions are sampled. This triplet gives every target the same cumulative
- * position when the target count is odd, and the mathematically minimal
- * one-position difference when it is even.
+ * Spread each target across process positions without losing the balanced
+ * average position used by short publication profiles. Runs that cover at
+ * least one complete target cycle use cyclic permutations, so every target
+ * receives every process position before any position repeats. A partial
+ * cycle selects evenly spaced rotations to minimize its position bias.
+ * Short profiles retain the balanced triplet and complementary-pair design.
  */
 export function balancedTargetOrder<T>(targets: readonly T[], runIndex: number, totalRuns = 3): T[] {
   if (targets.length < 2)
     return [...targets]
+
+  if (totalRuns >= targets.length) {
+    const scheduledRun = ((runIndex % totalRuns) + totalRuns) % totalRuns
+    const completeRuns = Math.floor(totalRuns / targets.length) * targets.length
+    const remainder = totalRuns - completeRuns
+    const remainderIndex = scheduledRun - completeRuns
+    const offset = scheduledRun < completeRuns
+      ? scheduledRun % targets.length
+      : Math.floor(remainderIndex * targets.length / remainder)
+    return [...targets.slice(offset), ...targets.slice(0, offset)]
+  }
 
   // Even run counts decompose entirely into complementary pairs. For odd
   // counts, use the balanced triplet once and pair every remaining run.

@@ -17,11 +17,17 @@ describe('balanced benchmark target scheduling', () => {
     expect(positionTotals(8, 5)).toEqual([17, 17, 17, 17, 18, 18, 18, 18])
   })
 
+  test('covers every process position evenly across longer runs', () => {
+    expect(positionCounts(7, 15).every(counts => Math.max(...counts) - Math.min(...counts) <= 1)).toBe(true)
+    expect(positionCounts(7, 30).every(counts => Math.max(...counts) - Math.min(...counts) <= 1)).toBe(true)
+    expect(positionCounts(8, 30).every(counts => Math.max(...counts) - Math.min(...counts) <= 1)).toBe(true)
+  })
+
   test('repeats a deterministic triplet without mutating the input', () => {
     const targets = ['stacks', 'hono', 'bun-raw']
     expect(balancedTargetOrder(targets, 0)).toEqual(['stacks', 'hono', 'bun-raw'])
-    expect(balancedTargetOrder(targets, 1)).toEqual(['bun-raw', 'stacks', 'hono'])
-    expect(balancedTargetOrder(targets, 2)).toEqual(['hono', 'bun-raw', 'stacks'])
+    expect(balancedTargetOrder(targets, 1)).toEqual(['hono', 'bun-raw', 'stacks'])
+    expect(balancedTargetOrder(targets, 2)).toEqual(['bun-raw', 'stacks', 'hono'])
     expect(balancedTargetOrder(targets, 3)).toEqual(targets)
     expect(targets).toEqual(['stacks', 'hono', 'bun-raw'])
   })
@@ -40,4 +46,14 @@ function positionTotals(targetCount: number, runs = 3): number[] {
       totals[target]! += position
   }
   return totals
+}
+
+function positionCounts(targetCount: number, runs: number): number[][] {
+  const targets = Array.from({ length: targetCount }, (_, index) => index)
+  const counts = Array.from({ length: targetCount }, () => Array.from({ length: targetCount }, () => 0))
+  for (let run = 0; run < runs; run++) {
+    for (const [position, target] of balancedTargetOrder(targets, run, runs).entries())
+      counts[target]![position]!++
+  }
+  return counts
 }

@@ -24,9 +24,10 @@ describe('peer startup benchmark configuration', () => {
     const targets = parsePeerStartupOptions([]).targets
     const schedule = peerStartupSchedule(targets, 15)
     expect(schedule).toHaveLength(targets.length * 15)
-    const totals = Object.fromEntries(targets.map(target => [target.id, 0]))
-    for (const sample of schedule)
-      totals[sample.target.id]! += sample.order
-    expect(new Set(Object.values(totals))).toEqual(new Set([45]))
+    for (const target of targets) {
+      const counts = Array.from({ length: targets.length }, (_, order) =>
+        schedule.filter(sample => sample.target.id === target.id && sample.order === order).length)
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
+    }
   })
 })
