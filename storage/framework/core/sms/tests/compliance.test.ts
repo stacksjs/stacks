@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { describe, expect, test } from 'bun:test'
-import { classifySmsIntent, estimateSmsSegments, isWithinSmsQuietHours, parseTwilioInbound, smsComplianceReply, verifyTwilioWebhook } from './compliance'
+import { classifySmsIntent, estimateSmsSegments, isWithinSmsQuietHours, parseTwilioInbound, smsComplianceReply, verifyTwilioWebhook } from '../src/compliance'
 
 describe('SMS compliance', () => {
   test('classifies carrier keywords without matching ordinary messages', () => {
