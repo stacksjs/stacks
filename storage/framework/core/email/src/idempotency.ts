@@ -36,7 +36,7 @@
  */
 
 import type { EmailMessage, EmailResult } from '@stacksjs/types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 let warnedAboutMissingEmailIdempotencyTable = false
 

@@ -23,7 +23,7 @@
  *   - UNIQUE(provider, event_id)
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 let warnedAboutMissingTable = false
 

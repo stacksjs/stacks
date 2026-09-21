@@ -28,7 +28,7 @@
  *   - UNIQUE(email, type)
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 export type SuppressionType = 'bounce' | 'complaint' | 'unsubscribe' | 'manual'
 
