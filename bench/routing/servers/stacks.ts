@@ -107,7 +107,7 @@ if (withDb && serves('db-roundtrip')) {
   // Imported lazily so the two DB-free profiles never pay for the database
   // package's boot, and so a machine with no fixture can still run scenarios
   // 1 to 3.
-  const { db } = await import('@stacksjs/database') as any
+  const { db } = await import('@stacksjs/database/runtime') as any
   if (sqliteProfile === 'wal-full') {
     const checkpoint = await db.unsafe('PRAGMA wal_autocheckpoint').execute()
     const synchronous = await db.unsafe('PRAGMA synchronous').execute()

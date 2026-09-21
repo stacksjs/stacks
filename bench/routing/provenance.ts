@@ -11,7 +11,7 @@ export type StacksRuntimeDependencies = Record<typeof STACKS_RUNTIME_PACKAGES[nu
 
 export const STACKS_FIXTURE_MODULES = [
   '@stacksjs/actions',
-  '@stacksjs/database',
+  '@stacksjs/database/runtime',
   '@stacksjs/query-builder',
   '@stacksjs/router',
   '@stacksjs/router/runtime',

@@ -32,7 +32,7 @@ describe('Stacks benchmark source provenance', () => {
       join(REPO_ROOT, 'storage', 'framework', 'core', specifier.slice('@stacksjs/'.length).split('/', 1)[0]!, 'src', 'index.ts'),
     ])) as StacksSourceModules
     modules['@stacksjs/router'] = join(REPO_ROOT, 'node_modules', '@stacksjs', 'router', 'dist', 'index.js')
-    modules['@stacksjs/database'] = join(REPO_ROOT, 'storage', 'framework', 'core', 'router', 'src', 'index.ts')
+    modules['@stacksjs/database/runtime'] = join(REPO_ROOT, 'storage', 'framework', 'core', 'router', 'src', 'index.ts')
 
     expect(stacksSourceIssues(REPO_ROOT, modules)).toHaveLength(2)
   })
