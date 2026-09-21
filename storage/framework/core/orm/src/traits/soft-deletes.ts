@@ -27,7 +27,7 @@
  * and friends when the trait is on.
  */
 
-import { sqlDateTime } from '@stacksjs/database'
+import { mutationCount, sqlDateTime } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 interface SoftDeleteCapableModel {
@@ -107,11 +107,18 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
 
     async forceDelete(id) {
       // Bypass the soft-delete shim and call the real query.delete().
+      //
+      // Over trashed rows too, as `restore` above does. Without
+      // `withTrashed()` the default scope added `deleted_at IS NULL`, so a
+      // row that was already soft-deleted - the usual reason to force-delete -
+      // matched nothing and survived, while this still answered `true`. The
+      // answer is now whether a row went away; a DELETE's count means the
+      // same on every dialect, unlike an UPDATE's. bun-query-builder 0.2.70
+      // routes its native `remove(id)` here, which is how this surfaced.
       const q: any = (model).where(primaryKey, id)
-      if (typeof q?.delete === 'function') {
-        await q.delete()
-        return true
-      }
+      const scoped: any = typeof q?.withTrashed === 'function' ? q.withTrashed() : q
+      if (typeof scoped?.delete === 'function')
+        return mutationCount(await scoped.delete()) > 0
       return false
     },
 
