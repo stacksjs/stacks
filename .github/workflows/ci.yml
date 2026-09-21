@@ -287,6 +287,18 @@ jobs:
       # bun test ./<path>". Running from the package directory would also work
       # (`root` is cwd-relative) but breaks tests that resolve repo-root
       # paths, e.g. orm's sensitive-api-security.test.ts.
+      #
+      # commerce and cms are the exception, and only for `src/tests`. Those
+      # suites are written for the SQLite harness each package's own
+      # bunfig.toml preloads (`src/tests/setup.ts`), and bun reads bunfig from
+      # the working directory only, so they run from the package directory,
+      # the one place that preload applies. No CI step had reached them since
+      # f25e67af9d (2026-05-11) replaced this job's bare `bun test`, which
+      # picked up test files across the checkout, with `buddy test`.
+      #
+      # cms's files are named rather than globbed, to leave out
+      # public-serving.test.ts. core/buddy/tests/ci-runs-every-test-file.test.ts
+      # records why, and fails for any other file there that is not named.
       - name: Core tests (all packages)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         env:
@@ -309,10 +321,31 @@ jobs:
             bun test "./$dir" || failed="$failed $pkg"
             echo "::endgroup::"
           done
+          echo "::group::core/commerce (src/tests)"
+          (cd storage/framework/core/commerce && bun test ./src/tests) || failed="$failed commerce[src/tests]"
+          echo "::endgroup::"
+          echo "::group::core/cms (src/tests)"
+          (cd storage/framework/core/cms && bun test \
+            ./src/tests/categorizables.test.ts \
+            ./src/tests/pages-crud.test.ts \
+            ./src/tests/pages-document.test.ts \
+            ./src/tests/post-relations.test.ts \
+            ./src/tests/taggables.test.ts) || failed="$failed cms[src/tests]"
+          echo "::endgroup::"
           if [ -n "$failed" ]; then
             echo "Failing core packages:$failed"
             exit 1
           fi
+
+      # The framework's default app layer keeps its tests beside the code they
+      # test (the dashboard actions, functions and components under
+      # storage/framework/defaults), and the server package keeps its one in
+      # `test/`. Neither step above reaches them, and all 90 files were added
+      # after f25e67af9d (2026-05-11) stopped this job running a bare
+      # `bun test`, so none of them had run in CI.
+      - name: Defaults and server tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test ./storage/framework/defaults ./storage/framework/server/test
 
   compile:
     runs-on: ubuntu-latest
@@ -510,6 +543,13 @@ jobs:
       - name: Deployment target resolution
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun test ./.github/scripts/deploy/resolve-target.test.ts
+
+      # Of the tests under .github/scripts today, only resolve-target's was
+      # run, by name. No workflow had run the tests for the Bun pin, lockfile
+      # version, subpath export and npm promotion checks.
+      - name: Repository script tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test ./.github/scripts/*.test.ts
 
       # Asks the registry what each declared range actually admits, rather than
       # what happens to be installed here — a local checkout, a nested install
