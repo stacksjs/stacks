@@ -20,7 +20,7 @@ initializeDbConfig({
 // first query, so a default-sized admin pool would still be starting siblings when the
 // terminate below runs. `pid <> pg_backend_pid()` spares only the connection executing it,
 // and a pool whose connection is terminated mid-startup never finishes close().
-const admin = new SQL({ adapter: 'postgres', hostname: host, port: Number(port || 5432), username, password, database: name, max: 1 })
+const admin = new SQL({ adapter: 'postgres', hostname: host, port: Number(port || 5432), username, password, database: name, ...(process.env.SOAK_ADMIN_POOL === 'pooled' ? {} : { max: 1 }) })
 
 try {
   await db.unsafe('CREATE TABLE scope_probe (id INTEGER PRIMARY KEY)').execute()
