@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { looksLikeEmail, syncDecision } from './sync'
+import { looksLikeEmail, syncDecision } from '../src/sync'
 
 /**
  * Syncing an audience you already have onto a list.

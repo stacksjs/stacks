@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { allocateDeliveryVariant, assertUsageAvailable, classifyDeliveryFailure, deliveryIdempotencyKey } from './delivery'
+import { allocateDeliveryVariant, assertUsageAvailable, classifyDeliveryFailure, deliveryIdempotencyKey } from '../src/delivery'
 
 describe('channel-neutral delivery primitives', () => {
   test('allocates variants deterministically', () => {

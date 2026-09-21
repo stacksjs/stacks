@@ -6,7 +6,7 @@ import {
   campaignUpdateData,
   canQueueCampaignStatus,
   shouldRunScheduledCampaign,
-} from './campaigns'
+} from '../src/campaigns'
 
 describe('newsletter campaigns', () => {
   test('maps campaign creation to database fillable columns', () => {

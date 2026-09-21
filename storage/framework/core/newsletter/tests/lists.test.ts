@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { emailListCreateData } from './lists'
+import { emailListCreateData } from '../src/lists'
 
 describe('newsletter lists', () => {
   test('maps facade input to the EmailList database fillable columns', () => {

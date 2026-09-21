@@ -1,6 +1,6 @@
-import type { UsageQuotaSnapshot, UsageQuotaStore } from './usage'
+import type { UsageQuotaSnapshot, UsageQuotaStore } from '../src/usage'
 import { describe, expect, test } from 'bun:test'
-import { releaseUsage, reserveUsage, UsageQuotaError } from './usage'
+import { releaseUsage, reserveUsage, UsageQuotaError } from '../src/usage'
 
 function memoryStore(initial: UsageQuotaSnapshot | null): UsageQuotaStore & { current: () => UsageQuotaSnapshot | null } {
   let current = initial ? { ...initial } : null
