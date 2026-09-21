@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
 import * as net from 'node:net'
-import { SmtpServer } from './smtp-server'
+import { SmtpServer } from '../src/imap/smtp-server'
 
 const TEST_PORT = 12587
 const TEST_DOMAIN = 'test.example.com'
