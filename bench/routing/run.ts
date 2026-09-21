@@ -16,6 +16,7 @@ import type { Driver } from './drivers'
 import type { BusyProcess } from './host-load'
 import type { Measurement, RoutingRepeat, RunMeta } from './report'
 import type { ScenarioParityEvidence } from './runtime'
+import { Buffer } from 'node:buffer'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release } from 'node:os'
 import { join } from 'node:path'
@@ -26,6 +27,7 @@ import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-versio
 import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess, readLinuxClockTicksPerSecond } from './host-load'
 import { cpuMicrosPerRequest, measureLoad } from './measurement'
+import { createRoutingArtifact } from './artifact'
 import { resolvePeerVersions } from './peer-versions'
 import { verifyLoadPersistence } from './persistence'
 import { resolveStacksRuntimeDependencies, resolveStacksSourceModules } from './provenance'
@@ -297,6 +299,8 @@ async function main(): Promise<void> {
           const key = `${target.id}:${scenario.id}`
           const bucket = collected.get(key) ?? []
           collected.set(key, bucket)
+          const rawOutputFile = `raw/${target.id}--${scenario.id}--run${run}.txt`
+          const warmupOutputFile = warmupResult ? `raw/${target.id}--${scenario.id}--run${run}--warmup.txt` : null
 
           // Every repeat is retained, including one that produced no CPU
           // reading. Dropping those before the median made a repeat with no
@@ -316,11 +320,13 @@ async function main(): Promise<void> {
             rateAttained: opts.requestRate == null
               ? null
               : result.requests / (opts.requestRate * opts.durationSeconds),
-            rawBytes: result.raw.length,
+            rawBytes: Buffer.byteLength(result.raw),
+            rawOutputFile,
+            warmupOutputFile,
           })
-          writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}.txt`), result.raw)
+          writeFileSync(join(outDir, rawOutputFile), result.raw)
           if (warmupResult)
-            writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}--warmup.txt`), warmupResult.raw)
+            writeFileSync(join(outDir, warmupOutputFile!), warmupResult.raw)
           if (benchmarkQueryLoggingEnabled() && scenario.requiresDb && target.server === 'stacks.ts') {
             // The fixture was cleared before warmup. Count both load windows,
             // after CPU sampling, so verification cannot inflate measured cost.
@@ -409,6 +415,7 @@ async function main(): Promise<void> {
     }
   }
 
+  const repeats = [...collected.values()].flat()
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
     ...routingMeasurementPublicationIssues(
@@ -417,9 +424,10 @@ async function main(): Promise<void> {
       measurements,
       opts.runs,
       parityChecks,
-      [...collected.values()].flat(),
+      repeats,
       opts.requestRate != null,
       platform() === 'linux' ? 'proc' : undefined,
+      opts.warmupSeconds > 0,
     ),
   ])]
   meta.sourceAtEnd = await readSourceState(REPO_ROOT)
@@ -427,9 +435,9 @@ async function main(): Promise<void> {
     meta.publicationIssues.push('source state changed during the benchmark')
   meta.publishable = meta.publicationIssues.length === 0
 
-  const report = renderReport({ meta, scenarios, targets: targetRows, measurements })
+  const report = renderReport({ meta, scenarios, targets: targetRows, measurements, repeats })
   writeFileSync(join(outDir, 'report.md'), report)
-  writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify({
+  writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify(createRoutingArtifact({
     /*
      * 2: latency percentiles and errorRate became nullable, errorRate became
      * pooled rather than the mean of per-repeat rates, cpuPercent requires
@@ -442,8 +450,10 @@ async function main(): Promise<void> {
      * baseline needs to say which rules produced it.
      *
      * 3: fixed-rate rows retain run-paired CPU-cost ratios against Bun raw.
+     *
+     * 4: every repeat is retained with its CPU sample source and raw-output
+     * path, so an artifact can prove the evidence the publication gate used.
      */
-    schemaVersion: 3,
     meta,
     targets: targetRows,
     workload: {
@@ -460,7 +470,8 @@ async function main(): Promise<void> {
       parityChecks,
     },
     measurements,
-  }, null, 2)}\n`)
+    repeats,
+  }), null, 2)}\n`)
 
   console.error(`\n[bench] report written to ${join(outDir, 'report.md')}\n`)
   console.log(report)

@@ -258,6 +258,8 @@ describe('per-repeat publication gating', () => {
     cpuMicrosPerRequest: null,
     rateAttained: null,
     rawBytes: 512,
+    rawOutputFile: `raw/stacks--static-json--run${run}.txt`,
+    warmupOutputFile: null,
     ...over,
   })
 
@@ -311,6 +313,26 @@ describe('per-repeat publication gating', () => {
   it('rejects a repeat whose raw output was not preserved', () => {
     expect(check([row()], [repeat(1, { rawBytes: 0 }), repeat(2), repeat(3)]))
       .toContain('stacks:static-json run 1 preserved no raw output')
+  })
+
+  it('links each repeat to its measured and warm-up raw output', () => {
+    const issues = routingMeasurementPublicationIssues(
+      target as never,
+      scenario as never,
+      [row()] as never,
+      3,
+      parityChecks('stacks', 'static-json'),
+      [
+        repeat(1, { warmupOutputFile: 'raw/stacks--static-json--run1--warmup.txt' }),
+        repeat(2, { rawOutputFile: 'raw/wrong.txt', warmupOutputFile: 'raw/stacks--static-json--run2--warmup.txt' }),
+        repeat(3),
+      ] as never,
+      false,
+      undefined,
+      true,
+    )
+    expect(issues).toContain('stacks:static-json run 2 has an invalid raw output path')
+    expect(issues).toContain('stacks:static-json run 3 has an invalid warm-up output path')
   })
 
   it('rejects a malformed throughput measurement in one repeat', () => {

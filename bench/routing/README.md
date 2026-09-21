@@ -12,7 +12,8 @@ timestamped directory under `results/` containing `report.md`,
 `measurements.json`, and the raw load-generator output for every individual run.
 The JSON artifact embeds the selected target definitions and complete scenario
 contracts, including request bodies, expected responses, headers profiles, and
-validation probes.
+validation probes. It also retains every repeat with its CPU sample source and
+artifact-relative raw output paths.
 
 Reports and metadata record the Git revision and working-tree state both before
 and after measurement, plus the machine architecture. Ignored files are
@@ -275,11 +276,13 @@ raw output should be read.
 Missing evidence stays missing. A latency percentile the load tool did not
 report is `null` rather than `0`, and the report renders it as `-`. An
 aggregate is `null` unless every repeat measured it. `measurements.json`
-carries `schemaVersion: 3` to mark these rules: `errorRate` is pooled errors
+carries `schemaVersion: 4` to mark these rules: `errorRate` is pooled errors
 over pooled requests rather than the mean of per-repeat rates, `cpuPercent`
 requires every repeat to have reported one, and `runs` counts the repeats
-retained rather than the number requested. Fixed-rate runs also retain the
-median and range of run-paired CPU-cost ratios against Bun raw.
+retained rather than the number requested. Fixed-rate runs retain the median
+and range of run-paired CPU-cost ratios against Bun raw. The schema also keeps
+each repeat's run ordinal, request and error counts, latency, CPU cost and
+sample source, rate attainment, and measured and warm-up output filenames.
 
 Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
 The runner records that requirement beside the actual runtime version and warns

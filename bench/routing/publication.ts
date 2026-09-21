@@ -112,6 +112,7 @@ export function routingMeasurementPublicationIssues(
   repeats: RoutingRepeat[] = [],
   fixedRate = false,
   requiredCpuSource?: CpuWindowSource,
+  expectsWarmup = false,
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
@@ -210,6 +211,12 @@ export function routingMeasurementPublicationIssues(
             // empty capture means there is nothing to audit.
             if (!Number.isSafeInteger(repeat.rawBytes) || repeat.rawBytes <= 0)
               issues.push(`${at} preserved no raw output`)
+            const rawOutputFile = `raw/${target.id}--${scenario.id}--run${repeat.run}.txt`
+            const warmupOutputFile = `raw/${target.id}--${scenario.id}--run${repeat.run}--warmup.txt`
+            if (repeat.rawOutputFile !== rawOutputFile)
+              issues.push(`${at} has an invalid raw output path`)
+            if (repeat.warmupOutputFile !== (expectsWarmup ? warmupOutputFile : null))
+              issues.push(`${at} has an invalid warm-up output path`)
           }
         }
       }

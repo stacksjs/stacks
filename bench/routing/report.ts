@@ -48,6 +48,10 @@ export interface RoutingRepeat {
   rateAttained: number | null
   /** Bytes of raw tool output recorded for this repeat. */
   rawBytes: number
+  /** Artifact-relative measured output path. */
+  rawOutputFile: string
+  /** Artifact-relative warm-up output path, when a warm-up ran. */
+  warmupOutputFile: string | null
 }
 
 export interface Measurement {
@@ -119,6 +123,7 @@ export interface ReportInput {
   scenarios: readonly Scenario[]
   targets: Array<{ id: string, label: string, skipped?: string }>
   measurements: Measurement[]
+  repeats?: RoutingRepeat[]
 }
 
 function fmt(n: number, digits = 0): string {
@@ -153,7 +158,7 @@ export function stabilityRange(row: Measurement, fixedRate: boolean): number {
 }
 
 export function renderReport(input: ReportInput): string {
-  const { meta, scenarios, targets, measurements } = input
+  const { meta, scenarios, targets, measurements, repeats = [] } = input
   const hasAnyRawCostComparison = meta.requestRate != null && measurements.some(row => row.relativeCpuCostToRaw != null)
   const lines: string[] = []
 
@@ -211,6 +216,11 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| Bun | ${meta.machine.bun} |`)
   if (meta.machine.clockTicksPerSecond != null)
     lines.push(`| Linux clock ticks | ${fmt(meta.machine.clockTicksPerSecond)} per second |`)
+  if (repeats.length > 0) {
+    const cpuSources = [...new Set(repeats.map(repeat => repeat.cpuSource ?? 'none'))].sort().join(', ')
+    lines.push(`| Retained repeats | ${fmt(repeats.length)} |`)
+    lines.push(`| CPU sample source | ${cpuSources} |`)
+  }
   if (meta.runtimeRequirement)
     lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)
   lines.push('')

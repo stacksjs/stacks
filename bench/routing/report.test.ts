@@ -90,9 +90,18 @@ describe('routing benchmark report', () => {
       scenarios: [SCENARIOS[0]!],
       targets: [{ id: 'stacks-minimal', label: 'Stacks minimal' }],
       measurements: [measurement],
+      repeats: [{
+        targetId: 'stacks-minimal', scenarioId: 'static-json', run: 1,
+        rpsMean: 100, rpsP50: 100, latencyMs: { p50: 1, p90: 2, p99: 3 },
+        requests: 100, errors: 0, cpuPercent: 20, cpuSource: 'proc',
+        cpuMicrosPerRequest: 20, rateAttained: 1, rawBytes: 100,
+        rawOutputFile: 'raw/stacks-minimal--static-json--run1.txt', warmupOutputFile: null,
+      }],
     })
 
     expect(report).toContain('| Linux clock ticks | 250 per second |')
+    expect(report).toContain('| Retained repeats | 1 |')
+    expect(report).toContain('| CPU sample source | proc |')
   })
 
   test('reports per-request CPU cost for a fixed-rate run and drops the throughput ratio', () => {
