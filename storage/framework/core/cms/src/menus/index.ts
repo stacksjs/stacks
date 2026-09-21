@@ -1,4 +1,4 @@
-import { asRows } from '@stacksjs/database'
+import { asRows } from '@stacksjs/database/runtime'
 import { getDb } from '../database'
 
 export interface MenuTreeItem {

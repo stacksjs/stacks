@@ -1,4 +1,4 @@
-import type { RowOf } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
 type AuthorJsonResponse = RowOf<'authors'>
 type NewAuthor = NewModelData<typeof Author>
 import { randomUUIDv7 } from 'bun'

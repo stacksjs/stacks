@@ -1,4 +1,4 @@
-import { sqlDateTime } from '@stacksjs/database'
+import { sqlDateTime } from '@stacksjs/database/runtime'
 import type { CommentablesTable } from '@stacksjs/orm'
 import { getDb } from '../database'
 import { resolveWrittenRow } from '../results'

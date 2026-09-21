@@ -1,4 +1,4 @@
-import type { RowOf } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
 type PageJsonResponse = RowOf<'pages'>
 type PageUpdate = UpdateModelData<typeof Page>
 import { getDb } from '../database'

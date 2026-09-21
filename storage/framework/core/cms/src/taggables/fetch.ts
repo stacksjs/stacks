@@ -1,5 +1,5 @@
 import type { TaggableTable } from '@stacksjs/orm'
-import { sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database/runtime'
 import { getDb } from '../database'
 import { findOrCreate } from './store'
 

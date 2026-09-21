@@ -243,7 +243,7 @@ async function fetchPublishedPosts(): Promise<PostRow[]> {
   if (sqlitePosts)
     return sqlitePosts
 
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
   return await withTimeout(
     db
       .selectFrom('posts')
@@ -260,7 +260,7 @@ async function fetchAuthors(): Promise<AuthorRow[]> {
   if (sqliteAuthors)
     return sqliteAuthors
 
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
   return await withTimeout(
     db
       .selectFrom('authors')

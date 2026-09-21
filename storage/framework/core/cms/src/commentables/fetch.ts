@@ -1,4 +1,4 @@
-import { sqlDateTime } from '@stacksjs/database'
+import { sqlDateTime } from '@stacksjs/database/runtime'
 import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
