@@ -1,19 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { summarizePairedMetric } from './paired'
 import { parseStartupReportOptions, renderStartupReport } from './report'
-
-function metric(pairs = 15) {
-  return {
-    rootMedian: 20,
-    runtimeMedian: 18,
-    medianDelta: -2,
-    medianPercentChange: -10,
-    pairedMedianRatio: 0.9,
-    pairedRatios: Array.from({ length: pairs }, (_, pair) => ({ pair, ratio: 0.9 })),
-    runtimeLowerPairs: pairs,
-    runtimeEqualPairs: 0,
-    runtimeHigherPairs: 0,
-  }
-}
+import { summarizeStartupMetric } from './statistics'
 
 function base(pairs = 15) {
   const response = { status: 200, mediaType: 'application/json', bodySha256: 'a'.repeat(64) }
@@ -39,17 +27,28 @@ function base(pairs = 15) {
       runtime: { digest: 'runtime', fileCount: 5, totalBytes: 600 },
     },
     samples: Array.from({ length: pairs }, (_, pair) => [
-      { pair, order: pair % 2, variant: 'root', response },
-      { pair, order: 1 - (pair % 2), variant: 'runtime', response },
+      { pair, order: pair % 2, variant: 'root' as const, response, importMs: 20, listenMs: 20, firstResponseMs: 20, rssBytes: 20 },
+      { pair, order: 1 - (pair % 2), variant: 'runtime' as const, response, importMs: 18, listenMs: 18, firstResponseMs: 18, rssBytes: 18 },
     ]).flat(),
   }
 }
 
 function diagnostics() {
   const common = base()
+  const imported = structuredClone(common)
+  const ready = structuredClone(common)
   return {
-    imported: { ...structuredClone(common), importMs: metric(), rssBytes: metric() },
-    ready: { ...structuredClone(common), listenMs: metric(), firstResponseMs: metric(), rssBytes: metric() },
+    imported: {
+      ...imported,
+      importMs: summarizeStartupMetric(imported.samples, imported.pairs, 'importMs'),
+      rssBytes: summarizeStartupMetric(imported.samples, imported.pairs, 'rssBytes'),
+    },
+    ready: {
+      ...ready,
+      listenMs: summarizePairedMetric(ready.samples, ready.pairs, 'listen time', sample => sample.listenMs),
+      firstResponseMs: summarizePairedMetric(ready.samples, ready.pairs, 'first response time', sample => sample.firstResponseMs),
+      rssBytes: summarizePairedMetric(ready.samples, ready.pairs, 'RSS value', sample => sample.rssBytes),
+    },
   }
 }
 
@@ -72,11 +71,25 @@ describe('startup diagnostic report', () => {
 
     const incomplete = diagnostics()
     incomplete.ready.samples.pop()
-    expect(() => renderStartupReport(incomplete.imported, incomplete.ready)).toThrow('must contain 30 samples')
+    expect(() => renderStartupReport(incomplete.imported, incomplete.ready)).toThrow('Expected 30 paired samples')
 
     const changed = diagnostics()
     changed.ready.samples[0]!.response = { ...changed.ready.samples[0]!.response, status: 201 }
     expect(() => renderStartupReport(changed.imported, changed.ready)).toThrow('inconsistent response evidence')
+  })
+
+  test('rejects stored summaries that drift from retained samples', () => {
+    const summary = diagnostics()
+    summary.imported.importMs.rootMedian = 21
+    expect(() => renderStartupReport(summary.imported, summary.ready)).toThrow('Import time summary does not match')
+
+    const readiness = diagnostics()
+    readiness.ready.samples[0]!.listenMs = 21
+    expect(() => renderStartupReport(readiness.imported, readiness.ready)).toThrow('Listen time summary does not match')
+
+    const rss = diagnostics()
+    rss.ready.samples[0]!.rssBytes = 21
+    expect(() => renderStartupReport(rss.imported, rss.ready)).toThrow('Ready-state RSS summary does not match')
   })
 
   test('requires explicit input and output paths', () => {

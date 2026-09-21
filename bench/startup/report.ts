@@ -1,32 +1,13 @@
+import type { ListenSample } from './listen-process'
+import type { PairedMetricSummary } from './paired'
+import type { StartupSample } from './statistics'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
+import { summarizePairedMetric, validatePairedSamples } from './paired'
+import { summarizeStartupMetric, validateStartupSamples } from './statistics'
 
-interface MetricSummary {
-  medianDelta: number
-  medianPercentChange: number
-  pairedMedianRatio: number
-  pairedRatios: Array<{ pair: number, ratio: number }>
-  rootMedian: number
-  runtimeEqualPairs: number
-  runtimeHigherPairs: number
-  runtimeLowerPairs: number
-  runtimeMedian: number
-}
-
-interface ResponseEvidence {
-  bodySha256: string
-  mediaType: string
-  status: number
-}
-
-interface ReportSample {
-  pair: number
-  response?: ResponseEvidence
-  variant: string
-}
-
-interface DiagnosticResult {
+interface DiagnosticResult<TSample> {
   diagnosticOnly: boolean
   entries: { root: string, runtime: string }
   generatedAt: string
@@ -45,7 +26,7 @@ interface DiagnosticResult {
     requirement: { matches: boolean, range: string }
     version: string
   }
-  samples: ReportSample[]
+  samples: TSample[]
   schemaVersion: number
   source: {
     after: { dirty: boolean, fingerprint: string, revision: string }
@@ -58,15 +39,15 @@ interface DiagnosticResult {
   }
 }
 
-interface ImportResult extends DiagnosticResult {
-  importMs: MetricSummary
-  rssBytes: MetricSummary
+interface ImportResult extends DiagnosticResult<StartupSample> {
+  importMs: PairedMetricSummary
+  rssBytes: PairedMetricSummary
 }
 
-interface ReadyResult extends DiagnosticResult {
-  firstResponseMs: MetricSummary
-  listenMs: MetricSummary
-  rssBytes: MetricSummary
+interface ReadyResult extends DiagnosticResult<ListenSample> {
+  firstResponseMs: PairedMetricSummary
+  listenMs: PairedMetricSummary
+  rssBytes: PairedMetricSummary
 }
 
 export interface StartupReportOptions {
@@ -79,7 +60,7 @@ function isPositive(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
 }
 
-function validateMetric(metric: MetricSummary, pairs: number, name: string): void {
+function validateMetric(metric: PairedMetricSummary, pairs: number, name: string): void {
   if (!metric || !isPositive(metric.rootMedian) || !isPositive(metric.runtimeMedian) || !isPositive(metric.pairedMedianRatio))
     throw new Error(`${name} contains an invalid median or paired ratio`)
   if (!Number.isFinite(metric.medianDelta) || !Number.isFinite(metric.medianPercentChange))
@@ -96,17 +77,7 @@ function validateMetric(metric: MetricSummary, pairs: number, name: string): voi
     throw new Error(`${name} sign counts must add up to ${pairs}`)
 }
 
-function validateSamples(result: DiagnosticResult, label: string): void {
-  if (!Array.isArray(result.samples) || result.samples.length !== result.pairs * 2)
-    throw new Error(`${label} must contain ${result.pairs * 2} samples`)
-  for (let pair = 0; pair < result.pairs; pair++) {
-    const rows = result.samples.filter(sample => sample.pair === pair)
-    if (rows.length !== 2 || new Set(rows.map(row => row.variant)).size !== 2)
-      throw new Error(`${label} pair ${pair} is incomplete`)
-  }
-}
-
-function validateBase(result: DiagnosticResult, label: string): void {
+function validateBase(result: DiagnosticResult<unknown>, label: string): void {
   if (result.schemaVersion !== 1)
     throw new Error(`${label} uses unsupported schema version ${result.schemaVersion}`)
   if (result.diagnosticOnly !== true)
@@ -119,11 +90,16 @@ function validateBase(result: DiagnosticResult, label: string): void {
     throw new Error(`${label} has inconsistent source revisions`)
   if (!result.staticGraph?.root?.digest || !result.staticGraph?.runtime?.digest)
     throw new Error(`${label} is missing built graph evidence`)
-  validateSamples(result, label)
 }
 
 function same(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right)
+}
+
+function validateDerivedMetric(actual: PairedMetricSummary, expected: PairedMetricSummary, pairs: number, name: string): void {
+  validateMetric(actual, pairs, name)
+  if (!same(actual, expected))
+    throw new Error(`${name} summary does not match its retained samples`)
 }
 
 function validateCombined(imported: ImportResult, ready: ReadyResult): void {
@@ -145,11 +121,28 @@ function validateCombined(imported: ImportResult, ready: ReadyResult): void {
       throw new Error(`Startup diagnostics have mismatched ${name}`)
   }
 
-  validateMetric(imported.importMs, imported.pairs, 'Import time')
-  validateMetric(imported.rssBytes, imported.pairs, 'Import RSS')
-  validateMetric(ready.listenMs, ready.pairs, 'Listen time')
-  validateMetric(ready.firstResponseMs, ready.pairs, 'First response time')
-  validateMetric(ready.rssBytes, ready.pairs, 'Ready-state RSS')
+  validateStartupSamples(imported.samples, imported.pairs)
+  validatePairedSamples(ready.samples, ready.pairs)
+  validateDerivedMetric(imported.importMs, summarizeStartupMetric(imported.samples, imported.pairs, 'importMs'), imported.pairs, 'Import time')
+  validateDerivedMetric(imported.rssBytes, summarizeStartupMetric(imported.samples, imported.pairs, 'rssBytes'), imported.pairs, 'Import RSS')
+  validateDerivedMetric(
+    ready.listenMs,
+    summarizePairedMetric(ready.samples, ready.pairs, 'listen time', sample => sample.listenMs),
+    ready.pairs,
+    'Listen time',
+  )
+  validateDerivedMetric(
+    ready.firstResponseMs,
+    summarizePairedMetric(ready.samples, ready.pairs, 'first response time', sample => sample.firstResponseMs),
+    ready.pairs,
+    'First response time',
+  )
+  validateDerivedMetric(
+    ready.rssBytes,
+    summarizePairedMetric(ready.samples, ready.pairs, 'RSS value', sample => sample.rssBytes),
+    ready.pairs,
+    'Ready-state RSS',
+  )
 
   const responses = ready.samples.map(sample => JSON.stringify(sample.response))
   if (responses.some(response => response === undefined) || new Set(responses).size !== 1)
@@ -167,7 +160,7 @@ function formatBytes(value: number): string {
   return `${value.toLocaleString('en-US')} B (${(value / 1024 / 1024).toFixed(2)} MiB)`
 }
 
-function metricRow(name: string, metric: MetricSummary, unit: 'ms' | 'bytes', pairs: number): string {
+function metricRow(name: string, metric: PairedMetricSummary, unit: 'ms' | 'bytes', pairs: number): string {
   const root = unit === 'ms' ? `${metric.rootMedian.toFixed(3)} ms` : formatBytes(metric.rootMedian)
   const runtime = unit === 'ms' ? `${metric.runtimeMedian.toFixed(3)} ms` : formatBytes(metric.runtimeMedian)
   return `| ${name} | ${root} | ${runtime} | ${formatPercent(metric.medianPercentChange)} | ${metric.pairedMedianRatio.toFixed(4)} | ${metric.runtimeLowerPairs} / ${metric.runtimeEqualPairs} / ${metric.runtimeHigherPairs} | ${pairs} |`
