@@ -1,6 +1,6 @@
 import type { TableNames } from '@stacksjs/types'
 import { randomBytes } from 'node:crypto'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { slugify } from 'ts-slug'
 
 interface SlugifyOptions {
