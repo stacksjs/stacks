@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { normalizeMobileUrl, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig } from './ios-config'
+import { normalizeMobileUrl, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig } from '../src/build/ios-config'
 
 describe('iOS mobile build configuration', () => {
   it('maps Stacks capabilities onto Craft feature flags', () => {

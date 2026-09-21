@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { resolveCraftBuilderProvenance } from './craft-provenance'
+import { resolveCraftBuilderProvenance } from '../src/build/craft-provenance'
 
 describe('Craft builder provenance', () => {
   it('identifies package resolution without inventing a revision', () => {
@@ -11,7 +11,7 @@ describe('Craft builder provenance', () => {
   })
 
   it('records the revision for an explicit source checkout', () => {
-    const provenance = resolveCraftBuilderProvenance(join(import.meta.dir, 'ios.ts'))
+    const provenance = resolveCraftBuilderProvenance(join(import.meta.dir, '../src/build/ios.ts'))
     expect(provenance.package).toBe('craft-native')
     expect(provenance.source).toBe('path')
     expect(provenance.revision).toMatch(/^[\da-f]{40}$/)

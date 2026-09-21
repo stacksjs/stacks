@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { toCraftAndroidConfig, validateAndroidMobileConfig } from './android-config'
+import { toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
 
 describe('Android mobile build configuration', () => {
   it('maps Stacks capabilities onto the Craft Android builder', () => {
