@@ -1,5 +1,6 @@
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
+import { isSafePortableRelativePath } from '../artifact-files'
 
 export interface BuiltGraphFile {
   bytes: number
@@ -16,6 +17,40 @@ export interface BuiltGraph {
 
 function sha256(value: string | Uint8Array): string {
   return new Bun.CryptoHasher('sha256').update(value).digest('hex')
+}
+
+export function summarizeBuiltGraph(files: readonly BuiltGraphFile[]): BuiltGraph {
+  const ordered = [...files].sort((left, right) => left.path.localeCompare(right.path))
+  const digestInput = ordered.map(file => `${file.path}\0${file.bytes}\0${file.sha256}`).join('\n')
+  return {
+    digest: sha256(digestInput),
+    files: ordered,
+    fileCount: ordered.length,
+    totalBytes: ordered.reduce((sum, file) => sum + file.bytes, 0),
+  }
+}
+
+export function validateBuiltGraph(graph: BuiltGraph, label: string): void {
+  if (!graph || !Array.isArray(graph.files) || graph.files.length === 0)
+    throw new Error(`${label} has no retained built files`)
+  for (const file of graph.files) {
+    if (!isSafePortableRelativePath(file.path) || extname(file.path) !== '.js')
+      throw new Error(`${label} contains an invalid built-file path`)
+    if (!Number.isSafeInteger(file.bytes) || file.bytes < 0)
+      throw new Error(`${label} contains an invalid built-file size`)
+    if (!/^[a-f\d]{64}$/.test(file.sha256))
+      throw new Error(`${label} contains an invalid built-file SHA-256`)
+  }
+  const paths = graph.files.map(file => file.path)
+  if (new Set(paths).size !== paths.length)
+    throw new Error(`${label} contains duplicate built-file paths`)
+  const sortedPaths = [...paths].sort((left, right) => left.localeCompare(right))
+  if (paths.some((path, index) => path !== sortedPaths[index]))
+    throw new Error(`${label} built-file paths are not sorted`)
+
+  const expected = summarizeBuiltGraph(graph.files)
+  if (graph.fileCount !== expected.fileCount || graph.totalBytes !== expected.totalBytes || graph.digest !== expected.digest)
+    throw new Error(`${label} summary does not match its retained built files`)
 }
 
 function assertInside(root: string, path: string): void {
@@ -68,11 +103,5 @@ export async function readBuiltGraph(entry: string, graphRoot: string): Promise<
       sha256: sha256(contents),
     }
   }))
-  const digestInput = files.map(file => `${file.path}\0${file.bytes}\0${file.sha256}`).join('\n')
-  return {
-    digest: sha256(digestInput),
-    files,
-    fileCount: files.length,
-    totalBytes: files.reduce((sum, file) => sum + file.bytes, 0),
-  }
+  return summarizeBuiltGraph(files)
 }

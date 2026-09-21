@@ -2,9 +2,12 @@ import { describe, expect, test } from 'bun:test'
 import { summarizePairedMetric } from './paired'
 import { parseStartupReportOptions, renderStartupReport } from './report'
 import { summarizeStartupMetric } from './statistics'
+import { summarizeBuiltGraph } from './graph'
 
 function base(pairs = 15) {
   const response = { status: 200, mediaType: 'application/json', bodySha256: 'a'.repeat(64) }
+  const rootGraph = summarizeBuiltGraph([{ path: 'index.js', bytes: 1000, sha256: 'a'.repeat(64) }])
+  const runtimeGraph = summarizeBuiltGraph([{ path: 'runtime.js', bytes: 600, sha256: 'b'.repeat(64) }])
   return {
     schemaVersion: 1,
     diagnosticOnly: true,
@@ -23,8 +26,11 @@ function base(pairs = 15) {
     pairs,
     entries: { root: 'dist/index.js', runtime: 'dist/runtime.js' },
     staticGraph: {
-      root: { digest: 'root', fileCount: 10, totalBytes: 1000 },
-      runtime: { digest: 'runtime', fileCount: 5, totalBytes: 600 },
+      root: rootGraph,
+      runtime: runtimeGraph,
+      fileCountDelta: runtimeGraph.fileCount - rootGraph.fileCount,
+      byteDelta: runtimeGraph.totalBytes - rootGraph.totalBytes,
+      bytePercentChange: ((runtimeGraph.totalBytes / rootGraph.totalBytes) - 1) * 100,
     },
     samples: Array.from({ length: pairs }, (_, pair) => [
       { pair, order: pair % 2, variant: 'root' as const, response, importMs: 20, listenMs: 20, firstResponseMs: 20, rssBytes: 20 },
@@ -90,6 +96,16 @@ describe('startup diagnostic report', () => {
     const rss = diagnostics()
     rss.ready.samples[0]!.rssBytes = 21
     expect(() => renderStartupReport(rss.imported, rss.ready)).toThrow('Ready-state RSS summary does not match')
+  })
+
+  test('rejects built graph summaries and deltas that drift from retained manifests', () => {
+    const summary = diagnostics()
+    summary.imported.staticGraph.root.totalBytes++
+    expect(() => renderStartupReport(summary.imported, summary.ready)).toThrow('root graph summary does not match')
+
+    const delta = diagnostics()
+    delta.ready.staticGraph.byteDelta++
+    expect(() => renderStartupReport(delta.imported, delta.ready)).toThrow('built graph deltas do not match')
   })
 
   test('requires explicit input and output paths', () => {

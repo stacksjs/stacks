@@ -1,11 +1,13 @@
 import type { ListenSample } from './listen-process'
 import type { PairedMetricSummary } from './paired'
 import type { StartupSample } from './statistics'
+import type { StartupGraphs } from './context'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { summarizePairedMetric, validatePairedSamples } from './paired'
 import { summarizeStartupMetric, validateStartupSamples } from './statistics'
+import { validateBuiltGraph } from './graph'
 
 interface DiagnosticResult<TSample> {
   diagnosticOnly: boolean
@@ -33,9 +35,10 @@ interface DiagnosticResult<TSample> {
     before: { dirty: boolean, fingerprint: string, revision: string }
     changedDuringRun: boolean
   }
-  staticGraph: {
-    root: { digest: string, fileCount: number, totalBytes: number }
-    runtime: { digest: string, fileCount: number, totalBytes: number }
+  staticGraph: StartupGraphs & {
+    byteDelta: number
+    bytePercentChange: number
+    fileCountDelta: number
   }
 }
 
@@ -88,8 +91,17 @@ function validateBase(result: DiagnosticResult<unknown>, label: string): void {
     throw new Error(`${label} source changed during measurement`)
   if (!result.source?.before?.revision || result.source.before.revision !== result.source?.after?.revision)
     throw new Error(`${label} has inconsistent source revisions`)
-  if (!result.staticGraph?.root?.digest || !result.staticGraph?.runtime?.digest)
-    throw new Error(`${label} is missing built graph evidence`)
+  validateBuiltGraph(result.staticGraph?.root, `${label} root graph`)
+  validateBuiltGraph(result.staticGraph?.runtime, `${label} runtime graph`)
+  const rootGraph = result.staticGraph.root
+  const runtimeGraph = result.staticGraph.runtime
+  const expectedByteDelta = runtimeGraph.totalBytes - rootGraph.totalBytes
+  const expectedFileCountDelta = runtimeGraph.fileCount - rootGraph.fileCount
+  const expectedPercentChange = ((runtimeGraph.totalBytes / rootGraph.totalBytes) - 1) * 100
+  if (result.staticGraph.byteDelta !== expectedByteDelta
+    || result.staticGraph.fileCountDelta !== expectedFileCountDelta
+    || result.staticGraph.bytePercentChange !== expectedPercentChange)
+    throw new Error(`${label} built graph deltas do not match the retained manifests`)
 }
 
 function same(left: unknown, right: unknown): boolean {

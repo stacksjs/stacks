@@ -1,14 +1,20 @@
 import { lstatSync } from 'node:fs'
 import { isAbsolute, posix, relative, resolve, sep, win32 } from 'node:path'
 
+export function isSafePortableRelativePath(path: unknown): path is string {
+  return typeof path === 'string'
+    && path.length > 0
+    && !path.includes('\\')
+    && !path.split('/').some(segment => segment === '..')
+    && !posix.isAbsolute(path)
+    && !win32.isAbsolute(path)
+    && posix.normalize(path) === path
+}
+
 export function artifactRelativeFile(root: string, path: unknown, expected: string, kind: string): string {
   if (typeof path !== 'string' || path.length === 0)
     throw new Error(`${kind} path is missing`)
-  if (path.includes('\\')
-    || path.split('/').some(segment => segment === '..')
-    || posix.isAbsolute(path)
-    || win32.isAbsolute(path)
-    || posix.normalize(path) !== path)
+  if (!isSafePortableRelativePath(path))
     throw new Error(`${kind} path is not a safe artifact-relative path: ${path}`)
   if (path !== expected)
     throw new Error(`${kind} path is not deterministic: ${path}`)

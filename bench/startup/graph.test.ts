@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { readBuiltGraph } from './graph'
+import { readBuiltGraph, summarizeBuiltGraph, validateBuiltGraph } from './graph'
 
 const temporaryDirectories: string[] = []
 
@@ -42,5 +42,23 @@ describe('built startup graph', () => {
 
     expect(readBuiltGraph(join(root, 'missing.js'), root)).rejects.toThrow('Cannot resolve local built import')
     expect(readBuiltGraph(join(root, 'escape.js'), root)).rejects.toThrow('escapes its root')
+  })
+
+  test('derives and validates graph summaries from retained file manifests', () => {
+    const files = [
+      { path: 'index.js', bytes: 100, sha256: 'a'.repeat(64) },
+      { path: 'chunks/runtime.js', bytes: 50, sha256: 'b'.repeat(64) },
+      { path: 'empty.js', bytes: 0, sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
+    ]
+    const graph = summarizeBuiltGraph(files)
+    expect(graph.fileCount).toBe(3)
+    expect(graph.totalBytes).toBe(150)
+    expect(graph.files.map(file => file.path)).toEqual(['chunks/runtime.js', 'empty.js', 'index.js'])
+    expect(() => validateBuiltGraph(graph, 'Runtime graph')).not.toThrow()
+
+    expect(() => validateBuiltGraph({ ...graph, totalBytes: 151 }, 'Runtime graph')).toThrow('summary does not match')
+    expect(() => validateBuiltGraph({ ...graph, files: [...graph.files, graph.files[0]!] }, 'Runtime graph')).toThrow('duplicate')
+    expect(() => validateBuiltGraph({ ...graph, files: [{ ...graph.files[0]!, path: '../escape.js' }] }, 'Runtime graph')).toThrow('invalid built-file path')
+    expect(() => validateBuiltGraph({ ...graph, files: [{ ...graph.files[0]!, sha256: 'nope' }] }, 'Runtime graph')).toThrow('invalid built-file SHA-256')
   })
 })
