@@ -7,7 +7,7 @@
  * allowed to proceed?"
  */
 
-import { db, sqlHelpers } from '@stacksjs/database'
+import { db, sqlHelpers } from '@stacksjs/database/runtime'
 import { env } from '@stacksjs/env'
 import { mutationCount } from '../utils/mutation-count'
 

@@ -27,7 +27,7 @@
  * cents avoid the rounding-error class entirely.
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 export interface RecomputeLineItem {
   /** Product ID — used to look up the current canonical unit price. */

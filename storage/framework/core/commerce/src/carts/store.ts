@@ -2,7 +2,7 @@ import type { Cart, ModelRow, NewModelData } from '@stacksjs/orm'
 type CartJsonResponse = ModelRow<typeof Cart>
 type NewCart = NewModelData<typeof Cart>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 
 /**

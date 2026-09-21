@@ -50,7 +50,7 @@
  * ```
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import { emitOrderCancelled, emitOrderPaid, emitOrderRefunded } from './events'
 

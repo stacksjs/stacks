@@ -1,7 +1,7 @@
 import type { ModelRow, NewModelData, Order } from '@stacksjs/orm'
 // Import dependencies
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { insertedId } from '../utils/inserted-id'

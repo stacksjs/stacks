@@ -1,5 +1,5 @@
 import type { ModelRow, Order, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 type OrderJsonResponse = ModelRow<typeof Order>

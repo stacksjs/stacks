@@ -5,7 +5,7 @@ import type {
   OrderTypeCount,
   StatusCount,
 } from '../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../utils/model-row'
 
 /**

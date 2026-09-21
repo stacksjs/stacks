@@ -1,5 +1,5 @@
 import type { Cart, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db, matchedRows } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type CartJsonResponse = ModelRow<typeof Cart>

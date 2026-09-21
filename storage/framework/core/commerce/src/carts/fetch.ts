@@ -1,6 +1,6 @@
 import type { Cart, ModelRow } from '@stacksjs/orm'
 type CartJsonResponse = ModelRow<typeof Cart>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../utils/model-row'
 
 /**

@@ -38,7 +38,7 @@ import type { ModelRow, NewModelData, Order, OrderItem, Payment } from '@stacksj
  */
 
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../utils/model-row'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 import { emitOrderCreated, emitOrderPaid } from './events'
