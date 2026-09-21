@@ -48,6 +48,10 @@ jobs:
       - name: Verify startup harness
         run: bun test ./bench/startup/*.test.ts
 
+      - name: Build logging package
+        working-directory: storage/framework/core/logging
+        run: bun run build
+
       - name: Build router package
         working-directory: storage/framework/core/router
         run: bun run build
