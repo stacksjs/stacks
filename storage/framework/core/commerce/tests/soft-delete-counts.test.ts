@@ -1,17 +1,27 @@
+/**
+ * stacksjs/stacks#2639: a soft delete must not read an affected-row count as
+ * "does this row exist". See fixtures/soft-delete-counts.ts for what runs.
+ *
+ * Each dialect gets its own disposable database. The server cases skip unless
+ * STACKS_TEST_POSTGRES_URL / STACKS_TEST_MYSQL_URL name a local one, so CI and
+ * a laptop without them still run the SQLite case.
+ */
+
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
 import { SQL } from 'bun'
 import { expect, test } from 'bun:test'
 
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
-  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} commerce writes apply and report the rows they changed`, async () => {
+  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} soft deletes count the rows their predicate matched`, async () => {
     const url = dialect === 'sqlite' ? undefined : new URL(connection!)
     if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-      throw new Error('Commerce write count tests require a local disposable database server')
-    const directory = await mkdtemp(join(tmpdir(), 'stacks-commerce-write-counts-'))
-    const name = `stacks_commerce_write_counts_${crypto.randomUUID().replaceAll('-', '')}`
+      throw new Error('Commerce soft delete tests require a local disposable database server')
+    const directory = await mkdtemp(join(tmpdir(), 'stacks-commerce-soft-delete-'))
+    const name = `stacks_commerce_soft_delete_${crypto.randomUUID().replaceAll('-', '')}`
     const admin = url ? new SQL(url.href) : undefined
     const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
     let created = false
@@ -19,11 +29,11 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
       const config = join(directory, 'bunfig.toml')
       await writeFile(config, 'preload = []\n')
       if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
-      const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/write-counts.ts`], {
+      const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/../src/tests/fixtures/soft-delete-counts.ts`], {
         env: {
           ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
-          DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'write-counts.sqlite') : ':memory:',
-          STACKS_COMMERCE_WRITE_COUNTS_CONFIG: config,
+          DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'soft-delete-counts.sqlite') : ':memory:',
+          STACKS_COMMERCE_SOFT_DELETE_CONFIG: config,
           ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
           DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
           DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
@@ -33,9 +43,9 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
       const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 25_000)
       try {
         const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-        expect(timedOut, 'commerce write counts must finish without a watchdog kill').toBe(false)
+        expect(timedOut, 'commerce soft delete counts must finish without a watchdog kill').toBe(false)
         expect(code, `${stdout}\n${stderr}`).toBe(0)
-        expect(stdout).toContain('commerce write counts OK')
+        expect(stdout).toContain('commerce soft delete counts OK')
       }
       finally { clearTimeout(watchdog); child.kill() }
     }
