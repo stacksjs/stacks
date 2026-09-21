@@ -230,6 +230,18 @@ export default {
     captureBindings: env.DB_QUERY_LOGGING_CAPTURE_BINDINGS ?? !['production', 'prod'].includes(env.APP_ENV || ''),
 
     /**
+     * Columns whose values are secret although nothing about their name or
+     * their values says so, such as a gift card's `code`. Each is stored as
+     * `<redacted>` in `query_logs.bindings`, and taken out of the error of a
+     * failed query where the driver printed it, like the names recognised
+     * anyway, which this extends and never replaces. A bare name (`'code'`)
+     * is that column in every table; `'gift_cards.code'` is only the one in
+     * `gift_cards`, and matches a `code` written without its table wherever
+     * the statement names `gift_cards`.
+     */
+    sensitiveColumns: [],
+
+    /**
      * The threshold in milliseconds to mark a query as slow
      */
     slowThreshold: env.DB_QUERY_LOGGING_SLOW_THRESHOLD || 100,

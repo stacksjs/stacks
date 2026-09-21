@@ -12,6 +12,9 @@ assert(appEnv === 'test' || appEnv === 'production')
 // production, `types` in production.
 const expected = process.env.STACKS_QUERY_LOG_BINDINGS_EXPECT
 assert(expected === 'values' || expected === 'types')
+// queryLogging.sensitiveColumns as JSON, when the run lists columns the way
+// an application would.
+const listed: string[] | undefined = process.env.STACKS_QUERY_LOG_BINDINGS_SENSITIVE_COLUMNS ? JSON.parse(process.env.STACKS_QUERY_LOG_BINDINGS_SENSITIVE_COLUMNS) : undefined
 const configPath = process.env.STACKS_QUERY_LOG_BINDINGS_CONFIG
 assert(configPath && basename(dirname(configPath)).startsWith('stacks-query-log-bindings-'))
 if (dialect === 'sqlite')
@@ -61,6 +64,7 @@ const queryLogging = config.database.queryLogging
 assert(queryLogging, 'the database config has queryLogging')
 config.database.queryLogging = {
   ...queryLogging,
+  ...(listed ? { sensitiveColumns: listed } : {}),
   enabled: true,
   excludedQueries: ['query_logs'],
   analysis: { enabled: false, analyzeAll: false, explainPlan: false, suggestions: false },
@@ -84,6 +88,10 @@ const HANDLE = `ada \u{1F600} lovelace`
 // A number in a column named `otp`: redacted where values are kept, and a
 // number that must leave the error in production too, where it is a type.
 const OTP = 482913
+// An ordinary-looking gift card code, in gift_cards and in coupons alike. Only
+// an application listing gift_cards.code makes it secret, and only there.
+const GIFT_CODE = 'GIFT-2026-ABCD'
+const giftCodeListed = listed?.includes('gift_cards.code') === true
 
 /** Every `size`-character piece of `text`. */
 function pieces(text: string, size: number): string[] {
@@ -108,15 +116,24 @@ try {
   const text = dialect === 'mysql' ? 'VARCHAR(255)' : 'TEXT'
   await db.unsafe(`CREATE TABLE devices (id INTEGER PRIMARY KEY, token ${text}, handle ${text}, build INTEGER, otp INTEGER, UNIQUE (token), UNIQUE (handle), UNIQUE (otp))`).execute()
 
+  await db.unsafe(`CREATE TABLE gift_cards (id INTEGER PRIMARY KEY, code ${text}, UNIQUE (code))`).execute()
+  await db.unsafe(`CREATE TABLE coupons (id INTEGER PRIMARY KEY, code ${text}, UNIQUE (code))`).execute()
+
   await db.insertInto('devices').values({ id: 1, token: TOKEN, handle: HANDLE, otp: OTP }).execute()
+  await db.insertInto('gift_cards').values({ id: 1, code: GIFT_CODE }).execute()
+  await db.insertInto('coupons').values({ id: 1, code: GIFT_CODE }).execute()
+  await db.selectFrom('gift_cards').where('code', '=', GIFT_CODE).selectAll().execute()
+  await db.selectFrom('coupons').where('code', '=', GIFT_CODE).selectAll().execute()
   // One column each, so each failure is told apart by its SQL alone, types or not.
   const caught = {
     token: await failure(() => db.insertInto('devices').values({ id: 2, token: TOKEN }).execute()),
     handle: await failure(() => db.insertInto('devices').values({ id: 3, handle: HANDLE }).execute()),
     build: await failure(() => db.insertInto('devices').values({ id: 4, build: BUILD_TOKEN }).execute()),
     otp: await failure(() => db.insertInto('devices').values({ id: 5, otp: OTP }).execute()),
+    giftCard: await failure(() => db.insertInto('gift_cards').values({ id: 2, code: GIFT_CODE }).execute()),
+    coupon: await failure(() => db.insertInto('coupons').values({ id: 2, code: GIFT_CODE }).execute()),
   }
-  assert(caught.token && caught.handle && caught.otp, 'every duplicate must fail')
+  assert(caught.token && caught.handle && caught.otp && caught.giftCard && caught.coupon, 'every duplicate must fail')
   // A failed query whose error can be longer than the limit. SQLite names a
   // missing table in full (Bun 1.4.1), and PostgreSQL 16 echoes in full a
   // value it cannot parse; MySQL 8.4 prints 100 characters of the name, so
@@ -132,7 +149,7 @@ try {
   assert.equal(caught.build === undefined, dialect === 'sqlite', `build: ${caught.build}`)
 
   /** A fragment of each value that says the driver printed it, as any server prints it. */
-  const fragment = { token: TOKEN.slice(0, 16), build: 'c0ffee00deadbeef', handle: 'lovelace', otp: String(OTP) }
+  const fragment = { token: TOKEN.slice(0, 16), build: 'c0ffee00deadbeef', handle: 'lovelace', otp: String(OTP), giftCard: GIFT_CODE, coupon: GIFT_CODE }
   const printed = (key: keyof typeof caught): boolean => caught[key]?.includes(fragment[key]) === true
   // The test is only worth something where a driver put values in its
   // messages. This depends on the servers: MySQL 8.4.5 printed the duplicate
@@ -143,17 +160,17 @@ try {
   if (dialect === 'postgres')
     assert(printed('build'), `PostgreSQL no longer prints the value: ${caught.build}`)
 
-  // Query logs are written in the background; wait for every failure and
-  // for the long query.
+  // Query logs are written in the background; wait for every failure, the
+  // two gift code lookups and the long query.
   const failures = Object.values(caught).filter(Boolean).length
   let all: LogRow[] = []
   let rows: LogRow[] = []
   const deadline = Date.now() + 10_000
   while (Date.now() < deadline) {
     all = (await db.unsafe('SELECT query, status, error, bindings FROM query_logs').execute() as unknown as LogRow[])
-      .filter(row => /\b(?:devices|q{5000})\b/.test(String(row.query)) && !/^\s*create/i.test(String(row.query)))
+      .filter(row => /\b(?:devices|gift_cards|coupons|q{5000})\b/.test(String(row.query)) && !/^\s*create/i.test(String(row.query)))
     rows = all.filter(row => row.status === 'failed' && /^\s*insert/i.test(String(row.query)))
-    if (rows.length >= failures && all.some(row => /^\s*select/i.test(String(row.query))))
+    if (rows.length >= failures && all.filter(row => /^\s*select/i.test(String(row.query))).length >= 3)
       break
     await Bun.sleep(25)
   }
@@ -168,13 +185,16 @@ try {
 
   /** The logged error of the failed insert of `key`. */
   function loggedError(key: keyof typeof caught): string {
-    return String(logged(rows, new RegExp(`^insert into devices\\s*\\(id,\\s*${key}\\)`)).error)
+    const shape = key === 'giftCard'
+      ? /^insert into gift_cards/
+      : key === 'coupon' ? /^insert into coupons/ : new RegExp(`^insert into devices\\s*\\(id,\\s*${key}\\)`)
+    return String(logged(rows, shape).error)
   }
 
   // Nothing withheld from the bindings survives in any error: no 12
   // characters of the token or of the build's hex, and not the one-time code.
-  // In production the benign handle is withheld too.
-  const withheld = [...pieces(TOKEN, 12), ...pieces(BUILD_TOKEN.slice(5), 12), String(OTP), ...(expected === 'types' ? ['lovelace'] : [])]
+  // In production the benign handle and the gift code are withheld too.
+  const withheld = [...pieces(TOKEN, 12), ...pieces(BUILD_TOKEN.slice(5), 12), String(OTP), ...(expected === 'types' ? ['lovelace', GIFT_CODE] : [])]
   for (const row of rows) {
     for (const value of withheld)
       assert(!String(row.error).includes(value), `${appEnv} kept ${JSON.stringify(value)} in query_logs.error: ${row.error}`)
@@ -207,9 +227,22 @@ try {
   }
 
   // A value that is not withheld stays in the error wherever the driver
-  // printed it: outside production, the benign handle.
-  if (expected === 'values')
-    assert.equal(loggedError('handle').includes(fragment.handle), printed('handle'), loggedError('handle'))
+  // printed it: outside production the benign handle, the coupon code, and
+  // the gift card code unless gift_cards.code is listed.
+  if (expected === 'values') {
+    for (const key of ['handle', 'coupon', ...(giftCodeListed ? [] : ['giftCard'] as const)] as const)
+      assert.equal(loggedError(key).includes(fragment[key]), printed(key), `${key}: ${loggedError(key)}`)
+  }
+  // A listed column is redacted in the bindings and taken out of the error;
+  // the same value in a column that is not listed stays in both.
+  if (giftCodeListed) {
+    assert(!loggedError('giftCard').includes(GIFT_CODE), loggedError('giftCard'))
+    if (printed('giftCard'))
+      assert(loggedError('giftCard').includes('<redacted>'), loggedError('giftCard'))
+  }
+  const binding = (redacted: boolean): string => expected === 'types' ? '<string>' : redacted ? '<redacted>' : GIFT_CODE
+  assert.deepEqual(JSON.parse(logged(all, /^select \* from gift_cards where code = /).bindings!), [binding(giftCodeListed)])
+  assert.deepEqual(JSON.parse(logged(all, /^select \* from coupons where code = /).bindings!), [binding(false)])
 
   // Only the first MAX_QUERY_LOG_ERROR_LENGTH characters of an error are kept,
   // with the values in them withheld as anywhere else: in production the

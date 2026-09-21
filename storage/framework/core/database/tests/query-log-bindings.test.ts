@@ -21,7 +21,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { SQL } from 'bun'
 import { describe, expect, it, test } from 'bun:test'
-import { isSensitiveName, looksLikeCredential, MAX_QUERY_LOG_ERROR_LENGTH, parseCaptureBindings, persistQueryLogValues, queryLogBindings, serializeQueryLogBindings } from '../src/query-log-bindings'
+import { isSensitiveName, looksLikeCredential, MAX_QUERY_LOG_ERROR_LENGTH, parseCaptureBindings, parseSensitiveColumn, persistQueryLogValues, queryLogBindings, serializeQueryLogBindings } from '../src/query-log-bindings'
 
 const SESSION_ID = 'c0ffee00deadbeef'.repeat(4)
 const capture = { captureValues: true }
@@ -216,6 +216,47 @@ describe('query log bindings', () => {
     expect(queryLogBindings(insert, rows.flat(), capture)).toEqual(rows.flatMap(([email]) => [email, '<redacted>']))
   })
 
+  it('redacts the columns an application lists, a table-qualified one only in its table', () => {
+    const code = 'GIFT-2026-ABCD'
+    const listed = { captureValues: true, sensitiveColumns: ['gift_cards.code'] }
+    // Neither its name nor its shape gives it away.
+    expect(queryLogBindings('SELECT * FROM gift_cards WHERE code = ?', [code], capture)).toEqual([code])
+
+    const inGiftCards: Array<[string, unknown[], unknown[]]> = [
+      ['SELECT * FROM gift_cards WHERE code = ?', [code], ['<redacted>']],
+      ['INSERT INTO `gift_cards`(`id`,`code`)VALUES(?,?)', [1, code], [1, '<redacted>']],
+      ['UPDATE "public"."gift_cards" SET "code" = $1 WHERE "id" = $2', [code, 1], ['<redacted>', 1]],
+      ['SELECT * FROM gift_cards AS g WHERE lower(g.code) = lower(?)', [code], ['<redacted>']],
+      ['SELECT * FROM coupons c JOIN gift_cards g ON g.coupon_id = c.id WHERE g.code = ? AND c.code = ?', [code, code], ['<redacted>', code]],
+      // Which table a bare `code` belongs to is not known; gift_cards is named, so it counts.
+      ['SELECT * FROM coupons JOIN gift_cards ON gift_cards.coupon_id = coupons.id WHERE code = ?', [code], ['<redacted>']],
+      // Its column cannot be worked out, and the statement names a listed one.
+      ['SELECT * FROM gift_cards WHERE coalesce(?, code) = code', [code], ['<redacted>']],
+    ]
+    for (const [sql, parameters, expected] of inGiftCards)
+      expect(queryLogBindings(sql, parameters, listed)).toEqual(expected)
+
+    // Only in gift_cards: the same column elsewhere is kept.
+    expect(queryLogBindings('SELECT * FROM coupons WHERE code = ?', [code], listed)).toEqual([code])
+    expect(queryLogBindings('INSERT INTO `coupons`(`id`,`code`)VALUES(?,?)', [1, code], listed)).toEqual([1, code])
+    // A bare name is the column in every table.
+    expect(queryLogBindings('SELECT * FROM coupons WHERE code = ?', [code], { captureValues: true, sensitiveColumns: ['code'] })).toEqual(['<redacted>'])
+    // A listed column takes numbers too, which a sensitive table alone does not.
+    expect(queryLogBindings('SELECT * FROM verifications WHERE code = ?', [123456], capture)).toEqual([123456])
+    expect(queryLogBindings('SELECT * FROM verifications WHERE code = ?', [123456], { captureValues: true, sensitiveColumns: ['verifications.code'] })).toEqual(['<redacted>'])
+    // The names recognised anyway are extended, never replaced.
+    expect(queryLogBindings('UPDATE users SET password = ?, nickname = ? WHERE id = ?', ['hunter2', 'ada', 1], listed)).toEqual(['<redacted>', 'ada', 1])
+  })
+
+  it('reads a listed column as a column or a table.column', () => {
+    expect(parseSensitiveColumn('code')).toEqual({ column: 'code' })
+    expect(parseSensitiveColumn('gift_cards.code')).toEqual({ table: 'gift_cards', column: 'code' })
+    expect(parseSensitiveColumn(' "Gift_Cards"."CODE" ')).toEqual({ table: 'gift_cards', column: 'code' })
+    expect(parseSensitiveColumn('public.gift_cards.code')).toEqual({ table: 'gift_cards', column: 'code' })
+    for (const unreadable of ['', ' ', 'gift_cards.', '.code', 'gift_cards.*', 'gift cards.code', 'a.b.c.d', 'code, pin', 42, null, undefined, {}])
+      expect(parseSensitiveColumn(unreadable)).toBeUndefined()
+  })
+
   it('keeps only the type of each value when values are not captured', () => {
     expect(queryLogBindings(
       'SELECT * FROM people WHERE email = ? AND id = ? AND active = ? AND deleted_at IS ? AND born < ? AND avatar = ? AND total = ? AND meta = ?',
@@ -340,6 +381,22 @@ describe('query log errors', () => {
     expect(logged('SELECT * FROM "devices" WHERE "token" = $1', [TOKEN], long)).toBe(`${long.slice(0, MAX_QUERY_LOG_ERROR_LENGTH - 19)}<redacted><truncated: ${long.length - MAX_QUERY_LOG_ERROR_LENGTH - 16} more characters>`)
     const short = `${head}${'x'.repeat(MAX_QUERY_LOG_ERROR_LENGTH - head.length - 4)} 'hunter2' and more`
     expect(logged('UPDATE "users" SET "password" = $1', ['hunter2'], short)).toBe(`${short.slice(0, MAX_QUERY_LOG_ERROR_LENGTH - 2)}<redacted><truncated: ${short.length - (MAX_QUERY_LOG_ERROR_LENGTH - 2 + 7)} more characters>`)
+  })
+
+  it('takes the values of a listed column out of the error text', () => {
+    const listed = { captureValues: true, sensitiveColumns: ['gift_cards.code', 'gift_cards.serial'] }
+    expect(logged('INSERT INTO `gift_cards`(`id`,`code`)VALUES(?,?)', [2, 'GIFT-2026-ABCD'], `MySQLError: Duplicate entry 'GIFT-2026-ABCD' for key 'gift_cards.code'`, listed))
+      .toBe(`MySQLError: Duplicate entry '<redacted>' for key 'gift_cards.code'`)
+    const coupon = `MySQLError: Duplicate entry 'GIFT-2026-ABCD' for key 'coupons.code'`
+    expect(logged('INSERT INTO `coupons`(`id`,`code`)VALUES(?,?)', [2, 'GIFT-2026-ABCD'], coupon, listed)).toBe(coupon)
+    // A listed number leaves the error in production too, and so does a
+    // listed value shorter than the 8 characters an ordinary one needs.
+    expect(logged('INSERT INTO `gift_cards`(`id`,`serial`)VALUES(?,?)', [2, 90210], `MySQLError: Duplicate entry '90210' for key 'gift_cards.serial'`, { ...listed, captureValues: false }))
+      .toBe(`MySQLError: Duplicate entry '<number>' for key 'gift_cards.serial'`)
+    expect(logged('INSERT INTO `gift_cards`(`id`,`code`)VALUES(?,?)', [2, 'AB12'], `MySQLError: Duplicate entry 'AB12' for key 'gift_cards.code'`, { ...listed, captureValues: false }))
+      .toBe(`MySQLError: Duplicate entry '<string>' for key 'gift_cards.code'`)
+    const unlisted = `MySQLError: Duplicate entry 'AB12' for key 'coupons.code'`
+    expect(logged('INSERT INTO `coupons`(`id`,`code`)VALUES(?,?)', [2, 'AB12'], unlisted, { ...listed, captureValues: false })).toBe(unlisted)
   })
 
   it('reads a long withheld value only as far as the error text reaches', () => {
@@ -618,10 +675,19 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   for (const run of [
     { title: 'failed query logs keep redacted values out of the error', appEnv: 'test', expect: 'values' },
     { title: 'production failed query logs keep only types of the values in the error', appEnv: 'production', expect: 'types' },
+    // `gift_cards.*` is not a column: it is reported once, over every query,
+    // and the entry beside it still counts.
+    { title: 'query logs redact a column the application lists, in bindings and errors', appEnv: 'test', expect: 'values', sensitiveColumns: '["gift_cards.code","gift_cards.*"]' },
   ]) {
     test.skipIf(dialect !== 'sqlite' && !serverUrl(dialect))(`${dialect} ${run.title}`, async () => {
-      const { stdout } = await runFixture(dialect, 'query-log-errors.ts', { APP_ENV: run.appEnv, STACKS_QUERY_LOG_BINDINGS_EXPECT: run.expect })
+      const { stdout, stderr } = await runFixture(dialect, 'query-log-errors.ts', {
+        APP_ENV: run.appEnv,
+        STACKS_QUERY_LOG_BINDINGS_EXPECT: run.expect,
+        STACKS_QUERY_LOG_BINDINGS_SENSITIVE_COLUMNS: run.sensitiveColumns ?? '',
+      })
       expect(stdout).toContain('query log errors OK')
+      const warnings = stderr.split('\n').filter(line => line.includes('[database] queryLogging.sensitiveColumns has'))
+      expect(warnings, stderr).toEqual(run.sensitiveColumns ? [expect.stringContaining('"gift_cards.*", which is not a column or table.column')] : [])
     }, 30_000)
   }
 }

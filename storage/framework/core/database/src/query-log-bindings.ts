@@ -246,6 +246,8 @@ interface SqlToken {
   kind: 'word' | 'name' | 'param' | 'value' | 'op' | '(' | ')' | ','
   /** As written, so `rememberToken` still splits into words; for a qualified name, its last part. */
   text: string
+  /** For a qualified name, the part before its last: the table of `gift_cards.code`. */
+  qualifier?: string
   /** Zero-based position in the parameter array, for placeholders. */
   param?: number
 }
@@ -304,8 +306,9 @@ function scanSql(sql: string): ScannedSql {
     // `"users"."password"` and `excluded.token` are the column they end in.
     const dot = tokens.at(-1)
     if ((token.kind === 'name' || token.kind === 'word') && dot?.kind === 'op' && dot.text === '.' && isName(tokens.at(-2))) {
+      const qualifier = tokens.at(-2)!.text
       tokens.splice(-2, 2)
-      token = { kind: 'name', text: token.text }
+      token = { kind: 'name', text: token.text, qualifier }
     }
     tokens.push(token)
   }
@@ -450,11 +453,11 @@ function skipNot(tokens: SqlToken[], at: number): number {
  * The column an operand ending at `at` names: `token`, `"sessions"."id"`, or
  * the first name inside a call such as `lower(email)`.
  */
-function operandColumn({ tokens, openers }: Statement, at: number): string | undefined {
+function operandColumn({ tokens, openers }: Statement, at: number): SqlToken | undefined {
   const token = tokens[at]
   if (token?.kind !== ')')
-    return isName(token) ? token.text : undefined
-  return tokens.slice(openers[at]! + 1, at).find(inner => isName(inner))?.text
+    return isName(token) ? token : undefined
+  return tokens.slice(openers[at]! + 1, at).find(inner => isName(inner))
 }
 
 /**
@@ -462,7 +465,7 @@ function operandColumn({ tokens, openers }: Statement, at: number): string | und
  * `col = ?`, `col NOT LIKE ?`, `col IN (?, ?)`, `col BETWEEN ? AND ?`,
  * `col = lower(?)`, `SET col = ?` and `? = col`.
  */
-function valueColumn(statement: Statement, start: number, end: number): string | undefined {
+function valueColumn(statement: Statement, start: number, end: number): SqlToken | undefined {
   const { tokens, openers } = statement
   // `IS NOT ?` puts its NOT between the operator and the value.
   const operator = isWord(tokens[start - 1], 'not') && isWord(tokens[start - 2], 'is') ? start - 2 : start - 1
@@ -491,7 +494,7 @@ function valueColumn(statement: Statement, start: number, end: number): string |
   const after = tokens[end + 1]
   const operand = tokens[end + 2]
   if (after?.kind === 'op' && isComparison(after) && isName(operand) && tokens[end + 3]?.kind !== '(')
-    return operand.text
+    return operand
 
   return undefined
 }
@@ -500,14 +503,14 @@ function valueColumn(statement: Statement, start: number, end: number): string |
  * `INSERT INTO t (a, b) VALUES (?, ?), (?, ?)`: each placeholder takes the
  * column at its position in the tuple, including when a call wraps it.
  */
-function insertColumns(tokens: SqlToken[]): Map<number, string | undefined> {
-  const columns = new Map<number, string | undefined>()
+function insertColumns(tokens: SqlToken[]): Map<number, SqlToken | undefined> {
+  const columns = new Map<number, SqlToken | undefined>()
   const insert = tokens.findIndex(token => isWord(token, 'insert', 'replace'))
   const into = tokens.findIndex((token, index) => index > insert && isWord(token, 'into'))
   if (insert < 0 || into < 0 || tokens[into + 2]?.kind !== '(')
     return columns
 
-  const names: Array<string | undefined> = []
+  const names: Array<SqlToken | undefined> = []
   let index = into + 3
   let expectName = true
   for (; index < tokens.length && tokens[index]!.kind !== ')'; index++) {
@@ -515,7 +518,7 @@ function insertColumns(tokens: SqlToken[]): Map<number, string | undefined> {
     if (token.kind === ',')
       expectName = true
     else if (expectName) {
-      names.push(isName(token) ? token.text : undefined)
+      names.push(isName(token) ? token : undefined)
       expectName = false
     }
   }
@@ -547,23 +550,95 @@ function insertColumns(tokens: SqlToken[]): Map<number, string | undefined> {
   return columns
 }
 
+/**
+ * A column the application lists in `queryLogging.sensitiveColumns`: `column`
+ * in every table, or only in `table`. Both are lowercase and unquoted.
+ */
+interface ListedColumn {
+  table?: string
+  column: string
+}
+
+/** One part of a listed name, once its quotes are gone. */
+const LISTED_PART = /^[\p{L}\p{N}_$-]+$/u
+
+/**
+ * A `queryLogging.sensitiveColumns` entry as the scanner compares it:
+ * `column`, or `table.column` with any schema before the table ignored,
+ * without quotes and letter case. Undefined for an entry that is neither.
+ */
+export function parseSensitiveColumn(entry: unknown): ListedColumn | undefined {
+  if (typeof entry !== 'string')
+    return undefined
+  const parts = entry.split('.').map(part => part.trim().replace(/^(["`])(.*)\1$/, '$2').toLowerCase())
+  if (parts.length > 3 || !parts.every(part => LISTED_PART.test(part)))
+    return undefined
+  return parts.length === 1 ? { column: parts[0]! } : { table: parts.at(-2)!, column: parts.at(-1)! }
+}
+
+/**
+ * Which of a statement's columns the application listed. A bare entry is
+ * that column anywhere. A `table.column` entry is that column where it is
+ * written against the table or an alias of it (`gift_cards.code`, or `g.code`
+ * after `FROM gift_cards g`), and nowhere it is written against another table
+ * the statement names. Written without a table, a column counts when the
+ * statement names the table anywhere: which table it belongs to is not known,
+ * so it is taken to be the listed one.
+ */
+function listedColumnTest(tokens: SqlToken[], listed: readonly ListedColumn[]): (column: SqlToken) => boolean {
+  if (listed.length === 0)
+    return () => false
+  const named = new Set<string>()
+  const tables = new Set<string>()
+  const aliases = new Map<string, string>()
+  for (const [index, token] of tokens.entries()) {
+    if (!isName(token))
+      continue
+    named.add(token.text.toLowerCase())
+    if (token.qualifier)
+      named.add(token.qualifier.toLowerCase())
+    if (!TABLE_KEYWORDS.has(keyword(tokens[index - 1]) ?? '') || isWord(tokens[index - 2], 'key'))
+      continue
+    const table = token.text.toLowerCase()
+    tables.add(table)
+    const at = isWord(tokens[index + 1], 'as') ? index + 2 : index + 1
+    if (isName(tokens[at]) && tokens[at + 1]?.kind !== '(')
+      aliases.set(tokens[at]!.text.toLowerCase(), table)
+  }
+
+  return (column) => {
+    const name = column.text.toLowerCase()
+    const qualifier = column.qualifier?.toLowerCase()
+    const against = qualifier === undefined ? undefined : aliases.get(qualifier) ?? qualifier
+    return listed.some(entry => entry.column === name && (
+      entry.table === undefined
+      || against === entry.table
+      || ((against === undefined || !tables.has(against)) && named.has(entry.table))
+    ))
+  }
+}
+
 interface BindingContext {
   /** Every column each parameter position meets (PostgreSQL may reuse `$1`). */
-  columns: Map<number, Array<string | undefined>>
+  columns: Map<number, Array<SqlToken | undefined>>
+  /** Whether a column is sensitive: by its name, or because the application listed it. */
+  sensitiveColumn: (column: SqlToken) => boolean
   /** The statement reads or writes a table with a sensitive name. */
   sensitiveTable: boolean
-  /** A sensitive name appears anywhere in the statement. */
+  /** A sensitive name, or a listed column, appears anywhere in the statement. */
   sensitiveMention: boolean
 }
 
-function bindingContext(sql: string): BindingContext {
+function bindingContext(sql: string, listed: readonly ListedColumn[]): BindingContext {
   const { tokens, complete } = scanSql(sql)
-  const columns = new Map<number, Array<string | undefined>>()
+  const columns = new Map<number, Array<SqlToken | undefined>>()
   // A statement the scanner could not finish is judged by its words alone.
   if (!complete) {
     const words = sql.match(/[A-Z_a-z][\w$]*/g) ?? []
+    const lower = new Set(words.map(word => word.toLowerCase()))
     const sensitive = words.some(word => isSensitiveName(word))
-    return { columns, sensitiveTable: sensitive, sensitiveMention: sensitive }
+      || listed.some(entry => lower.has(entry.column) && (entry.table === undefined || lower.has(entry.table)))
+    return { columns, sensitiveColumn: () => sensitive, sensitiveTable: sensitive, sensitiveMention: sensitive }
   }
 
   const statement = { tokens, openers: pairParentheses(tokens) }
@@ -577,15 +652,17 @@ function bindingContext(sql: string): BindingContext {
     columns.set(token.param, seen)
   }
 
+  const isListed = listedColumnTest(tokens, listed)
+  const sensitiveColumn = (column: SqlToken): boolean => isSensitiveName(column.text) || isListed(column)
   const sensitiveTable = tokens.some((token, index) =>
     isName(token)
     && TABLE_KEYWORDS.has(keyword(tokens[index - 1]) ?? '')
     // `ON DUPLICATE KEY UPDATE col = ?` names a column, not a table.
     && !isWord(tokens[index - 2], 'key')
     && isSensitiveName(token.text))
-  const sensitiveMention = tokens.some(token => isName(token) && isSensitiveName(token.text))
+  const sensitiveMention = tokens.some(token => isName(token) && sensitiveColumn(token))
 
-  return { columns, sensitiveTable, sensitiveMention }
+  return { columns, sensitiveColumn, sensitiveTable, sensitiveMention }
 }
 
 // ---------------------------------------------------------------------------
@@ -654,6 +731,11 @@ export interface QueryLogBindingOptions {
    * type is kept.
    */
   captureValues: boolean
+  /**
+   * `queryLogging.sensitiveColumns`: more columns whose values are secret,
+   * as `column` or `table.column`, on top of the names recognised anyway.
+   */
+  sensitiveColumns?: readonly unknown[]
 }
 
 /** How the other Stacks switches read on and off (`isVitessSharded`, `buddy migrate`'s guards). */
@@ -681,6 +763,11 @@ export function parseCaptureBindings(setting: unknown): boolean | null | undefin
   return null
 }
 
+/** `queryLogging.sensitiveColumns` as the scanner compares them, without the entries it cannot read. */
+function listedColumns(options: QueryLogBindingOptions): ListedColumn[] {
+  return options.sensitiveColumns?.flatMap(entry => parseSensitiveColumn(entry) ?? []) ?? []
+}
+
 /**
  * `value`, the parameter at `index`, as the bindings keep it where values are
  * kept: the value itself, `<redacted>`, or a type tag such as `<bytes>`.
@@ -690,7 +777,7 @@ function keptValue(context: BindingContext, value: unknown, index: number): unkn
     return null
 
   const columns = context.columns.get(index) ?? []
-  if (columns.some(column => column !== undefined && isSensitiveName(column)))
+  if (columns.some(column => column !== undefined && context.sensitiveColumn(column)))
     return REDACTED_BINDING
   if (isBytes(value))
     return typeTag(value)
@@ -719,7 +806,7 @@ export function queryLogBindings(sql: string, parameters: readonly unknown[], op
   if (!options.captureValues)
     return parameters.map(value => value === null || value === undefined ? null : typeTag(value))
 
-  const context = bindingContext(sql)
+  const context = bindingContext(sql, listedColumns(options))
   return parameters.map((value, index) => keptValue(context, value, index))
 }
 
@@ -1183,13 +1270,13 @@ export function queryLogError(
  * is read, and a value longer than MAX_JUDGED_LENGTH, counted as that
  * constant says, is taken to be secret without being read.
  */
-function secretValues(sql: string, values: readonly unknown[]): (index: number) => boolean {
+function secretValues(sql: string, values: readonly unknown[], options: QueryLogBindingOptions): (index: number) => boolean {
   let context: BindingContext | undefined
   return (index) => {
     const value = values[index]
     if (typeof value === 'string' ? value.length > MAX_JUDGED_LENGTH : isStructured(value) && jsonText(value, MAX_JUDGED_LENGTH) === TOO_LONG)
       return true
-    context ??= bindingContext(sql)
+    context ??= bindingContext(sql, listedColumns(options))
     return keptValue(context, value, index) === REDACTED_BINDING
   }
 }
@@ -1211,7 +1298,7 @@ export function persistQueryLogValues(sql: string, parameters: unknown, error: s
     const entries = queryLogBindings(sql, values, options)
     if (error === undefined)
       return { bindings: JSON.stringify(entries) }
-    const secret = options.captureValues ? undefined : secretValues(sql, values)
+    const secret = options.captureValues ? undefined : secretValues(sql, values, options)
     return { bindings: JSON.stringify(entries), error: queryLogError(error, values, entries, secret) }
   }
   catch {

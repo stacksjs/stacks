@@ -5,7 +5,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
 import { env as envVars } from '@stacksjs/env'
 import { log } from '@stacksjs/logging'
-import { parseCaptureBindings, persistQueryLogValues, queryLogError } from './query-log-bindings'
+import { parseCaptureBindings, parseSensitiveColumn, persistQueryLogValues, queryLogError } from './query-log-bindings'
 import { normalizeQuery, parseQuery } from './query-parser'
 import { db, getDatabaseDialect } from './utils'
 
@@ -301,6 +301,31 @@ function capturesBindingValues(): boolean {
   return appEnv !== 'production' && appEnv !== 'prod'
 }
 
+// Each unreadable `sensitiveColumns` entry is reported once, not on every query.
+const warnedSensitiveColumns = new Set<string>()
+
+/**
+ * `queryLogging.sensitiveColumns`: the columns the application marks as
+ * secret on top of the names the logger recognises by itself. An entry that
+ * is neither `column` nor `table.column` marks nothing, so it is reported
+ * rather than passed over in silence.
+ */
+function sensitiveColumns(): readonly unknown[] {
+  const setting: unknown = config.database?.queryLogging?.sensitiveColumns
+  if (setting === undefined || setting === null)
+    return []
+  const entries = Array.isArray(setting) ? setting : [setting]
+  for (const entry of entries) {
+    const shown = String(entry)
+    if (parseSensitiveColumn(entry) === undefined && !warnedSensitiveColumns.has(shown)) {
+      warnedSensitiveColumns.add(shown)
+      // eslint-disable-next-line no-console
+      console.warn(`[database] queryLogging.sensitiveColumns has "${shown}", which is not a column or table.column; it marks nothing as sensitive.`)
+    }
+  }
+  return entries
+}
+
 /**
  * Create a base query log record
  */
@@ -332,7 +357,7 @@ async function createQueryLogRecord(
   // first MAX_QUERY_LOG_ERROR_LENGTH characters are kept.
   const errorText = error ? String(error) : undefined
   const persisted = parameters
-    ? persistQueryLogValues(query, parameters, errorText, { captureValues: capturesBindingValues() })
+    ? persistQueryLogValues(query, parameters, errorText, { captureValues: capturesBindingValues(), sensitiveColumns: sensitiveColumns() })
     : { bindings: undefined, error: errorText === undefined ? undefined : queryLogError(errorText, [], []) }
 
   return {
