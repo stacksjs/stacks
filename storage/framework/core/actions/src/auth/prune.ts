@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { db, sql } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 
 // Parse arguments from process.argv
