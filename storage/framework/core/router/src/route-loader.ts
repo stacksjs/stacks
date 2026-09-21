@@ -21,7 +21,7 @@
 
 import type { MiddlewareReference } from '@stacksjs/bun-router'
 import type { RouteDefinition, RouteRegistry } from './route-types'
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 import { route } from './stacks-router'
 
 export interface RootMountedAppRoute {

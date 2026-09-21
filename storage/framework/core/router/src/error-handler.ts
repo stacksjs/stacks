@@ -7,7 +7,7 @@
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 import type { ErrorPageConfig } from '@stacksjs/error-handling'
 import { isApiRequest } from './api-shape'
 import { getCurrentRequest } from './request-context'

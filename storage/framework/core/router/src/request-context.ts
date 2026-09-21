@@ -10,7 +10,7 @@ import type { StacksRequestMarkers } from './request-augmentation'
 import type { RequestInstance } from '@stacksjs/types'
 import process from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 
 // AsyncLocalStorage for request context.
 //

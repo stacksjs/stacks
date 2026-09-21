@@ -89,6 +89,16 @@ describe('router import graph', () => {
         && ['@stacksjs/clarity', '@stacksjs/error-handling/handler', '@stacksjs/types'].includes(entry.original ?? '')) ?? []
     expect(eagerLoggerDependencies).toEqual([])
 
+    const eagerLoggingImplementationImports = Object.entries(result.metafile?.inputs ?? {}).flatMap(([source, meta]) =>
+      meta.imports
+        .filter(entry => (source.startsWith('src/') || source.includes('/router/src/'))
+          && entry.kind !== 'dynamic-import'
+          && /logging\/(?:src|dist)\/index\.(?:ts|js)$/.test(entry.path))
+        .map(entry => `${source} -> ${entry.path}`),
+    )
+    expect(eagerLoggingImplementationImports).toEqual([])
+    expect(Object.keys(result.metafile?.inputs ?? {}).some(source => /logging\/(?:src|dist)\/runtime\.(?:ts|js)$/.test(source))).toBe(true)
+
     const eagerRateLimiterImports = routerEntry?.[1].imports
       .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/rate-limit.ts')) ?? []
     expect(eagerRateLimiterImports).toEqual([])
