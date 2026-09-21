@@ -254,6 +254,7 @@ describe('per-repeat publication gating', () => {
     requests: 1000,
     errors: 0,
     cpuPercent: 98,
+    cpuSource: 'proc',
     cpuMicrosPerRequest: null,
     rateAttained: null,
     rawBytes: 512,
@@ -279,6 +280,21 @@ describe('per-repeat publication gating', () => {
     // medianed the readings it had. The repeat is the only place the gap shows.
     expect(check([row()], [repeat(1), repeat(2, { cpuPercent: null }), repeat(3)]))
       .toContain('stacks:static-json run 2 has no valid server CPU reading')
+  })
+
+  it('requires proc timing when the host publication profile does', () => {
+    const issues = routingMeasurementPublicationIssues(
+      target as never,
+      scenario as never,
+      [row()] as never,
+      3,
+      parityChecks('stacks', 'static-json'),
+      [repeat(1), repeat(2, { cpuSource: 'ps' }), repeat(3, { cpuSource: 'mixed' })] as never,
+      false,
+      'proc',
+    )
+    expect(issues).toContain('stacks:static-json run 2 used ps CPU source; proc is required')
+    expect(issues).toContain('stacks:static-json run 3 used mixed CPU source; proc is required')
   })
 
   it('rejects a repeat with an absent latency percentile', () => {

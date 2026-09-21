@@ -13,6 +13,7 @@ import type { RelativeThroughput } from './statistics'
 import type { RuntimeRequirement } from './runtime-version'
 import type { StacksRuntimeDependencies, StacksSourceModules } from './provenance'
 import type { BusyProcess } from './host-load'
+import type { CpuWindowSource } from './measurement'
 import { formatBusyProcess } from './host-load'
 import { formatSourceState } from './source'
 import { MAX_STABLE_RANGE, MIN_RATE_ATTAINMENT } from './statistics'
@@ -39,6 +40,8 @@ export interface RoutingRepeat {
   errors: number
   /** `null` when no CPU evidence was captured during this repeat. */
   cpuPercent: number | null
+  /** CPU sampler used at both measurement boundaries. */
+  cpuSource: CpuWindowSource | null
   /** Microseconds of server CPU per request served. `null` without evidence. */
   cpuMicrosPerRequest: number | null
   /** Delivered requests over requested, for fixed-rate runs. `null` otherwise. */

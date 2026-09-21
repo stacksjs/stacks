@@ -12,7 +12,15 @@ import { readProcProcessCpuTime } from './host-load'
  * answer the question the report is actually asking - "was that throughput won
  * by being efficient, or by using more CPU".
  */
-async function psCpuSeconds(pid: number): Promise<number | null> {
+export type CpuSampleSource = 'proc' | 'ps'
+export type CpuWindowSource = CpuSampleSource | 'mixed'
+
+export interface ProcessCpuSample {
+  seconds: number
+  source: CpuSampleSource
+}
+
+async function psCpuSample(pid: number): Promise<ProcessCpuSample | null> {
   try {
     const proc = Bun.spawn(['ps', '-o', 'time=', '-p', String(pid)], { stdout: 'pipe', stderr: 'ignore' })
     const out = (await new Response(proc.stdout).text()).trim()
@@ -24,7 +32,7 @@ async function psCpuSeconds(pid: number): Promise<number | null> {
     const seconds = Number(match[1] ?? 0) * 86400
       + Number(match[2] ?? 0) * 3600
       + Number(match[3]) * 60 + Number(match[4])
-    return Number.isFinite(seconds) ? seconds : null
+    return Number.isFinite(seconds) ? { seconds, source: 'ps' } : null
   }
   catch {
     return null
@@ -41,18 +49,27 @@ async function psCpuSeconds(pid: number): Promise<number | null> {
  * Other hosts and restricted Linux environments retain the portable `ps`
  * fallback.
  */
+export async function processCpuSample(
+  pid: number,
+  currentPlatform = platform(),
+  procRoot = '/proc',
+  clockTicksPerSecond?: number | null,
+): Promise<ProcessCpuSample | null> {
+  if (currentPlatform === 'linux') {
+    const sample = await readProcProcessCpuTime(pid, procRoot, clockTicksPerSecond)
+    if (sample)
+      return { seconds: sample.seconds, source: 'proc' }
+  }
+  return psCpuSample(pid)
+}
+
 export async function processCpuSeconds(
   pid: number,
   currentPlatform = platform(),
   procRoot = '/proc',
   clockTicksPerSecond?: number | null,
 ): Promise<number | null> {
-  if (currentPlatform === 'linux') {
-    const sample = await readProcProcessCpuTime(pid, procRoot, clockTicksPerSecond)
-    if (sample)
-      return sample.seconds
-  }
-  return psCpuSeconds(pid)
+  return (await processCpuSample(pid, currentPlatform, procRoot, clockTicksPerSecond))?.seconds ?? null
 }
 
 export interface CpuWindow {
@@ -60,33 +77,44 @@ export interface CpuWindow {
   cpuSeconds: number | null
   /** Those seconds as a percentage of one core over the window's wall clock. */
   cpuPercent: number | null
+  /** Sampling source at both boundaries, or mixed when the fallback changed. */
+  cpuSource: CpuWindowSource | null
 }
 
-async function measureCpu(pid: number): Promise<() => Promise<CpuWindow>> {
-  const before = await processCpuSeconds(pid)
+export function calculateCpuWindow(
+  before: ProcessCpuSample | null,
+  after: ProcessCpuSample | null,
+  wallSeconds: number,
+): CpuWindow {
+  if (before == null || after == null || wallSeconds <= 0)
+    return { cpuSeconds: null, cpuPercent: null, cpuSource: null }
+  const used = after.seconds - before.seconds
+  const cpuSource: CpuWindowSource = before.source === after.source ? before.source : 'mixed'
+  return { cpuSeconds: used, cpuPercent: (used / wallSeconds) * 100, cpuSource }
+}
+
+async function measureCpu(pid: number, clockTicksPerSecond?: number | null): Promise<() => Promise<CpuWindow>> {
+  const before = await processCpuSample(pid, platform(), '/proc', clockTicksPerSecond)
   const wallStart = performance.now()
   return async () => {
-    const after = await processCpuSeconds(pid)
+    const after = await processCpuSample(pid, platform(), '/proc', clockTicksPerSecond)
     const wallSeconds = (performance.now() - wallStart) / 1000
-    if (before == null || after == null || wallSeconds <= 0)
-      return { cpuSeconds: null, cpuPercent: null }
-    const used = after - before
-    return { cpuSeconds: used, cpuPercent: (used / wallSeconds) * 100 }
+    return calculateCpuWindow(before, after, wallSeconds)
   }
 }
 
 /** Sample server CPU over the load window returned by the driver. */
-export async function measureLoad(driver: Driver, request: LoadRequest, pid: number): Promise<{ result: LoadResult, cpuSeconds: number | null, cpuPercent: number | null, warmupResult: LoadResult | null }> {
+export async function measureLoad(driver: Driver, request: LoadRequest, pid: number, clockTicksPerSecond?: number | null): Promise<{ result: LoadResult, cpuSeconds: number | null, cpuPercent: number | null, cpuSource: CpuWindowSource | null, warmupResult: LoadResult | null }> {
   // Warm the server before taking either CPU sample. Every adapter receives
   // zero internal warmup, so throughput and CPU exclude the same phase.
   const measuredRequest = { ...request, warmupSeconds: 0 }
   const warmupResult = request.warmupSeconds > 0
     ? await driver.run({ ...measuredRequest, durationSeconds: request.warmupSeconds })
     : null
-  const finishCpu = await measureCpu(pid)
+  const finishCpu = await measureCpu(pid, clockTicksPerSecond)
   const result = await driver.run(measuredRequest)
   const cpu = await finishCpu()
-  return { result, cpuSeconds: cpu.cpuSeconds, cpuPercent: cpu.cpuPercent, warmupResult }
+  return { result, cpuSeconds: cpu.cpuSeconds, cpuPercent: cpu.cpuPercent, cpuSource: cpu.cpuSource, warmupResult }
 }
 
 /**

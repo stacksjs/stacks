@@ -1,4 +1,5 @@
 import type { BusyProcess } from './host-load'
+import type { CpuWindowSource } from './measurement'
 import type { Measurement, RoutingRepeat } from './report'
 import type { RuntimeRequirement } from './runtime-version'
 import type { ScenarioParityEvidence } from './runtime'
@@ -110,6 +111,7 @@ export function routingMeasurementPublicationIssues(
   parityChecks: RoutingParityCheck[],
   repeats: RoutingRepeat[] = [],
   fixedRate = false,
+  requiredCpuSource?: CpuWindowSource,
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
@@ -194,6 +196,8 @@ export function routingMeasurementPublicationIssues(
               issues.push(`${at} is missing a latency percentile`)
             if (repeat.cpuPercent == null || !Number.isFinite(repeat.cpuPercent) || repeat.cpuPercent < 0)
               issues.push(`${at} has no valid server CPU reading`)
+            if (requiredCpuSource && repeat.cpuSource !== requiredCpuSource)
+              issues.push(`${at} used ${repeat.cpuSource ?? 'no'} CPU source; ${requiredCpuSource} is required`)
             if (fixedRate && (repeat.cpuMicrosPerRequest == null || !Number.isFinite(repeat.cpuMicrosPerRequest) || repeat.cpuMicrosPerRequest <= 0))
               issues.push(`${at} has no valid per-request CPU cost`)
             if (fixedRate && (repeat.rateAttained == null || !Number.isFinite(repeat.rateAttained) || repeat.rateAttained < MIN_RATE_ATTAINMENT))

@@ -284,7 +284,7 @@ async function main(): Promise<void> {
           const parityBefore = await assertParity(target, scenario)
           if (scenario.requiresDb)
             resetFixtureLogs(FIXTURE)
-          const { result, cpuSeconds, cpuPercent, warmupResult } = await measureLoad(driver, {
+          const { result, cpuSeconds, cpuPercent, cpuSource, warmupResult } = await measureLoad(driver, {
             url: `http://127.0.0.1:${PORT}${scenario.path}`,
             method: scenario.method,
             body: scenario.body,
@@ -293,7 +293,7 @@ async function main(): Promise<void> {
             requestRate: opts.requestRate,
             warmupSeconds: opts.warmupSeconds,
             durationSeconds: opts.durationSeconds,
-          }, booted.pid)
+          }, booted.pid, clockTicksPerSecond)
           const key = `${target.id}:${scenario.id}`
           const bucket = collected.get(key) ?? []
           collected.set(key, bucket)
@@ -311,6 +311,7 @@ async function main(): Promise<void> {
             requests: result.requests,
             errors: result.errors,
             cpuPercent,
+            cpuSource,
             cpuMicrosPerRequest: cpuMicrosPerRequest(cpuSeconds, result.requests),
             rateAttained: opts.requestRate == null
               ? null
@@ -410,7 +411,16 @@ async function main(): Promise<void> {
 
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
-    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs, parityChecks, [...collected.values()].flat(), opts.requestRate != null),
+    ...routingMeasurementPublicationIssues(
+      targetRows,
+      scenarios,
+      measurements,
+      opts.runs,
+      parityChecks,
+      [...collected.values()].flat(),
+      opts.requestRate != null,
+      platform() === 'linux' ? 'proc' : undefined,
+    ),
   ])]
   meta.sourceAtEnd = await readSourceState(REPO_ROOT)
   if (sourceStateChanged(meta.source, meta.sourceAtEnd))

@@ -3,7 +3,7 @@ import { describe, expect, it, spyOn } from 'bun:test'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { cpuMicrosPerRequest, measureLoad, processCpuSeconds } from './measurement'
+import { calculateCpuWindow, cpuMicrosPerRequest, measureLoad, processCpuSample, processCpuSeconds } from './measurement'
 
 const result: LoadResult = {
   rpsMean: 42,
@@ -25,6 +25,7 @@ describe('benchmark CPU window', () => {
       throw new Error('ps must not run when proc is readable')
     })
     try {
+      expect(await processCpuSample(pid, 'linux', procRoot, 100)).toEqual({ seconds: 1.68, source: 'proc' })
       expect(await processCpuSeconds(pid, 'linux', procRoot, 100)).toBe(1.68)
     }
     finally {
@@ -38,11 +39,27 @@ describe('benchmark CPU window', () => {
       stdout: new Response('00:07.25').body,
     }) as unknown as ReturnType<typeof Bun.spawn>)
     try {
+      expect(await processCpuSample(123, 'linux', '/missing-proc-root', null)).toEqual({ seconds: 7.25, source: 'ps' })
       expect(await processCpuSeconds(123, 'linux', '/missing-proc-root', null)).toBe(7.25)
     }
     finally {
       spawn.mockRestore()
     }
+  })
+
+  it('records stable, mixed, and missing CPU sample sources', () => {
+    expect(calculateCpuWindow(
+      { seconds: 1, source: 'proc' },
+      { seconds: 1.5, source: 'proc' },
+      2,
+    )).toEqual({ cpuSeconds: 0.5, cpuPercent: 25, cpuSource: 'proc' })
+    expect(calculateCpuWindow(
+      { seconds: 1, source: 'proc' },
+      { seconds: 1.5, source: 'ps' },
+      2,
+    )).toEqual({ cpuSeconds: 0.5, cpuPercent: 25, cpuSource: 'mixed' })
+    expect(calculateCpuWindow(null, { seconds: 1.5, source: 'ps' }, 2))
+      .toEqual({ cpuSeconds: null, cpuPercent: null, cpuSource: null })
   })
 
   it.each([0, 3])('excludes %s seconds of warmup CPU and wall time', async (warmupSeconds) => {
