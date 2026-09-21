@@ -93,16 +93,34 @@ describe('routing benchmark report', () => {
         spread: { min: 19_985, max: 19_995 },
         cpuMicrosPerRequest: 17.75,
         cpuCostSpread: { min: 17.5, max: 18 },
+        relativeCpuCostToRaw: { median: 1.25, spread: { min: 1.2, max: 1.3 } },
         rateAttained: 0.9995,
         relativeToRaw: { median: 1, spread: { min: 1, max: 1 } },
       }],
     })
 
     expect(report).toContain('| Request rate | fixed at 20,000 req/s for every target (cost profile) |')
-    expect(report).toContain('| Target | CPU us/req | cost spread | rate | req/s |')
-    expect(report).toContain('| Stacks minimal | 17.75 | 17.50-18.00 (2.8%) | 100.0% |')
+    expect(report).toContain('| Target | CPU us/req | cost spread | Bun raw cost | rate | req/s |')
+    expect(report).toContain('| Stacks minimal | 17.75 | 17.50-18.00 (2.8%) | 125.0% (120.0%-130.0%) | 100.0% |')
+    expect(report).toContain('The Bun raw cost column pairs matching run ordinals before taking its median; lower is cheaper.')
     // A ratio of throughputs is 100% for every row once the rate is pinned.
-    expect(report).not.toContain('Bun raw')
+    expect(report).not.toContain('| Bun raw |')
+  })
+
+  test('omits the paired cost column when Bun raw was not measured', () => {
+    const report = renderReport({
+      meta: { ...meta, requestRate: 20_000 },
+      scenarios: [SCENARIOS[0]!],
+      targets: [{ id: 'stacks-minimal', label: 'Stacks minimal' }],
+      measurements: [{
+        ...measurement,
+        cpuMicrosPerRequest: 17.75,
+        cpuCostSpread: { min: 17.5, max: 18 },
+        rateAttained: 0.9995,
+      }],
+    })
+
+    expect(report).not.toContain('Bun raw cost')
   })
 
   test('marks a fixed-rate row that could not keep up as invalid rather than cheap', () => {

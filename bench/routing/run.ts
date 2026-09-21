@@ -348,6 +348,7 @@ async function main(): Promise<void> {
       const rpsValues = results.map(r => r.rpsMean)
       const p50s = results.map(r => r.rpsP50).filter((v): v is number => v != null)
       const rawResults = collected.get(`bun-raw:${scenario.id}`)
+      const rawByRun = rawResults && new Map(rawResults.map(result => [result.run, result]))
 
       /*
        * Aggregate all-or-nothing.
@@ -370,6 +371,8 @@ async function main(): Promise<void> {
       const pooledErrors = results.reduce((sum, r) => sum + r.errors, 0)
       const costs = results.map(r => r.cpuMicrosPerRequest)
       const everyCost = costs.every((v): v is number => v != null && Number.isFinite(v)) ? costs as number[] : null
+      const rawCosts = rawByRun && results.map(result => rawByRun.get(result.run)?.cpuMicrosPerRequest ?? null)
+      const everyRawCost = rawCosts?.every((v): v is number => v != null && Number.isFinite(v)) ? rawCosts as number[] : null
 
       measurements.push({
         targetId: target.id,
@@ -388,8 +391,11 @@ async function main(): Promise<void> {
         rateAttained: everyValue(r => r.rateAttained),
         spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
         rangeRatio: relativeRange(rpsValues),
-        relativeToRaw: rawResults
-          ? relativeThroughput(rpsValues, rawResults.map(r => r.rpsMean))
+        relativeToRaw: rawByRun
+          ? relativeThroughput(rpsValues, results.map(result => rawByRun.get(result.run)?.rpsMean ?? Number.NaN))
+          : null,
+        relativeCpuCostToRaw: opts.requestRate != null && everyCost && everyRawCost
+          ? relativeThroughput(everyCost, everyRawCost)
           : null,
         runs: results.length,
       })
@@ -418,8 +424,10 @@ async function main(): Promise<void> {
      * 34196555986, where pooled and mean-of-rates agree on all 32 rows - but
      * the definitions differ the moment a repeat fails, so a committed
      * baseline needs to say which rules produced it.
+     *
+     * 3: fixed-rate rows retain run-paired CPU-cost ratios against Bun raw.
      */
-    schemaVersion: 2,
+    schemaVersion: 3,
     meta,
     targets: targetRows,
     workload: {

@@ -268,10 +268,11 @@ raw output should be read.
 Missing evidence stays missing. A latency percentile the load tool did not
 report is `null` rather than `0`, and the report renders it as `-`. An
 aggregate is `null` unless every repeat measured it. `measurements.json`
-carries `schemaVersion: 2` to mark these rules: `errorRate` is pooled errors
+carries `schemaVersion: 3` to mark these rules: `errorRate` is pooled errors
 over pooled requests rather than the mean of per-repeat rates, `cpuPercent`
 requires every repeat to have reported one, and `runs` counts the repeats
-retained rather than the number requested.
+retained rather than the number requested. Fixed-rate runs also retain the
+median and range of run-paired CPU-cost ratios against Bun raw.
 
 Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
 The runner records that requirement beside the actual runtime version and warns

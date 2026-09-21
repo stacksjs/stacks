@@ -72,6 +72,8 @@ export interface Measurement {
   rangeRatio?: number
   /** Median and spread of run-paired throughput ratios against Bun raw. */
   relativeToRaw?: RelativeThroughput | null
+  /** Median and spread of run-paired CPU-cost ratios against Bun raw. */
+  relativeCpuCostToRaw?: RelativeThroughput | null
   runs: number
 }
 
@@ -147,6 +149,7 @@ export function stabilityRange(row: Measurement, fixedRate: boolean): number {
 
 export function renderReport(input: ReportInput): string {
   const { meta, scenarios, targets, measurements } = input
+  const hasAnyRawCostComparison = meta.requestRate != null && measurements.some(row => row.relativeCpuCostToRaw != null)
   const lines: string[] = []
 
   lines.push('# Routing benchmark')
@@ -212,6 +215,8 @@ export function renderReport(input: ReportInput): string {
     lines.push('slower one, and its cost figure is marked invalid rather than reported as a win.')
     lines.push('The CPU window includes the load generator\'s startup and drain, identically for')
     lines.push('every target, so read the rows against each other rather than as absolute costs.')
+    if (hasAnyRawCostComparison)
+      lines.push('The Bun raw cost column pairs matching run ordinals before taking its median; lower is cheaper.')
     lines.push('')
   }
 
@@ -229,6 +234,7 @@ export function renderReport(input: ReportInput): string {
     // target delivers the same throughput by construction, so it would read
     // 100% for all of them and say nothing.
     const hasRawComparison = !fixedRate && rows.some(row => row.relativeToRaw != null)
+    const hasRawCostComparison = fixedRate && rows.some(row => row.relativeCpuCostToRaw != null)
 
     lines.push(`## ${scenario.title}`)
     lines.push('')
@@ -243,9 +249,10 @@ export function renderReport(input: ReportInput): string {
       lines.push(`> **Unstable result.** ${labels.join(', ')} exceeded the ${fmt(MAX_STABLE_RANGE * 100)}% ${fixedRate ? 'cost' : 'throughput'} range limit. Treat this scenario as invalid and rerun on an isolated host.`)
       lines.push('')
     }
-    const costColumns = fixedRate ? ' CPU us/req | cost spread | rate |' : ''
+    const costColumns = fixedRate ? ` CPU us/req | cost spread |${hasRawCostComparison ? ' Bun raw cost |' : ''} rate |` : ''
+    const costAlignment = fixedRate ? `---:|---:|${hasRawCostComparison ? '---:|' : ''}---:|` : ''
     lines.push(`| Target |${costColumns} req/s | req/s p50 | spread |${hasRawComparison ? ' Bun raw |' : ''} p50 ms | p90 ms | p99 ms | errors | CPU |`)
-    lines.push(`|---|${fixedRate ? '---:|---:|---:|' : ''}---:|---:|---:|${hasRawComparison ? '---:|' : ''}---:|---:|---:|---:|---:|`)
+    lines.push(`|---|${costAlignment}---:|---:|---:|${hasRawComparison ? '---:|' : ''}---:|---:|---:|---:|---:|`)
 
     for (const row of rows) {
       const target = targets.find(t => t.id === row.targetId)
@@ -266,8 +273,14 @@ export function renderReport(input: ReportInput): string {
           row.cpuCostSpread == null
             ? '-'
             : `${fmt(row.cpuCostSpread.min, 2)}-${fmt(row.cpuCostSpread.max, 2)} (${fmt(costRange(row) * 100, 1)}%)`,
-          attained == null ? '-' : `${fmt(attained * 100, 1)}%${comparable ? '' : ' (invalid)'}`,
         )
+        if (hasRawCostComparison) {
+          const relative = row.relativeCpuCostToRaw
+          cells.push(relative
+            ? `${fmt(relative.median * 100, 1)}% (${fmt(relative.spread.min * 100, 1)}%-${fmt(relative.spread.max * 100, 1)}%)`
+            : '-')
+        }
+        cells.push(attained == null ? '-' : `${fmt(attained * 100, 1)}%${comparable ? '' : ' (invalid)'}`)
       }
       cells.push(
         fmt(row.rpsMean),
