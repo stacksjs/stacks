@@ -268,6 +268,9 @@ Entity-centric API for single-table design:
     // (by name and shape, so not every secret); production keeps only each
     // value's type unless this is enabled. Env takes true/false, 1/0, yes/no, on/off.
     captureBindings: env.DB_QUERY_LOGGING_CAPTURE_BINDINGS ?? !['production', 'prod'].includes(env.APP_ENV || ''),
+    // More secret columns, on top of those names: 'code' in every table,
+    // 'gift_cards.code' in that one. Also taken out of a failed query's error.
+    sensitiveColumns: [],
     slowThreshold: 100,  // ms
     retention: 7,        // days
     pruneFrequency: 24,  // hours
