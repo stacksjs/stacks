@@ -1,4 +1,4 @@
-import { db, sqlDateTime } from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 
 /**
  * US SMS compliance: STOP must stop, START must restart, HELP must answer.
