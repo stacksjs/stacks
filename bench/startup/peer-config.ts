@@ -6,6 +6,9 @@ export const MIN_PEER_STARTUP_RUNS = 15
 export const DEFAULT_PEER_STARTUP_TARGET_IDS = [
   'stacks',
   'stacks-warm',
+  'stacks-no-csrf',
+  'stacks-no-request-ids',
+  'stacks-no-security-headers',
   'stacks-minimal',
   'elysia',
   'express',

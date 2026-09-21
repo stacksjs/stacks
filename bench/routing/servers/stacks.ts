@@ -33,6 +33,13 @@ const { createStacksRouter, disableViewRouting } = routerEntry === 'root'
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const hostname = '127.0.0.1'
 const minimal = process.env.BENCH_MODE === 'minimal'
+const benchmarkFlag = (name: string, fallback: boolean): boolean => {
+  const value = process.env[name]
+  if (value == null) return fallback
+  if (value === 'true') return true
+  if (value === 'false') return false
+  throw new Error(`${name} must be true or false, received ${value}`)
+}
 const withDb = process.env.BENCH_DB === '1'
 const sqliteProfile = process.env.BENCH_SQLITE_PROFILE ?? 'stock'
 if (sqliteProfile !== 'stock' && sqliteProfile !== 'wal-full')
@@ -46,8 +53,8 @@ const serves = (id: string) => !scenario || scenario === id
 
 const router = createStacksRouter({
   autoDiscoverRoutes: false,
-  requestIds: !minimal,
-  csrf: !minimal,
+  requestIds: benchmarkFlag('BENCH_REQUEST_IDS', !minimal),
+  csrf: benchmarkFlag('BENCH_CSRF', !minimal),
   // Every route below takes its request as an argument, so the no-context
   // profile measures a real deployment shape rather than a crippled one:
   // `request()` throws under it, and nothing here calls it.

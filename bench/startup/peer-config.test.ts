@@ -9,6 +9,9 @@ describe('peer startup benchmark configuration', () => {
     expect(DEFAULT_PEER_STARTUP_TARGET_IDS).toEqual([
       'stacks',
       'stacks-warm',
+      'stacks-no-csrf',
+      'stacks-no-request-ids',
+      'stacks-no-security-headers',
       'stacks-minimal',
       'elysia',
       'express',
