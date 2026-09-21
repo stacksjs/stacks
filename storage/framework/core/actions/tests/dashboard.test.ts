@@ -611,5 +611,52 @@ describe('dashboard-utils', () => {
       expect(elapsed).toBeGreaterThanOrEqual(100)
       expect(elapsed).toBeLessThan(500)
     })
+
+    // The budget used to be re-checked only between attempts, so a server that
+    // accepted the connection and then took its time answering ran unbounded.
+    // On the dashboard that was the whole boot: the probe rendered the index
+    // page, and a 500ms budget regularly cost 11 seconds before the banner.
+    it('returns within maxWait even when the server answers slowly', async () => {
+      const server = Bun.serve({
+        port: 0,
+        async fetch() {
+          await new Promise(resolve => setTimeout(resolve, 3000))
+          return new Response('ok')
+        },
+      })
+
+      try {
+        const start = Date.now()
+        const result = await waitForServer(server.port, 300)
+        const elapsed = Date.now() - start
+
+        expect(result).toBe(true)
+        expect(elapsed).toBeLessThan(1000)
+      }
+      finally {
+        server.stop(true)
+      }
+    })
+
+    // The probe must not need a response body: asking for one is what dragged
+    // the render onto the boot path.
+    it('reports ready without asking the server to render anything', async () => {
+      let handled = 0
+      const server = Bun.serve({
+        port: 0,
+        fetch() {
+          handled++
+          return new Response('ok')
+        },
+      })
+
+      try {
+        expect(await waitForServer(server.port, 1000)).toBe(true)
+        expect(handled).toBe(0)
+      }
+      finally {
+        server.stop(true)
+      }
+    })
   })
 })

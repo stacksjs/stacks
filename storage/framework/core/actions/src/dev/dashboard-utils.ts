@@ -1,6 +1,7 @@
 import type { DashboardModelOptions } from '@stacksjs/types'
 import { Glob } from 'bun'
 import { existsSync } from 'node:fs'
+import { connect } from 'node:net'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -275,20 +276,52 @@ export async function findAvailablePort(preferred: number, maxAttempts = 20): Pr
   return preferred
 }
 
-/** Wait for STX server to accept connections */
+/** One TCP connect attempt, resolved as "did it connect within `timeoutMs`". */
+function connectsWithin(port: number, timeoutMs: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ port, host: '127.0.0.1' })
+    const finish = (connected: boolean): void => {
+      clearTimeout(timer)
+      try { socket.destroy() }
+      catch { /* already gone */ }
+      resolve(connected)
+    }
+    const timer = setTimeout(() => finish(false), timeoutMs)
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+  })
+}
+
+/**
+ * Wait for a dev server to accept connections, for at most `maxWait` ms.
+ *
+ * The probe is a TCP connect, which is the question actually being asked. It
+ * used to be `HEAD /`, and on the dashboard that means rendering the index
+ * page - roughly eight seconds of STX and Crosswind compilation on a cold
+ * boot. Worse, the budget was only re-checked between attempts, so one slow
+ * response ran unbounded: `maxWait` of 500ms routinely took 11 seconds, all of
+ * it before the banner printed, with nothing on screen to explain the wait.
+ *
+ * Nothing is lost by not rendering here: the STX server's own
+ * `prewarmRenderCache` compiles the index in the background either way, so the
+ * page is warm by the time anyone opens it - it just no longer holds the
+ * banner hostage while it does.
+ */
 export async function waitForServer(port: number, maxWait = 500): Promise<boolean> {
-  const start = Date.now()
-  while (Date.now() - start < maxWait) {
-    try {
-      const res = await fetch(`http://localhost:${port}/`, { method: 'HEAD' })
-      if (res.ok || res.status === 404) return true
-    }
-    catch {
-      // Server not ready yet
-    }
-    await new Promise(resolve => setTimeout(resolve, 25))
+  const deadline = Date.now() + maxWait
+
+  while (true) {
+    const remaining = deadline - Date.now()
+    if (remaining <= 0)
+      return false
+
+    if (await connectsWithin(port, Math.min(remaining, 250)))
+      return true
+
+    if (Date.now() >= deadline)
+      return false
+    await new Promise(resolve => setTimeout(resolve, Math.min(25, Math.max(deadline - Date.now(), 0))))
   }
-  return false
 }
 
 /**
