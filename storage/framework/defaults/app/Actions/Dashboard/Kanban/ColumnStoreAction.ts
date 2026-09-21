@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { Board, BoardColumn } from '@stacksjs/orm'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
