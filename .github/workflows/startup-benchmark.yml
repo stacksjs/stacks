@@ -73,6 +73,14 @@ jobs:
             --pairs="$PAIRS" \
             --output="$RUNNER_TEMP/router-startup/ready.json"
 
+      - name: Render validated startup report
+        run: |
+          bun run bench:startup:report -- \
+            --import="$RUNNER_TEMP/router-startup/import.json" \
+            --ready="$RUNNER_TEMP/router-startup/ready.json" \
+            --output="$RUNNER_TEMP/router-startup/report.md"
+          cat "$RUNNER_TEMP/router-startup/report.md" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Record and verify source after measurement
         if: always()
         run: |

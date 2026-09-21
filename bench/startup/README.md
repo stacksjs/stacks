@@ -53,3 +53,21 @@ Each sample has a deadline. Missing or malformed handshakes, child diagnostics,
 incorrect responses, and children that do not stop are hard failures. The same
 source, build graph, runtime, environment, dependency, and pairing checks used
 by the import diagnostic apply here.
+
+## Validated report
+
+Combine one import artifact and one readiness artifact from the same source and
+host into a readable report:
+
+```bash
+bun run bench:startup:report -- \
+  --import=bench/startup/results/latest.json \
+  --ready=bench/startup/results/listen-latest.json \
+  --output=bench/startup/results/report.md
+```
+
+The report refuses to combine mismatched revisions, runtimes, hosts,
+dependencies, entry paths, build graphs, or pair counts. It also revalidates
+sample completeness, metric summaries, source stability, and exact HTTP
+evidence before rendering. The hosted workflow retains this Markdown beside
+the raw JSON and adds it to the job summary.
