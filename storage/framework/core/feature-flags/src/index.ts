@@ -21,7 +21,7 @@ async function configuredDriver(
   if (config.default === 'database') {
     if (dialect !== 'sqlite' && dialect !== 'mysql' && dialect !== 'singlestore' && dialect !== 'postgres')
       throw new FeatureFlagStoreError(`The feature flag database driver requires a SQL database. Received '${dialect ?? 'undefined'}'.`)
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     return new DatabaseFeatureFlagDriver(db, {
       ...config.drivers?.database,
       dialect: dialect === 'mysql' || dialect === 'singlestore'
