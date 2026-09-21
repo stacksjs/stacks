@@ -25,6 +25,7 @@
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/testing/*": ["./core/testing/src/*"],
+      "@stacksjs/utils/*": ["./core/utils/src/*"],
       "@stacksjs/browser/*": ["./core/browser/src/*"],
       "@stacksjs/composables/*": ["./core/composables/src/*"],
       "@stacksjs/desktop-build": ["./core/desktop/src"],
