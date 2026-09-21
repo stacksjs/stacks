@@ -7,7 +7,7 @@
 
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
-import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
+import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database/runtime'
 import type { Job } from './action'
 import { moveToDeadLetter } from './dead-letter'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
@@ -16,7 +16,7 @@ import { isQuarantined } from './poison'
 import { runNamedAction } from './action-runner'
 
 let testingModule: Promise<typeof import('./testing')> | undefined
-let databaseModule: Promise<typeof import('@stacksjs/database')> | undefined
+let databaseModule: Promise<typeof import('@stacksjs/database/runtime')> | undefined
 let traceModule: Promise<typeof import('@stacksjs/router')> | undefined
 
 function loadTraceModule(): Promise<typeof import('@stacksjs/router')> {
@@ -393,7 +393,7 @@ class JobBuilder {
     // never be written costs nothing to reject.
     const payloadJson = serializeEnvelope(envelope)
 
-    const { db } = await (databaseModule ??= import('@stacksjs/database').catch((error) => {
+    const { db } = await (databaseModule ??= import('@stacksjs/database/runtime').catch((error) => {
       databaseModule = undefined
       throw error
     }))

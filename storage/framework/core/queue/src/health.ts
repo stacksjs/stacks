@@ -157,7 +157,7 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
   const nowTimestamp = Math.floor(now.getTime() / 1000)
 
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     // Neither table is in the generated database types, so both come back as
     // generic rows; every field below is coerced before use.
     const jobs = await db.selectFrom('jobs').selectAll().execute() as unknown as QueuedJobRow[]

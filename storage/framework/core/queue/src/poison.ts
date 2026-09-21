@@ -21,7 +21,7 @@
  */
 
 import { hash } from 'node:crypto'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { isMissingTableError } from './missing-table'
 
 export interface PoisonConfig {

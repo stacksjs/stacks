@@ -15,7 +15,7 @@
  * degrade when the table isn't migrated yet.
  */
 
-import { db, mutationCount } from '@stacksjs/database'
+import { db, mutationCount } from '@stacksjs/database/runtime'
 import { isMissingTableError } from './missing-table'
 
 export type DeadLetterReason = 'repeat-failure' | 'poison-detected' | 'circuit-broken' | 'manual'

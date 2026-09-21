@@ -15,7 +15,7 @@
  * matching the opt-in / degrade-when-missing pattern the rest of the queue uses.
  */
 
-import type { UnsafeRowsResult } from '@stacksjs/database'
+import type { UnsafeRowsResult } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 
 let ensured = false
@@ -28,7 +28,7 @@ async function ensureTable(): Promise<boolean> {
   if (ensured)
     return true
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     // `VARCHAR(255) PRIMARY KEY` is the framework's portable PK pattern across
     // sqlite / mysql / postgres; no dialect-specific bits are needed here.
     await db.unsafe(
@@ -54,7 +54,7 @@ export async function loadPersistedLastRun(jobName: string): Promise<Date | null
   if (!await ensureTable())
     return null
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     const row = await db
       .selectFrom('scheduled_job_runs')
       .where('job_name', '=', jobName)
@@ -80,7 +80,7 @@ export async function persistLastRun(jobName: string, when: Date): Promise<void>
   if (!await ensureTable())
     return
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     const iso = when.toISOString()
     await db.deleteFrom('scheduled_job_runs').where('job_name', '=', jobName).execute()
     await db.insertInto('scheduled_job_runs').values({ job_name: jobName, last_run_at: iso }).execute()
@@ -124,7 +124,7 @@ export function overlapPayloadPattern(jobName: string): string {
 
 export async function hasUnfinishedRun(jobName: string): Promise<boolean> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     const rows = await db.unsafe(
       `SELECT 1 AS present FROM jobs WHERE payload LIKE ? ESCAPE '\\' LIMIT 1`,
       [overlapPayloadPattern(jobName)],

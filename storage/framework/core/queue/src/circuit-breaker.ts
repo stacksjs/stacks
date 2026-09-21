@@ -18,7 +18,7 @@
  * when the table is missing.
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { isMissingTableError } from './missing-table'
 
 export interface CircuitBreakerConfig {

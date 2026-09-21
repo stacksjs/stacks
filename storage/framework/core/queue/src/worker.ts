@@ -171,7 +171,7 @@ async function sweepStaleReservations(): Promise<number> {
   const cutoff = Math.floor(Date.now() / 1000) - ttlSec
   const now = Math.floor(Date.now() / 1000)
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     const result = await db
       .updateTable('jobs')
       .set({ reserved_at: null, available_at: now })
@@ -277,7 +277,7 @@ export async function startProcessor(
  */
 async function getAllQueues(): Promise<string[]> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     // Typed equivalent of `SELECT DISTINCT queue FROM jobs`
     // (stacksjs/stacks#1872 Q-14). Pre-fix this went through a
     // `rawQuery` cast to escape the simplified `Db` surface — works
@@ -410,7 +410,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
  */
 async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]> {
   const now = Math.floor(Date.now() / 1000)
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
   const claimed: any[] = []
 
   for (let i = 0; i < limit; i++) {
@@ -710,7 +710,7 @@ async function processJob(job: any): Promise<void> {
  * Delete a job from the queue
  */
 async function deleteJob(jobId: number): Promise<void> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
   await db.deleteFrom('jobs').where('id', '=', jobId).execute()
 }
 
@@ -722,7 +722,7 @@ async function releaseJob(jobId: number, delaySeconds: number = 30): Promise<voi
   log.debug(`Releasing job ${jobId} for retry at ${retryAt}`)
 
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     await db
       .updateTable('jobs')
       .set({ reserved_at: null, available_at: retryAt })
@@ -757,7 +757,7 @@ async function moveToFailedJobs(job: any, error: Error, metrics: FailedJobMetric
     const uuid = crypto.randomUUID()
     const exception = error.stack || error.message
 
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     await db
       .insertInto('failed_jobs')
       .values({
@@ -1072,7 +1072,7 @@ export async function stopProcessor(options: { graceMs?: number } = {}): Promise
  * Retry all failed jobs
  */
 export async function executeFailedJobs(): Promise<void> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
   const failedJobs = await db
     .selectFrom('failed_jobs')
     .selectAll()
@@ -1092,7 +1092,7 @@ export async function retryFailedJob(id: number): Promise<void> {
   const now = Math.floor(Date.now() / 1000)
   const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   const failedJobs = await db
     .selectFrom('failed_jobs')

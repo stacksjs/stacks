@@ -1,5 +1,5 @@
 import type { QueueOption } from '@stacksjs/types'
-import { mutationCount } from '@stacksjs/database'
+import { mutationCount } from '@stacksjs/database/runtime'
 import { createEnvelope, serializeEnvelope } from './envelope'
 
 /**
@@ -83,7 +83,7 @@ export function buildScheduledJobRow(name: string, options: QueueOption): Schedu
 export async function storeJob(name: string, options: QueueOption): Promise<void> {
   const row = buildScheduledJobRow(name, options)
 
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   await db
     .insertInto('jobs')

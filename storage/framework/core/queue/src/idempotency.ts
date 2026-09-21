@@ -37,10 +37,10 @@
 
 import { isMissingTableError } from './missing-table'
 
-let databaseModule: Promise<typeof import('@stacksjs/database')> | undefined
+let databaseModule: Promise<typeof import('@stacksjs/database/runtime')> | undefined
 
-function loadDatabaseModule(): Promise<typeof import('@stacksjs/database')> {
-  return databaseModule ??= import('@stacksjs/database').catch((error) => {
+function loadDatabaseModule(): Promise<typeof import('@stacksjs/database/runtime')> {
+  return databaseModule ??= import('@stacksjs/database/runtime').catch((error) => {
     databaseModule = undefined
     throw error
   })

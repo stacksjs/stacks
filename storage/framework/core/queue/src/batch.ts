@@ -689,7 +689,7 @@ async function incrementBatchCounters(id: string, delta: number): Promise<boolea
     }
   }
 
-  const { db, sql } = await import('@stacksjs/database')
+  const { db, sql } = await import('@stacksjs/database/runtime')
 
   // `.whereNull(...)`, not `.where(col, 'is', null)` — the latter binds the
   // null as a parameter and emits `cancelled_at is $n`, which Postgres rejects
@@ -758,7 +758,7 @@ function hasPersistentHandlers(record: BatchRecord): boolean {
 }
 
 async function storeBatchInDatabase(record: BatchRecord): Promise<void> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   const columns = {
     id: record.id,
@@ -808,7 +808,7 @@ async function storeBatchInDatabase(record: BatchRecord): Promise<void> {
 }
 
 async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   const result = await db
     .selectFrom('job_batches')
@@ -820,7 +820,7 @@ async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
 }
 
 async function getAllBatchesFromDatabase(): Promise<BatchRecord[]> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   const results = await db
     .selectFrom('job_batches')
@@ -832,7 +832,7 @@ async function getAllBatchesFromDatabase(): Promise<BatchRecord[]> {
 }
 
 async function updateBatchInDatabase(id: string, updates: Partial<BatchRecord>): Promise<void> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   await db
     .updateTable('job_batches')
@@ -842,7 +842,7 @@ async function updateBatchInDatabase(id: string, updates: Partial<BatchRecord>):
 }
 
 async function deleteBatchFromDatabase(id: string): Promise<void> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
 
   await db
     .deleteFrom('job_batches')
@@ -858,7 +858,7 @@ async function cancelBatchInDatabase(id: string): Promise<void> {
 }
 
 async function pruneBatchesFromDatabase(olderThanHours: number): Promise<number> {
-  const { db } = await import('@stacksjs/database')
+  const { db } = await import('@stacksjs/database/runtime')
   const cutoff = new Date(Date.now() - olderThanHours * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 19)
@@ -1221,7 +1221,7 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
     completed = await decrementBatchInRedis(batchId, false, false)
   }
   else {
-  const { db, sql } = await import('@stacksjs/database')
+  const { db, sql } = await import('@stacksjs/database/runtime')
 
   // Step 1: atomic decrement. `GREATEST` clamps at 0 so a stray
   // double-record can't push the counter negative.
@@ -1384,7 +1384,7 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
     }
   }
   else {
-  const { db, sql } = await import('@stacksjs/database')
+  const { db, sql } = await import('@stacksjs/database/runtime')
 
   // Step 1: atomic decrement pending + increment failed. This path used to
   // read pending_jobs and write back an ABSOLUTE value, which clobbered a
