@@ -162,6 +162,29 @@ try {
     await assert.rejects(updateBalance(Number(card.id), -1), /not active/, 'a spent card rejects another redemption')
   })
 
+  // A zero adjustment writes exactly what the card holds once `updated_at` is
+  // in the same second, so on MySQL, which counts rows CHANGED, the UPDATE
+  // reported zero rows although it matched the card. Every guard in the
+  // diagnosis then passed, and it fell through to "Insufficient gift card
+  // balance" for a card holding 100 (stacksjs/stacks#2639).
+  await check('gift cards updateBalance by zero', async () => {
+    const card = await storeGiftCard({ code: `GC-ZERO-${dialect}`, initial_balance: 100, current_balance: 100, currency: 'USD', status: 'ACTIVE', is_active: true } as never)
+    assert(card?.id, 'seed gift card')
+    const { setSystemTime } = await import('bun:test')
+    setSystemTime(new Date('2030-01-02T03:04:05.000Z'))
+    try {
+      // The first stamps updated_at; the second is the true no-op.
+      await updateBalance(Number(card.id), 0)
+      const again = await updateBalance(Number(card.id), 0)
+      assert.equal(Number((again as Record<string, unknown> | undefined)?.current_balance), 100, `${dialect}: a zero adjustment must return the card unchanged`)
+      // Zero is the only amount that can leave a matched card unchanged, so it
+      // is the only one the diagnosis may accept. An over-spend is still refused.
+      await assert.rejects(updateBalance(Number(card.id), -1000), /Insufficient/, 'an over-spend is still insufficient')
+      assert.equal(Number(await column('gift_cards', card.id, 'current_balance')), 100)
+    }
+    finally { setSystemTime() }
+  })
+
   await check('payments recordRefund', async () => {
     const payment = await storePayment({ amount: 1000, method: 'creditCard', status: 'completed', transaction_id: `TXN-WRITE-COUNTS-${dialect}` } as never)
     assert(payment?.id, 'seed payment')
@@ -197,7 +220,18 @@ try {
 
     for (const child of ['a', 'b'])
       await seedCategory(`child-${child}`, id)
-    assert.equal(await deactivateChildCategories(String(id)), 2)
+    // The repeat writes values both children already hold - is_active false,
+    // and a second-precision updated_at in the same second - so MySQL, which
+    // counts rows CHANGED, reported 0 children deactivated where the other two
+    // report 2 (stacksjs/stacks#2639). The clock is frozen so "the same
+    // second" is a fact rather than a race.
+    const { setSystemTime } = await import('bun:test')
+    setSystemTime(new Date('2030-01-02T03:04:05.000Z'))
+    try {
+      assert.equal(await deactivateChildCategories(String(id)), 2)
+      assert.equal(await deactivateChildCategories(String(id)), 2, `${dialect}: children that are already inactive are still the children deactivated`)
+    }
+    finally { setSystemTime() }
 
     // The reported race: the category is removed after deactivate() has
     // checked that it exists, and before its UPDATE lands. A result object is

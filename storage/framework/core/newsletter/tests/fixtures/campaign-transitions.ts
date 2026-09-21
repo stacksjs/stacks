@@ -31,10 +31,12 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 const models = await loadModels({ modelsDir: join(import.meta.dir, '../../../../defaults/app/Models') })
 const plan = buildMigrationPlan(models, { dialect })
-plan.tables = plan.tables.filter(table => table.table === 'campaigns')
-assert.equal(plan.tables.length, 1)
-for (const column of plan.tables[0].columns)
-  delete column.references
+plan.tables = plan.tables.filter(table => table.table === 'campaigns' || table.table === 'email_lists')
+assert.deepEqual(plan.tables.map(table => table.table).sort(), ['campaigns', 'email_lists'])
+for (const table of plan.tables) {
+  for (const column of table.columns)
+    delete column.references
+}
 const scratch = mkdtempSync(join(tmpdir(), 'stacks-campaign-transitions-sql-'))
 writeFileSync(join(scratch, 'package.json'), '{}')
 const cwd = process.cwd()
@@ -49,6 +51,7 @@ finally {
 }
 
 const { CampaignStateConflictError, campaignDeliverySnapshot, campaigns } = await import('../../src/campaigns')
+const { lists } = await import('../../src/lists')
 
 async function seed(status: string, updatedAt: string | null, scheduledAt: string | null): Promise<number> {
   await db.insertInto('campaigns').values({
@@ -211,6 +214,18 @@ try {
     // a space, and with or without milliseconds.
     assert.equal(campaignDeliverySnapshot(row).updatedAt?.slice(0, 19).replace('T', ' '), WINNER_UPDATED_AT, 'the winner\'s write stands')
     console.log(`  ${dialect} lost race: ${raised instanceof Error ? raised.name : String(raised)} | competitor ${competitor.output().trim().replace(/\s+/g, ' ')}`)
+  })
+
+  // lists.archive() reports how many lists it archived. Its SET is only
+  // `status = 'archived'`, so archiving a list that is already archived
+  // writes nothing new at any time of day, and MySQL, which counts rows
+  // CHANGED, reported 0 where PostgreSQL and SQLite report 1 (#2639).
+  await check('archiving an archived list still reports the list', async () => {
+    await db.insertInto('email_lists').values({ name: `list-${dialect}`, slug: `list-${dialect}`, status: 'active' } as never).execute()
+    const rows = await db.selectFrom('email_lists').selectAll().execute() as Array<{ id: number }>
+    const id = Number(rows[rows.length - 1].id)
+    assert.equal(await lists.archive(id), 1)
+    assert.equal(await lists.archive(id), 1, `${dialect}: archiving an archived list must still report it`)
   })
 
   assert.deepEqual(failures, [], `${dialect}: campaign delivery transitions must run`)

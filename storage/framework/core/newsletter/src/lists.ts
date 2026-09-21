@@ -1,5 +1,5 @@
 import type { CreateListInput } from './types'
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 
 /**
  * EmailList CRUD wrapper.
@@ -106,10 +106,14 @@ export const lists = {
     if (!list)
       throw new Error(`[newsletter] List '${String(idOrSlug)}' not found`)
 
-    return await db
+    // How many lists this archived. Read from what the predicate matched, not
+    // the affected-row count: MySQL counts rows CHANGED, so archiving a list
+    // that is already archived reported 0 there and 1 everywhere else
+    // (stacksjs/stacks#2639).
+    const matched = await matchedRows(db
       .updateTable('email_lists')
       .set({ status: 'archived' })
-      .where('id', '=', Number(list.id))
-      .execute()
+      .where('id', '=', Number(list.id)))
+    return matched.length
   },
 }

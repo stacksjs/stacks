@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 import { mutationCount } from '../../utils/mutation-count'
@@ -92,17 +92,19 @@ export async function deactivate(id: number): Promise<boolean> {
  * @returns Number of categories deactivated
  */
 export async function deactivateChildCategories(parentId: string): Promise<number> {
-  // Update categories with the specified parent_category_id
-  const result = await db
+  // Update categories with the specified parent_category_id.
+  //
+  // The count is what the predicate matched. MySQL reports rows CHANGED, so
+  // children already inactive, re-deactivated inside the second their
+  // `updated_at` already holds, were left out and a repeat call reported 0
+  // where PostgreSQL and SQLite report every child (stacksjs/stacks#2639).
+  const matched = await matchedRows(db
     .updateTable('categories')
     .set({
       is_active: false,
       updated_at: formatDate(new Date()),
     })
-    .where('parent_category_id', '=', parentId)
-    .execute()
+    .where('parent_category_id', '=', parentId))
 
-  // `execute()` on a delete answers the affected-row count. `.length` on a
-  // number is `undefined`, so this reported 0 deleted every time.
-  return Number(result) || 0
+  return matched.length
 }

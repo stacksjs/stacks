@@ -159,6 +159,20 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
   const expiry = (row.expiry_date ?? row.expiryDate) as string | null | undefined
   if (expiry && String(expiry) < now)
     throw new Error(`Gift card has expired`)
-  // Fell through every other check - must be insufficient balance.
+  // Every guard the re-read can see held. For any non-zero amount that means
+  // the one it cannot - the balance at write time - failed: a non-zero
+  // adjustment always changes current_balance, so it cannot match the card and
+  // leave it unchanged.
+  //
+  // Zero can. It writes values the card already holds once `updated_at` is in
+  // the same second, and MySQL counts rows CHANGED, so it reported zero rows
+  // for an UPDATE that matched, and this used to call it an insufficient
+  // balance (stacksjs/stacks#2639). Only zero is accepted here: a non-zero
+  // amount whose guard failed may pass on this re-read if a concurrent reload
+  // landed in between, and accepting it would report a redemption that never
+  // took the money.
+  if (amount === 0 && Number(row.current_balance ?? row.currentBalance) >= 0)
+    return existing
+
   throw new Error(`Insufficient gift card balance`)
 }
