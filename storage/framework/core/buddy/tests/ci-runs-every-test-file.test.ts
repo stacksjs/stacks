@@ -73,11 +73,6 @@ const TEST_FILE = /[._](?:test|spec)\.[cm]?[jt]sx?$/
  * in CI, so that whoever clears that knows to wire it in and delete the entry.
  */
 const EXEMPT: Record<string, string> = {
-  // tests/whois.test.ts put its IANA and Verisign lookups behind WHOIS_LIVE=1
-  // in bb15844441, after one failed CI for a diff that touched neither. These
-  // two can run once their network cases get the same gate.
-  'storage/framework/core/whois/test/fetch.test.ts': 'it fetches httpbin.org unconditionally',
-  'storage/framework/core/whois/test/whois.test.ts': 'two of its cases ask IANA over the network unconditionally',
   // On macOS's default volume `tests/browser` IS `tests/Browser`, so both
   // fixture files land in one directory the runner visits once, which is what
   // the test expects. On a case-sensitive volume, such as CI's Linux runner
