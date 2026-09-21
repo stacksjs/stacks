@@ -1,10 +1,24 @@
 import type { CLI } from '@stacksjs/cli'
+import { writeSync } from 'node:fs'
 import process from 'node:process'
-import { cli, log } from '@stacksjs/cli'
-import { path as p } from '@stacksjs/path'
 import { registerGlobalOptions } from './global-options'
 import { shouldSkipAppKeyCheck } from './project-setup'
 import { resultFailed } from './result'
+import { versionLine } from './version-info'
+
+const args = process.argv.slice(2)
+const requestedCommand = args[0] || 'help'
+const isVersionOnly = args.length === 1 && ['--version', '-V', 'version'].includes(requestedCommand)
+
+if (isVersionOnly) {
+  writeSync(process.stdout.fd, `${versionLine} ${process.platform}-${process.arch} bun-v${Bun.version}\n`)
+  process.exit(0)
+}
+
+const [{ cli, log }, { path: p }] = await Promise.all([
+  import('@stacksjs/cli'),
+  import('@stacksjs/path'),
+])
 
 // Enforce the minimum supported Bun version before anything else runs, so an
 // outdated runtime fails fast with a clear message instead of an obscure error
@@ -25,11 +39,8 @@ catch {
 }
 
 // Get the command being run to determine what to load
-const args = process.argv.slice(2)
-const requestedCommand = args[0] || 'help'
 const isHelpFlag = args.includes('--help') || args.includes('-h')
 // Pure version queries: print version and exit, no command surface needed.
-const isVersionOnly = ['--version', '-V', 'version'].includes(requestedCommand)
 // Help mode: `./buddy`, `./buddy help`, `./buddy --help`, or `./buddy <cmd> --help`.
 // We still need the full command registry so help output lists every command,
 // but we can skip the APP_KEY check and other project-setup work.
@@ -250,11 +261,23 @@ await main()
 /**
  * Attach aliases to a command the CLI already knows about.
  *
- * The implementation moved to `@stacksjs/cli` along with the rest of command
- * loading, so buddy, an application's own binary, and the dashboard all share
- * one loader. Re-exported here to keep the historical import path.
+ * Keep the historical Buddy import path without statically importing the full
+ * CLI package before the version fast path runs. This is the same small,
+ * dependency-free operation exposed by `@stacksjs/cli`.
  */
-export { applyAliases } from '@stacksjs/cli'
+export function applyAliases(cli: CLI, signature: string, aliases: string[]): boolean {
+  const name = signature.trim().split(/\s+/)[0]
+  const commands = cli.commands as Array<{ name?: string, alias?: (alias: string) => unknown }>
+  const command = commands.find(candidate => candidate.name === name)
+
+  if (!command || typeof command.alias !== 'function')
+    return false
+
+  for (const alias of aliases)
+    command.alias(alias)
+
+  return true
+}
 
 /**
  * Register the application's own commands.
