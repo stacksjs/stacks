@@ -19,6 +19,8 @@ const publishable = {
   durationSeconds: 30,
   runs: 3,
   busyHostProcesses: [],
+  platform: 'linux',
+  clockTicksPerSecond: 100,
 }
 
 const responseEvidence = {
@@ -60,6 +62,7 @@ describe('routing benchmark publication profile', () => {
       durationSeconds: 10,
       runs: 1,
       busyHostProcesses: [{ pid: 42, cpuPercent: 90, command: 'compiler' }],
+      clockTicksPerSecond: null,
     })).toEqual([
       'load generator is not publishable',
       'load generator version is unavailable',
@@ -72,7 +75,15 @@ describe('routing benchmark publication profile', () => {
       'measurement window is 10s; at least 30s is required',
       'only 1 run(s) were requested; at least 3 are required',
       'competing host processes were observed',
+      'Linux clock tick rate is unavailable, so proc CPU timing cannot be audited',
     ])
+  })
+
+  it('keeps a Linux ps fallback direction-only while allowing other platforms', () => {
+    expect(routingPublicationIssues({ ...publishable, clockTicksPerSecond: null }))
+      .toContain('Linux clock tick rate is unavailable, so proc CPU timing cannot be audited')
+    expect(routingPublicationIssues({ ...publishable, platform: 'darwin', clockTicksPerSecond: null }))
+      .toEqual([])
   })
 
   it('rejects cherry-picked or duplicate comparison matrices', () => {

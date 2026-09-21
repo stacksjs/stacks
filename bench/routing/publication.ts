@@ -43,6 +43,8 @@ export interface RoutingPublicationProfile {
   durationSeconds: number
   runs: number
   busyHostProcesses: BusyProcess[]
+  platform: string
+  clockTicksPerSecond?: number | null
 }
 
 export function routingPublicationIssues(profile: RoutingPublicationProfile): string[] {
@@ -88,6 +90,10 @@ export function routingPublicationIssues(profile: RoutingPublicationProfile): st
     issues.push(`only ${profile.runs} run(s) were requested; at least 3 are required`)
   if (profile.busyHostProcesses.length > 0)
     issues.push('competing host processes were observed')
+  const clockTicksPerSecond = profile.clockTicksPerSecond
+  if (profile.platform === 'linux'
+    && (clockTicksPerSecond == null || !Number.isSafeInteger(clockTicksPerSecond) || clockTicksPerSecond <= 0))
+    issues.push('Linux clock tick rate is unavailable, so proc CPU timing cannot be audited')
   return issues
 }
 

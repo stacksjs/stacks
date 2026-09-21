@@ -176,6 +176,9 @@ async function main(): Promise<void> {
   const rawDir = join(outDir, 'raw')
   mkdirSync(rawDir, { recursive: true })
 
+  const clockTicksPerSecond = platform() === 'linux'
+    ? await readLinuxClockTicksPerSecond()
+    : null
   const publicationProfile = {
     driverPublishable: driver.publishable,
     driverVersion,
@@ -190,11 +193,10 @@ async function main(): Promise<void> {
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,
     busyHostProcesses: [...observedBusyProcesses.values()],
+    platform: platform(),
+    clockTicksPerSecond,
   }
   const publicationIssues = routingPublicationIssues(publicationProfile)
-  const clockTicksPerSecond = platform() === 'linux'
-    ? await readLinuxClockTicksPerSecond()
-    : null
   const meta: RunMeta = {
     startedAt,
     source,

@@ -81,7 +81,9 @@ accident. The safeguards here exist only to stop that:
   `/proc/<pid>/stat` for both the server window and host guard, converts its
   ticks with the host's cached `getconf CLK_TCK` value, and records that rate
   in the report. Other hosts, and Linux environments where either source is
-  unavailable, fall back to cumulative `ps` time.
+  unavailable, fall back to cumulative `ps` time. A Linux run without the
+  resolved clock rate remains direction-only because its CPU conversion cannot
+  be audited precisely enough for publication.
 - **Three runs, median reported, spread printed beside it.** A single run on a
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much. A full range above 10% of the median marks
