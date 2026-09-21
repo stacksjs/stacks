@@ -6,6 +6,7 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks'
+import process from 'node:process'
 import { types as nodeUtilTypes } from 'node:util'
 import type { QueryHooks } from '@stacksjs/query-builder'
 import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig } from '@stacksjs/query-builder'
@@ -14,6 +15,8 @@ import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQue
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
 import { SQL } from 'bun'
+import { recordDatabaseQueryError } from './broken-pool'
+import type { DatabasePoolIdentity } from './broken-pool'
 import { closeDatabaseConnectionsAndPending, retireDatabaseConnections } from './connection-lifecycle'
 import type { PendingDatabaseConnectionClosures } from './connection-lifecycle'
 import { runInTransactionScope } from './transaction-context'
@@ -22,7 +25,7 @@ import type { QueryBuilderDialect } from './dialect'
 import type { FrameworkSchema } from './framework-schema'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
-import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
+import { isMysqlWire, isPostgresWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
 import { configureDatabaseRoutingContext, contextInTransaction, markContextWrote, resolveReplicaConnection, runInDatabaseRoutingContext, selectReplica, shouldRouteToReplica, withDatabaseRoutingContext, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
@@ -186,6 +189,7 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
     ?? !isProductionEnvironment(appEnv)
 
   syncDatabaseQueryHooks()
+  syncBrokenPoolDetection()
 
   // Update bun-query-builder config
   updateQueryBuilderConfig()
@@ -413,6 +417,109 @@ function syncDatabaseQueryHooks(): void {
 }
 
 syncDatabaseQueryHooks()
+
+/**
+ * The primary pool, identified the way bun-query-builder connects it: when
+ * `DB_CONNECTION` names the dialect, its `createConnectionString()` reads
+ * `DB_HOST`, `DB_PORT` and `DB_DATABASE` ahead of its config (the rule
+ * `resolveConnectionTarget` in ./ensure-database also mirrors). Credentials
+ * are left out on purpose.
+ */
+function primaryPoolIdentity(): DatabasePoolIdentity {
+  const dialect = String(queryBuilderConfig.dialect)
+  const configured: { host?: string, port?: number, database?: string } = queryBuilderConfig.database ?? {}
+  const env: Record<string, string | undefined> = process.env.DB_CONNECTION === dialect ? process.env : {}
+  return {
+    driver: dialect,
+    host: env.DB_HOST || configured.host || 'localhost',
+    port: Number(env.DB_PORT || configured.port) || undefined,
+    database: String(env.DB_DATABASE || configured.database || '').replace(/^['"]|['"]$/g, ''),
+  }
+}
+
+/**
+ * Report a query error from the primary pool to ./broken-pool, which ignores
+ * anything but Bun's broken-slot error (oven-sh/bun#42804).
+ *
+ * The query hook below calls this for every error bun-query-builder reports.
+ * Code holding an error from a path that fires no hook, such as a query
+ * through `db.unsafe()`, calls it directly.
+ */
+export function recordPrimaryDatabaseQueryError(error: unknown): void {
+  recordDatabaseQueryError(error, primaryPoolIdentity())
+}
+
+let unregisterBrokenPoolDetection: (() => void) | undefined
+
+/**
+ * Whether the active driver's pool is a Bun SQL pool (the Postgres or MySQL
+ * adapter), which is where oven-sh/bun#42804 can break a slot. SQLite is not.
+ */
+function detectsBrokenPools(): boolean {
+  return isPostgresWire(getDriver()) || isMysqlWire(getDriver())
+}
+
+/**
+ * Watch the errors bun-query-builder's query hooks report for Bun's
+ * broken-pool error (./broken-pool).
+ *
+ * The hooks reach builders on every framework pool without Stacks owning the
+ * primary pool, which bun-query-builder creates and does not expose: the `db`
+ * builders, the ones the ORM routes and `Database` create, their transaction
+ * handles, and the replica builders, which report under their own identity
+ * (`replicaQueryHooks`). They do not see every query: against a broken pool,
+ * `unsafe()`, a transaction's BEGIN and model queries (`User.find()`) fired
+ * no hook in bun-query-builder 0.2.70, so a pool that only those reach is
+ * reported only by code that passes such an error to
+ * `recordPrimaryDatabaseQueryError`.
+ *
+ * Installed on PostgreSQL and MySQL whether or not query logging is on: a
+ * production process with logging off is the one that most needs this. It is
+ * an `onQueryError` hook and nothing else, so no Stacks code runs for a query
+ * that succeeds. bun-query-builder 0.2.70 still takes its instrumented path
+ * for every query once any hook is set: it captures the SQL text, reads the
+ * clock and wraps the result promise. SQLite keeps the hook-free fast path.
+ */
+function syncBrokenPoolDetection(): void {
+  const shouldInstall = detectsBrokenPools()
+  if (shouldInstall && !unregisterBrokenPoolDetection) {
+    unregisterBrokenPoolDetection = registerPersistentQueryHooks({
+      onQueryError: event => recordPrimaryDatabaseQueryError(event.error),
+    })
+  }
+  else if (!shouldInstall && unregisterBrokenPoolDetection) {
+    unregisterBrokenPoolDetection()
+    unregisterBrokenPoolDetection = undefined
+  }
+}
+
+syncBrokenPoolDetection()
+
+/**
+ * Query hooks for a replica builder, so a broken replica pool is reported
+ * under the replica's identity rather than the primary's.
+ *
+ * A builder's own hooks replace the process-wide ones key by key, so this
+ * forwards to them afterwards: query logging still sees the error, and the
+ * process-wide detection hook skips it because it is already attributed.
+ * Wrapped because a builder's own hook does not pass through the guarded
+ * dispatch in @stacksjs/query-builder, and bun-query-builder 0.2.70's
+ * `rawQuery()` calls it from a catch block where a throw would replace the
+ * query's own error.
+ */
+function replicaQueryHooks(pool: DatabasePoolIdentity): QueryHooks {
+  return {
+    onQueryError: (event) => {
+      try {
+        recordDatabaseQueryError(event.error, pool)
+        queryBuilderConfig.hooks?.onQueryError?.(event)
+      }
+      catch {
+        // Query diagnostics must never change the query result.
+      }
+    },
+  }
+}
 
 /**
  * The active connection's pool block, if it declared one.
@@ -947,7 +1054,9 @@ function getReplicaDb(replica: ReplicaConfig): ReturnType<typeof createQueryBuil
   const url = `${scheme}://${auth}${resolved.host}:${resolved.port}/${resolved.database}`
 
   const sql = new SQL({ url, ...toBunPoolOptions(getPoolConfig()) })
-  const instance = createQueryBuilder({ sql })
+  const instance = detectsBrokenPools()
+    ? createQueryBuilder({ sql, hooks: replicaQueryHooks({ driver: getDriver(), host: resolved.host, port: resolved.port, database: resolved.database }) })
+    : createQueryBuilder({ sql })
   _replicaInstances.set(key, instance)
   return instance
 }
