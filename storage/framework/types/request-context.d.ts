@@ -4,67 +4,54 @@
 // What a `<script server>` block can reach (stacksjs/stacks#2232). tsc cannot
 // see inside a `.stx` file, but `typecheck:views` hands this file to
 // `stx typecheck` with `--lib`, so the templates are checked against it. It
-// also gives an editor something to complete against, and the two server
-// implementations one written-down contract instead of two `as any`
-// installers that drifted twice into production.
+// also gives an editor something to complete against.
 //
-// Without it, `stx typecheck` reported every `requestContext` as "Cannot find
-// name", and the storefront pages were moved onto `request`, which stx's
-// typecheck declares and stx serve never binds.
+// `requestContext` is typed as the object the servers install
+// (`StacksRequestContext` in @stacksjs/config), not restated here. A copy of
+// its methods written out in this file drifted: it had no `site()`, so a
+// template calling `requestContext.site()` as core/sites/README.md tells it to
+// failed `typecheck:views`. The import is relative, as the paths in
+// `browser-auto-imports.d.ts` are: through `@stacksjs/config`, `stx typecheck`
+// resolved the type to `any` and passed a call to a method that does not
+// exist.
 
 export {}
 
 declare global {
   /**
-   * The request in flight, published by whichever server booted.
+   * The request this server script is rendering.
    *
-   * Always present under `buddy dev` and `buddy serve`. A standalone or SSG
-   * render has no request, and every accessor answers with its empty value
-   * rather than throwing — so a page may call these unguarded.
+   * Installed by `buddy dev` and `buddy serve` (`installRequestScope`), and
+   * read from the scope each server opens for a request, so a page, its
+   * layout and its components each read their own request while others are
+   * in flight. Outside a request, every accessor answers with its empty
+   * value rather than throwing. Only those two servers install it: in a
+   * process that started neither, `requestContext` is undefined.
    */
-  const requestContext: {
-    /** One cookie by name, or null. */
-    cookie: (name: string) => string | null
-    /** Every cookie on the request. */
-    cookies: () => Record<string, string>
-    /** The full request URL. Safe to hand to `new URL()`. */
-    url: () => string
-    /** Path only, no query. */
-    path: () => string
-    /** Query string including the leading `?`, or ''. */
-    search: () => string
-    /** Query parameters, parsed. */
-    query: () => Record<string, string>
-    /** Route parameters for the matched page. */
-    params: () => Record<string, string>
-    /** Resolved locale, defaulting to 'en'. */
-    locale: () => string
-    /** Client IP, or '' when the server did not resolve one. */
-    ip: () => string
-    /** Host header, or ''. */
-    host: () => string
-  }
+  const requestContext: import('../core/config/src/request-context').StacksRequestContext
 
   /**
    * Query parameters injected onto the render context by the serve path.
    *
-   * Declared optional-shaped for a reason: unlike `requestContext`, this is
-   * injected by bun-plugin-stx's serve path only. A standalone render (the SSG
-   * path, or `processDirectives` called without a request) supplies nothing, and
-   * a bare `query` is a ReferenceError there rather than an empty result. Until
-   * that path injects an empty-but-shaped object, reads still need a guard:
+   * Declared optional-shaped for a reason: this is injected by
+   * bun-plugin-stx's serve path only. A standalone render (the SSG path, or
+   * `processDirectives` called without a request) supplies nothing, and a bare
+   * `query` is a ReferenceError there rather than an empty result. Until that
+   * path injects an empty-but-shaped object, reads still need a guard:
    *
    *     const params = typeof query !== 'undefined' ? query : {}
    *
-   * `requestContext.query()` has no such caveat and is the safer spelling.
+   * In a process that installed `requestContext`, `requestContext.query()`
+   * answers `{}` there instead.
    */
   const query: Record<string, string>
 
   /**
    * Cookies injected onto the render context by the serve path.
    *
-   * Same caveat as `query` — absent in a standalone render.
-   * `requestContext.cookie(name)` is the safer spelling.
+   * Same caveat as `query`: absent in a standalone render, where a process
+   * that installed `requestContext` answers `requestContext.cookie(name)`
+   * with null.
    */
   const cookies: Record<string, string>
 }
