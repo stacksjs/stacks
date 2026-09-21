@@ -24,6 +24,12 @@
  * Without `captureValues` nothing but each value's type is kept, so the count
  * and shape of the bindings survive without the data. Binary values are only
  * ever recorded by type.
+ *
+ * The error text of a failed query can copy a bound value too, so the values
+ * the bindings withhold are taken out of `query_logs.error` where the driver
+ * printed them, as far as {@link queryLogError} can recognise them, and it
+ * keeps at most the first MAX_QUERY_LOG_ERROR_LENGTH characters of the
+ * message.
  */
 
 export const REDACTED_BINDING = '<redacted>'
@@ -599,13 +605,46 @@ function typeTag(value: unknown): string {
   return `<${typeof value}>`
 }
 
-/** JSON text of a structured value, or undefined when it has none. */
-function jsonText(value: unknown): string | undefined {
-  try {
-    return JSON.stringify(value)
+/** An object or array, as opposed to text, a number, bytes or a date. */
+function isStructured(value: unknown): value is object {
+  return typeof value === 'object' && value !== null && !(value instanceof Date) && !isBytes(value)
+}
+
+/** What {@link jsonText} returns for a value whose JSON text is longer than its limit. */
+const TOO_LONG: unique symbol = Symbol('longer than the limit')
+
+/**
+ * JSON text of a structured value, or undefined when it has none. With a
+ * `limit`, TOO_LONG for a value whose text is longer than that, found out
+ * without writing much more of it: the replacer counts what each key and
+ * value adds to the text, less quotes' escapes and commas, and stops the
+ * writing once that passes the limit.
+ */
+function jsonText(value: unknown): string | undefined
+function jsonText(value: unknown, limit: number): string | undefined | typeof TOO_LONG
+function jsonText(value: unknown, limit = Number.POSITIVE_INFINITY): string | undefined | typeof TOO_LONG {
+  let written = 0
+  let root = true
+  function count(this: unknown, key: string, item: unknown): unknown {
+    // The root and an array's items are written without a key.
+    const member = !root && !Array.isArray(this)
+    root = false
+    // A value JSON leaves out writes nothing in an object and `null` in an array.
+    const omitted = item === undefined || typeof item === 'function' || typeof item === 'symbol'
+    if (member && omitted)
+      return item
+    written += (member ? key.length + 3 : 0) + (omitted
+      ? 4
+      : typeof item === 'string' ? item.length + 2 : typeof item === 'object' && item !== null ? 2 : String(item).length)
+    if (written > limit)
+      throw TOO_LONG
+    return item
   }
-  catch {
-    return undefined
+  try {
+    return JSON.stringify(value, limit === Number.POSITIVE_INFINITY ? undefined : count)
+  }
+  catch (error) {
+    return error === TOO_LONG ? TOO_LONG : undefined
   }
 }
 
@@ -643,48 +682,551 @@ export function parseCaptureBindings(setting: unknown): boolean | null | undefin
 }
 
 /**
+ * `value`, the parameter at `index`, as the bindings keep it where values are
+ * kept: the value itself, `<redacted>`, or a type tag such as `<bytes>`.
+ */
+function keptValue(context: BindingContext, value: unknown, index: number): unknown {
+  if (value === null || value === undefined)
+    return null
+
+  const columns = context.columns.get(index) ?? []
+  if (columns.some(column => column !== undefined && isSensitiveName(column)))
+    return REDACTED_BINDING
+  if (isBytes(value))
+    return typeTag(value)
+
+  if (typeof value === 'string' || (typeof value === 'object' && !(value instanceof Date))) {
+    const unresolved = columns.every(column => column === undefined)
+    if (context.sensitiveTable || (unresolved && context.sensitiveMention))
+      return REDACTED_BINDING
+    const text = typeof value === 'string' ? value : jsonText(value)
+    if (text === undefined)
+      return typeTag(value)
+    if (looksLikeCredential(text) || hasSensitiveKey(text))
+      return REDACTED_BINDING
+  }
+
+  return typeof value === 'bigint' ? String(value) : value
+}
+
+/**
  * The bindings of `sql` as they may be persisted: one entry per parameter,
  * each the value itself, `<redacted>`, or a type tag such as `<string>`.
  */
 export function queryLogBindings(sql: string, parameters: readonly unknown[], options: QueryLogBindingOptions): unknown[] {
   if (parameters.length === 0)
     return []
+  if (!options.captureValues)
+    return parameters.map(value => value === null || value === undefined ? null : typeTag(value))
 
-  const context = options.captureValues ? bindingContext(sql) : undefined
-  return parameters.map((value, index) => {
-    if (value === null || value === undefined)
-      return null
-    if (!context)
-      return typeTag(value)
+  const context = bindingContext(sql)
+  return parameters.map((value, index) => keptValue(context, value, index))
+}
 
-    const columns = context.columns.get(index) ?? []
-    if (columns.some(column => column !== undefined && isSensitiveName(column)))
-      return REDACTED_BINDING
-    if (isBytes(value))
-      return typeTag(value)
+// ---------------------------------------------------------------------------
+// The error text of a failed query
+// ---------------------------------------------------------------------------
 
-    if (typeof value === 'string' || (typeof value === 'object' && !(value instanceof Date))) {
-      const unresolved = columns.every(column => column === undefined)
-      if (context.sensitiveTable || (unresolved && context.sensitiveMention))
-        return REDACTED_BINDING
-      const text = typeof value === 'string' ? value : jsonText(value)
-      if (text === undefined)
-        return typeTag(value)
-      if (looksLikeCredential(text) || hasSensitiveKey(text))
-        return REDACTED_BINDING
+/**
+ * The most characters of a failed query's error that `query_logs.error`
+ * keeps. PostgreSQL prints a value it cannot parse in full (a 20,000
+ * character value gave a 20,056 character message on PostgreSQL 16), so
+ * without a limit the column holds as much as a caller binds. The rest of a
+ * longer error is dropped and counted, as `<truncated: 15960 more
+ * characters>`, and the limit is also what bounds the cost of taking values
+ * out of it (see {@link scanForValues}).
+ */
+export const MAX_QUERY_LOG_ERROR_LENGTH = 4096
+
+/**
+ * How many characters of the start of a value a copy shorter than the value
+ * must hold to be recognised. MySQL cuts the key of a duplicate entry at 64
+ * bytes, which is 16 characters or more, and a rejected value at 128
+ * characters, so a value that starts the key it is printed in, or is printed
+ * alone, leaves at least this much. A later column of a key over several
+ * columns starts wherever the ones before it end, and a prefix index
+ * (`UNIQUE (token(10))`) prints only what it indexes, so MySQL can print
+ * fewer characters of a value than this; such a copy is not recognised.
+ */
+const CUT_VALUE_LENGTH = 16
+
+/**
+ * The shortest copy that is looked for of a value withheld without being
+ * secret, as every value is in production, where the bindings keep types. A
+ * shorter one is left in place: taking out every copy of a bound `key` or
+ * `email` would take the `key` out of "for key" and the `email` out of
+ * `users.email` as well. A secret is looked for whatever its length.
+ */
+const MIN_TYPED_COPY_LENGTH = 8
+
+/** A letter, digit or underscore: a value next to one is part of a longer word. */
+const WORD_CHAR = /[\p{L}\p{N}_]/u
+
+/**
+ * The most characters of a value that are read to judge whether it is
+ * secret where only types are kept (see {@link secretValues}). Longer text
+ * is taken to be secret without being read, and so is a structured value
+ * once its keys and values come to more than this in its JSON text. That
+ * count leaves out commas and escapes, so the JSON text of a value judged
+ * can be longer: 80,012 characters for 40,001 one-digit numbers.
+ */
+const MAX_JUDGED_LENGTH = 65_536
+
+/**
+ * How far {@link printedValue} reads the values of one failed query: arrays
+ * nested at most this deep (PostgreSQL takes 6 dimensions), and, across all
+ * of the query's values together, at most this many items and this many
+ * characters of the ways they can be printed. JSON.parse nests arrays
+ * 100,000 deep, one array can hold another many times over, and a query can
+ * bind any number of values, so past any of these the values are not looked
+ * for and the error keeps none of its text (see {@link queryLogError}).
+ */
+const MAX_PRINTED_DEPTH = 32
+const MAX_PRINTED_ITEMS = 100_000
+const MAX_PRINTED_CHARACTERS = 16_777_216
+
+/** What one error has left of MAX_PRINTED_ITEMS and MAX_PRINTED_CHARACTERS. */
+interface PrintBudget {
+  items: number
+  characters: number
+}
+
+const utf8 = new TextEncoder()
+
+function bytesOf(value: ArrayBuffer | ArrayBufferView): Uint8Array {
+  return value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
+}
+
+/**
+ * Bytes as MySQL prints a rejected value ("Incorrect integer value: '...'")
+ * or a binary key: printable ASCII as it is, every other byte as `\xHH`. It
+ * stops one character past `limit`, since a byte can take four characters
+ * and nothing past the limit can be in the error.
+ */
+function mysqlPrintable(bytes: Uint8Array, limit: number): string {
+  let text = ''
+  for (let at = 0; at < bytes.length && text.length <= limit; at++) {
+    const byte = bytes[at]!
+    text += byte >= 0x20 && byte < 0x7F ? String.fromCharCode(byte) : `\\x${byte.toString(16).toUpperCase().padStart(2, '0')}`
+  }
+  return text
+}
+
+/** One way a withheld value can appear in an error message. */
+interface PrintedValue {
+  text: string
+  /** False when `text` is only the start of the value. */
+  whole: boolean
+  /** A number, which is looked for only where its value is secret. */
+  number?: boolean
+}
+
+/** At most `limit` characters of `text`, and whether that is all of it. */
+function upTo(text: string, whole: boolean, limit: number): PrintedValue {
+  return text.length <= limit ? { text, whole } : { text: text.slice(0, limit), whole: false }
+}
+
+/**
+ * The most characters of a value a MySQL error can print: its messages hold
+ * at most 512 bytes (MYSQL_ERRMSG_SIZE). MySQL 8.4.5 printed 128 characters
+ * of a rejected value and 64 bytes of a duplicate key, for values of 1,500 to
+ * 5,000 characters, as text and as `\xHH` escapes alike, and no message
+ * longer than 179 bytes.
+ */
+const MAX_MYSQL_PRINTED_LENGTH = 512
+
+/**
+ * The ways a driver prints `text` into an error message: as it is, which is
+ * how PostgreSQL prints it and MySQL prints most text; as MySQL prints the
+ * key of a duplicate entry, with each character beyond three UTF-8 bytes as
+ * `?` and nothing after a NUL; and as MySQL prints a rejected value. The two
+ * MySQL forms stop at MAX_MYSQL_PRINTED_LENGTH, since MySQL prints no more.
+ */
+function printedText(text: string, whole: boolean, limit: number): PrintedValue[] {
+  const forms = [upTo(text, whole, limit)]
+  if (/[^\x20-\x7E]/.test(text)) {
+    // Each MySQL form gives at least one character for every two of `text`,
+    // so a longer text still gives a form past the limit, which is cut and
+    // counts as the start of the value.
+    const mysqlLimit = Math.min(limit, MAX_MYSQL_PRINTED_LENGTH)
+    const head = text.slice(0, 2 * mysqlLimit + 2)
+    const key = head.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '?')
+    const nul = key.indexOf('\0')
+    for (const form of [nul < 0 ? key : key.slice(0, nul), mysqlPrintable(utf8.encode(head), mysqlLimit)]) {
+      const printed = upTo(form, whole, mysqlLimit)
+      if (!forms.some(known => known.text === printed.text))
+        forms.push(printed)
     }
+  }
+  return forms
+}
 
-    return typeof value === 'bigint' ? String(value) : value
-  })
+/**
+ * How a withheld `value` that is not an array can appear in an error `limit`
+ * characters long. `json` gives the start of an object's JSON text.
+ */
+function printedItem(value: unknown, limit: number, json: (value: object) => string | undefined): PrintedValue[] {
+  if (typeof value === 'string')
+    return printedText(value.slice(0, limit), value.length <= limit, limit)
+  if (isBytes(value)) {
+    const bytes = bytesOf(value as ArrayBuffer | ArrayBufferView)
+    return [upTo(mysqlPrintable(bytes.subarray(0, limit), limit), bytes.length <= limit, limit)]
+  }
+  if (typeof value === 'number' || typeof value === 'bigint')
+    return typeof value === 'bigint' || Number.isFinite(value) ? [{ text: String(value), whole: true, number: true }] : []
+  if (isStructured(value)) {
+    const text = json(value)
+    return text === undefined ? [] : printedText(text.slice(0, limit), text.length <= limit, limit)
+  }
+  // A date or a boolean is not looked for.
+  return []
+}
+
+/**
+ * How a withheld `value` can appear in an error `limit` characters long. No
+ * more of a value than that can be in it, so no form is longer.
+ *
+ * MySQL prints an array as its JSON text, and PostgreSQL prints the items
+ * Bun sent, joined by commas (`malformed array literal: "a,b"`), so the
+ * value's JSON text counts, and each item that is not itself an array. An
+ * array inside the value is printed by neither on its own: MySQL printed
+ * `'[["alpha-one"],["bravo-two"]]'` whole, and PostgreSQL printed no inner
+ * array, so its JSON text only goes into the value's. Counting it as well
+ * gave a chain of arrays around one long string a copy per array. Arrays are
+ * read depth first without recursion, each array's JSON text built from its
+ * items' as they are read and only up to one character past `limit`, so no
+ * array is written out more than once. A value past MAX_PRINTED_DEPTH, or
+ * past what is left of `budget`, gives undefined.
+ */
+function printedValue(value: unknown, limit: number, budget: PrintBudget): PrintedValue[] | undefined {
+  // The start of an object's JSON text, written out once however often the
+  // value holds it.
+  const heads = new Map<object, string | undefined>()
+  const json = (item: object): string | undefined => {
+    if (!heads.has(item))
+      heads.set(item, jsonText(item)?.slice(0, limit + 1))
+    return heads.get(item)
+  }
+  const forms: PrintedValue[] = []
+  const add = (printed: PrintedValue[]): boolean => {
+    for (const form of printed) {
+      forms.push(form)
+      budget.characters -= form.text.length
+    }
+    return budget.characters >= 0
+  }
+  if (--budget.items < 0)
+    return undefined
+  if (!Array.isArray(value))
+    return add(printedItem(value, limit, json)) ? forms : undefined
+
+  /** An array being read: its next item, and its JSON text so far. */
+  interface Open { items: readonly unknown[], next: number, text: string | undefined }
+  // An item's text goes on the end of its array's while that is still short
+  // enough to matter; undefined, where JSON.stringify would throw, spreads
+  // to every array around it.
+  const append = (array: Open, item: string | undefined): void => {
+    if (array.text !== undefined && array.text.length <= limit)
+      array.text = item === undefined ? undefined : `${array.text}${array.next > 1 ? ',' : ''}${item}`
+  }
+  const open: Open[] = [{ items: value, next: 0, text: '[' }]
+  while (open.length > 0) {
+    const array = open.at(-1)!
+    if (array.next < array.items.length) {
+      const item = array.items[array.next++]
+      if (--budget.items < 0)
+        return undefined
+      if (Array.isArray(item)) {
+        if (open.length >= MAX_PRINTED_DEPTH)
+          return undefined
+        open.push({ items: item, next: 0, text: '[' })
+        continue
+      }
+      if (!add(printedItem(item, limit, json)))
+        return undefined
+      if (array.text !== undefined && array.text.length <= limit) {
+        // As JSON.stringify writes an array's item, only as much as can matter.
+        append(array, typeof item === 'string'
+          ? JSON.stringify(item.slice(0, limit + 1 - array.text.length))
+          : item === undefined || typeof item === 'function' || typeof item === 'symbol'
+            ? 'null'
+            : typeof item === 'object' && item !== null ? json(item) : jsonText(item))
+      }
+      continue
+    }
+    open.pop()
+    const text = array.text === undefined ? undefined : `${array.text}]`
+    const around = open.at(-1)
+    if (around)
+      append(around, text)
+    else if (text !== undefined && !add(printedText(text.slice(0, limit), text.length <= limit, limit)))
+      return undefined
+  }
+  return forms
+}
+
+/**
+ * A trie of the ways the withheld values can appear. An edge holds a run of
+ * characters, `source` from the parent's depth to this node's, so the values
+ * that share a start share nodes: a trie of n distinct copies has at most
+ * 2n + 1 nodes, however long they are, and adding a copy reads each of its
+ * characters at most once. Building it is linear in the number of copies
+ * times their length, which is at most the length of the text read.
+ */
+interface CopyNode {
+  source: string
+  depth: number
+  children?: Map<number, CopyNode>
+  /** The copy that ends here, where one does. */
+  end?: PrintedValue & { marker: string }
+  /** Whether a copy at or below this node is of a value its binding redacts. */
+  redacted: boolean
+  /** The marker of a copy at or below this node. */
+  marker: string
+}
+
+function addCopy(root: CopyNode, { text, whole }: PrintedValue, marker: string): void {
+  const redacted = marker === REDACTED_BINDING
+  let node = root
+  let depth = 0
+  for (;;) {
+    node.redacted ||= redacted
+    if (depth === text.length) {
+      // The same copy of two values: it counts as whole only if both are,
+      // and as redacted if either is.
+      node.end = node.end
+        ? { text, whole: node.end.whole && whole, marker: node.end.marker === REDACTED_BINDING ? REDACTED_BINDING : marker }
+        : { text, whole, marker }
+      return
+    }
+    const children = node.children ??= new Map()
+    const child = children.get(text.charCodeAt(depth))
+    if (!child) {
+      children.set(text.charCodeAt(depth), { source: text, depth: text.length, end: { text, whole, marker }, redacted, marker })
+      return
+    }
+    let at = depth + 1
+    while (at < child.depth && at < text.length && text.charCodeAt(at) === child.source.charCodeAt(at))
+      at++
+    if (at < child.depth) {
+      // The copy leaves this edge part way along it, so the edge is split.
+      node = { source: child.source, depth: at, children: new Map([[child.source.charCodeAt(at), child]]), redacted: child.redacted, marker: child.marker }
+      children.set(text.charCodeAt(depth), node)
+    }
+    else {
+      node = child
+    }
+    depth = at
+  }
+}
+
+/** Where a copy of a withheld value starts and ends, and what replaces it. */
+interface Span {
+  start: number
+  end: number
+  marker: string
+}
+
+/**
+ * Where copies of the withheld values occur in `text`: a whole copy of a value
+ * shorter than CUT_VALUE_LENGTH characters that stands as a word of its own,
+ * or a copy of at least the first CUT_VALUE_LENGTH characters of a longer
+ * value that does not continue a word before it, as far as it matches.
+ *
+ * From each position the trie is walked along `text` as far as it matches,
+ * which finds the longest start of any value there in one walk, however many
+ * values share it. A walk stops at the end of `text`, so a scan compares at
+ * most n(n+1)/2 characters of a text n characters long, whatever the number of
+ * values, with a Map lookup for each where the trie branches, and holds one
+ * span per position. `text` is at most MAX_QUERY_LOG_ERROR_LENGTH +
+ * CUT_VALUE_LENGTH characters.
+ */
+function scanForValues(text: string, root: CopyNode): Span[] {
+  const spans: Span[] = []
+  const words = new Uint8Array(text.length)
+  for (let at = 0; at < text.length; at++)
+    words[at] = WORD_CHAR.test(text[at]!) ? 1 : 0
+  const word = (at: number): boolean => words[at] === 1
+  for (let start = 0; start < text.length; start++) {
+    // A copy that starts inside a longer word is part of that word.
+    if (word(start) && word(start - 1))
+      continue
+    let end = start
+    let marker: string | undefined
+    let node = root
+    let depth = 0
+    let matched = 0
+    // The node below which every copy shares the first CUT_VALUE_LENGTH
+    // characters with the text here, once the walk gets that far.
+    let cut: CopyNode | undefined
+    for (;;) {
+      const whole = node.end
+      // A shorter copy counts where it is all of the value and ends a word.
+      if (whole && depth < CUT_VALUE_LENGTH && !(whole.whole && word(start + depth - 1) && word(start + depth))) {
+        end = start + depth
+        marker = marker === REDACTED_BINDING ? marker : whole.marker
+      }
+      const child = start + depth < text.length ? node.children?.get(text.charCodeAt(start + depth)) : undefined
+      if (!child)
+        break
+      let at = depth + 1
+      while (at < child.depth && start + at < text.length && text.charCodeAt(start + at) === child.source.charCodeAt(at))
+        at++
+      matched = at
+      if (!cut && at >= CUT_VALUE_LENGTH)
+        cut = child
+      if (at < child.depth)
+        break
+      node = child
+      depth = at
+    }
+    if (cut) {
+      end = start + matched
+      marker = marker === REDACTED_BINDING || cut.redacted ? REDACTED_BINDING : cut.marker
+    }
+    if (marker !== undefined && end > start)
+      spans.push({ start, end, marker })
+  }
+  return spans
+}
+
+/**
+ * `error` as `query_logs.error` may keep it: at most
+ * MAX_QUERY_LOG_ERROR_LENGTH characters of it, with each value its binding
+ * does not keep replaced by that binding (`<redacted>`, `<string>`, ...)
+ * where the driver printed it. MySQL prints the value of a duplicate entry
+ * ("Duplicate entry '...' for key ...") and of a value a column rejects
+ * ("Incorrect integer value: '...'"); PostgreSQL prints one it cannot parse
+ * ("invalid input syntax for type uuid: \"...\""). A value is found as it
+ * is and as MySQL escapes it (see {@link printedText}), whole where it stands
+ * as a word of its own, and cut short from its first CUT_VALUE_LENGTH
+ * characters on (see {@link scanForValues}).
+ *
+ * `entries` are {@link queryLogBindings} of `parameters`, and `secret` says
+ * whether the value at an index would be `<redacted>` if values were kept,
+ * which types alone do not. Text, JSON and bytes are taken out wherever
+ * their binding is a marker, a copy of fewer than MIN_TYPED_COPY_LENGTH
+ * characters only when the value is secret; a number only when it is
+ * secret; a date or a boolean not at all. `secret` is asked only about a
+ * value it decides something for, once. A value too deep to look for, or
+ * values too many or too long together (see {@link printedValue}), leave
+ * none of the error: the stored error is the marker of the binding where
+ * reading stopped.
+ */
+export function queryLogError(
+  error: string,
+  parameters: readonly unknown[],
+  entries: readonly unknown[],
+  secret: (index: number) => boolean = index => entries[index] === REDACTED_BINDING,
+): string {
+  // A copy that starts before the limit is recognised as it would be in the
+  // whole error: the text read runs CUT_VALUE_LENGTH characters past it.
+  const truncated = error.length > MAX_QUERY_LOG_ERROR_LENGTH
+  const text = truncated ? error.slice(0, MAX_QUERY_LOG_ERROR_LENGTH + CUT_VALUE_LENGTH) : error
+
+  const root: CopyNode = { source: '', depth: 0, redacted: false, marker: '' }
+  const budget: PrintBudget = { items: MAX_PRINTED_ITEMS, characters: MAX_PRINTED_CHARACTERS }
+  let copies = 0
+  for (const [index, value] of parameters.entries()) {
+    const entry = entries[index]
+    if (typeof entry !== 'string' || entry === value || (typeof value === 'bigint' && entry === String(value)))
+      continue
+    const printed = printedValue(value, text.length, budget)
+    if (printed === undefined)
+      return entry
+    let isSecret: boolean | undefined
+    for (const copy of printed) {
+      // In production every number is a type, and taking out each id and
+      // limit would turn "at row 1" into "at row <number>"; a copy this short
+      // can spell the message's own words.
+      if (copy.number || copy.text.length < MIN_TYPED_COPY_LENGTH) {
+        isSecret ??= secret(index)
+        if (!isSecret || copy.text.length === 0)
+          continue
+      }
+      addCopy(root, copy, entry)
+      copies++
+    }
+  }
+  const spans = copies > 0 ? scanForValues(text, root) : []
+
+  // Overlapping copies become one marker, `<redacted>` if any of them is.
+  // Spans are found in order of their start.
+  const limit = truncated ? MAX_QUERY_LOG_ERROR_LENGTH : text.length
+  let kept = ''
+  let at = 0
+  for (let index = 0; index < spans.length && spans[index]!.start < limit;) {
+    let { start, end, marker } = spans[index]!
+    for (index++; index < spans.length && spans[index]!.start < end; index++) {
+      end = Math.max(end, spans[index]!.end)
+      if (spans[index]!.marker === REDACTED_BINDING)
+        marker = REDACTED_BINDING
+    }
+    kept += text.slice(at, start) + marker
+    at = end
+  }
+  if (!truncated)
+    return kept + text.slice(at)
+  // A copy running past the limit is replaced whole, and the text after it
+  // is dropped with the rest.
+  const cut = Math.max(at, MAX_QUERY_LOG_ERROR_LENGTH)
+  return `${kept}${text.slice(at, cut)}<truncated: ${error.length - cut} more characters>`
+}
+
+/**
+ * Whether the value at an index would be `<redacted>` if values were kept,
+ * for a query whose bindings keep only types. Types do not say which values
+ * are secret, and a number or a short copy only leaves the error when its
+ * value is, so production must judge them as development does or it would
+ * keep a one-time code that development takes out. {@link queryLogError}
+ * asks only about a value whose answer decides something, so no other value
+ * is read, and a value longer than MAX_JUDGED_LENGTH, counted as that
+ * constant says, is taken to be secret without being read.
+ */
+function secretValues(sql: string, values: readonly unknown[]): (index: number) => boolean {
+  let context: BindingContext | undefined
+  return (index) => {
+    const value = values[index]
+    if (typeof value === 'string' ? value.length > MAX_JUDGED_LENGTH : isStructured(value) && jsonText(value, MAX_JUDGED_LENGTH) === TOO_LONG)
+      return true
+    context ??= bindingContext(sql)
+    return keptValue(context, value, index) === REDACTED_BINDING
+  }
+}
+
+export interface PersistedQueryLogValues {
+  /** The JSON text the `bindings` column holds. */
+  bindings: string
+  /** The error text the `error` column holds, when there is one. */
+  error?: string
+}
+
+/**
+ * What a query log row keeps of the values a query bound: its `bindings`,
+ * and `error` (the failed query's error text) without them.
+ */
+export function persistQueryLogValues(sql: string, parameters: unknown, error: string | undefined, options: QueryLogBindingOptions): PersistedQueryLogValues {
+  const values = Array.isArray(parameters) ? parameters : [parameters]
+  try {
+    const entries = queryLogBindings(sql, values, options)
+    if (error === undefined)
+      return { bindings: JSON.stringify(entries) }
+    const secret = options.captureValues ? undefined : secretValues(sql, values)
+    return { bindings: JSON.stringify(entries), error: queryLogError(error, values, entries, secret) }
+  }
+  catch {
+    // Nothing is known of the values, so the error keeps none of them, and
+    // nothing of itself if they cannot be looked for.
+    try {
+      return { bindings: '[]', error: error === undefined ? undefined : queryLogError(error, values, values.map(() => REDACTED_BINDING), () => true) }
+    }
+    catch {
+      return { bindings: '[]', error: error === undefined ? undefined : REDACTED_BINDING }
+    }
+  }
 }
 
 /** {@link queryLogBindings} as the JSON text the `bindings` column holds. */
 export function serializeQueryLogBindings(sql: string, parameters: unknown, options: QueryLogBindingOptions): string {
-  const values = Array.isArray(parameters) ? parameters : [parameters]
-  try {
-    return JSON.stringify(queryLogBindings(sql, values, options))
-  }
-  catch {
-    return '[]'
-  }
+  return persistQueryLogValues(sql, parameters, undefined, options).bindings
 }

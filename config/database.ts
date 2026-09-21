@@ -218,6 +218,14 @@ export default {
      * USING or UPDATE ONLY; and a value compared with a JSON path key written
      * as a string (`meta->>'password' = ?`). SQL that interpolates values
      * instead of binding them is stored as written, so bind them.
+     *
+     * A failed query's `query_logs.error` has the text, JSON and bytes its
+     * bindings withhold replaced by `<redacted>` or `<string>` where the
+     * driver printed them (MySQL's "Duplicate entry '...'", PostgreSQL's
+     * "invalid input syntax for type uuid: \"...\""), a number or a short
+     * copy only when its value is secret, and keeps at most the first 4096
+     * characters of the message. Dates and booleans are not looked for; the
+     * query monitoring guide lists the copies it cannot recognise.
      */
     captureBindings: env.DB_QUERY_LOGGING_CAPTURE_BINDINGS ?? !['production', 'prod'].includes(env.APP_ENV || ''),
 

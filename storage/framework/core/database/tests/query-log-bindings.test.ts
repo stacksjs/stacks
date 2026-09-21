@@ -1,6 +1,9 @@
 /**
- * query_logs.bindings must not hold credentials. See src/query-log-bindings.ts
- * for the policy and fixtures/query-log-bindings.ts for what the runners do.
+ * query_logs.bindings must not hold credentials, and query_logs.error must not
+ * hold the values the bindings withhold where a driver printed them. See
+ * src/query-log-bindings.ts for the policy, and what it cannot recognise, and
+ * fixtures/query-log-bindings.ts and fixtures/query-log-errors.ts for what the
+ * runners do.
  *
  * The unit cases pin the policy on SQL as each dialect's builder writes it.
  * The runners send real queries through the query builder and read back what
@@ -18,7 +21,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { SQL } from 'bun'
 import { describe, expect, it, test } from 'bun:test'
-import { isSensitiveName, looksLikeCredential, parseCaptureBindings, queryLogBindings, serializeQueryLogBindings } from '../src/query-log-bindings'
+import { isSensitiveName, looksLikeCredential, MAX_QUERY_LOG_ERROR_LENGTH, parseCaptureBindings, persistQueryLogValues, queryLogBindings, serializeQueryLogBindings } from '../src/query-log-bindings'
 
 const SESSION_ID = 'c0ffee00deadbeef'.repeat(4)
 const capture = { captureValues: true }
@@ -235,6 +238,273 @@ describe('query log bindings', () => {
   })
 })
 
+describe('query log errors', () => {
+  const types = { captureValues: false }
+  /** `message` as query_logs.error keeps it, for a query that bound `parameters`. */
+  const logged = (sql: string, parameters: unknown[], message: string, options = capture): string | undefined =>
+    persistQueryLogValues(sql, parameters, message, options).error
+  const TOKEN = 'Zq7xT2mN9pL4vR8sK1wY6bH3jF5cD0gA-u_EeIiOo2k'
+
+  // The messages are shaped as MySQL 8.4 and PostgreSQL 16 print them.
+  it('takes a redacted value out of the error text, as each driver prints it', () => {
+    const insert = 'INSERT INTO `devices`(`id`,`token`)VALUES(?,?)'
+    expect(logged(insert, [2, TOKEN], `MySQLError: Duplicate entry '${TOKEN}' for key 'devices.token'`))
+      .toBe(`MySQLError: Duplicate entry '<redacted>' for key 'devices.token'`)
+    // MySQL cuts a duplicate key at 64 bytes.
+    const long = TOKEN.repeat(2)
+    expect(logged(insert, [2, long], `MySQLError: Duplicate entry '${long.slice(0, 64)}' for key 'devices.token'`))
+      .toBe(`MySQLError: Duplicate entry '<redacted>' for key 'devices.token'`)
+    // A rejected value, with every byte beyond printable ASCII as \xHH.
+    expect(logged('INSERT INTO `devices`(`id`,`build`)VALUES(?,?)', [4, `café-${SESSION_ID}`], `MySQLError: Incorrect integer value: 'caf\\xC3\\xA9-${SESSION_ID}' for column 'build' at row 1`))
+      .toBe(`MySQLError: Incorrect integer value: '<redacted>' for column 'build' at row 1`)
+    expect(logged('DELETE FROM `devices` WHERE `build` = ?', [TOKEN], `MySQLError: Truncated incorrect INTEGER value: '${TOKEN}'`))
+      .toBe(`MySQLError: Truncated incorrect INTEGER value: '<redacted>'`)
+    expect(logged('SELECT * FROM "devices" WHERE "id" = $1', [TOKEN], `PostgresError: invalid input syntax for type uuid: "${TOKEN}"`))
+      .toBe('PostgresError: invalid input syntax for type uuid: "<redacted>"')
+    expect(logged('SELECT * FROM "devices" WHERE "token" = ANY($1)', [['plain-item']], 'PostgresError: malformed array literal: "plain-item"'))
+      .toBe('PostgresError: malformed array literal: "<redacted>"')
+    // A key over two columns: only the redacted part goes.
+    expect(logged('INSERT INTO `grants`(`scope`,`secret`)VALUES(?,?)', ['read-write', 'hunter2'], `MySQLError: Duplicate entry 'read-write-hunter2' for key 'grants.scope'`))
+      .toBe(`MySQLError: Duplicate entry 'read-write-<redacted>' for key 'grants.scope'`)
+    // A redacted number, and binary, which the bindings only ever keep as `<bytes>`.
+    expect(logged('INSERT INTO `otps`(`user_id`,`otp`)VALUES(?,?)', [1, 123456], `MySQLError: Duplicate entry '123456' for key 'otps.otp'`))
+      .toBe(`MySQLError: Duplicate entry '<redacted>' for key 'otps.otp'`)
+    expect(logged('INSERT INTO `digests`(`digest`)VALUES(?)', [new Uint8Array([0x62, 0x69, 0x6E, 0x00, 0xFF])], `MySQLError: Duplicate entry 'bin\\x00\\xFF' for key 'digests.digest'`))
+      .toBe(`MySQLError: Duplicate entry '<bytes>' for key 'digests.digest'`)
+  })
+
+  it('keeps an error whose values the bindings keep as it is', () => {
+    const duplicate = `MySQLError: Duplicate entry 'ada ? lovelace' for key 'devices.handle'`
+    expect(logged('INSERT INTO `devices`(`id`,`handle`)VALUES(?,?)', [3, 'ada \u{1F600} lovelace'], duplicate)).toBe(duplicate)
+    const constraint = 'SQLiteError: UNIQUE constraint failed: devices.token'
+    expect(logged('INSERT INTO "devices"("id","token")VALUES(?,?)', [2, TOKEN], constraint)).toBe(constraint)
+    expect(logged('SELECT 1', [], 'PostgresError: syntax error at or near "SELEC"')).toBe('PostgresError: syntax error at or near "SELEC"')
+  })
+
+  it('keeps only the type of a printed value when only types are kept', () => {
+    // MySQL prints a character beyond three UTF-8 bytes as `?`, and stops at a NUL.
+    expect(logged('INSERT INTO `devices`(`id`,`handle`)VALUES(?,?)', [3, 'ada \u{1F600} lovelace'], `MySQLError: Duplicate entry 'ada ? lovelace' for key 'devices.handle'`, types))
+      .toBe(`MySQLError: Duplicate entry '<string>' for key 'devices.handle'`)
+    expect(logged('INSERT INTO `devices`(`handle`)VALUES(?)', ['ada lovelace\0x'], `MySQLError: Duplicate entry 'ada lovelace' for key 'devices.handle'`, types))
+      .toBe(`MySQLError: Duplicate entry '<string>' for key 'devices.handle'`)
+    expect(logged('UPDATE `people` SET `rank` = ? WHERE `id` = ?', [{ theme: 'dark' }, 1], `MySQLError: Incorrect integer value: '{"theme":"dark"}' for column 'rank' at row 1`, types))
+      .toBe(`MySQLError: Incorrect integer value: '<object>' for column 'rank' at row 1`)
+    // Numbers stay: every id and limit is a number, and "at row 1" would go
+    // too. One that would be redacted if values were kept goes as its type.
+    const phone = `MySQLError: Duplicate entry '5551234567' for key 'people.phone'`
+    expect(logged('INSERT INTO `people`(`phone`)VALUES(?)', [5551234567], phone, types)).toBe(phone)
+    expect(logged('INSERT INTO `otps`(`user_id`,`otp`)VALUES(?,?)', [1, 123456], `MySQLError: Duplicate entry '123456' for key 'otps.otp'`, types))
+      .toBe(`MySQLError: Duplicate entry '<number>' for key 'otps.otp'`)
+  })
+
+  it('leaves the words and names of the message alone when only types are kept', () => {
+    // Bound `key`, `email` and `users` are shorter than 8 characters and not
+    // secret, so they stay, and with them the words the message spells alike.
+    const insert = 'INSERT INTO `users`(`email`,`channel`,`label`,`scope`)VALUES(?,?,?,?)'
+    expect(logged(insert, ['ada@example.com', 'email', 'key', 'users'], `MySQLError: Duplicate entry 'ada@example.com' for key 'users.email'`, types))
+      .toBe(`MySQLError: Duplicate entry '<string>' for key 'users.email'`)
+    expect(logged('UPDATE `people` SET `rank` = ? WHERE `initial` = ? AND `locale` = ?', ['active', 'a', 'e'], `MySQLError: Incorrect integer value: 'active' for column 'rank' at row 1`, types))
+      .toBe(`MySQLError: Incorrect integer value: 'active' for column 'rank' at row 1`)
+    // NUL ends what MySQL prints, so this copy is 3 characters long.
+    expect(logged('INSERT INTO `devices`(`handle`)VALUES(?)', ['ada\0lovelace'], `MySQLError: Duplicate entry 'ada' for key 'devices.handle'`, types))
+      .toBe(`MySQLError: Duplicate entry 'ada' for key 'devices.handle'`)
+    // A secret goes whatever its length, judged by its column as if values
+    // were kept, even where the message spells a name the same way.
+    expect(logged('INSERT INTO `cards`(`pin`)VALUES(?)', ['4821'], `MySQLError: Duplicate entry '4821' for key 'cards.pin'`, types))
+      .toBe(`MySQLError: Duplicate entry '<string>' for key 'cards.pin'`)
+    expect(logged('UPDATE `accounts` SET `password` = ? WHERE `id` = ?', ['users', 1], `MySQLError: Duplicate entry 'x' for key 'users.email'`))
+      .toBe(`MySQLError: Duplicate entry 'x' for key '<redacted>.email'`)
+  })
+
+  it('leaves a copy it cannot tell from the rest of the message', () => {
+    // MySQL 8.4 prints 64 bytes of a key over two columns, here 3 characters
+    // of the second value, and only what a prefix index (`c(10)`) indexes.
+    const insert = 'INSERT INTO `t`(`id`,`b`,`c`)VALUES(?,?,?)'
+    const pair = `MySQLError: Duplicate entry '${'B'.repeat(60)}-SEC' for key 't.two'`
+    expect(logged(insert, [8, 'B'.repeat(60), 'SECRETVALUE-XYZ-123456'], pair, types)).toBe(`MySQLError: Duplicate entry '<string>-SEC' for key 't.two'`)
+    const prefix = `MySQLError: Duplicate entry 'PREFIXSECR' for key 't.pre'`
+    expect(logged('INSERT INTO `t`(`id`,`c`)VALUES(?,?)', [10, 'PREFIXSECRETVALUE0002'], prefix, types)).toBe(prefix)
+    // A value the statement changes before the driver prints it.
+    const lower = `MySQLError: Duplicate entry '${'a'.repeat(64)}' for key 't.one'`
+    expect(logged('INSERT INTO `t`(`id`,`a`)VALUES(?,LOWER(?))', [12, 'A'.repeat(100)], lower, types)).toBe(lower)
+  })
+
+  it('keeps at most MAX_QUERY_LOG_ERROR_LENGTH characters of the error', () => {
+    const head = 'PostgresError: invalid input syntax for type uuid: "'
+    const exact = head + 'x'.repeat(MAX_QUERY_LOG_ERROR_LENGTH - head.length)
+    expect(logged('SELECT 1', [], exact)).toBe(exact)
+    expect(logged('SELECT 1', [], `${exact}yz`)).toBe(`${exact}<truncated: 2 more characters>`)
+    // A copy running past the limit goes whole, and so does a short one that
+    // the limit would cut: what follows the limit is read before the cut.
+    const long = `${head}${'x'.repeat(MAX_QUERY_LOG_ERROR_LENGTH - head.length - 20)}"${TOKEN}" and more`
+    expect(logged('SELECT * FROM "devices" WHERE "token" = $1', [TOKEN], long)).toBe(`${long.slice(0, MAX_QUERY_LOG_ERROR_LENGTH - 19)}<redacted><truncated: ${long.length - MAX_QUERY_LOG_ERROR_LENGTH - 16} more characters>`)
+    const short = `${head}${'x'.repeat(MAX_QUERY_LOG_ERROR_LENGTH - head.length - 4)} 'hunter2' and more`
+    expect(logged('UPDATE "users" SET "password" = $1', ['hunter2'], short)).toBe(`${short.slice(0, MAX_QUERY_LOG_ERROR_LENGTH - 2)}<redacted><truncated: ${short.length - (MAX_QUERY_LOG_ERROR_LENGTH - 2 + 7)} more characters>`)
+  })
+
+  it('reads a long withheld value only as far as the error text reaches', () => {
+    // 20,000 fields of JSON, 537,781 characters, cut to 128 in the message.
+    const payload = JSON.stringify(Object.fromEntries(Array.from({ length: 20_000 }, (_, index) => [`field_${index}`, `value ${index}`])))
+    expect(logged('UPDATE `jobs` SET `payload` = ? WHERE `id` = ?', [payload, 1], `MySQLError: Incorrect integer value: '${payload.slice(0, 128)}' for column 'payload' at row 1`, types))
+      .toBe(`MySQLError: Incorrect integer value: '<string>' for column 'payload' at row 1`)
+    // Every one of 5,000 withheld values is looked for.
+    const ids = Array.from({ length: 5000 }, (_, index) => `sess-${index}`)
+    expect(logged(`SELECT * FROM sessions WHERE id IN (${ids.map(() => '?').join(', ')})`, ids, `PostgresError: invalid input syntax for type uuid: "${ids.at(-1)}"`))
+      .toBe('PostgresError: invalid input syntax for type uuid: "<redacted>"')
+    // MySQL escapes each byte of this value into 4 characters and prints 128
+    // of them.
+    expect(logged('UPDATE `t` SET `a` = ? WHERE `id` = 1', ['ࠀ'.repeat(5000)], `MySQLError: Incorrect integer value: '${'\\xE0\\xA0\\x80'.repeat(10)}\\xE0\\xA0' for column 'a' at row 1`, types))
+      .toBe(`MySQLError: Incorrect integer value: '<string>' for column 'a' at row 1`)
+  })
+
+  it('judges in production only the values whose secrecy decides what the error keeps', () => {
+    // A copy of 8 characters or more goes whether its value is secret or
+    // not, so this one is written out as JSON once, to be looked for, and
+    // not again to be judged.
+    let written = 0
+    const payload = { toJSON: () => { written++; return { note: 'goes either way' } } }
+    expect(logged('UPDATE `jobs` SET `payload` = ? WHERE `id` = ?', [payload, 1], `MySQLError: Incorrect integer value: '{"note":"goes either way"}' for column 'payload' at row 1`, types))
+      .toBe(`MySQLError: Incorrect integer value: '<object>' for column 'payload' at row 1`)
+    expect(written).toBe(1)
+    // A number is judged, but a value whose keys and values come to more
+    // than 65,536 characters of JSON is taken to be secret unread, so its
+    // numbers go too.
+    const range = 'PostgresError: value "5551234567" is out of range for type integer'
+    expect(logged('SELECT * FROM "t" WHERE "id" = ANY($1)', [[5_551_234_567, 2]], range, types)).toBe(range)
+    const ids = Array.from({ length: 20_000 }, (_, index) => 5_551_234_567 + index)
+    expect(logged('SELECT * FROM "t" WHERE "id" = ANY($1)', [ids], range, types)).toBe('PostgresError: value "<object>" is out of range for type integer')
+  })
+
+  it('looks for the items of arrays nested up to 32 deep, and keeps none of the error past that', () => {
+    const nested = (depth: number, leaf: unknown): unknown => {
+      let value = leaf
+      for (let level = 0; level < depth; level++)
+        value = [value]
+      return value
+    }
+    const message = (printed: string): string => `MySQLError: Incorrect integer value: '${printed}' for column 'a' at row 1`
+    const update = 'UPDATE `t` SET `a` = ? WHERE `id` = 1'
+    expect(logged(update, [nested(32, 'leaf-value-0123')], message('leaf-value-0123'), types)).toBe(message('<object>'))
+    expect(logged(update, [nested(33, 'leaf-value-0123')], message('leaf-value-0123'), types)).toBe('<object>')
+    expect(logged('UPDATE `t` SET `token` = ? WHERE `id` = 1', [nested(33, 'x')], message('x'))).toBe('<redacted>')
+    // So is an array holding itself, which JSON.stringify refuses.
+    const cyclic: unknown[] = ['leaf-value-0123']
+    cyclic.push(cyclic)
+    expect(logged(update, [cyclic], message('leaf-value-0123'), types)).toBe('<object>')
+  })
+
+  // MySQL printed a nested array as its outer JSON text alone
+  // ('[["alpha-one"],["bravo-two"]]') and PostgreSQL printed no inner array,
+  // so an inner array's text is not looked for on its own. It was: a chain of
+  // 31 arrays around one string gave 31 copies of it, three each when the
+  // string was not ASCII, and 240 such chains in a 976 KiB body took 115 to
+  // 400ms to leave only the marker, past MAX_PRINTED_CHARACTERS. They now
+  // take 3 to 11ms (M2 Pro, shared with other work).
+  it('looks for an array\'s own JSON text, not for each array inside it', () => {
+    const chain = (leaf: string): unknown => {
+      let value: unknown = leaf
+      for (let level = 0; level < 30; level++)
+        value = [value]
+      return value
+    }
+    const leaf = `é0123456789abcdef0123456789abcdef${'a'.repeat(4048)}`
+    const echoed = 'z'.repeat(5000)
+    const parameters = JSON.parse(JSON.stringify([echoed, Array.from({ length: 240 }, () => chain(leaf)), 1]))
+    const started = performance.now()
+    const stored = logged('SELECT * FROM "t" WHERE "id" IN ($1, $2, $3)', parameters, `PostgresError: invalid input syntax for type integer: "${echoed}"`, types)!
+    expect(performance.now() - started).toBeLessThan(1000)
+    expect(stored.startsWith('PostgresError: invalid input syntax for type integer: "<string>')).toBe(true)
+  })
+
+  it('counts every value of a query against one budget', () => {
+    // 40,000 items each: under MAX_PRINTED_ITEMS alone, past it together.
+    const range = 'PostgresError: value "5551234567" is out of range for type integer'
+    const list = (): number[] => Array.from({ length: 40_000 }, (_, index) => index)
+    expect(logged('SELECT * FROM "t" WHERE "a" = ANY($1)', [list()], range, types)).toBe(range)
+    expect(logged('SELECT * FROM "t" WHERE "a" = ANY($1) AND "b" = ANY($2) AND "c" = ANY($3)', [list(), list(), list()], range, types)).toBe('<object>')
+  })
+
+  // JSON.parse nests arrays 100,000 deep, and an array can hold another many
+  // times over. Reading every array inside a value by recursion, writing
+  // each one out as JSON, took 164 to 235ms for 4,000 levels, 0.9 to 2.1s
+  // for 8,000, and 339s for 16,000, which then threw RangeError out of
+  // persistQueryLogValues; the array holding one other 99,999 times took
+  // 2.7 to 3.3s and 1.6 GB (M2 Pro, shared with other work). Past
+  // MAX_PRINTED_DEPTH, MAX_PRINTED_ITEMS or MAX_PRINTED_CHARACTERS the error
+  // now keeps only the value's marker, and each shape here takes 46ms at
+  // most on that machine.
+  it('stays within a time and memory bound on arrays built to be expensive', () => {
+    const inner = ['y'.repeat(5000)]
+    const shapes: Record<string, unknown> = {
+      'wide': Array.from({ length: 1_000_000 }, (_, index) => index),
+      'long items': Array.from({ length: 4100 }, () => 'x'.repeat(5000)),
+      'one array many times': Array.from({ length: 99_999 }, () => inner),
+      'deep': JSON.parse(`${'['.repeat(100_000)}"leaf"${']'.repeat(100_000)}`),
+    }
+    for (const [name, value] of Object.entries(shapes)) {
+      const peak = process.resourceUsage().maxRSS
+      const started = performance.now()
+      expect(logged('SELECT * FROM "t" WHERE "id" = ANY($1)', [value], `PostgresError: malformed array literal: "${'x'.repeat(5000)}"`, types), name).toBe('<object>')
+      expect(performance.now() - started, name).toBeLessThan(1000)
+      expect(process.resourceUsage().maxRSS - peak, name).toBeLessThan(256 * 1024)
+    }
+  })
+
+  // A caller can choose both the values and, through a value PostgreSQL
+  // echoes, most of the error. A walk of the trie stops at the end of the
+  // 4,112 characters read, so the scan is bounded by the text whatever the
+  // values; the trie is built from every value's forms, so building it grows
+  // with them. On an M2 Pro shared with other work (medians of 7 runs, two
+  // or three rounds): the first two shapes take 5 to 7ms; one long value,
+  // where every position starts a copy running to the end of the text, 10
+  // to 12ms; 2,000 values sharing 4,200 dashes 27 to 35ms; a trie that
+  // branches at every character, so that each character of each walk is a
+  // Map lookup, 175 to 183ms; and 10,000 values sharing their first 4,100
+  // characters, each read that far when it is added, 95 to 106ms. None grew
+  // the process by more than 40 MB. The bound leaves room for a slower
+  // machine. Those 10,000 values now go past MAX_PRINTED_CHARACTERS, which
+  // counts every value of the query together, so 4,000 of them are read
+  // here, and 10,000 leave only a marker.
+  it('stays within a time and memory bound on adversarial errors', () => {
+    const inList = (count: number): string => Array.from({ length: count }, () => '?').join(', ')
+    const echo = (text: string): string => `PostgresError: invalid input syntax for type uuid: "${text}"`
+    // 5,000 ids sharing their first 17 characters, in a 200 KB error.
+    const ids = Array.from({ length: 5000 }, (_, index) => `sess-shared-head-${String(index).padStart(6, '0')}`)
+    // Every position of the error starts a copy that runs as far as the text read.
+    const dashes = '-'.repeat(200_000)
+    const runs = Array.from({ length: 2000 }, (_, index) => `${'-'.repeat(4200)}${index}`)
+    // Values ending at every length from 16 to 4,111, so the trie branches at every dash.
+    const branches = Array.from({ length: 4096 }, (_, index) => `${'-'.repeat(16 + index)}x`)
+    // Whole strings, as a request's values arrive, rather than concatenations.
+    const sharedHead = (count: number): string[] => Array.from({ length: count }, (_, index) => Buffer.from(`${'-'.repeat(4100)}${String(index).padStart(12, '0')}`).toString('latin1'))
+    const shared = sharedHead(4000)
+    const shapes: Array<[sql: string, parameters: unknown[], message: string, value: string]> = [
+      [`SELECT * FROM sessions WHERE id IN (${inList(5000)})`, ids, echo(ids.join(',').repeat(2).slice(0, 200_000)), 'sess-shared-head-'],
+      [`SELECT * FROM sessions WHERE id IN (${inList(5000)})`, ids.map(() => ids[0]!), echo(`${ids[0]},`.repeat(8700)), 'sess-shared-head-'],
+      ['UPDATE users SET password = ? WHERE id = 1', ['-'.repeat(5000)], echo(dashes), '-'.repeat(16)],
+      [`SELECT * FROM sessions WHERE id IN (${inList(2000)})`, runs, echo(dashes), '-'.repeat(16)],
+      [`SELECT * FROM sessions WHERE id IN (${inList(4096)})`, branches, echo(dashes), '-'.repeat(16)],
+      [`SELECT * FROM sessions WHERE id IN (${inList(4000)})`, shared, echo(dashes), '-'.repeat(16)],
+    ]
+    for (const [sql, parameters, message, value] of shapes) {
+      // maxRSS is the process's peak, in kilobytes.
+      const peak = process.resourceUsage().maxRSS
+      const started = performance.now()
+      const stored = logged(sql, parameters, message)!
+      expect(performance.now() - started).toBeLessThan(2000)
+      expect(process.resourceUsage().maxRSS - peak).toBeLessThan(256 * 1024)
+      expect(stored.startsWith('PostgresError: invalid input syntax for type uuid: "<redacted>')).toBe(true)
+      expect(stored).not.toContain(value)
+      expect(stored).toMatch(/<truncated: \d+ more characters>$/)
+      expect(stored.length).toBeLessThanOrEqual(MAX_QUERY_LOG_ERROR_LENGTH + 40)
+    }
+    const many = sharedHead(10_000)
+    const started = performance.now()
+    expect(logged(`SELECT * FROM sessions WHERE id IN (${inList(10_000)})`, many, echo(dashes))).toBe('<redacted>')
+    expect(performance.now() - started).toBeLessThan(2000)
+  })
+})
+
 interface Run {
   title: string
   appEnv: 'test' | 'production'
@@ -265,61 +535,93 @@ const runs: Run[] = [
 
 const CAPTURE_BINDINGS_WARNING = '[database] queryLogging.captureBindings (DB_QUERY_LOGGING_CAPTURE_BINDINGS) is'
 
+type Dialect = 'sqlite' | 'postgres' | 'mysql'
+
+function serverUrl(dialect: Dialect): string | undefined {
+  return dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : dialect === 'mysql' ? process.env.STACKS_TEST_MYSQL_URL : undefined
+}
+
+/**
+ * Runs `fixture` in its own process against a disposable `dialect` database
+ * with `env` on top, requires it to exit cleanly, and returns its output.
+ */
+async function runFixture(dialect: Dialect, fixture: string, env: Record<string, string>): Promise<{ stdout: string, stderr: string }> {
+  const connection = serverUrl(dialect)
+  const url = dialect === 'sqlite' ? undefined : new URL(connection!)
+  if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
+    throw new Error('Query log binding tests require a local disposable database server')
+  const directory = await mkdtemp(join(tmpdir(), 'stacks-query-log-bindings-'))
+  const name = `stacks_query_log_bindings_${crypto.randomUUID().replaceAll('-', '')}`
+  const admin = url ? new SQL(url.href) : undefined
+  const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
+  let created = false
+  try {
+    const config = join(directory, 'bunfig.toml')
+    // Passing --config at this file replaces the repo bunfig, so the child
+    // inherits none of its preloads. The key is left out rather than set to
+    // an empty array: `preload = []` is rejected by Bun before 1.4.
+    await writeFile(config, '# no preload\n')
+    if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
+    // The run decides the setting, so an override in the calling shell
+    // must not. With no preload and no env file, nothing puts it back.
+    const inherited = { ...process.env }
+    delete inherited.DB_QUERY_LOGGING_CAPTURE_BINDINGS
+    const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/${fixture}`], {
+      env: {
+        ...inherited, DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'true',
+        DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'query-log-bindings.sqlite') : ':memory:',
+        STACKS_QUERY_LOG_BINDINGS_CONFIG: config,
+        ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
+          DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
+          DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
+        ...env,
+      }, stdout: 'pipe', stderr: 'pipe',
+    })
+    let timedOut = false
+    const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 25_000)
+    try {
+      const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(timedOut, `${fixture} must finish without a watchdog kill`).toBe(false)
+      expect(code, `${stdout}\n${stderr}`).toBe(0)
+      return { stdout, stderr }
+    }
+    finally { clearTimeout(watchdog); child.kill() }
+  }
+  finally {
+    try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
+    finally {
+      try { await admin?.close() }
+      finally { await rm(directory, { recursive: true, force: true }) }
+    }
+  }
+}
+
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
-  const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
   for (const run of runs.filter(run => dialect === 'sqlite' || !run.sqliteOnly)) {
-    test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} ${run.title}`, async () => {
-      const url = dialect === 'sqlite' ? undefined : new URL(connection!)
-      if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-        throw new Error('Query log binding tests require a local disposable database server')
-      const directory = await mkdtemp(join(tmpdir(), 'stacks-query-log-bindings-'))
-      const name = `stacks_query_log_bindings_${crypto.randomUUID().replaceAll('-', '')}`
-      const admin = url ? new SQL(url.href) : undefined
-      const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
-      let created = false
-      try {
-        const config = join(directory, 'bunfig.toml')
-        // Passing --config at this file replaces the repo bunfig, so the child
-        // inherits none of its preloads. The key is left out rather than set to
-        // an empty array: `preload = []` is rejected by Bun before 1.4.
-        await writeFile(config, '# no preload\n')
-        if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
-        // The run decides the setting, so an override in the calling shell
-        // must not. With no preload and no env file, nothing puts it back.
-        const inherited = { ...process.env }
-        delete inherited.DB_QUERY_LOGGING_CAPTURE_BINDINGS
-        const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/query-log-bindings.ts`], {
-          env: {
-            ...inherited, APP_ENV: run.appEnv, DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'true',
-            ...(run.setting === undefined ? {} : { DB_QUERY_LOGGING_CAPTURE_BINDINGS: run.setting }),
-            DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'query-log-bindings.sqlite') : ':memory:',
-            STACKS_QUERY_LOG_BINDINGS_CONFIG: config,
-            STACKS_QUERY_LOG_BINDINGS_APP_CONFIG: run.appConfig,
-            STACKS_QUERY_LOG_BINDINGS_EXPECT: run.expect,
-            ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
-              DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
-              DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
-          }, stdout: 'pipe', stderr: 'pipe',
-        })
-        let timedOut = false
-        const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 25_000)
-        try {
-          const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-          expect(timedOut, 'query log bindings must finish without a watchdog kill').toBe(false)
-          expect(code, `${stdout}\n${stderr}`).toBe(0)
-          expect(stdout).toContain('query log bindings OK')
-          // Every one of the fixture's eight queries resolves the setting.
-          expect(stderr.split('\n').filter(line => line.includes(CAPTURE_BINDINGS_WARNING)).length, stderr).toBe(run.warns ? 1 : 0)
-        }
-        finally { clearTimeout(watchdog); child.kill() }
-      }
-      finally {
-        try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
-        finally {
-          try { await admin?.close() }
-          finally { await rm(directory, { recursive: true, force: true }) }
-        }
-      }
+    test.skipIf(dialect !== 'sqlite' && !serverUrl(dialect))(`${dialect} ${run.title}`, async () => {
+      const { stdout, stderr } = await runFixture(dialect, 'query-log-bindings.ts', {
+        APP_ENV: run.appEnv,
+        ...(run.setting === undefined ? {} : { DB_QUERY_LOGGING_CAPTURE_BINDINGS: run.setting }),
+        STACKS_QUERY_LOG_BINDINGS_APP_CONFIG: run.appConfig,
+        STACKS_QUERY_LOG_BINDINGS_EXPECT: run.expect,
+      })
+      expect(stdout).toContain('query log bindings OK')
+      // Every one of the fixture's eight queries resolves the setting.
+      expect(stderr.split('\n').filter(line => line.includes(CAPTURE_BINDINGS_WARNING)).length, stderr).toBe(run.warns ? 1 : 0)
+    }, 30_000)
+  }
+
+  // A failed query's error text copies bound values: MySQL's "Duplicate
+  // entry '...'" and "Incorrect integer value: '...'", PostgreSQL's "invalid
+  // input syntax for type integer: \"...\"". fixtures/query-log-errors.ts
+  // makes each of those fail and reads back what was stored.
+  for (const run of [
+    { title: 'failed query logs keep redacted values out of the error', appEnv: 'test', expect: 'values' },
+    { title: 'production failed query logs keep only types of the values in the error', appEnv: 'production', expect: 'types' },
+  ]) {
+    test.skipIf(dialect !== 'sqlite' && !serverUrl(dialect))(`${dialect} ${run.title}`, async () => {
+      const { stdout } = await runFixture(dialect, 'query-log-errors.ts', { APP_ENV: run.appEnv, STACKS_QUERY_LOG_BINDINGS_EXPECT: run.expect })
+      expect(stdout).toContain('query log errors OK')
     }, 30_000)
   }
 }

@@ -5,7 +5,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
 import { env as envVars } from '@stacksjs/env'
 import { log } from '@stacksjs/logging'
-import { parseCaptureBindings, serializeQueryLogBindings } from './query-log-bindings'
+import { parseCaptureBindings, persistQueryLogValues, queryLogError } from './query-log-bindings'
 import { normalizeQuery, parseQuery } from './query-parser'
 import { db, getDatabaseDialect } from './utils'
 
@@ -326,10 +326,14 @@ async function createQueryLogRecord(
 
   // The bound values, minus anything that is or looks like a credential.
   // `GET /api/queries/:id` returns the whole row, so it must not become a copy
-  // of every session id and password hash the application binds.
-  const bindings = parameters
-    ? serializeQueryLogBindings(query, parameters, { captureValues: capturesBindingValues() })
-    : undefined
+  // of every session id and password hash the application binds. A failed
+  // query's error can print a bound value too, so the values the bindings
+  // withhold are taken out of it where the driver printed them, and only its
+  // first MAX_QUERY_LOG_ERROR_LENGTH characters are kept.
+  const errorText = error ? String(error) : undefined
+  const persisted = parameters
+    ? persistQueryLogValues(query, parameters, errorText, { captureValues: capturesBindingValues() })
+    : { bindings: undefined, error: errorText === undefined ? undefined : queryLogError(errorText, [], []) }
 
   return {
     query,
@@ -337,9 +341,9 @@ async function createQueryLogRecord(
     duration: durationMs,
     connection,
     status,
-    error: error ? String(error) : undefined,
+    error: persisted.error,
     executed_at: sqlDateTime(),
-    bindings,
+    bindings: persisted.bindings,
     trace: traceInfo?.trace,
     ...(traceInfo?.caller ?? {}),
     memory_usage: memoryUsage().heapUsed / 1024 / 1024, // in MB
