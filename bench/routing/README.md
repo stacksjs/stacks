@@ -13,7 +13,9 @@ timestamped directory under `results/` containing `report.md`,
 The JSON artifact embeds the selected target definitions and complete scenario
 contracts, including request bodies, expected responses, headers profiles, and
 validation probes. It also retains every repeat with its CPU sample source and
-artifact-relative raw output paths.
+artifact-relative raw output paths. `verify-artifact.ts` checks those paths,
+file types and byte counts and regenerates the report from the JSON before a
+hosted workflow uploads the completed directory.
 
 Reports and metadata record the Git revision and working-tree state both before
 and after measurement, plus the machine architecture. Ignored files are

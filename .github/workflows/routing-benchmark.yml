@@ -92,6 +92,10 @@ jobs:
         if: inputs.mode == 'cost'
         run: bun bench/routing/run.ts --driver oha --rate "${{ inputs.rate }}" --warmup 5 --duration 30 --runs 3 --output "$RUNNER_TEMP/routing-diagnostic"
 
+      - name: Verify completed routing artifact
+        if: inputs.mode == 'benchmark' || inputs.mode == 'cost'
+        run: bun bench/routing/verify-artifact.ts --directory="$RUNNER_TEMP/routing-diagnostic"
+
       - name: Capture stock HTTP CPU profiles
         if: inputs.mode == 'profile'
         run: bun bench/routing/profile.ts --output "$RUNNER_TEMP/routing-diagnostic"
