@@ -10,7 +10,6 @@ permissions:
 
 env:
   BUN_VERSION: '1.4.2'
-  CURL_VERSION: '8.22.0'
 
 concurrency:
   group: idle-memory-benchmark
@@ -30,7 +29,7 @@ jobs:
         with:
           version: '0.11.60'
           install: 'false'
-          packages: 'bun@${{ env.BUN_VERSION }} curl@${{ env.CURL_VERSION }}'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Install project and benchmark dependencies
         run: |
@@ -50,7 +49,7 @@ jobs:
           OHA_SHA256: 620bb9e16fb53eabc9a3fc45f88bdb41fefa3fee5c05e75892011ce320391716
         run: |
           mkdir -p "$RUNNER_TEMP/oha/bin"
-          pantry/.bin/curl -fsSL \
+          /usr/bin/curl -fsSL \
             https://github.com/hatoo/oha/releases/download/v1.16.0/oha-linux-amd64 \
             -o "$RUNNER_TEMP/oha/bin/oha"
           echo "$OHA_SHA256  $RUNNER_TEMP/oha/bin/oha" | sha256sum --check
