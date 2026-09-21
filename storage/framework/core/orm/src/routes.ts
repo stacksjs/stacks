@@ -18,7 +18,7 @@
  */
 
 import process from 'node:process'
-import type { DbWriteResult } from '@stacksjs/database'
+import type { DbWriteResult } from '@stacksjs/database/runtime'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
 import { env } from '@stacksjs/env'

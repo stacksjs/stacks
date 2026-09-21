@@ -27,7 +27,7 @@
  * and friends when the trait is on.
  */
 
-import { mutationCount, sqlDateTime } from '@stacksjs/database'
+import { mutationCount, sqlDateTime } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 
 interface SoftDeleteCapableModel {

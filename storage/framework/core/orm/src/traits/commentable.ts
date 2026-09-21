@@ -1,4 +1,4 @@
-import { db as _db, sql, sqlDateTime} from '@stacksjs/database'
+import { db as _db, sql, sqlDateTime } from '@stacksjs/database/runtime'
 
 
 function assertId(id: unknown, method: string): asserts id is number {

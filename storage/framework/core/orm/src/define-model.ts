@@ -3091,7 +3091,7 @@ function applySoftDeletes(
         await cascadeSoftDelete(parentDef, options, id, 'softDelete')
       return ok
     }
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     return await db.transaction(async () => {
       const ok = await helpers.softDelete(id)
       if (ok)
@@ -3112,7 +3112,7 @@ function applySoftDeletes(
       }
       return ok
     }
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     const ok = await db.transaction(async () => {
       const inner = await helpers.restore(id)
       if (inner)

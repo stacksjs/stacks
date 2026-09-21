@@ -1,4 +1,4 @@
-import type { RawBuilder } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database/runtime'
 import type { Operator, SubqueryBuilder } from '@stacksjs/orm'
 
 /**

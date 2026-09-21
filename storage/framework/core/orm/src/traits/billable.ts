@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-import { db as _db } from '@stacksjs/database'
+import { db as _db } from '@stacksjs/database/runtime'
 import type Stripe from 'stripe'
 
 const require = createRequire(import.meta.url)

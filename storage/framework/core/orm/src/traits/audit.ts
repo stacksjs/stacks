@@ -42,7 +42,7 @@
  * `storage/framework/core/database/src/custom/audits.ts`.
  */
 
-import { sqlDateTime } from '@stacksjs/database'
+import { sqlDateTime } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 
 /**
@@ -194,7 +194,7 @@ async function writeAuditRow(payload: {
   user_id: number | string | null
 }, transactional = false): Promise<void> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     await db.insertInto(AUDITS_TABLE).values({
       auditable_type: payload.auditable_type,
       auditable_id: payload.auditable_id,
@@ -244,7 +244,7 @@ export function createAuditMethods(modelName: string): AuditHelpers {
   return {
     async audits(id) {
       try {
-        const { db } = await import('@stacksjs/database')
+        const { db } = await import('@stacksjs/database/runtime')
         const rows = await db
           .selectFrom(AUDITS_TABLE)
           .selectAll()
@@ -331,7 +331,7 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
   // (stacksjs/stacks#1876 X-2).
   const runWithOptionalTx = async <T>(fn: () => Promise<T>): Promise<T> => {
     if (!transactional) return await fn()
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     return await db.transaction(async () => fn())
   }
 

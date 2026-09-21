@@ -1,4 +1,4 @@
-import { db as _db, sqlDateTime} from '@stacksjs/database'
+import { db as _db, sqlDateTime } from '@stacksjs/database/runtime'
 
 // `db` is a Proxy whose methods are typed via bun-query-builder's generics —
 // resolution to the concrete invocation here can leave methods marked

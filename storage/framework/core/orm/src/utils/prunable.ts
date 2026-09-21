@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db, mutationCount } from '@stacksjs/database'
+import { db, mutationCount } from '@stacksjs/database/runtime'
 
 export interface PrunableOptions {
   olderThanDays?: number

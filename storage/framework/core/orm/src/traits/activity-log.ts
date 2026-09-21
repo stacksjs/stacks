@@ -42,7 +42,7 @@
  *
  * @see https://github.com/stacksjs/stacks/issues/2435
  */
-import { sqlDateTime } from '@stacksjs/database'
+import { sqlDateTime } from '@stacksjs/database/runtime'
 import { redactSensitive, reportTrailFailure, resolveTrailActorId, resolveTrailIp } from './actor'
 
 const ACTIVITIES_TABLE = 'activities'
@@ -137,7 +137,7 @@ export async function writeActivityRow(payload: {
   ip_address: string | null
 }): Promise<void> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     await db.insertInto(ACTIVITIES_TABLE).values({
       type: payload.type,
       description: payload.description,

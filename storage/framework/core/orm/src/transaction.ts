@@ -5,7 +5,7 @@
  * commit on success and rollback on error.
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * Transaction handle. Aliases the project's `db` type so callers get

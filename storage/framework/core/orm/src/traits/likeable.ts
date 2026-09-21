@@ -1,4 +1,4 @@
-import { db as _db, sqlDateTime} from '@stacksjs/database'
+import { db as _db, sqlDateTime } from '@stacksjs/database/runtime'
 
 
 export function createLikeableMethods(tableName: string, options?: { table?: string, foreignKey?: string }) {
