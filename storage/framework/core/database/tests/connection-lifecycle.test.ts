@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { closeDatabaseConnections } from '../src/connection-lifecycle'
+import { closeDatabaseConnections, closeDatabaseConnectionsAndPending, retireDatabaseConnections } from '../src/connection-lifecycle'
 
 describe('database connection lifecycle', () => {
   test('waits for every distinct connection to finish closing', async () => {
@@ -49,5 +49,34 @@ describe('database connection lifecycle', () => {
     ])).rejects.toBe(failure)
 
     expect(calls).toEqual(['replica closed'])
+  })
+
+  test('shutdown waits for a connection retired by reset', async () => {
+    const release = Promise.withResolvers<void>()
+    const pending = new Set<Promise<void>>()
+    let closeStarted = false
+    let closeFinished = false
+    retireDatabaseConnections(pending, [{
+      async close() {
+        closeStarted = true
+        await release.promise
+        closeFinished = true
+      },
+    }], (error) => {
+      throw error
+    })
+
+    expect(closeStarted).toBe(true)
+    let shutdownFinished = false
+    const shutdown = closeDatabaseConnectionsAndPending([], pending).then(() => {
+      shutdownFinished = true
+    })
+    await Promise.resolve()
+    expect(shutdownFinished).toBe(false)
+
+    release.resolve()
+    await shutdown
+    expect(closeFinished).toBe(true)
+    expect(shutdownFinished).toBe(true)
   })
 })

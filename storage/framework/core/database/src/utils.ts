@@ -14,7 +14,8 @@ import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQue
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
 import { SQL } from 'bun'
-import { closeDatabaseConnections } from './connection-lifecycle'
+import { closeDatabaseConnectionsAndPending, retireDatabaseConnections } from './connection-lifecycle'
+import type { PendingDatabaseConnectionClosures } from './connection-lifecycle'
 import { runInTransactionScope } from './transaction-context'
 import { env as envVars } from '@stacksjs/env'
 import type { QueryBuilderDialect } from './dialect'
@@ -851,6 +852,7 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
  */
 let _replicaInstances = new Map<string, ReturnType<typeof createQueryBuilder>>()
 let _databaseClosePromise: Promise<void> | null = null
+const _retiredConnectionClosures: PendingDatabaseConnectionClosures = new Set()
 
 /**
  * Discard every cached database client after the underlying query-builder
@@ -863,6 +865,12 @@ let _databaseClosePromise: Promise<void> | null = null
  * reset and replay, so both caches must be invalidated as one operation.
  */
 export function resetDatabaseConnection(): void {
+  const connections = [
+    ...(_dbInstance ? [_dbInstance] : []),
+    ..._replicaInstances.values(),
+  ]
+  if (connections.length > 0)
+    retireDatabaseConnections(_retiredConnectionClosures, connections, error => console.error(`[database] Failed to close retired connection: ${(error as Error).message}`))
   resetQueryBuilderConnection()
   lastGeneralSqliteStatement = undefined
   _dbInstance = null
@@ -890,7 +898,7 @@ export function closeDatabaseConnection(): Promise<void> {
 
   const closing = (async () => {
     try {
-      await closeDatabaseConnections(connections)
+      await closeDatabaseConnectionsAndPending(connections, _retiredConnectionClosures)
     }
     finally {
       // The builders above own the same primary SQL pool cached by upstream.
