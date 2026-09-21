@@ -49,5 +49,5 @@ export function startupSchedule(pairs: number): ScheduledSample[] {
 }
 
 export function startupSampleCommand(executable: string, config: string, sample: string, entry: string): string[] {
-  return [executable, `--config=${config}`, sample, entry]
+  return [executable, '--no-env-file', `--config=${config}`, sample, entry]
 }

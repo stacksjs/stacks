@@ -18,8 +18,10 @@ and machine details, exact dependency versions, and source fingerprints from
 before and after the run.
 
 Fresh processes use the benchmark's intentionally empty Bun configuration. This
-prevents application preloads from importing framework code before the timer or
-adding unrelated memory to either variant.
+prevents application preloads from importing framework code before the timer.
+They also disable automatic env-file loading and inherit only the host variables
+needed to run Bun, so application settings cannot change one measurement host's
+import graph or memory.
 
 The runner rejects missing build output, unresolved local imports, malformed
 child output, incomplete pairs, and source or build changes during measurement.

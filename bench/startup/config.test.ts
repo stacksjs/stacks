@@ -35,6 +35,7 @@ describe('startup benchmark configuration', () => {
   test('passes the isolated Bun config as one CLI option', () => {
     expect(startupSampleCommand('/bun', '/bench/bunfig.toml', '/bench/sample.ts', '/dist/runtime.js')).toEqual([
       '/bun',
+      '--no-env-file',
       '--config=/bench/bunfig.toml',
       '/bench/sample.ts',
       '/dist/runtime.js',

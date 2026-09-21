@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release, totalmem } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
 import process from 'node:process'
+import { hostEnvironment } from '../routing/runtime'
 import { readRuntimeRequirement } from '../routing/runtime-version'
 import type { StartupSample } from './statistics'
 import { parseStartupOptions, startupSampleCommand, startupSchedule } from './config'
@@ -45,7 +46,11 @@ export async function runStartupBenchmark(args = process.argv.slice(2)): Promise
       entries[scheduled.variant],
     ), {
       cwd: here,
-      env: { ...process.env, NODE_ENV: 'production' },
+      env: {
+        ...hostEnvironment(),
+        APP_ENV: 'production',
+        NODE_ENV: 'production',
+      },
     })
     if (child.exitCode !== 0)
       throw new Error(`Startup sample ${scheduled.pair}/${scheduled.variant} failed: ${child.stderr.toString().trim()}`)
