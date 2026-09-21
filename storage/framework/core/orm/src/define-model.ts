@@ -1173,7 +1173,17 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // straight in the DB — a request body with `is_admin: true` would write
   // it even on models that mark the column guarded. Use `forceUpdate` to
   // bypass when intentional.
-  if (typeof baseModel.update !== 'function') {
+  //
+  // Installed unconditionally, unlike the helpers around it. bun-query-builder
+  // 0.2.70 ships a native static `update(id, data)`, and the guard these used
+  // (`if (typeof baseModel.update !== 'function')`) let it silently win: it
+  // fills through the instance, which drops a guarded attribute instead of
+  // rejecting it, and calls `set:` hooks without awaiting them, so an async
+  // setter bound a Promise and `User.update(id, { password })` threw. Both
+  // contracts above are this method's, so this is the one a model gets.
+  // tests/static-helper-precedence.test.ts pins it, with a tripwire on the
+  // builder's other natives.
+  {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
       if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
       if (!data || typeof data !== 'object' || Array.isArray(data))
@@ -1250,7 +1260,10 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   }
 
   // Model.delete(id) — wrap where(pk, id).delete() and report whether a row went away.
-  if (typeof baseModel.delete !== 'function') {
+  //
+  // Unconditional for the same reason as `update`: 0.2.70 also ships a native
+  // static `delete(id)`, which would otherwise replace this one unannounced.
+  {
     baseModel.delete = async function (id: number | string): Promise<boolean> {
       if (id == null) throw new Error(`[ORM] ${definition.name}.delete requires an id as the first argument`)
       const existed = await getFind('delete').call(baseModel, id)
