@@ -3,8 +3,7 @@
 @section('title', 'Your cart')
 
 <script server>
-// The columns this query selects. bun:sqlite returns `any`, so nothing
-// downstream of the map was checked either.
+// The columns the line query selects.
 interface CartItemRow {
   id: number
   quantity: number | string
@@ -16,48 +15,56 @@ interface CartItemRow {
   weight_grams: number | null
 }
 
+// The column of `carts` this page reads. The query selects `*`.
+interface CartRow {
+  id: number
+}
+
 interface StorefrontLineItem { lineTotal: number }
 
-const Database = require('bun:sqlite').Database
-const path = require('path')
+const { verifyCartCookie } = require('../../app/Storefront/CartCookie')
+const { readStorefront } = require('../../app/Storefront/StorefrontDatabase')
 
-const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+// Signed by the storefront actions as the token, a dot and its HMAC. An
+// unsigned or tampered cookie is no cart, and is never looked up.
+const token = verifyCartCookie(requestContext.cookie('stacks_cart'))
 
-// Through requestContext: `request` here is the router's ambient proxy, which
-// has no request while stx serve renders a page, so it carries no cookies.
-const token = requestContext.cookie('stacks_cart')
-let items = []
-let cart = null
+const found = token
+  ? readStorefront('views/cart.stx', { cart: null, items: [] }, (db: import('bun:sqlite').Database) => {
+      const row = db.query<CartRow, [string]>(`SELECT * FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
+      if (!row)
+        return { cart: null, items: [] }
 
-if (token) {
-  cart = db.query(`SELECT * FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
-  if (cart) {
-    items = db.query(`
-      SELECT ci.id, ci.quantity, ci.unit_price, ci.total_price, ci.product_name,
-            ci.product_image, ci.product_sku, p.weight_grams
-      FROM cart_items ci
-      LEFT JOIN products p ON p.slug = ci.product_sku
-      WHERE ci.cart_id = ?1
-      ORDER BY ci.id ASC
-    `).all(cart.id).map((row: CartItemRow) => {
-      const qty = Number(row.quantity)
-      const price = Number(row.unit_price)
-      const lineTotal = Number(row.total_price)
-      return {
-        id: row.id,
-        slug: row.product_sku,
-        name: row.product_name,
-        weight: row.weight_grams ? `${row.weight_grams}g` : '',
-        qty,
-        priceLabel: `$${price.toFixed(2)}`,
-        lineTotal,
-        lineTotalLabel: `$${lineTotal.toFixed(2)}`,
-        image: row.product_image,
-      }
+      const lines = db.query<CartItemRow, [number]>(`
+        SELECT ci.id, ci.quantity, ci.unit_price, ci.total_price, ci.product_name,
+              ci.product_image, ci.product_sku, p.weight_grams
+        FROM cart_items ci
+        LEFT JOIN products p ON p.slug = ci.product_sku
+        WHERE ci.cart_id = ?1
+        ORDER BY ci.id ASC
+      `).all(row.id).map((line: CartItemRow) => {
+        const qty = Number(line.quantity)
+        const price = Number(line.unit_price)
+        const lineTotal = Number(line.total_price)
+        return {
+          id: line.id,
+          slug: line.product_sku,
+          name: line.product_name,
+          weight: line.weight_grams ? `${line.weight_grams}g` : '',
+          qty,
+          priceLabel: `$${price.toFixed(2)}`,
+          lineTotal,
+          lineTotalLabel: `$${lineTotal.toFixed(2)}`,
+          image: line.product_image,
+        }
+      })
+
+      return { cart: row, items: lines }
     })
-  }
-}
+  : { cart: null, items: [] }
+
+const cart = found.cart
+const items = found.items
 
 // Mirror the rule used by PlaceOrderAction so the price the shopper
 // sees in their cart matches the total they're actually charged. Both
