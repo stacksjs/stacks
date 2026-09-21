@@ -26,7 +26,7 @@
 
 import type { DashboardData, PressureAction, RunnerAlertState, RunnerSample } from '@stacksjs/github'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { detectRunnerPressure } from '@stacksjs/github'
 import { notify } from '@stacksjs/notifications'
 

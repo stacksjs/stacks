@@ -1,6 +1,6 @@
 import type { DashboardProviderUnavailable } from '../dashboard-provider'
 import type { DashboardLogRecord, DashboardLogSummary } from './log-dashboard'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { HQ_READ_UNAVAILABLE, readThroughProvider, resolveDashboardDriver } from '../dashboard-provider'
 import { DASHBOARD_LOG_TYPES, normalizeDashboardLog, summarizeDashboardLogTypes } from './log-dashboard'
 
