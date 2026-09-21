@@ -23,7 +23,33 @@ function routerBuild(): Promise<BuildOutput> {
   return cachedRouterBuild
 }
 
+function runtimeBuild(): Promise<BuildOutput> {
+  return Bun.build({
+    entrypoints: [join(import.meta.dir, 'fixtures/import-router-runtime.ts')],
+    target: 'bun',
+    metafile: true,
+    write: false,
+  })
+}
+
 describe('router import graph', () => {
+  it('keeps root-only helpers out of the server runtime entry', async () => {
+    const result = await runtimeBuild()
+
+    expect(result.success).toBe(true)
+    const inputs = Object.keys(result.metafile?.inputs ?? {})
+    for (const module of [
+      'encrypted-session-store.ts',
+      'path-sanitize.ts',
+      'route-model-binding.ts',
+      'session-factory.ts',
+      'signed-url.ts',
+      'typed-router.ts',
+    ]) {
+      expect(inputs.some(source => source.endsWith(`/router/src/${module}`))).toBe(false)
+    }
+  })
+
   it('keeps optional subsystems out of the success path', async () => {
     const result = await routerBuild()
 

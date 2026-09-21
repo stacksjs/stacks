@@ -55,6 +55,13 @@ export const TARGETS: readonly Target[] = [
     env: { BENCH_MODE: 'minimal', STACKS_SECURITY_HEADERS_DISABLE: 'true' },
   },
   {
+    id: 'stacks-root',
+    label: 'Stacks (root compatibility entry, minimal API profile)',
+    server: 'stacks.ts',
+    env: { BENCH_MODE: 'minimal', STACKS_SECURITY_HEADERS_DISABLE: 'true', BENCH_ROUTER_ENTRY: 'root' },
+    optIn: true,
+  },
+  {
     id: 'elysia',
     label: 'Elysia',
     server: 'elysia.ts',

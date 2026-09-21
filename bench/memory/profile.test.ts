@@ -6,6 +6,7 @@ describe('equal-rate idle-memory comparison profile', () => {
     expect(EQUAL_RATE_API_PROFILE).toEqual([
       { targetId: 'stacks-warm', label: 'Stacks (stock defaults, warm client)', requestRate: 25_000 },
       { targetId: 'stacks-minimal', label: 'Stacks (minimal API profile)', requestRate: 25_000 },
+      { targetId: 'stacks-root', label: 'Stacks (root compatibility entry, minimal API profile)', requestRate: 25_000 },
       { targetId: 'express', label: 'Express', requestRate: 25_000 },
       { targetId: 'fastify', label: 'Fastify', requestRate: 25_000 },
       { targetId: 'elysia', label: 'Elysia', requestRate: 25_000 },
@@ -16,6 +17,6 @@ describe('equal-rate idle-memory comparison profile', () => {
   })
 
   it('keeps stock-default and capability-equivalent Stacks profiles explicit', () => {
-    expect(EQUAL_RATE_API_PROFILE.slice(0, 2).map(target => target.targetId)).toEqual(['stacks-warm', 'stacks-minimal'])
+    expect(EQUAL_RATE_API_PROFILE.slice(0, 3).map(target => target.targetId)).toEqual(['stacks-warm', 'stacks-minimal', 'stacks-root'])
   })
 })

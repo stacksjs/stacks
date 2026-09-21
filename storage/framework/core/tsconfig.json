@@ -18,6 +18,7 @@
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/database/*": ["./database/src/*"],
       "@stacksjs/error-handling/*": ["./error-handling/src/*"],
+      "@stacksjs/router/*": ["./router/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
       // The ORM route generator is a package entrypoint of its own, so the
       // vendored `storage/framework/orm/routes.ts` can reach it from an app

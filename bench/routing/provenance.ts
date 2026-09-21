@@ -14,6 +14,7 @@ export const STACKS_FIXTURE_MODULES = [
   '@stacksjs/database',
   '@stacksjs/query-builder',
   '@stacksjs/router',
+  '@stacksjs/router/runtime',
   '@stacksjs/validation',
 ] as const
 

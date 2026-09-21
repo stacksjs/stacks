@@ -37,6 +37,7 @@
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
+      "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/storage/*": ["./core/storage/src/*"],
       // Deep entrypoint, mapped explicitly: `@stacksjs/*` below binds the
       // wildcard to the whole remainder, so `@stacksjs/orm/routes` looks for

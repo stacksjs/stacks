@@ -19,11 +19,14 @@ requests per second for every target. The lower common rate is intentional:
 using the 40,000 and 25,000 tiers from Bun's graphic would expose frameworks to
 different allocation pressure and make both peak and settled RSS less directly
 comparable.
-It reports Stacks twice: stock defaults with a returning client's CSRF cookie,
-and the explicitly labeled minimal API profile with CSRF, framework security
-headers, and framework-owned request IDs disabled. The stock row shows what
-users receive by default. The minimal row is the capability-equivalent
-comparison with peers that do not enable those features in their fixtures.
+It reports Stacks three ways: stock defaults with a returning client's CSRF
+cookie, the explicitly labeled minimal API profile, and that same minimal
+profile through the root compatibility entry. The latter two differ only by
+router entrypoint, so the same run measures the memory retained by root-only
+sessions, signed URLs, model binding, and typed-client helpers. The stock row
+shows what users receive by default. The minimal runtime row is the
+capability-equivalent comparison with peers that do not enable those features
+in their fixtures.
 
 Next.js SSR and Vite dev are separate workload classes. They are not included
 in the API table because comparing an SSR render or development transform with
@@ -41,7 +44,7 @@ database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
 cannot consistently favor the same implementation. The balanced triplet plus
 complementary pairs give every target the same cumulative position in the
-seven-target matrix instead of moving each target only one place per repeat
+eight-target matrix instead of moving each target only one place per repeat
 across the hour-long suite.
 The load generator runs on the same host as the target server for every row.
 This symmetric topology can understate absolute throughput when the generator

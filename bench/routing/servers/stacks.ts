@@ -22,7 +22,13 @@
  */
 
 import process from 'node:process'
-import { createStacksRouter, disableViewRouting } from '@stacksjs/router'
+
+const routerEntry = process.env.BENCH_ROUTER_ENTRY ?? 'runtime'
+if (routerEntry !== 'runtime' && routerEntry !== 'root')
+  throw new Error(`Unknown benchmark router entry: ${routerEntry}`)
+const { createStacksRouter, disableViewRouting } = routerEntry === 'root'
+  ? await import('@stacksjs/router')
+  : await import('@stacksjs/router/runtime')
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const hostname = '127.0.0.1'
@@ -109,4 +115,4 @@ if (withDb && serves('db-roundtrip')) {
 }
 
 const server = await router.serve({ port, hostname })
-console.error(`[bench] stacks (${minimal ? 'minimal' : 'secure'}) listening on ${server.port}`)
+console.error(`[bench] stacks (${minimal ? 'minimal' : 'secure'}, ${routerEntry} entry) listening on ${server.port}`)

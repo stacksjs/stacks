@@ -21,6 +21,7 @@
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/auth/*": ["./core/auth/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
+      "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
       "@stacksjs/types/exit-code": ["./core/types/src/exit-code.ts"],
       "@stacksjs/*": ["./core/*/src"],

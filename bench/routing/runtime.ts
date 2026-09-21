@@ -153,6 +153,7 @@ export function serverEnvironment(target: Target, withDb: boolean, scenarioId?: 
     BENCH_SCENARIO: scenarioId ?? '',
     BENCH_MODE: 'secure',
     BENCH_REQUEST_CONTEXT: 'true',
+    BENCH_ROUTER_ENTRY: 'runtime',
     BENCH_SQLITE_PROFILE: 'stock',
     STACKS_SECURITY_HEADERS_DISABLE: 'false',
     ...target.env,

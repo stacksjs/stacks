@@ -29,6 +29,7 @@
       "@stacksjs/database/*": ["./database/src/*"],
       "@stacksjs/error-handling/*": ["./error-handling/src/*"],
       "@stacksjs/path/*": ["./path/src/*"],
+      "@stacksjs/router/*": ["./router/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
       "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
       "@stacksjs/*": ["./*/src"],

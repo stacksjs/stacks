@@ -13,6 +13,7 @@ const meta: RunMeta = {
     '@stacksjs/database/replicas': 'storage/framework/core/database/src/replicas.ts',
     '@stacksjs/query-builder': 'storage/framework/core/query-builder/src/index.ts',
     '@stacksjs/router': 'storage/framework/core/router/src/index.ts',
+    '@stacksjs/router/runtime': 'storage/framework/core/router/src/runtime.ts',
     '@stacksjs/validation': 'storage/framework/core/validation/src/index.ts',
   },
   stacksRuntimeDependencies: {

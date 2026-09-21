@@ -26,6 +26,13 @@ import * as router from '@stacksjs/router'
 // wip
 ```
 
+API servers that only need route registration and serving can use the narrow
+runtime entry. The root entry remains the complete compatibility surface.
+
+```ts
+import { createStacksRouter } from '@stacksjs/router/runtime'
+```
+
 Learn more in the docs.
 
 ## 🧪 Testing
