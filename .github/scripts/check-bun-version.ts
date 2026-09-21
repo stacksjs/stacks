@@ -9,11 +9,10 @@
  * different versions, `@types/node` 26.5.0 down to 22.20.2 among them. That
  * last one changes what typechecks.
  *
- * This only warns. It cannot prevent the rewrite - Bun writes the lockfile
- * whether or not `preinstall` succeeds, which is worth knowing before anyone
- * tries to make this a hard gate - so the useful thing it can do is say what
- * happened and how to undo it, at the moment it happens, rather than leaving it
- * to `check-lockfile-version.ts` in CI several commits later.
+ * The install-time default only warns. It cannot prevent the rewrite - Bun
+ * writes the lockfile whether or not `preinstall` succeeds. CI calls this with
+ * `--strict` after Pantry provisions the repository toolchain, where a mismatch
+ * means the workflow is testing a Bun version the repository does not support.
  *
  * See stacksjs/stacks#2533.
  */
@@ -65,6 +64,9 @@ if (import.meta.main) {
   const pinned = pinnedBunVersion(packageJson)
   const running = process.versions.bun
 
-  if (!isPinnedBun(running, pinned))
+  if (!isPinnedBun(running, pinned)) {
     console.warn(mismatchWarning(running!, pinned!))
+    if (process.argv.includes('--strict'))
+      process.exitCode = 1
+  }
 }

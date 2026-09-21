@@ -32,7 +32,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -51,11 +51,11 @@ jobs:
       - name: Check lockfile version
         run: bun .github/scripts/check-lockfile-version.ts
 
-      # Warns rather than fails: the runtime is usable, and the point is to say
-      # so at the top of the log rather than leave a rewritten lockfile to be
-      # explained three commits later.
+      # CI must exercise the exact Bun that owns the committed lockfile and is
+      # declared in package.json. Pantry provisions that version above; this
+      # check fails the job if PATH ever selects another Bun.
       - name: Check the running Bun is the pinned one
-        run: bun .github/scripts/check-bun-version.ts
+        run: bun .github/scripts/check-bun-version.ts --strict
 
       - name: Check dependency state
         env:
@@ -77,7 +77,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -205,7 +205,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -316,7 +316,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -393,7 +393,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -512,7 +512,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -537,7 +537,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       # Run from the script's own directory so the repo's `bunfig.toml` does not
       # apply. Bun reads `$cwd/bunfig.toml` and does not walk up, and this repo's
@@ -580,7 +580,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       # Before the install and the build, and inside the job that can actually
       # see this environment's secrets (stacksjs/stacks#2068). A missing
@@ -670,7 +670,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'false'
+          install: 'true'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
