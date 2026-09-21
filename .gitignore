@@ -57,6 +57,7 @@ temp
 .temp
 data.ms
 generated/*
+bench/memory/results/
 .stx-serve
 custom-cli
 *bun-build
