@@ -9,6 +9,10 @@ on:
         description: Alternating root/runtime process pairs for each diagnostic
         type: string
         default: '30'
+      peer_runs:
+        description: Complete balanced peer server startup cycles
+        type: string
+        default: '30'
 
 permissions:
   contents: read
@@ -37,7 +41,9 @@ jobs:
           packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Install frozen dependencies
-        run: bun install --frozen-lockfile
+        run: |
+          bun install --frozen-lockfile
+          bun install --cwd bench/routing --frozen-lockfile
 
       - name: Verify startup harness
         run: bun test ./bench/startup/*.test.ts
@@ -73,6 +79,14 @@ jobs:
             --pairs="$PAIRS" \
             --output="$RUNNER_TEMP/router-startup/ready.json"
 
+      - name: Measure peer server startup
+        env:
+          RUNS: ${{ inputs.peer_runs || '30' }}
+        run: |
+          bun run bench:startup:peers -- \
+            --runs="$RUNS" \
+            --output="$RUNNER_TEMP/router-startup/peers.json"
+
       - name: Render validated startup report
         run: |
           bun run bench:startup:report -- \
@@ -80,6 +94,13 @@ jobs:
             --ready="$RUNNER_TEMP/router-startup/ready.json" \
             --output="$RUNNER_TEMP/router-startup/report.md"
           cat "$RUNNER_TEMP/router-startup/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Render validated peer startup report
+        run: |
+          bun run bench:startup:peer-report -- \
+            --input="$RUNNER_TEMP/router-startup/peers.json" \
+            --output="$RUNNER_TEMP/router-startup/peer-report.md"
+          cat "$RUNNER_TEMP/router-startup/peer-report.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Record and verify source after measurement
         if: always()

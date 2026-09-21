@@ -95,3 +95,15 @@ dependencies, entry paths, build graphs, or pair counts. It also revalidates
 sample completeness, metric summaries, source stability, and exact HTTP
 evidence before rendering. The hosted workflow retains this Markdown beside
 the raw JSON and adds it to the job summary.
+
+Render and revalidate a peer startup artifact independently:
+
+```bash
+bun run bench:startup:peer-report -- \
+  --input=bench/startup/results/peers-latest.json \
+  --output=bench/startup/results/peer-report.md
+```
+
+The scheduled workflow measures 30 peer cycles after installing the frozen
+comparison dependency set. It retains the raw peer samples and validated
+Markdown report with the root/runtime startup artifacts.
