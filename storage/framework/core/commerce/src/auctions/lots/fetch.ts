@@ -1,5 +1,5 @@
 import type { AuctionItemRow, AuctionRow } from '../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { nextMinimumBid } from '../engine/increments'
 import { rulesFor } from '../rules'
 

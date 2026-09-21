@@ -1,5 +1,5 @@
 import type { ModelRow, UpdateModelData, WaitlistRestaurant } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'

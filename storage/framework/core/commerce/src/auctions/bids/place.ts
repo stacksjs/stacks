@@ -1,6 +1,6 @@
 import type { AuctionItemRow, AuctionRow, BidRequest, BidRow, PlacedBid } from '../types'
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { effectiveCloseAt, extendedCloseAt } from '../engine/anti-snipe'
 import { nextMinimumBid } from '../engine/increments'
 import { resolveBid } from '../engine/proxy'

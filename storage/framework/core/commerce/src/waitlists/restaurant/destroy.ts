@@ -1,6 +1,6 @@
 import type { ModelRow, WaitlistRestaurant } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 

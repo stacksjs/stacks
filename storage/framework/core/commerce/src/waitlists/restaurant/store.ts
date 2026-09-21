@@ -2,7 +2,7 @@ import type { ModelRow, NewModelData, WaitlistRestaurant } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 type NewWaitlistRestaurant = NewModelData<typeof WaitlistRestaurant>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { restaurantWaitlistWriteData } from './write-data'

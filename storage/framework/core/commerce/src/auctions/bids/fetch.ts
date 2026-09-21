@@ -1,5 +1,5 @@
 import type { BidRow } from '../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * The bid currently winning a lot, or null when nobody has bid.

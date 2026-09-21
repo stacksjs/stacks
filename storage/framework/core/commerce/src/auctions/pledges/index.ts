@@ -1,6 +1,6 @@
 import type { PledgeRow, PledgeStatus } from '../types'
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { broadcastPledge } from '../realtime'
 
 export interface PledgeRequest {

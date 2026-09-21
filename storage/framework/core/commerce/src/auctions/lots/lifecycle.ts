@@ -1,5 +1,5 @@
 import type { AuctionItemRow, AuctionRow, AuctionSettlement, BidRow, ItemOutcome, PledgeRow } from '../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { effectiveCloseAt } from '../engine/anti-snipe'
 import { determineWinner, settle } from '../engine/winners'
 import { broadcastItemClosed } from '../realtime'
