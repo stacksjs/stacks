@@ -54,6 +54,30 @@ incorrect responses, and children that do not stop are hard failures. The same
 source, build graph, runtime, environment, dependency, and pairing checks used
 by the import diagnostic apply here.
 
+## Peer readiness diagnostic
+
+Compare the real stock Stacks, minimal Stacks, Elysia, Express, Fastify, Hono,
+and Bun raw routing fixtures from fresh Bun processes:
+
+```bash
+bun install --cwd bench/routing --frozen-lockfile
+bun run bench:startup:peers -- --runs=30
+```
+
+Every cycle measures all seven servers in a balanced process order. Each child
+loads the shared production `static-json` scenario without application preloads
+or env files, binds an ephemeral loopback port, and reports its RSS only after
+listening. The parent records spawn-to-listen and spawn-to-verified-response
+time, then requires the exact `200 application/json` response body before it
+stops the child.
+
+The JSON retains all samples, medians, ratios paired to Bun raw by cycle, sign
+counts, exact peer versions, target definitions, runtime and host details,
+framework package provenance, and source snapshots. Incomplete cycles,
+malformed handshakes, response drift, child diagnostics, missing versions, and
+source changes are hard failures. This comparison is diagnostic only on
+developer machines and shared hosted runners.
+
 ## Validated report
 
 Combine one import artifact and one readiness artifact from the same source and
