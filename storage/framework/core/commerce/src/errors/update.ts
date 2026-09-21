@@ -1,5 +1,5 @@
-import { db } from '@stacksjs/database'
-import { sql } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
+import { sql } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 
 export interface UpdateErrorData {

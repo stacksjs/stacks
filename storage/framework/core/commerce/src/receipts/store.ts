@@ -2,7 +2,7 @@ import type { ModelRow, NewModelData, Receipt } from '@stacksjs/orm'
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
 type NewReceipt = NewModelData<typeof Receipt>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { mutationCount } from '../utils/mutation-count'
 import { receiptTimestamp } from './timestamp'

@@ -1,4 +1,4 @@
-import { sqlHelpers } from '@stacksjs/database'
+import { sqlHelpers } from '@stacksjs/database/runtime'
 import { env } from '@stacksjs/env'
 import { mutationCount } from './mutation-count'
 

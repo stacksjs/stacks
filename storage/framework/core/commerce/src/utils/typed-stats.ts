@@ -6,8 +6,8 @@
  * column names, bindings, and result shapes.
  */
 
-import { aggregateFunctions, db } from '@stacksjs/database'
-import type { AggregateExpression } from '@stacksjs/database'
+import { aggregateFunctions, db } from '@stacksjs/database/runtime'
+import type { AggregateExpression } from '@stacksjs/database/runtime'
 
 /**
  * Stats descriptors map: each key is the result-row alias; each value is

@@ -1,7 +1,7 @@
 import type { ModelRow, PrintDevice, Receipt } from '@stacksjs/orm'
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../utils/model-row'
 
 /**

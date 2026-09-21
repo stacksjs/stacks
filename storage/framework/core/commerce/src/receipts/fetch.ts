@@ -1,5 +1,5 @@
 import type { ModelRow, Receipt } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { aggregateStats } from '../utils/typed-stats'

@@ -1,7 +1,7 @@
 import type { Customer, ModelRow, NewModelData } from '@stacksjs/orm'
 type CustomerJsonResponse = ModelRow<typeof Customer>
 type NewCustomer = NewModelData<typeof Customer>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { insertedId } from '../utils/inserted-id'

@@ -1,5 +1,5 @@
 import type { ModelRow, PrintDevice, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type PrintDeviceUpdate = UpdateModelData<typeof PrintDevice>

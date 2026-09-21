@@ -2,7 +2,7 @@ import type { ModelRow, NewModelData, PrintDevice } from '@stacksjs/orm'
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type NewPrintDevice = NewModelData<typeof PrintDevice>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 
 /**
