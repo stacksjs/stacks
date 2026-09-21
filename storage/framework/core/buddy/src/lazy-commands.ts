@@ -12,6 +12,21 @@ interface CommandLoader {
   exportName: string
 }
 
+export async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+  const deadline = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('timeout')), ms)
+  })
+
+  try {
+    return await Promise.race([work, deadline])
+  }
+  finally {
+    if (timeoutId !== undefined)
+      clearTimeout(timeoutId)
+  }
+}
+
 // Map of command names to their lazy loaders
 const commandRegistry: Record<string, CommandLoader> = {
   'about': { path: './commands/about.ts', exportName: 'about' },
@@ -268,9 +283,6 @@ export async function loadCommand(commandName: string, buddy: CLI): Promise<bool
  * registrar runs at most once per CLI instance.
  */
 export async function loadCommands(commandNames: string[], buddy: CLI): Promise<void> {
-  const timeout = (ms: number) => new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('timeout')), ms))
-
   const seen = new Set<string>()
   const unique: string[] = []
   for (const name of commandNames) {
@@ -284,10 +296,7 @@ export async function loadCommands(commandNames: string[], buddy: CLI): Promise<
 
   await Promise.all(unique.map(async (name) => {
     try {
-      await Promise.race([
-        loadCommand(name, buddy),
-        timeout(5000), // 5 second timeout per command
-      ])
+      await withTimeout(loadCommand(name, buddy), 5000)
     }
     catch {
       // Command timed out or failed, continue
