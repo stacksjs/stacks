@@ -21,7 +21,7 @@
  */
 
 import type { PermissionRecord, RbacStore, RoleRecord } from './rbac'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 // `isUniqueViolation` now lives in the cycle-free `@stacksjs/orm` package so
 // every framework write path (auto-CRUD routes, commerce/cms) can share it —
 // see stacksjs/stacks#1957. Re-exported here so existing consumers

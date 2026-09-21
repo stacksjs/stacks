@@ -1,7 +1,7 @@
 import type { NewUser } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'

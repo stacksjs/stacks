@@ -1,4 +1,4 @@
-import { db, getDatabaseDialect, markContextWrote, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database'
+import { db, getDatabaseDialect, markContextWrote, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database/runtime'
 
 interface TokenIdRow { id: number | string | bigint }
 

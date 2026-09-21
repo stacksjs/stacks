@@ -14,7 +14,7 @@
 import { Buffer } from 'node:buffer'
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
+import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 

@@ -6,9 +6,9 @@
 
 import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
 import { Buffer } from 'node:buffer'
-import type { Insertable } from '@stacksjs/database'
+import type { Insertable } from '@stacksjs/database/runtime'
 
-import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
+import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { User } from '@stacksjs/orm'
 
 type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>

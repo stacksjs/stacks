@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime} from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { formatDate } from '@stacksjs/orm'

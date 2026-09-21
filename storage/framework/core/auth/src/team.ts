@@ -1,5 +1,5 @@
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { Auth } from './authentication'
 import { sessionUser } from './session-auth'
 import { authCookieName } from './cookie-auth'

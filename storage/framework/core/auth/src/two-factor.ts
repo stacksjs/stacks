@@ -33,7 +33,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
+import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyTwoFactorCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
 

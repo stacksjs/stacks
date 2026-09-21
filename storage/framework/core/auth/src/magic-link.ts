@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime } from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, templateByName } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { RateLimiter } from './rate-limiter'

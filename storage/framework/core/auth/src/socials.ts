@@ -1,5 +1,5 @@
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * The social sign-in policy: which local user a provider identity resolves to

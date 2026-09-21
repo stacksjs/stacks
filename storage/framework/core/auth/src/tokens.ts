@@ -21,7 +21,7 @@ import type {
   TokenScopes,
 } from '@stacksjs/types'
 import { createHash, randomBytes } from 'node:crypto'
-import { db, markContextWrote, mutationCount } from '@stacksjs/database'
+import { db, markContextWrote, mutationCount } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
 import { makeHash } from '@stacksjs/security'
@@ -33,7 +33,7 @@ import { requestToken } from './request-token'
 // ============================================================================
 
 import { env } from '@stacksjs/env'
-import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database'
+import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database/runtime'
 
 /** Current database driver */
 const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlite'

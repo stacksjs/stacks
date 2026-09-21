@@ -28,7 +28,7 @@ function userId(value: number): void {
 }
 
 async function connection(database?: ReferralDatabase): Promise<ReferralDatabase> {
-  return database ?? (await import('@stacksjs/database')).db as unknown as ReferralDatabase
+  return database ?? (await import('@stacksjs/database/runtime')).db as unknown as ReferralDatabase
 }
 
 async function rows<T>(database: ReferralDatabase, sql: string, bindings: unknown[]): Promise<T[]> {

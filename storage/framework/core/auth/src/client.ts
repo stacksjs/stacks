@@ -1,6 +1,6 @@
 import type { Result } from '@stacksjs/error-handling'
 import { randomBytes } from 'node:crypto'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import { err, HttpError, ok } from '@stacksjs/error-handling'
 import { makeHash } from '@stacksjs/security'

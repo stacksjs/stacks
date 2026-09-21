@@ -9,7 +9,7 @@ import type {
   TokenCreateOptions,
 } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { db, parseSqlDateTime} from '@stacksjs/database'
+import { db, parseSqlDateTime } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
