@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { artifactRelativeFile, regularArtifactFileSize } from '../artifact-files'
+import { summarizeRoutingMeasurements } from './aggregate'
 import { ROUTING_ARTIFACT_SCHEMA_VERSION } from './artifact'
 import { renderReport } from './report'
 
@@ -36,6 +37,8 @@ export function verifyRoutingArtifactDirectory(directory: string): RoutingArtifa
     throw new Error(`Routing artifact uses unsupported schema version ${isRecord(parsed) ? String(parsed.schemaVersion) : 'unknown'}`)
   if (!isRecord(parsed.workload))
     throw new Error('Routing artifact has no workload definition')
+  if (!isRecord(parsed.meta) || !Number.isSafeInteger(parsed.meta.runs) || (parsed.meta.runs as number) < 1)
+    throw new Error('Routing artifact has invalid run metadata')
 
   const targetIds = recordIds(parsed.targets, 'target')
   const scenarioIds = recordIds(parsed.workload.scenarios, 'scenario')
@@ -86,6 +89,18 @@ export function verifyRoutingArtifactDirectory(directory: string): RoutingArtifa
   }
 
   const artifact = parsed as unknown as RoutingArtifact
+  const activeTargetIds = (parsed.targets as Array<Record<string, unknown>>)
+    .filter(target => typeof target.skipped !== 'string')
+    .map(target => target.id as string)
+  const expectedMeasurements = summarizeRoutingMeasurements(
+    artifact.repeats,
+    activeTargetIds,
+    [...scenarioIds],
+    parsed.meta.runs as number,
+    parsed.meta.requestRate != null,
+  )
+  if (JSON.stringify(artifact.measurements) !== JSON.stringify(expectedMeasurements))
+    throw new Error('Routing artifact measurements do not match retained repeats')
   const regenerated = renderReport({
     meta: artifact.meta,
     scenarios: artifact.workload.scenarios,

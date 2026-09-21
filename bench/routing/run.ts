@@ -14,7 +14,7 @@
 
 import type { Driver } from './drivers'
 import type { BusyProcess } from './host-load'
-import type { Measurement, RoutingRepeat, RunMeta } from './report'
+import type { RoutingRepeat, RunMeta } from './report'
 import type { ScenarioParityEvidence } from './runtime'
 import { Buffer } from 'node:buffer'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -23,6 +23,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
+import { summarizeRoutingMeasurements } from './aggregate'
 import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess, readLinuxClockTicksPerSecond } from './host-load'
@@ -37,7 +38,6 @@ import { assertParity, assertStableParity, benchmarkQueryLoggingEnabled, boot, F
 import { balancedTargetOrder } from './schedule'
 import { SCENARIOS } from './scenarios'
 import { readSourceState, sourceStateChanged } from './source'
-import { median, relativeRange, relativeThroughput } from './statistics'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -243,7 +243,6 @@ async function main(): Promise<void> {
       console.error(`[bench] busy-host override: ${meta.busyHostProcesses.map(formatBusyProcess).join(', ')}`)
   }
 
-  const measurements: Measurement[] = []
   const parityChecks: Array<{
     targetId: string
     scenarioId: string
@@ -351,71 +350,14 @@ async function main(): Promise<void> {
     }
   }
 
-  for (const target of targets) {
-    if (!availableTargets.has(target.id))
-      continue
-    for (const scenario of scenarios) {
-      const results = collected.get(`${target.id}:${scenario.id}`)
-      if (!results || results.length !== opts.runs)
-        throw new Error(`Incomplete measurements for ${target.id}:${scenario.id}`)
-      const rpsValues = results.map(r => r.rpsMean)
-      const p50s = results.map(r => r.rpsP50).filter((v): v is number => v != null)
-      const rawResults = collected.get(`bun-raw:${scenario.id}`)
-      const rawByRun = rawResults && new Map(rawResults.map(result => [result.run, result]))
-
-      /*
-       * Aggregate all-or-nothing.
-       *
-       * A median taken over the repeats that happened to report a metric is a
-       * number with no stated coverage: it reads the same whether three
-       * repeats agreed or one repeat was the only evidence. Where a metric is
-       * missing from any repeat the aggregate is `null`, which the report
-       * renders as `-` and publication rejects with a reason naming the run.
-       */
-      const everyValue = (pick: (r: RoutingRepeat) => number | null): number | null => {
-        const values = results.map(pick)
-        return values.every((v): v is number => v != null && Number.isFinite(v)) ? median(values) : null
-      }
-
-      // Pooled rather than the mean of per-repeat rates, so a repeat that
-      // served fewer requests carries proportionally less weight - and a
-      // repeat that served none contributes nothing instead of a free 0.
-      const pooledRequests = results.reduce((sum, r) => sum + r.requests, 0)
-      const pooledErrors = results.reduce((sum, r) => sum + r.errors, 0)
-      const costs = results.map(r => r.cpuMicrosPerRequest)
-      const everyCost = costs.every((v): v is number => v != null && Number.isFinite(v)) ? costs as number[] : null
-      const rawCosts = rawByRun && results.map(result => rawByRun.get(result.run)?.cpuMicrosPerRequest ?? null)
-      const everyRawCost = rawCosts?.every((v): v is number => v != null && Number.isFinite(v)) ? rawCosts as number[] : null
-
-      measurements.push({
-        targetId: target.id,
-        scenarioId: scenario.id,
-        rpsMean: median(rpsValues),
-        rpsP50: p50s.length ? median(p50s) : null,
-        latencyMs: {
-          p50: everyValue(r => r.latencyMs.p50),
-          p90: everyValue(r => r.latencyMs.p90),
-          p99: everyValue(r => r.latencyMs.p99),
-        },
-        errorRate: pooledRequests > 0 ? pooledErrors / pooledRequests : null,
-        cpuPercent: everyValue(r => r.cpuPercent),
-        cpuMicrosPerRequest: everyCost ? median(everyCost) : null,
-        cpuCostSpread: everyCost ? { min: Math.min(...everyCost), max: Math.max(...everyCost) } : null,
-        rateAttained: everyValue(r => r.rateAttained),
-        spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
-        rangeRatio: relativeRange(rpsValues),
-        relativeToRaw: rawByRun
-          ? relativeThroughput(rpsValues, results.map(result => rawByRun.get(result.run)?.rpsMean ?? Number.NaN))
-          : null,
-        relativeCpuCostToRaw: opts.requestRate != null && everyCost && everyRawCost
-          ? relativeThroughput(everyCost, everyRawCost)
-          : null,
-        runs: results.length,
-      })
-    }
-  }
-
   const repeats = [...collected.values()].flat()
+  const measurements = summarizeRoutingMeasurements(
+    repeats,
+    targets.filter(target => availableTargets.has(target.id)).map(target => target.id),
+    scenarios.map(scenario => scenario.id),
+    opts.runs,
+    opts.requestRate != null,
+  )
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
     ...routingMeasurementPublicationIssues(

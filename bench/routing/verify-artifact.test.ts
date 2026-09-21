@@ -5,6 +5,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRoutingArtifact } from './artifact'
+import { summarizeRoutingMeasurements } from './aggregate'
 import { renderReport } from './report'
 import { SCENARIOS } from './scenarios'
 import { verifyRoutingArtifactDirectory } from './verify-artifact'
@@ -18,6 +19,7 @@ const meta: RunMeta = {
   loadTopology: 'same-host',
   publishable: false,
   connections: 50,
+  requestRate: 10_000,
   warmupSeconds: 5,
   durationSeconds: 30,
   runs: 1,
@@ -58,7 +60,7 @@ const repeat: RoutingRepeat = {
 }
 
 function artifact(): RoutingArtifact {
-  return createRoutingArtifact({
+  const value = createRoutingArtifact({
     meta,
     targets: [{ id: 'bun-raw', label: 'Bun.serve baseline' }],
     workload: {
@@ -70,6 +72,8 @@ function artifact(): RoutingArtifact {
     measurements: [measurement],
     repeats: [{ ...repeat }],
   })
+  value.measurements = summarizeRoutingMeasurements(value.repeats, ['bun-raw'], ['static-json'], 1, true)
+  return value
 }
 
 function writeArtifact(over?: (value: RoutingArtifact, root: string) => void): string {
@@ -142,5 +146,10 @@ describe('routing artifact verifier', () => {
     const root = writeArtifact()
     writeFileSync(join(root, 'report.md'), 'stale report\n')
     expect(() => verifyRoutingArtifactDirectory(root)).toThrow('does not match its structured evidence')
+  })
+
+  test('rejects aggregate measurements that drift from retained repeats', () => {
+    const root = writeArtifact(value => value.measurements[0]!.rpsMean++)
+    expect(() => verifyRoutingArtifactDirectory(root)).toThrow('measurements do not match retained repeats')
   })
 })
