@@ -5899,7 +5899,7 @@ async function getRoutingContextDispatcher(): Promise<ContextDispatcher> {
       // config, drivers, or query builders into every HTTP server process.
       let database = await import('@stacksjs/database/replicas') as unknown as DatabaseRoutingApi
       if (typeof database.runInDatabaseRoutingContext !== 'function' && typeof database.withDatabaseRoutingContext !== 'function')
-        database = await import('@stacksjs/database') as unknown as DatabaseRoutingApi
+        database = await import('@stacksjs/database/runtime') as unknown as DatabaseRoutingApi
       const dispatcher = database.runInDatabaseRoutingContext
       const runner = database.withDatabaseRoutingContext ?? database.withRoutingContext
       routingContextDispatcher = typeof dispatcher === 'function'
