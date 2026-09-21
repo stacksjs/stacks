@@ -1065,6 +1065,12 @@ export const log: Log = {
   },
 }
 
+// A narrow runtime facade can suppress default-level debug calls without
+// importing this complete implementation. Once any consumer has loaded the
+// root module, delegation is the only way to preserve registered transports
+// and live configuration exactly.
+;(globalThis as Record<symbol, unknown>)[Symbol.for('@stacksjs/logging:implementation-loaded')] = true
+
 // Export convenience functions
 export async function dump(...args: any[]): Promise<void> {
   for (const arg of args) {
