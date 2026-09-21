@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { assertFrameworkRepo, isInsideRoot, looksLikeFrameworkRepo } from './framework-repo'
+import { assertFrameworkRepo, isInsideRoot, looksLikeFrameworkRepo } from '../src/commands/docs/framework-repo'
 
 /**
  * The docs tools locate their files by counting `../` up from their own source,

@@ -1,6 +1,6 @@
-import type { BuddyCommandInventoryEntry } from '../list'
+import type { BuddyCommandInventoryEntry } from '../src/commands/list'
 import { describe, expect, it } from 'bun:test'
-import { renderBuddyCommandReference } from './buddy-commands'
+import { renderBuddyCommandReference } from '../src/commands/docs/buddy-commands'
 
 const command: BuddyCommandInventoryEntry = {
   name: 'deploy',

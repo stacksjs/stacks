@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { validateOpenApi } from './generated-artifacts'
+import { validateOpenApi } from '../src/commands/docs/generated-artifacts'
 
 describe('generated API artifact validation', () => {
   it('rejects empty, duplicate, and optional path evidence', () => {

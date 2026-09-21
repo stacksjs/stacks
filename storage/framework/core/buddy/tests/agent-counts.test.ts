@@ -10,7 +10,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const root = new URL('../../../../../../../', import.meta.url).pathname
+const root = new URL('../../../../../', import.meta.url).pathname
 const source = readFileSync(join(root, 'storage/framework/core/buddy/src/commands/docs/agent-counts.ts'), 'utf-8')
 
 /** Every `{ file, pattern }` site the tool declares. */

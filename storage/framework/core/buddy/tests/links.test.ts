@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join, resolve } from 'node:path'
-import { extractLinks, isFileCaseExact, isSkippableLink, isTrackedPath, resolveCandidates, selfRepoPath } from './links'
+import { extractLinks, isFileCaseExact, isSkippableLink, isTrackedPath, resolveCandidates, selfRepoPath } from '../src/commands/docs/links'
 
 describe('docs link checker (stacksjs/stacks#2056)', () => {
   describe('isSkippableLink', () => {
@@ -187,7 +187,7 @@ describe('isTrackedPath', () => {
  * a wrong-cased directory sails through. The walk has to start at the root.
  */
 describe('isFileCaseExact', () => {
-  const root = resolve(import.meta.dir, '../../../../../../..')
+  const root = resolve(import.meta.dir, '../../../../..')
 
   it('accepts a real path with the right case', () => {
     expect(isFileCaseExact(join(root, 'docs/index.md'), root)).toBe(true)
