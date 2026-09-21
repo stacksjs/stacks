@@ -373,7 +373,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "bun-plugin-dtsx": "^0.11.10"
+        "bun-plugin-dtsx": "^0.11.13"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -1868,14 +1868,14 @@
       "resolved": "https://registry.npmjs.org/bun-plugin-auto-imports/-/bun-plugin-auto-imports-0.4.2.tgz",
       "integrity": "sha512-UmXPZ25fu9tvddmOGlOrY9FVqSAB3S1zroX/tps9y/SmRNJRsWlVRkO1LcDe2E2HxauCr3iOz55calIVYP1XUg=="
     },
-    "bun-plugin-dtsx@0.11.10": {
+    "bun-plugin-dtsx@0.11.13": {
       "name": "bun-plugin-dtsx",
-      "version": "0.11.10",
+      "version": "0.11.13",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-plugin-dtsx/-/bun-plugin-dtsx-0.11.10.tgz",
-      "integrity": "sha512-qQrEBIV1pzhDmrxmhTHhgVK5gqE5CfpO8C9NCp7zUaN48c4IJVrpqXbeNWch7sAT/Hf4GhVMWau7T65xySm59Q==",
+      "resolved": "https://registry.npmjs.org/bun-plugin-dtsx/-/bun-plugin-dtsx-0.11.13.tgz",
+      "integrity": "sha512-E9GeZ0bx1d9m82oESHTy/dhmGrqdAlNiIEgXFzRGSUw042+SEoTo1z9z4/OCx0VyIFjF5r8QNr/F9DQ6MPlBTg==",
       "dependencies": {
-        "@stacksjs/dtsx": "0.11.10"
+        "@stacksjs/dtsx": "0.11.13"
       }
     },
     "bun-plugin-stx@0.2.286": {
