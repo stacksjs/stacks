@@ -5,7 +5,7 @@ import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 
 const dialect = process.env.DB_CONNECTION
-assert(dialect === 'sqlite' || dialect === 'postgres')
+assert(dialect === 'sqlite' || dialect === 'postgres' || dialect === 'mysql')
 const configPath = process.env.STACKS_PAGE_DOCUMENT_CONFIG
 assert(configPath && basename(dirname(configPath)).startsWith('stacks-page-document-'))
 if (dialect === 'sqlite')
