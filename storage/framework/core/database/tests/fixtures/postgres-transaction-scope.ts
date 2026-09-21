@@ -7,7 +7,7 @@ assert(name?.startsWith('stacks_transaction_test_'))
 assert(host && ['127.0.0.1', 'localhost', '[::1]'].includes(host))
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, initializeDbConfig, ensureDatabaseConfigLoaded, resetDatabaseConnection, enqueueAfterCommit, isInTransaction } = await import('@stacksjs/database')
+const { closeDatabaseConnection, db, initializeDbConfig, ensureDatabaseConfigLoaded, resetDatabaseConnection, enqueueAfterCommit, isInTransaction } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({
   app: { env: 'test' },
@@ -114,6 +114,6 @@ try {
   console.log('PASS PostgreSQL nested rollback, concurrent isolation, commit retry, backend recovery and reset')
 }
 finally {
-  resetDatabaseConnection()
+  await closeDatabaseConnection()
   await admin.close()
 }

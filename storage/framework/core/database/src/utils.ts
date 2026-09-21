@@ -14,6 +14,7 @@ import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQue
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
 import { SQL } from 'bun'
+import { closeDatabaseConnections } from './connection-lifecycle'
 import { runInTransactionScope } from './transaction-context'
 import { env as envVars } from '@stacksjs/env'
 import type { QueryBuilderDialect } from './dialect'
@@ -810,6 +811,8 @@ function applyTransactionRoutingContext(instance: RawQueryBuilder): void {
 }
 
 function getDb(): ReturnType<typeof createQueryBuilder> {
+  if (_databaseClosePromise)
+    throw new Error('Database connections are shutting down')
   const active = activeTransactionConnection()
   if (active) return active
   if (!_dbInstance) {
@@ -847,6 +850,7 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
  * list cannot keep serving reads from the old hosts.
  */
 let _replicaInstances = new Map<string, ReturnType<typeof createQueryBuilder>>()
+let _databaseClosePromise: Promise<void> | null = null
 
 /**
  * Discard every cached database client after the underlying query-builder
@@ -863,6 +867,51 @@ export function resetDatabaseConnection(): void {
   lastGeneralSqliteStatement = undefined
   _dbInstance = null
   _replicaInstances = new Map()
+}
+
+/**
+ * Close every framework-owned database pool and wait until it has drained.
+ *
+ * Unlike resetDatabaseConnection(), this is a shutdown boundary. New queries
+ * are rejected while the cached primary and replica builders close so they
+ * cannot attach themselves to a pool that is already draining.
+ */
+export function closeDatabaseConnection(): Promise<void> {
+  if (_databaseClosePromise)
+    return _databaseClosePromise
+
+  const connections = [
+    ...(_dbInstance ? [_dbInstance] : []),
+    ..._replicaInstances.values(),
+  ]
+  _dbInstance = null
+  _replicaInstances = new Map()
+  lastGeneralSqliteStatement = undefined
+
+  const closing = (async () => {
+    try {
+      await closeDatabaseConnections(connections)
+    }
+    finally {
+      // The builders above own the same primary SQL pool cached by upstream.
+      // Clear that lower cache only after close() has finished so its lazy
+      // proxy cannot create and close a replacement connection by mistake.
+      resetQueryBuilderConnection()
+    }
+  })()
+
+  _databaseClosePromise = closing
+  void closing.then(
+    () => {
+      if (_databaseClosePromise === closing)
+        _databaseClosePromise = null
+    },
+    () => {
+      if (_databaseClosePromise === closing)
+        _databaseClosePromise = null
+    },
+  )
+  return closing
 }
 
 /**
