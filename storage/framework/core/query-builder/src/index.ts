@@ -72,21 +72,58 @@ function callQueryHooks<K extends 'onQueryStart' | 'onQueryEnd' | 'onQueryError'
   }
 }
 
-function withPersistentQueryHooks(configuredHooks?: QueryHooks): QueryHooks {
-  return {
-    ...configuredHooks,
-    onQueryStart: event => callQueryHooks('onQueryStart', event, configuredHooks),
-    onQueryEnd: event => callQueryHooks('onQueryEnd', event, configuredHooks),
-    onQueryError: event => callQueryHooks('onQueryError', event, configuredHooks),
-    onSlowQuery: event => callQueryHooks('onSlowQuery', event, configuredHooks),
+const DISPATCHED_QUERY_HOOKS = ['onQueryStart', 'onQueryEnd', 'onQueryError', 'onSlowQuery'] as const
+
+function hasListener(kind: typeof DISPATCHED_QUERY_HOOKS[number], configuredHooks?: QueryHooks): boolean {
+  if (configuredHooks?.[kind] !== undefined)
+    return true
+  for (const hooks of persistentQueryHooks) {
+    if (hooks[kind] !== undefined)
+      return true
   }
+  return false
+}
+
+/**
+ * A dispatcher for each hook kind that a registered or configured hook set
+ * defines, and none for the others.
+ *
+ * bun-query-builder 0.2.70 calls `onQueryStart` and `onQueryEnd` on every
+ * successful query whenever they are set, so a dispatcher with no listener
+ * behind it would still run once per query. Which kinds exist is decided each
+ * time a hook set is registered or removed or `setConfig` runs, so a key added
+ * to a hook object in between is not dispatched until then.
+ */
+function withPersistentQueryHooks(configuredHooks?: QueryHooks): QueryHooks {
+  const hooks: Record<string, unknown> = { ...configuredHooks }
+  for (const kind of DISPATCHED_QUERY_HOOKS) {
+    if (hasListener(kind, configuredHooks))
+      hooks[kind] = (event: Parameters<NonNullable<QueryHooks[typeof kind]>>[0]) => callQueryHooks(kind, event, configuredHooks)
+  }
+  return hooks as QueryHooks
+}
+
+function activeQueryHooks(): QueryHooks | undefined {
+  return persistentQueryHooks.size > 0 || hasConfiguredQueryHooks(configuredQueryHooks)
+    ? withPersistentQueryHooks(configuredQueryHooks)
+    : undefined
+}
+
+/**
+ * Make `hooks` the whole of bun-query-builder's hook config.
+ *
+ * Its `setConfig` deep-merges plain objects into the current config, so a hook
+ * set with fewer kinds than the one it replaces would keep the dispatchers it
+ * leaves out. `undefined` replaces rather than merges, so clear first.
+ */
+function replaceQueryHooks(hooks: QueryHooks | undefined): void {
+  setBunQueryBuilderConfig({ hooks: undefined })
+  if (hooks)
+    setBunQueryBuilderConfig({ hooks })
 }
 
 function applyQueryHooks(): void {
-  const hooks = persistentQueryHooks.size > 0 || hasConfiguredQueryHooks(configuredQueryHooks)
-    ? withPersistentQueryHooks(configuredQueryHooks)
-    : undefined
-  setBunQueryBuilderConfig({ hooks })
+  replaceQueryHooks(activeQueryHooks())
 }
 
 export function registerPersistentQueryHooks(hooks: QueryHooks): () => void {
@@ -101,12 +138,9 @@ export function registerPersistentQueryHooks(hooks: QueryHooks): () => void {
 export function setConfig(config: QueryBuilderConfig): void {
   if (Object.prototype.hasOwnProperty.call(config, 'hooks'))
     configuredQueryHooks = config.hooks
-  setBunQueryBuilderConfig({
-    ...config,
-    hooks: persistentQueryHooks.size > 0 || hasConfiguredQueryHooks(configuredQueryHooks)
-      ? withPersistentQueryHooks(configuredQueryHooks)
-      : undefined,
-  })
+  const { hooks: _hooks, ...rest } = config
+  setBunQueryBuilderConfig(rest)
+  replaceQueryHooks(activeQueryHooks())
 }
 
 /**
