@@ -164,7 +164,11 @@ describe('subpath imports', () => {
       'lint': 'pickier reads files rather than resolving imports, and `bun buddy lint` loads no subpath',
       'scaffold-smoke': 'it typechecks a freshly scaffolded app against the PUBLISHED framework, not this checkout',
       'deployment-target': 'it installs nothing and imports no framework package',
-      'deploy': 'the deploy action runs `bun run build` over every core package itself before it ships, and nothing it imports reaches a subpath',
+      // Not because anything builds on the runner: the Hetzner deploy ships
+      // source, and the box bundles it with `bun build`, which resolves each
+      // subpath through core/tsconfig.build.json. That mapping is pinned by
+      // the next test, and it is what actually broke a deploy.
+      'deploy': 'it ships source, and the box resolves subpaths through tsconfig.build.json paths, checked below',
       'publish-commit': 'it runs the full `bun run build` before publishing',
     }
 
@@ -192,5 +196,62 @@ describe('subpath imports', () => {
     // An exemption for a job that is gone is a stale reason, not a safe one.
     for (const name of Object.keys(exempt))
       expect(Object.keys(workflow.jobs)).toContain(name)
+  })
+
+  /**
+   * Where no `dist/` exists, a subpath resolves only through
+   * core/tsconfig.build.json.
+   *
+   * The production box never has a `dist/`: the deploy ships source and
+   * bundles it there with `bun build`, which honours these `paths`. The
+   * catch-all `@stacksjs/*` does not cover a subpath - it binds the wildcard to
+   * the whole remainder, so `@stacksjs/logging/runtime` looks for
+   * `./logging/runtime/src` and falls back to the missing `dist/` - so every
+   * package imported by subpath needs its own entry. That list is typed by
+   * hand, and the router's import of `@stacksjs/logging/runtime` had none, so
+   * the first deploy to reach the box failed with "Could not resolve" four
+   * times while CI, which builds `dist/`, stayed green.
+   *
+   * Type-only imports are skipped: the bundler erases them.
+   */
+  it('resolve to source through tsconfig.build.json, which is all the deploy box has', () => {
+    const tsconfig = Bun.JSONC.parse(readFileSync(join(coreDir, 'tsconfig.build.json'), 'utf-8')) as { compilerOptions: { paths: Record<string, string[]> } }
+    const mapped = Object.keys(tsconfig.compilerOptions.paths)
+    const covers = (specifier: string): boolean => mapped.some(key => key.endsWith('/*')
+      ? key !== '@stacksjs/*' && specifier.startsWith(key.slice(0, -1))
+      : key === specifier)
+
+    const packages = workspacePackages()
+    const governed = [...packages.values()].filter((dir) => {
+      try {
+        return readFileSync(join(coreDir, dir, 'tsconfig.json'), 'utf-8').includes('tsconfig.build.json')
+      }
+      catch {
+        return false
+      }
+    })
+
+    const unmapped: string[] = []
+    for (const dir of governed) {
+      for (const file of sourceFiles(join(coreDir, dir, 'src'))) {
+        const source = readFileSync(file, 'utf-8')
+          .split('\n')
+          .filter((line) => {
+            const code = line.trimStart()
+            return !code.startsWith('*') && !code.startsWith('//') && !code.startsWith('/*')
+          })
+          .join('\n')
+        const specifiers = [
+          ...[...source.matchAll(/^\s*(?:import|export)\s+(?!type\b)[^'\n]*?from '(@stacksjs\/([a-z0-9-]+)\/[^']+)'/gm)].map(m => [m[1]!, m[2]!]),
+          ...[...source.matchAll(/(?<!typeof )\bimport\('(@stacksjs\/([a-z0-9-]+)\/[^']+)'\)/g)].map(m => [m[1]!, m[2]!]),
+        ]
+        for (const [specifier, name] of specifiers) {
+          if (packages.has(`@stacksjs/${name}`) && !covers(specifier!))
+            unmapped.push(`${file.slice(coreDir.length + 1)} imports ${specifier}`)
+        }
+      }
+    }
+
+    expect([...new Set(unmapped)].sort()).toEqual([])
   })
 })
