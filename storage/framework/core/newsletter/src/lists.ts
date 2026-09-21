@@ -1,5 +1,5 @@
 import type { CreateListInput } from './types'
-import { db, matchedRows } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database/runtime'
 
 /**
  * EmailList CRUD wrapper.

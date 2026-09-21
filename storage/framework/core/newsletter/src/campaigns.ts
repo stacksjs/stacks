@@ -1,5 +1,5 @@
 import type { CreateCampaignInput, SendCampaignOptions } from './types'
-import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database'
+import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { lists } from './lists'
 
 /**

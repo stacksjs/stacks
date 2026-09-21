@@ -1,5 +1,5 @@
 import type { SubscribeOptions, SubscribeResult, UnsubscribeResult } from './types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { lists } from './lists'
 
 /**
