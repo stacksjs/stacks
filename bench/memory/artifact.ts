@@ -1,7 +1,8 @@
 import type { ScenarioParityEvidence } from '../routing/runtime'
 import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
-import type { MemoryMeasurement, MemoryRunMeta } from './report'
+import type { LoadResult } from '../routing/drivers'
+import type { MemoryMeasurement, MemoryRunMeta, MemorySample } from './report'
 
 export const MEMORY_ARTIFACT_SCHEMA_VERSION = 1
 
@@ -35,6 +36,18 @@ export interface MemoryArtifact {
       targetId: string
     }>
   }
+}
+
+export interface MemoryRawRun {
+  load: LoadResult
+  parity: {
+    after: ScenarioParityEvidence
+    before: ScenarioParityEvidence
+  }
+  run: number
+  samples: MemorySample[]
+  settledAfterMs: number
+  targetId: string
 }
 
 export function createMemoryArtifact(input: Omit<MemoryArtifact, 'schemaVersion'>): MemoryArtifact {

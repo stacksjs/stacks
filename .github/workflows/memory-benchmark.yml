@@ -59,6 +59,9 @@ jobs:
       - name: Measure idle RSS
         run: bun run bench:memory --driver oha --output bench/memory/results/ci
 
+      - name: Verify completed memory artifact
+        run: bun bench/memory/verify-artifact.ts --directory=bench/memory/results/ci
+
       - name: Upload report and raw samples
         if: always()
         uses: actions/upload-artifact@v6

@@ -88,6 +88,10 @@ Every run writes:
   target definitions, scenario contract, and schema v1 links to every raw run
 - `raw/<target>--run<N>.json`, every RSS sample and raw load-generator result
 
+`verify-artifact.ts` reconstructs every measurement from those raw files,
+checks their deterministic paths and byte sizes, validates parity evidence, and
+regenerates the report from the JSON before the hosted workflow uploads it.
+
 The report and metadata include the Git revision and working-tree state captured
 before and after measurement, plus the machine architecture, exact load-generator
 version, load topology, and exact versions resolved for selected peer frameworks.

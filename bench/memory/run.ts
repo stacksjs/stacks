@@ -9,6 +9,7 @@
 import type { Driver, LoadResult } from '../routing/drivers'
 import type { BusyProcess } from '../routing/host-load'
 import type { MemoryMeasurement, MemoryRunMeta, MemorySample } from './report'
+import type { MemoryRawRun } from './artifact'
 import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
 import type { ScenarioParityEvidence } from '../routing/runtime'
@@ -215,6 +216,7 @@ async function measure(
     samples: MemorySample[]
     load: LoadResult
     parity: { before: ScenarioParityEvidence, after: ScenarioParityEvidence }
+    settledAfterMs: number
   }
 > {
   const booted = await boot(target, Boolean(scenario.requiresDb), scenario)
@@ -258,6 +260,7 @@ async function measure(
       samples,
       load,
       parity: { before: parityBefore, after: parityAfter },
+      settledAfterMs: settledAfter,
     }
   }
   finally {
@@ -399,13 +402,15 @@ async function main(): Promise<void> {
         targetRows.push({ id: target.id, label: selected.label, requestRate })
       }
       const rawOutputFile = `raw/${target.id}--run${run}.json`
-      const rawOutput = `${JSON.stringify({
+      const raw: MemoryRawRun = {
         targetId: target.id,
         run,
         samples: result.samples,
         load: result.load,
         parity: result.parity,
-      }, null, 2)}\n`
+        settledAfterMs: result.settledAfterMs,
+      }
+      const rawOutput = `${JSON.stringify(raw, null, 2)}\n`
       measurements.push({
         targetId: target.id,
         run,
