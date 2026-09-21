@@ -35,7 +35,7 @@ test('captures real production HTTP work only after the start handshake', async 
   }
   finally {
     const logs = await worker.close()
-    expect(logs.stderr).toContain('stacks (secure) listening')
+    expect(logs.stderr).toContain('stacks (secure, runtime entry) listening')
     rmSync(directory, { recursive: true, force: true })
   }
 }, 20_000)
