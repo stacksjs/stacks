@@ -13,8 +13,8 @@ export interface ScheduledSample {
 
 export const MIN_STARTUP_PAIRS = 15
 
-export function parseStartupOptions(args: readonly string[]): StartupOptions {
-  let output = 'bench/startup/results/latest.json'
+export function parseStartupOptions(args: readonly string[], defaultOutput = 'bench/startup/results/latest.json'): StartupOptions {
+  let output = defaultOutput
   let pairs = MIN_STARTUP_PAIRS
 
   for (const argument of args) {

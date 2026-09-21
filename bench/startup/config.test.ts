@@ -7,6 +7,7 @@ describe('startup benchmark configuration', () => {
       output: 'bench/startup/results/latest.json',
       pairs: MIN_STARTUP_PAIRS,
     })
+    expect(parseStartupOptions([], 'bench/startup/results/ready.json').output).toBe('bench/startup/results/ready.json')
   })
 
   test('parses explicit options and rejects invalid values', () => {
