@@ -62,7 +62,7 @@ export function detectInstaller(cwd: string): string[] {
     /*
      * Carry the project's linker through. `pantry install` defaults to the
      * isolated layout regardless of what `bunfig.toml` asks for, which puts a
-     * transitive package at `node_modules/.bun/@types+bun@1.4.1/node_modules/
+     * transitive package at `node_modules/.bun/@types+bun@1.4.2/node_modules/
      * @types/bun`. TypeScript's default `typeRoots` walks `node_modules/@types`
      * upward and never looks there, so a scaffolded app failed its first
      * typecheck with

@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-/** The lockfile format written by the Pantry-pinned Bun 1.4.1 toolchain. */
+/** The lockfile format written by the Pantry-pinned Bun 1.4.2 toolchain. */
 export const EXPECTED_LOCKFILE_VERSION = 2
 
 /** Parse the `lockfileVersion` from bun.lock text, or null if absent. */
@@ -27,7 +27,7 @@ if (import.meta.main) {
   }
   else {
     console.error(
-      `✗ bun.lock is lockfileVersion ${version ?? 'unknown'}, but Pantry and \`engines.bun\` pin Bun 1.4.1, which writes v${EXPECTED_LOCKFILE_VERSION}.\n`
+      `✗ bun.lock is lockfileVersion ${version ?? 'unknown'}, but Pantry and \`engines.bun\` pin Bun 1.4.2, which writes v${EXPECTED_LOCKFILE_VERSION}.\n`
       + `\n`
       + `  Install the declared toolchain and regenerate the lockfile through Pantry:\n`
       + `\n`

@@ -17,7 +17,7 @@ describe('memory benchmark report', () => {
         startedAt: '2026-09-04T00:00:00.000Z',
         source: { revision: 'a'.repeat(40), dirty: true },
         sourceAtEnd: { revision: 'b'.repeat(40), dirty: false },
-        runtimeRequirement: { range: '1.4.1', matches: true },
+        runtimeRequirement: { range: '1.4.2', matches: true },
         driver: 'oha',
         driverVersion: 'oha 1.16.0',
         loadTopology: 'same-host',
@@ -39,7 +39,7 @@ describe('memory benchmark report', () => {
           release: '6.0',
           cpu: 'Test CPU',
           cores: 8,
-          bun: '1.4.1',
+          bun: '1.4.2',
         },
       },
       targets: [{ id: 'stacks', label: 'Stacks', requestRate: 40_000 }],
@@ -51,8 +51,8 @@ describe('memory benchmark report', () => {
 
     expect(report).toContain(`| Source at start | \`${'a'.repeat(40)}\` (modified working tree) |`)
     expect(report).toContain(`| Source at end | \`${'b'.repeat(40)}\` (clean working tree) |`)
-    expect(report).toContain('| Runtime | Bun 1.4.1 |')
-    expect(report).toContain('| Project Bun requirement | 1.4.1 (matched) |')
+    expect(report).toContain('| Runtime | Bun 1.4.2 |')
+    expect(report).toContain('| Project Bun requirement | 1.4.2 (matched) |')
     expect(report).toContain('| Load generator version | oha 1.16.0 |')
     expect(report).toContain('| Load topology | same host as target server |')
     expect(report).toContain('| Peer framework versions | `elysia`: 1.4.30<br>`hono`: 4.13.5 |')
@@ -69,13 +69,13 @@ describe('memory benchmark report', () => {
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
         machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
-        runtimeRequirement: { range: '1.4.1', matches: false },
+        runtimeRequirement: { range: '1.4.2', matches: false },
       },
       targets: [], measurements: [],
     })
     expect(report).toContain('| Runtime | Bun 1.3.14 |')
-    expect(report).toContain('| Project Bun requirement | 1.4.1 (runtime mismatch) |')
-    expect(report).toContain('Runtime mismatch: Bun 1.3.14 does not satisfy package.json engines.bun (1.4.1).')
+    expect(report).toContain('| Project Bun requirement | 1.4.2 (runtime mismatch) |')
+    expect(report).toContain('Runtime mismatch: Bun 1.3.14 does not satisfy package.json engines.bun (1.4.2).')
   })
 
   it('flags a busy-host override as non-publishable', () => {
@@ -85,7 +85,7 @@ describe('memory benchmark report', () => {
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
         busyHostProcesses: [{ pid: 20, cpuPercent: 88.44, command: 'compiler' }],
-        machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
+        machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.2' },
       },
       targets: [], measurements: [],
     })
@@ -99,7 +99,7 @@ describe('memory benchmark report', () => {
         publicationIssues: ['host architecture is arm64, not x64', 'only 1 fresh-process run(s) were requested; at least 3 are required'],
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
-        machine: { arch: 'arm64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
+        machine: { arch: 'arm64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.2' },
       },
       targets: [], measurements: [],
     })

@@ -4,7 +4,7 @@ description: Set up Stacks locally, make focused changes, and submit verified co
 ---
 # Contribution Guide
 
-Fork the repository, create a focused branch, and let Pantry install the pinned Bun 1.4.1 workspace runtime.
+Fork the repository, create a focused branch, and let Pantry install the pinned Bun 1.4.2 workspace runtime.
 
 ```bash
 pantry install

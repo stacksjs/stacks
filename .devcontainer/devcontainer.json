@@ -3,7 +3,7 @@
   "name": "Stacks",
 
   // Debian rather than a Bun image on purpose. Pantry provisions and PINS Bun
-  // for this workspace (1.4.1 today), so a base image that ships its own Bun
+  // for this workspace (1.4.2 today), so a base image that ships its own Bun
   // would put a second, differently-versioned one earlier on PATH - and the
   // version skew would show up as a lockfile or build difference nobody
   // configured. See the Prerequisites section of the README.

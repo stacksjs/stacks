@@ -5,42 +5,58 @@ import { EXPECTED_LOCKFILE_VERSION } from './check-lockfile-version'
 import { isPinnedBun, mismatchWarning, pinnedBunVersion } from './check-bun-version'
 
 const packageJson = readFileSync(resolve(import.meta.dir, '..', '..', 'package.json'), 'utf8')
+const repositoryRoot = resolve(import.meta.dir, '..', '..')
 
 describe('pinned Bun guard', () => {
   it('reads engines.bun', () => {
-    expect(pinnedBunVersion('{"engines":{"bun":"1.4.1"}}')).toBe('1.4.1')
+    expect(pinnedBunVersion('{"engines":{"bun":"1.4.2"}}')).toBe('1.4.2')
     expect(pinnedBunVersion('{}')).toBeNull()
     expect(pinnedBunVersion('{"engines":{}}')).toBeNull()
   })
 
   /**
    * "Close enough" is what produced the lockfile nobody asked for. 1.3.14
-   * satisfies every range you would reasonably write around 1.4.1 - ^1.3, >=1.3,
+   * satisfies every range you would reasonably write around 1.4.2 - ^1.3, >=1.3,
    * 1.x - and it is the version that rewrote bun.lock. So the comparison is
    * exact, and this test is here to stop it being loosened into a range later.
    */
   it('accepts only the exact pinned version', () => {
-    expect(isPinnedBun('1.4.1', '1.4.1')).toBe(true)
-    expect(isPinnedBun('1.3.14', '1.4.1')).toBe(false)
-    expect(isPinnedBun('1.4.2', '1.4.1')).toBe(false)
-    expect(isPinnedBun('1.4.10', '1.4.1')).toBe(false)
+    expect(isPinnedBun('1.4.2', '1.4.2')).toBe(true)
+    expect(isPinnedBun('1.3.14', '1.4.2')).toBe(false)
+    expect(isPinnedBun('1.4.1', '1.4.2')).toBe(false)
+    expect(isPinnedBun('1.4.10', '1.4.2')).toBe(false)
   })
 
   it('stays quiet when there is nothing to compare', () => {
     expect(isPinnedBun('1.3.14', null)).toBe(true)
-    expect(isPinnedBun(undefined, '1.4.1')).toBe(true)
+    expect(isPinnedBun(undefined, '1.4.2')).toBe(true)
   })
 
   it('names both versions and how to undo the damage', () => {
-    const warning = mismatchWarning('1.3.14', '1.4.1')
+    const warning = mismatchWarning('1.3.14', '1.4.2')
     expect(warning).toContain('1.3.14')
-    expect(warning).toContain('1.4.1')
+    expect(warning).toContain('1.4.2')
     expect(warning).toContain('git checkout -- bun.lock')
     expect(warning).toContain('./pantry/.bin/bun install')
   })
 
   it('pins a Bun in package.json', () => {
     expect(pinnedBunVersion(packageJson)).toMatch(/^\d+\.\d+\.\d+$/)
+  })
+
+  it('keeps every active Bun version source aligned', () => {
+    const pinnedVersion = pinnedBunVersion(packageJson)
+    const deps = readFileSync(resolve(repositoryRoot, 'deps.yml'), 'utf8')
+    const config = readFileSync(resolve(repositoryRoot, 'config/deps.ts'), 'utf8')
+    const pantryLock = JSON.parse(readFileSync(resolve(repositoryRoot, 'pantry.lock'), 'utf8')) as {
+      packages: Record<string, { version: string }>
+      workspaces: { '': { system: Record<string, string> } }
+    }
+
+    expect(deps.match(/^\s*bun:\s*(\S+)$/m)?.[1]).toBe(pinnedVersion)
+    expect(config.match(/^\s*bun:\s*'([^']+)'/m)?.[1]).toBe(pinnedVersion)
+    expect(pantryLock.workspaces[''].system['bun.sh']).toBe(pinnedVersion)
+    expect(pantryLock.packages[`bun.sh@${pinnedVersion}`]?.version).toBe(pinnedVersion)
   })
 
   /**

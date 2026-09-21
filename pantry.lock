@@ -12,7 +12,7 @@
         "better-dx": "^0.2.24"
       },
       "system": {
-        "bun.sh": "1.4.1",
+        "bun.sh": "1.4.2",
         "curl.se": "^8.22.0",
         "git-scm.org": "^2.47.0",
         "sqlite.org": "^3.47.2"
@@ -1911,11 +1911,11 @@
         "query-builder": "./dist/bin/cli.js"
       }
     },
-    "bun.sh@1.4.1": {
+    "bun.sh@1.4.2": {
       "name": "bun.sh",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "source": "pantry",
-      "resolved": "registry:bun.sh@1.4.1"
+      "resolved": "registry:bun.sh@1.4.2"
     },
     "craft-native@0.0.87": {
       "name": "craft-native",

@@ -7,7 +7,7 @@ const publishable = {
   driverPublishable: true,
   driverVersion: 'oha 1.16.0',
   dedicated: true,
-  runtimeRequirement: { range: '1.4.1', matches: true },
+  runtimeRequirement: { range: '1.4.2', matches: true },
   source: { revision: 'a'.repeat(40), dirty: false },
   targetIds: DEFAULT_TARGETS.map(target => target.id),
   scenarioIds: SCENARIOS.map(scenario => scenario.id),
@@ -50,7 +50,7 @@ describe('routing benchmark publication profile', () => {
       driverPublishable: false,
       driverVersion: null,
       dedicated: false,
-      runtimeRequirement: { range: '1.4.1', matches: false },
+      runtimeRequirement: { range: '1.4.2', matches: false },
       source: { revision: null, dirty: null },
       peerVersions: { elysia: 'unavailable' },
       stacksRuntimeDependencies: {

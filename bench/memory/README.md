@@ -96,7 +96,7 @@ attainment is marked invalid and cannot be used for a memory win. Fixed-rate
 runs require `oha`; the runner fails instead of silently substituting a
 saturating driver.
 
-No baseline is checked in. A publishable baseline requires Bun 1.4.1 from the
+No baseline is checked in. A publishable baseline requires Bun 1.4.2 from the
 Pantry environment, `oha`, at least three fresh-process repeats, a clean Git
 revision, and dedicated Linux x64 hardware with no observed competing process.
 Set `BENCH_DEDICATED=1` only on such a machine. Other runs list their publication

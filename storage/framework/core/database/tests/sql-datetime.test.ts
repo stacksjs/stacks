@@ -36,8 +36,8 @@ describe('sqlDateTime - the write format', () => {
    * `setSystemTime(new Date(0))` is a no-op on Bun 1.3.14 - `Date.now()` keeps
    * whatever the previous mocked value was - so the epoch entry below reads as
    * the timestamp before it and this looks exactly like a caching bug in
-   * `sqlDateTime`. It is fixed in the 1.4.1 this repository pins in
-   * `engines.bun`, which is what CI runs and what `./pantry/.bin/bun` is
+   * `sqlDateTime`. It is fixed starting in 1.4.1, including the newer runtime
+   * pinned by `engines.bun`, which is what CI runs and what `./pantry/.bin/bun` is
    * (#2533). One line reproduces it, with no Stacks code involved:
    *
    *   setSystemTime(new Date('2024-02-29T23:59:59.998Z'))
