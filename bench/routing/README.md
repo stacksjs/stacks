@@ -59,8 +59,9 @@ accident. The safeguards here exist only to stop that:
   framework and to no other, and two people on the same commit would measure
   different things. A server inherits only what a process needs to start -
   `PATH`, `HOME`, locale, temp directories - and the benchmark states
-  everything else explicitly. `DB_QUERY_LOGGING_ENABLED` is forwarded because
-  the report describes it.
+  everything else explicitly. Every child also uses `--no-env-file`, so Bun
+  cannot repopulate filtered settings from the repository after it starts.
+  `DB_QUERY_LOGGING_ENABLED` is forwarded because the report describes it.
 - **Every process exposes only benchmark routes.** The Stacks fixture uses the
   framework's public programmatic-router configuration to disable application
   route discovery, and its public API-server configuration to disable view

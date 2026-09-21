@@ -65,6 +65,7 @@ export function serverCommand(server: string): string[] {
   return [
     process.execPath,
     `--config=${join(BENCH_ROOT, 'bunfig.toml')}`,
+    '--no-env-file',
     join(BENCH_ROOT, 'servers', server),
   ]
 }
@@ -75,10 +76,13 @@ export function serverCommand(server: string): string[] {
  * Not the whole parent environment. The runner boots through the repository's
  * own bunfig, which preloads `.env`, so spreading `process.env` handed every
  * server the developer's application configuration - and only the Stacks
- * targets read any of it. A stray `STACKS_CSP` adds a header to every Stacks
- * response and to nobody else's; a stray query-logging threshold changes the
- * database row for one framework. Two people on the same commit would measure
- * different things, and the difference would land entirely on one target.
+ * targets read any of it. The child command also disables Bun's automatic
+ * env-file loading; filtering the inherited environment would otherwise be
+ * undone as soon as Bun started in the repository root. A stray `STACKS_CSP`
+ * adds a header to every Stacks response and to nobody else's; a stray
+ * query-logging threshold changes the database row for one framework. Two
+ * people on the same commit would measure different things, and the difference
+ * would land entirely on one target.
  *
  * So the host contributes only what a process needs to run at all, and the
  * benchmark states everything else explicitly. `NODE_OPTIONS` is deliberately

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { assertProbeResponse, assertResponseParity, assertStableParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, headersFor, hostEnvironment, probeHeadersFor, serverCommand, serverEnvironment } from './runtime'
 import { SCENARIOS } from './scenarios'
@@ -9,8 +11,36 @@ describe('benchmark server isolation', () => {
     expect(serverCommand('bun-raw.ts')).toEqual([
       process.execPath,
       `--config=${BENCH_ROOT}bunfig.toml`,
+      '--no-env-file',
       `${BENCH_ROOT}servers/bun-raw.ts`,
     ])
+  })
+
+  it('keeps cwd env files out while preserving explicit benchmark variables', async () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'stacks-benchmark-env-'))
+    try {
+      writeFileSync(join(cwd, '.env.production'), 'BENCH_ENV_SENTINEL=loaded-from-file\n')
+      const child = Bun.spawn(serverCommand('../fixtures/environment.ts'), {
+        cwd,
+        env: {
+          ...hostEnvironment(),
+          NODE_ENV: 'production',
+          BENCH_EXPLICIT_ENV: 'kept-from-spawn',
+        },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(JSON.parse(stdout)).toEqual({ sentinel: null, explicit: 'kept-from-spawn' })
+    }
+    finally {
+      rmSync(cwd, { force: true, recursive: true })
+    }
   })
 
   it('boots every framework in production mode', () => {
