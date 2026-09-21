@@ -1,7 +1,7 @@
 import type { FormDefinition, SubmissionErrors } from './types'
 import { randomUUID } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime } from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import { validateSubmission } from './validate'
 
 export interface SubmitOptions {

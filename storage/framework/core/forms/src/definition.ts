@@ -1,5 +1,5 @@
 import type { FieldConditions, FieldOptions, FormDefinition, FormFieldDefinition, FormFieldType, FormSettings, PublicFormDefinition } from './types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 function parseJson<T>(raw: unknown, fallback: T): T {
   if (raw && typeof raw === 'object')

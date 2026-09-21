@@ -1,5 +1,5 @@
 import type { FormDefinition, FormFieldDefinition, FormFieldType, FormSettings } from './types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { loadFormByUuid } from './definition'
 
 /**
