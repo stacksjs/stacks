@@ -9,7 +9,7 @@
  * and a coarse device/browser classification from the user agent.
  */
 
-import { db, sqlDateTime } from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 
 const ASSET_EXT = /\.(?:css|js|mjs|map|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|eot|txt|xml|json|webmanifest|mp[34]|webm|pdf|zip)$/i
 
