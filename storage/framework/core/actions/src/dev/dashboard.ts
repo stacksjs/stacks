@@ -1,12 +1,14 @@
 import process from 'node:process'
 import { randomUUID } from 'node:crypto'
 import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, publicPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
+import { resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 
@@ -459,18 +461,76 @@ async function startStxServer(): Promise<void> {
   })
 }
 
+/** Whether anything is listening on `port` of the loopback interface. */
+function portAnswers(port: number, timeoutMs = 800): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ port, host: '127.0.0.1' })
+    const finish = (answered: boolean): void => {
+      try { socket.destroy() }
+      catch { /* already gone */ }
+      resolve(answered)
+    }
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+    setTimeout(() => finish(false), timeoutMs).unref?.()
+  })
+}
+
+/**
+ * Publish `dashboard.<domain>` on the shared rpx daemon.
+ *
+ * The daemon is root-owned and already holds :443 for every dev host, so a
+ * route is all this process can (and needs to) contribute. The entry carries
+ * this pid, which is how the daemon garbage-collects it when the dashboard
+ * stops.
+ */
+async function registerWithRpxDaemon(domainToServe: string): Promise<boolean> {
+  const { writeEntry } = await import('@stacksjs/rpx')
+
+  await writeEntry({
+    id: `${domainToServe}-dashboard`,
+    from: `localhost:${dashboardPort}`,
+    to: domainToServe,
+    cwd: process.cwd(),
+    createdAt: new Date().toISOString(),
+    pid: process.pid,
+  }, undefined, verbose)
+
+  return true
+}
+
+/**
+ * Make `https://dashboard.<domain>` reach this server. Returns whether the
+ * pretty URL is actually served - see {@link resolveDashboardProxyStrategy}
+ * for the cases.
+ */
 async function startReverseProxy(): Promise<boolean> {
   if (!dashboardDomain) return false
 
-  // When running as part of `buddy dev`, the main dev server handles the
-  // reverse proxy for all subdomains. Starting a second proxy here would
-  // race for port 443 and break routing for other subdomains (docs, api, etc.).
-  if (process.env.STACKS_PROXY_MANAGED) return false
-
   try {
-    const { startProxies } = await import('@stacksjs/rpx')
+    // Loaded lazily: under `buddy dev` the strategy is settled without touching
+    // rpx at all, and importing it there only costs boot time and log noise.
+    let rpx: typeof import('@stacksjs/rpx') | undefined
+    const loadRpx = async (): Promise<typeof import('@stacksjs/rpx')> => (rpx ??= await import('@stacksjs/rpx'))
 
-    await startProxies({
+    const strategy = await resolveDashboardProxyStrategy(dashboardDomain, {
+      proxyManagedExternally: Boolean(process.env.STACKS_PROXY_MANAGED),
+      isDaemonRunning: async () => (await loadRpx()).isDaemonRunning(),
+      httpsPortAnswers: () => portAnswers(443),
+    })
+
+    if (strategy === 'origin-only')
+      return false
+
+    // `buddy dev` owns the proxy; it is up or coming up there, and the pretty
+    // URL is the one to print either way.
+    if (strategy === 'parent-managed')
+      return true
+
+    if (strategy === 'daemon-route')
+      return await registerWithRpxDaemon(dashboardDomain)
+
+    await (await loadRpx()).startProxies({
       proxies: [
         { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
       ],
@@ -482,7 +542,11 @@ async function startReverseProxy(): Promise<boolean> {
       verbose,
     })
 
-    return true
+    // rpx falls back to a high port when it cannot bind :443 (it needs root),
+    // and that fallback port is not in the pretty URL. Only claim the pretty
+    // URL once :443 actually answers; otherwise the banner below prints the
+    // origin URL, which always works.
+    return await portAnswers(443)
   }
   catch (error) {
     if (verbose) originalConsoleLog(`  ${dim(`Proxy: ${error}`)}`)
@@ -532,17 +596,13 @@ const serverReady = await waitForServer(dashboardPort)
 // Restore console before our output
 restoreConsole()
 
-// The native Craft window uses the same pretty HTTPS URL as the browser.
-// When the parent `buddy dev` process already owns rpx/tlsx, it is ready or
-// becoming ready there. A direct `buddy dev:dashboard` waits for its own proxy.
-let proxyStarted = Boolean(process.env.STACKS_PROXY_MANAGED)
-if (!proxyStarted) {
-  // eslint-disable-next-line ts/no-top-level-await
-  proxyStarted = await startReverseProxy().catch((err) => {
-    if (verbose) console.warn('[Dashboard] Reverse proxy failed:', err)
-    return false
-  })
-}
+// The native Craft window uses the same pretty HTTPS URL as the browser, so
+// both wait on the same answer: is anything serving `dashboard.<domain>`?
+// eslint-disable-next-line ts/no-top-level-await
+const proxyStarted = await startReverseProxy().catch((err) => {
+  if (verbose) console.warn('[Dashboard] Reverse proxy failed:', err)
+  return false
+})
 
 const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
 const dashboardLocalUrl = `http://localhost:${dashboardPort}`
@@ -558,12 +618,18 @@ const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
 console.log()
 console.log(`  ${bold(cyan('stacks dashboard'))}`)
 console.log()
-if (dashboardHttpsUrl) {
+// Only lead with the pretty URL when something is actually serving it.
+// Printing `https://dashboard.<domain>` on the strength of APP_URL alone sent
+// people to a host that refused the connection whenever the proxy had not come
+// up, with the URL that does work hidden on the `Origin` line below it.
+if (dashboardHttpsUrl && proxyStarted) {
   console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardHttpsUrl)}`)
   console.log(`  ${dim('➜')}  ${dim('Origin')}:  ${dim(dashboardLocalUrl)}`)
 }
 else {
   console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardLocalUrl)}`)
+  if (dashboardHttpsUrl)
+    console.log(`  ${dim('➜')}  ${dim('Pretty')}:  ${dim(`${dashboardHttpsUrl} needs the rpx proxy - run \`buddy dev\``)}`)
 }
 console.log(`  ${green('➜')}  ${bold('Window')}:  ${dim('Stacks Dashboard')} ${dim('1400×900')}`)
 console.log(`  ${green('➜')}  ${bold('Models')}:  ${dim(`${discoveredModels.length} discovered`)}`)
