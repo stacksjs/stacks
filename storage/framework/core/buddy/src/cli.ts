@@ -267,8 +267,8 @@ await main()
  */
 export function applyAliases(cli: CLI, signature: string, aliases: string[]): boolean {
   const name = signature.trim().split(/\s+/)[0]
-  const commands = cli.commands as Array<{ name?: string, alias?: (alias: string) => unknown }>
-  const command = commands.find(candidate => candidate.name === name)
+  const commands = cli?.commands as Array<{ name?: string, alias?: (alias: string) => unknown }> | undefined
+  const command = commands?.find(candidate => candidate.name === name)
 
   if (!command || typeof command.alias !== 'function')
     return false
