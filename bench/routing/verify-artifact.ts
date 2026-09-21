@@ -5,6 +5,7 @@ import process from 'node:process'
 import { artifactRelativeFile, regularArtifactFileSize } from '../artifact-files'
 import { summarizeRoutingMeasurements } from './aggregate'
 import { ROUTING_ARTIFACT_SCHEMA_VERSION } from './artifact'
+import { parseOhaOutput } from './drivers'
 import { renderReport } from './report'
 
 export interface RoutingArtifactVerification {
@@ -39,6 +40,10 @@ export function verifyRoutingArtifactDirectory(directory: string): RoutingArtifa
     throw new Error('Routing artifact has no workload definition')
   if (!isRecord(parsed.meta) || !Number.isSafeInteger(parsed.meta.runs) || (parsed.meta.runs as number) < 1)
     throw new Error('Routing artifact has invalid run metadata')
+  if (!Number.isFinite(parsed.meta.durationSeconds) || (parsed.meta.durationSeconds as number) <= 0
+    || !Number.isFinite(parsed.meta.warmupSeconds) || (parsed.meta.warmupSeconds as number) < 0
+    || (parsed.meta.requestRate != null && (!Number.isSafeInteger(parsed.meta.requestRate) || (parsed.meta.requestRate as number) <= 0)))
+    throw new Error('Routing artifact has invalid load metadata')
 
   const targetIds = recordIds(parsed.targets, 'target')
   const scenarioIds = recordIds(parsed.workload.scenarios, 'scenario')
@@ -78,12 +83,46 @@ export function verifyRoutingArtifactDirectory(directory: string): RoutingArtifa
       throw new Error(`Routing artifact repeat ${identity} raw byte count is ${value.rawBytes}, but its file has ${rawSize}`)
     rawFileCount++
 
+    if (parsed.meta.driver === 'oha') {
+      const reconstructed = parseOhaOutput(readFileSync(rawFile, 'utf8'))
+      const expectedRate = parsed.meta.requestRate == null
+        ? null
+        : reconstructed.requests / ((parsed.meta.requestRate as number) * (parsed.meta.durationSeconds as number))
+      const structured = {
+        rpsMean: value.rpsMean,
+        rpsP50: value.rpsP50,
+        latencyMs: value.latencyMs,
+        requests: value.requests,
+        errors: value.errors,
+        rateAttained: value.rateAttained,
+      }
+      const expected = {
+        rpsMean: reconstructed.rpsMean,
+        rpsP50: reconstructed.rpsP50,
+        latencyMs: reconstructed.latencyMs,
+        requests: reconstructed.requests,
+        errors: reconstructed.errors,
+        rateAttained: expectedRate,
+      }
+      if (JSON.stringify(structured) !== JSON.stringify(expected))
+        throw new Error(`Routing artifact repeat ${identity} does not match its raw oha evidence`)
+    }
+
+    const expectsWarmup = (parsed.meta.warmupSeconds as number) > 0
+    if ((value.warmupOutputFile !== null) !== expectsWarmup)
+      throw new Error(`Routing artifact repeat ${identity} has inconsistent warm-up evidence`)
     if (value.warmupOutputFile !== null) {
       const warmupPath = `raw/${value.targetId}--${value.scenarioId}--run${value.run}--warmup.txt`
+      const warmupFile = artifactRelativeFile(root, value.warmupOutputFile, warmupPath, 'Routing artifact warm-up output')
       regularArtifactFileSize(
-        artifactRelativeFile(root, value.warmupOutputFile, warmupPath, 'Routing artifact warm-up output'),
+        warmupFile,
         'Routing artifact warm-up output',
       )
+      if (parsed.meta.driver === 'oha') {
+        const warmup = parseOhaOutput(readFileSync(warmupFile, 'utf8'))
+        if (warmup.requests <= 0 || warmup.errors !== 0)
+          throw new Error(`Routing artifact repeat ${identity} has failed warm-up evidence`)
+      }
       rawFileCount++
     }
   }

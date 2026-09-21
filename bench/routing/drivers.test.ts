@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test'
 import process from 'node:process'
-import { DRIVERS, ohaArgs } from './drivers'
+import { DRIVERS, ohaArgs, parseOhaOutput } from './drivers'
 
 describe('publication-capable drivers', () => {
   it('allows only the native generator that exposes exact status counts', () => {
@@ -207,11 +207,12 @@ describe('latency percentiles preserve absence', () => {
   })
 
   it('rejects a non-numeric percentile instead of producing NaN', async () => {
-    // `'fast' * 1000` is NaN, which is finite-checked nowhere upstream and
-    // renders as NaN in the report.
-    const result = await runOha({ ...base, latencyPercentiles: { p50: 'fast', p90: 0.0005, p99: 0.0007 } })
+    expect(runOha({ ...base, latencyPercentiles: { p50: 'fast', p90: 0.0005, p99: 0.0007 } }))
+      .rejects.toThrow('invalid p50 latency')
+  })
 
-    expect(result.latencyMs.p50).toBeNull()
-    expect(result.latencyMs.p90).toBeCloseTo(0.5, 6)
+  it('rejects malformed request rates and response counts', () => {
+    expect(() => parseOhaOutput(JSON.stringify({ ...base, summary: { requestsPerSec: 'fast' } }))).toThrow('invalid requests per second')
+    expect(() => parseOhaOutput(JSON.stringify({ ...base, statusCodeDistribution: { 200: -1 } }))).toThrow('invalid HTTP 200 count')
   })
 })

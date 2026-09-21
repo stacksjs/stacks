@@ -68,6 +68,61 @@ export interface Driver {
   run: (req: LoadRequest) => Promise<LoadResult>
 }
 
+function record(value: unknown, label: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    throw new Error(`oha output has invalid ${label}`)
+  return value as Record<string, unknown>
+}
+
+function finite(value: unknown, label: string, nullable = false): number | null {
+  if (nullable && value == null) return null
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0)
+    throw new Error(`oha output has invalid ${label}`)
+  return value
+}
+
+function count(value: unknown, label: string): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 0)
+    throw new Error(`oha output has invalid ${label}`)
+  return value as number
+}
+
+export function parseOhaOutput(raw: string): LoadResult {
+  const json = record(JSON.parse(raw), 'root object')
+  const summary = record(json.summary, 'summary')
+  const rpsMean = finite(summary.requestsPerSec, 'requests per second')!
+  const rps = json.rps == null ? null : record(json.rps, 'RPS summary')
+  const rpsPercentiles = rps?.percentiles == null ? null : record(rps.percentiles, 'RPS percentiles')
+  const latency = json.latencyPercentiles == null ? null : record(json.latencyPercentiles, 'latency percentiles')
+  const codes = json.statusCodeDistribution == null ? {} : record(json.statusCodeDistribution, 'status distribution')
+  const transport = json.errorDistribution == null ? {} : record(json.errorDistribution, 'error distribution')
+
+  let ok = 0
+  let bad = 0
+  for (const [code, value] of Object.entries(codes)) {
+    if (!/^\d{3}$/.test(code))
+      throw new Error(`oha output has invalid HTTP status ${code}`)
+    const requests = count(value, `HTTP ${code} count`)
+    if (Number(code) === 200) ok += requests
+    else bad += requests
+  }
+  const transportErrors = Object.entries(transport)
+    .reduce((sum, [name, value]) => sum + count(value, `${name} error count`), 0)
+
+  return {
+    rpsMean,
+    rpsP50: finite(rpsPercentiles?.p50, 'p50 requests per second', true),
+    latencyMs: {
+      p50: finite(latency?.p50, 'p50 latency', true) == null ? null : finite(latency?.p50, 'p50 latency')! * 1000,
+      p90: finite(latency?.p90, 'p90 latency', true) == null ? null : finite(latency?.p90, 'p90 latency')! * 1000,
+      p99: finite(latency?.p99, 'p99 latency', true) == null ? null : finite(latency?.p99, 'p99 latency')! * 1000,
+    },
+    requests: ok + bad + transportErrors,
+    errors: bad + transportErrors,
+    raw,
+  }
+}
+
 export function ohaArgs(req: LoadRequest, durationSeconds: number): string[] {
   return [
     'oha',
@@ -134,7 +189,6 @@ function methodArgs(req: LoadRequest, methodFlag: string, bodyFlag: string, head
  * "not measured" rather than as zero latency or as NaN.
  */
 const millis = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value : null
-const seconds = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value * 1000 : null
 const micros = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value / 1000 : null
 
 /** `oha` — the preferred tool. Percentiles come straight out of its JSON. */
@@ -151,29 +205,7 @@ const oha: Driver = {
       await capture(ohaArgs(req, req.warmupSeconds))
     }
     const raw = await capture(ohaArgs(req, req.durationSeconds))
-    const json = JSON.parse(raw)
-    const codes: Record<string, number> = json.statusCodeDistribution ?? {}
-    let ok = 0
-    let bad = 0
-    for (const [code, count] of Object.entries(codes)) {
-      if (Number(code) === 200) ok += count
-      else bad += count
-    }
-    const transportErrors = Object.values(json.errorDistribution as Record<string, number> ?? {}).reduce((sum, count) => sum + count, 0)
-    return {
-      rpsMean: json.summary.requestsPerSec,
-      rpsP50: json.rps?.percentiles?.['p50'] ?? null,
-      latencyMs: {
-        p50: seconds(json.latencyPercentiles?.p50),
-        p90: seconds(json.latencyPercentiles?.p90),
-        p99: seconds(json.latencyPercentiles?.p99),
-      },
-      // Failed connections have no status code, but still belong in the
-      // denominator. Otherwise a wholly failed run can report 0% errors.
-      requests: ok + bad + transportErrors,
-      errors: bad + transportErrors,
-      raw,
-    }
+    return parseOhaOutput(raw)
   },
 }
 

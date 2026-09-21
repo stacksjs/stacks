@@ -12,6 +12,17 @@ import { verifyRoutingArtifactDirectory } from './verify-artifact'
 
 const roots: string[] = []
 
+const measuredRaw = JSON.stringify({
+  summary: { requestsPerSec: 10_000 },
+  rps: { percentiles: { p50: 10_000 } },
+  latencyPercentiles: { p50: 0.001, p90: 0.002, p99: 0.003 },
+  statusCodeDistribution: { 200: 300_000 },
+})
+const warmupRaw = JSON.stringify({
+  summary: { requestsPerSec: 10_000 },
+  statusCodeDistribution: { 200: 50_000 },
+})
+
 const meta: RunMeta = {
   startedAt: '2026-09-21T00:00:00.000Z',
   driver: 'oha',
@@ -54,7 +65,7 @@ const repeat: RoutingRepeat = {
   cpuSource: 'proc',
   cpuMicrosPerRequest: 20,
   rateAttained: 1,
-  rawBytes: 3,
+  rawBytes: Buffer.byteLength(measuredRaw),
   rawOutputFile: 'raw/bun-raw--static-json--run1.txt',
   warmupOutputFile: 'raw/bun-raw--static-json--run1--warmup.txt',
 }
@@ -81,8 +92,8 @@ function writeArtifact(over?: (value: RoutingArtifact, root: string) => void): s
   roots.push(root)
   mkdirSync(join(root, 'raw'))
   const value = artifact()
-  writeFileSync(join(root, repeat.rawOutputFile), 'raw')
-  writeFileSync(join(root, repeat.warmupOutputFile!), 'warmup')
+  writeFileSync(join(root, repeat.rawOutputFile), measuredRaw)
+  writeFileSync(join(root, repeat.warmupOutputFile!), warmupRaw)
   over?.(value, root)
   writeFileSync(join(root, 'measurements.json'), `${JSON.stringify(value, null, 2)}\n`)
   writeFileSync(join(root, 'report.md'), renderReport({
@@ -138,8 +149,8 @@ describe('routing artifact verifier', () => {
     const empty = writeArtifact((_, root) => writeFileSync(join(root, repeat.rawOutputFile), ''))
     expect(() => verifyRoutingArtifactDirectory(empty)).toThrow('file is empty')
 
-    const mismatched = writeArtifact(value => value.repeats[0]!.rawBytes = 4)
-    expect(() => verifyRoutingArtifactDirectory(mismatched)).toThrow('but its file has 3')
+    const mismatched = writeArtifact(value => value.repeats[0]!.rawBytes++)
+    expect(() => verifyRoutingArtifactDirectory(mismatched)).toThrow('but its file has')
   })
 
   test('rejects a report that does not reproduce from structured evidence', () => {
@@ -151,5 +162,25 @@ describe('routing artifact verifier', () => {
   test('rejects aggregate measurements that drift from retained repeats', () => {
     const root = writeArtifact(value => value.measurements[0]!.rpsMean++)
     expect(() => verifyRoutingArtifactDirectory(root)).toThrow('measurements do not match retained repeats')
+  })
+
+  test('rejects repeat metrics that drift from raw oha evidence', () => {
+    const root = writeArtifact(value => value.repeats[0]!.requests--)
+    expect(() => verifyRoutingArtifactDirectory(root)).toThrow('does not match its raw oha evidence')
+  })
+
+  test('rejects malformed measured output and failed warm-up evidence', () => {
+    const malformed = writeArtifact((value, root) => {
+      const raw = '{not-json}'
+      writeFileSync(join(root, repeat.rawOutputFile), raw)
+      value.repeats[0]!.rawBytes = Buffer.byteLength(raw)
+    })
+    expect(() => verifyRoutingArtifactDirectory(malformed)).toThrow()
+
+    const failedWarmup = writeArtifact((_, root) => writeFileSync(join(root, repeat.warmupOutputFile!), JSON.stringify({
+      summary: { requestsPerSec: 10 },
+      statusCodeDistribution: { 500: 50 },
+    })))
+    expect(() => verifyRoutingArtifactDirectory(failedWarmup)).toThrow('failed warm-up evidence')
   })
 })
