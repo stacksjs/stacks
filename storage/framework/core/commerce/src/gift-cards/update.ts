@@ -1,5 +1,5 @@
 import type { GiftCard, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db, mutationCount, sqlHelpers } from '@stacksjs/database'
+import { db, mutationCount, parseSqlDateTime, sqlHelpers } from '@stacksjs/database'
 import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
@@ -156,8 +156,14 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
     throw new Error(`Gift card is not reloadable`)
   if (existing.status !== 'ACTIVE')
     throw new Error(`Gift card is not active`)
-  const expiry = (row.expiry_date ?? row.expiryDate) as string | null | undefined
-  if (expiry && String(expiry) < now)
+  // Compared as instants, not strings. PostgreSQL and MySQL return the column
+  // as a Date, and `String(date)` - "Wed Jan 01 2020 ..." - starts with a
+  // letter, which sorts after every digit of `now`, so an expired card was
+  // never detected there: a redemption was diagnosed as an insufficient
+  // balance, and a zero adjustment fell through to the success below.
+  const expiry = parseSqlDateTime(row.expiry_date ?? row.expiryDate)
+  const checkedAt = parseSqlDateTime(now)
+  if (expiry && checkedAt && expiry.getTime() < checkedAt.getTime())
     throw new Error(`Gift card has expired`)
   // Every guard the re-read can see held. For any non-zero amount that means
   // the one it cannot - the balance at write time - failed: a non-zero

@@ -185,6 +185,21 @@ try {
     finally { setSystemTime() }
   })
 
+  // An expired card is refused by the UPDATE's own guard on every dialect,
+  // and the diagnosis that follows must say why. It compared `String(expiry)`
+  // to a formatted timestamp, and PostgreSQL and MySQL hand the column back as
+  // a Date: "Wed Jan 01 2020 ..." starts with a letter, which sorts after any
+  // digit, so the expiry was never detected there. A redemption was reported
+  // as an insufficient balance, and a zero adjustment - which the diagnosis
+  // accepts once every guard it can see has held - as a success.
+  await check('gift cards updateBalance on an expired card', async () => {
+    const card = await storeGiftCard({ code: `GC-EXPIRED-${dialect}`, initial_balance: 100, current_balance: 100, currency: 'USD', status: 'ACTIVE', is_active: true, expiry_date: '2020-01-01 00:00:00' } as never)
+    assert(card?.id, 'seed gift card')
+    await assert.rejects(updateBalance(Number(card.id), -10), /expired/, `${dialect}: a redemption on an expired card must say it expired`)
+    await assert.rejects(updateBalance(Number(card.id), 0), /expired/, `${dialect}: a zero adjustment on an expired card must be refused, not reported as success`)
+    assert.equal(Number(await column('gift_cards', card.id, 'current_balance')), 100)
+  })
+
   await check('payments recordRefund', async () => {
     const payment = await storePayment({ amount: 1000, method: 'creditCard', status: 'completed', transaction_id: `TXN-WRITE-COUNTS-${dialect}` } as never)
     assert(payment?.id, 'seed payment')
