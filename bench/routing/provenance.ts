@@ -27,17 +27,23 @@ export type StacksBenchmarkModule = typeof STACKS_BENCHMARK_MODULES[number]
 export type StacksSourceModules = Record<StacksBenchmarkModule, string>
 
 /** Resolve package specifiers with the executable context used by target servers. */
-export function resolveBenchmarkServerModules(repoRoot: string, specifiers: readonly string[], importer?: string): Record<string, string> {
-  if (specifiers.length === 0)
-    return {}
-
-  const probe = Bun.spawnSync([
+export function benchmarkServerModuleCommand(repoRoot: string, specifiers: readonly string[], importer?: string): string[] {
+  return [
     process.execPath,
+    '--no-env-file',
     `--config=${join(repoRoot, 'bench', 'routing', 'bunfig.toml')}`,
     join(repoRoot, 'bench', 'routing', 'fixtures', 'source-probe.ts'),
     ...(importer ? ['--importer', importer] : []),
     ...specifiers,
-  ], {
+  ]
+}
+
+/** Resolve package specifiers with the executable context used by target servers. */
+export function resolveBenchmarkServerModules(repoRoot: string, specifiers: readonly string[], importer?: string): Record<string, string> {
+  if (specifiers.length === 0)
+    return {}
+
+  const probe = Bun.spawnSync(benchmarkServerModuleCommand(repoRoot, specifiers, importer), {
     cwd: repoRoot,
     stdout: 'pipe',
     stderr: 'pipe',

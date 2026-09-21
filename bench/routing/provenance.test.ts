@@ -4,9 +4,19 @@ import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSyn
 import { tmpdir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import { REPO_ROOT } from './runtime'
-import { resolveStacksRuntimeDependencies, resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, STACKS_FIXTURE_MODULES, stacksSourceIssues } from './provenance'
+import { benchmarkServerModuleCommand, resolveStacksRuntimeDependencies, resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, STACKS_FIXTURE_MODULES, stacksSourceIssues } from './provenance'
 
 describe('Stacks benchmark source provenance', () => {
+  it('resolves modules without loading repository env files', () => {
+    expect(benchmarkServerModuleCommand(REPO_ROOT, ['@stacksjs/router'])).toEqual([
+      process.execPath,
+      '--no-env-file',
+      `--config=${join(REPO_ROOT, 'bench/routing/bunfig.toml')}`,
+      join(REPO_ROOT, 'bench/routing/fixtures/source-probe.ts'),
+      '@stacksjs/router',
+    ])
+  })
+
   it('resolves every framework dependency through the server config to source', () => {
     const modules = resolveStacksSourceModules(REPO_ROOT)
     expect(Object.keys(modules).sort()).toEqual([...STACKS_BENCHMARK_MODULES].sort())
