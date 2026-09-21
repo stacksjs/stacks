@@ -92,8 +92,14 @@ describe('team management contract', () => {
     expect(memberUpdate).toContain('await db.transaction(async (rawTrx) => {')
     expect(memberUpdate).toContain('await syncTeamMemberCount(teamId, trx)')
     expect(memberUpdate).toContain("where('role', '!=', 'owner')")
-    expect(memberUpdate).toContain('changedRows(updated) !== 1')
-    expect(memberUpdate).toContain("throw new TeamStateConflictError('The team member changed before they could be updated.')")
+    // The member is locked before the checks, and the UPDATE's affected-row
+    // count is deliberately not read: MySQL reports rows CHANGED, so an
+    // idempotent save counted 0 and was refused as a conflict (#2639). The
+    // lock is what makes dropping the count safe; team-state-writes.test.ts
+    // shows a concurrent ownership transfer is otherwise reported as success.
+    expect(memberUpdate).toContain('lookup = lookup.lockForUpdate()')
+    expect(memberUpdate).toContain('if (!sqlHelpers(getDatabaseDialect()).isSqlite)')
+    expect(memberUpdate).not.toContain('changedRows(')
     expect(memberDestroy).toContain('await db.transaction(async (rawTrx) => {')
     expect(memberDestroy).toContain('await syncTeamMemberCount(teamId, trx)')
     expect(memberDestroy).toContain("where('role', '!=', 'owner')")
