@@ -1,5 +1,157 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.46...v0.74.47)
+
+## ✨ Features
+
+- **database**: keep only binding types in production query logs ([72d5356](https://github.com/stacksjs/stacks/commit/72d5356)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **logging**: add narrow runtime facade ([2baf047](https://github.com/stacksjs/stacks/commit/2baf047)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: isolate startup response costs ([ee6b749](https://github.com/stacksjs/stacks/commit/ee6b749)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: compare returning-client startup ([ba7151c](https://github.com/stacksjs/stacks/commit/ba7151c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: version memory artifacts ([2b8749a](https://github.com/stacksjs/stacks/commit/2b8749a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: retain routing repeat evidence ([faebf44](https://github.com/stacksjs/stacks/commit/faebf44)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: report peer startup dispersion ([f2d6fb7](https://github.com/stacksjs/stacks/commit/f2d6fb7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: validate peer startup reports ([9d8c6a5](https://github.com/stacksjs/stacks/commit/9d8c6a5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: measure peer startup readiness ([c135ebe](https://github.com/stacksjs/stacks/commit/c135ebe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: add peer readiness handshake ([3c9226b](https://github.com/stacksjs/stacks/commit/3c9226b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: validate startup reports ([1b6cf22](https://github.com/stacksjs/stacks/commit/1b6cf22)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: add router readiness diagnostic ([310ec33](https://github.com/stacksjs/stacks/commit/310ec33)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: add router startup diagnostic ([b630f35](https://github.com/stacksjs/stacks/commit/b630f35)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **docs**: count what ships, not what sits on disk ([b46afc3](https://github.com/stacksjs/stacks/commit/b46afc3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: keep credentials out of persisted query log bindings ([8633afe](https://github.com/stacksjs/stacks/commit/8633afe)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **defaults**: load the functions barrel and auth page scripts where no dist exists ([08f0722](https://github.com/stacksjs/stacks/commit/08f0722)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **orm**: type Model.update as the method that actually runs ([79b7c3c](https://github.com/stacksjs/stacks/commit/79b7c3c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **orm**: force-delete a trashed row, and say whether one went away ([dea15b4](https://github.com/stacksjs/stacks/commit/dea15b4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **orm**: keep Stacks' static update and delete when the builder ships its own ([a79e282](https://github.com/stacksjs/stacks/commit/a79e282)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **deps**: bun-query-builder 0.2.70, so returningAll() writes work on MySQL ([0e931c8](https://github.com/stacksjs/stacks/commit/0e931c8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1160](https://github.com/stacksjs/stacks/issues/1160), [#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **commerce**: detect an expired gift card on PostgreSQL and MySQL ([c18f71f](https://github.com/stacksjs/stacks/commit/c18f71f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **build**: resolve @stacksjs/logging subpaths from source where no dist exists ([faad78e](https://github.com/stacksjs/stacks/commit/faad78e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **commerce,newsletter**: the last three writes that read a CHANGED count ([c52309b](https://github.com/stacksjs/stacks/commit/c52309b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639), [#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **newsletter**: a campaign transition to its current state is not a conflict ([0f94c01](https://github.com/stacksjs/stacks/commit/0f94c01)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **teams**: lock the member before deciding, so an idempotent save is not a conflict ([4e23dc9](https://github.com/stacksjs/stacks/commit/4e23dc9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **ci**: build logging before startup tests ([abb8b01](https://github.com/stacksjs/stacks/commit/abb8b01)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: preserve peer startup request profiles ([cc747e2](https://github.com/stacksjs/stacks/commit/cc747e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: reconstruct routing raw evidence ([80f90dc](https://github.com/stacksjs/stacks/commit/80f90dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: derive routing summaries ([aab93f3](https://github.com/stacksjs/stacks/commit/aab93f3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: derive startup graph evidence ([c14d5d8](https://github.com/stacksjs/stacks/commit/c14d5d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: derive startup report summaries ([2324c3b](https://github.com/stacksjs/stacks/commit/2324c3b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: record CPU sample provenance ([8c7434d](https://github.com/stacksjs/stacks/commit/8c7434d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: balance process position exposure ([d0763eb](https://github.com/stacksjs/stacks/commit/d0763eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: isolate source provenance probe ([14191bd](https://github.com/stacksjs/stacks/commit/14191bd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: disable server env files ([a52b959](https://github.com/stacksjs/stacks/commit/a52b959)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: isolate startup sample environment ([c6034e7](https://github.com/stacksjs/stacks/commit/c6034e7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: gate coarse Linux CPU timing ([d00db69](https://github.com/stacksjs/stacks/commit/d00db69)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: use host proc clock rate ([58d09e0](https://github.com/stacksjs/stacks/commit/58d09e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: sample Linux CPU from proc ([c8b34d0](https://github.com/stacksjs/stacks/commit/c8b34d0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: drain pools retired by reset ([ede4383](https://github.com/stacksjs/stacks/commit/ede4383)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: reuse the rpx daemon instead of racing it for :443 ([28d1c04](https://github.com/stacksjs/stacks/commit/28d1c04)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: await pooled client shutdown ([1961a6c](https://github.com/stacksjs/stacks/commit/1961a6c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cache**: a zero affected-row count does not mean the key is gone ([15339b5](https://github.com/stacksjs/stacks/commit/15339b5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **commerce**: bulk update counters count the rows they matched ([cb049c4](https://github.com/stacksjs/stacks/commit/cb049c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639), [#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **commerce**: status writes report the state they left the row in ([328275e](https://github.com/stacksjs/stacks/commit/328275e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **commerce**: soft delete counts the rows it matched, not the rows it changed ([e508f9b](https://github.com/stacksjs/stacks/commit/e508f9b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **security**: gate the dashboard API on the deployment, not the env name ([60f79c7](https://github.com/stacksjs/stacks/commit/60f79c7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2275](https://github.com/stacksjs/stacks/issues/2275), [#1955](https://github.com/stacksjs/stacks/issues/1955), [#1955](https://github.com/stacksjs/stacks/issues/1955))
+- **cms**: keep page document timestamps in the format they are stored ([193c103](https://github.com/stacksjs/stacks/commit/193c103)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **actions**: record the components dependency in both lockfiles ([34710bb](https://github.com/stacksjs/stacks/commit/34710bb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: register the component library with both dashboard servers ([cf0db43](https://github.com/stacksjs/stacks/commit/cf0db43)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2641](https://github.com/stacksjs/stacks/issues/2641))
+- **database**: stop the SQLite migrate sweep deleting files from the corpus ([010476b](https://github.com/stacksjs/stacks/commit/010476b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2234](https://github.com/stacksjs/stacks/issues/2234), [#2234](https://github.com/stacksjs/stacks/issues/2234))
+- **database**: make the safe migration helpers run on MySQL and SQLite ([4174070](https://github.com/stacksjs/stacks/commit/4174070)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2636](https://github.com/stacksjs/stacks/issues/2636))
+- **dashboard**: read query stats and the timeline on every dialect ([f012e1c](https://github.com/stacksjs/stacks/commit/f012e1c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2635](https://github.com/stacksjs/stacks/issues/2635))
+- **dashboard**: prune query logs on every dialect, and count what was deleted ([1dc980f](https://github.com/stacksjs/stacks/commit/1dc980f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2635](https://github.com/stacksjs/stacks/issues/2635))
+- **commerce**: decide category deactivation from the row, not a truthy result ([b118cfd](https://github.com/stacksjs/stacks/commit/b118cfd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2638](https://github.com/stacksjs/stacks/issues/2638), [#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **newsletter**: compare campaign timestamps in the format they are stored ([30ce624](https://github.com/stacksjs/stacks/commit/30ce624)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2640](https://github.com/stacksjs/stacks/issues/2640))
+- **commerce**: guard coupon redemption on the column the schema has ([ff484d2](https://github.com/stacksjs/stacks/commit/ff484d2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2634](https://github.com/stacksjs/stacks/issues/2634), [#1879](https://github.com/stacksjs/stacks/issues/1879))
+- **database**: let backfillInBatches run past its first batch ([69d6121](https://github.com/stacksjs/stacks/commit/69d6121)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **orm**: return the real count from prunable ([f2e8965](https://github.com/stacksjs/stacks/commit/f2e8965)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **commerce**: make gift card balance changes and refunds work on PostgreSQL and MySQL ([f2a8041](https://github.com/stacksjs/stacks/commit/f2a8041)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **commerce**: return real counts from bulkStore and cleanupAbandonedCarts ([8e11d94](https://github.com/stacksjs/stacks/commit/8e11d94)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **queue**: return the real count from purgeDeadLetterJobs ([e5bc457](https://github.com/stacksjs/stacks/commit/e5bc457)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: return the real count from the token pruning helpers ([d8b1440](https://github.com/stacksjs/stacks/commit/d8b1440)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: defer full logging runtime ([5250c77](https://github.com/stacksjs/stacks/commit/5250c77)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: stop rendering a page to find out the server is up ([0abf4f2](https://github.com/stacksjs/stacks/commit/0abf4f2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: add a narrow Stacks runtime entry ([ffcec45](https://github.com/stacksjs/stacks/commit/ffcec45)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2590](https://github.com/stacksjs/stacks/issues/2590))
+
+## ♻️ Code Refactoring
+
+- **bench**: share startup run invariants ([93f34dd](https://github.com/stacksjs/stacks/commit/93f34dd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: make mutationCount the one affected-row reader ([7cad464](https://github.com/stacksjs/stacks/commit/7cad464)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **database**: document what query logs keep of bound values ([254a173](https://github.com/stacksjs/stacks/commit/254a173)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **bench**: describe peer startup diagnostic ([52e01c1](https://github.com/stacksjs/stacks/commit/52e01c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- count the categorizable_models repair migration ([410962e](https://github.com/stacksjs/stacks/commit/410962e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **whois**: move the SOCKS client suite into tests/, where CI runs it ([3ed8557](https://github.com/stacksjs/stacks/commit/3ed8557)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **buddy**: move the docs tooling suites into tests/, where CI runs them ([16cd9f4](https://github.com/stacksjs/stacks/commit/16cd9f4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **actions**: move the mobile build suites into tests/, where CI runs them ([4c4faf7](https://github.com/stacksjs/stacks/commit/4c4faf7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **cloud**: move the SMTP server suite into tests/, where CI runs it ([d6d951b](https://github.com/stacksjs/stacks/commit/d6d951b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **sms**: move the compliance suite into tests/, where CI runs it ([522189d](https://github.com/stacksjs/stacks/commit/522189d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **newsletter**: move the colocated suites into tests/, where CI runs them ([9e16e5c](https://github.com/stacksjs/stacks/commit/9e16e5c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- move three packages' test/ suites into tests/, where CI runs them ([4e9043a](https://github.com/stacksjs/stacks/commit/4e9043a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: keep the transaction-scope admin to one connection ([d9822ca](https://github.com/stacksjs/stacks/commit/d9822ca)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **cms**: run the page document round trip on MySQL too ([f2048a2](https://github.com/stacksjs/stacks/commit/f2048a2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2637](https://github.com/stacksjs/stacks/issues/2637))
+- **commerce**: run the cross-dialect write tests where CI looks for them ([0474d99](https://github.com/stacksjs/stacks/commit/0474d99)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2639](https://github.com/stacksjs/stacks/issues/2639))
+- **bench**: verify memory artifacts ([a02d3c2](https://github.com/stacksjs/stacks/commit/a02d3c2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: verify routing artifacts ([6a71d4c](https://github.com/stacksjs/stacks/commit/6a71d4c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: define peer startup sampling ([86a275c](https://github.com/stacksjs/stacks/commit/86a275c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: verify router readiness lifecycle ([7ccda36](https://github.com/stacksjs/stacks/commit/7ccda36)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: add startup measurement primitives ([1962f09](https://github.com/stacksjs/stacks/commit/1962f09)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **routing**: follow the profiled runtime entry ([0d99aa6](https://github.com/stacksjs/stacks/commit/0d99aa6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: state the deployment gate's inputs instead of inheriting them ([65b5e0a](https://github.com/stacksjs/stacks/commit/65b5e0a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1955](https://github.com/stacksjs/stacks/issues/1955))
+- **defaults**: keep preloader fixture independent of package caches ([8339061](https://github.com/stacksjs/stacks/commit/8339061)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2618](https://github.com/stacksjs/stacks/issues/2618))
+- **auth**: cover MySQL session lifecycle in CI ([792c0e4](https://github.com/stacksjs/stacks/commit/792c0e4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2607](https://github.com/stacksjs/stacks/issues/2607))
+- **database**: isolate migration preprocessor fixtures ([501bec2](https://github.com/stacksjs/stacks/commit/501bec2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2603](https://github.com/stacksjs/stacks/issues/2603))
+- **queue**: isolate scheduler persistence checks ([05a9945](https://github.com/stacksjs/stacks/commit/05a9945)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2602](https://github.com/stacksjs/stacks/issues/2602))
+
+## 💚 Continuous Integration
+
+- run the test files no CI step reached, and keep it that way ([12f709d](https://github.com/stacksjs/stacks/commit/12f709d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- build the subpath set in every job that loads framework source ([c144b7b](https://github.com/stacksjs/stacks/commit/c144b7b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **bench**: build logging for startup runs ([8a8cd99](https://github.com/stacksjs/stacks/commit/8a8cd99)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: host peer startup diagnostic ([5dcba7e](https://github.com/stacksjs/stacks/commit/5dcba7e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: publish startup report ([bc045ca](https://github.com/stacksjs/stacks/commit/bc045ca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: retain router startup diagnostics ([472cef4](https://github.com/stacksjs/stacks/commit/472cef4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: execute benchmark harness tests ([6e253d9](https://github.com/stacksjs/stacks/commit/6e253d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- provision only the pinned Bun tool ([4fc8b8d](https://github.com/stacksjs/stacks/commit/4fc8b8d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2642](https://github.com/stacksjs/stacks/issues/2642))
+- enforce the pinned Bun runtime ([7e6a2a6](https://github.com/stacksjs/stacks/commit/7e6a2a6)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2642](https://github.com/stacksjs/stacks/issues/2642))
+
+## 🔧 Chores
+
+- **deps**: @stacksjs/rpx 0.11.54 ([767acf3](https://github.com/stacksjs/stacks/commit/767acf3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([263e864](https://github.com/stacksjs/stacks/commit/263e864)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: pin Bun 1.4.2 ([c2d3e70](https://github.com/stacksjs/stacks/commit/c2d3e70)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2642](https://github.com/stacksjs/stacks/issues/2642))
+- **deps**: point the redis pins at 8.4.0 ([7163f95](https://github.com/stacksjs/stacks/commit/7163f95)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update all non-major dependencies (updated) (#2202) ([6767ed9](https://github.com/stacksjs/stacks/commit/6767ed9)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#2202](https://github.com/stacksjs/stacks/issues/2202), [#2202](https://github.com/stacksjs/stacks/issues/2202))
+- **deps**: update dependency web-ext to 10.6.0 (updated) (#2195) ([a1a263c](https://github.com/stacksjs/stacks/commit/a1a263c)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#2195](https://github.com/stacksjs/stacks/issues/2195), [#2195](https://github.com/stacksjs/stacks/issues/2195))
+- **deps**: update dependency @vscode/vsce to 4.0.0 (#2630) ([574ca48](https://github.com/stacksjs/stacks/commit/574ca48)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#2630](https://github.com/stacksjs/stacks/issues/2630), [#2630](https://github.com/stacksjs/stacks/issues/2630))
+
+## bench
+
+- **routing**: pair CPU cost with raw ([634188b](https://github.com/stacksjs/stacks/commit/634188b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **routing**: preserve clean source provenance ([5f5319b](https://github.com/stacksjs/stacks/commit/5f5319b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **memory**: use runner curl for oha ([ef5fcf9](https://github.com/stacksjs/stacks/commit/ef5fcf9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2643](https://github.com/stacksjs/stacks/issues/2643))
+- **memory**: preserve clean source provenance ([18dbb16](https://github.com/stacksjs/stacks/commit/18dbb16)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2643](https://github.com/stacksjs/stacks/issues/2643))
+- profile against a symbolized Bun, and record what the first run found ([b4e6622](https://github.com/stacksjs/stacks/commit/b4e6622)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Revert "chore(deps): update all non-major dependencies (updated) (#2202)" ([36b0e4e](https://github.com/stacksjs/stacks/commit/36b0e4e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2202](https://github.com/stacksjs/stacks/issues/2202), [#2202](https://github.com/stacksjs/stacks/issues/2202))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.45...v0.74.46)
 
 ## 🐛 Bug Fixes
