@@ -381,6 +381,19 @@ jobs:
             exit 1
           fi
 
+      # Same computed set, and for the same reason, as the step in `typecheck`:
+      # these packages resolve only through a gitignored `dist/`, so a job that
+      # imports one without building it fails to resolve it. This job had no
+      # such step, and went red when the router started importing
+      # `@stacksjs/logging/runtime`.
+      - name: Build packages imported by subpath
+        run: |
+          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
+
       # The binaries are built only by the release job, on a tag, after npm
       # publish. So a dependency that grows a top-level await — which
       # `bun build --compile` refuses to bundle through a `require()` — took
@@ -415,6 +428,20 @@ jobs:
       - name: Install Dependencies
         id: install
         run: bun install --frozen-lockfile
+
+      # Same computed set, and for the same reason, as the step in `typecheck`:
+      # these packages resolve only through a gitignored `dist/`, so a job that
+      # imports one without building it fails to resolve it. This job had no
+      # such step, and went red when the router started importing
+      # `@stacksjs/logging/runtime`.
+      - name: Build packages imported by subpath
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
 
       # One step per check, rather than one `run:` block running all of them.
       #

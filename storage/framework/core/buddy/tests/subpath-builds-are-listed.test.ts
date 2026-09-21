@@ -22,7 +22,7 @@
  * needed listing.
  */
 import { describe, expect, it } from 'bun:test'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = new URL('../../../../../', import.meta.url).pathname
@@ -139,5 +139,58 @@ describe('subpath imports', () => {
     expect(loops.length).toBeGreaterThan(0)
     for (const loop of loops)
       expect(loop).toBe('$(bun .github/scripts/subpath-packages.ts)')
+  })
+
+  /**
+   * The computed set only protects a job that runs it.
+   *
+   * `typecheck` and `test` built it; `compile` and `artifact-freshness` never
+   * did, and both went red the day the router started importing
+   * `@stacksjs/logging/runtime`. With `compile` red, `deploy` was skipped on
+   * every push to main, and nothing here said so: the two checks above were
+   * both satisfied.
+   *
+   * So this fails closed. A job is assumed to load framework source, and must
+   * build the set before any step that runs it, unless it is exempted below
+   * with the reason it does not need to. A new job fails here until someone
+   * decides which it is, instead of turning main red the first time it
+   * imports a subpath.
+   */
+  it('are built by every job that loads framework source, before it does', () => {
+    const workflow = Bun.YAML.parse(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')) as {
+      jobs: Record<string, { steps: Array<{ name?: string, run?: string }> }>
+    }
+    const exempt: Record<string, string> = {
+      'lint': 'pickier reads files rather than resolving imports, and `bun buddy lint` loads no subpath',
+      'scaffold-smoke': 'it typechecks a freshly scaffolded app against the PUBLISHED framework, not this checkout',
+      'deployment-target': 'it installs nothing and imports no framework package',
+      'deploy': 'the deploy action runs `bun run build` over every core package itself before it ships, and nothing it imports reaches a subpath',
+      'publish-commit': 'it runs the full `bun run build` before publishing',
+    }
+
+    const builds = (step: { run?: string }): boolean => String(step.run ?? '').includes('bun .github/scripts/subpath-packages.ts')
+    // A step that runs framework code: anything but installing, provisioning,
+    // or the repo's own standalone checks.
+    const loadsFramework = (step: { run?: string }): boolean => {
+      const run = String(step.run ?? '')
+      return /\bbun (run|test)\b|\bbuddy\b/.test(run) && !builds(step)
+    }
+
+    const problems: string[] = []
+    for (const [name, job] of Object.entries(workflow.jobs)) {
+      if (name in exempt)
+        continue
+      const built = job.steps.findIndex(builds)
+      const firstUse = job.steps.findIndex(loadsFramework)
+      if (built === -1)
+        problems.push(`${name}: never builds the subpath set`)
+      else if (firstUse !== -1 && firstUse < built)
+        problems.push(`${name}: "${job.steps[firstUse].name}" runs before the subpath set is built`)
+    }
+    expect(problems).toEqual([])
+
+    // An exemption for a job that is gone is a stale reason, not a safe one.
+    for (const name of Object.keys(exempt))
+      expect(Object.keys(workflow.jobs)).toContain(name)
   })
 })
