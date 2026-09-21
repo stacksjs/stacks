@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { teamOperationalError } from '../../Teams/team-response'
 import { syncTeamMemberCount } from './team-member-count'

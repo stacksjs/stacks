@@ -1,5 +1,5 @@
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { sendTeamInvitation } from '../../../Mail/TeamInvitation'
 import { teamOperationalIssue } from '../../Teams/team-response'
 import { changedRows, invitationUrl, sqlTimestamp } from './team-records'

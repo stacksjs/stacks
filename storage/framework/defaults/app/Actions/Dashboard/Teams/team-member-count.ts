@@ -1,4 +1,4 @@
-import { db, sql } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database/runtime'
 import { sqlTimestamp } from './team-records'
 
 export async function syncTeamMemberCount(teamId: number, connection: typeof db = db): Promise<number> {

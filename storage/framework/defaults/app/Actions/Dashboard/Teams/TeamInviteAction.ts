@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { randomUUID } from 'node:crypto'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { TeamStateConflictError, teamOperationalError } from '../../Teams/team-response'

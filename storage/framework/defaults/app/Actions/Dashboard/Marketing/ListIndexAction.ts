@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { EmailList } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeMarketingLists } from './marketing-list-records'

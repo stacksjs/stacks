@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { Campaign, EmailList } from '@stacksjs/orm'
 
 export type CampaignDeliveryOperation = 'send' | 'schedule' | 'cancel'

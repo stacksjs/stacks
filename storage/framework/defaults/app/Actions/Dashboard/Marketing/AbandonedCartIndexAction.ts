@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeAbandonedCarts } from './abandoned-cart-records'
 

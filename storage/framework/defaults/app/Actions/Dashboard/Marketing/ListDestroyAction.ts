@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { EmailList } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { marketingModelError, marketingRecordId } from './marketing-response'
