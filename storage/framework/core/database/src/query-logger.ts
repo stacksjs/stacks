@@ -4,6 +4,7 @@ import { memoryUsage } from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import { serializeQueryLogBindings } from './query-log-bindings'
 import { normalizeQuery, parseQuery } from './query-parser'
 import { db, getDatabaseDialect } from './utils'
 
@@ -145,7 +146,7 @@ export async function logQuery(event: LogEvent): Promise<void> {
 
   try {
     // Extract basic information from the event
-    const { query, durationMs, error, bindings } = extractQueryInfo(event)
+    const { query, durationMs, error, parameters } = extractQueryInfo(event)
 
     // Always track query for error page context (even if logging is disabled).
     // Skipped without usable SQL text: an unattributable entry on the error page
@@ -171,7 +172,7 @@ export async function logQuery(event: LogEvent): Promise<void> {
     const status = determineQueryStatus(durationMs, error)
 
     // Create the base log record
-    const logRecord = await createQueryLogRecord(query, durationMs, status, error, bindings)
+    const logRecord = await createQueryLogRecord(query, durationMs, status, error, parameters)
 
     // Add additional query analysis if necessary
     if (config.database?.queryLogging?.analysis?.enabled && (status === 'slow' || config.database.queryLogging.analysis.analyzeAll)) {
@@ -247,19 +248,11 @@ function extractQueryInfo(event: any) {
   const query = queryText(event.query?.sql)
   const durationMs = event.queryDurationMillis || 0
   const error = event.error
+  // Serialized only once the query is known to be persisted: see
+  // `createQueryLogRecord`.
+  const parameters: unknown = event.query?.parameters
 
-  // Extract and safely stringify bindings if available
-  let bindings
-  if (event.query?.parameters) {
-    try {
-      bindings = JSON.stringify(event.query.parameters)
-    }
-    catch {
-      bindings = '[]'
-    }
-  }
-
-  return { query, durationMs, error, bindings }
+  return { query, durationMs, error, parameters }
 }
 
 /**
@@ -285,7 +278,7 @@ async function createQueryLogRecord(
   durationMs: number,
   status: 'completed' | 'failed' | 'slow',
   error?: any,
-  bindings?: string,
+  parameters?: unknown,
 ): Promise<QueryLogRecord> {
   // Get the current database connection
   const connection = config.database.default || 'unknown'
@@ -299,6 +292,13 @@ async function createQueryLogRecord(
   const traceInfo = status === 'completed' && !config.database?.queryLogging?.captureAllTraces
     ? undefined
     : extractTraceInfo()
+
+  // The bound values, minus anything that is or looks like a credential.
+  // `GET /api/queries/:id` returns the whole row, so it must not become a copy
+  // of every session id and password hash the application binds.
+  const bindings = parameters
+    ? serializeQueryLogBindings(query, parameters, { captureValues: true })
+    : undefined
 
   return {
     query,
