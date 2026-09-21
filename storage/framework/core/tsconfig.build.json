@@ -25,6 +25,7 @@
       // package, which is every CI run.
       "@stacksjs/actions/*": ["./actions/src/*"],
       "@stacksjs/auth/*": ["./auth/src/*"],
+      "@stacksjs/browser/*": ["./browser/src/*"],
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/composables/*": ["./composables/src/*"],
       "@stacksjs/database/*": ["./database/src/*"],
@@ -36,6 +37,7 @@
       "@stacksjs/path/*": ["./path/src/*"],
       "@stacksjs/router/*": ["./router/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
+      "@stacksjs/utils/*": ["./utils/src/*"],
       "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
