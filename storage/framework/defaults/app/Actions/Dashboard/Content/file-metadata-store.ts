@@ -1,5 +1,5 @@
 import type { StorageItemMetadata, StorageItemTask, StorageMetadataStore, StorageTaskKind, StorageTaskState } from './file-metadata'
-import { db, sqlDateTime } from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import { isEmptyMetadata, isUnderPrefix, normalizeTags, repathUnderPrefix, STORAGE_ITEM_TYPE } from './file-metadata'
 
 /**

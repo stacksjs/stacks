@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { dashboardOperationalError } from '../dashboard-response'
 
 const ALLOWED_RANGES = new Set([1, 7, 30, 90, 365])

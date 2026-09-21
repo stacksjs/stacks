@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { insertedId, str, timestamp } from './content-input'
 
 export { insertedId, timestamp }

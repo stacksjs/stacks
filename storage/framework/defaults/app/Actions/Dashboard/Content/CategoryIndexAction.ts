@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { dashboardOperationalError } from '../dashboard-response'
 
 interface CategoryRow {
