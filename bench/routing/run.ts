@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
 import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 import { createFixture, resetFixtureLogs } from './fixture'
-import { checkHostLoad, formatBusyProcess } from './host-load'
+import { checkHostLoad, formatBusyProcess, readLinuxClockTicksPerSecond } from './host-load'
 import { cpuMicrosPerRequest, measureLoad } from './measurement'
 import { resolvePeerVersions } from './peer-versions'
 import { verifyLoadPersistence } from './persistence'
@@ -192,6 +192,9 @@ async function main(): Promise<void> {
     busyHostProcesses: [...observedBusyProcesses.values()],
   }
   const publicationIssues = routingPublicationIssues(publicationProfile)
+  const clockTicksPerSecond = platform() === 'linux'
+    ? await readLinuxClockTicksPerSecond()
+    : null
   const meta: RunMeta = {
     startedAt,
     source,
@@ -218,6 +221,7 @@ async function main(): Promise<void> {
       cpu: cpus()[0]?.model ?? 'unknown',
       cores: cpus().length,
       bun: Bun.version,
+      clockTicksPerSecond,
     },
   }
 

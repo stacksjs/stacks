@@ -36,13 +36,19 @@ async function psCpuSeconds(pid: number): Promise<number | null> {
  *
  * Linux `ps -o time=` is whole-second data. At 10,000 req/s over 30 seconds,
  * one tick becomes 3.33 us/request and makes a single rounding step look like
- * 12-20% instability. `/proc/<pid>/stat` uses 10 ms kernel ticks, reducing the
- * same cost resolution to about 0.033 us/request. Other hosts and restricted
- * Linux environments retain the portable `ps` fallback.
+ * 12-20% instability. `/proc/<pid>/stat` uses the host's `_SC_CLK_TCK` rate,
+ * reducing the same cost resolution to about 0.033 us/request at 100 Hz.
+ * Other hosts and restricted Linux environments retain the portable `ps`
+ * fallback.
  */
-export async function processCpuSeconds(pid: number, currentPlatform = platform(), procRoot = '/proc'): Promise<number | null> {
+export async function processCpuSeconds(
+  pid: number,
+  currentPlatform = platform(),
+  procRoot = '/proc',
+  clockTicksPerSecond?: number | null,
+): Promise<number | null> {
   if (currentPlatform === 'linux') {
-    const sample = await readProcProcessCpuTime(pid, procRoot)
+    const sample = await readProcProcessCpuTime(pid, procRoot, clockTicksPerSecond)
     if (sample)
       return sample.seconds
   }

@@ -1,10 +1,10 @@
 /**
  * Machine-level diagnostics for one target, on Linux.
  *
- * Everything else in this directory measures wall-clock CPU through `ps`,
- * which reports hundredths of a second - at 8,000 req/s over 30 seconds that
- * is 0.042us of resolution, and three separate attempts to explain the last
- * half-microsecond of Stacks' cost ran into that floor (stacksjs/stacks#2597).
+ * The regular Linux routing benchmark reads process ticks from `/proc` using
+ * the host's `_SC_CLK_TCK` rate. That is precise enough for benchmark cost
+ * rows, while this diagnostic uses `perf stat` task-clock at nanosecond
+ * resolution to investigate the last fractions of a microsecond.
  *
  * `perf stat` reads the same CPU time from the kernel in nanoseconds, so
  * `task-clock` over a fixed-rate load answers the same question three orders
@@ -29,7 +29,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
 import { createFixture } from './fixture'
-import { checkHostLoad } from './host-load'
+import { checkHostLoad, readLinuxClockTicksPerSecond } from './host-load'
 import type { BusyProcess } from './host-load'
 import { resolvePeerVersions } from './peer-versions'
 import { resolveStacksRuntimeDependencies, resolveStacksSourceModules } from './provenance'
@@ -195,7 +195,14 @@ async function main(): Promise<void> {
     driver: driver.name,
     driverVersion: await driver.version(),
     runtime: Bun.version,
-    machine: { arch: arch(), platform: platform(), release: release(), cpu: cpus()[0]?.model ?? 'unknown', cores: cpus().length },
+    machine: {
+      arch: arch(),
+      platform: platform(),
+      release: release(),
+      cpu: cpus()[0]?.model ?? 'unknown',
+      cores: cpus().length,
+      clockTicksPerSecond: await readLinuxClockTicksPerSecond(),
+    },
     source: await readSourceState(REPO_ROOT),
     stacksSourceModules: targets.some(t => t.server === 'stacks.ts') ? resolveStacksSourceModules(REPO_ROOT) : undefined,
     stacksRuntimeDependencies: targets.some(t => t.server === 'stacks.ts') ? resolveStacksRuntimeDependencies(REPO_ROOT) : undefined,

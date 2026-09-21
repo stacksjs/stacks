@@ -78,9 +78,10 @@ accident. The safeguards here exist only to stop that:
   apart - because `ps -o %cpu` is an average over a process's whole lifetime,
   which cannot see a long-idle neighbour that has just started saturating a
   core, and keeps reporting a burst that finished an hour ago. Linux reads
-  `/proc/<pid>/stat` at the kernel's 10 ms tick precision for both the server
-  window and host guard. Other hosts, and restricted Linux environments, fall
-  back to cumulative `ps` time.
+  `/proc/<pid>/stat` for both the server window and host guard, converts its
+  ticks with the host's cached `getconf CLK_TCK` value, and records that rate
+  in the report. Other hosts, and Linux environments where either source is
+  unavailable, fall back to cumulative `ps` time.
 - **Three runs, median reported, spread printed beside it.** A single run on a
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much. A full range above 10% of the median marks

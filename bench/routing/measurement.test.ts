@@ -25,7 +25,7 @@ describe('benchmark CPU window', () => {
       throw new Error('ps must not run when proc is readable')
     })
     try {
-      expect(await processCpuSeconds(pid, 'linux', procRoot)).toBe(1.68)
+      expect(await processCpuSeconds(pid, 'linux', procRoot, 100)).toBe(1.68)
     }
     finally {
       spawn.mockRestore()
@@ -38,7 +38,7 @@ describe('benchmark CPU window', () => {
       stdout: new Response('00:07.25').body,
     }) as unknown as ReturnType<typeof Bun.spawn>)
     try {
-      expect(await processCpuSeconds(123, 'linux', '/missing-proc-root')).toBe(7.25)
+      expect(await processCpuSeconds(123, 'linux', '/missing-proc-root', null)).toBe(7.25)
     }
     finally {
       spawn.mockRestore()

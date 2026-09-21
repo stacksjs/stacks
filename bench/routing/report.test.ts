@@ -81,6 +81,20 @@ describe('routing benchmark report', () => {
     expect(report).not.toContain('Bun raw')
   })
 
+  test('records the Linux clock rate used to scale proc CPU time', () => {
+    const report = renderReport({
+      meta: {
+        ...meta,
+        machine: { ...meta.machine, platform: 'linux', clockTicksPerSecond: 250 },
+      },
+      scenarios: [SCENARIOS[0]!],
+      targets: [{ id: 'stacks-minimal', label: 'Stacks minimal' }],
+      measurements: [measurement],
+    })
+
+    expect(report).toContain('| Linux clock ticks | 250 per second |')
+  })
+
   test('reports per-request CPU cost for a fixed-rate run and drops the throughput ratio', () => {
     const report = renderReport({
       meta: { ...meta, requestRate: 20_000 },

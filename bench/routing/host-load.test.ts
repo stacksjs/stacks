@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { busyProcessesFromSamples, formatBusyProcess, parseProcessCpuTimes, parseProcStatCpuTime } from './host-load'
+import { busyProcessesFromSamples, formatBusyProcess, parseLinuxClockTicks, parseProcessCpuTimes, parseProcStatCpuTime } from './host-load'
 
 const sample = (entries: Array<[number, number, string]>) =>
   new Map(entries.map(([pid, seconds, command]) => [pid, { seconds, command }]))
@@ -24,12 +24,33 @@ describe('benchmark host load preflight', () => {
     // state, ppid, pgrp, session, tty_nr, tpgid, flags, minflt, cminflt,
     // majflt, cmajflt, then utime and stime: 100 + 50 ticks at 100Hz is 1.5s.
     const beforeCpu = ['S', '1', '1', '0', '-1', '4194304', '900', '0', '0', '0', '0']
-    expect(parseProcStatCpuTime(`7 (my (odd) name) ${beforeCpu.join(' ')} 100 50 0 0 0`))
+    expect(parseProcStatCpuTime(`7 (my (odd) name) ${beforeCpu.join(' ')} 100 50 0 0 0`, 100))
       .toEqual({ seconds: 1.5, command: 'my (odd) name' })
   })
 
+  test('uses the host clock rate instead of assuming 100 ticks per second', () => {
+    const beforeCpu = ['S', '1', '1', '0', '-1', '4194304', '900', '0', '0', '0', '0']
+    expect(parseProcStatCpuTime(`7 (server) ${beforeCpu.join(' ')} 250 125 0 0 0`, 250))
+      .toEqual({ seconds: 1.5, command: 'server' })
+  })
+
+  test.each([
+    ['100\n', 100],
+    ['250', 250],
+    ['', null],
+    ['0', null],
+    ['100.5', null],
+    ['not-a-clock', null],
+  ] as const)('parses getconf CLK_TCK output %j', (output, expected) => {
+    expect(parseLinuxClockTicks(output)).toBe(expected)
+  })
+
   test.each(['', '7 no-parens S 1', '7 (proc) S 1 2 3'])('reports an unreadable stat line as unmeasured: %s', (line) => {
-    expect(parseProcStatCpuTime(line)).toBeNull()
+    expect(parseProcStatCpuTime(line, 100)).toBeNull()
+  })
+
+  test('rejects an invalid clock rate rather than scaling plausible-looking data', () => {
+    expect(parseProcStatCpuTime('7 (server) S 1 1 0 -1 4194304 900 0 0 0 0 100 50 0 0 0', 0)).toBeNull()
   })
 
   test('measures what a process is using now, not over its lifetime', () => {

@@ -8,15 +8,14 @@ export const BUSY_PROCESS_CPU_PERCENT = 75
  * How long the two cumulative CPU readings are separated by.
  *
  * Long enough that the coarsest source of CPU time on either platform still
- * resolves a few percent of a core - Linux reports `/proc` CPU time in 10ms
- * ticks and `ps` on Darwin reports hundredths of a second - and short enough
- * that the guard runs twice around every measurement without adding a
+ * resolves a few percent of a core - Linux reports `/proc` CPU time in host
+ * clock ticks and `ps` on Darwin reports hundredths of a second - and short
+ * enough that the guard runs twice around every measurement without adding a
  * meaningful share of the suite's wall clock.
  */
 export const HOST_LOAD_SAMPLE_MS = 400
 
-/** `/proc` reports CPU time in USER_HZ, which the Linux ABI fixes at 100. */
-const LINUX_CLOCK_TICKS_PER_SECOND = 100
+let linuxClockTicksPromise: Promise<number | null> | undefined
 
 export interface BusyProcess {
   pid: number
@@ -70,7 +69,9 @@ export function parseProcessCpuTimes(output: string): Map<number, CpuTimeSample>
  * and parentheses, so the fields after it are found from the LAST `)` rather
  * than by splitting the whole line.
  */
-export function parseProcStatCpuTime(stat: string): CpuTimeSample | null {
+export function parseProcStatCpuTime(stat: string, clockTicksPerSecond: number): CpuTimeSample | null {
+  if (!Number.isSafeInteger(clockTicksPerSecond) || clockTicksPerSecond <= 0)
+    return null
   const commandEnd = stat.lastIndexOf(')')
   const commandStart = stat.indexOf('(')
   if (commandStart === -1 || commandEnd < commandStart)
@@ -82,13 +83,46 @@ export function parseProcStatCpuTime(stat: string): CpuTimeSample | null {
   const stime = Number(fields[12])
   if (!Number.isFinite(utime) || !Number.isFinite(stime))
     return null
-  return { seconds: (utime + stime) / LINUX_CLOCK_TICKS_PER_SECOND, command }
+  return { seconds: (utime + stime) / clockTicksPerSecond, command }
 }
 
-/** Read one Linux process at the kernel's 10 ms CPU tick precision. */
-export async function readProcProcessCpuTime(pid: number, procRoot = '/proc'): Promise<CpuTimeSample | null> {
+/** Parse the value printed by `getconf CLK_TCK`. */
+export function parseLinuxClockTicks(output: string): number | null {
+  const ticks = Number(output.trim())
+  return Number.isSafeInteger(ticks) && ticks > 0 ? ticks : null
+}
+
+/** Resolve Linux's runtime clock rate once for every proc sample in this process. */
+export async function readLinuxClockTicksPerSecond(): Promise<number | null> {
+  linuxClockTicksPromise ??= (async () => {
+    try {
+      const child = Bun.spawn(['getconf', 'CLK_TCK'], { stdout: 'pipe', stderr: 'ignore' })
+      const [output, exitCode] = await Promise.all([
+        new Response(child.stdout).text(),
+        child.exited,
+      ])
+      return exitCode === 0 ? parseLinuxClockTicks(output) : null
+    }
+    catch {
+      return null
+    }
+  })()
+  return linuxClockTicksPromise
+}
+
+/** Read one Linux process at the host kernel's CPU tick precision. */
+export async function readProcProcessCpuTime(
+  pid: number,
+  procRoot = '/proc',
+  clockTicksPerSecond?: number | null,
+): Promise<CpuTimeSample | null> {
   try {
-    return parseProcStatCpuTime(await readFile(`${procRoot}/${pid}/stat`, 'utf8'))
+    const ticks = clockTicksPerSecond === undefined
+      ? await readLinuxClockTicksPerSecond()
+      : clockTicksPerSecond
+    if (ticks == null)
+      return null
+    return parseProcStatCpuTime(await readFile(`${procRoot}/${pid}/stat`, 'utf8'), ticks)
   }
   catch {
     return null
@@ -150,13 +184,16 @@ export function busyProcessesFromSamples(
 
 async function readProcCpuTimes(procRoot = '/proc'): Promise<Map<number, CpuTimeSample> | null> {
   try {
+    const clockTicksPerSecond = await readLinuxClockTicksPerSecond()
+    if (clockTicksPerSecond == null)
+      return null
     const entries = await readdir(procRoot)
     const samples = new Map<number, CpuTimeSample>()
     await Promise.all(entries.map(async (entry) => {
       const pid = Number(entry)
       if (!Number.isSafeInteger(pid) || pid <= 0)
         return
-      const sample = await readProcProcessCpuTime(pid, procRoot)
+      const sample = await readProcProcessCpuTime(pid, procRoot, clockTicksPerSecond)
       if (sample)
         samples.set(pid, sample)
     }))
@@ -182,8 +219,8 @@ async function readPsCpuTimes(): Promise<Map<number, CpuTimeSample> | null> {
 }
 
 function sampleCpuTimes(): Promise<Map<number, CpuTimeSample> | null> {
-  // `/proc` needs no subprocess, and its 10ms ticks beat what `ps` prints on
-  // Linux, which is whole seconds and useless over a sub-second window.
+  // After resolving CLK_TCK once, `/proc` needs no per-sample subprocess and
+  // its host clock ticks beat the whole seconds Linux `ps` prints here.
   return platform() === 'linux'
     ? readProcCpuTimes().then(samples => samples ?? readPsCpuTimes())
     : readPsCpuTimes()

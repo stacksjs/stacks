@@ -106,6 +106,8 @@ export interface RunMeta {
     cpu: string
     cores: number
     bun: string
+    /** Linux `_SC_CLK_TCK`, recorded when proc CPU timing is available. */
+    clockTicksPerSecond?: number | null
   }
 }
 
@@ -204,6 +206,8 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| Architecture | ${meta.machine.arch} |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)
   lines.push(`| Bun | ${meta.machine.bun} |`)
+  if (meta.machine.clockTicksPerSecond != null)
+    lines.push(`| Linux clock ticks | ${fmt(meta.machine.clockTicksPerSecond)} per second |`)
   if (meta.runtimeRequirement)
     lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)
   lines.push('')
