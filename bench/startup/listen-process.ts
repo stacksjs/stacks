@@ -26,6 +26,7 @@ export interface ListenProcessOptions {
   expectedBody?: string
   expectedMediaType?: string
   expectedStatus?: number
+  headers?: Record<string, string>
   path?: string
   timeoutMs?: number
 }
@@ -132,7 +133,10 @@ export async function measureListenProcess(options: ListenProcessOptions): Promi
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const response = await fetch(`http://127.0.0.1:${handshake.port}${path}`, { signal: controller.signal })
+      const response = await fetch(`http://127.0.0.1:${handshake.port}${path}`, {
+        headers: options.headers,
+        signal: controller.signal,
+      })
       const body = await response.text()
       const mediaType = response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
       if (response.status !== expectedStatus || mediaType !== expectedMediaType || body !== expectedBody)

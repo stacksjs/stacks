@@ -4,8 +4,9 @@ import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { resolvePeerVersions } from '../routing/peer-versions'
 import { resolveStacksRuntimeDependencies, resolveStacksSourceModules } from '../routing/provenance'
-import { REPO_ROOT, serverCommand, serverEnvironment } from '../routing/runtime'
+import { headersFor, REPO_ROOT, serverCommand, serverEnvironment } from '../routing/runtime'
 import { readRuntimeRequirement } from '../routing/runtime-version'
+import { SCENARIOS } from '../routing/scenarios'
 import { parsePeerStartupOptions, peerStartupSchedule } from './peer-config'
 import { measureListenProcess } from './listen-process'
 import type { PeerStartupSample } from './peer-statistics'
@@ -23,6 +24,7 @@ export async function runPeerStartupBenchmark(args = process.argv.slice(2)): Pro
   if (Object.values(peerVersions).some(version => version === 'unavailable'))
     throw new Error('Every selected peer framework must resolve to an exact installed version')
   const samples: PeerStartupSample[] = []
+  const scenario = SCENARIOS.find(candidate => candidate.id === 'static-json')!
 
   for (const scheduled of peerStartupSchedule(options.targets, options.runs)) {
     const measurement = await measureListenProcess({
@@ -33,6 +35,7 @@ export async function runPeerStartupBenchmark(args = process.argv.slice(2)): Pro
         BENCH_PORT: '0',
         BENCH_READY_HANDSHAKE: '1',
       },
+      headers: headersFor(scheduled.target, scenario),
       path: '/bench/json',
       expectedBody: '{"hello":"world"}',
     })

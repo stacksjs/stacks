@@ -15,7 +15,7 @@ function fixture(source: string): string {
   return path
 }
 
-function measureFixture(path: string, timeoutMs?: number) {
+function measureFixture(path: string, timeoutMs?: number, headers?: Record<string, string>) {
   return measureListenProcess({
     command: [
       process.execPath,
@@ -26,6 +26,7 @@ function measureFixture(path: string, timeoutMs?: number) {
     ],
     cwd: dirname(path),
     env: { ...hostEnvironment(), APP_ENV: 'production', NODE_ENV: 'production' },
+    headers,
     timeoutMs,
   })
 }
@@ -84,6 +85,29 @@ describe('spawn-to-ready process measurement', () => {
       }
     `)
     await expect(measureFixture(incorrect)).rejects.toThrow('readiness probe returned')
+  })
+
+  test('forwards profile request headers to the readiness probe', async () => {
+    const path = fixture(`
+      export function disableViewRouting() {}
+      export function createStacksRouter() {
+        let handler
+        return {
+          bunRouter: {},
+          get(_path, value) { handler = value },
+          async serve(options) {
+            return Bun.serve({
+              ...options,
+              fetch(req) {
+                return req.headers.get('cookie') === 'X-CSRF-Token=known' ? handler(req) : new Response('missing cookie')
+              },
+            })
+          },
+        }
+      }
+    `)
+    await expect(measureFixture(path, undefined, { cookie: 'X-CSRF-Token=known' })).resolves.toBeDefined()
+    await expect(measureFixture(path)).rejects.toThrow('readiness probe returned')
   })
 
   test('times out and stops a child that never becomes ready', async () => {
