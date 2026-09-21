@@ -68,7 +68,7 @@ export async function checkApplicationHealth(
     {
       name: 'database',
       async run() {
-        const { db } = await import('@stacksjs/database')
+        const { db } = await import('@stacksjs/database/runtime')
         const unsafe = (db as { unsafe?: (sql: string) => Promise<unknown> }).unsafe
         if (typeof unsafe !== 'function')
           throw new Error('database driver does not expose a raw health probe')
