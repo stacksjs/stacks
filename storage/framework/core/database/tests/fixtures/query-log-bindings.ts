@@ -6,6 +6,16 @@ import process from 'node:process'
 
 const dialect = process.env.DB_CONNECTION
 assert(dialect === 'sqlite' || dialect === 'postgres' || dialect === 'mysql')
+const appEnv = process.env.APP_ENV
+assert(appEnv === 'test' || appEnv === 'production')
+// `current` is this repository's config/database.ts as loaded. `without-key`
+// drops captureBindings from it, as in an app config written before the
+// option existed. `opt-in` sets it to true, as an app would to keep values.
+const appConfig = process.env.STACKS_QUERY_LOG_BINDINGS_APP_CONFIG
+assert(appConfig === 'current' || appConfig === 'without-key' || appConfig === 'opt-in')
+// What the runner expects the logger to have resolved from all of that.
+const expected = process.env.STACKS_QUERY_LOG_BINDINGS_EXPECT
+assert(expected === 'values' || expected === 'types')
 const configPath = process.env.STACKS_QUERY_LOG_BINDINGS_CONFIG
 assert(configPath && basename(dirname(configPath)).startsWith('stacks-query-log-bindings-'))
 if (dialect === 'sqlite')
@@ -20,7 +30,7 @@ const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection } = await import('../../src/utils')
 await ensureDatabaseConfigLoaded()
-initializeDbConfig({ app: { env: 'test' }, database: {
+initializeDbConfig({ app: { env: appEnv }, database: {
   default: dialect,
   connections: dialect === 'sqlite' ? { sqlite: { database: process.env.DB_DATABASE_PATH } } : {
     [dialect]: { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD },
@@ -48,14 +58,18 @@ finally {
   rmSync(scratch, { recursive: true, force: true })
 }
 
-// Only what the logger keeps of the bindings is under test, so everything else
-// is pinned.
+// Only the capture policy is under test, so everything else is pinned.
+// captureBindings is left as the application config resolved it, unless the
+// run asks for an app config without it or one that opts in.
+const { captureBindings, ...queryLoggingWithoutCapture } = config.database.queryLogging
 config.database.queryLogging = {
-  ...config.database.queryLogging,
+  ...queryLoggingWithoutCapture,
+  ...(appConfig === 'current' ? { captureBindings } : appConfig === 'opt-in' ? { captureBindings: true } : {}),
   enabled: true,
   excludedQueries: ['query_logs'],
   analysis: { enabled: false, analyzeAll: false, explainPlan: false, suggestions: false },
 }
+assert.equal(Object.hasOwn(config.database.queryLogging, 'captureBindings'), appConfig !== 'without-key')
 
 // Shaped like what the framework really binds: session-auth ids are 64 hex
 // characters, magic-link tokens 43 base64url ones.
@@ -114,15 +128,32 @@ try {
     assert(!leaked, `${label} was persisted verbatim in query_logs: ${leaked?.query} ${leaked?.bindings}`)
   }
 
-  assert.deepEqual(bindingsOf(logged(rows, /^select \* from sessions where id = /)), ['<redacted>'])
-  assert.deepEqual(bindingsOf(logged(rows, /^insert into sessions/)), ['<redacted>', 7, '<redacted>', '<redacted>'])
-  assert.deepEqual(bindingsOf(logged(rows, /^insert into people/)), [1, 'Ada Lovelace', 'ada@example.com', '<redacted>', '<redacted>', 'active'])
-  assert.deepEqual(bindingsOf(logged(rows, /^update people set password = /)), ['<redacted>', 1])
-  assert.deepEqual(bindingsOf(logged(rows, /^update people set settings = /)), ['<redacted>', 1])
-  assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where name = /)), ['<redacted>'])
-  // Benign values stay, so the log is still worth reading while debugging.
-  assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where status = /)), ['active', 1, 2, 3])
-  assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where email = /)), ['ada@example.com'])
+  if (expected === 'types') {
+    // Real user data: only the count and type of each binding are kept.
+    for (const value of ['Ada Lovelace', 'ada@example.com', 'active', 'dark']) {
+      const kept = rows.find(row => String(row.bindings).includes(value))
+      assert(!kept, `${appEnv} kept the bound value ${value}: ${kept?.query} ${kept?.bindings}`)
+    }
+    for (const row of rows) {
+      const entries = bindingsOf(row)
+      assert(Array.isArray(entries) && entries.every(entry => entry === null || /^<[a-z]+>$/.test(String(entry))), `${row.query} kept more than types: ${row.bindings}`)
+    }
+    assert.deepEqual(bindingsOf(logged(rows, /^select \* from sessions where id = /)), ['<string>'])
+    assert.deepEqual(bindingsOf(logged(rows, /^insert into people/)), ['<number>', '<string>', '<string>', '<string>', '<string>', '<string>'])
+    assert.deepEqual(bindingsOf(logged(rows, /^update people set settings = /)), ['<string>', '<number>'])
+    assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where status = /)), ['<string>', '<number>', '<number>', '<number>'])
+  }
+  else {
+    assert.deepEqual(bindingsOf(logged(rows, /^select \* from sessions where id = /)), ['<redacted>'])
+    assert.deepEqual(bindingsOf(logged(rows, /^insert into sessions/)), ['<redacted>', 7, '<redacted>', '<redacted>'])
+    assert.deepEqual(bindingsOf(logged(rows, /^insert into people/)), [1, 'Ada Lovelace', 'ada@example.com', '<redacted>', '<redacted>', 'active'])
+    assert.deepEqual(bindingsOf(logged(rows, /^update people set password = /)), ['<redacted>', 1])
+    assert.deepEqual(bindingsOf(logged(rows, /^update people set settings = /)), ['<redacted>', 1])
+    assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where name = /)), ['<redacted>'])
+    // Benign values stay, so the log is still worth reading while debugging.
+    assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where status = /)), ['active', 1, 2, 3])
+    assert.deepEqual(bindingsOf(logged(rows, /^select \* from people where email = /)), ['ada@example.com'])
+  }
 
   console.log('query log bindings OK')
 }

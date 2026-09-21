@@ -239,6 +239,15 @@ export interface DatabaseOptions {
     enabled: boolean
     /** Also capture caller stacks for successful fast queries. */
     captureAllTraces?: boolean
+    /**
+     * Keep bound values in `query_logs.bindings`; when false only each
+     * value's type is kept. Credentials are stored as `<redacted>` either
+     * way. Env override: `DB_QUERY_LOGGING_CAPTURE_BINDINGS`, which takes
+     * true/false, 1/0, yes/no or on/off. Any other value keeps only types.
+     *
+     * @default true outside production, false when APP_ENV is production or prod
+     */
+    captureBindings?: boolean
     slowThreshold: number // in milliseconds
     retention: number // in days
     pruneFrequency: number // in hours

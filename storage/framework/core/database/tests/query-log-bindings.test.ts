@@ -18,7 +18,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { SQL } from 'bun'
 import { describe, expect, it, test } from 'bun:test'
-import { isSensitiveName, looksLikeCredential, queryLogBindings, serializeQueryLogBindings } from '../src/query-log-bindings'
+import { isSensitiveName, looksLikeCredential, parseCaptureBindings, queryLogBindings, serializeQueryLogBindings } from '../src/query-log-bindings'
 
 const SESSION_ID = 'c0ffee00deadbeef'.repeat(4)
 const capture = { captureValues: true }
@@ -174,52 +174,105 @@ describe('query log bindings', () => {
     )).toEqual(['<string>', '<number>', '<boolean>', null, '<date>', '<bytes>', '<bigint>', '<object>'])
   })
 
+  it('reads captureBindings the way other Stacks switches are read', () => {
+    for (const on of [true, 'true', 'TRUE', '1', 'yes', 'Yes', 'on', ' ON ', 1])
+      expect(parseCaptureBindings(on)).toBe(true)
+    for (const off of [false, 'false', 'False', '0', 'no', 'NO', 'off', ' Off ', 0])
+      expect(parseCaptureBindings(off)).toBe(false)
+    // Not set: the caller falls back to the environment default.
+    for (const unset of [undefined, null, '', '  '])
+      expect(parseCaptureBindings(unset)).toBeUndefined()
+    // Set, but not a switch: the caller keeps only types.
+    for (const unrecognised of ['maybe', 'enabled', 'y', 'n', '2', 't', 'true false', {}])
+      expect(parseCaptureBindings(unrecognised)).toBeNull()
+  })
 })
+
+interface Run {
+  title: string
+  appEnv: 'test' | 'production'
+  /** DB_QUERY_LOGGING_CAPTURE_BINDINGS, left unset when absent. */
+  setting?: string
+  appConfig: 'current' | 'without-key' | 'opt-in'
+  expect: 'values' | 'types'
+  /** How the setting is read does not depend on the dialect, so these run on SQLite alone. */
+  sqliteOnly?: boolean
+  /** The logger reports this setting as unrecognised, once. */
+  warns?: boolean
+}
+
+const runs: Run[] = [
+  { title: 'query logs keep benign bindings and redact credentials', appEnv: 'test', appConfig: 'current', expect: 'values' },
+  { title: 'production query logs keep only the type of each binding', appEnv: 'production', appConfig: 'current', expect: 'types' },
+  { title: 'production keeps redacted values when the app config opts in', appEnv: 'production', appConfig: 'opt-in', expect: 'values' },
+  { title: 'production keeps redacted values when DB_QUERY_LOGGING_CAPTURE_BINDINGS=true', appEnv: 'production', setting: 'true', appConfig: 'current', expect: 'values' },
+  { title: 'an app config without captureBindings keeps redacted values outside production', appEnv: 'test', appConfig: 'without-key', expect: 'values' },
+  { title: 'an app config without captureBindings keeps only types in production', appEnv: 'production', appConfig: 'without-key', expect: 'types' },
+  { title: 'an app config without captureBindings reads DB_QUERY_LOGGING_CAPTURE_BINDINGS=off', appEnv: 'test', setting: 'off', appConfig: 'without-key', expect: 'types', sqliteOnly: true },
+  { title: 'an app config without captureBindings reads DB_QUERY_LOGGING_CAPTURE_BINDINGS=1', appEnv: 'production', setting: '1', appConfig: 'without-key', expect: 'values', sqliteOnly: true },
+  { title: 'DB_QUERY_LOGGING_CAPTURE_BINDINGS=0 keeps only types outside production', appEnv: 'test', setting: '0', appConfig: 'current', expect: 'types', sqliteOnly: true },
+  { title: 'DB_QUERY_LOGGING_CAPTURE_BINDINGS=" Yes " keeps redacted values in production', appEnv: 'production', setting: ' Yes ', appConfig: 'current', expect: 'values', sqliteOnly: true },
+  { title: 'an unrecognised DB_QUERY_LOGGING_CAPTURE_BINDINGS keeps only types and warns once', appEnv: 'test', setting: 'maybe', appConfig: 'current', expect: 'types', sqliteOnly: true, warns: true },
+  { title: 'an unrecognised DB_QUERY_LOGGING_CAPTURE_BINDINGS fails closed without the config key too', appEnv: 'test', setting: 'enabled', appConfig: 'without-key', expect: 'types', sqliteOnly: true, warns: true },
+]
+
+const CAPTURE_BINDINGS_WARNING = '[database] queryLogging.captureBindings (DB_QUERY_LOGGING_CAPTURE_BINDINGS) is'
 
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
-  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} query logs keep benign bindings and redact credentials`, async () => {
-    const url = dialect === 'sqlite' ? undefined : new URL(connection!)
-    if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-      throw new Error('Query log binding tests require a local disposable database server')
-    const directory = await mkdtemp(join(tmpdir(), 'stacks-query-log-bindings-'))
-    const name = `stacks_query_log_bindings_${crypto.randomUUID().replaceAll('-', '')}`
-    const admin = url ? new SQL(url.href) : undefined
-    const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
-    let created = false
-    try {
-      const config = join(directory, 'bunfig.toml')
-      // Passing --config at this file replaces the repo bunfig, so the child
-      // inherits none of its preloads. The key is left out rather than set to
-      // an empty array: `preload = []` is rejected by Bun before 1.4.
-      await writeFile(config, '# no preload\n')
-      if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
-      const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/query-log-bindings.ts`], {
-        env: {
-          ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'true',
-          DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'query-log-bindings.sqlite') : ':memory:',
-          STACKS_QUERY_LOG_BINDINGS_CONFIG: config,
-          ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
-            DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
-            DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
-        }, stdout: 'pipe', stderr: 'pipe',
-      })
-      let timedOut = false
-      const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 25_000)
+  for (const run of runs.filter(run => dialect === 'sqlite' || !run.sqliteOnly)) {
+    test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} ${run.title}`, async () => {
+      const url = dialect === 'sqlite' ? undefined : new URL(connection!)
+      if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
+        throw new Error('Query log binding tests require a local disposable database server')
+      const directory = await mkdtemp(join(tmpdir(), 'stacks-query-log-bindings-'))
+      const name = `stacks_query_log_bindings_${crypto.randomUUID().replaceAll('-', '')}`
+      const admin = url ? new SQL(url.href) : undefined
+      const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
+      let created = false
       try {
-        const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-        expect(timedOut, 'query log bindings must finish without a watchdog kill').toBe(false)
-        expect(code, `${stdout}\n${stderr}`).toBe(0)
-        expect(stdout).toContain('query log bindings OK')
+        const config = join(directory, 'bunfig.toml')
+        // Passing --config at this file replaces the repo bunfig, so the child
+        // inherits none of its preloads. The key is left out rather than set to
+        // an empty array: `preload = []` is rejected by Bun before 1.4.
+        await writeFile(config, '# no preload\n')
+        if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
+        // The run decides the setting, so an override in the calling shell
+        // must not. With no preload and no env file, nothing puts it back.
+        const inherited = { ...process.env }
+        delete inherited.DB_QUERY_LOGGING_CAPTURE_BINDINGS
+        const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/query-log-bindings.ts`], {
+          env: {
+            ...inherited, APP_ENV: run.appEnv, DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'true',
+            ...(run.setting === undefined ? {} : { DB_QUERY_LOGGING_CAPTURE_BINDINGS: run.setting }),
+            DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'query-log-bindings.sqlite') : ':memory:',
+            STACKS_QUERY_LOG_BINDINGS_CONFIG: config,
+            STACKS_QUERY_LOG_BINDINGS_APP_CONFIG: run.appConfig,
+            STACKS_QUERY_LOG_BINDINGS_EXPECT: run.expect,
+            ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
+              DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
+              DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
+          }, stdout: 'pipe', stderr: 'pipe',
+        })
+        let timedOut = false
+        const watchdog = setTimeout(() => { timedOut = true; child.kill() }, 25_000)
+        try {
+          const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+          expect(timedOut, 'query log bindings must finish without a watchdog kill').toBe(false)
+          expect(code, `${stdout}\n${stderr}`).toBe(0)
+          expect(stdout).toContain('query log bindings OK')
+          // Every one of the fixture's eight queries resolves the setting.
+          expect(stderr.split('\n').filter(line => line.includes(CAPTURE_BINDINGS_WARNING)).length, stderr).toBe(run.warns ? 1 : 0)
+        }
+        finally { clearTimeout(watchdog); child.kill() }
       }
-      finally { clearTimeout(watchdog); child.kill() }
-    }
-    finally {
-      try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
       finally {
-        try { await admin?.close() }
-        finally { await rm(directory, { recursive: true, force: true }) }
+        try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
+        finally {
+          try { await admin?.close() }
+          finally { await rm(directory, { recursive: true, force: true }) }
+        }
       }
-    }
-  }, 30_000)
+    }, 30_000)
+  }
 }

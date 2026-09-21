@@ -199,6 +199,28 @@ export default {
     captureAllTraces: env.DB_QUERY_LOGGING_CAPTURE_ALL_TRACES ?? false,
 
     /**
+     * Keep the values each query bound in `query_logs.bindings`. Outside
+     * production they are kept for debugging; production keeps only each
+     * value's type (`<string>`, `<number>`, ...) unless this is enabled,
+     * because the table holds real user data and `GET /api/queries/:id`
+     * returns it. The variable takes true/false, 1/0, yes/no or on/off;
+     * anything else keeps only types and prints a warning.
+     *
+     * Either way, credentials are stored as `<redacted>`: a value bound to a
+     * sensitive column (password, token, secret, session, api_key, otp, ...),
+     * any text in a statement on a sensitive table such as `sessions`, JSON
+     * with a sensitive key, and anything shaped like a credential (a password
+     * hash, a JWT, a long random token). That goes by names and shapes, so
+     * outside production it can still keep: a secret with an ordinary column
+     * name and an ordinary look; a number bound to an ordinary column of a
+     * sensitive table; text on a sensitive table named only after a comma,
+     * USING or UPDATE ONLY; and a value compared with a JSON path key written
+     * as a string (`meta->>'password' = ?`). SQL that interpolates values
+     * instead of binding them is stored as written, so bind them.
+     */
+    captureBindings: env.DB_QUERY_LOGGING_CAPTURE_BINDINGS ?? !['production', 'prod'].includes(env.APP_ENV || ''),
+
+    /**
      * The threshold in milliseconds to mark a query as slow
      */
     slowThreshold: env.DB_QUERY_LOGGING_SLOW_THRESHOLD || 100,

@@ -568,6 +568,31 @@ export interface QueryLogBindingOptions {
   captureValues: boolean
 }
 
+/** How the other Stacks switches read on and off (`isVitessSharded`, `buddy migrate`'s guards). */
+const SWITCH_ON: ReadonlySet<string> = new Set(['1', 'true', 'yes', 'on'])
+const SWITCH_OFF: ReadonlySet<string> = new Set(['0', 'false', 'no', 'off'])
+
+/**
+ * `captureBindings` as config or `DB_QUERY_LOGGING_CAPTURE_BINDINGS` gave it:
+ * `undefined` when it is not set, `null` when it is set to something that is
+ * not a switch, else the boolean it spells. The env proxy turns only `true`
+ * and `false` into booleans, so `0`, `off` or ` Yes ` arrive here as text.
+ */
+export function parseCaptureBindings(setting: unknown): boolean | null | undefined {
+  if (typeof setting === 'boolean')
+    return setting
+  if (setting === undefined || setting === null)
+    return undefined
+  const text = String(setting).trim().toLowerCase()
+  if (text === '')
+    return undefined
+  if (SWITCH_ON.has(text))
+    return true
+  if (SWITCH_OFF.has(text))
+    return false
+  return null
+}
+
 /**
  * The bindings of `sql` as they may be persisted: one entry per parameter,
  * each the value itself, `<redacted>`, or a type tag such as `<string>`.

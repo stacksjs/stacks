@@ -3,8 +3,9 @@ import { sqlDateTime } from './sql-helpers'
 import { memoryUsage } from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
+import { env as envVars } from '@stacksjs/env'
 import { log } from '@stacksjs/logging'
-import { serializeQueryLogBindings } from './query-log-bindings'
+import { parseCaptureBindings, serializeQueryLogBindings } from './query-log-bindings'
 import { normalizeQuery, parseQuery } from './query-parser'
 import { db, getDatabaseDialect } from './utils'
 
@@ -270,6 +271,36 @@ function determineQueryStatus(durationMs: number, error?: any): 'completed' | 'f
   return 'completed'
 }
 
+// Each unrecognised `captureBindings` is reported once, not on every query.
+const warnedCaptureBindings = new Set<string>()
+
+/**
+ * Whether `query_logs.bindings` keeps values or only their types.
+ *
+ * An app config written before `captureBindings` existed has no key, so the
+ * environment variable is read here directly, as `initializeDbConfig` does
+ * for `enabled`, and failing that it gets the split `enabled` has: values
+ * outside production, types in production. A setting that is not a switch
+ * keeps only types: a typo must not decide that user data is kept.
+ */
+function capturesBindingValues(): boolean {
+  const setting = config.database?.queryLogging?.captureBindings ?? envVars.DB_QUERY_LOGGING_CAPTURE_BINDINGS
+  const capture = parseCaptureBindings(setting)
+  if (capture === null) {
+    const shown = String(setting)
+    if (!warnedCaptureBindings.has(shown)) {
+      warnedCaptureBindings.add(shown)
+      // eslint-disable-next-line no-console
+      console.warn(`[database] queryLogging.captureBindings (DB_QUERY_LOGGING_CAPTURE_BINDINGS) is "${shown}", which is not true, false, 1, 0, yes, no, on or off; query logs keep only the type of each binding.`)
+    }
+    return false
+  }
+  if (capture !== undefined)
+    return capture
+  const appEnv = config.app?.env
+  return appEnv !== 'production' && appEnv !== 'prod'
+}
+
 /**
  * Create a base query log record
  */
@@ -297,7 +328,7 @@ async function createQueryLogRecord(
   // `GET /api/queries/:id` returns the whole row, so it must not become a copy
   // of every session id and password hash the application binds.
   const bindings = parameters
-    ? serializeQueryLogBindings(query, parameters, { captureValues: true })
+    ? serializeQueryLogBindings(query, parameters, { captureValues: capturesBindingValues() })
     : undefined
 
   return {
