@@ -34,6 +34,13 @@
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/auth/*": ["./core/auth/src/*"],
+      // Governs `storage/framework/defaults` as well, at runtime: the server
+      // loads the auto-import barrels by path and the stx bundler builds page
+      // scripts on the deploy box, which has no `dist/`. Without this entry
+      // every `@stacksjs/browser/composables/*` import in `defaults/functions`
+      // missed there, so the whole functions barrel failed to load and the
+      // login and password forms shipped unbundled scripts.
+      "@stacksjs/browser/*": ["./core/browser/src/*"],
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
