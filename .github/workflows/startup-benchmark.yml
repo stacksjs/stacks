@@ -1,0 +1,95 @@
+name: Router startup diagnostic
+
+on:
+  schedule:
+    - cron: '43 7 * * 0'
+  workflow_dispatch:
+    inputs:
+      pairs:
+        description: Alternating root/runtime process pairs for each diagnostic
+        type: string
+        default: '30'
+
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: '1.4.2'
+
+concurrency:
+  group: router-startup-diagnostic
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        with:
+          version: '0.11.60'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
+
+      - name: Install frozen dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify startup harness
+        run: bun test ./bench/startup/*.test.ts
+
+      - name: Build router package
+        working-directory: storage/framework/core/router
+        run: bun run build
+
+      - name: Record clean source before measurement
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-startup"
+          git rev-parse HEAD > "$RUNNER_TEMP/router-startup/source-before-revision.txt"
+          git status --porcelain=v1 --untracked-files=all > "$RUNNER_TEMP/router-startup/source-before-status.txt"
+          git diff --binary HEAD > "$RUNNER_TEMP/router-startup/source-before.patch"
+          if [ -s "$RUNNER_TEMP/router-startup/source-before-status.txt" ]; then
+            cat "$RUNNER_TEMP/router-startup/source-before-status.txt"
+            exit 1
+          fi
+
+      - name: Measure fresh-process imports
+        env:
+          PAIRS: ${{ inputs.pairs || '30' }}
+        run: |
+          bun run bench:startup -- \
+            --pairs="$PAIRS" \
+            --output="$RUNNER_TEMP/router-startup/import.json"
+
+      - name: Measure spawn to verified response
+        env:
+          PAIRS: ${{ inputs.pairs || '30' }}
+        run: |
+          bun run bench:startup:ready -- \
+            --pairs="$PAIRS" \
+            --output="$RUNNER_TEMP/router-startup/ready.json"
+
+      - name: Record and verify source after measurement
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/router-startup"
+          git rev-parse HEAD > "$RUNNER_TEMP/router-startup/source-after-revision.txt"
+          git status --porcelain=v1 --untracked-files=all > "$RUNNER_TEMP/router-startup/source-after-status.txt"
+          git diff --binary HEAD > "$RUNNER_TEMP/router-startup/source-after.patch"
+          if [ -s "$RUNNER_TEMP/router-startup/source-after-status.txt" ]; then
+            cat "$RUNNER_TEMP/router-startup/source-after-status.txt"
+            exit 1
+          fi
+
+      - name: Upload startup diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: router-startup-${{ github.run_id }}
+          path: ${{ runner.temp }}/router-startup
+          if-no-files-found: error
+          retention-days: 30
