@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'bun:test'
+import type { MemoryMeasurement } from './report'
 import { EQUAL_RATE_API_PROFILE } from './profile'
 import { memoryMeasurementPublicationIssues, memoryPublicationIssues } from './publication'
+
+function measurement(targetId: string, run: number, over: Partial<MemoryMeasurement> = {}): MemoryMeasurement {
+  return {
+    targetId,
+    run,
+    requestRate: 25_000,
+    settledRssBytes: 100,
+    peakLoadRssBytes: 120,
+    rpsMean: 25_000,
+    requests: 25_000,
+    errors: 0,
+    rawBytes: 512,
+    rawOutputFile: `raw/${targetId}--run${run}.json`,
+    ...over,
+  }
+}
 
 const publishable = {
   driverPublishable: true,
@@ -108,9 +125,9 @@ describe('memory benchmark publication profile', () => {
     expect(memoryMeasurementPublicationIssues(
       [{ id: 'stacks-warm', requestRate: 25_000 }],
       [
-        { targetId: 'stacks-warm', run: 1, requestRate: 25_000, settledRssBytes: 100, peakLoadRssBytes: 120, rpsMean: 24_500, requests: 24_500, errors: 0 },
-        { targetId: 'stacks-warm', run: 2, requestRate: 25_000, settledRssBytes: 102, peakLoadRssBytes: 121, rpsMean: 24_750, requests: 24_750, errors: 0 },
-        { targetId: 'stacks-warm', run: 3, requestRate: 25_000, settledRssBytes: 101, peakLoadRssBytes: 122, rpsMean: 25_000, requests: 25_000, errors: 0 },
+        measurement('stacks-warm', 1, { rpsMean: 24_500, requests: 24_500 }),
+        measurement('stacks-warm', 2, { settledRssBytes: 102, peakLoadRssBytes: 121, rpsMean: 24_750, requests: 24_750 }),
+        measurement('stacks-warm', 3, { settledRssBytes: 101, peakLoadRssBytes: 122 }),
       ],
       3,
       parityChecks('stacks-warm'),
@@ -124,8 +141,8 @@ describe('memory benchmark publication profile', () => {
         { id: 'stacks-warm', requestRate: 25_000 },
       ],
       [
-        { targetId: 'stacks-warm', run: 1, requestRate: 25_000, settledRssBytes: 100, peakLoadRssBytes: 120, rpsMean: 23_000, requests: 23_000, errors: 1 },
-        { targetId: 'stacks-warm', run: 1, requestRate: 25_000, settledRssBytes: 120, peakLoadRssBytes: 0, rpsMean: 24_750, requests: 24_750, errors: 0 },
+        measurement('stacks-warm', 1, { rpsMean: 23_000, requests: 23_000, errors: 1 }),
+        measurement('stacks-warm', 1, { settledRssBytes: 120, peakLoadRssBytes: 0, rpsMean: 24_750, requests: 24_750 }),
       ],
       2,
       [],
@@ -162,10 +179,7 @@ describe('memory benchmark publication profile', () => {
   })
 
   it('rejects missing, malformed, and changing parity evidence', () => {
-    const measurements = [1, 2, 3].map(run => ({
-      targetId: 'stacks-warm', run, requestRate: 25_000,
-      settledRssBytes: 100, peakLoadRssBytes: 120, rpsMean: 25_000, requests: 25_000, errors: 0,
-    }))
+    const measurements = [1, 2, 3].map(run => measurement('stacks-warm', run))
     const malformed = parityChecks('stacks-warm')
     malformed[0] = {
       ...malformed[0]!,

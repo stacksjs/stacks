@@ -143,8 +143,11 @@ export function memoryMeasurementPublicationIssues(
       || !Number.isFinite(row.peakLoadRssBytes) || row.peakLoadRssBytes <= 0
       || !Number.isFinite(row.rpsMean) || row.rpsMean <= 0
       || !Number.isSafeInteger(row.requests) || row.requests <= 0
-      || !Number.isSafeInteger(row.errors) || row.errors < 0))
+      || !Number.isSafeInteger(row.errors) || row.errors < 0
+      || !Number.isSafeInteger(row.rawBytes) || row.rawBytes <= 0))
       issues.push(`${target.id} contains an invalid measurement`)
+    if (rows.some(row => row.rawOutputFile !== `raw/${target.id}--run${row.run}.json`))
+      issues.push(`${target.id} contains an invalid raw output path`)
 
     const errors = rows.reduce((total, row) => total + row.errors, 0)
     if (errors > 0)

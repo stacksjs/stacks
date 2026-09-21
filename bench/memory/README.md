@@ -85,7 +85,7 @@ Every run writes:
 
 - `report.md`, the human-readable comparison
 - `measurements.json`, the compact values, complete run metadata, selected
-  target definitions, and scenario contract
+  target definitions, scenario contract, and schema v1 links to every raw run
 - `raw/<target>--run<N>.json`, every RSS sample and raw load-generator result
 
 The report and metadata include the Git revision and working-tree state captured

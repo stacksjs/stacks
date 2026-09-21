@@ -44,8 +44,8 @@ describe('memory benchmark report', () => {
       },
       targets: [{ id: 'stacks', label: 'Stacks', requestRate: 40_000 }],
       measurements: [
-        { targetId: 'stacks', run: 1, requestRate: 40_000, settledRssBytes: 100 * 1024 * 1024, peakLoadRssBytes: 150 * 1024 * 1024, rpsMean: 39_900, requests: 2_394_000, errors: 0 },
-        { targetId: 'stacks', run: 2, requestRate: 40_000, settledRssBytes: 120 * 1024 * 1024, peakLoadRssBytes: 170 * 1024 * 1024, rpsMean: 40_000, requests: 2_400_000, errors: 1 },
+        { targetId: 'stacks', run: 1, requestRate: 40_000, settledRssBytes: 100 * 1024 * 1024, peakLoadRssBytes: 150 * 1024 * 1024, rpsMean: 39_900, requests: 2_394_000, errors: 0, rawBytes: 512, rawOutputFile: 'raw/stacks--run1.json' },
+        { targetId: 'stacks', run: 2, requestRate: 40_000, settledRssBytes: 120 * 1024 * 1024, peakLoadRssBytes: 170 * 1024 * 1024, rpsMean: 40_000, requests: 2_400_000, errors: 1, rawBytes: 512, rawOutputFile: 'raw/stacks--run2.json' },
       ],
     })
 

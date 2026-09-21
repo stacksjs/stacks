@@ -21,6 +21,10 @@ export interface MemoryMeasurement {
   requests: number
   errors: number
   requestRate: number
+  /** Bytes of raw RSS and load evidence recorded for this run. */
+  rawBytes: number
+  /** Artifact-relative raw RSS and load evidence path. */
+  rawOutputFile: string
 }
 
 export interface MemoryRunMeta {

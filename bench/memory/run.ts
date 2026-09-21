@@ -13,6 +13,7 @@ import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
 import type { ScenarioParityEvidence } from '../routing/runtime'
 import type { MemoryProfileTarget } from './profile'
+import { Buffer } from 'node:buffer'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release } from 'node:os'
 import { join } from 'node:path'
@@ -29,6 +30,7 @@ import { readSourceState, sourceStateChanged } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
 import { balancedTargetOrder } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
+import { createMemoryArtifact } from './artifact'
 import { EQUAL_RATE_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
 import { memoryMeasurementPublicationIssues, memoryPublicationIssues } from './publication'
@@ -209,7 +211,7 @@ async function measure(
 ): Promise<
   | { skipped: string }
   | {
-    measurement: Omit<MemoryMeasurement, 'targetId' | 'run' | 'requestRate'>
+    measurement: Omit<MemoryMeasurement, 'targetId' | 'run' | 'requestRate' | 'rawBytes' | 'rawOutputFile'>
     samples: MemorySample[]
     load: LoadResult
     parity: { before: ScenarioParityEvidence, after: ScenarioParityEvidence }
@@ -396,15 +398,24 @@ async function main(): Promise<void> {
         availableTargets.add(target.id)
         targetRows.push({ id: target.id, label: selected.label, requestRate })
       }
-      measurements.push({ targetId: target.id, run, requestRate, ...result.measurement })
-      parityChecks.push({ targetId: target.id, run, ...result.parity })
-      writeFileSync(join(rawDir, `${target.id}--run${run}.json`), `${JSON.stringify({
+      const rawOutputFile = `raw/${target.id}--run${run}.json`
+      const rawOutput = `${JSON.stringify({
         targetId: target.id,
         run,
         samples: result.samples,
         load: result.load,
         parity: result.parity,
-      }, null, 2)}\n`)
+      }, null, 2)}\n`
+      measurements.push({
+        targetId: target.id,
+        run,
+        requestRate,
+        ...result.measurement,
+        rawBytes: Buffer.byteLength(rawOutput),
+        rawOutputFile,
+      })
+      parityChecks.push({ targetId: target.id, run, ...result.parity })
+      writeFileSync(join(outDir, rawOutputFile), rawOutput)
       console.error(`[memory] settled RSS: ${(result.measurement.settledRssBytes / 1024 / 1024).toFixed(1)} MiB`)
     }
   }
@@ -420,7 +431,7 @@ async function main(): Promise<void> {
 
   const report = renderMemoryReport({ meta, targets: targetRows, measurements })
   writeFileSync(join(outDir, 'report.md'), report)
-  writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify({
+  writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify(createMemoryArtifact({
     meta,
     targets: targetRows,
     workload: {
@@ -437,7 +448,7 @@ async function main(): Promise<void> {
       parityChecks,
     },
     measurements,
-  }, null, 2)}\n`)
+  }), null, 2)}\n`)
   console.error(`\n[memory] report written to ${join(outDir, 'report.md')}\n`)
   console.log(report)
 }
