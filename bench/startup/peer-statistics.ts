@@ -28,6 +28,21 @@ export interface PeerMetricSummary {
   targetLowerRuns: number
 }
 
+export function percentile(values: readonly number[], fraction: number): number {
+  if (values.length === 0)
+    throw new Error('Cannot calculate a percentile without values')
+  if (!Number.isFinite(fraction) || fraction < 0 || fraction > 1)
+    throw new Error(`Percentile fraction must be between 0 and 1, received ${fraction}`)
+  if (values.some(value => !Number.isFinite(value)))
+    throw new Error('Cannot calculate a percentile from non-finite values')
+  const sorted = [...values].sort((left, right) => left - right)
+  const position = (sorted.length - 1) * fraction
+  const lower = Math.floor(position)
+  const upper = Math.ceil(position)
+  if (lower === upper) return sorted[lower]!
+  return sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (position - lower)
+}
+
 export function validatePeerStartupSamples(
   samples: readonly PeerStartupSample[],
   runs: number,
@@ -44,6 +59,12 @@ export function validatePeerStartupSamples(
     const orders = rows.map(row => row.order)
     if (new Set(orders).size !== targetIds.length || orders.some(order => !Number.isSafeInteger(order) || order < 0 || order >= targetIds.length))
       throw new Error(`Peer startup run ${run} has malformed process order`)
+  }
+  for (const targetId of targetIds) {
+    const positionCounts = Array.from({ length: targetIds.length }, (_, order) =>
+      samples.filter(sample => sample.targetId === targetId && sample.order === order).length)
+    if (Math.max(...positionCounts) - Math.min(...positionCounts) > 1)
+      throw new Error(`Peer startup target ${targetId} has unbalanced process positions`)
   }
   for (const sample of samples) {
     if (!Number.isFinite(sample.listenMs) || sample.listenMs <= 0)

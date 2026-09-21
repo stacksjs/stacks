@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { selectedPeerPackages } from '../routing/peer-versions'
-import { summarizePeerStartupMetric, validatePeerStartupSamples } from './peer-statistics'
+import { percentile, summarizePeerStartupMetric, validatePeerStartupSamples } from './peer-statistics'
 
 interface SourceSnapshot {
   dirty: boolean
@@ -133,14 +133,26 @@ function formatBytes(value: number): string {
   return `${(value / 1024 / 1024).toFixed(2)} MiB`
 }
 
+function formatMetric(value: number, metric: PeerStartupMetric): string {
+  return metric === 'rssBytes' ? formatBytes(value) : `${value.toFixed(3)} ms`
+}
+
 function metricRows(result: PeerStartupResult, metric: PeerStartupMetric): string {
   const summaries = result[metric]
-  const unit = metric === 'rssBytes' ? 'MiB' : 'ms'
   return result.targets.map((target) => {
     const summary = summaries.find(row => row.targetId === target.id)!
-    const median = unit === 'ms' ? `${summary.median.toFixed(3)} ms` : formatBytes(summary.median)
-    return `| ${target.label} | ${median} | ${summary.pairedMedianRatio.toFixed(4)} | ${summary.targetLowerRuns} / ${summary.targetEqualRuns} / ${summary.targetHigherRuns} |`
+    const values = result.samples.filter(sample => sample.targetId === target.id).map(sample => sample[metric])
+    const ratios = summary.pairedRatios.map(row => row.ratio)
+    const valueIqr = `${formatMetric(percentile(values, 0.25), metric)} - ${formatMetric(percentile(values, 0.75), metric)}`
+    const ratioIqr = `${percentile(ratios, 0.25).toFixed(4)} - ${percentile(ratios, 0.75).toFixed(4)}`
+    return `| ${target.label} | ${formatMetric(summary.median, metric)} | ${valueIqr} | ${summary.pairedMedianRatio.toFixed(4)} | ${ratioIqr} | ${summary.targetLowerRuns} / ${summary.targetEqualRuns} / ${summary.targetHigherRuns} |`
   }).join('\n')
+}
+
+function processPositionExposure(result: PeerStartupResult): { maximum: number, minimum: number } {
+  const counts = result.targets.flatMap(target => Array.from({ length: result.targets.length }, (_, order) =>
+    result.samples.filter(sample => sample.targetId === target.id && sample.order === order).length))
+  return { minimum: Math.min(...counts), maximum: Math.max(...counts) }
 }
 
 function targetVersion(result: PeerStartupResult, target: Target): string {
@@ -154,6 +166,7 @@ export function renderPeerStartupReport(result: PeerStartupResult): string {
   const source = result.source.before
   const sourceState = source.dirty ? 'modified working tree' : 'clean working tree'
   const bunRouter = result.frameworkPackages.bunRouter
+  const positionExposure = processPositionExposure(result)
 
   return `# Peer server startup diagnostic
 
@@ -168,6 +181,7 @@ export function renderPeerStartupReport(result: PeerStartupResult): string {
 | Host | ${result.host.platform} ${result.host.release}, ${result.host.architecture}, ${result.host.cpuModel} |
 | bun-router | ${bunRouter.version} (declared ${bunRouter.declaredRange}) |
 | Complete balanced cycles | ${result.runs} |
+| Process position exposure | ${positionExposure.minimum}-${positionExposure.maximum} samples per target and position |
 | Response | ${result.scenario.expectedStatus} ${result.scenario.expectedMediaType}, \`${result.scenario.expectedBodySha256}\` |
 
 ## Targets
@@ -180,20 +194,20 @@ Ratios are paired to Bun raw within the same cycle. A ratio below 1 uses less ti
 
 ## Spawn to listen
 
-| Target | Median | Paired median ratio | Lower / equal / higher |
-|---|---:|---:|---:|
+| Target | Median | p25-p75 | Paired median ratio | Paired ratio p25-p75 | Lower / equal / higher |
+|---|---:|---:|---:|---:|---:|
 ${metricRows(result, 'listenMs')}
 
 ## Spawn to verified response
 
-| Target | Median | Paired median ratio | Lower / equal / higher |
-|---|---:|---:|---:|
+| Target | Median | p25-p75 | Paired median ratio | Paired ratio p25-p75 | Lower / equal / higher |
+|---|---:|---:|---:|---:|---:|
 ${metricRows(result, 'firstResponseMs')}
 
 ## Ready-state RSS
 
-| Target | Median | Paired median ratio | Lower / equal / higher |
-|---|---:|---:|---:|
+| Target | Median | p25-p75 | Paired median ratio | Paired ratio p25-p75 | Lower / equal / higher |
+|---|---:|---:|---:|---:|---:|
 ${metricRows(result, 'rssBytes')}
 `
 }

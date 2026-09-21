@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { PeerStartupSample } from './peer-statistics'
-import { summarizePeerStartupMetric, validatePeerStartupSamples } from './peer-statistics'
+import { percentile, summarizePeerStartupMetric, validatePeerStartupSamples } from './peer-statistics'
 
 const response = { status: 200, mediaType: 'application/json', bodySha256: 'a'.repeat(64) }
 
@@ -12,6 +12,18 @@ function samples(runs = 15): PeerStartupSample[] {
 }
 
 describe('peer startup statistics', () => {
+  test('calculates interpolated percentiles without mutating samples', () => {
+    const values = [40, 10, 30, 20]
+    expect(percentile(values, 0)).toBe(10)
+    expect(percentile(values, 0.25)).toBe(17.5)
+    expect(percentile(values, 0.5)).toBe(25)
+    expect(percentile(values, 0.75)).toBe(32.5)
+    expect(percentile(values, 1)).toBe(40)
+    expect(values).toEqual([40, 10, 30, 20])
+    expect(() => percentile([], 0.5)).toThrow('without values')
+    expect(() => percentile(values, 2)).toThrow('between 0 and 1')
+  })
+
   test('summarizes run-paired ratios to Bun native', () => {
     const summaries = summarizePeerStartupMetric(samples(), 15, ['stacks', 'bun-raw'], 'listenMs')
     expect(summaries[0]).toMatchObject({
@@ -36,5 +48,10 @@ describe('peer startup statistics', () => {
     const drift = structuredClone(valid)
     drift[0]!.response = { ...drift[0]!.response, bodySha256: 'b'.repeat(64) }
     expect(() => validatePeerStartupSamples(drift, 15, ['stacks', 'bun-raw'])).toThrow('responses are inconsistent')
+
+    const unbalanced = structuredClone(valid)
+    for (const sample of unbalanced)
+      sample.order = sample.targetId === 'stacks' ? 0 : 1
+    expect(() => validatePeerStartupSamples(unbalanced, 15, ['stacks', 'bun-raw'])).toThrow('unbalanced process positions')
   })
 })

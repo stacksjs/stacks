@@ -52,8 +52,9 @@ describe('peer startup diagnostic report', () => {
     const report = renderPeerStartupReport(result())
     expect(report).toContain('Diagnostic only')
     expect(report).toContain('`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` (clean working tree)')
-    expect(report).toContain('| Stacks | 20.000 ms | 2.0000 | 0 / 0 / 15 |')
-    expect(report).toContain('| Stacks | 0.00 MiB | 2.0000 | 0 / 0 / 15 |')
+    expect(report).toContain('| Process position exposure | 7-8 samples per target and position |')
+    expect(report).toContain('| Stacks | 20.000 ms | 20.000 ms - 20.000 ms | 2.0000 | 2.0000 - 2.0000 | 0 / 0 / 15 |')
+    expect(report).toContain('| Stacks | 0.00 MiB | 0.00 MiB - 0.00 MiB | 2.0000 | 2.0000 - 2.0000 | 0 / 0 / 15 |')
     expect(report).toContain(`\`${ 'a'.repeat(64) }\``)
   })
 

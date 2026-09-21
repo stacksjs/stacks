@@ -74,9 +74,11 @@ stops the child.
 The JSON retains all samples, medians, ratios paired to Bun raw by cycle, sign
 counts, exact peer versions, target definitions, runtime and host details,
 framework package provenance, and source snapshots. Incomplete cycles,
-malformed handshakes, response drift, child diagnostics, missing versions, and
-source changes are hard failures. This comparison is diagnostic only on
-developer machines and shared hosted runners.
+unbalanced process positions, malformed handshakes, response drift, child
+diagnostics, missing versions, and source changes are hard failures. The
+validated report derives p25-p75 ranges for raw measurements and paired ratios
+from the retained samples. This comparison is diagnostic only on developer
+machines and shared hosted runners.
 
 ## Validated report
 
