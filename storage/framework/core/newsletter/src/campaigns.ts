@@ -1,5 +1,5 @@
 import type { CreateCampaignInput, SendCampaignOptions } from './types'
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database'
+import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database'
 import { lists } from './lists'
 
 /**
@@ -114,22 +114,6 @@ export function canQueueCampaignStatus(status: unknown): boolean {
   return ['draft', 'scheduled', 'paused', 'failed'].includes(String(status || '').toLowerCase())
 }
 
-function affectedRows(result: unknown): number {
-  if (Array.isArray(result))
-    return result.reduce((total, item) => total + affectedRows(item), 0)
-  if (typeof result === 'number' || typeof result === 'bigint')
-    return Number(result)
-
-  const record = result as Record<string, unknown> | null | undefined
-  const raw = record?.changes
-    ?? record?.affectedRows
-    ?? record?.numAffectedRows
-    ?? record?.numUpdatedRows
-  if (typeof raw === 'object' && raw !== null)
-    return Number((raw as Record<string, unknown>).changes || 0)
-  return Number(raw || 0)
-}
-
 function withScheduledAtMatch(query: any, scheduledAt: string | null): any {
   return scheduledAt === null
     ? query.whereNull('scheduled_at')
@@ -142,29 +126,78 @@ function withUpdatedAtMatch(query: any, updatedAt: string | null): any {
     : query.where('updated_at', '=', updatedAt)
 }
 
+/**
+ * Move a campaign from the state the caller read to `target`, or refuse.
+ *
+ * A compare-and-set against the caller's snapshot: the write only lands if
+ * status, scheduled_at and updated_at still hold what the caller read.
+ *
+ * On PostgreSQL and SQLite that is one atomic UPDATE whose affected-row count
+ * is the verdict, because both count the rows an UPDATE MATCHED. MySQL counts
+ * the rows it CHANGED, so there the same count cannot carry the decision: a
+ * transition whose target is the state the campaign is already in reported 0.
+ * `sqlDateTime` has second precision, so `updated_at` does not save it, and
+ * cancelling a cancelled campaign - a double click - threw
+ * CampaignStateConflictError for a campaign nobody else had touched
+ * (stacksjs/stacks#2639).
+ *
+ * The obvious repair is the dangerous one. Re-reading after a zero and
+ * accepting "the row already holds the target" cannot tell our no-op from a
+ * concurrent caller that got there first: two `sendNow()` calls in the same
+ * second both target `sending`, the loser's re-read finds exactly its target,
+ * and it would report success and dispatch a second SendCampaignJob. The
+ * campaign would go out twice.
+ *
+ * So on MySQL the comparison moves in front of the write, under a row lock,
+ * and is made by the database with the same predicate the UPDATE uses, which
+ * keeps the stored-format question out of JavaScript. A caller that loses a
+ * race waits for the winner, finds the snapshot no longer matches, and gets
+ * the conflict; with the row locked and matched, the UPDATE cannot miss, so
+ * its count is not read.
+ *
+ * The other dialects keep the single statement on purpose, not as a fallback.
+ * Opening a transaction there would make SQLite worse: its SELECT pins a read
+ * snapshot, and when a competing writer commits first the UPDATE fails to
+ * upgrade the transaction with a raw SQLITE_BUSY instead of re-checking its
+ * WHERE and reporting the conflict the caller can act on.
+ */
 async function transitionCampaignDelivery(
   id: number,
   expected: CampaignDeliverySnapshot,
   target: CampaignDeliveryTarget,
 ): Promise<void> {
-  const query = withUpdatedAtMatch(
+  const matchingSnapshot = (query: any): any => withUpdatedAtMatch(
     withScheduledAtMatch(
-      db
+      query
+        .where('id', '=', id)
+        .where('status', '=', expected.status),
+      expected.scheduledAt,
+    ),
+    expected.updatedAt,
+  )
+  const write = (connection: typeof db): any => matchingSnapshot(
+    connection
       .updateTable('campaigns')
       .set({
         status: target.status,
         scheduled_at: target.scheduledAt,
         updated_at: target.updatedAt,
-      })
-      .where('id', '=', id)
-      .where('status', '=', expected.status),
-      expected.scheduledAt,
-    ),
-    expected.updatedAt,
+      }),
   )
-  const result = await query.execute()
-  if (affectedRows(result) !== 1)
-    throw new CampaignStateConflictError(id)
+
+  if (!sqlHelpers(getDatabaseDialect()).isMysql) {
+    if (mutationCount(await write(db).executeTakeFirst()) !== 1)
+      throw new CampaignStateConflictError(id)
+    return
+  }
+
+  await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as typeof db
+    const current = await matchingSnapshot(trx.selectFrom('campaigns')).select(['id']).lockForUpdate().executeTakeFirst()
+    if (!current)
+      throw new CampaignStateConflictError(id)
+    await write(trx).execute()
+  })
 }
 
 async function restoreCampaignDelivery(
