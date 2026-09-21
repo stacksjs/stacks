@@ -128,10 +128,16 @@ jobs:
 
       # Three typecheck scripts cover three disjoint surfaces, and only the
       # first was running here. `typecheck:app` covers app/, config/, routes/
-      # and resources/; `typecheck:views` covers all 615 tracked .stx files.
+      # and resources/; `typecheck:views` covers every tracked .stx file.
       # Neither was wired in, so the two surfaces an app author actually edits
-      # were unverified on every PR - which is how 75 .stx errors accumulated,
-      # among them five storefront views that always rendered an empty cart.
+      # were unverified on every PR - which is how 75 .stx errors accumulated.
+      # On the storefront cart, checkout and layout views as they stood before
+      # 133a6c689d, what it reports is `Cannot find name 'requestContext'` (a
+      # global both view servers install, which it now reads from
+      # request-context.d.ts), untyped callback parameters and an undeclared
+      # `window` property. What kept a shopper's cart off those views was not
+      # a type error: see app/Storefront/StorefrontDatabase.ts and
+      # verifyCartCookie in app/Storefront/CartCookie.ts.
       #
       # Kept as separate steps so a failure names the surface it came from.
       - name: Typecheck framework
