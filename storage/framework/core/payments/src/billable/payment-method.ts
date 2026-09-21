@@ -1,7 +1,7 @@
-import type { Selectable } from '@stacksjs/database'
+import type { Selectable } from '@stacksjs/database/runtime'
 import type { ModelRow, UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { PaymentMethod } from '@stacksjs/orm'
 import { stripe } from '../drivers/stripe'
 

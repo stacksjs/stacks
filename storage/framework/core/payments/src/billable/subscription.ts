@@ -1,6 +1,6 @@
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 

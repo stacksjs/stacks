@@ -1,5 +1,5 @@
 import type { ModelRow, UserModel } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { PaymentTransaction } from '@stacksjs/orm'
 
 type PaymentTransactionsTable = ModelRow<typeof PaymentTransaction>
