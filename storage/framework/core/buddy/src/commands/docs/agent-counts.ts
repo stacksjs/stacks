@@ -30,6 +30,7 @@
  * Usage: `bun storage/framework/core/buddy/src/commands/docs/agent-counts.ts [--check|--write]`
  */
 
+import { execFileSync } from 'node:child_process'
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -41,24 +42,67 @@ function abs(relative: string): string {
   return join(root, relative)
 }
 
-/** Every file with `extension` under `dir`, ignoring barrels. */
-function countFiles(dir: string, extension: string): number {
+/**
+ * Paths git ignores, out of the ones given. Repo-relative, as walked.
+ *
+ * The walk below reads the working tree, so it counts whatever happens to sit
+ * on disk - including generated artifacts git was told to ignore.
+ * `buddy migrate:regenerate` drops .sql files into database/migrations, and a
+ * personal global `*.sql` rule keeps them untracked forever. The docs then get
+ * measured against a tree nobody else has: this machine counted 230 migrations
+ * where a clean checkout and CI count 229, so `--check` failed here and
+ * `--write` would have committed "230" for CI to reject straight back. One bug,
+ * failing in both directions, and the release gate blocked on both.
+ *
+ * The docs say what SHIPS, and git already knows what that is.
+ */
+function ignoredPaths(paths: string[]): Set<string> {
+  if (!paths.length)
+    return new Set()
+
+  try {
+    const output = execFileSync('git', ['check-ignore', '--stdin'], {
+      cwd: root,
+      input: paths.join('\n'),
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    })
+    return new Set(output.split('\n').map(line => line.trim()).filter(Boolean))
+  }
+  catch {
+    // Exit 1 means "none of these are ignored", which is an answer, not a
+    // failure. Anything else - no git, or a vendored copy of the framework
+    // inside a consumer app that is not a repo at all - leaves the count as the
+    // plain disk walk, exactly as it behaved before this filter existed.
+    return new Set()
+  }
+}
+
+/** Every file with `extension` under `dir`, ignoring barrels. Repo-relative. */
+function walkFiles(dir: string, extension: string): string[] {
   let entries: string[]
   try {
     entries = readdirSync(abs(dir))
   }
   catch {
-    return 0
+    return []
   }
 
-  return entries.reduce((total, entry) => {
+  return entries.flatMap((entry) => {
     const full = join(abs(dir), entry)
     if (statSync(full).isDirectory())
-      return total + countFiles(join(dir, entry), extension)
+      return walkFiles(join(dir, entry), extension)
     if (!entry.endsWith(extension) || entry === 'index.ts')
-      return total
-    return total + 1
-  }, 0)
+      return []
+    return [join(dir, entry)]
+  })
+}
+
+/** Every file with `extension` under `dir` that git would carry, ignoring barrels. */
+export function countFiles(dir: string, extension: string): number {
+  const files = walkFiles(dir, extension)
+  const ignored = ignoredPaths(files)
+  return files.filter(file => !ignored.has(file)).length
 }
 
 function countDirs(dir: string): number {
