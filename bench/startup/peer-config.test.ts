@@ -6,6 +6,16 @@ describe('peer startup benchmark configuration', () => {
     const options = parsePeerStartupOptions([])
     expect(options.runs).toBe(15)
     expect(options.output).toBe('bench/startup/results/peers-latest.json')
+    expect(DEFAULT_PEER_STARTUP_TARGET_IDS).toEqual([
+      'stacks',
+      'stacks-warm',
+      'stacks-minimal',
+      'elysia',
+      'express',
+      'fastify',
+      'hono',
+      'bun-raw',
+    ])
     expect(options.targets.map(target => target.id)).toEqual([...DEFAULT_PEER_STARTUP_TARGET_IDS])
   })
 

@@ -5,6 +5,7 @@ import { targetById } from '../routing/targets'
 export const MIN_PEER_STARTUP_RUNS = 15
 export const DEFAULT_PEER_STARTUP_TARGET_IDS = [
   'stacks',
+  'stacks-warm',
   'stacks-minimal',
   'elysia',
   'express',
