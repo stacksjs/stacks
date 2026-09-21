@@ -22,7 +22,6 @@
  * badge is correct on first paint, before any client-side JS runs.
  */
 
-const { cartTokenFromRequest } = require('../functions/storefront/cart-cookie')
 const Database = require('bun:sqlite').Database
 const path = require('path')
 
@@ -30,7 +29,9 @@ const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'data
 
 let cartCount = 0
 try {
-  const sessionToken = cartTokenFromRequest(request)
+  // Through requestContext: `request` here is the router's ambient proxy, which
+  // has no request while stx serve renders a page, so it carries no cookies.
+  const sessionToken = requestContext.cookie('stacks_cart')
   if (sessionToken) {
     const db = new Database(dbPath, { readonly: true })
     const cart = db.query(`SELECT total_items FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(sessionToken)
