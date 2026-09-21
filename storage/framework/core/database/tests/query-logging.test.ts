@@ -22,20 +22,42 @@ describe('database query logging', () => {
     }
   })
 
-  it('installs query hooks only for profiles that consume diagnostics', async () => {
-    const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-hook-profile.ts')], {
+  // Production without query logging installs no hooks on SQLite, and only
+  // the onQueryError hook of the oven-sh/bun#42804 detector on PostgreSQL and
+  // MySQL. Each driver is pinned in DB_CONNECTION and in every call the child
+  // makes, so the checkout's env files and the shell cannot pick the profile.
+  it.each(['sqlite', 'postgres', 'mysql'])('installs query hooks only for profiles that consume diagnostics (%s)', async (driver) => {
+    const child = Bun.spawn([process.execPath, '--no-env-file', join(import.meta.dir, 'fixtures/query-hook-profile.ts'), driver], {
       cwd: join(import.meta.dir, '..'),
-      env: { ...process.env, APP_ENV: 'production', DB_QUERY_LOGGING_ENABLED: 'false' },
+      env: {
+        ...process.env,
+        APP_ENV: 'production',
+        DB_CONNECTION: driver,
+        DB_QUERY_LOGGING_ENABLED: 'false',
+        DB_DATABASE_PATH: ':memory:',
+        DB_HOST: '127.0.0.1',
+        DB_PORT: '1',
+        DB_DATABASE: 'stacks_hook_profile',
+        DB_USERNAME: 'stacks',
+        DB_PASSWORD: '',
+      },
       stdout: 'pipe',
       stderr: 'pipe',
     })
-    const [exitCode, stdout, stderr] = await Promise.all([
-      child.exited,
-      new Response(child.stdout).text(),
-      new Response(child.stderr).text(),
-    ])
-    expect(exitCode, stderr).toBe(0)
-    expect(stdout).toContain('query-hook-profile-ok')
+    const watchdog = setTimeout(() => child.kill('SIGKILL'), 4000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(stdout).toContain(`query-hook-profile-ok ${driver}`)
+    }
+    finally {
+      clearTimeout(watchdog)
+      child.kill('SIGKILL')
+    }
   })
 
   it('keeps persisted traces accurate and redacted across repeated and changing callers', async () => {

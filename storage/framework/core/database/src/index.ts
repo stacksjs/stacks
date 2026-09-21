@@ -66,6 +66,10 @@ export type {
 export type { FrameworkSchema } from './framework-schema'
 export * from './utils'
 
+// Pools broken by oven-sh/bun#42804, for health checks to read
+export { BUN_BROKEN_MYSQL_POOL_MESSAGE, BUN_BROKEN_POSTGRES_POOL_MESSAGE, getBrokenDatabasePools, isBrokenBunPoolError } from './broken-pool'
+export type { BrokenDatabasePool, DatabasePoolIdentity } from './broken-pool'
+
 // Types (compatibility layer for Kysely types)
 export * from './types'
 

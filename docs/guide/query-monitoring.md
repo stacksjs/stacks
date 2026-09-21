@@ -82,8 +82,16 @@ Persistent query history is disabled by default in production because every
 application query otherwise creates an additional database write. Set
 `DB_QUERY_LOGGING_ENABLED=true` when durable history is worth that cost.
 Development retains request-scoped query tracking for error diagnostics when
-persistence is disabled. Production skips the query-hook path entirely unless
-durable history is explicitly enabled.
+persistence is disabled. In production without durable history, SQLite runs
+with no query hooks at all. PostgreSQL and MySQL keep a single `onQueryError`
+hook, which reports a Bun SQL pool broken by
+[oven-sh/bun#42804](https://github.com/oven-sh/bun/issues/42804) and runs
+nothing for a query that succeeds. bun-query-builder still takes its
+instrumented path for every query once any hook is set; against a local
+PostgreSQL 16 that cost was around a microsecond per query, within the noise
+of a 54µs query. The hook sees builder queries and raw queries only: ORM model
+queries, `db.unsafe()` and a transaction's `BEGIN` never reach it, so a pool
+that only those use is reported when `/api/health` runs its own probe.
 
 ## Bindings
 
