@@ -68,6 +68,7 @@
     "bench:memory": "bun bench/memory/run.ts",
     "bench:routing": "bun bench/routing/run.ts",
     "bench:startup": "bun bench/startup/run.ts",
+    "bench:startup:ready": "bun bench/startup/listen-run.ts",
     "test": "./buddy test",
     "test:ui": "./buddy test:ui",
     "test:coverage": "./buddy test:coverage",
