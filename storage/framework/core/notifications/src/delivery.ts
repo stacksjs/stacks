@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime} from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import type {
   NotificationChannel,
   NotificationPayload,

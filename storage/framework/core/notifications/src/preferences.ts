@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db, sqlDateTime} from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 import type { NotificationChannel } from './index'
 
 /**

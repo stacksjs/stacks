@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db, sqlDateTime} from '@stacksjs/database'
+import { db, sqlDateTime } from '@stacksjs/database/runtime'
 
 // `./database-schema.d.ts` augments `@stacksjs/database`'s
 // `DatabaseSchema` with the `notifications` + `notification_preferences`
