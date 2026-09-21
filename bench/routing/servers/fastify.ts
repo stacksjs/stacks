@@ -43,4 +43,10 @@ if (withDb && serves('db-roundtrip')) {
 }
 
 await app.listen({ port, host: hostname })
-console.error(`[bench] fastify listening on ${port}`)
+const address = app.server.address()
+if (!address || typeof address === 'string')
+  throw new Error('Fastify did not expose its listening port')
+if (process.env.BENCH_READY_HANDSHAKE === '1')
+  console.log(`{"port":${address.port},"rssBytes":${process.memoryUsage().rss}}`)
+else
+  console.error(`[bench] fastify listening on ${address.port}`)

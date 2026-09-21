@@ -55,4 +55,7 @@ if (withDb && serves('db-roundtrip')) {
 // decides it per route table. Matching that here keeps this row a measurement
 // of the layer Stacks actually runs on rather than of a path it never takes.
 const server = await router.serve({ port, hostname, nativeRoutes: true })
-console.error(`[bench] bun-router listening on ${server.port}`)
+if (process.env.BENCH_READY_HANDSHAKE === '1')
+  console.log(`{"port":${server.port},"rssBytes":${process.memoryUsage().rss}}`)
+else
+  console.error(`[bench] bun-router listening on ${server.port}`)

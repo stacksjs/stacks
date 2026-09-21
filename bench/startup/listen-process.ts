@@ -23,6 +23,10 @@ export interface ListenProcessOptions {
   command: string[]
   cwd: string
   env: Record<string, string>
+  expectedBody?: string
+  expectedMediaType?: string
+  expectedStatus?: number
+  path?: string
   timeoutMs?: number
 }
 
@@ -105,6 +109,10 @@ export function parseListenHandshake(line: string): ListenHandshake {
 
 export async function measureListenProcess(options: ListenProcessOptions): Promise<Omit<ListenSample, keyof PairedSample>> {
   const timeoutMs = options.timeoutMs ?? 10_000
+  const expectedBody = options.expectedBody ?? EXPECTED_BODY
+  const expectedMediaType = options.expectedMediaType ?? EXPECTED_MEDIA_TYPE
+  const expectedStatus = options.expectedStatus ?? 200
+  const path = options.path ?? '/ready'
   const started = performance.now()
   const child = Bun.spawn(options.command, {
     cwd: options.cwd,
@@ -116,6 +124,7 @@ export async function measureListenProcess(options: ListenProcessOptions): Promi
   let firstLine: FirstLine | undefined
   let measurement: Omit<ListenSample, keyof PairedSample> | undefined
   let failure: unknown
+  let terminatedByParent = false
   try {
     firstLine = await readFirstLine(child.stdout, timeoutMs)
     const handshake = parseListenHandshake(firstLine.line)
@@ -123,10 +132,10 @@ export async function measureListenProcess(options: ListenProcessOptions): Promi
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const response = await fetch(`http://127.0.0.1:${handshake.port}/ready`, { signal: controller.signal })
+      const response = await fetch(`http://127.0.0.1:${handshake.port}${path}`, { signal: controller.signal })
       const body = await response.text()
       const mediaType = response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
-      if (response.status !== 200 || mediaType !== EXPECTED_MEDIA_TYPE || body !== EXPECTED_BODY)
+      if (response.status !== expectedStatus || mediaType !== expectedMediaType || body !== expectedBody)
         throw new Error(`Router readiness probe returned ${response.status} ${mediaType || '(no media type)'} ${JSON.stringify(body)}`)
       measurement = {
         listenMs,
@@ -147,7 +156,10 @@ export async function measureListenProcess(options: ListenProcessOptions): Promi
     failure = error
   }
   finally {
-    if (child.exitCode == null) child.kill('SIGTERM')
+    if (child.exitCode == null) {
+      terminatedByParent = true
+      child.kill('SIGTERM')
+    }
   }
 
   let exitCode: number
@@ -168,7 +180,7 @@ export async function measureListenProcess(options: ListenProcessOptions): Promi
   if (trailingStdout.trim())
     throw new Error(`Router process wrote unexpected output after readiness: ${trailingStdout.trim()}`)
   if (failure) throw failure
-  if (exitCode !== 0)
+  if (exitCode !== 0 && !(terminatedByParent && exitCode === 128 + 15))
     throw new Error(`Router process exited with code ${exitCode}`)
   if (!measurement)
     throw new Error('Router process completed without a readiness measurement')

@@ -41,5 +41,14 @@ if (withDb && serves('db-roundtrip')) {
   })
 }
 
-app.listen(port, hostname)
-console.error(`[bench] express listening on ${port}`)
+const server = await new Promise<any>((resolve, reject) => {
+  const listener = app.listen(port, hostname, () => resolve(listener))
+  listener.once('error', reject)
+})
+const address = server.address()
+if (!address || typeof address === 'string')
+  throw new Error('Express did not expose its listening port')
+if (process.env.BENCH_READY_HANDSHAKE === '1')
+  console.log(`{"port":${address.port},"rssBytes":${process.memoryUsage().rss}}`)
+else
+  console.error(`[bench] express listening on ${address.port}`)

@@ -53,7 +53,7 @@ if (selectItem) {
   }
 }
 
-Bun.serve({
+const server = Bun.serve({
   port,
   hostname,
   routes,
@@ -62,4 +62,7 @@ Bun.serve({
   },
 })
 
-console.error(`[bench] bun-raw listening on ${port}`)
+if (process.env.BENCH_READY_HANDSHAKE === '1')
+  console.log(`{"port":${server.port},"rssBytes":${process.memoryUsage().rss}}`)
+else
+  console.error(`[bench] bun-raw listening on ${server.port}`)

@@ -115,4 +115,7 @@ if (withDb && serves('db-roundtrip')) {
 }
 
 const server = await router.serve({ port, hostname })
-console.error(`[bench] stacks (${minimal ? 'minimal' : 'secure'}, ${routerEntry} entry) listening on ${server.port}`)
+if (process.env.BENCH_READY_HANDSHAKE === '1')
+  console.log(`{"port":${server.port},"rssBytes":${process.memoryUsage().rss}}`)
+else
+  console.error(`[bench] stacks (${minimal ? 'minimal' : 'secure'}, ${routerEntry} entry) listening on ${server.port}`)

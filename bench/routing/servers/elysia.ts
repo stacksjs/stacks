@@ -48,4 +48,9 @@ if (withDb && serves('db-roundtrip')) {
 }
 
 app.listen({ port, hostname })
-console.error(`[bench] elysia listening on ${port}`)
+if (!app.server)
+  throw new Error('Elysia did not expose its listening server')
+if (process.env.BENCH_READY_HANDSHAKE === '1')
+  console.log(`{"port":${app.server.port},"rssBytes":${process.memoryUsage().rss}}`)
+else
+  console.error(`[bench] elysia listening on ${app.server.port}`)
