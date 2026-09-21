@@ -155,7 +155,7 @@
         "@stacksjs/queue": "workspace:*",
         "@stacksjs/registry": "workspace:*",
         "@stacksjs/router": "workspace:*",
-        "@stacksjs/rpx": "^0.11.53",
+        "@stacksjs/rpx": "^0.11.54",
         "@stacksjs/scheduler": "workspace:*",
         "@stacksjs/search-engine": "workspace:*",
         "@stacksjs/security": "workspace:*",
@@ -338,7 +338,7 @@
         "@stacksjs/payments": "^0.74.46",
         "@stacksjs/realtime": "^0.74.46",
         "@stacksjs/router": "^0.74.46",
-        "@stacksjs/rpx": "^0.11.53",
+        "@stacksjs/rpx": "^0.11.54",
         "@stacksjs/scheduler": "^0.74.46",
         "@stacksjs/search-engine": "^0.74.46",
         "@stacksjs/security": "^0.74.46",
@@ -1593,12 +1593,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/mail/-/mail-0.3.8.tgz",
       "integrity": "sha512-KF6yOTCieIaVvYOK72CGVFxMSx2XpaRaDbIt5yY4WmTs4d6ZFsr4UKhk/4G0psQjCXx7ATx+i11JVOaPZde3pQ=="
     },
-    "@stacksjs/rpx@0.11.53": {
+    "@stacksjs/rpx@0.11.54": {
       "name": "@stacksjs/rpx",
-      "version": "0.11.53",
+      "version": "0.11.54",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/rpx/-/rpx-0.11.53.tgz",
-      "integrity": "sha512-H+Oh9c0CBmMVj6AoXL2b+hFNx1YtnxC5e5W+DHnB0FVtfAX0bVXmHSJ8W2m9t4AUjx5aT8Izsy9FyYYui2YnjA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/rpx/-/rpx-0.11.54.tgz",
+      "integrity": "sha512-3njfy0BYCpof1rkuY4slGmHRggLWlJdrnUJMNoou6kfBqXNvm8ANqXgiL/bIlQeIWwidqoo1IOjgPcB/EozNog==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.10",
         "@stacksjs/tlsx": "^0.13.19",

@@ -90,7 +90,7 @@
     "@stacksjs/queue": "workspace:*",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/rpx": "^0.11.53",
+    "@stacksjs/rpx": "^0.11.54",
     "@stacksjs/scheduler": "workspace:*",
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
