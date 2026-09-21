@@ -16,7 +16,7 @@ export const primitiveModules = [
   ['@stacksjs/router', ['response', 'request', 'route', 'Middleware', 'url']],
   ['@stacksjs/storage', ['storage', 'fs']],
   ['@stacksjs/orm', ['defineModel', 'toAttrs']],
-  ['@stacksjs/database', ['db', 'sql']],
+  ['@stacksjs/database/runtime', ['db', 'sql']],
   ['@stacksjs/email', ['mail', 'template']],
   ['@stacksjs/queue', ['Job']],
   ['@stacksjs/scheduler', ['schedule']],

@@ -5,7 +5,7 @@ describe('server primitive auto-imports', () => {
   it('generates declarations for runtime globals', () => {
     const entries = primitiveAutoImportEntries()
 
-    expect(entries).toContainEqual({ from: '@stacksjs/database', name: 'db', as: 'db' })
+    expect(entries).toContainEqual({ from: '@stacksjs/database/runtime', name: 'db', as: 'db' })
     expect(entries).toContainEqual({ from: '@stacksjs/actions', name: 'Action', as: 'Action' })
     expect(entries).toContainEqual({ from: '@stacksjs/router', name: 'response', as: 'response' })
   })
