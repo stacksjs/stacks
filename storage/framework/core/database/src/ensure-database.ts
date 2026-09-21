@@ -230,8 +230,23 @@ export function buildConnectionUrl(target: ConnectionTarget, database: string): 
   return `${scheme}://${auth}@${target.host}:${target.port}/${encodeURIComponent(database)}${ssl}`
 }
 
+/**
+ * One connection, not Bun's default pool of 10.
+ *
+ * Every caller runs a single statement and closes, and one statement needs one
+ * session. With the default pool the probe opened 10 server sessions per call
+ * against both PostgreSQL 16 and MySQL 8.4 (Bun 1.4.1), and every one of them
+ * counts against the server's `max_connections`.
+ *
+ * It also shrinks, but does not remove, this module's exposure to
+ * oven-sh/bun#42804, where a server-side termination races the connections a
+ * pool is still opening. Terminating a local PostgreSQL 16 database's sessions
+ * while a pool warmed up left a pool of 10 broken in 43 and 76 of 160 trials
+ * (two runs) and a pool of 1 in 6 and 6 of 160. A termination while this
+ * single connection is still being opened can still leave its close() pending.
+ */
 function defaultConnect(url: string): MaintenanceClient {
-  return new SQL(url) as unknown as MaintenanceClient
+  return new SQL(url, { max: 1 }) as unknown as MaintenanceClient
 }
 
 /**
@@ -264,6 +279,10 @@ async function withConnection<T>(
   finally {
     if (timer)
       clearTimeout(timer)
+    // `timeoutMs` bounds `work` only. This close() is outside it and has no
+    // limit of its own: when oven-sh/bun#42804 leaves it pending, the caller
+    // waits on it (locally still 12 seconds later, past the 10s default).
+    // Nothing here bounds that.
     try {
       await client.close()
     }
