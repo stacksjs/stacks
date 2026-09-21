@@ -18,6 +18,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  BUN_VERSION: '1.4.2'
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -32,7 +35,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -77,7 +81,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -205,7 +210,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -316,7 +322,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -393,7 +400,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -512,7 +520,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -537,7 +546,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       # Run from the script's own directory so the repo's `bunfig.toml` does not
       # apply. Bun reads `$cwd/bunfig.toml` and does not walk up, and this repo's
@@ -580,7 +590,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       # Before the install and the build, and inside the job that can actually
       # see this environment's secrets (stacksjs/stacks#2068). A missing
@@ -670,7 +681,8 @@ jobs:
         uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
         with:
           version: '0.11.60'
-          install: 'true'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
 
       - name: Use cached node_modules
         uses: actions/cache@v5

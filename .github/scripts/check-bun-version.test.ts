@@ -48,6 +48,7 @@ describe('pinned Bun guard', () => {
     const pinnedVersion = pinnedBunVersion(packageJson)
     const deps = readFileSync(resolve(repositoryRoot, 'deps.yml'), 'utf8')
     const config = readFileSync(resolve(repositoryRoot, 'config/deps.ts'), 'utf8')
+    const ci = readFileSync(resolve(repositoryRoot, '.github/workflows/ci.yml'), 'utf8')
     const pantryLock = JSON.parse(readFileSync(resolve(repositoryRoot, 'pantry.lock'), 'utf8')) as {
       packages: Record<string, { version: string }>
       workspaces: { '': { system: Record<string, string> } }
@@ -55,6 +56,7 @@ describe('pinned Bun guard', () => {
 
     expect(deps.match(/^\s*bun:\s*(\S+)$/m)?.[1]).toBe(pinnedVersion)
     expect(config.match(/^\s*bun:\s*'([^']+)'/m)?.[1]).toBe(pinnedVersion)
+    expect(ci.match(/^\s*BUN_VERSION:\s*'([^']+)'/m)?.[1]).toBe(pinnedVersion)
     expect(pantryLock.workspaces[''].system['bun.sh']).toBe(pinnedVersion)
     expect(pantryLock.packages[`bun.sh@${pinnedVersion}`]?.version).toBe(pinnedVersion)
   })
