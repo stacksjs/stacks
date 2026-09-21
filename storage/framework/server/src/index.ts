@@ -1,7 +1,7 @@
 import process from 'node:process'
-import { log } from '@stacksjs/logging'
-import { serverResponse } from '@stacksjs/router'
-import { retry } from '@stacksjs/utils'
+import { log } from '@stacksjs/logging/runtime'
+import { serverResponse } from '@stacksjs/router/runtime'
+import { retry } from '@stacksjs/utils/retry'
 import type { Server, ServerWebSocket } from 'bun'
 import { isWebSocketUpgrade } from './request'
 
@@ -20,7 +20,7 @@ if (process.env.QUEUE_WORKER) {
   const jobName = process.env.JOB.replace(/\.ts$/, '').replace(/[^a-zA-Z0-9_-]/g, '')
   const jobModule = await import(`./app/Jobs/${jobName}`)
 
-  log.info('Running job...', jobName)
+  await log.info('Running job...', jobName)
 
   if (typeof jobModule.default.handle === 'function') {
     await retry(() => jobModule.default.handle(), {
