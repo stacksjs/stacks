@@ -61,7 +61,7 @@
     "typecheck:app": "bun x --bun tsc --noEmit -p tsconfig.json --pretty false",
     "typecheck:bench": "bun x --bun tsc --noEmit -p bench/tsconfig.json --pretty false",
     "test:bench": "bun test ./bench/memory/*.test.ts ./bench/routing/*.test.ts ./bench/startup/*.test.ts",
-    "typecheck:views": "bun x --bun stx typecheck 'resources/**/*.stx' 'storage/framework/defaults/views/**/*.stx' 'storage/framework/defaults/resources/**/*.stx' 'storage/framework/core/error-handling/src/views/**/*.stx' 'storage/framework/defaults/stores/*.stx' 'storage/framework/libs/examples/**/*.stx'",
+    "typecheck:views": "bun x --bun stx typecheck --lib storage/framework/types/request-context.d.ts 'resources/**/*.stx' 'storage/framework/defaults/views/**/*.stx' 'storage/framework/defaults/resources/**/*.stx' 'storage/framework/core/error-handling/src/views/**/*.stx' 'storage/framework/defaults/stores/*.stx' 'storage/framework/libs/examples/**/*.stx'",
     "typecheck:clean": "bunx --bun rimraf storage/framework/.cache/typescript",
     "types:check": "bun run typecheck",
     "types:fix": "./buddy types:fix",

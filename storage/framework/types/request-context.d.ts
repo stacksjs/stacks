@@ -2,10 +2,15 @@
 // regenerated whenever the API starts and would lose these.
 //
 // What a `<script server>` block can reach (stacksjs/stacks#2232). tsc cannot
-// see inside a `.stx` file, so these do not check the templates themselves;
-// they give an editor something to complete against, and they give the two
-// server implementations one written-down contract instead of two `as any`
+// see inside a `.stx` file, but `typecheck:views` hands this file to
+// `stx typecheck` with `--lib`, so the templates are checked against it. It
+// also gives an editor something to complete against, and the two server
+// implementations one written-down contract instead of two `as any`
 // installers that drifted twice into production.
+//
+// Without it, `stx typecheck` reported every `requestContext` as "Cannot find
+// name", and the storefront pages were moved onto `request`, which stx's
+// typecheck declares and stx serve never binds.
 
 export {}
 
