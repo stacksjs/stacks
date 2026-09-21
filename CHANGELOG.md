@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.47...v0.74.48)
+
+## ✨ Features
+
+- **database**: add narrow runtime entry ([4563683](https://github.com/stacksjs/stacks/commit/4563683)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **build**: require dtsx 0.11.13, which stops truncating declarations ([e988b39](https://github.com/stacksjs/stacks/commit/e988b39)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **commerce**: narrow shipping database imports ([fe3ce7c](https://github.com/stacksjs/stacks/commit/fe3ce7c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: narrow product database imports ([fd24e80](https://github.com/stacksjs/stacks/commit/fd24e80)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: narrow pricing database imports ([5346b0c](https://github.com/stacksjs/stacks/commit/5346b0c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: narrow order database imports ([74865ba](https://github.com/stacksjs/stacks/commit/74865ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: use database runtime entry ([1fe5b03](https://github.com/stacksjs/stacks/commit/1fe5b03)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: add database runtime diagnostic ([08245f1](https://github.com/stacksjs/stacks/commit/08245f1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: use database runtime entry ([67a915f](https://github.com/stacksjs/stacks/commit/67a915f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: use database runtime entry ([bcb6ffb](https://github.com/stacksjs/stacks/commit/bcb6ffb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: use database runtime entry ([f0ca669](https://github.com/stacksjs/stacks/commit/f0ca669)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: use database runtime entry ([eb6c035](https://github.com/stacksjs/stacks/commit/eb6c035)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: narrow database health import ([5612515](https://github.com/stacksjs/stacks/commit/5612515)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: narrow database auto imports ([f4c8af4](https://github.com/stacksjs/stacks/commit/f4c8af4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: use database runtime entry ([527e51d](https://github.com/stacksjs/stacks/commit/527e51d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **types**: narrow database globals ([8e7a97d](https://github.com/stacksjs/stacks/commit/8e7a97d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.46...v0.74.47)
 
 ## ✨ Features
