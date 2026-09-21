@@ -176,7 +176,7 @@ export function getCustomRule(name: string): AsyncValidator | undefined {
 export function unique(table: string, column: string, exceptId?: number): AsyncValidator {
   return async (value: unknown): Promise<boolean | string> => {
     try {
-      const { db } = await import('@stacksjs/database')
+      const { db } = await import('@stacksjs/database/runtime')
       // The query builder uses template-literal types that narrow on every
       // `.where()`, so chaining loses type compatibility — cast through `any`.
       let query: any = db.selectFrom(table).where(column, '=', value)
@@ -197,7 +197,7 @@ export function unique(table: string, column: string, exceptId?: number): AsyncV
 export function exists(table: string, column: string): AsyncValidator {
   return async (value: unknown): Promise<boolean | string> => {
     try {
-      const { db } = await import('@stacksjs/database')
+      const { db } = await import('@stacksjs/database/runtime')
       const existing = await (db.selectFrom(table).where(column, '=', value)).selectAll().executeTakeFirst()
       return existing ? true : `The selected ${column} does not exist`
     }
