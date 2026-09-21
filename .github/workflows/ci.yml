@@ -295,10 +295,6 @@ jobs:
       # the one place that preload applies. No CI step had reached them since
       # f25e67af9d (2026-05-11) replaced this job's bare `bun test`, which
       # picked up test files across the checkout, with `buddy test`.
-      #
-      # cms's files are named rather than globbed, to leave out
-      # public-serving.test.ts. core/buddy/tests/ci-runs-every-test-file.test.ts
-      # records why, and fails for any other file there that is not named.
       - name: Core tests (all packages)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         env:
@@ -325,12 +321,7 @@ jobs:
           (cd storage/framework/core/commerce && bun test ./src/tests) || failed="$failed commerce[src/tests]"
           echo "::endgroup::"
           echo "::group::core/cms (src/tests)"
-          (cd storage/framework/core/cms && bun test \
-            ./src/tests/categorizables.test.ts \
-            ./src/tests/pages-crud.test.ts \
-            ./src/tests/pages-document.test.ts \
-            ./src/tests/post-relations.test.ts \
-            ./src/tests/taggables.test.ts) || failed="$failed cms[src/tests]"
+          (cd storage/framework/core/cms && bun test ./src/tests) || failed="$failed cms[src/tests]"
           echo "::endgroup::"
           if [ -n "$failed" ]; then
             echo "Failing core packages:$failed"

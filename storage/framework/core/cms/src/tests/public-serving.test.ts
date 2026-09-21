@@ -16,7 +16,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -29,7 +29,7 @@ import { refreshDatabase } from './setup'
 const SITE = { id: 1, name: 'Lakeside', subdomain: 'lakeside', settings: {} }
 const PORT = 3187
 
-let viewsDir: string
+let publicDir: string
 let stop: (() => void) | undefined
 let originalCwd: string
 
@@ -44,12 +44,19 @@ beforeAll(async () => {
   originalCwd = process.cwd()
   process.chdir(resolve(import.meta.dir, '../../../../../..'))
 
-  // Unused placeholder kept so cleanup stays uniform; the coded view under
-  // test is the framework's real `resources/views/index.stx`, because stx
-  // routes views from the project's own views root - a temp directory
-  // outside it produces no route at all, which is itself worth knowing.
-  viewsDir = mkdtempSync(join(tmpdir(), 'stacks-cms-serve-'))
-  writeFileSync(join(viewsDir, '.keep'), '')
+  // The coded view under test is the framework's real
+  // `resources/views/index.stx`, because stx routes views from the
+  // project's own views root - a temp directory outside it produces no
+  // route at all, which is itself worth knowing.
+  //
+  // The public directory is the one thing not taken from the project.
+  // bun-plugin-stx 0.2.286's `serve()` holds every request, the readiness
+  // probe below included, until it has encoded responsive variants of each
+  // raster image under its public directory. Pointed at the project's
+  // public/ from a cold cache, which CI's always is, that kept this hook past
+  // its 30s budget. Nothing here is about images, so the server gets a
+  // public directory with none in it.
+  publicDir = mkdtempSync(join(tmpdir(), 'stacks-cms-public-'))
 
   await createPageDocument(SITE.id, {
     title: 'Admissions',
@@ -77,6 +84,7 @@ beforeAll(async () => {
   void (serve)({
     patterns: ['resources/views/**/*.stx'],
     port: PORT,
+    publicDir,
     quiet: true,
     // Byte-for-byte what both stx servers install.
     onResponse: async (req: Request, response: Response) => {
@@ -102,8 +110,8 @@ afterAll(async () => {
   stop?.()
   const db = await getDb()
   await db.unsafe('DELETE FROM pages').execute()
-  if (viewsDir)
-    rmSync(viewsDir, { recursive: true, force: true })
+  if (publicDir)
+    rmSync(publicDir, { recursive: true, force: true })
   if (originalCwd)
     process.chdir(originalCwd)
 })

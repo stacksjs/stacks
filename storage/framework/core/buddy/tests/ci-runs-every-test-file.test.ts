@@ -73,14 +73,6 @@ const TEST_FILE = /[._](?:test|spec)\.[cm]?[jt]sx?$/
  * in CI, so that whoever clears that knows to wire it in and delete the entry.
  */
 const EXEMPT: Record<string, string> = {
-  // bun-plugin-stx 0.2.286's `serve()` listens at once, but every request
-  // awaits `placeholdersReady`, which settles only after it has encoded
-  // responsive variants of every image under public/ into
-  // storage/framework/stx/image-delivery. From a cold cache the first
-  // response took 34s here and 3s warm, and CI's cache is always cold. The
-  // other five files in src/tests run in the core step, from the package, as
-  // commerce's do.
-  'storage/framework/core/cms/src/tests/public-serving.test.ts': 'it starts the real stx server, which answers nothing until it has encoded every image under public/, 34s from a cold cache against a 30s beforeAll. It can run once stx answers before that work finishes, or once the suite hands `serve()` a `publicDir` without images (an empty one passes 4/4 cold in under a second)',
   // tests/whois.test.ts put its IANA and Verisign lookups behind WHOIS_LIVE=1
   // in bb15844441, after one failed CI for a diff that touched neither. These
   // two can run once their network cases get the same gate.
