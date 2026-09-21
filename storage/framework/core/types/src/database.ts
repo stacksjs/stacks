@@ -248,6 +248,16 @@ export interface DatabaseOptions {
      * @default true outside production, false when APP_ENV is production or prod
      */
     captureBindings?: boolean
+    /**
+     * More columns whose values are secret, on top of the names recognised
+     * anyway (`password`, `token`, `api_key`, ...): `code` is that column in
+     * every table, `gift_cards.code` only in `gift_cards`. A listed column's
+     * values are stored as `<redacted>` in `query_logs.bindings` and taken
+     * out of `query_logs.error` where a driver printed them.
+     *
+     * @default []
+     */
+    sensitiveColumns?: string[]
     slowThreshold: number // in milliseconds
     retention: number // in days
     pruneFrequency: number // in hours
