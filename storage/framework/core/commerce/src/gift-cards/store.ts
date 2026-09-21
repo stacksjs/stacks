@@ -2,7 +2,7 @@ import type { GiftCard, ModelRow, NewModelData } from '@stacksjs/orm'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 type NewGiftCard = NewModelData<typeof GiftCard>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'

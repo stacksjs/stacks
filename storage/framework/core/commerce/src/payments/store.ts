@@ -2,7 +2,7 @@ import type { ModelRow, NewModelData, Payment } from '@stacksjs/orm'
 type PaymentJsonResponse = ModelRow<typeof Payment>
 type NewPayment = NewModelData<typeof Payment>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'

@@ -1,6 +1,6 @@
 import type { Coupon, ModelRow } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../utils/model-row'
 import { extractDate, formatDate } from '@stacksjs/orm'
 import { camelCase } from '@stacksjs/strings'

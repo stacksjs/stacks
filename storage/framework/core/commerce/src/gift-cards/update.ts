@@ -1,5 +1,5 @@
 import type { GiftCard, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db, mutationCount, parseSqlDateTime, sqlHelpers } from '@stacksjs/database'
+import { db, mutationCount, parseSqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'

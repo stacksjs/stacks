@@ -1,5 +1,5 @@
 import type { ModelRow, Payment, UpdateModelData } from '@stacksjs/orm'
-import { db, mutationCount, sqlHelpers } from '@stacksjs/database'
+import { db, mutationCount, sqlHelpers } from '@stacksjs/database/runtime'
 import { env } from '@stacksjs/env'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'

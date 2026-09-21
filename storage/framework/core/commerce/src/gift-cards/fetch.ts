@@ -1,6 +1,6 @@
 import type { GiftCard, ModelRow } from '@stacksjs/orm'
 import type { GiftCardStats } from '../types'
-import { db, sql } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database/runtime'
 import { formatDate, toTimestamp } from '@stacksjs/orm'
 import { asModelRow, asModelRows } from '../utils/model-row'
 import { aggregateStats } from '../utils/typed-stats'

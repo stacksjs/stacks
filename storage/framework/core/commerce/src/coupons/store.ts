@@ -2,7 +2,7 @@ import type { Coupon, ModelRow, NewModelData } from '@stacksjs/orm'
 type CouponJsonResponse = ModelRow<typeof Coupon>
 type NewCoupon = NewModelData<typeof Coupon>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'

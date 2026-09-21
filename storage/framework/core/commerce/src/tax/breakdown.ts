@@ -17,7 +17,7 @@
  * result itemises what was charged and what was not.
  */
 
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /** One component, as it applied to this sale. */
 export interface TaxComponent {

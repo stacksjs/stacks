@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import { mutationCount } from '../utils/mutation-count'
 
