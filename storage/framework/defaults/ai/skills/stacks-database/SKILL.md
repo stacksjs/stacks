@@ -262,6 +262,10 @@ Entity-centric API for single-table design:
     // skips query hooks unless persistent history is explicitly enabled.
     enabled: env.DB_QUERY_LOGGING_ENABLED ?? !['production', 'prod'].includes(env.APP_ENV || ''),
     captureAllTraces: false, // slow and failed queries always keep traces
+    // Bound values in query_logs.bindings, credentials stored as `<redacted>`
+    // (by name and shape, so not every secret); production keeps only each
+    // value's type unless this is enabled. Env takes true/false, 1/0, yes/no, on/off.
+    captureBindings: env.DB_QUERY_LOGGING_CAPTURE_BINDINGS ?? !['production', 'prod'].includes(env.APP_ENV || ''),
     slowThreshold: 100,  // ms
     retention: 7,        // days
     pruneFrequency: 24,  // hours

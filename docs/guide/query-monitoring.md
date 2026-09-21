@@ -11,7 +11,7 @@ The Query Monitoring system provides comprehensive tools to collect, analyze, an
 - **Real-time Query Logging**: Automatically logs all database queries with detailed information
 - **Query Analysis**: Analyzes query patterns, identifies slow queries, and suggests optimizations
 - **Dashboard Interface**: Visual dashboard for monitoring query performance metrics
-- **Detailed Query Information**: Displays query details including duration, status, bindings, and caller traces for slow or failed queries
+- **Detailed Query Information**: Displays each query's text, type, duration, status, connection, affected tables and optimization suggestions, and the model and method behind a slow or failed query. Bindings (with credentials redacted) and caller traces are recorded in `query_logs` but not shown on the dashboard
 - **Advanced Filtering**: Filter queries by type, status, connection, and more
 - **Optimization Suggestions**: Automated recommendations for improving query performance
 
@@ -29,6 +29,10 @@ export default {
 
     // Also capture caller stacks for successful fast queries
     captureAllTraces: false,
+
+    // Keep bound values, with credentials redacted (see Bindings); defaults
+    // to false in production, which keeps only each value's type
+    captureBindings: true,
 
     // Threshold in milliseconds to mark a query as slow
     slowThreshold: 100,
@@ -60,6 +64,7 @@ You can also configure query monitoring using environment variables:
 ```
 DB_QUERY_LOGGING_ENABLED=true
 DB_QUERY_LOGGING_CAPTURE_ALL_TRACES=false
+DB_QUERY_LOGGING_CAPTURE_BINDINGS=true
 DB_QUERY_LOGGING_SLOW_THRESHOLD=100
 DB_QUERY_LOGGING_RETENTION_DAYS=7
 DB_QUERY_LOGGING_PRUNE_FREQUENCY=24
@@ -69,12 +74,68 @@ DB_QUERY_LOGGING_EXPLAIN_PLAN=true
 DB_QUERY_LOGGING_SUGGESTIONS=true
 ```
 
+`DB_QUERY_LOGGING_CAPTURE_BINDINGS` takes `true`/`false`, `1`/`0`, `yes`/`no`
+or `on`/`off`, in any letter case. Any other value keeps only the type of each
+binding and prints a warning once.
+
 Persistent query history is disabled by default in production because every
 application query otherwise creates an additional database write. Set
 `DB_QUERY_LOGGING_ENABLED=true` when durable history is worth that cost.
 Development retains request-scoped query tracking for error diagnostics when
 persistence is disabled. Production skips the query-hook path entirely unless
 durable history is explicitly enabled.
+
+## Bindings
+
+The values a query binds are stored in `query_logs.bindings` as a JSON array,
+one entry per parameter. The table outlives the request and
+`GET /api/queries/:id` returns it, so credentials are kept out of it. An entry
+is stored as `<redacted>` when:
+
+- the SQL binds it to a column with a sensitive name, such as `password`,
+  `remember_token`, `api_key`, `two_factor_secret` or `otp`;
+- it is text and the statement reads or writes a table with a sensitive name,
+  such as `sessions`, `password_resets` or `oauth_access_tokens`, where even
+  the `id` is a credential;
+- it is text, its column cannot be worked out from the SQL, and the statement
+  names something sensitive;
+- it is an object, or text holding JSON, with a key that has a sensitive name
+  at any depth, such as `{"api_key": "..."}` bound to a `settings` column,
+  including JSON encoded inside a JSON string;
+- it looks like a credential by itself: a password hash, a JWT, a run of 32 or
+  more hex digits, a long mixed-case random token, or a Stripe or AWS key.
+
+Every other value is kept outside production, so the log still shows which id
+or status a query used. In production `captureBindings` defaults to `false`
+and each entry is only its type (`<string>`, `<number>`, `<date>`, ...): the
+count and shape survive, the user data does not. Enabling `captureBindings`
+in `config/database.ts`, or setting `DB_QUERY_LOGGING_CAPTURE_BINDINGS=true`,
+keeps values in production too, with the same redaction. An app config written
+before `captureBindings` existed has no key for it: it gets the same defaults
+and still reads `DB_QUERY_LOGGING_CAPTURE_BINDINGS`. Binary values are only
+ever recorded as `<bytes>`.
+
+### What the redaction can miss
+
+The redaction works from names and shapes. Wherever values are kept (outside
+production, or in production with `captureBindings` enabled), these are kept
+as bound:
+
+- a secret in a column with an ordinary name that also looks ordinary, such as
+  a six-character `code`;
+- a number bound to an ordinary column of a sensitive table: only text is
+  redacted there, so a numeric one-time code in `verifications.code` is kept;
+- text bound to an ordinary column of a sensitive table that the statement
+  names only after a comma (`FROM users, sessions`), after `USING`, or after
+  `UPDATE ONLY`: a table is recognised only right after `FROM`, `INTO`,
+  `JOIN`, `TABLE` or `UPDATE`;
+- a value compared with a JSON path key written as a string, such as
+  `meta->>'password' = ?` or `JSON_EXTRACT(meta, '$.password') = ?`: a string
+  literal is not read as a column name.
+
+Only bound values are covered: SQL that interpolates a value into its own text
+is stored as written, so bind values rather than building them into the
+statement.
 
 ## Dashboard Interface
 
@@ -109,15 +170,18 @@ The slow queries page focuses on:
 
 ### Query Details
 
-The detail view provides comprehensive information about a specific query:
+The detail view shows one query log record:
 
-- Full query text and normalized version
-- Execution metrics and duration
-- Bindings and parameters
-- Stack trace and caller information for slow or failed queries
-- Index usage information
-- EXPLAIN plan data
+- Query type, status, duration and when it ran
+- Full query text, and the normalized version when it differs
+- Connection and rows affected
+- Model and method behind a slow or failed query
+- Affected tables
 - Optimization suggestions
+
+It does not show the bindings, the stack trace, the file and line, the index
+lists or the EXPLAIN plan. `GET /api/queries/:id` returns the whole record,
+bindings and trace included, to an authenticated caller.
 
 ## API Endpoints
 
@@ -145,7 +209,7 @@ Queries are stored in the `query_logs` table with the following structure:
 | status | text | Completed, slow, or failed |
 | error | text | Error message if failed |
 | executed_at | timestamp | When the query was executed |
-| bindings | text | JSON array of query parameters |
+| bindings | text | JSON array of query parameters, credentials redacted (see [Bindings](#bindings)) |
 | trace | text | Stack trace for a slow or failed query |
 | model | text | Model that executed a slow or failed query |
 | method | text | Method that executed a slow or failed query |
@@ -177,7 +241,7 @@ The system includes a scheduled job (`PruneQueryLogsJob`) that automatically rem
 
 5. **Caller Traces**: Slow and failed queries always include caller traces. Enable `captureAllTraces` only when fast-query call sites are worth the additional CPU and storage cost.
 
-6. **Security**: Query logs may contain sensitive information in bindings. Ensure that access to the query dashboard is properly secured.
+6. **Security**: Bindings are stored with credentials redacted, and in production only their types are kept unless `captureBindings` is enabled. Query text, error messages and ordinary bound values can still carry personal data, so keep access to the query dashboard secured.
 
 ## Debugging with Query Logs
 
