@@ -45,12 +45,12 @@ jobs:
           bun install --frozen-lockfile
           bun install --cwd bench/routing --frozen-lockfile
 
-      - name: Verify startup harness
-        run: bun test ./bench/startup/*.test.ts
-
       - name: Build logging package
         working-directory: storage/framework/core/logging
         run: bun run build
+
+      - name: Verify startup harness
+        run: bun test ./bench/startup/*.test.ts
 
       - name: Build router package
         working-directory: storage/framework/core/router
