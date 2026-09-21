@@ -1,4 +1,6 @@
 import type { Driver, LoadRequest, LoadResult } from './drivers'
+import { platform } from 'node:os'
+import { readProcProcessCpuTime } from './host-load'
 
 /**
  * CPU time the server actually burned, as a percentage of one core.
@@ -10,7 +12,7 @@ import type { Driver, LoadRequest, LoadResult } from './drivers'
  * answer the question the report is actually asking - "was that throughput won
  * by being efficient, or by using more CPU".
  */
-async function cpuSeconds(pid: number): Promise<number | null> {
+async function psCpuSeconds(pid: number): Promise<number | null> {
   try {
     const proc = Bun.spawn(['ps', '-o', 'time=', '-p', String(pid)], { stdout: 'pipe', stderr: 'ignore' })
     const out = (await new Response(proc.stdout).text()).trim()
@@ -29,6 +31,24 @@ async function cpuSeconds(pid: number): Promise<number | null> {
   }
 }
 
+/**
+ * Cumulative server CPU time from the most precise source on this host.
+ *
+ * Linux `ps -o time=` is whole-second data. At 10,000 req/s over 30 seconds,
+ * one tick becomes 3.33 us/request and makes a single rounding step look like
+ * 12-20% instability. `/proc/<pid>/stat` uses 10 ms kernel ticks, reducing the
+ * same cost resolution to about 0.033 us/request. Other hosts and restricted
+ * Linux environments retain the portable `ps` fallback.
+ */
+export async function processCpuSeconds(pid: number, currentPlatform = platform(), procRoot = '/proc'): Promise<number | null> {
+  if (currentPlatform === 'linux') {
+    const sample = await readProcProcessCpuTime(pid, procRoot)
+    if (sample)
+      return sample.seconds
+  }
+  return psCpuSeconds(pid)
+}
+
 export interface CpuWindow {
   /** CPU seconds the server burned during the measured load. */
   cpuSeconds: number | null
@@ -37,10 +57,10 @@ export interface CpuWindow {
 }
 
 async function measureCpu(pid: number): Promise<() => Promise<CpuWindow>> {
-  const before = await cpuSeconds(pid)
+  const before = await processCpuSeconds(pid)
   const wallStart = performance.now()
   return async () => {
-    const after = await cpuSeconds(pid)
+    const after = await processCpuSeconds(pid)
     const wallSeconds = (performance.now() - wallStart) / 1000
     if (before == null || after == null || wallSeconds <= 0)
       return { cpuSeconds: null, cpuPercent: null }

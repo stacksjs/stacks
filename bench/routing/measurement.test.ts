@@ -1,6 +1,9 @@
 import type { Driver, LoadRequest, LoadResult } from './drivers'
 import { describe, expect, it, spyOn } from 'bun:test'
-import { cpuMicrosPerRequest, measureLoad } from './measurement'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { cpuMicrosPerRequest, measureLoad, processCpuSeconds } from './measurement'
 
 const result: LoadResult = {
   rpsMean: 42,
@@ -12,6 +15,36 @@ const result: LoadResult = {
 }
 
 describe('benchmark CPU window', () => {
+  it('prefers Linux proc ticks over whole-second ps output', async () => {
+    const procRoot = await mkdtemp(join(tmpdir(), 'stacks-routing-proc-'))
+    const pid = 123
+    await mkdir(join(procRoot, String(pid)))
+    const beforeCpu = ['S', '1', '1', '0', '-1', '4194304', '900', '0', '0', '0', '0']
+    await writeFile(join(procRoot, String(pid), 'stat'), `${pid} (bench server) ${beforeCpu.join(' ')} 123 45 0 0 0`)
+    const spawn = spyOn(Bun, 'spawn').mockImplementation(() => {
+      throw new Error('ps must not run when proc is readable')
+    })
+    try {
+      expect(await processCpuSeconds(pid, 'linux', procRoot)).toBe(1.68)
+    }
+    finally {
+      spawn.mockRestore()
+      await rm(procRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('falls back to ps when Linux proc data is unavailable', async () => {
+    const spawn = spyOn(Bun, 'spawn').mockImplementation(() => ({
+      stdout: new Response('00:07.25').body,
+    }) as unknown as ReturnType<typeof Bun.spawn>)
+    try {
+      expect(await processCpuSeconds(123, 'linux', '/missing-proc-root')).toBe(7.25)
+    }
+    finally {
+      spawn.mockRestore()
+    }
+  })
+
   it.each([0, 3])('excludes %s seconds of warmup CPU and wall time', async (warmupSeconds) => {
     let cpu = 0
     let wall = 0

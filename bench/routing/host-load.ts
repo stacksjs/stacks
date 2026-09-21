@@ -85,6 +85,16 @@ export function parseProcStatCpuTime(stat: string): CpuTimeSample | null {
   return { seconds: (utime + stime) / LINUX_CLOCK_TICKS_PER_SECOND, command }
 }
 
+/** Read one Linux process at the kernel's 10 ms CPU tick precision. */
+export async function readProcProcessCpuTime(pid: number, procRoot = '/proc'): Promise<CpuTimeSample | null> {
+  try {
+    return parseProcStatCpuTime(await readFile(`${procRoot}/${pid}/stat`, 'utf8'))
+  }
+  catch {
+    return null
+  }
+}
+
 /** Apply the busy threshold to instantaneous readings. */
 function selectBusyProcesses(processes: BusyProcess[]): BusyProcess[] {
   processes.sort((a, b) => b.cpuPercent - a.cpuPercent)
@@ -146,12 +156,9 @@ async function readProcCpuTimes(procRoot = '/proc'): Promise<Map<number, CpuTime
       const pid = Number(entry)
       if (!Number.isSafeInteger(pid) || pid <= 0)
         return
-      try {
-        const sample = parseProcStatCpuTime(await readFile(`${procRoot}/${pid}/stat`, 'utf8'))
-        if (sample)
-          samples.set(pid, sample)
-      }
-      catch { /* the process exited between listing and reading it */ }
+      const sample = await readProcProcessCpuTime(pid, procRoot)
+      if (sample)
+        samples.set(pid, sample)
     }))
     return samples.size > 0 ? samples : null
   }
