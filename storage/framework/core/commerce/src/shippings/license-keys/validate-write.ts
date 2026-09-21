@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 type LicenseKeyWriteData = Record<string, unknown>
 

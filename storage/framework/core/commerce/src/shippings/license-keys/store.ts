@@ -3,7 +3,7 @@ import type { LicenseKey, ModelRow, NewModelData } from '@stacksjs/orm'
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 type NewLicenseKey = NewModelData<typeof LicenseKey>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { licenseKeyWriteData } from '../write-data'

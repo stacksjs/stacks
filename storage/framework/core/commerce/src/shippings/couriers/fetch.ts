@@ -1,6 +1,6 @@
 import type { Courier, ModelRow } from '@stacksjs/orm'
 type CourierJsonResponse = ModelRow<typeof Courier>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**

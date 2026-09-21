@@ -2,7 +2,7 @@ import type { Courier, ModelRow, NewModelData } from '@stacksjs/orm'
 type CourierJsonResponse = ModelRow<typeof Courier>
 type NewCourier = NewModelData<typeof Courier>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { courierWriteData } from '../write-data'

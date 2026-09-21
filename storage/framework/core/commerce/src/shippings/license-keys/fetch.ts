@@ -1,6 +1,6 @@
 import type { LicenseKey, ModelRow } from '@stacksjs/orm'
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**

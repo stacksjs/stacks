@@ -1,6 +1,6 @@
-import type { RowOf } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
 import type {UpdateModelData} from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import { deliveryRouteWriteData } from '../write-data'
 import { DeliveryRouteInputError, validateDeliveryRouteWrite } from './validate-write'

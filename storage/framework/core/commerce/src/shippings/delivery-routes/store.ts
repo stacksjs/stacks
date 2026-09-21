@@ -1,4 +1,4 @@
-import type { RowOf } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
 import type {NewModelData} from '@stacksjs/orm'
 type DeliveryRouteJsonResponse = RowOf<'delivery_routes'>
 type NewDeliveryRoute = NewModelData<typeof DeliveryRoute>
@@ -8,7 +8,7 @@ type DeliveryRouteInput = NewDeliveryRoute & Partial<{
   total_distance: number
 }>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { deliveryRouteWriteData } from '../write-data'
 import { fetchById } from './fetch'
 import { DeliveryRouteInputError, validateDeliveryRouteWrite } from './validate-write'

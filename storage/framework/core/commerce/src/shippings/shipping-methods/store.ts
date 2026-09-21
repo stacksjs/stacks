@@ -2,7 +2,7 @@ import type { ModelRow, NewModelData, ShippingMethod } from '@stacksjs/orm'
 type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
 type NewShippingMethod = NewModelData<typeof ShippingMethod>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { shippingMethodWriteData } from '../write-data'

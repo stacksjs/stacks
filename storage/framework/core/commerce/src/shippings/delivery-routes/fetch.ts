@@ -1,6 +1,6 @@
-import type { RowOf } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
 type DeliveryRouteJsonResponse = RowOf<'delivery_routes'>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * Fetch a delivery route by ID

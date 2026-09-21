@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const runtimeRoots = ['carts', 'coupons', 'gift-cards', 'orders', 'payments', 'products', 'tax'] as const
+const runtimeRoots = ['carts', 'coupons', 'gift-cards', 'orders', 'payments', 'products', 'shippings', 'tax'] as const
 
 describe('commerce database imports', () => {
   it('keeps the database tooling barrel outside migrated request paths', () => {

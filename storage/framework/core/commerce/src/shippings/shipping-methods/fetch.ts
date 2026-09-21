@@ -1,6 +1,6 @@
 import type { ModelRow, ShippingMethod } from '@stacksjs/orm'
 type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * Fetch a shipping method by ID

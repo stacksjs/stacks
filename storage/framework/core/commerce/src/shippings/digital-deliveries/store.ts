@@ -2,7 +2,7 @@ import type { DigitalDelivery, ModelRow, NewModelData } from '@stacksjs/orm'
 type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
 type NewDigitalDelivery = NewModelData<typeof DigitalDelivery>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { digitalDeliveryWriteData } from '../write-data'

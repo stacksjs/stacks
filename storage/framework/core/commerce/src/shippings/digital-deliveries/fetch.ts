@@ -1,6 +1,6 @@
 import type { DigitalDelivery, ModelRow } from '@stacksjs/orm'
 type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**
