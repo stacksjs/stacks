@@ -72,15 +72,7 @@ const TEST_FILE = /[._](?:test|spec)\.[cm]?[jt]sx?$/
  * a place to park a failing suite: the reason has to say what stops it running
  * in CI, so that whoever clears that knows to wire it in and delete the entry.
  */
-const EXEMPT: Record<string, string> = {
-  // On macOS's default volume `tests/browser` IS `tests/Browser`, so both
-  // fixture files land in one directory the runner visits once, which is what
-  // the test expects. On a case-sensitive volume, such as CI's Linux runner
-  // has, they are two directories, and the runner rightly reports the second
-  // file as `./tests/browser/timeline.spec.ts`. It can run once its
-  // expectation follows the filesystem it runs on.
-  'storage/framework/core/actions/src/test/runner.test.ts': 'it expects tests/Browser and tests/browser to be one directory, which holds only on a case-insensitive filesystem',
-}
+const EXEMPT: Record<string, string> = {}
 
 interface Step {
   'name'?: string
