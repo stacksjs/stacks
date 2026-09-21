@@ -6,10 +6,12 @@
  * physically distinct copies of this package load in one process, context set
  * by one is visible to the other.
  *
- * IMPORTANT: this does NOT reach `<script server>` blocks. ALS does not
- * survive into stx-serve's render; pages read `requestContext.site()` from the
- * request-context snapshot instead (`@stacksjs/config`). The serving layer
- * carries the same value into both places.
+ * IMPORTANT: this does NOT reach `<script server>` blocks. The view servers
+ * call `setCurrentSite` after the first `await` of stx serve's `onRequest`
+ * hook, and a context entered there ends with the hook, before the render
+ * (see `enterRequestScope` in `@stacksjs/config`). Pages read
+ * `requestContext.site()` from the request's snapshot instead. The serving
+ * layer carries the same value into both places.
  */
 
 import type { SiteContext } from './types'

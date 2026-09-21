@@ -1,8 +1,7 @@
-import type { RequestContextSnapshot } from '@stacksjs/config'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { installRequestContext, parseCookieHeader } from '@stacksjs/config'
+import { enterRequestScope, installRequestScope } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -10,72 +9,21 @@ import { resolveStxSource } from './stx-source'
 import type { EnhancedRequest } from '@stacksjs/router'
 
 /**
- * Request-scoped context (query string + parsed cookies) for `<script
- * server>` blocks in `.stx` pages — mirrors `dev/views.ts`'s dev-only
- * setup of the same globals. Without this, `globalThis.requestContext`
- * and `__stxServeSearch` are simply undefined in production: every
- * cookie-aware or query-param-aware page (auth+team resolution on the
- * dashboard, filter params on monitors/incidents, etc.) silently reads
- * nothing and falls back to its unauthenticated/no-filter state, even
- * for a legitimately signed-in request. `dev/views.ts` sets these up
- * for `buddy dev`, but `buddy serve` (this file, the actual Hetzner
- * entrypoint) never did — this was found by an end-to-end login +
- * dashboard smoke test, not by inspection.
+ * `requestContext` for `<script server>` blocks in `.stx` pages, the same one
+ * `dev/views.ts` installs for `buddy dev` (#2232). Without it the global is
+ * simply undefined in production, and every cookie-aware or query-aware page
+ * (auth and team resolution on the dashboard, filters on monitors and
+ * incidents) reads nothing, even for a signed-in request.
  *
- * Plain globals, not `AsyncLocalStorage` — tried that first (mirroring
- * dev/views.ts's own approach) and confirmed via the same e2e test that
- * the store is empty by the time a `<script server>` block reads it:
- * bun-plugin-stx's internal request handling doesn't preserve the async
- * context across whatever it does between `onRequest` returning and the
- * page actually rendering. `__stxServeSearch` already uses a plain
- * global for the exact same reason (and already accepts the same
- * concurrent-request race this shares) — `__stxServeCookies` follows
- * that precedent instead of a mechanism that demonstrably doesn't work
- * in this server.
+ * It reads the request each script runs inside, which `onRequest` below opens
+ * a scope for before its first `await`. It used to read process-wide globals
+ * instead, stx's `__stxServeContext` mirror and three this file set, and so
+ * answered with whichever request had assigned them last. The storefront
+ * layout, which stx renders after the page, badged the header with another
+ * visitor's cart on 128 of 400 requests with two in flight. See
+ * `enterRequestScope` in `@stacksjs/config`.
  */
-/**
- * Where this server's snapshot comes from.
- *
- * stx builds a per-request snapshot and refreshes `__stxServeContext`
- * immediately before each server script runs, so it is the accurate source even
- * when a concurrent request has already moved on. The two hook-set globals are
- * the fallback for stx versions that predate it. Preferring the snapshot
- * matters most for the thing cookies usually carry: whoever is signed in.
- *
- * This function is the ONLY thing that differs from the dev server now — the
- * object itself is built by the shared factory, so production can no longer
- * quietly grow a different `url()` or lose `locale()` (#2232).
- */
-function productionRequestSnapshot(): RequestContextSnapshot | undefined {
-  const snapshot = (globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext
-  const legacyCookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
-  const legacySearch = (globalThis as { __stxServeSearch?: string }).__stxServeSearch
-  // Resolved by our onRequest, not by stx: stx rebuilds __stxServeContext per
-  // request and knows nothing about sites, so the site rides a sibling global
-  // and merges here.
-  const site = (globalThis as { __stxServeSite?: RequestContextSnapshot['site'] }).__stxServeSite
-
-  if (!snapshot && !legacyCookies && legacySearch === undefined)
-    return undefined
-
-  return {
-    ...snapshot,
-    cookies: snapshot?.cookies ?? legacyCookies ?? {},
-    // `url` used to fall back to the query string here, which is exactly how
-    // `new URL(requestContext.url())` came to work in dev and throw on the box.
-    // Kept as a last resort only because an old snapshot has nothing better.
-    url: snapshot?.url || snapshot?.search || legacySearch || '',
-    search: snapshot?.search ?? legacySearch ?? '',
-    site: snapshot?.site ?? site ?? null,
-  }
-}
-
-installRequestContext(productionRequestSnapshot)
-
-/** Byte-identical to the dev server's copy, so both now share one. */
-function parseCookies(req: Request): Record<string, string> {
-  return parseCookieHeader(req.headers.get('cookie'))
-}
+installRequestScope()
 
 /**
  * Resolve the project's includes directory.
@@ -455,6 +403,10 @@ export async function startProductionServer(options?: { port?: string | number, 
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request) => {
+          // First, before any `await`: this request's scope for its
+          // server scripts (see `installRequestScope()` above).
+          const snapshot = enterRequestScope(req)
+
           const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect, resolveRewrite } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)
           if (gated)
@@ -525,12 +477,6 @@ export async function startProductionServer(options?: { port?: string | number, 
               return feed
           }
 
-          // Stash cookies + query string so server-script blocks rendering
-          // this request can pull them via globalThis.requestContext /
-          // __stxServeSearch — see the doc comment above this function.
-          ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
-          ;(globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies = parseCookies(req)
-
           // First-party pageviews: fire-and-forget, gated on config; a
           // failed insert loses one statistic and never a render. Mirrors
           // the dev views server.
@@ -545,10 +491,7 @@ export async function startProductionServer(options?: { port?: string | number, 
             const sites = await import('@stacksjs/sites')
             const resolved = await sites.resolveSiteByHost(sites.requestHost(req.headers, sites.sitesOptions()))
             sites.setCurrentSite(resolved)
-            ;(globalThis as { __stxServeSite?: RequestContextSnapshot['site'] }).__stxServeSite = sites.toSiteSnapshot(resolved)
-          }
-          else {
-            ;(globalThis as { __stxServeSite?: RequestContextSnapshot['site'] }).__stxServeSite = null
+            snapshot.site = sites.toSiteSnapshot(resolved)
           }
 
           return undefined

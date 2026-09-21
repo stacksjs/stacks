@@ -14,10 +14,13 @@ A host resolves in this order:
 
 - **API / bun-router:** the `siteResolver` middleware stamps `request.site`
   and the ambient AsyncLocalStorage context (`currentSite()`, `requireSite()`).
-- **STX pages:** ALS does not survive into stx-serve's render. The serving
-  layer stashes `toSiteSnapshot(site)` on the request-context snapshot, and
-  `<script server>` blocks read `requestContext.site()`. Never call
-  `currentSite()` from an stx server script.
+- **STX pages:** the view servers resolve the site after an `await` in stx
+  serve's `onRequest` hook, and the ALS context `setCurrentSite` enters there
+  ends with the hook, before the render. The serving layer stores
+  `toSiteSnapshot(site)` on the request's snapshot (`enterRequestScope` in
+  `@stacksjs/config`), and `<script server>` blocks read
+  `requestContext.site()`. Never call `currentSite()` from an stx server
+  script.
 
 ## Scoping is explicit
 

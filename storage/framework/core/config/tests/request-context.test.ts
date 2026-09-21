@@ -177,9 +177,23 @@ describe('both servers go through the factory (#2232 ask 1)', () => {
   const dev = readFileSync(join(import.meta.dir, '../../actions/src/dev/views.ts'), 'utf8')
   const prod = readFileSync(join(import.meta.dir, '../../buddy/src/production-server.ts'), 'utf8')
 
-  it('each installs via the shared factory', () => {
-    expect(dev).toContain('installRequestContext(')
-    expect(prod).toContain('installRequestContext(')
+  it('each installs the same request-scoped reader', () => {
+    expect(dev).toContain('installRequestScope()')
+    expect(prod).toContain('installRequestScope()')
+  })
+
+  it('each opens the request\'s scope before its onRequest hook first awaits', () => {
+    // Entered after an await, the scope never reaches the render. The dev
+    // server entered it there, production-server.ts said it had tried the
+    // same, and both fell back to process-wide globals, which let a layout
+    // show another visitor's cart. request-scope.test.ts measures both
+    // placements.
+    for (const source of [dev, prod]) {
+      // Comment lines out first: the one above each call says `await` too.
+      const code = source.replace(/^\s*\/\/.*$/gm, '')
+      const hook = /onRequest: async \(req: Request\) => \{([\s\S]*?)\bawait\b/.exec(code)
+      expect(hook?.[1]).toContain('enterRequestScope(req)')
+    }
   })
 
   it('neither hand-assigns the global any more', () => {
