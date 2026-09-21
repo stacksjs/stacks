@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'

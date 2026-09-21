@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import { readCartCookie, writeCartCookie } from '../../Storefront/CartCookie'

@@ -33,7 +33,7 @@ async function getServiceHealth() {
   // Database Health
   const dbStart = Date.now()
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await import('@stacksjs/database/runtime')
     await db.selectFrom('users').select('id').limit(1).execute()
     const dbLatency = Date.now() - dbStart
     services.push({

@@ -25,7 +25,7 @@ export default new Action({
     const perPage = Math.min(100, Math.max(1, Number(request.get('perPage', 25) ?? 25)))
 
     try {
-      const { db } = await import('@stacksjs/database')
+      const { db } = await import('@stacksjs/database/runtime')
       const dbAny = db as any
 
       // Pull the live `jobs` table — this contains queued + reserved (processing) rows.

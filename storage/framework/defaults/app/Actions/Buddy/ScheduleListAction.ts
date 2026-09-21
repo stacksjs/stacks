@@ -16,7 +16,7 @@ export default new Action({
 
   async handle() {
     try {
-      const { db } = await import('@stacksjs/database')
+      const { db } = await import('@stacksjs/database/runtime')
       const dbAny = db as any
 
       const rows = await dbAny

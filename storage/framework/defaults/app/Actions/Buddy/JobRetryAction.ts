@@ -16,7 +16,7 @@ export default new Action({
     if (!id) return new Response(JSON.stringify({ error: 'missing id' }), { status: 400 })
 
     try {
-      const { db } = await import('@stacksjs/database')
+      const { db } = await import('@stacksjs/database/runtime')
       const dbAny = db as any
 
       const failed = await dbAny.selectFrom('failed_jobs').selectAll().where('id', '=', id).executeTakeFirst()

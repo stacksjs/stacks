@@ -1,5 +1,5 @@
 import { config } from '@stacksjs/config'
-import { db, mutationCount, sql, sqlDateTime } from '@stacksjs/database'
+import { db, mutationCount, sql, sqlDateTime } from '@stacksjs/database/runtime'
 import { Controller } from '@stacksjs/server'
 
 const DAY_MS = 86_400_000

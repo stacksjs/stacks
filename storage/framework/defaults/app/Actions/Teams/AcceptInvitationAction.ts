@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { randomUUID } from 'node:crypto'
 import { Action } from '@stacksjs/actions'
 import { resolveAuthenticatedUser } from '@stacksjs/auth'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import {
   changedRows,
