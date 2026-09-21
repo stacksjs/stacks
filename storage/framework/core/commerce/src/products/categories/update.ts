@@ -1,5 +1,5 @@
-import type { RowOf } from '@stacksjs/database'
-import { db } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
+import { db } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 import { fetchById } from './fetch'

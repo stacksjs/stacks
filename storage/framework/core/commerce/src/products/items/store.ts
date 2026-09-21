@@ -2,7 +2,7 @@ import type { ModelRow, NewModelData, Product } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
 type NewProduct = NewModelData<typeof Product>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { insertedId } from '../../utils/inserted-id'
 import { fetchById, getProductByUuid } from './fetch'
 

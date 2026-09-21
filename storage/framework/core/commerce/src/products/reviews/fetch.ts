@@ -1,6 +1,6 @@
 import type { ModelRow, Review } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**

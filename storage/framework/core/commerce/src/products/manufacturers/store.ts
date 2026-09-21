@@ -2,7 +2,7 @@ import type { Manufacturer, ModelRow, NewModelData } from '@stacksjs/orm'
 type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 type NewManufacturer = NewModelData<typeof Manufacturer>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'

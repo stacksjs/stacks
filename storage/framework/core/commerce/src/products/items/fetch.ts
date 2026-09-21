@@ -1,6 +1,6 @@
 import type { ModelRow, Product } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
-import { db, sql } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**

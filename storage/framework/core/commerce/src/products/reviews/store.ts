@@ -9,7 +9,7 @@ type NewReviewInput = NewReview & Partial<{
   is_featured: boolean
 }>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 
 /**

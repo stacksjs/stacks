@@ -1,6 +1,6 @@
-import type { RowOf } from '@stacksjs/database'
+import type { RowOf } from '@stacksjs/database/runtime'
 import type { CategoryStats } from '../../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 type CategoryJsonResponse = RowOf<'categories'>
 

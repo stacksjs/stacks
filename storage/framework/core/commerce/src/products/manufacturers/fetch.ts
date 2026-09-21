@@ -1,7 +1,7 @@
 import type { Manufacturer, ModelRow } from '@stacksjs/orm'
 type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 import type { FetchManufacturersOptions, ManufacturerResponse } from '../../types'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow, asModelRows } from '../../utils/model-row'
 
 export async function fetchAll(): Promise<ManufacturerJsonResponse[]> {

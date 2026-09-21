@@ -1,4 +1,4 @@
-import { db, matchedRows } from '@stacksjs/database'
+import { db, matchedRows } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 import { mutationCount } from '../../utils/mutation-count'

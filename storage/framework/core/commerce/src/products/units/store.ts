@@ -2,7 +2,7 @@ import type { ModelRow, ProductUnit } from '@stacksjs/orm'
 // Import dependencies
 type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import type { ProductUnitWriteData } from './types'
 
