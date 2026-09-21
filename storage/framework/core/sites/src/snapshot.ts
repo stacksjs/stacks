@@ -3,8 +3,8 @@ import type { SiteContext } from './types'
 /**
  * The shape the stx serving layer stashes on the request-context snapshot
  * (`RequestContextSnapshot.site` in `@stacksjs/config`), which is how
- * `<script server>` blocks see the site - ALS does not survive into
- * stx-serve's render, so this is the one channel that works there.
+ * `<script server>` blocks see the site. The snapshot rides on the request
+ * scope both view servers enter at the start of onRequest.
  */
 export interface SiteSnapshotShape {
   id: number

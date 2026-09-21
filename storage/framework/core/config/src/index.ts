@@ -16,10 +16,15 @@ export { packageComponentRoots, packageJobRoots, packageMigrationRoots, packageM
 export { resolveViewPatterns, type DefaultViewsSetting, type ViewPatternResolution } from './views'
 export {
   createRequestContext,
+  enterRequestScope,
   installRequestContext,
+  installRequestScope,
   parseCookieHeader,
+  scopedRequestSnapshot,
+  scopeStxServeContext,
   useRequestEvent,
   type RequestContextSnapshot,
+  type SiteSnapshot,
   type StacksRequestContext,
 } from './request-context'
 export * from './capabilities'

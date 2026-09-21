@@ -1,8 +1,6 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
-import type { RequestContextSnapshot } from '@stacksjs/config'
 import { join } from 'node:path'
-import { config, installRequestContext, overridesReady, parseCookieHeader, resolveViewPatterns } from '@stacksjs/config'
+import { config, enterRequestScope, installRequestScope, overridesReady, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, siteConfigPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
@@ -26,34 +24,19 @@ import type { EnhancedRequest } from '@stacksjs/router'
  *      servers. Without this, form posts and doc assets on the frontend
  *      port land on stx-serve and 404.
  *
- *   2. The raw Request's cookies are exposed to stx server-script
- *      blocks via a per-request AsyncLocalStorage on a stable global
- *      (`globalThis.requestContext`). stx-serve does not pass the
- *      Request into the template context, so anonymous-cart and
- *      session-aware pages would otherwise have no way to read their
- *      own cookie during SSR.
+ *   2. The request is exposed to stx server-script blocks as
+ *      `globalThis.requestContext`, reading the scope `onRequest` opens for
+ *      each request. stx-serve does not pass the Request into the template
+ *      context, so anonymous-cart and session-aware pages would otherwise
+ *      have no way to read their own cookie during SSR.
  */
 
-const requestStore = new AsyncLocalStorage<RequestContextSnapshot>()
-
-// Stable global so server-script blocks (which run inside stx serve's
-// fetch handler but without the raw Request) can read cookies.
-//
-// The AsyncLocalStorage context set via enterWith() in the fetch pre-handler
-// does NOT survive into stx-serve's later render of the server script (a
-// different async continuation), so we ALSO stash the context on a plain global
-// (`__stxServeContext`) — the same mechanism `__stxServeSearch` already relies
-// on — and fall back to it when the ALS store is empty.
-function currentRequestContext(): RequestContextSnapshot | undefined {
-  return requestStore.getStore() ?? (globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext
-}
-
-// Built by the shared factory, not by hand. Two hand-written installers is how
-// production ended up returning the query string from `url()` and having no
-// `locale()` at all — both dev-only-passing bugs that reached a box (#2232).
-// Only the snapshot source differs between the servers, and that is the
-// argument.
-installRequestContext(currentRequestContext)
+// The same call `buddy serve` makes, so the two cannot drift (#2232). It used
+// to read an AsyncLocalStorage store entered at the END of `onRequest`, after
+// several awaits, which never reached a render, and fall back to stx's
+// `__stxServeContext`, a process-wide global that holds whichever request
+// assigned it last. See `enterRequestScope` in `@stacksjs/config`.
+installRequestScope()
 
 // Do not outlive `./buddy dev`. See exit-with-parent.ts.
 exitWithParent()
@@ -71,11 +54,6 @@ try {
 }
 catch {
   await startDefaultServer()
-}
-
-/** Byte-identical to the production server's copy, so both now share one. */
-function parseCookies(req: Request): Record<string, string> {
-  return parseCookieHeader(req.headers.get('cookie'))
 }
 
 async function startDefaultServer() {
@@ -230,6 +208,9 @@ async function startDefaultServer() {
     },
     prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
     onRequest: async (req: Request) => {
+      // First, before any `await`: this request's scope for its server
+      // scripts (see `installRequestScope()` above).
+      const snapshot = enterRequestScope(req)
       const url = new URL(req.url)
 
       // Maintenance / coming-soon gate. Runs first so it can intercept
@@ -307,42 +288,24 @@ async function startDefaultServer() {
         }
       }
 
-      // Stash cookies + url so server-script blocks rendering this request can
-      // pull them via globalThis.requestContext. We use enterWith() rather than
-      // run() because returning here would exit the async context before
-      // stx-serve resumes — but enterWith()'s context is also lost across that
-      // boundary, so we additionally stash a plain global (read as a fallback by
-      // requestContext, mirroring __stxServeSearch).
-      const locale = await applyRequestLocale(req)
+      // On the snapshot this request's scope opened with. `requestContext`
+      // prefers the locale stx publishes for the render (from a locale path
+      // prefix, null without one), as `buddy serve`'s does, so this one
+      // answers `locale()` only when stx publishes nothing.
+      snapshot.locale = await applyRequestLocale(req)
 
       // Multi-site: resolve the Host into a site once per request and carry
-      // it on the snapshot — ALS does not survive into stx-serve's render, so
-      // the snapshot is the only channel `<script server>` blocks can read it
-      // from. Gated on config so a single-site app never loads the package.
-      let site: RequestContextSnapshot['site'] = null
+      // it on the snapshot. `setCurrentSite` enters its own AsyncLocalStorage
+      // context here, after the awaits above, where it cannot reach the
+      // render, so the snapshot is the only channel `<script server>` blocks
+      // can read it from. Gated on config so a single-site app never loads
+      // the package.
       if ((config as { sites?: { enabled?: boolean } }).sites?.enabled) {
         const sites = await import('@stacksjs/sites')
         const resolved = await sites.resolveSiteByHost(sites.requestHost(req.headers, sites.sitesOptions()))
         sites.setCurrentSite(resolved)
-        site = sites.toSiteSnapshot(resolved)
+        snapshot.site = sites.toSiteSnapshot(resolved)
       }
-
-      // `search` and `path` alongside `url`: production's snapshot carries them,
-      // and a dev snapshot that did not meant `requestContext.path()` answered
-      // differently under `buddy dev` than on the box — the same class of
-      // divergence that produced the url()/locale() incidents (#2232).
-      const ctx: RequestContextSnapshot = {
-        cookies: parseCookies(req),
-        url: req.url,
-        path: url.pathname,
-        search: url.search,
-        host: url.host,
-        locale,
-        site,
-      }
-
-      ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
-      ;(globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext = ctx
 
       // First-party pageviews: fire-and-forget, gated on config; a failed
       // insert loses one statistic and never a render.
@@ -350,7 +313,6 @@ async function startDefaultServer() {
         void import('@stacksjs/analytics').then(({ recordPageview }) => recordPageview(req)).catch(() => {})
       }
 
-      requestStore.enterWith(ctx)
       return null
     },
     // Three response-time concerns, in order:
