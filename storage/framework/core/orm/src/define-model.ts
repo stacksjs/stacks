@@ -2218,7 +2218,13 @@ import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } f
  * // Result: Post.with('author') — 'author' narrowed to valid relations
  * ```
  */
-export type StacksModelStatic<TDef extends ModelDefinition> = QueryModel<TDef> & TDef & TraitMethods & {
+// `update` and `delete` are omitted from the builder's surface because Stacks
+// installs its own (see addStaticHelpers). bun-query-builder 0.2.70 declares a
+// native static `update` returning a non-optional record; left in the
+// intersection its signature came first, so `await Model.update(id, data)` was
+// typed as never undefined while the method that actually runs returns
+// undefined for a row that is gone.
+export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete'> & TDef & TraitMethods & {
   readonly [MODEL_DEFINITION]: TDef
   update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
   forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
