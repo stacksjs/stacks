@@ -507,7 +507,7 @@ export class Schedule implements UntimedSchedule {
 
     if (this.shouldRunOnOneServer) {
       try {
-        const { db } = await import('@stacksjs/database')
+        const { db } = await import('@stacksjs/database/runtime')
         // The Stacks db proxy exposes a Bun.SQL-compatible `unsafe`
         // method — same shape `migration-lock.ts` uses.
         adminDb = db as unknown as { unsafe: (sql: string) => Promise<unknown> }
