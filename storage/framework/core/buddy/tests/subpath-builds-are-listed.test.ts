@@ -285,6 +285,19 @@ describe('subpath imports', () => {
    * tsconfig is the one the box uses, and a failure on `dist/` as well as on
    * a miss: the box has nothing at either.
    *
+   * A relative import that misses is a problem too, wherever the walk finds
+   * it. stx resolves a template's relative `import` and `require` from the
+   * template's own directory, and one miss drops the whole server script:
+   *
+   *   [stx] server <script> in .../defaults/resources/views/cart.stx imports
+   *   a module that does not resolve, so every variable in that script is
+   *   undefined.
+   *
+   * The cart and all three checkout steps required a helper from one
+   * directory too high, and stx dropped each of those scripts whole. That got
+   * past `typecheck:views`, which reports an `import` that does not resolve
+   * and says nothing about the argument of a `require`.
+   *
    * The walk starts from what the server loads by path: the barrels, the
    * files the name-to-path barrels (actions, middleware, ...) point at, the
    * route files, userland and framework `app/`, config, and the script
@@ -302,11 +315,13 @@ describe('subpath imports', () => {
         return transpiler.scanImports(code).map(entry => entry.path)
       }
       catch {
-        // A few stx client scripts hold syntax the TypeScript scanner
-        // rejects. Their import lines are ordinary ones.
+        // A few stx scripts hold syntax the TypeScript scanner rejects.
+        // Their import lines are ordinary ones, and server scripts also load
+        // modules with `require`, which the scanner reports as well.
         return [
           ...code.matchAll(/^\s*import\s+(?!type\b)[^'"]*?from\s+['"]([^'"]+)['"]/gm),
           ...code.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g),
+          ...code.matchAll(/\brequire\(\s*['"]([^'"]+)['"]\s*\)/g),
         ].map(match => match[1]!)
       }
     }
@@ -335,9 +350,13 @@ describe('subpath imports', () => {
         enqueue(join(root, entry))
     }
     const defaults = join(root, 'storage/framework/defaults')
-    for (const pattern of ['storage/framework/defaults/**/*.stx', 'resources/**/*.stx']) {
+    // `core/*/src` is the error page: error-handling renders its own
+    // templates from there.
+    const templates = new Set<string>()
+    for (const pattern of ['storage/framework/defaults/**/*.stx', 'storage/framework/core/*/src/**/*.stx', 'resources/**/*.stx']) {
       for (const entry of new Bun.Glob(pattern).scanSync({ cwd: root, onlyFiles: true })) {
         const source = readFileSync(join(root, entry), 'utf-8')
+        templates.add(join(root, entry))
         for (const block of source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
           if (!/\bsrc=/.test(block[1]!))
             queue.push({ file: join(root, entry), code: block[2]! })
@@ -348,6 +367,7 @@ describe('subpath imports', () => {
     const walked = new Set<string>()
     const problems: string[] = []
     let checked = 0
+    let relativeFromTemplates = 0
 
     while (queue.length > 0) {
       const { file, code } = queue.pop()!
@@ -363,11 +383,14 @@ describe('subpath imports', () => {
           resolved = Bun.resolveSync(specifier, dirname(file))
         }
         catch {
-          // A broken relative import is a different bug, and not this test's.
-          if (workspace)
-            problems.push(`${relative(file)} imports ${specifier}, which does not resolve without dist/`)
+          problems.push(workspace
+            ? `${relative(file)} imports ${specifier}, which does not resolve without dist/`
+            : `${relative(file)} imports ${specifier}, which does not resolve from ${relative(dirname(file))}/`)
           continue
         }
+
+        if (!workspace && templates.has(file))
+          relativeFromTemplates++
 
         if (workspace) {
           checked++
@@ -386,6 +409,7 @@ describe('subpath imports', () => {
 
     // Guards the walk itself: a scanner that found nothing would pass.
     expect(checked).toBeGreaterThan(0)
+    expect(relativeFromTemplates).toBeGreaterThan(0)
     expect([...walked].some(file => file.startsWith(join(defaults, 'functions/')))).toBe(true)
     expect([...new Set(problems)].sort()).toEqual([])
   })
