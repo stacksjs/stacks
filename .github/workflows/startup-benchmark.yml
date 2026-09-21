@@ -56,6 +56,10 @@ jobs:
         working-directory: storage/framework/core/router
         run: bun run build
 
+      - name: Build database package
+        working-directory: storage/framework/core/database
+        run: bun run build
+
       - name: Record clean source before measurement
         run: |
           mkdir -p "$RUNNER_TEMP/router-startup"
@@ -74,6 +78,14 @@ jobs:
           bun run bench:startup -- \
             --pairs="$PAIRS" \
             --output="$RUNNER_TEMP/router-startup/import.json"
+
+      - name: Measure database root and runtime imports
+        env:
+          PAIRS: ${{ inputs.pairs || '30' }}
+        run: |
+          bun run bench:database-runtime -- \
+            --pairs="$PAIRS" \
+            --output="$RUNNER_TEMP/router-startup/database.json"
 
       - name: Measure spawn to verified response
         env:
@@ -98,6 +110,13 @@ jobs:
             --ready="$RUNNER_TEMP/router-startup/ready.json" \
             --output="$RUNNER_TEMP/router-startup/report.md"
           cat "$RUNNER_TEMP/router-startup/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Render validated database runtime report
+        run: |
+          bun run bench:database-runtime:report -- \
+            --input="$RUNNER_TEMP/router-startup/database.json" \
+            --output="$RUNNER_TEMP/router-startup/database-report.md"
+          cat "$RUNNER_TEMP/router-startup/database-report.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Render validated peer startup report
         run: |

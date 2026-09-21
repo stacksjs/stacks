@@ -32,6 +32,25 @@ Developer machines and hosted runners provide diagnostic evidence. Do not use
 these results as public rankings without a separately documented dedicated-host
 publication profile.
 
+## Database runtime import diagnostic
+
+The same alternating fresh-process method compares the built database tooling
+barrel with the request-time database entry:
+
+```bash
+(cd storage/framework/core/database && bun run build)
+bun run bench:database-runtime -- --pairs=30
+bun run bench:database-runtime:report -- \
+  --input=bench/startup/results/database-latest.json \
+  --output=bench/startup/results/database-report.md
+```
+
+The raw result retains every sample, exact Bun and source provenance, package
+version, and the complete reachable local JavaScript graph for both entries.
+The report recomputes both metric summaries and graph deltas before rendering.
+The hosted startup workflow publishes the JSON and validated Markdown beside
+the router startup artifacts.
+
 ## Spawn-to-ready diagnostic
 
 The readiness diagnostic adds router construction, loopback binding, and one

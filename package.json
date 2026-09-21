@@ -68,6 +68,8 @@
     "bench:memory": "bun bench/memory/run.ts",
     "bench:routing": "bun bench/routing/run.ts",
     "bench:startup": "bun bench/startup/run.ts",
+    "bench:database-runtime": "bun bench/startup/database-run.ts",
+    "bench:database-runtime:report": "bun bench/startup/database-report.ts",
     "bench:startup:peers": "bun bench/startup/peer-run.ts",
     "bench:startup:peer-report": "bun bench/startup/peer-report.ts",
     "bench:startup:ready": "bun bench/startup/listen-run.ts",
