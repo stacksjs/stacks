@@ -214,7 +214,9 @@ try {
 
   await check('product categories deactivate', async () => {
     // Seeded directly rather than through categories/store.ts, which uses
-    // returningAll() and therefore cannot run on MySQL (stacksjs/stacks#2637).
+    // returningAll() and could not run on MySQL before bun-query-builder
+    // 0.2.70 (stacksjs/stacks#2637). That insert is covered by
+    // returning-all-writes now; this check is about deactivation.
     let next = 0
     const seedCategory = async (name: string, parentId: number | null) => {
       next += 1
