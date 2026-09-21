@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * Creating a site and giving it something to serve.

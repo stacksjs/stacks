@@ -1,6 +1,6 @@
 import type { TeamAuthRequest } from '@stacksjs/auth'
 import { resolveAuthenticatedTeamId } from '@stacksjs/auth'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 import { currentSiteId } from './context'
 import { SiteNotResolvedError } from './context'
 

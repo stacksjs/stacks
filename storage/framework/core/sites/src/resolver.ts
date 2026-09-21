@@ -1,6 +1,6 @@
 import type { HostKind, ResolvedSitesOptions, SiteContext, SiteStore } from './types'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 /**
  * Lowercase, strip the port and any trailing dot. `Host: StMarks.CampusHQ.com:443.`
