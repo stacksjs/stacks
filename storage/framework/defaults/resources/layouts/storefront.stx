@@ -19,28 +19,23 @@
  * the request handler.
  *
  * The cart count is read from the storefront's session cookie so the
- * badge is correct on first paint, before any client-side JS runs.
+ * badge is correct on first paint, before any client-side JS runs. A
+ * copy has to point the two requires below at the storefront helpers
+ * from wherever it sits.
  */
 
-const Database = require('bun:sqlite').Database
-const path = require('path')
+const { verifyCartCookie } = require('../../app/Storefront/CartCookie')
+const { readStorefront } = require('../../app/Storefront/StorefrontDatabase')
 
-const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
-
-let cartCount = 0
-try {
-  // Through requestContext: `request` here is the router's ambient proxy, which
-  // has no request while stx serve renders a page, so it carries no cookies.
-  const sessionToken = requestContext.cookie('stacks_cart')
-  if (sessionToken) {
-    const db = new Database(dbPath, { readonly: true })
-    const cart = db.query(`SELECT total_items FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(sessionToken)
-    if (cart && cart.total_items)
-      cartCount = Number(cart.total_items) || 0
-    db.close()
-  }
-}
-catch { /* schema not migrated yet, or db missing — render an empty header */ }
+// The same signed cookie the cart page reads. When the cart cannot be read
+// the badge shows nothing, and the server log says why.
+const token = verifyCartCookie(requestContext.cookie('stacks_cart'))
+const cartCount = token
+  ? readStorefront('layouts/storefront.stx', 0, (db: import('bun:sqlite').Database) => {
+      const row = db.query<{ total_items: number | string | null }, [string]>(`SELECT total_items FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
+      return Number(row?.total_items) || 0
+    })
+  : 0
 </script>
 
 <!DOCTYPE html>

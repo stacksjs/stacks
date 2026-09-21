@@ -61,6 +61,32 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 /**
+ * The token a signed `<token>.<sig>` value carries, or null when the
+ * value is missing, unsigned or its signature does not match.
+ *
+ * The storefront pages read the cookie through this. They take no
+ * unsigned value: the actions accept one only to re-sign a cart that
+ * predates signing, and a page never writes the cookie.
+ */
+export function verifyCartCookie(value: string | null | undefined): string | null {
+  if (!value || typeof value !== 'string') return null
+
+  const dot = value.lastIndexOf('.')
+  if (dot < 0) return null
+
+  const token = value.slice(0, dot)
+  const presented = value.slice(dot + 1)
+  if (!token || presented.length !== SIG_CHARS) return null
+
+  const expected = createHmac('sha256', getKey())
+    .update(token)
+    .digest('base64url')
+    .slice(0, SIG_CHARS)
+
+  return timingSafeEqual(expected, presented) ? token : null
+}
+
+/**
  * Pull a verified cart token out of the request, or null if the
  * cookie is missing/malformed/forged. Legacy unsigned tokens
  * (no `.`) are accepted once and re-signed on the next write.
@@ -75,17 +101,7 @@ export function readCartCookie(request: any, cookieName: string): string | null 
   // returns no row for unknown tokens — same fallback path.
   if (!raw.includes('.')) return raw
 
-  const dot = raw.lastIndexOf('.')
-  const token = raw.slice(0, dot)
-  const presented = raw.slice(dot + 1)
-  if (!token || presented.length !== SIG_CHARS) return null
-
-  const expected = createHmac('sha256', getKey())
-    .update(token)
-    .digest('base64url')
-    .slice(0, SIG_CHARS)
-
-  return timingSafeEqual(expected, presented) ? token : null
+  return verifyCartCookie(raw)
 }
 
 /**
@@ -101,7 +117,7 @@ export function writeCartCookie(
   request.cookies?.set?.(cookieName, sign(token), opts)
 }
 
-export const cartCookie = { read: readCartCookie, write: writeCartCookie, sign }
+export const cartCookie = { read: readCartCookie, write: writeCartCookie, sign, verify: verifyCartCookie }
 export default cartCookie
 
 // Re-export `SIG_BYTES` so tests can assert the byte budget without

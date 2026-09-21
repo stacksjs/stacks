@@ -29,6 +29,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
+import { cartCookie as signedCart } from '../../../defaults/app/Storefront/CartCookie'
 
 const root = resolve(import.meta.dir, '../../../../..')
 
@@ -36,21 +37,32 @@ const CARTS = 40
 const REQUESTS = 400
 const IN_FLIGHT = 16
 
-/** The cookie visitor `index` sends. */
+/** The servers' APP_KEY, which the storefront actions sign the cart cookie with. */
+const APP_KEY = 'base64:cmVxdWVzdC1jb250ZXh0LWNvbmN1cnJlbmN5LXRlc3Q='
+
+/** The cookie visitor `index` sends: signed, as the storefront actions write it. */
 function cartCookie(index: number): string {
-  return `stacks_cart=cart-token-${index}`
+  const previous = process.env.APP_KEY
+  process.env.APP_KEY = APP_KEY
+  try {
+    return `stacks_cart=${signedCart.sign(`cart-token-${index}`)}`
+  }
+  finally {
+    if (previous === undefined)
+      delete process.env.APP_KEY
+    else
+      process.env.APP_KEY = previous
+  }
 }
 
 /**
  * One active cart per visitor, each with a line and a count no other has.
  *
- * Returned open, in WAL mode and read once, and held for the run the way the
- * API process holds the database on a box. The pages open it read-only, and
- * SQLite refuses a read-only connection to a WAL database that no connection
- * has read (it cannot create the `-shm` file); the servers put it in WAL mode
- * as they boot.
+ * Closed before the server starts. The servers put it in WAL mode as they
+ * boot, so the pages read a WAL database with no other connection of this
+ * test holding it open (app/Storefront/StorefrontDatabase.ts).
  */
-function seed(file: string): Database {
+function seed(file: string): void {
   // The columns these pages query, which no migration creates: see
   // tests/unit/storefront-cart-cookie.test.ts.
   const db = new Database(file, { create: true })
@@ -68,9 +80,7 @@ function seed(file: string): Database {
     const { id } = cart.get(index + 1, `cart-token-${index}`) as { id: number }
     line.run(id, index + 1, 3 * (index + 1), `Bowl number ${index}`, `bowl-${index}`)
   }
-  db.run('PRAGMA journal_mode = WAL')
-  db.query('SELECT count(*) FROM carts').get()
-  return db
+  db.close()
 }
 
 /** A port nothing is listening on right now. */
@@ -112,13 +122,12 @@ for (const server of servers) {
     let dir: string
     let base: string
     let child: Subprocess | undefined
-    let held: Database | undefined
     let output = ''
 
     beforeAll(async () => {
       dir = mkdtempSync(join(tmpdir(), 'stacks-request-context-'))
       const database = join(dir, 'storefront.sqlite')
-      held = seed(database)
+      seed(database)
 
       const port = freePort()
       base = `http://127.0.0.1:${port}`
@@ -132,7 +141,7 @@ for (const server of servers) {
           ...server.env,
           PORT: String(port),
           APP_URL: base,
-          APP_KEY: 'base64:cmVxdWVzdC1jb250ZXh0LWNvbmN1cnJlbmN5LXRlc3Q=',
+          APP_KEY,
           APP_MAINTENANCE: 'false',
           APP_COMING_SOON: 'false',
           DB_CONNECTION: 'sqlite',
@@ -174,7 +183,6 @@ for (const server of servers) {
         child.kill()
         await child.exited
       }
-      held?.close()
       rmSync(dir, { recursive: true, force: true })
     })
 
@@ -186,8 +194,12 @@ for (const server of servers) {
         expect(readCart(html)).toEqual({ lines: [index], badge: index + 1 })
       }
 
-      const html = await (await fetch(`${base}/cart`)).text()
-      expect(readCart(html)).toEqual({ lines: [], badge: 0 })
+      // No cookie, the bare token a lookup would match, and a forged
+      // signature: none of them is anyone's cart.
+      for (const cookie of ['', 'stacks_cart=cart-token-7', `stacks_cart=cart-token-7.${'A'.repeat(22)}`]) {
+        const html = await (await fetch(`${base}/cart`, { headers: { cookie } })).text()
+        expect(readCart(html)).toEqual({ lines: [], badge: 0 })
+      }
     })
 
     it('renders each visitor\'s own cart with many in flight', async () => {
