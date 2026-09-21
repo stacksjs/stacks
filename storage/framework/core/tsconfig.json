@@ -20,6 +20,7 @@
       "@stacksjs/error-handling/*": ["./error-handling/src/*"],
       "@stacksjs/router/*": ["./router/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
+      "@stacksjs/utils/*": ["./utils/src/*"],
       // The ORM route generator is a package entrypoint of its own, so the
       // vendored `storage/framework/orm/routes.ts` can reach it from an app
       // that has no `core/` directory. Mapped explicitly because `@stacksjs/*`
