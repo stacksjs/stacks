@@ -20,6 +20,25 @@ function request(path: string, method = 'GET', headers: Record<string, string> =
 }
 
 describe('resolved string handlers', () => {
+  test('does not import an unsafe action until its route receives a request', async () => {
+    const marker = '__stacksLazyUnsafeActionImports'
+    delete (globalThis as Record<string, unknown>)[marker]
+    writeFileSync(join(dir, 'LazyUnsafe.ts'), `
+      globalThis.${marker} = (globalThis.${marker} ?? 0) + 1
+      export default { skipCsrf: true, handle() { return { imports: globalThis.${marker} } } }
+    `)
+
+    const router = createStacksRouter()
+    const path = '/resolved-handler/lazy-unsafe'
+    router.post(path, `${prefix}/LazyUnsafe`)
+    await Bun.sleep(30)
+    expect((globalThis as Record<string, unknown>)[marker]).toBeUndefined()
+
+    const response = await router.handleRequest(request(path, 'POST'))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ imports: 1 })
+  })
+
   test('shares cold resolution and reuses the action across warm and newly registered routes', async () => {
     writeFileSync(join(dir, 'Shared.ts'), `
       await Bun.sleep(20)
@@ -49,7 +68,7 @@ describe('resolved string handlers', () => {
     }
   })
 
-  test('honors action CSRF flags before and after POST prefetch settles', async () => {
+  test('honors action CSRF flags on the first and later POST requests', async () => {
     const router = createStacksRouter()
     for (const skip of [true, false]) {
       const name = skip ? 'Exempt' : 'Protected'

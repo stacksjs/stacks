@@ -1865,31 +1865,6 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
     ? undefined
     : wrapHandler(handler, true, routeKey)
 
-  /*
-   * Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
-   * cached before the middleware chain runs. Without this, the first request
-   * to a skipCsrf webhook would inject CSRF, fail, and only the SECOND request
-   * would see the populated cache and skip injection.
-   *
-   * Only for CSRF-protected methods: GET/HEAD/OPTIONS never get CSRF injected,
-   * so prefetching their actions would front-load every action import (and its
-   * model graph) at registration time for no benefit. Measured ~90ms of
-   * dev-boot time across a route-heavy app; safe-method actions resolve lazily
-   * on first request instead. Idempotent - later resolutions come from the
-   * import cache.
-   *
-   * An action handed over directly needs none of this: `wrapHandler` above
-   * already read its flags, synchronously, before this line.
-   */
-  let actionPrefetch: Promise<void> | null = null
-  if (typeof handler === 'string' && (routeFlags & ROUTE_ACCEPTS_CSRF) !== 0) {
-    const pending = resolveStringHandler(handler)
-    if (pending instanceof Promise) {
-      const settled = () => { actionPrefetch = null }
-      actionPrefetch = pending.then(settled, settled)
-    }
-  }
-
   const handleAsyncInContext = async (
     req: EnhancedRequest,
     preparedBaseResult?: Response | Promise<Response>,
@@ -1937,7 +1912,26 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
       if (renderTokenSeeding) await renderTokenSeeding
     }
 
-    if (actionPrefetch) await actionPrefetch
+    /*
+     * Resolve action-level CSRF metadata before deciding whether to inject the
+     * middleware, but only when this unsafe route actually receives a request.
+     * Registration used to start every unsafe action import concurrently,
+     * making an unrelated 404 load the full dependency graph of hundreds of
+     * dashboard actions. The shared resolved-handler promise preserves the
+     * first-request guarantee and deduplicates concurrent cold requests.
+     *
+     * A failed import is handled by the wrapped handler below. Until it can be
+     * read, the secure default remains in force and CSRF stays enabled.
+     */
+    if (handlerKey && (routeFlags & ROUTE_ACCEPTS_CSRF) !== 0 && actionSkipsCsrfCache.get(handlerKey) === undefined) {
+      const pending = resolveStringHandler(handlerKey)
+      if (pending instanceof Promise) {
+        try {
+          await pending
+        }
+        catch { /* reported when the route invokes its wrapped handler */ }
+      }
+    }
 
     // Group-level apiResponse: flip `_forceJson` so `formatResult` skips
     // negotiation and always returns JSON. Action-level apiResponse is
