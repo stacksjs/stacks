@@ -135,16 +135,10 @@ function timestampInputFactory(): ReturnType<ValidationInstance['timestamp']> {
   return withConditionals(validator) as unknown as ReturnType<ValidationInstance['timestamp']>
 }
 
-/**
- * Wrap a ts-validation factory function so each returned validator
- * gets `.when()` / `.sometimes()` (see ./conditional.ts) added.
- */
-function wrapFactory<F extends (...args: any[]) => Validator<any>>(factory: F): F {
-  return ((...args: Parameters<F>) => {
-    const validator = factory(...args)
-    return withConditionals(validator)
-  }) as unknown as F
-}
+// Property access is much hotter than the number of factory names. Keep one
+// forwarding function per name, then resolve the upstream factory when that
+// function runs so extensions to ts-validation remain visible.
+const wrappedFactories: Record<string, (...args: any[]) => Validator<any>> = Object.create(null)
 
 /**
  * `Object.assign({}, v, { file })` would defeat the ts-validation
@@ -160,8 +154,14 @@ export const schema: SchemaWithFile = new Proxy(v as unknown as SchemaWithFile, 
     if (prop === 'date') return dateInputFactory
     if (prop === 'timestamp') return timestampInputFactory
     if (typeof prop === 'string' && FACTORY_KEYS.has(prop)) {
-      const factory = Reflect.get(target, prop, receiver)
-      if (typeof factory === 'function') return wrapFactory(factory)
+      const cached = wrappedFactories[prop]
+      if (cached) return cached
+      const wrapped = (...args: any[]) => {
+        const factory = Reflect.get(target, prop, receiver)
+        return withConditionals(factory(...args))
+      }
+      wrappedFactories[prop] = wrapped
+      return wrapped
     }
     return Reflect.get(target, prop, receiver)
   },

@@ -28,6 +28,17 @@ describe('schema.file()', () => {
     expect(typeof schema.string).toBe('function')
   })
 
+  test('reuses primitive factory wrappers while returning independent validators', () => {
+    expect(schema.string).toBe(schema.string)
+    expect(schema.number).toBe(schema.number)
+
+    const first = schema.string()
+    const second = schema.string()
+    expect(first).not.toBe(second)
+    expect(typeof first.when).toBe('function')
+    expect(typeof second.sometimes).toBe('function')
+  })
+
   test('`file()` is also exported directly for callers that prefer the named import', () => {
     expect(typeof file).toBe('function')
     expect(file()).toBeInstanceOf(FileValidator)
