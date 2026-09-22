@@ -409,6 +409,42 @@ export const AUTO_CRUD_CASTERS: Record<string, { get: (v: unknown) => unknown, s
   array:    { get: v => v == null ? [] : Array.isArray(v) ? v : (typeof v === 'string' ? safeJSONOrEmpty(v) : []), set: v => v == null ? null : Array.isArray(v) ? JSON.stringify(v) : v },
 }
 
+interface ResolvedAutoCrudCast {
+  attr: string
+  snake: string
+  definition: string | { get: (v: unknown) => unknown, set: (v: unknown) => unknown }
+  caster?: { get?: (v: unknown) => unknown, set?: (v: unknown) => unknown }
+}
+
+const autoCrudCastsByDefinition = new WeakMap<object, ResolvedAutoCrudCast[]>()
+
+function resolveAutoCrudCasts(
+  casts: Record<string, string | { get: (v: unknown) => unknown, set: (v: unknown) => unknown }>,
+  attrs: string[],
+): ResolvedAutoCrudCast[] {
+  const cached = autoCrudCastsByDefinition.get(casts)
+  if (cached && cached.length === attrs.length) {
+    let unchanged = true
+    for (let index = 0; index < attrs.length; index++) {
+      const attr = attrs[index]!
+      if (cached[index]?.attr !== attr || cached[index]?.definition !== casts[attr]) {
+        unchanged = false
+        break
+      }
+    }
+    if (unchanged) return cached
+  }
+
+  const resolved: ResolvedAutoCrudCast[] = []
+  for (const attr of attrs) {
+    const castDef = casts[attr]!
+    const caster = typeof castDef === 'string' ? AUTO_CRUD_CASTERS[castDef] : castDef
+    resolved.push({ attr, snake: toSnakeCase(attr), definition: castDef, caster })
+  }
+  autoCrudCastsByDefinition.set(casts, resolved)
+  return resolved
+}
+
 function safeJSON(s: string): unknown { try { return JSON.parse(s) } catch { return s } }
 function safeJSONOrEmpty(_s: string): unknown { try { return JSON.parse(_s) } catch { return [] } }
 
@@ -429,14 +465,18 @@ export function applyCasts(
   casts: Record<string, string | { get: (v: unknown) => unknown, set: (v: unknown) => unknown }> | null | undefined,
   direction: 'get' | 'set',
 ): any {
-  if (!record || typeof record !== 'object' || !casts || Object.keys(casts).length === 0) return record
+  if (!record || typeof record !== 'object' || !casts) return record
+  const attrs = Object.keys(casts)
+  if (attrs.length === 0) return record
+  const resolvedCasts = resolveAutoCrudCasts(casts, attrs)
+  if (resolvedCasts.length === 0) return record
   const out: Record<string, any> = { ...record }
-  for (const [attr, castDef] of Object.entries(casts)) {
-    const caster = typeof castDef === 'string' ? AUTO_CRUD_CASTERS[castDef] : castDef
-    if (!caster || typeof caster[direction] !== 'function') continue
-    if (Object.prototype.hasOwnProperty.call(out, attr)) out[attr] = caster[direction](out[attr])
-    const snake = toSnakeCase(attr)
-    if (snake !== attr && Object.prototype.hasOwnProperty.call(out, snake)) out[snake] = caster[direction](out[snake])
+  for (const { attr, caster, snake } of resolvedCasts) {
+    if (!caster) continue
+    const cast = caster[direction]
+    if (typeof cast !== 'function') continue
+    if (Object.prototype.hasOwnProperty.call(out, attr)) out[attr] = cast.call(caster, out[attr])
+    if (snake !== attr && Object.prototype.hasOwnProperty.call(out, snake)) out[snake] = cast.call(caster, out[snake])
   }
   return out
 }
