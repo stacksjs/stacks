@@ -262,13 +262,43 @@ function resolveCaster(cast: CastType | CasterInterface): CasterInterface {
   return typeof cast === 'string' ? builtInCasters[cast] : cast
 }
 
+interface ResolvedModelCast {
+  attr: string
+  definition: CastType | CasterInterface
+  caster: CasterInterface
+}
+
+const resolvedModelCastsByDefinition = new WeakMap<object, ResolvedModelCast[]>()
+
+function resolveModelCasts(casts: Record<string, CastType | CasterInterface>): ResolvedModelCast[] {
+  const attrs = Object.keys(casts)
+  const cached = resolvedModelCastsByDefinition.get(casts)
+  if (cached && cached.length === attrs.length) {
+    let unchanged = true
+    for (let index = 0; index < attrs.length; index++) {
+      const attr = attrs[index]!
+      if (cached[index]?.attr !== attr || cached[index]?.definition !== casts[attr]) {
+        unchanged = false
+        break
+      }
+    }
+    if (unchanged) return cached
+  }
+
+  const resolved = attrs.map(attr => {
+    const definition = casts[attr]!
+    return { attr, definition, caster: resolveCaster(definition) }
+  })
+  resolvedModelCastsByDefinition.set(casts, resolved)
+  return resolved
+}
+
 function castAttributes(row: any, casts: Record<string, CastType | CasterInterface>, direction: 'get' | 'set'): any {
   if (!row || typeof row !== 'object') return row
   const result = { ...row }
-  for (const [attr, castDef] of Object.entries(casts)) {
+  for (const { attr, caster } of resolveModelCasts(casts)) {
     if (attr in result) {
-      const caster = resolveCaster(castDef)
-      result[attr] = caster[direction](result[attr])
+      result[attr] = caster[direction].call(caster, result[attr])
     }
   }
   return result
@@ -476,10 +506,10 @@ function wrapModelInstance<T extends object>(
   // sees the same correctly-typed value. SQLite stores booleans as 0/1
   // strings — without this, `!!"0"` is `true` and ownership / capability
   // checks silently invert.
-  if (casts && Object.keys(casts).length > 0) {
-    for (const [attr, castDef] of Object.entries(casts)) {
+  if (casts) {
+    for (const { attr, caster } of resolveModelCasts(casts)) {
       if (Object.hasOwn(attrs, attr)) {
-        attrs[attr] = resolveCaster(castDef).get(attrs[attr])
+        attrs[attr] = caster.get.call(caster, attrs[attr])
       }
     }
   }
