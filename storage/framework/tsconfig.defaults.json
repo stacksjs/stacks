@@ -20,6 +20,7 @@
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/auth/*": ["./core/auth/src/*"],
+      "@stacksjs/config/*": ["./core/config/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],

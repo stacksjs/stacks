@@ -1,5 +1,5 @@
 import type { ServerOptions } from '@stacksjs/types'
-import { ports } from '@stacksjs/config'
+import { ports } from '@stacksjs/config/runtime'
 
 export function config(options: ServerOptions): {
   host: string

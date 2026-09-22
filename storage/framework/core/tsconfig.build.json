@@ -26,6 +26,7 @@
       "@stacksjs/actions/*": ["./actions/src/*"],
       "@stacksjs/auth/*": ["./auth/src/*"],
       "@stacksjs/browser/*": ["./browser/src/*"],
+      "@stacksjs/config/*": ["./config/src/*"],
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/composables/*": ["./composables/src/*"],
       "@stacksjs/database/*": ["./database/src/*"],

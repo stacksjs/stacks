@@ -27,7 +27,7 @@ import type {
   StorageConfig,
   UiConfig,
 } from '@stacksjs/types'
-import { config } from '.'
+import { config } from './runtime'
 
 export type LocalUrlType =
   | 'frontend'

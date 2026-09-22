@@ -12,7 +12,7 @@
  * `enableFeature` / `disableFeature` for tests and feature ramps.
  */
 
-import { config } from './config'
+import { config } from './runtime'
 
 export type StacksFeature =
   | 'auth' | 'marketing' | 'cms' | 'commerce' | 'forms'
