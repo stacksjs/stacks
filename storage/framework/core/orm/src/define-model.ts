@@ -1084,7 +1084,9 @@ function applyMassAssignmentRules(
   // non-guarded attribute is assignable. Deny-by-default either way.
   const { allowed, guarded } = resolveMassAssignmentRuleSet(attrs)
 
-  for (const key of Object.keys(data)) {
+  for (const key in data) {
+    if (!Object.prototype.hasOwnProperty.call(data, key)) continue
+
     // The allowlist above is keyed by COLUMN name (`snakeCase(k)`), so the
     // payload key has to be normalised the same way before any comparison.
     // Without this the guard rejected every camelCase attribute, including
