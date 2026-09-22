@@ -246,7 +246,8 @@ export interface LocationApi {
 }
 
 export interface ShareApi {
-  share: (options: ShareOptions) => Promise<void>
+  /** Resolves `true` when the person shared and `false` when they dismissed the dialog. */
+  share: (options: ShareOptions) => Promise<boolean>
   isAvailable: () => boolean
 }
 

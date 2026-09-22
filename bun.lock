@@ -894,7 +894,7 @@
       "name": "@stacksjs/mobile",
       "version": "0.74.51",
       "dependencies": {
-        "craft-native": ">=0.0.72",
+        "craft-native": ">=0.0.92",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
