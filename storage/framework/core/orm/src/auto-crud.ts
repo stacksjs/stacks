@@ -527,6 +527,25 @@ export interface RegisteredRouteLike {
   path?: unknown
 }
 
+/** A stable lookup key for the verb and parameter-independent route shape. */
+export function routeShapeKey(method: string, path: string): string {
+  return `${method}\0${routeShape(path)}`
+}
+
+/**
+ * Index registered routes by verb and path shape while preserving the first
+ * route for collision diagnostics. The router also serves the first
+ * registration, so later duplicates must not replace it here.
+ */
+export function indexRouteShapes<T extends RegisteredRouteLike>(routes: readonly T[]): Map<string, T> {
+  const index = new Map<string, T>()
+  for (const route of routes) {
+    const key = routeShapeKey(String(route.method ?? ''), String(route.path ?? ''))
+    if (!index.has(key)) index.set(key, route)
+  }
+  return index
+}
+
 /**
  * The already-registered route that would shadow a generated `method` + `path`,
  * or undefined when the generated route is free to register.

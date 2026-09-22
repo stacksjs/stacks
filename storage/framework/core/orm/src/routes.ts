@@ -26,7 +26,8 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
-import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import type { RegisteredRouteLike } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
 
@@ -135,9 +136,11 @@ const db = createQueryBuilder()
 /** @see {@link DynamicQuery} for why this cast is the honest one. */
 const dyn = db as unknown as DynamicDb
 
-// Helper: check if a route is already registered (user-defined routes take priority)
+const routeShapeIndex = indexRouteShapes<RegisteredRouteLike>(route.routes)
+
+// Helper: claim a route shape unless an earlier registration already owns it.
 /**
- * Is a user route already serving this method and path shape?
+ * Is an earlier route already serving this method and path shape?
  *
  * Compared by shape, not by literal path, because a hand-written
  * `/api/sites/{siteId}` and a generated `/api/sites/{id}` address the same URLs
@@ -146,15 +149,22 @@ const dyn = db as unknown as DynamicDb
  * registration serves: the hand-written handler's authorization check simply
  * stops running (stacksjs/stacks#2364).
  *
- * The skip is logged. Silence previously meant both "skipped correctly" and
+ * The first claim is added to the index before registration. That keeps later
+ * generated routes consistent with the router's first-registration-wins rule
+ * without rescanning and renormalizing the full route array for every model.
+ *
+ * A skip is logged. Silence previously meant both "skipped correctly" and
  * "compared literally and skipped nothing", and those are indistinguishable
  * from outside the process. Naming the route that won also surfaces the
  * parameter-name mismatch that makes this confusing in the first place.
  */
-function routeExists(method: string, path: string): boolean {
-  const existing = findShadowingRoute(route.routes as Parameters<typeof findShadowingRoute>[0], method, path)
-  if (!existing)
+function routeClaimed(method: string, path: string): boolean {
+  const key = routeShapeKey(method, path)
+  const existing = routeShapeIndex.get(key)
+  if (!existing) {
+    routeShapeIndex.set(key, { method, path })
     return false
+  }
 
   const existingPath = String((existing).path ?? '')
   log.debug(
@@ -606,7 +616,7 @@ for (const [modelName, model] of Object.entries(models)) {
   }
 
   // GET /api/{uri} — list all records (paginated, sortable)
-  if (enabledRoutes.includes('index') && !routeExists('GET', basePath)) {
+  if (enabledRoutes.includes('index') && !routeClaimed('GET', basePath)) {
     applyMiddleware(route.get(basePath, async (req: EnhancedRequest) => {
       try {
         const url = new URL(req.url)
@@ -771,7 +781,7 @@ for (const [modelName, model] of Object.entries(models)) {
   }
 
   // GET /api/{uri}/{id} — show single record
-  if (enabledRoutes.includes('show') && !routeExists('GET', `${basePath}/{id}`)) {
+  if (enabledRoutes.includes('show') && !routeClaimed('GET', `${basePath}/{id}`)) {
     applyMiddleware(route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId(req.params?.id)
@@ -853,7 +863,7 @@ for (const [modelName, model] of Object.entries(models)) {
   }
 
   // POST /api/{uri} — create record
-  if (!skipMutatingRoutes && enabledRoutes.includes('store') && !routeExists('POST', basePath)) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('store') && !routeClaimed('POST', basePath)) {
     applyMiddleware(route.post(basePath, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
@@ -1031,17 +1041,17 @@ for (const [modelName, model] of Object.entries(models)) {
       }
     }
 
-    if (!routeExists('PUT', `${basePath}/{id}`)) {
+    if (!routeClaimed('PUT', `${basePath}/{id}`)) {
       applyMiddleware(route.put(`${basePath}/{id}`, updateHandler), writeMiddleware)
     }
-    if (!routeExists('PATCH', `${basePath}/{id}`)) {
+    if (!routeClaimed('PATCH', `${basePath}/{id}`)) {
       applyMiddleware(route.patch(`${basePath}/{id}`, updateHandler), writeMiddleware)
     }
   }
 
   // DELETE /api/{uri}/{id} — delete record (or soft-delete if model has useSoftDeletes).
   const usesSoftDeletes = !!model.traits?.useSoftDeletes
-  if (!skipMutatingRoutes && enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('destroy') && !routeClaimed('DELETE', `${basePath}/{id}`)) {
     applyMiddleware(route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId(req.params?.id)
@@ -1094,7 +1104,7 @@ for (const [modelName, model] of Object.entries(models)) {
 
   // POST /api/{uri}/bulk-delete — delete multiple records (also soft-aware,
   // also ownership-checked per row).
-  if (!skipMutatingRoutes && enabledRoutes.includes('destroy') && !routeExists('POST', `${basePath}/bulk-delete`)) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('destroy') && !routeClaimed('POST', `${basePath}/bulk-delete`)) {
     applyMiddleware(route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)

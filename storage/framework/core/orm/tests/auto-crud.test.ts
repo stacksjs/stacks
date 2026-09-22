@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -830,6 +830,19 @@ describe('findShadowingRoute (which generated routes must not register) (#2364)'
 
   it('tolerates a route whose path is missing rather than throwing', () => {
     expect(findShadowingRoute([{ method: 'PATCH' }], 'PATCH', '/api/sites/{id}')).toBeUndefined()
+  })
+})
+
+describe('indexRouteShapes', () => {
+  it('indexes parameter-independent shapes per method and keeps the first route', () => {
+    const first = { method: 'PATCH', path: '/api/sites/{siteId}', source: 'user' }
+    const duplicate = { method: 'PATCH', path: '/api/sites/:id', source: 'generated' }
+    const get = { method: 'GET', path: '/api/sites/{id}', source: 'read' }
+    const index = indexRouteShapes([first, duplicate, get])
+
+    expect(index.size).toBe(2)
+    expect(index.get(routeShapeKey('PATCH', '/api/sites/{id}'))).toBe(first)
+    expect(index.get(routeShapeKey('GET', '/api/sites/{siteId}'))).toBe(get)
   })
 })
 
