@@ -1,7 +1,7 @@
 import type { Log, ReportOptions } from './index'
 import process from 'node:process'
 
-type RuntimeLog = Pick<Log, 'info' | 'warn' | 'error' | 'debug'>
+type RuntimeLog = Pick<Log, 'info' | 'warn' | 'error' | 'debug' | 'flush'>
 type LoggingModule = typeof import('./index')
 
 const CONFIG_READY_KEY = Symbol.for('@stacksjs/config:overridesReady')
@@ -94,6 +94,7 @@ export const log: RuntimeLog = {
   warn: (...args) => loadImplementation().then(module => module.log.warn(...args)),
   error: (...args) => loadImplementation().then(module => module.log.error(...args)),
   debug: (...args) => delegateDebug(args),
+  flush: () => loadImplementation().then(module => module.log.flush()),
 }
 
 export function report(error: unknown, options: ReportOptions = {}): void {

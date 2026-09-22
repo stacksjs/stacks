@@ -11,6 +11,7 @@ if (mode === 'resolved-debug')
 
 const { log } = await import('../../src/runtime')
 const before = (globalThis as Record<symbol, unknown>)[implementationKey] === true
+let flushResult: Record<string, boolean> | undefined
 
 if (mode === 'pending-info') {
   let resolveConfig!: (value: unknown) => void
@@ -32,6 +33,31 @@ else if (mode === 'env-after-info') {
 else if (mode === 'warn') {
   await log.warn('runtime facade warning')
 }
+else if (mode === 'flush') {
+  await log.flush()
+}
+else if (mode === 'flush-delegation') {
+  let release!: () => void
+  let flushStarted = false
+  let flushSettled = false
+  const gate = new Promise<void>(resolve => release = resolve)
+  const { registerTransport } = await import('../../src/index')
+  const detach = registerTransport({
+    name: 'runtime-flush-probe',
+    log: () => {},
+    flush: async () => {
+      flushStarted = true
+      await gate
+    },
+  })
+  const completion = log.flush().then(() => flushSettled = true)
+  await Bun.sleep(0)
+  const settledBeforeRelease = flushSettled
+  release()
+  await completion
+  detach()
+  flushResult = { flushStarted, settledBeforeRelease, flushSettled }
+}
 else {
   await log.debug('runtime facade debug')
 }
@@ -39,4 +65,5 @@ else {
 console.log(JSON.stringify({
   before,
   after: (globalThis as Record<symbol, unknown>)[implementationKey] === true,
+  ...flushResult,
 }))

@@ -52,4 +52,18 @@ describe('logging runtime facade', () => {
   it('loads the implementation for emitted records', () => {
     expect(probe('warn')).toEqual({ before: false, after: true })
   })
+
+  it('loads the implementation when flush is requested', () => {
+    expect(probe('flush')).toEqual({ before: false, after: true })
+  })
+
+  it('delegates flush and waits for the implementation to finish', () => {
+    expect(probe('flush-delegation')).toEqual({
+      before: false,
+      after: true,
+      flushStarted: true,
+      settledBeforeRelease: false,
+      flushSettled: true,
+    })
+  })
 })
