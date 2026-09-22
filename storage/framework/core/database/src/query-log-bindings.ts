@@ -107,20 +107,69 @@ export function isSensitiveName(name: string): boolean {
  * JSON payload is caught too. Tuned for values rather than for the stack
  * traces `sanitizeStackTrace` handles: a long lowercase slug is not a secret,
  * so an opaque run only counts when it mixes cases and digits (see below).
+ *
+ * Every value a query binds is judged wherever values are kept, and a caller
+ * chooses much of what is bound, so judging a value must stay linear in its
+ * length. A pattern is tried from every position of the value, and a match
+ * ends the search, so each one here fails within a bounded number of
+ * characters of any start, or at a character no other start reads past:
+ *   - the modular crypt prefix's only open run, `pbkdf2[\w-]*`, stops at the
+ *     first character outside `[\w-]`, and every start is a `$`, which is
+ *     outside it, so no two starts read the same run;
+ *   - the hex, Stripe and AWS shapes fail within 32, 24 and 21 characters of
+ *     their start.
+ * A JWT is not one of them: see {@link hasJwt}.
  */
 const CREDENTIAL_PATTERNS: ReadonlyArray<RegExp> = [
   /\$(?:2[abxy]?|argon2(?:id|i|d)|scrypt|pbkdf2[\w-]*|[156y])\$/, // modular crypt hashes: bcrypt, argon2, scrypt, sha-crypt
-  /\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]*/, // JWT
   /[\da-f]{32,}/i, // hex, also inside a key: digests, session ids, reset tokens
   /\b(?:sk|pk|rk)_(?:live|test)_\w{16,}/, // Stripe-shaped
   /\bAKIA[\dA-Z]{16}\b/, // AWS access key id
 ]
 
-/** A run long enough to be a random token rather than a word or a slug. */
+/**
+ * A run of base64url characters and dots long enough to hold the shortest
+ * JWT {@link hasJwt} recognises: `eyJ`, 8 characters, a dot, 8, and a dot.
+ */
+const JWT_RUN = /[\w.-]{21,}/g
+
+/** A JWT's header segment: `eyJ` where a word starts, and 8 more characters. */
+const JWT_HEADER = /(?:^|-)eyJ[\w-]{8}/
+
+/**
+ * Whether `text` holds a JWT, as `\beyJ[\w-]{8,}\.[\w-]{8,}\.` would match:
+ * `eyJ` where a word starts, 8 or more base64url characters, a dot, 8 or
+ * more, and a dot. That pattern, tried from every `-eyJ` of a run without
+ * dots, reads the rest of the run each time, which is quadratic: 128,000
+ * characters of `-eyJ` took a second. The characters between `eyJ` and the
+ * next dot all belong to its segment, so the same test reads each run of
+ * `[\w.-]` once, split at its dots: a segment holding the header, the next
+ * one 8 characters or longer, and a dot after that.
+ */
+function hasJwt(text: string): boolean {
+  for (const [run] of text.matchAll(JWT_RUN)) {
+    const segments = run.split('.')
+    for (let at = 0; at + 2 < segments.length; at++) {
+      if (segments[at + 1]!.length >= 8 && JWT_HEADER.test(segments[at]!))
+        return true
+    }
+  }
+  return false
+}
+
+/**
+ * A run long enough to be a random token rather than a word or a slug. Each
+ * match is as long as it can be and the search goes on after it, so a start
+ * that does not match reads fewer than 32 characters.
+ */
 const OPAQUE_RUN = /[\w-]{32,}/g
 
+/**
+ * Whether a value looks like a credential by itself, read in time linear in
+ * its length whatever it holds (see {@link CREDENTIAL_PATTERNS}).
+ */
 export function looksLikeCredential(text: string): boolean {
-  if (CREDENTIAL_PATTERNS.some(pattern => pattern.test(text)))
+  if (CREDENTIAL_PATTERNS.some(pattern => pattern.test(text)) || hasJwt(text))
     return true
   for (const [run] of text.matchAll(OPAQUE_RUN)) {
     if (/[A-Z]/.test(run) && /[a-z]/.test(run) && /\d/.test(run))

@@ -114,6 +114,53 @@ describe('query log bindings', () => {
     expect(queryLogBindings(update, [JSON.stringify(JSON.stringify({ ...fields, reset_token: 'abc' })), 1], capture)).toEqual(['<redacted>', 1])
   })
 
+  it('finds a JWT wherever a word starts, however long the run around it', () => {
+    const jwt = [{ alg: 'HS256' }, { sub: 'fixture-user' }].map(part => Buffer.from(JSON.stringify(part)).toString('base64url')).join('.')
+    for (const value of [`${jwt}.`, `ref-${jwt}.sig`, `${'-eyJ'.repeat(50_000)}-${jwt}.sig`, `${'x.'.repeat(50_000)}${jwt}.sig`, `Bearer ${jwt}.sig and more`])
+      expect(looksLikeCredential(value)).toBe(true)
+    // It needs 8 characters after `eyJ`, 8 in the next segment, and a dot after them.
+    for (const value of [jwt, 'eyJxxxxxxx.yyyyyyyy.', 'eyJxxxxxxxx.yyyyyyy.', 'eyJxxxxxxxx.yyyyyyyy'])
+      expect(looksLikeCredential(value)).toBe(false)
+  })
+
+  // Wherever values are kept every bound value is judged, and a caller
+  // chooses much of what is bound. Each shape is aimed at one credential
+  // pattern or at the key scan, is 262,144 characters long, and is neither a
+  // credential nor JSON with a sensitive key, so the whole of it is read.
+  // Matched as one pattern, the JWT shape took 4.0 to 4.2s in
+  // looksLikeCredential alone and 12 to 14s for the three judgements below
+  // (three runs, M2 Pro), about four times as long for twice the length.
+  // Every shape now takes 69ms at most for all three on that machine. The
+  // bound leaves room for a slower one.
+  it('judges a value in time linear in its length, whatever it holds', () => {
+    const length = 2 ** 18
+    const fill = (unit: string): string => unit.repeat(Math.ceil(length / unit.length)).slice(0, length)
+    const shapes: Record<string, string> = {
+      // `eyJ` at every word start of one run, which a pattern re-read from each.
+      'jwt run': fill('-eyJ'),
+      'jwt segments': fill('-eyJ-eyJ.'),
+      'jwt dots': fill('.'),
+      'crypt run': `$pbkdf2${'x'.repeat(length - 8)}!`,
+      'crypt starts': fill(`$pbkdf2${'-'.repeat(200)}!`),
+      'hex': fill(`${'a'.repeat(31)}g`),
+      'stripe': fill(`-sk_live_${'x'.repeat(15)}`),
+      'aws': fill(`-AKIA${'A'.repeat(15)}`),
+      'opaque runs': fill(`${'x'.repeat(31)} `),
+      'opaque run': 'x'.repeat(length),
+      'key quotes': fill(`"${' '.repeat(200)}`),
+      // Key ends whose escapes differ, so each walks back past quotes of other counts.
+      'key escapes': fill(Array.from({ length: 12 }, (_, count) => `x${'\\'.repeat(count)}":`).join('')),
+      'key lengths': fill(`"${'x'.repeat(120)}":`),
+    }
+    for (const [name, value] of Object.entries(shapes)) {
+      const started = performance.now()
+      expect(looksLikeCredential(value), name).toBe(false)
+      expect(queryLogBindings('SELECT * FROM posts WHERE title = ?', [value], capture), name).toEqual([value])
+      expect(queryLogBindings('UPDATE posts SET meta = ? WHERE id = ?', [{ note: value }, 1], capture), name).toEqual([{ note: value }, 1])
+      expect(performance.now() - started, name).toBeLessThan(1000)
+    }
+  })
+
   it('keeps benign values so the log stays useful', () => {
     const benign = [
       'active',
