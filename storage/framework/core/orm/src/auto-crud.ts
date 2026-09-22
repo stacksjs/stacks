@@ -517,6 +517,7 @@ export function validateWriteBody(
   if (validators.length === 0) return { valid: true }
 
   const errors: Record<string, string[]> = {}
+  let hasErrors = false
   for (const validator of validators) {
     const { definition, field, hasDefault, rule } = validator
     const present = Object.prototype.hasOwnProperty.call(data, field)
@@ -545,12 +546,13 @@ export function validateWriteBody(
     const value = normalizeValidationValue(rule, raw)
     const result = rule.validate(value)
     if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
+      hasErrors = true
       errors[field] = result.errors.map((e: any) =>
         definition.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
       )
     }
   }
-  return Object.keys(errors).length === 0 ? { valid: true } : { valid: false, errors }
+  return hasErrors ? { valid: false, errors } : { valid: true }
 }
 
 /**
