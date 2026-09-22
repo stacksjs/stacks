@@ -8,7 +8,7 @@ import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
-import { validateWriteBody } from './auto-crud'
+import { hasWriteValidators, validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
 
 // Cache only the loaded namespace; listener state stays in the live event bus.
@@ -1989,6 +1989,8 @@ function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, defini
  * they call internally.
  */
 function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
+  if (!hasWriteValidators(definition)) return
+
   const modelName = String((definition)?.name ?? baseModel.name ?? 'Model')
 
   const check = (data: unknown, hook: 'creating' | 'updating'): void => {

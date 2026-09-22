@@ -493,6 +493,18 @@ function resolveWriteValidators(attributes: Record<string, any>): WriteValidator
   return validators
 }
 
+export function hasWriteValidators(model: any): boolean {
+  const attributes = model?.attributes
+  if (!attributes || typeof attributes !== 'object') return false
+
+  for (const definition of Object.values(attributes)) {
+    const rule = (definition as Record<string, any>)?.validation?.rule
+    if (rule && typeof rule.validate === 'function') return true
+  }
+
+  return false
+}
+
 export function validateWriteBody(
   data: Record<string, any>,
   model: any,
