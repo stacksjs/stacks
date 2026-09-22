@@ -609,10 +609,7 @@ function generateOptimizationSuggestions(explainResult: any, logRecord: QueryLog
 async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true): Promise<boolean> {
   try {
     const values = logRecords as unknown as Record<string, unknown>[]
-    if (values.length === 1) {
-      await db.insertInto('query_logs').values(values).execute()
-    }
-    else if (getDatabaseDialect() === 'sqlite') {
+    if (values.length > 1 && getDatabaseDialect() === 'sqlite') {
       // SQLite shares one connection. An awaited transaction lets unrelated
       // application writes join this batch and be undone by its rollback.
       // Keep the savepoint, INSERT and release synchronous as one operation.
@@ -634,10 +631,17 @@ async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true
       }
     }
     else {
-      await db.transaction(async (rawTrx) => {
-        const trx = rawTrx as unknown as typeof db
-        await trx.insertInto('query_logs').values(values).execute()
-      })
+      // Postgres and MySQL (InnoDB) undo a failed INSERT statement as a whole,
+      // so a batch needs no transaction to stay all-or-nothing. It must not
+      // open one: db.transaction() applies the application's
+      // setTransactionDefaults, which ran the app's rollback observers for a
+      // missing query_logs table, and an afterCommit that threw sent the
+      // committed batch to the per-row retry, storing every row twice.
+      // Vitess and SingleStore take this branch too, as they took the
+      // single-row one. Whether a multi-row INSERT is all-or-nothing there
+      // has not been measured; one that kept part of a batch would have the
+      // per-row retry store those rows again.
+      await db.insertInto('query_logs').values(values).execute()
     }
     return true
   }

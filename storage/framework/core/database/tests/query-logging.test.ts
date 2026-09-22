@@ -1,7 +1,50 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
+import { SQL } from 'bun'
 import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
+
+async function runInDisposableDatabase(dialect: 'mysql' | 'postgres', connection: string, fixture: string, marker: string): Promise<void> {
+  const url = new URL(connection)
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
+    throw new Error('Query log fixtures require a local disposable database server')
+  const name = `stacks_query_log_${crypto.randomUUID().replaceAll('-', '')}`
+  const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
+  // Two sequential statements need one connection, not a default pool of ten.
+  const admin = new SQL({ url: url.href, max: 1 })
+  let created = false
+  try {
+    await admin.unsafe(`CREATE DATABASE ${quoted}`)
+    created = true
+    const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures', fixture)], {
+      cwd: join(import.meta.dir, '..'),
+      env: {
+        ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_DATABASE_PATH: ':memory:', DB_QUERY_LOGGING_ENABLED: 'false',
+        DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
+        DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
+        DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false',
+      },
+      stdout: 'pipe', stderr: 'pipe',
+    })
+    const watchdog = setTimeout(() => child.kill(), 25000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(exitCode, `${stdout}\n${stderr}`).toBe(0)
+      expect(stdout).toContain(marker)
+    }
+    finally {
+      clearTimeout(watchdog)
+      child.kill()
+    }
+  }
+  finally {
+    try {
+      if (created)
+        await admin.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`)
+    }
+    finally { await admin.close() }
+  }
+}
 
 describe('database query logging', () => {
   it('does not roll back application writes when background log batches fail', async () => {
@@ -21,6 +64,12 @@ describe('database query logging', () => {
       child.kill()
     }
   })
+
+  it.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('keeps Postgres query-log batches out of application transaction defaults', () =>
+    runInDisposableDatabase('postgres', process.env.STACKS_TEST_POSTGRES_URL!, 'query-log-transaction-defaults.ts', 'query-log-transaction-defaults-ok'), 30000)
+
+  it.skipIf(!process.env.STACKS_TEST_MYSQL_URL)('keeps MySQL query-log batches out of application transaction defaults', () =>
+    runInDisposableDatabase('mysql', process.env.STACKS_TEST_MYSQL_URL!, 'query-log-transaction-defaults.ts', 'query-log-transaction-defaults-ok'), 30000)
 
   // Production without query logging installs no hooks on SQLite, and only
   // the onQueryError hook of the oven-sh/bun#42804 detector on PostgreSQL and
