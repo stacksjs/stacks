@@ -42,6 +42,10 @@ async function main() {
     outdir: './dist',
     format: 'esm',
     target: 'bun',
+    // Keep the lazy router and logging graphs out of the listener entry. The
+    // Docker image copies the complete dist directory, so every emitted chunk
+    // remains colocated with index.js at runtime.
+    splitting: true,
     // sourcemap: 'linked',
     // minify: true,
   })
