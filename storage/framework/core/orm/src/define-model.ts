@@ -279,9 +279,13 @@ function castAttributes(row: any, casts: Record<string, CastType | CasterInterfa
  * through attribute-access proxies (would let `{ ...model }` dump the
  * model's private bookkeeping into a response payload).
  */
-const MODEL_INSTANCE_INTERNAL_KEYS = new Set([
-  '_attributes', '_original', '_definition', '_hasSaved', '_relations',
-])
+function isModelInstanceInternalKey(key: string): boolean {
+  return key === '_attributes'
+    || key === '_original'
+    || key === '_definition'
+    || key === '_hasSaved'
+    || key === '_relations'
+}
 
 const STACKS_PROXY_TAG = Symbol.for('stacks.modelInstanceProxy')
 // Proxy traps receive all per-row state through their target. Only casts are
@@ -682,7 +686,7 @@ function wrapModelInstance<T extends object>(
         }
       }
 
-      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+      if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return a[prop]
         // Eloquent-style relation access: after `Booking.query().with('user').first()`
@@ -753,7 +757,7 @@ function wrapModelInstance<T extends object>(
       // We delegate to the instance's `set(key, value)` method when present
       // because it also snapshots `_original` for dirty tracking — without
       // that snapshot, getChanges() returns `{}` and save() becomes a no-op.
-      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+      if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
         const setter = target.set
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
@@ -786,7 +790,7 @@ function wrapModelInstance<T extends object>(
     has(rawTarget, prop) {
       const target = rawTarget as T & WrappedModelInstance
 
-      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+      if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
         const rels = target._relations
@@ -802,7 +806,7 @@ function wrapModelInstance<T extends object>(
     deleteProperty(rawTarget, prop) {
       const target = rawTarget as T & WrappedModelInstance
 
-      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+      if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
           delete a[prop]
