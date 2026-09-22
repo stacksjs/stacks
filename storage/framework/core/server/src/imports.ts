@@ -3,10 +3,10 @@ import { existsSync, readFileSync, renameSync, statSync, unlinkSync } from 'node
 import { dirname, relative, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { plugin } from 'bun'
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 import { path } from '@stacksjs/path'
 import { autoImports, generateRuntimeIndex, generateGlobalsScript } from 'bun-plugin-auto-imports'
-import { globSync } from '@stacksjs/storage'
+import { globSync } from '@stacksjs/storage/glob'
 import { primitiveAutoImportEntries, primitiveModules } from './primitive-imports'
 
 interface ExportInfo {

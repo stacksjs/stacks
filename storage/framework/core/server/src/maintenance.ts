@@ -15,7 +15,7 @@
  * if (await isDownForMaintenance()) { ... }
  */
 
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 import * as p from '@stacksjs/path'
 import { existsSync } from 'node:fs'
 

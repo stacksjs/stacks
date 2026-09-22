@@ -3,7 +3,7 @@
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
 import { assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
-import { log, report } from '@stacksjs/logging'
+import { log, report } from '@stacksjs/logging/runtime'
 import config from './config-production'
 import routeRegistry from '../../../../../app/Routes'
 
