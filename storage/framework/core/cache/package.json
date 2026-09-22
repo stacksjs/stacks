@@ -59,7 +59,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cache": "^0.1.5"
+    "@stacksjs/ts-cache": "^0.1.7"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*"

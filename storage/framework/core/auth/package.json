@@ -70,7 +70,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/ts-auth": "^0.4.4",
+    "@stacksjs/ts-auth": "^0.4.5",
     "ts-qr-codes": "^0.1.8"
   },
   "devDependencies": {

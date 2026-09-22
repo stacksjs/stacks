@@ -65,7 +65,7 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/mail": "^0.3.6",
+    "@stacksjs/mail": "^0.3.8",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",

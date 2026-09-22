@@ -334,7 +334,7 @@
     "@stacksjs/config": "^0.74.48",
     "@stacksjs/database": "^0.74.48",
     "@stacksjs/defaults": "^0.74.48",
-    "@stacksjs/desktop": "^0.2.197",
+    "@stacksjs/desktop": "^0.2.289",
     "@stacksjs/dns": "^0.74.48",
     "@stacksjs/email": "^0.74.48",
     "@stacksjs/enums": "^0.74.48",
