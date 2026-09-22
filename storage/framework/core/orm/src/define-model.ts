@@ -1056,7 +1056,7 @@ function applyMassAssignmentRules(
   const fillable = new Set<string>()
   const guarded = new Set<string>()
   for (const [k, a] of Object.entries(attrs)) {
-    const col = snakeCase(k)
+    const col = toColumnName(k)
     declared.add(col)
     if (a?.fillable === true) fillable.add(col)
     if (a?.guarded === true) guarded.add(col)
@@ -1080,7 +1080,7 @@ function applyMassAssignmentRules(
     // ends in `Id`, not `_id`, so belongsTo writes in camelCase fell
     // through to the throw as well. Models written in snake_case were
     // unaffected, which is why this survived.
-    const col = snakeCase(key)
+    const col = toColumnName(key)
 
     if (MASS_ASSIGNMENT_SYSTEM_COLUMNS.has(col)) continue
 
