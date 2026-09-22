@@ -21,7 +21,9 @@ import { log, report } from '@stacksjs/logging/runtime'
 import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
 import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router'
-import { checkApplicationHealth } from './health'
+import { registerQueryTracker } from './query-tracking'
+
+registerQueryTracker()
 
 // --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
 // Two physically distinct @stacksjs/router modules can load in one process: an
@@ -258,9 +260,24 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
 
 import { runWithRequestArgument, runWithRequestArguments, setAmbientRequestContext } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
-import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
+
+type ErrorHandlerModule = typeof import('./error-handler')
+let errorHandlerModule: ErrorHandlerModule | undefined
+let errorHandlerModuleLoad: Promise<ErrorHandlerModule> | undefined
+
+async function loadErrorHandlerModule(): Promise<ErrorHandlerModule> {
+  return errorHandlerModule ??= await (errorHandlerModuleLoad ??= import('./error-handler'))
+}
+
+async function createErrorResponse(...args: Parameters<ErrorHandlerModule['createErrorResponse']>): Promise<Response> {
+  return (await loadErrorHandlerModule()).createErrorResponse(...args)
+}
+
+async function createMiddlewareErrorResponse(...args: Parameters<ErrorHandlerModule['createMiddlewareErrorResponse']>): Promise<Response> {
+  return (await loadErrorHandlerModule()).createMiddlewareErrorResponse(...args)
+}
 
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
@@ -4922,6 +4939,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // `/api/health`.
     health() {
       bunRouter.get('/api/health', async () => {
+        const { checkApplicationHealth } = await import('./health')
         const health = await checkApplicationHealth()
         return Response.json(health, { status: health.status === 'healthy' ? 200 : 503 })
       })

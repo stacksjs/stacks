@@ -48,6 +48,15 @@ describe('router import graph', () => {
     ]) {
       expect(inputs.some(source => source.endsWith(`/router/src/${module}`))).toBe(false)
     }
+
+    const routerEntry = Object.entries(result.metafile?.inputs ?? {})
+      .find(([source]) => source.endsWith('src/stacks-router.ts'))
+    const eagerErrorRendererImports = routerEntry?.[1].imports
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/error-handler.ts')) ?? []
+    const eagerQueryTrackerImports = routerEntry?.[1].imports
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/query-tracking.ts')) ?? []
+    expect(eagerErrorRendererImports).toEqual([])
+    expect(eagerQueryTrackerImports).toHaveLength(1)
   })
 
   it('keeps optional subsystems out of the success path', async () => {
