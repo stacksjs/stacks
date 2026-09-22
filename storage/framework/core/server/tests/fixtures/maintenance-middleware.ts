@@ -32,6 +32,7 @@ async function request(path = '/work', cookie?: string): Promise<Response | unde
 try {
   await mkdir(join(root, 'framework'))
   assert.deepEqual(await Promise.all(Array.from({ length: 8 }, () => request())), Array(8).fill(undefined))
+  assert.equal(middleware.handle(new Request('https://app.example/work')), undefined)
   await Bun.write(maintenance.maintenanceFilePath(), JSON.stringify({ time: 1, secret: 'preview-secret', retry: 60 }))
   const blocked = await request()
   assert.equal(blocked?.status, 503)

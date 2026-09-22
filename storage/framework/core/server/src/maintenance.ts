@@ -696,9 +696,14 @@ function clientIp(req: Request): string {
  *      coming-soon when a redirect URL is configured; HTML page for
  *      maintenance).
  */
-export async function maintenanceGate(req: Request): Promise<Response | null> {
+export function maintenanceGate(req: Request): Response | null | Promise<Response | null> {
   const payloadResult = activeSiteModePayloadResult()
-  const payload = payloadResult instanceof Promise ? await payloadResult : payloadResult
+  return payloadResult instanceof Promise
+    ? payloadResult.then(payload => applyMaintenanceGate(req, payload))
+    : applyMaintenanceGate(req, payloadResult)
+}
+
+function applyMaintenanceGate(req: Request, payload: MaintenancePayload | null): Response | null {
   if (!payload)
     return null
 

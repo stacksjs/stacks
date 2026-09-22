@@ -156,6 +156,32 @@ describe('server maintenance', () => {
       process.env.APP_ENV = previousAppEnv
   })
 
+  test('maintenanceGate returns synchronously when no site mode is active', async () => {
+    const { maintenanceGate } = await import('../src/maintenance')
+    const previousMaintenance = process.env.APP_MAINTENANCE
+    const previousComingSoon = process.env.APP_COMING_SOON
+
+    process.env.APP_MAINTENANCE = 'false'
+    process.env.APP_COMING_SOON = 'false'
+
+    try {
+      const result = maintenanceGate(new Request('http://localhost/'))
+      expect(result).not.toBeInstanceOf(Promise)
+      expect(result).toBeNull()
+    }
+    finally {
+      if (previousMaintenance === undefined)
+        delete process.env.APP_MAINTENANCE
+      else
+        process.env.APP_MAINTENANCE = previousMaintenance
+
+      if (previousComingSoon === undefined)
+        delete process.env.APP_COMING_SOON
+      else
+        process.env.APP_COMING_SOON = previousComingSoon
+    }
+  })
+
   test('maintenanceHtml includes retry info when provided', async () => {
     const { maintenanceHtml } = await import('../src/maintenance')
     const html = maintenanceHtml({ time: Date.now(), retry: 300 })

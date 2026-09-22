@@ -28,11 +28,23 @@ export default new Middleware({
   name: 'maintenance',
   priority: 0, // Run first, before all other middleware
 
-  async handle(request) {
-    const { maintenanceGate } = serverModule ??= await import('@stacksjs/server')
+  handle(request) {
+    if (!serverModule) {
+      return import('@stacksjs/server').then((module) => {
+        serverModule = module
+        return module.maintenanceGate(request)
+      }).then(throwIfGated)
+    }
 
-    const gated = await maintenanceGate(request)
+    const gated = serverModule.maintenanceGate(request)
+    if (gated instanceof Promise)
+      return gated.then(throwIfGated)
     if (gated)
-      throw gated // short-circuit the request
+      return Promise.reject(gated)
   },
 })
+
+function throwIfGated(gated: Response | null): void {
+  if (gated)
+    throw gated // short-circuit the request
+}
