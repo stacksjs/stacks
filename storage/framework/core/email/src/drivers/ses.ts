@@ -1,7 +1,7 @@
 import type { EmailMessage, EmailResult } from '@stacksjs/types'
+import type { SESClient } from '@stacksjs/ts-cloud'
 import type { TemplateOptions } from '../template'
 import { config } from '@stacksjs/config'
-import { SESClient } from '@stacksjs/ts-cloud'
 import { templateByName } from '../template'
 import { buildMimeMessage } from '../mime'
 import { filterStringHeaders } from '../validation'
@@ -10,38 +10,47 @@ import { BaseEmailDriver } from './base'
 export class SESDriver extends BaseEmailDriver {
   public name = 'ses'
   private client: SESClient | null = null
+  private clientPromise: Promise<SESClient> | null = null
 
   /**
-   * Lazy SESClient construction. Per-service credentials configured under
+   * Lazy SES client import and construction keeps ts-cloud off the
+   * `@stacksjs/email` import path until an SES send actually needs it.
+   * Per-service credentials configured under
    * `services.ses.credentials.{accessKeyId,secretAccessKey}` are forwarded
    * when set so a dedicated SES IAM user doesn't have to overload the
    * global `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` env vars used by
    * the rest of the AWS surface. Empty values fall through to the env →
    * `~/.aws/credentials` chain inside AWSClient.
    */
-  private getClient(): SESClient {
-    if (!this.client) {
-      const sesConfig = config?.services?.ses as
-        | {
-          region?: string
-          credentials?: { accessKeyId?: string, secretAccessKey?: string, sessionToken?: string }
-        }
-        | undefined
-      const explicit = sesConfig?.credentials
-      const hasExplicit = !!(explicit?.accessKeyId && explicit?.secretAccessKey)
-      this.client = new SESClient(
-        sesConfig?.region || 'us-east-1',
-        hasExplicit
-          ? {
-              accessKeyId: explicit!.accessKeyId!,
-              secretAccessKey: explicit!.secretAccessKey!,
-              sessionToken: explicit!.sessionToken,
-            }
-          : undefined,
-      )
+  private async getClient(): Promise<SESClient> {
+    if (this.client)
+      return this.client
+
+    if (!this.clientPromise) {
+      this.clientPromise = import('@stacksjs/ts-cloud').then(({ SESClient }) => {
+        const sesConfig = config?.services?.ses as
+          | {
+            region?: string
+            credentials?: { accessKeyId?: string, secretAccessKey?: string, sessionToken?: string }
+          }
+          | undefined
+        const explicit = sesConfig?.credentials
+        const hasExplicit = !!(explicit?.accessKeyId && explicit?.secretAccessKey)
+        this.client = new SESClient(
+          sesConfig?.region || 'us-east-1',
+          hasExplicit
+            ? {
+                accessKeyId: explicit!.accessKeyId!,
+                secretAccessKey: explicit!.secretAccessKey!,
+                sessionToken: explicit!.sessionToken,
+              }
+            : undefined,
+        )
+        return this.client
+      })
     }
 
-    return this.client
+    return this.clientPromise
   }
 
   public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
@@ -75,6 +84,7 @@ export class SESDriver extends BaseEmailDriver {
       const customHeaders = filterStringHeaders(message.headers)
       const hasAttachments = !!(message.attachments && message.attachments.length > 0)
       const hasCustomHeaders = !!customHeaders
+      const client = await this.getClient()
 
       // Attachments + custom headers are unsupported by SES's `Simple`
       // content shape — we have to fall back to `SendRawEmail` (RFC
@@ -97,7 +107,7 @@ export class SESDriver extends BaseEmailDriver {
         // SES's SendRawEmail takes the entire RFC 5322 envelope. The
         // BCC list is NOT in the wire bytes — SES handles delivery to
         // bcc'd recipients via the `Destinations` argument.
-        const result = await this.getClient().sendRawEmail({
+        const result = await client.sendRawEmail({
           source: fromAddress,
           destinations: [...toAddresses, ...ccAddresses, ...bccAddresses],
           rawMessage: raw,
@@ -118,7 +128,7 @@ export class SESDriver extends BaseEmailDriver {
         body.Text = { Charset: config.email.charset || 'UTF-8', Data: message.text }
       }
 
-      const result = await this.getClient().sendEmail({
+      const result = await client.sendEmail({
         FromEmailAddress: fromAddress,
         Destination: {
           ToAddresses: toAddresses,
