@@ -61,6 +61,22 @@ test('the built mobile package has usable declarations and bundles for browsers'
     expect(loaded.mobile.nativeBridge).toBeNull()
     expect(loaded.getNativeMobileBridge()).toBeNull()
     expect(typeof loaded.mobile.location.startRecording).toBe('function')
+
+    // One API bundles to about what importing it from Craft directly does
+    // (#2670). Reading the APIs off the namespace object kept all of them:
+    // secureStorage alone came to 25.4 KB against Craft's own 1.8 KB.
+    async function bundledLength(name: string, source: string): Promise<number> {
+      await writeFile(join(directory, `${name}.ts`), source)
+      const result = await Bun.build({
+        entrypoints: [join(directory, `${name}.ts`)], outdir: join(directory, name),
+        target: 'browser', format: 'esm', tsconfig: join(directory, 'tsconfig.json'),
+      })
+      expect(result.success, JSON.stringify(result.logs)).toBe(true)
+      return (await result.outputs[0]!.text()).length
+    }
+    const throughPackage = await bundledLength('one-api', "import { secureStorage } from '@stacksjs/mobile'\nconsole.log(secureStorage)\n")
+    const direct = await bundledLength('one-api-direct', "import { secureStorage } from 'craft-native/mobile'\nconsole.log(secureStorage)\n")
+    expect(throughPackage).toBeLessThanOrEqual(direct + 512)
   }
   finally {
     await rm(directory, { recursive: true, force: true })

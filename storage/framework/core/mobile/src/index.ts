@@ -1,19 +1,39 @@
 /**
- * Craft's mobile runtime is BUNDLED into this package's `dist`, not resolved
- * from the consumer at runtime.
+ * Native mobile surfaces for Stacks and STX apps, from `craft-native/mobile`.
  *
  * `craft-native/mobile` is the browser-safe half of the SDK: it talks to the
  * `globalThis.craft` bridge when the page runs inside a native WebView, and
- * falls back to web equivalents (or no-ops) everywhere else. Because it is
- * pure browser code, inlining it here is what makes `@stacksjs/mobile` import
- * cleanly from an STX client bundle, a plain web build, and a server render
- * alike — with no optional peer to install and nothing left to resolve.
+ * falls back to web equivalents (or no-ops) everywhere else, so this package
+ * imports cleanly from an STX client bundle, a plain web build, and a server
+ * render alike. It is a dependency, which the build leaves external, so the
+ * app's bundler resolves it.
  *
- * The previous shape lazily `require`d the peer on first property access,
- * which meant every application that wanted native surfaces in the browser had
- * to vendor a pre-bundled copy of this file into its own repository.
+ * Each API is imported by name. A bundler keeps what a named import's binding
+ * reaches and drops the rest of craft-native's modules; reading the APIs off
+ * the module namespace object instead kept every one of them, so importing
+ * `secureStorage` alone bundled all of craft-native/mobile, 25.4 KB rather
+ * than 1.8 KB (stacksjs/stacks#2670).
  */
-import * as craftMobile from 'craft-native/mobile'
+import {
+  appReview as craftAppReview,
+  biometrics as craftBiometrics,
+  camera as craftCamera,
+  deepLinks as craftDeepLinks,
+  device as craftDevice,
+  haptics as craftHaptics,
+  health as craftHealth,
+  keepAwake as craftKeepAwake,
+  lifecycle as craftLifecycle,
+  liveActivities as craftLiveActivities,
+  location as craftLocation,
+  network as craftNetwork,
+  notifications as craftNotifications,
+  permissions as craftPermissions,
+  pushNotifications as craftPushNotifications,
+  secureStorage as craftSecureStorage,
+  share as craftShare,
+  watchConnectivity as craftWatchConnectivity,
+} from 'craft-native/mobile'
 
 import type {
   AppReviewApi,
@@ -40,27 +60,6 @@ import type {
 } from './types'
 
 export * from './types'
-
-const {
-  biometrics: craftBiometrics,
-  camera: craftCamera,
-  device: craftDevice,
-  haptics: craftHaptics,
-  lifecycle: craftLifecycle,
-  location: craftLocation,
-  notifications: craftNotifications,
-  permissions: craftPermissions,
-  secureStorage: craftSecureStorage,
-  share: craftShare,
-  appReview: craftAppReview,
-  deepLinks: craftDeepLinks,
-  keepAwake: craftKeepAwake,
-  network: craftNetwork,
-  pushNotifications: craftPushNotifications,
-  health: craftHealth,
-  liveActivities: craftLiveActivities,
-  watchConnectivity: craftWatchConnectivity,
-} = craftMobile
 
 export const biometrics: BiometricsApi = craftBiometrics
 export const camera: CameraApi = craftCamera
