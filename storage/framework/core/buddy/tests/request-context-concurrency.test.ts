@@ -98,6 +98,15 @@ function readCart(html: string): { lines: number[], badge: number | null } {
   return { lines, badge: badge ? Number(badge[1]) : null }
 }
 
+/** What a failure shows: the markup where the badge should be, and what the server logged. */
+function explain(html: string, output: string): string {
+  const at = html.indexOf('data-stx-cart-count')
+  const markup = at === -1
+    ? `no data-stx-cart-count in ${html.length} bytes, <header> ${html.includes('<header') ? 'present' : 'absent'}`
+    : html.slice(Math.max(0, at - 120), at + 400)
+  return `badge markup: ${markup}\nserver output:\n${output.slice(-3000) || '(none)'}`
+}
+
 interface ServerUnderTest {
   name: string
   entry: string
@@ -191,7 +200,9 @@ for (const server of servers) {
       // page that listed nothing for anyone would pass below.
       for (const index of [0, 7, CARTS - 1]) {
         const html = await (await fetch(`${base}/cart`, { headers: { cookie: cartCookie(index) } })).text()
-        expect(readCart(html)).toEqual({ lines: [index], badge: index + 1 })
+        const seen = readCart(html)
+        if (seen.lines.length !== 1 || seen.lines[0] !== index || seen.badge !== index + 1)
+          throw new Error(`visitor ${index} saw lines ${JSON.stringify(seen.lines)} and badge ${seen.badge}\n${explain(html, output)}`)
       }
 
       // No cookie, the bare token a lookup would match, and a forged
@@ -204,6 +215,7 @@ for (const server of servers) {
 
     it('renders each visitor\'s own cart with many in flight', async () => {
       const wrong: string[] = []
+      let firstWrong = ''
       let next = 0
 
       await Promise.all(Array.from({ length: IN_FLIGHT }, async () => {
@@ -211,12 +223,16 @@ for (const server of servers) {
           const index = next++ % CARTS
           const html = await (await fetch(`${base}/cart`, { headers: { cookie: cartCookie(index) } })).text()
           const seen = readCart(html)
-          if (seen.lines.length !== 1 || seen.lines[0] !== index || seen.badge !== index + 1)
+          if (seen.lines.length !== 1 || seen.lines[0] !== index || seen.badge !== index + 1) {
             wrong.push(`visitor ${index} saw lines ${JSON.stringify(seen.lines)} and badge ${seen.badge}`)
+            if (wrong.length === 1)
+              firstWrong = explain(html, output)
+          }
         }
       }))
 
-      expect(wrong).toEqual([])
+      if (wrong.length > 0)
+        throw new Error(`${wrong.length} of ${REQUESTS} responses were wrong:\n${wrong.slice(0, 20).join('\n')}\nThe first of them, ${firstWrong}`)
     }, 120_000)
   })
 }
