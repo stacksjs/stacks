@@ -24,9 +24,19 @@ interface ProbeResult {
   sameGetConfig?: boolean
 }
 
+interface ControllerProbeResult {
+  controllerName: string
+  frameworkModuleCount: number
+  serverModuleCount: number
+  serverRootLoaded: boolean
+  baseSourceLoaded: boolean
+  baseDistLoaded: boolean
+}
+
 const repositoryRoot = resolve(import.meta.dir, '../../../../..')
 const config = join(repositoryRoot, 'bench/startup/bunfig.toml')
 const fixture = join(import.meta.dir, 'fixtures/import-probe.ts')
+const controllerFixture = join(import.meta.dir, 'fixtures/controller-import-probe.ts')
 
 function runProbe(mode?: 'call-config' | 'await-config' | 'identity', options?: {
   cwd?: string
@@ -51,6 +61,37 @@ function runProbe(mode?: 'call-config' | 'await-config' | 'identity', options?: 
   const lines = child.stdout.toString().trim().split('\n')
   return JSON.parse(lines.at(-1)!) as ProbeResult
 }
+
+function runControllerProbe(): ControllerProbeResult {
+  const child = Bun.spawnSync([
+    process.execPath,
+    '--no-env-file',
+    `--config=${config}`,
+    controllerFixture,
+  ], {
+    cwd: repositoryRoot,
+    env: {
+      ...process.env,
+      LOG_WRITE_TO_FILE: 'false',
+      SKIP_CONFIG_LOADING: 'true',
+    },
+  })
+
+  expect(child.exitCode).toBe(0)
+  const lines = child.stdout.toString().trim().split('\n')
+  return JSON.parse(lines.at(-1)!) as ControllerProbeResult
+}
+
+test('built-in controller import stays on the narrow server entry', () => {
+  expect(runControllerProbe()).toEqual({
+    controllerName: 'ComingSoonController',
+    frameworkModuleCount: 3,
+    serverModuleCount: 1,
+    serverRootLoaded: false,
+    baseSourceLoaded: true,
+    baseDistLoaded: false,
+  } satisfies ControllerProbeResult)
+})
 
 test('server import keeps broad runtime entries unloaded', () => {
   expect(runProbe()).toEqual({

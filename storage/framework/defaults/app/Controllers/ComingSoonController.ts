@@ -1,4 +1,4 @@
-import { Controller } from '@stacksjs/server'
+import { Controller } from '@stacksjs/server/controllers/base'
 /**
  * Base Controller class providing Laravel-like functionality
  */

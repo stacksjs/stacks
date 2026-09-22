@@ -35,6 +35,7 @@
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/auth/*": ["./core/auth/src/*"],
       "@stacksjs/config/*": ["./core/config/src/*"],
+      "@stacksjs/server/*": ["./core/server/src/*"],
       // Governs `storage/framework/defaults` as well, at runtime: the server
       // loads the auto-import barrels by path and the stx bundler builds page
       // scripts on the deploy box, which has no `dist/`. Without this entry

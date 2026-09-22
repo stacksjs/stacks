@@ -1,6 +1,6 @@
 import { config } from '@stacksjs/config'
 import { db, mutationCount, sql, sqlDateTime } from '@stacksjs/database/runtime'
-import { Controller } from '@stacksjs/server'
+import { Controller } from '@stacksjs/server/controllers/base'
 
 const DAY_MS = 86_400_000
 /** `2026-09-10T11` - the stored timestamp truncated to its hour. */
