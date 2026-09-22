@@ -101,6 +101,21 @@ export interface ConditionalAPI<V extends Validator<any>> {
   sometimes: () => V & ConditionalAPI<V>
 }
 
+type AnyConditionalValidator = Validator<any>
+  & ConditionalAPI<Validator<any>>
+  & ValidatorWithConditionals<Validator<any>>
+
+function when(this: AnyConditionalValidator, field: string, match: unknown | ((value: unknown) => boolean), refine: (validator: Validator<any>) => Validator<any>): AnyConditionalValidator {
+  if (!this.__conditionals) this.__conditionals = []
+  this.__conditionals.push({ field, match, refine })
+  return this
+}
+
+function sometimes(this: AnyConditionalValidator): AnyConditionalValidator {
+  this.optional()
+  return this
+}
+
 /**
  * Mixin: add `.when()` / `.sometimes()` to a validator instance.
  *
@@ -112,18 +127,10 @@ export interface ConditionalAPI<V extends Validator<any>> {
 export function withConditionals<V extends Validator<any>>(validator: V): V & ConditionalAPI<V> {
   const augmented = validator as V & ConditionalAPI<V> & ValidatorWithConditionals<V>
 
-  augmented.when = function when(field, match, refine) {
-    if (!this.__conditionals) this.__conditionals = []
-    this.__conditionals.push({ field, match, refine })
-    return this
-  }
-
-  augmented.sometimes = function sometimes() {
-    // `.optional()` returns `this` per the ts-validation contract;
-    // re-export under the Laravel-flavored name.
-    this.optional()
-    return this
-  }
+  augmented.when = when as typeof augmented.when
+  // `.optional()` returns `this` per the ts-validation contract; re-export it
+  // under the Laravel-flavored name.
+  augmented.sometimes = sometimes as typeof augmented.sometimes
 
   return augmented
 }

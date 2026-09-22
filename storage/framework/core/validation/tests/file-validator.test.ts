@@ -35,6 +35,8 @@ describe('schema.file()', () => {
     const first = schema.string()
     const second = schema.string()
     expect(first).not.toBe(second)
+    expect(first.when).toBe(second.when)
+    expect(first.sometimes).toBe(second.sometimes)
     expect(typeof first.when).toBe('function')
     expect(typeof second.sometimes).toBe('function')
   })
