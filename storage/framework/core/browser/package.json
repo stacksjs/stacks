@@ -32,6 +32,12 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./model-glob": {
+      "types": "./dist/model-glob.d.ts",
+      "bun": "./dist/model-glob.js",
+      "import": "./dist/model-glob.js",
+      "default": "./dist/model-glob.js"
+    },
     "./composables": {
       "types": "./dist/composables/index.d.ts",
       "bun": "./dist/composables/index.js",

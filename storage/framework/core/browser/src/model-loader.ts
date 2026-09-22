@@ -106,17 +106,47 @@ function isBrowserModel(value: unknown): value is BrowserModel {
     && typeof (value as BrowserModel).find === 'function'
 }
 
-// Dynamically import all model definitions from app/Models/
-// Uses import.meta.glob in Vite context (build time), or empty map in Bun/Node context
-const modelModules: Record<string, { default: BrowserModelDefinition }> = typeof (import.meta as { glob?: unknown }).glob === 'function'
-  ? (import.meta as unknown as { glob: (pattern: string, opts?: { eager?: boolean }) => Record<string, { default: BrowserModelDefinition }> }).glob('~/app/Models/*.ts', { eager: true })
-  : {}
+/**
+ * Model definitions to register, when someone supplies them.
+ *
+ * This used to be an `import.meta.glob` read behind `typeof
+ * import.meta.glob === 'function'`. That guard could never run: `import.meta`
+ * outside a module is a PARSE error, so the file failed before reaching it.
+ * Since this package is transpiled file-by-file rather than bundled, the token
+ * travelled into application bundles, and any page emitted as a classic script
+ * died on it — every feature on the page, not only models.
+ *
+ * The glob now lives in `./model-glob`, which is the only place that can throw
+ * and the only place that needs to. Vite consumers pass it in:
+ *
+ *   import { modelModules } from '@stacksjs/browser/model-glob'
+ *
+ *   loadBrowserModels(modelModules)
+ *
+ * Everyone else gets an empty map and a page that parses.
+ */
+const registeredModules: Record<string, { default: BrowserModelDefinition }> = {}
+
+/**
+ * Add model definitions for `loadBrowserModels()` to pick up.
+ *
+ * Additive rather than replacing, so several sources can contribute and a
+ * second call cannot silently drop the first one's models.
+ */
+export function registerModelModules(modules: Record<string, { default: BrowserModelDefinition }>): void {
+  Object.assign(registeredModules, modules)
+}
 
 /**
  * Load all models and register them on window.StacksBrowser
  */
-export function loadBrowserModels(): void {
+export function loadBrowserModels(modules?: Record<string, { default: BrowserModelDefinition }>): void {
   if (typeof window === 'undefined') return
+
+  if (modules)
+    registerModelModules(modules)
+
+  const modelModules = registeredModules
 
   // Ensure StacksBrowser exists
   if (!window.StacksBrowser) {
