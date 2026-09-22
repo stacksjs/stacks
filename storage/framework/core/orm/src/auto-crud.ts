@@ -281,6 +281,31 @@ export function normalizeValidationValue(rule: { name?: unknown } | null | undef
   return parsed
 }
 
+interface ResolvedFieldSpelling {
+  field: string
+  snake: string
+}
+
+const fieldSpellingsByList = new WeakMap<string[], ResolvedFieldSpelling[]>()
+
+function resolveFieldSpellings(fields: string[]): ResolvedFieldSpelling[] {
+  const cached = fieldSpellingsByList.get(fields)
+  if (cached && cached.length === fields.length) {
+    let unchanged = true
+    for (let index = 0; index < fields.length; index++) {
+      if (cached[index]?.field !== fields[index]) {
+        unchanged = false
+        break
+      }
+    }
+    if (unchanged) return cached
+  }
+
+  const resolved = fields.map(field => ({ field, snake: toSnakeCase(field) }))
+  fieldSpellingsByList.set(fields, resolved)
+  return resolved
+}
+
 /**
  * Drop attribute keys flagged `hidden: true` from an incoming write body.
  * Must drop BOTH spellings — accepting the snake spelling in filterFillable
@@ -290,9 +315,9 @@ export function normalizeValidationValue(rule: { name?: unknown } | null | undef
 export function dropHiddenInputs(data: Record<string, any>, hiddenFields: string[]): Record<string, any> {
   if (!hiddenFields.length) return data
   const out: Record<string, any> = { ...data }
-  for (const f of hiddenFields) {
-    delete out[f]
-    delete out[toSnakeCase(f)]
+  for (const { field, snake } of resolveFieldSpellings(hiddenFields)) {
+    delete out[field]
+    if (snake !== field) delete out[snake]
   }
   return out
 }
@@ -308,9 +333,9 @@ export function dropHiddenInputs(data: Record<string, any>, hiddenFields: string
 export function stripHidden<T extends Record<string, unknown>>(record: T | null | undefined, hiddenFields: string[]): T | null | undefined {
   if (!record || hiddenFields.length === 0) return record
   const result = { ...record }
-  for (const field of hiddenFields) {
+  for (const { field, snake } of resolveFieldSpellings(hiddenFields)) {
     delete result[field]
-    delete result[toSnakeCase(field)]
+    if (snake !== field) delete result[snake]
   }
   return result
 }
