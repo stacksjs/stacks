@@ -44,6 +44,11 @@ describe('logging runtime facade', () => {
     expect(probe('quiet', 'debug')).toEqual({ before: false, after: true })
   })
 
+  it('invalidates suppression when configuration or LOG_LEVEL changes', () => {
+    expect(probe('replaced-debug')).toEqual({ before: false, after: true })
+    expect(probe('env-after-info')).toEqual({ before: false, after: true })
+  })
+
   it('loads the implementation for emitted records', () => {
     expect(probe('warn')).toEqual({ before: false, after: true })
   })

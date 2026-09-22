@@ -9,6 +9,9 @@ const IMPLEMENTATION_LOADED_KEY = Symbol.for('@stacksjs/logging:implementation-l
 const SUPPRESSED_LEVELS = new Set(['info', 'success', 'warn', 'warning', 'error'])
 
 let implementationLoad: Promise<LoggingModule> | undefined
+const resolvedVoid = Promise.resolve()
+let cachedConfigSignal: Promise<LoggingConfiguration | undefined> | undefined
+let cachedConfigNeedsDebug: boolean | undefined
 
 function loadImplementation(): Promise<LoggingModule> {
   return implementationLoad ??= import('./index')
@@ -42,23 +45,40 @@ function delegateDebug(args: unknown[]): Promise<void> {
 
   const rawLevel = process.env.LOG_LEVEL
   const envLevel = rawLevel?.toLowerCase()
-  if (envLevel && !SUPPRESSED_LEVELS.has(envLevel))
-    return loadImplementation().then(module => module.log.debug(...args))
+  if (envLevel) {
+    return SUPPRESSED_LEVELS.has(envLevel)
+      ? resolvedVoid
+      : loadImplementation().then(module => module.log.debug(...args))
+  }
 
   const ready = (globalThis as Record<symbol, unknown>)[CONFIG_READY_KEY]
   if (!ready || typeof (ready as Promise<unknown>).then !== 'function')
-    return Promise.resolve()
+    return resolvedVoid
 
   const signal = ready as Promise<LoggingConfiguration | undefined>
+  if (signal !== cachedConfigSignal) {
+    cachedConfigSignal = signal
+    cachedConfigNeedsDebug = undefined
+  }
+  else if (cachedConfigNeedsDebug !== undefined) {
+    return cachedConfigNeedsDebug
+      ? loadImplementation().then(module => module.log.debug(...args))
+      : resolvedVoid
+  }
+
   const current = Bun.peek(signal)
   if (current !== signal) {
-    return configurationNeedsDebug(current as LoggingConfiguration | undefined, envLevel)
+    cachedConfigNeedsDebug = configurationNeedsDebug(current as LoggingConfiguration | undefined, undefined)
+    return cachedConfigNeedsDebug
       ? loadImplementation().then(module => module.log.debug(...args))
-      : Promise.resolve()
+      : resolvedVoid
   }
 
   return signal.then((configuration) => {
-    if (configurationNeedsDebug(configuration, envLevel))
+    const needsDebug = configurationNeedsDebug(configuration, undefined)
+    if (cachedConfigSignal === signal)
+      cachedConfigNeedsDebug = needsDebug
+    if (needsDebug)
       return loadImplementation().then(module => module.log.debug(...args))
   })
 }
