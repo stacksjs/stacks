@@ -899,15 +899,18 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
 }
 
 function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<string, CastType | CasterInterface>) {
+  const applyReadResult = (result: any) => Array.isArray(result)
+    ? result.map(item => wrapModelInstance(item, casts))
+    : wrapModelInstance(result, casts)
+
   const directReads = ['find', 'first', 'last', 'all', 'firstOrFail', 'findOrFail', 'findMany']
   for (const method of directReads) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
     baseModel[method] = function (...args: any[]) {
       const result = (original as Function).apply(this, args)
-      const apply = (r: any) => Array.isArray(r) ? r.map(x => wrapModelInstance(x, casts)) : wrapModelInstance(r, casts)
-      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(apply)
-      return apply(result)
+      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(applyReadResult)
+      return applyReadResult(result)
     }
   }
 
@@ -920,9 +923,8 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     if (typeof original !== 'function') continue
     baseModel[method] = function (...args: any[]) {
       const result = (original as Function).apply(this, args)
-      const apply = (r: any) => Array.isArray(r) ? r.map(x => wrapModelInstance(x, casts)) : wrapModelInstance(r, casts)
-      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(apply)
-      return apply(result)
+      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(applyReadResult)
+      return applyReadResult(result)
     }
   }
 
