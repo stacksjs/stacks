@@ -240,12 +240,14 @@ export function getWritableFields(model: {
 export function filterFillable(body: Record<string, unknown> | null | undefined, fillableFields: string[]): Record<string, unknown> {
   if (!body || fillableFields.length === 0) return {}
   const result: Record<string, unknown> = {}
+  let snakeByField: Map<string, string> | undefined
   for (const field of fillableFields) {
     if (field in body) {
       result[field] = body[field]
       continue
     }
-    const snake = toSnakeCase(field)
+    snakeByField ??= resolveFieldSpellingMap(fillableFields)
+    const snake = snakeByField.get(field)!
     if (snake !== field && snake in body) result[field] = body[snake]
   }
   return result
@@ -287,6 +289,7 @@ interface ResolvedFieldSpelling {
 }
 
 const fieldSpellingsByList = new WeakMap<string[], ResolvedFieldSpelling[]>()
+const fieldSpellingMaps = new WeakMap<ResolvedFieldSpelling[], Map<string, string>>()
 
 function resolveFieldSpellings(fields: string[]): ResolvedFieldSpelling[] {
   const cached = fieldSpellingsByList.get(fields)
@@ -303,6 +306,16 @@ function resolveFieldSpellings(fields: string[]): ResolvedFieldSpelling[] {
 
   const resolved = fields.map(field => ({ field, snake: toSnakeCase(field) }))
   fieldSpellingsByList.set(fields, resolved)
+  return resolved
+}
+
+function resolveFieldSpellingMap(fields: string[]): Map<string, string> {
+  const spellings = resolveFieldSpellings(fields)
+  const cached = fieldSpellingMaps.get(spellings)
+  if (cached) return cached
+
+  const resolved = new Map(spellings.map(({ field, snake }) => [field, snake]))
+  fieldSpellingMaps.set(spellings, resolved)
   return resolved
 }
 
