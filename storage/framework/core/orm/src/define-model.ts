@@ -478,7 +478,7 @@ function wrapModelInstance<T extends object>(
   // checks silently invert.
   if (casts && Object.keys(casts).length > 0) {
     for (const [attr, castDef] of Object.entries(casts)) {
-      if (Object.prototype.hasOwnProperty.call(attrs, attr)) {
+      if (Object.hasOwn(attrs, attr)) {
         attrs[attr] = resolveCaster(castDef).get(attrs[attr])
       }
     }
@@ -688,14 +688,14 @@ function wrapModelInstance<T extends object>(
 
       if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
-        if (a && Object.prototype.hasOwnProperty.call(a, prop)) return a[prop]
+        if (a && Object.hasOwn(a, prop)) return a[prop]
         // Eloquent-style relation access: after `Booking.query().with('user').first()`
         // the renter is reachable as `booking.user` instead of forcing every
         // call site through `booking.getRelation('user')`. If the relation
         // wasn't eager-loaded, this still returns undefined — callers should
         // either load it via `.with(name)` or use the explicit accessor.
         const rels = target._relations
-        if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) {
+        if (rels && Object.hasOwn(rels, prop)) {
           const related = rels[prop]
           if (Array.isArray(related)) return related.map(x => wrapModelInstance(x as object, casts))
           // A relation is a row, a list of rows, or nothing. `wrapModelInstance`
@@ -736,7 +736,7 @@ function wrapModelInstance<T extends object>(
         // spreads, `Object.keys`, and JSON responses byte-identical.
         if (a) {
           const column = toColumnName(prop)
-          if (column !== prop && Object.prototype.hasOwnProperty.call(a, column))
+          if (column !== prop && Object.hasOwn(a, column))
             return a[column]
         }
       }
@@ -760,7 +760,7 @@ function wrapModelInstance<T extends object>(
       if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
         const setter = target.set
-        if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
+        if (a && Object.hasOwn(a, prop)) {
           if (typeof setter === 'function') setter.call(target, prop, value)
           else a[prop] = value
           return true
@@ -771,7 +771,7 @@ function wrapModelInstance<T extends object>(
         // column that does not exist.
         if (a) {
           const column = toColumnName(prop)
-          if (column !== prop && Object.prototype.hasOwnProperty.call(a, column)) {
+          if (column !== prop && Object.hasOwn(a, column)) {
             if (typeof setter === 'function') setter.call(target, column, value)
             else a[column] = value
             return true
@@ -792,13 +792,13 @@ function wrapModelInstance<T extends object>(
 
       if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
-        if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
+        if (a && Object.hasOwn(a, prop)) return true
         const rels = target._relations
-        if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) return true
+        if (rels && Object.hasOwn(rels, prop)) return true
         // Keep `in` agreeing with what `get` will actually resolve.
         if (a) {
           const column = toColumnName(prop)
-          if (column !== prop && Object.prototype.hasOwnProperty.call(a, column)) return true
+          if (column !== prop && Object.hasOwn(a, column)) return true
         }
       }
       return Reflect.has(target, prop)
@@ -808,7 +808,7 @@ function wrapModelInstance<T extends object>(
 
       if (typeof prop === 'string' && !isModelInstanceInternalKey(prop)) {
         const a = target._attributes
-        if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
+        if (a && Object.hasOwn(a, prop)) {
           delete a[prop]
           return true
         }
@@ -826,7 +826,7 @@ function wrapModelInstance<T extends object>(
 
       if (typeof prop === 'string') {
         const a = target._attributes
-        if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
+        if (a && Object.hasOwn(a, prop)) {
           return { configurable: true, enumerable: true, value: a[prop], writable: true }
         }
       }
@@ -1104,7 +1104,7 @@ function applyMassAssignmentRules(
   const { allowed, guarded } = resolveMassAssignmentRuleSet(attrs)
 
   for (const key in data) {
-    if (!Object.prototype.hasOwnProperty.call(data, key)) continue
+    if (!Object.hasOwn(data, key)) continue
 
     // The allowlist above is keyed by COLUMN name (`snakeCase(k)`), so the
     // payload key has to be normalised the same way before any comparison.
