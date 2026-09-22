@@ -25,7 +25,7 @@ import { env } from '@stacksjs/env'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
@@ -157,7 +157,7 @@ function routeExists(method: string, path: string): boolean {
     return false
 
   const existingPath = String((existing).path ?? '')
-  log.info(
+  log.debug(
     `[orm] Skipping generated ${method} ${path} - already defined`
     + `${existingPath && existingPath !== path ? ` as ${existingPath}` : ''}.`,
   )
