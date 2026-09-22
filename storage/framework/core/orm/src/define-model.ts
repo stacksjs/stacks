@@ -901,6 +901,8 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         }
 
         const result = v.apply(target, callArgs)
+        if (!QB_TERMINATORS.has(propName) && result === target)
+          return recv
         if (result && typeof (result).then === 'function') {
           return (result as Promise<any>).then(resolved => finalizeQueryResult(resolved, propName, casts))
         }
