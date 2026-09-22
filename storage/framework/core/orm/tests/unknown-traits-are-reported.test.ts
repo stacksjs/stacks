@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, spyOn } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { log } from '@stacksjs/logging'
+import { log } from '@stacksjs/logging/runtime'
 
 /**
  * A trait Stacks does not read says so, once, by name.
