@@ -851,14 +851,22 @@ function wrapModelInstance<T extends object>(
  * — `Car.where(...).first()` should return a proxied instance, not a raw
  * one.
  */
-const QB_TERMINATORS = new Set([
-  'get', 'first', 'last', 'firstOrFail', 'find', 'findOrFail', 'all',
+const QB_TERMINATORS: Record<string, true> = Object.assign(Object.create(null), {
+  get: true,
+  first: true,
+  last: true,
+  firstOrFail: true,
+  find: true,
+  findOrFail: true,
+  all: true,
   // Pagination terminators (stacksjs/stacks#1905 P1) — each one routes
   // its bqb-shaped return through the matching canonical adapter below
   // so userland sees `{ data, current_page, per_page, total, ... }`
   // instead of bqb's internal `{ data, meta: { perPage, page, ... } }`.
-  'paginate', 'simplePaginate', 'cursorPaginate',
-])
+  paginate: true,
+  simplePaginate: true,
+  cursorPaginate: true,
+})
 const PAGINATE_ADAPTERS: Record<string, (r: any) => any> = {
   paginate: toPaginator,
   simplePaginate: toSimplePaginator,
@@ -867,7 +875,7 @@ const PAGINATE_ADAPTERS: Record<string, (r: any) => any> = {
 const STACKS_QB_PROXY_TAG = Symbol.for('stacks.queryBuilderProxy')
 
 function finalizeQueryResult(result: any, propName: string, casts?: Record<string, CastType | CasterInterface>): any {
-  if (QB_TERMINATORS.has(propName)) {
+  if (QB_TERMINATORS[propName]) {
     if (Array.isArray(result)) return result.map(item => wrapModelInstance(item, casts))
     // Convert bun-query-builder's pagination shape after wrapping its rows.
     const adapter = PAGINATE_ADAPTERS[propName]
@@ -920,7 +928,7 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         }
 
         const result = v.apply(target, callArgs)
-        if (!QB_TERMINATORS.has(propName) && result === target)
+        if (!QB_TERMINATORS[propName] && result === target)
           return recv
         if (result && typeof (result).then === 'function') {
           return (result as Promise<any>).then(resolved => finalizeQueryResult(resolved, propName, casts))
