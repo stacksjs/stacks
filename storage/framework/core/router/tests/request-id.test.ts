@@ -18,6 +18,7 @@ beforeAll(async () => {
 
   route.get('/_rid', (request: any) => Response.json({ seen: request._requestId }))
   route.get('/_rid_boom', () => Response.json({ error: 'nope' }, { status: 500 }))
+  route.get('/_rid_generic_404', () => Response.json({ message: 'Not Found' }, { status: 404 }))
 
   server = await route.serve({ port: 0, hostname: '127.0.0.1' })
   port = Number(server?.port ?? server?.server?.port ?? 0)
@@ -118,5 +119,27 @@ describe('an error body', () => {
     const body: any = await answer.json()
 
     expect(body.request_id).toBe(answer.headers.get('X-Request-ID'))
+  })
+
+  it('keeps an already enriched router 404 unchanged', async () => {
+    const { serverResponse } = await import('../src')
+    const answer = await serverResponse(new Request('http://127.0.0.1/_rid_missing'))
+
+    expect(await answer.json()).toEqual({
+      success: false,
+      message: 'Not Found',
+      path: '/_rid_missing',
+      method: 'GET',
+    })
+  })
+
+  it('still enriches a generic user 404', async () => {
+    const { serverResponse } = await import('../src')
+    const answer = await serverResponse(new Request('http://127.0.0.1/_rid_generic_404'))
+    const body: any = await answer.json()
+
+    expect(body.message).toBe('Not Found')
+    expect(body.path).toBe('/_rid_generic_404')
+    expect(body.method).toBe('GET')
   })
 })

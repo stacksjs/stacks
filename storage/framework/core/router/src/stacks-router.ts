@@ -5941,14 +5941,22 @@ async function handleServerRequest(request: Request): Promise<Response> {
   // user 404s with their own message stay untouched.
   if (response.status === 404 && response.headers.get('content-type')?.includes('json')) {
     try {
-      const body = await response.clone().json()
+      const url = new URL(request.url)
+      const path = url.pathname
+      const method = request.method
+      const text = await response.clone().text()
+      const alreadyEnriched = text === JSON.stringify({ success: false, message: 'Not Found', path, method })
+        || text === JSON.stringify({ error: 'Not Found', path, method })
+      if (alreadyEnriched)
+        return response
+
+      const body = JSON.parse(text)
       const isGeneric = body?.message === 'Not Found' || body?.error === 'Not Found'
       if (isGeneric) {
-        const url = new URL(request.url)
         const enriched = {
           ...body,
-          path: url.pathname,
-          method: request.method,
+          path,
+          method,
         }
         return new Response(JSON.stringify(enriched), {
           status: 404,
