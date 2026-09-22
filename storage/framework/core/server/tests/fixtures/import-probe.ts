@@ -5,9 +5,13 @@ await import('../../src/index')
 const routerRootLoaded = Object.keys(import.meta.require.cache).some(modulePath =>
   /\/core\/router\/(?:src|dist)\/index\.(?:ts|js)$/.test(modulePath),
 )
+const routerRuntimeLoaded = Object.keys(import.meta.require.cache).some(modulePath =>
+  /\/core\/router\/(?:src|dist)\/runtime\.(?:ts|js)$/.test(modulePath),
+)
 
 console.log(JSON.stringify({
   before,
   after: (globalThis as Record<symbol, unknown>)[implementationKey] === true,
   routerRootLoaded,
+  routerRuntimeLoaded,
 }))

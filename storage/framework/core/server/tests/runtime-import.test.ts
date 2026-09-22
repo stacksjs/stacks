@@ -6,13 +6,14 @@ interface ProbeResult {
   before: boolean
   after: boolean
   routerRootLoaded: boolean
+  routerRuntimeLoaded: boolean
 }
 
 const repositoryRoot = resolve(import.meta.dir, '../../../../..')
 const config = join(repositoryRoot, 'bench/startup/bunfig.toml')
 const fixture = join(import.meta.dir, 'fixtures/import-probe.ts')
 
-test('server import keeps the full logger and router root unloaded', () => {
+test('server import keeps the full logger and broad router entries unloaded', () => {
   const child = Bun.spawnSync([
     process.execPath,
     '--no-env-file',
@@ -33,5 +34,6 @@ test('server import keeps the full logger and router root unloaded', () => {
     before: false,
     after: false,
     routerRootLoaded: false,
+    routerRuntimeLoaded: false,
   } satisfies ProbeResult)
 })
