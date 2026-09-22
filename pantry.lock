@@ -2053,11 +2053,11 @@
       "source": "pantry",
       "resolved": "registry:invisible-island.net/ncurses@6.6.0"
     },
-    "libexpat.github.io@2.8.4": {
+    "libexpat.github.io@2.8.5": {
       "name": "libexpat.github.io",
-      "version": "2.8.4",
+      "version": "2.8.5",
       "source": "pantry",
-      "resolved": "registry:libexpat.github.io@2.8.4"
+      "resolved": "registry:libexpat.github.io@2.8.5"
     },
     "localtunnels@0.2.13": {
       "name": "localtunnels",
