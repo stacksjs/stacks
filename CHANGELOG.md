@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.50...v0.74.51)
+
+## 🐛 Bug Fixes
+
+- **browser**: keep import.meta out of the default model-loading path ([0abeeea](https://github.com/stacksjs/stacks/commit/0abeeea)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **server**: skip idle maintenance promises ([5eb3a43](https://github.com/stacksjs/stacks/commit/5eb3a43)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2726](https://github.com/stacksjs/stacks/issues/2726))
+- **router**: chain middleware without async wrapper ([2a7c2e0](https://github.com/stacksjs/stacks/commit/2a7c2e0)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2725](https://github.com/stacksjs/stacks/issues/2725))
+- **router**: reuse enriched not-found responses ([2103ad0](https://github.com/stacksjs/stacks/commit/2103ad0)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2724](https://github.com/stacksjs/stacks/issues/2724))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.48...v0.74.50)
 
 ## ✨ Features
