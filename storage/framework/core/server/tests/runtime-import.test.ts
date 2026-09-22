@@ -5,13 +5,14 @@ import process from 'node:process'
 interface ProbeResult {
   before: boolean
   after: boolean
+  routerRootLoaded: boolean
 }
 
 const repositoryRoot = resolve(import.meta.dir, '../../../../..')
 const config = join(repositoryRoot, 'bench/startup/bunfig.toml')
 const fixture = join(import.meta.dir, 'fixtures/import-probe.ts')
 
-test('server import keeps the full logger unloaded', () => {
+test('server import keeps the full logger and router root unloaded', () => {
   const child = Bun.spawnSync([
     process.execPath,
     '--no-env-file',
@@ -28,5 +29,9 @@ test('server import keeps the full logger unloaded', () => {
 
   expect(child.exitCode).toBe(0)
   const lines = child.stdout.toString().trim().split('\n')
-  expect(JSON.parse(lines.at(-1)!)).toEqual({ before: false, after: false } satisfies ProbeResult)
+  expect(JSON.parse(lines.at(-1)!)).toEqual({
+    before: false,
+    after: false,
+    routerRootLoaded: false,
+  } satisfies ProbeResult)
 })

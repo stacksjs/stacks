@@ -1,6 +1,6 @@
 import type { Request, ResponseStatus } from '@stacksjs/router'
-import { response } from '@stacksjs/router'
 import { log } from '@stacksjs/logging/runtime'
+import { response } from '@stacksjs/router/runtime'
 /**
  * Base Controller class providing Laravel-like functionality
  */
