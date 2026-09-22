@@ -5914,7 +5914,14 @@ async function getRoutingContextDispatcher(): Promise<ContextDispatcher> {
  * Handle a server request through the router
  * This is the main entry point for the Stacks server
  */
-export async function serverResponse(request: Request, _body?: string): Promise<Response> {
+export function serverResponse(request: Request, _body?: string): Promise<Response> {
+  if (routingContextDispatcher)
+    return routingContextDispatcher(handleServerRequest, request)
+
+  return dispatchServerRequestAfterContextInit(request)
+}
+
+async function dispatchServerRequestAfterContextInit(request: Request): Promise<Response> {
   const dispatchInRoutingContext = await getRoutingContextDispatcher()
   // The context must wrap the whole handler, not just the dispatch: a write
   // in a controller has to be visible to a read later in the same request,
@@ -5922,7 +5929,9 @@ export async function serverResponse(request: Request, _body?: string): Promise<
   return dispatchInRoutingContext(handleServerRequest, request)
 }
 
-async function handleServerRequest(request: Request): Promise<Response> {
+let handleServerRequest: (request: Request) => Promise<Response> = handleServerRequestBeforeRoutes
+
+async function handleServerRequestBeforeRoutes(request: Request): Promise<Response> {
   // Load routes on first request — use a shared promise to prevent double-loading
   if (!routesLoadPromise) {
     log.debug('[router] Loading routes for first time...')
@@ -5932,7 +5941,11 @@ async function handleServerRequest(request: Request): Promise<Response> {
     })
   }
   await routesLoadPromise
+  handleServerRequest = handleLoadedServerRequest
+  return handleLoadedServerRequest(request)
+}
 
+async function handleLoadedServerRequest(request: Request): Promise<Response> {
   const response = await route.handleRequest(request)
 
   // Enrich generic 404s with the requested path so client-side debugging

@@ -43,6 +43,29 @@ describe('routing context plumbing', () => {
     }
   }, 15_000)
 
+  test('serverResponse retries route discovery once, shares it, then leaves initialization', async () => {
+    const child = Bun.spawn([
+      process.execPath,
+      `--config=${import.meta.dir}/fixtures/cold-start.toml`,
+      `${import.meta.dir}/fixtures/server-response-transition.ts`,
+    ], { stdout: 'pipe', stderr: 'pipe' })
+    const timeout = setTimeout(() => child.kill(), 10_000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(stdout).toContain('server-response-transition-ok')
+    }
+    finally {
+      clearTimeout(timeout)
+      child.kill()
+      await child.exited
+    }
+  }, 15_000)
+
   test('native dispatch preserves isolated read-routing state', async () => {
     const child = Bun.spawn([
       process.execPath,
