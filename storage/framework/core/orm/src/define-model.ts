@@ -1016,6 +1016,34 @@ const MASS_ASSIGNMENT_SYSTEM_COLUMNS = new Set([
   'id', 'created_at', 'updated_at', 'deleted_at', 'uuid',
 ])
 
+interface MassAssignmentRuleSet {
+  allowed: Set<string>
+  guarded: Set<string>
+}
+
+const massAssignmentRuleSets = new WeakMap<object, MassAssignmentRuleSet>()
+
+function resolveMassAssignmentRuleSet(
+  attrs: Record<string, { fillable?: boolean, guarded?: boolean }>,
+): MassAssignmentRuleSet {
+  const cached = massAssignmentRuleSets.get(attrs)
+  if (cached) return cached
+
+  const declared = new Set<string>()
+  const fillable = new Set<string>()
+  const guarded = new Set<string>()
+  for (const [key, attribute] of Object.entries(attrs)) {
+    const column = toColumnName(key)
+    declared.add(column)
+    if (attribute?.fillable === true) fillable.add(column)
+    if (attribute?.guarded === true) guarded.add(column)
+  }
+
+  const rules = { allowed: fillable.size > 0 ? fillable : declared, guarded }
+  massAssignmentRuleSets.set(attrs, rules)
+  return rules
+}
+
 /**
  * Apply mass-assignment rules to a write payload. Returns the validated
  * payload (unchanged) or throws `MassAssignmentException` on the first
@@ -1052,19 +1080,9 @@ function applyMassAssignmentRules(
   const attrs = (definition).attributes as Record<string, { fillable?: boolean, guarded?: boolean }> | undefined
   if (!attrs) return data
 
-  const declared = new Set<string>()
-  const fillable = new Set<string>()
-  const guarded = new Set<string>()
-  for (const [k, a] of Object.entries(attrs)) {
-    const col = toColumnName(k)
-    declared.add(col)
-    if (a?.fillable === true) fillable.add(col)
-    if (a?.guarded === true) guarded.add(col)
-  }
-
   // Explicit `fillable` narrows the allowlist; otherwise every declared,
   // non-guarded attribute is assignable. Deny-by-default either way.
-  const allowed = fillable.size > 0 ? fillable : declared
+  const { allowed, guarded } = resolveMassAssignmentRuleSet(attrs)
 
   for (const key of Object.keys(data)) {
     // The allowlist above is keyed by COLUMN name (`snakeCase(k)`), so the
