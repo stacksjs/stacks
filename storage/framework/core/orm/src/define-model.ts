@@ -150,6 +150,26 @@ export interface CasterInterface {
 // so genuinely different corruptions each get logged once.
 const jsonParseFailureSeen = new Set<string>()
 
+// Model attribute names are stable and repeated across every instance. Keep
+// their default snake_case conversion so camelCase reads and writes do not
+// rerun the full tokenizer on every Proxy trap. The cap keeps dynamic property
+// access from turning this process-wide fast path into an unbounded cache.
+const COLUMN_NAME_CACHE_LIMIT = 4096
+const columnNameCache: Record<string, string> = Object.create(null)
+let columnNameCacheSize = 0
+
+function toColumnName(attribute: string): string {
+  const cached = columnNameCache[attribute]
+  if (cached !== undefined) return cached
+
+  const column = snakeCase(attribute)
+  if (columnNameCacheSize < COLUMN_NAME_CACHE_LIMIT) {
+    columnNameCache[attribute] = column
+    columnNameCacheSize++
+  }
+  return column
+}
+
 function logJsonParseFailure(raw: unknown, err: unknown): void {
   const preview = typeof raw === 'string' ? raw.slice(0, 80) : String(raw)
   const key = `${typeof raw}:${preview}`
@@ -702,7 +722,7 @@ function wrapModelInstance<T extends object>(
         // `ownKeys` deliberately still reports column names only, which keeps
         // spreads, `Object.keys`, and JSON responses byte-identical.
         if (a) {
-          const column = snakeCase(prop)
+          const column = toColumnName(prop)
           if (column !== prop && Object.prototype.hasOwnProperty.call(a, column))
             return a[column]
         }
@@ -737,7 +757,7 @@ function wrapModelInstance<T extends object>(
         // key under the camelCase name, which save() then tries to write as a
         // column that does not exist.
         if (a) {
-          const column = snakeCase(prop)
+          const column = toColumnName(prop)
           if (column !== prop && Object.prototype.hasOwnProperty.call(a, column)) {
             if (typeof setter === 'function') setter.call(target, column, value)
             else a[column] = value
@@ -764,7 +784,7 @@ function wrapModelInstance<T extends object>(
         if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) return true
         // Keep `in` agreeing with what `get` will actually resolve.
         if (a) {
-          const column = snakeCase(prop)
+          const column = toColumnName(prop)
           if (column !== prop && Object.prototype.hasOwnProperty.call(a, column)) return true
         }
       }
