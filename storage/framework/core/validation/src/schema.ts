@@ -153,9 +153,10 @@ export const schema: SchemaWithFile = new Proxy(v as unknown as SchemaWithFile, 
     if (prop === 'object') return objectWithContext
     if (prop === 'date') return dateInputFactory
     if (prop === 'timestamp') return timestampInputFactory
-    if (typeof prop === 'string' && FACTORY_KEYS.has(prop)) {
+    if (typeof prop === 'string') {
       const cached = wrappedFactories[prop]
       if (cached) return cached
+      if (!FACTORY_KEYS.has(prop)) return Reflect.get(target, prop, receiver)
       const wrapped = (...args: any[]) => {
         const factory = Reflect.get(target, prop, receiver)
         return withConditionals(factory(...args))
