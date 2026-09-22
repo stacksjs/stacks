@@ -7,8 +7,11 @@ import { db as runtimeDb } from '../src/runtime'
 const sourceAliases: BunPlugin = {
   name: 'database-runtime-source-aliases',
   setup(build) {
-    build.onResolve({ filter: /^@stacksjs\/(env|query-builder)$/ }, ({ path }) => ({
-      path: join(import.meta.dir, `../../${path.slice('@stacksjs/'.length)}/src/index.ts`),
+    build.onResolve({ filter: /^@stacksjs\/env(?:\/runtime)?$/ }, ({ path }) => ({
+      path: join(import.meta.dir, `../../env/src/${path.endsWith('/runtime') ? 'runtime' : 'index'}.ts`),
+    }))
+    build.onResolve({ filter: /^@stacksjs\/query-builder$/ }, () => ({
+      path: join(import.meta.dir, '../../query-builder/src/index.ts'),
     }))
   },
 }
@@ -66,5 +69,17 @@ describe('database runtime entry', () => {
       expect([...inputs].some(source => source.endsWith(`/database/src/${module}`))).toBe(false)
     }
     expect([...inputs].some(source => source.includes('/database/src/drivers/'))).toBe(false)
+  })
+
+  it('uses the env runtime entry without evaluating the env root', async () => {
+    const result = await runtimeBuild()
+
+    expect(result.success).toBe(true)
+    const inputs = staticInputs(result)
+    expect([...inputs].some(source => source.endsWith('/env/src/runtime.ts'))).toBe(true)
+    expect([...inputs].some(source => source.endsWith('/env/src/index.ts'))).toBe(false)
+    for (const module of ['cli.ts', 'deployment.ts', 'plaintext.ts', 'tenants.ts', 'utils.ts']) {
+      expect([...inputs].some(source => source.endsWith(`/env/src/${module}`))).toBe(false)
+    }
   })
 })

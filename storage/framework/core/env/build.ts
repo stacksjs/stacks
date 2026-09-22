@@ -1,38 +1,20 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  // Build every entry (not just index) so subpath imports like
-  // `@stacksjs/env/plugin` (used as a bunfig `preload`) resolve to real JS in
-  // `dist/`, not just a `.d.ts`. The export map maps `./*` → `./dist/*`.
-  entrypoints: [
-    './src/index.ts',
-    './src/plugin.ts',
-    './src/parser.ts',
-    './src/crypto.ts',
-    './src/cli.ts',
-    './src/utils.ts',
-  ],
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  // sourcemap: 'linked',
-  minify: true,
+// Preserve the module graph file-for-file so the root, runtime, and plugin
+// entries share the same proxy and private-key caches. Bundling each entry
+// separately creates duplicate module instances, while cross-entry splitting
+// is unsafe for re-export barrels on current Bun releases.
+await transpilePackage({
+  dir: import.meta.dir,
   external: frameworkExternal(),
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
 })
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })
