@@ -1,5 +1,79 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.48...v0.74.49)
+
+## ✨ Features
+
+- **server**: let an app declare paths that answer during coming-soon ([d7212f0](https://github.com/stacksjs/stacks/commit/d7212f0)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: preserve alias helper guard ([fe9ad6a](https://github.com/stacksjs/stacks/commit/fe9ad6a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: resolve server startup subpaths ([dc4365d](https://github.com/stacksjs/stacks/commit/dc4365d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: map framework utils subpaths ([858196b](https://github.com/stacksjs/stacks/commit/858196b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: resolve utils subpaths ([f48e832](https://github.com/stacksjs/stacks/commit/f48e832)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **orm**: process sort tokens in one pass ([ed056ad](https://github.com/stacksjs/stacks/commit/ed056ad)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2722](https://github.com/stacksjs/stacks/issues/2722))
+- **orm**: cache core model cast metadata ([99860b5](https://github.com/stacksjs/stacks/commit/99860b5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2721](https://github.com/stacksjs/stacks/issues/2721))
+- **orm**: replace regex snake-case conversion ([437589f](https://github.com/stacksjs/stacks/commit/437589f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2720](https://github.com/stacksjs/stacks/issues/2720))
+- **orm**: cache snake_case fillable fields ([ee20c5c](https://github.com/stacksjs/stacks/commit/ee20c5c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2719](https://github.com/stacksjs/stacks/issues/2719))
+- **orm**: cache hidden field spellings ([5733fe3](https://github.com/stacksjs/stacks/commit/5733fe3)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2718](https://github.com/stacksjs/stacks/issues/2718))
+- **orm**: cache auto-CRUD cast metadata ([bf0d02b](https://github.com/stacksjs/stacks/commit/bf0d02b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2717](https://github.com/stacksjs/stacks/issues/2717))
+- **orm**: skip successful error enumeration ([689dd2e](https://github.com/stacksjs/stacks/commit/689dd2e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2716](https://github.com/stacksjs/stacks/issues/2716))
+- **orm**: speed query terminator checks ([2610c8c](https://github.com/stacksjs/stacks/commit/2610c8c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2715](https://github.com/stacksjs/stacks/issues/2715))
+- **orm**: use native own-property checks ([c3a79d5](https://github.com/stacksjs/stacks/commit/c3a79d5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2714](https://github.com/stacksjs/stacks/issues/2714))
+- **orm**: inline proxy internal key checks ([57a8f35](https://github.com/stacksjs/stacks/commit/57a8f35)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2713](https://github.com/stacksjs/stacks/issues/2713))
+- **orm**: reuse instance proxy handlers ([4265d8b](https://github.com/stacksjs/stacks/commit/4265d8b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2712](https://github.com/stacksjs/stacks/issues/2712))
+- **orm**: avoid mass-assignment key arrays ([35fc588](https://github.com/stacksjs/stacks/commit/35fc588)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: skip empty validation wrappers ([cc6a021](https://github.com/stacksjs/stacks/commit/cc6a021)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: cache write validators ([1540b0a](https://github.com/stacksjs/stacks/commit/1540b0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: cache mass-assignment rules ([d59d12b](https://github.com/stacksjs/stacks/commit/d59d12b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: cache mass-assignment columns ([5ca5c63](https://github.com/stacksjs/stacks/commit/5ca5c63)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: reuse self-returning query proxies ([786606e](https://github.com/stacksjs/stacks/commit/786606e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: reuse query result finalizer ([e085355](https://github.com/stacksjs/stacks/commit/e085355)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: cache model column names ([24719d8](https://github.com/stacksjs/stacks/commit/24719d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: reuse read result wrapper ([10ad9c1](https://github.com/stacksjs/stacks/commit/10ad9c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **logging**: cache debug suppression ([805f158](https://github.com/stacksjs/stacks/commit/805f158)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: defer full logging ([802bf65](https://github.com/stacksjs/stacks/commit/802bf65)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: share conditional methods ([bd87e1d](https://github.com/stacksjs/stacks/commit/bd87e1d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: check cached factories first ([d1f8d5f](https://github.com/stacksjs/stacks/commit/d1f8d5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: cache schema factory wrappers ([a062eb9](https://github.com/stacksjs/stacks/commit/a062eb9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: defer SES cloud client ([ad8691c](https://github.com/stacksjs/stacks/commit/ad8691c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: defer unsafe action imports ([5d47f56](https://github.com/stacksjs/stacks/commit/5d47f56)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: index generated route shapes ([8ad6c52](https://github.com/stacksjs/stacks/commit/8ad6c52)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: defer RBAC store initialization ([d9aacb3](https://github.com/stacksjs/stacks/commit/d9aacb3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: quiet generated route skips ([c4d4b2b](https://github.com/stacksjs/stacks/commit/c4d4b2b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: align images with Bun 1.4.2 ([8b1d1e8](https://github.com/stacksjs/stacks/commit/8b1d1e8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: split lazy runtime bundle ([5ef1d16](https://github.com/stacksjs/stacks/commit/5ef1d16)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: clear lazy command deadlines ([6b2fa80](https://github.com/stacksjs/stacks/commit/6b2fa80)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: fast-path version queries ([ff9934d](https://github.com/stacksjs/stacks/commit/ff9934d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: narrow startup imports ([d36ca4c](https://github.com/stacksjs/stacks/commit/d36ca4c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: narrow dashboard kanban imports ([7afb08e](https://github.com/stacksjs/stacks/commit/7afb08e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: narrow dashboard content imports ([2825729](https://github.com/stacksjs/stacks/commit/2825729)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: narrow dashboard operations imports ([1d672ac](https://github.com/stacksjs/stacks/commit/1d672ac)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: narrow dashboard workflow imports ([d121099](https://github.com/stacksjs/stacks/commit/d121099)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: narrow core action database imports ([1caaae2](https://github.com/stacksjs/stacks/commit/1caaae2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: narrow token pruning database import ([68cc9cb](https://github.com/stacksjs/stacks/commit/68cc9cb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: narrow database context fallback ([980fe92](https://github.com/stacksjs/stacks/commit/980fe92)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: narrow database rule imports ([11ab1dc](https://github.com/stacksjs/stacks/commit/11ab1dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **slug**: narrow database runtime import ([6ffefb1](https://github.com/stacksjs/stacks/commit/6ffefb1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: narrow advisory lock database import ([99dfe0c](https://github.com/stacksjs/stacks/commit/99dfe0c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **feature-flags**: narrow database driver import ([32c718d](https://github.com/stacksjs/stacks/commit/32c718d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **analytics**: narrow database runtime import ([5a4677c](https://github.com/stacksjs/stacks/commit/5a4677c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **sites**: narrow database imports ([2d77590](https://github.com/stacksjs/stacks/commit/2d77590)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **forms**: narrow database imports ([d921c83](https://github.com/stacksjs/stacks/commit/d921c83)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **sms**: narrow database runtime import ([3d5e2c3](https://github.com/stacksjs/stacks/commit/3d5e2c3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **defaults**: guard database runtime imports ([adf80ee](https://github.com/stacksjs/stacks/commit/adf80ee)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.47...v0.74.48)
 
 ## ✨ Features
