@@ -101,17 +101,21 @@ export interface ConditionalAPI<V extends Validator<any>> {
   sometimes: () => V & ConditionalAPI<V>
 }
 
-type AnyConditionalValidator = Validator<any>
-  & ConditionalAPI<Validator<any>>
-  & ValidatorWithConditionals<Validator<any>>
+type ConditionalValidator<V extends Validator<any>> = V
+  & ConditionalAPI<V>
+  & ValidatorWithConditionals<V>
 
-function when(this: AnyConditionalValidator, field: string, match: unknown | ((value: unknown) => boolean), refine: (validator: Validator<any>) => Validator<any>): AnyConditionalValidator {
+// Shared by every augmented validator, so each call to withConditionals
+// assigns these two functions instead of allocating new closures. Generic
+// over the validator they are bound to, so they are assignable to the
+// methods of each augmented type without a cast.
+function when<V extends Validator<any>>(this: ConditionalValidator<V>, field: string, match: unknown | ((value: unknown) => boolean), refine: (validator: V) => V): V & ConditionalAPI<V> {
   if (!this.__conditionals) this.__conditionals = []
   this.__conditionals.push({ field, match, refine })
   return this
 }
 
-function sometimes(this: AnyConditionalValidator): AnyConditionalValidator {
+function sometimes<V extends Validator<any>>(this: ConditionalValidator<V>): V & ConditionalAPI<V> {
   this.optional()
   return this
 }
@@ -127,10 +131,10 @@ function sometimes(this: AnyConditionalValidator): AnyConditionalValidator {
 export function withConditionals<V extends Validator<any>>(validator: V): V & ConditionalAPI<V> {
   const augmented = validator as V & ConditionalAPI<V> & ValidatorWithConditionals<V>
 
-  augmented.when = when as typeof augmented.when
+  augmented.when = when
   // `.optional()` returns `this` per the ts-validation contract; re-export it
   // under the Laravel-flavored name.
-  augmented.sometimes = sometimes as typeof augmented.sometimes
+  augmented.sometimes = sometimes
 
   return augmented
 }
