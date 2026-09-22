@@ -462,16 +462,51 @@ export type WriteValidationResult =
   | { valid: true }
   | { valid: false, errors: Record<string, string[]> }
 
+interface WriteValidatorDefinition {
+  definition: Record<string, any>
+  field: string
+  hasDefault: boolean
+  rule: { name?: unknown, validate: (value: unknown) => any }
+}
+
+const writeValidatorsByAttributes = new WeakMap<object, WriteValidatorDefinition[]>()
+
+function resolveWriteValidators(attributes: Record<string, any>): WriteValidatorDefinition[] {
+  const cached = writeValidatorsByAttributes.get(attributes)
+  if (cached) return cached
+
+  const validators: WriteValidatorDefinition[] = []
+  for (const [field, definition] of Object.entries(attributes)) {
+    const rule = definition?.validation?.rule
+    if (!rule || typeof rule.validate !== 'function') continue
+    validators.push({
+      definition,
+      field,
+      hasDefault: definition !== null
+        && typeof definition === 'object'
+        && Object.prototype.hasOwnProperty.call(definition, 'default'),
+      rule,
+    })
+  }
+
+  writeValidatorsByAttributes.set(attributes, validators)
+  return validators
+}
+
 export function validateWriteBody(
   data: Record<string, any>,
   model: any,
   hook: 'creating' | 'updating',
 ): WriteValidationResult {
-  const attrs = model?.attributes ?? {}
+  const attributes = model?.attributes
+  if (!attributes || typeof attributes !== 'object') return { valid: true }
+
+  const validators = resolveWriteValidators(attributes)
+  if (validators.length === 0) return { valid: true }
+
   const errors: Record<string, string[]> = {}
-  for (const [field, def] of Object.entries(attrs as Record<string, any>)) {
-    const rule: any = def?.validation?.rule
-    if (!rule || typeof rule.validate !== 'function') continue
+  for (const validator of validators) {
+    const { definition, field, hasDefault, rule } = validator
     const present = Object.prototype.hasOwnProperty.call(data, field)
     if (!present && hook === 'updating') continue
 
@@ -488,12 +523,9 @@ export function validateWriteBody(
     //
     // `hasOwnProperty`, not a truthiness test: `default: 0` and `default: ''`
     // are values, and are exactly the defaults most likely to be declared.
-    const hasDefault = def !== null && typeof def === 'object'
-      && Object.prototype.hasOwnProperty.call(def, 'default')
-
     const raw = present
       ? data[field]
-      : hasDefault ? (def as { default?: unknown }).default : undefined
+      : hasDefault ? definition.default : undefined
 
     // The default is validated rather than waved through, so a default that
     // breaks its own rule is caught at the first write instead of silently
@@ -502,7 +534,7 @@ export function validateWriteBody(
     const result = rule.validate(value)
     if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
       errors[field] = result.errors.map((e: any) =>
-        def?.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
+        definition.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
       )
     }
   }
