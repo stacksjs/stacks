@@ -559,8 +559,64 @@ const ALWAYS_ALLOWED_EXTENSIONS = [
   '.ico',
 ]
 
+/**
+ * Extra paths an application declares reachable while the curtain is up, as
+ * `APP_MAINTENANCE_ALLOW` (comma-separated).
+ *
+ * The lists above cover the holding page and its assets, which is all the
+ * framework can know about on its own. An application knows more: a public
+ * share link someone handed to a colleague, a status endpoint a monitor polls,
+ * a webhook a payment provider will retry into. Every one of those is meant to
+ * answer a caller who already has the URL, and every one of them the gate would
+ * otherwise redirect to a marketing page — silently, with a 302 that looks
+ * healthy to anything not following it.
+ *
+ * Entries are exact paths, or prefixes written with a trailing `/` or `*`:
+ *
+ *   APP_MAINTENANCE_ALLOW=/share/*,/api/share/*,/healthz
+ *
+ * Read per call rather than captured at import, because `buddy down` and
+ * `buddy coming-soon` flip modes inside a running process and an allowlist
+ * frozen at import would behave differently there than after a restart.
+ */
+function configuredAllowList(): string[] {
+  const raw = process.env.APP_MAINTENANCE_ALLOW ?? process.env.APP_COMING_SOON_ALLOW ?? ''
+
+  return raw.split(',').map(entry => entry.trim()).filter(Boolean)
+}
+
+/** Whether `path` matches one of the application's declared exceptions. */
+function isConfiguredAllowed(path: string): boolean {
+  for (const entry of configuredAllowList()) {
+    // `/share/*` and `/share/` both mean "everything under /share/". The
+    // wildcard form is spelled the way people expect to write it; the trailing
+    // slash is what they write when they forget the wildcard.
+    if (entry.endsWith('*')) {
+      if (path.startsWith(entry.slice(0, -1)))
+        return true
+
+      continue
+    }
+
+    if (entry.endsWith('/')) {
+      if (path.startsWith(entry))
+        return true
+
+      continue
+    }
+
+    if (path === entry)
+      return true
+  }
+
+  return false
+}
+
 export function isAlwaysAllowed(path: string): boolean {
   if (ALWAYS_ALLOWED_PATHS.has(path))
+    return true
+
+  if (isConfiguredAllowed(path))
     return true
 
   if (ALWAYS_ALLOWED_PREFIXES.some(p => path.startsWith(p)))
