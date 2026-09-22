@@ -106,6 +106,12 @@ export function defineMiddleware<const T extends MiddlewareAliases>(aliases: T):
   return aliases
 }
 
+function handleMiddlewareError(thrown: unknown): Response | never {
+  if (thrown instanceof Response)
+    return thrown
+  throw thrown
+}
+
 export class Middleware {
   readonly name: string
   readonly priority: number
@@ -144,15 +150,14 @@ export class Middleware {
    */
   toRouterHandler(): MiddlewareHandler {
     const handle = this.handle.bind(this)
-    return async (req, next) => {
+    return (req, next) => {
       try {
-        await handle(req)
+        const outcome = handle(req)
+        return outcome ? Promise.resolve(outcome).then(next, handleMiddlewareError) : next()
       }
       catch (thrown) {
-        if (thrown instanceof Response) return thrown
-        throw thrown
+        return handleMiddlewareError(thrown)
       }
-      return next()
     }
   }
 }

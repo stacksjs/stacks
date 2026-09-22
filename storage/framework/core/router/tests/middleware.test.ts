@@ -264,6 +264,51 @@ describe('Middleware handle behavior', () => {
     const result = await mw.handle(new Request('http://localhost/test'))
     expect(result).toBeUndefined()
   })
+
+  test('router adapter chains async middleware into next', async () => {
+    const calls: string[] = []
+    const mw = new Middleware({
+      name: 'async-chain',
+      async handle() {
+        await Promise.resolve()
+        calls.push('handle')
+      },
+    })
+
+    const response = await mw.toRouterHandler()(new Request('http://localhost/test') as any, async () => {
+      calls.push('next')
+      return new Response('ok')
+    })
+
+    expect(calls).toEqual(['handle', 'next'])
+    expect(await response?.text()).toBe('ok')
+  })
+
+  test('router adapter returns a synchronously thrown Response', async () => {
+    const blocked = new Response('blocked', { status: 403 })
+    const mw = new Middleware({
+      name: 'sync-response',
+      handle() {
+        throw blocked
+      },
+    })
+
+    const response = await mw.toRouterHandler()(new Request('http://localhost/test') as any, async () => new Response('unexpected'))
+    expect(response).toBe(blocked)
+  })
+
+  test('router adapter returns an asynchronously thrown Response', async () => {
+    const blocked = new Response('blocked', { status: 429 })
+    const mw = new Middleware({
+      name: 'async-response',
+      async handle() {
+        throw blocked
+      },
+    })
+
+    const response = await mw.toRouterHandler()(new Request('http://localhost/test') as any, async () => new Response('unexpected'))
+    expect(response).toBe(blocked)
+  })
 })
 
 describe('Middleware parameterized usage patterns', () => {
