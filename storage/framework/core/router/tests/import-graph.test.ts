@@ -52,9 +52,9 @@ describe('router import graph', () => {
     const routerEntry = Object.entries(result.metafile?.inputs ?? {})
       .find(([source]) => source.endsWith('src/stacks-router.ts'))
     const eagerErrorRendererImports = routerEntry?.[1].imports
-      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/error-handler.ts')) ?? []
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('src/error-handler.ts')) ?? []
     const eagerQueryTrackerImports = routerEntry?.[1].imports
-      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/query-tracking.ts')) ?? []
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('src/query-tracking.ts')) ?? []
     expect(eagerErrorRendererImports).toEqual([])
     expect(eagerQueryTrackerImports).toHaveLength(1)
   })
