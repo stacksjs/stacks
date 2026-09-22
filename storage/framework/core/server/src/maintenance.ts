@@ -17,6 +17,7 @@
 
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
+import { existsSync } from 'node:fs'
 
 export type SiteMode = 'maintenance' | 'coming-soon'
 
@@ -100,8 +101,7 @@ export function siteModeFilePath(mode: SiteMode): string {
  */
 export async function isDownForMaintenance(): Promise<boolean> {
   try {
-    const file = Bun.file(maintenanceFilePath())
-    return await file.exists()
+    return existsSync(maintenanceFilePath())
   }
   catch {
     return false
@@ -110,8 +110,7 @@ export async function isDownForMaintenance(): Promise<boolean> {
 
 export async function isComingSoon(): Promise<boolean> {
   try {
-    const file = Bun.file(comingSoonFilePath())
-    return await file.exists()
+    return existsSync(comingSoonFilePath())
   }
   catch {
     return false
@@ -129,28 +128,40 @@ export async function comingSoonPayload(): Promise<MaintenancePayload | null> {
   return siteModePayload('coming-soon')
 }
 
-export async function siteModePayload(mode: SiteMode): Promise<MaintenancePayload | null> {
+function readSiteModePayload(mode: SiteMode): Promise<MaintenancePayload | null> | null {
   try {
-    const file = Bun.file(siteModeFilePath(mode))
+    const filePath = siteModeFilePath(mode)
 
-    if (!(await file.exists())) {
+    if (!existsSync(filePath))
       return null
-    }
 
-    const content = await file.text()
-    return {
+    return Bun.file(filePath).text().then(content => ({
       ...defaultsForMode(mode),
       ...JSON.parse(content),
       mode,
-    } as MaintenancePayload
+    } as MaintenancePayload)).catch(() => null)
   }
   catch {
     return null
   }
 }
 
+export async function siteModePayload(mode: SiteMode): Promise<MaintenancePayload | null> {
+  return readSiteModePayload(mode)
+}
+
+function comingSoonPayloadResult(): Promise<MaintenancePayload | null> | MaintenancePayload | null {
+  const payload = readSiteModePayload('coming-soon')
+  return payload ? payload.then(value => value ?? envSiteModePayload()) : envSiteModePayload()
+}
+
+function activeSiteModePayloadResult(): Promise<MaintenancePayload | null> | MaintenancePayload | null {
+  const payload = readSiteModePayload('maintenance')
+  return payload ? payload.then(value => value ?? comingSoonPayloadResult()) : comingSoonPayloadResult()
+}
+
 export async function activeSiteModePayload(): Promise<MaintenancePayload | null> {
-  return (await maintenancePayload()) ?? (await comingSoonPayload()) ?? envSiteModePayload()
+  return activeSiteModePayloadResult()
 }
 
 function envSiteModePayload(): MaintenancePayload | null {
@@ -176,7 +187,8 @@ function envSiteModePayload(): MaintenancePayload | null {
 }
 
 function isTruthy(value: string | undefined): boolean {
-  return ['1', 'true', 'yes', 'on'].includes(String(value || '').toLowerCase())
+  const normalized = value?.toLowerCase()
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on'
 }
 
 /**
@@ -685,7 +697,8 @@ function clientIp(req: Request): string {
  *      maintenance).
  */
 export async function maintenanceGate(req: Request): Promise<Response | null> {
-  const payload = await activeSiteModePayload()
+  const payloadResult = activeSiteModePayloadResult()
+  const payload = payloadResult instanceof Promise ? await payloadResult : payloadResult
   if (!payload)
     return null
 
