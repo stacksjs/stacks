@@ -87,7 +87,31 @@ export function mapWriteError(
  * snakeCase for word-shaped attribute names (locked in by tests).
  */
 export function toSnakeCase(s: string): string {
-  return s.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase()
+  let hasUppercase = false
+  for (let index = 0; index < s.length; index++) {
+    const code = s.charCodeAt(index)
+    if (code > 127)
+      return s.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase()
+    if (code >= 65 && code <= 90) hasUppercase = true
+  }
+  if (!hasUppercase) return s
+
+  let result = ''
+  for (let index = 0; index < s.length; index++) {
+    const code = s.charCodeAt(index)
+    if (code < 65 || code > 90) {
+      result += s[index]
+      continue
+    }
+
+    const previous = index > 0 ? s.charCodeAt(index - 1) : 0
+    const next = index + 1 < s.length ? s.charCodeAt(index + 1) : 0
+    const followsWord = (previous >= 97 && previous <= 122) || (previous >= 48 && previous <= 57)
+    const endsAcronym = previous >= 65 && previous <= 90 && next >= 97 && next <= 122
+    if (index > 0 && (followsWord || endsAcronym)) result += '_'
+    result += String.fromCharCode(code + 32)
+  }
+  return result
 }
 
 /** Map every key of a write payload to its snake_case column spelling. */
