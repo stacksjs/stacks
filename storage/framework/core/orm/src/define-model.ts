@@ -284,6 +284,10 @@ const MODEL_INSTANCE_INTERNAL_KEYS = new Set([
 ])
 
 const STACKS_PROXY_TAG = Symbol.for('stacks.modelInstanceProxy')
+// Proxy traps receive all per-row state through their target. Only casts are
+// closure state, so one handler can serve every instance of the same model.
+let defaultModelInstanceProxyHandler: ProxyHandler<any> | undefined
+const castModelInstanceProxyHandlers = new WeakMap<object, ProxyHandler<any>>()
 
 /**
  * Maps each trait-bag method name to how it must be invoked when called on
@@ -476,7 +480,12 @@ function wrapModelInstance<T extends object>(
     }
   }
 
-  return new Proxy(instance, {
+  let handler = casts
+    ? castModelInstanceProxyHandlers.get(casts)
+    : defaultModelInstanceProxyHandler
+
+  if (!handler) {
+    handler = {
     get(rawTarget, prop, recv) {
       const target = rawTarget as T & WrappedModelInstance
 
@@ -819,7 +828,13 @@ function wrapModelInstance<T extends object>(
       }
       return Object.getOwnPropertyDescriptor(target, prop)
     },
-  }) as T
+    }
+
+    if (casts) castModelInstanceProxyHandlers.set(casts, handler)
+    else defaultModelInstanceProxyHandler = handler
+  }
+
+  return new Proxy(instance, handler) as T
 }
 
 /**
