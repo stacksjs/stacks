@@ -1,4 +1,4 @@
-ARG BUN_VERSION=1.3.14
+ARG BUN_VERSION=1.4.2
 
 # Keep the build and runtime distributions identical. Alpine avoids carrying
 # Debian's package database and shell utilities into the production image.

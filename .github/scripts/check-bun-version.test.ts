@@ -51,6 +51,8 @@ describe('pinned Bun guard', () => {
     const ci = readFileSync(resolve(repositoryRoot, '.github/workflows/ci.yml'), 'utf8')
     const memoryBenchmark = readFileSync(resolve(repositoryRoot, '.github/workflows/memory-benchmark.yml'), 'utf8')
     const routingBenchmark = readFileSync(resolve(repositoryRoot, '.github/workflows/routing-benchmark.yml'), 'utf8')
+    const cloudDockerfile = readFileSync(resolve(repositoryRoot, 'cloud/Dockerfile'), 'utf8')
+    const serverDockerfile = readFileSync(resolve(repositoryRoot, 'storage/framework/server/Dockerfile'), 'utf8')
     const pantryLock = JSON.parse(readFileSync(resolve(repositoryRoot, 'pantry.lock'), 'utf8')) as {
       packages: Record<string, { version: string }>
       workspaces: { '': { system: Record<string, string> } }
@@ -61,6 +63,8 @@ describe('pinned Bun guard', () => {
     expect(ci.match(/^\s*BUN_VERSION:\s*'([^']+)'/m)?.[1]).toBe(pinnedVersion)
     expect(memoryBenchmark.match(/^\s*BUN_VERSION:\s*'([^']+)'/m)?.[1]).toBe(pinnedVersion)
     expect(routingBenchmark.match(/^\s*BUN_VERSION:\s*'([^']+)'/m)?.[1]).toBe(pinnedVersion)
+    expect(cloudDockerfile.match(/^ARG BUN_VERSION=(\S+)$/m)?.[1]).toBe(pinnedVersion)
+    expect(serverDockerfile.match(/^ARG BUN_VERSION=(\S+)$/m)?.[1]).toBe(pinnedVersion)
     expect(pantryLock.workspaces[''].system['bun.sh']).toBe(pinnedVersion)
     expect(pantryLock.packages[`bun.sh@${pinnedVersion}`]?.version).toBe(pinnedVersion)
   })
