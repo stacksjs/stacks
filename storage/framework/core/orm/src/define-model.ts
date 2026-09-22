@@ -847,6 +847,27 @@ const PAGINATE_ADAPTERS: Record<string, (r: any) => any> = {
 }
 const STACKS_QB_PROXY_TAG = Symbol.for('stacks.queryBuilderProxy')
 
+function finalizeQueryResult(result: any, propName: string, casts?: Record<string, CastType | CasterInterface>): any {
+  if (QB_TERMINATORS.has(propName)) {
+    if (Array.isArray(result)) return result.map(item => wrapModelInstance(item, casts))
+    // Convert bun-query-builder's pagination shape after wrapping its rows.
+    const adapter = PAGINATE_ADAPTERS[propName]
+    if (adapter && result && Array.isArray(result.data)) {
+      const wrappedData = result.data.map((item: any) => wrapModelInstance(item, casts))
+      const canonical = adapter({ ...result, data: wrappedData })
+      return enrichPaginatorUrls(canonical)
+    }
+    // Preserve custom query results that expose their rows under `data`.
+    if (result && Array.isArray(result.data)) {
+      return { ...result, data: result.data.map((item: any) => wrapModelInstance(item, casts)) }
+    }
+    return wrapModelInstance(result, casts)
+  }
+  if (result && typeof result === 'object' && typeof result.get === 'function')
+    return wrapQueryBuilder(result, casts)
+  return result
+}
+
 function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInterface>): any {
   if (!qb || typeof qb !== 'object') return qb
   // Skip re-wrapping. Without this guard, chains like
@@ -861,6 +882,7 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
       if (prop === STACKS_QB_PROXY_TAG) return true
       const v = Reflect.get(target, prop, recv)
       if (typeof v !== 'function') return v
+      const propName = String(prop)
       // eslint-disable-next-line pickier/no-unused-vars
       return function (this: any, ...args: any[]) {
         // P2 — when the caller invokes a pagination terminator without
@@ -869,7 +891,6 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         // any request scope, so CLI / queue / cron callers still see
         // the same defaults as before.
         let callArgs = args
-        const propName = String(prop)
         if (propName === 'paginate' || propName === 'simplePaginate') {
           const { perPage, page } = resolvePageArgs(args[0], args[1])
           callArgs = [perPage, page]
@@ -880,39 +901,10 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         }
 
         const result = v.apply(target, callArgs)
-        const finalize = (r: any) => {
-          if (QB_TERMINATORS.has(propName)) {
-            if (Array.isArray(r)) return r.map(x => wrapModelInstance(x, casts))
-            // Paginators — wrap data items first, then convert the raw
-            // bqb `{ data, meta }` shape to the canonical Stacks
-            // paginator. Each adapter preserves the data array, so
-            // wrapping the model instances before the conversion is
-            // safe (and saves a re-walk). Finally, enrich with URL
-            // fields from the active request (P2 — no-op when none).
-            const adapter = PAGINATE_ADAPTERS[propName]
-            if (adapter && r && Array.isArray((r).data)) {
-              const wrappedData = (r).data.map((x: any) => wrapModelInstance(x, casts))
-              const canonical = adapter({ ...r, data: wrappedData })
-              return enrichPaginatorUrls(canonical)
-            }
-            // Backward-compat: a non-paginator object whose `.data` is
-            // an array (custom subquery / search result) — re-wrap items
-            // without touching the surrounding shape.
-            if (r && Array.isArray((r).data)) {
-              return { ...r, data: (r).data.map((x: any) => wrapModelInstance(x, casts)) }
-            }
-            return wrapModelInstance(r, casts)
-          }
-          // Chainable — re-wrap if QueryBuilder-shaped
-          if (r && typeof r === 'object' && typeof (r).get === 'function') {
-            return wrapQueryBuilder(r, casts)
-          }
-          return r
-        }
         if (result && typeof (result).then === 'function') {
-          return (result as Promise<any>).then(finalize)
+          return (result as Promise<any>).then(resolved => finalizeQueryResult(resolved, propName, casts))
         }
-        return finalize(result)
+        return finalizeQueryResult(result, propName, casts)
       }
     },
   })
