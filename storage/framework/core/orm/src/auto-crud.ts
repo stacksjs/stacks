@@ -441,9 +441,10 @@ export function applySorting<Q extends { orderBy: (_column: string, _direction: 
   columns: ReadonlyMap<string, string>,
 ): Q {
   if (!sortParam) return query
-  const tokens = String(sortParam).split(',').map(t => t.trim()).filter(Boolean)
   let q = query
-  for (const tok of tokens) {
+  for (const rawToken of String(sortParam).split(',')) {
+    const tok = rawToken.trim()
+    if (!tok) continue
     const desc = tok.startsWith('-')
     const requested = desc ? tok.slice(1) : tok
     if (!/^\w+$/.test(requested)) continue
