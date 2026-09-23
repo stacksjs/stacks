@@ -26,7 +26,7 @@
  *     is process-wide and bun runs the whole directory in one process.
  */
 
-import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, setSystemTime, test } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -85,10 +85,10 @@ const fakeMail = {
 mock.module('@stacksjs/email', () => ({ ...realEmail, template: fakeTemplate, mail: fakeMail }))
 
 // ─── SUT + collaborators (imported AFTER the mock is installed) ──────────
-const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig, sqlDateTime } = await import('@stacksjs/database')
 const { overrides, overridesReady } = await import('@stacksjs/config')
 const { passwordResets } = await import('../src/password/reset')
-const { sendVerificationEmail } = await import('../src/email-verification')
+const { sendVerificationEmail, resendVerificationEmail } = await import('../src/email-verification')
 const { verifyHash } = await import('@stacksjs/security')
 
 const KNOWN_EMAIL = 'known-1944@example.com'
@@ -363,5 +363,45 @@ describe('email verification URL template + fallback (#1944)', () => {
   test('structured verification delivery failure still throws', async () => {
     mailMode = 'failure'
     await expect(sendVerificationEmail({ id: verifyId, email: VERIFY_EMAIL })).rejects.toThrow('provider unavailable')
+  })
+
+  for (const [zone, offsetMinutes] of [['UTC', 0], ['Pacific/Honolulu', 600], ['Asia/Kathmandu', -345]] as const) {
+    test(`resend cooldown uses UTC SQL timestamps in ${zone}`, async () => {
+      const previousTimezone = process.env.TZ
+      const now = new Date('2030-01-02T03:04:05.000Z')
+      setSystemTime(now)
+      process.env.TZ = zone
+      try {
+        expect(new Date().getTimezoneOffset()).toBe(offsetMinutes)
+        for (const age of [-1000, 0, 59_000, 60_000, 61_000]) {
+          sent.length = 0
+          await db.deleteFrom('email_verifications').where('user_id', '=', verifyId).execute()
+          await db.insertInto('email_verifications').values({ user_id: verifyId, token: 'synthetic-cooldown',
+            expires_at: sqlDateTime(new Date(now.getTime() + 60_000)),
+            created_at: sqlDateTime(new Date(now.getTime() - age)),
+          } as never).execute()
+          const result = await resendVerificationEmail({ id: verifyId, email: VERIFY_EMAIL })
+          expect(result.success, `age ${age} must not depend on local timezone`).toBe(age >= 60_000)
+          expect(sent.length).toBe(age >= 60_000 ? 1 : 0)
+        }
+      }
+      finally {
+        setSystemTime()
+        if (previousTimezone === undefined) delete process.env.TZ
+        else process.env.TZ = previousTimezone
+      }
+    })
+  }
+
+  test('missing or malformed resend timestamps fail closed', async () => {
+    for (const createdAt of [null, 'invalid']) {
+      sent.length = 0
+      await db.deleteFrom('email_verifications').where('user_id', '=', verifyId).execute()
+      await db.insertInto('email_verifications').values({ user_id: verifyId, token: 'synthetic-invalid-time',
+        expires_at: sqlDateTime(new Date(Date.now() + 60_000)), created_at: createdAt,
+      } as never).execute()
+      expect((await resendVerificationEmail({ id: verifyId, email: VERIFY_EMAIL })).success).toBe(false)
+      expect(sent.length).toBe(0)
+    }
   })
 })

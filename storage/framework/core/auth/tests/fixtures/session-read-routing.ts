@@ -1,13 +1,21 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { mock } from 'bun:test'
 
 const { DB_HOST: host, DB_DATABASE: name, DB_USERNAME: username, DB_PASSWORD: password, DB_PORT: port } = process.env
 assert.equal(process.env.DB_CONNECTION, 'postgres')
 assert(name?.startsWith('stacks_session_routing_'))
 assert(host && ['127.0.0.1', 'localhost', '[::1]'].includes(host))
 assert.equal(process.env.STACKS_SESSION_REPLICA_USER, name)
-const { overridesReady } = await import('@stacksjs/config')
+const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
+config.app.key = 'synthetic-session-routing-verification-key'
+const realEmail = { ...await import('@stacksjs/email') }
+const sent: unknown[] = []
+mock.module('@stacksjs/email', () => ({ ...realEmail,
+  template: async () => ({ text: 'Synthetic verification message' }),
+  mail: { sendOrFail: async (message: unknown) => { sent.push(message) } },
+}))
 const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, withRoutingContext, contextHasWritten, sqlDateTime } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
@@ -31,6 +39,7 @@ const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../
 const { getUserPasskey, getUserPasskeys, updatePasskeyCounter } = await import('../../src/passkey')
 const { createPersonalAccessClient } = await import('../../src/client')
 const { consumeMagicLink } = await import('../../src/magic-link')
+const { resendVerificationEmail } = await import('../../src/email-verification')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -285,9 +294,20 @@ try {
   const magic = 'synthetic-primary-magic-link'
   await db.insertInto('magic_link_tokens').values({ user_id: 1, email: 'session@example.invalid', token: createHash('sha256').update(magic).digest('hex'), expires_at: sqlDateTime(new Date(Date.now() + 60_000)), redirect_to: '/account' }).execute()
   assert.equal((await consumeMagicLink(magic)).ok, true, 'out-of-request magic-link readback must find the claim on primary')
+  await db.unsafe('CREATE TABLE lagged.email_verifications (LIKE public.email_verifications INCLUDING ALL)').execute()
+  await db.unsafe(`GRANT SELECT ON lagged.email_verifications TO "${name}"`).execute()
+  await db.insertInto('email_verifications').values({ user_id: 1, token: 'synthetic-cooldown', created_at: sqlDateTime(), expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
+  await withRoutingContext(async () => {
+    assert.equal((await db.selectFrom('email_verifications').selectAll().execute()).length, 0, 'the replica must actually be missing the recent send')
+    assert.equal((await resendVerificationEmail({ id: 1, email: 'session@example.invalid' })).success, false, 'replica lag must not bypass the verification resend cooldown')
+    assert.equal(sent.length, 0, 'a rejected resend must not deliver mail')
+    assert.equal(contextHasWritten(), false, 'cooldown checks must remain read-only')
+    await assertLaggedRead()
+  })
   console.log('session and token primary reads OK')
 }
 finally {
+  mock.module('@stacksjs/email', () => realEmail)
   await releaseOrm()
   await closeDatabaseConnection()
 }

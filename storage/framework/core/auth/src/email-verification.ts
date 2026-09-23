@@ -238,16 +238,16 @@ export async function resendVerificationEmail(user: { id: number, email: string,
     return { success: false, message: 'Email is already verified.' }
   }
 
-  // Check for rate limiting: only allow resend every 60 seconds
-  const existing = await db
+  // Cooldown state must include the most recent send, even with replica lag.
+  const existing = await db.primary
     .selectFrom('email_verifications')
     .where('user_id', '=', user.id)
     .selectAll()
     .executeTakeFirst()
 
   if (existing) {
-    const createdAt = new Date(existing.created_at as string)
-    const secondsSince = (Date.now() - createdAt.getTime()) / 1000
+    const createdAt = parseSqlDateTime(existing.created_at)
+    const secondsSince = createdAt ? (Date.now() - createdAt.getTime()) / 1000 : Number.NaN
     // Fail closed: an unparseable created_at yields NaN, and `NaN < 60` is
     // false, which would have bypassed the resend cooldown entirely (email
     // bombing). Treat NaN as "still cooling down". #1985.
