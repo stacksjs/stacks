@@ -36,26 +36,25 @@ export interface RateLimiterStore {
   delete: (key: string) => Promise<void> | void
 }
 
-const MAX_STORE_SIZE = 10_000
+const INITIAL_EVICTION_SIZE = 10_000
 const EVICTION_INTERVAL = 5 * 60 * 1000 // Run eviction every 5 minutes
 
 /** Process-local store — the default. */
 class MemoryStore implements RateLimiterStore {
   private store = new Map<string, { entry: RateLimitEntry, expiresAt: number }>()
   private lastEviction = Date.now()
+  private nextEvictionSize = INITIAL_EVICTION_SIZE
 
   /**
-   * Evict stale entries. Runs at the eviction interval *or* when the store
-   * gets close to its max size, whichever fires first. Previously the size
-   * check was AND-gated against the interval, which meant a low-traffic
-   * server staying under MAX_STORE_SIZE would never evict and entries with
-   * cleared lockouts would linger forever.
+   * Sweep periodically or after substantial growth. This is a cleanup
+   * threshold, not a hard capacity: evicting live counters would weaken
+   * lockouts. Geometric growth amortizes scans while all entries remain live.
    */
   private evict(): void {
     const now = Date.now()
     const intervalElapsed = now - this.lastEviction >= EVICTION_INTERVAL
-    const overCapacity = this.store.size >= MAX_STORE_SIZE
-    if (!intervalElapsed && !overCapacity)
+    const grew = this.store.size >= this.nextEvictionSize
+    if (!intervalElapsed && !grew)
       return
 
     this.lastEviction = now
@@ -65,6 +64,7 @@ class MemoryStore implements RateLimiterStore {
       else if (value.entry.lockedUntil === 0 && value.entry.attempts === 0)
         this.store.delete(key)
     }
+    this.nextEvictionSize = Math.max(INITIAL_EVICTION_SIZE, this.store.size * 2)
   }
 
   get(key: string): RateLimitEntry | undefined {
