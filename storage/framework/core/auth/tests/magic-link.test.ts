@@ -16,7 +16,9 @@ import process from 'node:process'
 const DB_PATH = join(tmpdir(), `stacks-magic-${process.pid}.sqlite`)
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = DB_PATH
-process.env.APP_ENV = 'testing'
+// Use a supported profile: a rejected shared overridesReady promise breaks
+// later mailer suites even when this file happens not to await it itself.
+process.env.APP_ENV = 'test'
 
 const sentMails: { to: string, text?: string, html?: string }[] = []
 const realEmail = { ...await import('@stacksjs/email') }
@@ -47,7 +49,7 @@ async function forceConfig(): Promise<void> {
   try {
     await ensureDatabaseConfigLoaded()
     initializeDbConfig({
-      app: { env: 'testing' },
+      app: { env: 'test' },
       database: {
         default: 'sqlite',
         connections: { sqlite: { database: DB_PATH, prefix: '' } },

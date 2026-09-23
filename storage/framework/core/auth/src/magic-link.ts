@@ -103,7 +103,9 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
     return
   await RateLimiter.recordFailedAttempt(normalized)
 
-  let user = await db
+  // Sending a sign-in credential must use current email ownership. A lagged
+  // replica may retain an address the account has already removed.
+  let user = await db.primary
     .selectFrom('users')
     .where('email', '=', normalized)
     .select(['id', 'email'])
@@ -124,7 +126,7 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
       } as never)
       .execute()
 
-    user = await db
+    user = await db.primary
       .selectFrom('users')
       .where('email', '=', normalized)
       .select(['id', 'email'])

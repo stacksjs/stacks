@@ -14,6 +14,7 @@ const realEmail = { ...await import('@stacksjs/email') }
 const sent: unknown[] = []
 mock.module('@stacksjs/email', () => ({ ...realEmail,
   template: async () => ({ text: 'Synthetic verification message' }),
+  templateByName: async () => ({ text: 'Synthetic magic-link message' }),
   mail: { sendOrFail: async (message: unknown) => { sent.push(message) } },
 }))
 const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, withRoutingContext, contextHasWritten, sqlDateTime } = await import('@stacksjs/database/runtime')
@@ -38,7 +39,7 @@ const { getTwoFactorState, verifyTwoFactorLoginCode, createTwoFactorChallenge, c
 const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
 const { getUserPasskey, getUserPasskeys, updatePasskeyCounter } = await import('../../src/passkey')
 const { createPersonalAccessClient } = await import('../../src/client')
-const { consumeMagicLink } = await import('../../src/magic-link')
+const { consumeMagicLink, sendMagicLink } = await import('../../src/magic-link')
 const { resendVerificationEmail } = await import('../../src/email-verification')
 const { passwordResets } = await import('../../src/password/reset')
 const { enhanceRequest } = await import('@stacksjs/router')
@@ -289,7 +290,7 @@ try {
     catch (error) { failures.push(String(error)) }
   }
   assert.deepEqual(failures, [])
-  await db.unsafe('CREATE TABLE magic_link_tokens (id BIGSERIAL PRIMARY KEY, user_id BIGINT, email TEXT, token TEXT UNIQUE, expires_at TIMESTAMP, consumed_at TIMESTAMP, updated_at TIMESTAMP, redirect_to TEXT)').execute()
+  await db.unsafe('CREATE TABLE magic_link_tokens (id BIGSERIAL PRIMARY KEY, user_id BIGINT, email TEXT, token TEXT UNIQUE, expires_at TIMESTAMP, consumed_at TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP, redirect_to TEXT, site_id BIGINT)').execute()
   await db.unsafe('CREATE TABLE lagged.magic_link_tokens (LIKE public.magic_link_tokens INCLUDING ALL)').execute()
   await db.unsafe(`GRANT SELECT ON lagged.magic_link_tokens TO "${name}"`).execute()
   const magic = 'synthetic-primary-magic-link'
@@ -319,6 +320,21 @@ try {
     assert.equal(sent.length, 0, 'a stale replica email must not receive a reset')
     assert.equal(contextHasWritten(), false, 'unknown current accounts must remain silent read-only no-ops')
   })
+  for (const [email, expected] of [['current-primary@example.invalid', 1], ['session@example.invalid', 0]] as const) {
+    sent.length = 0
+    try {
+      await withRoutingContext(async () => {
+        await sendMagicLink(email)
+        assert.equal(sent.length, expected, 'magic links must use current account ownership, not a stale replica email')
+        if (expected === 0) {
+          assert.equal(contextHasWritten(), false, 'a former email must not create a new sign-in token')
+          await assertLaggedRead()
+        }
+      })
+    }
+    catch (error) { failures.push(String(error)) }
+  }
+  assert.deepEqual(failures, [])
   console.log('session and token primary reads OK')
 }
 finally {
