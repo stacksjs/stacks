@@ -18,6 +18,8 @@ interface RequestLike {
   url?: string
 }
 
+const requestObjectValidator = objectWithContext<Record<string, Validator<any>>>()
+
 async function gatherRequestInput(source: RequestLike | Record<string, unknown>): Promise<Record<string, unknown>> {
   if (!source || typeof source !== 'object') return {}
   if (typeof (source as RequestLike).all === 'function') {
@@ -78,7 +80,7 @@ export async function validate<T = Record<string, unknown>>(
     if (messageObject)
       setCustomMessages(new MessageProvider(messageObject))
 
-    const result = await objectWithContext(ruleObject).validate(input)
+    const result = await requestObjectValidator.shape(ruleObject).validate(input)
     if (!result.valid) {
       const errors = normalizeValidationErrors(result.errors)
       throw new HttpError(422, 'Validation failed', { errors })
