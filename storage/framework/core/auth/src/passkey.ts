@@ -206,7 +206,7 @@ export async function updatePasskeyCounter(
       const current = await query.executeTakeFirst()
       if (!current) return false
       await db.updateTable('passkeys')
-        .set({ last_used_at: formatDateTime() } as never)
+        .set({ last_used_at: sqlDateTime() } as never)
         .where('id', '=', passkeyId)
         .where('user_id', '=', userId)
         .execute()
@@ -216,7 +216,7 @@ export async function updatePasskeyCounter(
 
   const claimed = await db
     .updateTable('passkeys')
-    .set({ counter: newCounter, last_used_at: formatDateTime() } as never)
+    .set({ counter: newCounter, last_used_at: sqlDateTime() } as never)
     .where('id', '=', passkeyId)
     .where('user_id', '=', userId)
     .where('counter', '=', stored)
@@ -258,25 +258,10 @@ export async function setCurrentRegistrationOptions(
     backup_eligible: false,
     backup_status: verified.registrationInfo?.credentialBackedUp || false,
     transports: JSON.stringify(['internal']),
-    last_used_at: formatDateTime(),
+    last_used_at: sqlDateTime(),
   }
 
   await db.insertInto('passkeys').values(passkeyData).executeTakeFirstOrThrow()
-}
-
-function formatDateTime(): string {
-  const date = new Date()
-  const pad = (num: number): string => String(num).padStart(2, '0')
-
-  const year = date.getFullYear()
-  const month = pad(date.getMonth() + 1)
-  const day = pad(date.getDate())
-
-  const hours = pad(date.getHours())
-  const minutes = pad(date.getMinutes())
-  const seconds = pad(date.getSeconds())
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 // =============================================================================

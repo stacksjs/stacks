@@ -15,7 +15,7 @@ else {
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection } = await import('@stacksjs/database/runtime')
+const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, parseSqlDateTime } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect, connections: dialect === 'sqlite' ? { sqlite: { database: process.env.DB_DATABASE_PATH } } : {
@@ -239,6 +239,24 @@ try {
       }
     }
     finally { contender.close() }
+  }
+  const previousTimezone = process.env.TZ
+  try {
+    for (const [zone, offset] of [['Pacific/Honolulu', 600], ['Asia/Kathmandu', -345]] as const) {
+      process.env.TZ = zone
+      assert.equal(new Date().getTimezoneOffset(), offset, 'the timestamp probe must really run outside UTC')
+      await resetPasskey(1)
+      try {
+        assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 2), true)
+        const row = await db.primary.selectFrom('passkeys').where('id', '=', 'synthetic-key').selectAll().executeTakeFirst()
+        assert.equal(parseSqlDateTime(row?.last_used_at)?.getTime(), now.getTime(), `passkey: last_used_at must round-trip as UTC in ${zone}`)
+      }
+      catch (error) { failures.push(String(error)) }
+    }
+  }
+  finally {
+    if (previousTimezone === undefined) delete process.env.TZ
+    else process.env.TZ = previousTimezone
   }
   assert.deepEqual(failures, [])
   console.log('credential consumption OK')
