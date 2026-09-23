@@ -618,6 +618,35 @@ export function isAuthenticatedRequest(request: Request): boolean {
 }
 
 /**
+ * The request header the SPA router sends to ask for a fragment, and the
+ * response header a fragment answers with.
+ *
+ * Wire protocol shared with `@stacksjs/stx`, spelled out here rather than
+ * imported. This module resolves stx lazily and by path, so the production
+ * server renders through whichever copy the app actually installed; a static
+ * import for two string constants would undo that. They are header names,
+ * which cannot change without breaking every page already serving a router,
+ * so they are safe to state in both places.
+ */
+const SPA_NAV_REQUEST_HEADER = 'X-STX-Router'
+const SPA_NAV_FRAGMENT_HEADER = 'X-STX-Fragment'
+
+/**
+ * Is this exchange the SPA router's fragment representation of a url, rather
+ * than the document representation?
+ *
+ * Either side is enough to say so. The response header is the stronger claim,
+ * since it is the renderer stating what it just produced; the request header
+ * covers the case where the router asked for a fragment and got something
+ * else back, which is still the router's variant of that url and still not a
+ * page to hand a shared cache.
+ */
+export function isSpaFragmentExchange(request: Request, response: Response): boolean {
+  return request.headers.get(SPA_NAV_REQUEST_HEADER) === 'true'
+    || response.headers.get(SPA_NAV_FRAGMENT_HEADER) === 'true'
+}
+
+/**
  * Mark a document cacheable, unless it is about one visitor.
  *
  * Two guards, and both are the framework's to enforce rather than each app's
@@ -645,6 +674,27 @@ export function applyDocumentCacheControl(
 
   const contentType = response.headers.get('content-type') || ''
   if (response.status !== 200 || !contentType.startsWith('text/html'))
+    return response
+
+  // A fragment is not a document. It is 200 and text/html exactly like a page,
+  // sets no cookie, and belongs to nobody in particular, so it clears every
+  // guard below and would be handed the shared-cache header meant for pages.
+  //
+  // That breaks navigation rather than merely wasting a cache entry. Every
+  // response carries the id of the build that rendered it, and the router
+  // compares the id on the document it is running inside against the id on
+  // each fragment it fetches; a mismatch means a runtime from one build is
+  // about to hydrate markup from another, so it abandons the swap and does a
+  // full page load instead. A cached fragment goes on serving the build id it
+  // was rendered by, so after a deploy the router fetched a stale fragment,
+  // disagreed with its own fresh document and reloaded the page — for as long
+  // as that entry lived, which a day-long stale window makes a day of full
+  // page loads. The one thing an SPA router exists to avoid, caused by the
+  // cache meant to make it faster.
+  //
+  // stx already answers `private, no-store` here for this reason. This is the
+  // framework declining to overwrite it.
+  if (isSpaFragmentExchange(request, response))
     return response
 
   if (response.headers.getSetCookie().length > 0)

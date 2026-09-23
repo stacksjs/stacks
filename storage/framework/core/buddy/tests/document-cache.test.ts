@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { applyDocumentCacheControl, buildDocumentCacheControl, isAuthenticatedRequest } from '../src/production-server'
+import { applyDocumentCacheControl, buildDocumentCacheControl, isAuthenticatedRequest, isSpaFragmentExchange } from '../src/production-server'
 
 function anon(headers: Record<string, string> = {}): Request {
   return new Request('https://example.com/privacy', { headers })
@@ -111,5 +111,70 @@ describe('isAuthenticatedRequest', () => {
   it('ignores cookies that are nobody\'s session', () => {
     expect(isAuthenticatedRequest(req({ cookie: 'theme=dark; locale=en' }))).toBe(false)
     expect(isAuthenticatedRequest(req({}))).toBe(false)
+  })
+})
+
+describe('SPA router fragments', () => {
+  const header = 'public, max-age=60, stale-while-revalidate=86400'
+
+  function fragment(): Response {
+    return new Response('<div class="page">x</div>', {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'x-stx-fragment': 'true', 'cache-control': 'private, no-store' },
+    })
+  }
+
+  function routerRequest(): Request {
+    return new Request('https://example.com/about', { headers: { 'x-stx-router': 'true' } })
+  }
+
+  // The bug this guards: a fragment is 200, text/html, sets no cookie and
+  // belongs to nobody, so it passed every other check and was handed the
+  // shared-cache header meant for pages. The router then compared the build id
+  // on a cached fragment against its own fresh document, disagreed, and did a
+  // full page load on every navigation after a deploy.
+  it('REFUSES a response that declares itself a fragment', () => {
+    const applied = applyDocumentCacheControl(anon(), fragment(), header)
+    expect(applied.headers.get('cache-control')).toBe('private, no-store')
+  })
+
+  it('REFUSES when the request asked for a fragment, whatever came back', () => {
+    const applied = applyDocumentCacheControl(routerRequest(), html(), header)
+    expect(applied.headers.get('cache-control')).toBeNull()
+  })
+
+  it('still marks the document representation of that same url cacheable', () => {
+    // The point of Vary: one url, two representations, and only one of them
+    // is a page. Fixing the fragment must not cost the document its caching.
+    const applied = applyDocumentCacheControl(anon(), html(), header)
+    expect(applied.headers.get('cache-control')).toBe(header)
+  })
+
+  it('leaves the fragment body and its other headers intact', () => {
+    const applied = applyDocumentCacheControl(routerRequest(), fragment(), header)
+    expect(applied.headers.get('x-stx-fragment')).toBe('true')
+  })
+})
+
+describe('isSpaFragmentExchange', () => {
+  const plainReq = new Request('https://example.com/about')
+  const plainRes = new Response('', { headers: { 'content-type': 'text/html' } })
+
+  it('is true when the response declares itself a fragment', () => {
+    expect(isSpaFragmentExchange(plainReq, new Response('', { headers: { 'x-stx-fragment': 'true' } }))).toBe(true)
+  })
+
+  it('is true when the request asked for one', () => {
+    expect(isSpaFragmentExchange(new Request('https://example.com/about', { headers: { 'x-stx-router': 'true' } }), plainRes)).toBe(true)
+  })
+
+  it('is false for an ordinary page load', () => {
+    expect(isSpaFragmentExchange(plainReq, plainRes)).toBe(false)
+  })
+
+  // "no information" is not "fragment": a header that is present but not the
+  // literal 'true' the router sends must not switch behaviour on.
+  it('is false for a header that is present but not the router\'s value', () => {
+    expect(isSpaFragmentExchange(new Request('https://example.com/a', { headers: { 'x-stx-router': 'false' } }), plainRes)).toBe(false)
   })
 })
