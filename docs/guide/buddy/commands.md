@@ -3543,6 +3543,7 @@ Migrates your database
 | `--from-db` | Diff against the live database schema instead of the snapshot (self-heal drift) | boolean, optional | `false` |
 | `--no-rename` | Treat renamed columns as drop + add instead of a data-preserving rename | boolean, optional, negated | `true` |
 | `--no-generate` | Apply committed migration files only; do not generate new ones from your models | boolean, optional, negated | `true` |
+| `--strict` | Fail when the schema has drifted from the models or a migration is git-ignored (for CI) | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `migrate:fresh`
