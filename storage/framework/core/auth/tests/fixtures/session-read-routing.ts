@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 
 const { DB_HOST: host, DB_DATABASE: name, DB_USERNAME: username, DB_PASSWORD: password, DB_PORT: port } = process.env
 assert.equal(process.env.DB_CONNECTION, 'postgres')
@@ -29,6 +30,7 @@ const { getTwoFactorState, verifyTwoFactorLoginCode, createTwoFactorChallenge, c
 const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
 const { getUserPasskey, getUserPasskeys, updatePasskeyCounter } = await import('../../src/passkey')
 const { createPersonalAccessClient } = await import('../../src/client')
+const { consumeMagicLink } = await import('../../src/magic-link')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -277,6 +279,12 @@ try {
     catch (error) { failures.push(String(error)) }
   }
   assert.deepEqual(failures, [])
+  await db.unsafe('CREATE TABLE magic_link_tokens (id BIGSERIAL PRIMARY KEY, user_id BIGINT, email TEXT, token TEXT UNIQUE, expires_at TIMESTAMP, consumed_at TIMESTAMP, updated_at TIMESTAMP, redirect_to TEXT)').execute()
+  await db.unsafe('CREATE TABLE lagged.magic_link_tokens (LIKE public.magic_link_tokens INCLUDING ALL)').execute()
+  await db.unsafe(`GRANT SELECT ON lagged.magic_link_tokens TO "${name}"`).execute()
+  const magic = 'synthetic-primary-magic-link'
+  await db.insertInto('magic_link_tokens').values({ user_id: 1, email: 'session@example.invalid', token: createHash('sha256').update(magic).digest('hex'), expires_at: sqlDateTime(new Date(Date.now() + 60_000)), redirect_to: '/account' }).execute()
+  assert.equal((await consumeMagicLink(magic)).ok, true, 'out-of-request magic-link readback must find the claim on primary')
   console.log('session and token primary reads OK')
 }
 finally {

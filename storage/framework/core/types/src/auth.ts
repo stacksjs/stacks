@@ -198,7 +198,8 @@ export interface AuthOptions {
     confirmInteraction?: boolean
 
     /**
-     * Where a consumed link lands when the send didn't specify.
+     * Relative application path used when the send did not specify one.
+     * External or malformed destinations fall back to '/'.
      * @default '/'
      */
     redirectDefault?: string

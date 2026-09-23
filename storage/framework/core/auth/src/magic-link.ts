@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, templateByName } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { RateLimiter } from './rate-limiter'
@@ -50,13 +50,15 @@ function expireMinutes(): number {
 
 function safeRedirect(candidate: string | null | undefined): string {
   const fallback = config.auth.magicLink?.redirectDefault ?? '/'
-  if (!candidate)
-    return fallback
-  // Relative-only: an absolute or protocol-relative value would make the
-  // login email an open redirect.
-  if (!candidate.startsWith('/') || candidate.startsWith('//'))
-    return fallback
-  return candidate
+  // Browsers normalize backslashes and strip tabs/newlines before navigating.
+  // Test the parsed destination, not just its relative-looking prefix. The
+  // configured fallback must satisfy the same local-path contract.
+  const isLocal = (value: unknown): value is string => {
+    if (typeof value !== 'string' || !value.startsWith('/')) return false
+    try { return new URL(value, 'https://stacks.invalid').origin === 'https://stacks.invalid' }
+    catch { return false }
+  }
+  return isLocal(candidate) ? candidate : isLocal(fallback) ? fallback : '/'
 }
 
 async function linkBase(siteId: number | undefined): Promise<string> {
@@ -67,7 +69,7 @@ async function linkBase(siteId: number | undefined): Promise<string> {
       .selectFrom('site_domains')
       .where('site_id', '=', siteId)
       .where('is_primary', '=', true)
-      .where('verified_at', 'is not', null)
+      .whereNotNull('verified_at')
       .select(['domain'])
       .executeTakeFirst() as { domain: string } | undefined
 
@@ -141,7 +143,7 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
   await db
     .deleteFrom('magic_link_tokens')
     .where('email', '=', normalized)
-    .where('consumed_at', 'is', null)
+    .whereNull('consumed_at')
     .execute()
 
   await db
@@ -215,19 +217,13 @@ export async function consumeMagicLink(raw: string): Promise<ConsumeMagicLinkRes
     .updateTable('magic_link_tokens')
     .set({ consumed_at: now, updated_at: now })
     .where('token', '=', hashed)
-    .where('consumed_at', 'is', null)
+    .whereNull('consumed_at')
     .where('expires_at', '>', now)
     .execute() as unknown
 
-  // bun-query-builder returns the affected-row count as a bare number on
-  // SQLite; other drivers report an object. Treat anything ambiguous as 0 -
-  // an unclaimed token must never log someone in.
-  const updated = typeof claim === 'number'
-    ? claim
-    : Number((claim as { numUpdatedRows?: bigint | number })?.numUpdatedRows
-      ?? (claim as { changes?: number })?.changes ?? 0)
+  const updated = mutationCount(claim)
 
-  const row = await db
+  const row = await db.primary
     .selectFrom('magic_link_tokens')
     .where('token', '=', hashed)
     .select(['user_id', 'email', 'expires_at', 'consumed_at', 'redirect_to'])
@@ -244,7 +240,7 @@ export async function consumeMagicLink(raw: string): Promise<ConsumeMagicLinkRes
 
   if (updated < 1) {
     // The claim missed: someone got here first, or it expired unconsumed.
-    if (!row.consumed_at && new Date(row.expires_at).getTime() <= Date.now())
+    if (!row.consumed_at && (parseSqlDateTime(row.expires_at)?.getTime() ?? 0) <= Date.now())
       return { ok: false, reason: 'expired' }
     return { ok: false, reason: 'used' }
   }
