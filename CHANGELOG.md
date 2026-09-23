@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.54...v0.74.55)
+
+## 🐛 Bug Fixes
+
+- **api**: pin the environment the portable spec is generated in ([342e580](https://github.com/stacksjs/stacks/commit/342e580)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: commit password recovery with credential revocation ([c3ccc78](https://github.com/stacksjs/stacks/commit/c3ccc78)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.53...v0.74.54)
 
 ## 🐛 Bug Fixes
