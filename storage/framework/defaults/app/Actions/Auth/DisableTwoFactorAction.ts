@@ -26,11 +26,16 @@ export default new Action({
     // rather than trusting the bearer token alone (a stolen/leaked
     // token shouldn't be enough to turn off the second factor it's
     // meant to help guard against).
-    const confirmed = await Auth.validate({ email: user.email, password })
+    // Bind reconfirmation to the same account and password version while
+    // disabling. A concurrent password reset must invalidate this request.
+    const confirmed = await Auth.withVerifiedCredentials({ email: user.email, password }, async (verifiedUser) => {
+      if (String(verifiedUser.id) !== String(user.id))
+        return false
+      await disableTwoFactor(user.id as number)
+      return true
+    })
     if (!confirmed)
       return response.unauthorized('Incorrect password')
-
-    await disableTwoFactor(user.id as number)
 
     return response.json({ enabled: false })
   },
