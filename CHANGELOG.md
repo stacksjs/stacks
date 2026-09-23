@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.52...v0.74.53)
+
+## 🐛 Bug Fixes
+
+- **browser**: read the head helpers off the stx runtime ([5ef030a](https://github.com/stacksjs/stacks/commit/5ef030a)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.51...v0.74.52)
 
 ## ✨ Features
