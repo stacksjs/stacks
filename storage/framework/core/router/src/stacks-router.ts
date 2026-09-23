@@ -382,15 +382,20 @@ export interface StacksRouterConfig {
    * `getCurrentRequest()` resolve anywhere below it - across awaits, and
    * inside code that was never handed the request.
    *
-   * That scope is an `AsyncLocalStorage`, and entering one is not free.
-   * Disabling this skips two of the three entries a request makes (this one
-   * and bun-router's), worth 0.24us per request on Bun 1.4.1 - around half of
-   * what the framework costs over a hand-written Bun route.
+   * That scope is an `AsyncLocalStorage`, and disabling this skips two of the
+   * three entries a request makes (this one and bun-router's). An earlier note
+   * here priced that at 0.24us per request on Bun 1.4.1, "around half of what
+   * the framework costs over a hand-written Bun route". On Bun 1.4.2 it is not
+   * measurable: the `stacks-no-context` target is `stacks-minimal` plus this
+   * switch, and against it the scope-off profile ran between 0.87us dearer and
+   * 0.56us cheaper across the four scenarios, both signs, every difference
+   * inside the run's own spread. Three nested entries cost 42ns in isolation.
    *
-   * Only disable it if handlers take their request as an argument, which is
-   * how every route in this repository's own defaults is written. With it off,
-   * touching `request()` throws and names this option rather than quietly
-   * answering with empty defaults.
+   * So disable it for the API, not for the throughput: handlers that take their
+   * request as an argument have no use for the scope, which is how every route
+   * in this repository's own defaults is written. With it off, touching
+   * `request()` throws and names this option rather than quietly answering with
+   * empty defaults.
    * @default true
    */
   requestContext?: boolean

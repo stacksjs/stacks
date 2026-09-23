@@ -186,17 +186,20 @@ export function clearCurrentRequest(): void {
  * different settings gets the last one, which is the same caveat
  * `warnOnMultipleRouterInstances` already exists for.
  *
- * Entering an `AsyncLocalStorage` is not free. Three nested entries per
- * request - this one, bun-router's, and the database routing scope - measure
- * at 0.36us on Bun 1.4.1, against 0.00us for the module variable a synchronous
- * handler could use instead. That is most of what the framework costs over a
- * hand-written route, and an API whose handlers take their request as an
- * argument pays it for a helper it never calls.
+ * This used to record that the three nested entries per request - this one,
+ * bun-router's, and the database routing scope - measure at 0.36us on Bun
+ * 1.4.1, "most of what the framework costs over a hand-written route". Bun
+ * 1.4.2 does not reproduce that. Three nested `run()` calls cost 42ns over an
+ * unwrapped synchronous call and 55ns across one await, and end to end the
+ * `stacks-no-context` benchmark target came out on both sides of the profile
+ * it ablates, every difference inside the run's spread. Do not restate the old
+ * figure without re-measuring: `enterWith` is not a cheaper substitute either,
+ * it is markedly slower than `run`.
  *
- * So it is an option rather than a given. What it buys is `request()` working
- * anywhere below the handler, including across awaits and inside code that was
- * never handed the request - which is exactly why the mechanism is an async
- * context and not a variable.
+ * So it stays an option for the API it implies, not for the throughput. What it
+ * buys is `request()` working anywhere below the handler, including across
+ * awaits and inside code that was never handed the request - which is exactly
+ * why the mechanism is an async context and not a variable.
  */
 let ambientContextEnabled = true
 
