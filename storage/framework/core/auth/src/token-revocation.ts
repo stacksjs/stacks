@@ -77,6 +77,19 @@ export async function revokeTokenPairs(userId: number, ownerType: string, except
           UPDATE oauth_access_tokens SET revoked = ${sql.boolTrue}, updated_at = ${sqlDateTimeLiteral()}
           WHERE id IN (${placeholders})
         `, ids)
+        // Bulk revocation promises the same postcondition as one-pair logout.
+        // A trigger can suppress either UPDATE while returning successfully.
+        const refreshPlaceholders = ids.map((_, index) => sql.param(ids.length + index + 1)).join(', ')
+        const remaining = await trx.unsafe(`
+          SELECT id FROM oauth_access_tokens
+          WHERE id IN (${placeholders}) AND (revoked = ${sql.boolFalse} OR revoked IS NULL)
+          UNION ALL
+          SELECT id FROM oauth_refresh_tokens
+          WHERE access_token_id IN (${refreshPlaceholders}) AND (revoked = ${sql.boolFalse} OR revoked IS NULL)
+          LIMIT 1
+        `, [...ids, ...ids]) as unknown as TokenIdRow[]
+        if (remaining.length > 0)
+          throw new HttpError(500, 'Failed to revoke all selected token pairs.')
         for (const id of ids) processed.add(String(id))
       }
     }
