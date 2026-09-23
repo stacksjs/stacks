@@ -318,32 +318,18 @@ export function passwordResets(email: string): PasswordResetActions {
       if (mutationCount(consumed) !== 1)
         throw new Error('Password reset token could not be consumed')
 
-      return { success: true as const, userId: Number(user.id) }
+      // Credential revocation is database state, not a post-commit side effect.
+      // Keep it with the password and consumed reset token so a failed sweep
+      // leaves the recovery link usable instead of committing a partial reset.
+      // Both helpers follow this active connection and nest using savepoints.
+      await revokeAllTokens(Number(user.id))
+      await sessionDestroyAll(Number(user.id))
+
+      return { success: true as const }
     })
 
-    // Post-commit side effects: revocation + notification.
+    // Only the external notification waits until commit.
     if (result.success) {
-      // Evict every existing session for the account. Password reset is
-      // the canonical account-recovery action; without this, a previously
-      // stolen refresh token keeps minting fresh access tokens for up to
-      // 30 days after the victim "secures" the account. Must be the
-      // standalone tokens.ts primitive (NOT Auth.revokeAllTokens): the
-      // /auth/refresh exchange checks only the refresh row's `revoked`
-      // flag, so revoking access tokens alone leaves the refresh chain
-      // alive. Awaited un-caught deliberately — if revocation fails, the
-      // request fails loud rather than reporting a "successful" reset
-      // that left the attacker logged in. Runs after the transaction
-      // commits: it uses the global connection (risking SQLITE_BUSY
-      // against a held write lock) and must not fire on rollback.
-      // See stacksjs/stacks#1947.
-      await revokeAllTokens(result.userId)
-
-      // Session cookies are a parallel credential: `sessions` rows are
-      // validated on existence + expires_at alone, never re-checked
-      // against the password hash, so they'd survive the reset for up
-      // to 24h. Same fail-loud, post-commit rationale as above.
-      await sessionDestroyAll(result.userId)
-
       // A nested transaction only released its savepoint. Keep the notification
       // with the outer transaction so a later rollback cannot announce a change
       // that never committed. Standalone resets retain non-blocking delivery.
@@ -352,8 +338,6 @@ export function passwordResets(email: string): PasswordResetActions {
       })
       if (!enqueueAfterCommit(notify)) void notify()
 
-      // Strip the internal userId so the public PasswordResetResult
-      // shape stays unchanged.
       return { success: true }
     }
 
