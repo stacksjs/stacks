@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { realpathSync } from 'node:fs'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
 assert(dialect === 'sqlite' || dialect === 'postgres' || dialect === 'mysql')
 const configPath = process.env.STACKS_AUTH_SETUP_CONFIG
 assert(configPath && basename(dirname(configPath)).startsWith('stacks-auth-setup-'))
+assert.equal(realpathSync(process.cwd()), realpathSync(dirname(configPath)), 'auth:setup must boot from the disposable app, never the checkout')
 if (dialect === 'sqlite')
   assert.equal(dirname(process.env.DB_DATABASE_PATH!), dirname(configPath))
 else {

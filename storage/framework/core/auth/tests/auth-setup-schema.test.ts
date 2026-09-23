@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { SQL } from 'bun'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -19,8 +19,20 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
       try {
         const config = join(directory, 'bunfig.toml')
         await writeFile(config, 'preload = []\n')
+        // auth:setup boots in a second process. Parent initializeDbConfig
+        // calls do not reach it; provide a complete disposable app config.
+        await mkdir(join(directory, 'config'))
+        await writeFile(join(directory, 'config/database.ts'), `export default ${JSON.stringify({
+          default: dialect,
+          connections: dialect === 'sqlite'
+            ? { sqlite: { database: join(directory, 'auth.sqlite') } }
+            : { [dialect]: { name, host: url!.hostname, port: Number(url!.port || (dialect === 'mysql' ? 3306 : 5432)),
+                username: decodeURIComponent(url!.username), password: decodeURIComponent(url!.password) } },
+          queryLogging: { enabled: false },
+        })}\n`, { mode: 0o600 })
         if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
         const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/auth-setup-schema.ts`], {
+          cwd: directory,
           env: {
             ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
             DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'auth.sqlite') : ':memory:',
