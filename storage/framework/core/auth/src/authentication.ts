@@ -632,7 +632,7 @@ export class Auth {
     log.debug(`[auth] Token validated for token#${accessToken.id}`)
 
     // Check if token is expired
-    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
+    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
@@ -684,7 +684,7 @@ export class Auth {
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
       return undefined
 
-    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
+    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
@@ -781,7 +781,7 @@ export class Auth {
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE || accessToken.revoked)
       return undefined
 
-    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
+    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
       return undefined
 
     const idleMs = config.auth?.idleTimeout ?? 0

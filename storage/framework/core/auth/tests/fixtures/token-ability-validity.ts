@@ -36,7 +36,7 @@ try {
   setSystemTime(now)
   config.auth.idleTimeout = 60_000
 
-  for (const mode of ['live', 'wildcard', 'non-expiring', 'revoked', 'expired', 'boundary', 'password', 'idle'] as const) {
+  for (const mode of ['live', 'wildcard', 'non-expiring', 'revoked', 'expired', 'boundary', 'empty-expiry', 'invalid-expiry', 'zero-expiry', 'password', 'idle'] as const) {
     for (const transport of ['bearer', 'cookie'] as const) {
       for (const userFirst of [false, true]) {
         const name = `${mode}/${transport}/userFirst=${userFirst}`
@@ -48,6 +48,8 @@ try {
           await db.updateTable('oauth_access_tokens').set({ revoked: true }).where('id', '=', pair.accessToken.id).execute()
         if (mode === 'expired' || mode === 'boundary' || mode === 'non-expiring')
           await db.updateTable('oauth_access_tokens').set({ expires_at: mode === 'non-expiring' ? null : sqlDateTime(new Date(now.getTime() - (mode === 'expired' ? 1000 : 0))) }).where('id', '=', pair.accessToken.id).execute()
+        if (mode === 'empty-expiry' || mode === 'invalid-expiry' || mode === 'zero-expiry')
+          await db.updateTable('oauth_access_tokens').set({ expires_at: mode === 'empty-expiry' ? '' : mode === 'zero-expiry' ? 0 : 'not-a-date' }).where('id', '=', pair.accessToken.id).execute()
         if (mode === 'password') {
           await db.updateTable('oauth_access_tokens').set({ created_at: sqlDateTime(new Date(now.getTime() - 2000)) }).where('id', '=', pair.accessToken.id).execute()
           await db.updateTable('users').set({ password_changed_at: sqlDateTime(new Date(now.getTime() - 1000)) }).where('id', '=', 1).execute()

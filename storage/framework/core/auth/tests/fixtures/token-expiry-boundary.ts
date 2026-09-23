@@ -18,7 +18,7 @@ configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken, findToken } = await import('../../src/tokens')
+const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const { authCookie, cookieCheck } = await import('../../src/cookie-auth')
 const { authMiddleware } = await import('../../src/middleware')
@@ -31,11 +31,19 @@ try {
   const boundary = new Date('2030-01-02T03:04:05.000Z')
   setSystemTime(boundary)
 
-  for (const mode of ['validate', 'user', 'middleware', 'cookie', 'find'] as const) {
-    for (const offset of [-1, 0, 1, null]) {
-      const pair = await createToken(1, 'expiry-fixture', ['*'], { withRefreshToken: false })
-      const expiry = offset === null ? null : sqlDateTime(new Date(boundary.getTime() + offset))
-      await db.updateTable('oauth_access_tokens').set({ expires_at: expiry }).where('id', '=', pair.accessToken.id).execute()
+  const cases = [
+    ...[-1, 0, 1].map(offset => ({ name: `offset ${offset}`, expiry: sqlDateTime(new Date(boundary.getTime() + offset)), valid: offset > 0 })),
+    { name: 'non-expiring', expiry: null, valid: true },
+    ...['', ' ', 'not-a-date', 'Infinity', 0].map(expiry => ({ name: `malformed ${JSON.stringify(expiry)}`, expiry, valid: false })),
+  ]
+  for (const mode of ['validate', 'user', 'middleware', 'cookie', 'find', 'refresh-check', 'refresh-exchange'] as const) {
+    for (const entry of cases) {
+      const refresh = mode === 'refresh-check' || mode === 'refresh-exchange'
+      const pair = await createToken(1, 'expiry-fixture', ['*'], { withRefreshToken: refresh })
+      if (refresh)
+        await db.updateTable('oauth_refresh_tokens').set({ expires_at: entry.expiry }).where('access_token_id', '=', pair.accessToken.id).execute()
+      else
+        await db.updateTable('oauth_access_tokens').set({ expires_at: entry.expiry }).where('id', '=', pair.accessToken.id).execute()
       Auth.clearState()
       const request = new Request('https://example.invalid/account', {
         headers: { cookie: authCookie(pair.plainTextToken).split(';')[0]! },
@@ -46,6 +54,22 @@ try {
         else if (mode === 'user') valid = Boolean(await Auth.getUserFromToken(pair.plainTextToken))
         else if (mode === 'cookie') valid = await cookieCheck(request)
         else if (mode === 'find') valid = Boolean(await findToken(pair.plainTextToken))
+        else if (mode === 'refresh-check') valid = await validateRefreshToken(pair.refreshToken!)
+        else if (mode === 'refresh-exchange') {
+          const before = {
+            access: await db.selectFrom('oauth_access_tokens').selectAll().orderBy('id').get(),
+            refresh: await db.selectFrom('oauth_refresh_tokens').selectAll().orderBy('id').get(),
+          }
+          try { await refreshToken(pair.refreshToken!); valid = true }
+          catch (error) {
+            assert.equal((error as { status: number }).status, 401)
+            valid = false
+            assert.deepEqual({
+              access: await db.selectFrom('oauth_access_tokens').selectAll().orderBy('id').get(),
+              refresh: await db.selectFrom('oauth_refresh_tokens').selectAll().orderBy('id').get(),
+            }, before, 'rejected rotation must not mutate credentials')
+          }
+        }
         else {
           try { await authMiddleware(request); valid = true }
           catch (error) {
@@ -53,7 +77,7 @@ try {
             valid = false
           }
         }
-        assert.equal(valid, offset === null || offset > 0, `${mode}: expiry offset ${offset}`)
+        assert.equal(valid, entry.valid, `${mode}: ${entry.name}`)
       }
       catch (error) { failures.push(String(error)) }
     }

@@ -58,6 +58,14 @@ function appNow(): string {
   return sqlDateTimeLiteral()
 }
 
+function validTokenExpiry(value: unknown): boolean {
+  // NULL deliberately means non-expiring. A present but malformed SQLite
+  // value can sort after today's ISO timestamp, so SQL ordering is not proof.
+  if (value == null) return true
+  const expiry = parseSqlDateTime(value)
+  return expiry != null && expiry.getTime() > Date.now()
+}
+
 /** Shorthand for sql.param */
 function param(index: number): string {
   return sql.param(index)
@@ -313,7 +321,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
   `, [hashedToken])
 
   const row = (rows as unknown as AccessTokenRow[])[0]
-  if (!row) return null
+  if (!row || !validTokenExpiry(row.expires_at)) return null
 
   // Reject any token issued before the user last changed their password
   // (stacksjs/stacks#1957). This is the use-time backstop that makes the
@@ -696,7 +704,7 @@ export async function refreshToken(
     `, [hashedRefreshToken])
 
     const refreshRow = (refreshRows as unknown as AccessTokenRow[])[0]
-    if (!refreshRow) {
+    if (!refreshRow || !validTokenExpiry(refreshRow.expires_at)) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
 
@@ -823,7 +831,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
   const hashedRefreshToken = hashToken(refreshTokenPlain)
 
   const rows = await db.unsafe(`
-    SELECT r.id FROM oauth_refresh_tokens r
+    SELECT r.id, r.expires_at FROM oauth_refresh_tokens r
     JOIN oauth_access_tokens t ON r.access_token_id = t.id
     WHERE r.token = ${param(1)}
     AND r.revoked = ${boolFalse}
@@ -834,7 +842,8 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     LIMIT 1
   `, [hashedRefreshToken])
 
-  return (rows as unknown as AccessTokenRow[]).length > 0
+  const row = (rows as unknown as AccessTokenRow[])[0]
+  return row != null && validTokenExpiry(row.expires_at)
 }
 
 /**
