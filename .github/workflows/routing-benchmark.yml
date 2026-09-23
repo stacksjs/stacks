@@ -43,6 +43,9 @@ jobs:
     env:
       # Hosted runners are shared machines, not publication hosts.
       BENCH_DEDICATED: '0'
+      # Keep the dispatch value out of the generated shell script. The runner
+      # validates the quoted value before starting any target.
+      BENCH_RATE: ${{ inputs.rate }}
 
     steps:
       - name: Checkout
@@ -106,7 +109,7 @@ jobs:
         env:
           BENCH_RUNS: ${{ inputs.runs }}
           BENCH_TARGETS: ${{ inputs.targets }}
-        run: bun bench/routing/run.ts --driver oha --rate "${{ inputs.rate }}" --warmup 5 --duration 30 --runs "$BENCH_RUNS" ${BENCH_TARGETS:+--targets "$BENCH_TARGETS"} --output "$RUNNER_TEMP/routing-diagnostic"
+        run: bun bench/routing/run.ts --driver oha --rate "$BENCH_RATE" --warmup 5 --duration 30 --runs "$BENCH_RUNS" ${BENCH_TARGETS:+--targets "$BENCH_TARGETS"} --output "$RUNNER_TEMP/routing-diagnostic"
 
       - name: Verify completed routing artifact
         if: inputs.mode == 'benchmark' || inputs.mode == 'cost'
@@ -134,7 +137,7 @@ jobs:
           bun bench/routing/perf.ts \
             --targets stacks-minimal,elysia,bun-raw \
             --scenario path-param \
-            --rate "${{ inputs.rate }}" \
+            --rate "$BENCH_RATE" \
             --duration 20 \
             --output "$RUNNER_TEMP/routing-diagnostic"
 
@@ -157,7 +160,7 @@ jobs:
           "$PROFILE_BUN" bench/routing/perf.ts \
             --targets stacks-minimal,elysia,bun-raw \
             --scenario path-param \
-            --rate "${{ inputs.rate }}" \
+            --rate "$BENCH_RATE" \
             --duration 20 \
             --runs 2 \
             --output "$RUNNER_TEMP/routing-diagnostic"

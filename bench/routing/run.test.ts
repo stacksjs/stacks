@@ -103,6 +103,9 @@ describe('ablation targets stay reachable', () => {
     expect(forwarding).toHaveLength(2) // the benchmark and cost steps
     expect(workflow.match(/--runs "\$BENCH_RUNS"/g)).toHaveLength(2)
     expect(workflow).not.toContain('--runs "${{ inputs.runs }}"')
+    expect(workflow).toContain('BENCH_RATE: ${{ inputs.rate }}')
+    expect(workflow.match(/--rate "\$BENCH_RATE"/g)).toHaveLength(3)
+    expect(workflow).not.toContain('--rate "${{ inputs.rate }}"')
     // An unset input has to leave the published matrix exactly as it was.
     expect(workflow).toMatch(/targets:\n\s+description:[\s\S]*?default: ''/)
     expect(workflow).toMatch(/runs:\n\s+description:[\s\S]*?default: '3'/)
