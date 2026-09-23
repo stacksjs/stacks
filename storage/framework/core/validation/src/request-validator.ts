@@ -54,7 +54,7 @@ export async function validate<T = Record<string, unknown>>(
 ): Promise<T> {
   const input = await gatherRequestInput(request)
   const ruleObject: Record<string, Validator<any>> = {}
-  const messageObject: Record<string, string> = {}
+  let messageObject: Record<string, string> | undefined
 
   for (const [field, definition] of Object.entries(rules)) {
     if (!definition) continue
@@ -62,9 +62,10 @@ export async function validate<T = Record<string, unknown>>(
       ruleObject[field] = (definition as { rule: Validator<any> }).rule
       const message = (definition as { message?: string | Record<string, string> }).message
       if (typeof message === 'string') {
-        messageObject[`${field}.default`] = message
+        ;(messageObject ??= {})[`${field}.default`] = message
       }
       else if (message && typeof message === 'object') {
+        messageObject ??= {}
         for (const [key, value] of Object.entries(message)) messageObject[`${field}.${key}`] = value
       }
     }
@@ -74,7 +75,7 @@ export async function validate<T = Record<string, unknown>>(
   }
 
   try {
-    if (Object.keys(messageObject).length > 0)
+    if (messageObject)
       setCustomMessages(new MessageProvider(messageObject))
 
     const result = await objectWithContext(ruleObject).validate(input)
