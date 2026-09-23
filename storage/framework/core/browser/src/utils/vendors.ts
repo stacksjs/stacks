@@ -25,11 +25,36 @@ export type {
   HeadConfig as HeadObjectPlain,
 } from '@stacksjs/stx'
 
+/**
+ * Imported into scope first, then re-exported, rather than forwarded with
+ * `export { x as y } from '...'`.
+ *
+ * The two forms are equivalent to a type checker and are not equivalent to a
+ * bundler. Forwarding leaves no local binding, and when an application bundles
+ * this barrel into a page, Bun has been observed emitting the export alias
+ * while dropping the import it points at:
+ *
+ *   renderHeadToString: () => renderHead,   // renderHead is not defined
+ *
+ * That is a ReferenceError thrown while the module initialises, so everything
+ * after it in the same bundled script never runs. In one app that script also
+ * contained `defineStore('auth')`, so the auth store was never defined and
+ * every page reported "Store auth not found" — a symptom three layers from the
+ * cause, on a page that still painted its server HTML and therefore looked
+ * fine. This package's build.ts already documents the same Bun behaviour as
+ * the reason it transpiles file-by-file instead of bundling; the forwarding
+ * form reintroduces it downstream, in whatever bundles the published barrel.
+ *
+ * An imported binding cannot be dropped this way: it is referenced in module
+ * scope, so the bundler has to keep it.
+ */
+import { renderHead, useHead } from '@stacksjs/stx'
+
 export {
+  renderHead as renderHeadToString,
   useHead as createHead,
   useHead as Head,
-  renderHead as renderHeadToString,
-} from '@stacksjs/stx'
+}
 
 export interface ReadableSizeOptions {
   precision?: number
