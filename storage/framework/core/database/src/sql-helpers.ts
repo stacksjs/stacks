@@ -195,8 +195,10 @@ export function parseSqlDateTime(value: unknown): Date | null {
     return null
   if (value instanceof Date)
     return Number.isNaN(value.getTime()) ? null : value
-  if (typeof value === 'number')
-    return Number.isNaN(value) ? null : new Date(value)
+  if (typeof value === 'number') {
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
   if (typeof value !== 'string')
     return null
 

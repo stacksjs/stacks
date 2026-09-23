@@ -129,8 +129,13 @@ describe('parseSqlDateTime - the read format', () => {
   })
 
   test('returns null for missing or unparseable input so callers fail closed', () => {
-    for (const bad of [null, undefined, '', '   ', 'not-a-date', {}, Number.NaN])
+    for (const bad of [null, undefined, '', '   ', 'not-a-date', {}, Number.NaN, Infinity, -Infinity, Number.MAX_VALUE, 8_640_000_000_000_001, -8_640_000_000_000_001])
       expect(parseSqlDateTime(bad)).toBeNull()
+  })
+
+  test('preserves representable numeric epochs, including both Date bounds', () => {
+    for (const value of [0, -1, INSTANT.getTime(), 8_640_000_000_000_000, -8_640_000_000_000_000])
+      expect(parseSqlDateTime(value)?.getTime()).toBe(value)
   })
 })
 

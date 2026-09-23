@@ -177,6 +177,18 @@ try {
           assert.equal(Boolean(await SessionAuth[method](id)), false, `${method}: missing expiry must never authorize`)
           assert.equal(await db.primary.selectFrom('sessions').where('id', '=', id).selectAll().executeTakeFirst(), undefined, `${method}: null-expiry cleanup must work on ${dialect}`)
         }
+        if (dialect === 'sqlite') {
+          // SQLite can persist numeric epochs outside JavaScript's Date
+          // range. They must not turn an invalid deadline into authorization.
+          for (const expiry of [Infinity, -Infinity, Number.MAX_VALUE, 8_640_000_000_000_001]) {
+            for (const method of ['user', 'check', 'refresh'] as const) {
+              const id = `invalid-epoch-${method}-${expiry}`
+              await db.insertInto('sessions').values({ id, user_id: 1, payload: '{}', last_activity: 0, expires_at: expiry }).execute()
+              assert.equal(Boolean(await SessionAuth[method](id)), false, `${method}: invalid numeric expiry ${expiry} must never authorize`)
+              assert.equal(await db.primary.selectFrom('sessions').where('id', '=', id).selectAll().executeTakeFirst(), undefined)
+            }
+          }
+        }
       }
       finally {
         setSystemTime()
