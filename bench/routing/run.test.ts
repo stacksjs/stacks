@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { parseArgs } from './run'
-import { DEFAULT_TARGETS } from './targets'
+import { DEFAULT_TARGETS, TARGETS } from './targets'
 
 describe('routing benchmark options', () => {
   it('preserves the default matrix and accepts fractional timing windows', () => {
@@ -61,5 +62,44 @@ describe('routing benchmark options', () => {
     expect(() => parseArgs(['--runs'])).toThrow('--runs needs a value')
     expect(() => parseArgs(['--output'])).toThrow('--output needs a value')
     expect(() => parseArgs(['--mystery'])).toThrow('Unknown flag')
+  })
+})
+
+/**
+ * An ablation target prices one feature by differing from another target in one
+ * environment variable, and it is opt-in so that switching a feature off never
+ * quietly becomes a published number. That leaves the routing diagnostic as the
+ * only place they can run on hardware whose spread is small enough to resolve
+ * the difference, so the workflow has to be able to select them.
+ */
+describe('ablation targets stay reachable', () => {
+  const workflow = readFileSync(new URL('../../.github/workflows/routing-benchmark.yml', import.meta.url), 'utf8')
+  const optIn = TARGETS.filter(target => target.optIn)
+
+  it('keeps every opt-in target out of the default matrix and selectable by id', () => {
+    expect(optIn.length).toBeGreaterThan(0)
+    for (const target of optIn) {
+      expect(DEFAULT_TARGETS.map(t => t.id)).not.toContain(target.id)
+      expect(parseArgs(['--targets', target.id]).targets).toEqual([target.id])
+    }
+  })
+
+  it('prices the ambient request scope against exactly one other target', () => {
+    // `stacks-no-context` is `stacks-minimal` plus one variable. If that stops
+    // being true the pair no longer measures the request scope on its own.
+    const minimal = TARGETS.find(t => t.id === 'stacks-minimal')!
+    const noContext = TARGETS.find(t => t.id === 'stacks-no-context')!
+    expect({ ...noContext.env }).toEqual({ ...minimal.env, BENCH_REQUEST_CONTEXT: 'false' })
+  })
+
+  it('lets the routing diagnostic choose targets, without changing the default run', () => {
+    expect(workflow).toContain('      targets:')
+    // Forwarded as a variable rather than expanded into the script, so a target
+    // list cannot become a command.
+    expect(workflow).toContain('BENCH_TARGETS: ${{ inputs.targets }}')
+    const forwarding = workflow.match(/\$\{BENCH_TARGETS:\+--targets "\$BENCH_TARGETS"\}/g) ?? []
+    expect(forwarding).toHaveLength(2) // the benchmark and cost steps
+    // An unset input has to leave the published matrix exactly as it was.
+    expect(workflow).toMatch(/targets:\n\s+description:[\s\S]*?default: ''/)
   })
 })
