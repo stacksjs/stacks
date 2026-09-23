@@ -41,7 +41,7 @@ const EVICTION_INTERVAL = 5 * 60 * 1000 // Run eviction every 5 minutes
 
 /** Process-local store — the default. */
 class MemoryStore implements RateLimiterStore {
-  private store = new Map<string, RateLimitEntry>()
+  private store = new Map<string, { entry: RateLimitEntry, expiresAt: number }>()
   private lastEviction = Date.now()
 
   /**
@@ -60,20 +60,27 @@ class MemoryStore implements RateLimiterStore {
 
     this.lastEviction = now
     for (const [key, value] of this.store) {
-      if (value.lockedUntil > 0 && value.lockedUntil <= now)
+      if (value.expiresAt <= now)
         this.store.delete(key)
-      else if (value.lockedUntil === 0 && value.attempts === 0)
+      else if (value.entry.lockedUntil === 0 && value.entry.attempts === 0)
         this.store.delete(key)
     }
   }
 
   get(key: string): RateLimitEntry | undefined {
     this.evict()
-    return this.store.get(key)
+    const value = this.store.get(key)
+    // Respect the TTL on every read, even between periodic cleanup passes.
+    // Partial counters also expire; they need not reach lockout first.
+    if (value && value.expiresAt <= Date.now()) {
+      this.store.delete(key)
+      return undefined
+    }
+    return value?.entry
   }
 
-  set(key: string, entry: RateLimitEntry): void {
-    this.store.set(key, entry)
+  set(key: string, entry: RateLimitEntry, ttlMs: number): void {
+    this.store.set(key, { entry, expiresAt: Date.now() + ttlMs })
   }
 
   delete(key: string): void {
@@ -83,7 +90,7 @@ class MemoryStore implements RateLimiterStore {
   recordFailedAttempt(key: string, now: number): void {
     // No await between reading and writing: simultaneous first attempts must
     // not all observe an absent entry and overwrite each other with count 1.
-    this.set(key, recordFailure(this.get(key), now))
+    this.set(key, recordFailure(this.get(key), now), LOCKOUT_DURATION)
   }
 }
 
