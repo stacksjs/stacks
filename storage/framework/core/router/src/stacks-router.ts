@@ -4017,19 +4017,31 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
       return input
     }
 
-    const normalized: Record<string, any> = {}
-    for (const [field, definition] of Object.entries(selectedRules)) {
+    const entries = Object.entries(selectedRules)
+    let normalized: Record<string, any> = selectedRules
+    for (let index = 0; index < entries.length; index++) {
+      const [field, definition] = entries[index]!
       if (typeof definition === 'string') {
         throw new TypeError(`String validation rules are not supported for "${field}". Use schema validators.`)
       }
 
       if (definition && typeof definition === 'object' && 'rule' in definition) {
         const message = messages[field]
-        normalized[field] = message ? { ...definition, message } : definition
+        if (message) {
+          if (normalized === selectedRules) {
+            normalized = {}
+            for (let previousIndex = 0; previousIndex < index; previousIndex++) {
+              const [previousField, previousDefinition] = entries[previousIndex]!
+              normalized[previousField] = previousDefinition
+            }
+          }
+          normalized[field] = { ...definition, message }
+          continue
+        }
       }
-      else {
+
+      if (normalized !== selectedRules)
         normalized[field] = definition
-      }
     }
 
     const { validate } = requestValidationModule ??= await import('@stacksjs/validation/request-validator')

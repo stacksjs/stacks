@@ -76,4 +76,22 @@ describe('request validation helpers', () => {
     expect(await request.validate({})).toEqual({ name: 'Stacks', extra: true })
     await expect(request.validate({ name: 'required' })).rejects.toBeInstanceOf(TypeError)
   })
+
+  it('keeps request-specific messages out of the shared rule definitions', async () => {
+    const definition = { rule: schema.string().required() }
+    const rules = { name: definition }
+
+    try {
+      await requestWith({ name: '' }).validate(rules, { name: 'Choose a name' })
+      throw new Error('Expected validation to fail')
+    }
+    catch (error) {
+      expect(error).toBeInstanceOf(HttpError)
+      const details = (error as HttpError).details as { errors: Record<string, string[]> }
+      expect(details.errors.name.length).toBeGreaterThan(0)
+    }
+
+    expect(rules.name).toBe(definition)
+    expect('message' in definition).toBe(false)
+  })
 })
