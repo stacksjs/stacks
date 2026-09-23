@@ -161,6 +161,11 @@ export async function sessionLogin(
           expires_at: sqlDateTime(expiresAt),
         })
         .execute()
+      const stored = await db.primary.selectFrom('sessions')
+        .where('id', '=', sessionId).select(['user_id', 'expires_at']).executeTakeFirst()
+      if (!stored || String(stored.user_id) !== String(user.id)
+        || (parseSqlDateTime(stored.expires_at)?.getTime() ?? 0) <= Date.now())
+        throw new Error('Session insert did not persist a usable credential for the verified user.')
       return true
     })
   }

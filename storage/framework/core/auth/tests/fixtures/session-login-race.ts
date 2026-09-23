@@ -126,6 +126,38 @@ try {
     }
     catch (error) { failures.push(`${mode} rollback: ${String(error)}`) }
   }
+  for (const effect of dialect === 'mysql' ? ['wrong-owner', 'expired'] : ['suppressed', 'wrong-owner', 'expired']) {
+    await db.deleteFrom('sessions').execute()
+    await db.insertInto('sessions').values({ id: 'synthetic-bystander', user_id: 2, payload: '{}', last_activity: 0,
+      expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
+    if (dialect === 'postgres') {
+      const body = effect === 'suppressed' ? 'RETURN NULL;' : effect === 'wrong-owner'
+        ? 'NEW.user_id := 2; RETURN NEW;' : "NEW.expires_at := '2000-01-01'; RETURN NEW;"
+      await db.unsafe(`CREATE FUNCTION alter_session_insert() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN ${body} END; $$`).execute()
+      await db.unsafe('CREATE TRIGGER alter_session_insert BEFORE INSERT ON sessions FOR EACH ROW EXECUTE FUNCTION alter_session_insert()').execute()
+    }
+    else if (dialect === 'mysql') {
+      const body = effect === 'wrong-owner' ? 'NEW.user_id = 2' : "NEW.expires_at = '2000-01-01'"
+      await db.unsafe(`CREATE TRIGGER alter_session_insert BEFORE INSERT ON sessions FOR EACH ROW SET ${body}`).execute()
+    }
+    else {
+      const body = effect === 'suppressed' ? 'SELECT RAISE(IGNORE)' : effect === 'wrong-owner'
+        ? 'UPDATE sessions SET user_id = 2 WHERE id = NEW.id' : "UPDATE sessions SET expires_at = '2000-01-01' WHERE id = NEW.id"
+      await db.unsafe(`CREATE TRIGGER alter_session_insert ${effect === 'suppressed' ? 'BEFORE' : 'AFTER'} INSERT ON sessions BEGIN ${body}; END`).execute()
+    }
+    try {
+      await assert.rejects(SessionAuth.login(email, 'old-synthetic-password'),
+        error => (error as { status?: number }).status === 500,
+        `a ${effect} session insert must not return a usable session ID`)
+      const sessions = await db.primary.selectFrom('sessions').select('id').execute()
+      assert.deepEqual(sessions.map(row => row.id), ['synthetic-bystander'], 'failed issuance must roll back without touching other sessions')
+    }
+    catch (error) { failures.push(`session insert ${effect}: ${String(error)}`) }
+    finally {
+      await db.unsafe(`DROP TRIGGER alter_session_insert${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
+      if (dialect === 'postgres') await db.unsafe('DROP FUNCTION alter_session_insert()').execute()
+    }
+  }
   assert.deepEqual(failures, [])
   console.log('session login races OK')
 }
