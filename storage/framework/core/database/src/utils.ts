@@ -7,7 +7,7 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks'
 import process from 'node:process'
-import { types as nodeUtilTypes } from 'node:util'
+import { isPromise, isProxy } from 'node:util/types'
 import type { QueryHooks } from '@stacksjs/query-builder'
 import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig } from '@stacksjs/query-builder'
 
@@ -821,7 +821,7 @@ function guardTransactionQuery<T>(value: T): T {
             : arg)
           const result = Reflect.apply(member, object, guardedArgs)
           if (result === object) return proxy
-          if (result && typeof result === 'object' && !nodeUtilTypes.isPromise(result)
+          if (result && typeof result === 'object' && !isPromise(result)
             && (typeof Reflect.get(result, 'execute') === 'function' || typeof Reflect.get(result, 'next') === 'function'))
             return wrap(result)
           return result
@@ -1904,7 +1904,7 @@ function renderSqlitePlaceholders(length: number): string {
 function snapshotSimpleSqliteMembershipValues(values: unknown[]): unknown[] | undefined {
   // Inspect stored values without invoking user getters, iterators or species.
   // Complex arrays stay on the upstream path with their original binding arity.
-  if (nodeUtilTypes.isProxy(values) || Object.getPrototypeOf(values) !== Array.prototype || Object.hasOwn(values, Symbol.iterator))
+  if (isProxy(values) || Object.getPrototypeOf(values) !== Array.prototype || Object.hasOwn(values, Symbol.iterator))
     return
   const snapshot = new Array<unknown>(values.length)
   for (let index = 0; index < values.length; index++) {
