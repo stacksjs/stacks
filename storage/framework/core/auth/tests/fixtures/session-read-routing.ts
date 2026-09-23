@@ -25,6 +25,8 @@ const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { migrateRbacTables } = await import('../../../database/src/rbac-tables')
 const { createBqbRbacStore } = await import('../../src/rbac-store-bqb')
 const { flushRbacCache, hasRole, hasPermission, setRbacStore } = await import('../../src/rbac')
+const { getTwoFactorState, verifyTwoFactorLoginCode, createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret } = await import('../../src/two-factor')
+const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -178,6 +180,39 @@ try {
     })
   }
   catch (error) { failures.push(String(error)) }
+  assert.deepEqual(failures, [])
+  const secret = generateTwoFactorSecret()
+  const challenge = await createTwoFactorChallenge(1)
+  await stashPendingTwoFactorSecret(1, secret)
+  for (const table of ['users', 'two_factor_challenges', 'two_factor_pending_secrets']) {
+    await db.unsafe(`CREATE TABLE lagged.${table} (LIKE public.${table} INCLUDING ALL)`).execute()
+    await db.unsafe(`INSERT INTO lagged.${table} SELECT * FROM public.${table}`).execute()
+    await db.unsafe(`GRANT SELECT ON lagged.${table} TO "${name}"`).execute()
+  }
+  await db.updateTable('users').set({ two_factor_secret: secret, two_factor_enabled: true }).where('id', '=', 1).execute()
+  try {
+    await withRoutingContext(async () => {
+      assert.equal((await getTwoFactorState(1)).enabled, true, 'recently enabled 2FA must not be skipped because the replica still says disabled')
+    })
+  }
+  catch (error) { failures.push(String(error)) }
+  // Let only the enabled-state snapshot catch up, not the consumed step.
+  await db.unsafe('UPDATE lagged.users SET two_factor_secret = $1, two_factor_enabled = true WHERE id = 1', [secret]).execute()
+  const code = await generateTwoFactorToken(secret)
+  assert.equal(await withRoutingContext(() => verifyTwoFactorLoginCode(1, code)), true)
+  try {
+    assert.equal(await withRoutingContext(() => verifyTwoFactorLoginCode(1, code)), false, 'TOTP replay must read the primary consumed step')
+  }
+  catch (error) { failures.push(String(error)) }
+  assert.equal(await withRoutingContext(() => consumeTwoFactorChallenge(challenge)), 1)
+  assert.equal(await withRoutingContext(() => consumePendingTwoFactorSecret(1)), secret)
+  for (const mode of ['challenge', 'pending'] as const) {
+    try {
+      const replay = await withRoutingContext(() => mode === 'challenge' ? consumeTwoFactorChallenge(challenge) : consumePendingTwoFactorSecret(1))
+      assert.equal(replay, null, `${mode}: consumed credentials must not be replayed from a stale replica`)
+    }
+    catch (error) { failures.push(String(error)) }
+  }
   assert.deepEqual(failures, [])
   console.log('session and token primary reads OK')
 }

@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('session, token and RBAC checks read committed primary state despite replica lag', async () => {
+test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('auth, RBAC and two-factor checks read committed primary state despite replica lag', async () => {
   const url = new URL(process.env.STACKS_TEST_POSTGRES_URL!)
   if (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
     throw new Error('Session routing tests require a local disposable PostgreSQL server')

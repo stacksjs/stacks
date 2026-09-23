@@ -65,7 +65,7 @@ function currentTotpStep(): number {
  */
 async function getLastUsedTwoFactorStep(userId: number): Promise<number | null> {
   try {
-    const row: any = await db.selectFrom('users').where('id', '=', userId).selectAll().executeTakeFirst()
+    const row: any = await db.primary.selectFrom('users').where('id', '=', userId).selectAll().executeTakeFirst()
     const value = row?.two_factor_last_used_step
     return value == null ? null : Number(value)
   }
@@ -99,7 +99,8 @@ export interface TwoFactorUser {
  * not the ORM model.
  */
 export async function getTwoFactorState(userId: number): Promise<{ secret: string | null, enabled: boolean }> {
-  const row = await db
+  // A lagged replica can still say disabled after the user enabled 2FA.
+  const row = await db.primary
     .selectFrom('users')
     .where('id', '=', userId)
     .select(['two_factor_secret', 'two_factor_enabled'])
@@ -161,7 +162,7 @@ export async function stashPendingTwoFactorSecret(userId: number, secret: string
  * null if none exists / it expired.
  */
 export async function consumePendingTwoFactorSecret(userId: number): Promise<string | null> {
-  const row = await db
+  const row = await db.primary
     .selectFrom('two_factor_pending_secrets')
     .where('user_id', '=', userId)
     .selectAll()
@@ -281,7 +282,7 @@ export async function createTwoFactorChallenge(userId: number, ttlSeconds: numbe
  * was issued for, or null if missing/expired.
  */
 export async function consumeTwoFactorChallenge(challengeToken: string): Promise<number | null> {
-  const row = await db
+  const row = await db.primary
     .selectFrom('two_factor_challenges')
     .where('id', '=', challengeToken)
     .selectAll()
