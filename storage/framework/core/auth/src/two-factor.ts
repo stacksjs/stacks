@@ -256,19 +256,22 @@ export async function createTwoFactorChallenge(userId: number, ttlSeconds: numbe
   const id = randomBytes(32).toString('hex')
   const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
 
-  await db
-    .deleteFrom('two_factor_challenges')
-    .where('user_id', '=', userId)
-    .execute()
+  await db.transaction(async () => {
+    await db.deleteFrom('two_factor_challenges').where('user_id', '=', userId).execute()
 
-  await db
-    .insertInto('two_factor_challenges')
-    .values({
+    await db.insertInto('two_factor_challenges').values({
       id,
       user_id: userId,
       expires_at: expiresAt,
-    } as never)
-    .execute()
+    } as never).execute()
+
+    // Never invalidate the prior login attempt unless its replacement was
+    // actually stored. Silent or altered inserts must roll back the deletion.
+    const stored = await db.primary.selectFrom('two_factor_challenges')
+      .where('user_id', '=', userId).select('id').execute()
+    if (stored.length !== 1 || stored[0]?.id !== id)
+      throw new Error('[auth] Two-factor login challenge could not be stored.')
+  })
 
   return id
 }
