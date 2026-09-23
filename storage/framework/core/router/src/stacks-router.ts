@@ -21,9 +21,20 @@ import { log, report } from '@stacksjs/logging/runtime'
 import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
 import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router'
-import { registerQueryTracker } from './query-tracking'
 
-registerQueryTracker()
+type QueryTracker = typeof import('./query-tracking').trackQuery
+const DATABASE_QUERY_TRACKER_KEY = Symbol.for('stacks.database.queryTracker')
+const queryTrackerGlobal = globalThis as Record<symbol, unknown>
+// Database query notifications are synchronous, so install a callable hook at
+// import time and load its diagnostic implementation on the first query. This
+// preserves that first event without evaluating tracking code in HTTP-only
+// processes. The loaded tracker replaces this function for every later query.
+const loadQueryTracker: QueryTracker = (...args) => {
+  const { trackQuery } = require('./query-tracking') as typeof import('./query-tracking')
+  queryTrackerGlobal[DATABASE_QUERY_TRACKER_KEY] = trackQuery
+  trackQuery(...args)
+}
+queryTrackerGlobal[DATABASE_QUERY_TRACKER_KEY] = loadQueryTracker
 
 // --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
 // Two physically distinct @stacksjs/router modules can load in one process: an
