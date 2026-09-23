@@ -27,6 +27,7 @@ import { getCurrentRequest } from '@stacksjs/router'
 import { makeHash } from '@stacksjs/security'
 import { revokeTokenPair, revokeTokenPairs } from './token-revocation'
 import { requestToken } from './request-token'
+import { tokenDate, tokenTimestamps } from './token-dates'
 
 // ============================================================================
 // DATABASE DRIVER DETECTION & SQL HELPERS
@@ -291,11 +292,10 @@ export async function tokens(userId: number, tokenableType: string = DEFAULT_TOK
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
-    expiresAt: row.expires_at ? new Date(row.expires_at) : null,
-    createdAt: new Date(row.created_at),
+    expiresAt: row.expires_at == null ? null : tokenDate(row.expires_at),
     // Touched on every use by `getUserFromToken`, so this is "last seen" - the
     // column a session list sorts by and the one an idle timeout measures.
-    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
+    ...tokenTimestamps(row),
     userAgent: row.user_agent ?? null,
     ipAddress: row.ip_address ?? null,
   }))
@@ -337,8 +337,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
     expiresAt: parseSqlDateTime(row.expires_at),
-    createdAt: new Date(row.created_at),
-    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
+    ...tokenTimestamps(row),
   }
 }
 
@@ -590,11 +589,7 @@ export async function createToken(
       scopes: parseScopes(row.scopes),
       revoked: false,
       expiresAt: expiresAt,
-      createdAt: new Date(row.created_at),
-      // `updated_at` is nullable in the schema, and `new Date(null)` is not an
-      // error - it is 1970-01-01. A token that has never been updated was being
-      // reported as updated at the epoch.
-      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
+      ...tokenTimestamps(row),
     }
 
     // Create refresh token if requested
@@ -778,8 +773,7 @@ export async function refreshToken(
       scopes: parseScopes(row.scopes),
       revoked: false,
       expiresAt: expiresAt,
-      createdAt: new Date(row.created_at),
-      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
+      ...tokenTimestamps(row),
     }
 
     // Re-read the stamp once more inside the transaction. If a reset
@@ -1165,7 +1159,7 @@ function mapToOAuthClient(row: OAuthClientRow): OAuthClient {
     personalAccessClient: Boolean(row.personal_access_client),
     passwordClient: Boolean(row.password_client),
     revoked: Boolean(row.revoked),
-    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
-    updatedAt: row.updated_at ? new Date(row.updated_at) : null,
+    createdAt: tokenDate(row.created_at),
+    updatedAt: row.updated_at == null ? null : tokenDate(row.updated_at),
   }
 }
