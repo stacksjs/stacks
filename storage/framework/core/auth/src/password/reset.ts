@@ -126,7 +126,9 @@ export function passwordResets(email: string): PasswordResetActions {
     // email is a silent no-op — no token row, no send — so the calling
     // action can always return a uniform "if an account exists, we sent a
     // link" response without leaking which addresses are registered.
-    const user = await db
+    // Replica lag must not suppress recovery for a current account or send
+    // a reset to an address that no longer belongs to one.
+    const user = await db.primary
       .selectFrom('users')
       .where('email', '=', email)
       .selectAll()

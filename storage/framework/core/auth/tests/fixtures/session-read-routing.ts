@@ -40,6 +40,7 @@ const { getUserPasskey, getUserPasskeys, updatePasskeyCounter } = await import('
 const { createPersonalAccessClient } = await import('../../src/client')
 const { consumeMagicLink } = await import('../../src/magic-link')
 const { resendVerificationEmail } = await import('../../src/email-verification')
+const { passwordResets } = await import('../../src/password/reset')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -303,6 +304,20 @@ try {
     assert.equal(sent.length, 0, 'a rejected resend must not deliver mail')
     assert.equal(contextHasWritten(), false, 'cooldown checks must remain read-only')
     await assertLaggedRead()
+  })
+  // Recovery is a fresh security decision, not a display read. A replica
+  // can retain an old email after the primary account has changed it.
+  await db.updateTable('users').set({ email: 'current-primary@example.invalid' }).where('id', '=', 1).execute()
+  await withRoutingContext(async () => {
+    assert.equal((await db.selectFrom('users').where('id', '=', 1).selectAll().executeTakeFirst())?.email, 'session@example.invalid')
+    await passwordResets('current-primary@example.invalid').sendEmail()
+    assert.equal(sent.length, 1, 'a primary account must receive its reset even while missing on the replica')
+  })
+  await withRoutingContext(async () => {
+    sent.length = 0
+    await passwordResets('session@example.invalid').sendEmail()
+    assert.equal(sent.length, 0, 'a stale replica email must not receive a reset')
+    assert.equal(contextHasWritten(), false, 'unknown current accounts must remain silent read-only no-ops')
   })
   console.log('session and token primary reads OK')
 }
