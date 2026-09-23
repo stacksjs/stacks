@@ -1,5 +1,92 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.53...v0.74.54)
+
+## 🐛 Bug Fixes
+
+- **server**: stop handing the SPA router's fragments a shared-cache header ([887c8d3](https://github.com/stacksjs/stacks/commit/887c8d3)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: commit reset tokens before delivering recovery links ([df254f3](https://github.com/stacksjs/stacks/commit/df254f3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject partial bulk credential revocation ([841a066](https://github.com/stacksjs/stacks/commit/841a066)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **ci**: map disposable databases to isolated host ports ([909f961](https://github.com/stacksjs/stacks/commit/909f961)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: serialize verification resend cooldown claims ([efb77f7](https://github.com/stacksjs/stacks/commit/efb77f7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: deliver verification links after token commit ([9b79565](https://github.com/stacksjs/stacks/commit/9b79565)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: consume bearer rotations in one transaction ([8050533](https://github.com/stacksjs/stacks/commit/8050533)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve UTC token metadata across database drivers ([572ce60](https://github.com/stacksjs/stacks/commit/572ce60)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve renewed lockouts during expiry checks ([55ec86d](https://github.com/stacksjs/stacks/commit/55ec86d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: send magic links to current primary accounts ([c0d2ce0](https://github.com/stacksjs/stacks/commit/c0d2ce0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject malformed persisted token deadlines ([5210921](https://github.com/stacksjs/stacks/commit/5210921)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: count concurrent in-memory login failures ([4032464](https://github.com/stacksjs/stacks/commit/4032464)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: resolve password recovery accounts on primary ([f878a9d](https://github.com/stacksjs/stacks/commit/f878a9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce verification cooldown on primary UTC state ([24148d6](https://github.com/stacksjs/stacks/commit/24148d6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: propagate session revocation dependency failures ([2b3db8d](https://github.com/stacksjs/stacks/commit/2b3db8d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: guard default login credential issuance ([e5551c1](https://github.com/stacksjs/stacks/commit/e5551c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind logins to verified password versions ([45cbe5c](https://github.com/stacksjs/stacks/commit/45cbe5c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: isolate optional session cleanup in transactions ([f05ebf8](https://github.com/stacksjs/stacks/commit/f05ebf8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: defer reset notifications until outer commit ([86a24c4](https://github.com/stacksjs/stacks/commit/86a24c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: serialize password reset token consumption ([c93c3f0](https://github.com/stacksjs/stacks/commit/c93c3f0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate magic links across database drivers ([1b676e1](https://github.com/stacksjs/stacks/commit/1b676e1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: reject out-of-range numeric timestamps ([d4e0821](https://github.com/stacksjs/stacks/commit/d4e0821)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: fail closed on password stamp lookup errors ([eae7698](https://github.com/stacksjs/stacks/commit/eae7698)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: consume the matched TOTP time step ([0d23c4f](https://github.com/stacksjs/stacks/commit/0d23c4f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: store passkey activity timestamps in UTC ([b3e2163](https://github.com/stacksjs/stacks/commit/b3e2163)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: provision personal clients against primary state ([806d8ac](https://github.com/stacksjs/stacks/commit/806d8ac)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: consume email verification tokens transactionally ([761870f](https://github.com/stacksjs/stacks/commit/761870f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: clean up null-expiry sessions across drivers ([b1635e5](https://github.com/stacksjs/stacks/commit/b1635e5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2780](https://github.com/stacksjs/stacks/issues/2780))
+- **auth**: atomically advance passkey counters ([54e749a](https://github.com/stacksjs/stacks/commit/54e749a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: read passkey enrollment and counters from primary ([52d2d64](https://github.com/stacksjs/stacks/commit/52d2d64)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: claim TOTP replay markers atomically ([1e7ca29](https://github.com/stacksjs/stacks/commit/1e7ca29)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: drain pools after synchronous close failures ([eec4f90](https://github.com/stacksjs/stacks/commit/eec4f90)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: atomically consume single-use credentials ([579f6b2](https://github.com/stacksjs/stacks/commit/579f6b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2786](https://github.com/stacksjs/stacks/issues/2786))
+- **auth**: enforce primary reads for two-factor state ([ec9aedb](https://github.com/stacksjs/stacks/commit/ec9aedb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2785](https://github.com/stacksjs/stacks/issues/2785))
+- **auth**: read RBAC authorization state from primary ([8a3c454](https://github.com/stacksjs/stacks/commit/8a3c454)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2784](https://github.com/stacksjs/stacks/issues/2784))
+- **auth**: reject invalid session refresh durations ([a66b99a](https://github.com/stacksjs/stacks/commit/a66b99a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2783](https://github.com/stacksjs/stacks/issues/2783))
+- **auth**: validate tokens and OAuth clients on primary ([d6e903b](https://github.com/stacksjs/stacks/commit/d6e903b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2782](https://github.com/stacksjs/stacks/issues/2782))
+- **auth**: validate database sessions on primary ([e64cbad](https://github.com/stacksjs/stacks/commit/e64cbad)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2781](https://github.com/stacksjs/stacks/issues/2781))
+- **auth**: preserve renewed sessions during expiry cleanup ([7710e6f](https://github.com/stacksjs/stacks/commit/7710e6f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2780](https://github.com/stacksjs/stacks/issues/2780))
+- **ci**: isolate benchmark rate input from shell ([7a17012](https://github.com/stacksjs/stacks/commit/7a17012)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **ci**: isolate benchmark repeat input from shell ([809c58c](https://github.com/stacksjs/stacks/commit/809c58c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **build**: register request validator subpath ([72f6a8a](https://github.com/stacksjs/stacks/commit/72f6a8a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: refresh Pantry craft-native resolution ([093b7d7](https://github.com/stacksjs/stacks/commit/093b7d7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: defer query tracking ([290005a](https://github.com/stacksjs/stacks/commit/290005a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: reuse request object validator ([9313fd6](https://github.com/stacksjs/stacks/commit/9313fd6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: defer custom message map allocation ([6476091](https://github.com/stacksjs/stacks/commit/6476091)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: reuse unchanged request validation rules ([2cb3304](https://github.com/stacksjs/stacks/commit/2cb3304)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: isolate request validator runtime ([ce9620a](https://github.com/stacksjs/stacks/commit/ce9620a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: use focused HttpError entry ([7cc6f12](https://github.com/stacksjs/stacks/commit/7cc6f12)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **error-handling**: split lightweight HttpError export ([6a33c3b](https://github.com/stacksjs/stacks/commit/6a33c3b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: narrow lazy CSRF imports ([933a113](https://github.com/stacksjs/stacks/commit/933a113)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: narrow Node util imports ([b03cee0](https://github.com/stacksjs/stacks/commit/b03cee0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: load focused config runtime ([d845af1](https://github.com/stacksjs/stacks/commit/d845af1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **router**: correct what disabling the ambient request scope saves ([36e2c7b](https://github.com/stacksjs/stacks/commit/36e2c7b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2779](https://github.com/stacksjs/stacks/issues/2779))
+
+## ✅ Tests
+
+- **auth**: isolate setup CLI database configuration ([8ec34b2](https://github.com/stacksjs/stacks/commit/8ec34b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: pin primary user resolution under replica lag ([fe05490](https://github.com/stacksjs/stacks/commit/fe05490)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **bench**: pin warm controls for feature comparisons ([2c4b206](https://github.com/stacksjs/stacks/commit/2c4b206)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2779](https://github.com/stacksjs/stacks/issues/2779))
+- **auth**: isolate OAuth CLI database configuration ([cee9e18](https://github.com/stacksjs/stacks/commit/cee9e18)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2782](https://github.com/stacksjs/stacks/issues/2782))
+- **buddy**: allow cold request context renders ([85e4eef](https://github.com/stacksjs/stacks/commit/85e4eef)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- **bench**: let routing diagnostic choose repeat count ([34fa8fc](https://github.com/stacksjs/stacks/commit/34fa8fc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **bench**: let the routing diagnostic select ablation targets ([88273a7](https://github.com/stacksjs/stacks/commit/88273a7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2779](https://github.com/stacksjs/stacks/issues/2779))
+
+## 🔧 Chores
+
+- **api**: regenerate the artifacts against the routes that still exist ([6172a95](https://github.com/stacksjs/stacks/commit/6172a95)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.52...v0.74.53)
 
 ## 🐛 Bug Fixes
