@@ -12,6 +12,8 @@
  *
  * The store stays cache-free — `rbac.ts` owns the in-memory cache around every
  * call site. We just translate interface methods into SQL.
+ * Authorization and write preconditions use primary reads so replica lag
+ * cannot restore revoked privileges or suppress a requested assignment.
  *
  * The composite primary keys on the three pivot tables mean duplicate
  * assignments produce a unique-constraint violation rather than corrupting
@@ -78,7 +80,7 @@ async function insertAndFetch(
     .values({ name, guard_name: guardName, description: description ?? null })
     .execute()
 
-  const row = await (db.selectFrom(table))
+  const row = await (db.primary.selectFrom(table))
     .selectAll()
     .where('name', '=', name)
     .where('guard_name', '=', guardName)
@@ -110,7 +112,7 @@ async function pivotAttach(
   // Cheap existence check first — avoids most INSERTs in the steady state
   // where a user/role pair is already present (the common case once roles
   // are seeded).
-  let q = db.selectFrom(table).select('user_id' in cols ? 'user_id' : 'role_id')
+  let q = db.primary.selectFrom(table).select('user_id' in cols ? 'user_id' : 'role_id')
   for (const [k, v] of Object.entries(cols))
     q = q.where(k, '=', v)
   const existing = await q.limit(1).executeTakeFirst()
@@ -195,7 +197,7 @@ export function createBqbRbacStore(): RbacStore {
     // ─── Roles ────────────────────────────────────────────────────────
 
     async findRoleByName(name: string, guardName: string = 'web'): Promise<RoleRecord | null> {
-      const row = await (db.selectFrom('roles'))
+      const row = await (db.primary.selectFrom('roles'))
         .selectAll()
         .where('name', '=', name)
         .where('guard_name', '=', guardName)
@@ -205,7 +207,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async findRoleById(id: number): Promise<RoleRecord | null> {
-      const row = await (db.selectFrom('roles'))
+      const row = await (db.primary.selectFrom('roles'))
         .selectAll()
         .where('id', '=', id)
         .limit(1)
@@ -229,7 +231,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async getAllRoles(guardName?: string): Promise<RoleRecord[]> {
-      let q = (db.selectFrom('roles')).selectAll()
+      let q = (db.primary.selectFrom('roles')).selectAll()
       if (guardName)
         q = q.where('guard_name', '=', guardName)
       const rows: Array<Record<string, unknown>> = await q.orderBy('id', 'asc').execute()
@@ -239,7 +241,7 @@ export function createBqbRbacStore(): RbacStore {
     // ─── Permissions ──────────────────────────────────────────────────
 
     async findPermissionByName(name: string, guardName: string = 'web'): Promise<PermissionRecord | null> {
-      const row = await (db.selectFrom('permissions'))
+      const row = await (db.primary.selectFrom('permissions'))
         .selectAll()
         .where('name', '=', name)
         .where('guard_name', '=', guardName)
@@ -249,7 +251,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async findPermissionById(id: number): Promise<PermissionRecord | null> {
-      const row = await (db.selectFrom('permissions'))
+      const row = await (db.primary.selectFrom('permissions'))
         .selectAll()
         .where('id', '=', id)
         .limit(1)
@@ -268,7 +270,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async getAllPermissions(guardName?: string): Promise<PermissionRecord[]> {
-      let q = (db.selectFrom('permissions')).selectAll()
+      let q = (db.primary.selectFrom('permissions')).selectAll()
       if (guardName)
         q = q.where('guard_name', '=', guardName)
       const rows: Array<Record<string, unknown>> = await q.orderBy('id', 'asc').execute()
@@ -293,7 +295,7 @@ export function createBqbRbacStore(): RbacStore {
       //      REPLACES the SELECT clause each time — only the last
       //      column survives. Array form is the correct shape when
       //      you want >1 column.
-      const rows: Array<Record<string, unknown>> = await (db.selectFrom('roles'))
+      const rows: Array<Record<string, unknown>> = await (db.primary.selectFrom('roles'))
         .innerJoin('user_roles', 'user_roles.role_id', '=', 'roles.id')
         .select([
           'roles.id as id',
@@ -330,7 +332,7 @@ export function createBqbRbacStore(): RbacStore {
     async getUserDirectPermissions(userId: number): Promise<PermissionRecord[]> {
       // See `getUserRoles` above for the bqb API contracts on
       // `innerJoin(..., '=', ...)` and array-form `.select([])`.
-      const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions'))
+      const rows: Array<Record<string, unknown>> = await (db.primary.selectFrom('permissions'))
         .innerJoin('user_permissions', 'user_permissions.permission_id', '=', 'permissions.id')
         .select([
           'permissions.id as id',
@@ -367,7 +369,7 @@ export function createBqbRbacStore(): RbacStore {
     async getRolePermissions(roleId: number): Promise<PermissionRecord[]> {
       // See `getUserRoles` above for the bqb API contracts on
       // `innerJoin(..., '=', ...)` and array-form `.select([])`.
-      const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions'))
+      const rows: Array<Record<string, unknown>> = await (db.primary.selectFrom('permissions'))
         .innerJoin('role_permissions', 'role_permissions.permission_id', '=', 'permissions.id')
         .select([
           'permissions.id as id',

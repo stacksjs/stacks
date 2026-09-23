@@ -22,6 +22,9 @@ const { SessionAuth } = await import('../../src/session-auth')
 const { Auth } = await import('../../src/authentication')
 const { createToken, revokeToken, createClient, revokeClient } = await import('../../src/tokens')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
+const { migrateRbacTables } = await import('../../../database/src/rbac-tables')
+const { createBqbRbacStore } = await import('../../src/rbac-store-bqb')
+const { flushRbacCache, hasRole, hasPermission, setRbacStore } = await import('../../src/rbac')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -111,6 +114,68 @@ try {
       { status: 401, message: 'Invalid client credentials' },
       'revoked OAuth clients must fail before authenticating user credentials',
     ))
+  }
+  catch (error) { failures.push(String(error)) }
+  assert.deepEqual(failures, [])
+  assert.equal((await migrateRbacTables()).success, true)
+  const store = createBqbRbacStore()
+  setRbacStore(store)
+  const [role, permission] = await db.transaction(async () => {
+    const role = await store.createRole('revoked-admin')
+    const permission = await store.createPermission('revoked-write')
+    await store.assignRoleToUser(1, role.id)
+    await store.assignPermissionToUser(1, permission.id)
+    await store.assignPermissionToRole(role.id, permission.id)
+    return [role, permission] as const
+  })
+  for (const table of ['roles', 'permissions', 'user_roles', 'user_permissions', 'role_permissions']) {
+    await db.unsafe(`CREATE TABLE lagged.${table} (LIKE public.${table} INCLUDING ALL)`).execute()
+    await db.unsafe(`INSERT INTO lagged.${table} SELECT * FROM public.${table}`).execute()
+    await db.unsafe(`GRANT SELECT ON lagged.${table} TO "${name}"`).execute()
+  }
+  await store.removeRoleFromUser(1, role.id)
+  await store.removePermissionFromUser(1, permission.id)
+  await store.removePermissionFromRole(role.id, permission.id)
+  for (const mode of ['role', 'direct', 'inherited', 'hasRole', 'hasPermission'] as const) {
+    try {
+      flushRbacCache()
+      await withRoutingContext(async () => {
+        if (mode === 'role') assert.deepEqual(await store.getUserRoles(1), [], 'revoked user role must not survive replica lag')
+        if (mode === 'direct') assert.deepEqual(await store.getUserDirectPermissions(1), [], 'revoked direct permission must not survive replica lag')
+        if (mode === 'inherited') assert.deepEqual(await store.getRolePermissions(role.id), [], 'revoked role permission must not survive replica lag')
+        if (mode === 'hasRole') assert.equal(await hasRole(1, role.name), false, 'cold RBAC cache must not re-authorize a revoked role')
+        if (mode === 'hasPermission') assert.equal(await hasPermission(1, permission.name), false, 'cold RBAC cache must not re-authorize a revoked permission')
+        assert.equal(contextHasWritten(), false)
+        await assertLaggedRead()
+      })
+    }
+    catch (error) { failures.push(String(error)) }
+  }
+  for (const mode of ['role', 'direct', 'inherited'] as const) {
+    try {
+      await withRoutingContext(async () => {
+        if (mode === 'role') await store.assignRoleToUser(1, role.id)
+        if (mode === 'direct') await store.assignPermissionToUser(1, permission.id)
+        if (mode === 'inherited') await store.assignPermissionToRole(role.id, permission.id)
+      })
+      const table = mode === 'role' ? 'user_roles' : mode === 'direct' ? 'user_permissions' : 'role_permissions'
+      assert.equal((await db.primary.selectFrom(table).selectAll().execute()).length, 1, `${mode}: lagged pivot must not suppress re-assignment`)
+    }
+    catch (error) { failures.push(String(error)) }
+  }
+  try {
+    // Outside request scope there is no sticky-write context to rescue the
+    // create/read-back pair. It must still read the new primary row.
+    const createdRole = await store.createRole('fresh-role')
+    const createdPermission = await store.createPermission('fresh-permission')
+    await withRoutingContext(async () => {
+      assert.equal((await store.findRoleById(createdRole.id))?.name, createdRole.name)
+      assert.equal((await store.findRoleByName(createdRole.name))?.id, createdRole.id)
+      assert.equal((await store.findPermissionById(createdPermission.id))?.name, createdPermission.name)
+      assert.equal((await store.findPermissionByName(createdPermission.name))?.id, createdPermission.id)
+      assert((await store.getAllRoles()).some(item => item.id === createdRole.id))
+      assert((await store.getAllPermissions()).some(item => item.id === createdPermission.id))
+    })
   }
   catch (error) { failures.push(String(error)) }
   assert.deepEqual(failures, [])
