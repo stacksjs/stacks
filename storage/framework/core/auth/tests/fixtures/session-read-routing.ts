@@ -51,6 +51,10 @@ try {
   await db.unsafe('CREATE TABLE users (id BIGINT PRIMARY KEY, name TEXT, email TEXT, password TEXT, password_changed_at TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
   await db.insertInto('users').values({ id: 1, name: 'Session fixture', email: 'session@example.invalid' }).execute()
   await db.unsafe('CREATE TABLE sessions (id TEXT PRIMARY KEY, user_id BIGINT, expires_at TIMESTAMP, last_activity BIGINT, ip_address TEXT, user_agent TEXT)').execute()
+  // Finish schema setup before User.find prepares a SELECT *. Adding auth
+  // columns afterward invalidates PostgreSQL's cached result type and makes
+  // this routing test depend on which pooled connection executes the lookup.
+  await ensureFrameworkAuthTables()
   await db.unsafe('CREATE SCHEMA lagged').execute()
   await db.unsafe('CREATE TABLE lagged.sessions (LIKE public.sessions INCLUDING ALL)').execute()
   await db.unsafe(`GRANT USAGE ON SCHEMA lagged TO "${name}"`).execute()
@@ -98,7 +102,6 @@ try {
   })
   await assert.rejects(async () => escapedRead!(), /transaction/i, 'retained primary methods must not escape their transaction')
   await withRoutingContext(assertLaggedRead)
-  await ensureFrameworkAuthTables()
   const passkey = (id: string, counter: number) => ({ id, counter, user_id: 1, cred_public_key: '{}', webauthn_user_id: 'synthetic-user' })
   await db.insertInto('passkeys').values([passkey('revoked-key', 0), passkey('advanced-key', 1)] as never).execute()
   await db.unsafe('CREATE TABLE lagged.passkeys (LIKE public.passkeys INCLUDING ALL)').execute()
