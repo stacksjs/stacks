@@ -14,7 +14,7 @@
 import { Buffer } from 'node:buffer'
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 
@@ -174,49 +174,60 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
  * Verify a user's email with the provided token
  */
 export async function verifyEmail(userId: number, token: string): Promise<EmailVerificationResult> {
-  // Find the verification record
-  const record = await db
-    .selectFrom('email_verifications')
-    .where('user_id', '=', userId)
-    .selectAll()
-    .executeTakeFirst()
+  // Consuming the token and marking its owner must commit together. Otherwise
+  // a failed delete leaves a reusable token attached to an already verified user.
+  return db.transaction(async () => {
+    const record = await db.primary
+      .selectFrom('email_verifications')
+      .where('user_id', '=', userId)
+      .selectAll()
+      .executeTakeFirst()
 
-  if (!record) {
-    return { success: false, message: 'No verification request found. Please request a new verification email.' }
-  }
+    if (!record)
+      return { success: false, message: 'No verification request found. Please request a new verification email.' }
 
-  // Check expiration. Fail closed: a missing/unparseable expires_at must be
-  // treated as expired, not "never expires" — `new Date() > InvalidDate` is
-  // false, which would have let a row with a null expires_at verify forever
-  // (the reset module already fails closed the same way). #1985.
-  const expiresAt = parseSqlDateTime(record.expires_at) ?? new Date(Number.NaN)
-  if (Number.isNaN(expiresAt.getTime()) || new Date() > expiresAt) {
-    await db
+    const observed = db
       .deleteFrom('email_verifications')
       .where('user_id', '=', userId)
+      .where('id', '=', record.id)
+      .where('token', '=', record.token)
+    const claim = record.expires_at == null
+      ? observed.whereNull('expires_at')
+      : observed.where('expires_at', '=', record.expires_at)
+
+    const expiresAt = parseSqlDateTime(record.expires_at) ?? new Date(Number.NaN)
+    if (Number.isNaN(expiresAt.getTime()) || Date.now() >= expiresAt.getTime()) {
+      await claim.execute()
+      return { success: false, message: 'Verification link has expired. Please request a new one.' }
+    }
+
+    if (!verifyToken(userId, token, record.token as string))
+      return { success: false, message: 'Invalid verification link.' }
+
+    // Lock the owner so deletion cannot turn the later UPDATE into a no-op.
+    // MySQL's zero changed-row count also covers an already verified user,
+    // so a mutation count alone cannot establish that the owner exists.
+    let owner = db.primary.selectFrom('users').where('id', '=', userId).selectAll()
+    if (getDatabaseDialect() !== 'sqlite') owner = owner.lockForUpdate()
+    const user = await owner.executeTakeFirst()
+    if (!user)
+      return { success: false, message: 'Invalid verification link.' }
+
+    if (mutationCount(await claim.execute()) !== 1)
+      return { success: false, message: 'Invalid verification link.' }
+    // Either locking statement may have waited behind another transaction.
+    if (Date.now() >= expiresAt.getTime())
+      return { success: false, message: 'Verification link has expired. Please request a new one.' }
+
+    const updated = await db.updateTable('users')
+      .set({ email_verified_at: sqlDateTime() })
+      .where('id', '=', userId)
       .execute()
-    return { success: false, message: 'Verification link has expired. Please request a new one.' }
-  }
+    if (mutationCount(updated) !== 1 && user.email_verified_at == null)
+      throw new Error('[auth] Email verification could not update the user.')
 
-  // Verify the token
-  if (!verifyToken(userId, token, record.token as string)) {
-    return { success: false, message: 'Invalid verification link.' }
-  }
-
-  // Mark the user's email as verified
-  await db
-    .updateTable('users')
-    .set({ email_verified_at: sqlDateTime() })
-    .where('id', '=', userId)
-    .executeTakeFirst()
-
-  // Clean up the verification record
-  await db
-    .deleteFrom('email_verifications')
-    .where('user_id', '=', userId)
-    .execute()
-
-  return { success: true, message: 'Email verified successfully.' }
+    return { success: true, message: 'Email verified successfully.' }
+  })
 }
 
 /**
