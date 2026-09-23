@@ -108,10 +108,15 @@ export function isEmailVerified(user: { email_verified_at?: string | Date | null
  * Send a verification email to the user
  */
 export async function sendVerificationEmail(user: { id: number, email: string, name?: string }): Promise<void> {
+  await deliverAfterCommit(await prepareVerificationEmail(user))
+}
+
+async function prepareVerificationEmail(user: { id: number, email: string, name?: string }): Promise<() => Promise<void>> {
   // Generate token
   const { token, hash } = generateVerificationToken(user.id)
   const expiryMinutes = getExpiryMinutes()
-  const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000)
+  const createdAt = new Date()
+  const expiresAt = new Date(createdAt.getTime() + expiryMinutes * 60 * 1000)
 
   // A failed replacement must not destroy the user's previous working link.
   await db.transaction(async () => {
@@ -126,6 +131,8 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
         user_id: user.id,
         token: hash,
         expires_at: sqlDateTime(expiresAt),
+        // Use issuance time, not an outer transaction's CURRENT_TIMESTAMP.
+        created_at: sqlDateTime(createdAt),
       })
       .executeTakeFirst()
 
@@ -137,9 +144,12 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
       throw new Error('[auth] Email verification could not replace the token.')
   })
 
+  return () => deliverVerificationEmail(user, token, expiryMinutes)
+}
+
+async function deliverAfterCommit(deliver: () => Promise<void>): Promise<void> {
   // Standalone sends still await and expose provider errors. When the caller
   // owns an outer transaction, its rollback must discard the email as well.
-  const deliver = () => deliverVerificationEmail(user, token, expiryMinutes)
   if (!enqueueAfterCommit(deliver)) await deliver()
 }
 
@@ -253,29 +263,43 @@ export async function resendVerificationEmail(user: { id: number, email: string,
     return { success: false, message: 'Email is already verified.' }
   }
 
-  // Cooldown state must include the most recent send, even with replica lag.
-  const existing = await db.primary
-    .selectFrom('email_verifications')
-    .where('user_id', '=', user.id)
-    .selectAll()
-    .executeTakeFirst()
+  const outcome = await db.transaction(async (): Promise<{ result: EmailVerificationResult, deliver?: () => Promise<void> }> => {
+    // Lock a stable owner row, not the optional verification row. This also
+    // serializes first sends, when there is no cooldown record to lock yet.
+    let ownerQuery = db.primary.selectFrom('users').where('id', '=', user.id).selectAll()
+    if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
+    const owner = await ownerQuery.executeTakeFirst()
+    if (!owner)
+      return { result: { success: false, message: 'User not found.' } }
+    if (isEmailVerified(owner))
+      return { result: { success: false, message: 'Email is already verified.' } }
 
-  if (existing) {
-    const createdAt = parseSqlDateTime(existing.created_at)
-    const secondsSince = createdAt ? (Date.now() - createdAt.getTime()) / 1000 : Number.NaN
-    // Fail closed: an unparseable created_at yields NaN, and `NaN < 60` is
-    // false, which would have bypassed the resend cooldown entirely (email
-    // bombing). Treat NaN as "still cooling down". #1985.
-    if (Number.isNaN(secondsSince)) {
-      return { success: false, message: 'Please wait a moment before requesting another verification email.' }
+    // A locking read sees the latest committed cooldown even when a caller's
+    // outer MySQL transaction established an older repeatable-read snapshot.
+    let existingQuery = db.primary.selectFrom('email_verifications')
+      .where('user_id', '=', user.id).selectAll()
+    if (getDatabaseDialect() !== 'sqlite') existingQuery = existingQuery.lockForUpdate()
+    const existing = await existingQuery.executeTakeFirst()
+    if (existing) {
+      const createdAt = parseSqlDateTime(existing.created_at)
+      const secondsSince = createdAt ? (Date.now() - createdAt.getTime()) / 1000 : Number.NaN
+      // Malformed state must not bypass the cooldown. #1985.
+      if (Number.isNaN(secondsSince)) {
+        return { result: { success: false, message: 'Please wait a moment before requesting another verification email.' } }
+      }
+      if (secondsSince < 60) {
+        return { result: { success: false, message: `Please wait ${Math.ceil(60 - secondsSince)} seconds before requesting another verification email.` } }
+      }
     }
-    if (secondsSince < 60) {
-      return { success: false, message: `Please wait ${Math.ceil(60 - secondsSince)} seconds before requesting another verification email.` }
-    }
-  }
 
-  await sendVerificationEmail(user)
-  return { success: true, message: 'Verification email sent.' }
+    const deliver = await prepareVerificationEmail(user)
+    return { result: { success: true, message: 'Verification email sent.' }, deliver }
+  // SQLite uses optimistic read-to-write promotion instead of row locks.
+  // Restart a conflicted claim from fresh state, never just its final write.
+  // Delivery happens below, outside every retry attempt.
+  }, getDatabaseDialect() === 'sqlite' ? { retries: 3 } : undefined)
+  if (outcome.deliver) await deliverAfterCommit(outcome.deliver)
+  return outcome.result
 }
 
 /**
