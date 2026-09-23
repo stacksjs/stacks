@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
-import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, templateByName } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { RateLimiter } from './rate-limiter'
@@ -136,33 +136,45 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
   if (!user)
     return
 
-  const raw = randomBytes(32).toString('base64url')
-  const ttl = options.ttlMinutes ?? expireMinutes()
-  const redirectTo = safeRedirect(options.redirectTo)
+  const userId = user.id
+  const issued = await db.transaction(async () => {
+    // Serialize even the first issue, when no token row exists to lock.
+    // Recheck ownership before issuing against the earlier user lookup.
+    let ownerQuery = db.primary.selectFrom('users')
+      .where('id', '=', userId).where('email', '=', normalized).select('id')
+    if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
+    if (!await ownerQuery.executeTakeFirst()) return undefined
 
-  // One outstanding link per email: a new request invalidates the old link,
-  // which also caps the damage window of a leaked inbox.
-  await db
-    .deleteFrom('magic_link_tokens')
-    .where('email', '=', normalized)
-    .whereNull('consumed_at')
-    .execute()
+    const raw = randomBytes(32).toString('base64url')
+    const ttl = options.ttlMinutes ?? expireMinutes()
+    const token = hashToken(raw)
+    const expiresAt = sqlDateTime(new Date(Date.now() + ttl * 60_000))
+    // Replacement must not destroy the old credential if storing the new one
+    // fails. Keep consumed history while allowing only one outstanding link.
+    await db.deleteFrom('magic_link_tokens')
+      .where('email', '=', normalized).whereNull('consumed_at').execute()
+    await db.insertInto('magic_link_tokens').values({
+      email: normalized, user_id: userId, token, expires_at: expiresAt,
+      redirect_to: safeRedirect(options.redirectTo), site_id: options.siteId ?? null,
+      created_at: sqlDateTime(), updated_at: sqlDateTime(),
+    } as never).execute()
+    const stored = await db.primary.selectFrom('magic_link_tokens')
+      .where('email', '=', normalized).whereNull('consumed_at')
+      .select(['token', 'user_id']).execute()
+    if (stored.length !== 1 || stored[0]?.token !== token || String(stored[0]?.user_id) !== String(userId))
+      throw new Error('[auth] Magic-link credential could not be stored.')
+    return { raw, ttl }
+  // SQLite promotes a read transaction optimistically. Retry the whole claim
+  // from fresh state, with all external delivery outside the retry boundary.
+  }, getDatabaseDialect() === 'sqlite' ? { retries: 3 } : undefined)
+  if (!issued) return
 
-  await db
-    .insertInto('magic_link_tokens')
-    .values({
-      email: normalized,
-      user_id: user.id,
-      token: hashToken(raw),
-      expires_at: sqlDateTime(new Date(Date.now() + ttl * 60_000)),
-      redirect_to: redirectTo,
-      site_id: options.siteId ?? null,
-      created_at: sqlDateTime(new Date()),
-      updated_at: sqlDateTime(new Date()),
-    } as never)
-    .execute()
+  const deliver = () => deliverMagicLink(normalized, issued.raw, issued.ttl, options.siteId)
+  if (!enqueueAfterCommit(deliver)) await deliver()
+}
 
-  const base = await linkBase(options.siteId)
+async function deliverMagicLink(normalized: string, raw: string, ttl: number, siteId?: number): Promise<void> {
+  const base = await linkBase(siteId)
   const tpl = config.auth.magicLink?.url ?? '/auth/magic/{token}'
   const filled = tpl.replace('{token}', raw)
   const linkUrl = /^https?:\/\//.test(filled) ? filled : `${base}${filled.startsWith('/') ? '' : '/'}${filled}`
