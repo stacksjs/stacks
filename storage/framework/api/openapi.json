@@ -59086,31 +59086,6 @@
         }
       }
     },
-    "/install": {
-      "get": {
-        "summary": "/install",
-        "operationId": "get__install",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
     "/jobs/": {
       "get": {
         "summary": "/jobs/",
@@ -60898,31 +60873,6 @@
       "get": {
         "summary": "/sitemap.xml",
         "operationId": "get__sitemap_xml",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/test-error": {
-      "get": {
-        "summary": "/test-error",
-        "operationId": "get__test_error",
         "parameters": [],
         "responses": {
           "200": {

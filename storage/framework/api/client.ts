@@ -7611,13 +7611,6 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
-   * GET /install
-   */
-  getInstall(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/install", {}, [], false, options)
-  },
-
-  /**
    * GET /jobs/
    */
   getJobs(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -8035,13 +8028,6 @@ export function createClient(config: ClientConfig) {
    */
   getSitemapXml(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/sitemap.xml", {}, [], false, options)
-  },
-
-  /**
-   * GET /test-error
-   */
-  getTestError(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/test-error", {}, [], false, options)
   },
 
   /**
