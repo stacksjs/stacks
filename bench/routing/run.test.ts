@@ -98,9 +98,11 @@ describe('ablation targets stay reachable', () => {
     // Forwarded as a variable rather than expanded into the script, so a target
     // list cannot become a command.
     expect(workflow).toContain('BENCH_TARGETS: ${{ inputs.targets }}')
+    expect(workflow.match(/BENCH_RUNS: \$\{\{ inputs\.runs \}\}/g)).toHaveLength(2)
     const forwarding = workflow.match(/\$\{BENCH_TARGETS:\+--targets "\$BENCH_TARGETS"\}/g) ?? []
     expect(forwarding).toHaveLength(2) // the benchmark and cost steps
-    expect(workflow.match(/--runs "\$\{\{ inputs\.runs \}\}"/g)).toHaveLength(2)
+    expect(workflow.match(/--runs "\$BENCH_RUNS"/g)).toHaveLength(2)
+    expect(workflow).not.toContain('--runs "${{ inputs.runs }}"')
     // An unset input has to leave the published matrix exactly as it was.
     expect(workflow).toMatch(/targets:\n\s+description:[\s\S]*?default: ''/)
     expect(workflow).toMatch(/runs:\n\s+description:[\s\S]*?default: '3'/)
