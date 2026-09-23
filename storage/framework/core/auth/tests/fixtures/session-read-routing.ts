@@ -28,6 +28,7 @@ const { flushRbacCache, hasRole, hasPermission, setRbacStore } = await import('.
 const { getTwoFactorState, verifyTwoFactorLoginCode, createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret } = await import('../../src/two-factor')
 const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
 const { getUserPasskey, getUserPasskeys, updatePasskeyCounter } = await import('../../src/passkey')
+const { createPersonalAccessClient } = await import('../../src/client')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -240,6 +241,26 @@ try {
     }
     catch (error) { failures.push(String(error)) }
   }
+  assert.deepEqual(failures, [])
+  // An empty replica must not permit duplicate personal access clients, and
+  // provisioning outside request scope must read back its own committed row.
+  await db.unsafe('DELETE FROM lagged.oauth_clients').execute()
+  const personalClients = () => db.primary.selectFrom('oauth_clients').where('personal_access_client', '=', true).where('revoked', '=', false).selectAll().execute()
+  const originalClients = await personalClients()
+  assert.equal(originalClients.length, 1)
+  try {
+    const existing = await withRoutingContext(() => createPersonalAccessClient())
+    assert.equal(existing.isErr, true, 'replica lag must not bypass the personal-client existence check')
+    assert.equal((await personalClients()).length, 1, 'the refused creation must not insert a duplicate')
+  }
+  catch (error) { failures.push(String(error)) }
+  await db.deleteFrom('oauth_clients').where('personal_access_client', '=', true).execute()
+  try {
+    const created = await createPersonalAccessClient()
+    assert.equal(created.isOk, true, 'read-back outside request scope must use the primary')
+    assert.equal((await personalClients()).length, 1)
+  }
+  catch (error) { failures.push(String(error)) }
   assert.deepEqual(failures, [])
   console.log('session and token primary reads OK')
 }

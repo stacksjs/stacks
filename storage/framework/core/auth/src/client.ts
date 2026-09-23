@@ -32,7 +32,7 @@ export async function createPersonalAccessClient(): Promise<Result<string, Creat
   // services that have stored its secret — silently creating a
   // duplicate makes `getPersonalAccessClient()` non-deterministic
   // (`LIMIT 1` with no ORDER BY).
-  const existing = await db.selectFrom('oauth_clients')
+  const existing = await db.primary.selectFrom('oauth_clients')
     .where('personal_access_client', '=', true)
     .where('revoked', '=', false)
     .select(['id'])
@@ -72,7 +72,7 @@ export async function createPersonalAccessClient(): Promise<Result<string, Creat
 
   // Look up the freshly inserted row by hash (not by plaintext) so
   // the SELECT works against the value we actually wrote.
-  const inserted = await db.selectFrom('oauth_clients')
+  const inserted = await db.primary.selectFrom('oauth_clients')
     .where('secret', '=', hashedSecret)
     .select(['id'])
     .executeTakeFirst()
