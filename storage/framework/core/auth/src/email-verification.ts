@@ -14,7 +14,7 @@
 import { Buffer } from 'node:buffer'
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 
@@ -113,22 +113,37 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
   const expiryMinutes = getExpiryMinutes()
   const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000)
 
-  // Delete any existing verification tokens for this user
-  await db
-    .deleteFrom('email_verifications')
-    .where('user_id', '=', user.id)
-    .execute()
+  // A failed replacement must not destroy the user's previous working link.
+  await db.transaction(async () => {
+    await db
+      .deleteFrom('email_verifications')
+      .where('user_id', '=', user.id)
+      .execute()
 
-  // Store the hash
-  await db
-    .insertInto('email_verifications')
-    .values({
-      user_id: user.id,
-      token: hash,
-      expires_at: sqlDateTime(expiresAt),
-    })
-    .executeTakeFirst()
+    await db
+      .insertInto('email_verifications')
+      .values({
+        user_id: user.id,
+        token: hash,
+        expires_at: sqlDateTime(expiresAt),
+      })
+      .executeTakeFirst()
 
+    // A trigger can suppress an INSERT without throwing. Do not send a link
+    // whose hash never persisted, or keep an older link alongside its successor.
+    const stored = await db.primary.selectFrom('email_verifications')
+      .where('user_id', '=', user.id).selectAll().execute()
+    if (stored.length !== 1 || stored[0]?.token !== hash)
+      throw new Error('[auth] Email verification could not replace the token.')
+  })
+
+  // Standalone sends still await and expose provider errors. When the caller
+  // owns an outer transaction, its rollback must discard the email as well.
+  const deliver = () => deliverVerificationEmail(user, token, expiryMinutes)
+  if (!enqueueAfterCommit(deliver)) await deliver()
+}
+
+async function deliverVerificationEmail(user: { id: number, email: string, name?: string }, token: string, expiryMinutes: number): Promise<void> {
   // Build verification URL (configurable — see getVerificationUrl)
   const verificationUrl = getVerificationUrl(user.id, token)
   const appName = config.app.name || 'Stacks'
