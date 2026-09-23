@@ -14,12 +14,14 @@ else {
   assert(process.env.DB_PORT && !['5432', '3306'].includes(process.env.DB_PORT))
 }
 let sent = 0
+const delivered: string[] = []
 let failDelivery = false
 mock.module('@stacksjs/email', () => ({
-  template: async () => ({ html: '<p>synthetic reset</p>', text: 'synthetic reset' }),
-  mail: { sendOrFail: async () => {
+  template: async (_name: string, options: { variables: { resetUrl: string } }) => ({ text: options.variables.resetUrl }),
+  mail: { sendOrFail: async (message: { text: string }) => {
     if (failDelivery) throw new Error('fixture delivery unavailable')
     sent++
+    delivered.push(message.text)
   } },
 }))
 const { overrides, overridesReady } = await import('@stacksjs/config')
@@ -35,6 +37,14 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 const { passwordResets } = await import('../../src/password/reset')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const user = { id: 1, email: 'synthetic@example.invalid' }
+if (process.argv[2] === 'send-worker') {
+  try {
+    await passwordResets(user.email).sendEmail()
+    console.log(JSON.stringify({ delivered }))
+  }
+  finally { await closeDatabaseConnection() }
+  process.exit(0)
+}
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
   try { await run(); console.log(`PASS ${name}`) }
@@ -42,6 +52,7 @@ async function check(name: string, run: () => Promise<void>) {
 }
 async function seed() {
   sent = 0
+  delivered.length = 0
   await db.deleteFrom('password_resets').execute()
   await db.insertInto('password_resets').values({ email: user.email, token: 'previous-hash', expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
 }
@@ -120,6 +131,38 @@ try {
     try { await assert.rejects(passwordResets(user.email).sendEmail(), /fixture delivery unavailable/) }
     finally { failDelivery = false }
   })
+  for (const legacy of [false, true]) {
+    await check(`${legacy ? 'legacy' : 'indexed'} independent sends all finish with one surviving link`, async () => {
+      if (legacy)
+        await db.unsafe(`DROP INDEX idx_password_resets_email_unique${dialect === 'mysql' ? ' ON password_resets' : ''}`).execute()
+      await seed()
+      await db.insertInto('password_resets').values({ email: 'bystander@example.invalid', token: 'bystander-hash' }).execute()
+      const results = await Promise.allSettled(Array.from({ length: 4 }, async () => {
+        const child = Bun.spawn([process.execPath, `--config=${configPath}`, '--no-env-file', import.meta.path, 'send-worker'], {
+          env: process.env, stdout: 'pipe', stderr: 'pipe',
+        })
+        const watchdog = setTimeout(() => child.kill(), 10_000)
+        try {
+          const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+          assert.equal(code, 0, `${stdout}\n${stderr}`)
+          const messages = JSON.parse(stdout.trim().split('\n').at(-1)!).delivered as string[]
+          assert.equal(messages.length, 1)
+          const raw = /\/password\/reset\/([a-f0-9]+)/.exec(messages[0]!)?.[1]
+          assert(raw)
+          return raw
+        }
+        finally { clearTimeout(watchdog); child.kill() }
+      }))
+      const failed = results.filter(result => result.status === 'rejected')
+      assert.equal(failed.length, 0, failed.map(result => String(result.reason)).join('\n'))
+      const tokens = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : [])
+      const validity = await Promise.all(tokens.map(token => passwordResets(user.email).verifyToken(token)))
+      assert.equal(validity.filter(Boolean).length, 1, 'only the last replacement may remain usable')
+      const rows = await db.primary.selectFrom('password_resets').selectAll().execute()
+      assert.equal(rows.length, 2)
+      assert(rows.some(row => row.email === 'bystander@example.invalid' && row.token === 'bystander-hash'))
+    })
+  }
   assert.deepEqual(failures, [])
   console.log('reset send atomicity OK')
 }

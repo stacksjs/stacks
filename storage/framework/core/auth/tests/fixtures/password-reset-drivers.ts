@@ -92,6 +92,23 @@ try {
     assert.equal((await db.primary.selectFrom('password_resets').where('email', '=', 'reset@example.invalid').selectAll().executeTakeFirstOrThrow()).token, hashedToken)
     assert.equal(sent.length, 0)
   }
+  if (dialect !== 'sqlite') {
+    await check('issuance and recovery lock the owner before reset credentials', async () => {
+      await seed()
+      const locks: string[] = []
+      const stop = registerPersistentQueryHooks({ onQueryStart(event) {
+        if (event.sql.includes('FOR UPDATE')) {
+          if (/\bpassword_resets\b/.test(event.sql)) locks.push('reset')
+          else if (/\busers\b/.test(event.sql)) locks.push('owner')
+        }
+      } })
+      try {
+        assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'new-synthetic-password')).success, true)
+        assert.deepEqual(locks.slice(0, 2), ['owner', 'reset'], 'opposite lock order deadlocks with concurrent issuance')
+      }
+      finally { stop() }
+    })
+  }
   await check('incorrect token preserves the valid reset and password', async () => {
     await seed()
     assert.equal((await passwordResets('reset@example.invalid').resetPassword('incorrect-token', 'unused-password')).success, false)
@@ -150,7 +167,13 @@ try {
     try {
       assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'unused-password')).success, false)
       assert(crossed)
-      await assertUnchanged()
+      // The owner is now locked before reading the reset, so an expired row
+      // may be pruned by the normal initial-expiry path. Never change the
+      // password or emit a successful-change notification at the deadline.
+      assert.equal((await db.primary.selectFrom('users').where('id', '=', 1).selectAll().executeTakeFirstOrThrow()).password, 'original')
+      assert.equal(sent.length, 0)
+      const remaining = await db.primary.selectFrom('password_resets').where('email', '=', 'reset@example.invalid').selectAll().execute()
+      assert(remaining.length === 0 || (remaining.length === 1 && remaining[0]?.token === hashedToken))
     }
     finally { stop(); setSystemTime(now) }
   })

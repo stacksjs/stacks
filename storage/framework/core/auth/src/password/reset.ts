@@ -93,12 +93,10 @@ export function passwordResets(email: string): PasswordResetActions {
     return randomBytes(32).toString('hex')
   }
 
-  async function createResetToken(): Promise<string> {
+  async function createResetToken(userId: number): Promise<string | undefined> {
     const token = generateResetToken()
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
     const expireMinutes = getTokenExpireMinutes()
-    const createdAt = new Date()
-    const expiresAt = sqlDateTime(new Date(createdAt.getTime() + expireMinutes * 60_000))
 
     // Delete any existing reset row for this email before inserting
     // the new one so a second reset request invalidates any prior
@@ -106,7 +104,17 @@ export function passwordResets(email: string): PasswordResetActions {
     // single-outstanding-token-per-email at the DB layer; this delete
     // makes the rotation work even when the unique constraint hasn't
     // been applied yet (older installs). See stacksjs/stacks#1861 A-5.
-    await db.transaction(async () => {
+    const issued = await db.transaction(async () => {
+      // Lock a stable owner even when no reset row exists yet. Concurrent
+      // replacements otherwise race between DELETE and INSERT on Postgres,
+      // including on legacy schemas without the unique email index.
+      let ownerQuery = db.primary.selectFrom('users')
+        .where('id', '=', userId).where('email', '=', email).select('id')
+      if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
+      if (!await ownerQuery.executeTakeFirst()) return false
+
+      const createdAt = new Date()
+      const expiresAt = sqlDateTime(new Date(createdAt.getTime() + expireMinutes * 60_000))
       await db
         .deleteFrom('password_resets')
         .where('email', '=', email)
@@ -126,9 +134,12 @@ export function passwordResets(email: string): PasswordResetActions {
         .where('email', '=', email).selectAll().execute()
       if (stored.length !== 1 || stored[0]?.token !== hashedToken)
         throw new Error('Password reset could not replace its token')
-    })
+      return true
+    // SQLite read-to-write conflicts require retrying the complete claim.
+    // Hashing and external delivery are outside that retry boundary.
+    }, getDatabaseDialect() === 'sqlite' ? { retries: 3 } : undefined)
 
-    return token // Return unhashed token for email
+    return issued ? token : undefined // Return unhashed token for email
   }
 
   async function sendEmail(): Promise<void> {
@@ -146,7 +157,8 @@ export function passwordResets(email: string): PasswordResetActions {
     if (!user)
       return
 
-    const token = await createResetToken()
+    const token = await createResetToken(user.id)
+    if (!token) return
     // A caller's outer rollback must not send a link that never committed.
     // Standalone sends still await delivery and surface provider failures.
     const deliver = () => deliverResetEmail(token)
@@ -244,6 +256,14 @@ export function passwordResets(email: string): PasswordResetActions {
       // which marks chained fluent methods like `selectAll` as optional. We mirror
       // the typing of the top-level `db` proxy so chained calls type-check the same way.
       const trx = rawTrx as unknown as typeof db
+      // Match issuance's owner-then-token order. Reversing it can deadlock a
+      // redemption against a concurrent reset request for the same account.
+      let userQuery = trx.selectFrom('users').where('email', '=', email).selectAll()
+      if (getDatabaseDialect() !== 'sqlite') userQuery = userQuery.lockForUpdate()
+      const user = await userQuery.executeTakeFirst()
+      if (!user)
+        return { success: false as const, message: 'Invalid or expired reset token' }
+
       // First verify the token exists
       let resetQuery = trx
         .selectFrom('password_resets')
@@ -275,19 +295,6 @@ export function passwordResets(email: string): PasswordResetActions {
       const isValid = await verifyHash(token, hashedToken)
 
       if (!isValid) {
-        return { success: false as const, message: 'Invalid or expired reset token' }
-      }
-
-      // Update the user's password
-      let userQuery = trx
-        .selectFrom('users')
-        .where('email', '=', email)
-        .selectAll()
-      if (getDatabaseDialect() !== 'sqlite') userQuery = userQuery.lockForUpdate()
-      const user = await userQuery.executeTakeFirst()
-
-      // If no user, return generic error (don't leak user existence)
-      if (!user) {
         return { success: false as const, message: 'Invalid or expired reset token' }
       }
 
