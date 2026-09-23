@@ -488,6 +488,21 @@ interface WrappedModelInstance {
   set?: (_key: string, _value: unknown) => unknown
 }
 
+/**
+ * A raw query-builder instance returned from the wrapped model's own
+ * `save()` turned back into the wrapper. The builder's `save()` ends with
+ * `return this` — the unwrapped object, whose columns sit in a private
+ * `_attributes` and read as `undefined` — so `await model.save()`, and
+ * `forceCreate()` which returns it, handed callers a record with every
+ * field missing but `id`. Anything else (a different object, a boolean)
+ * passes through untouched.
+ */
+function keepWrapped<R>(result: R, raw: object, wrapped: object): R {
+  if (result && typeof (result as { then?: unknown }).then === 'function')
+    return (result as unknown as Promise<unknown>).then(value => (value === raw ? wrapped : value)) as unknown as R
+  return (result === raw ? wrapped : result) as R
+}
+
 function wrapModelInstance<T extends object>(
   instance: T,
   casts?: Record<string, CastType | CasterInterface>,
@@ -555,13 +570,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return target.save()
+              return keepWrapped(target.save(), rawTarget, recv)
             }
             finally {
               def.set = original
             }
           }
-          return target.save()
+          return keepWrapped(target.save(), rawTarget, recv)
         }
       }
 
@@ -592,13 +607,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return target.save()
+              return keepWrapped(target.save(), rawTarget, recv)
             }
             finally {
               def.set = original
             }
           }
-          return target.save()
+          return keepWrapped(target.save(), rawTarget, recv)
         }
       }
 
@@ -1342,7 +1357,12 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         } | null
         if (instance && typeof instance.forceFill === 'function' && typeof instance.save === 'function') {
           instance.forceFill(data)
-          return (await instance.save()) ?? instance
+          const saved = await instance.save()
+          // The wrapped instance, never the builder's raw `this`: that one
+          // reads every column as undefined (see keepWrapped).
+          return saved && typeof saved === 'object' && saved !== instance && !(saved as { [STACKS_PROXY_TAG]?: boolean })[STACKS_PROXY_TAG]
+            ? instance
+            : (saved ?? instance)
         }
       }
 

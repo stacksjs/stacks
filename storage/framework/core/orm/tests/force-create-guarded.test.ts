@@ -72,6 +72,25 @@ describe('forceCreate persists guarded columns', () => {
     expect(found?.apiKey ?? found?.api_key).toBe('another-key')
   })
 
+  it('returns a record whose columns read back, not only its id', async () => {
+    // The builder's save() returns its raw `this`, whose columns live in a
+    // private `_attributes`: returning that from forceCreate handed callers
+    // a record where every field but `id` read as undefined, and an API that
+    // echoed the create result answered with nulls.
+    const created = await (Credential as any).forceCreate({ name: 'mapbox', apiKey: 'k-123', note: 'echoed' })
+    expect(created.name).toBe('mapbox')
+    expect(created.note).toBe('echoed')
+    expect({ ...created.toJSON() }).toMatchObject({ name: 'mapbox', note: 'echoed' })
+  })
+
+  it('save() on a made instance returns the same readable record', async () => {
+    const made = await (Credential as any).make()
+    made.forceFill({ name: 'here', apiKey: 'k-456' })
+    const saved = await made.save()
+    expect(saved.name).toBe('here')
+    expect(Number(saved.id)).toBeGreaterThan(0)
+  })
+
   it('still refuses guarded columns through ordinary create()', async () => {
     // The escape hatch opening does not open the front door.
     let thrown: unknown = null
