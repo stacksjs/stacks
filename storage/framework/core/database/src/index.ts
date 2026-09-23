@@ -178,6 +178,7 @@ export { auditForeignKeys, classifyDeclaredFKs, findFkOrphans, fkKey, getDeclare
 // declare. `migrate` only tracks which files have run, so a database built from
 // a wrong migration set reports "up to date" forever while its columns differ.
 export { auditSchemaDrift, formatSchemaDrift } from './schema-drift'
+export { describeIgnoreRule, findIgnoredMigrations, formatIgnoredMigrations } from './ignored-migrations'
 export type { SchemaDriftColumn, SchemaDriftReport } from './schema-drift'
 export type { DeclaredFK, FkAuditResult, FkOrphan, FkOrphanReport, LiveFK } from './fk-audit'
 

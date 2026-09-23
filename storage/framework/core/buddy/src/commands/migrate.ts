@@ -232,19 +232,51 @@ export function validateMigrationDialect(
  * exit 0 over it would block deploys that are otherwise fine. The point is that
  * it is no longer invisible.
  */
-async function reportSchemaDrift(): Promise<void> {
+async function reportSchemaDrift(): Promise<boolean> {
   try {
     const { auditSchemaDrift, formatSchemaDrift } = await import('@stacksjs/database')
 
     const drift = await auditSchemaDrift()
     if (drift.skipped || drift.clean)
-      return
+      return true
 
     log.warn(await formatSchemaDrift(drift))
+    return false
   }
   catch (err) {
     log.debug(`[migrate] schema drift check skipped: ${err instanceof Error ? err.message : String(err)}`)
+    return true
   }
+}
+
+/**
+ * Migration files git ignores, and so will never reach CI or the deploy —
+ * typically through a global `*.sql` ignore. See ignored-migrations.ts.
+ * Returns whether none are.
+ */
+async function reportIgnoredMigrations(): Promise<boolean> {
+  try {
+    const { findIgnoredMigrations, formatIgnoredMigrations } = await import('@stacksjs/database')
+    const ignored = findIgnoredMigrations()
+    if (!ignored.length)
+      return true
+    log.warn(formatIgnoredMigrations(ignored))
+    return false
+  }
+  catch (err) {
+    log.debug(`[migrate] ignored-migration check skipped: ${err instanceof Error ? err.message : String(err)}`)
+    return true
+  }
+}
+
+/**
+ * `--strict` (or STACKS_MIGRATE_STRICT=1): drift and ignored migrations fail
+ * the command instead of warning. For CI, where a missing table is a build
+ * to stop rather than a message to scroll past. Deploys keep the warning:
+ * repairing drift is the operator's to schedule.
+ */
+function strictMode(options: { strict?: boolean }): boolean {
+  return options.strict === true || process.env.STACKS_MIGRATE_STRICT === '1'
 }
 
 /**
@@ -526,8 +558,9 @@ export function migrate(buddy: CLI): void {
     .option('--from-db', descriptions.fromDb, { default: false })
     .option('--no-rename', descriptions.noRename)
     .option('--no-generate', descriptions.noGenerate)
+    .option('--strict', 'Fail when the schema has drifted from the models or a migration is git-ignored (for CI)', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean }) => {
+    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean, strict?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
@@ -796,7 +829,15 @@ export function migrate(buddy: CLI): void {
       // Post-migrate schema drift probe. Catches a database whose columns no
       // longer match the models — which `migrate` cannot see, because it only
       // tracks which files have run.
-      await reportSchemaDrift()
+      const schemaMatches = await reportSchemaDrift()
+
+      // Migrations git ignores run here and nowhere else.
+      const allCommittable = await reportIgnoredMigrations()
+
+      if (strictMode(options) && (!schemaMatches || !allCommittable)) {
+        console.error(`\n❌ --strict: ${!allCommittable ? 'a migration is git-ignored' : 'the live schema does not match the models'} (see above).\n`)
+        process.exit(ExitCode.FatalError)
+      }
 
       // Post-migrate orphan-row scan (stacksjs/stacks#1951). migrate is the
       // step that flips `foreign_keys = ON` against legacy data, so it's the

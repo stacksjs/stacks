@@ -168,6 +168,9 @@ storage/framework/core/defaults/*
 # Migration files set aside during a run: the SQLite quarantine
 # (stacksjs/stacks#2477) and the feature gate's own sidecars. All three are
 # restored when the run finishes, so one on disk means a run was killed.
+# Migrations are source: re-included so a machine-wide `*.sql` ignore (common,
+# to keep dumps out of repos) cannot silently leave one out of a commit.
+!database/migrations/*.sql
 database/migrations/*.sql.unsupported
 database/migrations/*.sql.disabled
 database/migrations/*.sql.ungated

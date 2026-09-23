@@ -513,6 +513,12 @@ export async function createMigration(options: MakeOptions): Promise<void> {
     await createFileWithTemplate(path, 'migration', tableIdentifier, primaryKey)
 
     log.success(`Migration created: ${italic(`database/migrations/${fileName}`)}`)
+
+    // Said now, while the file is fresh: a global `*.sql` ignore would keep
+    // it out of every commit without a word (see ignored-migrations.ts).
+    const { findIgnoredMigrations, formatIgnoredMigrations } = await import('@stacksjs/database')
+    if (findIgnoredMigrations().includes(fileName))
+      log.warn(formatIgnoredMigrations([fileName]))
   }
   catch (error: any) {
     log.error(error)
