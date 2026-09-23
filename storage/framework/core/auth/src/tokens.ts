@@ -122,7 +122,7 @@ function generateSecureToken(bytes: number = 40): string {
  * (#1947) — even a freshly minted pair that the sweep never saw is
  * rejected on first use.
  *
- * Returns `null` on ANY error (missing column / missing table) so a
+ * Returns `null` for a missing optional column or owner table so a
  * not-yet-migrated database degrades to legacy-allow rather than locking
  * everyone out. Accepts an optional query runner so the refresh exchange
  * can read the stamp inside its own transaction.
@@ -219,9 +219,15 @@ export async function getPasswordChangedAt(
       return null
     return parseSqlDateTime(value)
   }
-  catch {
-    // Column or table missing (legacy / un-migrated DB) — allow.
-    return null
+  catch (error) {
+    // Only absent legacy schema is compatible with a null stamp. Losing
+    // access to existing credential state must never authorize a token.
+    const message = error instanceof Error ? error.message : String(error)
+    const missingColumn = /^(?:no such column: password_changed_at|column "password_changed_at" does not exist)$/im.test(message)
+    const missingOwner = message === `no such table: ${ownerType}` || message === `relation "${ownerType}" does not exist`
+    if (missingColumn || missingOwner)
+      return null
+    throw error
   }
 }
 
