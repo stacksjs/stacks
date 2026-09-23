@@ -9,6 +9,16 @@ export interface RateLimitEntry {
   lockedUntil: number
 }
 
+function recordFailure(current: RateLimitEntry | undefined, now: number): RateLimitEntry {
+  const entry = current ?? { attempts: 0, lockedUntil: 0 }
+  entry.attempts++
+  if (entry.attempts >= MAX_ATTEMPTS) {
+    entry.lockedUntil = now + LOCKOUT_DURATION
+    entry.attempts = 0
+  }
+  return entry
+}
+
 /**
  * Pluggable backing store for the auth rate limiter.
  *
@@ -67,6 +77,12 @@ class MemoryStore implements RateLimiterStore {
 
   delete(key: string): void {
     this.store.delete(key)
+  }
+
+  recordFailedAttempt(key: string, now: number): void {
+    // No await between reading and writing: simultaneous first attempts must
+    // not all observe an absent entry and overwrite each other with count 1.
+    this.set(key, recordFailure(this.get(key), now))
   }
 }
 
@@ -142,18 +158,15 @@ export class RateLimiter {
   static async recordFailedAttempt(email: string): Promise<void> {
     email = email.toLowerCase()
     const now = Date.now()
-    const userAttempts = (await store.get(email)) || { attempts: 0, lockedUntil: 0 }
-    userAttempts.attempts++
-
-    // Lock out after reaching max attempts
-    if (userAttempts.attempts >= MAX_ATTEMPTS) {
-      userAttempts.lockedUntil = now + LOCKOUT_DURATION
-      userAttempts.attempts = 0
+    if (store instanceof MemoryStore) {
+      store.recordFailedAttempt(email, now)
+      return
     }
 
-    // TTL lets cache-backed entries decay on their own; the memory store
-    // ignores it and relies on its own eviction pass.
-    await store.set(email, userAttempts, LOCKOUT_DURATION)
+    // Preserve the pluggable store contract and TTL. Separate asynchronous
+    // get/set calls do not promise an atomic distributed increment.
+    const entry = recordFailure(await store.get(email), now)
+    await store.set(email, entry, LOCKOUT_DURATION)
   }
 
   static async resetAttempts(email: string): Promise<void> {
