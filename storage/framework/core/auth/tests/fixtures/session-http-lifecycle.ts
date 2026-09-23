@@ -165,6 +165,10 @@ try {
               id, user_id: 1, payload: '{}', last_activity: Math.floor(boundary.getTime() / 1000), expires_at: sqlDateTime(new Date(boundary.getTime() + offset)),
             }).execute()
             assert.equal(Boolean(await SessionAuth[method](id)), offset > 0, `${method}: expiry offset ${offset}ms`)
+            if (offset <= 0) {
+              const expired = await db.selectFrom('sessions').where('id', '=', id).selectAll().executeTakeFirst()
+              assert(!expired, `${method}: expired session must be removed on ${dialect}`)
+            }
           }
         }
       }

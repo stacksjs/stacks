@@ -227,7 +227,10 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
-      await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+      // Delete only the expired version we read. A concurrent refresh may have
+      // renewed this session before the cleanup reaches the database.
+      await db.deleteFrom('sessions').where('id', '=', sessionId)
+        .where('expires_at', session.expires_at == null ? 'is' : '=', session.expires_at).execute()
       return undefined
     }
 
@@ -259,7 +262,8 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
-      await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+      await db.deleteFrom('sessions').where('id', '=', sessionId)
+        .where('expires_at', session.expires_at == null ? 'is' : '=', session.expires_at).execute()
       return false
     }
 
@@ -288,7 +292,8 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
-      await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+      await db.deleteFrom('sessions').where('id', '=', sessionId)
+        .where('expires_at', session.expires_at == null ? 'is' : '=', session.expires_at).execute()
       return false
     }
 
