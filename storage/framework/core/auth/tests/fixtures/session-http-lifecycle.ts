@@ -38,7 +38,7 @@ if (dialect === 'sqlite')
   configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
-const { Auth, SessionAuth, authCookie, authUser, authenticatedUser } = await import('@stacksjs/auth')
+const { Auth, SessionAuth, authCookie, authUser, authenticatedUser, refresh } = await import('@stacksjs/auth')
 const { makeHash } = await import('@stacksjs/security')
 const { createStacksRouter } = await import('@stacksjs/router')
 const LogoutAction = (await import('../../../../defaults/app/Actions/Auth/LogoutAction')).default
@@ -88,6 +88,32 @@ try {
     assert.equal(after?.id, before?.id, 'auth identity changed across an await')
     return { id: after?.id, email: after?.email }
   }).middleware('auth')
+  // Public pages still need a lazy identity lookup (for a sign-in menu, for
+  // example). Exercise both helpers without an auth middleware priming them.
+  router.get('/session-audit/identity', async () => {
+    const helper = await authUser()
+    const user = await Auth.user()
+    return {
+      id: user?.id == null ? null : Number(user.id),
+      helperId: helper?.id == null ? null : Number(helper.id),
+      checked: await Auth.check(), guest: await Auth.guest(),
+    }
+  })
+  router.get('/session-audit/identity-refresh', async () => {
+    const before = await authUser()
+    assert(before)
+    const changedName = 'Reloaded fixture identity'
+    try {
+      await db.updateTable('users').set({ name: changedName }).where('id', '=', before.id).execute()
+      await refresh()
+      assert.equal((await authUser())?.name, changedName, 'refresh must invalidate the shared identity cache')
+      assert.equal((await Auth.user())?.name, changedName)
+      return { refreshed: true }
+    }
+    finally {
+      await db.updateTable('users').set({ name: before.name }).where('id', '=', before.id).execute()
+    }
+  })
   router.post('/session-audit/logout', LogoutAction).middleware('auth')
   router.post('/session-audit/logout-state', async (req) => {
     assert(await Auth.user(), 'logout-state must start authenticated')
@@ -124,6 +150,13 @@ try {
       assert.equal(Number(body.id), expectedId)
       assert.equal(body.email, emails[expectedId - 1])
     }
+    const identity = async (headers: Headers | Record<string, string>, expectedId: number | null) => {
+      const response = await fetch(`${base}/identity`, { headers })
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), {
+        id: expectedId, helperId: expectedId, checked: expectedId !== null, guest: expectedId === null,
+      }, 'public auth helpers must agree without middleware')
+    }
 
     let cookies: string[]
     if (phase === 'login') {
@@ -149,6 +182,14 @@ try {
     }
 
     await Promise.all(Array.from({ length: 20 }, (_, index) => me(cookies[index % 2]!, index % 2 + 1)))
+    await Promise.all(Array.from({ length: 20 }, (_, index) => identity({ cookie: cookies[index % 2]! }, index % 2 + 1)))
+    await identity({}, null)
+    await identity({ cookie: 'session_id=missing-session' }, null)
+    await identity({ cookie: cookies[0]!, authorization: 'Bearer invalid-explicit-token' }, null)
+    await identity({ cookie: `${cookies[0]}; ${authCookie('invalid-cookie-token').split(';')[0]}` }, null)
+    const refreshedIdentity = await fetch(`${base}/identity-refresh`, { headers: { cookie: cookies[0]! } })
+    assert.equal(refreshedIdentity.status, 200)
+    assert.deepEqual(await refreshedIdentity.json(), { refreshed: true })
     const guest = await fetch(`${base}/me`, { headers: { accept: 'application/json' } })
     assert.equal(guest.status, 401)
     await guest.arrayBuffer()
@@ -271,6 +312,7 @@ try {
         const before = await fetch(`${base}/me`, { headers })
         assert.equal(before.status, 200)
         assert.equal(Number((await before.json() as { id: number }).id), 2)
+        await identity(headers, 2)
         const logout = await fetch(`${base}/logout`, { method: 'POST', headers })
         await logout.arrayBuffer()
         assert.equal(logout.status, 200)
@@ -278,6 +320,7 @@ try {
         const revoked = await fetch(`${base}/me`, { headers })
         await revoked.arrayBuffer()
         assert.equal(revoked.status, 401, `${transport} token must be revoked`)
+        await identity(headers, null)
         await me(cookies[0]!, 1)
         await me(cookies[1]!, 2)
         const freshLogin = await fetch(`${base}/token-login`, {
@@ -336,6 +379,7 @@ try {
       const stale = await fetch(`${base}/me`, { headers: { cookie: cookies[0]!, accept: 'application/json' } })
       await stale.arrayBuffer()
       assert.equal(stale.status, 401, 'copied session cookie must stop authenticating after logout')
+      await identity({ cookie: cookies[0]! }, null)
       await me(cookies[1]!, 2)
       // Revocation must also invalidate the current request's cached identity,
       // not just reject its credentials on the next HTTP request.

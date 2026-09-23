@@ -15,7 +15,7 @@ import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
 import { getCurrentRequest, request } from '@stacksjs/router'
 import { requestToken } from './request-token'
-import { sessionLogout } from './session-auth'
+import { sessionLogout, sessionUser } from './session-auth'
 import { revokeTokenPair, revokeTokenPairs } from './token-revocation'
 import { Buffer } from 'node:buffer'
 import { createHash, timingSafeEqual } from 'node:crypto'
@@ -448,10 +448,13 @@ export class Auth {
       return state.authUser
 
     const bearerToken = this.getBearerToken()
-    if (!bearerToken)
-      return undefined
-
-    const user = await this.getUserFromToken(bearerToken)
+    // Public pages have no middleware to prime this state. Resolve the same
+    // credentials as guarded pages, without falling back from an invalid
+    // explicit token to a different user's session.
+    const sessionId = !bearerToken ? getCurrentRequest()?.cookie?.('session_id') : undefined
+    const user = bearerToken
+      ? await this.getUserFromToken(bearerToken)
+      : sessionId ? await sessionUser(sessionId) : undefined
     if (user && state)
       state.authUser = user
 
@@ -488,7 +491,7 @@ export class Auth {
    * Set the authenticated user (useful for testing)
    * Similar to Laravel's Auth::setUser()
    */
-  public static setUser(user: UserModel): void {
+  public static setUser(user: UserModel | undefined): void {
     const state = authStateOrNull()
     if (state) state.authUser = user
   }

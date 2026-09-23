@@ -14,7 +14,7 @@ export type AuthUser = UserJsonResponse
  *
  * This is the primary way to get the authenticated user in your application.
  * It first checks if the user was already set by the auth middleware,
- * then falls back to validating the bearer token.
+ * then resolves the request's bearer token, auth cookie, or database session.
  *
  * @example
  * import { authUser } from '@stacksjs/auth'
@@ -36,22 +36,7 @@ export async function authUser(): Promise<UserModel | undefined> {
     return middlewareUser
   }
 
-  // Fall back to token validation
-  let token = request.bearerToken?.()
-
-  // Fallback: get directly from Authorization header
-  if (!token) {
-    const authHeader = request.headers?.get?.('authorization') || request.headers?.get?.('Authorization')
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7)
-    }
-  }
-
-  if (!token) {
-    return undefined
-  }
-
-  return await Auth.getUserFromToken(token) as UserModel | undefined
+  return await Auth.user() as UserModel | undefined
 }
 
 export async function check(): Promise<boolean> {
@@ -79,7 +64,8 @@ export async function logout(): Promise<void> {
 }
 
 export async function refresh(): Promise<void> {
-  // Clear the cached user on the request to force re-fetch
+  // Both public lookup paths share the request-scoped Auth cache.
+  Auth.setUser(undefined)
   if (request?._authenticatedUser) {
     request._authenticatedUser = undefined
   }
