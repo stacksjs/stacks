@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { config } from '@stacksjs/config'
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
@@ -327,21 +327,37 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
     if (sessionFingerprintRejected(session))
       return false
 
-    const newExpiry = new Date(Date.now() + ttlMs)
-    const result = await db.updateTable('sessions')
-      .set({
-        expires_at: sqlDateTime(newExpiry),
-        last_activity: Math.floor(Date.now() / 1000),
-      })
-      .where('id', '=', sessionId)
-      .returning('id')
-      .executeTakeFirst()
+    return await db.transaction(async () => {
+      if (getDatabaseDialect() === 'mysql') {
+        // MySQL emulates RETURNING with reads. Lock the observed version first
+        // so a repeatable-read snapshot cannot report a concurrently deleted
+        // or replaced session as an updated row.
+        const current = await db.primary.selectFrom('sessions')
+          .where('id', '=', sessionId).where('expires_at', '=', session.expires_at)
+          .select('id').lockForUpdate().executeTakeFirst()
+        if (!current) return false
+      }
+      const newExpiry = new Date(Date.now() + ttlMs)
+      const result = await db.updateTable('sessions')
+        .set({
+          expires_at: sqlDateTime(newExpiry),
+          last_activity: Math.floor(Date.now() / 1000),
+        })
+        .where('id', '=', sessionId)
+        .where('expires_at', '=', session.expires_at)
+        .returning('id')
+        .executeTakeFirst()
 
-    // A concurrent logout can remove the row after the SELECT. Successful SQL
-    // execution alone does not mean this session's expiry was renewed.
-    // Returning a row also preserves idempotent refreshes on MySQL, where an
-    // unchanged row reports zero changed rows despite still being present.
-    return Boolean(result)
+      // Do not revive a session which expired while the UPDATE waited. Throw
+      // inside the transaction so its writes roll back before returning false.
+      if (Date.now() >= expiresAt)
+        throw new Error('[auth] Session expired during renewal.')
+
+      // Compare against the observed version: another refresh or expiry
+      // change must not be overwritten by this stale reader. Returning a row
+      // preserves same-value MySQL refreshes, unlike changed-row counts.
+      return Boolean(result)
+    })
   }
   catch {
     return false

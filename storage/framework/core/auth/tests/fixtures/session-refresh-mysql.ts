@@ -34,10 +34,11 @@ try {
   let revoked = false
   const unregister = registerPersistentQueryHooks({
     onQueryStart(event) {
-      if (event.kind !== 'update')
+      if (!event.sql.includes('FOR UPDATE') || !event.sql.includes('sessions'))
         return
       // Query hooks are synchronous. Complete revocation on another real
-      // connection before letting the pending UPDATE reach MySQL.
+      // connection after the initial read and before the renewal claims its
+      // row lock. Once claimed, revocation must wait for the renewal commit.
       const revoker = Bun.spawnSync([process.execPath, '-e', `
         const db = new Bun.SQL({ adapter: 'mysql', hostname: process.env.DB_HOST,
           port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
