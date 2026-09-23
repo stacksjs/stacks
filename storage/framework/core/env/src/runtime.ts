@@ -2,8 +2,21 @@ import type { EnvKey, StacksEnv } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import fs from 'node:fs'
-import { activeEnvName, decryptEnvValue } from './plugin'
 import { envEnum } from './types'
+
+type DecryptionRuntime = Pick<typeof import('./plugin'), 'activeEnvName' | 'decryptEnvValue'>
+
+let decryptionRuntime: DecryptionRuntime | undefined
+
+function getDecryptionRuntime(): DecryptionRuntime {
+  // `require()` is intentional here. Bun recognizes it as a synchronous lazy
+  // dependency and either inlines it behind a lazy initializer or emits a
+  // synchronous split chunk. `import.meta.require()` is not recognized by the
+  // bundler and would leave a broken relative lookup in downstream bundles.
+  // eslint-disable-next-line ts/no-require-imports
+  decryptionRuntime ||= require('./plugin') as DecryptionRuntime
+  return decryptionRuntime
+}
 
 // Report an undecryptable key once, not on every read in the hot path.
 const warnedUndecryptable = new Set<string>()
@@ -16,7 +29,7 @@ function warnUndecryptable(key: string): void {
   // Name the environment whose key was looked for. "No usable private key" on
   // its own sends people to check a key that is present and correct, when the
   // real answer is that the wrong environment was asked for.
-  const envName = activeEnvName()
+  const envName = getDecryptionRuntime().activeEnvName()
   // eslint-disable-next-line no-console
   console.warn(`[env] warning: "${key}" is encrypted but no usable private key was found for the "${envName}" environment; falling back to its default. Set DOTENV_PRIVATE_KEY_${envName.toUpperCase()} or ship .env.keys.`)
 }
@@ -43,7 +56,7 @@ const handler: ProxyHandler<StacksEnv> = {
     // key the value is useless to everyone, so it's scrubbed to `undefined` and
     // config falls back to its default — the same resolution the preloader does.
     if (typeof value === 'string' && (value.startsWith('encrypted:') || value.startsWith('enc:'))) {
-      const decrypted = decryptEnvValue(value)
+      const decrypted = getDecryptionRuntime().decryptEnvValue(value)
       if (decrypted === undefined) {
         warnUndecryptable(key)
         delete bag[key]

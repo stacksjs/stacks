@@ -14,8 +14,12 @@ const runtimeDistLoaded = () => moduleCacheKeys().some(modulePath =>
 const databaseRuntimeSourceLoaded = () => moduleCacheKeys().some(modulePath =>
   /\/core\/database\/src\/runtime\.ts$/.test(modulePath),
 )
+const decryptionSupportLoaded = () => moduleCacheKeys().some(modulePath =>
+  /\/core\/env\/src\/(?:crypto|parser|plaintext-env|plugin)\.ts$/.test(modulePath),
+)
 
 const rootLoadedBeforeRootImport = envRootLoaded()
+const decryptionSupportLoadedBeforeRootImport = decryptionSupportLoaded()
 const root = await import('@stacksjs/env')
 
 console.log(JSON.stringify({
@@ -24,6 +28,7 @@ console.log(JSON.stringify({
   runtimeSourceLoaded: runtimeSourceLoaded(),
   runtimeDistLoaded: runtimeDistLoaded(),
   databaseRuntimeSourceLoaded: databaseRuntimeSourceLoaded(),
+  decryptionSupportLoadedBeforeRootImport,
   sameEnv: runtime.env === root.env,
   sameProcess: runtime.process === root.process,
   sameWriteEnv: runtime.writeEnv === root.writeEnv,

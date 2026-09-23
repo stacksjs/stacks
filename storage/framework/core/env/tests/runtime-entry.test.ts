@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'bun:test'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import * as root from '../src'
+import { encryptValue, generateKeypair } from '../src/crypto'
 import * as runtime from '../src/runtime'
 
 interface PublicProbeResult {
@@ -10,6 +13,7 @@ interface PublicProbeResult {
   runtimeSourceLoaded: boolean
   runtimeDistLoaded: boolean
   databaseRuntimeSourceLoaded: boolean
+  decryptionSupportLoadedBeforeRootImport: boolean
   sameEnv: boolean
   sameProcess: boolean
   sameWriteEnv: boolean
@@ -58,12 +62,24 @@ describe('env runtime entry', () => {
       runtimeSourceLoaded: true,
       runtimeDistLoaded: false,
       databaseRuntimeSourceLoaded: true,
+      decryptionSupportLoadedBeforeRootImport: false,
       sameEnv: true,
       sameProcess: true,
       sameWriteEnv: true,
       sameValidateEnv: true,
       sameRequireEnv: true,
     } satisfies PublicProbeResult)
+  })
+
+  test('loads decryption support on the first encrypted proxy read', () => {
+    const keys = generateKeypair()
+    const ciphertext = encryptValue('runtime-secret', keys.publicKey)
+
+    expect(childResult('runtime-lazy-decryption-probe.ts', ['@stacksjs/env/runtime', ciphertext, keys.privateKey])).toEqual({
+      supportLoadedBeforeRead: false,
+      supportLoadedAfterRead: true,
+      decrypted: 'runtime-secret',
+    })
   })
 
   test('built public entries share runtime and plugin state', () => {
@@ -73,11 +89,10 @@ describe('env runtime entry', () => {
     })
     expect(build.exitCode).toBe(0)
 
-    expect(childResult('built-runtime-entry-probe.ts', [
-      join(packageRoot, 'dist/index.js'),
-      join(packageRoot, 'dist/runtime.js'),
-      join(packageRoot, 'dist/plugin.js'),
-    ])).toEqual({
+    const rootEntry = join(packageRoot, 'dist/index.js')
+    const runtimeEntry = join(packageRoot, 'dist/runtime.js')
+    const pluginEntry = join(packageRoot, 'dist/plugin.js')
+    expect(childResult('built-runtime-entry-probe.ts', [rootEntry, runtimeEntry, pluginEntry])).toEqual({
       sameEnv: true,
       sameProcess: true,
       sameWriteEnv: true,
@@ -85,5 +100,40 @@ describe('env runtime entry', () => {
       sameRequireEnv: true,
       sameActiveEnvName: true,
     })
+
+    const keys = generateKeypair()
+    const ciphertext = encryptValue('built-runtime-secret', keys.publicKey)
+    expect(childResult('runtime-lazy-decryption-probe.ts', [runtimeEntry, ciphertext, keys.privateKey])).toEqual({
+      supportLoadedBeforeRead: false,
+      supportLoadedAfterRead: true,
+      decrypted: 'built-runtime-secret',
+    })
+  })
+
+  test('bundles synchronous decryption support for standalone consumers', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-env-runtime-bundle-'))
+    try {
+      const build = await Bun.build({
+        entrypoints: [join(packageRoot, 'src/runtime.ts')],
+        target: 'bun',
+        format: 'esm',
+        write: false,
+        metafile: true,
+      })
+      expect(build.success).toBe(true)
+      expect(Object.keys(build.metafile?.inputs || {}).some(source => source.endsWith('/env/src/plugin.ts'))).toBe(true)
+      expect(build.outputs).toHaveLength(1)
+
+      const entry = join(directory, 'runtime.js')
+      await Bun.write(entry, build.outputs[0]!)
+      const keys = generateKeypair()
+      const ciphertext = encryptValue('bundled-runtime-secret', keys.publicKey)
+      expect(childResult('bundled-runtime-decryption-probe.ts', [entry, ciphertext, keys.privateKey])).toEqual({
+        decrypted: 'bundled-runtime-secret',
+      })
+    }
+    finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 })
