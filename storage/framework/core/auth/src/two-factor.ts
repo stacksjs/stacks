@@ -121,25 +121,23 @@ const PENDING_SECRET_TTL_SECONDS = 10 * 60
 /**
  * Stash a freshly generated secret server-side while the user goes
  * scan/enter it into their authenticator app. Single pending secret
- * per user — generating a new one invalidates any prior unconfirmed
- * attempt, same delete-then-insert shape as storeWebAuthnChallenge.
+ * per user. Replacing it is one atomic upsert so a failed write preserves
+ * the prior setup and simultaneous setup requests cannot collide.
  */
 export async function stashPendingTwoFactorSecret(userId: number, secret: string, ttlSeconds: number = PENDING_SECRET_TTL_SECONDS): Promise<void> {
   const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
 
-  await db
-    .deleteFrom('two_factor_pending_secrets')
-    .where('user_id', '=', userId)
-    .execute()
-
-  await db
-    .insertInto('two_factor_pending_secrets')
-    .values({
-      user_id: userId,
-      secret,
-      expires_at: expiresAt,
-    } as never)
-    .execute()
+  await db.transaction(async () => {
+    await db.upsert('two_factor_pending_secrets', [{
+      user_id: userId, secret, expires_at: expiresAt,
+    }], ['user_id'], ['secret', 'expires_at'])
+    // Triggers can suppress a write without throwing. Check under the same
+    // transaction lock so another setup cannot replace our row before reading.
+    const stored = await db.primary.selectFrom('two_factor_pending_secrets')
+      .where('user_id', '=', userId).select(['secret', 'expires_at']).executeTakeFirst()
+    if (stored?.secret !== secret || parseSqlDateTime(stored.expires_at)?.getTime() !== parseSqlDateTime(expiresAt)?.getTime())
+      throw new Error('[auth] Pending two-factor setup could not be stored.')
+  })
 }
 
 /**
