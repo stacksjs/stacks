@@ -102,8 +102,8 @@ export function buildableSubpaths(buildSource: string): string[] | null {
   if (/\btranspilePackage\s*\(/.test(buildSource))
     return null
 
-  const block = buildSource.match(/entrypoints:\s*\[([^\]]*)\]/)?.[1] ?? ''
-  return [...block.matchAll(/['"]([^'"]+)['"]/g)]
+  const blocks = [...buildSource.matchAll(/entrypoints:\s*\[([^\]]*)\]/g)].map(match => match[1] ?? '')
+  return blocks.flatMap(block => [...block.matchAll(/['"]([^'"]+)['"]/g)])
     .map(match => match[1]!.replace(/^\.\/src\//, '').replace(/\.ts$/, ''))
 }
 

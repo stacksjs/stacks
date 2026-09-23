@@ -41,6 +41,7 @@
       "@stacksjs/router/*": ["./router/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
       "@stacksjs/utils/*": ["./utils/src/*"],
+      "@stacksjs/validation/*": ["./validation/src/*"],
       "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
