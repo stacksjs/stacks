@@ -183,6 +183,20 @@ try {
       }).execute()
       assert.equal(await SessionAuth.refresh(refreshId, 120_000), true)
       assert.equal(await SessionAuth.refresh('missing-refresh-session'), false)
+      const refreshSnapshot = await db.primary.selectFrom('sessions').where('id', '=', refreshId).selectAll().executeTakeFirstOrThrow()
+      const invalidRefreshes: string[] = []
+      for (const ttl of [0, -1, -60_000, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.MAX_VALUE]) {
+        try {
+          assert.equal(await SessionAuth.refresh(refreshId, ttl), false, `invalid refresh TTL ${ttl} must not report success`)
+          const after = await db.primary.selectFrom('sessions').where('id', '=', refreshId).selectAll().executeTakeFirstOrThrow()
+          assert.deepEqual(after, refreshSnapshot, `invalid refresh TTL ${ttl} must leave a usable session intact`)
+        }
+        catch (error) { invalidRefreshes.push(String(error)) }
+        finally {
+          await db.updateTable('sessions').set({ expires_at: refreshSnapshot.expires_at, last_activity: refreshSnapshot.last_activity }).where('id', '=', refreshId).execute()
+        }
+      }
+      assert.deepEqual(invalidRefreshes, [])
       if (dialect === 'sqlite') {
         // Pause at the public query hook immediately before UPDATE executes.
         // A second real connection revokes the row after refresh read it.
