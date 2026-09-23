@@ -1,5 +1,75 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.51...v0.74.52)
+
+## ✨ Features
+
+- **database**: let an application list its own sensitive query log columns ([4ebf05e](https://github.com/stacksjs/stacks/commit/4ebf05e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: report a Bun SQL pool broken by oven-sh/bun#42804, once ([a9a79c8](https://github.com/stacksjs/stacks/commit/a9a79c8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#42804](https://github.com/stacksjs/stacks/issues/42804), [#42804](https://github.com/stacksjs/stacks/issues/42804), [#42804](https://github.com/stacksjs/stacks/issues/42804), [#40913](https://github.com/stacksjs/stacks/issues/40913), [#40913](https://github.com/stacksjs/stacks/issues/40913), [#42804](https://github.com/stacksjs/stacks/issues/42804), [#40913](https://github.com/stacksjs/stacks/issues/40913))
+
+## 🐛 Bug Fixes
+
+- **browser**: import the stx bindings before re-exporting them ([cfc0e56](https://github.com/stacksjs/stacks/commit/cfc0e56)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: import each Craft API by name, so one import bundles one API ([c32f3e8](https://github.com/stacksjs/stacks/commit/c32f3e8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2670](https://github.com/stacksjs/stacks/issues/2670), [#1957](https://github.com/stacksjs/stacks/issues/1957))
+- **defaults**: give the marketing header, footer and hero names of their own ([f22ee38](https://github.com/stacksjs/stacks/commit/f22ee38)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **types**: declare requestContext as the object the servers install ([4988317](https://github.com/stacksjs/stacks/commit/4988317)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **storefront**: verify the signed cart cookie, and log a cart the pages cannot read ([8b405af](https://github.com/stacksjs/stacks/commit/8b405af)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **server**: read requestContext from the request being rendered ([0ea9f9d](https://github.com/stacksjs/stacks/commit/0ea9f9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **storefront**: read the cart cookie through requestContext ([697d8d2](https://github.com/stacksjs/stacks/commit/697d8d2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2232](https://github.com/stacksjs/stacks/issues/2232))
+- **database**: keep withheld bound values out of query log errors ([ce84343](https://github.com/stacksjs/stacks/commit/ce84343)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: keep query-log batches out of application transaction defaults ([c465bdc](https://github.com/stacksjs/stacks/commit/c465bdc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: judge a bound value for a JWT in time linear in its length ([2ed9098](https://github.com/stacksjs/stacks/commit/2ed9098)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **router**: name oven-sh/bun#42804 in /api/health and keep reporting it ([b72878b](https://github.com/stacksjs/stacks/commit/b72878b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#42804](https://github.com/stacksjs/stacks/issues/42804), [#42804](https://github.com/stacksjs/stacks/issues/42804), [#42804](https://github.com/stacksjs/stacks/issues/42804), [#42804](https://github.com/stacksjs/stacks/issues/42804))
+- **query-builder**: install only the hook kinds a listener defines ([0954b53](https://github.com/stacksjs/stacks/commit/0954b53)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: give the database probe one connection, not a pool of 10 ([713f157](https://github.com/stacksjs/stacks/commit/713f157)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#42804](https://github.com/stacksjs/stacks/issues/42804))
+- **validation**: type the shared conditional methods over their validator ([c49e5f3](https://github.com/stacksjs/stacks/commit/c49e5f3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **mobile**: type share() the way craft-native 0.0.92 resolves it ([7a596fd](https://github.com/stacksjs/stacks/commit/7a596fd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **env**: defer encrypted value runtime ([7086b46](https://github.com/stacksjs/stacks/commit/7086b46)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: use narrow env runtime ([16a2393](https://github.com/stacksjs/stacks/commit/16a2393)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: narrow controller imports ([5175191](https://github.com/stacksjs/stacks/commit/5175191)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: use narrow config runtime ([cd28de9](https://github.com/stacksjs/stacks/commit/cd28de9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: add response-only runtime entry ([d76c783](https://github.com/stacksjs/stacks/commit/d76c783)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: use router runtime response ([15d1aa4](https://github.com/stacksjs/stacks/commit/15d1aa4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: narrow cold runtime imports ([aede616](https://github.com/stacksjs/stacks/commit/aede616)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **logging**: defer runtime flush loading ([aae4632](https://github.com/stacksjs/stacks/commit/aae4632)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: defer cold diagnostic modules ([494b3a5](https://github.com/stacksjs/stacks/commit/494b3a5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: skip settled server initialization ([b85ec53](https://github.com/stacksjs/stacks/commit/b85ec53)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **database**: document query log errors and sensitiveColumns ([040b15e](https://github.com/stacksjs/stacks/commit/040b15e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **router**: normalize metafile paths ([5accd5f](https://github.com/stacksjs/stacks/commit/5accd5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: show the badge markup and server output when a cart render is wrong ([2f7bc71](https://github.com/stacksjs/stacks/commit/2f7bc71)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **buddy**: fail on a template import that does not resolve from the template ([af68cdb](https://github.com/stacksjs/stacks/commit/af68cdb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: give the completion fixture's admin one connection ([806cb7d](https://github.com/stacksjs/stacks/commit/806cb7d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **cms**: run public-serving's stx server in a process the test can stop ([225d5a3](https://github.com/stacksjs/stacks/commit/225d5a3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **actions**: expect what the filesystem says about tests/Browser, and run it in CI ([6cf8c6a](https://github.com/stacksjs/stacks/commit/6cf8c6a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **whois**: gate the last network cases behind WHOIS_LIVE and move them into tests/ ([61ca245](https://github.com/stacksjs/stacks/commit/61ca245)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **cms**: serve public-serving an image-free public directory, and run it in CI ([773a570](https://github.com/stacksjs/stacks/commit/773a570)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 👷 Build System
+
+- **typecheck**: check stx templates against the requestContext they are given ([b58f8c2](https://github.com/stacksjs/stacks/commit/b58f8c2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2232](https://github.com/stacksjs/stacks/issues/2232))
+
+## 💚 Continuous Integration
+
+- say what typecheck:views found in the storefront views ([f462155](https://github.com/stacksjs/stacks/commit/f462155)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **pantry**: lock libexpat 2.8.5, which a Linux install now resolves ([c919643](https://github.com/stacksjs/stacks/commit/c919643)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.50...v0.74.51)
 
 ## 🐛 Bug Fixes
