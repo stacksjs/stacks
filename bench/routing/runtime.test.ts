@@ -143,6 +143,16 @@ describe('benchmark server isolation', () => {
     expect(headersFor(targetById('stacks-warm')!, scenario)).toHaveProperty('cookie')
   })
 
+  it('matches every single-feature ablation to the warm-client input profile', () => {
+    const control = targetById('stacks-warm')!
+    for (const id of ['stacks-no-csrf', 'stacks-no-request-ids', 'stacks-no-security-headers']) {
+      for (const scenario of SCENARIOS)
+        expect(headersFor(targetById(id)!, scenario)).toEqual(headersFor(control, scenario))
+    }
+    const get = SCENARIOS.find(scenario => scenario.id === 'static-json')!
+    expect(headersFor(targetById('stacks')!, get)).not.toEqual(headersFor(control, get))
+  })
+
   it('stabilizes only setup probe request IDs across every target', () => {
     const scenario = SCENARIOS.find(candidate => candidate.id === 'post-validate')!
     const stacksHeaders = probeHeadersFor(targetById('stacks')!, scenario)

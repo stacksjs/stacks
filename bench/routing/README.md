@@ -374,6 +374,22 @@ and reading it as anything else is the mistake this table exists to prevent.
 | `stacks-minimal` | `STACKS_SECURITY_HEADERS_DISABLE=true`, `csrf: false` for token-only APIs, and `requestIds: false` for deployments whose proxy owns correlation. GET requests carry the same headers as peer targets. Everything else unchanged. |
 | `stacks-no-context` | Opt-in. `stacks-minimal` plus `requestContext: false`, so no async scope is entered per handler and `request()` throws. Prices the ambient request scope on its own. |
 
+### Single-feature comparisons need the warm control
+
+`stacks-no-csrf`, `stacks-no-request-ids`, and `stacks-no-security-headers`
+all echo a CSRF cookie. Compare these opt-in ablations to **`stacks-warm` on
+the same runner**, not to `stacks`. Otherwise GET deltas include both the
+disabled feature and the cold-versus-returning-client difference. Retaining
+more repeats cannot remove that confound. `measurements.json` records the
+exact request headers so the comparison can be audited.
+
+```bash
+bun bench/routing/run.ts --driver oha --rate 10000 --runs 5 --targets stacks,stacks-warm,stacks-no-csrf,stacks-no-request-ids,stacks-no-security-headers
+```
+
+Keep `stacks` in that selection only to price cold-client behavior separately.
+These diagnostic feature costs are not a recommendation to disable security.
+
 The opt-in `stacks-no-context` target is `stacks-minimal` with
 `requestContext: false`, which stops the framework entering an async scope
 around each handler. `request()` throws under it, so it only applies to an
