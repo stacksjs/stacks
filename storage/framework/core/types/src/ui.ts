@@ -45,6 +45,37 @@ export interface UiOptions {
   defaultViews?: boolean | string[]
 
   /**
+   * Skip the startup pass that derives image placeholders and builds the
+   * responsive delivery catalog.
+   *
+   * Declared here for the same reason as `defaultViews`: `config/ui.ts` is the
+   * stx config (stx resolves `{ name: 'stx', alias: 'ui' }`), so this is where
+   * an app sets it, but it is typed on `ServeOptions` in bun-plugin-stx, which
+   * is the package that reads it. An app setting it had to widen the type
+   * inline to be allowed to.
+   *
+   * That gap is not cosmetic. The option is absent from both `UiOptions` and
+   * `StxOptions`, so grepping `node_modules/@stacksjs` for it finds nothing
+   * and it reads as dead config. On chrisbreuer.me it was deleted on exactly
+   * that reasoning and took the site down: the server runs the pass before it
+   * binds, and over 120 gallery files that is 35s to first response against
+   * 1.1s with it set, at 918 MB peak. The release could not clear its health
+   * gate, and because the current symlink had already moved the site served
+   * 502 until a previous release was started by hand.
+   *
+   * Leave it unset unless the app renders no `<StxImage>` and no `@image`, in
+   * which case every variant the pass derives goes unrequested.
+   */
+  imageWarmup?: boolean
+
+  /**
+   * How long a request will wait on the image warmup pass before being served
+   * without it. Meaningless unless the pass runs, so it pairs with
+   * `imageWarmup` above.
+   */
+  imageWarmupGraceMs?: number
+
+  /**
    * **Shortcuts**
    *
    * Shortcuts provide you with the ability to combine
