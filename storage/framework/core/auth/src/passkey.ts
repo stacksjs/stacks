@@ -303,21 +303,25 @@ export async function storeWebAuthnChallenge(
     ? challenge
     : Buffer.from(challenge).toString('base64url')
 
-  await db
-    .deleteFrom('webauthn_challenges')
-    .where('user_id', '=', userId)
-    .where('purpose', '=', purpose)
-    .execute()
+  await db.transaction(async () => {
+    await db.deleteFrom('webauthn_challenges')
+      .where('user_id', '=', userId).where('purpose', '=', purpose).execute()
 
-  await db
-    .insertInto('webauthn_challenges')
-    .values({
+    await db.insertInto('webauthn_challenges').values({
       user_id: userId,
       challenge: encodedChallenge,
       purpose,
       expires_at: expiresAt,
-    } as never)
-    .execute()
+    } as never).execute()
+
+    // Keep the prior challenge if replacement fails, including silent trigger
+    // rejection. Retain the legacy-schema path without requiring a new index.
+    const stored = await db.primary.selectFrom('webauthn_challenges')
+      .where('user_id', '=', userId).where('purpose', '=', purpose)
+      .select('challenge').execute()
+    if (stored.length !== 1 || stored[0]?.challenge !== encodedChallenge)
+      throw new Error('[auth] WebAuthn challenge could not be stored.')
+  })
 }
 
 /**
