@@ -96,7 +96,8 @@ export function passwordResets(email: string): PasswordResetActions {
     const token = generateResetToken()
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
     const expireMinutes = getTokenExpireMinutes()
-    const expiresAt = sqlDateTime(new Date(Date.now() + expireMinutes * 60_000))
+    const createdAt = new Date()
+    const expiresAt = sqlDateTime(new Date(createdAt.getTime() + expireMinutes * 60_000))
 
     // Delete any existing reset row for this email before inserting
     // the new one so a second reset request invalidates any prior
@@ -104,19 +105,27 @@ export function passwordResets(email: string): PasswordResetActions {
     // single-outstanding-token-per-email at the DB layer; this delete
     // makes the rotation work even when the unique constraint hasn't
     // been applied yet (older installs). See stacksjs/stacks#1861 A-5.
-    await db
-      .deleteFrom('password_resets')
-      .where('email', '=', email)
-      .execute()
+    await db.transaction(async () => {
+      await db
+        .deleteFrom('password_resets')
+        .where('email', '=', email)
+        .execute()
 
-    await db
-      .insertInto('password_resets')
-      .values({
-        email,
-        token: hashedToken,
-        expires_at: expiresAt,
-      } as never)
-      .executeTakeFirst()
+      await db
+        .insertInto('password_resets')
+        .values({
+          email,
+          token: hashedToken,
+          expires_at: expiresAt,
+          created_at: sqlDateTime(createdAt),
+        } as never)
+        .executeTakeFirst()
+
+      const stored = await db.primary.selectFrom('password_resets')
+        .where('email', '=', email).selectAll().execute()
+      if (stored.length !== 1 || stored[0]?.token !== hashedToken)
+        throw new Error('Password reset could not replace its token')
+    })
 
     return token // Return unhashed token for email
   }
@@ -137,7 +146,13 @@ export function passwordResets(email: string): PasswordResetActions {
       return
 
     const token = await createResetToken()
+    // A caller's outer rollback must not send a link that never committed.
+    // Standalone sends still await delivery and surface provider failures.
+    const deliver = () => deliverResetEmail(token)
+    if (!enqueueAfterCommit(deliver)) await deliver()
+  }
 
+  async function deliverResetEmail(token: string): Promise<void> {
     const expireMinutes = getTokenExpireMinutes()
     const appName = config.app.name || 'Stacks'
 
