@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling/http'
 import type { EnhancedRequest } from '@stacksjs/router'
-import { Middleware } from '@stacksjs/router'
+import { Middleware } from '@stacksjs/router/middleware'
 
 /**
  * CSRF Protection Middleware (default-on for unsafe methods)
