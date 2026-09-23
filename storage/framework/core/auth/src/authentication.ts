@@ -9,7 +9,7 @@ import type {
   TokenCreateOptions,
 } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { db, parseSqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, parseSqlDateTime } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
@@ -983,37 +983,40 @@ export class Auth {
     // Look up the existing row through `findToken` so the legacy
     // jwt:encryptedId shape resolves via `bearerLookupHash`.
     const { findToken: findRawToken, revokeToken: revokeRawToken } = await import('./tokens')
-    const existing = await findRawToken(oldToken)
-    if (!existing) return null
+    const candidate = await findRawToken(oldToken)
+    if (!candidate) return null
 
-    // The raw lookup intentionally accepts every owner type, including legacy
-    // bearer shapes. Check ownership before revoking or minting a User token.
-    const owner = await db.primary.selectFrom('oauth_access_tokens')
-      .where('id', '=', existing.id)
-      .select('tokenable_type')
-      .executeTakeFirst()
-    if (owner?.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
-      return null
+    return db.transaction(async () => {
+      // Match refresh and logout's access-row lock. Only one caller may
+      // consume the original, and a failed mint must restore its whole pair.
+      let query = db.primary.selectFrom('oauth_access_tokens')
+        .where('id', '=', candidate.id)
+        .selectAll()
+      if (getDatabaseDialect() !== 'sqlite') query = query.lockForUpdate()
+      const owner = await query.executeTakeFirst()
+      if (!owner || owner.revoked || owner.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
+        return null
 
-    const expiresAt = existing.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 60 * 60 * 1000))
+      // Lock acquisition may outlive the token, or another transaction may
+      // shorten its deadline. Validate the locked row, not the earlier read.
+      const deadline = parseSqlDateTime(owner.expires_at)
+      if (owner.expires_at != null && (!deadline || deadline.getTime() <= Date.now()))
+        return null
+      const existing = await findRawToken(oldToken)
+      if (!existing || Number(existing.id) !== Number(owner.id)) return null
 
-    // Revoke the old row before minting the new one. Sequencing
-    // matters: a crash between the two leaves the user without a
-    // valid token but doesn't leave a stale shadow row.
-    await revokeRawToken(oldToken)
+      const user = await User.find(Number(owner.tokenable_id))
+      if (!user) return null
+      await revokeRawToken(oldToken)
 
-    // Mint a fresh token via the canonical path so the new bearer
-    // matches the raw shape used by every helper in tokens.ts.
-    const user = await User.find(existing.userId as number)
-    if (!user) return null
-    const result = await this.createTokenForUser(user, {
-      name: existing.name,
-      abilities: existing.scopes ?? ['*'],
-      expiresAt,
-      withRefreshToken: false,
+      const result = await this.createTokenForUser(user, {
+        name: String(owner.name || 'access-token'),
+        abilities: parseScopes(owner.scopes as string),
+        expiresAt: deadline ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 60 * 60 * 1000)),
+        withRefreshToken: false,
+      })
+      return result.plainTextToken
     })
-
-    return result.plainTextToken
   }
 
   /**

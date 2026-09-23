@@ -1,4 +1,5 @@
 import { db, getDatabaseDialect, markContextWrote, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database/runtime'
+import { HttpError } from '@stacksjs/error-handling'
 
 interface TokenIdRow { id: number | string | bigint }
 
@@ -26,6 +27,18 @@ export async function revokeTokenPair(selector: { id: number } | { hash: string 
       UPDATE oauth_access_tokens SET revoked = ${sql.boolTrue}, updated_at = ${sqlDateTimeLiteral()}
       WHERE id = ${sql.param(1)}
     `, [row.id])
+    // Triggers may suppress an UPDATE without throwing. Success means both
+    // halves are unusable, not merely that both statements returned normally.
+    const remaining = await trx.unsafe(`
+      SELECT id FROM oauth_access_tokens
+      WHERE id = ${sql.param(1)} AND (revoked = ${sql.boolFalse} OR revoked IS NULL)
+      UNION ALL
+      SELECT id FROM oauth_refresh_tokens
+      WHERE access_token_id = ${sql.param(2)} AND (revoked = ${sql.boolFalse} OR revoked IS NULL)
+      LIMIT 1
+    `, [row.id, row.id]) as unknown as TokenIdRow[]
+    if (remaining.length > 0)
+      throw new HttpError(500, 'Failed to revoke the token pair.')
   }, { retries: 2, sqlStates: ['40001', '40P01'] })
 }
 
