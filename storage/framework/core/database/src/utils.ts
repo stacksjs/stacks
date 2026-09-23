@@ -1674,7 +1674,9 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
    * taking load off the primary. Falls back to the primary when no
    * replicas are declared or inside a transaction.
    */
-  read: Omit<Db, 'read'>
+  read: Omit<Db, 'read' | 'primary'>
+  /** Strongly consistent reads, still bound to the active transaction. */
+  primary: Omit<Db, 'read' | 'primary'>
 }
 
 const SIMPLE_SQLITE_TABLE = /^[A-Z_][A-Z0-9_]*$/i
@@ -2824,6 +2826,7 @@ Object.defineProperties(db, {
   deleteFrom: { value: deleteFromDatabase },
   fn: { value: aggregateFunctions },
   insertInto: { value: insertIntoDatabase },
+  primary: { get: () => primaryDb },
   read: { get: () => readDb },
   select: { value: selectDatabase },
   selectFrom: { value: selectFromDatabase },
@@ -2852,7 +2855,7 @@ const readDbFallback = new Proxy({} as Db, {
   },
 })
 
-export const readDb: Omit<Db, 'read'> = Object.create(readDbFallback) as Omit<Db, 'read'>
+export const readDb: Omit<Db, 'read' | 'primary'> = Object.create(readDbFallback) as Omit<Db, 'read' | 'primary'>
 Object.defineProperties(readDb, {
   fn: { value: aggregateFunctions },
   select: { value: selectExplicitReadDatabase },
@@ -2861,6 +2864,18 @@ Object.defineProperties(readDb, {
   table: { value: tableExplicitReadDatabase },
   transactional: { value: transactionalDatabase },
   unsafe: { value: unsafeExplicitReadDatabase },
+})
+
+// Authentication and other consistency-sensitive reads must see committed
+// primary state even when the application opts into automatic replica reads.
+// Resolve lazily through getDb so an active transaction remains authoritative;
+// forwardDatabaseMethod also guards retained methods after that scope ends.
+const primaryDb = new Proxy({} as Omit<Db, 'read' | 'primary'>, {
+  get(_target, prop) {
+    const instance = getDb()
+    const value = Reflect.get(instance, prop)
+    return typeof value === 'function' ? forwardDatabaseMethod(prop, getDb) : value
+  },
 })
 
 // Export setConfig if available

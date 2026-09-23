@@ -86,6 +86,12 @@ const users = await db.selectFrom('users').where('active', '=', true).get()
 
 `initializeDbConfig(config)` can be called to update the backing config at runtime.
 
+For reads which cannot tolerate replication lag, use `db.primary.selectFrom(...)`.
+It stays on the primary when automatic replica routing is enabled, and uses the
+active transaction connection inside a transaction. It does not mark the request
+as a writer or change routing for unrelated reads. Session authentication uses
+this handle so a revoked session cannot authenticate from a stale replica.
+
 ## SQL Template Tag (types.ts)
 
 ```typescript

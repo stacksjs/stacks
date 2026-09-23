@@ -217,7 +217,7 @@ export async function sessionDestroyAll(userId: number): Promise<void> {
  */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
   try {
-    const session = await db.selectFrom('sessions')
+    const session = await db.primary.selectFrom('sessions')
       .where('id', '=', sessionId)
       .selectAll()
       .executeTakeFirst()
@@ -252,7 +252,7 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
  */
 export async function sessionCheck(sessionId: string): Promise<boolean> {
   try {
-    const session = await db.selectFrom('sessions')
+    const session = await db.primary.selectFrom('sessions')
       .where('id', '=', sessionId)
       .selectAll()
       .executeTakeFirst()
@@ -282,7 +282,7 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
  */
 export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1000): Promise<boolean> {
   try {
-    const session = await db.selectFrom('sessions')
+    const session = await db.primary.selectFrom('sessions')
       .where('id', '=', sessionId)
       .selectAll()
       .executeTakeFirst()
