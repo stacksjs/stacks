@@ -190,6 +190,8 @@ can be dispatched manually to run the full default matrix on Ubuntu with pinned,
 checksummed oha, five seconds of warm-up, thirty measured seconds and three repeats.
 Its `cost` mode runs the same matrix at a fixed rate and reports CPU per request
 instead, which is what a shared runner can actually answer.
+The `targets` and `runs` inputs allow a diagnostic to spend more repetitions on a
+smaller comparison set while preserving the three-repeat default matrix.
 It uploads the report, metadata and raw samples as a `routing-diagnostic` artifact.
 The hosted runner is shared, so the workflow explicitly sets `BENCH_DEDICATED=0`.
 Use these artifacts for investigation, not published rankings. Source resolution,

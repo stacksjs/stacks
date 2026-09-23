@@ -17,6 +17,10 @@ on:
         description: Fixed requests per second per target in cost mode. Low enough that the slowest target still attains it on a shared runner.
         type: string
         default: '10000'
+      runs:
+        description: Repeats per target and scenario. The median is reported.
+        type: string
+        default: '3'
       targets:
         description: "Comma-separated target ids to measure instead of the default matrix, e.g. stacks,stacks-no-context,bun-raw. The ablation targets exist to price one feature and are opt-in, so this is the only way to reach them on the hardware that can resolve the difference."
         type: string
@@ -90,7 +94,7 @@ jobs:
         if: inputs.mode == 'benchmark'
         env:
           BENCH_TARGETS: ${{ inputs.targets }}
-        run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs 3 ${BENCH_TARGETS:+--targets "$BENCH_TARGETS"} --output "$RUNNER_TEMP/routing-diagnostic"
+        run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs "${{ inputs.runs }}" ${BENCH_TARGETS:+--targets "$BENCH_TARGETS"} --output "$RUNNER_TEMP/routing-diagnostic"
 
       # A shared runner is where saturating throughput is least informative and
       # cost per request is most: every target answers the same fixed rate, so
@@ -100,7 +104,7 @@ jobs:
         if: inputs.mode == 'cost'
         env:
           BENCH_TARGETS: ${{ inputs.targets }}
-        run: bun bench/routing/run.ts --driver oha --rate "${{ inputs.rate }}" --warmup 5 --duration 30 --runs 3 ${BENCH_TARGETS:+--targets "$BENCH_TARGETS"} --output "$RUNNER_TEMP/routing-diagnostic"
+        run: bun bench/routing/run.ts --driver oha --rate "${{ inputs.rate }}" --warmup 5 --duration 30 --runs "${{ inputs.runs }}" ${BENCH_TARGETS:+--targets "$BENCH_TARGETS"} --output "$RUNNER_TEMP/routing-diagnostic"
 
       - name: Verify completed routing artifact
         if: inputs.mode == 'benchmark' || inputs.mode == 'cost'

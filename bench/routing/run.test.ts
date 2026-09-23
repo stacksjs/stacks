@@ -92,14 +92,17 @@ describe('ablation targets stay reachable', () => {
     expect({ ...noContext.env }).toEqual({ ...minimal.env, BENCH_REQUEST_CONTEXT: 'false' })
   })
 
-  it('lets the routing diagnostic choose targets, without changing the default run', () => {
+  it('lets the routing diagnostic choose targets and repeat count without changing the defaults', () => {
     expect(workflow).toContain('      targets:')
+    expect(workflow).toContain('      runs:')
     // Forwarded as a variable rather than expanded into the script, so a target
     // list cannot become a command.
     expect(workflow).toContain('BENCH_TARGETS: ${{ inputs.targets }}')
     const forwarding = workflow.match(/\$\{BENCH_TARGETS:\+--targets "\$BENCH_TARGETS"\}/g) ?? []
     expect(forwarding).toHaveLength(2) // the benchmark and cost steps
+    expect(workflow.match(/--runs "\$\{\{ inputs\.runs \}\}"/g)).toHaveLength(2)
     // An unset input has to leave the published matrix exactly as it was.
     expect(workflow).toMatch(/targets:\n\s+description:[\s\S]*?default: ''/)
+    expect(workflow).toMatch(/runs:\n\s+description:[\s\S]*?default: '3'/)
   })
 })
