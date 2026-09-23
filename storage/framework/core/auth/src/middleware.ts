@@ -1,12 +1,16 @@
 import { Auth } from './authentication'
+import { authCookieToken } from './cookie'
 import { requestToken } from './request-token'
+import { sessionUser } from './session-auth'
 
 /**
  * Built-in auth middleware handler
- * Validates the request's access token and sets the authenticated user on Auth
+ * Validates the request's access token or database session and sets its user.
  *
  * Resolution is shared with `Auth.getBearerToken()` via `requestToken`, which
- * checks the Authorization header and then the auth cookie. This used to be a
+ * checks the Authorization header and then the auth cookie. Database sessions
+ * are considered only without a token, matching the default Auth middleware.
+ * This used to be a
  * second hand-rolled copy that stopped at the header, so a browser signed in
  * by cookie — the whole point of `cookie-auth.ts`, and what
  * `SocialCallbackAction` produces — was rejected here with 401 on every
@@ -14,15 +18,18 @@ import { requestToken } from './request-token'
  */
 export async function authMiddleware(request: any): Promise<void> {
   const bearerToken = requestToken(request)
+  const sessionId = !bearerToken
+    ? request?.headers ? authCookieToken(request, { name: 'session_id' }) : request?.cookie?.('session_id')
+    : undefined
 
-  if (!bearerToken) {
+  if (!bearerToken && !sessionId) {
     const error = new Error('No authentication token provided.') as Error & { statusCode: number }
     error.statusCode = 401
     throw error
   }
 
-  // Get user from token (also validates the token)
-  const user = await Auth.getUserFromToken(bearerToken)
+  // An invalid explicit token must not fall through to another identity.
+  const user = bearerToken ? await Auth.getUserFromToken(bearerToken) : await sessionUser(sessionId!)
 
   if (!user) {
     const error = new Error('Invalid or expired authentication token.') as Error & { statusCode: number }
@@ -37,7 +44,7 @@ export async function authMiddleware(request: any): Promise<void> {
   request._authenticatedUser = user
 
   // Get and store the access token for ability checks
-  const accessToken = await Auth.currentAccessToken()
+  const accessToken = bearerToken ? await Auth.currentAccessToken() : undefined
   request._currentAccessToken = accessToken
 }
 
