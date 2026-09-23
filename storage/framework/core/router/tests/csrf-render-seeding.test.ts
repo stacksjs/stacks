@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { CSRF_COOKIE_NAME, generateCsrfToken, seedCsrfCookieIfMissing } from '../../../defaults/app/Middleware/Csrf'
+import { CSRF_COOKIE_NAME, generateCsrfToken, responseMayUseCsrfToken, seedCsrfCookieIfMissing } from '../../../defaults/app/Middleware/Csrf'
 
 /**
  * The token has to exist before the page that embeds it is rendered.
@@ -162,5 +162,33 @@ describe('seedCsrfCookieIfMissing', () => {
   /** Not HttpOnly on purpose: a single-page app has to read it to echo it. */
   test('is readable by script, which is what double-submit requires', () => {
     expect(cookieOn(seedCsrfCookieIfMissing(request(), response()))).not.toContain('HttpOnly')
+  })
+})
+
+describe('which responses carry the CSRF cookie', () => {
+  const typed = (type?: string): Response =>
+    new Response('x', type ? { headers: { 'Content-Type': type } } : {})
+
+  // chrisbreuer.me, 2026-09-23: every stylesheet, script, font and image came
+  // back with Set-Cookie: X-CSRF-Token, so Cloudflare cached none of them.
+  test('never seeds a static file, so a CDN can cache it', () => {
+    for (const type of ['text/css', 'application/javascript', 'text/javascript', 'font/woff2', 'image/png', 'image/svg+xml', 'application/xml', 'text/plain']) {
+      const res = seedCsrfCookieIfMissing(request(), typed(type))
+      expect(cookieOn(res)).toBe('')
+      expect(responseMayUseCsrfToken(typed(type))).toBe(false)
+    }
+  })
+
+  test('still seeds a page, whatever charset it declares', () => {
+    expect(cookieOn(seedCsrfCookieIfMissing(request(), typed('text/html; charset=utf-8')))).toContain(`${CSRF_COOKIE_NAME}=`)
+  })
+
+  test('still seeds an API answer, which is what an SPA reads before it submits', () => {
+    expect(cookieOn(seedCsrfCookieIfMissing(request(), typed('application/json')))).toContain(`${CSRF_COOKIE_NAME}=`)
+    expect(cookieOn(seedCsrfCookieIfMissing(request(), typed('application/problem+json')))).toContain(`${CSRF_COOKIE_NAME}=`)
+  })
+
+  test('keeps seeding a response that declares no type, such as a redirect', () => {
+    expect(cookieOn(seedCsrfCookieIfMissing(request(), typed()))).toContain(`${CSRF_COOKIE_NAME}=`)
   })
 })

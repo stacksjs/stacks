@@ -144,7 +144,34 @@ export function createCsrfCookie(req: Request, minted?: string): string {
   return `${CSRF_COOKIE_PREFIX}${token}${suffix}`
 }
 
+/**
+ * Whether a browser could go on to use a CSRF token from this response.
+ *
+ * A page carries the forms that submit it, and an API answer is what an SPA
+ * reads before its next request. A stylesheet, script, font or image is
+ * neither, and a cookie on one is worse than useless: a response that sets a
+ * cookie is one no shared cache will store, so seeding every static file kept
+ * the site's whole asset set out of the CDN (every file came back
+ * `cf-cache-status: BYPASS`). A cacheable file carrying a per-visitor token is
+ * also the shape of a leak, should any cache in the path store it anyway.
+ *
+ * No content type at all (a redirect, an empty answer) keeps the old
+ * behaviour: it says nothing about what the browser is looking at.
+ */
+export function responseMayUseCsrfToken(response: Response): boolean {
+  const type = (response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase()
+  if (!type)
+    return true
+  return type === 'text/html'
+    || type === 'application/xhtml+xml'
+    || type === 'application/json'
+    || type.endsWith('+json')
+}
+
 export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string, responseHasNoCookies = false): Response {
+  if (!responseMayUseCsrfToken(response))
+    return response
+
   // A token the router minted before rendering wins over "the header already
   // has one", because it put that value in the header itself - and the page
   // has already embedded it in every form it drew. Generating a second token
