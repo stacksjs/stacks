@@ -212,9 +212,15 @@ export async function sessionDestroyAll(userId: number): Promise<void> {
   }
 }
 
-/**
- * Get the authenticated user from a session ID.
- */
+/** Delete the observed expired version without removing a concurrent renewal. */
+async function deleteObservedExpiredSession(sessionId: string, expiresAt: unknown): Promise<void> {
+  const cleanup = db.deleteFrom('sessions').where('id', '=', sessionId)
+  await (expiresAt == null
+    ? cleanup.whereNull('expires_at')
+    : cleanup.where('expires_at', '=', expiresAt)).execute()
+}
+
+/** Get the authenticated user from a session ID. */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
   try {
     const session = await db.primary.selectFrom('sessions')
@@ -229,8 +235,7 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
     if (Date.now() >= expiresAt) {
       // Delete only the expired version we read. A concurrent refresh may have
       // renewed this session before the cleanup reaches the database.
-      await db.deleteFrom('sessions').where('id', '=', sessionId)
-        .where('expires_at', session.expires_at == null ? 'is' : '=', session.expires_at).execute()
+      await deleteObservedExpiredSession(sessionId, session.expires_at)
       return undefined
     }
 
@@ -262,8 +267,7 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
-      await db.deleteFrom('sessions').where('id', '=', sessionId)
-        .where('expires_at', session.expires_at == null ? 'is' : '=', session.expires_at).execute()
+      await deleteObservedExpiredSession(sessionId, session.expires_at)
       return false
     }
 
@@ -296,8 +300,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
-      await db.deleteFrom('sessions').where('id', '=', sessionId)
-        .where('expires_at', session.expires_at == null ? 'is' : '=', session.expires_at).execute()
+      await deleteObservedExpiredSession(sessionId, session.expires_at)
       return false
     }
 

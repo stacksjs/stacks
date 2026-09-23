@@ -171,6 +171,12 @@ try {
             }
           }
         }
+        for (const method of ['user', 'check', 'refresh'] as const) {
+          const id = `null-expiry-${method}`
+          await db.insertInto('sessions').values({ id, user_id: 1, payload: '{}', last_activity: 0, expires_at: null }).execute()
+          assert.equal(Boolean(await SessionAuth[method](id)), false, `${method}: missing expiry must never authorize`)
+          assert.equal(await db.primary.selectFrom('sessions').where('id', '=', id).selectAll().executeTakeFirst(), undefined, `${method}: null-expiry cleanup must work on ${dialect}`)
+        }
       }
       finally {
         setSystemTime()
