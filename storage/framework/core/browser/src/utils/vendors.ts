@@ -26,34 +26,60 @@ export type {
 } from '@stacksjs/stx'
 
 /**
- * Imported into scope first, then re-exported, rather than forwarded with
- * `export { x as y } from '...'`.
+ * Head helpers, read off the stx runtime instead of imported from it.
  *
- * The two forms are equivalent to a type checker and are not equivalent to a
- * bundler. Forwarding leaves no local binding, and when an application bundles
- * this barrel into a page, Bun has been observed emitting the export alias
- * while dropping the import it points at:
+ * `@stacksjs/stx` is EXTERNAL to an application's page bundle: the runtime is
+ * delivered as `window.stx` and none of its module code is inlined. A static
+ * `import { renderHead } from '@stacksjs/stx'` in this barrel is therefore
+ * elided at bundle time, and the export alias left behind points at nothing:
  *
  *   renderHeadToString: () => renderHead,   // renderHead is not defined
  *
  * That is a ReferenceError thrown while the module initialises, so everything
- * after it in the same bundled script never runs. In one app that script also
- * contained `defineStore('auth')`, so the auth store was never defined and
- * every page reported "Store auth not found" — a symptom three layers from the
- * cause, on a page that still painted its server HTML and therefore looked
- * fine. This package's build.ts already documents the same Bun behaviour as
- * the reason it transpiles file-by-file instead of bundling; the forwarding
- * form reintroduces it downstream, in whatever bundles the published barrel.
+ * after it in the same bundled script never runs. In one application that
+ * script also contained `defineStore('auth')`, so the store was never defined
+ * and every page logged "Store auth not found" — two symptoms, one broken
+ * alias, and neither of them naming it. The page still painted its server HTML
+ * throughout, which is what kept it unnoticed.
  *
- * An imported binding cannot be dropped this way: it is referenced in module
- * scope, so the bundler has to keep it.
+ * Changing the re-export form does not help: forwarded or imported-then-
+ * exported, a binding that comes from an external module cannot survive into
+ * the bundle. Resolving through the runtime at call time is what actually
+ * works, and it has the side benefit of not caring when the runtime loads.
  */
-import { renderHead, useHead } from '@stacksjs/stx'
+interface StxRuntime {
+  useHead?: (...args: any[]) => any
+  renderHead?: (...args: any[]) => string
+}
 
-export {
-  renderHead as renderHeadToString,
-  useHead as createHead,
-  useHead as Head,
+function stxRuntime(name: keyof StxRuntime): (...args: any[]) => any {
+  const runtime = (globalThis as { stx?: StxRuntime }).stx
+  const fn = runtime?.[name]
+
+  if (typeof fn !== 'function') {
+    throw new TypeError(
+      `[@stacksjs/browser] stx.${name} is unavailable. These helpers read the stx runtime from `
+      + `window.stx, which the page installs before component scripts run; calling one outside a `
+      + `browser, or before the runtime script has loaded, gets you here.`,
+    )
+  }
+
+  return fn
+}
+
+/** `useHead` from the stx runtime. */
+export function createHead(...args: any[]): any {
+  return stxRuntime('useHead')(...args)
+}
+
+/** `useHead` from the stx runtime, under the name older call sites use. */
+export function Head(...args: any[]): any {
+  return stxRuntime('useHead')(...args)
+}
+
+/** `renderHead` from the stx runtime. */
+export function renderHeadToString(...args: any[]): string {
+  return stxRuntime('renderHead')(...args)
 }
 
 export interface ReadableSizeOptions {
