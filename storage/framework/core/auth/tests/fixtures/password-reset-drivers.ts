@@ -155,6 +155,9 @@ try {
   })
   await check('modern schemas stamp UTC and legacy schemas already succeeded', async () => {
     await db.unsafe('ALTER TABLE users ADD COLUMN password_changed_at TIMESTAMP NULL').execute()
+    // SELECT * prepared plans from the legacy-schema phase cannot be reused
+    // after changing its result shape on Postgres. Start a fresh fixture pool.
+    await closeDatabaseConnection()
     await seed()
     process.env.TZ = 'Pacific/Honolulu'
     assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'new-stamped-password')).success, true)
@@ -163,6 +166,18 @@ try {
     assert.equal(stamp instanceof Date ? sqlDateTime(stamp) : stamp, sqlDateTime(now))
   })
   process.env.TZ = 'UTC'
+  await check('outer reset without optional sessions table commits its password', async () => {
+    await seed()
+    await db.transaction(async () => {
+      assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'nested-without-sessions')).success, true)
+      // A caught missing-table error must not poison this outer transaction.
+      await db.primary.selectFrom('users').where('id', '=', 1).selectAll().executeTakeFirstOrThrow()
+    })
+    const user = await db.primary.selectFrom('users').where('id', '=', 1).selectAll().executeTakeFirstOrThrow()
+    assert(await verifyHash('nested-without-sessions', String(user.password)))
+    assert.equal(await db.primary.selectFrom('password_resets').where('email', '=', 'reset@example.invalid').selectAll().executeTakeFirst(), undefined)
+    assert.equal(sent.length, 1)
+  })
   await db.unsafe('CREATE TABLE sessions (id VARCHAR(255) PRIMARY KEY, user_id INTEGER, expires_at TIMESTAMP NULL)').execute()
   await check('outer rollback discards password-change notification', async () => {
     await seed()

@@ -5,7 +5,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { config } from '@stacksjs/config'
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, isInTransaction, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
@@ -198,9 +198,14 @@ export async function sessionLogout(sessionId: string): Promise<void> {
  */
 export async function sessionDestroyAll(userId: number): Promise<void> {
   try {
-    await db.deleteFrom('sessions')
-      .where('user_id', '=', userId)
-      .execute()
+    const destroy = async () => {
+      await db.deleteFrom('sessions').where('user_id', '=', userId).execute()
+    }
+    // Missing optional schema is caught below. Isolate that query in a
+    // savepoint when a caller owns a transaction: catching a Postgres error
+    // alone leaves the transaction aborted and cannot preserve its work.
+    if (isInTransaction()) await db.transaction(destroy)
+    else await destroy()
   }
   catch (err) {
     const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err)
