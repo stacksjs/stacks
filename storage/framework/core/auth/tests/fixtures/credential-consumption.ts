@@ -24,7 +24,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 } })
 const { createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret, verifyTwoFactorLoginCode } = await import('../../src/two-factor')
 const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
-const { storeWebAuthnChallenge, consumeWebAuthnChallenge } = await import('../../src/passkey')
+const { storeWebAuthnChallenge, consumeWebAuthnChallenge, updatePasskeyCounter } = await import('../../src/passkey')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const failures: string[] = []
@@ -162,6 +162,81 @@ try {
       }
       catch (error) { failures.push(String(error)) }
       finally { contender.exec('DROP TRIGGER reject_totp_claim') }
+    }
+    finally { contender.close() }
+  }
+  const resetPasskey = async (counter: number) => {
+    await db.deleteFrom('passkeys').where('id', '=', 'synthetic-key').execute()
+    await db.insertInto('passkeys').values({ id: 'synthetic-key', user_id: 1, cred_public_key: '{}', webauthn_user_id: 'fixture', counter } as never).execute()
+  }
+  await resetPasskey(1)
+  try {
+    const results = await Promise.all(Array.from({ length: 8 }, () => updatePasskeyCounter(1, 'synthetic-key', 2)))
+    assert.equal(results.filter(Boolean).length, 1, 'passkey: exactly one caller may advance to a given counter')
+    assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 2), false)
+    assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 3), true)
+    assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 0), false)
+    assert.equal(await updatePasskeyCounter(2, 'synthetic-key', 4), false, 'passkey: wrong owner cannot advance')
+  }
+  catch (error) { failures.push(String(error)) }
+  for (const invalid of [Number.NaN, Number.POSITIVE_INFINITY, -1, 1.5]) {
+    await resetPasskey(0)
+    try { assert.equal(await updatePasskeyCounter(1, 'synthetic-key', invalid), false, `passkey: reject invalid counter ${invalid}`) }
+    catch (error) { failures.push(String(error)) }
+  }
+  await resetPasskey(0)
+  try {
+    assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 0), true, 'passkey: no-counter authenticators remain valid')
+    assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 0), true, 'passkey: unchanged MySQL timestamp must not reject no-counter authenticators')
+    assert((await Promise.all(Array.from({ length: 8 }, () => updatePasskeyCounter(1, 'synthetic-key', 0)))).every(Boolean), 'passkey: counterless authenticators do not claim one-use counter values')
+    await assert.rejects(db.transaction(async () => {
+      assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 1), true)
+      throw new Error('rollback passkey counter')
+    }), /rollback passkey counter/)
+    assert.equal(Number((await db.primary.selectFrom('passkeys').where('id', '=', 'synthetic-key').selectAll().executeTakeFirst())?.counter), 0)
+  }
+  catch (error) { failures.push(String(error)) }
+  if (dialect === 'sqlite') {
+    const { Database } = await import('bun:sqlite')
+    const contender = new Database(process.env.DB_DATABASE_PATH!)
+    try {
+      for (const change of [
+        "UPDATE passkeys SET counter = 10 WHERE id = 'synthetic-key'",
+        "UPDATE passkeys SET cred_public_key = 'replacement' WHERE id = 'synthetic-key'",
+        "DELETE FROM passkeys WHERE id = 'synthetic-key'",
+      ]) {
+        await resetPasskey(1)
+        let changed = false
+        const stop = registerPersistentQueryHooks({ onQueryStart(event) {
+          if (event.kind === 'update' && event.sql.includes('passkeys')) {
+            contender.exec(change)
+            changed = true
+          }
+        } })
+        try {
+          assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 2), false, `passkey: stale update cannot override ${change}`)
+          assert(changed)
+        }
+        catch (error) { failures.push(String(error)) }
+        finally { stop() }
+      }
+      for (const change of [
+        "UPDATE passkeys SET counter = 10 WHERE id = 'synthetic-key'",
+        "DELETE FROM passkeys WHERE id = 'synthetic-key'",
+      ]) {
+        await resetPasskey(0)
+        let reads = 0
+        const stop = registerPersistentQueryHooks({ onQueryStart(event) {
+          if (event.kind === 'select' && event.sql.includes('passkeys') && ++reads === 2)
+            contender.exec(change)
+        } })
+        try {
+          assert.equal(await updatePasskeyCounter(1, 'synthetic-key', 0), false, `passkey: locked no-counter check must observe ${change}`)
+          assert.equal(reads, 2)
+        }
+        catch (error) { failures.push(String(error)) }
+        finally { stop() }
+      }
     }
     finally { contender.close() }
   }

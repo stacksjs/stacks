@@ -8,7 +8,7 @@ import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
 import { Buffer } from 'node:buffer'
 import type { Insertable } from '@stacksjs/database/runtime'
 
-import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { User } from '@stacksjs/orm'
 
 type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
@@ -167,6 +167,9 @@ export async function updatePasskeyCounter(
   passkeyId: string,
   newCounter: number,
 ): Promise<boolean> {
+  if (!Number.isSafeInteger(newCounter) || newCounter < 0)
+    return false
+
   // Authenticators that don't implement a counter (some platform
   // authenticators) always send 0 — accept those at face value as
   // long as the stored value is also 0. The strictly-greater check
@@ -186,14 +189,41 @@ export async function updatePasskeyCounter(
     return false
   }
 
-  await db
+  if (newCounter === 0) {
+    // MySQL reports zero changed rows for repeated no-counter assertions in
+    // the same second. Lock and verify existence instead of treating that
+    // no-op as a failed claim or using emulated RETURNING as a CAS result.
+    return db.transaction(async () => {
+      let query = db.primary.selectFrom('passkeys')
+        .selectAll()
+        .where('id', '=', passkeyId)
+        .where('user_id', '=', userId)
+        .where('counter', '=', 0)
+        .where('cred_public_key', '=', passkey.cred_public_key)
+      // SQLite serializes its write transaction and has no FOR UPDATE.
+      if (getDatabaseDialect() !== 'sqlite')
+        query = query.lockForUpdate()
+      const current = await query.executeTakeFirst()
+      if (!current) return false
+      await db.updateTable('passkeys')
+        .set({ last_used_at: formatDateTime() } as never)
+        .where('id', '=', passkeyId)
+        .where('user_id', '=', userId)
+        .execute()
+      return true
+    })
+  }
+
+  const claimed = await db
     .updateTable('passkeys')
     .set({ counter: newCounter, last_used_at: formatDateTime() } as never)
     .where('id', '=', passkeyId)
     .where('user_id', '=', userId)
+    .where('counter', '=', stored)
+    .where('cred_public_key', '=', passkey.cred_public_key)
     .execute()
 
-  return true
+  return mutationCount(claimed) === 1
 }
 
 export async function setCurrentRegistrationOptions(
