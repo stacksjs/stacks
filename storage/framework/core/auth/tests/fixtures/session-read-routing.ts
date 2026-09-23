@@ -27,6 +27,7 @@ const { createBqbRbacStore } = await import('../../src/rbac-store-bqb')
 const { flushRbacCache, hasRole, hasPermission, setRbacStore } = await import('../../src/rbac')
 const { getTwoFactorState, verifyTwoFactorLoginCode, createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret } = await import('../../src/two-factor')
 const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
+const { getUserPasskey, getUserPasskeys, updatePasskeyCounter } = await import('../../src/passkey')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -84,6 +85,32 @@ try {
   await assert.rejects(async () => escapedRead!(), /transaction/i, 'retained primary methods must not escape their transaction')
   await withRoutingContext(assertLaggedRead)
   await ensureFrameworkAuthTables()
+  const passkey = (id: string, counter: number) => ({ id, counter, user_id: 1, cred_public_key: '{}', webauthn_user_id: 'synthetic-user' })
+  await db.insertInto('passkeys').values([passkey('revoked-key', 0), passkey('advanced-key', 1)] as never).execute()
+  await db.unsafe('CREATE TABLE lagged.passkeys (LIKE public.passkeys INCLUDING ALL)').execute()
+  await db.unsafe('INSERT INTO lagged.passkeys SELECT * FROM public.passkeys').execute()
+  await db.unsafe(`GRANT SELECT ON lagged.passkeys TO "${name}"`).execute()
+  await db.deleteFrom('passkeys').where('id', '=', 'revoked-key').execute()
+  await db.updateTable('passkeys').set({ counter: 10 }).where('id', '=', 'advanced-key').execute()
+  await db.insertInto('passkeys').values(passkey('fresh-key', 0) as never).execute()
+  for (const mode of ['revoked', 'fresh', 'inventory', 'counter'] as const) {
+    try {
+      await withRoutingContext(async () => {
+        if (mode === 'revoked') assert.equal(await getUserPasskey(1, 'revoked-key'), undefined, 'a revoked passkey must not be supplied for signature verification')
+        if (mode === 'fresh') assert.equal((await getUserPasskey(1, 'fresh-key'))?.id, 'fresh-key', 'newly enrolled passkeys must be available immediately')
+        if (mode === 'inventory') assert.deepEqual((await getUserPasskeys(1)).map(row => row.id).sort(), ['advanced-key', 'fresh-key'], 'passkey options must use current enrollment state')
+        if (mode === 'counter') assert.equal(await updatePasskeyCounter(1, 'advanced-key', 4), false, 'a stale replica counter must not permit a rollback')
+        assert.equal(contextHasWritten(), false, 'rejected passkey checks must not write')
+        await assertLaggedRead()
+      })
+    }
+    catch (error) { failures.push(String(error)) }
+  }
+  try {
+    assert.equal(Number((await db.primary.selectFrom('passkeys').where('id', '=', 'advanced-key').selectAll().executeTakeFirst())?.counter), 10, 'the primary counter must remain monotonic')
+  }
+  catch (error) { failures.push(String(error)) }
+  assert.deepEqual(failures, [])
   const revoked = await createToken(1, 'lagged-token', ['read'], { withRefreshToken: false })
   const client = await createClient({ name: 'lagged-client', redirect: 'https://example.invalid/callback' })
   for (const table of ['oauth_access_tokens', 'oauth_clients']) {

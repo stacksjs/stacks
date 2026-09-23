@@ -134,12 +134,12 @@ export interface PasskeyAttribute {
 }
 
 export async function getUserPasskeys(userId: number): Promise<PasskeyAttribute[]> {
-  const rows = await db.selectFrom('passkeys').selectAll().where('user_id', '=', userId).execute()
+  const rows = await db.primary.selectFrom('passkeys').selectAll().where('user_id', '=', userId).execute()
   return rows as unknown as PasskeyAttribute[]
 }
 
 export async function getUserPasskey(userId: number, passkeyId: string): Promise<PasskeyAttribute | undefined> {
-  const row = await db
+  const row = await db.primary
     .selectFrom('passkeys')
     .selectAll()
     .where('id', '=', passkeyId)
