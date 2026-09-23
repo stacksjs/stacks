@@ -22,13 +22,15 @@ initializeDbConfig({ app: { env: 'test' }, database: {
     [dialect]: { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD },
   }, queryLogging: { enabled: false },
 } })
-const { createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret } = await import('../../src/two-factor')
+const { createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret, verifyTwoFactorLoginCode } = await import('../../src/two-factor')
+const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
 const { storeWebAuthnChallenge, consumeWebAuthnChallenge } = await import('../../src/passkey')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const failures: string[] = []
 
 try {
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await ensureFrameworkAuthTables()
   const now = new Date('2030-01-02T03:04:05.000Z')
   setSystemTime(now)
@@ -100,6 +102,68 @@ try {
       }
       contender.close()
     }
+  }
+  const secret = generateTwoFactorSecret()
+  const code = await generateTwoFactorToken(secret)
+  const resetTotp = async () => {
+    await db.deleteFrom('users').where('id', '=', 1).execute()
+    await db.insertInto('users').values({ id: 1, two_factor_secret: secret, two_factor_enabled: true } as never).execute()
+  }
+  await resetTotp()
+  try {
+    const results = await Promise.all(Array.from({ length: 8 }, () => verifyTwoFactorLoginCode(1, code)))
+    assert.equal(results.filter(Boolean).length, 1, 'TOTP: exactly one concurrent verifier may consume a step')
+    assert.equal(await verifyTwoFactorLoginCode(1, code), false, 'TOTP: sequential replay must fail')
+    setSystemTime(new Date(now.getTime() + 30_000))
+    const nextCode = await generateTwoFactorToken(secret)
+    assert.equal(await verifyTwoFactorLoginCode(1, nextCode), true, 'TOTP: the next time step must remain usable')
+    assert.equal(await verifyTwoFactorLoginCode(1, nextCode), false, 'TOTP: the next step is also single-use')
+  }
+  catch (error) { failures.push(String(error)) }
+  finally { setSystemTime(now) }
+
+  await resetTotp()
+  await db.unsafe('ALTER TABLE users RENAME COLUMN two_factor_last_used_step TO hidden_totp_step').execute()
+  try {
+    await assert.rejects(() => verifyTwoFactorLoginCode(1, code), /two_factor_last_used_step/i, 'TOTP: missing replay schema must fail closed')
+  }
+  catch (error) { failures.push(String(error)) }
+  finally { await db.unsafe('ALTER TABLE users RENAME COLUMN hidden_totp_step TO two_factor_last_used_step').execute() }
+
+  if (dialect === 'sqlite') {
+    const { Database } = await import('bun:sqlite')
+    const contender = new Database(process.env.DB_DATABASE_PATH!)
+    try {
+      for (const change of [
+        'UPDATE users SET two_factor_last_used_step = 9999999999 WHERE id = 1',
+        'UPDATE users SET two_factor_enabled = 0 WHERE id = 1',
+        "UPDATE users SET two_factor_secret = 'DIFFERENTSECRET' WHERE id = 1",
+        'DELETE FROM users WHERE id = 1',
+      ]) {
+        await resetTotp()
+        let changed = false
+        const stop = registerPersistentQueryHooks({ onQueryStart(event) {
+          if (event.kind === 'update' && event.sql.includes('two_factor_last_used_step')) {
+            contender.exec(change)
+            changed = true
+          }
+        } })
+        try {
+          assert.equal(await verifyTwoFactorLoginCode(1, code), false, `TOTP: stale verifier cannot override ${change}`)
+          assert(changed, 'a competing connection must change state before the claim')
+        }
+        catch (error) { failures.push(String(error)) }
+        finally { stop() }
+      }
+      await resetTotp()
+      contender.exec("CREATE TRIGGER reject_totp_claim BEFORE UPDATE OF two_factor_last_used_step ON users BEGIN SELECT RAISE(ABORT, 'synthetic claim failure'); END")
+      try {
+        await assert.rejects(() => verifyTwoFactorLoginCode(1, code), /synthetic claim failure/, 'TOTP: a failed persistence write must never authorize')
+      }
+      catch (error) { failures.push(String(error)) }
+      finally { contender.exec('DROP TRIGGER reject_totp_claim') }
+    }
+    finally { contender.close() }
   }
   assert.deepEqual(failures, [])
   console.log('credential consumption OK')

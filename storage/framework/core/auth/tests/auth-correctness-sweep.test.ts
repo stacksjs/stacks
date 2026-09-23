@@ -156,7 +156,7 @@ describe('TOTP replay guard - migration column + verify wiring (#1985)', () => {
     const s = src('two-factor.ts')
     expect(s).toContain('const step = currentTotpStep()')
     expect(s).toContain('if (lastStep !== null && step <= lastStep)')
-    expect(s).toContain('await setLastUsedTwoFactorStep(userId, step)')
+    expect(s).toContain('if (!await claimTwoFactorStep(userId, secret, step, lastStep))')
   })
 })
 

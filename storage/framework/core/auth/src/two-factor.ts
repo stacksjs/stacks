@@ -57,31 +57,24 @@ function currentTotpStep(): number {
   return Math.floor(Date.now() / 1000 / TWO_FACTOR_STEP_SECONDS)
 }
 
-/**
- * Best-effort read of `users.two_factor_last_used_step`. Returns null on any
- * error or a missing column (un-migrated DB) so replay protection degrades to
- * "allow" rather than locking anyone out — same legacy-allow stance as
- * getPasswordChangedAt (stacksjs/stacks#1985).
- */
+/** Read the primary replay marker. Database failures must not authorize. */
 async function getLastUsedTwoFactorStep(userId: number): Promise<number | null> {
-  try {
-    const row: any = await db.primary.selectFrom('users').where('id', '=', userId).selectAll().executeTakeFirst()
-    const value = row?.two_factor_last_used_step
-    return value == null ? null : Number(value)
-  }
-  catch {
-    return null
-  }
+  const row = await db.primary.selectFrom('users').where('id', '=', userId).select(['two_factor_last_used_step']).executeTakeFirst()
+  const value = row?.two_factor_last_used_step
+  return value == null ? null : Number(value)
 }
 
-/** Best-effort persist of the consumed TOTP step; no-op on an un-migrated DB. */
-async function setLastUsedTwoFactorStep(userId: number, step: number): Promise<void> {
-  try {
-    await db.updateTable('users').set({ two_factor_last_used_step: step }).where('id', '=', userId).executeTakeFirst()
-  }
-  catch {
-    // Column missing (un-migrated) — skip; replay protection stays off.
-  }
+/** Claim only the enabled secret and replay marker that this request read. */
+async function claimTwoFactorStep(userId: number, secret: string, step: number, lastStep: number | null): Promise<boolean> {
+  let claim = db.updateTable('users')
+    .set({ two_factor_last_used_step: step })
+    .where('id', '=', userId)
+    .where('two_factor_secret', '=', secret)
+    .where('two_factor_enabled', '=', true)
+  claim = lastStep === null
+    ? claim.whereNull('two_factor_last_used_step')
+    : claim.where('two_factor_last_used_step', '=', lastStep)
+  return mutationCount(await claim.execute()) === 1
 }
 
 export interface TwoFactorUser {
@@ -249,7 +242,8 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
   if (lastStep !== null && step <= lastStep)
     return false
 
-  await setLastUsedTwoFactorStep(userId, step)
+  if (!await claimTwoFactorStep(userId, secret, step, lastStep))
+    return false
   await RateLimiter.resetAttempts(rateKey)
   return true
 }
