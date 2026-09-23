@@ -262,6 +262,21 @@ try {
   }
   catch (error) { failures.push(String(error)) }
   assert.deepEqual(failures, [])
+  // The user model is a separate query surface from the session/token
+  // lookup. Pin that it cannot reintroduce stale account state afterward.
+  await db.updateTable('users').set({ name: 'Primary account' }).where('id', '=', 1).execute()
+  for (const mode of ['session', 'token'] as const) {
+    try {
+      await withRoutingContext(async () => {
+        const lagged = await db.selectFrom('users').selectAll().where('id', '=', 1).executeTakeFirst()
+        assert.equal(lagged?.name, 'Session fixture', 'the user replica must really be stale')
+        const user = mode === 'session' ? await SessionAuth.user('fresh') : await Auth.getUserFromToken(fresh.plainTextToken)
+        assert.equal(user?.name, 'Primary account', `${mode}: the resolved user must reflect the primary`)
+      })
+    }
+    catch (error) { failures.push(String(error)) }
+  }
+  assert.deepEqual(failures, [])
   console.log('session and token primary reads OK')
 }
 finally {
