@@ -10,7 +10,8 @@ export interface RateLimitEntry {
 }
 
 function recordFailure(current: RateLimitEntry | undefined, now: number): RateLimitEntry {
-  const entry = current ?? { attempts: 0, lockedUntil: 0 }
+  const expired = current && current.lockedUntil > 0 && current.lockedUntil <= now
+  const entry = current && !expired ? current : { attempts: 0, lockedUntil: 0 }
   entry.attempts++
   if (entry.attempts >= MAX_ATTEMPTS) {
     entry.lockedUntil = now + LOCKOUT_DURATION
@@ -145,14 +146,9 @@ export class RateLimiter {
     if (!userAttempts)
       return false
 
-    // If the lockout has expired, clear the entry
-    if (userAttempts.lockedUntil > 0 && userAttempts.lockedUntil <= now) {
-      await store.delete(email)
-      return false
-    }
-
-    // Currently locked out
-    return userAttempts.lockedUntil > 0
+    // A stale read must not delete a lockout renewed by another caller.
+    // Stores own TTL eviction; recording a failure resets expired counters.
+    return userAttempts.lockedUntil > now
   }
 
   static async recordFailedAttempt(email: string): Promise<void> {
