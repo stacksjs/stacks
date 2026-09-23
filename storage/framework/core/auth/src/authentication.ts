@@ -167,7 +167,7 @@ export class Auth {
 
   private static async getPersonalAccessClient(): Promise<OAuthClientRow> {
     try {
-      const client = await db.selectFrom('oauth_clients')
+      const client = await db.primary.selectFrom('oauth_clients')
         .where('personal_access_client', '=', true)
         .where('revoked', '=', false)
         .selectAll()
@@ -193,7 +193,7 @@ export class Auth {
     // only checked secret equality, so `revokeClient()` flips
     // `oauth_clients.revoked = true` but `requestToken` continued to
     // mint tokens for the revoked client. See stacksjs/stacks#1860 H-4.
-    const client = await db.selectFrom('oauth_clients')
+    const client = await db.primary.selectFrom('oauth_clients')
       .where('id', '=', clientId)
       .where('revoked', '=', false)
       .selectAll()
@@ -235,7 +235,7 @@ export class Auth {
   }
 
   private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {
-    const result = await db.selectFrom('oauth_access_tokens')
+    const result = await db.primary.selectFrom('oauth_access_tokens')
       .where('id', '=', tokenId)
       .selectAll()
       .executeTakeFirst()
@@ -616,7 +616,7 @@ export class Auth {
    */
   public static async validateToken(token: string): Promise<boolean> {
     const hashedPlainToken = hashToken(token)
-    const accessToken = await db.selectFrom('oauth_access_tokens')
+    const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashedPlainToken)
       .selectAll()
       .executeTakeFirst()
@@ -669,7 +669,7 @@ export class Auth {
    */
   public static async getUserFromToken(token: string): Promise<UserModel | undefined> {
     const hashedPlainToken = hashToken(token)
-    const accessToken = await db.selectFrom('oauth_access_tokens')
+    const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashedPlainToken)
       .selectAll()
       .executeTakeFirst()
@@ -769,7 +769,7 @@ export class Auth {
     // Raw-hex lookup matches the createTokenForUser bearer shape — no
     // parseToken / decryptTokenId envelope. See `validateToken`'s
     // doc for context (stacksjs/stacks#1867 follow-up).
-    const accessToken = await db.selectFrom('oauth_access_tokens')
+    const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashToken(bearerToken))
       .selectAll()
       .executeTakeFirst()
@@ -869,7 +869,7 @@ export class Auth {
     if (!uid)
       return []
 
-    const tokens = await db.selectFrom('oauth_access_tokens')
+    const tokens = await db.primary.selectFrom('oauth_access_tokens')
       .where('tokenable_id', '=', uid)
       .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
       .where('revoked', '=', false)
@@ -984,7 +984,7 @@ export class Auth {
 
     // The raw lookup intentionally accepts every owner type, including legacy
     // bearer shapes. Check ownership before revoking or minting a User token.
-    const owner = await db.selectFrom('oauth_access_tokens')
+    const owner = await db.primary.selectFrom('oauth_access_tokens')
       .where('id', '=', existing.id)
       .select('tokenable_type')
       .executeTakeFirst()

@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('session authentication reads committed primary state despite replica lag', async () => {
+test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('session and token authentication read committed primary state despite replica lag', async () => {
   const url = new URL(process.env.STACKS_TEST_POSTGRES_URL!)
   if (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
     throw new Error('Session routing tests require a local disposable PostgreSQL server')
@@ -36,7 +36,7 @@ test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('session authentication reads
     try {
       const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
       expect(code, `${stdout}\n${stderr}`).toBe(0)
-      expect(stdout).toContain('session primary reads OK')
+      expect(stdout).toContain('session and token primary reads OK')
     }
     finally { clearTimeout(watchdog); child.kill() }
   }

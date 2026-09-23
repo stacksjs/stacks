@@ -19,6 +19,12 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { releaseOrm } = await import('bun-query-builder')
 const { SessionAuth } = await import('../../src/session-auth')
+const { Auth } = await import('../../src/authentication')
+const { createToken, revokeToken, createClient, revokeClient } = await import('../../src/tokens')
+const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
+const { enhanceRequest } = await import('@stacksjs/router')
+const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
+setAmbientRequestContext(true)
 const failures: string[] = []
 
 try {
@@ -72,7 +78,43 @@ try {
   })
   await assert.rejects(async () => escapedRead!(), /transaction/i, 'retained primary methods must not escape their transaction')
   await withRoutingContext(assertLaggedRead)
-  console.log('session primary reads OK')
+  await ensureFrameworkAuthTables()
+  const revoked = await createToken(1, 'lagged-token', ['read'], { withRefreshToken: false })
+  const client = await createClient({ name: 'lagged-client', redirect: 'https://example.invalid/callback' })
+  for (const table of ['oauth_access_tokens', 'oauth_clients']) {
+    await db.unsafe(`CREATE TABLE lagged.${table} (LIKE public.${table} INCLUDING ALL)`).execute()
+    await db.unsafe(`INSERT INTO lagged.${table} SELECT * FROM public.${table}`).execute()
+    await db.unsafe(`GRANT SELECT ON lagged.${table} TO "${name}"`).execute()
+  }
+  await revokeToken(revoked.plainTextToken)
+  await revokeClient(client.client.id)
+  const fresh = await createToken(1, 'fresh-token', ['read'], { withRefreshToken: false })
+  for (const [pair, valid] of [[revoked, false], [fresh, true]] as const) {
+    for (const mode of ['validate', 'user', 'ability', 'current', 'find', 'list'] as const) {
+      try {
+        const request = enhanceRequest(new Request('https://example.invalid/account', { headers: { authorization: `Bearer ${pair.plainTextToken}` } }))
+        await withRoutingContext(() => runWithRequest(request, async () => {
+          if (mode === 'validate') assert.equal(await Auth.validateToken(pair.plainTextToken), valid, `validate: token validity ${valid}`)
+          if (mode === 'user') assert.equal(Boolean(await Auth.getUserFromToken(pair.plainTextToken)), valid, `user: token validity ${valid}`)
+          if (mode === 'ability') assert.equal(await Auth.tokenCan('read'), valid, `ability: token validity ${valid}`)
+          if (mode === 'current') assert.equal(Boolean(await Auth.currentAccessToken()), valid, `current: token validity ${valid}`)
+          if (mode === 'find') assert.equal((await Auth.findToken(Number(pair.accessToken.id)))?.revoked, !valid, `find: revocation state ${!valid}`)
+          if (mode === 'list') assert.equal((await Auth.tokens(1)).some(token => Number(token.id) === Number(pair.accessToken.id)), valid, `list: token validity ${valid}`)
+        }))
+      }
+      catch (error) { failures.push(String(error)) }
+    }
+  }
+  try {
+    await withRoutingContext(() => assert.rejects(
+      Auth.requestToken({ email: 'session@example.invalid', password: 'wrong' }, client.client.id, client.plainTextSecret),
+      { status: 401, message: 'Invalid client credentials' },
+      'revoked OAuth clients must fail before authenticating user credentials',
+    ))
+  }
+  catch (error) { failures.push(String(error)) }
+  assert.deepEqual(failures, [])
+  console.log('session and token primary reads OK')
 }
 finally {
   await releaseOrm()
