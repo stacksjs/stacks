@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.55...v0.74.56)
+
+## 🐛 Bug Fixes
+
+- **csrf**: seed the cookie on pages and API answers, not static files ([d43c1b6](https://github.com/stacksjs/stacks/commit/d43c1b6)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: preserve two-factor challenges on failed replacement ([d160883](https://github.com/stacksjs/stacks/commit/d160883)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve passkey challenges on failed replacement ([10da3a7](https://github.com/stacksjs/stacks/commit/10da3a7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind two-factor disable to verified credentials ([7f794f0](https://github.com/stacksjs/stacks/commit/7f794f0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify persisted two-factor state changes ([424636c](https://github.com/stacksjs/stacks/commit/424636c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: serialize password reset replacement claims ([a3c62d8](https://github.com/stacksjs/stacks/commit/a3c62d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve schemes in emailed authentication links ([fd27cca](https://github.com/stacksjs/stacks/commit/fd27cca)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify persisted session issuance ([097ef6d](https://github.com/stacksjs/stacks/commit/097ef6d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: replace pending two-factor setup atomically ([cbd5ef9](https://github.com/stacksjs/stacks/commit/cbd5ef9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **ci**: align Pantry with the required Craft version ([9c929b9](https://github.com/stacksjs/stacks/commit/9c929b9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: accept sessions in exported middleware ([07cdd05](https://github.com/stacksjs/stacks/commit/07cdd05)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: resolve session identity on public routes ([9a954c9](https://github.com/stacksjs/stacks/commit/9a954c9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: commit magic links before delivery ([b0322bc](https://github.com/stacksjs/stacks/commit/b0322bc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expire partial in-memory login counters ([47dd1b6](https://github.com/stacksjs/stacks/commit/47dd1b6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve session renewal claim boundaries ([d6c3c5d](https://github.com/stacksjs/stacks/commit/d6c3c5d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject incomplete session revocation ([6d4ada1](https://github.com/stacksjs/stacks/commit/6d4ada1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **auth**: amortize in-memory limiter cleanup scans ([fb997c0](https://github.com/stacksjs/stacks/commit/fb997c0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **auth**: stabilize PostgreSQL replica routing setup ([e34d1bf](https://github.com/stacksjs/stacks/commit/e34d1bf)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.54...v0.74.55)
 
 ## 🐛 Bug Fixes
