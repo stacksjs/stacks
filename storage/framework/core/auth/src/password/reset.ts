@@ -1,9 +1,8 @@
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
-import { formatDate } from '@stacksjs/orm'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
@@ -33,16 +32,12 @@ function getTokenExpireMinutes(): number {
  */
 function isWithinExpiry(row: Record<string, unknown>): boolean {
   const explicit = row.expires_at
-  if (typeof explicit === 'string' || explicit instanceof Date) {
-    return new Date(explicit).getTime() > Date.now()
-  }
-  const created = row.created_at
-  if (typeof created === 'string' || created instanceof Date) {
-    const expireMinutes = getTokenExpireMinutes()
-    return new Date(created).getTime() + expireMinutes * 60_000 > Date.now()
-  }
-  // No timestamp at all — refuse to verify rather than leak forever.
-  return false
+  if (explicit != null)
+    return (parseSqlDateTime(explicit)?.getTime() ?? 0) > Date.now()
+  const created = parseSqlDateTime(row.created_at)
+  const expireMinutes = getTokenExpireMinutes()
+  return created != null && Number.isFinite(expireMinutes) && expireMinutes > 0
+    && created.getTime() + expireMinutes * 60_000 > Date.now()
 }
 
 /**
@@ -198,7 +193,7 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   async function verifyToken(token: string): Promise<boolean> {
-    const result = await db
+    const result = await db.primary
       .selectFrom('password_resets')
       .where('email', '=', email)
       .selectAll()
@@ -215,6 +210,7 @@ export function passwordResets(email: string): PasswordResetActions {
       await db
         .deleteFrom('password_resets')
         .where('email', '=', email)
+        .where('token', '=', result.token)
         .execute()
       return false
     }
@@ -231,11 +227,14 @@ export function passwordResets(email: string): PasswordResetActions {
       // the typing of the top-level `db` proxy so chained calls type-check the same way.
       const trx = rawTrx as unknown as typeof db
       // First verify the token exists
-      const resetRecord = await trx
+      let resetQuery = trx
         .selectFrom('password_resets')
         .where('email', '=', email)
         .selectAll()
-        .executeTakeFirst()
+      // Lock before the expensive hash checks. SQLite's transaction executor
+      // already serializes writers; server databases need an explicit row lock.
+      if (getDatabaseDialect() !== 'sqlite') resetQuery = resetQuery.lockForUpdate()
+      const resetRecord = await resetQuery.executeTakeFirst()
 
       // If no reset record, return generic error (don't leak if user exists)
       if (!resetRecord) {
@@ -262,11 +261,12 @@ export function passwordResets(email: string): PasswordResetActions {
       }
 
       // Update the user's password
-      const user = await trx
+      let userQuery = trx
         .selectFrom('users')
         .where('email', '=', email)
         .selectAll()
-        .executeTakeFirst()
+      if (getDatabaseDialect() !== 'sqlite') userQuery = userQuery.lockForUpdate()
+      const user = await userQuery.executeTakeFirst()
 
       // If no user, return generic error (don't leak user existence)
       if (!user) {
@@ -275,43 +275,31 @@ export function passwordResets(email: string): PasswordResetActions {
 
       const hashedPassword = await makeHash(newPassword, { algorithm: 'bcrypt' })
 
-      // Update password AND stamp password_changed_at so every token /
-      // refresh token issued before this moment is rejected at use-time,
-      // not merely by the post-commit sweep (stacksjs/stacks#1957). The
-      // stamp is UTC 'YYYY-MM-DD HH:MM:SS' (formatDate), the same clock
-      // family as the token rows' CURRENT_TIMESTAMP so comparisons stay
-      // coherent. A future authenticated change-password endpoint MUST
-      // stamp this column too. If the column doesn't exist yet (DB not
-      // migrated), retry the update without the stamp — account recovery
-      // must never break on an un-migrated database (the sweep still runs
-      // post-commit; the binding is simply inert until `buddy migrate`).
-      try {
-        await trx
-          .updateTable('users')
-          .set({ password: hashedPassword, password_changed_at: formatDate(new Date()) } as never)
-          .where('email', '=', email)
-          .executeTakeFirst()
-      }
-      catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        if (/password_changed_at|no such column|unknown column/i.test(message)) {
-          log.warn('[PasswordReset] password_changed_at column missing - run `buddy migrate`; resetting without the credential-version stamp')
-          await trx
-            .updateTable('users')
-            .set({ password: hashedPassword })
-            .where('email', '=', email)
-            .executeTakeFirst()
-        }
-        else {
-          throw err
-        }
-      }
+      // Hashing and waiting for the owner lock can cross the token's deadline.
+      if (!isWithinExpiry(resetRecord))
+        return { success: false as const, message: 'Invalid or expired reset token' }
+
+      // SELECT * tells us whether this legacy schema has the optional stamp.
+      // Do not discover that with a failed UPDATE: Postgres aborts the entire
+      // transaction on a missing column, so retrying in it cannot recover.
+      const stamped = Object.hasOwn(user, 'password_changed_at')
+      if (!stamped)
+        log.warn('[PasswordReset] password_changed_at column missing - run `buddy migrate`; resetting without the credential-version stamp')
+      const updated = await trx.updateTable('users')
+        .set(stamped ? { password: hashedPassword, password_changed_at: sqlDateTime(new Date()) } as never : { password: hashedPassword })
+        .where('id', '=', user.id)
+        .execute()
+      if (mutationCount(updated) !== 1)
+        throw new Error('Password reset could not update its owner')
 
       // Delete the used reset token
-      await trx
+      const consumed = await trx
         .deleteFrom('password_resets')
         .where('email', '=', email)
+        .where('token', '=', hashedToken)
         .execute()
+      if (mutationCount(consumed) !== 1)
+        throw new Error('Password reset token could not be consumed')
 
       return { success: true as const, userId: Number(user.id) }
     })

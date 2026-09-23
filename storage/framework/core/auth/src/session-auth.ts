@@ -203,7 +203,7 @@ export async function sessionDestroyAll(userId: number): Promise<void> {
       .execute()
   }
   catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
+    const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err)
     // sqlite: `no such table: sessions` / postgres: `relation "sessions"
     // does not exist` / mysql: `Table '….sessions' doesn't exist`
     if (message.includes('sessions') && /no such table|does not exist|doesn't exist/i.test(message))
