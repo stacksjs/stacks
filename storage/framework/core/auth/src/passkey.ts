@@ -8,7 +8,7 @@ import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
 import { Buffer } from 'node:buffer'
 import type { Insertable } from '@stacksjs/database/runtime'
 
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { User } from '@stacksjs/orm'
 
 type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
@@ -319,7 +319,7 @@ export async function consumeWebAuthnChallenge(
   userId: number,
   purpose: WebAuthnChallengePurpose,
 ): Promise<Uint8Array | null> {
-  const row = await db
+  const row = await db.primary
     .selectFrom('webauthn_challenges')
     .where('user_id', '=', userId)
     .where('purpose', '=', purpose)
@@ -330,14 +330,17 @@ export async function consumeWebAuthnChallenge(
 
   // Delete BEFORE checking expiry so an expired row doesn't linger
   // and consume the unique slot for the next legitimate generate.
-  await db
+  const claimed = await db
     .deleteFrom('webauthn_challenges')
     .where('user_id', '=', userId)
     .where('purpose', '=', purpose)
+    .where('challenge', '=', row.challenge)
+    .where('expires_at', '=', row.expires_at)
     .execute()
 
+  if (mutationCount(claimed) !== 1) return null
   const expiresAt = parseSqlDateTime(row.expires_at)?.getTime() ?? 0
-  if (Date.now() > expiresAt) return null
+  if (Date.now() >= expiresAt) return null
 
   return Buffer.from(String(row.challenge), 'base64url')
 }

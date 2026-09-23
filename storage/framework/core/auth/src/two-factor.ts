@@ -33,7 +33,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyTwoFactorCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
 
@@ -170,13 +170,18 @@ export async function consumePendingTwoFactorSecret(userId: number): Promise<str
 
   if (!row) return null
 
-  await db
+  // Claim the version we read. A replacement secret must not be deleted by
+  // an older consumer, and only the request that actually deletes may win.
+  const claimed = await db
     .deleteFrom('two_factor_pending_secrets')
     .where('user_id', '=', userId)
+    .where('secret', '=', row.secret)
+    .where('expires_at', '=', row.expires_at)
     .execute()
 
+  if (mutationCount(claimed) !== 1) return null
   const expiresAt = parseSqlDateTime(row.expires_at)?.getTime() ?? 0
-  if (Date.now() > expiresAt) return null
+  if (Date.now() >= expiresAt) return null
 
   return String(row.secret)
 }
@@ -290,13 +295,14 @@ export async function consumeTwoFactorChallenge(challengeToken: string): Promise
 
   if (!row) return null
 
-  await db
+  const claimed = await db
     .deleteFrom('two_factor_challenges')
     .where('id', '=', challengeToken)
     .execute()
 
+  if (mutationCount(claimed) !== 1) return null
   const expiresAt = parseSqlDateTime(row.expires_at)?.getTime() ?? 0
-  if (Date.now() > expiresAt) return null
+  if (Date.now() >= expiresAt) return null
 
   return Number(row.user_id)
 }
