@@ -177,21 +177,29 @@ export async function enableTwoFactor(userId: number, secret: string, code: stri
   const valid = await verifyTwoFactorCode(code, secret)
   if (!valid) return false
 
-  await db
-    .updateTable('users')
-    .set({ two_factor_secret: secret, two_factor_enabled: true })
-    .where('id', '=', userId)
-    .executeTakeFirst()
-
-  return true
+  return persistTwoFactorState(userId, secret, true)
 }
 
 export async function disableTwoFactor(userId: number): Promise<void> {
-  await db
-    .updateTable('users')
-    .set({ two_factor_secret: null, two_factor_enabled: false })
-    .where('id', '=', userId)
-    .executeTakeFirst()
+  await persistTwoFactorState(userId, null, false)
+}
+
+async function persistTwoFactorState(userId: number, secret: string | null, enabled: boolean): Promise<boolean> {
+  return db.transaction(async () => {
+    await db.updateTable('users')
+      .set({ two_factor_secret: secret, two_factor_enabled: enabled })
+      .where('id', '=', userId).execute()
+
+    // A successful query is not proof that a trigger accepted the requested
+    // state. Check while the write lock is held and roll back altered writes.
+    // Same-state updates remain valid even on drivers reporting zero changes.
+    const stored = await db.primary.selectFrom('users').where('id', '=', userId)
+      .select(['two_factor_secret', 'two_factor_enabled']).executeTakeFirst()
+    if (!stored) return false
+    if (stored.two_factor_secret !== secret || Boolean(stored.two_factor_enabled) !== enabled)
+      throw new Error('[auth] Two-factor state could not be stored.')
+    return true
+  })
 }
 
 /**
