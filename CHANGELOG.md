@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.56...v0.74.57)
+
+## 🐛 Bug Fixes
+
+- **migrations**: never let a git-ignored migration pass silently ([bd89e52](https://github.com/stacksjs/stacks/commit/bd89e52)) _(by Chris <chris@stacksjs.com>)_
+- **orm**: save() and forceCreate() return the readable model ([f8e2620](https://github.com/stacksjs/stacks/commit/f8e2620)) _(by Chris <chris@stacksjs.com>)_
+- **csrf**: satisfy noUncheckedIndexedAccess in the content-type check ([9621cf8](https://github.com/stacksjs/stacks/commit/9621cf8)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **buddy**: document migrate --strict ([24d6352](https://github.com/stacksjs/stacks/commit/24d6352)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.55...v0.74.56)
 
 ## 🐛 Bug Fixes
