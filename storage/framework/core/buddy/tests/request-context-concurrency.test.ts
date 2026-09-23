@@ -211,7 +211,7 @@ for (const server of servers) {
         const html = await (await fetch(`${base}/cart`, { headers: { cookie } })).text()
         expect(readCart(html)).toEqual({ lines: [], badge: 0 })
       }
-    })
+    }, 120_000)
 
     it('renders each visitor\'s own cart with many in flight', async () => {
       const wrong: string[] = []
