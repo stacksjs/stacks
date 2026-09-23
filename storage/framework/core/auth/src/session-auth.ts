@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { config } from '@stacksjs/config'
-import { db, isInTransaction, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
@@ -181,9 +181,15 @@ export async function sessionLogin(
 export async function sessionLogout(sessionId: string): Promise<void> {
   // A failed delete must reach the caller: otherwise a copied cookie remains
   // valid while the user is told they signed out (stacksjs/stacks#2599).
-  await db.deleteFrom('sessions')
-    .where('id', '=', sessionId)
-    .execute()
+  await db.transaction(async () => {
+    await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+    // A trigger can suppress a DELETE without throwing. Check the committed
+    // outcome we promise, not merely whether the statement returned normally.
+    const remaining = await db.primary.selectFrom('sessions')
+      .where('id', '=', sessionId).select('id').executeTakeFirst()
+    if (remaining)
+      throw new HttpError(500, 'Session could not be destroyed.')
+  })
   log.debug('[auth] Session destroyed')
 }
 
@@ -203,14 +209,15 @@ export async function sessionLogout(sessionId: string): Promise<void> {
  */
 export async function sessionDestroyAll(userId: number): Promise<void> {
   try {
-    const destroy = async () => {
+    // A transaction also rolls back partial deletes when one row is retained.
+    // Its nested savepoint isolates the optional-schema failure on Postgres.
+    await db.transaction(async () => {
       await db.deleteFrom('sessions').where('user_id', '=', userId).execute()
-    }
-    // Missing optional schema is caught below. Isolate that query in a
-    // savepoint when a caller owns a transaction: catching a Postgres error
-    // alone leaves the transaction aborted and cannot preserve its work.
-    if (isInTransaction()) await db.transaction(destroy)
-    else await destroy()
+      const remaining = await db.primary.selectFrom('sessions')
+        .where('user_id', '=', userId).select('id').executeTakeFirst()
+      if (remaining)
+        throw new HttpError(500, 'Sessions could not be destroyed.')
+    })
   }
   catch (err) {
     const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err)

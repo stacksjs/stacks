@@ -297,27 +297,32 @@ try {
       }
 
       // A real database failure must not become a successful logout response.
-      if (dialect === 'postgres') {
-        await db.unsafe("CREATE FUNCTION reject_session_logout() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture session deletion denied'; END; $$").execute()
-        await db.unsafe('CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION reject_session_logout()').execute()
-      }
-      else if (dialect === 'mysql') {
-        await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'fixture session deletion denied'").execute()
-      }
-      else {
-        await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions BEGIN SELECT RAISE(ABORT, 'fixture session deletion denied'); END").execute()
-      }
-      try {
-        const denied = await fetch(`${base}/logout`, {
-          method: 'POST', headers: { cookie: `${cookies[0]}; ${csrfCookie}`, accept: 'application/json', 'x-csrf-token': csrfToken },
-        })
-        await denied.arrayBuffer()
-        assert.equal(denied.status, 500, 'failed database revocation must not report successful logout')
-        assert(!denied.headers.getSetCookie().some(value => value.startsWith('session_id=')), 'failed logout must retain the cookie for retry')
-        await me(cookies[0]!, 1)
-      }
-      finally {
-        await db.unsafe(`DROP TRIGGER reject_session_logout${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
+      for (const silentlySkipped of dialect === 'mysql' ? [false] : [false, true]) {
+        if (dialect === 'postgres') {
+          const failure = silentlySkipped ? 'RETURN NULL;' : "RAISE EXCEPTION 'fixture session deletion denied';"
+          await db.unsafe(`CREATE FUNCTION reject_session_logout() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN ${failure} END; $$`).execute()
+          await db.unsafe('CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION reject_session_logout()').execute()
+        }
+        else if (dialect === 'mysql') {
+          await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'fixture session deletion denied'").execute()
+        }
+        else {
+          const failure = silentlySkipped ? 'IGNORE' : "ABORT, 'fixture session deletion denied'"
+          await db.unsafe(`CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions BEGIN SELECT RAISE(${failure}); END`).execute()
+        }
+        try {
+          const denied = await fetch(`${base}/logout`, {
+            method: 'POST', headers: { cookie: `${cookies[0]}; ${csrfCookie}`, accept: 'application/json', 'x-csrf-token': csrfToken },
+          })
+          await denied.arrayBuffer()
+          assert.equal(denied.status, 500, 'failed database revocation must not report successful logout')
+          assert(!denied.headers.getSetCookie().some(value => value.startsWith('session_id=')), 'failed logout must retain the cookie for retry')
+          await me(cookies[0]!, 1)
+        }
+        finally {
+          await db.unsafe(`DROP TRIGGER reject_session_logout${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
+          if (dialect === 'postgres') await db.unsafe('DROP FUNCTION reject_session_logout()').execute()
+        }
       }
 
       const response = await fetch(`${base}/logout`, {
