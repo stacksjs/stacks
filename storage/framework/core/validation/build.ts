@@ -10,7 +10,6 @@ const result = await Bun.build({
   outdir: './dist',
   format: 'esm',
   target: 'bun',
-  // sourcemap: 'linked',
   minify: true,
   external: frameworkExternal(),
   plugins: [
@@ -20,6 +19,18 @@ const result = await Bun.build({
     }),
   ],
 })
+
+const requestValidatorResult = await Bun.build({
+  entrypoints: ['./src/request-validator.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  minify: true,
+  external: frameworkExternal(),
+})
+
+if (!requestValidatorResult.success)
+  throw new AggregateError(requestValidatorResult.logs, 'Failed to build the request validator entry')
 
 await outro({
   dir: import.meta.dir,

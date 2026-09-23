@@ -5,9 +5,15 @@ import {
   isObjectNotEmpty,
   registerRule,
   schema,
+  validate,
 } from '../src'
+import { validate as focusedValidate } from '../src/request-validator'
 
 describe('@stacksjs/validation - Validator Utilities', () => {
+  test('keeps the focused and root request validators on the same function', () => {
+    expect(focusedValidate).toBe(validate)
+  })
+
   describe('isObjectNotEmpty', () => {
     test('returns true for an object with one property', () => {
       expect(isObjectNotEmpty({ a: 1 })).toBe(true)

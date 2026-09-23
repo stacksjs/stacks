@@ -139,6 +139,12 @@ describe('router import graph', () => {
       entry.kind === 'dynamic-import'
       && entry.original === '@stacksjs/error-handling/http-error',
     )).toBe(true)
+
+    const requestValidationImports = routerEntry?.[1].imports
+      .filter(entry => entry.original?.startsWith('@stacksjs/validation')) ?? []
+    expect(requestValidationImports.map(entry => `${entry.kind}:${entry.original}`)).toEqual([
+      'dynamic-import:@stacksjs/validation/request-validator',
+    ])
   })
 
   /**

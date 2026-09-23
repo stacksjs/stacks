@@ -3794,7 +3794,7 @@ const nativeRequestArrayBuffer = Request.prototype.arrayBuffer
 const nativeRequestBlob = Request.prototype.blob
 const nativeRequestClone = Request.prototype.clone
 let requestBodyEncoder: TextEncoder | undefined
-let requestValidationModule: typeof import('@stacksjs/validation') | undefined
+let requestValidationModule: typeof import('@stacksjs/validation/request-validator') | undefined
 let UploadedFileConstructor: typeof import('@stacksjs/storage/uploaded-file').UploadedFile | undefined
 // Keep the module, not authorization decisions: gate definitions remain live.
 let requestGateModule: typeof import('@stacksjs/auth/gate') | undefined
@@ -4032,7 +4032,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
       }
     }
 
-    const { validate } = requestValidationModule ??= await import('@stacksjs/validation')
+    const { validate } = requestValidationModule ??= await import('@stacksjs/validation/request-validator')
     const validated = await validate(this, normalized)
     ;(this)._validatedInput = validated
     return validated
