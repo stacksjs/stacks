@@ -12,7 +12,7 @@ export type PendingDatabaseConnectionClosures = Set<Promise<void>>
  */
 export async function closeDatabaseConnections(connections: Iterable<CloseableDatabaseConnection>): Promise<void> {
   const results = await Promise.allSettled(
-    [...new Set(connections)].map(connection => connection.close()),
+    [...new Set(connections)].map(async connection => connection.close()),
   )
   const errors = results
     .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
