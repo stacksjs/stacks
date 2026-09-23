@@ -291,51 +291,84 @@ export async function generateOpenApi(options: {
   // and idempotent-safe: if this ever runs inside an already-booted process
   // (routes already loaded), re-importing is a silent no-op per each
   // module's own import-cache semantics, not a duplicate-registration error.
+  // A portable artifact has to describe the same API on every machine, and
+  // some routes register only when the deployment is local: the framework's
+  // `/install` and `/test-error` diagnostics do, deliberately, and an unset
+  // environment name counts as local. So the generating machine silently
+  // decided the contents. A developer whose `.env` resolves to a real
+  // deployment emitted a spec without them; CI, which cannot decrypt `.env`
+  // and therefore has no name at all, emitted one with them; and
+  // `docs:artifacts:check` compared whichever was committed against its own
+  // regeneration and called it stale. The gate could not be green in both
+  // places at once, so it blocked every release until someone bypassed it.
+  //
+  // Pinned for the load rather than filtered from the output: the diagnostic
+  // routes are never registered in the first place, so the spec, the types
+  // and the client agree without any of them having to carry a list of which
+  // paths are dev-only. The live `GET /__openapi.json` route asks for
+  // `portable: false` and still describes the app as it is actually running.
+  const pinnedEnv = portable ? process.env.APP_ENV : undefined
+  const hadPinnedEnv = portable && 'APP_ENV' in process.env
+  if (portable)
+    process.env.APP_ENV = 'production'
+
+  // Restored in a finally: a caller that catches the refusals below must not
+  // be left with an APP_ENV this function set for its own route load.
   try {
-    const { loadRoutes } = await import('@stacksjs/router')
-    // Resolved through `path`, not by counting `../` up from this file. Five
-    // levels lands on the project root only in the vendored layout; a core-less
-    // app - the default `buddy new` produces - resolves this package out of
-    // node_modules, where the same five levels land somewhere unrelated. The
-    // import then failed, no routes registered, and the generator refused to
-    // emit a spec for an app whose `routes/` directory was right there.
-    const { default: routeRegistry } = await import(path.appPath('Routes.ts'))
-    await loadRoutes(routeRegistry)
-  }
-  catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    // Warning and carrying on means a broken route registry silently yields a
-    // SMALLER spec, and a smaller spec is indistinguishable from "routes were
-    // deleted" in review. Refuse when the document is meant to be canonical.
-    if (portable)
-      throw new Error(`[generateOpenApi] Refusing to emit a partial spec: failed to load routes/api.ts + framework routes: ${message}`)
-    console.warn(`[generateOpenApi] Failed to load routes/api.ts + framework routes: ${message}`)
-  }
-  try {
-    // Package first, relative second. Each resolves in exactly one layout: the
-    // specifier is the only form an installed app can follow (a spec generated
-    // there used to silently omit every model's CRUD endpoints), and the
-    // relative path is the only form that works on a clean checkout of THIS
-    // repository, where `@stacksjs/orm`'s dist has not been built yet.
-    // The specifier is held in a variable on purpose. Bun resolves a LITERAL
-    // one while transpiling the module, so an unresolvable literal takes this
-    // whole file down before any `try` around the await can run — which is how
-    // a clean checkout (no built dist behind `@stacksjs/orm/routes`) produced a
-    // spec missing far more than the ORM routes. Through a variable it is a
-    // runtime resolution, and a runtime failure is catchable.
-    const ormRoutesPackage = '@stacksjs/orm/routes'
     try {
-      await import(ormRoutesPackage)
+      const { loadRoutes } = await import('@stacksjs/router')
+      // Resolved through `path`, not by counting `../` up from this file. Five
+      // levels lands on the project root only in the vendored layout; a core-less
+      // app - the default `buddy new` produces - resolves this package out of
+      // node_modules, where the same five levels land somewhere unrelated. The
+      // import then failed, no routes registered, and the generator refused to
+      // emit a spec for an app whose `routes/` directory was right there.
+      const { default: routeRegistry } = await import(path.appPath('Routes.ts'))
+      await loadRoutes(routeRegistry)
     }
-    catch {
-      await import('../../orm/routes')
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      // Warning and carrying on means a broken route registry silently yields a
+      // SMALLER spec, and a smaller spec is indistinguishable from "routes were
+      // deleted" in review. Refuse when the document is meant to be canonical.
+      if (portable)
+        throw new Error(`[generateOpenApi] Refusing to emit a partial spec: failed to load routes/api.ts + framework routes: ${message}`)
+      console.warn(`[generateOpenApi] Failed to load routes/api.ts + framework routes: ${message}`)
+    }
+    try {
+      // Package first, relative second. Each resolves in exactly one layout: the
+      // specifier is the only form an installed app can follow (a spec generated
+      // there used to silently omit every model's CRUD endpoints), and the
+      // relative path is the only form that works on a clean checkout of THIS
+      // repository, where `@stacksjs/orm`'s dist has not been built yet.
+      // The specifier is held in a variable on purpose. Bun resolves a LITERAL
+      // one while transpiling the module, so an unresolvable literal takes this
+      // whole file down before any `try` around the await can run — which is how
+      // a clean checkout (no built dist behind `@stacksjs/orm/routes`) produced a
+      // spec missing far more than the ORM routes. Through a variable it is a
+      // runtime resolution, and a runtime failure is catchable.
+      const ormRoutesPackage = '@stacksjs/orm/routes'
+      try {
+        await import(ormRoutesPackage)
+      }
+      catch {
+        await import('../../orm/routes')
+      }
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (portable)
+        throw new Error(`[generateOpenApi] Refusing to emit a partial spec: failed to load useApi-generated ORM routes: ${message}`)
+      console.warn(`[generateOpenApi] Failed to load useApi-generated ORM routes: ${message}`)
     }
   }
-  catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    if (portable)
-      throw new Error(`[generateOpenApi] Refusing to emit a partial spec: failed to load useApi-generated ORM routes: ${message}`)
-    console.warn(`[generateOpenApi] Failed to load useApi-generated ORM routes: ${message}`)
+  finally {
+    if (portable) {
+      if (hadPinnedEnv)
+        process.env.APP_ENV = pinnedEnv
+      else
+        delete process.env.APP_ENV
+    }
   }
 
   let modelRegistry: Record<string, any> = {}
