@@ -159,7 +159,7 @@ export function createCsrfCookie(req: Request, minted?: string): string {
  * behaviour: it says nothing about what the browser is looking at.
  */
 export function responseMayUseCsrfToken(response: Response): boolean {
-  const type = (response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase()
+  const type = ((response.headers.get('content-type') || '').split(';')[0] ?? '').trim().toLowerCase()
   if (!type)
     return true
   return type === 'text/html'
