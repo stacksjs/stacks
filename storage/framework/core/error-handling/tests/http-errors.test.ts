@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import { HttpError, HttpErrorHandler, createHttpErrorHandler, renderHttpError, errorMiddleware } from '../src/http'
+import { HttpError as FocusedHttpError } from '../src/http-error'
 
 describe('HttpError', () => {
+  it('keeps the focused and existing exports on the same constructor', () => {
+    expect(FocusedHttpError).toBe(HttpError)
+  })
+
   it('should construct with status and message', () => {
     const error = new HttpError(404, 'Not Found')
     expect(error.status).toBe(404)
