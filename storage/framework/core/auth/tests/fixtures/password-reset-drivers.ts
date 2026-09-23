@@ -29,6 +29,7 @@ mock.module('@stacksjs/email', () => ({ ...realEmail,
   mail: { sendOrFail: async (message: unknown) => { sent.push(message) } },
 }))
 const { passwordResets } = await import('../../src/password/reset')
+const { sessionDestroyAll } = await import('../../src/session-auth')
 const { makeHash, verifyHash } = await import('@stacksjs/security')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
@@ -198,6 +199,25 @@ try {
       assert.equal(sent.length, 0, 'a savepoint release is not the outer commit')
     })
     assert.equal(sent.length, 1)
+  })
+  await check('missing trigger dependency is not mistaken for optional sessions', async () => {
+    await db.insertInto('sessions').values({ id: 'must-not-survive-reported-success', user_id: 1 } as never).execute()
+    if (dialect === 'postgres') {
+      await db.unsafe('CREATE FUNCTION audit_session_delete() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN INSERT INTO audit_sessions (id) VALUES (OLD.id); RETURN OLD; END; $$').execute()
+      await db.unsafe('CREATE TRIGGER audit_session_delete BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION audit_session_delete()').execute()
+    }
+    else if (dialect === 'mysql')
+      await db.unsafe('CREATE TRIGGER audit_session_delete BEFORE DELETE ON sessions FOR EACH ROW INSERT INTO audit_sessions (id) VALUES (OLD.id)').execute()
+    else
+      await db.unsafe('CREATE TRIGGER audit_session_delete BEFORE DELETE ON sessions BEGIN INSERT INTO audit_sessions (id) VALUES (OLD.id); END').execute()
+    try {
+      await assert.rejects(() => sessionDestroyAll(1), 'a failed revocation must reach its caller')
+      assert(await db.primary.selectFrom('sessions').where('id', '=', 'must-not-survive-reported-success').selectAll().executeTakeFirst())
+    }
+    finally {
+      await db.unsafe(`DROP TRIGGER audit_session_delete${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
+      if (dialect === 'postgres') await db.unsafe('DROP FUNCTION audit_session_delete()').execute()
+    }
   })
   assert.deepEqual(failures, [])
   console.log('password reset drivers OK')

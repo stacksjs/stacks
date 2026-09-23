@@ -216,7 +216,10 @@ export async function sessionDestroyAll(userId: number): Promise<void> {
     const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err)
     // sqlite: `no such table: sessions` / postgres: `relation "sessions"
     // does not exist` / mysql: `Table '….sessions' doesn't exist`
-    if (message.includes('sessions') && /no such table|does not exist|doesn't exist/i.test(message))
+    // Match the actual optional table, not a trigger dependency such as
+    // audit_sessions: swallowing that error would report a revocation that
+    // left the session rows intact.
+    if (/^(?:no such table: (?:main\.)?sessions|relation "sessions" does not exist|Table '(?:[^'.]+\.)?sessions' doesn't exist)$/i.test(message))
       return
     throw err
   }
