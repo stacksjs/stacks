@@ -1,7 +1,7 @@
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { describe, expect, it } from 'bun:test'
 import process from 'node:process'
-import { HttpError } from '@stacksjs/error-handling/http'
+import { HttpError } from '@stacksjs/error-handling/http-error'
 import { clearRateLimit, rateLimit, rateLimitStatus } from '../src/rate-limit'
 import { runWithRequest } from '../src/request-context'
 import { createStacksRouter } from '../src/stacks-router'

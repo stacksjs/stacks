@@ -127,8 +127,18 @@ describe('router import graph', () => {
       .find(([source]) => source.endsWith('router/src/rate-limit.ts'))
     const eagerActionLimiterDependencies = rateLimitEntry?.[1].imports
       .filter(entry => entry.kind !== 'dynamic-import'
-        && (entry.path.includes('ts-rate-limiter') || entry.path.endsWith('error-handling/src/http.ts'))) ?? []
+        && (entry.path.includes('ts-rate-limiter') || entry.path.endsWith('error-handling/src/http-error.ts'))) ?? []
     expect(eagerActionLimiterDependencies).toEqual([])
+
+    const classOnlyHttpErrorImports = [
+      ...(routerEntry?.[1].imports ?? []),
+      ...(rateLimitEntry?.[1].imports ?? []),
+    ].filter(entry => entry.original?.startsWith('@stacksjs/error-handling/http'))
+    expect(classOnlyHttpErrorImports.length).toBeGreaterThan(0)
+    expect(classOnlyHttpErrorImports.every(entry =>
+      entry.kind === 'dynamic-import'
+      && entry.original === '@stacksjs/error-handling/http-error',
+    )).toBe(true)
   })
 
   /**
