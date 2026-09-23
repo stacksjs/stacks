@@ -34,6 +34,7 @@ mock.module('@stacksjs/email', () => ({
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { consumeMagicLink, pruneMagicLinkTokens, sendMagicLink } = await import('../src/magic-link')
 const { RateLimiter } = await import('../src/rate-limiter')
+const { overrides, overridesReady } = await import('@stacksjs/config')
 
 
 async function forceConfig(): Promise<void> {
@@ -147,6 +148,27 @@ async function tokenRows(): Promise<{ email: string, token: string, consumed_at:
 }
 
 describe('sendMagicLink', () => {
+  for (const [configured, base] of [
+    ['example.test', 'https://example.test'],
+    ['https://example.test', 'https://example.test'],
+    ['http://localhost:3100', 'http://localhost:3100'],
+    ['https://example.test:8443/tenant/', 'https://example.test:8443/tenant'],
+  ]) {
+    test(`magic links preserve configured base ${configured}`, async () => {
+      await overridesReady
+      const previous = overrides.app
+      overrides.app = { ...previous, url: configured }
+      try {
+        await seedUser('parent@example.com')
+        await sendMagicLink('parent@example.com')
+        expect(sentMails.at(-1)?.text).toContain(`${base}/auth/magic/`)
+        expect(sentMails.at(-1)?.text).not.toContain('https://https://')
+        expect(sentMails.at(-1)?.text).not.toContain('https://http://')
+      }
+      finally { overrides.app = previous }
+    })
+  }
+
   test('unknown email is a silent no-op: no row, no mail', async () => {
     await sendMagicLink('nobody@example.com')
     expect(await tokenRows()).toHaveLength(0)

@@ -1,9 +1,9 @@
 import { createHash, randomBytes } from 'node:crypto'
-import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, templateByName } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
+import { authLinkBase } from './link-url'
 import { RateLimiter } from './rate-limiter'
 
 /**
@@ -87,7 +87,7 @@ async function linkBase(siteId: number | undefined): Promise<string> {
       return `https://${site.subdomain}.${base}`
   }
 
-  return config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
+  return authLinkBase()
 }
 
 /**

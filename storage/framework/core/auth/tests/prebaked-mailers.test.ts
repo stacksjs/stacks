@@ -239,6 +239,43 @@ describe('password reset anti-enumeration (#1944)', () => {
 })
 
 describe('password reset URL template (#1944)', () => {
+  test('an empty app URL keeps the localhost port fallback', async () => {
+    const previous = overrides.app
+    const previousPort = process.env.PORT
+    overrides.app = { ...previous, url: '' }
+    process.env.PORT = '3456'
+    try {
+      await passwordResets(KNOWN_EMAIL).sendEmail()
+      expect(String(lastTemplateVars?.resetUrl)).toStartWith('http://localhost:3456/password/reset/')
+    }
+    finally {
+      overrides.app = previous
+      if (previousPort === undefined) delete process.env.PORT
+      else process.env.PORT = previousPort
+    }
+  })
+
+  for (const [configured, base] of [
+    ['example.test', 'https://example.test'],
+    ['https://example.test', 'https://example.test'],
+    ['http://localhost:3100', 'http://localhost:3100'],
+    ['https://example.test:8443/tenant/', 'https://example.test:8443/tenant'],
+    ['  https://example.test/tenant///  ', 'https://example.test/tenant'],
+  ]) {
+    test(`reset and verification links preserve configured base ${configured}`, async () => {
+      const previous = overrides.app
+      overrides.app = { ...previous, url: configured }
+      try {
+        await passwordResets(KNOWN_EMAIL).sendEmail()
+        expect(String(lastTemplateVars?.resetUrl)).toStartWith(`${base}/password/reset/`)
+        const user = await db.selectFrom('users').where('email', '=', VERIFY_EMAIL).select('id').executeTakeFirstOrThrow()
+        await sendVerificationEmail({ id: Number(user.id), email: VERIFY_EMAIL })
+        expect(String(lastTemplateVars?.verificationUrl)).toStartWith(`${base}/verify-email/`)
+      }
+      finally { overrides.app = previous }
+    })
+  }
+
   test('default convention URL-encodes {email} ( + and @ )', async () => {
     await passwordResets(TAGGED_EMAIL).sendEmail()
     const resetUrl = String(lastTemplateVars?.resetUrl)

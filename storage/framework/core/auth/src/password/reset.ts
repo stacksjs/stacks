@@ -4,6 +4,7 @@ import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDate
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { makeHash, verifyHash } from '@stacksjs/security'
+import { authLinkBase } from '../link-url'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
 
@@ -162,7 +163,7 @@ export function passwordResets(email: string): PasswordResetActions {
     // can reuse this whole flow instead of hand-rolling the send. Falls
     // back to the framework convention. Absolute templates are used as-is;
     // path templates are prefixed with the app URL.
-    const base = config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
+    const base = authLinkBase()
     const tpl = config.auth.passwordReset?.url
       ?? '/password/reset/{token}?email={email}'
     const filled = tpl.replace('{token}', token).replace('{email}', encodeURIComponent(email))

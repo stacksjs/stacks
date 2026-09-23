@@ -17,6 +17,7 @@ import { config } from '@stacksjs/config'
 import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
+import { authLinkBase } from './link-url'
 
 export interface EmailVerificationResult {
   success: boolean
@@ -91,7 +92,7 @@ function getExpiryMinutes(): number {
  * URL treatment — stacksjs/stacks#1944.)
  */
 function getVerificationUrl(userId: number, token: string): string {
-  const base = config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
+  const base = authLinkBase()
   const tpl = config.auth.emailVerification?.url ?? '/verify-email/{id}/{token}'
   const filled = tpl.replace('{id}', String(userId)).replace('{token}', token)
   return /^https?:\/\//.test(filled) ? filled : `${base}${filled.startsWith('/') ? '' : '/'}${filled}`
