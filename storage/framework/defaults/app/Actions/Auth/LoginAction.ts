@@ -1,6 +1,5 @@
 import { Action } from '@stacksjs/actions'
 import { Auth, authCookie, createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/auth'
-import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 import { PASSWORD_MAX_LENGTH, PASSWORD_PRESENCE_MESSAGE } from '../../password-policy'
@@ -30,28 +29,27 @@ export default new Action({
     const email = request.get('email')
     const password = request.get('password')
 
-    // Verify credentials WITHOUT minting tokens yet — if the account
-    // has TOTP 2FA enabled, no token pack should exist until the code
-    // is also verified (VerifyTwoFactorLoginAction mints the real
-    // pack via Auth.loginUsingId, same as the non-2FA path below).
-    const isValid = await Auth.attempt({ email, password })
-    if (!isValid)
+    // Verify once, then keep the observed password version locked while
+    // choosing and issuing the challenge or token. A completed password reset
+    // cannot be followed by this old in-flight login minting fresh access.
+    const decision = await Auth.withVerifiedCredentials({ email, password }, async (authedUser) => {
+      const { enabled: twoFactorEnabled } = await getTwoFactorState(authedUser.id as number)
+      if (twoFactorEnabled) {
+        return { kind: 'challenge' as const, token: await createTwoFactorChallenge(authedUser.id as number) }
+      }
+      return { kind: 'login' as const, result: await Auth.loginUsingId(authedUser.id as number) }
+    })
+    if (!decision)
       return response.unauthorized('Incorrect email or password')
 
-    const authedUser = await User.where('email', '=', email).first()
-    if (!authedUser)
-      return response.unauthorized('Incorrect email or password')
-
-    const { enabled: twoFactorEnabled } = await getTwoFactorState(authedUser.id as number)
-    if (twoFactorEnabled) {
-      const challengeToken = await createTwoFactorChallenge(authedUser.id as number)
+    if (decision.kind === 'challenge') {
       return response.json({
         requires_two_factor: true,
-        challenge_token: challengeToken,
+        challenge_token: decision.token,
       })
     }
 
-    const result = await Auth.loginUsingId(authedUser.id as number)
+    const result = decision.result
     if (!result)
       return response.unauthorized('Incorrect email or password')
 

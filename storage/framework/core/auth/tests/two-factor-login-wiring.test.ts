@@ -17,7 +17,8 @@ const DEFAULTS_ROOT = resolve(__dirname, '../../../defaults')
 describe('TOTP login-challenge wiring', () => {
   test('LoginAction verifies credentials before minting tokens, branches on 2FA', () => {
     const source = readFileSync(resolve(DEFAULTS_ROOT, 'app/Actions/Auth/LoginAction.ts'), 'utf-8')
-    expect(source).toMatch(/await Auth\.attempt\(\{ email, password \}\)/)
+    expect(source).toMatch(/await Auth\.withVerifiedCredentials\(\{ email, password \}, async \(authedUser\)/)
+    expect(source).not.toMatch(/User\.where/)
     expect(source).toMatch(/getTwoFactorState\(authedUser\.id as number\)/)
     expect(source).toMatch(/createTwoFactorChallenge\(authedUser\.id as number\)/)
     expect(source).toMatch(/requires_two_factor: true/)

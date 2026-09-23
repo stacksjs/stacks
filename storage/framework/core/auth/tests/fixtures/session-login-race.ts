@@ -32,6 +32,7 @@ const { makeHash } = await import('@stacksjs/security')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
+const LoginAction = (await import('../../../../defaults/app/Actions/Auth/LoginAction')).default
 setAmbientRequestContext(true)
 const failures: string[] = []
 const email = 'login-race@example.invalid'
@@ -41,14 +42,16 @@ try {
   await ensureFrameworkAuthTables()
   const oldHash = await makeHash('old-synthetic-password', { algorithm: 'bcrypt' })
   const newHash = await makeHash('new-synthetic-password', { algorithm: 'bcrypt' })
-  const cases = (['session', 'bearer', 'bearer-request'] as const)
+  const cases = (['session', 'bearer', 'bearer-request', 'action', 'action-2fa'] as const)
     .flatMap(mode => (['password', 'deleted', 'unchanged'] as const).map(change => ({ mode, change })))
   for (const { mode, change } of cases) {
     await db.deleteFrom('oauth_refresh_tokens').execute()
     await db.deleteFrom('oauth_access_tokens').execute()
     await db.deleteFrom('sessions').execute()
+    await db.deleteFrom('two_factor_challenges').execute()
     await db.deleteFrom('users').execute()
     await db.insertInto('users').values({ id: 1, name: 'Fixture', email, password: oldHash }).execute()
+    if (mode === 'action-2fa') await db.updateTable('users').set({ two_factor_enabled: true } as never).where('id', '=', 1).execute()
     let changed = false
     // The public asynchronous limiter-store seam is reached after the real
     // bcrypt verification, but before session persistence. Commit a competing
@@ -65,6 +68,8 @@ try {
     const login = async () => {
       if (mode === 'session') return SessionAuth.login(email, 'old-synthetic-password')
       const credentials = { email, password: 'old-synthetic-password' }
+      if (mode === 'action' || mode === 'action-2fa')
+        return LoginAction.handle({ get: (key: string) => credentials[key as keyof typeof credentials] } as never) as Promise<Response>
       if (mode === 'bearer') return Auth.login(credentials)
       const request = enhanceRequest(new Request('http://localhost/login-race'))
       return runWithRequest(request, () => Auth.login(credentials))
@@ -73,15 +78,26 @@ try {
       if (change === 'unchanged') {
         const result = await login()
         assert(result)
-        if ('sessionId' in result) assert(await SessionAuth.check(result.sessionId))
+        if (result instanceof Response) {
+          assert.equal(result.status, 200)
+          const body = await result.json() as { requires_two_factor?: boolean, access_token?: string }
+          if (mode === 'action-2fa') {
+            assert.equal(body.requires_two_factor, true)
+            assert.equal((await db.primary.selectFrom('oauth_access_tokens').selectAll().execute()).length, 0)
+          }
+          else assert(await findToken(body.access_token!))
+        }
+        else if ('sessionId' in result) assert(await SessionAuth.check(result.sessionId))
         else assert(await findToken(result.token))
       }
       else {
         if (mode === 'session') await assert.rejects(login)
+        else if (mode === 'action' || mode === 'action-2fa') assert.equal((await login() as Response).status, 401)
         else assert.equal(Boolean(await login()), false, 'stale credentials must not issue a bearer')
         assert.equal((await db.primary.selectFrom('sessions').selectAll().execute()).length, 0)
         assert.equal((await db.primary.selectFrom('oauth_access_tokens').selectAll().execute()).length, 0)
         assert.equal((await db.primary.selectFrom('oauth_refresh_tokens').selectAll().execute()).length, 0)
+        assert.equal((await db.primary.selectFrom('two_factor_challenges').selectAll().execute()).length, 0)
       }
       assert(changed, 'the competing operation must run after password verification')
     }

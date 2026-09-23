@@ -347,6 +347,18 @@ export class Auth {
   }
 
   /**
+   * Verify a password and issue a credential or challenge while its owner is
+   * locked on primary. The callback runs in the database transaction and must
+   * keep non-database side effects outside it. Returns null for invalid or
+   * concurrently changed credentials; storage failures propagate.
+   */
+  public static async withVerifiedCredentials<T>(credentials: AuthCredentials, issue: (user: UserModel) => Promise<T>): Promise<T | null> {
+    const user = await this.verifyCredentials(credentials)
+    if (!user) return null
+    return withVerifiedPassword(user.id!, user.password, () => issue(user))
+  }
+
+  /**
    * Login and return user with token
    * Similar to Laravel's Auth::login() + token creation
    *
@@ -358,18 +370,14 @@ export class Auth {
   public static async login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<
     { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
   > {
-    // Keep the verified snapshot even outside a request. Looking the user up
-    // again after verification can substitute a password that was never checked.
-    const authedUser = await this.verifyCredentials(credentials)
-    if (!authedUser)
-      return null
-
-    const issued = await withVerifiedPassword(authedUser.id!, authedUser.password, () => this.createTokenForUser(authedUser, options))
-    if (!issued) return null
+    const result = await this.withVerifiedCredentials(credentials, async (user) => {
+      const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(user, options)
+      return { user, token: plainTextToken, refreshToken, expiresIn }
+    })
+    if (!result) return null
     const state = authStateOrNull()
-    if (state) state.authUser = authedUser
-    const { plainTextToken, refreshToken, expiresIn } = issued
-    return { user: authedUser, token: plainTextToken, refreshToken, expiresIn }
+    if (state) state.authUser = result.user
+    return result
   }
 
   /**
