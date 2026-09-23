@@ -154,7 +154,7 @@ describe('TOTP replay guard - migration column + verify wiring (#1985)', () => {
 
   it('verifyTwoFactorLoginCode rejects a code whose step was already consumed', () => {
     const s = src('two-factor.ts')
-    expect(s).toContain('const step = currentTotpStep()')
+    expect(s).toContain('const { valid, counter: step } = await verifyTOTPWithCounter(code, { secret })')
     expect(s).toContain('if (lastStep !== null && step <= lastStep)')
     expect(s).toContain('if (!await claimTwoFactorStep(userId, secret, step, lastStep))')
   })

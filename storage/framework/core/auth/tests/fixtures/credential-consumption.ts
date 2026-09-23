@@ -23,7 +23,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   }, queryLogging: { enabled: false },
 } })
 const { createTwoFactorChallenge, consumeTwoFactorChallenge, stashPendingTwoFactorSecret, consumePendingTwoFactorSecret, verifyTwoFactorLoginCode } = await import('../../src/two-factor')
-const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
+const { generateTwoFactorToken } = await import('../../src/authenticator')
 const { storeWebAuthnChallenge, consumeWebAuthnChallenge, updatePasskeyCounter } = await import('../../src/passkey')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
@@ -103,7 +103,8 @@ try {
       contender.close()
     }
   }
-  const secret = generateTwoFactorSecret()
+  // Fixed synthetic secret keeps adjacent-window codes deterministic.
+  const secret = 'JBSWY3DPEHPK3PXP'
   const code = await generateTwoFactorToken(secret)
   const resetTotp = async () => {
     await db.deleteFrom('users').where('id', '=', 1).execute()
@@ -121,6 +122,29 @@ try {
   }
   catch (error) { failures.push(String(error)) }
   finally { setSystemTime(now) }
+
+  // A tolerated clock offset must consume the code's step, not the server's
+  // current step. Otherwise the same code becomes reusable at the boundary.
+  for (const offset of [-1, 0, 1]) {
+    await resetTotp()
+    try {
+      setSystemTime(new Date(now.getTime() + offset * 30_000))
+      const windowCode = await generateTwoFactorToken(secret)
+      setSystemTime(now)
+      assert.equal(await verifyTwoFactorLoginCode(1, windowCode), true, `TOTP: accept the documented ${offset} clock-offset window`)
+      const row = await db.primary.selectFrom('users').selectAll().where('id', '=', 1).executeTakeFirst()
+      assert.equal(Number(row?.two_factor_last_used_step), Math.floor(now.getTime() / 30_000) + offset, 'TOTP: persist the matched counter')
+      if (offset >= 0) {
+        setSystemTime(new Date(now.getTime() + 30_000))
+        assert.equal(await verifyTwoFactorLoginCode(1, windowCode), false, `TOTP: offset ${offset} replay must stay rejected across the server boundary`)
+      }
+      else {
+        assert.equal(await verifyTwoFactorLoginCode(1, code), true, 'TOTP: consuming a previous-window code must not block the unused current code')
+      }
+    }
+    catch (error) { failures.push(String(error)) }
+    finally { setSystemTime(now) }
+  }
 
   await resetTotp()
   await db.unsafe('ALTER TABLE users RENAME COLUMN two_factor_last_used_step TO hidden_totp_step').execute()

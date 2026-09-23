@@ -34,6 +34,7 @@
 
 import { randomBytes } from 'node:crypto'
 import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { verifyTOTPWithCounter } from '@stacksjs/ts-auth'
 import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyTwoFactorCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
 
@@ -47,15 +48,6 @@ const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
  * TOTP by looping fresh challenges. stacksjs/stacks#1985.
  */
 const TWO_FACTOR_RATE_LIMIT_PREFIX = '2fa:'
-
-// TOTP step in seconds — matches ts-auth's default (verifyTwoFactorCode calls
-// verifyTOTP with no override, so the period is 30s).
-const TWO_FACTOR_STEP_SECONDS = 30
-
-/** Current TOTP time-step, i.e. ts-auth's `floor(now / step)` counter. */
-function currentTotpStep(): number {
-  return Math.floor(Date.now() / 1000 / TWO_FACTOR_STEP_SECONDS)
-}
 
 /** Read the primary replay marker. Database failures must not authorize. */
 async function getLastUsedTwoFactorStep(userId: number): Promise<number | null> {
@@ -222,8 +214,8 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
   if (!enabled || !secret)
     return false
 
-  const valid = await verifyTwoFactorCode(code, secret)
-  if (!valid) {
+  const { valid, counter: step } = await verifyTOTPWithCounter(code, { secret })
+  if (!valid || step === null) {
     // Only a genuine wrong code counts toward the lockout; a fresh valid code
     // clears the counter so a legitimate user is never progressively locked.
     await RateLimiter.recordFailedAttempt(rateKey)
@@ -234,10 +226,9 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
   // ~30s step (plus ts-auth's ±1 verify window), so the same 6 digits would
   // otherwise be reusable until they expire. Reject any code whose step we've
   // already consumed. Not counted against the rate limiter (it's a replayed
-  // *valid* code, not a wrong guess — e.g. a double-submitted form). Residual:
-  // a code accepted via the +1 future window isn't covered, acceptable since
-  // every verify already needs a fresh single-use challenge.
-  const step = currentTotpStep()
+  // valid code, not a wrong guess, e.g. a double-submitted form). Persist the
+  // MATCHED counter, not the server clock: a code accepted from either side
+  // of the clock-skew window must stay consumed as the server clock advances.
   const lastStep = await getLastUsedTwoFactorStep(userId)
   if (lastStep !== null && step <= lastStep)
     return false
