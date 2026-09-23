@@ -1,4 +1,3 @@
-
 type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -9,6 +8,7 @@ import { db, isInTransaction, parseSqlDateTime, sqlDateTime } from '@stacksjs/da
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
+import { withVerifiedPassword } from './credential-version'
 
 function generateSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
@@ -141,32 +141,37 @@ export async function sessionLogin(
   const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 hours
   const { ip, userAgent } = readRequestFingerprint(fingerprint)
 
-  log.debug(`[auth] Session created for user#${user.id}`)
-
   // Persist session to database. Throw on failure rather than returning
   // an unusable sessionId (the previous code's "fall back to memory-only"
   // path was a lie — there was no in-memory store, so the caller got
   // a session ID that no subsequent `sessionCheck` could resolve and
   // the user appeared logged in for exactly one response).
   // See stacksjs/stacks#1860 H-6.
+  let persisted: boolean | null
   try {
-    await db.insertInto('sessions')
-      .values({
-        id: sessionId,
-        user_id: user.id!,
-        ip_address: ip,
-        user_agent: userAgent,
-        payload: '{}',
-        last_activity: Math.floor(Date.now() / 1000),
-        expires_at: sqlDateTime(expiresAt),
-      })
-      .execute()
+    persisted = await withVerifiedPassword(user.id!, hashToVerify, async () => {
+      await db.insertInto('sessions')
+        .values({
+          id: sessionId,
+          user_id: user.id!,
+          ip_address: ip,
+          user_agent: userAgent,
+          payload: '{}',
+          last_activity: Math.floor(Date.now() / 1000),
+          expires_at: sqlDateTime(expiresAt),
+        })
+        .execute()
+      return true
+    })
   }
   catch (err) {
     log.error(`[auth] Session persistence failed for user#${user.id}: ${(err as Error).message}`)
     throw new HttpError(500, 'Session could not be created. Ensure the `sessions` table exists (run `./buddy migrate`).')
   }
+  if (!persisted)
+    throw new HttpError(401, 'Invalid credentials')
 
+  log.debug(`[auth] Session created for user#${user.id}`)
   return { user, sessionId }
 }
 

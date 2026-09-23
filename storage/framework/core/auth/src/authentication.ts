@@ -23,6 +23,7 @@ import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { log } from '@stacksjs/logging'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
+import { withVerifiedPassword } from './credential-version'
 
 /**
  * Per-request auth state, scoped to the active `EnhancedRequest` via
@@ -270,6 +271,15 @@ export class Auth {
    * Similar to Laravel's Auth::attempt()
    */
   public static async attempt(credentials: AuthCredentials): Promise<boolean> {
+    const user = await this.verifyCredentials(credentials)
+    if (!user) return false
+    const state = authStateOrNull()
+    if (state) state.authUser = user
+    return true
+  }
+
+  /** Return the exact user/password snapshot checked by bcrypt. */
+  private static async verifyCredentials(credentials: AuthCredentials): Promise<UserModel | null> {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
@@ -277,7 +287,7 @@ export class Auth {
 
     // Validate email first to avoid unnecessary work and prevent timing leaks
     if (!email)
-      return false
+      return null
 
     // Per-email lockout enforcement. Without this check the framework
     // recorded failed attempts but never actually refused new ones, so
@@ -303,17 +313,15 @@ export class Auth {
     // If the account is currently locked out, refuse — AFTER the dummy
     // hash above so the response timing matches the wrong-password branch.
     if (isRateLimited)
-      return false
+      return null
 
     if (hashCheck && user) {
       await RateLimiter.resetAttempts(email)
-      const state = authStateOrNull()
-      if (state) state.authUser = user
-      return true
+      return user
     }
 
     await RateLimiter.recordFailedAttempt(email)
-    return false
+    return null
   }
 
   /**
@@ -350,28 +358,17 @@ export class Auth {
   public static async login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<
     { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
   > {
-    const isValid = await this.attempt(credentials)
-    if (!isValid)
-      return null
-
-    // `attempt()` stashes the user on the request-scoped auth state, which
-    // only exists inside a request. Outside one — a CLI command, a queued
-    // job, a test — that state is null, and login() used to return null on
-    // perfectly correct credentials, indistinguishable from a wrong
-    // password. Fall back to the lookup attempt() has already validated.
-    // The configured username column, which the model types as one of its
-    // own columns; config carries it as a plain string.
-    const username = (config.auth.username || 'email') as Parameters<typeof User.where>[0] & string
-    const usernameValue = credentials[username]
-    if (usernameValue === undefined)
-      return null
-    const authedUser = authStateOrNull()?.authUser
-      ?? await User.where(username, '=', usernameValue).first()
-
+    // Keep the verified snapshot even outside a request. Looking the user up
+    // again after verification can substitute a password that was never checked.
+    const authedUser = await this.verifyCredentials(credentials)
     if (!authedUser)
       return null
 
-    const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(authedUser, options)
+    const issued = await withVerifiedPassword(authedUser.id!, authedUser.password, () => this.createTokenForUser(authedUser, options))
+    if (!issued) return null
+    const state = authStateOrNull()
+    if (state) state.authUser = authedUser
+    const { plainTextToken, refreshToken, expiresIn } = issued
     return { user: authedUser, token: plainTextToken, refreshToken, expiresIn }
   }
 
