@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { makeHash, verifyHash } from '@stacksjs/security'
@@ -327,11 +327,13 @@ export function passwordResets(email: string): PasswordResetActions {
       // to 24h. Same fail-loud, post-commit rationale as above.
       await sessionDestroyAll(result.userId)
 
-      // Send password changed notification (async, non-blocking)
-      // This runs after the transaction is committed to ensure the password was actually changed
-      sendPasswordChangedNotification(email).catch((err) => {
+      // A nested transaction only released its savepoint. Keep the notification
+      // with the outer transaction so a later rollback cannot announce a change
+      // that never committed. Standalone resets retain non-blocking delivery.
+      const notify = () => sendPasswordChangedNotification(email).catch((err) => {
         console.error('[PasswordReset] Failed to send notification:', err)
       })
+      if (!enqueueAfterCommit(notify)) void notify()
 
       // Strip the internal userId so the public PasswordResetResult
       // shape stays unchanged.

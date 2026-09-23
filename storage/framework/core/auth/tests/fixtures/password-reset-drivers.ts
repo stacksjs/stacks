@@ -162,6 +162,28 @@ try {
     const stamp = user.password_changed_at
     assert.equal(stamp instanceof Date ? sqlDateTime(stamp) : stamp, sqlDateTime(now))
   })
+  process.env.TZ = 'UTC'
+  await db.unsafe('CREATE TABLE sessions (id VARCHAR(255) PRIMARY KEY, user_id INTEGER, expires_at TIMESTAMP NULL)').execute()
+  await check('outer rollback discards password-change notification', async () => {
+    await seed()
+    await db.insertInto('sessions').values({ id: 'synthetic-session', user_id: 1, expires_at: sqlDateTime(new Date(now.getTime() + 60_000)) } as never).execute()
+    await assert.rejects(() => db.transaction(async () => {
+      assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'nested-password')).success, true)
+      await Promise.resolve()
+      throw new Error('synthetic outer rollback')
+    }), /synthetic outer rollback/)
+    await assertUnchanged()
+    assert(await db.primary.selectFrom('sessions').where('id', '=', 'synthetic-session').selectAll().executeTakeFirst())
+  })
+  await check('notification waits for the outer commit', async () => {
+    await seed()
+    await db.transaction(async () => {
+      assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'nested-committed-password')).success, true)
+      await Promise.resolve()
+      assert.equal(sent.length, 0, 'a savepoint release is not the outer commit')
+    })
+    assert.equal(sent.length, 1)
+  })
   assert.deepEqual(failures, [])
   console.log('password reset drivers OK')
 }
