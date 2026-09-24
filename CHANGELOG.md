@@ -1,5 +1,58 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.57...v0.74.58)
+
+## ✨ Features
+
+- **auth**: apply browser session policy on login ([77dcf95](https://github.com/stacksjs/stacks/commit/77dcf95)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: add browser session policy ([8672d4b](https://github.com/stacksjs/stacks/commit/8672d4b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **scaffold**: deploy only the tip of main, and only this repo's pushes ([b3454c7](https://github.com/stacksjs/stacks/commit/b3454c7)) _(by Chris <chris@stacksjs.com>)_
+- **mail**: require explicit mailbox user backend ([3d03fe7](https://github.com/stacksjs/stacks/commit/3d03fe7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2790](https://github.com/stacksjs/stacks/issues/2790))
+- **dashboard**: exclude IP addresses from proxy domains ([2b9b102](https://github.com/stacksjs/stacks/commit/2b9b102)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2791](https://github.com/stacksjs/stacks/issues/2791))
+- **dashboard**: initialize app runtime before loading routes ([941b0ac](https://github.com/stacksjs/stacks/commit/941b0ac)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2789](https://github.com/stacksjs/stacks/issues/2789))
+- **auth**: recognize native SQL error records during recovery ([2a19a05](https://github.com/stacksjs/stacks/commit/2a19a05)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: keep direct login reads on the held transaction ([edb3206](https://github.com/stacksjs/stacks/commit/edb3206)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: avoid MySQL refresh token hash gap locks ([b2cf546](https://github.com/stacksjs/stacks/commit/b2cf546)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: recheck refresh clients after lock waits ([6923ac3](https://github.com/stacksjs/stacks/commit/6923ac3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce the initial session expiry deadline ([fcd8309](https://github.com/stacksjs/stacks/commit/fcd8309)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify persisted access grants before issuance ([35c749c](https://github.com/stacksjs/stacks/commit/35c749c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind issued grants to verified OAuth clients ([3a74270](https://github.com/stacksjs/stacks/commit/3a74270)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind client token requests to verified login ([2b17d73](https://github.com/stacksjs/stacks/commit/2b17d73)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: render token SQL for the configured database ([f2145d2](https://github.com/stacksjs/stacks/commit/f2145d2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject refresh of revoked access credentials ([e4a3248](https://github.com/stacksjs/stacks/commit/e4a3248)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve live refresh grants after access expiry ([78bfd90](https://github.com/stacksjs/stacks/commit/78bfd90)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke pending magic links during password recovery ([19bab93](https://github.com/stacksjs/stacks/commit/19bab93)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve request identity when direct login fails ([edf2425](https://github.com/stacksjs/stacks/commit/edf2425)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind magic link issuance to current email ownership ([03e5cfc](https://github.com/stacksjs/stacks/commit/03e5cfc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce deadlines on cached access tokens ([410a1a7](https://github.com/stacksjs/stacks/commit/410a1a7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: recheck magic link expiry after claiming ([e6db4e7](https://github.com/stacksjs/stacks/commit/e6db4e7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: honor shipped two-factor timestamp precision ([0575eaf](https://github.com/stacksjs/stacks/commit/0575eaf)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve session renewal across daylight saving changes ([da95943](https://github.com/stacksjs/stacks/commit/da95943)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: prevent MySQL access token deadline extension ([67468b9](https://github.com/stacksjs/stacks/commit/67468b9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **build**: restore required Craft version in Pantry lock ([002017d](https://github.com/stacksjs/stacks/commit/002017d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: isolate concurrent transaction routing contexts ([18f110b](https://github.com/stacksjs/stacks/commit/18f110b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify stored session renewal before success ([660d5f3](https://github.com/stacksjs/stacks/commit/660d5f3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify refresh grants before committing issuance ([0da8692](https://github.com/stacksjs/stacks/commit/0da8692)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify paired revocation before refresh exchange ([b07c385](https://github.com/stacksjs/stacks/commit/b07c385)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: serialize two-factor redemption with password recovery ([6ad5e5b](https://github.com/stacksjs/stacks/commit/6ad5e5b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke pending two-factor challenges during recovery ([6577e43](https://github.com/stacksjs/stacks/commit/6577e43)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **auth**: index owner and refresh token revocation scopes ([4ddc837](https://github.com/stacksjs/stacks/commit/4ddc837)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **database**: isolate query log application configuration ([b090007](https://github.com/stacksjs/stacks/commit/b090007)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.56...v0.74.57)
 
 ## 🐛 Bug Fixes
