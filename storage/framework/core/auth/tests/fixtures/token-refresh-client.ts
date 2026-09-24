@@ -147,6 +147,55 @@ try {
     }
     finally { startSecond(); await second.catch(() => {}) }
   }
+  if (dialect === 'mysql') {
+    const pair = await createToken(42, 'gap lock target', ['read'])
+    const other = await createToken(43, 'gap lock bystander', ['read'])
+    // One hash makes its preceding range explicit. The synthetic insertion
+    // below is inside that range but belongs to a different access token.
+    await db.deleteFrom('oauth_refresh_tokens').where('access_token_id', '!=', pair.accessToken.id).execute()
+    const observer = new SQL({ adapter: 'mysql', hostname: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
+      username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+      tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+    const blocker = await observer.reserve()
+    let held = false
+    let pending: ReturnType<typeof refreshToken> | undefined
+    let insertion: Promise<unknown> | undefined
+    try {
+      await blocker.unsafe('BEGIN'); held = true
+      await blocker.unsafe('SELECT id FROM oauth_access_tokens WHERE id = ? FOR UPDATE', [pair.accessToken.id])
+      pending = refreshToken(pair.refreshToken!)
+      void pending.catch(() => {})
+      let waiting = false
+      const deadline = performance.now() + 5000
+      while (!waiting && performance.now() < deadline) {
+        const rows = await observer.unsafe("SELECT COUNT(*) AS count FROM performance_schema.data_locks WHERE OBJECT_SCHEMA = DATABASE() AND LOCK_STATUS = 'WAITING'")
+        waiting = Number(rows[0].count) > 0
+        if (!waiting) await Bun.sleep(10)
+      }
+      assert(waiting, 'target exchange must hold its refresh selection while waiting for the access row')
+      let inserted = false
+      insertion = Promise.resolve(observer.unsafe('INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked) VALUES (?, ?, FALSE)',
+        [other.accessToken.id, '0'.repeat(64)])).then(() => { inserted = true })
+      void insertion.catch(() => {})
+      let gapWait = false
+      const insertDeadline = performance.now() + 5000
+      while (!inserted && !gapWait && performance.now() < insertDeadline) {
+        const rows = await observer.unsafe("SELECT COUNT(*) AS count FROM performance_schema.data_locks WHERE OBJECT_SCHEMA = DATABASE() AND INDEX_NAME = 'idx_oauth_refresh_tokens_token' AND LOCK_STATUS = 'WAITING'")
+        gapWait = Number(rows[0].count) > 0
+        if (!inserted && !gapWait) await Bun.sleep(10)
+      }
+      assert(inserted && !gapWait, 'refresh lookup must not lock unrelated token-hash gaps')
+      await insertion
+    }
+    finally {
+      if (held) await blocker.unsafe('ROLLBACK')
+      await Promise.allSettled([pending, insertion])
+      blocker.release()
+      await observer.close()
+    }
+    assert(await findToken((await pending!).plainTextToken))
+  }
   console.log('token refresh client validity OK')
 }
 finally { resetDatabaseConnection() }

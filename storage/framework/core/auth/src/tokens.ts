@@ -727,6 +727,19 @@ export async function refreshToken(
     // directly (same call shape as the top-level db proxy used above).
     const trx = rawTrx as unknown as { unsafe: (sql: string, params?: any[]) => any }
 
+    // Resolve the hash without range locks, then claim its primary key below.
+    // MySQL's non-unique hash index otherwise locks the preceding hash gap;
+    // concurrent rotations can each block the other's new random hash insert.
+    let selector = `r.token = ${param(1)}`
+    let bindings: unknown[] = [hashedRefreshToken]
+    if (isMysql) {
+      const candidates = await trx.unsafe('SELECT id FROM oauth_refresh_tokens WHERE token = ? LIMIT 1', [hashedRefreshToken]) as unknown as Array<{ id: number }>
+      const candidate = candidates[0]
+      if (!candidate) throw new HttpError(401, 'Invalid or expired refresh token')
+      selector = 'r.id = ? AND r.token = ?'
+      bindings = [candidate.id, hashedRefreshToken]
+    }
+
     // Find the refresh token and its associated access token.
     //
     // On Postgres/MySQL the SQLite mutex (#1953) does not apply, so two
@@ -744,7 +757,7 @@ export async function refreshToken(
       SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.name, t.scopes
       FROM oauth_refresh_tokens r
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
-      WHERE r.token = ${param(1)}
+      WHERE ${selector}
       AND r.revoked = ${boolFalse}
       AND t.revoked = ${boolFalse}
       AND EXISTS (
@@ -752,7 +765,7 @@ export async function refreshToken(
       )
       AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
       LIMIT 1${forUpdate}
-    `, [hashedRefreshToken])
+    `, bindings)
 
     const refreshRow = (refreshRows as unknown as AccessTokenRow[])[0]
     if (!refreshRow || refreshRow.access_token_id == null || !validTokenExpiry(refreshRow.expires_at)) {
