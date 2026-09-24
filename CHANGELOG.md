@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.66...v0.74.67)
+
+## ✨ Features
+
+- **image**: set social card type sizes from config/images.ts ([16912e1](https://github.com/stacksjs/stacks/commit/16912e1)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **upgrade**: regenerate auto-imports after syncing a package project ([cb2e3a6](https://github.com/stacksjs/stacks/commit/cb2e3a6)) _(by Chris <chris@stacksjs.com>)_
+- **generate**: survive an app with no resources/functions ([3057f8d](https://github.com/stacksjs/stacks/commit/3057f8d)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: require stx 0.2.307 and bun-plugin-auto-imports 0.4.3 ([905eecd](https://github.com/stacksjs/stacks/commit/905eecd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.65...v0.74.66)
 
 ## ⏪ Reverts
