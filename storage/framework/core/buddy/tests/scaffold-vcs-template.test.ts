@@ -190,7 +190,7 @@ describe('the app template runs exactly one dependency bot (#2574)', () => {
     // pass still exists and still runs on the config directory.
     expect(source).toContain('applyAppConfigTemplate')
     expect(source).toContain('defaults/scaffold/config')
-    expect(source).toContain('__APP_SLUG__')
+    expect(readFileSync(join(import.meta.dir, '../src/scaffold-app.ts'), 'utf8')).toContain('__APP_SLUG__')
   })
 })
 

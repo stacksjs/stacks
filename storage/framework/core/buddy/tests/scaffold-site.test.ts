@@ -8,7 +8,7 @@
 // deleted by hand.
 //
 // These tests run the real function against a copy of the repository's real
-// `resources/` and `public/`, so a page added to stacksjs.com later without a
+// `resources/`, `public/`, `docs/` and `content/`, so a page added to stacksjs.com later without a
 // matching `SITE_ONLY_PATHS` entry fails here rather than in someone's deploy.
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
@@ -38,7 +38,7 @@ let removed: string[]
 
 beforeAll(() => {
   app = mkdtempSync(join(tmpdir(), 'stacks-scaffold-site-'))
-  for (const dir of ['resources', 'public', APP_SITE_TEMPLATE])
+  for (const dir of ['resources', 'public', 'docs', 'content', APP_SITE_TEMPLATE])
     cpSync(join(REPO, dir), join(app, dir), { recursive: true })
 
   removed = applyAppSiteTemplate(app)
@@ -110,6 +110,28 @@ describe('a scaffolded app does not inherit stacksjs.com', () => {
     expect(existsSync(join(app, 'resources/functions/dark.ts'))).toBe(true)
     expect(existsSync(join(app, 'resources/emails/Welcome.stx'))).toBe(true)
     expect(existsSync(join(app, 'resources/assets/styles/docs/main.css'))).toBe(true)
+  })
+
+  test('neither the framework docs nor the Stacks blog posts', () => {
+    // `buddy deploy` builds both when they exist, so an app published them.
+    expect(existsSync(join(app, 'docs'))).toBe(false)
+    expect(existsSync(join(app, 'content'))).toBe(false)
+  })
+
+  test('none of the Stacks logos, but the images framework pages use', () => {
+    expect(existsSync(join(app, 'public/images/logos/logo.svg'))).toBe(false)
+    expect(existsSync(join(app, 'public/images/og-image.png'))).toBe(false)
+
+    // The dashboard layouts link these favicons, and the Marketing components
+    // in the defaults tree use the rest.
+    for (const kept of [
+      'public/images/logos/favicon.svg',
+      'public/images/logos/favicon-dark.svg',
+      'public/images/avatars/avatar-1.png',
+      'public/images/background-faqs.jpg',
+      'public/images/screenshots/dashboard.png',
+    ])
+      expect(existsSync(join(app, kept))).toBe(true)
   })
 
   test('emptied directories go with their contents', () => {

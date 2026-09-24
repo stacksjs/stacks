@@ -1,4 +1,9 @@
 import type { SaasConfig } from '@stacksjs/types'
+import { env } from '@stacksjs/env'
+
+// Plan and product names are what customers see at checkout and on invoices,
+// so they follow the app's name rather than naming the framework.
+const appName = env.APP_NAME || 'Stacks'
 
 /**
  * **Payment Configuration**
@@ -10,8 +15,8 @@ import type { SaasConfig } from '@stacksjs/types'
 export default {
   plans: [
     {
-      productName: 'Stacks Hobby',
-      description: 'All the Stacks features.',
+      productName: `${appName} Hobby`,
+      description: `All the ${appName} features.`,
       pricing: [
         {
           key: 'stacks_hobby_early_monthly',
@@ -44,8 +49,8 @@ export default {
       },
     },
     {
-      productName: 'Stacks Pro',
-      description: 'All the Stacks features, including being able to invite team members.',
+      productName: `${appName} Pro`,
+      description: `All the ${appName} features, including being able to invite team members.`,
       pricing: [
         {
           key: 'stacks_pro_early_monthly',
@@ -78,8 +83,8 @@ export default {
       },
     },
     {
-      productName: 'Stacks Lifetime',
-      description: 'One-time lifetime access to all Stacks features.',
+      productName: `${appName} Lifetime`,
+      description: `One-time lifetime access to all ${appName} features.`,
       pricing: [
         {
           key: 'stacks_hobby_early_lifetime',
@@ -126,18 +131,18 @@ export default {
   coupons: [],
   products: [
     {
-      name: 'Stacks Hobby',
-      description: 'All the Stacks features.',
+      name: `${appName} Hobby`,
+      description: `All the ${appName} features.`,
       images: ['image-url'],
     },
     {
-      name: 'Stacks Pro',
-      description: 'All the Stacks features, including team invites.',
+      name: `${appName} Pro`,
+      description: `All the ${appName} features, including team invites.`,
       images: ['image-url'],
     },
     {
-      name: 'Stacks Lifetime',
-      description: 'Lifetime access to Stacks features.',
+      name: `${appName} Lifetime`,
+      description: `Lifetime access to ${appName} features.`,
       images: ['image-url'],
     },
   ],

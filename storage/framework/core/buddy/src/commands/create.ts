@@ -10,6 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 import { resultFailed } from '../result'
+import { appIdentity, applyAppEnvTemplate, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
 import { fetchPublishedVersions } from '../registry'
 
@@ -81,6 +82,7 @@ export function create(buddy: CLI): void {
   ensureExecutableScripts(path)
   applyAppVcsTemplate(path)
   applyAppConfigTemplate(path)
+  applyAppEnv(path)
   replaceFrameworkSite(path)
   removeFrameworkTests(path)
   await ensureEnv(path, options)
@@ -309,6 +311,13 @@ function applyAppVcsTemplate(path: string) {
  * template keeps the useful cloud primitives while making every external
  * integration opt-in and disabling mail-server reconciliation by default.
  *
+ * The same pass replaces the configs that describe stacksjs.com rather than
+ * infrastructure: `app.ts` (its description and redirect domains), `blog.ts`
+ * and `docs.ts` (stacksjs.com's titles, links and sitemap origin),
+ * `library.ts` (publishing under the @stacksjs scope as Chris Breuer) and
+ * `mobile.ts` (the com.stacksjs.app bundle id), plus `lint.ts`, whose stx
+ * baselines counted the stacksjs.com pages `replaceFrameworkSite` removes.
+ *
  * Runs before unvendoring because its source lives under the defaults tree.
  */
 function applyAppConfigTemplate(path: string) {
@@ -320,12 +329,7 @@ function applyAppConfigTemplate(path: string) {
     return
   }
 
-  const slug = path.replace(/\/+$/, '').split('/').pop() || 'stacks-app'
-  const displayName = slug
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map(part => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join(' ')
+  const identity = appIdentity(path)
 
   log.info('Installing app-safe infrastructure configuration...')
 
@@ -335,16 +339,33 @@ function applyAppConfigTemplate(path: string) {
         continue
 
       const template = readFileSync(resolve(source, file), 'utf8')
-      const rendered = template
-        .replaceAll('__APP_NAME__', displayName)
-        .replaceAll('__APP_SLUG__', slug)
-
-      writeFileSync(resolve(destination, file), rendered)
+      writeFileSync(resolve(destination, file), renderTemplate(template, identity))
     }
     log.success('App-safe infrastructure configuration installed')
   }
   catch (error) {
     log.warn(`Could not install the app config template: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Give the app its own name in `.env.example`, before `install()` copies it
+ * to `.env`.
+ *
+ * The template's example is this repository's: `APP_NAME=Stacks`,
+ * `APP_URL=stacks.localhost`, a `stacks` database and mail from
+ * `no-reply@stacksjs.com`. Every app started out calling itself Stacks, which
+ * the starter page, the maintenance page and the mail sender name then
+ * repeated. `appEnvValues` in `../scaffold-app` lists what is rewritten.
+ */
+function applyAppEnv(path: string) {
+  try {
+    const changed = applyAppEnvTemplate(path, appIdentity(path))
+    if (changed.length > 0)
+      log.success(`Named the app in .env.example (${changed.join(', ')})`)
+  }
+  catch (error) {
+    log.warn(`Could not name the app in .env.example: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 

@@ -73,7 +73,8 @@ the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in
 
 Read the skill before building. The full list lives in `storage/framework/defaults/ai/skills/`; run
 `buddy setup:ai` to expose it to your agent, and add project-specific skills in `app/Skills/`.
-Every skill also has a docs page under `docs/skills/`, one per skill, grouped by section.
+Every skill also has a docs page at https://stacksjs.com/docs/skills, one per skill, grouped by section
+(`docs/skills/` in the framework repository; a scaffolded app's `docs/` is its own).
 
 ### Backend / API
 | Task | Skill |
@@ -111,7 +112,7 @@ Every skill also has a docs page under `docs/skills/`, one per skill, grouped by
 ### CLI, build, deploy, test
 | Task | Skill |
 |---|---|
-| The `buddy` / `bud` / `stacks` CLI (`docs/guide/buddy/commands.md` lists every command, generated from the runtime registry), `make:*` scaffolding, custom commands in `app/Commands/` | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
+| The `buddy` / `bud` / `stacks` CLI (`buddy list` prints every command; the framework repository's `docs/guide/buddy/commands.md` is the same list, generated from the runtime registry), `make:*` scaffolding, custom commands in `app/Commands/` | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
 | Building (components, CLI binaries, server images, docs) | `stacks-build` |
 | Native iOS/Android apps, Craft bridge, mobile builds and components | `stacks-mobile` |
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |

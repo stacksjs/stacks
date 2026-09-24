@@ -27,6 +27,7 @@ const nextSteps = [
 ]
 </script>
 
+@nolayout
 <!DOCTYPE html>
 <html lang="en">
   <head>

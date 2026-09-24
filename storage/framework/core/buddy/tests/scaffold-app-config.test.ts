@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { appIdentity, templatePlaceholders } from '../src/scaffold-app'
 
 const APP_CONFIG = join(import.meta.dir, '../../../defaults/scaffold/config')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -14,7 +15,11 @@ describe('the generated app config template', () => {
     // `buddy-bot.ts` joined the list in stacksjs/stacks#2574: buddy-bot needs
     // `repository.owner`/`name`, and the framework's copy names stacksjs/stacks,
     // so an app without a template here inherits a bot aimed at this repository.
-    expect(templates.sort()).toEqual(['buddy-bot.ts', 'cloud.ts', 'dns.ts', 'email.ts', 'team.ts'])
+    // app/blog/docs/library/mobile/lint joined when the scaffold stopped
+    // shipping stacksjs.com: each named the site (its description and redirect
+    // domain, "The Stacks Blog", stacksjs.com/docs, the @stacksjs npm scope,
+    // com.stacksjs.app) or counted its pages (lint baselines).
+    expect(templates.sort()).toEqual(['app.ts', 'blog.ts', 'buddy-bot.ts', 'cloud.ts', 'dns.ts', 'docs.ts', 'email.ts', 'library.ts', 'lint.ts', 'mobile.ts', 'team.ts'])
   })
 
   test('contains no Stacks production ownership', () => {
@@ -28,6 +33,16 @@ describe('the generated app config template', () => {
       // requests against from the app's own CI.
       "owner: 'stacksjs'",
       "name: 'stacks'",
+      // stacksjs.com's identity, which app, blog, docs, library and mobile
+      // used to carry.
+      "redirectUrls: ['stacksjs.com']",
+      'https://stacksjs.com/docs',
+      "url: 'https://stacksjs.com'",
+      'The Stacks Blog',
+      'Stacks Documentation',
+      "owner: '@stacksjs'",
+      'Chris Breuer',
+      'com.stacksjs.app',
     ]
 
     const offenders: string[] = []
@@ -67,8 +82,20 @@ describe('buddy new installs the app config template', () => {
 
   test('renders project identity tokens', () => {
     expect(source).toContain('applyAppConfigTemplate(path)')
-    expect(source).toContain("replaceAll('__APP_NAME__', displayName)")
-    expect(source).toContain("replaceAll('__APP_SLUG__', slug)")
+    expect(source).toContain('renderTemplate(template, identity)')
+  })
+
+  test('every placeholder a template uses is one the scaffold renders', () => {
+    // A misspelt token is not an error anywhere: it ships verbatim, and the
+    // app's config says `__APP_NMAE__` until someone reads it.
+    const known = Object.keys(templatePlaceholders(appIdentity('/tmp/my-app')))
+    const unknown = templates.flatMap(file =>
+      [...readFileSync(join(APP_CONFIG, file), 'utf8').matchAll(/__[A-Z_]+__/g)]
+        .map(match => match[0])
+        .filter(token => !known.includes(token))
+        .map(token => `${file}: ${token}`))
+
+    expect(unknown).toEqual([])
   })
 
   test('runs before the framework tree is removed', () => {

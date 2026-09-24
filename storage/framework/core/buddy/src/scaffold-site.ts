@@ -7,9 +7,11 @@ import { join } from 'node:path'
  *
  * `buddy new` scaffolds by downloading this repository, and this repository IS
  * stacksjs.com: its `resources/` and `public/` hold the marketing site, its
- * brand fonts and park illustrations, and a desktop-OS demo. Left in place, a
- * new app deployed as-is publishes a canonical URL and an Organization graph
- * claiming to be stacksjs.com, and carries about 3MB of someone else's brand.
+ * brand fonts, logos and park illustrations, and a desktop-OS demo; `docs/`
+ * and `content/blog/` are its documentation and blog. Left in place, a new app
+ * deployed as-is publishes a canonical URL and an Organization graph claiming
+ * to be stacksjs.com, the framework's docs and launch posts as its own, and
+ * carries several MB of someone else's brand.
  *
  * An explicit list rather than moving the site elsewhere: the stacks repo keeps
  * serving stacksjs.com from the paths every app uses, so its deploy does not
@@ -56,6 +58,47 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'resources/assets/images/river.svg',
   'resources/assets/images/topography.svg',
   'resources/assets/images/wood-sign.svg',
+
+  // stacksjs.com's documentation and blog. `buddy deploy` builds `docs/` and
+  // `content/blog/` when they exist, so left in place an app published the
+  // framework's docs and launch posts as its own. An app that wants either
+  // creates the directory; `config/docs.ts` and `config/blog.ts` are ready.
+  'docs',
+  'content/blog',
+  'content/BLOG_STRATEGY.md',
+
+  // Marketing images and logos only stacksjs.com uses. What stays in
+  // public/images is what the framework's own pages reference: the favicons
+  // (dashboard layouts) and the Marketing components' backgrounds, avatars
+  // and screenshots.
+  'public/images/atomic-fx-diagram.png',
+  'public/images/atomic-ui-diagram.png',
+  'public/images/diagram.png',
+  'public/images/og-image.png',
+  'public/images/social.png',
+  'public/images/background-auth.jpg',
+  'public/images/background-features.jpg',
+  'public/images/screenshots/expenses.webp',
+  'public/images/screenshots/reporting.webp',
+  'public/images/screenshots/vat-returns.webp',
+  'public/images/logos/amex.jpg',
+  'public/images/logos/jcb.svg',
+  'public/images/logos/laravel.svg',
+  'public/images/logos/logo-dark.svg',
+  'public/images/logos/logo-mini.svg',
+  'public/images/logos/logo-transparent.svg',
+  'public/images/logos/logo-white.png',
+  'public/images/logos/logo.png',
+  'public/images/logos/logo.svg',
+  'public/images/logos/mastercard.svg',
+  'public/images/logos/meilisearch.svg',
+  'public/images/logos/mirage.svg',
+  'public/images/logos/statamic.svg',
+  'public/images/logos/statickit.svg',
+  'public/images/logos/transistor.svg',
+  'public/images/logos/tuple.svg',
+  'public/images/logos/visa.png',
+  'public/images/logos/visa.svgz',
 
   // The desktop-OS demo.
   'resources/assets/scripts/main.ts',
@@ -108,10 +151,11 @@ export function applyAppSiteTemplate(root: string): string[] {
   }
 
   for (const relative of removed) {
-    // Walk up while the parent is empty, stopping below `resources/` and
-    // `public/` themselves: `public/assets/styles` empties, then `public/assets`.
+    // Walk up while the parent is empty: `public/assets/styles` empties, then
+    // `public/assets`, and `content/` once its blog has gone. `resources/` and
+    // `public/` themselves always stay.
     let dir = parentOf(relative)
-    while (dir.includes('/') && isEmptyDir(join(root, dir))) {
+    while (dir && !KEPT_ROOTS.has(dir) && isEmptyDir(join(root, dir))) {
       rmSync(join(root, dir), { recursive: true, force: true })
       dir = parentOf(dir)
     }
@@ -122,8 +166,10 @@ export function applyAppSiteTemplate(root: string): string[] {
   return removed
 }
 
+const KEPT_ROOTS = new Set(['resources', 'public'])
+
 function parentOf(relative: string): string {
-  return relative.slice(0, relative.lastIndexOf('/'))
+  return relative.includes('/') ? relative.slice(0, relative.lastIndexOf('/')) : ''
 }
 
 function isEmptyDir(dir: string): boolean {

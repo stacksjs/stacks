@@ -46,7 +46,7 @@ export default {
     enabled: true,
     transcription: true, // Use Amazon Transcribe
     maxDurationSeconds: 120,
-    greeting: 'Thank you for calling Stacks. Please leave a message after the tone and we will get back to you as soon as possible.',
+    greeting: `Thank you for calling ${env.APP_NAME || 'us'}. Please leave a message after the tone and we will get back to you as soon as possible.`,
   },
 
   // Call forwarding configuration
