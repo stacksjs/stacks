@@ -600,12 +600,11 @@ export class Auth {
     if (!isValidClient)
       throw new HttpError(401, 'Invalid client credentials')
 
-    const isValid = await this.attempt(credentials)
-    const authedUser = authStateOrNull()?.authUser
-    if (!isValid || !authedUser)
-      return null
-
-    return { token: await this.createToken(authedUser, 'user-auth-token') }
+    // Use the same password-version lock and post-issuance request state as
+    // normal login. An earlier bcrypt result must not outlive recovery, and
+    // issuance must not depend on an ambient HTTP request to retain its user.
+    const result = await this.login(credentials, { name: 'user-auth-token' })
+    return result ? { token: result.token } : null
   }
 
   // ============================================================================

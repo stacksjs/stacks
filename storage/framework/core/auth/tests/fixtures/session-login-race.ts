@@ -26,7 +26,7 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { SessionAuth } = await import('../../src/session-auth')
 const { Auth } = await import('../../src/authentication')
-const { findToken, revokeAllTokens } = await import('../../src/tokens')
+const { createClient, findToken, revokeAllTokens } = await import('../../src/tokens')
 const { RateLimiter } = await import('../../src/rate-limiter')
 const { makeHash } = await import('@stacksjs/security')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
@@ -42,7 +42,8 @@ try {
   await ensureFrameworkAuthTables()
   const oldHash = await makeHash('old-synthetic-password', { algorithm: 'bcrypt' })
   const newHash = await makeHash('new-synthetic-password', { algorithm: 'bcrypt' })
-  const cases = (['session', 'bearer', 'bearer-request', 'action', 'action-2fa'] as const)
+  const client = await createClient({ name: 'synthetic credential client', redirect: 'https://client.invalid', passwordClient: true })
+  const cases = (['session', 'bearer', 'bearer-request', 'request-token', 'request-token-outside', 'action', 'action-2fa'] as const)
     .flatMap(mode => (['password', 'deleted', 'unchanged'] as const).map(change => ({ mode, change })))
   for (const { mode, change } of cases) {
     await db.deleteFrom('oauth_refresh_tokens').execute()
@@ -71,8 +72,11 @@ try {
       if (mode === 'action' || mode === 'action-2fa')
         return LoginAction.handle({ get: (key: string) => credentials[key as keyof typeof credentials] } as never) as Promise<Response>
       if (mode === 'bearer') return Auth.login(credentials)
+      if (mode === 'request-token-outside') return Auth.requestToken(credentials, client.client.id, client.plainTextSecret)
       const request = enhanceRequest(new Request('http://localhost/login-race'))
-      return runWithRequest(request, () => Auth.login(credentials))
+      return runWithRequest(request, () => mode === 'request-token'
+        ? Auth.requestToken(credentials, client.client.id, client.plainTextSecret)
+        : Auth.login(credentials))
     }
     try {
       if (change === 'unchanged') {
@@ -104,7 +108,7 @@ try {
     catch (error) { failures.push(`${mode} ${change}: ${String(error)}`) }
     finally { RateLimiter.useMemoryStore() }
   }
-  for (const mode of ['session', 'bearer', 'bearer-request'] as const) {
+  for (const mode of ['session', 'bearer', 'bearer-request', 'request-token'] as const) {
     await db.deleteFrom('oauth_refresh_tokens').execute()
     await db.deleteFrom('oauth_access_tokens').execute()
     await db.deleteFrom('sessions').execute()
@@ -117,7 +121,9 @@ try {
           ? await SessionAuth.login(email, credentials.password)
           : mode === 'bearer'
             ? await Auth.login(credentials)
-            : await runWithRequest(enhanceRequest(new Request('http://localhost/login-rollback')), () => Auth.login(credentials))
+            : await runWithRequest(enhanceRequest(new Request('http://localhost/login-rollback')), () => mode === 'request-token'
+                ? Auth.requestToken(credentials, client.client.id, client.plainTextSecret)
+                : Auth.login(credentials))
         assert(result, 'valid login must succeed inside the transaction')
         throw new Error('synthetic credential rollback')
       }), /synthetic credential rollback/)
@@ -171,15 +177,18 @@ try {
     const { User } = await import('@stacksjs/orm')
     const previous = await User.find(2)
     assert(previous)
-    for (const initial of [undefined, previous]) {
-      try {
-        await runWithRequest(enhanceRequest(new Request('http://localhost/failed-direct-login')), async () => {
-          Auth.setUser(initial)
-          await assert.rejects(Auth.loginUsingId(1), /fixture direct login denied/)
-          assert((await Auth.user()) === initial, 'failed issuance must preserve the previous request principal')
-        })
+    for (const mode of ['direct', 'request-token']) {
+      for (const initial of [undefined, previous]) {
+        try {
+          await runWithRequest(enhanceRequest(new Request('http://localhost/failed-direct-login')), async () => {
+            Auth.setUser(initial)
+            await assert.rejects(mode === 'direct' ? Auth.loginUsingId(1)
+              : Auth.requestToken({ email, password: 'old-synthetic-password' }, client.client.id, client.plainTextSecret), /fixture direct login denied/)
+            assert((await Auth.user()) === initial, 'failed issuance must preserve the previous request principal')
+          })
+        }
+        catch (error) { failures.push(`failed ${mode}/previous=${Boolean(initial)}: ${error}`) }
       }
-      catch (error) { failures.push(`failed direct login/previous=${Boolean(initial)}: ${error}`) }
     }
   }
   finally {
