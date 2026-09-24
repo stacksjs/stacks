@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.58...v0.74.59)
+
+## ✨ Features
+
+- **auth**: preserve session policy through two factor ([cb686ba](https://github.com/stacksjs/stacks/commit/cb686ba)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: apply browser session policy on registration ([10d9be1](https://github.com/stacksjs/stacks/commit/10d9be1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **queue**: find SendEmailJob when the mailer dispatches SendEmail ([f62abf6](https://github.com/stacksjs/stacks/commit/f62abf6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.57...v0.74.58)
 
 ## ✨ Features
