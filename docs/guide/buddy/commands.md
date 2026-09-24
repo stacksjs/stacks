@@ -1794,7 +1794,7 @@ Get an environment variable
 | `-f`, `--file` | The environment file to use | value, optional | `""` |
 | `--format` | The format to output the result (json, shell, eval) | value, optional | `"json"` |
 | `-a`, `--all` | Get all environment variables | boolean, optional | `false` |
-| `-p`, `--pretty` | Pretty print the result | boolean, optional | `false` |
+| `-t`, `--pretty` | Pretty print the result | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -2180,10 +2180,10 @@ Automagically build any of your libraries/packages for production use. Select an
 | `-t`, `--types` | Generate your TypeScript types | boolean, optional | - |
 | `-e`, `--entries` | Generate your function & Component Library Entry Points | boolean, optional | - |
 | `-w`, `--web-types` | Generate web-types.json for IDEs | boolean, optional | - |
-| `-c`, `--custom-data` | Generate VS Code custom data (custom-elements.json) for IDEs | boolean, optional | - |
+| `-d`, `--custom-data` | Generate VS Code custom data (custom-elements.json) for IDEs | boolean, optional | - |
 | `-i`, `--ide-helpers` | Generate IDE helpers | boolean, optional | - |
 | `-c`, `--component-meta` | Generate component meta information | boolean, optional | - |
-| `-p`, `--pantry` | Generate the pantry configuration file | boolean, optional | - |
+| `-r`, `--pantry` | Generate the pantry configuration file | boolean, optional | - |
 | `-o`, `--openapi` | Generate the OpenAPI specification | boolean, optional | - |
 | `--images` | Generate every image declared in config/images.ts | boolean, optional | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |

@@ -57,7 +57,7 @@ export function env(buddy: CLI): void {
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('--format [format]', descriptions.format, { default: 'json' })
     .option('-a, --all', descriptions.all, { default: false })
-    .option('-p, --pretty', descriptions.pretty, { default: false })
+    .option('-t, --pretty', descriptions.pretty, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy env:get SECRET')

@@ -30,10 +30,10 @@ buddy generate:<type> [options]
 | `-t, --types` | Generate TypeScript types |
 | `-e, --entries` | Generate library entry points |
 | `-w, --web-types` | Generate web-types.json for IDEs |
-| `-c, --custom-data` | Generate VS Code custom data |
+| `-d, --custom-data` | Generate VS Code custom data |
 | `-i, --ide-helpers` | Generate IDE helpers |
-| `--component-meta` | Generate component metadata |
-| `-p, --pantry` | Generate pantry configuration |
+| `-c, --component-meta` | Generate component metadata |
+| `-r, --pantry` | Generate pantry configuration |
 | `-o, --openapi` | Generate OpenAPI specification |
 | `--images` | Generate the imagery declared in `config/images.ts` |
 | `--core-symlink` | Generate core framework symlink |
