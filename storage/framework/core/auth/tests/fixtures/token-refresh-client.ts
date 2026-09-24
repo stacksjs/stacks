@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { SQL } from 'bun'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -68,6 +69,84 @@ try {
   assert.equal(await validateRefreshToken(renewed.refreshToken!), false)
   await assert.rejects(refreshToken(renewed.refreshToken!), /Invalid or expired refresh token/)
   assert.deepEqual(await credentialSnapshot(), orphaned)
+  if (dialect !== 'sqlite') {
+    for (const change of ['revoke', 'delete'] as const) {
+      const racingClient = await createClient({ name: 'client update during exchange', redirect: 'https://race.invalid', personalAccessClient: true })
+      const pair = await createToken(42, 'waiting exchange', ['read'])
+      assert.equal(Number(pair.accessToken.clientId), Number(racingClient.client.id))
+      const beforeRace = await credentialSnapshot()
+      const observer = new SQL({ adapter: dialect, hostname: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
+        username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+        tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+      const blocker = await observer.reserve()
+      let held = false
+      let done = false
+      let pending: ReturnType<typeof refreshToken> | undefined
+      try {
+        await blocker.unsafe('BEGIN'); held = true
+        await blocker.unsafe(`SELECT id FROM oauth_access_tokens WHERE id = ${dialect === 'postgres' ? '$1' : '?'} FOR UPDATE`, [pair.accessToken.id])
+        pending = refreshToken(pair.refreshToken!).finally(() => { done = true })
+        void pending.catch(() => {})
+        let waiting = false
+        const deadline = performance.now() + 5000
+        while (!done && !waiting && performance.now() < deadline) {
+          const rows = await observer.unsafe(dialect === 'postgres'
+            ? "SELECT COUNT(*) AS count FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock' AND pid != pg_backend_pid()"
+            : "SELECT COUNT(*) AS count FROM performance_schema.data_locks WHERE OBJECT_SCHEMA = DATABASE() AND LOCK_STATUS = 'WAITING'")
+          waiting = Number(rows[0].count) > 0
+          if (!waiting) await Bun.sleep(10)
+        }
+        assert(waiting && !done, 'refresh must have entered its locking statement before client revocation')
+        // Commit the client update while the exchange's earlier query snapshot
+        // still sees the active client. The grant itself has not been consumed.
+        await observer.unsafe(`${change === 'revoke' ? 'UPDATE oauth_clients SET revoked = TRUE' : 'DELETE FROM oauth_clients'} WHERE id = ${dialect === 'postgres' ? '$1' : '?'}`, [racingClient.client.id])
+        await blocker.unsafe('COMMIT'); held = false
+        await assert.rejects(pending, /Invalid or expired refresh token/)
+        assert.deepEqual(await credentialSnapshot(), beforeRace, 'a client revoked during the wait must prevent rotation')
+      }
+      finally {
+        if (held) await blocker.unsafe('ROLLBACK')
+        await pending?.catch(() => {})
+        blocker.release()
+        await observer.close()
+      }
+    }
+
+    await db.insertInto('users').values({ id: 43 }).execute()
+    const sharedClient = await createClient({ name: 'shared refresh client', redirect: 'https://shared.invalid', personalAccessClient: true })
+    const firstPair = await createToken(42, 'first independent user', ['read'])
+    const secondPair = await createToken(43, 'second independent user', ['read'])
+    assert.equal(Number(firstPair.accessToken.clientId), Number(sharedClient.client.id))
+    assert.equal(Number(secondPair.accessToken.clientId), Number(sharedClient.client.id))
+    let startSecond!: () => void
+    const ready = new Promise<void>((resolve) => { startSecond = resolve })
+    // The continuation must capture the context outside the first transaction.
+    const second = (async () => { await ready; return refreshToken(secondPair.refreshToken!) })()
+    void second.catch(() => {})
+    try {
+      await assert.rejects(db.transaction(async () => {
+        const first = await refreshToken(firstPair.refreshToken!)
+        assert(await findToken(first.plainTextToken))
+        startSecond()
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        try {
+          const result = await Promise.race([second, new Promise<never>((_, reject) => {
+            timeout = setTimeout(() => reject(new Error('shared client serialized unrelated refreshes')), 5000)
+          })])
+          assert(result)
+        }
+        finally { clearTimeout(timeout) }
+        throw new Error('rollback first refresh')
+      }), /rollback first refresh/)
+      assert(await findToken(firstPair.plainTextToken), 'outer rollback restores the first pair')
+      assert.equal(await validateRefreshToken(firstPair.refreshToken!), true)
+      const committedSecond = await second
+      assert(await findToken(committedSecond.plainTextToken), 'the independent second exchange remains committed')
+      assert.equal(await validateRefreshToken(secondPair.refreshToken!), false)
+    }
+    finally { startSecond(); await second.catch(() => {}) }
+  }
   console.log('token refresh client validity OK')
 }
 finally { resetDatabaseConnection() }

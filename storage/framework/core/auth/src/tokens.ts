@@ -759,6 +759,17 @@ export async function refreshToken(
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
 
+    // The locking JOIN can wait after its statement snapshot saw an active
+    // client. Recheck with a current shared lock before issuing, and retain
+    // that lock through commit. Shared, not exclusive: unrelated users of
+    // the same OAuth client must remain able to refresh concurrently.
+    const clientLock = isPostgres ? ' FOR SHARE' : isMysql ? ' LOCK IN SHARE MODE' : ''
+    const currentClients = await trx.unsafe(`
+      SELECT id FROM oauth_clients WHERE id = ${param(1)} AND revoked = ${boolFalse}${clientLock}
+    `, [refreshRow.oauth_client_id]) as unknown as OAuthClientRow[]
+    if (currentClients.length !== 1)
+      throw new HttpError(401, 'Invalid or expired refresh token')
+
     // Reject a refresh token issued before the user last changed their
     // password. Same generic message as the not-found branch so the
     // endpoint never becomes a token-state oracle (#1957).
