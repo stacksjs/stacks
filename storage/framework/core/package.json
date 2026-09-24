@@ -373,6 +373,7 @@
     "@stacksjs/analytics": "^0.74.63",
     "@stacksjs/chat": "^0.74.63",
     "@stacksjs/cms": "^0.74.63",
+    "@stacksjs/forms": "^0.74.63",
     "@stacksjs/commerce": "^0.74.63",
     "@stacksjs/datetime": "^0.74.63",
     "@stacksjs/docs": "^0.74.63",
@@ -399,6 +400,7 @@
     "@stacksjs/newsletter": "^0.74.63",
     "@stacksjs/i18n": "^0.74.63",
     "@stacksjs/cron": "^0.74.63",
+    "@stacksjs/sites": "^0.74.63",
     "bun-query-builder": "^0.2.70"
   },
   "devDependencies": {
