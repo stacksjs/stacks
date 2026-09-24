@@ -150,6 +150,31 @@ export async function fetchSubmissions(formId: number, options: { limit?: number
   }))
 }
 
+/**
+ * Who sent a submission and what they said, for the notification mail.
+ *
+ * Reads the `data` column. The submit route used to do this itself and
+ * selected `values` - a SQL keyword the column was deliberately never named -
+ * so every submission on a form with notifications threw after its row was
+ * written.
+ */
+export async function submissionIdentity(submissionId: number): Promise<{ email: string | null, name: string | null, values: Record<string, unknown> }> {
+  const row = await db
+    .selectFrom('form_submissions')
+    .where('id', '=', submissionId)
+    .select(['email', 'name', 'data'])
+    .executeTakeFirst() as { email: string | null, name: string | null, data: string | null } | undefined
+
+  let values: Record<string, unknown> = {}
+  try {
+    values = row?.data ? JSON.parse(row.data) as Record<string, unknown> : {}
+  }
+  catch {
+    // Unreadable values only degrade the notification summary.
+  }
+  return { email: row?.email ?? null, name: row?.name ?? null, values }
+}
+
 function csvEscape(value: unknown): string {
   const text = value === undefined || value === null ? '' : String(value)
   // A leading =, +, -, @ would execute as a formula when the export opens in

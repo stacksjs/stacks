@@ -17,7 +17,7 @@ const { createForm, loadFormByHandle } = await import('../src/create')
 
 /** A site id for the scoped-form tests; nothing else in this file uses one. */
 const SITE_ID = 91
-const { completeSubmissionPayment, exportSubmissionsCsv, fetchSubmissions, submitForm } = await import('../src/submissions')
+const { completeSubmissionPayment, exportSubmissionsCsv, fetchSubmissions, submissionIdentity, submitForm } = await import('../src/submissions')
 const { computeAmountCents, validateSubmission } = await import('../src/validate')
 
 
@@ -292,6 +292,23 @@ describe('submitForm', () => {
       expect(rows[0]!.email).toBe('dana@example.com')
       expect(rows[0]!.values.grade).toBe('1')
     }
+  })
+
+  test('submissionIdentity reads back who sent it and what they said', async () => {
+    // The submit route looked this up from a `values` column that never
+    // existed, so it threw after every successful write.
+    const form = inquiryForm()
+    await seedForm(form)
+
+    const result = await submitForm(form, { parent_name: 'Ines', email: 'ines@example.com', grade: 'k' })
+    expect(result.ok).toBe(true)
+    if (!result.ok)
+      return
+
+    const identity = await submissionIdentity(result.submissionId)
+    expect(identity.email).toBe('ines@example.com')
+    expect(identity.name).toBe('Ines')
+    expect(identity.values.grade).toBe('k')
   })
 
   test('inactive forms refuse; honeypot fakes success and stores nothing', async () => {

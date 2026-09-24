@@ -7,6 +7,7 @@ export {
   completeSubmissionPayment,
   exportSubmissionsCsv,
   fetchSubmissions,
+  submissionIdentity,
   submitForm,
 } from './submissions'
 export type { SubmissionListRow, SubmitOptions, SubmitResult } from './submissions'
