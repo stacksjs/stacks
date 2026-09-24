@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.62...v0.74.63)
+
+## ✨ Features
+
+- **datetime**: convert wall-clock time in a zone to an instant ([810ff89](https://github.com/stacksjs/stacks/commit/810ff89)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: expose cookie policy configuration ([4eb42cc](https://github.com/stacksjs/stacks/commit/4eb42cc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: retry the unvendor install while a release propagates ([7297f92](https://github.com/stacksjs/stacks/commit/7297f92)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: honor configured cookie policy ([c15c6cf](https://github.com/stacksjs/stacks/commit/c15c6cf)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: issue sessions after passkey login ([04e1c6c](https://github.com/stacksjs/stacks/commit/04e1c6c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **auth**: prove browser sessions survive restarts ([d2075cf](https://github.com/stacksjs/stacks/commit/d2075cf)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **api**: regenerate artifacts for POST /verify-authentication ([40dfa63](https://github.com/stacksjs/stacks/commit/40dfa63)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.61...v0.74.62)
 
 ## 🐛 Bug Fixes
