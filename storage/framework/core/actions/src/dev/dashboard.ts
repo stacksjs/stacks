@@ -11,6 +11,7 @@ import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './das
 import { resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
+import { ensureDiscoveredPackages } from '../discover-packages'
 
 if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
   // The STX server owns template and component HMR. Backend modules need a
@@ -68,13 +69,17 @@ function restoreConsole(): void {
 }
 
 async function startStxServer(): Promise<void> {
-  // Preload @stacksjs/orm before the STX server starts. The orm package's
-  // top-level evaluation walks every framework default model file, exports
-  // each class, and assigns it onto globalThis so dashboard `<script server>`
-  // blocks can reference models as bare names (`await Order.all()`) without
-  // an explicit import. Loading it here means the first page render no
-  // longer pays the cold-start cost of resolving 50+ model files.
-  await import('@stacksjs/orm')
+  // The dev preloader skips globals. Like the API worker, the dashboard must
+  // discover packages and refresh the app barrels before injecting primitives,
+  // models, functions and authorization. Do this before importing app routes:
+  // their transitive action imports can use `new Action()` at module scope.
+  const { overridesReady } = await import('@stacksjs/config')
+  const { autoImportsAreStale, generateAutoImportFiles, injectGlobalAutoImports } = await import('@stacksjs/server')
+  await overridesReady
+  await ensureDiscoveredPackages()
+  if (!existsSync(storagePath('framework/auto-imports/models.ts')) || autoImportsAreStale())
+    await generateAutoImportFiles()
+  await injectGlobalAutoImports()
 
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
