@@ -1,4 +1,5 @@
 import type { NewUser } from '@stacksjs/orm'
+import type { TokenCreateOptions } from '@stacksjs/types'
 import type { AuthToken } from './token'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
@@ -67,7 +68,7 @@ export interface RegistrationResult {
  *
  * Additive, so `const { token } = await register(...)` is unaffected.
  */
-export async function register(credentials: NewUser & { referralCode?: string }): Promise<RegistrationResult> {
+export async function register(credentials: NewUser & { referralCode?: string }, tokenOptions?: TokenCreateOptions): Promise<RegistrationResult> {
   const { email, password, name } = credentials
 
   // Cheap structural validation before we hit the DB. Bad-email registration
@@ -147,6 +148,7 @@ export async function register(credentials: NewUser & { referralCode?: string })
   // `createTokenForUser`, not `createToken` — the latter drops the refresh
   // token and expiry on the floor. Same token name as before.
   const { plainTextToken, refreshToken, expiresIn } = await Auth.createTokenForUser(user, {
+    ...tokenOptions,
     name: 'user-auth-token',
   })
 

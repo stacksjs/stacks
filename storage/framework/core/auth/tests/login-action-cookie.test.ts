@@ -45,6 +45,7 @@ const { makeHash } = await import('@stacksjs/security')
 const { authCookieName } = await import('../src/cookie')
 
 const LoginAction = (await import('../../../defaults/app/Actions/Auth/LoginAction')).default
+const RegisterAction = (await import('../../../defaults/app/Actions/Auth/RegisterAction')).default
 
 const EMAIL = 'cookie-proof@example.com'
 const PASSWORD = 'correct-horse-battery'
@@ -84,6 +85,19 @@ async function forceConfig(): Promise<void> {
 /** The request shape an action's `handle()` actually touches: `get(key)`. */
 function loginRequest(email: string, password: string, remember?: unknown): any {
   const fields: Record<string, unknown> = { email, password, remember }
+  return {
+    get: (key: string) => fields[key],
+    all: () => ({ ...fields }),
+  }
+}
+
+function registrationRequest(email: string, remember?: unknown): any {
+  const fields: Record<string, unknown> = {
+    email,
+    password: PASSWORD,
+    name: 'Remembered Registration',
+    remember,
+  }
   return {
     get: (key: string) => fields[key],
     all: () => ({ ...fields }),
@@ -267,5 +281,43 @@ describe('POST /login sets the auth cookie (#2306)', () => {
 
     expect(res.status).toBe(401)
     expect(setCookies(res)).toEqual([])
+  })
+})
+
+describe('POST /register applies the browser session policy (#2795)', () => {
+  test('a remembered fixed session persists and serializes one matching lifetime', async () => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = {
+      baselineLifetime: 2 * 60 * 1000,
+      rememberedLifetime: 5 * 60 * 1000,
+      withRefreshToken: false,
+    }
+    const issuedAt = new Date('2030-01-02T03:04:05.000Z')
+    setSystemTime(issuedAt)
+
+    try {
+      const res = await RegisterAction.handle(registrationRequest('remembered-registration@example.com', true)) as Response
+      const body = await res.json() as Record<string, unknown>
+      const cookie = authCookieFrom(res)
+      const tokenRow = await db.selectFrom('oauth_access_tokens')
+        .select(['id', 'expires_at'])
+        .orderBy('id', 'desc')
+        .executeTakeFirstOrThrow()
+      const refreshRow = await db.selectFrom('oauth_refresh_tokens')
+        .select('id')
+        .where('access_token_id', '=', tokenRow.id)
+        .executeTakeFirst()
+
+      expect(res.status).toBe(200)
+      expect(body.expires_in).toBe(300)
+      expect(body).not.toHaveProperty('refresh_token')
+      expect(cookie).toContain('Max-Age=300')
+      expect(refreshRow).toBeUndefined()
+      expect(parseSqlDateTime(tokenRow.expires_at)?.getTime()).toBe(issuedAt.getTime() + 300_000)
+    }
+    finally {
+      setSystemTime()
+      config.auth.browserSession = originalPolicy
+    }
   })
 })
