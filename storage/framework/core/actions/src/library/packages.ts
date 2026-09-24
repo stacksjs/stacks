@@ -1,4 +1,5 @@
 import type { LibraryConfig, LibraryPackageKind, LibraryPackageOptions } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import process from 'node:process'
 import { componentsPath, functionsPath, libraryPackagePath } from '@stacksjs/path'
@@ -258,9 +259,18 @@ export async function resolveLibraryPackages(
  * a file outright — `['counter.ts']`, the single most obvious way to write it —
  * matched nothing at all.
  *
+ * A source directory that does not exist matches nothing rather than
+ * throwing: `Bun.Glob#scan` rejects with ENOENT on a missing cwd, and git
+ * does not track an empty directory, so a fresh clone of any app that never
+ * added a function has no `resources/functions` at all. That crashed
+ * `buddy generate` outright, where an empty directory was skipped.
+ *
  * Sorted, so a build's output order does not depend on filesystem order.
  */
-async function matchSources(sourceDir: string, include: string[], exclude: string[]): Promise<string[]> {
+export async function matchSources(sourceDir: string, include: string[], exclude: string[]): Promise<string[]> {
+  if (!existsSync(sourceDir))
+    return []
+
   const expand = async (patterns: string[]): Promise<Set<string>> => {
     const files = new Set<string>()
 

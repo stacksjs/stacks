@@ -11,6 +11,7 @@ import { publishCommand } from '../src/library/publish'
 import {
   entrySpecifier,
   LibraryConfigError,
+  matchSources,
   normalizeLibraryPackages,
   resolveLibraryPackages,
 } from '../src/library/packages'
@@ -150,6 +151,15 @@ describe('resolveLibraryPackages', () => {
     await expect(resolveLibraryPackages({
       packages: [{ name: 'fx', kind: 'functions', include: ['does-not-exist.ts'] }],
     })).rejects.toThrow(/matched no files/)
+  })
+
+  it('treats a missing source directory as matching nothing', async () => {
+    // git does not track an empty directory, so a clone of an app with no
+    // functions has no resources/functions. That used to throw ENOENT out of
+    // the glob scan and take `buddy generate` down with it.
+    const missing = projectPath('storage/framework/runtime/no-such-functions-dir')
+
+    expect(await matchSources(missing, ['*.ts'], [])).toEqual([])
   })
 
   it('skips an unmatched package when asked to', async () => {

@@ -726,7 +726,7 @@ export * from './controllers'
   // Generate globals injection script
   const globalsPath = `${outputDir}/globals.ts`
   await generateGlobalsScript(
-    [functionsPath],
+    existingDirs([functionsPath]),
     globalsPath,
     `${outputDir}/index.ts`,
   )
