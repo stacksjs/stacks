@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { authCookie, refreshToken } from '@stacksjs/auth'
+import { authCookieForBrowserSession, refreshToken } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
@@ -34,7 +34,7 @@ export default new Action({
         refresh_token: result.refreshToken,
         token_type: 'Bearer',
         expires_in: result.expiresIn,
-      }, { headers: { 'Set-Cookie': authCookie(result.plainTextToken) } })
+      }, { headers: { 'Set-Cookie': authCookieForBrowserSession(result.plainTextToken, result.expiresIn) } })
     }
     catch (error: any) {
       return response.unauthorized(error.message || 'Invalid or expired refresh token')

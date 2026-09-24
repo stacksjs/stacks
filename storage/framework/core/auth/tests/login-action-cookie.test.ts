@@ -50,6 +50,7 @@ const { authCookie, authCookieName } = await import('../src/cookie')
 const LoginAction = (await import('../../../defaults/app/Actions/Auth/LoginAction')).default
 const LogoutAction = (await import('../../../defaults/app/Actions/Auth/LogoutAction')).default
 const MagicLinkConsumeAction = (await import('../../../defaults/app/Actions/Auth/MagicLinkConsumeAction')).default
+const RefreshTokenAction = (await import('../../../defaults/app/Actions/Auth/RefreshTokenAction')).default
 const RegisterAction = (await import('../../../defaults/app/Actions/Auth/RegisterAction')).default
 
 const EMAIL = 'cookie-proof@example.com'
@@ -107,6 +108,13 @@ function registrationRequest(email: string, remember?: unknown): any {
   return {
     get: (key: string) => fields[key],
     all: () => ({ ...fields }),
+  }
+}
+
+function refreshRequest(refreshToken: string): any {
+  return {
+    get: (key: string) => key === 'refresh_token' ? refreshToken : undefined,
+    validate: async () => {},
   }
 }
 
@@ -302,6 +310,38 @@ describe('POST /login sets the auth cookie (#2306)', () => {
 
     expect(res.status).toBe(401)
     expect(setCookies(res)).toEqual([])
+  })
+})
+
+describe('POST /auth/refresh keeps token and configured cookie policy aligned (#2795)', () => {
+  test('issued lifetime overrides a conflicting configured fallback Max-Age', async () => {
+    const originalPolicy = config.auth.browserSession
+    const originalCookie = config.auth.cookie
+    config.auth.browserSession = {
+      baselineLifetime: 2 * 60 * 1000,
+      rememberedLifetime: 2 * 60 * 1000,
+      withRefreshToken: true,
+    }
+    config.auth.cookie = { ...originalCookie, name: 'configured_session', maxAge: 900 }
+
+    try {
+      const login = await LoginAction.handle(loginRequest(EMAIL, PASSWORD)) as Response
+      const loginBody = await login.json() as { refresh_token: string }
+      const refreshed = await RefreshTokenAction.handle(refreshRequest(loginBody.refresh_token)) as Response
+      const body = await refreshed.json() as { access_token: string, expires_in: number }
+      const cookie = setCookies(refreshed).find(value => value.startsWith('configured_session='))
+
+      expect(refreshed.status).toBe(200)
+      expect(cookie).toBeDefined()
+      expect(cookieValue(cookie!)).toBe(body.access_token)
+      expect(body.expires_in).toBe(60 * 60)
+      expect(cookie).toContain(`Max-Age=${body.expires_in}`)
+      expect(cookie).not.toContain('Max-Age=900')
+    }
+    finally {
+      config.auth.browserSession = originalPolicy
+      config.auth.cookie = originalCookie
+    }
   })
 })
 

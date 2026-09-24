@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { config } from '@stacksjs/config'
+import { authCookieForBrowserSession } from '../src/browser-session'
 import { authCookie, authCookieToken, clearAuthCookie, shouldSecureAuthCookie } from '../src/cookie-auth'
 
 /** A request carrying the given Cookie header, which is all these read. */
@@ -38,6 +40,43 @@ describe('authCookie', () => {
     expect(cookie).toContain('Path=/account')
     expect(cookie).toContain('Domain=openfarm.ing')
     expect(cookie).toContain('Max-Age=900')
+  })
+
+  it('honours configured cookie attributes without per-action overrides', () => {
+    const original = config.auth.cookie
+    config.auth.cookie = {
+      name: 'configured_session',
+      path: '/account',
+      domain: 'example.test',
+      maxAge: 900,
+      secure: false,
+      sameSite: 'Strict',
+    }
+
+    try {
+      const cookie = authCookie('abc123')
+      expect(cookie).toContain('configured_session=abc123')
+      expect(cookie).toContain('Path=/account')
+      expect(cookie).toContain('Domain=example.test')
+      expect(cookie).toContain('Max-Age=900')
+      expect(cookie).toContain('SameSite=Strict')
+      expect(cookie).not.toContain('Secure')
+    }
+    finally {
+      config.auth.cookie = original
+    }
+  })
+
+  it('keeps the issued session lifetime authoritative over configured Max-Age', () => {
+    const original = config.auth.cookie
+    config.auth.cookie = { ...original, maxAge: 900 }
+
+    try {
+      expect(authCookieForBrowserSession('abc123', 120)).toContain('Max-Age=120')
+    }
+    finally {
+      config.auth.cookie = original
+    }
   })
 
   it('can be forced insecure for plain-HTTP development', () => {
@@ -96,6 +135,30 @@ describe('clearAuthCookie', () => {
     expect(cleared).toContain('Max-Age=0')
     // Path has to match or the browser keeps the original alongside it.
     expect(cleared).toContain('Path=/account')
+  })
+
+  it('uses the configured identity attributes so the browser removes the issued cookie', () => {
+    const original = config.auth.cookie
+    config.auth.cookie = {
+      name: 'configured_session',
+      path: '/account',
+      domain: 'example.test',
+      secure: true,
+      sameSite: 'Strict',
+    }
+
+    try {
+      const cleared = clearAuthCookie()
+      expect(cleared).toContain('configured_session=')
+      expect(cleared).toContain('Path=/account')
+      expect(cleared).toContain('Domain=example.test')
+      expect(cleared).toContain('SameSite=Strict')
+      expect(cleared).toContain('Secure')
+      expect(cleared).toContain('Max-Age=0')
+    }
+    finally {
+      config.auth.cookie = original
+    }
   })
 })
 

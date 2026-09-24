@@ -62,7 +62,7 @@ describe('auth session cookie contract (#2306)', () => {
     // Refreshing invalidates the token the cookie was carrying. Leaving it
     // untouched would expire the browser's session at the exact moment it was
     // meant to be extended.
-    expect(action('RefreshTokenAction')).toMatch(/authCookie\(/)
+    expect(action('RefreshTokenAction')).toContain('authCookieForBrowserSession(result.plainTextToken, result.expiresIn)')
   })
 
   test.each(['LogoutAction', 'LogoutAllAction'])('%s clears the auth cookie', (name) => {

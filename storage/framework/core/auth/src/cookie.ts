@@ -166,21 +166,24 @@ let warnedInsecureOverride = false
  * ```
  */
 export function authCookie(token: string, options: AuthCookieOptions = {}): string {
+  const configured = config.auth?.cookie ?? {}
+  const secure = options.secure ?? configured.secure ?? shouldSecureAuthCookie()
   const parts = [
     `${cookieName(options)}=${encodeURIComponent(token)}`,
-    `Path=${options.path ?? '/'}`,
-    `Max-Age=${options.maxAge ?? defaultMaxAge()}`,
+    `Path=${options.path ?? configured.path ?? '/'}`,
+    `Max-Age=${options.maxAge ?? configured.maxAge ?? defaultMaxAge()}`,
     'HttpOnly',
-    `SameSite=${options.sameSite ?? 'Lax'}`,
+    `SameSite=${options.sameSite ?? configured.sameSite ?? 'Lax'}`,
   ]
 
-  if (options.domain)
-    parts.push(`Domain=${options.domain}`)
+  const domain = options.domain ?? configured.domain
+  if (domain)
+    parts.push(`Domain=${domain}`)
 
-  if (options.secure ?? shouldSecureAuthCookie()) {
+  if (secure) {
     parts.push('Secure')
   }
-  else if (options.secure === false && shouldSecureAuthCookie() && !warnedInsecureOverride) {
+  else if (shouldSecureAuthCookie() && !warnedInsecureOverride) {
     // Explicitly stripping Secure off an app whose URL says HTTPS means the
     // session token is exposed to any plain-HTTP request to the same host.
     // The default can no longer produce this combination, so it is always a
