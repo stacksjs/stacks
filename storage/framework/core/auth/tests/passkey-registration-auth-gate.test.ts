@@ -59,6 +59,7 @@ describe('passkey registration auth gate', () => {
 
     expect(genAuthLine).toBeTruthy()
     expect(verifyAuthLine).toBeTruthy()
+    expect(verifyAuthLine).toContain("route.post('/verify-authentication'")
     // These run before the caller has a session — gating them behind
     // auth would make login impossible.
     expect(genAuthLine).not.toMatch(/\.middleware\('auth'\)/)

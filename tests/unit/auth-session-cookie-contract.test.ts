@@ -33,6 +33,7 @@ const SESSION_ISSUING = [
   'RegisterAction',
   'SocialCallbackAction',
   'MagicLinkConsumeAction',
+  'VerifyAuthenticationAction',
 ]
 
 describe('auth session cookie contract (#2306)', () => {
@@ -86,7 +87,7 @@ describe('auth session cookie contract (#2306)', () => {
     }
   })
 
-  test.each(['SocialCallbackAction', 'MagicLinkConsumeAction'])('%s uses the baseline browser policy and issued lifetime', (name) => {
+  test.each(['SocialCallbackAction', 'MagicLinkConsumeAction', 'VerifyAuthenticationAction'])('%s uses the baseline browser policy and issued lifetime', (name) => {
     const source = action(name)
     expect(source).toContain('resolveBrowserSessionPolicy(false)')
     expect(source).toContain('expiresInMinutes: policy.expiresInMinutes')

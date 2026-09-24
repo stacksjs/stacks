@@ -53,7 +53,7 @@ route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction').midd
 // Passkey AUTHENTICATION (logging in) is correctly unauthenticated —
 // the caller doesn't have a session yet, that's the point.
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction').rateLimit(10, 'minute')
-route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction').rateLimit(10, 'minute')
+route.post('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction').rateLimit(10, 'minute')
 
 // TOTP 2FA. Setup/enable/disable act on the caller's own authenticated
 // account (auth-gated, same identity rule as passkey enrollment above).
