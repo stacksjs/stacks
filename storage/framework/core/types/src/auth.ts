@@ -47,6 +47,11 @@ export interface BrowserSessionConfig {
    * credential issued.
    */
   withRefreshToken?: boolean
+  /**
+   * Same-origin path for successful HTML logout form submissions.
+   * API clients continue to receive JSON. External URLs are rejected.
+   */
+  logoutRedirect?: string
 }
 
 export interface AuthOptions {

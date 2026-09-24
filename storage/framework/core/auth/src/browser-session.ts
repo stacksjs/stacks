@@ -71,3 +71,75 @@ export function authCookieForBrowserSession(token: string, expiresIn: number | u
     throw new TypeError('[auth] The issued token lifetime must be a positive integer number of seconds.')
   return authCookie(token, { maxAge: seconds })
 }
+
+type HeaderRequest = { headers?: { get: (name: string) => string | null } }
+
+interface MediaPreference {
+  order: number
+  quality: number
+  specificity: number
+}
+
+function mediaPreference(accept: string, mediaType: string): MediaPreference {
+  const requested = mediaType.toLowerCase()
+  const requestedType = requested.slice(0, requested.indexOf('/'))
+  let best: MediaPreference = { order: Number.POSITIVE_INFINITY, quality: 0, specificity: -1 }
+
+  for (const [order, raw] of accept.split(',').entries()) {
+    const [rawType = '', ...parameters] = raw.trim().toLowerCase().split(';')
+    const type = rawType.trim()
+    if (type !== requested && type !== `${requestedType}/*` && type !== '*/*')
+      continue
+    const qualityParameter = parameters.find(parameter => parameter.trim().startsWith('q='))
+    const quality = qualityParameter === undefined
+      ? 1
+      : Number(qualityParameter.slice(qualityParameter.indexOf('=') + 1).trim())
+    const normalizedQuality = Number.isFinite(quality) && quality >= 0 && quality <= 1 ? quality : 0
+    const specificity = type === requested ? 2 : type === `${requestedType}/*` ? 1 : 0
+    if (specificity > best.specificity || (specificity === best.specificity && normalizedQuality > best.quality))
+      best = { order, quality: normalizedQuality, specificity }
+  }
+
+  return best
+}
+
+function prefersHtml(accept: string | null): boolean {
+  if (!accept)
+    return false
+  const html = mediaPreference(accept, 'text/html')
+  const json = mediaPreference(accept, 'application/json')
+  return html.quality > 0 && (
+    html.quality > json.quality
+    || (html.quality === json.quality && html.order < json.order)
+  )
+}
+
+/** Resolve a configured same-origin logout target for HTML navigation only. */
+export function browserSessionLogoutRedirect(
+  request: HeaderRequest | undefined,
+  auth: BrowserSessionPolicyConfig = config.auth,
+): string | undefined {
+  if (!prefersHtml(request?.headers?.get('accept') ?? null))
+    return undefined
+
+  const configured = auth.browserSession?.logoutRedirect
+  if (typeof configured !== 'string')
+    return undefined
+  const candidate = configured.trim()
+  if (!candidate.startsWith('/') || candidate.startsWith('//'))
+    return undefined
+
+  try {
+    const base = new URL('https://stacks.invalid')
+    const resolved = new URL(candidate, base)
+    if (resolved.origin !== base.origin)
+      return undefined
+    const target = `${resolved.pathname}${resolved.search}${resolved.hash}`
+    if (!target.startsWith('/') || target.startsWith('//'))
+      return undefined
+    return target
+  }
+  catch {
+    return undefined
+  }
+}

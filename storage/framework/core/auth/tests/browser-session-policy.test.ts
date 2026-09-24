@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { authCookieForBrowserSession, resolveBrowserSessionPolicy } from '../src/browser-session'
+import { authCookieForBrowserSession, browserSessionLogoutRedirect, resolveBrowserSessionPolicy } from '../src/browser-session'
 
 const hour = 60 * 60 * 1000
 const day = 24 * hour
@@ -80,5 +80,27 @@ describe('browser session policy', () => {
 
   test.each([undefined, 0, -1, Number.NaN, Number.POSITIVE_INFINITY])('refuses to serialize an invalid issued lifetime of %p', (expiresIn) => {
     expect(() => authCookieForBrowserSession('12|plain-token', expiresIn)).toThrow('issued token lifetime')
+  })
+
+  test('resolves a configured local redirect only for HTML navigation', () => {
+    const html = new Request('https://app.example/logout', { headers: { accept: 'text/html,application/xhtml+xml' } })
+    const spacedHtml = new Request('https://app.example/logout', { headers: { accept: 'text/html ;q=1, application/json;q=0.5' } })
+    const json = new Request('https://app.example/logout', { headers: { accept: 'application/json' } })
+    const rejectsHtml = new Request('https://app.example/logout', { headers: { accept: 'application/json, text/html;q=0' } })
+    const auth = { tokenExpiry: hour, browserSession: { logoutRedirect: '/login?logged_out=1' } }
+
+    expect(browserSessionLogoutRedirect(html, auth)).toBe('/login?logged_out=1')
+    expect(browserSessionLogoutRedirect(spacedHtml, auth)).toBe('/login?logged_out=1')
+    expect(browserSessionLogoutRedirect(json, auth)).toBeUndefined()
+    expect(browserSessionLogoutRedirect(rejectsHtml, auth)).toBeUndefined()
+  })
+
+  test.each(['https://evil.example/login', '//evil.example/login', '/\\evil.example/login', '/a/..//evil.example/login', 'login'])('rejects unsafe logout redirect %p', (logoutRedirect) => {
+    const request = new Request('https://app.example/logout', { headers: { accept: 'text/html' } })
+
+    expect(browserSessionLogoutRedirect(request, {
+      tokenExpiry: hour,
+      browserSession: { logoutRedirect },
+    })).toBeUndefined()
   })
 })

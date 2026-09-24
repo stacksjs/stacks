@@ -42,13 +42,17 @@ const { config } = await import('@stacksjs/config')
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig, parseSqlDateTime } = await import('@stacksjs/database')
 const { ensureFrameworkAuthTables } = await import('./helpers/auth-schema')
 const { makeHash } = await import('@stacksjs/security')
-const { authCookieName } = await import('../src/cookie')
+const { createStacksRouter } = await import('@stacksjs/router')
+const { Auth } = await import('../src/authentication')
+const { authCookie, authCookieName } = await import('../src/cookie')
 
 const LoginAction = (await import('../../../defaults/app/Actions/Auth/LoginAction')).default
+const LogoutAction = (await import('../../../defaults/app/Actions/Auth/LogoutAction')).default
 const RegisterAction = (await import('../../../defaults/app/Actions/Auth/RegisterAction')).default
 
 const EMAIL = 'cookie-proof@example.com'
 const PASSWORD = 'correct-horse-battery'
+const CSRF_TOKEN = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
 
 let releaseDbConfigLock: () => void
 
@@ -319,5 +323,116 @@ describe('POST /register applies the browser session policy (#2795)', () => {
       setSystemTime()
       config.auth.browserSession = originalPolicy
     }
+  })
+})
+
+describe('POST /logout serves browser and API clients (#2795)', () => {
+  async function issuedToken(): Promise<string> {
+    const login = await LoginAction.handle(loginRequest(EMAIL, PASSWORD)) as Response
+    return String((await login.json() as { access_token: string }).access_token)
+  }
+
+  async function logout(token: string, accept: string, withCsrf = true): Promise<Response> {
+    const router = createStacksRouter({ autoDiscoverRoutes: false })
+    router.post('/logout-proof', LogoutAction).middleware('auth')
+    const cookies = [authCookie(token).split(';')[0]!]
+    const headers: Record<string, string> = { accept }
+    if (withCsrf) {
+      cookies.push(`X-CSRF-Token=${CSRF_TOKEN}`)
+      headers['x-csrf-token'] = CSRF_TOKEN
+    }
+    headers.cookie = cookies.join('; ')
+
+    return router.handleRequest(new Request('https://app.example/logout-proof', {
+      method: 'POST',
+      headers,
+    }))
+  }
+
+  test('CSRF rejection leaves the session usable', async () => {
+    const token = await issuedToken()
+    const res = await logout(token, 'application/json', false)
+
+    expect(res.status).toBe(403)
+    expect(await Auth.getUserFromToken(token)).toBeDefined()
+  })
+
+  test('HTML CSRF rejection never redirects or revokes', async () => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = { ...originalPolicy, logoutRedirect: '/signed-out' }
+
+    try {
+      const token = await issuedToken()
+      const res = await logout(token, 'text/html', false)
+
+      expect(res.status).toBe(403)
+      expect(res.headers.get('Location')).toBeNull()
+      expect(await Auth.getUserFromToken(token)).toBeDefined()
+    }
+    finally { config.auth.browserSession = originalPolicy }
+  })
+
+  test('unauthenticated HTML requests never reach the configured redirect', async () => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = { ...originalPolicy, logoutRedirect: '/signed-out' }
+
+    try {
+      const router = createStacksRouter({ autoDiscoverRoutes: false })
+      router.post('/logout-proof', LogoutAction).middleware('auth')
+      const res = await router.handleRequest(new Request('https://app.example/logout-proof', {
+        method: 'POST',
+        headers: {
+          accept: 'text/html',
+          cookie: `X-CSRF-Token=${CSRF_TOKEN}`,
+          'x-csrf-token': CSRF_TOKEN,
+        },
+      }))
+
+      expect(res.status).toBe(401)
+      expect(res.headers.get('Location')).toBeNull()
+    }
+    finally { config.auth.browserSession = originalPolicy }
+  })
+
+  test('API logout revokes first, clears the cookie, and returns JSON', async () => {
+    const token = await issuedToken()
+    const res = await logout(token, 'application/json')
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ message: 'Successfully logged out' })
+    expect(res.headers.get('Set-Cookie')).toContain('Max-Age=0')
+    expect(await Auth.getUserFromToken(token)).toBeUndefined()
+  })
+
+  test('an API media-range preference remains JSON when HTML is also acceptable', async () => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = { ...originalPolicy, logoutRedirect: '/signed-out' }
+
+    try {
+      const token = await issuedToken()
+      const res = await logout(token, 'application/*;q=1, text/html;q=0.5')
+
+      expect(res.status).toBe(200)
+      expect(res.headers.get('Location')).toBeNull()
+      expect(await res.json()).toEqual({ message: 'Successfully logged out' })
+      expect(await Auth.getUserFromToken(token)).toBeUndefined()
+    }
+    finally { config.auth.browserSession = originalPolicy }
+  })
+
+  test('HTML logout revokes first, clears the cookie, and uses the configured local redirect', async () => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = { ...originalPolicy, logoutRedirect: '/signed-out?logout=1' }
+
+    try {
+      const token = await issuedToken()
+      const res = await logout(token, 'text/html,application/xhtml+xml')
+
+      expect(res.status).toBe(303)
+      expect(res.headers.get('Location')).toBe('/signed-out?logout=1')
+      expect(res.headers.get('Set-Cookie')).toContain('Max-Age=0')
+      expect(await Auth.getUserFromToken(token)).toBeUndefined()
+    }
+    finally { config.auth.browserSession = originalPolicy }
   })
 })
