@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.63...v0.74.64)
+
+## ✨ Features
+
+- **image**: let a build skip the source-width variant ([869bcb0](https://github.com/stacksjs/stacks/commit/869bcb0)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **cms**: submit the form block with CSRF, on stx 0.2.304 ([2ad9f81](https://github.com/stacksjs/stacks/commit/2ad9f81)) _(by Chris <chris@stacksjs.com>)_
+- **image**: re-encode variants when a codec version changes ([27a6c43](https://github.com/stacksjs/stacks/commit/27a6c43)) _(by Chris <chris@stacksjs.com>)_
+- record forms and sites in pantry.lock; type the failed-jobs table ([f4bffe6](https://github.com/stacksjs/stacks/commit/f4bffe6)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: regenerate auto-import barrels after a --minimal strip ([9447f18](https://github.com/stacksjs/stacks/commit/9447f18)) _(by Chris <chris@stacksjs.com>)_
+- **stacks**: depend on forms and sites, which the defaults import ([7968f7d](https://github.com/stacksjs/stacks/commit/7968f7d)) _(by Chris <chris@stacksjs.com>)_
+- **forms**: stop failing every submission after it is saved ([d2114e6](https://github.com/stacksjs/stacks/commit/d2114e6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.62...v0.74.63)
 
 ## ✨ Features
