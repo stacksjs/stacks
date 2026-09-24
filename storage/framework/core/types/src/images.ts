@@ -62,6 +62,22 @@ export interface ImageFontConfig {
   body?: string
 }
 
+/**
+ * Type sizes on a social card, in pixels on the 1200px-wide card.
+ *
+ * A card is drawn at 1200px and mostly seen at 300-500px: in a chat thread the
+ * default subtitle lands near 7px and the eyebrow near 6px. A card that has to
+ * read small wants all three larger, and fewer words.
+ */
+export interface SocialCardTextConfig {
+  /** @default 74 (6.2% of the width) */
+  titleSize?: number
+  /** @default 23 (1.9% of the width) */
+  eyebrowSize?: number
+  /** @default 29 (2.45% of the width) */
+  subtitleSize?: number
+}
+
 export interface SocialCardPageConfig {
   /**
    * Route this card belongs to, used to name the file: `/` becomes `og`,
@@ -73,6 +89,8 @@ export interface SocialCardPageConfig {
   subtitle?: string
   /** Overrides the set-wide product shot for this page. */
   foreground?: string
+  /** Overrides the set-wide type sizes for this page's card. */
+  text?: SocialCardTextConfig
 }
 
 export interface SocialCardsConfig {
@@ -102,6 +120,8 @@ export interface SocialCardsConfig {
   color?: ImageColor
   mutedColor?: ImageColor
   accent?: ImageColor
+  /** Type sizes on every card. A page's own `text` wins, key by key. */
+  text?: SocialCardTextConfig
   /** One entry per page that needs its own card. */
   pages?: SocialCardPageConfig[]
 }

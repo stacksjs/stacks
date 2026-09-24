@@ -1,5 +1,5 @@
 import type { SocialCardPreset } from 'ts-images'
-import type { ImagesConfig, SocialCardPageConfig } from '@stacksjs/types'
+import type { ImagesConfig, SocialCardPageConfig, SocialCardTextConfig } from '@stacksjs/types'
 import { mkdir } from 'node:fs/promises'
 import process from 'node:process'
 import { generateSocialCards, renderSocialCard } from 'ts-images'
@@ -97,6 +97,21 @@ async function socialCardTheme(images: ImagesConfig, root: string) {
 }
 
 /**
+ * The type sizes for one card: the page's, falling back key by key to the
+ * set's, falling back to the renderer's own defaults when neither says.
+ */
+export function textSizes(
+  set: SocialCardTextConfig | undefined,
+  page?: SocialCardTextConfig,
+): { titleSize?: number, eyebrowSize?: number, subtitleSize?: number } {
+  return {
+    titleSize: page?.titleSize ?? set?.titleSize,
+    eyebrowSize: page?.eyebrowSize ?? set?.eyebrowSize,
+    subtitleSize: page?.subtitleSize ?? set?.subtitleSize,
+  }
+}
+
+/**
  * The foreground shot for one page, resolved against the device framing.
  * Shared for the same reason the theme is.
  */
@@ -144,6 +159,7 @@ export async function generateSocialCardSet(
 
     const files = await generateSocialCards(outputDir, {
       ...shared,
+      ...textSizes(social.text, page.text),
       name,
       title: page.title,
       eyebrow: page.eyebrow,
@@ -236,6 +252,7 @@ export async function renderOnDemandSocialCard(
 
   const bytes = await renderSocialCard({
     ...cardOptions,
+    ...textSizes(social.text),
     width,
     height,
     title: card.title,

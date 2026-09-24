@@ -9,7 +9,7 @@ import { generateAppIconSet } from '../src/app-icons'
 import { generateImages } from '../src/generate'
 import { resolveFontPath } from '../src/fonts'
 import { drawsGlyphs } from '../src/fonts'
-import { renderOnDemandSocialCard, socialCardName, socialMetaTags } from '../src/social'
+import { renderOnDemandSocialCard, socialCardName, socialMetaTags, textSizes } from '../src/social'
 import { generateSocialCardSet } from '../src/social'
 import { background, color, device, themed } from '../src/theme'
 
@@ -398,5 +398,19 @@ describe('drawsGlyphs', () => {
     // all" is. A face missing one character should not be refused.
     let call = 0
     expect(drawsGlyphs(face({ outline: () => (++call === 3 ? [[{ x: 0, y: 0, onCurve: true }]] : []) }))).toBe(true)
+  })
+})
+
+describe('social card text sizes', () => {
+  // A card drawn at 1200px is mostly seen at 300-500px, so a site that needs
+  // it legible small sets the sizes. Before `text` existed the renderer's
+  // fixed defaults were the only option.
+  test('a page overrides the set key by key', () => {
+    expect(textSizes({ titleSize: 136, eyebrowSize: 36, subtitleSize: 42 }, { titleSize: 100 }))
+      .toEqual({ titleSize: 100, eyebrowSize: 36, subtitleSize: 42 })
+  })
+
+  test('says nothing when neither does, leaving the renderer its defaults', () => {
+    expect(textSizes(undefined)).toEqual({ titleSize: undefined, eyebrowSize: undefined, subtitleSize: undefined })
   })
 })

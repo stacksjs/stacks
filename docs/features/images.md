@@ -86,6 +86,28 @@ Each page produces one card per preset. The `og` preset keeps the bare file name
 (`og.jpg`, `pricing.jpg`) so the primary card's URL stays stable; the rest are
 suffixed (`og-square.jpg`).
 
+### Legible at thumbnail size
+
+A card is drawn at 1200px and mostly seen far smaller: around 500px in a
+timeline and 300px or less in a chat thread. At the default type sizes the
+subtitle lands near 7px there and the eyebrow near 6px. When the card has to
+read small, set the sizes (in pixels on the 1200px card), and keep the words
+few:
+
+```ts
+social: {
+  // ...
+  text: { titleSize: 136, eyebrowSize: 36, subtitleSize: 42 },
+  pages: [
+    // A page's own `text` wins, key by key.
+    { path: '/', title: 'Mario Adrion', subtitle: 'German stand-up, based in Los Angeles.' },
+  ],
+},
+```
+
+Check the result at the size people see it, not at 1200px:
+`sips -Z 300 public/social/og.jpg --out /tmp/og-300.jpg`.
+
 ### Why more than one size
 
 A scraper decides for itself what shape of slot to put your one `og:image` in.

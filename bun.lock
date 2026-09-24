@@ -858,7 +858,7 @@
       "version": "0.74.66",
       "dependencies": {
         "@stacksjs/types": "workspace:*",
-        "ts-images": "^0.2.11",
+        "ts-images": "^0.2.21",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -1334,7 +1334,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-cloud": "^0.16.0",
         "@stacksjs/ts-xml": "^0.1.0",
-        "ts-images": "^0.2.11",
+        "ts-images": "^0.2.21",
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
@@ -2086,7 +2086,7 @@
 
     "ts-gif": ["ts-gif@0.1.2", "", { "dependencies": { "data-uri-to-buffer": "^6.0.2" } }, "sha512-jbraplO1qqJtrtkFeepNPUGPad7w8FQHWIQFsn1OJbHeWKUbdqdkrX18XzNXI5Fw7+s6A3nbNTdj+Ukn4d3f8g=="],
 
-    "ts-images": ["ts-images@0.2.20", "", { "dependencies": { "@stacksjs/ts-avif": "^0.1.4", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "^0.1.1", "@stacksjs/ts-webp": "^0.1.2", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-yKjBq9To98gH+XhH3E/s9vdaMYUTicwBeujcQbODKFFrHjw4mflwn4jJH5tyx0o0KokPCv6K6fXEIfRwWrxAiw=="],
+    "ts-images": ["ts-images@0.2.21", "", { "dependencies": { "@stacksjs/ts-avif": "^0.1.4", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "^0.1.1", "@stacksjs/ts-webp": "^0.1.2", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-ADJ3bbLLK5ckh0IcuIoAlTo0nJy7Ofeqy8D9td4+C/BQ4Ft7QCB4OSNlRSZfYiwtxvSeg3VE9N7Crht0/QnSJg=="],
 
     "ts-jpeg": ["ts-jpeg@0.3.5", "", {}, "sha512-etdIfMDRDYDF44kDu++z0M5GbR7ph9IKmubSXQop1O8NTUc+xjxE8dPt/niosHRUhMiQ4gaLtuFh0DH6QvfopA=="],
 
