@@ -724,6 +724,7 @@ export async function refreshToken(
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
       WHERE r.token = ${param(1)}
       AND r.revoked = ${boolFalse}
+      AND t.revoked = ${boolFalse}
       AND EXISTS (
         SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
       )
@@ -856,6 +857,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     JOIN oauth_access_tokens t ON r.access_token_id = t.id
     WHERE r.token = ${param(1)}
     AND r.revoked = ${boolFalse}
+    AND t.revoked = ${boolFalse}
     AND EXISTS (
       SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
     )
