@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.60...v0.74.61)
+
+## ✨ Features
+
+- **auth**: expose browser session policy ([13cd3d9](https://github.com/stacksjs/stacks/commit/13cd3d9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: complete default two-factor login ([3b885b7](https://github.com/stacksjs/stacks/commit/3b885b7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose browser two-factor exchange ([148d0d0](https://github.com/stacksjs/stacks/commit/148d0d0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **queue**: store job payloads and exceptions as text ([3e62e4b](https://github.com/stacksjs/stacks/commit/3e62e4b)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: support cookie-only browser sessions ([a671c4a](https://github.com/stacksjs/stacks/commit/a671c4a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.59...v0.74.60)
 
 ## ✨ Features
