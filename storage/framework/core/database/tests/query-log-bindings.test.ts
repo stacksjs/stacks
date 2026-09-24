@@ -15,7 +15,7 @@
  * database there.
  */
 
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -605,8 +605,8 @@ function serverUrl(dialect: Dialect): string | undefined {
 async function runFixture(dialect: Dialect, fixture: string, env: Record<string, string>): Promise<{ stdout: string, stderr: string }> {
   const connection = serverUrl(dialect)
   const url = dialect === 'sqlite' ? undefined : new URL(connection!)
-  if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-    throw new Error('Query log binding tests require a local disposable database server')
+  if (url && (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || !url.port || ['5432', '3306'].includes(url.port)))
+    throw new Error('Query log binding tests require a local disposable database server on a non-default port')
   const directory = await mkdtemp(join(tmpdir(), 'stacks-query-log-bindings-'))
   const name = `stacks_query_log_bindings_${crypto.randomUUID().replaceAll('-', '')}`
   const admin = url ? new SQL(url.href) : undefined
@@ -618,12 +618,19 @@ async function runFixture(dialect: Dialect, fixture: string, env: Record<string,
     // inherits none of its preloads. The key is left out rather than set to
     // an empty array: `preload = []` is rejected by Bun before 1.4.
     await writeFile(config, '# no preload\n')
+    // Config is resolved from the application's cwd, not the framework
+    // package. Give each child a tiny isolated app which loads the real
+    // database config under test, without inheriting other app config/env.
+    await mkdir(join(directory, 'config'))
+    const databaseConfig = new URL('../../../../../config/database.ts', import.meta.url).href
+    await writeFile(join(directory, 'config/database.ts'), `export { default } from ${JSON.stringify(databaseConfig)}\n`)
     if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
     // The run decides the setting, so an override in the calling shell
     // must not. With no preload and no env file, nothing puts it back.
     const inherited = { ...process.env }
     delete inherited.DB_QUERY_LOGGING_CAPTURE_BINDINGS
     const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/${fixture}`], {
+      cwd: directory,
       env: {
         ...inherited, DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'true',
         DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'query-log-bindings.sqlite') : ':memory:',
@@ -642,7 +649,7 @@ async function runFixture(dialect: Dialect, fixture: string, env: Record<string,
       expect(code, `${stdout}\n${stderr}`).toBe(0)
       return { stdout, stderr }
     }
-    finally { clearTimeout(watchdog); child.kill() }
+    finally { clearTimeout(watchdog); child.kill(); await child.exited }
   }
   finally {
     try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
