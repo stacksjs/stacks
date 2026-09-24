@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.64...v0.74.65)
+
+## 🐛 Bug Fixes
+
+- **preloader**: boot an app that has no resources/functions ([4a9c74a](https://github.com/stacksjs/stacks/commit/4a9c74a)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: require ts-cloud 0.16.11 ([2faacf5](https://github.com/stacksjs/stacks/commit/2faacf5)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: scaffold apps that are named after themselves ([049c344](https://github.com/stacksjs/stacks/commit/049c344)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: give stx the app's name instead of its placeholders ([33c1e53](https://github.com/stacksjs/stacks/commit/33c1e53)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: stop the blog builders publishing as stacksjs.com ([be7721f](https://github.com/stacksjs/stacks/commit/be7721f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: name the app on the maintenance and coming-soon pages ([45f2804](https://github.com/stacksjs/stacks/commit/45f2804)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: scaffold new apps with a starter page, not stacksjs.com ([219db25](https://github.com/stacksjs/stacks/commit/219db25)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: give every short flag a single owner per command ([56921fb](https://github.com/stacksjs/stacks/commit/56921fb)) _(by Chris <chris@stacksjs.com>)_
+- **app**: ship the Inspire schedule commented out, like its siblings ([e196889](https://github.com/stacksjs/stacks/commit/e196889)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: use stx 0.2.306 for page-derived social tags ([6d7f412](https://github.com/stacksjs/stacks/commit/6d7f412)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.63...v0.74.64)
 
 ## ✨ Features
