@@ -259,6 +259,12 @@ export async function consumeMagicLink(raw: string): Promise<ConsumeMagicLinkRes
     return { ok: false, reason: 'used' }
   }
 
+  // The UPDATE compared against the time captured before it acquired its
+  // lock. A blocked claim or delayed read-back may finish after the deadline.
+  // Parse again as well: SQLite text ordering does not validate a timestamp.
+  if ((parseSqlDateTime(row.expires_at)?.getTime() ?? 0) <= Date.now())
+    return { ok: false, reason: 'expired' }
+
   if (!row.user_id)
     return { ok: false, reason: 'no-user' }
 

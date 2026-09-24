@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { SQL } from 'bun'
 import { mock, setSystemTime } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { basename, dirname } from 'node:path'
@@ -30,6 +31,7 @@ mock.module('@stacksjs/email', () => ({ ...realEmail,
 }))
 const { sendMagicLink, consumeMagicLink } = await import('../../src/magic-link')
 const { RateLimiter } = await import('../../src/rate-limiter')
+const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 RateLimiter.useMemoryStore()
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
@@ -69,6 +71,68 @@ try {
     const attempts = await Promise.all(Array.from({ length: 8 }, () => consumeMagicLink('synthetic-concurrent')))
     assert.equal(attempts.filter(result => result.ok).length, 1)
   })
+  await check('a link expiring during the claim cannot authenticate', async () => {
+    await seed('synthetic-delayed-claim')
+    let delayed = false
+    const stop = registerPersistentQueryHooks({ onQueryStart(event) {
+      if (event.kind === 'update' && event.sql.includes('magic_link_tokens')) {
+        delayed = true
+        setSystemTime(new Date(now.getTime() + 60_000))
+      }
+    } })
+    try {
+      assert.deepEqual(await consumeMagicLink('synthetic-delayed-claim'), { ok: false, reason: 'expired' })
+      assert(delayed)
+    }
+    finally { stop(); setSystemTime(now) }
+  })
+  if (dialect === 'sqlite') {
+    await check('a lexically future malformed expiry cannot authenticate', async () => {
+      await seed('synthetic-malformed-expiry')
+      await db.updateTable('magic_link_tokens').set({ expires_at: 'zzzz-not-a-date' })
+        .where('token', '=', createHash('sha256').update('synthetic-malformed-expiry').digest('hex')).execute()
+      assert.deepEqual(await consumeMagicLink('synthetic-malformed-expiry'), { ok: false, reason: 'expired' })
+    })
+  }
+  else {
+    await check('expiry while blocked on a real database row lock is rejected', async () => {
+      const raw = 'synthetic-row-lock-expiry'
+      await seed(raw)
+      const observer = new SQL({ adapter: dialect, hostname: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
+        username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+        tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+      const blocker = await observer.reserve()
+      let held = false
+      let pending: ReturnType<typeof consumeMagicLink> | undefined
+      try {
+        await blocker.unsafe('BEGIN'); held = true
+        await blocker.unsafe(`UPDATE magic_link_tokens SET consumed_at = consumed_at WHERE token = ${dialect === 'postgres' ? '$1' : '?'}`,
+          [createHash('sha256').update(raw).digest('hex')])
+        pending = consumeMagicLink(raw)
+        const timeout = performance.now() + 5000
+        let blocked = false
+        while (performance.now() < timeout) {
+          const waiting = await observer.unsafe(dialect === 'postgres'
+            ? "SELECT COUNT(*) AS count FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'"
+            : "SELECT COUNT(*) AS count FROM performance_schema.data_locks WHERE OBJECT_SCHEMA = DATABASE() AND LOCK_STATUS = 'WAITING'")
+          if (Number(waiting[0].count) > 0) { blocked = true; break }
+          await Bun.sleep(10)
+        }
+        assert(blocked, 'consumption must reach the real row lock before the deadline moves')
+        setSystemTime(new Date(now.getTime() + 60_000))
+        await blocker.unsafe('COMMIT'); held = false
+        assert.deepEqual(await pending, { ok: false, reason: 'expired' })
+      }
+      finally {
+        if (held) await blocker.unsafe('ROLLBACK')
+        await pending?.catch(() => {})
+        blocker.release()
+        await observer.close()
+        setSystemTime(now)
+      }
+    })
+  }
   const previousTimezone = process.env.TZ
   try {
     for (const zone of ['UTC', 'Pacific/Honolulu', 'Asia/Kathmandu']) {

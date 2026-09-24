@@ -8,8 +8,8 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
   test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} magic links send, expire and consume once`, async () => {
     const url = dialect === 'sqlite' ? undefined : new URL(connection!)
-    if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-      throw new Error('Magic link tests require a local disposable database server')
+    if (url && (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || !url.port || ['5432', '3306'].includes(url.port)))
+      throw new Error('Magic link tests require a local disposable database server on a non-default port')
     const directory = await mkdtemp(join(tmpdir(), 'stacks-magic-drivers-'))
     const name = `stacks_magic_drivers_${crypto.randomUUID().replaceAll('-', '')}`
     const admin = url ? new SQL({ url: url.href, max: 1 }) : undefined
@@ -25,7 +25,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
           ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
           DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'magic.sqlite') : ':memory:',
           STACKS_MAGIC_DRIVERS_CONFIG: config,
-          ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port || (dialect === 'mysql' ? '3306' : '5432'),
+          ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port,
             DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
             DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
         }, stdout: 'pipe', stderr: 'pipe',
@@ -36,7 +36,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         expect(code, `${stdout}\n${stderr}`).toBe(0)
         expect(stdout).toContain('magic link drivers OK')
       }
-      finally { clearTimeout(watchdog); child.kill() }
+      finally { clearTimeout(watchdog); child.kill(); await child.exited }
     }
     finally {
       try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
