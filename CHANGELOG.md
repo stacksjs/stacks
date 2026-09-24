@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.61...v0.74.62)
+
+## 🐛 Bug Fixes
+
+- **deploy**: stop restarting shared mail when nothing changed ([11b48f0](https://github.com/stacksjs/stacks/commit/11b48f0)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: align alternate browser sessions ([cb85b0a](https://github.com/stacksjs/stacks/commit/cb85b0a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- update the dashboard component count to 401 ([22a7936](https://github.com/stacksjs/stacks/commit/22a7936)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.60...v0.74.61)
 
 ## ✨ Features
