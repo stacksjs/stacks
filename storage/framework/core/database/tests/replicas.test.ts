@@ -54,6 +54,54 @@ describe('rule 1: auto-routing is opt-in', () => {
 })
 
 describe('rule 2: transactions stay on the primary', () => {
+  test.each([false, true])('sibling transactions isolate flags while sharing request writes (rollback=%s)', async (rollback) => {
+    await withRoutingContext(async () => {
+      const firstRelease = Promise.withResolvers<void>()
+      const secondRelease = Promise.withResolvers<void>()
+      const first = withTransactionContext(async () => {
+        await firstRelease.promise
+        expect(contextInTransaction()).toBe(true)
+        if (rollback) throw new Error('first transaction rollback')
+      }).catch(error => { if (!rollback) throw error })
+      const second = withTransactionContext(async () => {
+        await secondRelease.promise
+        expect(contextInTransaction()).toBe(true)
+        expect(shouldRouteToReplica({ policy: AUTO, replicas: REPLICAS })).toBe(false)
+        markContextWrote()
+      })
+      try {
+        expect(contextInTransaction()).toBe(false)
+        expect(shouldRouteToReplica({ policy: AUTO, replicas: REPLICAS })).toBe(true)
+        firstRelease.resolve()
+        await first
+        expect(contextInTransaction()).toBe(false)
+        secondRelease.resolve()
+        await second
+        expect(contextInTransaction()).toBe(false)
+        expect(contextHasWritten()).toBe(true)
+        expect(shouldRouteToReplica({ policy: AUTO, replicas: REPLICAS })).toBe(false)
+      }
+      finally {
+        firstRelease.resolve()
+        secondRelease.resolve()
+        await Promise.allSettled([first, second])
+      }
+    })
+  })
+
+  test('read-only overlapping scopes do not permanently disable replica routing', async () => {
+    await withRoutingContext(async () => {
+      const release = Promise.withResolvers<void>()
+      const first = withTransactionContext(async () => {})
+      const second = withTransactionContext(async () => { await release.promise })
+      await first
+      release.resolve()
+      await second
+      expect(contextInTransaction()).toBe(false)
+      expect(shouldRouteToReplica({ policy: AUTO, replicas: REPLICAS })).toBe(true)
+    })
+  })
+
   test('does not route inside a transaction', async () => {
     await withRoutingContext(async () => {
       expect(shouldRouteToReplica({ policy: AUTO, replicas: REPLICAS })).toBe(true)

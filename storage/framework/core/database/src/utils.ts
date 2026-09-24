@@ -872,14 +872,18 @@ function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
         if (owner) owner.transactions++
         if (parent) parent.nested = true
         try {
-          return await original(tx => runAttempt(async () => {
+          // Native SQL pool callbacks may enter from a connection's async
+          // context rather than this request's. Preserve routing and caller
+          // context explicitly, then establish the per-attempt scopes inside.
+          const runCallback = AsyncLocalStorage.bind((tx: RawQueryBuilder) => runAttempt(async () => {
             applyTransactionDispatchScope(tx)
             const scope: TransactionConnectionScope = { connection: tx, parent, active: true, nested: false }
             return transactionConnection.run(scope, async () => {
               try { return await callback(tx) }
               finally { scope.active = false }
             })
-          }), method === 'transaction' ? {
+          }))
+          return await original(runCallback, method === 'transaction' ? {
             ...options, afterCommit: undefined,
             onRollback: parentObserver(effectiveOptions.onRollback),
             afterRollback: parentObserver(effectiveOptions.afterRollback),

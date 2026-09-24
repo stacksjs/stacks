@@ -54,14 +54,12 @@ import type { ReadPolicyConfig, ReplicaConfig } from './driver-config'
 /**
  * Per-async-context routing state.
  *
- * `wroteInContext` implements rule 3. It is a mutable box rather than a
- * plain boolean because the flag is set *after* the store is established —
- * a write deep inside a request has to be visible to reads that happen
- * later in that same request, and `AsyncLocalStorage.getStore()` returns
- * the same object reference throughout.
+ * Writes are shared throughout a request, including sibling transactions.
+ * Transaction membership belongs to an individual async branch instead:
+ * one sibling finishing must not restore a flag another sibling still uses.
  */
 interface RoutingContext {
-  wroteInContext: boolean
+  writes: { occurred: boolean }
   inTransaction: boolean
 }
 
@@ -89,7 +87,7 @@ export function withDatabaseRoutingContext<T>(fn: () => T): T {
  */
 export function runInDatabaseRoutingContext<T, A>(fn: (arg: A) => T, arg: A): T {
   return databaseRoutingContextEnabled
-    ? routingContext.run({ wroteInContext: false, inTransaction: false }, fn, arg)
+    ? routingContext.run({ writes: { occurred: false }, inTransaction: false }, fn, arg)
     : fn(arg)
 }
 
@@ -103,39 +101,29 @@ export function runInDatabaseRoutingContext<T, A>(fn: (arg: A) => T, arg: A): T 
  * should use `db.read` explicitly if it wants a replica.
  */
 export function withRoutingContext<T>(fn: () => T): T {
-  return routingContext.run({ wroteInContext: false, inTransaction: false }, fn)
+  return routingContext.run({ writes: { occurred: false }, inTransaction: false }, fn)
 }
 
 /** Record that the current context has written, pinning its later reads. */
 export function markContextWrote(): void {
   const store = routingContext.getStore()
   if (store)
-    store.wroteInContext = true
+    store.writes.occurred = true
 }
 
 /**
- * Mark the current context as inside a transaction for the duration of
- * `fn`, restoring the previous value afterwards so nested transactions
- * unwind correctly.
+ * Enter an independent transaction branch while retaining the request's
+ * write pin. AsyncLocalStorage restores the caller without mutating a flag
+ * shared by overlapping transactions or unrelated reads in the same request.
  */
 export async function withTransactionContext<T>(fn: () => Promise<T>): Promise<T> {
-  const store = routingContext.getStore()
-  if (!store)
-    return routingContext.run({ wroteInContext: false, inTransaction: true }, fn)
-
-  const previous = store.inTransaction
-  store.inTransaction = true
-  try {
-    return await fn()
-  }
-  finally {
-    store.inTransaction = previous
-  }
+  const writes = routingContext.getStore()?.writes ?? { occurred: false }
+  return routingContext.run({ writes, inTransaction: true }, fn)
 }
 
 /** Whether the current async context has already issued a write. */
 export function contextHasWritten(): boolean {
-  return routingContext.getStore()?.wroteInContext ?? false
+  return routingContext.getStore()?.writes.occurred ?? false
 }
 
 /** Whether the current async context is inside a transaction. */
