@@ -8,7 +8,7 @@ import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
-import { detectInstaller, findCoreReferences, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
+import { detectInstaller, findCoreReferences, INSTALL_RETRY_DELAYS_MS, installWithRetry, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
 import { fetchPublishedVersions } from '../registry'
 import { ExitCode } from '@stacksjs/types'
 
@@ -1148,8 +1148,14 @@ async function unvendorFramework(force: boolean): Promise<void> {
 
   const installer = detectInstaller(process.cwd())
   log.info(`Installing the published packages with \`${installer.join(' ')}\`...`)
-  const install = Bun.spawn(installer, { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
-  const code = await install.exited
+  const code = await installWithRetry(
+    () => Bun.spawn(installer, { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' }).exited,
+    {
+      onRetry: (attempt, delayMs) => {
+        log.warn(`The install failed. A release published minutes ago can list versions npm cannot serve yet, so retrying in ${Math.round(delayMs / 1000)}s (attempt ${attempt} of ${INSTALL_RETRY_DELAYS_MS.length + 1})...`)
+      },
+    },
+  )
   if (code !== 0) {
     await log.error(`\`${installer.join(' ')}\` failed. package.json and bunfig.toml were updated; re-run the install once the failure is resolved.`)
     process.exit(ExitCode.FatalError)

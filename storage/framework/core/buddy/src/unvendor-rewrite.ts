@@ -91,6 +91,53 @@ export function detectInstaller(cwd: string): string[] {
 }
 
 /**
+ * How long to keep retrying an install that failed, between attempts.
+ *
+ * A release lists its new versions in the registry metadata before every
+ * tarball can be fetched: `@stacksjs/cms@0.74.61` was in the packument at
+ * 17:29 UTC and its tarball answered 404 until 17:36, while the Releaser was
+ * still publishing the rest of the set. A caret range resolves
+ * to the newest listed version, so an app scaffolded in that window fails its
+ * install on a version that exists and cannot be downloaded yet, and is left
+ * half converted. The Releaser's own smoke install already retries for this
+ * reason (`Verify published framework install`, 30 attempts); this gives
+ * `buddy new` the same tolerance: eight minutes of waiting in all, past the
+ * seven that window lasted.
+ */
+export const INSTALL_RETRY_DELAYS_MS = [15_000, 30_000, 60_000, 90_000, 120_000, 180_000]
+
+/**
+ * Run an install, retrying a failure after each of `delaysMs`.
+ *
+ * Every failure is treated as retryable: a registry 404, a reset connection
+ * and a real resolution error look identical from an exit code, and one more
+ * attempt costs a few seconds against a scaffold that would otherwise need
+ * finishing by hand. Returns the last exit code, so a real error still fails.
+ */
+export async function installWithRetry(
+  run: () => Promise<number>,
+  options: {
+    delaysMs?: number[]
+    sleep?: (ms: number) => Promise<void>
+    onRetry?: (attempt: number, delayMs: number) => void
+  } = {},
+): Promise<number> {
+  const delays = options.delaysMs ?? INSTALL_RETRY_DELAYS_MS
+  const sleep = options.sleep ?? ((ms: number) => Bun.sleep(ms))
+
+  let code = await run()
+  for (const [i, delay] of delays.entries()) {
+    if (code === 0)
+      break
+    options.onRetry?.(i + 2, delay)
+    await sleep(delay)
+    code = await run()
+  }
+
+  return code
+}
+
+/**
  * Repoint package manifests that remain under `storage/framework` after core
  * is removed. These directories are standalone build/runtime packages rather
  * than root workspace members, so walking only `package.json#workspaces`
