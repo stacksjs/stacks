@@ -71,6 +71,14 @@ try {
     const attempts = await Promise.all(Array.from({ length: 8 }, () => consumeMagicLink('synthetic-concurrent')))
     assert.equal(attempts.filter(result => result.ok).length, 1)
   })
+  await check('a link sent to a removed email no longer authenticates its old owner', async () => {
+    const raw = 'synthetic-removed-email'
+    await seed(raw)
+    await db.updateTable('users').set({ email: 'replacement@example.invalid' }).where('id', '=', 1).execute()
+    try { assert.equal((await consumeMagicLink(raw)).ok, false) }
+    finally { await db.updateTable('users').set({ email: 'magic@example.invalid' }).where('id', '=', 1).execute() }
+    assert.equal((await consumeMagicLink(raw)).ok, false, 'a rejected link stays single-use if the address is restored')
+  })
   await check('a link expiring during the claim cannot authenticate', async () => {
     await seed('synthetic-delayed-claim')
     let delayed = false

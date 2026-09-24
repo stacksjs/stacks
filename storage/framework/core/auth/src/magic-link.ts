@@ -219,12 +219,58 @@ async function deliverMagicLink(normalized: string, raw: string, ttl: number, si
  * Atomically consume a raw token. Exactly one caller can win a given token:
  * the claim is a conditional UPDATE on (unconsumed AND unexpired), so two
  * concurrent consumes resolve to one `ok` and one `used`.
+ * Use withMagicLink when issuing credentials so ownership remains locked
+ * through the issuance transaction, not just through this claim.
  */
 export async function consumeMagicLink(raw: string): Promise<ConsumeMagicLinkResult> {
+  const result = await withMagicLink(raw, async grant => grant)
+  return result.ok ? result.value : result
+}
+
+/**
+ * Claim a sign-in link and issue credentials under its current owner's lock.
+ * The callback must perform database work only. Failed issuance rolls back
+ * without reviving the single-use link; an enclosing rollback restores both.
+ */
+export async function withMagicLink<T>(
+  raw: string,
+  complete: (grant: Extract<ConsumeMagicLinkResult, { ok: true }>) => Promise<T>,
+): Promise<{ ok: true, value: T } | Extract<ConsumeMagicLinkResult, { ok: false }>> {
   if (!raw || raw.length > 255)
     return { ok: false, reason: 'invalid' }
 
   const hashed = hashToken(raw)
+  const pending = await db.primary.selectFrom('magic_link_tokens')
+    .where('token', '=', hashed).select(['user_id', 'consumed_at', 'expires_at']).executeTakeFirst()
+  if (!pending) return { ok: false, reason: 'invalid' }
+  // Reject unusable grants before taking the account lock. A replay must not
+  // wait behind an unrelated profile update; live grants are rechecked below.
+  if (pending.consumed_at != null) return { ok: false, reason: 'used' }
+  if ((parseSqlDateTime(pending.expires_at)?.getTime() ?? 0) <= Date.now())
+    return { ok: false, reason: 'expired' }
+
+  const outcome = await db.transaction(async () => {
+    // Same owner-first order as sending/replacing a link. Hold the row until
+    // credential issuance commits, not merely until its email was checked.
+    let ownerQuery = db.primary.selectFrom('users').where('id', '=', pending.user_id).select(['id', 'email'])
+    if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
+    const owner = pending.user_id == null ? undefined : await ownerQuery.executeTakeFirst()
+    const grant = await claimMagicLink(hashed)
+    if (!grant.ok) return { result: grant }
+    if (!owner || String(owner.id) !== String(grant.userId)
+      || String(owner.email).trim().toLowerCase() !== grant.email.trim().toLowerCase())
+      return { result: { ok: false as const, reason: 'no-user' as const } }
+    try {
+      const value = await db.transaction(() => complete(grant))
+      return { result: { ok: true as const, value } }
+    }
+    catch (error) { return { error } }
+  })
+  if ('error' in outcome) throw outcome.error
+  return outcome.result
+}
+
+async function claimMagicLink(hashed: string): Promise<ConsumeMagicLinkResult> {
   const now = sqlDateTime(new Date())
 
   const claim = await db
