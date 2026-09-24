@@ -1,4 +1,5 @@
 import type { StxOptions as UiOptions } from '@stacksjs/stx'
+import app from './app'
 
 /**
  * STX Configuration for Stacks
@@ -43,5 +44,22 @@ export default {
   // `buddy serve` alike, and to whatever the route manifest enumerates into
   // the sitemap.
   defaultViews: true,
+
+  // What stx falls back to for a page that writes no title or description of
+  // its own. Without these it is stx's own placeholders: "stx App" as the
+  // title of a page it wraps in a document, and "stx Project" / "A website
+  // built with stx templating engine" in every social-preview tag.
+  defaultTitle: app.name,
+  app: {
+    head: { title: app.name },
+  },
+  seo: {
+    enabled: true,
+    socialPreview: true,
+    defaultConfig: {
+      title: app.name,
+      description: app.description || app.name,
+    },
+  },
 // `plugins` landed in stx after the pinned @stacksjs/stx types — widen until the dep updates.
 } satisfies UiOptions & { plugins?: string[], defaultViews?: boolean | string[] }
