@@ -1,0 +1,64 @@
+<script server>
+/**
+ * The starter page `buddy new` gives every app, at `/`.
+ *
+ * Everything that names the site comes from the app's own config: the title
+ * from APP_NAME and the canonical URL from APP_URL (via config/app.ts), so a
+ * deploy of an untouched app describes itself rather than anyone else.
+ * Replace this file with your own homepage.
+ */
+import { config } from '@stacksjs/config'
+
+const appName = config.app.name || 'My App'
+
+// APP_URL is often a bare host (`my-app.localhost`), which is not a valid
+// canonical href on its own.
+const rawUrl = String(config.app.url || '').replace(/\/+$/, '')
+const siteUrl = rawUrl && !/^https?:\/\//.test(rawUrl) ? `https://${rawUrl}` : rawUrl
+const canonicalUrl = siteUrl ? `${siteUrl}/` : ''
+
+const pageDescription = `${appName} is up and running.`
+
+const nextSteps = [
+  { icon: 'i-hugeicons-file-edit', title: 'Edit this page', path: 'resources/views/index.stx' },
+  { icon: 'i-hugeicons-database-01', title: 'Define a model', path: 'app/Models' },
+  { icon: 'i-hugeicons-route-01', title: 'Add an API route', path: 'routes/api.ts' },
+  { icon: 'i-hugeicons-settings-02', title: 'Configure the app', path: 'config/app.ts' },
+]
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ appName }}</title>
+    <meta name="description" content="{{ pageDescription }}">
+    @if(canonicalUrl)
+      <link rel="canonical" href="{{ canonicalUrl }}">
+    @endif
+  </head>
+  <body class="min-h-screen bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
+    <main class="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
+      <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">Your app is running</p>
+      <h1 class="mt-2 text-4xl font-semibold tracking-tight">{{ appName }}</h1>
+      <p class="mt-4 text-neutral-600 dark:text-neutral-300">
+        Start with <code class="rounded bg-neutral-200 px-1.5 py-0.5 text-sm dark:bg-neutral-800">./buddy dev</code>, then make it yours.
+      </p>
+
+      <ul class="mt-10 divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+        @foreach(nextSteps as step)
+          <li class="flex items-center gap-4 py-4">
+            <span class="{{ step.icon }} size-5 text-neutral-500 dark:text-neutral-400" aria-hidden="true"></span>
+            <span class="font-medium">{{ step.title }}</span>
+            <code class="ml-auto text-sm text-neutral-500 dark:text-neutral-400">{{ step.path }}</code>
+          </li>
+        @endforeach
+      </ul>
+
+      <p class="mt-10 text-sm text-neutral-500 dark:text-neutral-400">
+        <a class="underline underline-offset-4 hover:text-neutral-900 dark:hover:text-neutral-100" href="https://stacksjs.com/docs">Read the Stacks docs</a>
+      </p>
+    </main>
+  </body>
+</html>

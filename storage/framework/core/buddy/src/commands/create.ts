@@ -10,6 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 import { resultFailed } from '../result'
+import { applyAppSiteTemplate } from '../scaffold-site'
 import { fetchPublishedVersions } from '../registry'
 
 interface NewOptions extends CreateOptions {
@@ -80,6 +81,7 @@ export function create(buddy: CLI): void {
   ensureExecutableScripts(path)
   applyAppVcsTemplate(path)
   applyAppConfigTemplate(path)
+  replaceFrameworkSite(path)
   removeFrameworkTests(path)
   await ensureEnv(path, options)
 
@@ -343,6 +345,31 @@ function applyAppConfigTemplate(path: string) {
   }
   catch (error) {
     log.warn(`Could not install the app config template: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Swap stacksjs.com for a neutral starter page.
+ *
+ * Same root as the two templates above: the download IS this repository, and
+ * its `resources/` and `public/` are the stacksjs.com marketing site. An app
+ * deployed untouched served a canonical URL and an Organization graph for
+ * stacksjs.com, and every new app had ~3MB of its brand fonts and park art to
+ * delete by hand (found scaffolding marioadrion). `SITE_ONLY_PATHS` in
+ * `../scaffold-site` says what goes; `scaffold-site.test.ts` holds it to the
+ * repository's real tree.
+ *
+ * Runs before unvendoring because the starter lives under the defaults tree.
+ */
+function replaceFrameworkSite(path: string) {
+  log.info('Replacing the stacksjs.com site with a starter page...')
+
+  try {
+    const removed = applyAppSiteTemplate(path)
+    log.success(`Starter page installed (${removed.length} stacksjs.com path${removed.length === 1 ? '' : 's'} removed)`)
+  }
+  catch (error) {
+    log.warn(`Could not install the starter page: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
