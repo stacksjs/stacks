@@ -353,7 +353,9 @@ export async function revokeTwoFactorChallenges(userId: number): Promise<void> {
     })
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
+    // Native SQL errors may be plain records rather than Error instances.
+    const message = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+      ? error.message : String(error)
     // An installation without this table cannot redeem a challenge. Do not
     // hide a failed DELETE caused by a missing trigger dependency instead.
     if (/^(?:no such table: (?:main\.)?two_factor_challenges|relation "two_factor_challenges" does not exist|Table '(?:[^'.]+\.)?two_factor_challenges' doesn't exist)$/i.test(message))

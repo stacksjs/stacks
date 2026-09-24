@@ -13,7 +13,10 @@ export async function revokeMagicLinks(userId: number): Promise<void> {
     })
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
+    // Bun's SQL driver can reject with a plain error record, not an Error
+    // instance. Keep the exact table match below for both representations.
+    const message = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+      ? error.message : String(error)
     if (/^(?:no such table: (?:main\.)?magic_link_tokens|relation "magic_link_tokens" does not exist|Table '(?:[^'.]+\.)?magic_link_tokens' doesn't exist)$/i.test(message))
       return
     throw error
