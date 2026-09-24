@@ -25,7 +25,7 @@
  * from the migrator.
  */
 
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, beforeEach, describe, expect, setSystemTime, test } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -38,7 +38,8 @@ process.env.DB_DATABASE_PATH = DB_PATH
 process.env.APP_ENV = 'testing'
 
 const { configureOrm } = await import('bun-query-builder')
-const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { config } = await import('@stacksjs/config')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig, parseSqlDateTime } = await import('@stacksjs/database')
 const { ensureFrameworkAuthTables } = await import('./helpers/auth-schema')
 const { makeHash } = await import('@stacksjs/security')
 const { authCookieName } = await import('../src/cookie')
@@ -81,8 +82,8 @@ async function forceConfig(): Promise<void> {
 }
 
 /** The request shape an action's `handle()` actually touches: `get(key)`. */
-function loginRequest(email: string, password: string): any {
-  const fields: Record<string, string> = { email, password }
+function loginRequest(email: string, password: string, remember?: unknown): any {
+  const fields: Record<string, unknown> = { email, password, remember }
   return {
     get: (key: string) => fields[key],
     all: () => ({ ...fields }),
@@ -212,6 +213,44 @@ describe('POST /login sets the auth cookie (#2306)', () => {
     expect(body.token_type).toBe('Bearer')
     // The legacy field still shadows the access token for un-updated clients.
     expect(body.token).toBe(body.access_token)
+  })
+
+  test.each([
+    { remember: false, expectedSeconds: 120 },
+    { remember: 'on', expectedSeconds: 300 },
+  ])('binds the $expectedSeconds second token and cookie lifetime to remember=$remember', async ({ remember, expectedSeconds }) => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = {
+      baselineLifetime: 2 * 60 * 1000,
+      rememberedLifetime: 5 * 60 * 1000,
+      withRefreshToken: false,
+    }
+    const issuedAt = new Date('2030-01-02T03:04:05.000Z')
+    setSystemTime(issuedAt)
+
+    try {
+      const res = await LoginAction.handle(loginRequest(EMAIL, PASSWORD, remember)) as Response
+      const body = await res.json() as Record<string, unknown>
+      const cookie = authCookieFrom(res)
+      const tokenRow = await db.selectFrom('oauth_access_tokens')
+        .select(['id', 'expires_at'])
+        .orderBy('id', 'desc')
+        .executeTakeFirstOrThrow()
+      const refreshRow = await db.selectFrom('oauth_refresh_tokens')
+        .select('id')
+        .where('access_token_id', '=', tokenRow.id)
+        .executeTakeFirst()
+
+      expect(body.expires_in).toBe(expectedSeconds)
+      expect(body).not.toHaveProperty('refresh_token')
+      expect(cookie).toContain(`Max-Age=${expectedSeconds}`)
+      expect(refreshRow).toBeUndefined()
+      expect(parseSqlDateTime(tokenRow.expires_at)?.getTime()).toBe(issuedAt.getTime() + expectedSeconds * 1000)
+    }
+    finally {
+      setSystemTime()
+      config.auth.browserSession = originalPolicy
+    }
   })
 
   test('a wrong password sets no cookie at all', async () => {

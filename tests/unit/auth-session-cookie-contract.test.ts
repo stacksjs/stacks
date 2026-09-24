@@ -35,7 +35,7 @@ const SESSION_ISSUING = [
 
 describe('auth session cookie contract (#2306)', () => {
   test.each(SESSION_ISSUING)('%s sets the auth cookie', (name) => {
-    expect(action(name)).toMatch(/authCookie\(/)
+    expect(action(name)).toMatch(/authCookie(?:ForBrowserSession)?\(/)
   })
 
   test('the 2FA path is covered, not just the password path', () => {

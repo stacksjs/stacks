@@ -23,7 +23,7 @@ describe('TOTP login-challenge wiring', () => {
     expect(source).toMatch(/createTwoFactorChallenge\(authedUser\.id as number\)/)
     expect(source).toMatch(/requires_two_factor: true/)
     // Tokens only get minted via loginUsingId, on the non-2FA path.
-    expect(source).toMatch(/Auth\.loginUsingId\(authedUser\.id as number\)/)
+    expect(source).toMatch(/Auth\.loginUsingId\(authedUser\.id as number(?:,|\))/)
   })
 
   test('VerifyTwoFactorLoginAction consumes the challenge once and verifies the code before minting tokens', () => {

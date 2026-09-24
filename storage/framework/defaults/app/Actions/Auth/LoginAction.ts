@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, authCookie, createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/auth'
+import { Auth, authCookieForBrowserSession, createTwoFactorChallenge, getTwoFactorState, resolveBrowserSessionPolicy } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 import { PASSWORD_MAX_LENGTH, PASSWORD_PRESENCE_MESSAGE } from '../../password-policy'
@@ -28,6 +28,7 @@ export default new Action({
   async handle(request: RequestInstance) {
     const email = request.get('email')
     const password = request.get('password')
+    const remember = request.get('remember')
 
     // Verify once, then keep the observed password version locked while
     // choosing and issuing the challenge or token. A completed password reset
@@ -37,7 +38,14 @@ export default new Action({
       if (twoFactorEnabled) {
         return { kind: 'challenge' as const, token: await createTwoFactorChallenge(authedUser.id as number) }
       }
-      return { kind: 'login' as const, result: await Auth.loginUsingId(authedUser.id as number) }
+      const policy = resolveBrowserSessionPolicy(remember)
+      return {
+        kind: 'login' as const,
+        result: await Auth.loginUsingId(authedUser.id as number, {
+          expiresInMinutes: policy.expiresInMinutes,
+          withRefreshToken: policy.withRefreshToken,
+        }),
+      }
     })
     if (!decision)
       return response.unauthorized('Incorrect email or password')
@@ -84,6 +92,6 @@ export default new Action({
         email: user?.email,
         name: user?.name,
       },
-    }, { headers: { 'Set-Cookie': authCookie(result.token) } })
+    }, { headers: { 'Set-Cookie': authCookieForBrowserSession(result.token, result.expiresIn) } })
   },
 })
