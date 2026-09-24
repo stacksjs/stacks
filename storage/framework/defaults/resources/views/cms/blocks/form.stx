@@ -2,7 +2,8 @@
   Form block: renders a @stacksjs/forms form inline on a CMS page.
   `props.formUuid` names the form; the client script fetches the public
   definition (same-origin), renders the fields, evaluates conditions live,
-  and submits with the CSRF header the page response seeded.
+  and submits through useMutation, which repeats the page's CSRF cookie in
+  the header the submit route checks.
 --}}
 <div class="cms-form mx-auto max-w-xl px-6 py-8" data-form-uuid="{{ props.formUuid }}">
   <script client>
@@ -84,24 +85,24 @@
       payload.append('field', field.name)
       payload.append('file', file)
 
-      const reply = await fetch(`/api/forms/${uuid}/uploads`, {
-        method: 'POST',
-        credentials: 'same-origin',
-        body: payload,
-      })
-      const body = await reply.json().catch(() => ({}))
-
-      if (!reply.ok) {
+      // Through the data layer rather than a bare fetch(): it is what echoes
+      // the CSRF cookie the submit routes require, and it passes FormData
+      // through untouched.
+      let body: { path?: string }
+      try {
+        body = await useMutation(`/api/forms/${uuid}/uploads`).mutate(payload)
+      }
+      catch (failure) {
         // Clear the input as well as the value: leaving a rejected file
         // showing next to its own error message reads as though it was taken.
         input.value = ''
         delete values[field.name]
         delete attached[field.name]
-        errors.set({ ...errors(), [field.name]: body.message ?? 'That file could not be uploaded.' })
+        errors.set({ ...errors(), [field.name]: (failure as { data?: { message?: string } }).data?.message ?? 'That file could not be uploaded.' })
         return
       }
 
-      values[field.name] = body.path
+      values[field.name] = body.path ?? ''
       attached[field.name] = file.name
     }
     catch {
@@ -144,20 +145,19 @@
 
     try {
       const uuid = host()?.dataset.formUuid
-      const reply = await fetch(`/api/forms/${uuid}/submissions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ ...values, _renderedMs: Date.now() - openedAt }),
-      })
-      const body = await reply.json().catch(() => ({}))
-
-      if (reply.status === 422) {
-        errors.set(body.errors ?? {})
-        return
+      // useMutation, not fetch(): the submit route is CSRF-protected and the
+      // data layer is what repeats the cookie in the header. A bare fetch got
+      // 403 "CSRF token mismatch" on every submission.
+      let body: { message?: string, redirect?: string }
+      try {
+        body = await useMutation(`/api/forms/${uuid}/submissions`).mutate({ ...values, _renderedMs: Date.now() - openedAt })
       }
-      if (!reply.ok) {
-        errors.set({ _form: body.message ?? 'Something went wrong. Please try again.' })
+      catch (failure) {
+        const { status, data } = failure as { status?: number, data?: { errors?: FormErrors, message?: string } }
+        if (status === 422)
+          errors.set(data?.errors ?? {})
+        else
+          errors.set({ _form: data?.message ?? 'Something went wrong. Please try again.' })
         return
       }
       if (body.redirect) {
