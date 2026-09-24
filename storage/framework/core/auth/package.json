@@ -2,7 +2,7 @@
   "name": "@stacksjs/auth",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.59",
+  "version": "0.74.60",
   "description": "A more simplistic way to authenticate.",
   "author": "Chris Breuer",
   "contributors": [

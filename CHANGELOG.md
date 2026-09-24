@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.59...v0.74.60)
+
+## ✨ Features
+
+- **auth**: support browser logout redirects ([981fdc5](https://github.com/stacksjs/stacks/commit/981fdc5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: rotate an existing mailbox's password to the declared one ([82bb040](https://github.com/stacksjs/stacks/commit/82bb040)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.58...v0.74.59)
 
 ## ✨ Features
