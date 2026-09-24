@@ -78,6 +78,20 @@ export default {
   },
 
   /**
+   * Browser cookie attributes shared by issuance and logout.
+   *
+   * Leave `maxAge` unset for framework browser sessions: their actual issued
+   * token lifetime is authoritative. `secure` also defaults from APP_URL.
+   */
+  cookie: {
+    name: 'auth-token',
+    path: '/',
+    sameSite: 'Lax',
+    // domain: '.example.com',
+    // secure: true,
+  },
+
+  /**
    * The token rotation time in hours (default: 24 hours).
    */
   tokenRotation: env.AUTH_TOKEN_ROTATION || 24,

@@ -57,6 +57,10 @@ export default {
   // The browser cookie that carries an access token.
   cookie: {
     name: 'auth-token',
+    path: '/',
+    sameSite: 'Lax',
+    // domain: '.example.com',
+    // secure: true, // defaults from the configured app URL
   },
   tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
   tokenRotation: 24, // Rotate after 24 hours
@@ -746,10 +750,12 @@ return new Response(null, {
 ```
 
 The cookie is `HttpOnly` (no page script needs it), `SameSite=Lax` (a link from
-an email arrives signed in, a cross-site POST does not) and `Secure` everywhere
-except local development. It carries a real token, so it is revocable through
-the usual token calls and survives a restart. Sign out with
-`clearAuthCookie()`.
+an email arrives signed in, a cross-site POST does not) and `Secure` unless the
+configured app URL is a plain-HTTP loopback host. Configure its name, path,
+domain, SameSite, or explicit Secure override through `config.auth.cookie`.
+Issuance and `clearAuthCookie()` share those attributes, so logout removes the
+same cookie. It carries a real token, so it is revocable through the usual token
+calls and survives a restart.
 
 The Auth middleware reads it automatically — bearer header first, then this
 cookie. `authCookieName()` is the single resolver both sides use, so the name

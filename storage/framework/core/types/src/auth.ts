@@ -16,11 +16,11 @@ export interface AuthCookieConfig {
   path?: string
   /** Domain, for sharing one session across subdomains. */
   domain?: string
-  /** Lifetime in seconds. Defaults to `tokenExpiry`, so cookie and token die together. */
+  /** Lifetime in seconds when issuance does not provide one. Browser sessions use their actual issued token lifetime. */
   maxAge?: number
   /**
-   * Send only over HTTPS. Defaults to true outside local development, where
-   * the dev server is plain HTTP and a Secure cookie would never be stored.
+   * Send only over HTTPS. Defaults from the configured app URL: HTTPS and
+   * non-loopback hosts are secure, while plain-HTTP loopback development is not.
    */
   secure?: boolean
   /** @default 'Lax' — a link from an email arrives signed in; a cross-site POST does not. */

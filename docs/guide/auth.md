@@ -92,10 +92,12 @@ not a replacement for CSRF validation.
 `POST /logout` revokes the server credential before clearing the cookie. JSON
 clients keep receiving JSON. An HTML form receives the configured local
 `logoutRedirect`; external and protocol-relative destinations are rejected.
-Set `config.auth.cookie.name` to rename the cookie. The cookie serializer's
-options control path, domain, SameSite, and an explicit Secure override.
+Configure `config.auth.cookie` to set the cookie name, path, domain, SameSite,
+or an explicit Secure override. Issuance and logout use the same configured
+identity attributes, so clearing removes the cookie the browser received.
 Without overrides it uses Path `/`, SameSite `Lax`, an app-URL-derived Secure
-flag, and unconditional HttpOnly.
+flag, and unconditional HttpOnly. Framework browser sessions always override a
+configured `maxAge` with the lifetime of the token that was actually issued.
 
 After upgrading an app that copied the default login, registration, two-factor,
 logout actions, or cookie serializer, remove only those framework-equivalent
