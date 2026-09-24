@@ -14,7 +14,7 @@ else {
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(process.env.DB_HOST!))
   assert(process.env.DB_PORT && !['5432', '3306'].includes(process.env.DB_PORT))
 }
-const { overridesReady } = await import('@stacksjs/config')
+const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, sqlDateTime } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
@@ -99,6 +99,37 @@ try {
     const pack = await result.json() as { access_token: string }
     assert(await findToken(pack.access_token))
     assert.equal((await verify(challenge.challenge_token)).status, 401)
+  })
+  await check('remembered fixed policy survives password and second-factor steps', async () => {
+    const originalPolicy = config.auth.browserSession
+    config.auth.browserSession = {
+      baselineLifetime: 120_000,
+      rememberedLifetime: 300_000,
+      withRefreshToken: false,
+    }
+    try {
+      const fields: Record<string, unknown> = { email: email(1), password: oldPassword, remember: 'on' }
+      const login = await LoginAction.handle({ get: (key: string) => fields[key] } as never) as Response
+      assert.equal(login.status, 200)
+      assert.equal(login.headers.get('Set-Cookie'), null, 'password step must not issue a session before TOTP')
+      const challenge = await login.json() as { challenge_token: string, requires_two_factor: boolean }
+      assert.equal(challenge.requires_two_factor, true)
+
+      const completed = await verify(challenge.challenge_token)
+      assert.equal(completed.status, 200)
+      const pack = await completed.json() as { access_token: string, expires_in: number, refresh_token?: string }
+      const cookie = completed.headers.get('Set-Cookie')
+      const stored = await findToken(pack.access_token)
+      const remaining = Math.floor(((stored?.expiresAt?.getTime() ?? 0) - Date.now()) / 1000)
+
+      assert(pack.expires_in >= 298 && pack.expires_in <= 300)
+      assert.equal(pack.refresh_token, undefined)
+      assert(cookie?.includes(`Max-Age=${pack.expires_in}`))
+      assert(stored)
+      assert(Math.abs(remaining - pack.expires_in) <= 1)
+      assert.equal((await db.primary.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', stored.id).select('id').execute()).length, 0)
+    }
+    finally { config.auth.browserSession = originalPolicy }
   })
   await check('an outer rollback preserves the password, recovery link and pending challenge', async () => {
     const challenge = await createTwoFactorChallenge(1)

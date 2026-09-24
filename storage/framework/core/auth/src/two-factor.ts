@@ -39,6 +39,19 @@ import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyT
 import { RateLimiter } from './rate-limiter'
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
+const BASELINE_CHALLENGE_PREFIX = 'baseline.'
+const REMEMBERED_CHALLENGE_PREFIX = 'remembered.'
+
+export interface TwoFactorChallengeOptions {
+  /** Challenge lifetime in seconds. */
+  ttlSeconds?: number
+  /** Remember tier selected after password verification. */
+  remembered?: boolean
+}
+
+export interface TwoFactorChallengeContext {
+  remembered: boolean
+}
 
 function challengeExpiry(ttlSeconds: number): string {
   const deadline = new Date(Date.now() + ttlSeconds * 1000)
@@ -261,8 +274,10 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
  * an opaque random id instead of (user_id, purpose) since a user can
  * only have one login attempt in flight that matters here.
  */
-export async function createTwoFactorChallenge(userId: number, ttlSeconds: number = DEFAULT_CHALLENGE_TTL_SECONDS): Promise<string> {
-  const id = randomBytes(32).toString('hex')
+export async function createTwoFactorChallenge(userId: number, options: number | TwoFactorChallengeOptions = {}): Promise<string> {
+  const ttlSeconds = typeof options === 'number' ? options : options.ttlSeconds ?? DEFAULT_CHALLENGE_TTL_SECONDS
+  const remembered = typeof options === 'object' && options.remembered === true
+  const id = `${remembered ? REMEMBERED_CHALLENGE_PREFIX : BASELINE_CHALLENGE_PREFIX}${randomBytes(32).toString('hex')}`
   const expiresAt = challengeExpiry(ttlSeconds)
 
   await db.transaction(async () => {
@@ -315,7 +330,10 @@ export async function consumeTwoFactorChallenge(challengeToken: string): Promise
  * A reset either revokes this challenge first or revokes the issued tokens
  * afterward. It cannot commit between the second factor and token issuance.
  */
-export async function withTwoFactorChallenge<T>(challengeToken: string, complete: (userId: number) => Promise<T>): Promise<T | null> {
+export async function withTwoFactorChallenge<T>(
+  challengeToken: string,
+  complete: (userId: number, context: TwoFactorChallengeContext) => Promise<T>,
+): Promise<T | null> {
   const pending = await db.primary.selectFrom('two_factor_challenges')
     .where('id', '=', challengeToken).select('user_id').executeTakeFirst()
   if (!pending) return null
@@ -332,7 +350,7 @@ export async function withTwoFactorChallenge<T>(challengeToken: string, complete
       // Roll back incomplete issuance without reviving the single-use grant.
       // The outer transaction commits consumption even when verification or
       // issuance throws, matching the existing delete-before-verify contract.
-      return { value: await db.transaction(() => complete(userId)) }
+      return { value: await db.transaction(() => complete(userId, { remembered: challengeToken.startsWith(REMEMBERED_CHALLENGE_PREFIX) })) }
     }
     catch (error) { return { error } }
   })

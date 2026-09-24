@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, authCookie, verifyTwoFactorLoginCode, withTwoFactorChallenge } from '@stacksjs/auth'
+import { Auth, authCookieForBrowserSession, resolveBrowserSessionPolicy, verifyTwoFactorLoginCode, withTwoFactorChallenge } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
@@ -27,9 +27,13 @@ export default new Action({
     // (whether the code was right or wrong) must start over from
     // LoginAction, not retry — mirrors the WebAuthn challenge
     // delete-on-read semantics in passkey.ts (stacksjs/stacks#1866).
-    const result = await withTwoFactorChallenge(challengeToken, async (userId) => {
+    const result = await withTwoFactorChallenge(challengeToken, async (userId, challenge) => {
       if (!await verifyTwoFactorLoginCode(userId, code)) return null
-      return Auth.loginUsingId(userId)
+      const policy = resolveBrowserSessionPolicy(challenge.remembered)
+      return Auth.loginUsingId(userId, {
+        expiresInMinutes: policy.expiresInMinutes,
+        withRefreshToken: policy.withRefreshToken,
+      })
     })
     if (!result)
       return response.unauthorized('Invalid or expired login attempt. Please sign in again.')
@@ -51,6 +55,6 @@ export default new Action({
         email: user?.email,
         name: user?.name,
       },
-    }, { headers: { 'Set-Cookie': authCookie(result.token) } })
+    }, { headers: { 'Set-Cookie': authCookieForBrowserSession(result.token, result.expiresIn) } })
   },
 })

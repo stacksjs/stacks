@@ -20,7 +20,7 @@ describe('TOTP login-challenge wiring', () => {
     expect(source).toMatch(/await Auth\.withVerifiedCredentials\(\{ email, password \}, async \(authedUser\)/)
     expect(source).not.toMatch(/User\.where/)
     expect(source).toMatch(/getTwoFactorState\(authedUser\.id as number\)/)
-    expect(source).toMatch(/createTwoFactorChallenge\(authedUser\.id as number\)/)
+    expect(source).toMatch(/createTwoFactorChallenge\(authedUser\.id as number(?:,|\))/)
     expect(source).toMatch(/requires_two_factor: true/)
     // Tokens only get minted via loginUsingId, on the non-2FA path.
     expect(source).toMatch(/Auth\.loginUsingId\(authedUser\.id as number(?:,|\))/)
@@ -28,9 +28,9 @@ describe('TOTP login-challenge wiring', () => {
 
   test('VerifyTwoFactorLoginAction consumes the challenge once and verifies the code before minting tokens', () => {
     const source = readFileSync(resolve(DEFAULTS_ROOT, 'app/Actions/Auth/VerifyTwoFactorLoginAction.ts'), 'utf-8')
-    expect(source).toMatch(/withTwoFactorChallenge\(challengeToken, async \(userId\)/)
+    expect(source).toMatch(/withTwoFactorChallenge\(challengeToken, async \(userId, challenge\)/)
     expect(source).toMatch(/verifyTwoFactorLoginCode\(userId, code\)/)
-    expect(source).toMatch(/Auth\.loginUsingId\(userId\)/)
+    expect(source).toMatch(/Auth\.loginUsingId\(userId, /)
   })
 
   test('setup Actions never trust a client-supplied secret', () => {

@@ -25,7 +25,7 @@ process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = DB_PATH
 process.env.APP_ENV = 'testing'
 
-const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig, sqlDateTime } = await import('@stacksjs/database')
 const {
   consumePendingTwoFactorSecret,
   consumeTwoFactorChallenge,
@@ -36,6 +36,7 @@ const {
   getTwoFactorState,
   stashPendingTwoFactorSecret,
   verifyTwoFactorLoginCode,
+  withTwoFactorChallenge,
 } = await import('../src/two-factor')
 const { generateTwoFactorToken, twoFactorQrCode } = await import('../src/authenticator')
 
@@ -260,5 +261,39 @@ describe('login challenge (bridges LoginAction -> VerifyTwoFactorLoginAction)', 
 
   test('consuming an unknown token returns null', async () => {
     expect(await consumeTwoFactorChallenge('not-a-real-token')).toBeNull()
+  })
+
+  test('persists the remembered tier through the single-use challenge', async () => {
+    const userId = await seedUser('challenge-remembered@example.com')
+    const token = await createTwoFactorChallenge(userId, { remembered: true })
+
+    const result = await withTwoFactorChallenge(token, async (claimedUserId, context) => ({
+      userId: claimedUserId,
+      remembered: context.remembered,
+    }))
+
+    expect(result).toEqual({ userId, remembered: true })
+    expect(await withTwoFactorChallenge(token, async () => true)).toBeNull()
+  })
+
+  test('rejects tier tampering without consuming the original challenge', async () => {
+    const userId = await seedUser('challenge-tier-tamper@example.com')
+    const token = await createTwoFactorChallenge(userId, { remembered: true })
+    const tampered = token.replace('remembered.', 'baseline.')
+
+    expect(await withTwoFactorChallenge(tampered, async () => true)).toBeNull()
+    expect(await withTwoFactorChallenge(token, async (_claimedUserId, context) => context.remembered)).toBe(true)
+  })
+
+  test('treats pre-policy challenge tokens as baseline sessions during rolling upgrades', async () => {
+    const userId = await seedUser('challenge-legacy-tier@example.com')
+    const token = 'a'.repeat(64)
+    await db.insertInto('two_factor_challenges').values({
+      id: token,
+      user_id: userId,
+      expires_at: sqlDateTime(new Date(Date.now() + 60_000)),
+    }).execute()
+
+    expect(await withTwoFactorChallenge(token, async (_claimedUserId, context) => context.remembered)).toBe(false)
   })
 })

@@ -35,10 +35,13 @@ export default new Action({
     // cannot be followed by this old in-flight login minting fresh access.
     const decision = await Auth.withVerifiedCredentials({ email, password }, async (authedUser) => {
       const { enabled: twoFactorEnabled } = await getTwoFactorState(authedUser.id as number)
-      if (twoFactorEnabled) {
-        return { kind: 'challenge' as const, token: await createTwoFactorChallenge(authedUser.id as number) }
-      }
       const policy = resolveBrowserSessionPolicy(remember)
+      if (twoFactorEnabled) {
+        return {
+          kind: 'challenge' as const,
+          token: await createTwoFactorChallenge(authedUser.id as number, { remembered: policy.remembered }),
+        }
+      }
       return {
         kind: 'login' as const,
         result: await Auth.loginUsingId(authedUser.id as number, {

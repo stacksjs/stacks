@@ -44,7 +44,7 @@ describe('auth session cookie contract (#2306)', () => {
     // exactly where they started.
     const login = action('LoginAction')
     expect(login).toContain('requires_two_factor: true')
-    expect(action('VerifyTwoFactorLoginAction')).toMatch(/authCookie\(/)
+    expect(action('VerifyTwoFactorLoginAction')).toMatch(/authCookie(?:ForBrowserSession)?\(/)
   })
 
   test('rotation re-sets the cookie so it cannot go stale', () => {
