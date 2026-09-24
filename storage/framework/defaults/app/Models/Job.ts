@@ -28,6 +28,11 @@ export default defineModel({
 
     payload: {
       fillable: true,
+      // `text`, not the default varchar(255): a job's serialized envelope is
+      // far longer, and on Postgres every dispatch failed with "value too long
+      // for type character varying(255)". SQLite ignores the length, which is
+      // how it went unnoticed.
+      type: 'text',
       validation: {
         rule: schema.string().required(),
       },

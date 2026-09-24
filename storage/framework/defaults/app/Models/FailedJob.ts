@@ -36,8 +36,12 @@ export default defineModel({
       factory: () => 'default',
     },
 
+    // Both `text`: a payload is a serialized job envelope and an exception
+    // carries a stack trace, and neither fits the default varchar(255) that
+    // Postgres enforces.
     payload: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string().required(),
       },
@@ -46,6 +50,7 @@ export default defineModel({
 
     exception: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string().required(),
       },
