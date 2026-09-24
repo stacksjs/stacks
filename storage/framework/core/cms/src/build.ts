@@ -747,7 +747,6 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     </a>
     <nav>
       <a href="/">Posts</a>
-      <a href="https://stacksjs.com/docs">Docs</a>
       ${config.enableRss ? '<a href="/feed.xml">RSS</a>' : ''}
       ${config.social.github ? `<a href="https://github.com/${config.social.github}" target="_blank" rel="noopener">GitHub</a>` : ''}
     </nav>
@@ -762,14 +761,19 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
 </html>`
 }
 
-function generateNewsletterCapture(source = 'blog-static'): string {
-  return `<section id="newsletter" class="newsletter-card" aria-label="Subscribe to Stacks updates">
+/**
+ * Posts to the app's own subscribe endpoint. It used to post to
+ * stacksjs.com's, so every app's blog signed its readers up to the framework's
+ * mailing list under copy that said so.
+ */
+function generateNewsletterCapture(config: BlogConfig, source = 'blog-static'): string {
+  return `<section id="newsletter" class="newsletter-card" aria-label="Subscribe by email">
       <div class="newsletter-content">
-        <div class="newsletter-eyebrow">Trail dispatch</div>
-        <h2>Get new Stacks notes by email</h2>
-        <p>Short framework updates, release notes, and field guides for building with Stacks.</p>
+        <div class="newsletter-eyebrow">Newsletter</div>
+        <h2>Get new posts by email</h2>
+        <p>New posts from ${escapeHtml(config.title)}, sent when they are published.</p>
       </div>
-      <form class="newsletter-form" action="https://stacksjs.com/api/email/subscribe" method="POST">
+      <form class="newsletter-form" action="/api/email/subscribe" method="POST">
         <input type="hidden" name="source" value="${escapeHtml(source)}">
         <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
         <button type="submit">Subscribe</button>
@@ -777,10 +781,10 @@ function generateNewsletterCapture(source = 'blog-static'): string {
     </section>`
 }
 
-function generatePostCard(post: PostRow, author?: AuthorRow): string {
+function generatePostCard(post: PostRow, config: BlogConfig, author?: AuthorRow): string {
   const slug = getSlug(post)
   const date = post.published_at ? formatDate(post.published_at) : ''
-  const authorName = author?.name || 'Stacks Team'
+  const authorName = author?.name || config.author || ''
   const rawExcerpt = post.excerpt || (post.body || post.content || '').slice(0, 220)
   const excerpt = rawExcerpt.replace(/[#*`\[\]]/g, '').trim()
   const featured = post.is_featured ? '<span class="featured-badge">Featured</span>' : ''
@@ -803,7 +807,7 @@ function generatePostCard(post: PostRow, author?: AuthorRow): string {
 function generatePostPage(post: PostRow, config: BlogConfig, author?: AuthorRow): string {
   const date = post.published_at ? formatDate(post.published_at) : ''
   const bodyContent = post.body || post.content || ''
-  const authorName = author?.name || 'Stacks Team'
+  const authorName = author?.name || config.author || ''
   const readTime = estimateReadingTime(bodyContent)
 
   const authorHtml = author
@@ -858,7 +862,7 @@ function generatePostPage(post: PostRow, config: BlogConfig, author?: AuthorRow)
 function generateIndexPage(posts: PostRow[], config: BlogConfig, authors: Map<number, AuthorRow>, page: number, totalPages: number): string {
   const postCards = posts.map(post => {
     const author = post.author_id ? authors.get(post.author_id) : undefined
-    return generatePostCard(post, author)
+    return generatePostCard(post, config, author)
   }).join('\n')
 
   let pagination = ''
@@ -885,24 +889,26 @@ function generateIndexPage(posts: PostRow[], config: BlogConfig, authors: Map<nu
 
   const content = `
     ${hero}
-    ${page === 1 ? generateNewsletterCapture() : ''}
-    <ul class="post-list">
+    ${page === 1 ? generateNewsletterCapture(config) : ''}
+    ${posts.length > 0
+      ? `<ul class="post-list">
       ${postCards}
-    </ul>
+    </ul>`
+      : '<p class="post-excerpt">No posts yet.</p>'}
     ${pagination}`
 
   return generateLayout(config, config.title, content)
 }
 
-function generateRssFeed(posts: PostRow[], config: BlogConfig, domain: string): string {
+function generateRssFeed(posts: PostRow[], config: BlogConfig, origin: string): string {
   const items = posts.map(post => {
     const slug = getSlug(post)
     const pubDate = post.published_at ? formatRssDate(post.published_at) : ''
     const description = post.excerpt || (post.body || post.content || '').slice(0, 300)
     return `  <item>
     <title>${escapeXml(post.title)}</title>
-    <link>https://${domain}/posts/${escapeXml(slug)}/</link>
-    <guid>https://${domain}/posts/${escapeXml(slug)}/</guid>
+    <link>${origin}/posts/${escapeXml(slug)}/</link>
+    <guid>${origin}/posts/${escapeXml(slug)}/</guid>
     <description>${escapeXml(description)}</description>
     ${pubDate ? `<pubDate>${pubDate}</pubDate>` : ''}
   </item>`
@@ -912,9 +918,9 @@ function generateRssFeed(posts: PostRow[], config: BlogConfig, domain: string): 
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(config.title)}</title>
-    <link>https://${domain}/</link>
+    <link>${origin}/</link>
     <description>${escapeXml(config.description)}</description>
-    <atom:link href="https://${domain}/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${origin}/feed.xml" rel="self" type="application/rss+xml"/>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items}
@@ -922,12 +928,12 @@ ${items}
 </rss>`
 }
 
-function generateSitemap(posts: PostRow[], _config: BlogConfig, domain: string): string {
+function generateSitemap(posts: PostRow[], _config: BlogConfig, origin: string): string {
   const urls = posts.map((post) => {
     const slug = getSlug(post)
     const lastmod = post.updated_at || post.published_at || ''
     return `  <url>
-    <loc>https://${domain}/posts/${escapeXml(slug)}/</loc>
+    <loc>${origin}/posts/${escapeXml(slug)}/</loc>
     ${lastmod ? `<lastmod>${new Date(lastmod).toISOString().split('T')[0]}</lastmod>` : ''}
     <changefreq>weekly</changefreq>
   </url>`
@@ -936,7 +942,7 @@ function generateSitemap(posts: PostRow[], _config: BlogConfig, domain: string):
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://${domain}/</loc>
+    <loc>${origin}/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -948,334 +954,20 @@ function ensureDir(dir: string): void {
   mkdirSync(dir, { recursive: true })
 }
 
-function getDefaultBlogPosts(): PostRow[] {
-  return [
-    {
-      id: 1,
-      title: 'Introducing Stacks: A Full-Stack Framework for the Modern Web',
-      slug: 'introducing-stacks',
-      content: 'We are thrilled to announce the official launch of Stacks, a full-stack framework.',
-      body: `We are thrilled to announce the official launch of **Stacks**, a full-stack framework designed to make building web applications, APIs, cloud infrastructure, and libraries a delightful experience.
-
-## Why Stacks?
-
-The JavaScript ecosystem is incredibly rich, but building a production-ready application still requires gluing together dozens of tools, configurations, and deployment pipelines. Stacks changes that.
-
-With Stacks, you get a **unified, batteries-included framework** that handles everything from your database models and API routes to cloud infrastructure and documentation sites — all from a single, cohesive project.
-
-## What Makes Stacks Different
-
-- **Model-View-Action (MVA)**: A fresh take on MVC that emphasizes clarity and simplicity
-- **Type-Safe by Default**: Built on TypeScript with deep type inference throughout
-- **Cloud-Native**: Define your AWS infrastructure in \`config/cloud.ts\` and deploy with \`./buddy deploy\`
-- **Zero-Config DX**: Linting, testing, CI/CD pipelines, and documentation generation — all preconfigured
-- **Library Extraction**: Build your app, then extract reusable STX components and TypeScript functions as publishable packages
-
-## Getting Started
-
-Getting started with Stacks is simple:
-
-\`\`\`bash
-panx @stacksjs/buddy new my-app
-cd my-app
-./buddy dev
-\`\`\`
-
-This gives you a fully configured project with a dev server, database, API routes, and more — all ready to go.
-
-## What's Next
-
-We are actively working on expanding Stacks with more features, better documentation, and a growing ecosystem of plugins. Follow us on [GitHub](https://github.com/stacksjs/stacks) and join the conversation.
-
-The future of full-stack development is here. Let's build something great together.`,
-      excerpt: 'We are thrilled to announce the official launch of Stacks, a full-stack framework designed to make building web applications, APIs, and cloud infrastructure a delightful experience.',
-      status: 'published',
-      published_at: '2026-02-20T10:00:00.000Z',
-      views: 1250,
-      is_featured: 1,
-      created_at: '2026-02-20T10:00:00.000Z',
-      updated_at: '2026-02-20T10:00:00.000Z',
-    },
-    {
-      id: 2,
-      title: 'Deploying to AWS with a Single Command',
-      slug: 'deploying-to-aws',
-      content: 'Learn how Stacks makes cloud deployment as simple as running ./buddy deploy.',
-      body: `One of the most powerful features of Stacks is its built-in cloud deployment pipeline. Instead of wrestling with Terraform, CDK, or manual AWS console clicks, you can deploy your entire application - API, frontend, docs, and blog - with a single command.
-
-## The Problem with Cloud Deployment
-
-Most teams spend weeks setting up their deployment pipelines. You need to configure CloudFormation or Terraform templates, set up CI/CD, manage SSL certificates, configure CloudFront distributions, and handle database migrations. It's tedious and error-prone.
-
-## How Stacks Solves It
-
-With Stacks, your cloud infrastructure is defined in a simple TypeScript configuration file:
-
-\`\`\`typescript
-// config/cloud.ts
-export const tsCloud = {
-  project: { name: 'my-app', region: 'us-east-1' },
-  infrastructure: {
-    compute: { instances: 1, size: 'small' },
-    storage: {
-      public: { website: { indexDocument: 'index.html' } },
-      docs: { website: { indexDocument: 'index.html' } },
-    },
-    ssl: { enabled: true, domains: ['myapp.com', 'docs.myapp.com'] },
-    dns: { domain: 'myapp.com' },
-  },
-}
-\`\`\`
-
-Then deploy everything:
-
-\`\`\`bash
-./buddy deploy --yes
-\`\`\`
-
-## What Happens Under the Hood
-
-When you run \`./buddy deploy\`, Stacks:
-
-- **Generates a CloudFormation template** from your config
-- **Provisions EC2 instances** with your Bun application
-- **Creates S3 buckets** for static sites (frontend, docs, blog)
-- **Sets up CloudFront** distributions with SSL certificates
-- **Configures Route53** DNS records
-- **Runs database migrations** on the remote server
-- **Uploads static assets** to S3 with proper cache headers
-- **Invalidates CloudFront** caches for instant updates
-
-All of this happens automatically, with progress output so you know exactly what's happening.
-
-## Zero-Downtime Updates
-
-Subsequent deployments are incremental. Stacks detects what changed and only updates the necessary resources. Your users never experience downtime.
-
-## Try It Yourself
-
-If you have an AWS account, you can deploy a Stacks app in under 10 minutes. Check out our [deployment guide](https://stacksjs.com/docs/bootcamp/deploy) to get started.`,
-      excerpt: 'Learn how Stacks makes cloud deployment as simple as running a single command. No Terraform, no CDK - just ./buddy deploy.',
-      status: 'published',
-      published_at: '2026-02-18T14:00:00.000Z',
-      views: 840,
-      is_featured: 0,
-      created_at: '2026-02-18T14:00:00.000Z',
-      updated_at: '2026-02-18T14:00:00.000Z',
-    },
-    {
-      id: 3,
-      title: 'Building Type-Safe APIs with the Stacks ORM',
-      slug: 'type-safe-apis',
-      content: 'Discover how Stacks models auto-generate fully typed API endpoints.',
-      body: `One of the most tedious parts of building a web application is writing CRUD boilerplate. With Stacks, your models automatically generate fully typed API endpoints, database migrations, factories, and seeders.
-
-## Define a Model, Get an API
-
-Here's what a typical Stacks model looks like:
-
-\`\`\`typescript
-// app/Models/Post.ts
-export default defineModel({
-  name: 'Post',
-  table: 'posts',
-  traits: {
-    useTimestamps: true,
-    useApi: {
-      uri: 'posts',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
-    },
-  },
-  attributes: {
-    title: {
-      validation: { rule: schema.string().min(3).max(255) },
-      factory: faker => faker.lorem.sentence(),
-    },
-    slug: {
-      unique: true,
-      validation: { rule: schema.string().min(3).max(255) },
-    },
-    body: {
-      validation: { rule: schema.string() },
-    },
-  },
-})
-\`\`\`
-
-From this single file, Stacks generates:
-
-- **API routes**: \`GET /api/posts\`, \`POST /api/posts\`, \`GET /api/posts/:id\`, \`PATCH /api/posts/:id\`, \`DELETE /api/posts/:id\`
-- **Database migration**: Creates the \`posts\` table with all columns
-- **Factory**: Generates realistic test data using Faker
-- **Seeder**: Populates your database with sample data
-- **TypeScript types**: Full type inference for queries and responses
-
-## Type-Safe Queries
-
-The Stacks ORM is built on Kysely, giving you fully type-safe database queries:
-
-\`\`\`typescript
-const posts = await db
-  .selectFrom('posts')
-  .where('status', '=', 'published')
-  .orderBy('published_at', 'desc')
-  .selectAll()
-  .execute()
-\`\`\`
-
-Every column name, operator, and value is type-checked at compile time. Typos become compile errors, not runtime bugs.
-
-## Relationships
-
-Stacks supports all common relationship types with a clean, declarative syntax:
-
-\`\`\`typescript
-export default defineModel({
-  name: 'Post',
-  belongsTo: ['Author'],
-  traits: { taggable: true, categorizable: true, commentables: true },
-})
-\`\`\`
-
-## What's Next
-
-We are working on even more ORM features — real-time subscriptions, full-text search integration, and automatic OpenAPI documentation generation. Stay tuned.`,
-      excerpt: 'Discover how Stacks models auto-generate fully typed API endpoints, database migrations, and more from a single model definition.',
-      status: 'published',
-      published_at: '2026-02-15T09:00:00.000Z',
-      views: 620,
-      is_featured: 0,
-      created_at: '2026-02-15T09:00:00.000Z',
-      updated_at: '2026-02-15T09:00:00.000Z',
-    },
-    {
-      id: 4,
-      title: 'Meet Buddy: Your CLI Companion for Stacks Development',
-      slug: 'meet-buddy-cli',
-      content: 'Buddy is the CLI tool that powers your entire Stacks development workflow.',
-      body: `Every great framework needs a great CLI. In Stacks, that CLI is called **Buddy** - your companion for development, testing, deployment, and everything in between.
-
-## What Can Buddy Do?
-
-Buddy is the single entry point for every task in your Stacks project:
-
-\`\`\`bash
-./buddy dev          # Start the development server
-./buddy build        # Build for production
-./buddy test         # Run your test suite
-./buddy deploy       # Deploy to the cloud
-./buddy generate     # Generate models, migrations, and more
-./buddy lint         # Lint and format your code
-./buddy key:generate # Generate a new application key
-\`\`\`
-
-## Developer Experience First
-
-Buddy is designed to feel fast and intuitive. Some highlights:
-
-- **Lazy-loaded commands**: Only the command you run is loaded, keeping startup under 100ms
-- **Interactive mode**: Run \`./buddy\` with no arguments for a guided menu
-- **Verbose mode**: Add \`--verbose\` to any command for detailed output
-- **Tab completion**: Full shell completion support for bash and zsh
-
-## Extensible
-
-You can add your own commands by creating files in \`app/Commands/\`:
-
-\`\`\`typescript
-// app/Commands/Greet.ts
-export default function (buddy) {
-  buddy
-    .command('greet <name>', 'Greet someone')
-    .action((name) => {
-      console.log('Hello, ' + name + '!')
-    })
-}
-\`\`\`
-
-Then run it:
-
-\`\`\`bash
-./buddy greet World
-# Hello, World!
-\`\`\`
-
-## Built on Bun
-
-Buddy runs on [Bun](https://bun.sh), giving it near-instant startup times and excellent TypeScript support without a build step. Your commands are executed directly from TypeScript source.
-
-## Try It
-
-Start a new Stacks project and explore what Buddy can do. You might be surprised how much a good CLI can improve your workflow.`,
-      excerpt: 'Buddy is the CLI tool that powers your entire Stacks development workflow - from dev server to deployment, all in one place.',
-      status: 'published',
-      published_at: '2026-02-12T11:30:00.000Z',
-      views: 450,
-      is_featured: 0,
-      created_at: '2026-02-12T11:30:00.000Z',
-      updated_at: '2026-02-12T11:30:00.000Z',
-    },
-    {
-      id: 5,
-      title: 'Documentation as a First-Class Citizen',
-      slug: 'documentation-first-class',
-      content: 'How Stacks makes writing and deploying documentation effortless.',
-      body: `Good documentation is the difference between a framework people try and a framework people adopt. That's why Stacks treats documentation as a **first-class feature**, not an afterthought.
-
-## Write Docs, Deploy Docs
-
-Every Stacks project comes with a \`docs/\` directory preconfigured. Write your documentation in Markdown, and Stacks builds it into a beautiful static site using [BunPress](https://github.com/stacksjs/bunpress).
-
-\`\`\`bash
-./buddy dev:docs    # Preview docs locally
-./buddy deploy      # Docs deploy automatically to docs.yoursite.com
-\`\`\`
-
-## What You Get
-
-- **Beautiful defaults**: Clean, responsive design with dark mode support
-- **Sidebar navigation**: Automatically generated from your file structure
-- **Syntax highlighting**: Code blocks with proper language highlighting
-- **Search**: Built-in search functionality
-- **Automatic deployment**: Docs deploy to a dedicated S3 bucket + CloudFront CDN
-
-## Powered by BunPress
-
-Under the hood, Stacks uses BunPress — a fast, minimal static site generator built on Bun. It takes your Markdown files and produces optimized HTML with:
-
-- Table of contents generation
-- Anchor links for headings
-- Responsive images
-- SEO-friendly output with sitemaps and meta tags
-
-## Documentation is Part of Your Deploy
-
-When you run \`./buddy deploy\`, your documentation is automatically:
-
-- Built from the \`docs/\` directory
-- Uploaded to an S3 bucket
-- Served via CloudFront at \`docs.yourdomain.com\`
-- Cache-invalidated for instant updates
-
-No separate CI/CD pipeline needed. No extra configuration. It just works.
-
-## Start Documenting
-
-Great software deserves great documentation. With Stacks, there's no excuse not to write it.`,
-      excerpt: 'How Stacks makes writing and deploying documentation effortless - from Markdown to a deployed docs site in seconds.',
-      status: 'published',
-      published_at: '2026-02-10T08:00:00.000Z',
-      views: 380,
-      is_featured: 0,
-      created_at: '2026-02-10T08:00:00.000Z',
-      updated_at: '2026-02-10T08:00:00.000Z',
-    },
-  ]
+/**
+ * The site origin feeds and the sitemap link against: the blog's configured
+ * `url`, else APP_URL. It was `${subdomain}.stacksjs.com` for every app.
+ */
+function siteOrigin(config: BlogConfig): string {
+  const raw = String(config.url || process.env.APP_URL || '').trim().replace(/\/+$/, '')
+  if (!raw)
+    return ''
+  return /^https?:\/\//.test(raw) ? raw : `https://${raw}`
 }
 
 export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
   const { config, outDir } = options
-  const domain = `${config.subdomain}.stacksjs.com`
+  const origin = siteOrigin(config)
 
   // Ensure output directory
   ensureDir(outDir)
@@ -1283,28 +975,19 @@ export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
   copyBlogFonts(outDir)
   copyBlogImages(outDir)
 
-  // Fetch published posts from database
-  let posts: PostRow[]
-  let usedDefaults = false
+  // Fetch published posts from database. An empty or unreachable database
+  // builds an empty blog: this used to fall back to built-in posts announcing
+  // Stacks, and published them on whatever app deployed without posts yet.
+  let posts: PostRow[] = []
   try {
     const dbPosts = await fetchPublishedPosts()
-
-    // If DB posts have no slugs or are faker data, merge with defaults
-    const hasRealContent = dbPosts.some(p => p.slug && p.slug !== 'null' && !p.title.endsWith('.'))
-    if (dbPosts.length === 0 || !hasRealContent) {
-      posts = getDefaultBlogPosts()
-      usedDefaults = true
-    } else {
+    // Seeded faker rows have no slug and a sentence for a title. A table
+    // holding nothing else is a fresh app's seed data, not a blog.
+    const hasRealContent = dbPosts.some(post => post.slug && post.slug !== 'null' && !post.title.endsWith('.'))
+    if (hasRealContent)
       posts = dbPosts
-    }
   } catch {
-    console.log('  Database not available, using default blog posts')
-    posts = getDefaultBlogPosts()
-    usedDefaults = true
-  }
-
-  if (usedDefaults) {
-    console.log('  Using built-in blog posts (seed your database for custom content)')
+    console.log('  Database not available, building an empty blog')
   }
 
   // Fetch authors
@@ -1357,13 +1040,13 @@ export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
 
   // Generate RSS feed
   if (config.enableRss) {
-    const rss = generateRssFeed(posts.slice(0, 20), config, domain)
+    const rss = generateRssFeed(posts.slice(0, 20), config, origin)
     writeFileSync(join(outDir, 'feed.xml'), rss)
   }
 
   // Generate sitemap
   if (config.enableSitemap) {
-    const sitemap = generateSitemap(posts, config, domain)
+    const sitemap = generateSitemap(posts, config, origin)
     writeFileSync(join(outDir, 'sitemap.xml'), sitemap)
   }
 

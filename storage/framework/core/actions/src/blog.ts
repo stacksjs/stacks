@@ -62,40 +62,53 @@ interface BlogSiteConfig {
   emptyText: string
 }
 
-const STACKS_DEFAULTS: BlogSiteConfig = {
-  title: 'The Stacks Blog',
-  description: 'Notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.',
-  siteTitle: 'Stacks Blog',
-  author: 'The Stacks Team',
-  url: 'https://stacksjs.com',
-  nav: [
-    { text: 'Blog', link: '/blog' },
-    { text: 'Docs', link: '/docs' },
-    { text: 'GitHub', link: 'https://github.com/stacksjs/stacks' },
-  ],
-  themes: ['colored', 'light', 'dark'],
-  defaultTheme: 'colored',
-  colophon: 'Built with Stacks · TypeScript &amp; Bun · <a href="/blog/feed.xml">RSS</a>',
-  emptyTitle: 'No posts yet',
-  emptyText: 'The first one is in the works. Leave your email and it will land in your inbox the moment it ships.',
+/**
+ * What a key missing from `config/blog.ts` falls back to: the app's own name
+ * (APP_NAME) and origin (APP_URL). These were stacksjs.com's values, so an app
+ * whose config left `url` out published a feed and sitemap linking to
+ * stacksjs.com, under "The Stacks Blog".
+ *
+ * Read at call time rather than module load, so the app's env is in place.
+ */
+function blogDefaults(): BlogSiteConfig {
+  const appName = (process.env.APP_NAME || '').trim()
+  const appUrl = (process.env.APP_URL || '').trim().replace(/\/+$/, '')
+  const title = appName ? `${appName} Blog` : 'Blog'
+
+  return {
+    title,
+    description: '',
+    siteTitle: title,
+    author: appName,
+    url: appUrl && !/^https?:\/\//.test(appUrl) ? `https://${appUrl}` : appUrl,
+    nav: [
+      { text: 'Home', link: '/' },
+      { text: 'Blog', link: '/blog' },
+    ],
+    themes: ['colored', 'light', 'dark'],
+    defaultTheme: 'colored',
+    colophon: '<a href="/blog/feed.xml">RSS</a>',
+    emptyTitle: 'No posts yet',
+    emptyText: 'The first one is in the works. Leave your email and it will land in your inbox the moment it ships.',
+  }
 }
 
 let sitePromise: Promise<BlogSiteConfig> | null = null
 
-/** Load `config/blog.ts` and merge over the Stacks defaults (cached). */
+/** Load `config/blog.ts` and merge over the app-derived defaults (cached). */
 function site(): Promise<BlogSiteConfig> {
   if (!sitePromise) {
     sitePromise = (async () => {
       try {
         const mod = await import(join(process.cwd(), 'config/blog.ts'))
         const cfg = (mod.default ?? {}) as Partial<BlogSiteConfig>
-        const merged: BlogSiteConfig = { ...STACKS_DEFAULTS, ...cfg }
+        const merged: BlogSiteConfig = { ...blogDefaults(), ...cfg }
         if (!cfg.siteTitle && cfg.title)
           merged.siteTitle = cfg.title
         return merged
       }
       catch {
-        return STACKS_DEFAULTS
+        return blogDefaults()
       }
     })()
   }
@@ -273,7 +286,7 @@ const THEME_BUTTONS: Record<BlogThemeMode, { label: string, glyph: string }> = {
  */
 async function blogChrome(): Promise<string> {
   const cfg = await site()
-  const modes = cfg.themes.length ? cfg.themes : STACKS_DEFAULTS.themes
+  const modes = cfg.themes.length ? cfg.themes : blogDefaults().themes
   const fallback = modes.includes(cfg.defaultTheme) ? cfg.defaultTheme : modes[0]
   const buttons = modes.map(m => `<button type="button" data-t="${m}" title="${THEME_BUTTONS[m].label}" aria-label="${THEME_BUTTONS[m].label}" onclick="stxBlogTheme('${m}')">${THEME_BUTTONS[m].glyph}</button>`).join('\n      ')
   const toggle = modes.length > 1
