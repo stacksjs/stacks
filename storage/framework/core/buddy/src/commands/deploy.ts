@@ -3677,17 +3677,31 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   # the obvious way to write this and the wrong one here: the separator would
   # have to be a newline written as \\n inside a JS template literal, and the
   # domain would become a regex whose dots match anything.
-  OTHERS=""
+  #
+  # The entry is replaced where it stands, and appended only when absent. The
+  # list used to be rebuilt as "everyone else, then this domain", which moved
+  # the domain to the end. On a shared server only one tenant can be last, so
+  # every other tenant's deploy reordered the line, saw a change that was not
+  # one, and restarted mail for every domain on the box.
+  NEWEX=""
+  PLACED=0
   OLDIFS="$IFS"
   IFS=','
   for entry in $ex; do
     case "$entry" in
-      "$DOMAIN:"*|"") : ;;
-      *) OTHERS="\${OTHERS:+$OTHERS,}$entry" ;;
+      "") : ;;
+      "$DOMAIN:"*)
+        if [ "$PLACED" = 0 ]; then
+          NEWEX="\${NEWEX:+$NEWEX,}$ENTRY"
+          PLACED=1
+        fi ;;
+      *) NEWEX="\${NEWEX:+$NEWEX,}$entry" ;;
     esac
   done
   IFS="$OLDIFS"
-  NEWEX="\${OTHERS:+$OTHERS,}$ENTRY"
+  if [ "$PLACED" = 0 ]; then
+    NEWEX="\${NEWEX:+$NEWEX,}$ENTRY"
+  fi
   if [ "$NEWEX" != "$ex" ]; then
     if grep -qE '^DKIM_EXTRA_KEYS=' "$ENVF"; then
       sed -i "s|^DKIM_EXTRA_KEYS=.*|DKIM_EXTRA_KEYS=$NEWEX|" "$ENVF"

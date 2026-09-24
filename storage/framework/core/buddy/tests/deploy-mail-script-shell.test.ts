@@ -295,3 +295,23 @@ describe('the mailbox step', () => {
     expect(report).not.toContain('password}')
   })
 })
+
+describe('the DKIM key registration', () => {
+  const src = fs.readFileSync(SOURCE, 'utf8')
+  const block = src.slice(src.indexOf('ENTRY="$DOMAIN:$SEL:$KEY"'), src.indexOf('if [ "$NEWEX" != "$ex" ]'))
+
+  it('replaces the domain entry where it stands instead of moving it to the end', () => {
+    // Rebuilding as "everyone else, then this domain" reordered the shared line
+    // on every tenant's deploy but the last one's, which read as a change and
+    // restarted mail for every domain on the box.
+    expect(block).not.toContain('OTHERS')
+    expect(block).toContain('"$DOMAIN:"*)')
+    expect(block).toContain('PLACED=1')
+  })
+
+  it('appends the entry only when the domain has none', () => {
+    const append = block.slice(block.lastIndexOf('if [ "$PLACED" = 0 ]'))
+    // Raw source: the \$ is the template-literal escape the shell never sees.
+    expect(append).toContain('NEWEX="\\${NEWEX:+$NEWEX,}$ENTRY"')
+  })
+})
