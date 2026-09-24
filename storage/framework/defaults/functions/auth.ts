@@ -1,6 +1,6 @@
 import { resolveApiBaseUrl } from './api-url'
 import type { Ref } from '@stacksjs/stx'
-import type { AuthUser, LoginError, LoginResponse, MeResponse, RegisterCredentials, RegisterError, RegisterResponse, ResponseError, UserData } from '../types/dashboard'
+import type { AuthUser, LoginError, LoginResponse, LoginResult, MeResponse, RegisterCredentials, RegisterError, RegisterResponse, ResponseError, TwoFactorLoginChallenge, UserData } from '../types/dashboard'
 import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
 import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { ref } from '@stacksjs/stx'
@@ -31,7 +31,8 @@ const isAuthenticated = ref(false)
 export interface AuthComposable {
   isAuthenticated: Ref<boolean>
   user: { value: UserData | null }
-  login: (user: AuthUser) => Promise<LoginResponse | LoginError>
+  login: (user: AuthUser) => Promise<LoginResult | LoginError>
+  verifyTwoFactorLogin: (challengeToken: string, code: string) => Promise<LoginResponse | LoginError>
   register: (user: RegisterCredentials) => Promise<RegisterResponse | RegisterError>
   fetchAuthUser: () => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
@@ -41,6 +42,31 @@ export interface AuthComposable {
 }
 
 export function useAuth(): AuthComposable {
+  function isTwoFactorChallenge(data: unknown): data is TwoFactorLoginChallenge {
+    if (!data || typeof data !== 'object')
+      return false
+    const candidate = data as Record<string, unknown>
+    return candidate.requires_two_factor === true && typeof candidate.challenge_token === 'string' && candidate.challenge_token.length > 0
+  }
+
+  function isLoginResponse(data: unknown): data is LoginResponse {
+    if (!data || typeof data !== 'object')
+      return false
+    const candidate = data as Record<string, unknown>
+    return typeof candidate.token === 'string'
+      && candidate.token.length > 0
+      && typeof candidate.user === 'object'
+      && candidate.user !== null
+      && (candidate.refresh_token === undefined
+        || (typeof candidate.refresh_token === 'string' && candidate.refresh_token.length > 0))
+  }
+
+  function storeLogin(data: LoginResponse): void {
+    token.value = data.token
+    user.value = data.user
+    isAuthenticated.value = true
+  }
+
   async function fetchAuthUser(): Promise<UserData | null> {
     try {
       const response = await fetch(`${baseUrl}/me`, {
@@ -117,7 +143,7 @@ export function useAuth(): AuthComposable {
     return 'token' in data && 'user' in data
   }
 
-  async function login(credentials: AuthUser): Promise<LoginResponse | LoginError> {
+  async function login(credentials: AuthUser): Promise<LoginResult | LoginError> {
     const url = `${baseUrl}/login`
     const response = await fetch(url, {
       method: 'POST',
@@ -127,14 +153,30 @@ export function useAuth(): AuthComposable {
       }),
       body: JSON.stringify(credentials),
     })
-    const data = await response.json() as LoginResponse | LoginError
+    const data = await response.json() as LoginResult | LoginError
 
-    if (!response.ok || !('token' in data && 'user' in data))
+    if (!response.ok || isTwoFactorChallenge(data))
       return data
 
-    token.value = data.token
-    user.value = data.user
-    isAuthenticated.value = true
+    if (!isLoginResponse(data))
+      return data
+
+    storeLogin(data)
+    return data
+  }
+
+  async function verifyTwoFactorLogin(challengeToken: string, code: string): Promise<LoginResponse | LoginError> {
+    const response = await fetch(`${baseUrl}/verify-two-factor-login`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ challenge_token: challengeToken, code }),
+    })
+    const data = await response.json() as LoginResponse | LoginError
+    if (!response.ok || !isLoginResponse(data))
+      return data
+
+    storeLogin(data)
     return data
   }
 
@@ -163,6 +205,7 @@ export function useAuth(): AuthComposable {
     getToken: () => token.value,
     register,
     login,
+    verifyTwoFactorLogin,
     logout,
     fetchAuthUser,
     checkAuthentication,

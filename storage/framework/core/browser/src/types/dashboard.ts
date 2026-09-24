@@ -16,7 +16,9 @@ export function isGeneralError(error: ResponseError): error is { error: string }
 }
 
 export interface RegisterError {
-  errors: ResponseError
+  errors?: ResponseError
+  error?: string
+  message?: string
 }
 
 export type LoginError = RegisterError
@@ -39,7 +41,7 @@ export interface RegisterResponse {
 // is kept alongside `access_token` for backward compatibility.
 export interface LoginResponse {
   access_token: string
-  refresh_token: string
+  refresh_token?: string
   token_type: string
   expires_in: number
   token: string
@@ -50,6 +52,13 @@ export interface LoginResponse {
   }
 }
 
+export interface TwoFactorLoginChallenge {
+  requires_two_factor: true
+  challenge_token: string
+}
+
+export type LoginResult = LoginResponse | TwoFactorLoginChallenge
+
 export interface Response<T> {
   errors: ResponseError
   data: T
@@ -58,6 +67,7 @@ export interface Response<T> {
 export interface AuthUser {
   email: string
   password: string
+  remember?: boolean
 }
 
 export interface ErrorResponse {
@@ -75,7 +85,8 @@ export type MeResponse = UserData
 export interface AuthComposable {
   isAuthenticated: Ref<boolean>
   user: Ref<UserData | null>
-  login: (user: AuthUser) => Promise<LoginResponse | LoginError>
+  login: (user: AuthUser) => Promise<LoginResult | LoginError>
+  verifyTwoFactorLogin: (challengeToken: string, code: string) => Promise<LoginResponse | LoginError>
   register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
   fetchAuthUser: () => Promise<UserData | null>
   /**

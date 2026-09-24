@@ -1,5 +1,5 @@
 import type { StacksBrowserConfig } from '../types/globals'
-import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
+import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, LoginResult, MeResponse, RegisterError, RegisterResponse, TwoFactorLoginChallenge, UserData } from '../types/dashboard'
 import type { SessionHandoffPack } from '@stacksjs/composables'
 import { readSessionHandoff, stripSessionHandoff, useStorage } from '@stacksjs/composables'
 /// <reference lib="dom" />
@@ -219,6 +219,33 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
 }
 
 export function useAuth(): AuthComposable {
+  function isTwoFactorChallenge(data: unknown): data is TwoFactorLoginChallenge {
+    if (!data || typeof data !== 'object')
+      return false
+    const candidate = data as Record<string, unknown>
+    return candidate.requires_two_factor === true && typeof candidate.challenge_token === 'string' && candidate.challenge_token.length > 0
+  }
+
+  function isLoginResponse(data: unknown): data is LoginResponse {
+    if (!data || typeof data !== 'object')
+      return false
+    const candidate = data as Record<string, unknown>
+    return typeof candidate.token === 'string'
+      && candidate.token.length > 0
+      && typeof candidate.user === 'object'
+      && candidate.user !== null
+      && (candidate.refresh_token === undefined
+        || (typeof candidate.refresh_token === 'string' && candidate.refresh_token.length > 0))
+  }
+
+  function storeTokenPack(data: LoginResponse): void {
+    token.value = data.token
+    // A fixed-lifetime browser policy deliberately returns no refresh token.
+    // Clear any credential left by an earlier refresh-capable login so it
+    // cannot silently turn the new fixed session back into a renewable one.
+    refreshToken.value = data.refresh_token ?? ''
+  }
+
   async function fetchAuthUser(): Promise<UserData | null> {
     try {
       // `authFetch` turns a 401 into refresh-then-retry, so an expired access
@@ -286,8 +313,7 @@ export function useAuth(): AuthComposable {
       // (#2212). Storing the refresh token is what lets the session outlive
       // the access token's one-hour lifetime.
       const refreshed = (data as { refresh_token?: string }).refresh_token
-      if (refreshed)
-        refreshToken.value = refreshed
+      refreshToken.value = refreshed ?? ''
       return data
     }
 
@@ -302,7 +328,7 @@ export function useAuth(): AuthComposable {
     return 'token' in data && 'user' in data
   }
 
-  async function login(user: AuthUser): Promise<LoginResponse | LoginError> {
+  async function login(user: AuthUser): Promise<LoginResult | LoginError> {
     try {
       const url = `${baseUrl}/login`
       const response = await fetch(url, {
@@ -319,12 +345,39 @@ export function useAuth(): AuthComposable {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json() as LoginResponse
-      token.value = data.token
-      const refreshed = (data as { refresh_token?: string }).refresh_token
-      if (refreshed)
-        refreshToken.value = refreshed
+      const data = await response.json() as LoginResult
+      if (isTwoFactorChallenge(data))
+        return data
+      if (!isLoginResponse(data))
+        throw new Error('The login response did not contain a valid session.')
+
+      storeTokenPack(data)
       await fetchAuthUser() // Fetch user data after successful login
+      return data
+    }
+    catch (error) {
+      return error as LoginError
+    }
+  }
+
+  async function verifyTwoFactorLogin(challengeToken: string, code: string): Promise<LoginResponse | LoginError> {
+    try {
+      const response = await fetch(`${baseUrl}/verify-two-factor-login`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: withCsrfHeader({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ challenge_token: challengeToken, code }),
+      })
+      if (!response.ok) {
+        const errorData = await response.json() as ErrorResponse
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json() as LoginResponse
+      if (!isLoginResponse(data))
+        throw new Error('The two-factor response did not contain a valid session.')
+      storeTokenPack(data)
+      await fetchAuthUser()
       return data
     }
     catch (error) {
@@ -419,6 +472,7 @@ export function useAuth(): AuthComposable {
     getToken: () => token.value,
     register,
     login,
+    verifyTwoFactorLogin,
     logout,
     fetchAuthUser,
     completeSocialLogin,

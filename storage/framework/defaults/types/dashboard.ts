@@ -38,7 +38,7 @@ export interface RegisterResponse {
 // is kept alongside `access_token` for backward compatibility.
 export interface LoginResponse {
   access_token: string
-  refresh_token: string
+  refresh_token?: string
   token_type: string
   expires_in: number
   token: string
@@ -49,6 +49,13 @@ export interface LoginResponse {
   }
 }
 
+export interface TwoFactorLoginChallenge {
+  requires_two_factor: true
+  challenge_token: string
+}
+
+export type LoginResult = LoginResponse | TwoFactorLoginChallenge
+
 export interface Response<T> {
   errors: ResponseError
   data: T
@@ -57,6 +64,7 @@ export interface Response<T> {
 export interface AuthUser {
   email: string
   password: string
+  remember?: boolean
 }
 
 export interface RegisterCredentials extends AuthUser {

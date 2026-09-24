@@ -112,6 +112,71 @@ const load = async () => {
 }
 
 describe('useAuth refresh cycle (#2235)', () => {
+  test('login forwards remember and leaves a 2FA challenge unauthenticated', async () => {
+    const { useAuth } = await load()
+    responders = [() => json({ requires_two_factor: true, challenge_token: 'challenge-1' })]
+
+    const auth = useAuth()
+    const result = await auth.login({ email: 'a@b.co', password: 'pw', remember: true })
+
+    expect(result).toEqual({ requires_two_factor: true, challenge_token: 'challenge-1' })
+    expect(JSON.parse(String(calls[0]!.init.body))).toMatchObject({ remember: true })
+    expect(calls).toHaveLength(1)
+    expect(auth.isAuthenticated.value).toBe(false)
+    expect(persisted('token')).toBe('')
+  })
+
+  test('completes a 2FA challenge before storing the issued session', async () => {
+    const { useAuth } = await load()
+    responders = [
+      () => json({
+        access_token: 'access-2fa',
+        refresh_token: 'refresh-2fa',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        token: 'access-2fa',
+        user: { id: 1, email: 'a@b.co' },
+      }),
+      () => json({ id: 1, email: 'a@b.co' }),
+    ]
+
+    const result = await useAuth().verifyTwoFactorLogin('challenge-1', '123456')
+
+    expect(result && 'token' in result && result.token).toBe('access-2fa')
+    expect(calls[0]!.url).toBe('https://api.test/verify-two-factor-login')
+    expect(calls[0]!.init.credentials).toBe('same-origin')
+    expect(requestHeader(calls[0]!, 'X-CSRF-Token')).toBe('csrf-proof')
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ challenge_token: 'challenge-1', code: '123456' })
+    expect(persisted('token')).toBe('access-2fa')
+    expect(persisted('refresh_token')).toBe('refresh-2fa')
+  })
+
+  test('a malformed successful 2FA response cannot overwrite an existing session', async () => {
+    seed('token', 'existing-access')
+    seed('refresh_token', 'existing-refresh')
+    const { useAuth } = await load()
+    responders = [() => json({ token: 'poisoned-access', user: { id: 2 }, refresh_token: {} })]
+
+    const result = await useAuth().verifyTwoFactorLogin('challenge-1', '123456')
+
+    expect(result).toBeInstanceOf(Error)
+    expect(persisted('token')).toBe('existing-access')
+    expect(persisted('refresh_token')).toBe('existing-refresh')
+  })
+
+  test('the scaffold auth helper rejects malformed 2FA sessions without changing state', async () => {
+    seed('token', 'existing-access')
+    const { useAuth } = await import(`../../../defaults/functions/auth?t=${Math.random()}`)
+    responders = [() => json({ token: null, user: null })]
+
+    const auth = useAuth()
+    const result = await auth.verifyTwoFactorLogin('challenge-1', '123456')
+
+    expect(result).toEqual({ token: null, user: null })
+    expect(auth.token.value).toBe('existing-access')
+    expect(auth.isAuthenticated.value).toBe(false)
+  })
+
   test('persists the refresh token from a login response', async () => {
     const { useAuth } = await load()
     responders = [() => json({ token: 'access-1', refresh_token: 'refresh-1', user: { id: 1 } })]
@@ -121,6 +186,19 @@ describe('useAuth refresh cycle (#2235)', () => {
     // The field the client used to receive and drop on the floor.
     await flush()
     expect(persisted('refresh_token')).toBe('refresh-1')
+  })
+
+  test('a fixed-lifetime login clears a refresh token from an older session', async () => {
+    seed('refresh_token', 'stale-refresh')
+    const { useAuth } = await load()
+    responders = [
+      () => json({ token: 'fixed-access', user: { id: 1 } }),
+      () => json({ id: 1, email: 'a@b.co' }),
+    ]
+
+    await useAuth().login({ email: 'a@b.co', password: 'pw' })
+
+    expect(persisted('refresh_token')).toBe('')
   })
 
   test('a 401 refreshes and retries instead of ending the session', async () => {
