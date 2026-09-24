@@ -75,6 +75,13 @@ export class ImageBuilder {
     return this
   }
   quality(value: number): this { integer('Image quality', value, 1, 100); this.targetQuality = value; return this }
+  /**
+   * Whether to add a variant at the source's own width. On by default, and
+   * until this existed only a preset could turn it off, so asking for
+   * `.widths([480, 960])` from a 2400px original also wrote a 2400px file
+   * next to them that nothing referenced.
+   */
+  original(include: boolean): this { this.includeOriginal = include; return this }
   output(dir: string, publicPath = '/media/images'): this { this.options.outputDir = resolve(dir); this.options.publicPath = `/${publicPath.replace(/^\/+|\/+$/g, '')}`; return this }
   storage(adapter: ImageStorageAdapter, prefix = 'media/images'): this { this.targetStorage = { adapter, prefix: prefix.replace(/^\/+|\/+$/g, '') }; return this }
 

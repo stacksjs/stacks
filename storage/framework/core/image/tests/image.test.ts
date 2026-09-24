@@ -16,6 +16,12 @@ describe('@stacksjs/image', () => {
     expect(result.placeholder.length).toBeGreaterThan(10)
     expect((await readFile(result.variants[0].path)).length).toBeGreaterThan(0)
   })
+  test('original(false) writes only the widths asked for', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-image-original-')); dirs.push(root)
+    const input = createImageData(8, 4); input.data.fill(255); await writeFile(join(root, 'wide.png'), await encode(input, 'png'))
+    const result = await image('wide.png', { root, outputDir: join(root, 'out') }).widths([2, 4]).formats(['png']).original(false).generate()
+    expect(result.variants.map(item => item.width)).toEqual([2, 4])
+  })
   test('negotiates q-values, rejects traversal, and signs transforms', () => {
     const variants = [{ width: 800, height: 450, bytes: 10, format: 'avif' as const, mimeType: 'image/avif', path: '/a', url: '/a', cacheKey: 'a' }, { width: 800, height: 450, bytes: 12, format: 'jpeg' as const, mimeType: 'image/jpeg', path: '/b', url: '/b', cacheKey: 'b' }]
     expect(negotiateImageVariant(variants, 'image/jpeg;q=.5,image/avif;q=1')?.format).toBe('avif')
