@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, authCookie, consumeTwoFactorChallenge, verifyTwoFactorLoginCode } from '@stacksjs/auth'
+import { Auth, authCookie, verifyTwoFactorLoginCode, withTwoFactorChallenge } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
@@ -27,17 +27,12 @@ export default new Action({
     // (whether the code was right or wrong) must start over from
     // LoginAction, not retry — mirrors the WebAuthn challenge
     // delete-on-read semantics in passkey.ts (stacksjs/stacks#1866).
-    const userId = await consumeTwoFactorChallenge(challengeToken)
-    if (!userId)
-      return response.unauthorized('This login attempt has expired — please sign in again.')
-
-    const valid = await verifyTwoFactorLoginCode(userId, code)
-    if (!valid)
-      return response.unauthorized('Invalid code — please sign in again.')
-
-    const result = await Auth.loginUsingId(userId)
+    const result = await withTwoFactorChallenge(challengeToken, async (userId) => {
+      if (!await verifyTwoFactorLoginCode(userId, code)) return null
+      return Auth.loginUsingId(userId)
+    })
     if (!result)
-      return response.unauthorized('Invalid code — please sign in again.')
+      return response.unauthorized('Invalid or expired login attempt. Please sign in again.')
 
     const user = result.user
 

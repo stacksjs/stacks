@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { mock } from 'bun:test'
+import { SQL } from 'bun'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -36,6 +37,8 @@ const { makeHash, verifyHash } = await import('@stacksjs/security')
 const { createTwoFactorChallenge } = await import('../../src/two-factor')
 const { generateTwoFactorSecret, generateTwoFactorToken } = await import('../../src/authenticator')
 const { passwordResets } = await import('../../src/password/reset')
+const { RateLimiter } = await import('../../src/rate-limiter')
+const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const { findToken } = await import('../../src/tokens')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const VerifyAction = (await import('../../../../defaults/app/Actions/Auth/VerifyTwoFactorLoginAction')).default
@@ -47,6 +50,14 @@ const passwordHash = await makeHash(oldPassword, { algorithm: 'bcrypt' })
 const resetHash = await makeHash(resetToken, { algorithm: 'bcrypt' })
 const secret = generateTwoFactorSecret()
 const email = (id: number) => `recovery-${id}@example.invalid`
+if (process.env.STACKS_TWOFACTOR_RECOVERY_WORKER === 'reset') {
+  try {
+    assert.equal((await passwordResets(email(1)).resetPassword(resetToken, newPassword)).success, true)
+    console.log('independent recovery committed')
+  }
+  finally { await releaseOrm(); await closeDatabaseConnection() }
+  process.exit(0)
+}
 async function setup() {
   for (const table of ['password_resets', 'two_factor_challenges', 'oauth_refresh_tokens', 'oauth_access_tokens', 'users'])
     await db.deleteFrom(table).execute()
@@ -100,6 +111,129 @@ try {
     assert(await verifyHash(oldPassword, String((await db.primary.selectFrom('users').where('id', '=', 1).select('password').executeTakeFirstOrThrow()).password)))
     assert.equal((await verify(challenge)).status, 200)
   })
+  await check('recovery committing before the owner claim rejects the old challenge', async () => {
+    const challenge = await createTwoFactorChallenge(1)
+    let reset = false
+    const unregister = registerPersistentQueryHooks({ onQueryStart(event) {
+      if (reset || event.kind !== 'select' || !event.sql.includes('users')) return
+      reset = true
+      const child = Bun.spawnSync([process.execPath, `--config=${configPath}`, '--no-env-file', import.meta.path], {
+        env: { ...process.env, STACKS_TWOFACTOR_RECOVERY_WORKER: 'reset' }, stdout: 'pipe', stderr: 'pipe', timeout: 10_000,
+      })
+      assert.equal(child.exitCode, 0, new TextDecoder().decode(child.stderr))
+      assert(new TextDecoder().decode(child.stdout).includes('independent recovery committed'))
+    } })
+    try {
+      assert.equal((await verify(challenge)).status, 401)
+      assert(reset, 'the independent reset must run before the account read')
+    }
+    finally { unregister() }
+  })
+  await check('wrong and rate-limited attempts each consume their challenge once', async () => {
+    const wrong = await createTwoFactorChallenge(1)
+    assert.equal((await verify(wrong, 'ABCDEF')).status, 401)
+    assert.equal((await verify(wrong)).status, 401)
+    const limited = await createTwoFactorChallenge(1)
+    RateLimiter.useStore({ get: () => ({ attempts: 0, lockedUntil: Date.now() + 60_000 }), set: () => {}, delete: () => {} })
+    try { await assert.rejects(verify(limited), (error: unknown) => error instanceof Error && 'status' in error && error.status === 429) }
+    finally { RateLimiter.useMemoryStore() }
+    assert.equal((await verify(limited)).status, 401)
+  })
+  await check('failed token issuance consumes the challenge but leaves no partial token pair', async () => {
+    const challenge = await createTwoFactorChallenge(1)
+    if (dialect === 'postgres') {
+      await db.unsafe("CREATE FUNCTION reject_twofactor_token() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture token issuance denied'; END; $$").execute()
+      await db.unsafe('CREATE TRIGGER reject_twofactor_token BEFORE INSERT ON oauth_refresh_tokens FOR EACH ROW EXECUTE FUNCTION reject_twofactor_token()').execute()
+    }
+    else if (dialect === 'mysql')
+      await db.unsafe("CREATE TRIGGER reject_twofactor_token BEFORE INSERT ON oauth_refresh_tokens FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'fixture token issuance denied'").execute()
+    else
+      await db.unsafe("CREATE TRIGGER reject_twofactor_token BEFORE INSERT ON oauth_refresh_tokens BEGIN SELECT RAISE(ABORT, 'fixture token issuance denied'); END").execute()
+    try { await assert.rejects(verify(challenge), /fixture token issuance denied/) }
+    finally {
+      await db.unsafe(`DROP TRIGGER reject_twofactor_token${dialect === 'postgres' ? ' ON oauth_refresh_tokens' : ''}`).execute()
+      if (dialect === 'postgres') await db.unsafe('DROP FUNCTION reject_twofactor_token()').execute()
+    }
+    assert.equal((await verify(challenge)).status, 401)
+    assert.equal((await db.primary.selectFrom('oauth_access_tokens').select('id').execute()).length, 0)
+    assert.equal((await db.primary.selectFrom('oauth_refresh_tokens').select('id').execute()).length, 0)
+    assert.equal((await verify(await createTwoFactorChallenge(1))).status, 200)
+  })
+  await check('a caller rollback restores the challenge and removes the issued token', async () => {
+    const challenge = await createTwoFactorChallenge(1)
+    let issued = ''
+    await assert.rejects(db.transaction(async () => {
+      const response = await verify(challenge)
+      assert.equal(response.status, 200)
+      issued = (await response.json() as { access_token: string }).access_token
+      throw new Error('fixture login rollback')
+    }), /fixture login rollback/)
+    assert.equal(await findToken(issued), null)
+    assert.equal((await verify(challenge)).status, 200)
+  })
+  await check('simultaneous redemption has one winner and expired or ownerless grants fail closed', async () => {
+    const challenge = await createTwoFactorChallenge(1)
+    const code = await generateTwoFactorToken(secret)
+    const results = await Promise.all(Array.from({ length: 8 }, () => verify(challenge, code)))
+    assert.equal(results.filter(result => result.status === 200).length, 1)
+    assert.equal(results.filter(result => result.status === 401).length, 7)
+    assert.equal((await verify(await createTwoFactorChallenge(2, -1))).status, 401)
+    const orphan = await createTwoFactorChallenge(2)
+    await db.deleteFrom('users').where('id', '=', 2).execute()
+    assert.equal((await verify(orphan)).status, 401)
+  })
+  if (dialect !== 'sqlite') {
+    await check('recovery racing with a verified second factor leaves no usable old-password session', async () => {
+      const challenge = await createTwoFactorChallenge(1)
+      const observer = new SQL({ adapter: dialect, hostname: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
+        username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+        tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+      let child: ReturnType<typeof Bun.spawn> | undefined
+      let completed: Promise<{ exit: number, stdout: string, stderr: string }> | undefined
+      let finished = false
+      let reached = false
+      // Exercise the public asynchronous limiter-store boundary after the
+      // real TOTP step is claimed, before the real action mints its token.
+      RateLimiter.useStore({ get: () => undefined, set: () => {}, delete: async () => {
+        reached = true
+        child = Bun.spawn([process.execPath, `--config=${configPath}`, '--no-env-file', import.meta.path], {
+          env: { ...process.env, STACKS_TWOFACTOR_RECOVERY_WORKER: 'reset' }, stdout: 'pipe', stderr: 'pipe',
+        })
+        completed = Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+          .then(([exit, stdout, stderr]) => { finished = true; return { exit, stdout, stderr } })
+        const timeout = performance.now() + 10_000
+        while (performance.now() < timeout) {
+          // The unfixed action lets recovery COMMIT here. With the owner lock,
+          // recovery reaches a real database lock wait instead. Either event
+          // establishes the ordering without a sleep-based race assumption.
+          if (finished) return
+          const rows = await observer.unsafe(dialect === 'postgres'
+            ? "SELECT COUNT(*) AS count FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'"
+            : "SELECT COUNT(*) AS count FROM performance_schema.data_locks WHERE LOCK_STATUS = 'WAITING' AND OBJECT_SCHEMA = DATABASE() AND OBJECT_NAME = 'users'")
+          if (Number(rows[0]?.count) > 0) return
+          await Bun.sleep(10)
+        }
+        throw new Error('independent recovery neither committed nor reached the owner lock')
+      } })
+      try {
+        const response = await verify(challenge)
+        assert.equal(response.status, 200)
+        assert(reached)
+        const recovery = await completed!
+        assert.equal(recovery.exit, 0, `${recovery.stdout}\n${recovery.stderr}`)
+        assert(recovery.stdout.includes('independent recovery committed'))
+        const pack = await response.json() as { access_token: string }
+        assert.equal(await findToken(pack.access_token), null, 'an in-flight old-password login must not outlive committed recovery')
+      }
+      finally {
+        RateLimiter.useMemoryStore()
+        child?.kill()
+        await completed
+        await observer.close()
+      }
+    })
+  }
   for (const mode of dialect === 'mysql' ? ['reject', 'dependency'] : ['reject', 'suppress', 'dependency']) {
     await check(`${mode} challenge deletion fails recovery without committing partial credentials`, async () => {
       const challenge = await createTwoFactorChallenge(1)

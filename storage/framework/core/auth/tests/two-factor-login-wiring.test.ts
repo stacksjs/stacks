@@ -28,7 +28,7 @@ describe('TOTP login-challenge wiring', () => {
 
   test('VerifyTwoFactorLoginAction consumes the challenge once and verifies the code before minting tokens', () => {
     const source = readFileSync(resolve(DEFAULTS_ROOT, 'app/Actions/Auth/VerifyTwoFactorLoginAction.ts'), 'utf-8')
-    expect(source).toMatch(/consumeTwoFactorChallenge\(challengeToken\)/)
+    expect(source).toMatch(/withTwoFactorChallenge\(challengeToken, async \(userId\)/)
     expect(source).toMatch(/verifyTwoFactorLoginCode\(userId, code\)/)
     expect(source).toMatch(/Auth\.loginUsingId\(userId\)/)
   })

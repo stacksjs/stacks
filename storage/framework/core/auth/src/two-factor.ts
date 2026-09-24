@@ -33,7 +33,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { db, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { verifyTOTPWithCounter } from '@stacksjs/ts-auth'
 import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyTwoFactorCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
@@ -299,6 +299,36 @@ export async function consumeTwoFactorChallenge(challengeToken: string): Promise
   if (Date.now() >= expiresAt) return null
 
   return Number(row.user_id)
+}
+
+/**
+ * Consume a challenge and complete login while holding recovery's owner lock.
+ * A reset either revokes this challenge first or revokes the issued tokens
+ * afterward. It cannot commit between the second factor and token issuance.
+ */
+export async function withTwoFactorChallenge<T>(challengeToken: string, complete: (userId: number) => Promise<T>): Promise<T | null> {
+  const pending = await db.primary.selectFrom('two_factor_challenges')
+    .where('id', '=', challengeToken).select('user_id').executeTakeFirst()
+  if (!pending) return null
+  const userId = Number(pending.user_id)
+
+  const outcome = await db.transaction(async () => {
+    let owner = db.primary.selectFrom('users').where('id', '=', userId).select('id')
+    if (getDatabaseDialect() !== 'sqlite') owner = owner.lockForUpdate()
+    if (!await owner.executeTakeFirst()) return { value: null }
+    // Re-read and claim AFTER the lock: recovery may have removed the row
+    // while we waited. DELETE's affected count also rejects stale snapshots.
+    if (await consumeTwoFactorChallenge(challengeToken) !== userId) return { value: null }
+    try {
+      // Roll back incomplete issuance without reviving the single-use grant.
+      // The outer transaction commits consumption even when verification or
+      // issuance throws, matching the existing delete-before-verify contract.
+      return { value: await db.transaction(() => complete(userId)) }
+    }
+    catch (error) { return { error } }
+  })
+  if ('error' in outcome) throw outcome.error
+  return outcome.value
 }
 
 /** Revoke password-stage grants in the same transaction as credential recovery. */
