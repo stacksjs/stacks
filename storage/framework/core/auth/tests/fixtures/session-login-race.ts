@@ -216,6 +216,24 @@ try {
     assert(result)
     assert.equal(await Auth.user(), result.user, 'successful issuance establishes the new principal')
   })
+  try {
+    let rolledBackToken = ''
+    await assert.rejects(db.transaction(async () => {
+      await db.insertInto('users').values({ id: 99, name: 'Uncommitted principal', email: 'transaction@example.invalid', password: oldHash }).execute()
+      const result = await Auth.loginUsingId(99)
+      assert(result, 'direct login must read a user written on the held transaction')
+      assert.equal(result.user.name, 'Uncommitted principal')
+      assert.equal(result.user.password, oldHash)
+      assert.equal(result.user.isDirty(), false, 'hydration must preserve clean model state')
+      assert.equal(Object.hasOwn(result.user.toJSON(), 'password'), false, 'hidden attributes stay hidden')
+      assert.equal(typeof result.user.save, 'function', 'the result remains a model instance')
+      rolledBackToken = result.token
+      throw new Error('rollback transaction-local principal')
+    }), /rollback transaction-local principal/)
+    assert.equal(await findToken(rolledBackToken), null)
+    assert.equal(await db.primary.selectFrom('users').where('id', '=', 99).select('id').executeTakeFirst(), undefined)
+  }
+  catch (error) { failures.push(`transaction-local direct login: ${error}`) }
   const bystander = await createToken(2, 'default personal client', ['read'])
   for (const change of ['unchanged', 'revoked', 'rotated', 'deleted', 'legacy'] as const) {
     const grantClient = await createClient({ name: `grant ${change}`, redirect: 'https://grant.invalid', passwordClient: true })

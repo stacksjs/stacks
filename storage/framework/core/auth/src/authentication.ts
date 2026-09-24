@@ -9,7 +9,7 @@ import type {
   TokenCreateOptions,
 } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { db, getDatabaseDialect, parseSqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, isInTransaction, parseSqlDateTime } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
@@ -387,7 +387,21 @@ export class Auth {
   public static async loginUsingId(userId: number, options?: TokenCreateOptions): Promise<
     { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
   > {
-    const user = await User.find(userId)
+    let user: UserModel | null | undefined
+    if (isInTransaction()) {
+      // Model queries use a separate executor. Borrowing another pooled
+      // connection while holding the owner lock can starve the winner when
+      // other login attempts occupy the pool waiting for that same lock.
+      const definition: { table?: string, primaryKey?: string, traits?: { useSoftDeletes?: unknown } } = User.getDefinition()
+      let query = db.primary.selectFrom(definition.table || 'users')
+        .where(definition.primaryKey || 'id', '=', userId).selectAll()
+      if (definition.traits?.useSoftDeletes) query = query.whereNull('deleted_at')
+      const row = await query.executeTakeFirst()
+      // make uses the same instance constructor/read proxies as find, without
+      // another query. Preserve casts, hidden attributes and model methods.
+      user = row ? await User.make(row) as UserModel : null
+    }
+    else user = await User.find(userId)
     if (!user)
       return null
 

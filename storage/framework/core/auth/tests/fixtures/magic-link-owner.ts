@@ -196,9 +196,10 @@ try {
   })
   await check('concurrent login has one winner and missing owners cannot sign in', async () => {
     await seed('synthetic-concurrent-login')
-    const responses = await Promise.all(Array.from({ length: 8 }, () => consume('synthetic-concurrent-login')))
+    // Saturate the SQL pool with contenders waiting on the owner's lock.
+    const responses = await Promise.all(Array.from({ length: 16 }, () => consume('synthetic-concurrent-login')))
     assert.equal(responses.filter(response => response.status === 200).length, 1)
-    assert.equal(responses.filter(response => response.status === 401).length, 7)
+    assert.equal(responses.filter(response => response.status === 401).length, 15)
     await seed('synthetic-deleted-owner', 2)
     await db.deleteFrom('users').where('id', '=', 2).execute()
     assert.equal((await consume('synthetic-deleted-owner')).status, 401)

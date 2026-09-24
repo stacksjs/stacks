@@ -78,7 +78,7 @@ async function verify(challenge: string, code?: string): Promise<Response> {
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
   try { await setup(); await run(); console.log(`PASS ${name}`) }
-  catch (error) { failures.push(`${name}: ${error}`) }
+  catch (error) { failures.push(`${name}: ${error instanceof Error ? error.stack : JSON.stringify(error)}`) }
 }
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email VARCHAR(255), password TEXT, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
@@ -174,9 +174,11 @@ try {
   await check('simultaneous redemption has one winner and expired or ownerless grants fail closed', async () => {
     const challenge = await createTwoFactorChallenge(1)
     const code = await generateTwoFactorToken(secret)
-    const results = await Promise.all(Array.from({ length: 8 }, () => verify(challenge, code)))
+    // Exceed the network driver's default ten-connection pool. The winner
+    // must finish using its held transaction, not borrow an eleventh slot.
+    const results = await Promise.all(Array.from({ length: 16 }, () => verify(challenge, code)))
     assert.equal(results.filter(result => result.status === 200).length, 1)
-    assert.equal(results.filter(result => result.status === 401).length, 7)
+    assert.equal(results.filter(result => result.status === 401).length, 15)
     assert.equal((await verify(await createTwoFactorChallenge(2, -1))).status, 401)
     const orphan = await createTwoFactorChallenge(2)
     await db.deleteFrom('users').where('id', '=', 2).execute()
