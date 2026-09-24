@@ -35,7 +35,7 @@ export interface AuthComposable {
   register: (user: RegisterCredentials) => Promise<RegisterResponse | RegisterError>
   fetchAuthUser: () => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   getToken: () => string | null
   token: { value: string | null }
 }
@@ -43,15 +43,10 @@ export interface AuthComposable {
 export function useAuth(): AuthComposable {
   async function fetchAuthUser(): Promise<UserData | null> {
     try {
-      if (!token.value) {
-        isAuthenticated.value = false
-        user.value = null
-        return null
-      }
-
       const response = await fetch(`${baseUrl}/me`, {
+        credentials: 'same-origin',
         headers: {
-          Authorization: `Bearer ${token.value}`,
+          ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
           Accept: 'application/json',
         },
       })
@@ -144,25 +139,21 @@ export function useAuth(): AuthComposable {
   }
 
   async function logout() {
-    try {
-      if (token.value) {
-        await fetch(`${baseUrl}/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-            Accept: 'application/json',
-          },
-        })
-      }
-    }
-    catch (error) {
-      console.error('Error during logout:', error)
-    }
-    finally {
-      token.value = ''
-      user.value = null
-      isAuthenticated.value = false
-    }
+    const currentToken = token.value
+    const response = await fetch(`${baseUrl}/logout`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: withCsrfHeader({
+        ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
+        Accept: 'application/json',
+      }),
+    })
+    if (!response.ok)
+      throw new Error(`Logout failed with status ${response.status}`)
+
+    token.value = ''
+    user.value = null
+    isAuthenticated.value = false
   }
 
   return {

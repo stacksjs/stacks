@@ -4,7 +4,7 @@ import type { SessionHandoffPack } from '@stacksjs/composables'
 import { readSessionHandoff, stripSessionHandoff, useStorage } from '@stacksjs/composables'
 /// <reference lib="dom" />
 import { ref } from '@stacksjs/stx'
-import { withCsrfHeader } from './csrf'
+import { CSRF_COOKIE_NAME, readCsrfToken, withCsrfHeader } from './csrf'
 
 const token = useStorage('token', '')
 
@@ -184,14 +184,28 @@ export async function refreshSession(): Promise<boolean> {
  * refreshing would not change it.
  */
 export async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
-  const send = (): Promise<Response> => fetch(input.startsWith('http') ? input : `${baseUrl}${input}`, {
-    ...init,
-    headers: {
-      ...(init.headers as Record<string, string> | undefined),
-      ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
-      Accept: 'application/json',
-    },
-  })
+  const send = (): Promise<Response> => {
+    const target = input.startsWith('http') ? input : `${baseUrl}${input}`
+    const headers = new Headers(init.headers)
+    if (token.value)
+      headers.set('Authorization', `Bearer ${token.value}`)
+    headers.set('Accept', 'application/json')
+
+    const method = (init.method || 'GET').toUpperCase()
+    const pageOrigin = typeof window !== 'undefined' ? window.location?.origin : undefined
+    const sameOrigin = !!pageOrigin && new URL(target, pageOrigin).origin === pageOrigin
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && sameOrigin && !headers.has(CSRF_COOKIE_NAME)) {
+      const csrfToken = readCsrfToken()
+      if (csrfToken)
+        headers.set(CSRF_COOKIE_NAME, csrfToken)
+    }
+
+    return fetch(target, {
+      credentials: 'same-origin',
+      ...init,
+      headers,
+    })
+  }
 
   const response = await send()
   if (response.status !== 401 || !refreshToken.value)
@@ -207,12 +221,6 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
 export function useAuth(): AuthComposable {
   async function fetchAuthUser(): Promise<UserData | null> {
     try {
-      if (!token.value) {
-        isAuthenticated.value = false
-        user.value = null
-        return null
-      }
-
       // `authFetch` turns a 401 into refresh-then-retry, so an expired access
       // token renews instead of ending the session. Previously any non-ok
       // response cleared state, which made a one-hour-old token and a revoked
@@ -325,33 +333,28 @@ export function useAuth(): AuthComposable {
   }
 
   async function logout() {
-    try {
-      // Read via the same `useStorage`-backed ref the rest of the composable
-      // uses. Reading localStorage directly here meant cross-tab logouts
-      // (token cleared in another tab via useStorage) were invisible to the
-      // request, so we'd POST /logout with a stale token and surface a 401.
-      const currentToken = token.value
-      if (currentToken) {
-        await fetch(`${baseUrl}/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-            Accept: 'application/json',
-          },
-        })
-      }
-    }
-    catch (error) {
-      console.error('Error during logout:', error)
-    }
-    finally {
-      // useStorage's setter syncs the underlying localStorage so other tabs
-      // see the change via `storage` events. Setting localStorage manually
-      // would skip that broadcast. Clears the refresh token too — leaving it
-      // behind would let a later refresh silently resurrect a session the
-      // user just ended.
-      clearSession()
-    }
+    // Read via the same `useStorage`-backed ref the rest of the composable
+    // uses. Reading localStorage directly here meant cross-tab logouts
+    // (token cleared in another tab via useStorage) were invisible to the
+    // request, so we'd POST /logout with a stale token and surface a 401.
+    const currentToken = token.value
+    const response = await fetch(`${baseUrl}/logout`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: withCsrfHeader({
+        ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
+        Accept: 'application/json',
+      }),
+    })
+    if (!response.ok)
+      throw new Error(`Logout failed with status ${response.status}`)
+
+    // useStorage's setter syncs the underlying localStorage so other tabs see
+    // the change via `storage` events. Clear only after server revocation
+    // succeeds: otherwise the HttpOnly cookie remains valid while the UI lies
+    // that the user signed out, and the next identity request signs them in
+    // again. The refresh token must go too, or refresh can resurrect a logout.
+    clearSession()
   }
 
 

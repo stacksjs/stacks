@@ -89,7 +89,7 @@ export interface AuthComposable {
    */
   completeSocialLogin: (pack?: SessionHandoffPack | null) => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   getToken: () => string | null
   /**
    * The ACCESS token. Short-lived — `config.auth.tokenExpiry` caps it at one

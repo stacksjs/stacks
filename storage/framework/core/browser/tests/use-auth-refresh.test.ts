@@ -28,12 +28,16 @@ const store = new Map<string, string>()
 // set: a wall-clock sleep would make these assertions a race on a loaded CI
 // runner, and the thing under test has nothing to do with frame timing.
 const REAL_GLOBALS = {
+  document: (globalThis as any).document,
+  location: (globalThis as any).location,
   localStorage: (globalThis as any).localStorage,
   window: (globalThis as any).window,
   __STACKS_CONFIG__: (globalThis as any).__STACKS_CONFIG__,
   requestAnimationFrame: (globalThis as any).requestAnimationFrame,
 }
 ;(globalThis as any).requestAnimationFrame = (fn: () => void) => { fn(); return 0 }
+;(globalThis as any).document = { cookie: 'X-CSRF-Token=csrf-proof' }
+;(globalThis as any).location = { origin: 'https://api.test' }
 
 /*
  * Put every global back.
@@ -66,6 +70,10 @@ function seed(key: string, value: string): void {
 function persisted(key: string): string {
   const raw = store.get(key)
   return raw === undefined ? '' : JSON.parse(raw)
+}
+
+function requestHeader(call: Call, name: string): string | null {
+  return new Headers(call.init.headers).get(name)
 }
 
 const realFetch = globalThis.fetch
@@ -135,7 +143,7 @@ describe('useAuth refresh cycle (#2235)', () => {
       'https://api.test/api/sites',
     ])
     // The retry carries the NEW token, not the expired one.
-    expect((calls[2]!.init.headers as any).Authorization).toBe('Bearer access-2')
+    expect(requestHeader(calls[2]!, 'Authorization')).toBe('Bearer access-2')
     // Rotation is stored, so the next expiry can refresh again.
     await flush()
     expect(persisted('refresh_token')).toBe('refresh-2')
@@ -155,7 +163,7 @@ describe('useAuth refresh cycle (#2235)', () => {
         return json({ access_token: 'access-2', refresh_token: 'refresh-2' })
       }
       // Every protected call 401s until the token is replaced.
-      const auth = (call.init.headers as any)?.Authorization
+      const auth = requestHeader(call, 'Authorization')
       return auth === 'Bearer access-2' ? json({ ok: true }) : json({}, 401)
     }]
 
@@ -237,6 +245,70 @@ describe('useAuth refresh cycle (#2235)', () => {
     expect(calls[0]!.url).toBe('https://api.test/api/me')
   })
 
+  test('a cookie-only session can hydrate the authenticated user', async () => {
+    const { useAuth } = await load()
+    responders = [() => json({ id: 1, email: 'cookie@b.co' })]
+
+    const resolved = await useAuth().fetchAuthUser()
+
+    expect(resolved).toEqual({ id: 1, email: 'cookie@b.co' })
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.init.credentials).toBe('same-origin')
+    expect(requestHeader(calls[0]!, 'Authorization')).toBeNull()
+  })
+
+  test('a cookie-only session can log out with the seeded CSRF token', async () => {
+    const { useAuth } = await load()
+    responders = [() => json({ message: 'Successfully logged out' })]
+
+    await useAuth().logout()
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.url).toBe('https://api.test/logout')
+    expect(calls[0]!.init.credentials).toBe('same-origin')
+    expect(requestHeader(calls[0]!, 'X-CSRF-Token')).toBe('csrf-proof')
+    expect(requestHeader(calls[0]!, 'Authorization')).toBeNull()
+  })
+
+  test('a cookie-only mutation through authFetch echoes the seeded CSRF token', async () => {
+    const { authFetch } = await load()
+    responders = [() => json({ updated: true })]
+
+    const res = await authFetch('/api/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Cookie User' }),
+    })
+
+    expect(res.status).toBe(200)
+    expect(calls[0]!.init.credentials).toBe('same-origin')
+    expect(requestHeader(calls[0]!, 'X-CSRF-Token')).toBe('csrf-proof')
+    expect(requestHeader(calls[0]!, 'Authorization')).toBeNull()
+  })
+
+  test('authFetch never forwards the page CSRF token to another origin', async () => {
+    const { authFetch } = await load()
+    responders = [() => json({ updated: true })]
+
+    await authFetch('https://external.example/profile', { method: 'PATCH' })
+
+    expect(requestHeader(calls[0]!, 'X-CSRF-Token')).toBeNull()
+  })
+
+  test('authFetch preserves a caller-supplied CSRF header case-insensitively', async () => {
+    const { authFetch } = await load()
+    responders = [() => json({ updated: true })]
+
+    await authFetch('/api/profile', {
+      method: 'PATCH',
+      headers: { 'x-csrf-token': 'caller-proof' },
+    })
+
+    const headers = new Headers(calls[0]!.init.headers)
+    expect(headers.get('X-CSRF-Token')).toBe('caller-proof')
+    expect([...headers.keys()].filter(name => name === 'x-csrf-token')).toHaveLength(1)
+  })
+
   test('logout clears the refresh token too', async () => {
     seed('token', 'valid')
     seed('refresh_token', 'refresh-1')
@@ -249,5 +321,31 @@ describe('useAuth refresh cycle (#2235)', () => {
     // user just ended.
     await flush()
     expect(persisted('refresh_token')).toBe('')
+  })
+
+  test('a refused logout preserves local credentials and reports failure', async () => {
+    seed('token', 'still-valid')
+    seed('refresh_token', 'still-refreshable')
+    const { useAuth } = await load()
+    responders = [() => json({ message: 'CSRF token mismatch' }, 403)]
+
+    await expect(useAuth().logout()).rejects.toThrow('Logout failed with status 403')
+
+    await flush()
+    expect(persisted('token')).toBe('still-valid')
+    expect(persisted('refresh_token')).toBe('still-refreshable')
+  })
+
+  test('an unreachable logout preserves local credentials and reports failure', async () => {
+    seed('token', 'still-valid')
+    seed('refresh_token', 'still-refreshable')
+    const { useAuth } = await load()
+    responders = [() => { throw new TypeError('Failed to fetch') }]
+
+    await expect(useAuth().logout()).rejects.toThrow('Failed to fetch')
+
+    await flush()
+    expect(persisted('token')).toBe('still-valid')
+    expect(persisted('refresh_token')).toBe('still-refreshable')
   })
 })

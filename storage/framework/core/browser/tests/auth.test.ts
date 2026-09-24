@@ -86,6 +86,13 @@ describe('defaults/functions/auth.ts stays off the `.data.` envelope', () => {
     expect(source).toMatch(/const data = await response\.json\(\) as MeResponse\s*\n\s*user\.value = data/)
   })
 
+  it('does not require JavaScript token storage for cookie-backed identity or logout', () => {
+    const source = readFileSync(resolve(DEFAULTS_ROOT, 'functions/auth.ts'), 'utf-8')
+
+    expect(source).not.toMatch(/if \(!token\.value\) \{\s*isAuthenticated\.value = false/)
+    expect(source).not.toMatch(/if \(token\.value\) \{\s*await fetch\(`\$\{baseUrl\}\/logout`/)
+  })
+
   it('dashboard.ts types declare the flat shape LoginAction/RegisterAction/AuthUserAction return', () => {
     const source = readFileSync(resolve(DEFAULTS_ROOT, 'types/dashboard.ts'), 'utf-8')
 
