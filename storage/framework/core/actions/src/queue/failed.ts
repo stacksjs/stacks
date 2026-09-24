@@ -52,8 +52,10 @@ try {
   for (const job of failedJobs) {
     const id = String(job.id).padEnd(3)
     const queue = (job.queue || 'default').substring(0, 48).padEnd(48)
-    const failedAt = (job.failed_at || 'N/A').substring(0, 21).padEnd(21)
-    const exception = (job.exception || 'Unknown error').substring(0, 31).padEnd(31)
+    const failedAt = String(job.failed_at || 'N/A').substring(0, 21).padEnd(21)
+    // The exception column is TEXT but typed loosely by the generated table
+    // types; String() prints whatever the driver hands back.
+    const exception = String(job.exception || 'Unknown error').substring(0, 31).padEnd(31)
 
     console.log(`│ ${id} │ ${queue} │ ${failedAt} │ ${exception} │`)
   }
