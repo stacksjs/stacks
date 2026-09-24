@@ -664,9 +664,15 @@ export function jobBatch(jobs: Array<import('./action').Job | import('./batch').
  * subpath under the `bun` condition and does not land on the file.
  */
 export async function resolveJobFile(name: string): Promise<string | null> {
+  // `SendEmail`, then `SendEmailJob`. The mailer dispatches `SendEmail`
+  // (`mail.queue()` and friends) while the framework ships its handler as
+  // `SendEmailJob.ts`, so looking up only `${name}.ts` failed every queued
+  // email with "Job SendEmail not found" in every app. Each place is tried
+  // with both spellings before the next, so an app's own copy still wins.
+  const files = name.endsWith('Job') ? [`${name}.ts`] : [`${name}.ts`, `${name}Job.ts`]
   const candidates = [
-    appPath(`Jobs/${name}.ts`),
-    frameworkPath(`defaults/app/Jobs/${name}.ts`),
+    ...files.map(file => appPath(`Jobs/${file}`)),
+    ...files.map(file => frameworkPath(`defaults/app/Jobs/${file}`)),
   ]
 
   for (const candidate of candidates) {
@@ -674,16 +680,20 @@ export async function resolveJobFile(name: string): Promise<string | null> {
       return candidate
   }
 
-  let packageCandidate: string | undefined
+  let packageRoot: string | undefined
   try {
     const pkgUrl = import.meta.resolve('@stacksjs/defaults/package.json')
-    const root = new URL('.', pkgUrl).pathname
-    packageCandidate = `${root}app/Jobs/${name}.ts`
+    packageRoot = new URL('.', pkgUrl).pathname
   }
   catch { /* not installed in this layout */ }
 
-  if (packageCandidate && await Bun.file(packageCandidate).exists())
-    return packageCandidate
+  if (packageRoot) {
+    for (const file of files) {
+      const packageCandidate = `${packageRoot}app/Jobs/${file}`
+      if (await Bun.file(packageCandidate).exists())
+        return packageCandidate
+    }
+  }
   return null
 }
 
@@ -713,7 +723,7 @@ export async function runJob(name: string, options: { payload?: any; context?: a
     // when the job was meant to come from the framework.
     if (!jobPath) {
       throw new Error(
-        `Job ${name} not found. Looked in app/Jobs/${name}.ts and the framework defaults `
+        `Job ${name} not found. Looked in app/Jobs/${name}.ts${name.endsWith('Job') ? '' : ` (and ${name}Job.ts)`} and the framework defaults `
         + `(storage/framework/defaults/app/Jobs, @stacksjs/defaults).`,
       )
     }

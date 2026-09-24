@@ -61,6 +61,20 @@ describe('resolveJobFile (#2225)', () => {
     }
   })
 
+  it('resolves the name the mailer dispatches, SendEmail, to the shipped SendEmailJob', async () => {
+    // `mail.queue()` dispatches `SendEmail`; the framework ships the handler
+    // as SendEmailJob.ts. Looking up only `SendEmail.ts` failed every queued
+    // email in every app with "Job SendEmail not found".
+    const resolved = await resolveJobFile('SendEmail')
+    expect(resolved).not.toBeNull()
+    expect(resolved).toContain('app/Jobs/SendEmailJob.ts')
+  })
+
+  it('does not look for a doubled suffix', async () => {
+    // `FooJob` is looked up as FooJob.ts only, never FooJobJob.ts.
+    expect(await resolveJobFile('__NoSuchJobAnywhereJob')).toBeNull()
+  })
+
   it('resolves the other shipped defaults too, not just one special case', async () => {
     for (const name of ['SendEmailJob', 'PruneQueryLogsJob', 'SyncSearchIndexJob']) {
       expect(await resolveJobFile(name)).not.toBeNull()
