@@ -24,7 +24,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
     [dialect]: { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD },
   }, queryLogging: { enabled: false },
 } })
-const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../../src/tokens')
+const { createClient, createToken, findToken, refreshToken, validateRefreshToken } = await import('../../src/tokens')
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>): Promise<void> {
   try { await run(); console.log(`PASS ${name}`) }
@@ -39,8 +39,47 @@ async function snapshot() {
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
+  await db.insertInto('users').values({ id: 43 }).execute()
   assert.equal((await migrateAuthTables()).success, true)
   const existing = await createToken(42, 'existing session', ['read'])
+  const otherClient = await createClient({ name: 'other client', redirect: 'https://other.invalid', passwordClient: true })
+  for (const method of ['create', 'access-only', 'refresh'] as const) {
+    for (const fault of ['owner', 'owner type', 'legacy owner', 'client', 'scopes', 'revoked', 'unbounded expiry', 'extended expiry']) {
+      await check(`${method} rejects altered access ${fault} and preserves all existing grants`, async () => {
+        const original = await createToken(42, 'access replacement source', ['read'])
+        const before = await snapshot()
+        const assignment = fault === 'owner' ? 'tokenable_id = 43'
+          : fault === 'owner type' ? "tokenable_type = 'authors'"
+            : fault === 'legacy owner' ? 'user_id = 43'
+              : fault === 'client' ? `oauth_client_id = ${Number(otherClient.client.id)}`
+                : fault === 'scopes' ? `scopes = '["*"]'`
+                  : fault === 'revoked' ? `revoked = ${dialect === 'postgres' ? 'true' : '1'}`
+                    : fault === 'unbounded expiry' ? 'expires_at = NULL' : "expires_at = '2037-01-01 00:00:00'"
+        if (dialect === 'postgres') {
+          await db.unsafe(`CREATE FUNCTION alter_access_creation() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN NEW.${assignment.replace(' = ', ' := ')}; RETURN NEW; END; $$`).execute()
+          await db.unsafe('CREATE TRIGGER alter_access_creation BEFORE INSERT ON oauth_access_tokens FOR EACH ROW EXECUTE FUNCTION alter_access_creation()').execute()
+        }
+        else if (dialect === 'mysql')
+          await db.unsafe(`CREATE TRIGGER alter_access_creation BEFORE INSERT ON oauth_access_tokens FOR EACH ROW SET NEW.${assignment}`).execute()
+        else
+          await db.unsafe(`CREATE TRIGGER alter_access_creation AFTER INSERT ON oauth_access_tokens BEGIN UPDATE oauth_access_tokens SET ${assignment} WHERE id = NEW.id; END`).execute()
+        try {
+          await assert.rejects(method === 'refresh' ? refreshToken(original.refreshToken!)
+            : createToken(42, 'requested access grant', ['read'], { withRefreshToken: method !== 'access-only' }),
+          /Failed to persist the requested access token/)
+          assert.deepEqual(await snapshot(), before, 'mismatched issuance must roll back its new rows and any old-pair revocation')
+          assert(await findToken(original.plainTextToken))
+          assert.equal(await validateRefreshToken(original.refreshToken!), true)
+          assert(await findToken(existing.plainTextToken))
+          assert.equal(await validateRefreshToken(existing.refreshToken!), true)
+        }
+        finally {
+          await db.unsafe(`DROP TRIGGER alter_access_creation${dialect === 'postgres' ? ' ON oauth_access_tokens' : ''}`).execute()
+          if (dialect === 'postgres') await db.unsafe('DROP FUNCTION alter_access_creation()').execute()
+        }
+      })
+    }
+  }
   for (const table of ['oauth_access_tokens', 'oauth_refresh_tokens'] as const) {
     await check(`rejected ${table} insert leaves no partial session`, async () => {
       const before = await snapshot()

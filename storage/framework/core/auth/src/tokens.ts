@@ -82,6 +82,24 @@ async function verifyRefreshTokenInsert(
     throw new HttpError(500, 'Failed to persist the requested refresh token')
 }
 
+/** Use the existing read-back to verify the grant before returning its secret. */
+function verifyAccessTokenInsert(row: AccessTokenRow, expected: {
+  ownerId: number
+  ownerType: string
+  clientId: number
+  scopes: TokenScopes
+  expiresAt: Date
+}): void {
+  if (String(row.tokenable_id) !== String(expected.ownerId)
+    || String(row.user_id) !== String(expected.ownerId)
+    || row.tokenable_type !== expected.ownerType
+    || String(row.oauth_client_id) !== String(expected.clientId)
+    || (row.revoked !== false && row.revoked !== 0)
+    || parseSqlDateTime(row.expires_at)?.getTime() !== expected.expiresAt.getTime()
+    || JSON.stringify(parseScopes(row.scopes)) !== JSON.stringify(expected.scopes))
+    throw new HttpError(500, 'Failed to persist the requested access token')
+}
+
 function refreshDeadline(days: number): Date {
   const { isMysql } = tokenSql()
   const deadline = new Date()
@@ -615,6 +633,7 @@ export async function createToken(
     if (!row) {
       throw new HttpError(500, 'Failed to create access token - inserted row not found')
     }
+    verifyAccessTokenInsert(row, { ownerId: userId, ownerType: tokenableType, clientId: client.id, scopes, expiresAt })
 
     const accessToken: AccessToken = {
       id: row.id,
@@ -793,6 +812,8 @@ export async function refreshToken(
     // what went wrong.
     if (!row)
       throw new HttpError(500, 'Failed to read back the access token that was just created.')
+    verifyAccessTokenInsert(row, { ownerId: refreshRow.tokenable_id, ownerType: refreshRow.tokenable_type,
+      clientId: refreshRow.oauth_client_id, scopes: parseScopes(refreshRow.scopes), expiresAt })
 
     const accessToken: AccessToken = {
       id: row.id,
