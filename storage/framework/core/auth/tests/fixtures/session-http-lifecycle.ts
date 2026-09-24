@@ -38,10 +38,11 @@ if (dialect === 'sqlite')
   configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
-const { Auth, SessionAuth, authCookie, authUser, authenticatedUser, authMiddleware, refresh } = await import('@stacksjs/auth')
+const { Auth, SessionAuth, authCookie, authCookieName, authUser, authenticatedUser, authMiddleware, refresh } = await import('@stacksjs/auth')
 const { makeHash } = await import('@stacksjs/security')
 const { createStacksRouter } = await import('@stacksjs/router')
 const LogoutAction = (await import('../../../../defaults/app/Actions/Auth/LogoutAction')).default
+const LoginAction = (await import('../../../../defaults/app/Actions/Auth/LoginAction')).default
 
 const emails = ['alice@session.test', 'bob@session.test']
 const password = 'session-fixture-password'
@@ -81,6 +82,7 @@ try {
     const credentials = await req.json() as { email: string, password: string }
     return Auth.login(credentials)
   })
+  router.post('/session-audit/browser-login', LoginAction)
   router.get('/session-audit/me', async () => {
     const before = await Auth.user()
     await new Promise(resolve => setTimeout(resolve, 5))
@@ -177,8 +179,10 @@ try {
     }
 
     let cookies: string[]
+    let browserCookies: string[]
     if (phase === 'login') {
       cookies = []
+      browserCookies = []
       for (const email of emails) {
         const response = await fetch(`${base}/login`, {
           method: 'POST',
@@ -191,16 +195,33 @@ try {
         assert(cookie.includes('HttpOnly'))
         cookies.push(cookie.split(';')[0]!)
         await response.arrayBuffer()
+
+        const browserLogin = await fetch(`${base}/browser-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', accept: 'application/json', cookie: csrfCookie, 'x-csrf-token': csrfToken },
+          body: JSON.stringify({ email, password }),
+        })
+        assert.equal(browserLogin.status, 200, `browser login must succeed: ${browserLogin.status === 200 ? '' : await browserLogin.clone().text()}`)
+        const browserCookie = browserLogin.headers.getSetCookie().find(value => value.startsWith(`${authCookieName()}=`))
+        assert(browserCookie, 'browser login must return its auth cookie')
+        assert(browserCookie.includes('HttpOnly'))
+        browserCookies.push(browserCookie.split(';')[0]!)
+        await browserLogin.arrayBuffer()
       }
       assert.notEqual(cookies[0], cookies[1])
-      writeFileSync(cookiesFile, JSON.stringify(cookies), { mode: 0o600 })
+      assert.notEqual(browserCookies[0], browserCookies[1])
+      writeFileSync(cookiesFile, JSON.stringify({ cookies, browserCookies }), { mode: 0o600 })
     }
     else {
-      cookies = JSON.parse(readFileSync(cookiesFile, 'utf8'))
+      const persisted = JSON.parse(readFileSync(cookiesFile, 'utf8')) as { cookies: string[], browserCookies: string[] }
+      cookies = persisted.cookies
+      browserCookies = persisted.browserCookies
     }
 
     await Promise.all(Array.from({ length: 20 }, (_, index) => me(cookies[index % 2]!, index % 2 + 1)))
+    await Promise.all(Array.from({ length: 20 }, (_, index) => me(browserCookies[index % 2]!, index % 2 + 1)))
     await Promise.all(Array.from({ length: 20 }, (_, index) => identity({ cookie: cookies[index % 2]! }, index % 2 + 1)))
+    await Promise.all(Array.from({ length: 20 }, (_, index) => identity({ cookie: browserCookies[index % 2]! }, index % 2 + 1)))
     await identity({}, null)
     await identity({ cookie: 'session_id=missing-session' }, null)
     await identity({ cookie: cookies[0]!, authorization: 'Bearer invalid-explicit-token' }, null)
@@ -220,6 +241,19 @@ try {
     console.log(`PASS ${phase}: concurrent session isolation and guest rejection`)
 
     if (phase === 'logout') {
+      const browserLogout = await fetch(`${base}/logout`, {
+        method: 'POST',
+        headers: { cookie: `${browserCookies[0]}; ${csrfCookie}`, accept: 'application/json', 'x-csrf-token': csrfToken },
+      })
+      assert.equal(browserLogout.status, 200, 'browser token logout must succeed after restart')
+      const clearedBrowser = browserLogout.headers.getSetCookie().find(value => value.startsWith(`${authCookieName()}=`))
+      assert(clearedBrowser?.includes('Max-Age=0'), 'browser logout must clear the configured auth cookie')
+      await browserLogout.arrayBuffer()
+      const staleBrowser = await fetch(`${base}/me`, { headers: { cookie: browserCookies[0]!, accept: 'application/json' } })
+      await staleBrowser.arrayBuffer()
+      assert.equal(staleBrowser.status, 401, 'copied browser auth cookie must stop authenticating after logout')
+      await me(browserCookies[1]!, 2)
+
       const boundary = new Date('2030-01-02T03:04:05.000Z')
       try {
         setSystemTime(boundary)

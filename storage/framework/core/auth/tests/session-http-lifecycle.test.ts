@@ -49,7 +49,7 @@ async function checkLifecycle(database: { dialect: 'sqlite' | 'postgres' | 'mysq
   }
 }
 
-test('SQLite sessions survive restart and cannot authenticate after HTTP logout', () => checkLifecycle({ dialect: 'sqlite' }), 60_000)
+test('SQLite sessions and browser auth cookies survive restart and cannot authenticate after HTTP logout', () => checkLifecycle({ dialect: 'sqlite' }), 60_000)
 
 // Opt in with a local test server whose role can CREATE DATABASE.
 // Only the uniquely named database created here is ever modified or dropped.
@@ -78,6 +78,6 @@ async function checkServerLifecycle(dialect: 'postgres' | 'mysql', connection: s
   }
 }
 
-test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('PostgreSQL sessions survive restart and cannot authenticate after HTTP logout', () => checkServerLifecycle('postgres', process.env.STACKS_TEST_POSTGRES_URL!), 60_000)
+test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('PostgreSQL sessions and browser auth cookies survive restart and cannot authenticate after HTTP logout', () => checkServerLifecycle('postgres', process.env.STACKS_TEST_POSTGRES_URL!), 60_000)
 
-test.skipIf(!process.env.STACKS_TEST_MYSQL_URL)('MySQL sessions survive restart and cannot authenticate after HTTP logout', () => checkServerLifecycle('mysql', process.env.STACKS_TEST_MYSQL_URL!), 60_000)
+test.skipIf(!process.env.STACKS_TEST_MYSQL_URL)('MySQL sessions and browser auth cookies survive restart and cannot authenticate after HTTP logout', () => checkServerLifecycle('mysql', process.env.STACKS_TEST_MYSQL_URL!), 60_000)
