@@ -100,6 +100,52 @@ try {
     assert.equal(await SessionAuth.refresh('target', 120_000), true)
     assert.equal(await SessionAuth.check('target'), true)
   })
+  for (const fault of ['suppressed', 'expiry changed', 'owner changed']) {
+    await check(`renewal rejects a ${fault} update without persisting a partial change`, async () => {
+      const before = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
+      const assignment = fault === 'owner changed' ? 'user_id = 999' : 'expires_at = NULL'
+      if (dialect === 'postgres') {
+        const body = fault === 'suppressed' ? 'RETURN NULL;' : `NEW.${assignment.replace(' = ', ' := ')}; RETURN NEW;`
+        await db.unsafe(`CREATE FUNCTION alter_session_renewal() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN ${body} END; $$`).execute()
+        await db.unsafe('CREATE TRIGGER alter_session_renewal BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE FUNCTION alter_session_renewal()').execute()
+      }
+      else if (dialect === 'mysql')
+        await db.unsafe(`CREATE TRIGGER alter_session_renewal BEFORE UPDATE ON sessions FOR EACH ROW SET ${fault === 'suppressed'
+          ? 'NEW.expires_at = OLD.expires_at, NEW.last_activity = OLD.last_activity' : `NEW.${assignment}`}`).execute()
+      else
+        await db.unsafe(`CREATE TRIGGER alter_session_renewal ${fault === 'suppressed' ? 'BEFORE' : 'AFTER'} UPDATE ON sessions BEGIN ${fault === 'suppressed'
+          ? 'SELECT RAISE(IGNORE)' : `UPDATE sessions SET ${assignment} WHERE id = NEW.id`}; END`).execute()
+      try {
+        assert.equal(await SessionAuth.refresh('target', 120_000), false, 'an unpersisted renewal must not report success')
+        assert.deepEqual(await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow(), before)
+      }
+      finally {
+        await db.unsafe(`DROP TRIGGER alter_session_renewal${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
+        if (dialect === 'postgres') await db.unsafe('DROP FUNCTION alter_session_renewal()').execute()
+      }
+    })
+  }
+  await check('a TTL shorter than stored clock precision cannot expire an active session', async () => {
+    const before = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
+    assert.equal(await SessionAuth.refresh('target', 0.1), false)
+    assert.deepEqual(await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow(), before)
+  })
+  await check('a renewed deadline reached during read-back rolls the change back', async () => {
+    const before = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
+    let wrote = false
+    let advanced = false
+    const unregister = registerPersistentQueryHooks({ onQueryStart(event) {
+      if (!event.sql.includes('sessions')) return
+      if (event.kind === 'update') wrote = true
+      if (wrote && event.kind === 'select') {
+        advanced = true
+        setSystemTime(new Date(now.getTime() + 1000))
+      }
+    } })
+    try { assert.equal(await SessionAuth.refresh('target', 1000), false); assert(advanced) }
+    finally { unregister() }
+    assert.deepEqual(await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow(), before)
+  })
   await check('caller rollback also rolls back a valid renewal', async () => {
     await assert.rejects(db.transaction(async () => {
       assert.equal(await SessionAuth.refresh('target', 120_000), true)

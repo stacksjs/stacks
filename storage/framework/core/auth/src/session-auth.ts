@@ -333,7 +333,8 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
       return false
 
     return await db.transaction(async () => {
-      if (getDatabaseDialect() === 'mysql') {
+      const mysql = getDatabaseDialect() === 'mysql'
+      if (mysql) {
         // MySQL emulates RETURNING with reads. Lock the observed version first
         // so a repeatable-read snapshot cannot report a concurrently deleted
         // or replaced session as an updated row.
@@ -343,25 +344,45 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
         if (!current) return false
       }
       const newExpiry = new Date(Date.now() + ttlMs)
+      // MySQL's whole-second TIMESTAMP must not round the promised deadline
+      // upward. An unrepresentably short TTL must leave the session intact.
+      if (mysql) newExpiry.setMilliseconds(0)
+      if (!Number.isFinite(newExpiry.getTime()) || newExpiry.getTime() <= Date.now())
+        return false
+      const lastActivity = Math.floor(Date.now() / 1000)
       const result = await db.updateTable('sessions')
         .set({
           expires_at: sqlDateTime(newExpiry),
-          last_activity: Math.floor(Date.now() / 1000),
+          last_activity: lastActivity,
         })
         .where('id', '=', sessionId)
         .where('expires_at', '=', session.expires_at)
+        .where('user_id', '=', session.user_id)
         .returning('id')
         .executeTakeFirst()
 
       // Do not revive a session which expired while the UPDATE waited. Throw
       // inside the transaction so its writes roll back before returning false.
-      if (Date.now() >= expiresAt)
+      if (Date.now() >= expiresAt || Date.now() >= newExpiry.getTime())
         throw new Error('[auth] Session expired during renewal.')
 
       // Compare against the observed version: another refresh or expiry
       // change must not be overwritten by this stale reader. Returning a row
       // preserves same-value MySQL refreshes, unlike changed-row counts.
-      return Boolean(result)
+      if (!result) return false
+
+      // RETURNING may be emulated, and a trigger may alter or suppress the
+      // update. Verify the actual stored credential before committing it.
+      let storedQuery = db.primary.selectFrom('sessions').where('id', '=', sessionId)
+        .select(['user_id', 'expires_at', 'last_activity'])
+      if (mysql) storedQuery = storedQuery.lockForUpdate()
+      const stored = await storedQuery.executeTakeFirst()
+      if (!stored || String(stored.user_id) !== String(session.user_id)
+        || parseSqlDateTime(stored.expires_at)?.getTime() !== newExpiry.getTime()
+        || Number(stored.last_activity) !== lastActivity
+        || Date.now() >= Math.min(expiresAt, newExpiry.getTime()))
+        throw new Error('[auth] Session renewal did not persist the requested credential.')
+      return true
     })
   }
   catch {
