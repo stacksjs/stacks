@@ -177,6 +177,19 @@ describe('useAuth refresh cycle (#2235)', () => {
     expect(auth.isAuthenticated.value).toBe(false)
   })
 
+  test('the scaffold auth flow rejects malformed sessions and unsafe redirects', async () => {
+    const { isLoginResponse, isTwoFactorChallenge, safeAuthRedirect } = await import(`../../../defaults/functions/auth?t=${Math.random()}`)
+
+    expect(isLoginResponse({ token: null, user: null })).toBe(false)
+    expect(isLoginResponse({ token: 'access', user: { id: 1 } })).toBe(true)
+    expect(isTwoFactorChallenge({ requires_two_factor: true, challenge_token: '' })).toBe(false)
+    expect(isTwoFactorChallenge({ requires_two_factor: true, challenge_token: 'challenge-1' })).toBe(true)
+    expect(safeAuthRedirect('/dashboard?tab=security#sessions')).toBe('/dashboard?tab=security#sessions')
+    expect(safeAuthRedirect('/\\evil.example/login')).toBe('/')
+    expect(safeAuthRedirect('//evil.example/login')).toBe('/')
+    expect(safeAuthRedirect('https://evil.example/login')).toBe('/')
+  })
+
   test('persists the refresh token from a login response', async () => {
     const { useAuth } = await load()
     responders = [() => json({ token: 'access-1', refresh_token: 'refresh-1', user: { id: 1 } })]

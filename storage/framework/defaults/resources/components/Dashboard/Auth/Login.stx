@@ -51,7 +51,7 @@ function handleSubmit(): void {
   emit('submit', {
     email: email(),
     password: password(),
-    rememberMe: rememberMe(),
+    remember: rememberMe(),
   })
 }
 </script>

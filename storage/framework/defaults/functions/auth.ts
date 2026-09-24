@@ -28,6 +28,46 @@ const baseUrl = resolveApiBaseUrl('')
 // Create singleton state
 const isAuthenticated = ref(false)
 
+export function isTwoFactorChallenge(data: unknown): data is TwoFactorLoginChallenge {
+  if (!data || typeof data !== 'object')
+    return false
+  const candidate = data as Record<string, unknown>
+  return candidate.requires_two_factor === true && typeof candidate.challenge_token === 'string' && candidate.challenge_token.length > 0
+}
+
+export function isLoginResponse(data: unknown): data is LoginResponse {
+  if (!data || typeof data !== 'object')
+    return false
+  const candidate = data as Record<string, unknown>
+  return typeof candidate.token === 'string'
+    && candidate.token.length > 0
+    && typeof candidate.user === 'object'
+    && candidate.user !== null
+    && (candidate.refresh_token === undefined
+      || (typeof candidate.refresh_token === 'string' && candidate.refresh_token.length > 0))
+}
+
+/** Normalize a requested post-auth destination and reject cross-origin forms. */
+export function safeAuthRedirect(value: unknown): string {
+  if (typeof value !== 'string')
+    return '/'
+  const candidate = value.trim()
+  if (!candidate.startsWith('/') || candidate.startsWith('//'))
+    return '/'
+
+  try {
+    const base = new URL('https://stacks.invalid')
+    const resolved = new URL(candidate, base)
+    if (resolved.origin !== base.origin)
+      return '/'
+    const target = `${resolved.pathname}${resolved.search}${resolved.hash}`
+    return target.startsWith('/') && !target.startsWith('//') ? target : '/'
+  }
+  catch {
+    return '/'
+  }
+}
+
 export interface AuthComposable {
   isAuthenticated: Ref<boolean>
   user: { value: UserData | null }
@@ -42,25 +82,6 @@ export interface AuthComposable {
 }
 
 export function useAuth(): AuthComposable {
-  function isTwoFactorChallenge(data: unknown): data is TwoFactorLoginChallenge {
-    if (!data || typeof data !== 'object')
-      return false
-    const candidate = data as Record<string, unknown>
-    return candidate.requires_two_factor === true && typeof candidate.challenge_token === 'string' && candidate.challenge_token.length > 0
-  }
-
-  function isLoginResponse(data: unknown): data is LoginResponse {
-    if (!data || typeof data !== 'object')
-      return false
-    const candidate = data as Record<string, unknown>
-    return typeof candidate.token === 'string'
-      && candidate.token.length > 0
-      && typeof candidate.user === 'object'
-      && candidate.user !== null
-      && (candidate.refresh_token === undefined
-        || (typeof candidate.refresh_token === 'string' && candidate.refresh_token.length > 0))
-  }
-
   function storeLogin(data: LoginResponse): void {
     token.value = data.token
     user.value = data.user

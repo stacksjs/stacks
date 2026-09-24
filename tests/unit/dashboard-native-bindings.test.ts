@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { describeAuthError, isLoginResponse, isTwoFactorChallenge, safeAuthRedirect } from '../../storage/framework/defaults/functions/auth'
 
 const dashboardComponents = resolve(
   'storage/framework/defaults/resources/components/Dashboard',
@@ -17,6 +18,59 @@ const dashboardComponentBarrel = resolve(
 
 function componentSource(path: string): string {
   return readFileSync(resolve(dashboardComponents, path), 'utf8')
+}
+
+interface TestSignal<T> {
+  (): T
+  set: (value: T) => void
+}
+
+function testSignal<T>(initial: T): TestSignal<T> {
+  let value = initial
+  const signal = (() => value) as TestSignal<T>
+  signal.set = (next: T) => { value = next }
+  return signal
+}
+
+function loginDashboardHarness(options: {
+  login: (credentials: unknown) => Promise<unknown>
+  verify: (challengeToken: string, code: string) => Promise<unknown>
+  redirect?: string
+}) {
+  const source = componentSource('Auth/LoginDashboard.stx')
+  const script = source.match(/<script client>([\s\S]*?)<\/script>/)?.[1]
+  if (!script)
+    throw new Error('LoginDashboard client script is missing')
+
+  const body = script.replace(/^import .*$/gm, '')
+  const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun' })
+  const compiled = transpiler.transformSync(`
+    function createHarness(useAuth, useRoute, state, navigate, describeAuthError, isLoginResponse, isTwoFactorChallenge, safeAuthRedirect) {
+      ${body}
+      return { challengeToken, error, handleLogin, handleTwoFactor, isLoading, restartLogin }
+    }
+  `)
+  const createHarness = new Function(`${compiled}; return createHarness`)() as (...args: unknown[]) => {
+    challengeToken: TestSignal<string>
+    error: TestSignal<string>
+    handleLogin: (credentials: unknown) => Promise<void>
+    handleTwoFactor: (code: string) => Promise<void>
+    isLoading: TestSignal<boolean>
+    restartLogin: () => void
+  }
+  const navigations: string[] = []
+  const harness = createHarness(
+    () => ({ login: options.login, verifyTwoFactorLogin: options.verify }),
+    () => ({ query: { redirect: options.redirect ?? '/dashboard' } }),
+    testSignal,
+    (target: string) => navigations.push(target),
+    describeAuthError,
+    isLoginResponse,
+    isTwoFactorChallenge,
+    safeAuthRedirect,
+  )
+
+  return { ...harness, navigations }
 }
 
 describe('dashboard native STX bindings', () => {
@@ -389,6 +443,24 @@ describe('dashboard native STX bindings', () => {
 
     const login = componentSource('Auth/Login.stx')
     expect(login).toContain('x-model="rememberMe"')
+    expect(login).toContain('remember: rememberMe()')
+    expect(login).not.toContain('rememberMe: rememberMe()')
+
+    const loginDashboard = componentSource('Auth/LoginDashboard.stx')
+    expect(loginDashboard).toContain('verifyTwoFactorLogin(challengeToken(), code)')
+    expect(loginDashboard).toContain('challengeToken.set(result.challenge_token)')
+    expect(loginDashboard).toContain('<TwoFactorLogin')
+    expect(loginDashboard).toContain(':if="!challengeToken()"')
+    expect(loginDashboard).toContain(':if="challengeToken()"')
+    expect(loginDashboard).toContain('@submit="handleTwoFactor"')
+    expect(loginDashboard).toContain('@restart="restartLogin"')
+
+    const twoFactorLogin = componentSource('Auth/TwoFactorLogin.stx')
+    expect(twoFactorLogin).toContain('autocomplete="one-time-code"')
+    expect(twoFactorLogin).toContain('@submit.prevent="submit"')
+    expect(twoFactorLogin).toContain('v-model:value="code"')
+    expect(twoFactorLogin).toContain("emit('submit', code())")
+    expect(twoFactorLogin).toContain("emit('restart')")
 
     const register = componentSource('Auth/Register.stx')
     expect(register).toContain('x-model="agreeToTerms"')
@@ -444,6 +516,58 @@ describe('dashboard native STX bindings', () => {
     expect(accessTokens).toContain('if (authStore.unauthenticated())')
     expect(accessTokens.indexOf('await authStore.load()')).toBeLessThan(accessTokens.indexOf("dashboardApi<TokenListResponse>('/auth/tokens')"))
     expect(accessTokens).not.toContain('event.preventDefault()')
+  })
+
+  test('dashboard login completes the two-factor challenge before navigating', async () => {
+    const session = {
+      access_token: 'access-1',
+      token: 'access-1',
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: { id: 1, email: 'person@example.com', name: 'Person' },
+    }
+    let verification: unknown = { token: null, user: null }
+    const flow = loginDashboardHarness({
+      login: async () => ({ requires_two_factor: true, challenge_token: 'challenge-1' }),
+      verify: async () => verification,
+    })
+
+    await flow.handleLogin({ email: 'person@example.com', password: 'secret', remember: true })
+    expect(flow.challengeToken()).toBe('challenge-1')
+    expect(flow.navigations).toEqual([])
+    expect(flow.isLoading()).toBe(false)
+
+    await flow.handleTwoFactor('000000')
+    expect(flow.challengeToken()).toBe('')
+    expect(flow.navigations).toEqual([])
+    expect(flow.error()).toBe('Invalid or expired login attempt. Please sign in again.')
+
+    await flow.handleLogin({ email: 'person@example.com', password: 'secret', remember: true })
+    verification = session
+    await flow.handleTwoFactor('123456')
+    expect(flow.navigations).toEqual(['/dashboard'])
+
+    await flow.handleLogin({ email: 'person@example.com', password: 'secret', remember: true })
+    flow.restartLogin()
+    expect(flow.challengeToken()).toBe('')
+    expect(flow.error()).toBe('')
+  })
+
+  test('dashboard login normalizes an unsafe post-auth redirect', async () => {
+    const flow = loginDashboardHarness({
+      login: async () => ({
+        access_token: 'access-1',
+        token: 'access-1',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: { id: 1, email: 'person@example.com', name: 'Person' },
+      }),
+      verify: async () => ({ token: null, user: null }),
+      redirect: '/\\evil.example/login',
+    })
+
+    await flow.handleLogin({ email: 'person@example.com', password: 'secret' })
+    expect(flow.navigations).toEqual(['/'])
   })
 
   test('dashboard stores share the authenticated API client', () => {

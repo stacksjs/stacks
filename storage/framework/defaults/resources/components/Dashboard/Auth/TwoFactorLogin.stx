@@ -1,0 +1,63 @@
+@import('../UI/Input', '../UI/Button')
+
+<script client>
+const emit = defineEmits()
+const isLoading = useReactiveProp<boolean>('isLoading', false)
+const error = useReactiveProp<string>('error', '')
+const code = state('')
+const codeError = derived(() => code() && !/^\d{6}$/.test(code()) ? 'Enter the 6-digit code from your authenticator app' : '')
+
+function submit(): void {
+  if (!/^\d{6}$/.test(code()))
+    return
+  emit('submit', code())
+}
+</script>
+
+<div class="flex items-center justify-center px-4 py-12 min-h-screen">
+  <div class="max-w-sm w-full">
+    <div class="mb-8 text-center">
+      <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-blue-500/25 shadow-lg">
+        <span class="h-7 w-7 text-white i-hugeicons-shield-key"></span>
+      </div>
+      <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">Two-factor authentication</h1>
+      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Enter the code from your authenticator app.</p>
+    </div>
+
+    <div class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-xl dark:shadow-black/20">
+      <div :if="error()" role="alert" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
+        <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+      </div>
+
+      <form @submit.prevent="submit">
+        <Input
+          type="text"
+          name="code"
+          label="Authentication code"
+          placeholder="123456"
+          autocomplete="one-time-code"
+          v-model:value="code"
+          :error="codeError()"
+          required
+          :disabled="isLoading()"
+        />
+
+        <div class="grid gap-3 mt-6">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            :loading="isLoading()"
+            :disabled="isLoading() || !/^\d{6}$/.test(code())"
+          >
+            Verify and sign in
+          </Button>
+          <Button type="button" variant="ghost" size="lg" fullWidth :disabled="isLoading()" @click="emit('restart')">
+            Back to sign in
+          </Button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

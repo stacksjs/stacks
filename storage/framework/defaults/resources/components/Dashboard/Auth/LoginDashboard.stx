@@ -1,16 +1,16 @@
 <script client>
 import type { AuthUser } from '../../../../types/dashboard'
-import { describeAuthError, useAuth } from '../../../../functions/auth'
+import { describeAuthError, isLoginResponse, isTwoFactorChallenge, safeAuthRedirect, useAuth } from '../../../../functions/auth'
 
-const { login } = useAuth()
+const { login, verifyTwoFactorLogin } = useAuth()
 const route = useRoute()
 
 const isLoading = state(false)
 const error = state('')
+const challengeToken = state('')
 
 function safeRedirect(): string {
-  const redirect = String(route.query.redirect || '')
-  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+  return safeAuthRedirect(route.query.redirect)
 }
 
 async function handleLogin(credentials: AuthUser): Promise<void> {
@@ -20,7 +20,12 @@ async function handleLogin(credentials: AuthUser): Promise<void> {
   try {
     const result = await login(credentials)
 
-    if (!result || !('token' in result)) {
+    if (isTwoFactorChallenge(result)) {
+      challengeToken.set(result.challenge_token)
+      return
+    }
+
+    if (!isLoginResponse(result)) {
       error.set(describeAuthError(result, 'Invalid credentials'))
       return
     }
@@ -34,10 +39,38 @@ async function handleLogin(credentials: AuthUser): Promise<void> {
     isLoading.set(false)
   }
 }
+
+async function handleTwoFactor(code: string): Promise<void> {
+  isLoading.set(true)
+  error.set('')
+
+  try {
+    const result = await verifyTwoFactorLogin(challengeToken(), code)
+    if (!isLoginResponse(result)) {
+      challengeToken.set('')
+      error.set(describeAuthError(result, 'Invalid or expired login attempt. Please sign in again.'))
+      return
+    }
+
+    navigate(safeRedirect())
+  }
+  catch (err) {
+    error.set(err instanceof Error ? err.message : 'Unable to verify the authentication code')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+function restartLogin(): void {
+  challengeToken.set('')
+  error.set('')
+}
 </script>
 
 <template>
   <Login
+    :if="!challengeToken()"
     @submit="handleLogin"
     :isLoading="isLoading()"
     :error="error()"
@@ -47,4 +80,11 @@ async function handleLogin(credentials: AuthUser): Promise<void> {
          sign-in inside the card. -->
     <template #social><slot name="social" /></template>
   </Login>
+  <TwoFactorLogin
+    :if="challengeToken()"
+    @submit="handleTwoFactor"
+    @restart="restartLogin"
+    :isLoading="isLoading()"
+    :error="error()"
+  />
 </template>
