@@ -158,6 +158,40 @@ try {
       if (dialect === 'postgres') await db.unsafe('DROP FUNCTION alter_session_insert()').execute()
     }
   }
+  await db.insertInto('users').values({ id: 2, name: 'Previous principal', email: 'previous@example.invalid', password: oldHash }).execute()
+  if (dialect === 'postgres') {
+    await db.unsafe("CREATE FUNCTION reject_direct_login() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture direct login denied'; END; $$").execute()
+    await db.unsafe('CREATE TRIGGER reject_direct_login BEFORE INSERT ON oauth_refresh_tokens FOR EACH ROW EXECUTE FUNCTION reject_direct_login()').execute()
+  }
+  else if (dialect === 'mysql')
+    await db.unsafe("CREATE TRIGGER reject_direct_login BEFORE INSERT ON oauth_refresh_tokens FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'fixture direct login denied'").execute()
+  else
+    await db.unsafe("CREATE TRIGGER reject_direct_login BEFORE INSERT ON oauth_refresh_tokens BEGIN SELECT RAISE(ABORT, 'fixture direct login denied'); END").execute()
+  try {
+    const { User } = await import('@stacksjs/orm')
+    const previous = await User.find(2)
+    assert(previous)
+    for (const initial of [undefined, previous]) {
+      try {
+        await runWithRequest(enhanceRequest(new Request('http://localhost/failed-direct-login')), async () => {
+          Auth.setUser(initial)
+          await assert.rejects(Auth.loginUsingId(1), /fixture direct login denied/)
+          assert((await Auth.user()) === initial, 'failed issuance must preserve the previous request principal')
+        })
+      }
+      catch (error) { failures.push(`failed direct login/previous=${Boolean(initial)}: ${error}`) }
+    }
+  }
+  finally {
+    await db.unsafe(`DROP TRIGGER reject_direct_login${dialect === 'postgres' ? ' ON oauth_refresh_tokens' : ''}`).execute()
+    if (dialect === 'postgres') await db.unsafe('DROP FUNCTION reject_direct_login()').execute()
+  }
+  await runWithRequest(enhanceRequest(new Request('http://localhost/successful-direct-login')), async () => {
+    assert.equal(await Auth.user(), undefined)
+    const result = await Auth.loginUsingId(1)
+    assert(result)
+    assert.equal(await Auth.user(), result.user, 'successful issuance establishes the new principal')
+  })
   assert.deepEqual(failures, [])
   console.log('session login races OK')
 }

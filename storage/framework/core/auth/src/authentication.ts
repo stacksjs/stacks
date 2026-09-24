@@ -392,8 +392,10 @@ export class Auth {
       return null
 
     const state = authStateOrNull()
-    if (state) state.authUser = user
     const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(user, options)
+    // A failed mint must not authenticate a guest or replace the request's
+    // previous principal. Publish the new user only after issuance succeeds.
+    if (state) state.authUser = user
     return { user, token: plainTextToken, refreshToken, expiresIn }
   }
 

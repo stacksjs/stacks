@@ -8,8 +8,8 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
   test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} session and bearer logins bind the verified credential version`, async () => {
     const url = dialect === 'sqlite' ? undefined : new URL(connection!)
-    if (url && !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-      throw new Error('Session login races require a local disposable database server')
+    if (url && (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || !url.port || ['5432', '3306'].includes(url.port)))
+      throw new Error('Session login races require a local disposable database server on a non-default port')
     const directory = await mkdtemp(join(tmpdir(), 'stacks-session-login-race-'))
     const name = `stacks_login_race_${crypto.randomUUID().replaceAll('-', '')}`
     const admin = url ? new SQL({ url: url.href, max: 1 }) : undefined
@@ -37,7 +37,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         expect(code, `${stdout}\n${stderr}`).toBe(0)
         expect(stdout).toContain('session login races OK')
       }
-      finally { clearTimeout(watchdog); child.kill() }
+      finally { clearTimeout(watchdog); child.kill(); await child.exited }
     }
     finally {
       try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }
