@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { SQL } from 'bun'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -26,7 +27,7 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { SessionAuth } = await import('../../src/session-auth')
 const { Auth } = await import('../../src/authentication')
-const { createClient, findToken, revokeAllTokens } = await import('../../src/tokens')
+const { createClient, createToken, findToken, revokeAllTokens, revokeClient } = await import('../../src/tokens')
 const { RateLimiter } = await import('../../src/rate-limiter')
 const { makeHash } = await import('@stacksjs/security')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
@@ -201,6 +202,114 @@ try {
     assert(result)
     assert.equal(await Auth.user(), result.user, 'successful issuance establishes the new principal')
   })
+  const bystander = await createToken(2, 'default personal client', ['read'])
+  for (const change of ['unchanged', 'revoked', 'rotated', 'deleted', 'legacy'] as const) {
+    const grantClient = await createClient({ name: `grant ${change}`, redirect: 'https://grant.invalid', passwordClient: true })
+    if (change === 'legacy')
+      await db.updateTable('oauth_clients').set({ secret: grantClient.plainTextSecret }).where('id', '=', grantClient.client.id).execute()
+    const before = await db.primary.selectFrom('oauth_access_tokens').selectAll().orderBy('id').execute()
+    let intervened = false
+    RateLimiter.useStore({ get: () => undefined, set() {}, async delete() {
+      intervened = true
+      if (change === 'revoked') await revokeClient(grantClient.client.id)
+      if (change === 'rotated') await db.updateTable('oauth_clients').set({ secret: 'synthetic-replaced-secret' }).where('id', '=', grantClient.client.id).execute()
+      if (change === 'deleted') await db.deleteFrom('oauth_clients').where('id', '=', grantClient.client.id).execute()
+    } })
+    try {
+      const issue = () => Auth.requestToken({ email, password: 'old-synthetic-password' }, grantClient.client.id, grantClient.plainTextSecret)
+      if (change === 'unchanged' || change === 'legacy') {
+        const result = await issue()
+        assert(result)
+        assert.equal(Number((await findToken(result.token))?.clientId), Number(grantClient.client.id),
+          'the token must belong to the authenticated client, not the default personal client')
+      }
+      else {
+        await assert.rejects(issue(), /Invalid client credentials/)
+        assert.deepEqual(await db.primary.selectFrom('oauth_access_tokens').selectAll().orderBy('id').execute(), before, 'client change must prevent all issuance')
+      }
+      assert(intervened, 'the client change must happen after both credential checks')
+      assert(await findToken(bystander.plainTextToken), 'another client remains untouched')
+    }
+    catch (error) { failures.push(`client grant ${change}: ${error}`) }
+    finally { RateLimiter.useMemoryStore() }
+  }
+  if (dialect !== 'sqlite') {
+    const observer = new SQL({ adapter: dialect, hostname: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
+      username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+      tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+    try {
+      const grantClient = await createClient({ name: 'concurrent revocation', redirect: 'https://grant.invalid', passwordClient: true })
+      const blocker = await observer.reserve()
+      let held = false
+      let done = false
+      let pending: Promise<unknown> | undefined
+      RateLimiter.useStore({ get: () => undefined, set() {}, async delete() {
+        await blocker.unsafe('BEGIN'); held = true
+        await blocker.unsafe(`UPDATE oauth_clients SET revoked = TRUE WHERE id = ${dialect === 'postgres' ? '$1' : '?'}`, [grantClient.client.id])
+      } })
+      try {
+        pending = Auth.requestToken({ email, password: 'old-synthetic-password' }, grantClient.client.id, grantClient.plainTextSecret)
+          .finally(() => { done = true })
+        void pending.catch(() => {})
+        let waiting = false
+        const deadline = performance.now() + 5000
+        while (!done && !waiting && performance.now() < deadline) {
+          const rows = await observer.unsafe(dialect === 'postgres'
+            ? "SELECT COUNT(*) AS count FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock' AND pid != pg_backend_pid()"
+            : "SELECT COUNT(*) AS count FROM performance_schema.data_locks WHERE OBJECT_SCHEMA = DATABASE() AND LOCK_STATUS = 'WAITING'")
+          waiting = Number(rows[0].count) > 0
+          if (!waiting) await Bun.sleep(10)
+        }
+        assert(waiting && !done, 'issuance must wait for the independent client update')
+        await blocker.unsafe('COMMIT'); held = false
+        await assert.rejects(pending, /Invalid client credentials/)
+        assert.equal((await db.primary.selectFrom('oauth_access_tokens').where('oauth_client_id', '=', grantClient.client.id).selectAll().execute()).length, 0)
+      }
+      catch (error) { failures.push(`client revocation lock: ${error}`) }
+      finally {
+        if (held) await blocker.unsafe('ROLLBACK')
+        await pending?.catch(() => {})
+        blocker.release()
+        RateLimiter.useMemoryStore()
+      }
+
+      const sharedClient = await createClient({ name: 'concurrent users', redirect: 'https://grant.invalid', passwordClient: true })
+      let startSecond!: () => void
+      const ready = new Promise<void>((resolve) => { startSecond = resolve })
+      // Create this continuation outside the first user's transaction context.
+      const second = (async () => {
+        await ready
+        const result = await Auth.requestToken({ email: 'previous@example.invalid', password: 'old-synthetic-password' }, sharedClient.client.id, sharedClient.plainTextSecret)
+        assert(result)
+        assert.equal(Number((await findToken(result.token))?.clientId), Number(sharedClient.client.id))
+        return result
+      })()
+      void second.catch(() => {})
+      try {
+        await db.transaction(async () => {
+          const first = await Auth.requestToken({ email, password: 'old-synthetic-password' }, sharedClient.client.id, sharedClient.plainTextSecret)
+          assert(first)
+          startSecond()
+          let timeout: ReturnType<typeof setTimeout> | undefined
+          try {
+            const result = await Promise.race([second, new Promise<never>((_, reject) => {
+              timeout = setTimeout(() => reject(new Error('the client lock serialized unrelated users')), 5000)
+            })])
+            assert(result)
+          }
+          finally { clearTimeout(timeout) }
+          throw new Error('rollback first client grant')
+        }).then(() => assert.fail('rollback expected'), error => assert.match(String(error), /rollback first client grant/))
+        const remaining = await db.primary.selectFrom('oauth_access_tokens').where('oauth_client_id', '=', sharedClient.client.id).selectAll().execute()
+        assert.equal(remaining.length, 1, 'only the independently committed second user survives')
+        assert.equal(Number(remaining[0]!.user_id), 2)
+      }
+      catch (error) { failures.push(`concurrent client users: ${error}`) }
+      finally { startSecond(); await second.catch(() => {}) }
+    }
+    finally { await observer.close() }
+  }
   assert.deepEqual(failures, [])
   console.log('session login races OK')
 }

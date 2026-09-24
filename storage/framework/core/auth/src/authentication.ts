@@ -189,7 +189,7 @@ export class Auth {
     }
   }
 
-  private static async validateClient(clientId: number, clientSecret: string): Promise<boolean> {
+  private static async verifiedClient(clientId: number, clientSecret: string): Promise<OAuthClientRow | null> {
     // Filter by `revoked = false` at the DB layer so a revoked client
     // can't validate even with a correct secret. The previous code
     // only checked secret equality, so `revokeClient()` flips
@@ -212,7 +212,7 @@ export class Auth {
       const dummy = Buffer.alloc(Math.max(provided.length, 1))
       const padded = provided.length > 0 ? provided : Buffer.alloc(1)
       timingSafeEqual(dummy, padded)
-      return false
+      return null
     }
 
     const stored = String(client.secret)
@@ -225,15 +225,15 @@ export class Auth {
     // timing-safe byte comparison so they keep working until the
     // operator re-issues the client secret.
     if (stored.startsWith('$2')) {
-      return await verifyHash(clientSecret, stored)
+      return await verifyHash(clientSecret, stored) ? client as unknown as OAuthClientRow : null
     }
 
     const storedBuf = Buffer.from(stored)
     if (storedBuf.length !== provided.length) {
       timingSafeEqual(storedBuf, storedBuf)
-      return false
+      return null
     }
-    return timingSafeEqual(storedBuf, provided)
+    return timingSafeEqual(storedBuf, provided) ? client as unknown as OAuthClientRow : null
   }
 
   private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {
@@ -546,6 +546,7 @@ export class Auth {
       abilities,
       {
         expiresAt,
+        clientId: options?.clientId,
         withRefreshToken: options?.withRefreshToken !== false,
         refreshExpiresInDays,
         // Passed straight through. A caller with a request in hand supplies
@@ -596,14 +597,24 @@ export class Auth {
    * Similar to Laravel Passport's client credentials grant
    */
   public static async requestToken(credentials: AuthCredentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
-    const isValidClient = await this.validateClient(clientId, clientSecret)
-    if (!isValidClient)
+    const client = await this.verifiedClient(clientId, clientSecret)
+    if (!client)
       throw new HttpError(401, 'Invalid client credentials')
 
-    // Use the same password-version lock and post-issuance request state as
-    // normal login. An earlier bcrypt result must not outlive recovery, and
-    // issuance must not depend on an ambient HTTP request to retain its user.
-    const result = await this.login(credentials, { name: 'user-auth-token' })
+    const result = await this.withVerifiedCredentials(credentials, async (user) => {
+      // Both hashes were verified before this short issuance transaction.
+      // A shared client lock allows different users to sign in concurrently,
+      // but orders issuance against client revocation/deletion/secret rotation.
+      let currentQuery = db.primary.selectFrom('oauth_clients').where('id', '=', client.id).select(['secret', 'revoked'])
+      if (getDatabaseDialect() !== 'sqlite') currentQuery = currentQuery.sharedLock()
+      const current = await currentQuery.executeTakeFirst()
+      if (!current || current.revoked || current.secret !== client.secret)
+        throw new HttpError(401, 'Invalid client credentials')
+      const issued = await this.createTokenForUser(user, { name: 'user-auth-token', clientId: client.id })
+      return { user, token: issued.plainTextToken }
+    })
+    const state = authStateOrNull()
+    if (result && state) state.authUser = result.user
     return result ? { token: result.token } : null
   }
 

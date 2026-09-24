@@ -523,6 +523,8 @@ export async function createToken(
   name: string = 'access-token',
   scopes: string[] = ['*'],
   options: {
+    /** Explicit OAuth client for a server-authorized grant; defaults to the personal access client. */
+    clientId?: number
     expiresInMinutes?: number
     expiresAt?: Date
     withRefreshToken?: boolean
@@ -570,11 +572,14 @@ export async function createToken(
   const result = await db.transaction(async (trx) => {
     // Get the personal access client
     const clients = await trx.unsafe(`
-      SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} AND revoked = ${boolFalse} LIMIT 1
-    `)
+      SELECT id FROM oauth_clients
+      WHERE ${options.clientId === undefined ? `personal_access_client = ${boolTrue}` : `id = ${param(1)}`}
+      AND revoked = ${boolFalse} LIMIT 1
+    `, options.clientId === undefined ? [] : [options.clientId])
 
     const client = (clients as unknown as OAuthClientRow[])[0]
     if (!client) {
+      if (options.clientId !== undefined) throw new HttpError(401, 'Invalid client credentials')
       throw new HttpError(500, 'No personal access client found. Run ./buddy auth:setup first.')
     }
 

@@ -257,6 +257,8 @@ export interface OAuthClientRow {
  * Options for creating a new token.
  */
 export interface TokenCreateOptions {
+  /** OAuth client for a server-authorized grant; otherwise use the personal access client. */
+  clientId?: number
   /** Human-readable name for the token */
   name?: string
   /** Scopes/abilities to grant to the token */
