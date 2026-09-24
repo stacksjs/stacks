@@ -317,6 +317,17 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     console.log(`  Project structure: +${added} ~${updated} -${removed}`)
   }
 
+  // The auto-import barrels name files by path, and which tree they point at
+  // (the vendored storage/framework/defaults or the installed package) is
+  // decided by whether the vendored copy matches the installed version. Any
+  // barrel written before the sync above - including the one this very
+  // command's boot wrote, when `bun update` had already moved the package
+  // ahead of the vendored tree - points at the wrong one. Regenerated in a
+  // child process because this one may still hold the pre-install
+  // @stacksjs/server and its memoised staleness verdict.
+  if (structureChanges.length > 0)
+    await regenerateAutoImports(projectRoot)
+
   for (const provider of detectProjectAiProviders(projectRoot)) {
     const result = await runCommand(`./buddy setup:ai ${provider} --force`, { cwd: projectRoot })
     if (result.isErr) {
@@ -337,6 +348,29 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   else
     console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
   process.exit(0)
+}
+
+/**
+ * Rewrite storage/framework/auto-imports against the tree as it now stands.
+ *
+ * Not fatal: the dev server and every buddy boot regenerate stale barrels on
+ * their own, so a failure here costs a slower next start, not a broken app.
+ */
+async function regenerateAutoImports(projectRoot: string): Promise<void> {
+  const proc = Bun.spawn({
+    cmd: [process.execPath, '-e', 'await (await import(\'@stacksjs/server\')).generateAutoImportFiles()'],
+    cwd: projectRoot,
+    stdout: 'ignore',
+    stderr: 'pipe',
+  })
+
+  if (await proc.exited !== 0) {
+    const stderr = (await new Response(proc.stderr).text()).trim()
+    console.warn(`  auto-imports were not regenerated (non-fatal): ${stderr.split('\n').pop() || `exit ${proc.exitCode}`}`)
+    return
+  }
+
+  console.log('  Regenerated auto-imports')
 }
 
 /** One manifest the reconcile rewrote, for reporting. */
