@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { setSystemTime } from 'bun:test'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -38,8 +39,29 @@ async function current() {
   return db.primary.selectFrom('two_factor_pending_secrets').where('user_id', '=', 1).selectAll().executeTakeFirst()
 }
 try {
-  const timestamp = dialect === 'mysql' ? 'DATETIME(3)' : 'TIMESTAMP'
-  await db.unsafe(`CREATE TABLE two_factor_pending_secrets (user_id INTEGER PRIMARY KEY, secret VARCHAR(255) NOT NULL, expires_at ${timestamp} NOT NULL, created_at ${timestamp} DEFAULT ${dialect === 'mysql' ? 'CURRENT_TIMESTAMP(3)' : 'CURRENT_TIMESTAMP'})`).execute()
+  const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
+  await ensureFrameworkAuthTables()
+  await check('the shipped schema accepts a setup created at a fractional second', async () => {
+    setSystemTime(new Date('2030-01-02T03:04:05.800Z'))
+    try {
+      await stashPendingTwoFactorSecret(1, 'synthetic-fractional')
+      assert.equal(await consumePendingTwoFactorSecret(1), 'synthetic-fractional')
+      assert.equal(await consumePendingTwoFactorSecret(1), null)
+    }
+    finally { setSystemTime() }
+  })
+  for (const ttl of [0, 1, 600]) {
+    await check(`pending setup expires no later than the requested ${ttl}s TTL`, async () => {
+      const now = new Date('2030-01-02T03:04:05.800Z')
+      setSystemTime(now)
+      try {
+        await stashPendingTwoFactorSecret(1, 'synthetic-boundary', ttl)
+        setSystemTime(new Date(now.getTime() + ttl * 1000))
+        assert.equal(await consumePendingTwoFactorSecret(1), null)
+      }
+      finally { setSystemTime() }
+    })
+  }
   await check('failed storage preserves the previous setup', async () => {
     if (dialect === 'postgres') {
       await db.unsafe("CREATE FUNCTION reject_setup() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture setup denied'; END; $$").execute()

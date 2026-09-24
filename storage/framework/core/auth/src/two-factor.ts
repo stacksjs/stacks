@@ -40,6 +40,15 @@ import { RateLimiter } from './rate-limiter'
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
 
+function challengeExpiry(ttlSeconds: number): string {
+  const deadline = new Date(Date.now() + ttlSeconds * 1000)
+  // The shipped MySQL DATETIME stores whole seconds. Never extend a grant
+  // by letting the server round upward, and compare stored setup deadlines
+  // against a value that schema can actually represent.
+  if (getDatabaseDialect() === 'mysql') deadline.setUTCMilliseconds(0)
+  return sqlDateTime(deadline)
+}
+
 /**
  * Rate-limit key prefix for the SECOND factor. Deliberately distinct from the
  * password-step limiter (which is keyed by bare email and reset on a correct
@@ -125,7 +134,7 @@ const PENDING_SECRET_TTL_SECONDS = 10 * 60
  * the prior setup and simultaneous setup requests cannot collide.
  */
 export async function stashPendingTwoFactorSecret(userId: number, secret: string, ttlSeconds: number = PENDING_SECRET_TTL_SECONDS): Promise<void> {
-  const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
+  const expiresAt = challengeExpiry(ttlSeconds)
 
   await db.transaction(async () => {
     await db.upsert('two_factor_pending_secrets', [{
@@ -254,7 +263,7 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
  */
 export async function createTwoFactorChallenge(userId: number, ttlSeconds: number = DEFAULT_CHALLENGE_TTL_SECONDS): Promise<string> {
   const id = randomBytes(32).toString('hex')
-  const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
+  const expiresAt = challengeExpiry(ttlSeconds)
 
   await db.transaction(async () => {
     await db.deleteFrom('two_factor_challenges').where('user_id', '=', userId).execute()

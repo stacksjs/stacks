@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { setSystemTime } from 'bun:test'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -36,7 +37,20 @@ async function check(name: string, run: () => Promise<void>) {
   catch (error) { failures.push(`${name}: ${error}`) }
 }
 try {
-  await db.unsafe('CREATE TABLE two_factor_challenges (id VARCHAR(255) PRIMARY KEY, user_id INTEGER NOT NULL, expires_at TIMESTAMP NOT NULL)').execute()
+  const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
+  await ensureFrameworkAuthTables()
+  for (const ttl of [0, 1, 300]) {
+    await check(`login challenge expires no later than its ${ttl}s TTL`, async () => {
+      const now = new Date('2030-01-02T03:04:05.800Z')
+      setSystemTime(now)
+      try {
+        const challenge = await createTwoFactorChallenge(1, ttl)
+        setSystemTime(new Date(now.getTime() + ttl * 1000))
+        assert.equal(await consumeTwoFactorChallenge(challenge), null)
+      }
+      finally { setSystemTime() }
+    })
+  }
   for (const effect of dialect === 'mysql' ? ['rejected', 'altered'] : ['rejected', 'suppressed', 'altered']) {
     await check(`${effect} login challenge replacement preserves the old one`, async () => {
       const before = await rows()
