@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, authCookie, resolveSocialSignIn, SocialSignInRefusedError } from '@stacksjs/auth'
+import { Auth, authCookieForBrowserSession, resolveBrowserSessionPolicy, resolveSocialSignIn, SocialSignInRefusedError } from '@stacksjs/auth'
 import { log } from '@stacksjs/logging'
 import { response } from '@stacksjs/router'
 import { isSocialProviderConfigured, socialHandoffFailureRedirect, socialHandoffRedirect, socialProvider } from '@stacksjs/socials'
@@ -45,7 +45,11 @@ export default new Action({
 
       const { userId } = await resolveSocialSignIn(provider, identity)
 
-      const session = await Auth.loginUsingId(userId)
+      const policy = resolveBrowserSessionPolicy(false)
+      const session = await Auth.loginUsingId(userId, {
+        expiresInMinutes: policy.expiresInMinutes,
+        withRefreshToken: policy.withRefreshToken,
+      })
       if (!session?.token)
         return socialHandoffFailureRedirect('Sign-in could not be completed. Please try again.')
 
@@ -61,7 +65,7 @@ export default new Action({
       })
 
       // The cookie signs server-rendered pages in; the fragment pack the SPA.
-      redirect.headers.append('Set-Cookie', authCookie(session.token))
+      redirect.headers.append('Set-Cookie', authCookieForBrowserSession(session.token, session.expiresIn))
       return redirect
     }
     catch (error) {

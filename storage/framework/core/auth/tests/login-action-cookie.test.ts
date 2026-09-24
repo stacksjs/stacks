@@ -26,6 +26,7 @@
  */
 
 import { afterAll, beforeAll, beforeEach, describe, expect, setSystemTime, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -39,7 +40,7 @@ process.env.APP_ENV = 'testing'
 
 const { configureOrm } = await import('bun-query-builder')
 const { config } = await import('@stacksjs/config')
-const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig, parseSqlDateTime } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig, parseSqlDateTime, sqlDateTime } = await import('@stacksjs/database')
 const { ensureFrameworkAuthTables } = await import('./helpers/auth-schema')
 const { makeHash } = await import('@stacksjs/security')
 const { createStacksRouter } = await import('@stacksjs/router')
@@ -48,6 +49,7 @@ const { authCookie, authCookieName } = await import('../src/cookie')
 
 const LoginAction = (await import('../../../defaults/app/Actions/Auth/LoginAction')).default
 const LogoutAction = (await import('../../../defaults/app/Actions/Auth/LogoutAction')).default
+const MagicLinkConsumeAction = (await import('../../../defaults/app/Actions/Auth/MagicLinkConsumeAction')).default
 const RegisterAction = (await import('../../../defaults/app/Actions/Auth/RegisterAction')).default
 
 const EMAIL = 'cookie-proof@example.com'
@@ -160,6 +162,21 @@ beforeAll(async () => {
   `).execute()
 
   await ensureFrameworkAuthTables()
+
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS magic_link_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email VARCHAR(255) NOT NULL,
+      user_id INTEGER,
+      token VARCHAR(64) NOT NULL UNIQUE,
+      expires_at TIMESTAMP NOT NULL,
+      consumed_at TIMESTAMP,
+      redirect_to VARCHAR(2048),
+      site_id INTEGER,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP
+    )
+  `).execute()
 
   const hashed = await makeHash(PASSWORD, { algorithm: 'bcrypt' })
   await db.unsafe(`
@@ -321,6 +338,67 @@ describe('POST /register applies the browser session policy (#2795)', () => {
     }
     finally {
       setSystemTime()
+      config.auth.browserSession = originalPolicy
+    }
+  })
+})
+
+describe('POST /auth/magic-link/consume applies the browser session policy (#2795)', () => {
+  test('a fixed baseline session matches persistence and rejects replay', async () => {
+    const originalMagicLink = config.auth.magicLink
+    const originalPolicy = config.auth.browserSession
+    config.auth.magicLink = { ...originalMagicLink, enabled: true }
+    config.auth.browserSession = {
+      baselineLifetime: 2 * 60 * 1000,
+      rememberedLifetime: 5 * 60 * 1000,
+      withRefreshToken: false,
+    }
+    const issuedAt = new Date('2030-01-02T03:04:05.000Z')
+    setSystemTime(issuedAt)
+
+    try {
+      const user = await db.selectFrom('users').select(['id', 'email']).where('email', '=', EMAIL).executeTakeFirstOrThrow()
+      const raw = 'magic-link-browser-policy-proof'
+      const hashed = createHash('sha256').update(raw).digest('hex')
+      const now = sqlDateTime(new Date())
+      await db.insertInto('magic_link_tokens').values({
+        email: String(user.email),
+        user_id: Number(user.id),
+        token: hashed,
+        expires_at: sqlDateTime(new Date(Date.now() + 5 * 60 * 1000)),
+        consumed_at: null,
+        redirect_to: '/dashboard',
+        site_id: null,
+        created_at: now,
+        updated_at: now,
+      }).execute()
+
+      const request = { get: (key: string) => key === 'token' ? raw : undefined } as any
+      const res = await MagicLinkConsumeAction.handle(request) as Response
+      const body = await res.json() as Record<string, unknown>
+      const tokenRow = await db.selectFrom('oauth_access_tokens')
+        .select(['id', 'expires_at'])
+        .orderBy('id', 'desc')
+        .executeTakeFirstOrThrow()
+      const refreshRow = await db.selectFrom('oauth_refresh_tokens')
+        .select('id')
+        .where('access_token_id', '=', tokenRow.id)
+        .executeTakeFirst()
+
+      expect(res.status).toBe(200)
+      expect(body.expires_in).toBe(120)
+      expect(body).not.toHaveProperty('refresh_token')
+      expect(authCookieFrom(res)).toContain('Max-Age=120')
+      expect(refreshRow).toBeUndefined()
+      expect(parseSqlDateTime(tokenRow.expires_at)?.getTime()).toBe(issuedAt.getTime() + 120_000)
+
+      const replay = await MagicLinkConsumeAction.handle(request) as Response
+      expect(replay.status).toBe(401)
+      expect(setCookies(replay)).toEqual([])
+    }
+    finally {
+      setSystemTime()
+      config.auth.magicLink = originalMagicLink
       config.auth.browserSession = originalPolicy
     }
   })

@@ -77,8 +77,10 @@ function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
     return false
 
   token.value = resolved.token
-  if (resolved.refreshToken)
-    refreshToken.value = resolved.refreshToken
+  // A token-only handoff represents a fixed-lifetime session. Remove a
+  // refresh credential left by an older session instead of silently making
+  // the new session renewable after its access token expires.
+  refreshToken.value = resolved.refreshToken ?? ''
 
   if (resolved.user !== undefined && resolved.user !== null)
     user.value = resolved.user as UserData

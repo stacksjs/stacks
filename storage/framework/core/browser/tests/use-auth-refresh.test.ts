@@ -214,6 +214,21 @@ describe('useAuth refresh cycle (#2235)', () => {
     expect(persisted('refresh_token')).toBe('')
   })
 
+  test('a fixed-lifetime social handoff clears a refresh token from an older session', async () => {
+    seed('refresh_token', 'stale-refresh')
+    const { useAuth } = await load()
+    responders = [() => json({ id: 1, email: 'social@b.co' })]
+
+    await useAuth().completeSocialLogin({
+      token: 'fixed-social-access',
+      expiresIn: 120,
+      user: { id: 1, email: 'social@b.co' },
+    })
+
+    expect(persisted('token')).toBe('fixed-social-access')
+    expect(persisted('refresh_token')).toBe('')
+  })
+
   test('a 401 refreshes and retries instead of ending the session', async () => {
     seed('token', 'expired')
     seed('refresh_token', 'refresh-1')

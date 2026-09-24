@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, authCookie, withMagicLink } from '@stacksjs/auth'
+import { Auth, authCookieForBrowserSession, resolveBrowserSessionPolicy, withMagicLink } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
@@ -20,9 +20,13 @@ export default new Action({
     if (!config.auth.magicLink?.enabled)
       return response.notFound('Magic-link sign-in is not enabled')
 
+    const policy = resolveBrowserSessionPolicy(false)
     const consumed = await withMagicLink(String(request.get('token')), async grant => ({
       grant,
-      result: await Auth.loginUsingId(grant.userId),
+      result: await Auth.loginUsingId(grant.userId, {
+        expiresInMinutes: policy.expiresInMinutes,
+        withRefreshToken: policy.withRefreshToken,
+      }),
     }))
     if (!consumed.ok) {
       const messages: Record<string, string> = {
@@ -51,6 +55,6 @@ export default new Action({
         email: result.user?.email,
         name: result.user?.name,
       },
-    }, { headers: { 'Set-Cookie': authCookie(result.token) } })
+    }, { headers: { 'Set-Cookie': authCookieForBrowserSession(result.token, result.expiresIn) } })
   },
 })

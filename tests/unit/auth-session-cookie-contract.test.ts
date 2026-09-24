@@ -32,6 +32,7 @@ const SESSION_ISSUING = [
   'VerifyTwoFactorLoginAction',
   'RegisterAction',
   'SocialCallbackAction',
+  'MagicLinkConsumeAction',
 ]
 
 describe('auth session cookie contract (#2306)', () => {
@@ -83,5 +84,14 @@ describe('auth session cookie contract (#2306)', () => {
       expect(source).toContain('refresh_token:')
       expect(source).toContain("token_type: 'Bearer'")
     }
+  })
+
+  test.each(['SocialCallbackAction', 'MagicLinkConsumeAction'])('%s uses the baseline browser policy and issued lifetime', (name) => {
+    const source = action(name)
+    expect(source).toContain('resolveBrowserSessionPolicy(false)')
+    expect(source).toContain('expiresInMinutes: policy.expiresInMinutes')
+    expect(source).toContain('withRefreshToken: policy.withRefreshToken')
+    expect(source).toContain('authCookieForBrowserSession(')
+    expect(source).toMatch(/(?:session|result)\.expiresIn/)
   })
 })
