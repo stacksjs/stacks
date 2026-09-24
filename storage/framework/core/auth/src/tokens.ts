@@ -1008,24 +1008,57 @@ export async function revokeOtherTokens(userId: number, tokenableType: string = 
  * const count = await deleteExpiredTokens()
  */
 export async function deleteExpiredTokens(): Promise<number> {
-  // Delete associated refresh tokens first
-  await db.unsafe(`
-    DELETE FROM oauth_refresh_tokens
-    WHERE access_token_id IN (
-      SELECT id FROM oauth_access_tokens WHERE expires_at < ${appNow()}
-    )
-  `)
-  // Marked here, not after the second statement: these are two statements with
-  // no transaction around them. If the access-token delete below fails, this
-  // one has already committed, and the request must still read from primary.
-  markContextWrote()
-
-  const result = await db.unsafe(`
-    DELETE FROM oauth_access_tokens
-    WHERE expires_at < ${appNow()}
-  `)
-
-  return mutationCount(result)
+  const cutoff = appNow()
+  return db.transaction(async (trx) => {
+    let deleted = 0
+    let cursor: number | string | bigint | undefined
+    while (true) {
+      // Refresh grants have an independent lifetime and still need the
+      // expired access row's owner/client/scopes to perform their exchange.
+      // Discover candidates without locks. MySQL otherwise locks even the
+      // refreshable rows scanned and rejected by NOT EXISTS.
+      const rows = await trx.unsafe(`
+        SELECT t.id FROM oauth_access_tokens t
+        WHERE t.expires_at <= ${cutoff}
+        ${cursor === undefined ? '' : `AND t.id > ${param(1)}`}
+        AND NOT EXISTS (
+          SELECT 1 FROM oauth_refresh_tokens r
+          WHERE r.access_token_id = t.id AND r.revoked = ${boolFalse}
+          AND (r.expires_at IS NULL OR r.expires_at > ${cutoff})
+        )
+        ORDER BY t.id LIMIT 500
+      `, cursor === undefined ? [] : [cursor]) as unknown as Array<{ id: number | string | bigint }>
+      if (rows.length === 0) return deleted
+      cursor = rows[rows.length - 1]!.id
+      const candidates = rows.map(row => row.id)
+      const candidateParams = candidates.map((_, index) => param(index + 1)).join(', ')
+      const lock = isPostgres || isMysql ? ' FOR UPDATE' : ''
+      // Recheck current rows after any competing cleanup/rotation completes.
+      // Explicit primary-key probes keep retained accounts out of the lock set.
+      const locked = await trx.unsafe(`
+        SELECT id FROM oauth_access_tokens
+        WHERE id IN (${candidateParams}) AND expires_at <= ${cutoff}
+        ORDER BY id${lock}
+      `, candidates) as unknown as Array<{ id: number | string | bigint }>
+      if (locked.length === 0) continue
+      const refreshable = await trx.unsafe(`
+        SELECT access_token_id FROM oauth_refresh_tokens
+        WHERE access_token_id IN (${candidateParams}) AND revoked = ${boolFalse}
+        AND (expires_at IS NULL OR expires_at > ${cutoff})${lock}
+      `, candidates) as unknown as Array<{ access_token_id: number | string | bigint }>
+      const retained = new Set(refreshable.map(row => String(row.access_token_id)))
+      const ids = locked.filter(row => !retained.has(String(row.id))).map(row => row.id)
+      if (ids.length === 0) continue
+      const placeholders = ids.map((_, index) => param(index + 1)).join(', ')
+      markContextWrote()
+      await trx.unsafe(`DELETE FROM oauth_refresh_tokens WHERE access_token_id IN (${placeholders})`, ids)
+      const result = await trx.unsafe(`DELETE FROM oauth_access_tokens WHERE id IN (${placeholders})`, ids)
+      const count = mutationCount(result)
+      if (count !== ids.length)
+        throw new HttpError(500, 'Expired token pairs could not be pruned.')
+      deleted += count
+    }
+  }, { retries: 2, sqlStates: ['40001', '40P01'] })
 }
 
 /**

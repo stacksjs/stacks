@@ -143,10 +143,8 @@ try {
       await assert.rejects(db.selectFrom('oauth_access_tokens').selectAll().get())
   })
   if (replica) assert(replicaConnections > 0, 'the read-only control must actually attempt the configured replica')
-  // Partial success. The two sequential prunes issue their statements with no
-  // transaction around them, so the refresh delete can commit while the
-  // access-token delete fails. A trigger forces exactly that. The call throws,
-  // but a write has committed, so the request must still be pinned to primary.
+  // Both halves roll back if the access delete fails. The attempted write
+  // still conservatively pins this request, like other transaction writes.
   const partial = await seedPrunable('expired')
   const guards = dialect === 'postgres'
     ? ['CREATE FUNCTION prune_guard() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION \'blocked\'; END; $$ LANGUAGE plpgsql',
@@ -160,11 +158,11 @@ try {
     await withRoutingContext(async () => {
       assert.equal(contextHasWritten(), false)
       await assert.rejects(deleteExpiredTokens(), 'the guarded access-token delete must fail')
-      const orphan = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', partial.accessToken.id).selectAll().executeTakeFirst()
-      assert(!orphan, 'the first delete must have committed before the second failed')
-      assert.equal(contextHasWritten(), true, 'a partially committed prune must still pin the request')
+      const restored = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', partial.accessToken.id).selectAll().executeTakeFirst()
+      assert(restored, 'the refresh delete must roll back with the failed access delete')
+      assert.equal(contextHasWritten(), true, 'an attempted prune still conservatively pins the request')
     })
-    console.log('PASS partially committed prune still pins the request')
+    console.log('PASS rolled-back prune preserves both rows and the request write pin')
   }
   finally {
     const drops = dialect === 'postgres'

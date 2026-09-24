@@ -65,7 +65,7 @@ function authStateOrNull(): RequestAuthState | null {
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
-import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
+import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -636,13 +636,10 @@ export class Auth {
 
     log.debug(`[auth] Token validated for token#${accessToken.id}`)
 
-    // Check if token is expired
-    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
-      await db.deleteFrom('oauth_access_tokens')
-        .where('id', '=', accessToken.id)
-        .execute()
+    // An expired access credential can still own a live refresh grant.
+    // Reject its use without deleting the row needed for the next exchange.
+    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
       return false
-    }
 
     // Check if token is revoked
     if (accessToken.revoked)
@@ -689,12 +686,9 @@ export class Auth {
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
       return undefined
 
-    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
-      await db.deleteFrom('oauth_access_tokens')
-        .where('id', '=', accessToken.id)
-        .execute()
+    // The refresh endpoint still needs this row after access expires.
+    if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
       return undefined
-    }
 
     if (accessToken.revoked)
       return undefined
@@ -959,11 +953,7 @@ export class Auth {
    * Delete all expired tokens (cleanup)
    */
   public static async pruneExpiredTokens(): Promise<number> {
-    const result = await db.deleteFrom('oauth_access_tokens')
-      .where('expires_at', '<', formatDate(new Date()))
-      .executeTakeFirst()
-
-    return Number(result?.numDeletedRows) || 0
+    return deleteExpiredTokens()
   }
 
   /**
