@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
-  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} magic-link login keeps email ownership through issuance`, async () => {
+  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} magic-link login preserves ownership and recovery boundaries`, async () => {
     const url = dialect === 'sqlite' ? undefined : new URL(connection!)
     if (url && (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || !url.port || ['5432', '3306'].includes(url.port)))
       throw new Error('Magic-link ownership tests require a disposable local server on a non-default port')

@@ -8,6 +8,7 @@ import { authLinkBase } from '../link-url'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
 import { revokeTwoFactorChallenges } from '../two-factor'
+import { revokeMagicLinks } from '../magic-link-revocation'
 
 export interface PasswordResetResult {
   success: boolean
@@ -332,6 +333,7 @@ export function passwordResets(email: string): PasswordResetActions {
       // leaves the recovery link usable instead of committing a partial reset.
       // These helpers follow this active connection and nest using savepoints.
       await revokeTwoFactorChallenges(Number(user.id))
+      await revokeMagicLinks(Number(user.id))
       await revokeAllTokens(Number(user.id))
       await sessionDestroyAll(Number(user.id))
 
