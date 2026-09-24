@@ -8,7 +8,9 @@ Stacks provides token authentication, passkeys, two-factor authentication, autho
 
 ## Configure authentication
 
-The defaults live in `config/auth.ts`. API tokens use the database-backed `users` provider and expire after 30 days unless you change `tokenExpiry`.
+The defaults live in `config/auth.ts`. Access tokens use the database-backed
+`users` provider and expire after one hour unless you change `tokenExpiry`.
+Refresh tokens default to 30 days and rotate when exchanged.
 
 ```ts
 export default {
@@ -17,6 +19,13 @@ export default {
   providers: { users: { driver: 'database', table: 'users' } },
   username: 'email',
   password: 'password',
+  tokenExpiry: 60 * 60 * 1000,
+  refreshTokenExpiry: 30 * 24 * 60 * 60 * 1000,
+  browserSession: {
+    baselineLifetime: 60 * 60 * 1000,
+    rememberedLifetime: 60 * 60 * 1000,
+    withRefreshToken: true,
+  },
   defaultAbilities: ['*'],
 }
 ```
@@ -41,6 +50,57 @@ const isAuthenticated = await Auth.check()
 ```
 
 The built-in API routes include `POST /login`, `POST /register`, `POST /auth/refresh`, `GET /auth/tokens`, `GET /me`, and `POST /logout`.
+
+## Configure browser sessions
+
+`browserSession` controls credentials issued by the default `/login`,
+`/register`, and `/verify-two-factor-login` actions. Dedicated personal access
+token and OAuth issuance keep using their existing token settings. Every
+lifetime in this block is an absolute duration in milliseconds. `idleTimeout`,
+when set, is a separate limit on how long a live session may go unused.
+
+This example gives ordinary browser sessions seven days, remembered sessions
+30 days, and does not mint a refresh credential the browser will never use:
+
+```ts
+const day = 24 * 60 * 60 * 1000
+
+export default {
+  browserSession: {
+    baselineLifetime: 7 * day,
+    rememberedLifetime: 30 * day,
+    withRefreshToken: false,
+    logoutRedirect: '/login?logged_out=1',
+  },
+}
+```
+
+The default login form sends its checkbox as `remember`. Registration uses the
+baseline tier unless a custom client submits `remember`. When two-factor
+authentication is enabled, `/login` returns a single-use challenge instead of
+a session. The selected tier is stored with that challenge and applied only
+after `POST /verify-two-factor-login` succeeds. Failed, expired, and replayed
+challenges do not issue a cookie or token.
+
+The framework serializes the issued access token into an HttpOnly cookie whose
+Max-Age matches the token's actual lifetime. Server-rendered requests therefore
+authenticate after login, registration, or completed two-factor verification
+without copying the token into JavaScript storage. Cookie-authenticated writes
+still require the normal CSRF token. SameSite is an additional browser defense,
+not a replacement for CSRF validation.
+
+`POST /logout` revokes the server credential before clearing the cookie. JSON
+clients keep receiving JSON. An HTML form receives the configured local
+`logoutRedirect`; external and protocol-relative destinations are rejected.
+Set `config.auth.cookie.name` to rename the cookie. The cookie serializer's
+options control path, domain, SameSite, and an explicit Secure override.
+Without overrides it uses Path `/`, SameSite `Lax`, an app-URL-derived Secure
+flag, and unconditional HttpOnly.
+
+After upgrading an app that copied the default login, registration, two-factor,
+logout actions, or cookie serializer, remove only those framework-equivalent
+overrides. Keep application hooks such as onboarding, team creation, mailing
+list subscriptions, and notifications in app events or app-owned actions.
 
 ## The pages that come with it
 

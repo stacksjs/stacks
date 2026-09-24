@@ -18,6 +18,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import authConfig from '../../config/auth'
 
 const ACTIONS = 'storage/framework/defaults/app/Actions/Auth'
 
@@ -34,6 +35,14 @@ const SESSION_ISSUING = [
 ]
 
 describe('auth session cookie contract (#2306)', () => {
+  test('ships an explicit backward-compatible browser session policy', () => {
+    expect(authConfig.browserSession).toEqual({
+      baselineLifetime: authConfig.tokenExpiry,
+      rememberedLifetime: authConfig.tokenExpiry,
+      withRefreshToken: true,
+    })
+  })
+
   test.each(SESSION_ISSUING)('%s sets the auth cookie', (name) => {
     expect(action(name)).toMatch(/authCookie(?:ForBrowserSession)?\(/)
   })

@@ -1,6 +1,8 @@
 import type { AuthConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
 
+const tokenExpiry = env.AUTH_TOKEN_EXPIRY || 60 * 60 * 1000
+
 /**
  * **Authentication Configuration**
  *
@@ -54,13 +56,26 @@ export default {
    * paired refresh token (`refreshTokenExpiry`) carries the long-lived
    * session and is rotated on use, so UX is unaffected.
    */
-  tokenExpiry: env.AUTH_TOKEN_EXPIRY || 60 * 60 * 1000,
+  tokenExpiry,
 
   /**
    * Refresh-token expiry in milliseconds (default: 30 days). This is the
    * long-lived credential exchanged for fresh access tokens.
    */
   refreshTokenExpiry: env.AUTH_REFRESH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
+
+  /**
+   * First-party browser-session policy. Lifetimes are absolute milliseconds.
+   *
+   * Matching the ordinary access-token lifetime preserves existing behavior.
+   * Apps can give the remember checkbox a longer tier, or set
+   * `withRefreshToken: false` for a fixed-lifetime cookie session.
+   */
+  browserSession: {
+    baselineLifetime: tokenExpiry,
+    rememberedLifetime: tokenExpiry,
+    withRefreshToken: true,
+  },
 
   /**
    * The token rotation time in hours (default: 24 hours).

@@ -352,13 +352,33 @@ await authUser.authorize('edit-post', post)  // throws if denied
   providers: { users: { driver: 'database', table: 'users' } },
   username: 'email',      // AUTH_USERNAME_FIELD env
   password: 'password',   // AUTH_PASSWORD_FIELD env
-  tokenExpiry: 30,         // days, AUTH_TOKEN_EXPIRY env
-  tokenRotation: 7,        // days, AUTH_TOKEN_ROTATION env
+  tokenExpiry: 60 * 60 * 1000, // milliseconds, 1 hour
+  refreshTokenExpiry: 30 * 24 * 60 * 60 * 1000, // milliseconds
+  browserSession: {
+    baselineLifetime: 7 * 24 * 60 * 60 * 1000, // absolute milliseconds
+    rememberedLifetime: 30 * 24 * 60 * 60 * 1000,
+    withRefreshToken: false, // fixed browser lifetime, no unused refresh token
+    logoutRedirect: '/login?logged_out=1', // local path for HTML logout only
+  },
+  tokenRotation: 24,       // hours
   defaultAbilities: ['*'],
   defaultTokenName: 'auth-token',
   passwordReset: { expire: 60, throttle: 60 }
 }
 ```
+
+`browserSession` applies to credentials issued by the default login,
+registration, and completed two-factor actions. Dedicated personal access
+token and OAuth issuance remain unchanged. The default login form sends
+`remember`; registration uses the baseline tier unless a custom client sends
+that field. A two-factor challenge preserves the choice without minting a
+session until verification succeeds. Cookie Max-Age comes from the lifetime
+returned by token issuance, so it cannot outlive the token. Cookie-authenticated
+writes use the CSRF flow and same-origin credentials.
+
+When migrating an app that copied framework auth actions, remove only the
+equivalent login, registration, two-factor, logout, and cookie-helper overrides.
+Retain application-specific onboarding and event hooks.
 
 ### config/hashing.ts
 ```typescript
