@@ -301,6 +301,28 @@ export async function consumeTwoFactorChallenge(challengeToken: string): Promise
   return Number(row.user_id)
 }
 
+/** Revoke password-stage grants in the same transaction as credential recovery. */
+export async function revokeTwoFactorChallenges(userId: number): Promise<void> {
+  try {
+    // The savepoint also isolates an absent optional table on PostgreSQL.
+    await db.transaction(async () => {
+      await db.deleteFrom('two_factor_challenges').where('user_id', '=', userId).execute()
+      const remaining = await db.primary.selectFrom('two_factor_challenges')
+        .where('user_id', '=', userId).select('id').executeTakeFirst()
+      if (remaining)
+        throw new Error('[auth] Two-factor login challenges could not be revoked.')
+    })
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    // An installation without this table cannot redeem a challenge. Do not
+    // hide a failed DELETE caused by a missing trigger dependency instead.
+    if (/^(?:no such table: (?:main\.)?two_factor_challenges|relation "two_factor_challenges" does not exist|Table '(?:[^'.]+\.)?two_factor_challenges' doesn't exist)$/i.test(message))
+      return
+    throw error
+  }
+}
+
 export const TwoFactor = {
   isEnabled: isTwoFactorEnabled,
   getState: getTwoFactorState,

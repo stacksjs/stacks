@@ -7,6 +7,7 @@ import { makeHash, verifyHash } from '@stacksjs/security'
 import { authLinkBase } from '../link-url'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
+import { revokeTwoFactorChallenges } from '../two-factor'
 
 export interface PasswordResetResult {
   success: boolean
@@ -329,7 +330,8 @@ export function passwordResets(email: string): PasswordResetActions {
       // Credential revocation is database state, not a post-commit side effect.
       // Keep it with the password and consumed reset token so a failed sweep
       // leaves the recovery link usable instead of committing a partial reset.
-      // Both helpers follow this active connection and nest using savepoints.
+      // These helpers follow this active connection and nest using savepoints.
+      await revokeTwoFactorChallenges(Number(user.id))
       await revokeAllTokens(Number(user.id))
       await sessionDestroyAll(Number(user.id))
 
