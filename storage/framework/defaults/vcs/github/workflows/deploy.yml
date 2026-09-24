@@ -28,10 +28,53 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Is the commit CI passed still the tip of main?
+  #
+  # Deploys queue one at a time, and each checks out the commit its CI run
+  # was for. CI runs are not ordered: when two pushes land close together the
+  # older one can finish CI last, and its deploy then replaces the newer
+  # release with both deploys green. Checked here, when the deploy's turn
+  # comes: if main has moved on, the newer commit's own CI run deploys it.
+  current:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      latest: ${{ steps.tip.outputs.latest }}
+    steps:
+      - id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          tip=$(gh api "repos/${{ github.repository }}/commits/main" --jq .sha)
+          if [ "$tip" = "$SHA" ]; then
+            echo "latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "latest=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping ${SHA:0:8}: main is at ${tip:0:8}, whose CI run deploys it."
+          fi
+
   deploy:
+    needs: current
     # `workflow_run` fires for failed runs too — that is the point of the
     # gate, so check the conclusion.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    #
+    # And check what CI ran on. CI also runs for pull requests, and
+    # `branches: [main]` matches the head branch name, so a fork's PR from a
+    # branch called `main` that passed CI would deploy the fork's commit with
+    # the production secrets. Only a push to this repository ships.
+    #
+    # `always()` because `current` is skipped for a manual dispatch, which
+    # ships whatever it was pointed at.
+    if: >-
+      always() && (
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      needs.current.outputs.latest == 'true'))
     runs-on: ubuntu-latest
     # Attach a GitHub Environment to get required reviewers and to scope these
     # secrets to it.
