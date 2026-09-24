@@ -27,6 +27,28 @@ export interface AuthCookieConfig {
   sameSite?: 'Strict' | 'Lax' | 'None'
 }
 
+/**
+ * Policy for access tokens issued to first-party browser sessions.
+ *
+ * These lifetimes are absolute and expressed in milliseconds. They are
+ * separate from `idleTimeout`, which limits how long an otherwise-live session
+ * may go unused, and from API/OAuth token settings, which remain unchanged.
+ */
+export interface BrowserSessionConfig {
+  /** Baseline browser-session lifetime in milliseconds. Defaults to `tokenExpiry`. */
+  baselineLifetime?: number
+  /** Remembered browser-session lifetime in milliseconds. Defaults to `baselineLifetime`. */
+  rememberedLifetime?: number
+  /**
+   * Whether browser issuance also creates a refresh credential.
+   *
+   * Defaults to `true` for backward compatibility. Set to `false` for a fixed
+   * lifetime browser session whose cookie-carried access token is the only
+   * credential issued.
+   */
+  withRefreshToken?: boolean
+}
+
 export interface AuthOptions {
   /**
    * Top-level feature gate. When `false`, the auth feature is inert at boot
@@ -111,6 +133,9 @@ export interface AuthOptions {
    * by surprise reads to the person it logs out as being logged out at random.
    */
   idleTimeout?: number
+
+  /** First-party browser-session expiry and refresh policy. */
+  browserSession?: BrowserSessionConfig
 
   /**
    * The token rotation time in hours
