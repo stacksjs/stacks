@@ -90,7 +90,7 @@ function refreshDeadline(days: number): Date {
   deadline.setDate(deadline.getDate() + days)
   // The shipped MySQL TIMESTAMP has whole-second precision and normally
   // rounds. Choose an exact representable deadline without extending it.
-  if (isMysql) deadline.setMilliseconds(0)
+  if (isMysql) deadline.setUTCMilliseconds(0)
   return deadline
 }
 
@@ -562,6 +562,10 @@ export async function createToken(
   // extends short/expired tokens and truncates fractional-duration tokens.
   const issuedAt = Date.now()
   const expiresAt = new Date(options.expiresAt?.getTime() ?? issuedAt + expiresInMinutes * 60_000)
+  // The shipped MySQL TIMESTAMP rounds fractional seconds upward. Select a
+  // representable deadline before writing or reporting it so even a zero-TTL
+  // grant cannot remain usable after its requested expiry.
+  if (isMysql) expiresAt.setUTCMilliseconds(0)
 
   // A failed refresh insert or read-back must roll back the access row too.
   const result = await db.transaction(async (trx) => {
@@ -757,6 +761,7 @@ export async function refreshToken(
 
     const issuedAt = Date.now()
     const expiresAt = new Date(issuedAt + expiresInMinutes * 60_000)
+    if (isMysql) expiresAt.setUTCMilliseconds(0)
 
     if (isPostgres) {
       await trx.unsafe(`
