@@ -1,7 +1,8 @@
 import type { ImageData, ResizeFit } from 'ts-images'
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
-import { basename, extname, isAbsolute, relative, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { basename, dirname, extname, isAbsolute, relative, resolve } from 'node:path'
 import { decode, encode, imageToSplatHash, resize } from 'ts-images'
 
 // Generated imagery: social cards, App Store screenshots, app icons. Declared
@@ -25,6 +26,43 @@ export interface ImageOptions { root?: string, outputDir?: string, publicPath?: 
 const mime: Record<ImageFormat, string> = { avif: 'image/avif', webp: 'image/webp', jpeg: 'image/jpeg', png: 'image/png' }
 function integer(name: string, value: number, min: number, max: number): void {
   if (!Number.isInteger(value) || value < min || value > max) throw new TypeError(`${name} must be between ${min} and ${max}`)
+}
+
+/**
+ * The versions of the codecs that encode variants, folded into every cache
+ * key.
+ *
+ * Variants are content-addressed and reused whenever the key matches, and the
+ * key used to cover only the source and the options. So upgrading to a codec
+ * that fixes a corrupt encode changed nothing: ts-webp once wrote lossy WebP
+ * with no alpha and with banded chroma, and every variant made before the fix
+ * would have been served on, unchanged, forever. Folding the versions in makes
+ * an upgrade re-encode. Unresolvable packages count as "?", which still keys
+ * consistently.
+ */
+let codecs: string | undefined
+function codecFingerprint(): string {
+  if (codecs !== undefined)
+    return codecs
+  const version = (name: string, from: string): string => {
+    try {
+      return JSON.parse(readFileSync(Bun.resolveSync(`${name}/package.json`, from), 'utf8')).version ?? '?'
+    }
+    catch {
+      return '?'
+    }
+  }
+  let imagesDir = import.meta.dir
+  try {
+    imagesDir = dirname(Bun.resolveSync('ts-images/package.json', import.meta.dir))
+  }
+  catch {}
+  codecs = [
+    `ts-images@${version('ts-images', import.meta.dir)}`,
+    `ts-webp@${version('@stacksjs/ts-webp', imagesDir)}`,
+    `ts-avif@${version('@stacksjs/ts-avif', imagesDir)}`,
+  ].join(',')
+  return codecs
 }
 
 export function resolveImageSource(source: string, root: string = process.cwd()): string {
@@ -111,7 +149,7 @@ export class ImageBuilder {
     const height = this.targetHeight ?? (this.targetAspectRatio ? Math.max(1, Math.round(width / this.targetAspectRatio)) : undefined)
     const output = width === source.width && height === undefined ? source : resize(source, { width, height, fit: this.targetFit, position: this.targetPosition })
     if (!this.options.upscale && (output.width > source.width || output.height > source.height)) throw new TypeError(`Image variant ${output.width}x${output.height} would upscale the source`)
-    const cacheKey = createHash('sha256').update(`${hash}:${width}:${height ?? 'auto'}:${format}:${this.targetFit}:${this.targetPosition}:${this.targetQuality}`).digest('hex')
+    const cacheKey = createHash('sha256').update(`${hash}:${width}:${height ?? 'auto'}:${format}:${this.targetFit}:${this.targetPosition}:${this.targetQuality}:${codecFingerprint()}`).digest('hex')
     const stem = basename(sourcePath, extname(sourcePath)).replace(/[^a-zA-Z0-9_-]/g, '-') || 'image'
     const filename = `${stem}-${output.width}x${output.height}-${cacheKey.slice(0, 16)}.${format === 'jpeg' ? 'jpg' : format}`
     const path = resolve(this.options.outputDir, filename)

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -21,6 +22,15 @@ describe('@stacksjs/image', () => {
     const input = createImageData(8, 4); input.data.fill(255); await writeFile(join(root, 'wide.png'), await encode(input, 'png'))
     const result = await image('wide.png', { root, outputDir: join(root, 'out') }).widths([2, 4]).formats(['png']).original(false).generate()
     expect(result.variants.map(item => item.width)).toEqual([2, 4])
+  })
+  test('keys variants by the codec versions, so a codec fix re-encodes', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-image-codec-')); dirs.push(root)
+    const input = createImageData(4, 4); input.data.fill(90); await writeFile(join(root, 'k.png'), await encode(input, 'png'))
+    const [variant] = (await image('k.png', { root, outputDir: join(root, 'out') }).widths([4]).formats(['png']).original(false).generate()).variants
+    // The key must not be the one the old scheme produced from source + options alone.
+    const source = createHash('sha256').update(new Uint8Array(await readFile(join(root, 'k.png')))).digest('hex')
+    const legacy = createHash('sha256').update(`${source}:4:auto:png:inside:center:82`).digest('hex')
+    expect(variant!.cacheKey).not.toBe(legacy)
   })
   test('negotiates q-values, rejects traversal, and signs transforms', () => {
     const variants = [{ width: 800, height: 450, bytes: 10, format: 'avif' as const, mimeType: 'image/avif', path: '/a', url: '/a', cacheKey: 'a' }, { width: 800, height: 450, bytes: 12, format: 'jpeg' as const, mimeType: 'image/jpeg', path: '/b', url: '/b', cacheKey: 'b' }]
