@@ -1,3 +1,12 @@
+<script server>
+import { config } from '@stacksjs/config'
+
+// The app's own name and description, so the holding page describes the app
+// that turned coming-soon mode on rather than the framework.
+const appName = config.app.name || ''
+const description = config.app.description || ''
+</script>
+
 <main>
-  <ComingSoon />
+  <ComingSoon appName="{{ appName }}" description="{{ description }}" />
 </main>

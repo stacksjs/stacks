@@ -72,16 +72,51 @@ describe('server maintenance', () => {
     const html = maintenanceHtml({ time: Date.now(), message: 'Test maintenance' })
     expect(html).toContain('<!DOCTYPE html>')
     expect(html).toContain('Test maintenance')
-    expect(html).toContain('Trail Maintenance')
-    expect(html).toContain('park-ridge.svg')
+    expect(html).toContain('Down for maintenance')
+  })
+
+  test('maintenanceHtml carries no other project\'s brand', async () => {
+    // Every app renders this page. It used to be stacksjs.com's park theme,
+    // loading fonts and illustrations only stacksjs.com's public/ has.
+    const { maintenanceHtml } = await import('../src/maintenance')
+    const previous = process.env.APP_NAME
+    delete process.env.APP_NAME
+    try {
+      for (const mode of ['maintenance', 'coming-soon'] as const) {
+        const html = maintenanceHtml({ mode, time: Date.now() })
+        expect(html).not.toContain('Stacks')
+        expect(html).not.toContain('/assets/')
+        expect(html).not.toContain('url(')
+      }
+    }
+    finally {
+      if (previous !== undefined)
+        process.env.APP_NAME = previous
+    }
+  })
+
+  test('maintenanceHtml names the app from APP_NAME', async () => {
+    const { maintenanceHtml } = await import('../src/maintenance')
+    const previous = process.env.APP_NAME
+    process.env.APP_NAME = 'Acme <Co>'
+    try {
+      const html = maintenanceHtml({ time: Date.now() })
+      expect(html).toContain('<p class="app">Acme &lt;Co&gt;</p>')
+      expect(html).toContain('<title>Down for maintenance - Acme &lt;Co&gt;</title>')
+    }
+    finally {
+      if (previous === undefined)
+        delete process.env.APP_NAME
+      else
+        process.env.APP_NAME = previous
+    }
   })
 
   test('maintenanceHtml supports coming soon mode', async () => {
     const { maintenanceHtml } = await import('../src/maintenance')
     const html = maintenanceHtml({ mode: 'coming-soon', time: Date.now(), message: 'Launching soon' })
-    expect(html).toContain('Opening Soon')
+    expect(html).toContain('Coming soon')
     expect(html).toContain('Launching soon')
-    expect(html).toContain('Stacks basecamp')
   })
 
   test('activeSiteModePayload reads APP_COMING_SOON fallback', async () => {
@@ -185,7 +220,7 @@ describe('server maintenance', () => {
   test('maintenanceHtml includes retry info when provided', async () => {
     const { maintenanceHtml } = await import('../src/maintenance')
     const html = maintenanceHtml({ time: Date.now(), retry: 300 })
-    expect(html).toContain('Estimated reopening')
+    expect(html).toContain('Expected back in about 5 minutes')
   })
 
   test('maintenanceResponse returns 503 by default', async () => {

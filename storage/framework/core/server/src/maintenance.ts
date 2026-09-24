@@ -56,7 +56,7 @@ const DEFAULT_MAINTENANCE_PAYLOAD: Partial<MaintenancePayload> = {
 const DEFAULT_COMING_SOON_PAYLOAD: Partial<MaintenancePayload> = {
   mode: 'coming-soon',
   status: 200,
-  message: 'Stacks is setting up camp. Check back soon for the public launch.',
+  message: 'We are getting ready to launch. Check back soon.',
   // Redirect to the user's marketing holding page rather than the
   // framework's inline themed HTML. The view lives at
   // `storage/framework/defaults/resources/views/coming-soon.stx`
@@ -314,39 +314,43 @@ export function isSecretPath(path: string, secret: string): boolean {
 
 /**
  * Generate maintenance mode HTML response
+ *
+ * Every app gets this page, so it carries no brand of its own: the app's name
+ * (APP_NAME) above the headline, system fonts, and nothing fetched. It used to
+ * be the stacksjs.com park theme ("Trail Maintenance", "Stacks basecamp"),
+ * with fonts and illustrations loaded from `/assets/fonts/nps` and
+ * `/assets/images` in the app's public directory, which only stacksjs.com has.
+ * Every other app showed another project's copy in fallback fonts.
  */
 export function maintenanceHtml(payload: MaintenancePayload): string {
   const mode = payload.mode ?? 'maintenance'
   const defaults = defaultsForMode(mode)
   const message = escapeHtml(payload.message || defaults.message || '')
-  const title = escapeHtml(payload.title || (mode === 'coming-soon' ? 'Opening Soon' : 'Trail Maintenance'))
-  const eyebrow = mode === 'coming-soon' ? 'Stacks basecamp' : 'Service notice'
-  const lead = mode === 'coming-soon'
-    ? 'The public trailhead is almost ready.'
-    : 'The route is temporarily closed while the crew improves the path.'
+  const title = escapeHtml(payload.title || (mode === 'coming-soon' ? 'Coming soon' : 'Down for maintenance'))
+  const appName = escapeHtml((process.env.APP_NAME || '').trim())
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <meta name="robots" content="noindex">
+  <title>${appName ? `${title} - ${appName}` : title}</title>
   <style>
-    @font-face {
-      font-display: swap;
-      font-family: "Campmate Script";
-      src: url("/assets/fonts/nps/CampmateScript-Regular.woff2") format("woff2");
+    :root {
+      color-scheme: light dark;
+      --bg: #fafafa;
+      --fg: #171717;
+      --muted: #525252;
+      --rule: #e5e5e5;
     }
-    @font-face {
-      font-display: swap;
-      font-family: "Switchback";
-      src: url("/assets/fonts/nps/Switchback-Regular.woff2") format("woff2");
-    }
-    @font-face {
-      font-display: swap;
-      font-family: "NPS 2026";
-      font-weight: 100 900;
-      src: url("/assets/fonts/nps/NPS_2026-variable.woff2") format("woff2");
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0a0a0a;
+        --fg: #fafafa;
+        --muted: #a3a3a3;
+        --rule: #262626;
+      }
     }
     * {
       margin: 0;
@@ -354,107 +358,52 @@ export function maintenanceHtml(payload: MaintenancePayload): string {
       box-sizing: border-box;
     }
     body {
-      font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background:
-        linear-gradient(180deg, rgba(10, 28, 18, 0.78), rgba(10, 28, 18, 0.94)),
-        url("/assets/images/topography.svg") center / 760px auto,
-        #0d1e16;
-      color: #fff7e1;
-      padding: 20px;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    .container {
-      position: relative;
-      width: min(760px, 100%);
-      overflow: hidden;
-      border: 1px solid rgba(255, 240, 200, 0.28);
-      border-top: 6px solid #df9a2f;
-      border-radius: 8px;
-      padding: clamp(2rem, 7vw, 4.5rem);
-      background:
-        linear-gradient(180deg, rgba(27, 65, 40, 0.86), rgba(12, 31, 21, 0.96)),
-        #163824;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+    main {
+      width: min(560px, 100%);
     }
-    .container::after {
-      position: absolute;
-      inset: auto 0 0;
-      height: 44%;
-      content: "";
-      background: url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
-      opacity: 0.34;
-      pointer-events: none;
-    }
-    .eyebrow {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      gap: .75rem;
-      align-items: center;
-      color: #aac47d;
-      font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
-      font-size: .9rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-    .eyebrow::before {
-      width: 44px;
-      height: 2px;
-      content: "";
-      background: #df9a2f;
+    .app {
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
     }
     h1 {
-      position: relative;
-      z-index: 1;
-      margin-top: 1rem;
-      font-family: "Campmate Script", ui-serif, Georgia, serif;
-      font-size: clamp(4.5rem, 16vw, 8rem);
-      font-weight: 400;
-      line-height: .82;
+      margin-top: .5rem;
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      font-weight: 600;
+      letter-spacing: -.02em;
+      line-height: 1.1;
     }
-    .lead,
     .message,
     .retry {
-      position: relative;
-      z-index: 1;
-      max-width: 560px;
-      color: rgba(255, 247, 225, .84);
-      font-size: 1.08rem;
-      line-height: 1.65;
-    }
-    .lead {
-      margin-top: 1.25rem;
-      color: #b8d9cf;
-      font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
-      font-size: 1.22rem;
-      font-weight: 850;
-      line-height: 1.3;
-      text-transform: uppercase;
-    }
-    .message {
-      margin-top: .75rem;
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 1.0625rem;
+      line-height: 1.6;
     }
     .retry {
-      margin-top: 1.4rem;
-      color: #aac47d;
-      font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
-      font-size: .95rem;
-      font-weight: 800;
-      text-transform: uppercase;
+      padding-top: 1rem;
+      border-top: 1px solid var(--rule);
+      font-size: .9375rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="eyebrow">${eyebrow}</div>
+  <main>
+    ${appName ? `<p class="app">${appName}</p>` : ''}
     <h1>${title}</h1>
-    <p class="lead">${lead}</p>
-    <p class="message">${message}</p>
-    ${payload.retry ? `<p class="retry">Estimated reopening: ${Math.ceil(payload.retry / 60)} minutes.</p>` : ''}
-  </div>
+    ${message ? `<p class="message">${message}</p>` : ''}
+    ${payload.retry ? `<p class="retry">Expected back in about ${Math.ceil(payload.retry / 60)} minutes.</p>` : ''}
+  </main>
 </body>
 </html>`
 }
