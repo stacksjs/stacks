@@ -8031,10 +8031,10 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
-   * GET /verify-authentication
+   * POST /verify-authentication
    */
-  getVerifyAuthentication(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/verify-authentication", {}, [], false, options)
+  postVerifyAuthentication(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/verify-authentication", {}, [], false, options)
   },
 
   /**

@@ -21677,7 +21677,9 @@ export interface paths {
     trace?: never
   }
   "/verify-authentication": {
-    get: {
+    get?: never
+    put?: never
+    post: {
     parameters: {
       query?: never
       header?: never
@@ -21691,8 +21693,6 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
-    post?: never
     delete?: never
     options?: never
     head?: never

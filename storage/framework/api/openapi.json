@@ -60895,9 +60895,9 @@
       }
     },
     "/verify-authentication": {
-      "get": {
+      "post": {
         "summary": "/verify-authentication",
-        "operationId": "get__verify_authentication",
+        "operationId": "post__verify_authentication",
         "parameters": [],
         "responses": {
           "200": {
