@@ -340,6 +340,18 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
 
     await createTokenIndex('idx_oauth_refresh_tokens_token', 'oauth_refresh_tokens', 'token')
 
+    // Logout/recovery lock an owner's access rows and update their refresh
+    // pairs. Without these indexes MySQL scans and locks unrelated accounts,
+    // so a bystander's transaction can block even a one-session logout.
+    // Run after the legacy owner-column upgrade as well as on fresh installs.
+    for (const statement of [
+      'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_owner ON oauth_access_tokens(tokenable_type, tokenable_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_access_token_id ON oauth_refresh_tokens(access_token_id)',
+    ]) {
+      try { await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute() }
+      catch (error) { if (!isDuplicateIndexError(error)) throw error }
+    }
+
     if (options.verbose) log.info('Creating password_resets table...')
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS password_resets (
