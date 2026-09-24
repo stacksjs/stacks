@@ -13,7 +13,6 @@ import type {
   AccessToken,
   CreateClientOptions,
   CreateClientResult,
-  DatabaseDriver,
   OAuthClient,
   OAuthClientRow,
   PersonalAccessTokenResult,
@@ -21,7 +20,7 @@ import type {
   TokenScopes,
 } from '@stacksjs/types'
 import { createHash, randomBytes } from 'node:crypto'
-import { db, markContextWrote, mutationCount } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, markContextWrote, mutationCount } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
 import { makeHash } from '@stacksjs/security'
@@ -33,15 +32,12 @@ import { tokenDate, tokenTimestamps } from './token-dates'
 // DATABASE DRIVER DETECTION & SQL HELPERS
 // ============================================================================
 
-import { env } from '@stacksjs/env'
 import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database/runtime'
 
-/** Current database driver */
-const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlite'
-
-/** Cross-database SQL helpers */
-const sql = sqlHelpers(dbDriver)
-const { isPostgres, isMysql, boolTrue, boolFalse } = sql
+/** Resolve at invocation, after app configuration and connection setup. */
+function tokenSql() {
+  return sqlHelpers(getDatabaseDialect())
+}
 
 /**
  * The current time as a quoted SQL literal in the framework's canonical
@@ -74,6 +70,7 @@ async function verifyRefreshTokenInsert(
   accessTokenId: number,
   expiresAt: Date,
 ): Promise<void> {
+  const { param } = tokenSql()
   const rows = await trx.unsafe(`
     SELECT access_token_id, revoked, expires_at FROM oauth_refresh_tokens WHERE token = ${param(1)}
   `, [hash]) as Array<{ access_token_id: unknown, revoked: unknown, expires_at: unknown }>
@@ -86,17 +83,13 @@ async function verifyRefreshTokenInsert(
 }
 
 function refreshDeadline(days: number): Date {
+  const { isMysql } = tokenSql()
   const deadline = new Date()
   deadline.setDate(deadline.getDate() + days)
   // The shipped MySQL TIMESTAMP has whole-second precision and normally
   // rounds. Choose an exact representable deadline without extending it.
   if (isMysql) deadline.setUTCMilliseconds(0)
   return deadline
-}
-
-/** Shorthand for sql.param */
-function param(index: number): string {
-  return sql.param(index)
 }
 
 // ============================================================================
@@ -217,6 +210,7 @@ export async function getPasswordChangedAt(
   q: { unsafe: (sql: string, params?: any[]) => any } = db,
   ownerType: string = DEFAULT_TOKENABLE_TYPE,
 ): Promise<Date | null> {
+  const { isMysql, isPostgres, param } = tokenSql()
   if (ownerId === null || ownerId === undefined)
     return null
   // The polymorphic discriminator is a table name, not SQL. Escape its quote
@@ -302,6 +296,7 @@ export function isIssuedBeforePasswordChange(createdAt: unknown, changedAt: Date
  * const userTokens = await tokens(user.id)
  */
 export async function tokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<AccessToken[]> {
+  const { boolFalse, param } = tokenSql()
   const rows = await db.unsafe(`
     SELECT t.*, c.provider as client_provider
     FROM oauth_access_tokens t
@@ -337,6 +332,7 @@ export async function tokens(userId: number, tokenableType: string = DEFAULT_TOK
  * const token = await findToken('abc123...')
  */
 export async function findToken(plainTextToken: string): Promise<AccessToken | null> {
+  const { boolFalse, param } = tokenSql()
   const hashedToken = bearerLookupHash(plainTextToken)
 
   const rows = await db.unsafe(`
@@ -551,6 +547,7 @@ export async function createToken(
     tokenableType?: string
   } = {}
 ): Promise<PersonalAccessTokenResult> {
+  const { isMysql, isPostgres, boolTrue, boolFalse, param } = tokenSql()
   const {
     expiresInMinutes = 60,
     withRefreshToken = true,
@@ -683,6 +680,7 @@ export async function refreshToken(
     refreshExpiresInDays?: number
   } = {}
 ): Promise<RefreshTokenResult> {
+  const { isMysql, isPostgres, boolFalse, param } = tokenSql()
   const {
     expiresInMinutes = 60,
     refreshExpiresInDays = 30,
@@ -850,6 +848,7 @@ export async function refreshToken(
  * const isValid = await validateRefreshToken('your-refresh-token')
  */
 export async function validateRefreshToken(refreshTokenPlain: string): Promise<boolean> {
+  const { boolFalse, param } = tokenSql()
   const hashedRefreshToken = hashToken(refreshTokenPlain)
 
   const rows = await db.unsafe(`
@@ -877,6 +876,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
  * await revokeRefreshToken('your-refresh-token')
  */
 export async function revokeRefreshToken(refreshTokenPlain: string): Promise<void> {
+  const { boolTrue, param } = tokenSql()
   const hashedRefreshToken = hashToken(refreshTokenPlain)
 
   await db.unsafe(`
@@ -899,6 +899,7 @@ export async function revokeRefreshToken(refreshTokenPlain: string): Promise<voi
  * await revokeAllRefreshTokens(user.id)
  */
 export async function revokeAllRefreshTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
+  const { boolTrue, param } = tokenSql()
   await db.unsafe(`
     UPDATE oauth_refresh_tokens
     SET revoked = ${boolTrue}
@@ -934,6 +935,7 @@ export async function deleteExpiredRefreshTokens(): Promise<number> {
  * const count = await deleteRevokedRefreshTokens(7)
  */
 export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<number> {
+  const { boolTrue, param } = tokenSql()
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
@@ -1010,6 +1012,7 @@ export async function revokeOtherTokens(userId: number, tokenableType: string = 
  * const count = await deleteExpiredTokens()
  */
 export async function deleteExpiredTokens(): Promise<number> {
+  const { isPostgres, isMysql, boolFalse, param } = tokenSql()
   const cutoff = appNow()
   return db.transaction(async (trx) => {
     let deleted = 0
@@ -1071,6 +1074,7 @@ export async function deleteExpiredTokens(): Promise<number> {
  * const count = await deleteRevokedTokens(30) // older than 30 days
  */
 export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> {
+  const { boolTrue, param } = tokenSql()
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
@@ -1103,6 +1107,7 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
  * const userClients = await clients(user.id)
  */
 export async function clients(userId: number): Promise<OAuthClient[]> {
+  const { boolFalse, param } = tokenSql()
   const rows = await db.unsafe(`
     SELECT * FROM oauth_clients
     WHERE user_id = ${param(1)} AND revoked = ${boolFalse}
@@ -1120,6 +1125,7 @@ export async function clients(userId: number): Promise<OAuthClient[]> {
  * const client = await findClient(1)
  */
 export async function findClient(clientId: number): Promise<OAuthClient | null> {
+  const { param } = tokenSql()
   const rows = await db.unsafe(`
     SELECT * FROM oauth_clients WHERE id = ${param(1)} LIMIT 1
   `, [clientId])
@@ -1184,6 +1190,7 @@ export async function createClient(options: CreateClientOptions): Promise<Create
  * await revokeClient(1)
  */
 export async function revokeClient(clientId: number): Promise<void> {
+  const { boolTrue, param } = tokenSql()
   await db.unsafe(`
     UPDATE oauth_clients
     SET revoked = ${boolTrue}, updated_at = ${appNow()}

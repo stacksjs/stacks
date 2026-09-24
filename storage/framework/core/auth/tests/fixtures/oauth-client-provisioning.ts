@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { setSystemTime } from 'bun:test'
 import { realpathSync } from 'node:fs'
 import { basename, dirname } from 'node:path'
 
@@ -26,6 +27,46 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 } })
 const sql = sqlHelpers(dialect)
 async function verifyClients(): Promise<void> {
+  if (['mismatched-token-driver', 'absent-token-driver'].includes(process.env.STACKS_CLIENT_TEST_MODE!)) {
+    assert.equal((await migrateAuthTables()).success, true)
+    await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
+    await db.insertInto('users').values({ id: 42 }).execute()
+    const previous = process.env.DB_CONNECTION
+    if (process.env.STACKS_CLIENT_TEST_MODE === 'absent-token-driver') delete process.env.DB_CONNECTION
+    else process.env.DB_CONNECTION = dialect === 'postgres' ? 'sqlite' : 'postgres'
+    const now = new Date('2030-01-02T03:04:05.789Z')
+    setSystemTime(now)
+    try {
+      const api = await import('../../src/tokens')
+      const pair = await api.createToken(42, 'configured token driver', ['read'])
+      const client = await api.findClient(pair.accessToken.clientId)
+      assert(client && !client.revoked)
+      assert.equal((await api.findToken(pair.plainTextToken))?.name, 'configured token driver')
+      assert.equal((await api.tokens(42)).length, 1)
+      assert.equal(await api.getPasswordChangedAt(42), null)
+      assert.equal(await api.validateRefreshToken(pair.refreshToken!), true)
+      const rotated = await api.refreshToken(pair.refreshToken!)
+      assert.equal(await api.validateRefreshToken(pair.refreshToken!), false)
+      assert.equal(await api.validateRefreshToken(rotated.refreshToken!), true)
+      await api.revokeRefreshToken(rotated.refreshToken!)
+      assert.equal(await api.validateRefreshToken(rotated.refreshToken!), false)
+      const another = await api.createToken(42, 'bulk refresh revocation', ['read'])
+      await api.revokeAllRefreshTokens(42)
+      assert.equal(await api.validateRefreshToken(another.refreshToken!), false)
+      assert.equal(await api.deleteRevokedRefreshTokens(-1), 3)
+      assert.equal(await api.deleteExpiredRefreshTokens(), 0)
+      await api.createToken(42, 'expired', ['read'], { expiresAt: new Date(now.getTime() - 1000), withRefreshToken: false })
+      assert.equal(await api.deleteExpiredTokens(), 1)
+      await api.revokeAllTokens(42)
+      assert.equal(await api.deleteRevokedTokens(-1), 3)
+      assert.deepEqual(await api.tokens(42), [])
+      assert.deepEqual(await api.clients(42), [])
+      await api.revokeClient(pair.accessToken.clientId)
+      assert.equal((await api.findClient(pair.accessToken.clientId))?.revoked, true)
+    }
+    finally { process.env.DB_CONNECTION = previous; setSystemTime() }
+    return
+  }
   if (process.env.STACKS_CLIENT_TEST_MODE === 'replica-routing') {
     assert(dialect !== 'sqlite')
     assert.equal((await migrateAuthTables()).success, true)
