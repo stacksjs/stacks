@@ -699,7 +699,7 @@ export async function refreshToken(
     `, [hashedRefreshToken])
 
     const refreshRow = (refreshRows as unknown as AccessTokenRow[])[0]
-    if (!refreshRow || !validTokenExpiry(refreshRow.expires_at)) {
+    if (!refreshRow || refreshRow.access_token_id == null || !validTokenExpiry(refreshRow.expires_at)) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
 
@@ -719,17 +719,10 @@ export async function refreshToken(
     // same user. The atomic revoke-paired-access-token ensures a leaked
     // refresh produces only one usable access token at a time
     // (stacksjs/stacks#1860 H-2).
-    await trx.unsafe(`
-      UPDATE oauth_refresh_tokens
-      SET revoked = ${boolTrue}
-      WHERE id = ${param(1)}
-    `, [refreshRow.id])
-
-    await trx.unsafe(`
-      UPDATE oauth_access_tokens
-      SET revoked = ${boolTrue}
-      WHERE id = ${param(1)}
-    `, [refreshRow.access_token_id])
+    // Use the same checked cascade as logout and bearer rotation. A trigger
+    // may suppress either update without throwing; issuing a replacement in
+    // that case would leave the original credential usable as well.
+    await revokeTokenPair({ id: refreshRow.access_token_id })
 
     // Create new access token
     const plainTextToken = generateSecureToken(40)

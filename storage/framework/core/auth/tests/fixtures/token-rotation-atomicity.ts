@@ -29,7 +29,7 @@ const { configureOrm, releaseOrm } = await import('bun-query-builder')
 if (dialect === 'sqlite') configureOrm({ database: process.env.DB_DATABASE_PATH })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
-const { createToken, findToken, tokens, validateRefreshToken } = await import('../../src/tokens')
+const { createToken, findToken, refreshToken, tokens, validateRefreshToken } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
@@ -135,8 +135,8 @@ try {
     assert.equal(await validateRefreshToken(original.refreshToken!), true)
     assert.equal(await findToken(replacement!), null)
   })
-  for (const table of ['oauth_access_tokens', 'oauth_refresh_tokens']) {
-    await check(`a suppressed ${table} revocation cannot issue a second live bearer`, async () => {
+  for (const [table, method] of ['oauth_access_tokens', 'oauth_refresh_tokens'].flatMap(table => ['bearer', 'refresh'].map(method => [table, method] as const))) {
+    await check(`a suppressed ${table} revocation cannot complete a ${method} exchange`, async () => {
       const original = await createToken(42, 'suppressed revoke', ['read'])
       const before = (await tokens(42)).length
       if (dialect === 'postgres') {
@@ -148,7 +148,8 @@ try {
       else
         await db.unsafe(`CREATE TRIGGER suppress_rotation BEFORE UPDATE ON ${table} BEGIN SELECT RAISE(IGNORE); END`).execute()
       try {
-        await assert.rejects(Auth.rotateToken(original.plainTextToken), 'suppressed revocation must fail the exchange')
+        await assert.rejects(method === 'bearer' ? Auth.rotateToken(original.plainTextToken) : refreshToken(original.refreshToken!),
+          'suppressed revocation must fail the exchange')
         assert(Boolean(await findToken(original.plainTextToken)))
         assert.equal(await validateRefreshToken(original.refreshToken!), true, 'a failed exchange must roll back its refresh revocation too')
         assert.equal((await tokens(42)).length, before)
