@@ -12,7 +12,33 @@
  * - `origin-only`: no custom domain configured; `http://localhost:<port>` is the
  *   only URL there is.
  */
+import { isIP } from 'node:net'
+
 export type DashboardProxyStrategy = 'parent-managed' | 'daemon-route' | 'own-proxy' | 'origin-only'
+
+export function resolveDashboardDomain(appUrl: string): string | null {
+  if (!appUrl.trim())
+    return null
+  try {
+    const value = appUrl.trim()
+    if (!value.includes('://') && /^[a-z][a-z0-9+.-]*:(?!\d+(?:[/?#]|$))/i.test(value))
+      return null
+    const url = new URL(value.includes('://') ? value : `http://${value}`)
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password)
+      return null
+    const hostname = url.hostname.toLowerCase().replace(/\.$/, '')
+    // URL keeps IPv6 brackets and canonicalizes abbreviated IPv4 addresses.
+    // Neither is a DNS base to which a dashboard subdomain can be attached.
+    if (hostname === 'localhost' || isIP(hostname.replace(/^\[|\]$/g, '')))
+      return null
+    if (!hostname || !hostname.split('.').every(label => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label)))
+      return null
+    return `dashboard.${hostname}`
+  }
+  catch {
+    return null
+  }
+}
 
 export interface DashboardProxyProbes {
   /** `buddy dev` sets STACKS_PROXY_MANAGED before spawning the dashboard. */

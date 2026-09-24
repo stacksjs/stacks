@@ -18,6 +18,11 @@ test.each(['lazy', 'eager', 'stale'] as const)('dashboard boots globals for %s a
     symlinkSync(join(checkout, 'node_modules'), join(root, 'node_modules'), 'dir')
     write('package.json', '{"name":"dashboard-runtime-fixture","type":"module"}')
     write('bunfig.toml', '# No application preloads in this isolated worker.\n')
+    // The proxy is a system boundary: a regression must never create real
+    // certificates, change hosts files, or talk to a developer's rpx daemon.
+    write('proxy-guard.ts', `import { mock } from 'bun:test'
+const unexpected = () => { process.stdout.write('UNEXPECTED_PROXY_CALL'); throw new Error('Proxy forbidden in fixture') }
+mock.module('@stacksjs/rpx', () => ({ isDaemonRunning: unexpected, startProxies: unexpected, writeEntry: unexpected }))`)
     if (loading === 'stale') {
       for (const name of ['functions', 'models']) {
         const barrel = `storage/framework/auto-imports/${name}.ts`
@@ -52,20 +57,28 @@ export default new Action({
     const port = reservation.port!
     await reservation.stop(true)
     child = Bun.spawn([
-      process.execPath, '--no-env-file', '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
+      process.execPath, '--no-env-file', '--preload', join(root, 'proxy-guard.ts'),
+      '--tsconfig-override', join(checkout, 'storage/framework/tsconfig.framework.json'),
       join(checkout, 'storage/framework/core/actions/src/dev/dashboard.ts'), '--verbose',
     ], {
       cwd: root,
       env: {
         PATH: process.env.PATH,
-        APP_ENV: 'test', NODE_ENV: 'test', APP_URL: 'localhost', PORT_ADMIN: String(port),
+        APP_ENV: 'test', NODE_ENV: 'test', APP_URL: 'http://127.0.0.1:4320', PORT_ADMIN: String(port),
         STACKS_DASHBOARD_WORKER: '1', STACKS_NO_NATIVE: '1', STACKS_DEV_SERVER: '1',
         STACKS_DEV_AUTO_MIGRATE: '0', STACKS_SKIP_DEFAULT_ROUTES: '1',
         DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(root, 'fixture.sqlite'),
       },
       stdout: 'pipe', stderr: 'pipe',
     })
-    const output = new Response(child.stdout).text()
+    let transcript = ''
+    const output = (async () => {
+      const decoder = new TextDecoder()
+      for await (const chunk of child.stdout as ReadableStream<Uint8Array>)
+        transcript += decoder.decode(chunk, { stream: true })
+      transcript += decoder.decode()
+      return transcript
+    })()
     const errors = new Response(child.stderr).text()
     const origin = `http://127.0.0.1:${port}`
     let ready = false
@@ -88,6 +101,13 @@ export default new Action({
     expect(body.rows).toEqual([{ id: 1, name: 'isolated row' }])
     expect(body.allowed).toBe(true)
     expect(body.denied).toBe(false)
+    // HTTP starts before proxy setup. Wait for the final startup message so
+    // an early successful request cannot hide subsequent system side effects.
+    for (let attempt = 0; attempt < 100 && !transcript.includes('Native window disabled'); attempt++)
+      await Bun.sleep(100)
+    expect(transcript).toContain('Native window disabled')
+    expect(transcript).not.toContain('UNEXPECTED_PROXY_CALL')
+    expect(transcript).not.toContain('https://dashboard.')
   }
   finally {
     child?.kill()

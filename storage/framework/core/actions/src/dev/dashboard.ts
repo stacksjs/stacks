@@ -8,7 +8,7 @@ import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { resolveComponentsLibraryRoot } from './defaults-resources'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
-import { resolveDashboardProxyStrategy } from './dashboard-proxy'
+import { resolveDashboardDomain, resolveDashboardProxyStrategy } from './dashboard-proxy'
 import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 import { ensureDiscoveredPackages } from '../discover-packages'
@@ -52,9 +52,7 @@ const dashboardPort = await findAvailablePort(preferredPort)
 
 // Determine if we have a custom domain (like stacks.localhost)
 const appUrl = process.env.APP_URL || ''
-const hasCustomDomain = appUrl !== '' && appUrl !== 'localhost' && !appUrl.includes('localhost:')
-const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
-const dashboardDomain = domain ? `dashboard.${domain}` : null
+const dashboardDomain = resolveDashboardDomain(appUrl)
 const sslBasePath = `${process.env.HOME}/.stacks/ssl`
 
 function restoreConsole(): void {
