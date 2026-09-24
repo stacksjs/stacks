@@ -265,37 +265,6 @@ describe('the mail health check', () => {
   })
 })
 
-describe('the mailbox step', () => {
-  const src = fs.readFileSync(SOURCE, 'utf8')
-  const existing = src.slice(src.indexOf('An existing mailbox follows its declared password'), src.indexOf('echo "EXISTS:$addr"'))
-
-  it('changes an existing mailbox password that no longer matches the declared one', () => {
-    // This branch used to only echo EXISTS: a rotated MAIL_PASSWORD_<LP>
-    // deployed cleanly and the old password kept working.
-    const invalid = existing.indexOf('grep -qix \'credentials invalid\'')
-    const change = existing.indexOf('user:local change-password "$addr" "$pw"')
-
-    expect(invalid).toBeGreaterThan(-1)
-    expect(change).toBeGreaterThan(invalid)
-  })
-
-  it('reports a change only after verifying it took', () => {
-    const block = existing.slice(existing.indexOf('user:local change-password'))
-    const valid = block.indexOf('grep -qix \'credentials valid\'')
-
-    expect(valid).toBeGreaterThan(-1)
-    expect(valid).toBeLessThan(block.indexOf('echo "ROTATED:$addr"'))
-    expect(block).toContain('echo "ROTATEFAIL:$addr"')
-  })
-
-  it('logs rotated addresses, never passwords', () => {
-    const report = src.slice(src.indexOf('const rotated = '), src.indexOf('const rotated = ') + 700)
-
-    expect(report).toContain('rotated.join(\', \')')
-    expect(report).not.toContain('password}')
-  })
-})
-
 describe('the DKIM key registration', () => {
   const src = fs.readFileSync(SOURCE, 'utf8')
   const block = src.slice(src.indexOf('ENTRY="$DOMAIN:$SEL:$KEY"'), src.indexOf('if [ "$NEWEX" != "$ex" ]'))
@@ -313,5 +282,19 @@ describe('the DKIM key registration', () => {
     const append = block.slice(block.lastIndexOf('if [ "$PLACED" = 0 ]'))
     // Raw source: the \$ is the template-literal escape the shell never sees.
     expect(append).toContain('NEWEX="\\${NEWEX:+$NEWEX,}$ENTRY"')
+  })
+})
+
+describe('the mailbox step', () => {
+  it('never changes the password of a mailbox that already exists', () => {
+    // A deploy changing existing passwords reset mailboxes to whichever app
+    // deployed last: stacksjs.com mailboxes are declared by several apps, each
+    // with its own MAIL_PASSWORD_<LP>. Changing a password is a deliberate act:
+    // `mail-server user:local change-password` on the mail box.
+    const src = fs.readFileSync(SOURCE, 'utf8')
+    const step = src.slice(src.indexOf('# 3) Create the configured mailboxes'), src.indexOf('echo "EXISTS:$addr"'))
+    const existingBranch = step.slice(step.lastIndexOf('    else\n'))
+
+    expect(existingBranch).not.toContain('change-password')
   })
 })
