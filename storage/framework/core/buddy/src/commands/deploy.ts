@@ -3319,7 +3319,8 @@ systemctl reset-failed`
  *   2. A per-domain DKIM key is generated on first sight (`/opt/mail/dkim/<domain>.private`)
  *      and registered in `DKIM_EXTRA_KEYS` so outbound mail is signed AS the domain.
  *   3. `config.email.mailboxes` → created as per-domain isolated users
- *      (`mail-server user:local create <lp>@<domain>`), skipping any that exist.
+ *      (`mail-server user:local create <lp>@<domain>`). One that already exists
+ *      has its password changed when it no longer matches the declared one.
  *   4. `config.email.forwards` → merged into `forwards.json` and compiled to
  *      RFC 5228 `forwards.sieve` (live-reloaded).
  *
@@ -3748,6 +3749,23 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
         echo "MADE:$addr"
       fi
     else
+      # An existing mailbox follows its declared password, the same as a
+      # migrated one above: config/email.ts (or MAIL_PASSWORD_<LP>) is the
+      # source of truth, so rotating a password is a secret change plus a
+      # deploy. This branch used to only echo EXISTS, so a rotated secret
+      # deployed cleanly and the old password kept working.
+      #
+      # Checked with 'user:local verify' first, so an unchanged password is not
+      # rehashed on every deploy. Only an explicit "invalid" rotates: a server
+      # too old to have 'verify' prints neither answer and is left alone.
+      if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -qix 'credentials invalid'; then
+        SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" "$pw" >/dev/null 2>&1 || true
+        if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -qix 'credentials valid'; then
+          echo "ROTATED:$addr"
+        else
+          echo "ROTATEFAIL:$addr"
+        fi
+      fi
       echo "EXISTS:$addr"
     fi
   done
@@ -4021,6 +4039,14 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     }
     if (migratedAddrs.size)
       logger.success(`Mail: migrated ${migratedAddrs.size} legacy mailbox username(s) to isolated full addresses`)
+
+    // Addresses only: the password is the secret being rotated.
+    const rotated = [...out.matchAll(/ROTATED:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])
+    if (rotated.length)
+      logger.success(`Mail: changed the password of ${rotated.length} mailbox(es) to the declared one: ${rotated.join(', ')}`)
+    const rotateFailed = [...out.matchAll(/ROTATEFAIL:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])
+    if (rotateFailed.length)
+      logger.warn(`Mail: could not change the password of ${rotateFailed.length} mailbox(es); the old one still works: ${rotateFailed.join(', ')}`)
     return domain ? { domain, mailHost, dkimPubB64, dkimSelector, created } : null
   }
   catch (err) {

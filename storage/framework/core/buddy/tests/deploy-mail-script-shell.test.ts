@@ -264,3 +264,34 @@ describe('the mail health check', () => {
     expect(healthCheck).toContain('exit 1')
   })
 })
+
+describe('the mailbox step', () => {
+  const src = fs.readFileSync(SOURCE, 'utf8')
+  const existing = src.slice(src.indexOf('An existing mailbox follows its declared password'), src.indexOf('echo "EXISTS:$addr"'))
+
+  it('changes an existing mailbox password that no longer matches the declared one', () => {
+    // This branch used to only echo EXISTS: a rotated MAIL_PASSWORD_<LP>
+    // deployed cleanly and the old password kept working.
+    const invalid = existing.indexOf('grep -qix \'credentials invalid\'')
+    const change = existing.indexOf('user:local change-password "$addr" "$pw"')
+
+    expect(invalid).toBeGreaterThan(-1)
+    expect(change).toBeGreaterThan(invalid)
+  })
+
+  it('reports a change only after verifying it took', () => {
+    const block = existing.slice(existing.indexOf('user:local change-password'))
+    const valid = block.indexOf('grep -qix \'credentials valid\'')
+
+    expect(valid).toBeGreaterThan(-1)
+    expect(valid).toBeLessThan(block.indexOf('echo "ROTATED:$addr"'))
+    expect(block).toContain('echo "ROTATEFAIL:$addr"')
+  })
+
+  it('logs rotated addresses, never passwords', () => {
+    const report = src.slice(src.indexOf('const rotated = '), src.indexOf('const rotated = ') + 700)
+
+    expect(report).toContain('rotated.join(\', \')')
+    expect(report).not.toContain('password}')
+  })
+})
