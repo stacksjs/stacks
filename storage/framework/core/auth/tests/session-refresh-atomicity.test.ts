@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
   const connection = dialect === 'postgres' ? process.env.STACKS_TEST_POSTGRES_URL : process.env.STACKS_TEST_MYSQL_URL
-  test.skipIf(dialect !== 'sqlite' && !connection)(`${dialect} session renewal preserves expiry boundaries and competing changes`, async () => {
+  test.skipIf(dialect !== 'sqlite' && !connection).each(['UTC', 'America/Los_Angeles'])(`${dialect} session renewal preserves expiry boundaries and competing changes in %s`, async (timezone) => {
     const url = dialect === 'sqlite' ? undefined : new URL(connection!)
     if (url && (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || !url.port || ['5432', '3306'].includes(url.port)))
       throw new Error('Session renewal tests require a disposable local server on a non-default port')
@@ -21,7 +21,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
       if (admin) { await admin.unsafe(`CREATE DATABASE ${quoted}`); created = true }
       const child = Bun.spawn([process.execPath, `--config=${config}`, '--no-env-file', `${import.meta.dir}/fixtures/session-refresh-atomicity.ts`], {
         env: {
-          ...process.env, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
+          ...process.env, TZ: timezone, APP_ENV: 'test', DB_CONNECTION: dialect, DB_QUERY_LOGGING_ENABLED: 'false',
           DB_DATABASE_PATH: dialect === 'sqlite' ? join(directory, 'session.sqlite') : ':memory:',
           STACKS_SESSION_RENEW_CONFIG: config,
           ...(url ? { DB_DATABASE: name, DB_HOST: url.hostname, DB_PORT: url.port,
@@ -35,7 +35,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         expect(code, `${stdout}\n${stderr}`).toBe(0)
         expect(stdout).toContain('session renewal atomicity OK')
       }
-      finally { clearTimeout(watchdog); child.kill() }
+      finally { clearTimeout(watchdog); child.kill(); await child.exited }
     }
     finally {
       try { if (created) await admin!.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`) }

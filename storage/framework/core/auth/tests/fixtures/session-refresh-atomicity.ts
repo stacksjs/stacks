@@ -28,10 +28,10 @@ const { SessionAuth } = await import('../../src/session-auth')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const failures: string[] = []
 const now = new Date('2030-01-02T03:04:05Z')
-async function check(name: string, run: () => Promise<void>) {
-  setSystemTime(now)
+async function check(name: string, run: () => Promise<void>, at: Date = now) {
+  setSystemTime(at)
   await db.deleteFrom('sessions').execute()
-  await db.insertInto('sessions').values({ id: 'target', user_id: 1, expires_at: sqlDateTime(new Date(now.getTime() + 60_000)), last_activity: 0 }).execute()
+  await db.insertInto('sessions').values({ id: 'target', user_id: 1, expires_at: sqlDateTime(new Date(at.getTime() + 60_000)), last_activity: 0 }).execute()
   try { await run(); console.log(`PASS ${name}`) }
   catch (error) { failures.push(`${name}: ${error}`) }
 }
@@ -100,6 +100,20 @@ try {
     assert.equal(await SessionAuth.refresh('target', 120_000), true)
     assert.equal(await SessionAuth.check('target'), true)
   })
+  for (const timestamp of ['2030-11-03T08:59:30.800Z', '2030-03-10T09:59:30.800Z']) {
+    const start = new Date(timestamp)
+    await check(`renewal preserves elapsed TTL across the clock change at ${timestamp}`, async () => {
+      assert.equal(await SessionAuth.refresh('target', 120_000), true)
+      const row = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
+      const requested = start.getTime() + 120_000
+      const expected = dialect === 'mysql' ? Math.floor(requested / 1000) * 1000 : requested
+      assert.equal(parseSqlDateTime(row.expires_at)?.getTime(), expected)
+      setSystemTime(new Date(expected - 1))
+      assert.equal(await SessionAuth.check('target'), true)
+      setSystemTime(new Date(expected))
+      assert.equal(await SessionAuth.check('target'), false)
+    }, start)
+  }
   for (const fault of ['suppressed', 'expiry changed', 'owner changed']) {
     await check(`renewal rejects a ${fault} update without persisting a partial change`, async () => {
       const before = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()

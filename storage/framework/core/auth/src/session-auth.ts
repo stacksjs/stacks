@@ -346,7 +346,8 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
       const newExpiry = new Date(Date.now() + ttlMs)
       // MySQL's whole-second TIMESTAMP must not round the promised deadline
       // upward. An unrepresentably short TTL must leave the session intact.
-      if (mysql) newExpiry.setMilliseconds(0)
+      // UTC avoids reinterpreting the repeated local hour at DST fallback.
+      if (mysql) newExpiry.setUTCMilliseconds(0)
       if (!Number.isFinite(newExpiry.getTime()) || newExpiry.getTime() <= Date.now())
         return false
       const lastActivity = Math.floor(Date.now() / 1000)
