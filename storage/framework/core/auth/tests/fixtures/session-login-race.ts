@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { SQL } from 'bun'
+import { setSystemTime } from 'bun:test'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -14,7 +15,7 @@ else {
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, sqlDateTime } = await import('@stacksjs/database/runtime')
+const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, parseSqlDateTime, sqlDateTime } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect, connections: dialect === 'sqlite' ? { sqlite: { database: process.env.DB_DATABASE_PATH } } : {
@@ -133,23 +134,23 @@ try {
     }
     catch (error) { failures.push(`${mode} rollback: ${String(error)}`) }
   }
-  for (const effect of dialect === 'mysql' ? ['wrong-owner', 'expired'] : ['suppressed', 'wrong-owner', 'expired']) {
+  for (const effect of dialect === 'mysql' ? ['wrong-owner', 'expired', 'extended'] : ['suppressed', 'wrong-owner', 'expired', 'extended']) {
     await db.deleteFrom('sessions').execute()
     await db.insertInto('sessions').values({ id: 'synthetic-bystander', user_id: 2, payload: '{}', last_activity: 0,
       expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
     if (dialect === 'postgres') {
       const body = effect === 'suppressed' ? 'RETURN NULL;' : effect === 'wrong-owner'
-        ? 'NEW.user_id := 2; RETURN NEW;' : "NEW.expires_at := '2000-01-01'; RETURN NEW;"
+        ? 'NEW.user_id := 2; RETURN NEW;' : `NEW.expires_at := '${effect === 'extended' ? '2037-01-01' : '2000-01-01'}'; RETURN NEW;`
       await db.unsafe(`CREATE FUNCTION alter_session_insert() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN ${body} END; $$`).execute()
       await db.unsafe('CREATE TRIGGER alter_session_insert BEFORE INSERT ON sessions FOR EACH ROW EXECUTE FUNCTION alter_session_insert()').execute()
     }
     else if (dialect === 'mysql') {
-      const body = effect === 'wrong-owner' ? 'NEW.user_id = 2' : "NEW.expires_at = '2000-01-01'"
+      const body = effect === 'wrong-owner' ? 'NEW.user_id = 2' : `NEW.expires_at = '${effect === 'extended' ? '2037-01-01' : '2000-01-01'}'`
       await db.unsafe(`CREATE TRIGGER alter_session_insert BEFORE INSERT ON sessions FOR EACH ROW SET ${body}`).execute()
     }
     else {
       const body = effect === 'suppressed' ? 'SELECT RAISE(IGNORE)' : effect === 'wrong-owner'
-        ? 'UPDATE sessions SET user_id = 2 WHERE id = NEW.id' : "UPDATE sessions SET expires_at = '2000-01-01' WHERE id = NEW.id"
+        ? 'UPDATE sessions SET user_id = 2 WHERE id = NEW.id' : `UPDATE sessions SET expires_at = '${effect === 'extended' ? '2037-01-01' : '2000-01-01'}' WHERE id = NEW.id`
       await db.unsafe(`CREATE TRIGGER alter_session_insert ${effect === 'suppressed' ? 'BEFORE' : 'AFTER'} INSERT ON sessions BEGIN ${body}; END`).execute()
     }
     try {
@@ -165,6 +166,19 @@ try {
       if (dialect === 'postgres') await db.unsafe('DROP FUNCTION alter_session_insert()').execute()
     }
   }
+  try {
+    const now = Math.floor(Date.now() / 1000) * 1000 + 800
+    setSystemTime(new Date(now))
+    const issued = await SessionAuth.login(email, 'old-synthetic-password')
+    const stored = await db.primary.selectFrom('sessions').where('id', '=', issued.sessionId).select('expires_at').executeTakeFirst()
+    const expected = new Date(now + 24 * 60 * 60 * 1000)
+    if (dialect === 'mysql') expected.setUTCMilliseconds(0)
+    assert.equal(parseSqlDateTime(stored?.expires_at)?.getTime(), expected.getTime(), 'initial session deadline must not round upward')
+    setSystemTime(expected)
+    assert.equal(await SessionAuth.check(issued.sessionId), false, 'the exact issued deadline is expired')
+  }
+  catch (error) { failures.push(`initial session expiry: ${error}`) }
+  finally { setSystemTime() }
   await db.insertInto('users').values({ id: 2, name: 'Previous principal', email: 'previous@example.invalid', password: oldHash }).execute()
   if (dialect === 'postgres') {
     await db.unsafe("CREATE FUNCTION reject_direct_login() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture direct login denied'; END; $$").execute()

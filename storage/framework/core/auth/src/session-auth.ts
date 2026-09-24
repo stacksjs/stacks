@@ -139,6 +139,9 @@ export async function sessionLogin(
 
   const sessionId = generateSessionId()
   const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 hours
+  // Match renewal's representable deadline; MySQL TIMESTAMP would otherwise
+  // round fractional seconds upward and extend the initial session lifetime.
+  if (getDatabaseDialect() === 'mysql') expiresAt.setUTCMilliseconds(0)
   const { ip, userAgent } = readRequestFingerprint(fingerprint)
 
   // Persist session to database. Throw on failure rather than returning
@@ -164,6 +167,7 @@ export async function sessionLogin(
       const stored = await db.primary.selectFrom('sessions')
         .where('id', '=', sessionId).select(['user_id', 'expires_at']).executeTakeFirst()
       if (!stored || String(stored.user_id) !== String(user.id)
+        || parseSqlDateTime(stored.expires_at)?.getTime() !== expiresAt.getTime()
         || (parseSqlDateTime(stored.expires_at)?.getTime() ?? 0) <= Date.now())
         throw new Error('Session insert did not persist a usable credential for the verified user.')
       return true
