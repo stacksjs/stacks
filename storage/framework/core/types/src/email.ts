@@ -207,9 +207,18 @@ export interface EmailCategorizationConfig {
   promotions?: CategoryPatterns
 }
 
+export type MailboxUserBackend = { driver: 'external' } | {
+  driver: 'dynamodb'
+  /** Existing table used by the mailbox verifier. Never created by the CLI. */
+  table: string
+  region?: string
+}
+
 export interface EmailServerConfig {
   enabled: boolean
   scan?: boolean // spam/virus scanning
+  /** Explicit backend for mail:user:* commands. Missing/external refuses AWS access. */
+  mailboxUsers?: MailboxUserBackend
 
   /**
    * Generate a password for every declared mailbox that does not have one.

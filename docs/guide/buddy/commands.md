@@ -3100,7 +3100,8 @@ Add a mail user
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--password` | User password (generated if not provided) | value, required | - |
+| `--password` | Deprecated: use --password-stdin to avoid exposing secrets in process arguments | value, required | - |
+| `--password-stdin` | Read the mailbox password from standard input without printing it | boolean, optional | - |
 
 ### `mail:user:delete`
 

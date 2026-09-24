@@ -232,3 +232,34 @@ Outbound Email Flow:
 | `delete(mailbox, messageId)` | Delete email |
 | `markAsRead(mailbox, messageId)` | Mark as read |
 | `markAsUnread(mailbox, messageId)` | Mark as unread |
+
+## Mailbox user administration
+
+The `mail:user:add`, `mail:user:list`, and `mail:user:delete` commands require an
+explicit mailbox verifier backend. They do not infer DynamoDB from `APP_NAME`,
+AWS credentials, or your outgoing mail driver. Missing configuration, or
+`mailboxUsers: { driver: 'external' }`, stops these commands before AWS access.
+Manage SQLite and other external mail-server accounts using that server's
+administration tools or deployment configuration instead.
+
+For an existing DynamoDB-backed verifier, add this inside `server` in
+`config/email.ts`:
+
+```ts
+mailboxUsers: {
+  driver: 'dynamodb',
+  table: 'your-existing-mail-users',
+  region: 'us-east-1',
+},
+```
+
+The table must already exist and match the mailbox verifier. These commands
+never create a table. Existing AWS installations must explicitly select their
+current table when upgrading.
+
+To add a user, pipe a password from your secret manager into
+`buddy mail:user:add user@example.com --password-stdin`. The command accepts one
+password, optionally followed by a newline, and never prints it. Configure the
+mail client with the same secret through your normal secure provisioning flow.
+The old `--password` argument and automatic generated-password output are no
+longer supported. The existing DynamoDB verifier's hash format is unchanged.

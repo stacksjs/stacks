@@ -2,9 +2,16 @@ import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorMessage } from '@stacksjs/utils'
 import { CLI } from '@stacksjs/clapp'
-import { createHash, randomBytes, timingSafeEqual } from 'crypto'
+import { randomBytes, timingSafeEqual } from 'crypto'
 import { readFileSync, existsSync } from 'node:fs'
 import { execSync, spawnSync } from 'node:child_process'
+import { addMailUser, mailUserClient, resolveMailUserBackend } from '../mail-users'
+
+async function mailboxUserSettings() {
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady
+  return config.email.server?.mailboxUsers
+}
 
 export function resolveDirectMailHost(env: NodeJS.ProcessEnv = process.env): string | undefined {
   let configured = env.MAIL_SERVER_HOST
@@ -1241,51 +1248,17 @@ export function mailCommands(buddy: CLI): void {
 
   buddy
     .command('mail:user:add <email>', 'Add a mail user')
-    .option('--password <password>', 'User password (generated if not provided)')
-    .action(async (email: string, options: { password?: string }) => {
-      log.info(`Adding mail user: ${email}`)
-
+    .option('--password <password>', 'Deprecated: use --password-stdin to avoid exposing secrets in process arguments')
+    .option('--password-stdin', 'Read the mailbox password from standard input without printing it')
+    .action(async (email: string, options: { password?: string, passwordStdin?: boolean }) => {
       try {
-        // Generate password if not provided
-        const password = options.password || randomBytes(16).toString('base64').replace(/[+/=]/g, '').substring(0, 16)
-        const passwordHash = createHash('sha256').update(password).digest('hex')
-
-        // Get the table name from environment or use default
-        const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-        const tableName = `${appName}-mail-users`
-
-        // Use ts-cloud DynamoDB client
-        const { DynamoDBClient } = await import('@stacksjs/ts-cloud')
-        const dynamodb = new DynamoDBClient(process.env.AWS_REGION || 'us-east-1')
-
-        await dynamodb.putItem({
-          TableName: tableName,
-          Item: {
-            email: { S: email.toLowerCase() },
-            passwordHash: { S: passwordHash },
-            createdAt: { S: new Date().toISOString() },
-          },
-        })
-
+        const settings = await mailboxUserSettings()
+        // Refuse external backends before reading a secret or constructing AWS clients.
+        resolveMailUserBackend(settings)
+        if (options.password !== undefined || !options.passwordStdin || process.stdin.isTTY)
+          throw new Error('Pipe a password from your secret manager using --password-stdin. Password arguments and generated credential output are no longer supported.')
+        await addMailUser(email, await Bun.stdin.text(), settings)
         log.success(`User ${email} added successfully!`)
-        console.log('')
-        console.log('═══════════════════════════════════════════════════════')
-        console.log('  MAIL CREDENTIALS')
-        console.log('═══════════════════════════════════════════════════════')
-        console.log('')
-        console.log(`  Email:    ${email}`)
-        console.log(`  Password: ${password}`)
-        console.log('')
-        console.log('  To connect with Mail.app, run:')
-        console.log('    buddy mail:proxy')
-        console.log('')
-        console.log('═══════════════════════════════════════════════════════')
-        console.log('')
-
-        if (!options.password) {
-          log.warn('Save this password! It will not be shown again.')
-        }
-
         await log.flush()
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
@@ -1298,13 +1271,8 @@ export function mailCommands(buddy: CLI): void {
     .command('mail:user:list', 'List mail users')
     .action(async () => {
       try {
-        const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-        const tableName = `${appName}-mail-users`
-
-        const { DynamoDBClient } = await import('@stacksjs/ts-cloud')
-        const dynamodb = new DynamoDBClient(process.env.AWS_REGION || 'us-east-1')
-
-        const result = await dynamodb.scan({ TableName: tableName })
+        const { client, table } = await mailUserClient(await mailboxUserSettings())
+        const result = await client.scan({ TableName: table })
 
         console.log('')
         console.log('Mail Users:')
@@ -1333,14 +1301,9 @@ export function mailCommands(buddy: CLI): void {
     .command('mail:user:delete <email>', 'Delete a mail user')
     .action(async (email: string) => {
       try {
-        const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-        const tableName = `${appName}-mail-users`
-
-        const { DynamoDBClient } = await import('@stacksjs/ts-cloud')
-        const dynamodb = new DynamoDBClient(process.env.AWS_REGION || 'us-east-1')
-
-        await dynamodb.deleteItem({
-          TableName: tableName,
+        const { client, table } = await mailUserClient(await mailboxUserSettings())
+        await client.deleteItem({
+          TableName: table,
           Key: { email: { S: email.toLowerCase() } },
         })
 
