@@ -767,8 +767,13 @@ export class Auth {
    */
   public static async currentAccessToken(): Promise<PersonalAccessToken | undefined> {
     const state = authStateOrNull()
-    if (state?.currentToken)
-      return state.currentToken
+    if (state?.currentToken) {
+      // Request-local caching must not extend a credential's lifetime.
+      const cached = state.currentToken
+      if (cached.revoked || (cached.expiresAt != null && !(cached.expiresAt.getTime() > Date.now())))
+        return undefined
+      return cached
+    }
 
     const bearerToken = this.getBearerToken()
     if (!bearerToken)

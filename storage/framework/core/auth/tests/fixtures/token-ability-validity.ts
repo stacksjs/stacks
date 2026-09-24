@@ -19,7 +19,7 @@ configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken } = await import('../../src/tokens')
+const { createToken, currentAccessToken, tokenCan, tokenCanAll, tokenCanAny } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const { authCookie } = await import('../../src/cookie-auth')
 const { enhanceRequest } = await import('@stacksjs/router')
@@ -100,6 +100,35 @@ try {
     })
     const row = await db.selectFrom('oauth_access_tokens').where('id', '=', active.accessToken.id).select('updated_at').executeTakeFirst()
     assert.equal(parseSqlDateTime(row?.updated_at)?.getTime(), now.getTime() + elapsed, 'Last-seen is durable across requests')
+  }
+  for (const facade of ['auth', 'standalone'] as const) {
+    for (const transport of ['bearer', 'cookie'] as const) {
+      for (const userFirst of [false, true]) {
+        const name = `cached-expiry/${facade}/${transport}/userFirst=${userFirst}`
+        setSystemTime(now)
+        const pair = await createToken(1, name, ['posts:read'], { withRefreshToken: false, expiresAt: new Date(now.getTime() + 1000) })
+        const req = enhanceRequest(new Request('https://abilities.invalid/account', { headers: transport === 'bearer'
+          ? { authorization: `Bearer ${pair.plainTextToken}` }
+          : { cookie: authCookie(pair.plainTextToken).split(';')[0]! } }))
+        const api = facade === 'auth' ? Auth : { currentAccessToken, tokenCan, tokenCanAll, tokenCanAny }
+        try {
+          await runWithRequest(req, async () => {
+            if (userFirst) assert(await Auth.getUserFromToken(pair.plainTextToken))
+            const cached = await api.currentAccessToken()
+            assert(cached)
+            assert.equal(await api.currentAccessToken(), cached, 'live credentials retain request-local caching')
+            setSystemTime(new Date(now.getTime() + 999))
+            assert.equal(await api.tokenCan('posts:read'), true)
+            setSystemTime(new Date(now.getTime() + 1000))
+            assert.equal(await api.tokenCan('posts:read'), false, 'cached token expires at its deadline')
+            assert.equal(await api.tokenCanAll(['posts:read']), false)
+            assert.equal(await api.tokenCanAny(['posts:read']), false)
+            assert.equal(Boolean(await api.currentAccessToken()), false)
+          })
+        }
+        catch (error) { failures.push(`${name}: ${error}`) }
+      }
+    }
   }
   assert.deepEqual(failures, [])
   console.log('token ability validity OK')

@@ -386,7 +386,9 @@ export async function currentAccessToken(): Promise<AccessToken | null> {
   // straight into an `AccessToken` slot the way the `(request)` read
   // used to allow.
   const attached = request._currentAccessToken as AccessToken | undefined
-  if (attached) return attached
+  // A request may outlive its credential. Caching avoids repeated lookups,
+  // not the absolute deadline check on a later authorization decision.
+  if (attached) return !attached.revoked && validTokenExpiry(attached.expiresAt) ? attached : null
 
   // Match authentication's bearer-first, auth-cookie fallback. A cookie-only
   // session must not make revokeOtherTokens mistake it for "no current token".
