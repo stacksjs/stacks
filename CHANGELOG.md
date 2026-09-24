@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.65...v0.74.66)
+
+## ⏪ Reverts
+
+- **deploy**: stop changing existing mailbox passwords on deploy ([1588a70](https://github.com/stacksjs/stacks/commit/1588a70)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.64...v0.74.65)
 
 ## 🐛 Bug Fixes
