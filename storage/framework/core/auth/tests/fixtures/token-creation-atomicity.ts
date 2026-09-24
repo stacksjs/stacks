@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { setSystemTime } from 'bun:test'
 import { basename, dirname } from 'node:path'
 
 const dialect = process.env.DB_CONNECTION
@@ -11,10 +12,11 @@ else {
   assert.equal(process.env.DB_DATABASE_PATH, ':memory:')
   assert(process.env.DB_DATABASE?.startsWith('stacks_token_creation_'))
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(process.env.DB_HOST!))
+  assert(process.env.DB_PORT && !['5432', '3306'].includes(process.env.DB_PORT))
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, migrateAuthTables, resetDatabaseConnection, withRoutingContext, contextHasWritten } = await import('@stacksjs/database')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, migrateAuthTables, resetDatabaseConnection, withRoutingContext, contextHasWritten, parseSqlDateTime } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect,
@@ -22,7 +24,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
     [dialect]: { name: process.env.DB_DATABASE, host: process.env.DB_HOST, port: Number(process.env.DB_PORT), username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD },
   }, queryLogging: { enabled: false },
 } })
-const { createToken, findToken, validateRefreshToken } = await import('../../src/tokens')
+const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../../src/tokens')
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>): Promise<void> {
   try { await run(); console.log(`PASS ${name}`) }
@@ -66,6 +68,43 @@ try {
       }
     })
   }
+  for (const method of ['create', 'refresh'] as const) {
+    for (const fault of ['revoked', 'wrong pair', 'unbounded expiry', ...(dialect === 'mysql' ? [] : ['suppressed'])]) {
+      await check(`${method} rejects a ${fault} refresh insert and rolls back the whole pair`, async () => {
+        const original = await createToken(42, 'replacement source', ['read'])
+        const before = await snapshot()
+        const assignment = fault === 'revoked' ? `revoked = ${dialect === 'postgres' ? 'true' : '1'}`
+          : fault === 'wrong pair' ? `access_token_id = ${Number(existing.accessToken.id)}` : 'expires_at = NULL'
+        if (dialect === 'postgres') {
+          const body = fault === 'suppressed' ? 'RETURN NULL;' : `NEW.${assignment.replace(' = ', ' := ')}; RETURN NEW;`
+          await db.unsafe(`CREATE FUNCTION alter_refresh_creation() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN ${body} END; $$`).execute()
+          await db.unsafe('CREATE TRIGGER alter_refresh_creation BEFORE INSERT ON oauth_refresh_tokens FOR EACH ROW EXECUTE FUNCTION alter_refresh_creation()').execute()
+        }
+        else if (dialect === 'mysql')
+          await db.unsafe(`CREATE TRIGGER alter_refresh_creation BEFORE INSERT ON oauth_refresh_tokens FOR EACH ROW SET NEW.${assignment}`).execute()
+        else if (fault === 'suppressed')
+          await db.unsafe('CREATE TRIGGER alter_refresh_creation BEFORE INSERT ON oauth_refresh_tokens BEGIN SELECT RAISE(IGNORE); END').execute()
+        else
+          await db.unsafe(`CREATE TRIGGER alter_refresh_creation AFTER INSERT ON oauth_refresh_tokens BEGIN UPDATE oauth_refresh_tokens SET ${assignment} WHERE id = NEW.id; END`).execute()
+        try {
+          await withRoutingContext(async () => {
+            await assert.rejects(method === 'create' ? createToken(42, 'incomplete pair', ['read']) : refreshToken(original.refreshToken!),
+              'a reported pair must contain the requested refresh credential')
+            assert.deepEqual(await snapshot(), before)
+            if (method === 'create') assert.equal(contextHasWritten(), false)
+          })
+          assert(await findToken(original.plainTextToken))
+          assert.equal(await validateRefreshToken(original.refreshToken!), true)
+          assert(await findToken(existing.plainTextToken))
+          assert.equal(await validateRefreshToken(existing.refreshToken!), true)
+        }
+        finally {
+          await db.unsafe(`DROP TRIGGER alter_refresh_creation${dialect === 'postgres' ? ' ON oauth_refresh_tokens' : ''}`).execute()
+          if (dialect === 'postgres') await db.unsafe('DROP FUNCTION alter_refresh_creation()').execute()
+        }
+      })
+    }
+  }
   await check('successful paired and access-only creation pin subsequent request reads', async () => {
     for (const withRefreshToken of [false, true]) {
       await withRoutingContext(async () => {
@@ -98,6 +137,27 @@ try {
       throw new Error('fixture outer rollback')
     }), /fixture outer rollback/)
     assert.deepEqual(await snapshot(), before)
+  })
+  await check('refresh insert verification accepts exact expired deadlines without extending them', async () => {
+    const now = new Date(Math.floor(Date.now() / 1000) * 1000 + 800)
+    setSystemTime(now)
+    try {
+      for (const days of [-1, 0, 30]) {
+        const expected = new Date(now)
+        expected.setDate(expected.getDate() + days)
+        if (dialect === 'mysql') expected.setMilliseconds(0)
+        for (const method of ['create', 'refresh']) {
+          const result = method === 'create'
+            ? await createToken(42, 'explicit refresh deadline', ['read'], { refreshExpiresInDays: days })
+            : await refreshToken((await createToken(42)).refreshToken!, { refreshExpiresInDays: days })
+          const rows = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', result.accessToken.id).selectAll().get()
+          assert.equal(rows.length, 1)
+          assert.equal(parseSqlDateTime(rows[0]!.expires_at)?.getTime(), expected.getTime())
+          assert.equal(await validateRefreshToken(result.refreshToken!), days > 0)
+        }
+      }
+    }
+    finally { setSystemTime() }
   })
   await check('concurrent successful creations retain distinct complete pairs', async () => {
     const before = await snapshot()

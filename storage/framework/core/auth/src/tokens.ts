@@ -67,6 +67,33 @@ function validTokenExpiry(value: unknown): boolean {
   return expiry != null && expiry.getTime() > Date.now()
 }
 
+/** Verify the stored grant, not just whether INSERT raised an exception. */
+async function verifyRefreshTokenInsert(
+  trx: { unsafe: (sql: string, params?: any[]) => any },
+  hash: string,
+  accessTokenId: number,
+  expiresAt: Date,
+): Promise<void> {
+  const rows = await trx.unsafe(`
+    SELECT access_token_id, revoked, expires_at FROM oauth_refresh_tokens WHERE token = ${param(1)}
+  `, [hash]) as Array<{ access_token_id: unknown, revoked: unknown, expires_at: unknown }>
+  const row = rows[0]
+  const storedExpiry = parseSqlDateTime(row?.expires_at)?.getTime()
+  const expectedExpiry = expiresAt.getTime()
+  if (rows.length !== 1 || !row || String(row.access_token_id) !== String(accessTokenId)
+    || (row.revoked !== false && row.revoked !== 0) || storedExpiry !== expectedExpiry)
+    throw new HttpError(500, 'Failed to persist the requested refresh token')
+}
+
+function refreshDeadline(days: number): Date {
+  const deadline = new Date()
+  deadline.setDate(deadline.getDate() + days)
+  // The shipped MySQL TIMESTAMP has whole-second precision and normally
+  // rounds. Choose an exact representable deadline without extending it.
+  if (isMysql) deadline.setMilliseconds(0)
+  return deadline
+}
+
 /** Shorthand for sql.param */
 function param(index: number): string {
   return sql.param(index)
@@ -598,8 +625,7 @@ export async function createToken(
       refreshTokenPlain = generateSecureToken(40)
       const hashedRefreshToken = hashToken(refreshTokenPlain)
 
-      const refreshExpiresAt = new Date()
-      refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+      const refreshExpiresAt = refreshDeadline(refreshExpiresInDays)
 
       if (isPostgres) {
         await trx.unsafe(`
@@ -612,6 +638,7 @@ export async function createToken(
           VALUES (?, ?, 0, ?, ${appNow()})
         `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
       }
+      await verifyRefreshTokenInsert(trx, hashedRefreshToken, accessToken.id, refreshExpiresAt)
     }
 
     return {
@@ -781,8 +808,7 @@ export async function refreshToken(
     const newRefreshTokenPlain = generateSecureToken(40)
     const newHashedRefreshToken = hashToken(newRefreshTokenPlain)
 
-    const refreshExpiresAt = new Date()
-    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+    const refreshExpiresAt = refreshDeadline(refreshExpiresInDays)
 
     if (isPostgres) {
       await trx.unsafe(`
@@ -795,6 +821,7 @@ export async function refreshToken(
         VALUES (?, ?, 0, ?, ${appNow()})
       `, [accessToken.id, newHashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     }
+    await verifyRefreshTokenInsert(trx, newHashedRefreshToken, accessToken.id, refreshExpiresAt)
 
     return {
       accessToken,
