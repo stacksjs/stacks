@@ -100,6 +100,9 @@ export function create(buddy: CLI): void {
   if (!options.withCore)
     await unvendorCore(path, options)
 
+  if (options.minimal)
+    await regenerateAutoImports(path, options)
+
       if (startTime) {
         const time = performance.now() - startTime
         log.success(dim(`[${time.toFixed(2)}ms] Completed`))
@@ -486,6 +489,22 @@ async function unvendorCore(path: string, options: NewOptions) {
   }
 
   log.success('Framework resolved from npm')
+}
+
+/**
+ * Rebuild the auto-import barrels after `--minimal` has stripped features.
+ *
+ * The template ships its generated barrels (`storage/framework/auto-imports/
+ * jobs.ts`, `functions.ts`, ...) for the full kitchen-sink tree, so they name
+ * files the strip just deleted - `app/Jobs/Inspire.ts` among them. Every boot
+ * of a minimal app then warned that `jobs.ts failed to load` and dropped
+ * every job it exports, before the user had written a line. Runs last, once
+ * `./buddy` boots from whichever framework the project ended up on.
+ */
+async function regenerateAutoImports(path: string, options: NewOptions) {
+  const result = await runCommand('./buddy generate --types', { ...options, cwd: path })
+  if (resultFailed(result))
+    log.warn('Could not regenerate the auto-import barrels. Run `./buddy generate --types` in the project before `./buddy dev`.')
 }
 
 /**
