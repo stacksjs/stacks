@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.69...v0.74.70)
+
+## ✨ Features
+
+- **env**: one environment gate for remote integrations ([8b3db85](https://github.com/stacksjs/stacks/commit/8b3db85)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2792](https://github.com/stacksjs/stacks/issues/2792), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: import the composables five client scripts called bare ([0afba14](https://github.com/stacksjs/stacks/commit/0afba14)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2585](https://github.com/stacksjs/stacks/issues/2585), [#2585](https://github.com/stacksjs/stacks/issues/2585))
+- **router**: make app/Routes.ts optional ([069eeff](https://github.com/stacksjs/stacks/commit/069eeff)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: detect middleware structurally instead of loading the class ([16248d2](https://github.com/stacksjs/stacks/commit/16248d2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2778](https://github.com/stacksjs/stacks/issues/2778))
+
+## 📝 Documentation
+
+- **agents**: list clearServerData among the stx runtime globals ([d062c26](https://github.com/stacksjs/stacks/commit/d062c26)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2585](https://github.com/stacksjs/stacks/issues/2585))
+
+## ✅ Tests
+
+- **composables**: assert nothing new rather than an exact phantom set ([8eb4b4a](https://github.com/stacksjs/stacks/commit/8eb4b4a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2585](https://github.com/stacksjs/stacks/issues/2585))
+- **composables**: pin the template calls the browser cannot resolve ([9938145](https://github.com/stacksjs/stacks/commit/9938145)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2585](https://github.com/stacksjs/stacks/issues/2585))
+
+## 🔧 Chores
+
+- **pantry**: lock craft-native 0.0.92, which an install now resolves ([f4c2bae](https://github.com/stacksjs/stacks/commit/f4c2bae)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([740ec27](https://github.com/stacksjs/stacks/commit/740ec27)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.68...v0.74.69)
 
 ## ✨ Features
