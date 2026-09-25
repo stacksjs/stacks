@@ -2,10 +2,9 @@
 ;(globalThis as { __STACKS_BINARY_MODE__?: boolean }).__STACKS_BINARY_MODE__ = true
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
-import { assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
+import { appRouteRegistry, assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
 import { log, report } from '@stacksjs/logging/runtime'
 import config from './config-production'
-import routeRegistry from '../../../../../app/Routes'
 
 // Process-level safety net (stacksjs/stacks#1933). Without these, an
 // async throw that escapes a request try/catch — a floating promise in
@@ -40,9 +39,21 @@ console.log('[START] Config loaded:', {
   appUrl: config.app.url,
 })
 
-// Load routes from the registry, then ORM auto-routes, then start the server
+/*
+ * Load routes from the registry, then ORM auto-routes, then start the server.
+ *
+ * The registry is read at runtime rather than imported five directories up at
+ * compile time. `app/Routes.ts` is a manifest of which route files to load,
+ * and it is optional — an app whose routes all live in `routes/api.ts` is
+ * described completely by the default. As a static import it was mandatory
+ * instead: `bun build --compile` resolved it while bundling, so an app without
+ * one could not be built at all. Nothing was gained by embedding it, because
+ * the route files the registry names are imported through `projectPath()` at
+ * runtime regardless.
+ */
 console.log('[START] Loading routes from registry...')
-loadRoutes(routeRegistry)
+appRouteRegistry()
+  .then(loadRoutes)
   .then(async () => {
     console.log('[START] Routes loaded successfully')
 

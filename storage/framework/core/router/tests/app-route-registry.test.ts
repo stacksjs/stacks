@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { appRouteRegistry, DEFAULT_ROUTE_REGISTRY } from '../src/route-loader'
@@ -69,5 +69,30 @@ describe('appRouteRegistry', () => {
       expect(typeof key).toBe('string')
       expect(['string', 'object']).toContain(typeof definition)
     }
+  })
+})
+
+/**
+ * The entrypoints that load the registry, checked by file shape rather than by
+ * boot: one compiles into a binary and the other opens a database, and what
+ * went wrong in both was never the loading — it was reaching for a path that
+ * an app is allowed not to have.
+ */
+describe('the entrypoints that load an app\'s routes', () => {
+  const framework = join(import.meta.dir, '..', '..', '..')
+
+  it.each([
+    ['core/server/src/start.ts', 'the production server, which `bun build --compile` bundles'],
+    ['core/api/src/generate-openapi.ts', 'the spec generator, which refuses to emit a partial document'],
+  ])('asks %s for the registry instead of importing the file', (file) => {
+    const source = readFileSync(join(framework, file), 'utf8')
+
+    expect(source).toContain('appRouteRegistry')
+    // A static `import … from '…/app/Routes'` made the file mandatory: the
+    // bundler resolved it while compiling, so an app without one could not be
+    // built. Nothing was embedded by it either — the route files the registry
+    // names are imported through `projectPath()` at runtime regardless.
+    expect(source).not.toMatch(/from '(\.\.\/)+app\/Routes'/)
+    expect(source).not.toMatch(/import\(path\.appPath\('Routes\.ts'\)\)/)
   })
 })

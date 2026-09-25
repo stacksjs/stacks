@@ -316,15 +316,14 @@ export async function generateOpenApi(options: {
   // be left with an APP_ENV this function set for its own route load.
   try {
     try {
-      const { loadRoutes } = await import('@stacksjs/router')
-      // Resolved through `path`, not by counting `../` up from this file. Five
-      // levels lands on the project root only in the vendored layout; a core-less
-      // app - the default `buddy new` produces - resolves this package out of
-      // node_modules, where the same five levels land somewhere unrelated. The
-      // import then failed, no routes registered, and the generator refused to
-      // emit a spec for an app whose `routes/` directory was right there.
-      const { default: routeRegistry } = await import(path.appPath('Routes.ts'))
-      await loadRoutes(routeRegistry)
+      // Asked for rather than imported: `app/Routes.ts` is a manifest of which
+      // route files to load, and it is optional - an app whose routes all live
+      // in `routes/api.ts` is described completely by the default. Importing
+      // the path directly threw "Cannot find module" for such an app, and the
+      // refusal below then reported a broken route registry for a project that
+      // simply did not carry the file.
+      const { appRouteRegistry, loadRoutes } = await import('@stacksjs/router')
+      await loadRoutes(await appRouteRegistry())
     }
     catch (error) {
       const message = error instanceof Error ? error.message : String(error)
