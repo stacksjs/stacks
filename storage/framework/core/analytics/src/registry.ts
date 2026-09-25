@@ -14,6 +14,7 @@
 
 import type { AnalyticsConfig, AnalyticsOptions } from '@stacksjs/types'
 import type { AnalyticsHeadTag } from './drivers/shared'
+import { getAnalyticsHqHead } from './drivers/analyticshq'
 import { getFathomAnalyticsHead } from './drivers/fathom'
 import { getGoogleAnalyticsHead } from './drivers/google-analytics'
 import { getPlausibleAnalyticsHead } from './drivers/plausible'
@@ -28,6 +29,7 @@ export const ANALYTICS_DRIVERS: readonly AnalyticsDriverName[] = [
   'fathom',
   'plausible',
   'self-hosted',
+  'analyticshq',
 ] as const
 
 /**
@@ -95,6 +97,14 @@ export function getAnalyticsHead(config: AnalyticsConfig): AnalyticsHeadTag[] {
         throw misconfigured(driver, 'selfHosted', 'apiEndpoint')
 
       return getSelfHostedAnalyticsHead(options)
+    }
+
+    case 'analyticshq': {
+      const options = config.drivers?.analyticshq
+      if (!options?.siteId)
+        throw misconfigured(driver, 'analyticshq', 'siteId')
+
+      return getAnalyticsHqHead(options)
     }
 
     default: {

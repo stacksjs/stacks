@@ -122,6 +122,13 @@ interface GoogleAnalyticsConfig {
   debug?: boolean                 // debug_mode -> DebugView
 }
 
+interface AnalyticsHqConfig {
+  siteId: string                  // the data-site id AnalyticsHQ minted
+  scriptUrl?: string              // self-hosted instance or verified custom domain
+  respectDnt?: boolean            // false counts DNT/GPC visitors (skipped by default)
+  vitals?: boolean                // false stops Core Web Vitals beacons
+}
+
 interface SelfHostedConfig {
   siteId: string                  // unique site identifier
   apiEndpoint: string             // analytics API URL
@@ -135,8 +142,9 @@ interface SelfHostedConfig {
 
 ```typescript
 {
-  driver: 'fathom',              // 'fathom' | 'plausible' | 'google-analytics' | 'self-hosted'
+  driver: 'fathom',              // 'fathom' | 'plausible' | 'google-analytics' | 'self-hosted' | 'analyticshq'
   drivers: {
+    analyticshq: { siteId: '' },
     googleAnalytics: { trackingId: '' },
     fathom: { siteId: '' },
     plausible: { domain: '' },
@@ -167,3 +175,4 @@ Analytics dashboard at `/dashboard/analytics` displays:
 - Fathom is a paid service - self-hosted is free but requires infrastructure
 - `trackOutboundLinks` adds click handlers to external `<a>` tags
 - `capturePageviews` is server-side and independent of `driver`
+- AnalyticsHQ custom events need no script: `data-analyticshq-event="Ticket click"` on any element, with other `data-analyticshq-*` attributes as properties

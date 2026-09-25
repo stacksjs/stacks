@@ -1,3 +1,4 @@
+export * from './analyticshq'
 export * from './fathom'
 export * from './google-analytics'
 export * from './plausible'

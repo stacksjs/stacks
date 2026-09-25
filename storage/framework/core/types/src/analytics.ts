@@ -7,7 +7,7 @@
  */
 export interface AnalyticsOptions {
   /** The analytics driver/provider to use */
-  driver: 'google-analytics' | 'fathom' | 'plausible' | 'self-hosted'
+  driver: 'google-analytics' | 'fathom' | 'plausible' | 'self-hosted' | 'analyticshq'
 
   /**
    * First-party server-side pageview capture: the stx servers record page
@@ -19,6 +19,17 @@ export interface AnalyticsOptions {
   capturePageviews?: boolean
 
   drivers: {
+    /** AnalyticsHQ configuration (https://analyticshq.org, cookie-free) */
+    analyticshq?: {
+      /** The site id AnalyticsHQ minted (the `data-site` value in its snippet) */
+      siteId: string
+      /** Custom script URL, for a self-hosted instance or verified custom domain */
+      scriptUrl?: string
+      /** Count visitors who send Do Not Track / GPC. Skipped by default. */
+      respectDnt?: boolean
+      /** Report Core Web Vitals. On by default. */
+      vitals?: boolean
+    }
     /** Google Analytics configuration */
     googleAnalytics?: {
       /** GA4 Measurement ID (e.g., G-XXXXXXXXXX) */

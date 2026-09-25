@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { FATHOM_DEFAULT_SCRIPT_URL, generateFathomScript, getFathomAnalyticsHead } from '../src/drivers/fathom'
 import { generateGoogleAnalyticsScript, getGoogleAnalyticsHead } from '../src/drivers/google-analytics'
 import { generatePlausibleScript, getPlausibleAnalyticsHead, plausibleScriptUrl } from '../src/drivers/plausible'
+import { ANALYTICSHQ_DEFAULT_SCRIPT, generateAnalyticsHqScript, getAnalyticsHqHead } from '../src/drivers/analyticshq'
 import { ANALYTICS_DRIVERS, generateAnalyticsScript, getAnalyticsHead, isAnalyticsDriver } from '../src/registry'
 
 describe('Fathom driver', () => {
@@ -93,9 +94,35 @@ describe('Google Analytics driver', () => {
   })
 })
 
+describe('AnalyticsHQ driver', () => {
+  test('emits the tag the AnalyticsHQ dashboard hands out', () => {
+    expect(generateAnalyticsHqScript({ siteId: 'd61994a9bf380d24c81029c3' }))
+      .toContain(`<script src="${ANALYTICSHQ_DEFAULT_SCRIPT}" data-site="d61994a9bf380d24c81029c3" defer`)
+  })
+
+  test('writes only the non-default switches', () => {
+    const [, attributes] = getAnalyticsHqHead({ siteId: 's', respectDnt: false, vitals: false })[0]!
+    expect(attributes['data-respect-dnt']).toBe('false')
+    expect(attributes['data-vitals']).toBe('false')
+
+    const [, defaults] = getAnalyticsHqHead({ siteId: 's', respectDnt: true, vitals: true })[0]!
+    expect('data-respect-dnt' in defaults).toBe(false)
+    expect('data-vitals' in defaults).toBe(false)
+  })
+
+  test('a self-hosted instance or custom domain replaces the script URL', () => {
+    expect(generateAnalyticsHqScript({ siteId: 's', scriptUrl: 'https://stats.example.com/script.js' }))
+      .toContain('src="https://stats.example.com/script.js"')
+  })
+
+  test('no site id, no tag', () => {
+    expect(getAnalyticsHqHead({ siteId: '' })).toEqual([])
+  })
+})
+
 describe('Analytics driver registry', () => {
   test('every documented driver value is implemented', () => {
-    expect([...ANALYTICS_DRIVERS].sort()).toEqual(['fathom', 'google-analytics', 'plausible', 'self-hosted'])
+    expect([...ANALYTICS_DRIVERS].sort()).toEqual(['analyticshq', 'fathom', 'google-analytics', 'plausible', 'self-hosted'])
     for (const driver of ANALYTICS_DRIVERS)
       expect(isAnalyticsDriver(driver)).toBe(true)
   })
@@ -120,6 +147,11 @@ describe('Analytics driver registry', () => {
     })).toContain('gtag')
 
     expect(generateAnalyticsScript({
+      driver: 'analyticshq',
+      drivers: { analyticshq: { siteId: 'abc123' } },
+    })).toContain('data-site="abc123"')
+
+    expect(generateAnalyticsScript({
       driver: 'self-hosted',
       drivers: { selfHosted: { siteId: 's', apiEndpoint: 'https://api.example.com' } },
     })).toContain('data-api="https://api.example.com"')
@@ -137,6 +169,7 @@ describe('Analytics driver registry', () => {
       .toThrow(/drivers\.googleAnalytics\.trackingId/)
     expect(() => getAnalyticsHead({ driver: 'self-hosted', drivers: { selfHosted: { siteId: 's', apiEndpoint: '' } } }))
       .toThrow(/drivers\.selfHosted\.apiEndpoint/)
+    expect(() => getAnalyticsHead({ driver: 'analyticshq', drivers: {} })).toThrow(/drivers\.analyticshq\.siteId/)
   })
 
   test('no configured driver is not an error', () => {
