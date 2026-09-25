@@ -317,26 +317,58 @@ function loadLayout(layoutName: string): string | null {
 }
 
 /**
- * Convert HTML to plain text
+ * The plain-text part of an HTML email.
+ *
+ * A text part is what a client shows when it will not render HTML, and what
+ * spam filters compare against the HTML. It used to strip every tag and keep
+ * the rest, which lost the one thing a transactional mail is for: a link's
+ * URL. The framework's own password-reset text part had no reset link, only
+ * the word on the button. It also kept the text of `<title>` and `<style>`
+ * and every line's HTML indentation.
+ *
+ * Links now read `label (url)`, head/style/script contents are dropped, and
+ * lines are trimmed.
  */
-function htmlToText(html: string): string {
-  return html
-    // Replace <br> and block elements with newlines
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, '\n')
-    .replace(/<\/td>/gi, '\t')
-    // Remove remaining HTML tags
-    .replace(/<[^>]*>/g, '')
-    // Decode common HTML entities
+export function htmlToText(html: string): string {
+  const decode = (value: string): string => value
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, `"`)
-    .replace(/&#39;/g, `'`)
+    .replace(/&#39;|&apos;/g, `'`)
     .replace(/&copy;/g, '(c)')
-    // Clean up whitespace
-    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([\da-f]+);/gi, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 16)))
+    // Last, so an escaped entity (`&amp;lt;`) comes out as its text.
+    .replace(/&amp;/g, '&')
+
+  return decode(html
+    .replace(/<(head|style|script|title)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    // A link keeps its destination. A label that already is the URL, or a
+    // link with nowhere to go, reads as the label alone.
+    .replace(/<a\b[^>]*?\bhref\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a>/gi, (_, _quote: string, href: string, inner: string) => {
+      const label = inner.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+      const url = href.trim()
+      if (!url || url === '#' || url.startsWith('javascript:'))
+        return label
+      if (`mailto:${label}` === url)
+        return label
+      if (!label || label === url)
+        return url
+      return `${label} (${url})`
+    })
+    // Replace <br> and block elements with newlines
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|tr|table)>/gi, '\n')
+    .replace(/<\/td>/gi, '\t')
+    // Remove remaining HTML tags
+    .replace(/<[^>]*>/g, ''))
+    .split('\n')
+    .map(line => line.replace(/[ \t]+/g, ' ').trim())
+    .join('\n')
+    // At most one blank line in a row.
+    .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
 
