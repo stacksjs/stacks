@@ -5,6 +5,7 @@ import type {
   DashboardLogType,
 } from '../../../../app/Actions/Dashboard/Infrastructure/log-dashboard'
 import { dashboardApi } from '../../../../functions/dashboard-api'
+import { debounce } from '@stacksjs/browser/utils/debounce'
 
 interface LogPagination {
   page: number

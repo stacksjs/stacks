@@ -1,5 +1,6 @@
 <script client>
 import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
+import { useTimeoutFn } from '@stacksjs/composables'
 
 const kanban = kanbanStore
 const openCard = derived(() => kanban.openCard())

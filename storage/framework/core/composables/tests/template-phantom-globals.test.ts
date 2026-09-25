@@ -28,25 +28,19 @@ import { describe, expect, it } from 'bun:test'
 const root = new URL('../../../../../', import.meta.url).pathname
 
 /**
- * Bare calls that are live defects right now, each one a component that cannot
- * hydrate. They are listed rather than tolerated silently: a new one fails this
- * test, and so does an entry that has been fixed, so the list can only shrink.
+ * Empty, and meant to stay that way.
  *
- * Repairing them is not a matter of adding an import. `useScrollLock` and
- * `useTimeoutFn` come from `core/browser/src/utils/vendors` and `debounce` from
- * `core/browser/src/utils/debounce`, no `.stx` template imports from those paths
- * today, and a missing `browser/*` entry in the app tsconfig is what killed the
- * live login forms in 08f072216d - the deploy box resolves subpaths only through
- * explicit tsconfig paths. So the repair needs a served-page check per call site,
- * tracked on #2585, not a blind import.
+ * It held five components that could not hydrate - MobileSidebar, UI/Drawer and
+ * UI/Modal on `useScrollLock`, KanbanCardDialog on `useTimeoutFn`, LogsDashboard
+ * on `debounce`. Each now imports the name explicitly, verified through
+ * `subpath-builds-are-listed.test.ts`, which resolves every `.stx` script's
+ * workspace imports the way the deploy box does rather than the way a checkout
+ * with `dist/` present does.
+ *
+ * An entry here is a defect being tracked, not a tolerated exception: a new bare
+ * call fails this test, and so does an entry whose call is gone.
  */
-const KNOWN_PHANTOM_USAGES: Record<string, string[]> = {
-  'storage/framework/defaults/resources/components/Dashboard/MobileSidebar.stx': ['useScrollLock'],
-  'storage/framework/defaults/resources/components/Dashboard/UI/Drawer.stx': ['useScrollLock'],
-  'storage/framework/defaults/resources/components/Dashboard/UI/Modal.stx': ['useScrollLock'],
-  'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanCardDialog.stx': ['useTimeoutFn'],
-  'storage/framework/defaults/resources/components/Dashboard/Infrastructure/LogsDashboard.stx': ['debounce'],
-}
+const KNOWN_PHANTOM_USAGES: Record<string, string[]> = {}
 
 /** The globals the served runtime actually attaches to `window`. */
 async function runtimeGlobals(): Promise<Set<string>> {

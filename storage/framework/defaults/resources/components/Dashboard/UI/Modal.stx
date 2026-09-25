@@ -41,6 +41,7 @@ const positionClasses = {
 }
 </script>
 <script client>
+import { useScrollLock } from '@stacksjs/composables'
 const open = useReactiveProp('isOpen', false)
 const liveClosable = useReactiveProp('closable', true)
 const liveTitle = useReactiveProp('title', '')

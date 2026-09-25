@@ -1,4 +1,5 @@
 <script client>
+import { useScrollLock } from '@stacksjs/composables'
 const isOpen = state(false)
 const isDesktop = useMediaQuery('(min-width: 1024px)')
 const scrollLocked = useScrollLock()
