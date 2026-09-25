@@ -32,9 +32,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -78,9 +78,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -217,9 +217,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -353,9 +353,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -444,9 +444,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -585,9 +585,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -611,9 +611,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -655,9 +655,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -746,9 +746,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
         with:
-          version: '0.11.60'
+          version: '0.11.64'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
