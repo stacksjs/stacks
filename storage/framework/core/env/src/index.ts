@@ -1,5 +1,6 @@
 export * from './runtime'
 export * from './deployment'
+export * from './integrations'
 export * from './types'
 export * from './crypto'
 export * from './parser'
