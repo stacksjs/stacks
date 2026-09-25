@@ -253,9 +253,18 @@ describe('a box with several tenants registered', () => {
   }, { staleKey: true })
 
   it('rewrites only this domain and preserves the rest, in order', () => {
+    // Two invariants, and the second is the one that keeps being lost.
+    //
     // The list is rebuilt rather than appended to, so one domain can never end
     // up with two entries - which is what an append would have produced here.
-    expect(result.extraKeys).toBe('a.com:mail:/opt/mail/dkim/a.com.private,b.com:mail:/opt/mail/dkim/b.com.private,example.com:sel9:<dkim>/mail.private')
+    //
+    // And the rewritten entry stays WHERE IT STANDS, between a.com and b.com,
+    // rather than moving to the end. This assertion used to expect the end,
+    // matching an earlier implementation that rebuilt the list as "everyone
+    // else, then this domain". On a shared box only one tenant can be last, so
+    // that reordered the line on every other tenant's deploy, which saw a
+    // change that was not one and restarted mail for every domain on the box.
+    expect(result.extraKeys).toBe('a.com:mail:/opt/mail/dkim/a.com.private,example.com:sel9:<dkim>/mail.private,b.com:mail:/opt/mail/dkim/b.com.private')
   })
 
   it('uses the server\'s own selector, not a hardcoded one', () => {

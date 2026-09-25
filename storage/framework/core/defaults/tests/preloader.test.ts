@@ -55,7 +55,16 @@ describe('default preloader', () => {
       'storage/framework/defaults/app/Models',
       'storage/framework/defaults/app/Controllers',
     ].map(path => mkdir(resolve(tempDir, path), { recursive: true })))
-    await Bun.write(isolatedPreloader, Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')))
+    // Every source file beside it, for the third time in this fixture and for
+    // the same reason as `env` and `path` below: the plugins directory is a
+    // source graph, not one entry. `preloader.ts` imports `./user-functions`,
+    // and copying the entry alone left the isolated tree unable to resolve it.
+    const pluginsSrc = resolve(defaultsRoot, 'resources/plugins')
+    await Promise.all(
+      (await readdir(pluginsSrc))
+        .filter(file => file.endsWith('.ts'))
+        .map(file => Bun.write(resolve(isolatedPreloader, '..', file), Bun.file(resolve(pluginsSrc, file)))),
+    )
     // Like path below, env is a source graph, not a frozen three-file bundle.
     // Missing plaintext-env.ts made this fixture load a cached npm package
     // instead of the vendored source it was meant to exercise.
