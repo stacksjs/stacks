@@ -108,11 +108,7 @@ function resolvedLocally(script: string, name: string): boolean {
 describe('stx client scripts only call names the browser has', () => {
   it('reports every bare call to a declared-but-absent global', async () => {
     const runtime = await runtimeGlobals()
-    const phantom = declaredGlobals().filter(name => !runtime.has(name))
-
-    // If this ever empties, the declarations and the runtime agree and the whole
-    // failure mode is gone - which is the outcome #2585 is asking for.
-    expect(phantom.length).toBeGreaterThan(0)
+    const phantom = new Set(declaredGlobals().filter(name => !runtime.has(name)))
 
     const found: Record<string, string[]> = {}
     const glob = new Bun.Glob('**/*.stx')
@@ -124,7 +120,7 @@ describe('stx client scripts only call names the browser has', () => {
           continue
 
         const called = callsIn(script)
-        const offenders = phantom
+        const offenders = [...phantom]
           .filter(name => called.has(name) && !resolvedLocally(script, name))
           .sort()
         if (offenders.length > 0)
@@ -132,6 +128,27 @@ describe('stx client scripts only call names the browser has', () => {
       }
     }
 
-    expect(found).toEqual(KNOWN_PHANTOM_USAGES)
+    /*
+     * Asserted as "nothing new", not as an exact match, because which names are
+     * phantom depends on the installed stx version and that is not pinned to one
+     * value across every checkout: this repository requires Bun 1.4.2 and a
+     * checkout on 1.4.1 resolves a different `@stacksjs/stx` than the lockfile's,
+     * so an exact match is green on one machine and red in CI for a reason that
+     * has nothing to do with the templates.
+     */
+    const unexpected = Object.entries(found)
+      .map(([file, names]) => [file, names.filter(name => !(KNOWN_PHANTOM_USAGES[file] ?? []).includes(name))] as const)
+      .filter(([, names]) => names.length > 0)
+    expect(Object.fromEntries(unexpected)).toEqual({})
+
+    /*
+     * And the list can only shrink: a known entry whose name the runtime has
+     * since started providing is no longer a defect, so it is only stale when the
+     * name is still phantom here and the call is gone.
+     */
+    const stale = Object.entries(KNOWN_PHANTOM_USAGES)
+      .map(([file, names]) => [file, names.filter(name => phantom.has(name) && !(found[file] ?? []).includes(name))] as const)
+      .filter(([, names]) => names.length > 0)
+    expect(Object.fromEntries(stale)).toEqual({})
   })
 })
