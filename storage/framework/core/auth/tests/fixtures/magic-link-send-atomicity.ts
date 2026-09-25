@@ -56,7 +56,17 @@ async function check(name: string, run: () => Promise<void>) {
   await db.insertInto('magic_link_tokens').values({ user_id: 1, email, token: previousHash, consumed_at: null,
     expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
   try { await run(); console.log(`PASS ${name}`) }
-  catch (error) { failures.push(`${name}: ${error}`) }
+  // The message only, never the formatted error. Bun prints a code frame with
+  // it, and for a failure raised inside `bun:sqlite` that frame is two
+  // kilobytes of the driver's own source - which is what reaches CI, where it
+  // is truncated to exactly the part that says nothing.
+  catch (error) { failures.push(`${name}: ${error instanceof Error ? `${error.name}: ${error.message}` : String(error)}`) }
+}
+/** A child's stderr, cut to the lines that name the failure. See `check`. */
+function briefly(stderr: string): string {
+  const lines = stderr.split('\n').map(line => line.trim()).filter(Boolean)
+  const named = lines.filter(line => /^(?:error|[A-Za-z]*Error):/.test(line))
+  return (named.length > 0 ? named : lines.slice(-3)).join(' | ').slice(0, 400)
 }
 async function hashes() {
   return (await db.primary.selectFrom('magic_link_tokens').whereNull('consumed_at').selectAll().execute()).map(row => row.token)
@@ -148,7 +158,7 @@ try {
       const watchdog = setTimeout(() => child.kill(), 8000)
       try {
         const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
-        assert.equal(code, 0, stderr)
+        assert.equal(code, 0, briefly(stderr))
         const record = JSON.parse(stdout.trim().split('\n').at(-1)!)
         assert.equal(record.delivered.length, 1, 'every successful worker delivers exactly once')
         return String(record.delivered[0])
