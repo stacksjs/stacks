@@ -9,7 +9,11 @@ import type { Server } from 'bun'
 import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
 import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareHandler as BunMiddlewareHandler, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
-import { Middleware } from './middleware'
+// Type-only: the sole value use was an `instanceof` check in
+// `adaptMiddlewareForBunRouter`, which now detects the same objects
+// structurally. An application that registers no global middleware therefore
+// never loads the module (stacksjs/stacks#2778).
+import type { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
 // and `req.input(...)` access in this file type-checks without `as any`
 // (stacksjs/stacks#1863 T-3).
@@ -1152,11 +1156,27 @@ function adaptMiddlewareForBunRouter(
     | Middleware
     | { handle: (req: EnhancedRequest) => void | Promise<void> },
 ): BunMiddlewareHandler {
-  if (middleware instanceof Middleware) {
-    // `toRouterHandler()` already returns `(req, next) => Promise<Response>`,
-    // which is exactly a MiddlewareHandler - it only needed a cast while this
-    // function claimed to return the much broader ActionHandler.
-    return middleware.toRouterHandler()
+  /*
+   * A `Middleware` is recognised by the seam it exposes rather than by
+   * `instanceof`, for two reasons. The class was this file's only value import
+   * of `./middleware`, so a router that registers no global middleware used to
+   * load the module for a type test it never passed. And `instanceof` misses an
+   * otherwise valid instance that came from a second physical copy of the
+   * package - a split install the router deliberately supports elsewhere - which
+   * would silently drop it onto the slower generic branch below.
+   *
+   * `toRouterHandler()` already returns `(req, next) => Promise<Response>`,
+   * which is exactly a MiddlewareHandler.
+   *
+   * Checked before the `{ handle() }` branch: an instance has both, and this is
+   * the optimized one.
+   */
+  if (
+    middleware
+    && typeof middleware === 'object'
+    && typeof (middleware as Partial<Middleware>).toRouterHandler === 'function'
+  ) {
+    return (middleware as Middleware).toRouterHandler()
   }
   // Duck-typed handler object: `{ handle(req) { … } }` without the class.
   // Function values DO have a `.handle` property only if explicitly assigned;

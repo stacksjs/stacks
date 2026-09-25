@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { path as p } from '@stacksjs/path'
+import { Middleware } from '../src/middleware'
 import { clearMiddlewareCache, createStacksRouter, listRegisteredRoutes, shouldUseNativeRoutesByDefault, url } from '../src/stacks-router'
 
 // ---------------------------------------------------------------------------
@@ -349,6 +350,64 @@ describe('createStacksRouter - use()', () => {
     const router = createStacksRouter()
     const result = router.use(() => {})
     expect(result).toBe(router)
+  })
+
+  /*
+   * A middleware is adapted by the seam it exposes, not by `instanceof`
+   * (stacksjs/stacks#2778). These pin the three arms apart, because the
+   * `toRouterHandler()` arm and the generic `{ handle() }` arm both accept a
+   * `Middleware` instance and only the first honours its void/throw contract
+   * through bun-router's optimized path.
+   */
+  test('use() adapts a Middleware instance through toRouterHandler()', async () => {
+    const seen: string[] = []
+    const router = createStacksRouter()
+    const mw = new Middleware({ name: 'records', handle: () => { seen.push('handle') } })
+    router.use(mw)
+
+    const [adapted] = router.bunRouter.globalMiddleware
+    expect(adapted).not.toBe(mw)
+
+    const answer = await adapted(
+      {} as never,
+      (() => { seen.push('next'); return new Response('ok') }) as never,
+    )
+    expect(seen).toEqual(['handle', 'next'])
+    expect(await (answer as Response).text()).toBe('ok')
+  })
+
+  test('use() accepts a structurally compatible middleware from a second package copy', () => {
+    // Not `instanceof Middleware` — the shape a split install produces, which
+    // the old nominal check dropped onto the generic branch.
+    const optimized = ((_req: unknown, next: () => Response) => next()) as never
+    const foreign = {
+      name: 'foreign',
+      priority: 10,
+      handle: () => {},
+      toRouterHandler: () => optimized,
+    }
+
+    const router = createStacksRouter()
+    router.use(foreign as never)
+
+    expect(router.bunRouter.globalMiddleware[0]).toBe(optimized)
+  })
+
+  test('use() still wraps a plain handler object, and still passes a bare function through', async () => {
+    const seen: string[] = []
+    const router = createStacksRouter()
+    const plain = { handle: () => { seen.push('handle') } }
+    router.use(plain)
+
+    const [adapted] = router.bunRouter.globalMiddleware
+    expect(adapted).not.toBe(plain)
+    await adapted({} as never, (() => { seen.push('next'); return new Response('ok') }) as never)
+    expect(seen).toEqual(['handle', 'next'])
+
+    const bare = () => {}
+    const passthrough = createStacksRouter()
+    passthrough.use(bare)
+    expect(passthrough.bunRouter.globalMiddleware[0]).toBe(bare)
   })
 })
 

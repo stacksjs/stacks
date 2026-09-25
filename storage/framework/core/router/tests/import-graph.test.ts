@@ -40,6 +40,10 @@ describe('router import graph', () => {
     const inputs = Object.keys(result.metafile?.inputs ?? {})
     for (const module of [
       'encrypted-session-store.ts',
+      // The `Middleware` class is a type here: an application that registers no
+      // global middleware should not load it, and `adaptMiddlewareForBunRouter`
+      // detects the same objects structurally (stacksjs/stacks#2778).
+      'middleware.ts',
       'path-sanitize.ts',
       'route-model-binding.ts',
       'session-factory.ts',
