@@ -25,10 +25,21 @@ describe('useForm is reachable (stx#1843)', () => {
     expect(typeof (vendors as Record<string, unknown>).useForm).toBe('function')
   })
 
-  it('is declared in the browser auto-import surface', () => {
-    // Without this an editor never offers it, which is the entire failure
-    // mode — the primitive existed and worked the whole time.
-    expect(readFileSync(AUTO_IMPORTS, 'utf8')).toContain("const useForm:")
+  it('is offered by the module an editor completes against', () => {
+    // This asserted `const useForm:` in `browser-auto-imports.d.ts` until
+    // stacksjs/stacks#2585. That declaration made the name resolve for `tsc`
+    // and NOT in the browser: the stx runtime never attached it to `window`, so
+    // a bare `useForm()` in a template typechecked and then raised a
+    // ReferenceError during setup, taking the whole root down unhydrated. The
+    // two names beside it in `OWNED` were doing exactly that in five shipped
+    // components.
+    //
+    // Discovery is the real goal and an import serves it: the editor completes
+    // the name once the module is imported, and the call then works. So what is
+    // pinned is that the documented path exports it.
+    const vendors = readFileSync(join(import.meta.dir, '../src/utils/vendors.ts'), 'utf8')
+    expect(vendors).toContain('useForm')
+    expect(vendors).toContain(`from '@stacksjs/composables'`)
   })
 
   it('the composable behind it is the reactive one, not a schema builder', () => {
@@ -55,9 +66,14 @@ describe('a declared browser global is actually exported (stx#1843)', () => {
     expect(missing).toEqual([])
   })
 
-  it('and is declared', () => {
+  it('and is not declared as an ambient global, because none of them is one', () => {
+    // The inverse of what this asserted before stacksjs/stacks#2585, and for a
+    // reason measured rather than argued: against the runtime stx serves, the
+    // declaration named 83 globals, 61 were attached to `window`, and three
+    // were in both. None of these three is. Re-declaring one would restore a
+    // name that compiles and then throws.
     const declared = readFileSync(AUTO_IMPORTS, 'utf8')
-    const undeclared = OWNED.filter(name => !declared.includes(`const ${name}:`))
-    expect(undeclared).toEqual([])
+    const wronglyDeclared = OWNED.filter(name => declared.includes(`const ${name}:`))
+    expect(wronglyDeclared).toEqual([])
   })
 })
