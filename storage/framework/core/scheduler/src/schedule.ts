@@ -225,7 +225,14 @@ export class Schedule implements UntimedSchedule {
     if (hour === undefined || minute === undefined || Number.isNaN(hour) || Number.isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
       throw new Error(`Invalid time "${time}". Hour must be 0-23, minute must be 0-59`)
     }
-    this.cronPattern = `${minute} ${hour} * * *`
+    // Only the time of day changes. `.weekly().at('09:00')` and
+    // `.monthly().at('09:00')` are the documented spellings, and rebuilding
+    // the whole pattern as `m h * * *` quietly turned both into daily jobs:
+    // a Monday digest sent every morning. The day, month and weekday fields a
+    // timing method set are kept; with none set yet, this is a daily time.
+    const fields = this.cronPattern.trim().split(/\s+/)
+    const [dayOfMonth, month, dayOfWeek] = fields.length === 5 ? fields.slice(2) : ['*', '*', '*']
+    this.cronPattern = `${minute} ${hour} ${dayOfMonth} ${month} ${dayOfWeek}`
     return this as TimedSchedule
   }
 

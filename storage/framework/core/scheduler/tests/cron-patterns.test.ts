@@ -54,6 +54,24 @@ describe('@stacksjs/scheduler - cron patterns', () => {
     expect(patternOf(s => s.at('23:59'))).toBe('59 23 * * *')
   })
 
+  // `.at()` pins the time of day and nothing else. It used to rebuild the
+  // pattern as `m h * * *`, so a weekly or monthly job ran every day.
+  test('weekly().at() stays weekly', () => {
+    expect(patternOf(s => s.weekly().at('09:00'))).toBe('0 9 * * 0')
+  })
+
+  test('onDays().at() keeps the days', () => {
+    expect(patternOf(s => s.onDays([1, 3]).at('09:30'))).toBe('30 9 * * 1,3')
+  })
+
+  test('monthly().at() stays monthly', () => {
+    expect(patternOf(s => s.monthly().at('06:15'))).toBe('15 6 1 * *')
+  })
+
+  test('daily().at() is a daily time', () => {
+    expect(patternOf(s => s.daily().at('05:30'))).toBe('30 5 * * *')
+  })
+
   test('at() validates hour out of range', () => {
     expect(() => patternOf(s => s.at('25:00'))).toThrow()
   })
