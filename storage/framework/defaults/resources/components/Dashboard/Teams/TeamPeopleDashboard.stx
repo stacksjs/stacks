@@ -449,7 +449,7 @@ onMount(() => {
   confirmLabel="Remove member"
   :busy="Boolean(busyMemberId())"
   @close="memberToRemove.set(null)"
-  @confirm="removeMember"
+  @confirm="removeMember()"
 />
 
 <ConfirmDialog
@@ -459,5 +459,5 @@ onMount(() => {
   confirmLabel="Revoke invitation"
   :busy="Boolean(busyInvitationId())"
   @close="invitationToRevoke.set(null)"
-  @confirm="revokeInvitation"
+  @confirm="revokeInvitation()"
 />

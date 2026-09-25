@@ -144,7 +144,7 @@ function handleSubmit(): void {
             label="Email address"
             placeholder="you@example.com"
             v-model:value="email"
-            @blur="validateEmail"
+            @blur="validateEmail()"
             :error="fieldError('email')"
             required
             :disabled="isLoading()"
@@ -158,8 +158,8 @@ function handleSubmit(): void {
             label="Password"
             placeholder="At least 8 characters"
             v-model:value="password"
-            @input="validatePassword"
-            @blur="validatePassword"
+            @input="validatePassword()"
+            @blur="validatePassword()"
             :error="fieldError('password')"
             required
             :disabled="isLoading()"
@@ -185,7 +185,7 @@ function handleSubmit(): void {
             label="Confirm password"
             placeholder="Confirm your password"
             v-model:value="passwordConfirmation"
-            @input="validateConfirmation"
+            @input="validateConfirmation()"
             :error="fieldError('passwordConfirmation')"
             required
             :disabled="isLoading()"

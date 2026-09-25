@@ -81,7 +81,7 @@ function handleSubmit(): void {
             label="Email address"
             placeholder="you@example.com"
             v-model:value="email"
-            @blur="validateEmail"
+            @blur="validateEmail()"
             :error="fieldError('email')"
             required
             :disabled="isLoading()"
@@ -94,7 +94,7 @@ function handleSubmit(): void {
             label="Password"
             placeholder="Enter your password"
             v-model:value="password"
-            @blur="validatePassword"
+            @blur="validatePassword()"
             :error="fieldError('password')"
             required
             :disabled="isLoading()"
