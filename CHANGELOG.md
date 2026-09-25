@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.67...v0.74.68)
+
+## 🐛 Bug Fixes
+
+- **email**: answer one-click unsubscribe POSTs ([3bf8a57](https://github.com/stacksjs/stacks/commit/3bf8a57)) _(by Chris <chris@stacksjs.com>)_
+- **email**: keep link URLs in the plain-text part ([4b9ad29](https://github.com/stacksjs/stacks/commit/4b9ad29)) _(by Chris <chris@stacksjs.com>)_
+- **scheduler**: at() sets the time of day without dropping the days ([f9beb44](https://github.com/stacksjs/stacks/commit/f9beb44)) _(by Chris <chris@stacksjs.com>)_
+- **database**: bring the model snapshot up to the models, and guard it ([7bfa429](https://github.com/stacksjs/stacks/commit/7bfa429)) _(by Chris <chris@stacksjs.com>)_
+- **scaffold**: install from the lockfile in a new app's CI ([d7fb5bb](https://github.com/stacksjs/stacks/commit/d7fb5bb)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **api**: regenerate artifacts for the one-click unsubscribe POST ([d6b6ff6](https://github.com/stacksjs/stacks/commit/d6b6ff6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.66...v0.74.67)
 
 ## ✨ Features
