@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.68...v0.74.69)
+
+## ✨ Features
+
+- **analytics**: an AnalyticsHQ driver ([ff1ffb8](https://github.com/stacksjs/stacks/commit/ff1ffb8)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.67...v0.74.68)
 
 ## 🐛 Bug Fixes
