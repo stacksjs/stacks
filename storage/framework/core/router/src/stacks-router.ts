@@ -5214,14 +5214,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // Load user-defined routes
       log.debug('[router] Loading user routes from registry...')
       try {
-        const { loadRoutes } = await import('./route-loader')
-        // Resolve `app/Routes.ts` against the project root via @stacksjs/path
-        // so this works under both layouts (workspace vs installed package).
-        // The hardcoded `../../../../../app/Routes` path only resolved when
-        // the router lived at `storage/framework/core/router/src/`.
-        const { appPath } = await import('@stacksjs/path')
-        const routeRegistry = (await import(appPath('Routes.ts'))).default
-        await loadRoutes(routeRegistry)
+        // `app/Routes.ts` is a manifest of which route files to load, not
+        // where routes are written, so it is optional: an app whose routes
+        // all live in `routes/api.ts` gets the default registry instead of
+        // an API server that dies on "Cannot find module".
+        const { appRouteRegistry, loadRoutes } = await import('./route-loader')
+        await loadRoutes(await appRouteRegistry())
       }
       catch (error) {
         log.error('Failed to load route registry:', error)

@@ -35,7 +35,7 @@ export type { MiddlewareAliases, MiddlewareClasses, MiddlewareClassName, Middlew
 
 // Export route loader
 export type { RootMountedAppRoute } from './route-loader'
-export { listRootMountedAppRoutes, loadRoutes } from './route-loader'
+export { appRouteRegistry, DEFAULT_ROUTE_REGISTRY, listRootMountedAppRoutes, loadRoutes } from './route-loader'
 
 // Export route registry types — owned here rather than in app/Routes.ts
 // so the path doesn't depend on a 5-level relative reach across the

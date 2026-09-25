@@ -389,8 +389,9 @@ async function startStxServer(): Promise<void> {
   // though it works fine in production (server/start.ts also calls
   // loadRoutes). We scope onRequest delegation tightly below.
   const router = await import('@stacksjs/router')
-  const routeRegistry = (await import(projectPath('app/Routes.ts'))).default
-  await router.loadRoutes(routeRegistry)
+  // `app/Routes.ts` is optional: an app whose routes all live in
+  // `routes/api.ts` needs no manifest saying so.
+  await router.loadRoutes(await router.appRouteRegistry())
   const stacksRoute = router.route
 
   const serverPromise = serve({

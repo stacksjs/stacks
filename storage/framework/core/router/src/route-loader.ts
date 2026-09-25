@@ -21,6 +21,7 @@
 
 import type { MiddlewareReference } from '@stacksjs/bun-router'
 import type { RouteDefinition, RouteRegistry } from './route-types'
+import { existsSync } from 'node:fs'
 import { log } from '@stacksjs/logging/runtime'
 import { route } from './stacks-router'
 
@@ -55,6 +56,40 @@ export function listRootMountedAppRoutes(): readonly RootMountedAppRoute[] {
 /**
  * Load all routes from the registry
  */
+/**
+ * What an app's routes are when it has not said otherwise: `routes/api.ts`
+ * mounted at `/api`.
+ */
+export const DEFAULT_ROUTE_REGISTRY: RouteRegistry = { api: 'api' }
+
+/**
+ * The app's route registry, from `app/Routes.ts` when the project has one.
+ *
+ * That file is a manifest of which route files to load and under which
+ * prefix. It is not where routes are written — `routes/` is — so an app that
+ * only has `routes/api.ts` is described completely by the default above, and
+ * should not have to carry a file that says so. Without this, a project with
+ * no `app/Routes.ts` did not fall back: the import threw "Cannot find module"
+ * and the dashboard never came up, which reads as the app being broken rather
+ * than as a file being optional.
+ *
+ * A file that exists but exports nothing usable falls back too, rather than
+ * iterating undefined and failing further from the cause.
+ */
+export async function appRouteRegistry(): Promise<RouteRegistry> {
+  const { projectPath } = await import('@stacksjs/path')
+  const file = projectPath('app/Routes.ts')
+  if (!existsSync(file))
+    return DEFAULT_ROUTE_REGISTRY
+
+  const registry = (await import(file)).default as RouteRegistry | undefined
+  if (!registry || typeof registry !== 'object' || Object.keys(registry).length === 0) {
+    log.debug('[route-loader] app/Routes.ts exports no registry; using the default')
+    return DEFAULT_ROUTE_REGISTRY
+  }
+  return registry
+}
+
 export async function loadRoutes(registry: RouteRegistry): Promise<void> {
   // Load user-defined routes FIRST — they take priority over framework defaults.
   // bun-router silently ignores duplicate registrations (same method + path),
