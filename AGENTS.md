@@ -191,6 +191,11 @@ and currently disagrees with the browser in both directions.
   `useWebSocket`.
 - Signals and lifecycle: `state`, `derived`, `effect`, `batch`, `nextTick`,
   `onMount`, `onDestroy`, `provide`, `defineStore`, `stx`.
+- Server-rendered data: `clearServerData`. The page embeds its hydration payload
+  in a `script[data-stx-server-data]` tag, which `useFetch` and `useQuery` read
+  once on mount instead of refetching. `clearServerData(key)` drops one entry and
+  `clearServerData()` drops all of it, so the next read goes to the network -
+  which is what you want after a mutation has made the embedded copy stale.
 - Routing and UI: `navigate`, `goBack`, `goForward`, `modal`, `drawer`, `toast`,
   `stxAlert`, `stxConfirm`.
 - **Vue-compatible aliases onto the above**: `ref` (= `state`), `computed`
