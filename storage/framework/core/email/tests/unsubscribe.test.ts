@@ -105,3 +105,14 @@ describe('buildListUnsubscribeHeaders', () => {
     expect(headers['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
   })
 })
+
+describe('the unsubscribe route answers both ways the link is used', () => {
+  // buildListUnsubscribeHeaders promises RFC 8058 one-click unsubscribe,
+  // where the mail client POSTs to the link. Only GET was mounted, so the
+  // unsubscribe button in Gmail and Apple Mail unsubscribed nobody.
+  test('GET for the link in the message, POST for the client button', async () => {
+    const source = await Bun.file(new URL('../../../defaults/routes/email.ts', import.meta.url)).text()
+    expect(source).toMatch(/route\.get\('\/_stacks\/email\/unsubscribe\/\{token\}'/)
+    expect(source).toMatch(/route\.post\('\/_stacks\/email\/unsubscribe\/\{token\}'/)
+  })
+})

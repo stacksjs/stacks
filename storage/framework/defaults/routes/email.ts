@@ -53,8 +53,8 @@ function emailConfig(): EmailConfigShape {
 // Unsubscribe — signed-link opt-out (stacksjs/stacks#1880)
 // ============================================================================
 
-route.get('/_stacks/email/unsubscribe/{token}', async (req) => {
-  const params = (req as unknown as { params?: { token?: string } }).params
+async function unsubscribe(req: unknown): Promise<Response> {
+  const params = (req as { params?: { token?: string } }).params
   const token = params?.token ?? ''
   const result = verifyUnsubscribeToken(token)
   if (!result.valid || !result.email) {
@@ -68,7 +68,17 @@ route.get('/_stacks/email/unsubscribe/{token}', async (req) => {
     `You've been unsubscribed. We won't email ${result.email} again.`,
     { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } },
   )
-}).skipCsrf()
+}
+
+// A person clicking the link in the message.
+route.get('/_stacks/email/unsubscribe/{token}', unsubscribe).skipCsrf()
+
+// The mail client's own unsubscribe button. `buildListUnsubscribeHeaders`
+// sends `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, and RFC 8058 has
+// the client POST that body to the same URL. Only GET was mounted, so the
+// button Gmail and Apple Mail show next to the sender reached no route and
+// nobody was unsubscribed.
+route.post('/_stacks/email/unsubscribe/{token}', unsubscribe).skipCsrf()
 
 // ============================================================================
 // Provider webhooks (stacksjs/stacks#1881)
