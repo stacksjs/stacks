@@ -13,6 +13,7 @@
  */
 
 import type { AnalyticsConfig, AnalyticsOptions } from '@stacksjs/types'
+import { integrationGate } from '@stacksjs/env'
 import type { AnalyticsHeadTag } from './drivers/shared'
 import { getAnalyticsHqHead } from './drivers/analyticshq'
 import { getFathomAnalyticsHead } from './drivers/fathom'
@@ -56,6 +57,22 @@ export function getAnalyticsHead(config: AnalyticsConfig): AnalyticsHeadTag[] {
   const driver = config.driver
 
   if (!driver)
+    return []
+
+  /*
+   * The environment gate runs before the driver is resolved, so an excluded
+   * environment injects nothing at all rather than a script that reports itself
+   * as local (stacksjs/stacks#2792). It also runs before the misconfiguration
+   * throws below, so switching an environment off does not oblige it to hold
+   * credentials it will never use.
+   *
+   * Only when the application opted in. `environments` unset leaves reporting
+   * exactly as it was, because no installation's behaviour should change just
+   * because this check exists.
+   */
+  if (config.enabled === false)
+    return []
+  if (config.environments !== undefined && !integrationGate(config).enabled)
     return []
 
   if (!isAnalyticsDriver(driver)) {

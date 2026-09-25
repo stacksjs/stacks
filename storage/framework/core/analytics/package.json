@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/env": "workspace:*",
     "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {

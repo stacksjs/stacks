@@ -18,6 +18,32 @@ export interface AnalyticsOptions {
    */
   capturePageviews?: boolean
 
+  /**
+   * A master switch. `false` renders no analytics at all; `true` does not
+   * bypass {@link AnalyticsOptions.environments}, so it cannot be used to turn
+   * production reporting on from a laptop by accident (stacksjs/stacks#2792).
+   */
+  enabled?: boolean
+
+  /**
+   * The `APP_ENV` labels permitted to report, checked before any driver builds
+   * its tags - so an excluded environment injects no tracking script at all,
+   * rather than one that reports itself as local. The label describes the
+   * event; it does not stop it leaving.
+   *
+   * Left unset, analytics behaves exactly as it always has and reports from
+   * every environment: no installation's reporting changes because this option
+   * exists. Set it to adopt the gate, e.g. `['production', 'staging']` -
+   * `REMOTE_TELEMETRY_ENVIRONMENTS` in `@stacksjs/env` is that pair, and what a
+   * new remote-telemetry integration should default to. An empty array is off
+   * everywhere.
+   *
+   * `APP_ENV` is a configuration label, not proof of deployment identity: a
+   * command launched locally with `APP_ENV=production` passes a production
+   * allowlist.
+   */
+  environments?: readonly string[]
+
   drivers: {
     /** AnalyticsHQ configuration (https://analyticshq.org, cookie-free) */
     analyticshq?: {

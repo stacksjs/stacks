@@ -216,6 +216,7 @@
       "version": "0.74.70",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
+        "@stacksjs/env": "workspace:*",
         "@stacksjs/types": "workspace:*",
       },
       "devDependencies": {
