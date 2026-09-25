@@ -37,6 +37,38 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/_stacks/email/unsubscribe/{token}",
+        "operationId": "post___stacks_email_unsubscribe__token_",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/_stacks/mail/preview": {

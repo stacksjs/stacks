@@ -100,6 +100,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /_stacks/email/unsubscribe/{token}
+   */
+  postStacksEmailUnsubscribeToken(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/_stacks/email/unsubscribe/{token}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /_stacks/mail/preview
    */
   getStacksMailPreview(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
