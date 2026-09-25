@@ -2152,37 +2152,7 @@ function resolveGenerateOptions(options: GenerateMigrationsOptions): { applyRena
  */
 export async function previewPendingMigrations(options: GenerateMigrationsOptions = {}): Promise<MigrationOperation[]> {
   try {
-    configureQueryBuilder()
-    const dialect = getDialect()
-    const { modelsDir, skip, protectedTables } = prepareMigrationModelsDir()
-    if (skip)
-      return []
-    const { applyRenames, fromDb } = resolveGenerateOptions(options)
-    const qbDialect = getQbDialect()
-    const result = await qbGenerateMigration(modelsDir, {
-      dialect: qbDialect,
-      vitessSharded: qbDialect === 'vitess' ? isVitessSharded(dbConfig.connections.vitess.sharded) : undefined,
-      dryRun: true,
-      applyRenames,
-      fromDb,
-    })
-    let operations = result.operations ?? []
-    // Protected tables are never dropped (see `withoutProtectedTableDropSql`),
-    // so they must not appear in the confirmation gate either — sixty phantom
-    // drops would train the user to approve a prompt that is, on any other run,
-    // worth reading.
-    if (protectedTables.length > 0) {
-      const excluded = new Set(protectedTables.map(table => table.toLowerCase()))
-      operations = operations.filter(
-        (op: MigrationOperation) => !(op.kind === 'drop_table' && excluded.has(op.table.toLowerCase())),
-      )
-    }
-    // Framework-managed columns (trait ALTERs, not model `attributes`) are not
-    // real strays — don't surface them as destructive drops in the confirmation
-    // gate, or migrate never shows "nothing to migrate" (stacksjs/stacks#2075).
-    if (!operations.some((op: MigrationOperation) => op.kind === 'drop_column'))
-      return operations
-    return withoutManagedColumnDrops(operations, await frameworkManagedColumns())
+    return await pendingMigrationOperations(options)
   }
   catch (error) {
     // A preview must never block the migrate flow on its own failure — the
@@ -2190,6 +2160,49 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
     log.debug(`[migration] preview failed: ${error instanceof Error ? error.message : String(error)}`)
     return []
   }
+}
+
+/**
+ * The operations the differ would generate, throwing instead of returning an
+ * empty list when it cannot tell.
+ *
+ * `previewPendingMigrations` swallows failures because a preview must not
+ * block `buddy migrate`. A check that the committed snapshot matches the
+ * models needs the opposite: an empty answer has to mean "nothing pending",
+ * never "the differ failed".
+ */
+export async function pendingMigrationOperations(options: GenerateMigrationsOptions = {}): Promise<MigrationOperation[]> {
+  configureQueryBuilder()
+  const dialect = getDialect()
+  const { modelsDir, skip, protectedTables } = prepareMigrationModelsDir()
+  if (skip)
+    return []
+  const { applyRenames, fromDb } = resolveGenerateOptions(options)
+  const qbDialect = getQbDialect()
+  const result = await qbGenerateMigration(modelsDir, {
+    dialect: qbDialect,
+    vitessSharded: qbDialect === 'vitess' ? isVitessSharded(dbConfig.connections.vitess.sharded) : undefined,
+    dryRun: true,
+    applyRenames,
+    fromDb,
+  })
+  let operations = result.operations ?? []
+  // Protected tables are never dropped (see `withoutProtectedTableDropSql`),
+  // so they must not appear in the confirmation gate either — sixty phantom
+  // drops would train the user to approve a prompt that is, on any other run,
+  // worth reading.
+  if (protectedTables.length > 0) {
+    const excluded = new Set(protectedTables.map(table => table.toLowerCase()))
+    operations = operations.filter(
+      (op: MigrationOperation) => !(op.kind === 'drop_table' && excluded.has(op.table.toLowerCase())),
+    )
+  }
+  // Framework-managed columns (trait ALTERs, not model `attributes`) are not
+  // real strays — don't surface them as destructive drops in the confirmation
+  // gate, or migrate never shows "nothing to migrate" (stacksjs/stacks#2075).
+  if (!operations.some((op: MigrationOperation) => op.kind === 'drop_column'))
+    return operations
+  return withoutManagedColumnDrops(operations, await frameworkManagedColumns())
 }
 
 /**

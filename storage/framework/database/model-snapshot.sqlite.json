@@ -1367,7 +1367,7 @@
           },
           {
             "name": "payload",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -1375,7 +1375,7 @@
           },
           {
             "name": "exception",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -6445,7 +6445,7 @@
           },
           {
             "name": "payload",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -13179,10 +13179,109 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "categorizables",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "is_active",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": true
+          },
+          {
+            "name": "categorizable_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "categorizable_type",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "categorizables_type_slug_unique",
+            "columns": [
+              "categorizable_type",
+              "slug"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "categorizables_owner_slug_unique",
+            "columns": [
+              "categorizable_type",
+              "categorizable_id",
+              "slug"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "d8fe65d210b638adf9df00d977ceb0cb3507f311204f5b87c2b7a64b3346cbd5",
+  "hash": "2706ba665026d867b80b043c3099ce347ff4ac2a99b27339d645d76b51936e8d",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-16T11:23:18.688Z"
+  "updatedAt": "2026-09-25T00:57:31.427Z"
 }
