@@ -40,9 +40,30 @@ const POLICY = [
   'max_age: 604800',
 ].join('\r\n') + '\r\n'
 
+/**
+ * The overlap ts-cloud's cutover needs.
+ *
+ * Every release gets its own templated systemd unit, and the new one has to
+ * bind the port while the old one is still serving - the old is stopped only
+ * once the new is up. Without `reusePort` (SO_REUSEPORT) that bind is
+ * `EADDRINUSE`, the new unit crash-loops, the old one keeps the port, and the
+ * deploy fails with the policy still served by the previous release. Which is
+ * exactly what it did: restart counter 34 against a healthy old process. The
+ * page and API servers already set this; this one was the last that did not.
+ *
+ * `INVOCATION_ID` is set by systemd for every unit it starts, and answers the
+ * case `APP_ENV` cannot: the allowlist below is the idiom the other two servers
+ * use, and it silently does nothing if this unit's environment never carries
+ * `APP_ENV`. Off for a local run, where two servers fighting over one port
+ * should still fail loudly rather than both half-serving.
+ */
+const isDeployed = ['production', 'staging', 'development'].includes((process.env.APP_ENV || '').toLowerCase())
+  || Boolean(process.env.INVOCATION_ID)
+
 Bun.serve({
   port: PORT,
   hostname: '127.0.0.1',
+  reusePort: isDeployed,
   fetch(req: Request): Response {
     // One legitimate URL, and this vhost faces the whole internet. Anything
     // else it could be persuaded to serve is surface for no benefit.
