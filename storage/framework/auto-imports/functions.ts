@@ -7,7 +7,7 @@ export type { AnalyticsOverview, TrafficDataPoint, PageData, ReferrerData, Devic
 export { resolveApiBaseUrl } from '../defaults/functions/api-url'
 export { get, post, put, patch, del, createResource, useApi } from '../defaults/functions/api'
 export type { ApiResponse, ApiError } from '../defaults/functions/api'
-export { useAuth, describeAuthError, authGuard } from '../defaults/functions/auth'
+export { isTwoFactorChallenge, isLoginResponse, safeAuthRedirect, useAuth, describeAuthError, authGuard } from '../defaults/functions/auth'
 export type { AuthComposable } from '../defaults/functions/auth'
 export { fetchBillingOverview } from '../defaults/functions/billing/dashboard'
 export type { BillingSubscription, BillingPaymentMethod, BillingTransaction, BillingOverview } from '../defaults/functions/billing/dashboard'
