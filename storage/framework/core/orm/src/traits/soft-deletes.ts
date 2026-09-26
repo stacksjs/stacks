@@ -106,19 +106,22 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
     },
 
     async forceDelete(id) {
-      // Bypass the soft-delete shim and call the real query.delete().
+      // A real DELETE, over trashed rows too, as `restore` above does.
+      // Without `withTrashed()` the default scope added `deleted_at IS NULL`,
+      // so a row that was already soft-deleted - the usual reason to
+      // force-delete - matched nothing and survived, while this still
+      // answered `true`. The answer is whether a row went away; a DELETE's
+      // count means the same on every dialect, unlike an UPDATE's.
+      // bun-query-builder 0.2.70 routes its native `remove(id)` here.
       //
-      // Over trashed rows too, as `restore` above does. Without
-      // `withTrashed()` the default scope added `deleted_at IS NULL`, so a
-      // row that was already soft-deleted - the usual reason to force-delete -
-      // matched nothing and survived, while this still answered `true`. The
-      // answer is now whether a row went away; a DELETE's count means the
-      // same on every dialect, unlike an UPDATE's. bun-query-builder 0.2.70
-      // routes its native `remove(id)` here, which is how this surfaced.
+      // Through the builder's own `forceDelete()`. Since bun-query-builder
+      // 0.3.0 its query `delete()` honours soft deletes, so on this model it
+      // MARKS the row: calling it here turned every force delete into a soft
+      // one, with `deleted_at` stamped and the row still in the table.
       const q: any = (model).where(primaryKey, id)
       const scoped: any = typeof q?.withTrashed === 'function' ? q.withTrashed() : q
-      if (typeof scoped?.delete === 'function')
-        return mutationCount(await scoped.delete()) > 0
+      if (typeof scoped?.forceDelete === 'function')
+        return mutationCount(await scoped.forceDelete()) > 0
       return false
     },
 

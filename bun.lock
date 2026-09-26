@@ -291,7 +291,7 @@
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.307",
-        "bun-query-builder": "^0.2.70",
+        "bun-query-builder": "^0.3.0",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
@@ -603,7 +603,7 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.2.70",
+        "bun-query-builder": "^0.3.0",
         "dynamodb-tooling": "^0.3.2",
       },
       "devDependencies": {
@@ -987,7 +987,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
         "@stacksjs/validation": "workspace:*",
-        "bun-query-builder": "^0.2.70",
+        "bun-query-builder": "^0.3.0",
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
@@ -1061,7 +1061,7 @@
       "name": "@stacksjs/query-builder",
       "version": "0.75.2",
       "dependencies": {
-        "bun-query-builder": "^0.2.70",
+        "bun-query-builder": "^0.3.0",
       },
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
@@ -1398,7 +1398,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.307",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.2.70",
+        "bun-query-builder": "^0.3.0",
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -1877,7 +1877,7 @@
 
     "bun-plugin-stx": ["bun-plugin-stx@0.2.315", "", { "dependencies": { "@stacksjs/stx": "^0.2.227", "stx-router": "^0.2.227" }, "bin": { "serve": "./dist/serve.js", "stx-serve": "./dist/serve.js" } }, "sha512-IAxDNoh6Si8p7fjg8aWJBjurUrdFclveOmjOUC2KyhUqlOE5DF5R9uXpXMSzuO4YwpeWn3eXk/YxOCTn2FXQ7g=="],
 
-    "bun-query-builder": ["bun-query-builder@0.2.70", "", { "dependencies": { "@stacksjs/clapp": "^0.2.16", "@stacksjs/ts-faker": "^0.1.8", "@stacksjs/ts-validation": "^0.5.2", "dynamodb-tooling": "^0.3.6" }, "bin": { "qb": "./dist/bin/cli.js", "qbx": "./dist/bin/cli.js", "query-builder": "./dist/bin/cli.js" } }, "sha512-4vDGC0NtaSsw0HjwZkDq6Oj+pWB6RK5sB3xuNA3cg025t7IgSyLILAqN7Juu6MhhGaBrdufsDY+zwq05cwOTnA=="],
+    "bun-query-builder": ["bun-query-builder@0.3.0", "", { "dependencies": { "@stacksjs/clapp": "^0.2.16", "@stacksjs/ts-faker": "^0.1.8", "@stacksjs/ts-validation": "^0.5.2", "dynamodb-tooling": "^0.3.6" }, "bin": { "qb": "./dist/bin/cli.js", "qbx": "./dist/bin/cli.js", "query-builder": "./dist/bin/cli.js" } }, "sha512-G+bbd0y17uAiyUMqu3ovdLGJDyTLe5Ycg2h1vDGJgJ3Qo2hyEFgpxkTFPKDqaTcq33UlLr99KU5OXelR2yN0Mw=="],
 
     "bun-types": ["bun-types@1.4.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w=="],
 
@@ -2132,6 +2132,8 @@
     "body-parser/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
 
     "negotiator/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
+
+    "stacks/bun-query-builder": ["bun-query-builder@0.2.70", "", { "dependencies": { "@stacksjs/clapp": "^0.2.16", "@stacksjs/ts-faker": "^0.1.8", "@stacksjs/ts-validation": "^0.5.2", "dynamodb-tooling": "^0.3.6" }, "bin": { "qb": "./dist/bin/cli.js", "qbx": "./dist/bin/cli.js", "query-builder": "./dist/bin/cli.js" } }, "sha512-4vDGC0NtaSsw0HjwZkDq6Oj+pWB6RK5sB3xuNA3cg025t7IgSyLILAqN7Juu6MhhGaBrdufsDY+zwq05cwOTnA=="],
 
     "type-is/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
   }
