@@ -88,3 +88,17 @@ describe('template variable HTML escaping (stacksjs/stacks#1871 M-1)', () => {
     expect(html).toContain('should-not-appear')
   })
 })
+
+describe('list and record variables', () => {
+  // They are for `.stx` templates, which receive them as props and loop over
+  // them. An `.html` template can only substitute, so it prints nothing for
+  // one rather than `[object Object]`.
+  it('renders a list or record as empty in an .html template', () => {
+    const { html } = renderHtml('<p>[{{ rows }}][{{ row }}]</p>', {
+      rows: [{ label: '/pricing', views: '12' }],
+      row: { label: '/pricing' },
+    })
+    expect(html).toContain('<p>[][]</p>')
+    expect(html).not.toContain('[object Object]')
+  })
+})

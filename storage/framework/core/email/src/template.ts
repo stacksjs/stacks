@@ -49,8 +49,25 @@ export function safe(html: string): SafeHtml {
   return new SafeHtml(html)
 }
 
-/** Allowed types for email template variable values */
-export type TemplateVariableValue = string | number | boolean | undefined | null | SafeHtml
+/** A single value a template can print. */
+export type TemplateScalar = string | number | boolean | undefined | null | SafeHtml
+
+/**
+ * Allowed types for email template variable values.
+ *
+ * Lists and records are for `.stx` templates, which receive the variables as
+ * props and can `@foreach` over a list of rows (a digest's top pages, an
+ * order's line items). The type used to stop at scalars, so a caller passing
+ * the rows its own `.stx` template loops over had to cast them past it.
+ *
+ * A plain `.html` template has only `{{ name }}` substitution and nothing to
+ * iterate with, so a list or record there renders as empty rather than as
+ * `[object Object]`.
+ */
+export type TemplateVariableValue =
+  | TemplateScalar
+  | readonly TemplateVariableValue[]
+  | { readonly [key: string]: TemplateVariableValue }
 
 /** Map of variable names to their values for template replacement */
 export type TemplateVariables = Record<string, TemplateVariableValue>
@@ -159,6 +176,7 @@ function replaceVariables(html: string, variables: TemplateVariables): string {
 function renderTemplateValue(value: TemplateVariableValue): string {
   if (value === null || value === undefined) return ''
   if (value instanceof SafeHtml) return value.value
+  if (typeof value === 'object') return ''
   return escapeHtml(String(value))
 }
 

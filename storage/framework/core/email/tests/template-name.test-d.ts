@@ -46,3 +46,17 @@ export async function runtimeNamesStayOpen(): Promise<void> {
   await templateByName(someString, { subject: 'Hi', variables: {} })
   await templateByName('magic-link', { subject: 'Hi', variables: {} })
 }
+
+// Rows for a `.stx` template to `@foreach` over are variables too, nested
+// records included. Anything else - a function, a Date - is still refused.
+export async function acceptsRowsForStxLoops(): Promise<void> {
+  await template('welcome', {
+    variables: {
+      topPages: [{ label: '/pricing', views: '1,204' }],
+      totals: { visitors: 12, views: 40 },
+    },
+  })
+  // @ts-expect-error - a function is not a template variable.
+  await template('welcome', { variables: { onClick: () => {} } })
+}
+
