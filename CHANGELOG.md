@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.0...v0.75.1)
+
+## ✨ Features
+
+- **orm,cms,buddy**: guest comments on the commentable trait, and moderation from the CLI ([945191d](https://github.com/stacksjs/stacks/commit/945191d)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference for comments:* ([43234ed](https://github.com/stacksjs/stacks/commit/43234ed)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.70...v0.75.0)
 
 ## ✨ Features
