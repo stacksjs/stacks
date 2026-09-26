@@ -109,7 +109,7 @@
         "@stacksjs/validation": "^0.75.4",
         "@stacksjs/video": "^0.75.4",
         "@stacksjs/whois": "^0.75.4",
-        "bun-query-builder": "^0.2.70"
+        "bun-query-builder": "^0.3.0"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -1896,12 +1896,12 @@
         "stx-serve": "./dist/serve.js"
       }
     },
-    "bun-query-builder@0.2.70": {
+    "bun-query-builder@0.3.0": {
       "name": "bun-query-builder",
-      "version": "0.2.70",
+      "version": "0.3.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-query-builder/-/bun-query-builder-0.2.70.tgz",
-      "integrity": "sha512-4vDGC0NtaSsw0HjwZkDq6Oj+pWB6RK5sB3xuNA3cg025t7IgSyLILAqN7Juu6MhhGaBrdufsDY+zwq05cwOTnA==",
+      "resolved": "https://registry.npmjs.org/bun-query-builder/-/bun-query-builder-0.3.0.tgz",
+      "integrity": "sha512-G+bbd0y17uAiyUMqu3ovdLGJDyTLe5Ycg2h1vDGJgJ3Qo2hyEFgpxkTFPKDqaTcq33UlLr99KU5OXelR2yN0Mw==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.16",
         "@stacksjs/ts-faker": "^0.1.8",

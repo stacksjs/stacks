@@ -401,7 +401,7 @@
     "@stacksjs/i18n": "^0.75.4",
     "@stacksjs/cron": "^0.75.4",
     "@stacksjs/sites": "^0.75.4",
-    "bun-query-builder": "^0.2.70"
+    "bun-query-builder": "^0.3.0"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
