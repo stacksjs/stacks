@@ -4,7 +4,14 @@ import { pushToast } from '../../../../functions/toasts'
 
 type CommentStatus = 'pending' | 'approved' | 'spam' | 'trash'
 
+// `comments` is the CMS table, `commentables` the one the `commentable` model
+// trait writes. Their ids overlap, so a record is identified by `key` and every
+// write says which table it is for.
+type CommentSource = 'comments' | 'commentables'
+
 interface CommentRecord {
+  key: string
+  source: CommentSource
   id: string
   authorName: string
   authorEmail: string
@@ -24,15 +31,23 @@ const deletingComment = state<CommentRecord | null>(null)
 const deleting = state(false)
 const deleteError = state('')
 
+function normalizeStatus(value: unknown): CommentStatus | null {
+  const status = String(value || '').toLowerCase()
+  return ['pending', 'approved', 'spam', 'trash'].includes(status) ? status as CommentStatus : null
+}
+
 function normalize(record: any): CommentRecord {
-  const rawStatus = String(record?.status || 'pending').toLowerCase()
+  const source: CommentSource = record?.source === 'commentables' ? 'commentables' : 'comments'
+  const id = String(record?.id || '')
   return {
-    id: String(record?.id || ''),
+    key: String(record?.key || `${source}:${id}`),
+    source,
+    id,
     authorName: String(record?.author_name || ''),
     authorEmail: String(record?.author_email || ''),
     content: String(record?.content || ''),
     postTitle: String(record?.post_title || ''),
-    status: ['pending', 'approved', 'spam', 'trash'].includes(rawStatus) ? rawStatus as CommentStatus : 'pending',
+    status: normalizeStatus(record?.status) ?? 'pending',
     createdAt: String(record?.created_at || ''),
   }
 }
@@ -87,14 +102,17 @@ async function loadComments(): Promise<void> {
 }
 
 async function setStatus(comment: CommentRecord, status: CommentStatus): Promise<void> {
-  updatingId.set(comment.id)
+  updatingId.set(comment.key)
   try {
-    await dashboardApi(`/api/dashboard/comments/${comment.id}`, {
+    const updated = await dashboardApi<{ status?: string }>(`/api/dashboard/comments/${comment.id}`, {
       method: 'PATCH',
-      body: { status },
+      body: { status, source: comment.source },
     })
-    comments.set(comments().map(record => record.id === comment.id ? { ...record, status } : record))
-    pushToast('success', `Comment marked ${status}`)
+    // The server says what the comment now is: a trait comment has one hidden
+    // state, so asking for trash comes back as spam.
+    const next = normalizeStatus(updated?.status) ?? status
+    comments.set(comments().map(record => record.key === comment.key ? { ...record, status: next } : record))
+    pushToast('success', `Comment marked ${next}`)
   }
   catch (error) {
     pushToast('error', 'Could not update comment', {
@@ -127,8 +145,8 @@ async function deleteComment(): Promise<void> {
   deleting.set(true)
   deleteError.set('')
   try {
-    await dashboardApi(`/api/dashboard/comments/${comment.id}`, { method: 'DELETE' })
-    comments.set(comments().filter(record => record.id !== comment.id))
+    await dashboardApi(`/api/dashboard/comments/${comment.id}?source=${comment.source}`, { method: 'DELETE' })
+    comments.set(comments().filter(record => record.key !== comment.key))
     deletingComment.set(null)
     pushToast('success', 'Comment permanently deleted')
   }
@@ -165,7 +183,7 @@ onMount(() => {
     <div class="divide-gray-200 divide-y dark:divide-neutral-700">
       <div :if="loading()" class="px-4 py-14 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading comments</div>
       <div :else-if="visibleComments().length === 0" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-comment-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No comments found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or status filter.</p></div>
-      <template :else><template :for="comment in visibleComments()"><article class="p-4"><div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><p class="font-semibold text-gray-900 text-sm dark:text-white">{{ comment.authorName || 'Anonymous' }}</p><span :class="statusClass(comment.status)">{{ comment.status }}</span><span class="text-gray-400 text-xs">{{ formatDate(comment.createdAt) }}</span></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ comment.authorEmail }}<span :if="comment.postTitle"> on {{ comment.postTitle }}</span></p><p class="mt-3 max-w-4xl text-gray-700 text-sm whitespace-pre-wrap dark:text-neutral-200">{{ comment.content }}</p></div><div class="flex flex-shrink-0 flex-wrap gap-2"><Button :if="comment.status !== 'approved'" variant="success" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'approved')">Approve</Button><Button :if="comment.status !== 'pending'" variant="secondary" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'pending')">Restore</Button><Button :if="comment.status !== 'spam'" variant="warning" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'spam')">Spam</Button><Button :if="comment.status !== 'trash'" variant="outline" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'trash')">Trash</Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Permanently delete comment by ' + comment.authorName" :disabled="Boolean(updatingId())" @click="openDelete(comment)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></div></article></template></template>
+      <template :else><template :for="comment in visibleComments()"><article class="p-4"><div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><p class="font-semibold text-gray-900 text-sm dark:text-white">{{ comment.authorName || 'Anonymous' }}</p><span :class="statusClass(comment.status)">{{ comment.status }}</span><span class="text-gray-400 text-xs">{{ formatDate(comment.createdAt) }}</span></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ comment.authorEmail }}<span :if="comment.postTitle"> on {{ comment.postTitle }}</span></p><p class="mt-3 max-w-4xl text-gray-700 text-sm whitespace-pre-wrap dark:text-neutral-200">{{ comment.content }}</p></div><div class="flex flex-shrink-0 flex-wrap gap-2"><Button :if="comment.status !== 'approved'" variant="success" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'approved')">Approve</Button><Button :if="comment.status !== 'pending'" variant="secondary" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'pending')">Restore</Button><Button :if="comment.status !== 'spam'" variant="warning" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'spam')">Spam</Button><Button :if="comment.status !== 'trash' && comment.source === 'comments'" variant="outline" size="sm" :disabled="Boolean(updatingId())" @click="setStatus(comment, 'trash')">Trash</Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Permanently delete comment by ' + comment.authorName" :disabled="Boolean(updatingId())" @click="openDelete(comment)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></div></article></template></template>
     </div>
   </section>
 </div>
