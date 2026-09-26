@@ -1,5 +1,43 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.70...v0.75.0)
+
+## ✨ Features
+
+- **email**: template variables accept lists and records ([99d8478](https://github.com/stacksjs/stacks/commit/99d8478)) _(by Chris <chris@stacksjs.com>)_
+- **analytics**: gate reporting on the shared environment allowlist ([b59a4dd](https://github.com/stacksjs/stacks/commit/b59a4dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2792](https://github.com/stacksjs/stacks/issues/2792))
+
+## 🐛 Bug Fixes
+
+- **auth,payments**: type the signed-in user, and fix the billing defaults it exposed ([72733f7](https://github.com/stacksjs/stacks/commit/72733f7)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: let the MTA-STS server overlap a release cutover ([1cc731d](https://github.com/stacksjs/stacks/commit/1cc731d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auto-imports**: stop declaring browser globals nothing injects ([507b8d0](https://github.com/stacksjs/stacks/commit/507b8d0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2585](https://github.com/stacksjs/stacks/issues/2585))
+- **router**: let the server and the spec generator run without app/Routes.ts ([528d399](https://github.com/stacksjs/stacks/commit/528d399)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: call the zero-argument handlers these events bind ([4b9d2e6](https://github.com/stacksjs/stacks/commit/4b9d2e6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **preloader**: set auto-import globals without an any cast ([43c2201](https://github.com/stacksjs/stacks/commit/43c2201)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **browser**: pin useForm reachability to the import, not an ambient global ([d384502](https://github.com/stacksjs/stacks/commit/d384502)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1843](https://github.com/stacksjs/stacks/issues/1843))
+- **auth**: report the magic-link failure instead of a driver code frame ([f8d7a46](https://github.com/stacksjs/stacks/commit/f8d7a46)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- copy the plugins graph, and pin DKIM order where it stands ([77799a5](https://github.com/stacksjs/stacks/commit/77799a5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- provision pantry 0.11.64, which resolves the pinned versions ([282721e](https://github.com/stacksjs/stacks/commit/282721e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **pantry**: record the analytics env dependency in pantry.lock too ([f5f934f](https://github.com/stacksjs/stacks/commit/f5f934f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.69...v0.74.70)
 
 ## ✨ Features
