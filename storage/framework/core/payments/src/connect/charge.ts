@@ -2,6 +2,7 @@ import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { config } from '@stacksjs/config'
 import { stripe } from '../drivers/stripe'
+import { manageCustomer } from '../billable/customer'
 import { freshIdempotencyKey } from '../idempotency'
 import { requireAccountId } from './account'
 
@@ -114,7 +115,7 @@ export const manageDestinationCharge: ManageDestinationCharge = (() => {
       ...intentParams,
     }
 
-    if (!params.customer && user.hasStripeId())
+    if (!params.customer && manageCustomer.hasStripeId(user))
       params.customer = user.stripe_id ?? undefined
 
     // Fresh per attempt, matching `manageCharge.createPayment`: each call is a

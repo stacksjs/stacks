@@ -13,7 +13,7 @@ export default new Action({
       return response.unauthorized('Authentication required')
     }
 
-    const userTokens = await tokens(user.id)
+    const userTokens = await tokens(Number(user.id))
 
     return response.json({
       tokens: userTokens.map(token => ({

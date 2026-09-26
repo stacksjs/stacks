@@ -15,28 +15,44 @@ import type { Infer, IsRequired } from '@stacksjs/ts-validation'
  * depends on this package again. A types package sits at the bottom of a
  * stack or it drags whatever it imports down there with it.
  *
- * Nothing is lost in practice. The old type was intersected with
- * `Record<string, any>` already, because the model proxy attaches trait
- * methods ahead of time and an application's own User columns are its own -
- * so every property access resolved through the index signature regardless.
+ * The index signature is `unknown`, not `any`. It was `any`, on the reasoning
+ * that the old type was intersected with `Record<string, any>` anyway, so
+ * "every property access resolved through the index signature regardless".
+ * That was the problem, not the excuse. Every field and every method was
+ * accepted unchecked, so apps wrote `(user as any).name` and never learned
+ * whether `name` existed, and the framework's own payment actions called
+ * `user.asStripeUser()`, `user.paymentIntent()` and five other methods no
+ * user has ever had - each one a `TypeError: ... is not a function` at
+ * runtime that the compiler waved through. With `unknown`, reading a field this interface does
+ * not declare still compiles, but using it means saying what it is.
  *
- * It is an interface so an application can have the precision back where it
- * wants it:
+ * An application rarely has to: `storage/framework/types/authenticated-user.d.ts`
+ * augments this interface with the columns of the app's own User model (and
+ * its billable methods, when it declares the trait), derived from the model
+ * so there is nothing to keep in step. It is an interface so anything else
+ * can be declared the same way:
  *
  * ```ts
  * declare module '@stacksjs/types' {
  *   interface AuthenticatedUser {
- *     email: string
  *     team_id: number
  *   }
  * }
  * ```
  */
 export interface AuthenticatedUser {
-  /** Present on every authenticated user, whichever model backs it. */
-  id: number
+  /**
+   * Present on every authenticated user, whichever model backs it.
+   *
+   * A number or a string, because both are what arrives. A BIGINT key comes
+   * back from Postgres as a string (`"1"`), since it can exceed what a number
+   * holds exactly, and a custom user provider may issue string ids outright.
+   * Declaring `number` alone promised arithmetic and `===` comparisons that
+   * are wrong on those databases; `Number(user.id)` says which one you mean.
+   */
+  id: number | string
   email: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 type UserJsonResponse = AuthenticatedUser

@@ -1,4 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,9 +13,14 @@ export default new Action({
     if (!user)
       return response.unauthorized('Authentication required')
 
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
+
     const paymentId = String(request.get('setupIntent'))
 
-    const paymentMethod = await user?.setUserDefaultPaymentMethod(paymentId)
+    // A string id is Stripe's own `pm_...`, which `setDefaultPaymentMethod`
+    // resolves on Stripe's side. `setUserDefaultPaymentMethod()` never existed.
+    const paymentMethod = await user.setDefaultPaymentMethod(paymentId)
 
     return response.json(paymentMethod)
   },

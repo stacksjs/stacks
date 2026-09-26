@@ -1,6 +1,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { manageCheckout } from '@stacksjs/payments'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED, manageCheckout } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -20,16 +21,12 @@ export default new Action({
     }
 
     // Checkout needs the billable trait, which the default User model leaves
-    // OFF ("not every app bills through the User model"). Without it the
-    // methods manageCheckout calls - hasStripeId() and friends - are not on
-    // the record at all, so say which switch is missing instead of failing
-    // deeper in with "user.hasStripeId is not a function".
-    if (typeof (user as unknown as Partial<UserModel>).hasStripeId !== 'function') {
-      return response.json(
-        { message: 'Billing is not enabled. Set `traits.billable` on the User model to use checkout.' },
-        503,
-      )
-    }
+    // OFF ("not every app bills through the User model"), so say which switch
+    // is missing instead of failing deeper in. This used to ask whether
+    // `hasStripeId` was a function - a method nothing binds, billable or not -
+    // so it answered 503 even in an app that had turned billing on.
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
 
     const session = await manageCheckout.create(user as unknown as UserModel, params)
 

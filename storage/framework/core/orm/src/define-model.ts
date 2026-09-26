@@ -369,28 +369,9 @@ const TRAIT_INSTANCE_METHOD_BINDINGS: Record<string, { bag: keyof TraitMethods, 
   unlike: { bag: '_likeable', mode: 'id' },
   isLiked: { bag: '_likeable', mode: 'id' },
 
-  createStripeUser: { bag: '_billable', mode: 'model' },
-  updateStripeUser: { bag: '_billable', mode: 'model' },
-  deleteStripeUser: { bag: '_billable', mode: 'model' },
-  createOrGetStripeUser: { bag: '_billable', mode: 'model' },
-  retrieveStripeUser: { bag: '_billable', mode: 'model' },
-  defaultPaymentMethod: { bag: '_billable', mode: 'model' },
-  setDefaultPaymentMethod: { bag: '_billable', mode: 'model' },
-  addPaymentMethod: { bag: '_billable', mode: 'model' },
-  paymentMethods: { bag: '_billable', mode: 'model' },
-  newSubscription: { bag: '_billable', mode: 'model' },
-  updateSubscription: { bag: '_billable', mode: 'model' },
-  cancelSubscription: { bag: '_billable', mode: 'model' },
-  activeSubscription: { bag: '_billable', mode: 'model' },
-  checkout: { bag: '_billable', mode: 'model' },
-  createSetupIntent: { bag: '_billable', mode: 'model' },
-  subscriptionHistory: { bag: '_billable', mode: 'model' },
-  transactionHistory: { bag: '_billable', mode: 'model' },
-  connectAccount: { bag: '_billable', mode: 'model' },
-  createConnectAccount: { bag: '_billable', mode: 'model' },
-  connectOnboardLink: { bag: '_billable', mode: 'model' },
-  syncConnectStatus: { bag: '_billable', mode: 'model' },
-  chargeWithSplit: { bag: '_billable', mode: 'model' },
+  // Every billable method, from the one list `isBillable` also reads, so the
+  // surface an instance binds and the surface callers check are the same.
+  ...Object.fromEntries(BILLABLE_INSTANCE_METHODS.map(name => [name, { bag: '_billable', mode: 'model' } as const])),
 
   generateTwoFactorForModel: { bag: '_twoFactor', mode: 'model' },
   verifyTwoFactorCode: { bag: '_twoFactor', mode: 'model' },
@@ -2280,7 +2261,7 @@ type ModelForceWriteData<TDef extends ModelDefinition> = Parameters<ReturnType<Q
 import { createTaggableMethods } from './traits/taggable'
 import { createCategorizableMethods } from './traits/categorizable'
 import { createCommentableMethods } from './traits/commentable'
-import { createBillableMethods } from './traits/billable'
+import { BILLABLE_INSTANCE_METHODS, createBillableMethods } from './traits/billable'
 import { createLikeableMethods } from './traits/likeable'
 import { createTwoFactorMethods } from './traits/two-factor'
 import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'

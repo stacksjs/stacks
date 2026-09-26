@@ -1,4 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +13,10 @@ export default new Action({
     if (!user)
       return response.unauthorized('Authentication required')
 
-    const checkout = await user?.checkout([
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
+
+    const checkout = await user.checkout([
       {
         priceId: 'price_1QBEfsBv6MhUdo23avVV0kqx',
         quantity: 1,

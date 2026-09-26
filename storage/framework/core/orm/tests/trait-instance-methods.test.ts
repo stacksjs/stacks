@@ -63,6 +63,22 @@ const {
 } = await import('@stacksjs/database')
 const { configureOrm } = await import('bun-query-builder')
 const { defineModel } = await import('../src/define-model')
+const { BILLABLE_INSTANCE_METHODS, createBillableMethods, isBillable, SubscriptionNotOwnedError } = await import('../src/traits/billable')
+
+// One stand-in for `@stacksjs/payments`, registered before anything loads it.
+// Each billable test fills in the functions it needs on these objects. A
+// second `mock.module` call for the same package is not reliably picked up
+// once the first has been imported, so the tests share this one.
+type PaymentsStub = Record<string, (...args: any[]) => unknown>
+const payments = {
+  manageCheckout: {} as PaymentsStub,
+  manageCharge: {} as PaymentsStub,
+  manageCustomer: {} as PaymentsStub,
+  managePaymentMethod: {} as PaymentsStub,
+  manageTransaction: {} as PaymentsStub,
+  manageSubscription: {} as PaymentsStub,
+}
+mock.module('@stacksjs/payments', () => payments)
 
 describe('trait methods are wired onto hydrated instances (not just the static model)', () => {
   let releaseDbConfigLock: () => void
@@ -117,6 +133,9 @@ describe('trait methods are wired onto hydrated instances (not just the static m
     await run(`CREATE TABLE posts (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)`)
     await run(`CREATE TABLE users (
       id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, stripe_id TEXT, two_factor_secret TEXT
+    )`)
+    await run(`CREATE TABLE subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, provider_id TEXT, type TEXT, provider_status TEXT
     )`)
 
     // Build the trait tables from the SAME DDL `buddy migrate` runs, rather
@@ -287,17 +306,11 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       expect(typeof user.createOrGetStripeUser).toBe('function')
 
       let capturedModel: any
-      mock.module('@stacksjs/payments', () => ({
-        manageCustomer: {
-          createOrGetStripeUser: async (model: any) => {
-            capturedModel = model
-            return { id: 'cus_test123' }
-          },
-        },
-        manageCheckout: {
-          create: async () => ({ id: 'cs_test123', url: 'https://checkout.stripe.com/test' }),
-        },
-      }))
+      payments.manageCustomer.createOrGetStripeUser = async (model: any) => {
+        capturedModel = model
+        return { id: 'cus_test123' }
+      }
+      payments.manageCheckout.create = async () => ({ id: 'cs_test123', url: 'https://checkout.stripe.com/test' })
 
       const session = await user.checkout([{ priceId: 'price_123' }])
       expect(session.id).toBe('cs_test123')
@@ -309,6 +322,98 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       expect(capturedModel.id).toBe(user.id)
       expect(capturedModel.email).toBe('buyer@example.com')
       expect(typeof capturedModel.update).toBe('function')
+    })
+  })
+
+  describe('billable surface', () => {
+    it('binds every method the bag has, and nothing the bag lacks', () => {
+      // The list the proxy binds is the list of bag keys. When they were two
+      // hand-kept lists, shipped actions called methods neither had.
+      expect([...BILLABLE_INSTANCE_METHODS].sort()).toEqual(Object.keys(createBillableMethods('users')).sort())
+    })
+
+    it('isBillable answers for the model behind the record', async () => {
+      const user = await freshUser('surface@example.com')
+      const post = await freshPost('Not billable')
+
+      expect(isBillable(user)).toBe(true)
+      for (const name of BILLABLE_INSTANCE_METHODS)
+        expect(typeof user[name]).toBe('function')
+
+      // The default User model leaves `billable` off. Its records have none of
+      // these methods, and saying so is what lets a payments endpoint answer
+      // "billing is not enabled" instead of throwing inside Stripe code.
+      expect(isBillable(post)).toBe(false)
+      expect(isBillable({ id: 1, email: 'plain@example.com' })).toBe(false)
+    })
+
+    it('cancels only a subscription the record owns', async () => {
+      const owner = await freshUser('owner@example.com')
+      const other = await freshUser('other@example.com')
+      await (appDb as any).unsafe(`INSERT INTO subscriptions (user_id, provider_id, type, provider_status) VALUES (${Number(owner.id)}, 'sub_owned', 'default', 'active')`).execute()
+
+      const canceled: string[] = []
+      payments.manageSubscription.cancel = async (providerId: string) => {
+        canceled.push(providerId)
+        return { id: providerId, status: 'canceled' }
+      }
+
+      // Another user naming the owner's Stripe id: refused before Stripe is called.
+      await expect(other.cancelSubscription('sub_owned')).rejects.toThrow(SubscriptionNotOwnedError)
+      await expect(owner.cancelSubscription('sub_unknown')).rejects.toThrow(SubscriptionNotOwnedError)
+      expect(canceled).toEqual([])
+
+      const { subscription } = await owner.cancelSubscription('sub_owned')
+      expect(subscription).toEqual({ id: 'sub_owned', status: 'canceled' })
+      expect(canceled).toEqual(['sub_owned'])
+    })
+
+    it('routes the methods the payment actions call to the functions that exist', async () => {
+      const user = await freshUser('routes@example.com')
+      const calls: Array<[string, unknown[]]> = []
+      const record = (name: string) => async (...args: unknown[]) => {
+        calls.push([name, args])
+        return { id: `${name}_result` }
+      }
+
+      Object.assign(payments.manageCustomer, {
+        retrieveStripeUser: record('retrieveStripeUser'),
+        syncStripeCustomerDetails: record('syncStripeCustomerDetails'),
+      })
+      Object.assign(payments.managePaymentMethod, {
+        setDefaultPaymentMethod: record('setDefaultPaymentMethod'),
+        setUserDefaultPayment: record('setUserDefaultPayment'),
+        deletePaymentMethod: record('deletePaymentMethod'),
+      })
+      payments.manageCharge.createPayment = record('createPayment')
+      payments.manageTransaction.store = record('store')
+
+      await user.retrieveStripeUser()
+      // A number is the local payment_methods row, a string Stripe's own id.
+      await user.setDefaultPaymentMethod(7)
+      await user.setDefaultPaymentMethod('pm_123')
+      await user.deletePaymentMethod('pm_123')
+      await user.syncStripeCustomerDetails({ address: { city: 'Austin' } })
+      await user.createPayment(1500, { currency: 'usd' })
+      await user.storeTransaction(3, { brand: 'visa', provider_id: 'pi_123' })
+
+      expect(calls.map(([name]) => name)).toEqual([
+        'retrieveStripeUser',
+        'setDefaultPaymentMethod',
+        'setUserDefaultPayment',
+        'deletePaymentMethod',
+        'syncStripeCustomerDetails',
+        'createPayment',
+        'store',
+      ])
+
+      // Each received the record itself first, then the caller's arguments.
+      for (const [, args] of calls)
+        expect((args[0] as { id: unknown }).id).toBe(user.id)
+      expect(calls[1]![1].slice(1)).toEqual([7])
+      expect(calls[2]![1].slice(1)).toEqual(['pm_123'])
+      expect(calls[5]![1].slice(1)).toEqual([1500, { currency: 'usd' }])
+      expect(calls[6]![1].slice(1)).toEqual([3, { brand: 'visa', provider_id: 'pi_123' }])
     })
   })
 

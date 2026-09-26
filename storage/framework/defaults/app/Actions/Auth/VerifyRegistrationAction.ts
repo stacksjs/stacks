@@ -51,7 +51,7 @@ export default new Action({
         expectedRPID,
       )
 
-      await setCurrentRegistrationOptions(user, verification)
+      await setCurrentRegistrationOptions({ id: Number(user.id), email: user.email }, verification)
 
       return verification
     }

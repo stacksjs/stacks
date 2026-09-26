@@ -1,4 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -16,8 +18,13 @@ export default new Action({
     if (!user)
       return response.unauthorized('Authentication required')
 
-    const subscription = await user?.newSubscription(plan, type, { description, metadata: { period } })
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
 
-    return response.json(subscription?.paymentIntent)
+    // `plan` is the subscription's name ('pro') and `type` the price lookup key
+    // ('stacks_pro_monthly'), which is the order `newSubscription` takes them in.
+    const { paymentIntent } = await user.newSubscription(plan, type, { description, metadata: { period } })
+
+    return response.json(paymentIntent)
   },
 })

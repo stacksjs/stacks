@@ -13,7 +13,7 @@ export default new Action({
     }
 
     const { resendVerificationEmail } = await import('@stacksjs/auth')
-    const result = await resendVerificationEmail(user)
+    const result = await resendVerificationEmail({ ...user, id: Number(user.id) })
 
     if (!result.success) {
       return response.json({ success: false, message: result.message }, 422)

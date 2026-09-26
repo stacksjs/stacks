@@ -73,7 +73,7 @@ export default new Action({
       settleBillableRead(user, 'activeSubscription'),
       settleBillableRead(user, 'paymentMethods'),
       settleBillableRead(user, 'defaultPaymentMethod'),
-      PaymentTransaction.where('user_id', authenticatedUser.id).orderByDesc('id').get(),
+      PaymentTransaction.where('user_id', Number(authenticatedUser.id)).orderByDesc('id').get(),
     ])
 
     const providerReads: SettledBillingRead[] = [

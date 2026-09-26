@@ -27,6 +27,10 @@ export { createCommentableMethods } from './traits/commentable'
 export { createTaggableMethods } from './traits/taggable'
 export { createCategorizableMethods } from './traits/categorizable'
 export { createLikeableMethods } from './traits/likeable'
+// The billable instance surface: `isBillable(user)` narrows a record to it, so
+// a caller holding `request.user()` can ask rather than cast.
+export { BILLABLE_INSTANCE_METHODS, isBillable, SubscriptionNotOwnedError } from './traits/billable'
+export type { BillableMethods } from './traits/billable'
 export type { AuditHelpers } from './traits/audit'
 // Re-export soft-delete option types so user code can `satisfies SoftDeleteOptions`.
 export type { SoftDeleteOptions, SoftDeleteHelpers } from './traits/soft-deletes'
@@ -731,7 +735,9 @@ export interface UserModel {
   updated_at: string | null
   stripe_id?: string | null
   two_factor_enabled?: boolean
-  hasStripeId: () => boolean
+  // No `hasStripeId()`. It was declared here and bound nowhere, so every
+  // payments call written against it threw "is not a function" on a real
+  // user. Ask `manageCustomer.hasStripeId(user)` in `@stacksjs/payments`.
   hasRole: (role: string) => boolean | Promise<boolean>
   assignRole: (role: string) => unknown | Promise<unknown>
   update: (data: Record<string, unknown>) => Promise<UserModel>

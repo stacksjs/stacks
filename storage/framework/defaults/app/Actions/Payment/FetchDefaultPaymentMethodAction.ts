@@ -1,4 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +13,10 @@ export default new Action({
     if (!user)
       return response.unauthorized('Authentication required')
 
-    const paymentMethod = await user?.defaultPaymentMethod()
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
+
+    const paymentMethod = await user.defaultPaymentMethod()
 
     return response.json(paymentMethod)
   },

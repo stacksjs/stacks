@@ -1,5 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { HttpError } from '@stacksjs/error-handling'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -16,14 +18,17 @@ export default new Action({
     if (!user)
       return response.unauthorized('Authentication required')
 
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
+
     if (!product) {
       throw new HttpError(422, 'Product not found!')
     }
 
-    const paymentIntent = await user?.paymentIntent({
-      // The Product model's column is `price`; `unit_price` has never been
-      // one, so this read was undefined and the intent was created for NaN.
-      amount: Number(product.get('price')),
+    // The Product model's column is `price`; `unit_price` has never been one,
+    // so that read was undefined and the intent was created for NaN. And the
+    // method is `createPayment`: `user.paymentIntent()` never existed.
+    const paymentIntent = await user.createPayment(Number(product.get('price')), {
       currency: 'usd',
       payment_method_types: ['card'],
     })

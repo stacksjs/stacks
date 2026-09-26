@@ -429,9 +429,11 @@ Plans use `productName`, `description`, `metadata`, and a `pricing` array where 
 ## User Model Requirements
 The `UserModel` must have:
 - `id`, `name`, `email`, `stripe_id` fields
-- `hasStripeId()` method -- returns boolean
 - `update(data)` method -- for persisting `stripe_id`
-- `activeSubscription()` method -- for subscription updates
+- `activeSubscription()` method -- for subscription updates (bound by the `billable` trait)
+
+There is no `user.hasStripeId()` instance method. Use
+`manageCustomer.hasStripeId(user)`, which reads `stripe_id`.
 
 The framework default `storage/framework/defaults/app/Models/User.ts` sets
 `billable: false` intentionally because not every application uses payments.
@@ -439,7 +441,30 @@ Run `buddy publish:model User`, keep the override at `app/Models/User.ts`, and
 enable its `billable` trait before calling instance helpers such as
 `activeSubscription()`, `paymentMethods()`, or `createSetupIntent()`. A payment
 Action must report the missing trait clearly instead of calling an undefined
-method.
+method. `isBillable(user)` from `@stacksjs/orm` is that check, and narrows the
+user to `BillableMethods` (the instance surface, derived from
+`createBillableMethods`) so no cast is needed:
+
+```ts
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
+
+const user = await request.user()
+if (!user)
+  return response.unauthorized('Authentication required')
+if (!isBillable(user))
+  return response.error(BILLING_NOT_ENABLED, 503)
+
+const customer = await user.retrieveStripeUser()
+```
+
+The instance methods are exactly the keys of `createBillableMethods` in
+`core/orm/src/traits/billable.ts`. Among them: `retrieveStripeUser()`,
+`createPayment(amount, options)`, `setDefaultPaymentMethod(id)` (a number is the
+local row, a string is Stripe's `pm_...` id), `deletePaymentMethod(id)`,
+`syncStripeCustomerDetails(options)`, `storeTransaction(productId, options)`,
+`newSubscription(type, lookupKey, options)`. Anything else is not a function at
+runtime.
 
 ## Gotchas
 - Stripe API keys MUST be in `.env` as `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` -- never hardcode them in config files

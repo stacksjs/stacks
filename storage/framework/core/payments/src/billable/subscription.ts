@@ -174,7 +174,7 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function retrieve(user: UserModel, subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
-    if (!user.hasStripeId()) {
+    if (!manageCustomer.hasStripeId(user)) {
       throw new Error('Customer does not exist in Stripe')
     }
 

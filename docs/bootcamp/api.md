@@ -531,11 +531,15 @@ export default new Action({
   method: 'GET',
 
   async handle(request: RequestInstance) {
-    // The auth middleware ensures user is authenticated
-    const user = request.user()
+    // The auth middleware has authenticated the request; the check keeps the
+    // type honest for a route that forgot it.
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized()
 
     return response.json({
-      id: user.id,
+      id: Number(user.id), // Postgres returns BIGINT keys as strings
       email: user.email,
       name: user.name,
     })
@@ -751,7 +755,11 @@ export default new Action({
   },
 
   async handle(request: RequestInstance) {
-    const user = request.user()
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized()
+
     const title = request.get('title')
     const content = request.get('content')
     const excerpt = request.get('excerpt', '')
@@ -762,7 +770,7 @@ export default new Action({
       slug: slugify(title),
       content,
       excerpt: excerpt || content.substring(0, 200),
-      author_id: user.id,
+      author_id: Number(user.id),
       published_at: null,
     })
 

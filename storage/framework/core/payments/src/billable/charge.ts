@@ -4,6 +4,7 @@ import type Stripe from 'stripe'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { stripe } from '../drivers/stripe'
+import { manageCustomer } from './customer'
 import { freshIdempotencyKey } from '../idempotency'
 
 function defaultCurrency(): string {
@@ -29,7 +30,7 @@ export const manageCharge: ManageCharge = (() => {
       amount,
     }
 
-    if (user.hasStripeId()) {
+    if (manageCustomer.hasStripeId(user)) {
       defaultOptions.customer = user.stripe_id ?? undefined
     }
 

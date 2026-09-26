@@ -1,10 +1,24 @@
 import { createRequire } from 'node:module'
 import { db as _db } from '@stacksjs/database/runtime'
+import type { ManageTransaction, StoreTransactionOptions } from '@stacksjs/payments'
+import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
 
 const require = createRequire(import.meta.url)
 
 type StripeConstructor = typeof Stripe
+
+/**
+ * Thrown by `cancelSubscription` when the subscription is not the caller's:
+ * unknown, or another user's. One error for both, so a caller probing ids
+ * learns nothing about which exist.
+ */
+export class SubscriptionNotOwnedError extends Error {
+  constructor(providerId: string) {
+    super(`No subscription ${providerId} belongs to this user`)
+    this.name = 'SubscriptionNotOwnedError'
+  }
+}
 
 /**
  * Stored subscription row shape — narrower than `Record<string, unknown>`
@@ -47,6 +61,11 @@ export interface ActiveSubscriptionResult {
 export function createBillableMethods(_tableName: string) {
   const db = _db
   return {
+    async syncStripeCustomerDetails(model: any, options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.syncStripeCustomerDetails(model, options)
+    },
+
     async createStripeUser(model: any, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const { manageCustomer } = await import('@stacksjs/payments')
       return await manageCustomer.createStripeCustomer(model, options)
@@ -77,9 +96,21 @@ export function createBillableMethods(_tableName: string) {
       return await managePaymentMethod.retrieveDefaultPaymentMethod(model)
     },
 
-    async setDefaultPaymentMethod(model: any, pmId: number): Promise<Stripe.Response<Stripe.Customer>> {
+    /**
+     * A number is the local `payment_methods` row; a string is Stripe's own
+     * `pm_...` id, which is what a setup-intent callback hands back. Same rule
+     * as `deletePaymentMethod` below, so one method covers both callers.
+     */
+    async setDefaultPaymentMethod(model: any, paymentMethod: number | string): Promise<Stripe.Response<Stripe.Customer>> {
       const { managePaymentMethod } = await import('@stacksjs/payments')
-      return await managePaymentMethod.setDefaultPaymentMethod(model, pmId)
+      return typeof paymentMethod === 'string'
+        ? await managePaymentMethod.setUserDefaultPayment(model, paymentMethod)
+        : await managePaymentMethod.setDefaultPaymentMethod(model, paymentMethod)
+    },
+
+    async deletePaymentMethod(model: any, paymentMethod: number | string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+      const { managePaymentMethod } = await import('@stacksjs/payments')
+      return await managePaymentMethod.deletePaymentMethod(model, paymentMethod)
     },
 
     async addPaymentMethod(model: any, paymentMethodId: string): Promise<Stripe.PaymentMethod> {
@@ -109,6 +140,17 @@ export function createBillableMethods(_tableName: string) {
     },
 
     async cancelSubscription(model: any, providerId: string, options: Partial<Stripe.SubscriptionCancelParams> = {}): Promise<{ subscription: Stripe.Response<Stripe.Subscription> }> {
+      // Only a subscription this record owns. `providerId` arrives from the
+      // request body, and without this check any signed-in user could cancel
+      // anyone's subscription by naming its Stripe id.
+      const owned = await db.selectFrom('subscriptions')
+        .where('provider_id', '=', providerId)
+        .where('user_id', '=', model.id)
+        .select(['id'])
+        .executeTakeFirst()
+      if (!owned)
+        throw new SubscriptionNotOwnedError(providerId)
+
       const { manageSubscription } = await import('@stacksjs/payments')
       const subscription = await manageSubscription.cancel(providerId, options)
       return { subscription }
@@ -160,6 +202,22 @@ export function createBillableMethods(_tableName: string) {
     async createSetupIntent(model: any, options: Stripe.SetupIntentCreateParams = {}): Promise<Stripe.Response<Stripe.SetupIntent>> {
       const { manageSetupIntent } = await import('@stacksjs/payments')
       return await manageSetupIntent.create(model, options)
+    },
+
+    /**
+     * A one-off payment intent for `amount` (in the currency's smallest unit),
+     * attached to the model's Stripe customer when it has one.
+     */
+    async createPayment(model: any, amount: number, options: Partial<Stripe.PaymentIntentCreateParams> = {}): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+      const { manageCharge } = await import('@stacksjs/payments')
+      // `createPayment` fills `amount` and a default `currency` in itself, so
+      // the partial it is handed here is complete by the time Stripe sees it.
+      return await manageCharge.createPayment(model, amount, options as Stripe.PaymentIntentCreateParams)
+    },
+
+    async storeTransaction(model: any, productId: number, options: StoreTransactionOptions): ReturnType<ManageTransaction['store']> {
+      const { manageTransaction } = await import('@stacksjs/payments')
+      return await manageTransaction.store(model, productId, options)
     },
 
     async subscriptionHistory(model: any): Promise<Stripe.ApiList<Stripe.Invoice>> {
@@ -326,6 +384,86 @@ export function createBillableMethods(_tableName: string) {
       })
     },
   }
+}
+
+type BillableMethodBag = ReturnType<typeof createBillableMethods>
+
+/**
+ * A bag method as it is called on an instance: the proxy in `define-model.ts`
+ * supplies the leading `model` itself, so the caller passes only the rest.
+ * `never` in the model position matches any first parameter, whatever it is
+ * declared as.
+ */
+// eslint-disable-next-line pickier/no-unused-vars
+type BoundToModel<TMethod> = TMethod extends (model: never, ...args: infer TArgs) => infer TResult
+  // eslint-disable-next-line pickier/no-unused-vars
+  ? (...args: TArgs) => TResult
+  : never
+
+/**
+ * What a hydrated instance of a `billable` model can do: `user.checkout(...)`,
+ * `user.newSubscription(...)`, and the rest of the bag above.
+ *
+ * Derived from `createBillableMethods`, so a method added there is typed here
+ * with no second declaration to keep in step.
+ */
+export type BillableMethods = { readonly [TName in keyof BillableMethodBag]: BoundToModel<BillableMethodBag[TName]> }
+
+/**
+ * Every bag method, as a value.
+ *
+ * Written as a record over the bag's keys rather than a list, so the compiler
+ * rejects a missing name and a misspelled one alike. It is what the instance
+ * proxy binds and what `isBillable` checks. Those used to be a hand-kept list
+ * in `define-model.ts`, and the defaults were written against a surface that
+ * list never had: `user.asStripeUser()`, `user.paymentIntent()` and five more
+ * were called in shipped actions and threw "is not a function" every time.
+ */
+const BILLABLE_METHOD_NAMES: { readonly [TName in keyof BillableMethodBag]: true } = {
+  syncStripeCustomerDetails: true,
+  createStripeUser: true,
+  updateStripeUser: true,
+  deleteStripeUser: true,
+  createOrGetStripeUser: true,
+  retrieveStripeUser: true,
+  defaultPaymentMethod: true,
+  setDefaultPaymentMethod: true,
+  deletePaymentMethod: true,
+  addPaymentMethod: true,
+  paymentMethods: true,
+  newSubscription: true,
+  updateSubscription: true,
+  cancelSubscription: true,
+  activeSubscription: true,
+  checkout: true,
+  createSetupIntent: true,
+  createPayment: true,
+  storeTransaction: true,
+  subscriptionHistory: true,
+  transactionHistory: true,
+  connectAccount: true,
+  createConnectAccount: true,
+  connectOnboardLink: true,
+  syncConnectStatus: true,
+  chargeWithSplit: true,
+}
+
+export const BILLABLE_INSTANCE_METHODS: ReadonlyArray<keyof BillableMethods> = Object.freeze(
+  Object.keys(BILLABLE_METHOD_NAMES) as Array<keyof BillableMethods>,
+)
+
+/**
+ * Whether `model` carries the billable instance methods - which is to say,
+ * whether it is a hydrated instance of a model that declares
+ * `traits: { billable: true }`.
+ *
+ * A runtime check, not an assertion: the default User model leaves `billable`
+ * off, so `request.user()` is billable only in an app that turned it on. Asking
+ * lets a caller answer "billing is not enabled" rather than fail inside Stripe
+ * code with "user.checkout is not a function".
+ */
+export function isBillable<TModel extends object>(model: TModel): model is TModel & BillableMethods {
+  return BILLABLE_INSTANCE_METHODS.every(name => typeof Reflect.get(model, name) === 'function')
 }
 
 // Lazy-load Stripe so the trait stays free in projects that don't enable it.

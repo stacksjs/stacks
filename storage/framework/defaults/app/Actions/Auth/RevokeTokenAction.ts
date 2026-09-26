@@ -20,7 +20,7 @@ export default new Action({
     }
 
     // Verify the token belongs to the user
-    const userTokens = await tokens(user.id)
+    const userTokens = await tokens(Number(user.id))
     const tokenToRevoke = userTokens.find(t => t.id === tokenId)
 
     if (!tokenToRevoke) {

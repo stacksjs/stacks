@@ -456,6 +456,7 @@ async function handleLogin() {
 // app/Actions/Auth/CreateTokenAction.ts
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { createToken } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
@@ -476,16 +477,21 @@ export default new Action({
   },
 
   async handle(request: RequestInstance) {
-    const user = request.user()
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
+
     const name = request.get('name')
     const abilities = request.get('abilities', ['*'])
 
-    const token = await user.createToken(name, abilities)
+    // `id` is `number | string`: Postgres returns BIGINT keys as strings.
+    const token = await createToken(Number(user.id), name, abilities)
 
     return response.json({
       token: token.plainTextToken,
-      name: token.name,
-      abilities: token.abilities,
+      name: token.accessToken.name,
+      abilities: token.accessToken.scopes,
     }, 201)
   },
 })
@@ -497,6 +503,7 @@ export default new Action({
 // app/Actions/Auth/ListTokensAction.ts
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { tokens } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -505,16 +512,20 @@ export default new Action({
   method: 'GET',
 
   async handle(request: RequestInstance) {
-    const user = request.user()
-    const tokens = await user.tokens()
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
+
+    const userTokens = await tokens(Number(user.id))
 
     return response.json({
-      tokens: tokens.map(token => ({
+      tokens: userTokens.map(token => ({
         id: token.id,
         name: token.name,
-        abilities: token.abilities,
-        lastUsedAt: token.last_used_at,
-        createdAt: token.created_at,
+        abilities: token.scopes,
+        updatedAt: token.updatedAt,
+        createdAt: token.createdAt,
       })),
     })
   },
@@ -527,6 +538,7 @@ export default new Action({
 // app/Actions/Auth/RevokeTokenAction.ts
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { revokeTokenById, tokens } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -535,18 +547,21 @@ export default new Action({
   method: 'DELETE',
 
   async handle(request: RequestInstance) {
-    const user = request.user()
-    const tokenId = request.param('id')
+    const user = await request.user()
 
-    const token = await PersonalAccessToken.where('id', tokenId)
-      .where('user_id', user.id)
-      .first()
+    if (!user)
+      return response.unauthorized('Authentication required')
 
-    if (!token) {
+    const tokenId = Number(request.getParam('id'))
+
+    // Only the caller's own tokens are candidates.
+    const owned = (await tokens(Number(user.id))).some(token => token.id === tokenId)
+
+    if (!owned) {
       return response.notFound('Token not found')
     }
 
-    await token.delete()
+    await revokeTokenById(tokenId)
 
     return response.json({ message: 'Token revoked' })
   },
@@ -631,10 +646,15 @@ export default new Action({
   method: 'GET',
 
   async handle(request: RequestInstance) {
-    const user = request.user()
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     return response.json({
-      id: user.id,
+      // A number or a string: Postgres returns BIGINT keys as strings, so say
+      // which one the response promises.
+      id: Number(user.id),
       email: user.email,
       name: user.name,
       emailVerifiedAt: user.email_verified_at,
@@ -643,6 +663,15 @@ export default new Action({
   },
 })
 ```
+
+`request.user()` is typed from your own User model: every column it declares
+(`name`, `email_verified_at`, anything you add) is typed as the model declares
+it, with no cast. A field the model does not declare is `unknown`, so reading
+one that does not exist is caught instead of quietly returning `undefined`. If
+the User model enables `traits.billable`, the billable methods
+(`user.checkout()`, `user.newSubscription()`, ...) are typed too; to use them
+where the trait may be off, ask first with `isBillable(user)` from
+`@stacksjs/orm`.
 
 ### Logout Action
 

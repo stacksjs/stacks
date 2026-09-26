@@ -72,7 +72,7 @@ export default new Action({
     const res: MeResponse = {
       user: {
         id: userId,
-        name: user.name ?? null,
+        name: typeof user.name === 'string' ? user.name : null,
         email: user.email ?? null,
       },
       roles,

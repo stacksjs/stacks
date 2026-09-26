@@ -1,4 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { isBillable } from '@stacksjs/orm'
+import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +13,12 @@ export default new Action({
     if (!user)
       return response.unauthorized('Authentication required')
 
-    const customer = await user?.asStripeUser()
+    if (!isBillable(user))
+      return response.error(BILLING_NOT_ENABLED, 503)
+
+    // `asStripeUser()` does not exist; `retrieveStripeUser()` is the lookup,
+    // and answers undefined for a user with no Stripe customer yet.
+    const customer = await user.retrieveStripeUser()
 
     return response.json(customer)
   },

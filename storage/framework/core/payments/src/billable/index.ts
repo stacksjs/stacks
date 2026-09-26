@@ -1,4 +1,5 @@
 // Core Billable Modules
+export * from './billing-enabled'
 export * from './charge'
 export * from './checkout'
 export * from './customer'

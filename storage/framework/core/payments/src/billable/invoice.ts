@@ -2,6 +2,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { stripe } from '../drivers/stripe'
+import { manageCustomer } from './customer'
 
 export interface ManageInvoice {
   list: (user: UserModel) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>>
@@ -9,7 +10,7 @@ export interface ManageInvoice {
 
 export const manageInvoice: ManageInvoice = (() => {
   async function list(user: UserModel): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
-    if (!user.hasStripeId()) {
+    if (!manageCustomer.hasStripeId(user)) {
       throw new Error('Customer does not exist in Stripe')
     }
 
