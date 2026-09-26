@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.4...v0.75.5)
+
+## 🐛 Bug Fixes
+
+- **deps**: the stacks package requires bun-query-builder ^0.3.0 too ([e76349c](https://github.com/stacksjs/stacks/commit/e76349c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.3...v0.75.4)
 
 ## 🐛 Bug Fixes
