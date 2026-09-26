@@ -8,56 +8,73 @@ The Comments module in the CMS package provides a robust set of functions to man
 
 ## Making Models Commentable
 
-The comments functionality is implemented as a trait that can be added to any model. To make your model commentable, add the `commentables` trait to your model definition:
+The comments functionality is implemented as a trait that can be added to any model. To make your model commentable, add the `commentable` trait to your model definition:
 
 ```ts
-export default {
+import { defineModel } from '@stacksjs/orm'
+
+export default defineModel({
   name: 'Post',
   table: 'posts',
-  
+
   traits: {
-    commentables: true,  // Enable comments for this model
+    commentable: true, // Enable comments for this model
     // ... other traits
   },
 
   // ... rest of model definition
-} satisfies Model
+})
 ```
 
-When you add the `commentables` trait to a model:
+The key is `commentable`, singular. The plural `commentables` is not a trait name and does nothing.
 
-1. The model automatically gets the ability to have comments
-2. The appropriate database relationships are set up
-3. All comment-related functionality becomes available for that model
-4. The model can be referenced in comments via `commentables_type`
+When you add the `commentable` trait to a model:
+
+1. Comments are stored in the polymorphic `commentables` table, which `buddy migrate` creates
+2. Each comment is keyed by `commentables_type` (the model's table) and `commentables_id` (the record)
+3. Instances of the model gain the comment methods below
 
 ## Model Methods
 
-When you add the `commentables` trait to a model, it automatically gains several methods for working with comments. Here's how to use them:
+The instance methods use the record's own id, so you never pass one:
 
 ```ts
-// First, get your model instance
 const post = await Post.find(1)
 
-// Get all comments for this post
-const comments = await post.comments()
+// All comments on this post, oldest first
+const all = await post.comments()
+const count = await post.commentCount()
 
-// Get the comment count
-const count = await post.commentCount(id)
+// A comment from a signed-in user. Held for moderation by default.
+await post.addComment({ body: 'This was very informative...', user_id: user.id })
 
-// Add a new comment
-await post.addComment(id, {
-  title: 'Great Post!',
-  body: 'This was very informative...'
-})
+// A guest comment from a public form, published immediately.
+await post.addComment(
+  { body: 'Loved this.', author_name: 'Ada', author_email: 'ada@example.com' },
+  { status: 'approved' },
+)
 
-// Get comments by status
-const approved = await post.approvedComments(id)
-const pending = await post.pendingComments(id)
-const rejected = await post.rejectedComments(id)
+// Comments by status, oldest first
+const approved = await post.approvedComments()
+const pending = await post.pendingComments()
+const rejected = await post.rejectedComments()
 ```
 
-These methods make it easy to work with comments directly from your model instances, providing a more intuitive and object-oriented way to manage comments.
+`addComment` writes only `body`, `title`, `author_name`, `author_email` and `user_id`. `title` is optional. The owner, the timestamps and the status are set by the trait, so you can pass a validated form body straight through without it approving itself or moving to another record. Pick the status with the second argument: `'pending'` (the default) or `'approved'`.
+
+`author_email` is stored for the site owner. Do not render it next to the comment.
+
+## Moderating From the CLI
+
+A site deployed without the dashboard can still moderate. Run these on the server:
+
+```bash
+buddy comments:list                   # newest first
+buddy comments:list --status pending  # or approved, rejected
+buddy comments:approve 12
+buddy comments:reject 12              # hide it, keep the row
+buddy comments:delete 12              # remove it for good
+```
 
 ## Getting Started
 

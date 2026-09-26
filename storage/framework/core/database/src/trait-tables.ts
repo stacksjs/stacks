@@ -113,6 +113,11 @@ export const UNSCOPED_OWNER_ID = 0
  * 32-bit INTEGER on Postgres and MySQL — hence BIGINT. SQLite gives every
  * INTEGER 64 bits, so the same declaration is correct there too.
  *
+ * `author_name` / `author_email` carry a guest commenter, someone who left a
+ * name on a public form without an account. A signed-in commenter is
+ * `user_id` instead, so both are nullable. They were missing entirely, which
+ * left a public blog nowhere to record who wrote a comment.
+ *
  * This is a distinct table from `comments`: `comments` is a model-backed
  * table, `commentables` is the polymorphic trait table.
  */
@@ -128,6 +133,8 @@ export function commentablesTableSql(sql: SqlHelpers): string {
     commentables_id INTEGER NOT NULL,
     commentables_type VARCHAR(255) NOT NULL,
     user_id INTEGER,
+    author_name VARCHAR(255),
+    author_email VARCHAR(255),
     is_active BOOLEAN NOT NULL DEFAULT ${boolTrue},
     ${createdAt(sql)},
     ${updatedAt(sql)}
@@ -270,7 +277,9 @@ export function commentableUpvotesTableSql(sql: SqlHelpers): string {
  * duplicate-index error on replay instead.
  */
 /**
- * Columns the indexes below depend on, for tables that may predate them.
+ * Columns added after a table first shipped, for databases that predate them:
+ * the ones the indexes below depend on, and the guest-author columns on
+ * `commentables`.
  *
  * Only additive: a column that is missing gets added with a default, and one
  * that is present is left alone. Nothing here drops or retypes, so replaying
@@ -288,6 +297,8 @@ export function traitTableColumnGuarantees(sql: SqlHelpers): { table: string, co
       column: 'categorizable_id',
       definition: `INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID}`,
     },
+    { table: 'commentables', column: 'author_name', definition: 'VARCHAR(255)' },
+    { table: 'commentables', column: 'author_email', definition: 'VARCHAR(255)' },
   ]
 }
 

@@ -148,6 +148,21 @@ cms.comments.rejectComment(id: number): Promise<CommentablesTable>
 cms.comments.deleteComment(id: number): Promise<void>
 ```
 
+### The `commentable` trait
+A model with `traits: { commentable: true }` (singular; `commentables` is inert) gains instance methods
+keyed to the record's own id:
+
+```typescript
+await post.addComment({ body, author_name?, author_email?, user_id?, title? }, { status: 'pending' | 'approved' })
+await post.comments() / post.approvedComments() / post.pendingComments() / post.rejectedComments() // oldest first
+await post.commentCount()
+```
+
+Only those five fields are written, so a validated form body can go straight in; status and owner come
+from the trait. `author_name` / `author_email` are for guest commenters (no account); never render the
+email. Moderate without a dashboard with `buddy comments:list [--status] [--type]`,
+`comments:approve <id>`, `comments:reject <id>`, `comments:delete <id>`.
+
 ## Routes
 
 ### CMS Admin Routes

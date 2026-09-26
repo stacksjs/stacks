@@ -17,7 +17,12 @@ export {
 } from './fetch'
 
 export {
+  approveComment,
+  createComment,
+  deleteComment,
+  rejectComment,
   store,
+  updateComment,
 } from './store'
 
 export {

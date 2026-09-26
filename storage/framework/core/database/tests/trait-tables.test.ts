@@ -205,7 +205,7 @@ describe('a model with commentable: true ends up with a usable commentables tabl
   test('PRAGMA table_info(commentables) reports the columns the trait writes', () => {
     const db = migratedSqlite()
     const columns = db.query(`PRAGMA table_info(commentables)`).all().map((r: any) => r.name)
-    for (const col of ['id', 'title', 'body', 'status', 'commentables_id', 'commentables_type', 'created_at', 'updated_at'])
+    for (const col of ['id', 'title', 'body', 'status', 'commentables_id', 'commentables_type', 'author_name', 'author_email', 'created_at', 'updated_at'])
       expect(columns).toContain(col)
     db.close()
   })
@@ -501,6 +501,7 @@ describe('drifted catalogue tables', () => {
 
     db.run(categorizablesTableSql(sql))
     db.run(taggablesTableSql(sql))
+    db.run(commentablesTableSql(sql))
 
     for (const { table, column, definition } of traitTableColumnGuarantees(sql)) {
       // Adding a column that exists throws, and the caller tolerates exactly
@@ -512,10 +513,48 @@ describe('drifted catalogue tables', () => {
     db.close()
   })
 
-  test('guarantees the owner column on both catalogues', () => {
+  test('guarantees the owner column on both catalogues and the guest author on comments', () => {
     const guarantees = traitTableColumnGuarantees(sqlHelpers('sqlite'))
 
     expect(guarantees.map(g => `${g.table}.${g.column}`).sort())
-      .toEqual(['categorizables.categorizable_id', 'taggables.taggable_id'])
+      .toEqual([
+        'categorizables.categorizable_id',
+        'commentables.author_email',
+        'commentables.author_name',
+        'taggables.taggable_id',
+      ])
+  })
+
+  test('adds the guest author columns to a commentables table that predates them', () => {
+    const db = new Database(':memory:')
+    const sql = sqlHelpers('sqlite')
+
+    // The shape every database migrated before the columns existed still has.
+    db.run(`CREATE TABLE commentables (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title VARCHAR(255) NOT NULL,
+      body TEXT NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'pending',
+      commentables_id INTEGER NOT NULL,
+      commentables_type VARCHAR(255) NOT NULL,
+      user_id INTEGER
+    )`)
+    db.run(`INSERT INTO commentables (title, body, commentables_id, commentables_type) VALUES ('t', 'b', 1, 'posts')`)
+
+    for (const { table, column, definition } of traitTableColumnGuarantees(sql)) {
+      if (table === 'commentables')
+        db.run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+    }
+
+    const columns = (db.query('PRAGMA table_info(commentables)').all() as { name: string }[]).map(c => c.name)
+    expect(columns).toContain('author_name')
+    expect(columns).toContain('author_email')
+
+    // Existing rows keep their data and read the new columns as NULL.
+    const row = db.query('SELECT * FROM commentables').get() as any
+    expect(row.body).toBe('b')
+    expect(row.author_name).toBeNull()
+
+    db.close()
   })
 })

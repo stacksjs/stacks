@@ -273,6 +273,58 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       expect(await post.pendingComments()).toHaveLength(1)
       expect(await post.approvedComments()).toHaveLength(0)
     })
+
+    it('takes a guest comment with no title and publishes it when asked', async () => {
+      const post = await freshPost('Guest comment post')
+
+      const comment = await post.addComment(
+        { body: 'Loved this.', author_name: 'Ada', author_email: 'ada@example.com' },
+        { status: 'approved' },
+      )
+
+      expect(comment.title).toBe('')
+      expect(comment.author_name).toBe('Ada')
+      expect(comment.author_email).toBe('ada@example.com')
+      expect(comment.status).toBe('approved')
+      expect(Number(comment.approved_at)).toBeGreaterThan(0)
+      expect(await post.approvedComments()).toHaveLength(1)
+      expect(await post.pendingComments()).toHaveLength(0)
+    })
+
+    it('writes only the comment fields, never the status or owner a caller slips in', async () => {
+      const post = await freshPost('Whitelist post')
+      const other = await freshPost('Other post')
+
+      const comment = await post.addComment({
+        body: 'Sneaky',
+        status: 'approved',
+        commentables_id: other.id,
+        approved_at: 1,
+      } as any)
+
+      expect(comment.status).toBe('pending')
+      expect(comment.approved_at).toBeNull()
+      expect(Number(comment.commentables_id)).toBe(Number(post.id))
+      expect(await other.commentCount()).toBe(0)
+    })
+
+    it('rejects an empty body and an unknown status', async () => {
+      const post = await freshPost('Validation post')
+
+      await expect(post.addComment({ body: '   ' })).rejects.toThrow(/non-empty comment.body/)
+      await expect(post.addComment({ body: 'ok' }, { status: 'spam' as any })).rejects.toThrow(/status must be one of/)
+    })
+
+    it('lists comments oldest first', async () => {
+      const post = await freshPost('Ordered post')
+
+      await post.addComment({ body: 'first' }, { status: 'approved' })
+      await post.addComment({ body: 'second' }, { status: 'approved' })
+      await post.addComment({ body: 'third' }, { status: 'approved' })
+
+      expect((await post.approvedComments()).map((c: any) => c.body)).toEqual(['first', 'second', 'third'])
+      expect((await post.comments()).map((c: any) => c.body)).toEqual(['first', 'second', 'third'])
+    })
   })
 
   describe('likeable', () => {

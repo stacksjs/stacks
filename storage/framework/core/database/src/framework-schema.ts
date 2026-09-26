@@ -391,6 +391,8 @@ export interface FrameworkSchema {
     commentables_id: number
     commentables_type: string
     user_id: number | null
+    author_name: string | null
+    author_email: string | null
     is_active: number | null
     created_at: string
     updated_at: string | null

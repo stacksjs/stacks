@@ -24,6 +24,7 @@ export { setAuditUser, createAuditMethods } from './traits/audit'
 // there was no way to reach them except a subpath import that never resolved,
 // since only the `@stacksjs/orm` barrel itself is aliased.
 export { createCommentableMethods } from './traits/commentable'
+export type { AddCommentOptions, NewComment } from './traits/commentable'
 export { createTaggableMethods } from './traits/taggable'
 export { createCategorizableMethods } from './traits/categorizable'
 export { createLikeableMethods } from './traits/likeable'
@@ -798,6 +799,8 @@ export interface CommentablesTable {
   commentables_id: number
   commentables_type: string
   user_id: number | null
+  author_name?: string | null
+  author_email?: string | null
   created_at?: string
   updated_at?: string | null
 }

@@ -27,6 +27,29 @@ function isDuplicateError(err: unknown): boolean {
     || /unique|duplicate/i.test(e.message ?? '')
 }
 
+/** The fields a caller may set on a new comment. */
+export interface NewComment {
+  body: string
+  /** Optional: most comment forms have no subject line. */
+  title?: string | null
+  /** A guest commenter's display name, for comments left without an account. */
+  author_name?: string | null
+  /** A guest commenter's email. Stored for the site owner, never meant for display. */
+  author_email?: string | null
+  /** The signed-in commenter, when there is one. */
+  user_id?: number | null
+}
+
+export interface AddCommentOptions {
+  /**
+   * `'pending'` (the default) holds the comment for moderation. `'approved'`
+   * publishes it immediately, for sites that moderate after the fact.
+   */
+  status?: 'pending' | 'approved'
+}
+
+const COMMENT_STATUSES_ON_CREATE: readonly string[] = ['pending', 'approved']
+
 export function createCommentableMethods(tableName: string) {
   const db = _db
   return {
@@ -37,6 +60,7 @@ export function createCommentableMethods(tableName: string) {
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
         .selectAll()
+        .orderBy('id', 'asc')
         .execute()
     },
 
@@ -51,24 +75,49 @@ export function createCommentableMethods(tableName: string) {
       return Number((result)?.count) || 0
     },
 
-    async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
+    /**
+     * Attach a comment to the record with this id.
+     *
+     * Only the fields in {@link NewComment} are written. The rest of the row
+     * belongs to the trait: the owner, the timestamps, and the status, which
+     * a caller picks through `options` rather than the comment itself so a
+     * form body passed straight through cannot approve its own comment or
+     * move it to another record.
+     */
+    async addComment(id: number, comment: NewComment, options: AddCommentOptions = {}): Promise<any> {
       assertId(id, 'addComment')
-      if (!comment || typeof comment.title !== 'string' || comment.title.trim().length === 0) {
-        throw new Error('[orm/commentable] addComment requires a non-empty comment.title')
-      }
-      if (typeof comment.body !== 'string' || comment.body.trim().length === 0) {
+      if (!comment || typeof comment.body !== 'string' || comment.body.trim().length === 0) {
         throw new Error('[orm/commentable] addComment requires a non-empty comment.body')
       }
+      // Optional: a reply on a blog has no subject line. The column is NOT
+      // NULL, so an absent title is stored as the empty string.
+      if (comment.title != null && typeof comment.title !== 'string') {
+        throw new Error('[orm/commentable] addComment requires comment.title to be a string when given')
+      }
+
+      const status = options.status ?? 'pending'
+      if (!COMMENT_STATUSES_ON_CREATE.includes(status)) {
+        throw new Error(`[orm/commentable] addComment status must be one of ${COMMENT_STATUSES_ON_CREATE.join(', ')} (received ${String(status)})`)
+      }
+
+      const values: Record<string, unknown> = {
+        title: comment.title?.trim() ?? '',
+        body: comment.body,
+        commentables_id: id,
+        commentables_type: tableName,
+        status,
+        approved_at: status === 'approved' ? Date.now() : null,
+        created_at: sqlDateTime(),
+        updated_at: sqlDateTime(),
+      }
+      for (const key of ['author_name', 'author_email', 'user_id'] as const) {
+        if (comment[key] != null)
+          values[key] = comment[key]
+      }
+
       const written = await db
         .insertInto('commentables')
-        .values({
-          ...comment,
-          commentables_id: id,
-          commentables_type: tableName,
-          status: 'pending',
-          created_at: sqlDateTime(),
-          updated_at: sqlDateTime(),
-        })
+        .values(values)
         .returningAll()
         .executeTakeFirst()
 
@@ -105,6 +154,7 @@ export function createCommentableMethods(tableName: string) {
         .where('commentables_type', '=', tableName)
         .where('status', '=', 'approved')
         .selectAll()
+        .orderBy('id', 'asc')
         .execute()
     },
 
@@ -115,6 +165,7 @@ export function createCommentableMethods(tableName: string) {
         .where('commentables_type', '=', tableName)
         .where('status', '=', 'pending')
         .selectAll()
+        .orderBy('id', 'asc')
         .execute()
     },
 
@@ -125,6 +176,7 @@ export function createCommentableMethods(tableName: string) {
         .where('commentables_type', '=', tableName)
         .where('status', '=', 'rejected')
         .selectAll()
+        .orderBy('id', 'asc')
         .execute()
     },
 
