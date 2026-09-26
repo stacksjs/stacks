@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **333 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **337 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -18,6 +18,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `cloud` | 12 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
+| `comments` | 4 |
 | `commerce` | 2 |
 | `config` | 1 |
 | `configure` | 1 |
@@ -781,6 +782,73 @@ Check if the application is in coming soon mode
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `comments:approve`
+
+Publish a comment
+
+- Usage: `$ buddy comments:approve <id>`
+- Namespace: `comments`
+- Aliases: none
+- Arguments: `<id>`
+
+Examples:
+
+```bash
+buddy comments:approve 12
+```
+
+### `comments:delete`
+
+Delete a comment for good
+
+- Usage: `$ buddy comments:delete <id>`
+- Namespace: `comments`
+- Aliases: none
+- Arguments: `<id>`
+
+Examples:
+
+```bash
+buddy comments:delete 12
+```
+
+### `comments:list`
+
+List reader comments, newest first
+
+- Usage: `$ buddy comments:list`
+- Namespace: `comments`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--status` | Only this status: pending, approved, rejected | value, required | - |
+| `--type` | Only comments on this table, e.g. posts | value, required | - |
+| `--limit` | How many to show | value, required | `"25"` |
+
+Examples:
+
+```bash
+buddy comments:list
+buddy comments:list --status pending --type posts
+```
+
+### `comments:reject`
+
+Hide a comment without deleting it
+
+- Usage: `$ buddy comments:reject <id>`
+- Namespace: `comments`
+- Aliases: none
+- Arguments: `<id>`
+
+Examples:
+
+```bash
+buddy comments:reject 12
+```
 
 ### `commerce:install`
 
