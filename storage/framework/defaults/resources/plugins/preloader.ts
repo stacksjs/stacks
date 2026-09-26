@@ -278,7 +278,7 @@ export async function loadAutoImports() {
         // Skip default exports and protected globals
         if (name === 'default' || protectedGlobals.has(name)) continue
         if (typeof value !== 'undefined') {
-          (globalThis as any)[name] = value
+          Reflect.set(globalThis, name, value)
         }
       }
     } catch {
@@ -298,7 +298,7 @@ export async function loadAutoImports() {
         // Skip default exports and protected globals
         if (name === 'default' || protectedGlobals.has(name)) continue
         if (typeof value !== 'undefined') {
-          (globalThis as any)[name] = value
+          Reflect.set(globalThis, name, value)
         }
       }
     } catch {
@@ -331,7 +331,7 @@ export async function loadAutoImports() {
         try {
           const module = await import(file)
           if (module.default) {
-            (globalThis as any)[modelName] = module.default
+            Reflect.set(globalThis, modelName, module.default)
             loadedModels.add(modelName)
           }
         } catch {
@@ -362,7 +362,7 @@ export async function loadAutoImports() {
       try {
         const module = await import(file)
         if (module.default) {
-          (globalThis as any)[jobName] = module.default
+          Reflect.set(globalThis, jobName, module.default)
           loadedJobs.add(jobName)
         }
       } catch {
@@ -397,7 +397,7 @@ export async function loadAutoImports() {
         try {
           const module = await import(file)
           if (module.default) {
-            (globalThis as any)[controllerName] = module.default
+            Reflect.set(globalThis, controllerName, module.default)
             loadedControllers.add(controllerName)
           }
         } catch {
