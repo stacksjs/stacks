@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.1...v0.75.2)
+
+## ✨ Features
+
+- **dashboard**: moderate commentable-trait comments alongside CMS comments ([c0bbad6](https://github.com/stacksjs/stacks/commit/c0bbad6)) _(by Chris <chris@stacksjs.com>)_ ([#3](https://github.com/stacksjs/stacks/issues/3))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.0...v0.75.1)
 
 ## ✨ Features
