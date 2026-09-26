@@ -243,6 +243,16 @@ export function applyActivityLog(
     }
   }
 
+  const originalCreateMany = baseModel.createMany
+  if (typeof originalCreateMany === 'function') {
+    baseModel.createMany = async function (...args: unknown[]) {
+      const result = await (originalCreateMany as (...a: unknown[]) => unknown).apply(this, args)
+      for (const record of Array.isArray(result) ? result : [])
+        await log('created', plainAttributes(record))
+      return result
+    }
+  }
+
   const originalUpdate = baseModel.update
   if (typeof originalUpdate === 'function') {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {

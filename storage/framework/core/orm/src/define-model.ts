@@ -984,7 +984,7 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
   // Writes also return ModelInstances. Wrapping them too means
   // `const car = await Car.create(...); car.slug` works without the
   // caller having to remember that create() comes back un-proxied.
-  const writeReturningInstance = ['create', 'firstOrCreate', 'updateOrCreate', 'make']
+  const writeReturningInstance = ['create', 'createMany', 'firstOrCreate', 'updateOrCreate', 'make']
   for (const method of writeReturningInstance) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
@@ -1862,7 +1862,7 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
   // Writes return rows too; the freshly-inserted row's encrypted columns
   // come back from the DB as ciphertext, so we have to decrypt those for
   // the caller's `const u = await User.create(...); u.ssn` access.
-  const writeReturningInstance = ['create', 'firstOrCreate', 'updateOrCreate', 'make']
+  const writeReturningInstance = ['create', 'createMany', 'firstOrCreate', 'updateOrCreate', 'make']
   for (const method of writeReturningInstance) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
@@ -1954,6 +1954,13 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
   // sits outside the force helpers and their payload is encrypted before
   // they ever see it.
   const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate', 'forceCreate']
+  const originalCreateMany = baseModel.createMany
+  if (typeof originalCreateMany === 'function') {
+    baseModel.createMany = async function (items: unknown[], ...rest: unknown[]) {
+      const encrypted = Array.isArray(items) ? await Promise.all(items.map(encryptArg)) : items
+      return await (originalCreateMany as Function).call(this, encrypted, ...rest)
+    }
+  }
   for (const method of writeMethods) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
@@ -2005,6 +2012,21 @@ function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, defini
       applyMassAssignmentRules(definition, data)
       const finalData = await applyDefinedSetters(definition, data)
       return await (origCreate as Function).call(this, finalData, ...rest)
+    }
+  }
+
+  // `createMany` batches the INSERT inside bun-query-builder, so it no longer
+  // goes through the `create` above. The same rule and the same setters run
+  // on every record here, before any of them is written.
+  const origCreateMany = baseModel.createMany
+  if (typeof origCreateMany === 'function') {
+    baseModel.createMany = async function (this: unknown, items: Record<string, unknown>[], ...rest: unknown[]) {
+      const finalItems: Record<string, unknown>[] = []
+      for (const data of items) {
+        applyMassAssignmentRules(definition, data)
+        finalItems.push(await applyDefinedSetters(definition, data))
+      }
+      return await (origCreateMany as Function).call(this, finalItems, ...rest)
     }
   }
 
@@ -2069,6 +2091,19 @@ function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition
     }
   }
 
+  // Every record is checked before any is written, so one invalid record
+  // rejects the batch rather than leaving half of it in the table.
+  const origCreateMany = baseModel.createMany
+  if (typeof origCreateMany === 'function') {
+    baseModel.createMany = async function (this: unknown, items: Record<string, unknown>[], ...rest: unknown[]) {
+      if (Array.isArray(items)) {
+        for (const data of items)
+          check(data, 'creating')
+      }
+      return await (origCreateMany as Function).call(this, items, ...rest)
+    }
+  }
+
   // `update(id, data)` — the id is the first argument here, unlike `create`.
   const origUpdate = baseModel.update
   if (typeof origUpdate === 'function') {
@@ -2085,6 +2120,16 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
   // again would `{ ...row }` the proxy and discard everything but the bare
   // attribute bag, breaking `instance.toJSON()` / `instance.update()`.
   const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate']
+
+  const originalCreateMany = baseModel.createMany
+  if (typeof originalCreateMany === 'function') {
+    baseModel.createMany = async function (items: unknown[], ...rest: unknown[]) {
+      const cast = Array.isArray(items)
+        ? items.map(item => item && typeof item === 'object' && !Array.isArray(item) ? castAttributes(item as Record<string, unknown>, casts, 'set') : item)
+        : items
+      return await (originalCreateMany as Function).call(this, cast, ...rest)
+    }
+  }
 
   for (const method of writeMethods) {
     const original = baseModel[method]
@@ -2563,7 +2608,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     return withoutEvents(fn)
   }
 
-  for (const method of ['create', 'update', 'firstOrCreate', 'updateOrCreate', 'forceCreate', 'forceUpdate', 'delete', 'forceDelete', 'softDelete', 'restore'] as const) {
+  for (const method of ['create', 'createMany', 'update', 'firstOrCreate', 'updateOrCreate', 'forceCreate', 'forceUpdate', 'delete', 'forceDelete', 'softDelete', 'restore'] as const) {
     const orig = (baseModel)[method]
     if (typeof orig !== 'function') continue
     const quietName = `${method}Quietly` as const

@@ -365,6 +365,39 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
     }
   }
 
+  // CREATE MANY: one audit row per record, the same as create() would write.
+  // The batch and its audit rows share the optional transaction.
+  const origCreateMany = baseModel.createMany
+  if (typeof origCreateMany === 'function') {
+    baseModel.createMany = async function (...args: unknown[]) {
+      return await runWithOptionalTx(async () => {
+        const result = await (origCreateMany as (...a: unknown[]) => unknown).apply(this, args)
+        try {
+          const userId = Array.isArray(result) && result.length ? await resolveAuditUserId() : null
+          for (const record of Array.isArray(result) ? result : []) {
+            const newAttrs = plainAttrs(record)
+            const id = newAttrs?.[primaryKey] as number | string | undefined
+            if (id == null)
+              continue
+            await writeAuditRow({
+              auditable_type: modelName,
+              auditable_id: id,
+              event: 'created',
+              old_values: null,
+              new_values: redactSensitive(newAttrs),
+              user_id: userId,
+            }, transactional)
+          }
+        }
+        catch (err) {
+          log.warn(`[orm] audit(createMany) failed for ${modelName}`, { error: err })
+          if (transactional) throw err
+        }
+        return result
+      })
+    }
+  }
+
   // UPDATE: read the row before and after so we can diff. The `before` read
   // happens before the actual write, so a failed write produces no audit
   // row — exactly what we want.
