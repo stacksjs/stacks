@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.2...v0.75.3)
+
+## 🐛 Bug Fixes
+
+- **orm**: forceDelete purges on bun-query-builder 0.3, which createMany batches ([b587043](https://github.com/stacksjs/stacks/commit/b587043)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.1...v0.75.2)
 
 ## ✨ Features
