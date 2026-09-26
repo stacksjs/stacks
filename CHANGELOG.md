@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.3...v0.75.4)
+
+## 🐛 Bug Fixes
+
+- **orm**: createMany runs validation, mass assignment, setters, casts and encryption ([4d2def7](https://github.com/stacksjs/stacks/commit/4d2def7)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.2...v0.75.3)
 
 ## 🐛 Bug Fixes
