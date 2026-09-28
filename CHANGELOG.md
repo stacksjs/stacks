@@ -1,5 +1,44 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.17...v0.75.18)
+
+## ✨ Features
+
+- **auth**: prepare OAuth authorization pages ([be49876](https://github.com/stacksjs/stacks/commit/be49876)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind OAuth requests to browsers ([d44210d](https://github.com/stacksjs/stacks/commit/d44210d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: add OAuth consent view ([d264db2](https://github.com/stacksjs/stacks/commit/d264db2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: handle OAuth consent submissions ([8aace09](https://github.com/stacksjs/stacks/commit/8aace09)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: parse OAuth consent decisions ([2b3916a](https://github.com/stacksjs/stacks/commit/2b3916a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: build OAuth consent view data ([8a25442](https://github.com/stacksjs/stacks/commit/8a25442)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: format OAuth authorization redirects ([c1c0d2e](https://github.com/stacksjs/stacks/commit/c1c0d2e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: begin OAuth authorization requests ([e5e4b1d](https://github.com/stacksjs/stacks/commit/e5e4b1d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: configure OAuth request lifetime ([4c91e41](https://github.com/stacksjs/stacks/commit/4c91e41)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: parse OAuth authorization queries ([4e863ce](https://github.com/stacksjs/stacks/commit/4e863ce)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+- **auth**: build OAuth server metadata ([ffa96d5](https://github.com/stacksjs/stacks/commit/ffa96d5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+
+## 🐛 Bug Fixes
+
+- **auth**: bind OAuth consent to its browser ([4b5649f](https://github.com/stacksjs/stacks/commit/4b5649f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **ci**: run the component-dom fixture so every test file runs ([d68cc21](https://github.com/stacksjs/stacks/commit/d68cc21)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: recheck OAuth policy at consent ([836f5cc](https://github.com/stacksjs/stacks/commit/836f5cc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2788](https://github.com/stacksjs/stacks/issues/2788))
+
+## ⚡ Performance Improvements
+
+- **router**: trust enriched not-found responses ([fc5d629](https://github.com/stacksjs/stacks/commit/fc5d629)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **testing**: exercise very-happy-dom components ([7e05e81](https://github.com/stacksjs/stacks/commit/7e05e81)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2802](https://github.com/stacksjs/stacks/issues/2802), [#1598](https://github.com/stacksjs/stacks/issues/1598), [#1599](https://github.com/stacksjs/stacks/issues/1599))
+
+## 🔧 Chores
+
+- **deps**: take stx 0.2.325 ([fb58f20](https://github.com/stacksjs/stacks/commit/fb58f20)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.16...v0.75.17)
 
 ## 💥 Breaking Changes
