@@ -12,6 +12,7 @@ export * from './oauth-provider'
 export * from './oauth-pkce'
 export * from './oauth-token-exchange'
 export * from './oauth-token-request'
+export * from './oauth-token-response'
 export * from './rate-limiter'
 
 // WebAuthn/Passkey support (now using ts-auth - no external dependencies)
