@@ -2604,7 +2604,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     }
 
     if (result.hasChanges) {
-      const written = persistGeneratedMigrations(sqlStatements)
+      const written = persistGeneratedMigrations(sqlStatements, storedPlan)
       // Only announce when we actually wrote files. `hasChanges` can be
       // true while `written === 0` if the qb diff restated statements
       // already covered by committed migrations — that's a no-op from
@@ -3665,7 +3665,7 @@ export function generatedStatementIsRedundant(statement: string, index: Committe
   return index.sql.includes(normalizeSqlForComparison(statement))
 }
 
-function persistGeneratedMigrations(sqlStatements: string[]): number {
+function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: MigrationPlan): number {
   if (!sqlStatements?.length)
     return 0
 
@@ -3684,7 +3684,7 @@ function persistGeneratedMigrations(sqlStatements: string[]): number {
   catch { /* nothing committed yet */ }
   const index = indexCommittedMigrations(committed)
 
-  const groups = groupGeneratedStatements(sqlStatements)
+  const groups = groupGeneratedStatements(sqlStatements, previousPlan)
   let written = 0
   let cursor = nextMigrationNumber(migrationsDir)
 
@@ -3720,7 +3720,7 @@ function persistGeneratedMigrations(sqlStatements: string[]): number {
   return written
 }
 
-interface GeneratedGroup {
+export interface GeneratedGroup {
   label: string
   statements: string[]
 }
@@ -3847,7 +3847,7 @@ function normalizeCreateStatements(sqlStatements: string[]): string[] {
  * `alter-<table>-<col>`, `create-<index>-index-in-<table>`, or
  * `drop-<table>-table`. Anything we can't match falls back to `auto-misc`.
  */
-export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGroup[] {
+export function groupGeneratedStatements(sqlStatements: string[], previousPlan?: MigrationPlan): GeneratedGroup[] {
   const normalizedStatements = normalizeCreateStatements(sqlStatements)
   const groups = new Map<string, string[]>()
   const push = (label: string, stmt: string): void => {
@@ -3910,9 +3910,79 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     push('auto-misc', stmt)
   }
 
-  return [...groups.entries()]
+  const ordered = [...groups.entries()]
     .map(([label, statements]) => ({ label, statements }))
     .sort((a, b) => Number(b.label === 'create-database-types') - Number(a.label === 'create-database-types'))
+
+  return withTableDropsLast(ordered, previousPlan)
+}
+
+const DROP_TABLE_GROUP_RE = /^drop-(\w+)-table$/
+
+/**
+ * Move generated `DROP TABLE` migrations after everything else in the batch,
+ * children before parents.
+ *
+ * bun-query-builder emits a model's removal as a DROP ahead of the rebuilds and
+ * alters in the same diff, and a group's file number follows that order. So a
+ * removed model's table was dropped while other tables still referenced it:
+ * the SQLite rebuild that takes `delivery_routes.driver_id REFERENCES drivers`
+ * away ran one file LATER than `DROP TABLE drivers`, whose implicit delete then
+ * failed with "FOREIGN KEY constraint failed" wherever a route pointed at a
+ * driver. MySQL and Postgres refuse the same drop outright.
+ *
+ * Dropping last is always at least as safe: nothing else in a diff can need a
+ * table to be gone - except creating one of the same name, so a drop whose
+ * table a later group creates keeps its place. Among the drops, a table that
+ * references another dropped table goes first. The references come from
+ * `previousPlan`, the snapshot the diff was taken against, which is the only
+ * place a dropped table's columns are still described; without it drops run in
+ * reverse emission order, since tables are created parents first.
+ */
+export function withTableDropsLast(groups: GeneratedGroup[], previousPlan?: MigrationPlan): GeneratedGroup[] {
+  const dropOf = (group: GeneratedGroup): string | undefined => group.label.match(DROP_TABLE_GROUP_RE)?.[1]
+
+  const recreated = new Set(groups.flatMap(group => group.statements.flatMap((statement) => {
+    const table = createdTableName(statement)
+    return table ? [table] : []
+  })))
+
+  const movable = groups.filter((group) => {
+    const table = dropOf(group)
+    return table !== undefined && !recreated.has(table.toLowerCase())
+  })
+  if (movable.length === 0)
+    return groups
+
+  const rest = groups.filter(group => !movable.includes(group))
+
+  // Reverse emission order first, then pull each table ahead of any table it
+  // references, so dependents are dropped before what they depend on.
+  const drops = [...movable].reverse()
+  const references = new Map<string, Set<string>>()
+  for (const table of previousPlan?.tables ?? []) {
+    references.set(table.table, new Set(table.columns.flatMap(column =>
+      column.references?.table && column.references.table !== table.table ? [column.references.table] : [])))
+  }
+
+  const sorted: GeneratedGroup[] = []
+  const visiting = new Set<GeneratedGroup>()
+  const visit = (group: GeneratedGroup): void => {
+    if (sorted.includes(group) || visiting.has(group))
+      return
+    visiting.add(group)
+    // Anything dropped here that references this table must go before it.
+    for (const other of drops) {
+      if (other !== group && references.get(dropOf(other)!)?.has(dropOf(group)!))
+        visit(other)
+    }
+    visiting.delete(group)
+    sorted.push(group)
+  }
+  for (const group of drops)
+    visit(group)
+
+  return [...rest, ...sorted]
 }
 
 function nextMigrationNumber(migrationsDir: string): number {
