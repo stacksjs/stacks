@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.12...v0.75.13)
+
+## 🐛 Bug Fixes
+
+- **deps**: stx 0.2.320, which stops painting placeholders behind transparent images ([942c80c](https://github.com/stacksjs/stacks/commit/942c80c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **upgrade**: deliver the framework's type declarations to existing apps ([7d039a3](https://github.com/stacksjs/stacks/commit/7d039a3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: count applied migrations, so migrate stops saying "Nothing to migrate" ([d806be2](https://github.com/stacksjs/stacks/commit/d806be2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: make migrate --dry-run and migrate:fresh --diff change nothing ([cdb99f0](https://github.com/stacksjs/stacks/commit/cdb99f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: never generate migrations for the tables the auth layer creates ([023f99b](https://github.com/stacksjs/stacks/commit/023f99b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: drop removed tables after the migrations that stop referencing them ([910d89b](https://github.com/stacksjs/stacks/commit/910d89b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference for migrate --pretend ([fcf6802](https://github.com/stacksjs/stacks/commit/fcf6802)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.11...v0.75.12)
 
 ## 🐛 Bug Fixes
