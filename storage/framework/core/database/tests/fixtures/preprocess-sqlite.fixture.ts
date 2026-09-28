@@ -189,6 +189,31 @@ describe('preprocessSqliteMigrations - unique-index files must run (stacksjs/sta
     expect(migrationRecord(dbPath, idxFileName)).not.toBeNull()
   })
 
+  it('does not re-queue an index whose column a later rebuild removed', () => {
+    // Replaying it would fail with "no such column" and stop the whole batch;
+    // the rebuild that removed the column removed the index on purpose.
+    const fileName = '0000000097-create-users_nickname_unique-index-in-users.sql'
+    writeFileSync(join(migrationsDir, fileName), 'CREATE UNIQUE INDEX IF NOT EXISTS "users_nickname_unique" ON "users" ("nickname");')
+    const dbPath = createDb(`INSERT INTO migrations (migration) VALUES ('${fileName}')`)
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, fileName)).not.toBeNull()
+  })
+
+  it('does not re-queue an index a later migration dropped by name', () => {
+    writeFileSync(join(migrationsDir, idxFileName), idxSql)
+    writeFileSync(join(migrationsDir, '0000000200-drop-users_users_email_unique.sql'), 'DROP INDEX IF EXISTS "users_users_email_unique";')
+    const dbPath = createDb(
+      `INSERT INTO migrations (migration) VALUES ('${idxFileName}')`,
+      `INSERT INTO migrations (migration) VALUES ('0000000200-drop-users_users_email_unique.sql')`,
+    )
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, idxFileName)).not.toBeNull()
+  })
+
   it('never deletes a recorded DROP COLUMN migration after the column is gone', () => {
     const fileName = '0000000152-alter-tags-columns.sql'
     const filePath = join(migrationsDir, fileName)

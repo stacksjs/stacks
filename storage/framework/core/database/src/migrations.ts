@@ -56,6 +56,10 @@ import { relativeMigrationDirectory, resolveMigrationDirectory } from './migrati
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablesMissingCreateStatements } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
+import { sqlStatementsOf } from './sql-statements'
+import { corpusUniqueIndexes, hasIndex, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
+
+export { sqlStatementsOf } from './sql-statements'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
@@ -376,96 +380,6 @@ export function withoutProtectedTableDropSql(
  *     generated file from a hand-written one (stacksjs/stacks#2234).
  */
 /**
- * Split a migration file into its statements.
- *
- * Comments come out FIRST, before the split on `;`. Splitting first and then
- * dropping the chunks that begin with `--` looks equivalent and is not: a
- * file that opens with a comment header — which every hand-written migration
- * in this repo does — glues that header to its first statement, so the chunk
- * begins with `--` and the statement disappears with the comment. Everything
- * downstream then reasons about a file it has only partly read, and the
- * ADD COLUMN reconciliation below would happily record a file as fully
- * applied while its first column had never been created.
- */
-export function sqlStatementsOf(content: string): string[] {
-  const statements: string[] = []
-  let current = ''
-  let quote: 'single' | 'double' | null = null
-  let dollarTag: string | null = null
-
-  for (let i = 0; i < content.length; i++) {
-    const char = content[i]!
-
-    // Inside a dollar-quoted body ($$ … $$ or $tag$ … $tag$) nothing is
-    // punctuation: a `;` there belongs to the body. Without this a `DO $$ …
-    // END $$;` block - which is the only way to write an idempotent
-    // CREATE TYPE - is torn into fragments that are not valid SQL on their own.
-    if (dollarTag) {
-      current += char
-      if (char === '$' && content.startsWith(dollarTag, i)) {
-        current += content.slice(i + 1, i + dollarTag.length)
-        i += dollarTag.length - 1
-        dollarTag = null
-      }
-      continue
-    }
-
-    if (quote) {
-      current += char
-      if ((quote === 'single' && char === '\'') || (quote === 'double' && char === '"'))
-        quote = null
-      continue
-    }
-
-    // A comment runs to the end of the line, but only outside a string: a `--`
-    // inside a default value is data.
-    if (char === '-' && content[i + 1] === '-') {
-      const newline = content.indexOf('\n', i)
-      if (newline === -1)
-        break
-      i = newline - 1
-      continue
-    }
-
-    const dollar = char === '$' ? /^\$[A-Za-z_]*\$/.exec(content.slice(i)) : null
-    if (dollar) {
-      dollarTag = dollar[0]
-      current += dollarTag
-      i += dollarTag.length - 1
-      continue
-    }
-
-    if (char === '\'') {
-      quote = 'single'
-      current += char
-      continue
-    }
-
-    if (char === '"') {
-      quote = 'double'
-      current += char
-      continue
-    }
-
-    if (char === ';') {
-      const trimmed = current.trim()
-      if (trimmed.length > 0)
-        statements.push(trimmed)
-      current = ''
-      continue
-    }
-
-    current += char
-  }
-
-  const trailing = current.trim()
-  if (trailing.length > 0)
-    statements.push(trailing)
-
-  return statements
-}
-
-/**
  * Make a Postgres `CREATE TYPE … AS ENUM` statement safe to run twice, and make
  * it mean something when the type is already there.
  *
@@ -728,13 +642,16 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
 
   const addConstraintPattern = /^\s*ALTER\s+TABLE\s+.+\s+ADD\s+CONSTRAINT\s+/i
   const createTypePattern = /^\s*CREATE\s+TYPE\s+/i
-  // Match CREATE UNIQUE INDEX, capturing the index name. These files MUST run
-  // on SQLite — the dialect driver never renders inline UNIQUE in CREATE
-  // TABLE, so this index is the only uniqueness enforcement (#1952).
-  // IF NOT EXISTS makes them idempotent by name; SQLite accepts a unique
-  // index alongside an inline constraint; a genuine SQLITE_CONSTRAINT
-  // failure means duplicate rows already exist and must surface.
-  const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
+  // Unique-index-only files, by name. These files MUST run on SQLite — the
+  // dialect driver never renders inline UNIQUE in CREATE TABLE, so this index
+  // is the only uniqueness enforcement (#1952). IF NOT EXISTS makes them
+  // idempotent by name; SQLite accepts a unique index alongside an inline
+  // constraint; a genuine SQLITE_CONSTRAINT failure means duplicate rows
+  // already exist and must surface. Indexes a later `DROP INDEX` retired are
+  // already filtered out (see declared-unique-indexes.ts).
+  const uniqueIndexFiles = corpusUniqueIndexes(
+    files.map(file => ({ file, content: readFileSync(join(migrationsDir, file), 'utf-8') })),
+  )
   // Match ALTER TABLE ... DROP COLUMN — SQLite fails if the column doesn't exist
   const dropColumnPattern = /^\s*ALTER\s+TABLE\s+["']?(\w+)["']?\s+DROP\s+COLUMN\s+["']?(\w+)["']?\s*$/i
   // Match ALTER TABLE ... ADD COLUMN — the mirror case: SQLite fails with
@@ -821,12 +738,14 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
     // `email: { unique: true }` etc. were never enforced. This is the one
     // intentional exception to recorded migration immutability: a missing
     // index proves that the historical record is false, so re-queue the file.
-    const uniqueIndexNames = statements
-      .map(s => s.match(createUniqueIndexPattern)?.[1])
-      .filter((name): name is string => Boolean(name))
-    if (sqliteDb && uniqueIndexNames.length === statements.length) {
-      const indexExists = (sqliteDb).prepare(`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?`)
-      const missing = uniqueIndexNames.filter(name => !indexExists.get(name))
+    //
+    // Only an index that can still be put back: one whose table or column a
+    // later migration removed is gone on purpose, and replaying it would fail
+    // the whole batch instead of repairing anything.
+    const declaredUniques = uniqueIndexFiles.get(file)
+    if (sqliteDb && declaredUniques) {
+      const liveDb = sqliteDb
+      const missing = declaredUniques.filter(index => !hasIndex(liveDb, index.name) && uniqueIndexIsRestorable(liveDb, index))
       if (missing.length > 0) {
         log.info(`Re-queueing unique-index migration (index missing from database): ${file}`)
         replayMigrations.push(file)
@@ -1710,6 +1629,27 @@ function makeMigrationsIdempotent(): void {
   }
 }
 
+/**
+ * Re-create the declared unique indexes this batch's table rebuilds dropped.
+ * See `declared-unique-indexes.ts`.
+ */
+function restoreUniqueIndexesAfterBatch(corpusDir: string): void {
+  const dbPath = sqliteDatabasePath()
+  if (!existsSync(dbPath))
+    return
+
+  const { Database } = require('bun:sqlite') as typeof import('bun:sqlite')
+  const liveDb = new Database(dbPath)
+  try {
+    liveDb.exec('PRAGMA busy_timeout = 5000')
+    for (const index of restoreDroppedUniqueIndexes(liveDb, corpusDir))
+      log.info(`Restored unique index ${index.name} on ${index.table} (declared in ${index.file}, dropped by a later table rebuild)`)
+  }
+  finally {
+    liveDb.close()
+  }
+}
+
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   const startedAt = Date.now()
   const hidden = await hideDisabledFeatureMigrations()
@@ -1848,6 +1788,13 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     await qbExecuteMigration(corpusDir)
 
     await catchUpFrameworkRenames()
+
+    // A table rebuild later in the batch drops every index on the table and
+    // re-creates only the model's own. Put back the declared unique indexes it
+    // took with it now, rather than on the next migrate - which is when the
+    // re-queue in the preprocessor would have noticed, and CI never runs one.
+    if (dialect === 'sqlite')
+      restoreUniqueIndexesAfterBatch(corpusDir)
 
     // Complete the guarantee after the model batch. This creates tables absent
     // from both the corpus and the preflight, and validates existing shapes.
