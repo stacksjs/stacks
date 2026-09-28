@@ -469,6 +469,22 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
   return confirm({ message: 'Apply these destructive changes?', initial: false })
 }
 
+/**
+ * Whether this run is a preview. `--diff` is the migrate flag, but buddy also
+ * registers `--dry-run` for every command ("Preview actions without making
+ * changes"), and `migrate` used to ignore it: `buddy migrate --dry-run` ran a
+ * full migrate, generating files, advancing the model snapshot and applying
+ * everything. A flag promising to change nothing has to change nothing.
+ * `--pretend` is Laravel's name for the same thing.
+ */
+export function isMigratePreview(options: { diff?: boolean, dryRun?: boolean, pretend?: boolean }, argv: readonly string[] = process.argv): boolean {
+  return options.diff === true
+    || options.dryRun === true
+    || options.pretend === true
+    || argv.includes('--dry-run')
+    || argv.includes('--pretend')
+}
+
 type FreshGuard = 'allow' | 'confirm' | 'disabled'
 
 interface MigrationGuards {
@@ -550,6 +566,7 @@ export function migrate(buddy: CLI): void {
     .command('migrate', descriptions.migrate)
     .alias('db:migrate')
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
+    .option('--pretend', 'Same as --diff (and --dry-run): preview, change nothing', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-a, --auth', descriptions.auth, { default: true })
     .option('--no-auth', 'Skip auth/oauth table migrations')
@@ -560,7 +577,7 @@ export function migrate(buddy: CLI): void {
     .option('--no-generate', descriptions.noGenerate)
     .option('--strict', 'Fail when the schema has drifted from the models or a migration is git-ignored (for CI)', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean, strict?: boolean }) => {
+    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean, strict?: boolean, dryRun?: boolean, pretend?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
@@ -600,8 +617,9 @@ export function migrate(buddy: CLI): void {
         process.env.STACKS_MIGRATE_NO_GENERATE = '1'
 
       // --diff: dry-run only. Preview the pending operations + SQL and exit
-      // without writing files or applying anything.
-      if (options.diff) {
+      // without writing files or applying anything. `--dry-run` and
+      // `--pretend` mean the same (see isMigratePreview).
+      if (isMigratePreview(options)) {
         try {
           const { previewPendingMigrations } = await import('@stacksjs/database')
           const ops = await previewPendingMigrations({ fromDb: options.fromDb, applyRenames })
@@ -888,7 +906,8 @@ export function migrate(buddy: CLI): void {
   buddy
     .command('migrate:fresh', descriptions.fresh)
     .alias('db:fresh')
-    .option('-d, --diff', 'Show the SQL that would be run', { default: false })
+    .option('-d, --diff', 'Show what would be dropped and replayed, and change nothing', { default: false })
+    .option('--pretend', 'Same as --diff (and --dry-run): preview, change nothing', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-s, --seed', 'Run database seeders after migration', { default: false })
     .option('-a, --auth', descriptions.auth, { default: true })
@@ -896,7 +915,7 @@ export function migrate(buddy: CLI): void {
     .option('--create-database', 'Create the database if it does not exist, without asking', { default: false })
     .option('-f, --force', 'Skip the drop-database confirmation (only honored when the migrateFresh guard is "allow")', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean, createDatabase?: boolean, force?: boolean }) => {
+    .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean, createDatabase?: boolean, force?: boolean, dryRun?: boolean, pretend?: boolean }) => {
       log.debug('Running `buddy migrate:fresh` ...', options)
 
       const perf = await intro('buddy migrate:fresh')
@@ -915,6 +934,21 @@ export function migrate(buddy: CLI): void {
       if (!dialectCheck.valid) {
         console.error(`\n❌ Error: ${dialectCheck.error!}\n`)
         process.exit(ExitCode.FatalError)
+      }
+
+      // A preview drops nothing. `--diff` was declared here and never read, so
+      // `migrate:fresh --diff --force` dropped every table - as did the global
+      // `--dry-run`. Say what a real run would do, and stop.
+      if (isMigratePreview(options)) {
+        let files = 0
+        try {
+          const dir = resolveMigrationDirectory(String(process.env.DB_CONNECTION || 'sqlite').toLowerCase())
+          files = readdirSync(dir).filter(file => file.endsWith('.sql')).length
+        }
+        catch { /* no corpus yet */ }
+        log.info(`Would drop every table in the ${process.env.APP_ENV || 'local'} database "${currentDatabaseLabel()}" and replay ${files} migration file${files === 1 ? '' : 's'}${options.seed ? ', then seed it' : ''}.`)
+        await outro('Dry run - nothing was dropped or migrated.', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
       }
 
       // Safety guard. migrate:fresh DROPS every table, so it is gated far
