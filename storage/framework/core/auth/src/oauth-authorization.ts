@@ -66,7 +66,11 @@ function reject(
   throw new OAuthAuthorizationRequestError(code, message, redirectUri, state)
 }
 
-function isSafeRedirectUri(value: string): boolean {
+/** Whether a registered callback is safe for exact redirect matching. */
+export function isValidOAuthRedirectUri(value: string): boolean {
+  if (value.includes('*'))
+    return false
+
   let url: URL
   try {
     url = new URL(value)
@@ -131,7 +135,7 @@ export function validateOAuthAuthorizationRequest(
     reject('unauthorized_client', 'OAuth client is disabled.')
   if (!provider.clientTypes.includes(client.type))
     reject('unauthorized_client', 'OAuth client type is not enabled by this provider.')
-  if (!client.redirectUris.includes(input.redirectUri) || !isSafeRedirectUri(input.redirectUri))
+  if (!client.redirectUris.includes(input.redirectUri) || !isValidOAuthRedirectUri(input.redirectUri))
     reject('invalid_request', 'OAuth redirect URI is not an exact secure registration match.')
 
   const state = typeof input.state === 'string' ? input.state : null
