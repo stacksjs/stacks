@@ -355,6 +355,50 @@ export async function registerOAuthClient(
   }
 }
 
+/** Rotate one active confidential client's secret and reveal the replacement once. */
+export async function rotateOAuthClientSecret(ownerId: number, clientId: number): Promise<string | null> {
+  if (!Number.isSafeInteger(ownerId) || ownerId <= 0 || !Number.isSafeInteger(clientId) || clientId <= 0)
+    return null
+
+  const plainTextSecret = randomBytes(40).toString('hex')
+  const storedSecret = await makeHash(plainTextSecret, { algorithm: 'bcrypt' })
+  const sql = sqlHelpers(getDatabaseDialect())
+  const lock = sql.isSqlite ? '' : ' FOR UPDATE'
+  const rotated = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const rows = await trx.unsafe(`
+      SELECT client_type, token_endpoint_auth_method, revoked
+      FROM oauth_clients
+      WHERE id = ${sql.param(1)} AND user_id = ${sql.param(2)}
+      LIMIT 1${lock}
+    `, [clientId, ownerId]) as unknown as Array<{
+      client_type: string | null
+      token_endpoint_auth_method: string | null
+      revoked: boolean | number
+    }>
+    const client = rows[0]
+    if (!client
+      || client.client_type !== 'confidential'
+      || client.token_endpoint_auth_method !== 'client_secret_basic'
+      || !inactive(client.revoked))
+      return false
+
+    const active = sql.isPostgres ? false : 0
+    const changed = await trx.unsafe(`
+      UPDATE oauth_clients
+      SET secret = ${sql.param(1)}, updated_at = ${sql.param(2)}
+      WHERE id = ${sql.param(3)} AND user_id = ${sql.param(4)}
+        AND client_type = ${sql.param(5)} AND token_endpoint_auth_method = ${sql.param(6)}
+        AND revoked = ${sql.param(7)}
+    `, [storedSecret, sqlDateTime(new Date()), clientId, ownerId, 'confidential', 'client_secret_basic', active])
+    return mutationCount(changed) === 1
+  })
+  if (!rotated)
+    return null
+  markContextWrote()
+  return plainTextSecret
+}
+
 /** Disable one owner-managed client and revoke every credential it issued. */
 export async function disableOAuthClient(ownerId: number, clientId: number): Promise<boolean> {
   if (!Number.isSafeInteger(ownerId) || ownerId <= 0 || !Number.isSafeInteger(clientId) || clientId <= 0)

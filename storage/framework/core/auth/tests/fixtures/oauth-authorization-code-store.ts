@@ -63,6 +63,7 @@ const {
   loadOAuthAuthorizationClient,
   refreshOAuthDelegatedToken,
   registerOAuthClient,
+  rotateOAuthClientSecret,
   resolveOAuthProviderConfig,
   refreshToken,
   revokeOAuthGrant,
@@ -405,9 +406,30 @@ try {
     'wrong-secret',
     async client => client,
   ), null)
-  await assert.rejects(withAuthenticatedOAuthTokenClient(
+  assert.equal(await rotateOAuthClientSecret(7, confidentialRegistration.client.id), null, 'another owner must not rotate the secret')
+  assert.equal(await rotateOAuthClientSecret(42, publicRegistration.client.id), null, 'public clients must not gain a secret')
+  const rotatedSecret = await rotateOAuthClientSecret(42, confidentialRegistration.client.id)
+  assert(rotatedSecret)
+  assert.notEqual(rotatedSecret, confidentialRegistration.plainTextSecret)
+  const rotatedConfidential = await db.selectFrom('oauth_clients')
+    .where('id', '=', confidentialRegistration.client.id)
+    .select('secret')
+    .executeTakeFirstOrThrow()
+  assert.equal(await verifyHash(confidentialRegistration.plainTextSecret, String(rotatedConfidential.secret)), false)
+  assert.equal(await verifyHash(rotatedSecret, String(rotatedConfidential.secret)), true)
+  assert.equal(await withAuthenticatedOAuthTokenClient(
     String(confidentialRegistration.client.id),
     confidentialRegistration.plainTextSecret,
+    async client => client,
+  ), null, 'the old client secret must stop authenticating')
+  assert.deepEqual(await withAuthenticatedOAuthTokenClient(
+    String(confidentialRegistration.client.id),
+    rotatedSecret,
+    async client => client,
+  ), loadedConfidential)
+  await assert.rejects(withAuthenticatedOAuthTokenClient(
+    String(confidentialRegistration.client.id),
+    rotatedSecret,
     async () => {
       await db.insertInto('issued_markers').values({ marker: 'client-auth-must-roll-back' }).execute()
       throw new Error('synthetic token endpoint failure')
@@ -424,7 +446,7 @@ try {
   assert.deepEqual(await refreshOAuthDelegatedToken({
     refreshToken: 'malformed',
     clientId: confidentialRegistration.client.id,
-    clientSecret: confidentialRegistration.plainTextSecret,
+    clientSecret: rotatedSecret,
     accessTokenLifetimeMs: 60_000,
     refreshTokenLifetimeMs: 120_000,
   }), { ok: false, reason: 'unauthorized_client' })
@@ -460,7 +482,7 @@ try {
     assert.deepEqual(await exchangeOAuthAuthorizationCode({ ...confidentialInput, clientSecret: 'wrong-secret' }), { ok: false, reason: 'invalid_client' })
     const confidentialExchange = await exchangeOAuthAuthorizationCode({
       ...confidentialInput,
-      clientSecret: confidentialRegistration.plainTextSecret,
+      clientSecret: rotatedSecret,
     })
     assert.equal(confidentialExchange.ok, true)
     if (confidentialExchange.ok) {
@@ -474,16 +496,17 @@ try {
     }
     assert.deepEqual(await exchangeOAuthAuthorizationCode({
       ...confidentialInput,
-      clientSecret: confidentialRegistration.plainTextSecret,
+      clientSecret: rotatedSecret,
     }), { ok: false, reason: 'invalid_grant' })
   }
   await db.updateTable('oauth_clients').set({ revoked: true }).where('id', '=', confidentialRegistration.client.id).execute()
   assert.equal((await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)))?.revoked, true)
   assert.equal(await withAuthenticatedOAuthTokenClient(
     String(confidentialRegistration.client.id),
-    confidentialRegistration.plainTextSecret,
+    rotatedSecret,
     async client => client,
   ), null)
+  assert.equal(await rotateOAuthClientSecret(42, confidentialRegistration.client.id), null, 'revoked clients must not rotate secrets')
 
   const disableRegistration = await registerOAuthClient(provider, 42, {
     name: 'Disposable integration',
