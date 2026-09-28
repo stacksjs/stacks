@@ -255,9 +255,16 @@ Tests for individual functions or components in isolation.
 
 Tests for complete features or user flows.
 
-### Browser Tests
+### Component Tests
 
-End-to-end tests that run in a real browser.
+Tests that drive the DOM in-process with very-happy-dom, under `bun test`. No
+browser and no server: fast, but with no CSS cascade, layout or visibility.
+
+### Browser QA
+
+Checks run against a real browser engine over the DevTools Protocol, for
+navigation, layout, visibility and screenshots — the things a virtual DOM cannot
+answer. Driven by the `stacks-browse` skill rather than by a test runner.
 
 ## Configuration
 

@@ -33,7 +33,6 @@ The current focus is on stabilizing the core framework:
 - **Parallel Tests** - Run tests concurrently
 - **Snapshot Testing** - Visual regression testing
 - **Coverage Reporting** - Integrated code coverage
-- **E2E Framework** - Built-in Playwright integration
 
 ### Documentation
 

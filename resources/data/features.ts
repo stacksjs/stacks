@@ -526,7 +526,7 @@ export default new Action({
         { title: 'HTTP assertions', text: 'Call a route, assert on status, headers, and the decoded JSON body without standing up a server yourself.' },
         { title: 'Database helpers', text: 'Per-test migration and truncation, so a test that writes rows does not decide what the next test sees.' },
         { title: 'Factories', text: 'The factory functions on each model attribute generate valid rows, so a schema change breaks the seed rather than the assertion.' },
-        { title: 'Browser tests', text: 'Drive the rendered page for the flows that only exist once STX has hydrated.' },
+        { title: 'Component tests', text: 'Drive the DOM in-process with very-happy-dom, so UI behaviour is covered without a browser or a server.' },
         { title: 'Type tests', text: 'buddy typecheck runs the native Go compiler over app, config, resources, and routes in a couple of seconds.' },
       ],
       code: {

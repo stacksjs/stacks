@@ -13,7 +13,7 @@ Stacks testing supports:
 - **Unit Tests** - Test individual functions and classes
 - **Feature Tests** - Test application features and workflows
 - **HTTP Tests** - Test API endpoints and responses
-- **Browser Tests** - Test UI interactions with virtual DOM
+- **Component Tests** - Test UI interactions against the DOM with very-happy-dom
 - **Database Tests** - Test database operations with automatic cleanup
 
 ## Quick Start
@@ -58,7 +58,7 @@ describe('Example', () => {
 tests/
 ├── Unit/           # Unit tests for functions and classes
 ├── Feature/        # Feature tests for workflows
-├── Browser/        # Browser/UI tests
+├── browser/        # Component & DOM tests
 ├── fixtures/       # Test fixtures and data
 └── setup.ts        # Global test setup
 ```
@@ -67,7 +67,7 @@ tests/
 
 - Unit tests: `tests/Unit/[Name]Test.ts`
 - Feature tests: `tests/Feature/[Name]Test.ts`
-- Browser tests: `tests/Browser/[Name]Test.ts`
+- Component tests: `tests/browser/[name].test.ts`
 
 ## Assertions
 

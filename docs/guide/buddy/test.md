@@ -64,7 +64,7 @@ buddy test:feature
 
 ### UI Tests
 
-Run tests in the browser (Vitest UI):
+Run the component and DOM test suites:
 
 ```bash
 buddy test:ui
