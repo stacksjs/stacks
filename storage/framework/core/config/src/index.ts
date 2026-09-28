@@ -13,7 +13,7 @@ export { FRAMEWORK_DEFAULTS } from './defaults'
 export { validateConfig, reportConfigIssues, type ConfigValidationIssue } from './validators'
 export { feature, enableFeature, disableFeature, resetFeature, listFeatures } from './features'
 export { packageComponentRoots, packageJobRoots, packageMigrationRoots, packageModelRoots, packageViewRoots, type PackageResourceOptions, type PackageResourceRoot } from './discovered-resources'
-export { resolveViewPatterns, type DefaultViewsSetting, type ViewPatternResolution } from './views'
+export { DEFAULT_VIEW_ROUTE_BUNDLES, DEFAULT_VIEW_TEMPLATES, DEFAULT_VIEWS_ALWAYS, resolveViewPatterns, withheldDefaultViews, type DefaultViewsSetting, type ViewPatternResolution } from './views'
 export {
   createRequestContext,
   enterRequestScope,

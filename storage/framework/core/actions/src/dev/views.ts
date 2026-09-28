@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { config, enterRequestScope, installRequestScope, overridesReady, resolveViewPatterns } from '@stacksjs/config'
+import { config, enterRequestScope, feature, installRequestScope, overridesReady, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath, siteConfigPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
@@ -164,20 +164,28 @@ async function startDefaultServer() {
   const authCookie = authCookieName()
   const pageMiddleware = await loadMiddlewareHandlers()
 
-  // Which of the framework's default views this app serves (#2237). Defaults
-  // to all of them, so an app that says nothing is unaffected.
+  // Which of the framework's default views this app serves (#2237). Unset
+  // serves the ones whose route bundle the API process mounts, so /login is
+  // only a page where POST /login is a route. Same inputs as bootstrap.ts
+  // decides mounting from, read after `overridesReady` for the same reason.
+  const { mountedDefaultRouteBundles } = await import('@stacksjs/router')
   const viewPatterns = resolveViewPatterns(
     userViewsPath,
     defaultViewsPath,
     (config)?.ui?.defaultViews,
     path => existsSync(projectPath(path)),
+    undefined,
+    mountedDefaultRouteBundles(feature),
   )
 
   for (const name of viewPatterns.missing)
     log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} - ignoring.`)
+  if (viewPatterns.withheld.length > 0)
+    log.debug(`Default views without a mounted route bundle behind them, not served: ${viewPatterns.withheld.join(', ')}`)
 
   await serve({
     patterns: viewPatterns.patterns,
+    exclude: viewPatterns.exclude,
     port: preferredPort,
     // Wider than the dashboard subdir so both Dashboard/* and
     // Storefront/* (and any future <Namespace>/Component.stx) get

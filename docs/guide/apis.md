@@ -118,6 +118,28 @@ one:
 route.post('/login', 'Actions/Auth/LoginAction').rateLimit(5, 'minute')
 ```
 
+The framework's default **pages** follow the bundles. Unless `config/ui.ts`
+sets `defaultViews`, the auth pages (`/login`, `/register`, `/forgot-password`,
+`/password/reset/{token}`, `/auth/magic/{token}`) are served only while `auth`
+is mounted, and the demo storefront (`/cart`, `/checkout/*`, `/orders/{id}`)
+only while `dashboard` is, because that is where its routes live. The error
+pages and `/coming-soon` are always served. An app that mounts nothing no
+longer answers 200 on a login form that posts into a 404.
+
+If you declare the routes yourself, as above, the views server cannot see
+that, so serve the page yourself too. Every default page is a thin view over a
+framework component, so the smallest copy is one line (the framework's own
+`login.stx` also renders social sign-in buttons; copy that file instead if you
+use them):
+
+```html
+<!-- resources/views/login.stx -->
+<LoginDashboard />
+```
+
+`defaultViews: true` in `config/ui.ts` also brings the pages back, all of them
+and whatever is mounted, which is what an unset `defaultViews` used to mean.
+
 ### Manual API Routes
 
 ```typescript

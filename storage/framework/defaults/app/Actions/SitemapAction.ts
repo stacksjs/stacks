@@ -1,18 +1,23 @@
 import { Action } from '@stacksjs/actions'
-import { config } from '@stacksjs/config'
+import { resolveDefaultsResources } from '@stacksjs/actions/dev/defaults-resources'
+import { config, feature, overridesReady, resolveViewPatterns } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
-import { response } from '@stacksjs/router'
+import { mountedDefaultRouteBundles, response } from '@stacksjs/router'
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 
 /**
  * Generate the top-level sitemap.xml.
  *
  * Strategy:
- *   1. Walk resources/views and storage/framework/defaults/resources/views
- *      collecting static pages — file paths that don't contain `[`
- *      (dynamic) or `[...]` (catch-all). The static set covers the
- *      home page, /about, /faq, /products listing, etc.
+ *   1. Walk the view roots the views server serves - the app's views, and
+ *      whichever framework default views `ui.defaultViews` and the mounted
+ *      route bundles leave in (`resolveViewPatterns`) - collecting static
+ *      pages: file paths that don't contain `[` (dynamic) or `[...]`
+ *      (catch-all). The static set covers the home page, /about, /faq,
+ *      /products listing, etc. This walked the whole defaults tree whatever
+ *      the app had turned off, so a sitemap could advertise a page the
+ *      server answers 404 for.
  *   2. For dynamic patterns (e.g. resources/views/products/[slug].stx)
  *      fan out using the database — currently the storefront's
  *      `products` table by `slug`. Apps with other dynamic models
@@ -30,7 +35,6 @@ import { join } from 'node:path'
  */
 
 const PROJECT_VIEWS = 'resources/views'
-const FRAMEWORK_VIEWS = 'storage/framework/defaults/resources/views'
 
 // Path prefixes that should never be indexed. Matched as a literal
 // prefix on the URL path (so '/cart' matches '/cart' and '/cart/x').
@@ -151,12 +155,40 @@ async function discoverProducts(): Promise<SitemapEntry[]> {
   }
 }
 
-function staticEntries(): SitemapEntry[] {
+/**
+ * The view roots the views server serves, and the files under them it does
+ * not, resolved exactly as `dev/views.ts` and `production-server.ts` resolve
+ * them. Package view roots are left out: this sitemap never listed them.
+ */
+async function servedViewRoots(): Promise<{ roots: string[], isExcluded: (file: string) => boolean }> {
+  await overridesReady
+  const resolution = resolveViewPatterns(
+    PROJECT_VIEWS,
+    join(resolveDefaultsResources(), 'views'),
+    config.ui?.defaultViews,
+    existsSync,
+    [],
+    mountedDefaultRouteBundles(feature),
+  )
+  const excluded = resolution.exclude.map(entry => resolve(entry))
+  return {
+    roots: resolution.patterns,
+    isExcluded: (file) => {
+      const full = resolve(file)
+      return excluded.some(entry => full === entry || full.startsWith(`${entry}${sep}`))
+    },
+  }
+}
+
+async function staticEntries(): Promise<SitemapEntry[]> {
   const seen = new Set<string>()
   const entries: SitemapEntry[] = []
+  const { roots, isExcluded: isWithheld } = await servedViewRoots()
 
-  for (const root of [PROJECT_VIEWS, FRAMEWORK_VIEWS]) {
+  for (const root of roots) {
     for (const file of walkViews(root)) {
+      if (isWithheld(file))
+        continue
       const urlPath = fileToUrl(root, file)
       if (!urlPath)
         continue
@@ -223,7 +255,7 @@ export default new Action({
   async handle() {
     const siteUrl = (config as any).app?.url || 'http://localhost:3000'
     const all: SitemapEntry[] = [
-      ...staticEntries(),
+      ...(await staticEntries()),
       ...(await discoverProducts()),
     ]
 

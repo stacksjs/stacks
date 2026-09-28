@@ -282,6 +282,74 @@ export function resolveDefaultRouteBundlesWithDiagnostics(
   return { bundles: all(), unknown: [], explicit: false }
 }
 
+/**
+ * The feature flag that gates each default bundle when an app has not named
+ * its bundles. `auth` rides on `dashboard` rather than `auth` for the reason
+ * `defaults/bootstrap.ts` gives: `config/auth.ts` ships enabled in every app,
+ * so gating on it would widen existing apps' public surface on upgrade.
+ */
+export const DEFAULT_ROUTE_BUNDLE_FEATURES = {
+  auth: 'dashboard',
+  dashboard: 'dashboard',
+  delivery: 'commerce',
+  email: 'email',
+  forms: 'forms',
+} as const satisfies Record<typeof DEFAULT_ROUTE_BUNDLES[number], string>
+
+/** What {@link loadFrameworkRoutes} publishes for bootstrap.ts. */
+export interface DefaultRouteBundleSelection {
+  bundles: ReadonlySet<string>
+  explicit: boolean
+}
+
+/**
+ * Whether one default bundle mounts, given the selection and its feature flag.
+ *
+ * An app that NAMED its bundles has already answered the question, so the
+ * feature flag does not get a second veto - otherwise `STACKS_DEFAULT_ROUTES=auth`
+ * would still be withheld from an app running with `dashboard` off, which is
+ * the exact case the variable exists for. When nothing was named, the flag
+ * gates as it always did.
+ *
+ * `defaults/bootstrap.ts` decides with this, and so does the views server
+ * when it works out which default pages have routes behind them. One rule in
+ * two processes; a copy in each is how they come to disagree.
+ */
+export function bundleMounts(
+  selection: DefaultRouteBundleSelection | undefined,
+  bundle: string,
+  featureEnabled: boolean,
+): boolean {
+  if (selection && !selection.bundles.has(bundle))
+    return false
+  return selection?.explicit ? true : featureEnabled
+}
+
+/**
+ * The default bundles this app mounts, without mounting anything.
+ *
+ * For a process that needs the answer but does not own the routes: the views
+ * server serves `/login` only when the API process mounts `POST /login`
+ * (stacksjs/stacks#2237). `featureEnabled` is `feature` from
+ * `@stacksjs/config`, passed in so this stays free of config state; call it
+ * after `overridesReady`, for the reason {@link loadFrameworkRoutes} awaits it.
+ *
+ * `social` is not included. It is opt-in, decided by configured providers,
+ * and no default page depends on it alone.
+ */
+export function mountedDefaultRouteBundles(
+  featureEnabled: (name: string) => boolean,
+  env: NodeJS.ProcessEnv = process.env,
+): Set<typeof DEFAULT_ROUTE_BUNDLES[number]> {
+  const selection = resolveDefaultRouteBundlesWithDiagnostics(env)
+  const mounted = new Set<typeof DEFAULT_ROUTE_BUNDLES[number]>()
+  for (const bundle of DEFAULT_ROUTE_BUNDLES) {
+    if (bundleMounts(selection, bundle, featureEnabled(DEFAULT_ROUTE_BUNDLE_FEATURES[bundle])))
+      mounted.add(bundle)
+  }
+  return mounted
+}
+
 async function loadFrameworkRoutes(): Promise<void> {
   const { bundles, unknown, explicit } = resolveDefaultRouteBundlesWithDiagnostics()
 

@@ -36,7 +36,13 @@ export interface WebFontMeta {
  */
 export interface UiOptions {
   /**
-   * Which of the framework's default views to serve, read by `dev:views`.
+   * Which of the framework's default views to serve, read by `dev:views` and
+   * the production server.
+   *
+   * Unset serves each default page only while the route bundle it posts to is
+   * mounted - `/login` with `auth`, `/cart` with `dashboard` - see
+   * `resolveViewPatterns` in `@stacksjs/config`. `true` serves every default
+   * view whatever is mounted, `false` none, and a list the named subtrees.
    *
    * Declared here because it is read here. `config/ui.ts` sets it and had to
    * widen the type inline - `satisfies UiOptions & { defaultViews?: … }` - to

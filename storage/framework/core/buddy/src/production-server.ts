@@ -182,7 +182,7 @@ export async function startProductionServer(options?: { port?: string | number, 
 
   const port = Number(process.env.PORT) || 3000
 
-  const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
+  const { config, feature, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
   // Before anything reads the manifest. `resolveViewPatterns` appends each
@@ -299,14 +299,25 @@ export async function startProductionServer(options?: { port?: string | number, 
       // resolve identically to `dev/views.ts` — hence the shared helper rather
       // than a second copy of the rule — or an app opts a demo route out in dev
       // and still ships it.
+      //
+      // Unset serves only the default views whose route bundle the API
+      // process mounts: /login where POST /login is a route, /cart where the
+      // storefront routes are. Decided from the same env and feature flags
+      // bootstrap.ts mounts from, after `overridesReady` above.
+      const { mountedDefaultRouteBundles } = await import('@stacksjs/router')
       const viewPatterns = resolveViewPatterns(
         userViewsPath,
         defaultViewsPath,
         (config)?.ui?.defaultViews,
+        undefined,
+        undefined,
+        mountedDefaultRouteBundles(feature),
       )
 
       for (const name of viewPatterns.missing)
         log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} - ignoring.`)
+      if (viewPatterns.withheld.length > 0)
+        log.info(`Default views without a mounted route bundle behind them, not served: ${viewPatterns.withheld.join(', ')}`)
 
       // Same rules the dev server uses, so a route reachable under `buddy dev`
       // is reachable under `buddy serve` (stacksjs/stacks#2230). Resolved here
@@ -340,6 +351,7 @@ export async function startProductionServer(options?: { port?: string | number, 
 
       await stxServe({
         patterns: viewPatterns.patterns,
+        exclude: viewPatterns.exclude,
         port,
         // Never silently drift off the configured port: the reverse
         // proxy/gateway routes to exactly this port, so stx's fallback bind

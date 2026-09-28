@@ -23,7 +23,7 @@
 
 import { feature } from '@stacksjs/config'
 import { frameworkPath } from '@stacksjs/path'
-import { route } from '@stacksjs/router'
+import { bundleMounts, DEFAULT_ROUTE_BUNDLE_FEATURES, route } from '@stacksjs/router'
 import MaintenanceMiddleware from './app/Middleware/Maintenance'
 
 // Global maintenance / coming-soon gate. Registered first so the
@@ -59,18 +59,16 @@ const selection = (globalThis as Record<string, unknown>).__stacksDefaultRouteBu
   { bundles: Set<string>, explicit: boolean } | undefined
 
 /**
- * Whether a bundle mounts.
+ * Whether a bundle mounts: named by the app, or, when the app named none, its
+ * feature flag is on.
  *
- * An app that NAMED its bundles has already answered the question, so the
- * feature flag does not get a second veto - otherwise `STACKS_DEFAULT_ROUTES=auth`
- * would still be withheld from an app running with `dashboard` off, which is
- * the exact case this exists for. When nothing was named, the flags gate
- * precisely as they did before.
+ * The rule and the flag each bundle rides on live in the router
+ * (`bundleMounts`, `DEFAULT_ROUTE_BUNDLE_FEATURES`), because the views server
+ * asks the same question from another process - it serves `/login` only when
+ * this file mounts `POST /login` - and two copies of one rule drift.
  */
-function mounts(bundle: string, featureEnabled: boolean): boolean {
-  if (selection && !selection.bundles.has(bundle))
-    return false
-  return selection?.explicit ? true : featureEnabled
+function mounts(bundle: keyof typeof DEFAULT_ROUTE_BUNDLE_FEATURES): boolean {
+  return bundleMounts(selection, bundle, feature(DEFAULT_ROUTE_BUNDLE_FEATURES[bundle]))
 }
 
 // Auth: login, registration, logout, refresh/revoke, passkeys, TOTP 2FA and
@@ -88,7 +86,7 @@ function mounts(bundle: string, featureEnabled: boolean): boolean {
 // `/generate-two-factor-secret`, `/logout-all` and `/auth/tokens` — in apps
 // currently running with `dashboard` off. Widening an app's public surface on
 // upgrade is not something a refactor gets to do silently.
-if (mounts('auth', feature('dashboard')))
+if (mounts('auth'))
   await route.register(frameworkPath('defaults/routes/auth.ts'))
 
 // The rest of dashboard.ts: email subscribe, storefront cart/checkout,
@@ -100,7 +98,7 @@ if (mounts('auth', feature('dashboard')))
 // Apps that need only a slice can also define the routes they want directly
 // in `routes/api.ts` — first-registration-wins means the user version takes
 // priority.
-if (mounts('dashboard', feature('dashboard'))) {
+if (mounts('dashboard')) {
   await route.register(frameworkPath('defaults/routes/dashboard.ts'))
   // JSON endpoints for the dev dashboard UI. Kept separate from the view
   // routes above so the data layer is one obvious file to grep.
@@ -137,21 +135,21 @@ if (mounts('dashboard', feature('dashboard'))) {
 // non-default mount path register their own routes in `routes/api.ts`
 // and the framework's mount silently no-ops since user routes
 // register first.
-if (mounts('email', feature('email'))) {
+if (mounts('email')) {
   await route.register(frameworkPath('defaults/routes/email.ts'))
 }
 
 // Form-builder public endpoints (`@stacksjs/forms`). Gated on the `forms`
 // feature, which defaults OFF - an app opts in with config/forms.ts
 // (`buddy forms:install`) and only then do the public submit routes exist.
-if (mounts('forms', feature('forms'))) {
+if (mounts('forms')) {
   await route.register(frameworkPath('defaults/routes/forms.ts'))
 }
 
 // Courier delivery endpoints: position ingest and the stop/route lifecycle a
 // courier's device drives. Gated with the rest of the commerce surface, since
 // they are meaningless without the delivery models behind them.
-if (mounts('delivery', feature('commerce'))) {
+if (mounts('delivery')) {
   await route.register(frameworkPath('defaults/routes/delivery.ts'))
 }
 

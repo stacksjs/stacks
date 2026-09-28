@@ -36,14 +36,16 @@ export default {
 
   partialsDir: 'partials',
 
-  // Whether this app serves the framework's default views, which include a
-  // demo storefront (/cart, /checkout/*, /orders/:id) alongside the error
-  // pages and mail previews. `true` serves all of them and is the historical
-  // behaviour; `false` serves only `resources/views`; an array names the
-  // subtrees to keep, e.g. `['errors', 'emails']`. Applies to `buddy dev` and
-  // `buddy serve` alike, and to whatever the route manifest enumerates into
-  // the sitemap.
-  defaultViews: true,
+  // Whether this app serves the framework's default views: the auth pages
+  // (/login, /register, /forgot-password, /password/reset/:token,
+  // /auth/magic/:token), a demo storefront (/cart, /checkout/*, /orders/:id),
+  // the error pages and the mail previews. Left unset, each page is served
+  // only while the route bundle it posts to is mounted (STACKS_DEFAULT_ROUTES):
+  // the auth pages with `auth`, the storefront with `dashboard`. `true` serves
+  // all of them whatever is mounted; `false` serves only `resources/views`; an
+  // array names the subtrees to keep, e.g. `['errors', 'emails']`. Applies to
+  // `buddy dev` and `buddy serve` alike, and to the sitemap.
+  // defaultViews: true,
 
   // What stx falls back to for a page that writes no title or description of
   // its own. Without these it is stx's own placeholders: "stx App" as the
