@@ -38,8 +38,8 @@ function tapBack(event: MouseEvent): void {
 }
 </script>
 
-<!-- `display: contents` on the wrapper: a sticky element sticks within its
-     parent, and a wrapper exactly the bar's height would give it no room. -->
+<!-- `display: contents` on this box and on stx's own wrapper: a sticky element
+     sticks within its parent, and either box would give the bar no room. -->
 <div class="native-nav" data-native-nav-bar>
   <header :class="barClass()">
     <div class="native-nav-side">

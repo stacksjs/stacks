@@ -29,7 +29,7 @@ describe('Native components', () => {
   it('backs out through history, and sticks within the page rather than its wrapper', () => {
     const bar = read('NativeNavBar')
     expect(bar).toContain('if (goBack()) event.preventDefault()')
-    expect(bar).toContain('.native-nav { display: contents; }')
+    expect(bar).toContain('[data-stx-scope]:has(> .native-nav) { display: contents; }')
     expect(bar).toContain("useReactiveProp<string>('title', '')")
   })
 
