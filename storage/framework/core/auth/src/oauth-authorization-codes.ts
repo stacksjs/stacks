@@ -12,14 +12,8 @@ import { isValidOAuthRedirectUri } from './oauth-authorization'
 import { isValidS256CodeChallenge, verifyS256CodeChallenge } from './oauth-pkce'
 
 export interface IssueAuthorizationCodeInput {
-  clientId: number
-  subjectType: string
-  subjectId: number
+  grantId: string
   redirectUri: string
-  scopes: readonly string[]
-  resources: readonly string[]
-  audiences: readonly string[]
-  workspaceId?: string | null
   codeChallenge: string
   lifetimeMs: number
 }
@@ -31,6 +25,7 @@ export interface AuthorizationCodeRedemption {
 }
 
 export interface AuthorizationCodeGrant {
+  grantId: string
   clientId: number
   subjectType: string
   subjectId: number
@@ -47,6 +42,7 @@ export type AuthorizationCodeResult<T>
 
 interface AuthorizationCodeRow {
   code_hash: string
+  grant_id: string | null
   client_id: number | string
   subject_type: string
   subject_id: number | string
@@ -59,6 +55,13 @@ interface AuthorizationCodeRow {
   code_challenge_method: string
   expires_at: string | Date
   consumed_at: string | Date | null
+  grant_client_id: number | string
+  grant_subject_type: string
+  grant_subject_id: number | string
+  grant_scopes: string
+  grant_resources: string
+  grant_audiences: string
+  grant_workspace_id: string | null
 }
 
 const invalidGrant = { ok: false as const, reason: 'invalid_grant' as const }
@@ -70,14 +73,6 @@ function codeHash(value: string): string {
 
 function validIdentifier(value: number): boolean {
   return Number.isSafeInteger(value) && value > 0
-}
-
-function explicitValues(name: string, values: readonly string[]): string[] {
-  if (values.some(value => !value))
-    throw new TypeError(`OAuth authorization code ${name} must not contain empty values.`)
-  if (new Set(values).size !== values.length)
-    throw new TypeError(`OAuth authorization code ${name} must not contain duplicate values.`)
-  return [...values]
 }
 
 function storedValues(value: string): string[] | null {
@@ -92,46 +87,50 @@ function storedValues(value: string): string[] | null {
 
 /** Issue a high-entropy code while storing only its SHA-256 hash. */
 export async function issueAuthorizationCode(input: IssueAuthorizationCodeInput): Promise<string> {
-  if (!validIdentifier(input.clientId) || !validIdentifier(input.subjectId))
-    throw new TypeError('OAuth authorization code client and subject identifiers must be positive safe integers.')
-  if (!/^[A-Za-z0-9_.:-]{1,255}$/.test(input.subjectType))
-    throw new TypeError('OAuth authorization code subject type is invalid.')
+  if (!/^[a-f0-9]{32}$/.test(input.grantId))
+    throw new TypeError('OAuth authorization code grant identifier is invalid.')
   if (!isValidOAuthRedirectUri(input.redirectUri))
     throw new TypeError('OAuth authorization code redirect URI is invalid.')
   if (!isValidS256CodeChallenge(input.codeChallenge))
     throw new TypeError('OAuth authorization code requires a valid S256 challenge.')
   if (!Number.isFinite(input.lifetimeMs) || input.lifetimeMs <= 0)
     throw new TypeError('OAuth authorization code lifetime must be positive.')
-  if (input.workspaceId != null && (!input.workspaceId || input.workspaceId.length > 255))
-    throw new TypeError('OAuth authorization code workspace identifier must be 1 to 255 characters.')
-
-  const scopes = explicitValues('scopes', input.scopes)
-  const resources = explicitValues('resources', input.resources)
-  const audiences = explicitValues('audiences', input.audiences)
   const plainTextCode = randomBytes(32).toString('base64url')
   const createdAt = new Date()
   const sql = sqlHelpers(getDatabaseDialect())
-  const bound = sql.params(
-    codeHash(plainTextCode),
-    input.clientId,
-    input.subjectType,
-    input.subjectId,
-    input.redirectUri,
-    JSON.stringify(scopes),
-    JSON.stringify(resources),
-    JSON.stringify(audiences),
-    input.workspaceId ?? null,
-    input.codeChallenge,
-    'S256',
-    sqlDateTime(new Date(createdAt.getTime() + input.lifetimeMs)),
-    sqlDateTime(createdAt),
-  )
 
   await db.transaction(async (rawTrx) => {
     const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const grantLock = sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
+    const grants = await trx.unsafe(`
+      SELECT id, client_id, subject_type, subject_id, scopes, resources, audiences, workspace_id
+      FROM oauth_grants
+      WHERE id = ${sql.param(1)} AND revoked_at IS NULL
+      LIMIT 1${grantLock}
+    `, [input.grantId]) as Array<Record<string, unknown>>
+    const grant = grants[0]
+    if (!grant)
+      throw new Error('OAuth authorization grant is not active.')
+
+    const bound = sql.params(
+      codeHash(plainTextCode),
+      input.grantId,
+      grant.client_id,
+      grant.subject_type,
+      grant.subject_id,
+      input.redirectUri,
+      grant.scopes,
+      grant.resources,
+      grant.audiences,
+      grant.workspace_id ?? null,
+      input.codeChallenge,
+      'S256',
+      sqlDateTime(new Date(createdAt.getTime() + input.lifetimeMs)),
+      sqlDateTime(createdAt),
+    )
     await trx.unsafe(`
       INSERT INTO oauth_auth_codes (
-        code_hash, client_id, subject_type, subject_id, redirect_uri, scopes, resources,
+        code_hash, grant_id, client_id, subject_type, subject_id, redirect_uri, scopes, resources,
         audiences, workspace_id, code_challenge, code_challenge_method, expires_at, created_at
       ) VALUES (${bound.sql})
     `, bound.values)
@@ -159,10 +158,16 @@ export async function withAuthorizationCode<T>(
   const result = await db.transaction(async (rawTrx): Promise<AuthorizationCodeResult<T>> => {
     const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
     const rows = await trx.unsafe(`
-      SELECT code_hash, client_id, subject_type, subject_id, redirect_uri, scopes, resources,
-        audiences, workspace_id, code_challenge, code_challenge_method, expires_at, consumed_at
-      FROM oauth_auth_codes
-      WHERE code_hash = ${sql.param(1)}
+      SELECT c.code_hash, c.grant_id, c.client_id, c.subject_type, c.subject_id, c.redirect_uri,
+        c.scopes, c.resources, c.audiences, c.workspace_id, c.code_challenge,
+        c.code_challenge_method, c.expires_at, c.consumed_at,
+        g.client_id AS grant_client_id, g.subject_type AS grant_subject_type,
+        g.subject_id AS grant_subject_id, g.scopes AS grant_scopes,
+        g.resources AS grant_resources, g.audiences AS grant_audiences,
+        g.workspace_id AS grant_workspace_id
+      FROM oauth_auth_codes c
+      JOIN oauth_grants g ON g.id = c.grant_id AND g.revoked_at IS NULL
+      WHERE c.code_hash = ${sql.param(1)}
       LIMIT 1${lock}
     `, [hash]) as AuthorizationCodeRow[]
     const row = rows[0]
@@ -177,9 +182,21 @@ export async function withAuthorizationCode<T>(
     const scopes = storedValues(row.scopes)
     const resources = storedValues(row.resources)
     const audiences = storedValues(row.audiences)
+    const grantScopes = storedValues(row.grant_scopes)
+    const grantResources = storedValues(row.grant_resources)
+    const grantAudiences = storedValues(row.grant_audiences)
     const clientId = Number(row.client_id)
     const subjectId = Number(row.subject_id)
-    if (!scopes || !resources || !audiences || !validIdentifier(clientId) || !validIdentifier(subjectId))
+    if (!row.grant_id || !scopes || !resources || !audiences
+      || !grantScopes || !grantResources || !grantAudiences
+      || !validIdentifier(clientId) || !validIdentifier(subjectId)
+      || String(row.grant_client_id) !== String(row.client_id)
+      || row.grant_subject_type !== row.subject_type
+      || String(row.grant_subject_id) !== String(row.subject_id)
+      || JSON.stringify(grantScopes) !== JSON.stringify(scopes)
+      || JSON.stringify(grantResources) !== JSON.stringify(resources)
+      || JSON.stringify(grantAudiences) !== JSON.stringify(audiences)
+      || row.grant_workspace_id !== row.workspace_id)
       return invalidGrant
 
     const now = sqlDateTime(new Date())
@@ -194,6 +211,7 @@ export async function withAuthorizationCode<T>(
       return invalidGrant
 
     const value = await complete({
+      grantId: row.grant_id,
       clientId,
       subjectType: row.subject_type,
       subjectId,

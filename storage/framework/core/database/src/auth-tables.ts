@@ -3,6 +3,7 @@
  *
  * Creates the authentication-related tables:
  * - oauth_clients
+ * - oauth_grants
  * - oauth_auth_codes
  * - oauth_access_tokens
  * - oauth_refresh_tokens
@@ -49,6 +50,7 @@ function getDbDriver(): string {
  */
 export const AUTH_TABLES: readonly string[] = [
   'oauth_clients',
+  'oauth_grants',
   'oauth_auth_codes',
   'oauth_access_tokens',
   'oauth_refresh_tokens',
@@ -289,10 +291,38 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       if (!isDuplicateColumnError(error)) throw error
     }
 
+    if (options.verbose) log.info('Creating oauth_grants table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_grants (
+        id VARCHAR(32) PRIMARY KEY,
+        client_id BIGINT NOT NULL,
+        subject_type VARCHAR(255) NOT NULL,
+        subject_id BIGINT NOT NULL,
+        scopes TEXT NOT NULL,
+        resources TEXT NOT NULL,
+        audiences TEXT NOT NULL,
+        workspace_id VARCHAR(255),
+        revoked_at ${nullableTimestamp},
+        created_at ${datetime} DEFAULT ${utcNow},
+        updated_at ${nullableTimestamp}
+      )
+    `).execute()
+
+    try {
+      await db.unsafe(indexSqlForDialect(
+        'CREATE INDEX IF NOT EXISTS idx_oauth_grants_subject ON oauth_grants(client_id, subject_type, subject_id)',
+        dbDriver,
+      )).execute()
+    }
+    catch (error) {
+      if (!isDuplicateIndexError(error)) throw error
+    }
+
     if (options.verbose) log.info('Creating oauth_auth_codes table...')
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_auth_codes (
         code_hash VARCHAR(64) PRIMARY KEY,
+        grant_id VARCHAR(32) NOT NULL,
         client_id BIGINT NOT NULL,
         subject_type VARCHAR(255) NOT NULL,
         subject_id BIGINT NOT NULL,
@@ -309,8 +339,19 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       )
     `).execute()
 
+    // The provider routes were still disabled when oauth_auth_codes first
+    // shipped, so existing installations have no legitimate rows to backfill.
+    // Keep the upgrade nullable and fail closed when redemption sees NULL.
+    try {
+      await db.unsafe('ALTER TABLE oauth_auth_codes ADD COLUMN grant_id VARCHAR(32)').execute()
+    }
+    catch (error) {
+      if (!isDuplicateColumnError(error)) throw error
+    }
+
     for (const statement of [
       'CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_client_id ON oauth_auth_codes(client_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_grant_id ON oauth_auth_codes(grant_id)',
       'CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_expires_at ON oauth_auth_codes(expires_at)',
     ]) {
       try {
@@ -606,7 +647,9 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // LIMIT 0 checks the schema without reading any stored credentials.
     await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, personal_access_client,
       password_client, revoked, created_at, updated_at FROM oauth_clients LIMIT 0`).execute()
-    await db.unsafe(`SELECT code_hash, client_id, subject_type, subject_id, redirect_uri, scopes,
+    await db.unsafe(`SELECT id, client_id, subject_type, subject_id, scopes, resources, audiences,
+      workspace_id, revoked_at, created_at, updated_at FROM oauth_grants LIMIT 0`).execute()
+    await db.unsafe(`SELECT code_hash, grant_id, client_id, subject_type, subject_id, redirect_uri, scopes,
       resources, audiences, workspace_id, code_challenge, code_challenge_method, expires_at,
       consumed_at, created_at FROM oauth_auth_codes LIMIT 0`).execute()
     await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,

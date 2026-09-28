@@ -50,45 +50,65 @@ if (dialect === 'sqlite')
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const {
+  createOAuthGrant,
   createS256CodeChallenge,
   issueAuthorizationCode,
+  revokeOAuthGrant,
   withAuthorizationCode,
 } = await import('../../src')
 
 const verifier = 'v'.repeat(43)
 const codeChallenge = await createS256CodeChallenge(verifier)
-const base = {
-  clientId: 7,
-  subjectType: 'users',
-  subjectId: 42,
-  redirectUri: 'https://client.example.com/callback',
-  scopes: ['issues:read'],
-  resources: ['bughq'],
-  audiences: ['https://api.bughq.example'],
-  workspaceId: 'workspace-1',
-  codeChallenge,
-  lifetimeMs: 60_000,
-}
-const expected = {
-  clientId: base.clientId,
-  redirectUri: base.redirectUri,
-  codeVerifier: verifier,
-}
 
 try {
   assert.equal((await migrateAuthTables()).success, true)
   assert.equal((await migrateAuthTables()).success, true)
   await db.unsafe('CREATE TABLE issued_markers (marker VARCHAR(255) PRIMARY KEY)').execute()
+  const client = await db.selectFrom('oauth_clients')
+    .where('personal_access_client', '=', true)
+    .where('revoked', '=', false)
+    .select('id')
+    .executeTakeFirstOrThrow()
+
+  const grant = await createOAuthGrant({
+    clientId: Number(client.id),
+    subjectType: 'users',
+    subjectId: 42,
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+    audiences: ['https://api.bughq.example'],
+    workspaceId: 'workspace-1',
+  })
+  const base = {
+    grantId: grant.id,
+    clientId: grant.clientId,
+    subjectType: grant.subjectType,
+    subjectId: grant.subjectId,
+    redirectUri: 'https://client.example.com/callback',
+    scopes: grant.scopes,
+    resources: grant.resources,
+    audiences: grant.audiences,
+    workspaceId: grant.workspaceId,
+    codeChallenge,
+    lifetimeMs: 60_000,
+  }
+  const expected = {
+    clientId: base.clientId,
+    redirectUri: base.redirectUri,
+    codeVerifier: verifier,
+  }
 
   const plain = await issueAuthorizationCode(base)
   const stored = await db.selectFrom('oauth_auth_codes').selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
   assert.equal(stored.code_hash, createHash('sha256').update(plain).digest('hex'))
+  assert.equal(stored.grant_id, grant.id)
   assert.equal('code' in stored, false)
 
   const first = await withAuthorizationCode(plain, expected, async grant => grant)
   assert.equal(first.ok, true)
   if (first.ok) {
-    assert.equal(first.value.clientId, 7)
+    assert.equal(first.value.grantId, grant.id)
+    assert.equal(first.value.clientId, Number(client.id))
     assert.equal(first.value.subjectType, 'users')
     assert.equal(first.value.subjectId, 42)
     assert.deepEqual(first.value.scopes, ['issues:read'])
@@ -128,6 +148,39 @@ try {
     .where('code_hash', '=', createHash('sha256').update(expiredCode).digest('hex'))
     .execute()
   assert.deepEqual(await withAuthorizationCode(expiredCode, expected, async grant => grant), { ok: false, reason: 'invalid_grant' })
+
+  const revokedGrant = await createOAuthGrant({
+    clientId: Number(client.id),
+    subjectType: 'users',
+    subjectId: 42,
+    scopes: ['profile:read'],
+    resources: [],
+    audiences: [],
+  })
+  const revokedBase = {
+    ...base,
+    grantId: revokedGrant.id,
+    clientId: revokedGrant.clientId,
+    scopes: revokedGrant.scopes,
+    resources: revokedGrant.resources,
+    audiences: revokedGrant.audiences,
+    workspaceId: revokedGrant.workspaceId,
+  }
+  const outstanding = await issueAuthorizationCode(revokedBase)
+  assert.equal(await revokeOAuthGrant(revokedGrant.id), true)
+  assert.deepEqual(await withAuthorizationCode(outstanding, {
+    ...expected,
+    clientId: revokedGrant.clientId,
+  }, async active => active), { ok: false, reason: 'invalid_grant' })
+  await assert.rejects(issueAuthorizationCode(revokedBase), /grant is not active/)
+  await assert.rejects(createOAuthGrant({
+    clientId: 999_999,
+    subjectType: 'users',
+    subjectId: 42,
+    scopes: ['profile:read'],
+    resources: [],
+    audiences: [],
+  }), /client is not active/)
 
   console.log('oauth authorization code store OK')
 }
