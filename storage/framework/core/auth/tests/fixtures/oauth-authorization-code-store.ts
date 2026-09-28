@@ -55,6 +55,8 @@ const {
   exchangeAuthorizationCode,
   findToken,
   issueAuthorizationCode,
+  registerOAuthClient,
+  resolveOAuthProviderConfig,
   refreshToken,
   revokeOAuthGrant,
   validateRefreshToken,
@@ -73,6 +75,56 @@ try {
     .where('revoked', '=', false)
     .select('id')
     .executeTakeFirstOrThrow()
+
+  const provider = resolveOAuthProviderConfig({
+    enabled: true,
+    issuer: 'https://id.example.com',
+    scopes: { 'issues:read': { description: 'Read issues', resources: ['bughq'] } },
+    resources: { bughq: { audience: 'https://api.bughq.example' } },
+  })!
+  const publicRegistration = await registerOAuthClient(provider, 42, {
+    name: 'Browser integration',
+    type: 'public',
+    tokenEndpointAuthMethod: 'none',
+    redirectUris: ['https://client.example.com/callback'],
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  assert.equal(publicRegistration.plainTextSecret, undefined)
+  assert.equal(publicRegistration.client.ownerId, 42)
+  assert.equal(publicRegistration.client.type, 'public')
+  const storedPublic = await db.selectFrom('oauth_clients').where('id', '=', publicRegistration.client.id).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
+  assert.equal(storedPublic.secret, null)
+  assert.deepEqual(JSON.parse(String(storedPublic.redirect_uris)), ['https://client.example.com/callback'])
+  assert.deepEqual(JSON.parse(String(storedPublic.grant_types)), ['authorization_code', 'refresh_token'])
+  assert.deepEqual(JSON.parse(String(storedPublic.allowed_scopes)), ['issues:read'])
+  assert.deepEqual(JSON.parse(String(storedPublic.allowed_resources)), ['bughq'])
+
+  const confidentialRegistration = await registerOAuthClient(provider, 42, {
+    name: 'Server integration',
+    type: 'confidential',
+    tokenEndpointAuthMethod: 'client_secret_basic',
+    redirectUris: ['https://server.example.com/callback'],
+    grantTypes: ['authorization_code'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  assert(confidentialRegistration.plainTextSecret)
+  const storedConfidential = await db.selectFrom('oauth_clients').where('id', '=', confidentialRegistration.client.id).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
+  assert.notEqual(storedConfidential.secret, confidentialRegistration.plainTextSecret)
+  assert(String(storedConfidential.secret).startsWith('$2'))
+  const { verifyHash } = await import('@stacksjs/security')
+  assert.equal(await verifyHash(confidentialRegistration.plainTextSecret, String(storedConfidential.secret)), true)
+  await assert.rejects(registerOAuthClient(provider, 0, {
+    name: 'Ownerless integration',
+    type: 'public',
+    tokenEndpointAuthMethod: 'none',
+    redirectUris: ['https://client.example.com/callback'],
+    grantTypes: ['authorization_code'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  }), /owner identifier/)
 
   const grant = await createOAuthGrant({
     clientId: Number(client.id),

@@ -1,4 +1,14 @@
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
+import { randomBytes } from 'node:crypto'
+import {
+  db,
+  getDatabaseDialect,
+  markContextWrote,
+  parseSqlDateTime,
+  sqlDateTime,
+  sqlHelpers,
+} from '@stacksjs/database/runtime'
+import { makeHash } from '@stacksjs/security'
 import { isValidOAuthRedirectUri } from './oauth-authorization'
 
 export type OAuthTokenEndpointAuthMethod = 'client_secret_basic' | 'none'
@@ -20,6 +30,43 @@ export interface ValidatedOAuthClientRegistration extends OAuthClientRegistratio
   scopes: string[]
   resources: string[]
   requiresSecret: boolean
+}
+
+export interface RegisteredOAuthClient {
+  id: number
+  ownerId: number
+  name: string
+  type: 'confidential' | 'public'
+  tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod
+  redirectUris: string[]
+  grantTypes: string[]
+  scopes: string[]
+  resources: string[]
+  revoked: false
+  createdAt: Date
+}
+
+export interface RegisteredOAuthClientResult {
+  client: RegisteredOAuthClient
+  plainTextSecret?: string
+}
+
+interface StoredOAuthClient {
+  id: number | string
+  user_id: number | string | null
+  name: string
+  secret: string | null
+  redirect: string
+  client_type: string | null
+  redirect_uris: string | null
+  grant_types: string | null
+  token_endpoint_auth_method: string | null
+  allowed_scopes: string | null
+  allowed_resources: string | null
+  personal_access_client: boolean | number
+  password_client: boolean | number
+  revoked: boolean | number
+  created_at: string | Date
 }
 
 export class OAuthClientRegistrationError extends Error {
@@ -98,5 +145,111 @@ export function validateOAuthClientRegistration(
     scopes,
     resources,
     requiresSecret: input.type === 'confidential',
+  }
+}
+
+function storedValues(value: string | null): string[] | null {
+  if (value == null) return null
+  try {
+    const parsed: unknown = JSON.parse(value)
+    return Array.isArray(parsed) && parsed.every(item => typeof item === 'string') ? parsed : null
+  }
+  catch {
+    return null
+  }
+}
+
+function inactive(value: boolean | number): boolean {
+  return value === false || value === 0
+}
+
+/** Validate and persist one owner-managed provider client. */
+export async function registerOAuthClient(
+  provider: ResolvedOAuthProviderConfig,
+  ownerId: number,
+  input: OAuthClientRegistrationInput,
+): Promise<RegisteredOAuthClientResult> {
+  if (!Number.isSafeInteger(ownerId) || ownerId <= 0)
+    throw new TypeError('OAuth client owner identifier must be a positive safe integer.')
+
+  const client = validateOAuthClientRegistration(provider, input)
+  const plainTextSecret = client.requiresSecret ? randomBytes(40).toString('hex') : undefined
+  const storedSecret = plainTextSecret ? await makeHash(plainTextSecret, { algorithm: 'bcrypt' }) : null
+  const sql = sqlHelpers(getDatabaseDialect())
+  const createdAt = new Date()
+  if (sql.isMysql) createdAt.setUTCMilliseconds(0)
+  const disabled = sql.isPostgres ? false : 0
+
+  const stored = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const values = sql.params(
+      ownerId,
+      client.name,
+      storedSecret,
+      'local',
+      client.redirectUris[0],
+      client.type,
+      JSON.stringify(client.redirectUris),
+      JSON.stringify(client.grantTypes),
+      client.tokenEndpointAuthMethod,
+      JSON.stringify(client.scopes),
+      JSON.stringify(client.resources),
+      disabled,
+      disabled,
+      disabled,
+      sqlDateTime(createdAt),
+    )
+    const returning = sql.isMysql ? '' : ' RETURNING id'
+    const inserted = await trx.unsafe(`
+      INSERT INTO oauth_clients (
+        user_id, name, secret, provider, redirect, client_type, redirect_uris, grant_types,
+        token_endpoint_auth_method, allowed_scopes, allowed_resources, personal_access_client,
+        password_client, revoked, created_at
+      ) VALUES (${values.sql})${returning}
+    `, values.values) as Array<{ id: number | string }>
+    const idRows = sql.isMysql
+      ? await trx.unsafe('SELECT LAST_INSERT_ID() AS id') as Array<{ id: number | string }>
+      : inserted
+    const id = Number(idRows[0]?.id)
+    if (!Number.isSafeInteger(id) || id <= 0)
+      throw new Error('Failed to resolve the registered OAuth client identifier.')
+
+    const rows = await trx.unsafe(`SELECT * FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1`, [id]) as StoredOAuthClient[]
+    const row = rows[0]
+    if (!row
+      || String(row.user_id) !== String(ownerId)
+      || row.name !== client.name
+      || row.secret !== storedSecret
+      || row.redirect !== client.redirectUris[0]
+      || row.client_type !== client.type
+      || JSON.stringify(storedValues(row.redirect_uris)) !== JSON.stringify(client.redirectUris)
+      || JSON.stringify(storedValues(row.grant_types)) !== JSON.stringify(client.grantTypes)
+      || row.token_endpoint_auth_method !== client.tokenEndpointAuthMethod
+      || JSON.stringify(storedValues(row.allowed_scopes)) !== JSON.stringify(client.scopes)
+      || JSON.stringify(storedValues(row.allowed_resources)) !== JSON.stringify(client.resources)
+      || !inactive(row.personal_access_client)
+      || !inactive(row.password_client)
+      || !inactive(row.revoked))
+      throw new Error('Failed to persist the registered OAuth client policy.')
+
+    return { id, createdAt: parseSqlDateTime(row.created_at) ?? createdAt }
+  })
+  markContextWrote()
+
+  return {
+    client: {
+      id: stored.id,
+      ownerId,
+      name: client.name,
+      type: client.type,
+      tokenEndpointAuthMethod: client.tokenEndpointAuthMethod,
+      redirectUris: client.redirectUris,
+      grantTypes: client.grantTypes,
+      scopes: client.scopes,
+      resources: client.resources,
+      revoked: false,
+      createdAt: stored.createdAt,
+    },
+    ...(plainTextSecret === undefined ? {} : { plainTextSecret }),
   }
 }
