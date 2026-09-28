@@ -7,8 +7,6 @@ import {
   check,
   bcryptEncode,
   argon2Encode,
-  base64Verify,
-  md5Encode,
   hashMake,
   hashCheck,
   hashNeedsRehash,
@@ -16,7 +14,6 @@ import {
   hashDetectAlgorithm,
   makeHash,
   verifyHash,
-  base64Encode,
 } from '../src/hash'
 
 // Pre-generated hashes for synchronous tests
@@ -26,6 +23,13 @@ let argon2idHash: string
 beforeAll(async () => {
   bcryptHash = await bcryptEncode('test-password')
   argon2idHash = await argon2Encode('test-password')
+})
+
+test('the main entry excludes insecure password lookalikes', async () => {
+  const security = await import('../src')
+  expect('base64Verify' in security).toBe(false)
+  expect('md5Encode' in security).toBe(false)
+  expect('base64Encode' in security).toBe(true)
 })
 
 // ---------------------------------------------------------------------------
@@ -372,69 +376,6 @@ describe('argon2Encode', () => {
     const hash1 = await argon2Encode('alpha')
     const hash2 = await argon2Encode('beta')
     expect(hash1).not.toBe(hash2)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// base64Verify
-// ---------------------------------------------------------------------------
-describe('base64Verify', () => {
-  test('returns true for matching password', () => {
-    const encoded = base64Encode('hello-world')
-    expect(base64Verify('hello-world', encoded)).toBe(true)
-  })
-
-  test('returns false for non-matching password', () => {
-    const encoded = base64Encode('hello-world')
-    expect(base64Verify('wrong', encoded)).toBe(false)
-  })
-
-  test('returns false for different length strings', () => {
-    const encoded = base64Encode('short')
-    expect(base64Verify('a-much-longer-string-here', encoded)).toBe(false)
-  })
-
-  test('handles empty string', () => {
-    const encoded = base64Encode('')
-    expect(base64Verify('', encoded)).toBe(true)
-  })
-
-  test('is case sensitive', () => {
-    const encoded = base64Encode('Hello')
-    expect(base64Verify('hello', encoded)).toBe(false)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// md5Encode
-// ---------------------------------------------------------------------------
-describe('md5Encode', () => {
-  test('produces consistent output for same input', () => {
-    const hash1 = md5Encode('test')
-    const hash2 = md5Encode('test')
-    expect(hash1).toBe(hash2)
-  })
-
-  test('produces different output for different input', () => {
-    const hash1 = md5Encode('alpha')
-    const hash2 = md5Encode('beta')
-    expect(hash1).not.toBe(hash2)
-  })
-
-  test('returns a hex string', () => {
-    const hash = md5Encode('hello')
-    expect(hash).toMatch(/^[a-f0-9]+$/i)
-  })
-
-  test('produces 32-character hex hash', () => {
-    const hash = md5Encode('hello')
-    expect(hash.length).toBe(32)
-  })
-
-  test('handles empty string', () => {
-    const hash = md5Encode('')
-    expect(typeof hash).toBe('string')
-    expect(hash.length).toBe(32)
   })
 })
 

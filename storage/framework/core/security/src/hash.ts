@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto'
-import { base64Decode, base64Encode, hashPassword, md5, verifyPassword } from 'ts-security-crypto'
+import { base64Encode, hashPassword, verifyPassword } from 'ts-security-crypto'
 
 /**
  * Lazy-load hashing config to avoid circular dependency issues.
@@ -267,26 +267,6 @@ export async function argon2Encode(
     memoryCost: memory,
     timeCost: time,
   })
-}
-
-/**
- * Verify a password against a base64 encoded string
- * Note: base64 is NOT a secure password hash - only for legacy support
- */
-export function base64Verify(password: string, hash: string): boolean {
-  const decoded = base64Decode(hash)
-  const a = Buffer.from(decoded)
-  const b = Buffer.from(password)
-  if (a.length !== b.length)
-    return false
-  return timingSafeEqual(a, b)
-}
-
-/**
- * Create an MD5 hash (NOT secure for passwords)
- */
-export function md5Encode(password: string): string {
-  return md5(password)
 }
 
 /**

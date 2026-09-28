@@ -77,9 +77,7 @@ bcryptEncode(value, rounds?)     // bcrypt hash
 bcryptVerify(value, hash)        // bcrypt verify
 argon2Encode(value, options?)    // argon2 hash
 argon2Verify(value, hash)        // argon2 verify
-md5Encode(value)                  // MD5 (legacy only)
 base64Encode(value)               // base64
-base64Verify(value, encoded)      // base64 compare
 ```
 
 ## HashMakeOptions
@@ -124,6 +122,7 @@ interface HashMakeOptions {
 - APP_KEY is used for `encrypt()`/`decrypt()` — generate via `buddy key:generate`
 - APP_KEY format is colon-separated (validated during deployment)
 - Argon2 requires more memory/time but is more resistant to GPU attacks
-- `md5Encode()` exists for legacy compatibility only — never use for passwords
+- Base64 is encoding, not hashing. Never use `base64Encode()` for credentials.
+- MD5 and base64 password verification are intentionally absent from the main security API.
 - The firewall config is used by cloud deployment for WAF rules
 - Rate limiting is per-minute per-IP (500 default)
