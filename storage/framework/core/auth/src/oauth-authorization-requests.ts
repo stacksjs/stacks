@@ -228,7 +228,7 @@ export async function loadOAuthAuthorizationRequestSession(
       AND consumed_at IS NULL
       AND expires_at > ${sql.param(3)}
     LIMIT 1
-  `, [requestHash(requestId), browserSessionHash(browserSessionId), sqlDateTime(new Date())]) as StoredAuthorizationRequest[]
+  `, [requestHash(requestId), browserSessionHash(browserSessionId), sqlDateTime(new Date())]) as unknown as StoredAuthorizationRequest[]
   const row = rows[0]
   if (!row)
     return null
@@ -269,7 +269,7 @@ export async function withOAuthAuthorizationRequestSession<T>(
       WHERE request_hash = ${sql.param(1)}
         AND browser_session_hash = ${sql.param(2)}
       LIMIT 1${requestLock}
-    `, [hash, sessionHash]) as StoredAuthorizationRequest[]
+    `, [hash, sessionHash]) as unknown as StoredAuthorizationRequest[]
     const request = rows[0] ? requestFromStoredRow(rows[0], now.getTime()) : null
     if (!request)
       return invalidRequest

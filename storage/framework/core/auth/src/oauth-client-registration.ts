@@ -214,7 +214,7 @@ async function storedAuthorizationClient(clientId: string): Promise<{
       token_endpoint_auth_method, allowed_scopes, allowed_resources,
       personal_access_client, password_client, revoked
     FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
-  `, [id]) as StoredOAuthClient[]
+  `, [id]) as unknown as StoredOAuthClient[]
   const row = rows[0]
   const client = authorizationClientFromStored(row, id)
   return row && client ? { client, row } : null
@@ -244,7 +244,7 @@ export async function withAuthenticatedOAuthTokenClient<T>(
         token_endpoint_auth_method, allowed_scopes, allowed_resources,
         personal_access_client, password_client, revoked
       FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1${lock}
-    `, [id]) as StoredOAuthClient[]
+    `, [id]) as unknown as StoredOAuthClient[]
     const row = rows[0]
     const client = authorizationClientFromStored(row, id)
     if (!row || !client || client.revoked)

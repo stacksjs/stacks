@@ -55,6 +55,7 @@ const {
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
   exchangeAuthorizationCode,
+  exchangeOAuthAuthorizationCode,
   findToken,
   issueAuthorizationCode,
   loadOAuthAuthorizationRequestSession,
@@ -254,6 +255,38 @@ try {
     authorizationCodeLifetimeMs: 60_000,
   })).ok, true)
 
+  const publicExchangeRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const publicConsent = await approveOAuthAuthorizationRequestSession({
+    requestId: publicExchangeRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert.equal(publicConsent.ok, true)
+  if (publicConsent.ok) {
+    assert.deepEqual(await exchangeOAuthAuthorizationCode({
+      code: publicConsent.value.code,
+      clientId: publicRegistration.client.id,
+      clientSecret: 'unexpected-secret',
+      redirectUri: validatedRequest.redirectUri,
+      codeVerifier: verifier,
+      accessTokenLifetimeMs: 60_000,
+      refreshTokenLifetimeMs: 120_000,
+    }), { ok: false, reason: 'invalid_client' })
+    const publicExchange = await exchangeOAuthAuthorizationCode({
+      code: publicConsent.value.code,
+      clientId: publicRegistration.client.id,
+      redirectUri: validatedRequest.redirectUri,
+      codeVerifier: verifier,
+      accessTokenLifetimeMs: 60_000,
+      refreshTokenLifetimeMs: 120_000,
+    })
+    assert.equal(publicExchange.ok, true)
+    if (publicExchange.ok)
+      assert.match(publicExchange.value.refreshToken ?? '', /^[a-f0-9]{80}$/)
+  }
+
   assert.equal(await loadOAuthAuthorizationClient(String(client.id)), null, 'legacy personal clients must not enter the provider flow')
 
   const confidentialRegistration = await registerOAuthClient(provider, 42, {
@@ -271,13 +304,14 @@ try {
   assert(String(storedConfidential.secret).startsWith('$2'))
   const { verifyHash } = await import('@stacksjs/security')
   assert.equal(await verifyHash(confidentialRegistration.plainTextSecret, String(storedConfidential.secret)), true)
+  const loadedConfidential = await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id))
   assert.deepEqual(
     await withAuthenticatedOAuthTokenClient(
       String(confidentialRegistration.client.id),
       confidentialRegistration.plainTextSecret,
       async client => client,
     ),
-    await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)),
+    loadedConfidential,
   )
   assert.equal(await withAuthenticatedOAuthTokenClient(
     String(confidentialRegistration.client.id),
@@ -298,6 +332,55 @@ try {
     },
   ), /synthetic token endpoint failure/)
   assert.equal(await db.selectFrom('issued_markers').where('marker', '=', 'client-auth-must-roll-back').select('marker').executeTakeFirst(), undefined)
+
+  const confidentialRequest = validateOAuthAuthorizationRequest(provider, loadedConfidential!, {
+    responseType: 'code',
+    clientId: String(confidentialRegistration.client.id),
+    redirectUri: 'https://server.example.com/callback',
+    scope: 'issues:read',
+    resource: 'https://api.bughq.example',
+    codeChallenge,
+    codeChallengeMethod: 'S256',
+  })
+  const confidentialRequestId = await createOAuthAuthorizationRequestSession(confidentialRequest, browserSession, 60_000)
+  const confidentialConsent = await approveOAuthAuthorizationRequestSession({
+    requestId: confidentialRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert.equal(confidentialConsent.ok, true)
+  if (confidentialConsent.ok) {
+    const confidentialInput = {
+      code: confidentialConsent.value.code,
+      clientId: confidentialRegistration.client.id,
+      redirectUri: confidentialRequest.redirectUri,
+      codeVerifier: verifier,
+      accessTokenLifetimeMs: 60_000,
+      refreshTokenLifetimeMs: 120_000,
+    }
+    assert.deepEqual(await exchangeOAuthAuthorizationCode(confidentialInput), { ok: false, reason: 'invalid_client' })
+    assert.deepEqual(await exchangeOAuthAuthorizationCode({ ...confidentialInput, clientSecret: 'wrong-secret' }), { ok: false, reason: 'invalid_client' })
+    const confidentialExchange = await exchangeOAuthAuthorizationCode({
+      ...confidentialInput,
+      clientSecret: confidentialRegistration.plainTextSecret,
+    })
+    assert.equal(confidentialExchange.ok, true)
+    if (confidentialExchange.ok) {
+      assert.equal(confidentialExchange.value.refreshToken, undefined)
+      const refreshRows = await db.selectFrom('oauth_refresh_tokens')
+        .innerJoin('oauth_access_tokens', 'oauth_access_tokens.id', '=', 'oauth_refresh_tokens.access_token_id')
+        .where('oauth_access_tokens.oauth_grant_id', '=', confidentialExchange.value.grantId)
+        .select('oauth_refresh_tokens.id')
+        .get()
+      assert.equal(refreshRows.length, 0)
+    }
+    assert.deepEqual(await exchangeOAuthAuthorizationCode({
+      ...confidentialInput,
+      clientSecret: confidentialRegistration.plainTextSecret,
+    }), { ok: false, reason: 'invalid_grant' })
+  }
   await db.updateTable('oauth_clients').set({ revoked: true }).where('id', '=', confidentialRegistration.client.id).execute()
   assert.equal((await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)))?.revoked, true)
   assert.equal(await withAuthenticatedOAuthTokenClient(
