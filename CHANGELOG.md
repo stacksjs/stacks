@@ -1,5 +1,44 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.16...v0.75.17)
+
+## 💥 Breaking Changes
+
+- fix(security)!: remove insecure password helpers ([2008b0a](https://github.com/stacksjs/stacks/commit/2008b0a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✨ Features
+
+- **auth**: reuse remembered OAuth consent ([c6a5d2e](https://github.com/stacksjs/stacks/commit/c6a5d2e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **monitoring**: add BugHQ reporter ([a4ca2cb](https://github.com/stacksjs/stacks/commit/a4ca2cb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **errors**: add reporter registry ([e9c6c90](https://github.com/stacksjs/stacks/commit/e9c6c90)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **logging**: ship logs to LogHQ ([fd9b7dd](https://github.com/stacksjs/stacks/commit/fd9b7dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: stx 0.2.324, whose image warm-up no longer trusts the global Worker ([09fc1b4](https://github.com/stacksjs/stacks/commit/09fc1b4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **preloader**: never overwrite a global the runtime already owns ([4616029](https://github.com/stacksjs/stacks/commit/4616029)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: upgrade stale password hashes ([8bc9ee8](https://github.com/stacksjs/stacks/commit/8bc9ee8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **testing**: draw the component-vs-browser-QA boundary ([98d4f92](https://github.com/stacksjs/stacks/commit/98d4f92)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **testing**: replace the Playwright story with very-happy-dom ([5e1ee0a](https://github.com/stacksjs/stacks/commit/5e1ee0a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **desktop**: make bundle fixture portable ([5310f79](https://github.com/stacksjs/stacks/commit/5310f79)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2806](https://github.com/stacksjs/stacks/issues/2806))
+
+## 🎉 Miscellaneous
+
+- Merge pull request #2805 from stacksjs/docs/testing-very-happy-dom ([6ee1c51](https://github.com/stacksjs/stacks/commit/6ee1c51)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2805](https://github.com/stacksjs/stacks/issues/2805), [#2805](https://github.com/stacksjs/stacks/issues/2805))
+- Merge branch 'main' into docs/testing-very-happy-dom ([513987f](https://github.com/stacksjs/stacks/commit/513987f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.15...v0.75.16)
 
 ## ✨ Features
