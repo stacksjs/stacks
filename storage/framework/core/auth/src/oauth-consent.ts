@@ -19,6 +19,12 @@ export interface OAuthAuthorizationConsentResult {
   state: string | null
 }
 
+export interface OAuthAuthorizationDenialResult {
+  error: 'access_denied'
+  redirectUri: string
+  state: string | null
+}
+
 /** Atomically turn one authenticated browser approval into a grant and code. */
 export async function approveOAuthAuthorizationRequestSession(
   input: ApproveOAuthAuthorizationRequestSessionInput,
@@ -49,4 +55,16 @@ export async function approveOAuthAuthorizationRequestSession(
       state: request.state,
     }
   })
+}
+
+/** Consume one browser-bound denial without creating a grant or authorization code. */
+export async function denyOAuthAuthorizationRequestSession(
+  requestId: string,
+  browserSessionId: string,
+): Promise<OAuthAuthorizationRequestSessionResult<OAuthAuthorizationDenialResult>> {
+  return withOAuthAuthorizationRequestSession(requestId, browserSessionId, async request => ({
+    error: 'access_denied' as const,
+    redirectUri: request.redirectUri,
+    state: request.state,
+  }))
 }

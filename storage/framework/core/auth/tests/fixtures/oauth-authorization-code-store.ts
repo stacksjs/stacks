@@ -55,6 +55,7 @@ const {
   createOAuthGrant,
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
+  denyOAuthAuthorizationRequestSession,
   disableOAuthClient,
   disconnectOAuthGrant,
   exchangeAuthorizationCode,
@@ -183,6 +184,26 @@ try {
     { ok: false, reason: 'invalid_request' },
   )
   assert.equal((await withOAuthAuthorizationRequestSession(wrongSessionRequestId, browserSession, async request => request)).ok, true)
+
+  const denialRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const grantsBeforeDenial = await db.selectFrom('oauth_grants').where('client_id', '=', publicRegistration.client.id).select('id').get()
+  const codesBeforeDenial = await db.selectFrom('oauth_auth_codes').where('client_id', '=', publicRegistration.client.id).select('code_hash').get()
+  assert.deepEqual(
+    await denyOAuthAuthorizationRequestSession(denialRequestId, 'different-browser-session-token'),
+    { ok: false, reason: 'invalid_request' },
+  )
+  assert(await loadOAuthAuthorizationRequestSession(denialRequestId, browserSession), 'the wrong browser must not consume the request')
+  assert.deepEqual(await denyOAuthAuthorizationRequestSession(denialRequestId, browserSession), {
+    ok: true,
+    value: {
+      error: 'access_denied',
+      redirectUri: validatedRequest.redirectUri,
+      state: validatedRequest.state,
+    },
+  })
+  assert.deepEqual(await denyOAuthAuthorizationRequestSession(denialRequestId, browserSession), { ok: false, reason: 'invalid_request' })
+  assert.equal((await db.selectFrom('oauth_grants').where('client_id', '=', publicRegistration.client.id).select('id').get()).length, grantsBeforeDenial.length)
+  assert.equal((await db.selectFrom('oauth_auth_codes').where('client_id', '=', publicRegistration.client.id).select('code_hash').get()).length, codesBeforeDenial.length)
 
   const rollbackRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   await assert.rejects(withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async () => {
