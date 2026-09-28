@@ -132,8 +132,12 @@ async function verifySetup(): Promise<void> {
     assert((await tokens(42)).some(token => Number(token.id) === Number(previous.id)), 'existing tokens must receive their polymorphic owner backfill')
   }
   const pair = await createToken(42, 'after-setup', ['read'], { userAgent: 'setup-fixture', ipAddress: '127.0.0.1' })
-  const issued = await db.selectFrom('oauth_access_tokens').where('id', '=', pair.accessToken.id).selectAll().executeTakeFirstOrThrow()
+  const issued = await db.selectFrom('oauth_access_tokens').where('id', '=', pair.accessToken.id).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
   assert.equal(Number(issued.oauth_client_id), Number(clientBefore!.id), 'issuance must use the active client established by setup')
+  assert.equal(issued.oauth_grant_id, null, 'personal tokens must not claim a delegated grant')
+  assert.equal(issued.resources, null, 'personal tokens must not inherit delegated resources')
+  assert.equal(issued.audiences, null, 'personal tokens must not inherit delegated audiences')
+  assert.equal(issued.workspace_id, null, 'personal tokens must not inherit a delegated workspace')
   assert(await findToken(pair.plainTextToken))
   const replacement = await refreshToken(pair.refreshToken!)
   assert(await findToken(replacement.plainTextToken))

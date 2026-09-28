@@ -196,6 +196,23 @@ export function oauthAccessTokenDeviceColumnsSql(): string[] {
 }
 
 /**
+ * Nullable delegation metadata for OAuth-provider access tokens.
+ *
+ * Personal access tokens deliberately leave every column null. A provider
+ * token fills all four from the immutable consent grant, which lets resource
+ * authorization distinguish delegated access from a first-party session
+ * without overloading token scopes or the polymorphic owner columns.
+ */
+export function oauthAccessTokenDelegationColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_access_tokens ADD COLUMN oauth_grant_id VARCHAR(32)`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN resources TEXT`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN audiences TEXT`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN workspace_id VARCHAR(255)`,
+  ]
+}
+
+/**
  * Defensive ALTER guaranteeing `password_resets.expires_at`.
  *
  * `createResetToken` in `core/auth/src/password/reset.ts` has always written
@@ -381,6 +398,10 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         token TEXT NOT NULL,
         name VARCHAR(255),
         scopes TEXT,
+        oauth_grant_id VARCHAR(32),
+        resources TEXT,
+        audiences TEXT,
+        workspace_id VARCHAR(255),
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         expires_at ${nullableTimestamp},
         -- What the browser called itself and where it came from, so a person
@@ -407,6 +428,17 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       }
       catch {
         if (options.verbose) log.debug(`[auth-tables] Skipped (already applied): ${alterSql}`)
+      }
+    }
+
+    // Delegated OAuth tokens bind to an immutable grant and its authorization
+    // context. Existing personal tokens remain valid with null metadata.
+    for (const alterSql of oauthAccessTokenDelegationColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
       }
     }
 
@@ -449,6 +481,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // Run after the legacy owner-column upgrade as well as on fresh installs.
     for (const statement of [
       'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_owner ON oauth_access_tokens(tokenable_type, tokenable_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_grant_id ON oauth_access_tokens(oauth_grant_id)',
       'CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_access_token_id ON oauth_refresh_tokens(access_token_id)',
     ]) {
       try { await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute() }
@@ -653,7 +686,8 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       resources, audiences, workspace_id, code_challenge, code_challenge_method, expires_at,
       consumed_at, created_at FROM oauth_auth_codes LIMIT 0`).execute()
     await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,
-      token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at
+      token, name, scopes, oauth_grant_id, resources, audiences, workspace_id, revoked, expires_at,
+      user_agent, ip_address, created_at, updated_at
       FROM oauth_access_tokens LIMIT 0`).execute()
     await db.unsafe(`SELECT id, access_token_id, token, revoked, expires_at, created_at
       FROM oauth_refresh_tokens LIMIT 0`).execute()
