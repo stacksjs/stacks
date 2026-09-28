@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.23...v0.75.24)
+
+## 🐛 Bug Fixes
+
+- **mobile**: keep NativeNavBar stuck to the page, not its component wrapper ([f6278fe](https://github.com/stacksjs/stacks/commit/f6278fe)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **mobile**: assert NativeNavBar steps its stx wrapper aside ([a7eec52](https://github.com/stacksjs/stacks/commit/a7eec52)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.22...v0.75.23)
 
 ## ✨ Features
