@@ -1,4 +1,5 @@
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
+import type { OAuthAuthorizationClientRegistration } from './oauth-authorization'
 import { randomBytes } from 'node:crypto'
 import {
   db,
@@ -161,6 +162,52 @@ function storedValues(value: string | null): string[] | null {
 
 function inactive(value: boolean | number): boolean {
   return value === false || value === 0
+}
+
+function storedFlag(value: boolean | number): boolean | null {
+  if (value === false || value === 0) return false
+  if (value === true || value === 1) return true
+  return null
+}
+
+/** Load only complete provider registration metadata from authoritative storage. */
+export async function loadOAuthAuthorizationClient(clientId: string): Promise<OAuthAuthorizationClientRegistration | null> {
+  const id = Number(clientId)
+  if (!Number.isSafeInteger(id) || id <= 0)
+    return null
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const rows = await db.primary.unsafe(`
+    SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
+      token_endpoint_auth_method, allowed_scopes, allowed_resources,
+      personal_access_client, password_client, revoked
+    FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
+  `, [id]) as StoredOAuthClient[]
+  const row = rows[0]
+  const redirectUris = storedValues(row?.redirect_uris ?? null)
+  const grantTypes = storedValues(row?.grant_types ?? null)
+  const scopes = storedValues(row?.allowed_scopes ?? null)
+  const resources = storedValues(row?.allowed_resources ?? null)
+  const revoked = row ? storedFlag(row.revoked) : null
+  const type = row?.client_type
+  const method = row?.token_endpoint_auth_method
+  if (!row || String(row.id) !== String(id)
+    || (type !== 'public' && type !== 'confidential')
+    || (method !== 'none' && method !== 'client_secret_basic')
+    || (type === 'public' ? method !== 'none' || row.secret != null : method !== 'client_secret_basic' || !row.secret)
+    || !redirectUris?.length || !grantTypes?.includes('authorization_code') || !scopes?.length || !resources
+    || new Set(redirectUris).size !== redirectUris.length
+    || new Set(grantTypes).size !== grantTypes.length
+    || new Set(scopes).size !== scopes.length
+    || new Set(resources).size !== resources.length
+    || redirectUris.some(uri => !isValidOAuthRedirectUri(uri))
+    || row.redirect !== redirectUris[0]
+    || !inactive(row.personal_access_client)
+    || !inactive(row.password_client)
+    || revoked == null)
+    return null
+
+  return { id, type, revoked, redirectUris, grantTypes, scopes, resources }
 }
 
 /** Validate and persist one owner-managed provider client. */

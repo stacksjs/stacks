@@ -55,11 +55,13 @@ const {
   exchangeAuthorizationCode,
   findToken,
   issueAuthorizationCode,
+  loadOAuthAuthorizationClient,
   registerOAuthClient,
   resolveOAuthProviderConfig,
   refreshToken,
   revokeOAuthGrant,
   validateRefreshToken,
+  validateOAuthAuthorizationRequest,
   withAuthorizationCode,
 } = await import('../../src')
 
@@ -100,6 +102,27 @@ try {
   assert.deepEqual(JSON.parse(String(storedPublic.grant_types)), ['authorization_code', 'refresh_token'])
   assert.deepEqual(JSON.parse(String(storedPublic.allowed_scopes)), ['issues:read'])
   assert.deepEqual(JSON.parse(String(storedPublic.allowed_resources)), ['bughq'])
+  const loadedPublic = await loadOAuthAuthorizationClient(String(publicRegistration.client.id))
+  assert.deepEqual(loadedPublic, {
+    id: publicRegistration.client.id,
+    type: 'public',
+    revoked: false,
+    redirectUris: ['https://client.example.com/callback'],
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  assert.equal(validateOAuthAuthorizationRequest(provider, loadedPublic!, {
+    responseType: 'code',
+    clientId: String(publicRegistration.client.id),
+    redirectUri: 'https://client.example.com/callback',
+    scope: 'issues:read',
+    resource: 'https://api.bughq.example',
+    state: 'registered-client-state',
+    codeChallenge,
+    codeChallengeMethod: 'S256',
+  }).clientType, 'public')
+  assert.equal(await loadOAuthAuthorizationClient(String(client.id)), null, 'legacy personal clients must not enter the provider flow')
 
   const confidentialRegistration = await registerOAuthClient(provider, 42, {
     name: 'Server integration',
@@ -116,6 +139,10 @@ try {
   assert(String(storedConfidential.secret).startsWith('$2'))
   const { verifyHash } = await import('@stacksjs/security')
   assert.equal(await verifyHash(confidentialRegistration.plainTextSecret, String(storedConfidential.secret)), true)
+  await db.updateTable('oauth_clients').set({ revoked: true }).where('id', '=', confidentialRegistration.client.id).execute()
+  assert.equal((await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)))?.revoked, true)
+  await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
+  assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
   await assert.rejects(registerOAuthClient(provider, 0, {
     name: 'Ownerless integration',
     type: 'public',
