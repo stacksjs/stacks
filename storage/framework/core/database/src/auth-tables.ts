@@ -230,6 +230,14 @@ export function oauthAccessTokenDelegationColumnsSql(): string[] {
   ]
 }
 
+/** Nullable rotation-family metadata used only by delegated refresh tokens. */
+export function oauthRefreshTokenDelegationColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_refresh_tokens ADD COLUMN family_id VARCHAR(64)`,
+    `ALTER TABLE oauth_refresh_tokens ADD COLUMN parent_id BIGINT`,
+  ]
+}
+
 /**
  * Defensive ALTER guaranteeing `password_resets.expires_at`.
  *
@@ -532,11 +540,22 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         ${pkColumn},
         access_token_id INTEGER NOT NULL,
         token TEXT NOT NULL,
+        family_id VARCHAR(64),
+        parent_id BIGINT,
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         expires_at ${nullableTimestamp},
         created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
+
+    for (const alterSql of oauthRefreshTokenDelegationColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
+      }
+    }
 
     await createTokenIndex('idx_oauth_refresh_tokens_token', 'oauth_refresh_tokens', 'token')
 
@@ -548,6 +567,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_owner ON oauth_access_tokens(tokenable_type, tokenable_id)',
       'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_grant_id ON oauth_access_tokens(oauth_grant_id)',
       'CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_access_token_id ON oauth_refresh_tokens(access_token_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_family_id ON oauth_refresh_tokens(family_id)',
     ]) {
       try { await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute() }
       catch (error) { if (!isDuplicateIndexError(error)) throw error }
@@ -759,7 +779,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       token, name, scopes, oauth_grant_id, resources, audiences, workspace_id, revoked, expires_at,
       user_agent, ip_address, created_at, updated_at
       FROM oauth_access_tokens LIMIT 0`).execute()
-    await db.unsafe(`SELECT id, access_token_id, token, revoked, expires_at, created_at
+    await db.unsafe(`SELECT id, access_token_id, token, family_id, parent_id, revoked, expires_at, created_at
       FROM oauth_refresh_tokens LIMIT 0`).execute()
 
     if (options.verbose) log.info('Ensuring personal access client exists...')

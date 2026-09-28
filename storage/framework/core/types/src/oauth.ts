@@ -240,6 +240,8 @@ export interface OAuthRefreshTokenRow {
   id: number
   access_token_id: number
   token: string
+  family_id?: string | null
+  parent_id?: number | null
   revoked: boolean | number
   expires_at: string | null
   created_at: string | null
