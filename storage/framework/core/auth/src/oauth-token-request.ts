@@ -1,6 +1,15 @@
 import { Buffer } from 'node:buffer'
 
-export type OAuthTokenRequestErrorCode = 'invalid_client' | 'invalid_request' | 'unsupported_grant_type'
+export type OAuthTokenRequestErrorCode
+  = | 'invalid_client'
+    | 'invalid_request'
+    | 'unsupported_grant_type'
+    | 'unsupported_token_type'
+
+export interface OAuthClientCredentials {
+  clientId: number
+  clientSecret?: string
+}
 
 export interface OAuthAuthorizationCodeTokenRequest {
   grantType: 'authorization_code'
@@ -20,6 +29,11 @@ export interface OAuthRefreshTokenRequest {
 }
 
 export type OAuthTokenRequest = OAuthAuthorizationCodeTokenRequest | OAuthRefreshTokenRequest
+
+export interface OAuthRevocationRequest extends OAuthClientCredentials {
+  token: string
+  tokenTypeHint?: 'access_token' | 'refresh_token'
+}
 
 export class OAuthTokenRequestError extends Error {
   constructor(
@@ -98,6 +112,19 @@ function basicCredentials(header: string): { clientId: number, clientSecret: str
   return { clientId, clientSecret }
 }
 
+function clientCredentials(params: URLSearchParams, authorization?: string | null): OAuthClientCredentials {
+  const bodyClientId = single(params, 'client_id')
+  const bodyClientSecret = single(params, 'client_secret')
+  if (authorization) {
+    if (bodyClientId !== undefined || bodyClientSecret !== undefined)
+      reject('invalid_request', 'OAuth client authentication methods must not be combined.')
+    return basicCredentials(authorization)
+  }
+  if (bodyClientSecret !== undefined)
+    reject('invalid_request', 'OAuth client secrets must use Basic authentication.')
+  return { clientId: clientIdentifier(bodyClientId ?? '') }
+}
+
 function tokenValue(params: URLSearchParams, name: string): string {
   const value = single(params, name, true)!
   if (value.length > 4096 || /\s/.test(value))
@@ -131,19 +158,7 @@ export function parseOAuthTokenRequest(body: string, authorization?: string | nu
     'scope',
   ]) single(params, name)
 
-  const bodyClientId = single(params, 'client_id')
-  const bodyClientSecret = single(params, 'client_secret')
-  let credentials: { clientId: number, clientSecret?: string }
-  if (authorization) {
-    if (bodyClientId !== undefined || bodyClientSecret !== undefined)
-      reject('invalid_request', 'OAuth client authentication methods must not be combined.')
-    credentials = basicCredentials(authorization)
-  }
-  else {
-    if (bodyClientSecret !== undefined)
-      reject('invalid_request', 'OAuth client secrets must use Basic authentication.')
-    credentials = { clientId: clientIdentifier(bodyClientId ?? '') }
-  }
+  const credentials = clientCredentials(params, authorization)
 
   const grantType = single(params, 'grant_type', true)
   if (grantType === 'authorization_code') {
@@ -171,4 +186,25 @@ export function parseOAuthTokenRequest(body: string, authorization?: string | nu
     }
   }
   return reject('unsupported_grant_type', 'OAuth grant type is not supported.')
+}
+
+/** Parse one RFC 7009 revocation request through the token endpoint's client-authentication rules. */
+export function parseOAuthRevocationRequest(body: string, authorization?: string | null): OAuthRevocationRequest {
+  if (body.length > 16_384)
+    reject('invalid_request', 'OAuth revocation request is too large.')
+  const params = new URLSearchParams(body)
+  for (const name of ['client_id', 'client_secret', 'token', 'token_type_hint'])
+    single(params, name)
+
+  const credentials = clientCredentials(params, authorization)
+  const token = tokenValue(params, 'token')
+  const tokenTypeHint = single(params, 'token_type_hint')
+  if (tokenTypeHint !== undefined && tokenTypeHint !== 'access_token' && tokenTypeHint !== 'refresh_token')
+    reject('unsupported_token_type', 'OAuth revocation token type is not supported.')
+
+  return {
+    ...credentials,
+    token,
+    ...(tokenTypeHint ? { tokenTypeHint } : {}),
+  }
 }

@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { describe, expect, it } from 'bun:test'
 import {
   OAuthTokenRequestError,
+  parseOAuthRevocationRequest,
   parseOAuthTokenRequest,
 } from '../src/oauth-token-request'
 
@@ -19,6 +20,17 @@ function requestError(body: string, authorization?: string): OAuthTokenRequestEr
     return error as OAuthTokenRequestError
   }
   throw new Error('Expected OAuth token request parsing to fail.')
+}
+
+function revocationError(body: string, authorization?: string): OAuthTokenRequestError {
+  try {
+    parseOAuthRevocationRequest(body, authorization)
+  }
+  catch (error) {
+    expect(error).toBeInstanceOf(OAuthTokenRequestError)
+    return error as OAuthTokenRequestError
+  }
+  throw new Error('Expected OAuth revocation request parsing to fail.')
 }
 
 describe('OAuth token request parsing', () => {
@@ -79,5 +91,33 @@ describe('OAuth token request parsing', () => {
     ['grant_type=refresh_token&client_id=42&refresh_token=token&scope=issues%3Aread+issues%3Aread', undefined, 'invalid_request'],
   ])('rejects ambiguous or unsupported token request %#', (body, authorization, expected) => {
     expect(requestError(body, authorization).error).toBe(expected)
+  })
+})
+
+describe('OAuth revocation request parsing', () => {
+  it('parses public and confidential client authentication without exposing ambiguity', () => {
+    expect(parseOAuthRevocationRequest(new URLSearchParams({
+      client_id: '42',
+      token: 'a'.repeat(80),
+    }).toString())).toEqual({ clientId: 42, token: 'a'.repeat(80) })
+    expect(parseOAuthRevocationRequest(new URLSearchParams({
+      token: 'b'.repeat(80),
+      token_type_hint: 'refresh_token',
+    }).toString(), basic('42', 'secret'))).toEqual({
+      clientId: 42,
+      clientSecret: 'secret',
+      token: 'b'.repeat(80),
+      tokenTypeHint: 'refresh_token',
+    })
+  })
+
+  it.each([
+    ['client_id=42&token=a&token=b', undefined, 'invalid_request'],
+    ['client_id=42&client_secret=secret&token=a', undefined, 'invalid_request'],
+    ['client_id=42&token=a', basic('42', 'secret'), 'invalid_request'],
+    ['client_id=42&token=a&token_type_hint=id_token', undefined, 'unsupported_token_type'],
+    ['client_id=42', undefined, 'invalid_request'],
+  ])('rejects ambiguous or unsupported revocation request %#', (body, authorization, expected) => {
+    expect(revocationError(body, authorization).error).toBe(expected)
   })
 })

@@ -60,6 +60,7 @@ const {
   exchangeAuthorizationCode,
   exchangeOAuthAuthorizationCode,
   findToken,
+  handleOAuthRevocationRequest,
   handleOAuthTokenRequest,
   issueAuthorizationCode,
   listOAuthClients,
@@ -772,6 +773,131 @@ try {
     workspaceId: null,
     isSubjectEligible: async () => false,
   }), { ok: false, reason: 'invalid_token' })
+  const revocationRegistration = await registerOAuthClient(provider, 42, {
+    name: 'Revocation integration',
+    type: 'public',
+    tokenEndpointAuthMethod: 'none',
+    redirectUris: ['https://revoke.example.com/callback'],
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  const revocationRequest = validateOAuthAuthorizationRequest(
+    provider,
+    (await loadOAuthAuthorizationClient(String(revocationRegistration.client.id)))!,
+    {
+      responseType: 'code',
+      clientId: String(revocationRegistration.client.id),
+      redirectUri: 'https://revoke.example.com/callback',
+      scope: 'issues:read',
+      resource: 'https://api.bughq.example',
+      codeChallenge,
+      codeChallengeMethod: 'S256',
+    },
+  )
+  const revocationRequestId = await createOAuthAuthorizationRequestSession(revocationRequest, browserSession, 60_000)
+  const revocationConsent = await approveOAuthAuthorizationRequestSession({
+    requestId: revocationRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(revocationConsent.ok)
+  const revocationTokens = await exchangeOAuthAuthorizationCode({
+    code: revocationConsent.value.code,
+    clientId: revocationRegistration.client.id,
+    redirectUri: revocationRequest.redirectUri,
+    codeVerifier: verifier,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert(revocationTokens.ok)
+  const secondRevocationCode = await issueAuthorizationCode({
+    grantId: revocationTokens.value.grantId,
+    redirectUri: revocationRequest.redirectUri,
+    codeChallenge,
+    lifetimeMs: 60_000,
+  })
+  const secondRevocationTokens = await exchangeOAuthAuthorizationCode({
+    code: secondRevocationCode,
+    clientId: revocationRegistration.client.id,
+    redirectUri: revocationRequest.redirectUri,
+    codeVerifier: verifier,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert(secondRevocationTokens.ok)
+  const invalidBasicRevocation = await handleOAuthRevocationRequest({
+    body: new URLSearchParams({ token: revocationTokens.value.accessToken }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+    authorization: 'Basic !!!',
+  })
+  assert.equal(invalidBasicRevocation.status, 401)
+  assert.equal(invalidBasicRevocation.headers.get('www-authenticate'), 'Basic realm="oauth-revoke"')
+  const crossClientRevocation = await handleOAuthRevocationRequest({
+    body: new URLSearchParams({
+      client_id: String(publicRegistration.client.id),
+      token: revocationTokens.value.accessToken,
+      token_type_hint: 'access_token',
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  })
+  assert.equal(crossClientRevocation.status, 200)
+  assert.equal(await crossClientRevocation.text(), '')
+  assert(await findToken(revocationTokens.value.accessToken), 'another client must not revoke the token')
+  const unsupportedHint = await handleOAuthRevocationRequest({
+    body: new URLSearchParams({
+      client_id: String(revocationRegistration.client.id),
+      token: revocationTokens.value.accessToken,
+      token_type_hint: 'id_token',
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  })
+  assert.equal(unsupportedHint.status, 400)
+  assert.deepEqual(await unsupportedHint.json(), { error: 'unsupported_token_type' })
+  assert(await findToken(revocationTokens.value.accessToken), 'an unsupported hint must not revoke the token')
+  const accessRevocation = await handleOAuthRevocationRequest({
+    body: new URLSearchParams({
+      client_id: String(revocationRegistration.client.id),
+      token: revocationTokens.value.accessToken,
+      token_type_hint: 'refresh_token',
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+  })
+  assert.equal(accessRevocation.status, 200)
+  assert.equal(accessRevocation.headers.get('cache-control'), 'no-store')
+  assert.equal(await findToken(revocationTokens.value.accessToken), null)
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: revocationTokens.value.refreshToken!,
+    clientId: revocationRegistration.client.id,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_grant' })
+  const refreshRevocation = await handleOAuthRevocationRequest({
+    body: new URLSearchParams({
+      client_id: String(revocationRegistration.client.id),
+      token: secondRevocationTokens.value.refreshToken!,
+      token_type_hint: 'refresh_token',
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  })
+  assert.equal(refreshRevocation.status, 200)
+  assert.equal(await findToken(secondRevocationTokens.value.accessToken), null)
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: secondRevocationTokens.value.refreshToken!,
+    clientId: revocationRegistration.client.id,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_grant' })
+  const repeatedRevocation = await handleOAuthRevocationRequest({
+    body: new URLSearchParams({
+      client_id: String(revocationRegistration.client.id),
+      token: secondRevocationTokens.value.refreshToken!,
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  })
+  assert.equal(repeatedRevocation.status, 200)
   const publicUpdate = {
     name: 'Browser integration renamed',
     redirectUris: ['https://client.example.com/callback'],

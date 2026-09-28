@@ -12,6 +12,7 @@ export type OAuthTokenProtocolErrorCode
 
 export interface OAuthTokenResponseOptions {
   clientAuthenticatedWithBasic?: boolean
+  basicRealm?: string
 }
 
 const TOKEN_HEADERS = {
@@ -30,7 +31,7 @@ export function oauthTokenErrorResponse(
     status: challenge ? 401 : 400,
     headers: {
       ...TOKEN_HEADERS,
-      ...(challenge ? { 'WWW-Authenticate': 'Basic realm="oauth-token"' } : {}),
+      ...(challenge ? { 'WWW-Authenticate': `Basic realm="${options.basicRealm ?? 'oauth-token'}"` } : {}),
     },
   })
 }
