@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.10...v0.75.11)
+
+## 🐛 Bug Fixes
+
+- **auth**: say so when a reset link points at a page that cannot work ([bf743d9](https://github.com/stacksjs/stacks/commit/bf743d9)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **views**: an app view overrides the default at a dynamic path ([db54148](https://github.com/stacksjs/stacks/commit/db54148)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.9...v0.75.10)
 
 ## 🐛 Bug Fixes
