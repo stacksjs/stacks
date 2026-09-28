@@ -60,6 +60,7 @@ const {
   issueAuthorizationCode,
   loadOAuthAuthorizationRequestSession,
   loadOAuthAuthorizationClient,
+  refreshOAuthDelegatedToken,
   registerOAuthClient,
   resolveOAuthProviderConfig,
   refreshToken,
@@ -283,8 +284,88 @@ try {
       refreshTokenLifetimeMs: 120_000,
     })
     assert.equal(publicExchange.ok, true)
-    if (publicExchange.ok)
+    if (publicExchange.ok) {
       assert.match(publicExchange.value.refreshToken ?? '', /^[a-f0-9]{80}$/)
+      const originalAccessToken = publicExchange.value.accessToken
+      const originalRefreshToken = publicExchange.value.refreshToken!
+      const originalRefreshRow = await db.selectFrom('oauth_refresh_tokens')
+        .where('token', '=', createHash('sha256').update(originalRefreshToken).digest('hex'))
+        .selectAll()
+        .executeTakeFirstOrThrow() as Record<string, unknown>
+      assert.deepEqual(await refreshOAuthDelegatedToken({
+        refreshToken: originalRefreshToken,
+        clientId: publicRegistration.client.id,
+        clientSecret: 'unexpected-secret',
+        accessTokenLifetimeMs: 60_000,
+        refreshTokenLifetimeMs: 120_000,
+      }), { ok: false, reason: 'invalid_client' })
+      const rotated = await refreshOAuthDelegatedToken({
+        refreshToken: originalRefreshToken,
+        clientId: publicRegistration.client.id,
+        accessTokenLifetimeMs: 60_000,
+        refreshTokenLifetimeMs: 120_000,
+      })
+      assert.equal(rotated.ok, true)
+      if (rotated.ok) {
+        assert.notEqual(rotated.value.accessToken, originalAccessToken)
+        assert.notEqual(rotated.value.refreshToken, originalRefreshToken)
+        assert.equal(await findToken(originalAccessToken), null)
+        assert(await findToken(rotated.value.accessToken))
+        const replacementRefresh = await db.selectFrom('oauth_refresh_tokens')
+          .where('token', '=', createHash('sha256').update(rotated.value.refreshToken!).digest('hex'))
+          .selectAll()
+          .executeTakeFirstOrThrow() as Record<string, unknown>
+        assert.equal(replacementRefresh.family_id, originalRefreshRow.family_id)
+        assert.equal(String(replacementRefresh.parent_id), String(originalRefreshRow.id))
+
+        assert.deepEqual(await refreshOAuthDelegatedToken({
+          refreshToken: originalRefreshToken,
+          clientId: publicRegistration.client.id,
+          accessTokenLifetimeMs: 60_000,
+          refreshTokenLifetimeMs: 120_000,
+        }), { ok: false, reason: 'invalid_grant' })
+        assert.equal(await findToken(rotated.value.accessToken), null, 'replaying a parent must revoke its descendants')
+        const familyRows = await db.selectFrom('oauth_refresh_tokens')
+          .where('family_id', '=', String(originalRefreshRow.family_id))
+          .select(['id', 'revoked'])
+          .get()
+        assert.equal(familyRows.length, 2)
+        assert(familyRows.every(row => Boolean(row.revoked)))
+      }
+    }
+
+    const concurrentRefreshRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+    const concurrentRefreshConsent = await approveOAuthAuthorizationRequestSession({
+      requestId: concurrentRefreshRequestId,
+      browserSessionId: browserSession,
+      subjectType: 'users',
+      subjectId: 42,
+      authorizationCodeLifetimeMs: 60_000,
+    })
+    assert.equal(concurrentRefreshConsent.ok, true)
+    if (concurrentRefreshConsent.ok) {
+      const concurrentFamily = await exchangeOAuthAuthorizationCode({
+        code: concurrentRefreshConsent.value.code,
+        clientId: publicRegistration.client.id,
+        redirectUri: validatedRequest.redirectUri,
+        codeVerifier: verifier,
+        accessTokenLifetimeMs: 60_000,
+        refreshTokenLifetimeMs: 120_000,
+      })
+      assert.equal(concurrentFamily.ok, true)
+      if (concurrentFamily.ok) {
+        const attempts = await Promise.all(Array.from({ length: 8 }, () => refreshOAuthDelegatedToken({
+          refreshToken: concurrentFamily.value.refreshToken!,
+          clientId: publicRegistration.client.id,
+          accessTokenLifetimeMs: 60_000,
+          refreshTokenLifetimeMs: 120_000,
+        })))
+        assert.equal(attempts.filter(result => result.ok).length, 1)
+        const winner = attempts.find(result => result.ok)
+        assert(winner?.ok)
+        assert.equal(await findToken(winner.value.accessToken), null, 'concurrent reuse must contain the winning descendant')
+      }
+    }
   }
 
   assert.equal(await loadOAuthAuthorizationClient(String(client.id)), null, 'legacy personal clients must not enter the provider flow')
@@ -332,6 +413,20 @@ try {
     },
   ), /synthetic token endpoint failure/)
   assert.equal(await db.selectFrom('issued_markers').where('marker', '=', 'client-auth-must-roll-back').select('marker').executeTakeFirst(), undefined)
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: 'malformed',
+    clientId: confidentialRegistration.client.id,
+    clientSecret: 'wrong-secret',
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_client' })
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: 'malformed',
+    clientId: confidentialRegistration.client.id,
+    clientSecret: confidentialRegistration.plainTextSecret,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'unauthorized_client' })
 
   const confidentialRequest = validateOAuthAuthorizationRequest(provider, loadedConfidential!, {
     responseType: 'code',
