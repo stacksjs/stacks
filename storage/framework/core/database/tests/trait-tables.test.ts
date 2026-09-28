@@ -452,6 +452,19 @@ describe('the trait pivots exist without a model declaring them', () => {
   })
 })
 
+describe('the pivot unique indexes', () => {
+  test('use the names the migration corpus uses, so the two converge on one index', () => {
+    // 0000000119/0000000147/0000000148 name these `<table>_owner_unique`. The
+    // guarantee used `<table>_unique`, so a cms app carried two identical
+    // indexes, and one with cms disabled - where the gate strips every
+    // `taggable_models` statement from the corpus - never had the corpus name.
+    const statements = traitTableIndexSql()
+    expect(statements).toContain('CREATE UNIQUE INDEX IF NOT EXISTS taggable_models_owner_unique ON taggable_models (tag_id, taggable_id, taggable_type)')
+    expect(statements).toContain('CREATE UNIQUE INDEX IF NOT EXISTS categorizable_models_owner_unique ON categorizable_models (category_id, categorizable_id, categorizable_type)')
+    expect(statements.some(statement => /\b(taggable|categorizable)_models_unique\b/.test(statement))).toBe(false)
+  })
+})
+
 describe('drifted catalogue tables', () => {
   /**
    * `CREATE TABLE IF NOT EXISTS` guarantees a table by that NAME, not a table

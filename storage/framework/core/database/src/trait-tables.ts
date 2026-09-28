@@ -316,8 +316,16 @@ export function traitTableIndexSql(): string[] {
     // One upvote per user per target — `upvote()` relies on this to stay
     // idempotent rather than stacking duplicate rows.
     `CREATE UNIQUE INDEX IF NOT EXISTS commentable_upvotes_user_unique ON commentable_upvotes (upvoteable_type, upvoteable_id, user_id)`,
-    `CREATE UNIQUE INDEX IF NOT EXISTS taggable_models_unique ON taggable_models (tag_id, taggable_id, taggable_type)`,
-    `CREATE UNIQUE INDEX IF NOT EXISTS categorizable_models_unique ON categorizable_models (category_id, categorizable_id, categorizable_type)`,
+    // The names the migration corpus uses (0000000119, 0000000147, 0000000148),
+    // so this guarantee and the corpus converge on ONE index instead of two
+    // identical ones under different names. It also makes the guarantee the
+    // only source where the corpus is gated out: `taggable_models` belongs to
+    // the `cms` feature, so with cms disabled the gate strips every statement
+    // against it - including this index from 0000000147 - while this function
+    // still creates the table. These were `<table>_unique` through 0.75.13; a
+    // database from then keeps that index as well, which is redundant, not wrong.
+    `CREATE UNIQUE INDEX IF NOT EXISTS taggable_models_owner_unique ON taggable_models (tag_id, taggable_id, taggable_type)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS categorizable_models_owner_unique ON categorizable_models (category_id, categorizable_id, categorizable_type)`,
   ]
 }
 
