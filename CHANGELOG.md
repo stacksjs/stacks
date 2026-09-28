@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.6...v0.75.7)
+
+## ✨ Features
+
+- **cms**: blog posts publish their images the way Medium does ([18914dd](https://github.com/stacksjs/stacks/commit/18914dd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.5...v0.75.6)
 
 ## 🐛 Bug Fixes
