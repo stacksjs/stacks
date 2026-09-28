@@ -1516,10 +1516,12 @@ async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden:
  */
 export async function countAppliedMigrations(): Promise<number> {
   try {
-    const row = await db
-      .selectFrom('migrations')
-      .select((eb: any) => eb.fn.count('id').as('n'))
-      .executeTakeFirst()
+    // Plain SQL on purpose. This was a Kysely-style `select(eb => eb.fn.count())`,
+    // which bun-query-builder rejects ("unsupported column"), and the catch below
+    // turned that into 0 on every call - so `buddy migrate` reported "Nothing to
+    // migrate" straight after applying two hundred migrations.
+    const rows = await db.unsafe('SELECT COUNT(*) AS n FROM migrations').execute() as unknown
+    const row = (Array.isArray(rows) ? rows[0] : undefined) as { n?: unknown, N?: unknown } | undefined
     if (!row) return 0
     const n = Number(row.n ?? row.N ?? 0)
     return Number.isFinite(n) ? n : 0
