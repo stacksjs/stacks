@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.18...v0.75.19)
+
+## 🐛 Bug Fixes
+
+- **buddy**: <feature>:install and :uninstall honour --dry-run ([888f595](https://github.com/stacksjs/stacks/commit/888f595)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.17...v0.75.18)
 
 ## ✨ Features
