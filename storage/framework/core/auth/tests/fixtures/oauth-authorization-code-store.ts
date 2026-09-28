@@ -58,6 +58,7 @@ const {
   exchangeAuthorizationCode,
   exchangeOAuthAuthorizationCode,
   findToken,
+  handleOAuthTokenRequest,
   issueAuthorizationCode,
   listOAuthClients,
   loadOAuthAuthorizationRequestSession,
@@ -652,6 +653,48 @@ try {
   })
   assert(continuedNarrowing.ok)
   assert.deepEqual(continuedNarrowing.value.scopes, ['issues:read'])
+  const endpointRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const endpointConsent = await approveOAuthAuthorizationRequestSession({
+    requestId: endpointRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(endpointConsent.ok)
+  const endpointExchange = await handleOAuthTokenRequest(provider, {
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: String(publicRegistration.client.id),
+      code: endpointConsent.value.code,
+      redirect_uri: validatedRequest.redirectUri,
+      code_verifier: verifier,
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  })
+  assert.equal(endpointExchange.status, 200)
+  assert.equal(endpointExchange.headers.get('cache-control'), 'no-store')
+  const endpointTokens = await endpointExchange.json() as Record<string, unknown>
+  assert.equal(endpointTokens.token_type, 'Bearer')
+  assert.equal(endpointTokens.expires_in, 3600)
+  assert.equal(endpointTokens.scope, 'issues:read')
+  assert.equal(typeof endpointTokens.access_token, 'string')
+  assert.equal(typeof endpointTokens.refresh_token, 'string')
+  assert.equal('grantId' in endpointTokens, false)
+  const endpointRefresh = await handleOAuthTokenRequest(provider, {
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: String(publicRegistration.client.id),
+      refresh_token: String(endpointTokens.refresh_token),
+      scope: 'issues:read',
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  })
+  assert.equal(endpointRefresh.status, 200)
+  const refreshedEndpointTokens = await endpointRefresh.json() as Record<string, unknown>
+  assert.equal(refreshedEndpointTokens.scope, 'issues:read')
+  assert.equal(await findToken(String(endpointTokens.access_token)), null)
+  assert(await findToken(String(refreshedEndpointTokens.access_token)))
   const publicUpdate = {
     name: 'Browser integration renamed',
     redirectUris: ['https://client.example.com/callback'],
