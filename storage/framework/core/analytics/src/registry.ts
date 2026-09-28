@@ -6,6 +6,8 @@
  * driver that is selected but has no implementation, or is selected but not
  * configured, throws instead of quietly emitting nothing, because analytics
  * that silently does nothing is only discovered by noticing missing data.
+ * AnalyticsHQ is the exception: it is the first-party default, so it remains
+ * a no-op until the app supplies the site id AnalyticsHQ minted.
  *
  * The switch is exhaustive over `AnalyticsOptions['driver']`, so widening that
  * union without adding a driver here is a compile error rather than a runtime
@@ -49,15 +51,12 @@ function misconfigured(driver: AnalyticsDriverName, key: string, field: string):
 /**
  * Resolve the configured driver's head tags.
  *
- * Returns an empty array when no driver is configured at all. Throws when a
- * driver is named that Stacks does not implement, or when the named driver is
- * missing the config it needs.
+ * Defaults to AnalyticsHQ when no driver is named. Returns an empty array while
+ * that default has no site id. Throws when a driver is unknown, or when an
+ * explicitly selected third-party driver is missing the config it needs.
  */
 export function getAnalyticsHead(config: AnalyticsConfig): AnalyticsHeadTag[] {
-  const driver = config.driver
-
-  if (!driver)
-    return []
+  const driver = config.driver ?? 'analyticshq'
 
   /*
    * The environment gate runs before the driver is resolved, so an excluded
@@ -126,7 +125,7 @@ function resolveAnalyticsHead(config: AnalyticsConfig, driver: AnalyticsDriverNa
     case 'analyticshq': {
       const options = config.drivers?.analyticshq
       if (!options?.siteId)
-        throw misconfigured(driver, 'analyticshq', 'siteId')
+        return []
 
       return getAnalyticsHqHead(options)
     }

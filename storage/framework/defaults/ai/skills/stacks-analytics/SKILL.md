@@ -35,8 +35,9 @@ const head = getAnalyticsHead(analytics)
 ```
 
 The registry is loud on purpose. A `driver` value with no implementation throws,
-and so does a driver that is selected but missing its config (the message names
-the exact key to set). Only an app with no `driver` at all gets an empty result.
+and so does a selected third-party driver missing its config (the message names
+the exact key to set). An app with no `driver` defaults to AnalyticsHQ. It emits
+nothing until `drivers.analyticshq.siteId` is set.
 
 Nothing injects the script for you - a framework that silently posted pageviews
 to a third party would be the wrong default. Render it yourself in the layout
@@ -142,9 +143,9 @@ interface SelfHostedConfig {
 
 ```typescript
 {
-  driver: 'fathom',              // 'fathom' | 'plausible' | 'google-analytics' | 'self-hosted' | 'analyticshq'
+  driver: 'analyticshq',         // 'analyticshq' | 'fathom' | 'plausible' | 'google-analytics' | 'self-hosted'
   drivers: {
-    analyticshq: { siteId: '' },
+    analyticshq: { siteId: '' }, // empty means no tracking tags
     googleAnalytics: { trackingId: '' },
     fathom: { siteId: '' },
     plausible: { domain: '' },
@@ -169,7 +170,8 @@ Analytics dashboard at `/dashboard/analytics` displays:
 
 ## Gotchas
 - Selecting a driver does not inject anything - call `generateAnalyticsScript()` in your layout
-- A misconfigured driver throws rather than emitting nothing; the message names the config key
+- A misconfigured third-party driver throws rather than emitting nothing; the message names the config key
+- AnalyticsHQ is the first-party default and emits nothing until its site id is set
 - `honorDnt: true` respects browser Do Not Track settings
 - Attribute values are escaped, and inline script values are JS-escaped, to prevent XSS
 - Fathom is a paid service - self-hosted is free but requires infrastructure

@@ -8,15 +8,12 @@ import type { AnalyticsConfig } from '@stacksjs/types'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  driver: 'fathom',
+  driver: 'analyticshq',
+  environments: ['production', 'staging'],
 
   drivers: {
-    googleAnalytics: {
-      trackingId: 'UA-XXXXXXXXX-X',
-    },
-
-    fathom: {
-      siteId: 'WOLZMJDL',
+    analyticshq: {
+      siteId: 'd61994a9bf380d24c81029c3',
     },
   },
 } satisfies AnalyticsConfig
