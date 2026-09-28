@@ -56,12 +56,14 @@ const {
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
   disableOAuthClient,
+  disconnectOAuthGrant,
   exchangeAuthorizationCode,
   exchangeOAuthAuthorizationCode,
   findToken,
   handleOAuthTokenRequest,
   issueAuthorizationCode,
   listOAuthClients,
+  listOAuthConnections,
   loadOAuthAuthorizationRequestSession,
   loadOAuthAuthorizationClient,
   refreshOAuthDelegatedToken,
@@ -655,6 +657,36 @@ try {
   })
   assert(continuedNarrowing.ok)
   assert.deepEqual(continuedNarrowing.value.scopes, ['issues:read'])
+  const connections = await listOAuthConnections('users', 42)
+  const narrowedConnection = connections.find(connection => connection.grantId === continuedNarrowing.value.grantId)
+  assert(narrowedConnection)
+  assert.equal(narrowedConnection.clientId, publicRegistration.client.id)
+  assert.equal(narrowedConnection.clientName, 'Browser integration')
+  assert.deepEqual(narrowedConnection.scopes, ['issues:read', 'profile:read'])
+  assert.deepEqual(await listOAuthConnections('users', 7), [])
+  const disconnectedCode = await issueAuthorizationCode({
+    grantId: continuedNarrowing.value.grantId,
+    redirectUri: scopedRequest.redirectUri,
+    codeChallenge,
+    lifetimeMs: 60_000,
+  })
+  const disconnectedCodeHash = createHash('sha256').update(disconnectedCode, 'ascii').digest('hex')
+  assert.equal(await disconnectOAuthGrant('users', 7, continuedNarrowing.value.grantId), false, 'another subject must not disconnect the grant')
+  assert(await findToken(continuedNarrowing.value.accessToken))
+  assert.equal(await disconnectOAuthGrant('users', 42, continuedNarrowing.value.grantId), true)
+  assert.equal(await disconnectOAuthGrant('users', 42, continuedNarrowing.value.grantId), false, 'disconnect must be idempotent')
+  assert.equal((await listOAuthConnections('users', 42)).some(connection => connection.grantId === continuedNarrowing.value.grantId), false)
+  assert((await db.selectFrom('oauth_auth_codes')
+    .where('code_hash', '=', disconnectedCodeHash)
+    .select('consumed_at')
+    .executeTakeFirstOrThrow()).consumed_at)
+  assert.equal(await findToken(continuedNarrowing.value.accessToken), null)
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: continuedNarrowing.value.refreshToken!,
+    clientId: publicRegistration.client.id,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_grant' })
   const endpointRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const endpointConsent = await approveOAuthAuthorizationRequestSession({
     requestId: endpointRequestId,

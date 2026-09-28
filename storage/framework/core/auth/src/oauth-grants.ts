@@ -4,6 +4,7 @@ import {
   getDatabaseDialect,
   markContextWrote,
   mutationCount,
+  parseSqlDateTime,
   sqlDateTime,
   sqlHelpers,
 } from '@stacksjs/database/runtime'
@@ -30,6 +31,28 @@ export interface OAuthGrant {
   createdAt: Date
 }
 
+export interface OAuthConnectedApplication {
+  grantId: string
+  clientId: number
+  clientName: string
+  scopes: string[]
+  resources: string[]
+  audiences: string[]
+  workspaceId: string | null
+  createdAt: Date
+}
+
+interface StoredOAuthConnection {
+  grant_id: string
+  client_id: number | string
+  client_name: string
+  scopes: string
+  resources: string
+  audiences: string
+  workspace_id: string | null
+  created_at: string | Date
+}
+
 function validIdentifier(value: number): boolean {
   return Number.isSafeInteger(value) && value > 0
 }
@@ -38,6 +61,20 @@ function explicitValues(name: string, values: readonly string[]): string[] {
   if (values.some(value => !value) || new Set(values).size !== values.length)
     throw new TypeError(`OAuth grant ${name} must contain unique non-empty values.`)
   return [...values]
+}
+
+function storedValues(value: string): string[] | null {
+  try {
+    const parsed: unknown = JSON.parse(value)
+    return Array.isArray(parsed)
+      && parsed.every(item => typeof item === 'string' && item.length > 0)
+      && new Set(parsed).size === parsed.length
+      ? parsed
+      : null
+  }
+  catch {
+    return null
+  }
 }
 
 /** Persist the exact consent a user approved. Grants are immutable until revoked. */
@@ -115,4 +152,104 @@ export async function revokeOAuthGrant(id: string): Promise<boolean> {
   if (revoked)
     markContextWrote()
   return revoked
+}
+
+/** List the active third-party applications connected to one OAuth subject. */
+export async function listOAuthConnections(subjectType: string, subjectId: number): Promise<OAuthConnectedApplication[]> {
+  if (!/^[A-Za-z0-9_.:-]{1,255}$/.test(subjectType) || !validIdentifier(subjectId))
+    return []
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const rows = await db.primary.unsafe(`
+    SELECT g.id AS grant_id, g.client_id, c.name AS client_name, g.scopes,
+      g.resources, g.audiences, g.workspace_id, g.created_at
+    FROM oauth_grants g
+    JOIN oauth_clients c ON c.id = g.client_id AND c.revoked = ${sql.boolFalse}
+    WHERE g.subject_type = ${sql.param(1)} AND g.subject_id = ${sql.param(2)}
+      AND g.revoked_at IS NULL
+    ORDER BY g.created_at DESC, g.id DESC
+  `, [subjectType, subjectId]) as unknown as StoredOAuthConnection[]
+
+  return rows.flatMap((row): OAuthConnectedApplication[] => {
+    const clientId = Number(row.client_id)
+    const scopes = storedValues(row.scopes)
+    const resources = storedValues(row.resources)
+    const audiences = storedValues(row.audiences)
+    const createdAt = parseSqlDateTime(row.created_at)
+    if (!/^[a-f0-9]{32}$/.test(row.grant_id)
+      || !validIdentifier(clientId)
+      || typeof row.client_name !== 'string'
+      || !row.client_name
+      || !scopes
+      || !resources
+      || !audiences
+      || !createdAt)
+      return []
+
+    return [{
+      grantId: row.grant_id,
+      clientId,
+      clientName: row.client_name,
+      scopes,
+      resources,
+      audiences,
+      workspaceId: row.workspace_id,
+      createdAt,
+    }]
+  })
+}
+
+/** Disconnect one application without allowing another subject to revoke it. */
+export async function disconnectOAuthGrant(subjectType: string, subjectId: number, grantId: string): Promise<boolean> {
+  if (!/^[A-Za-z0-9_.:-]{1,255}$/.test(subjectType)
+    || !validIdentifier(subjectId)
+    || !/^[a-f0-9]{32}$/.test(grantId))
+    return false
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const lock = sql.isSqlite ? '' : ' FOR UPDATE'
+  const disconnected = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const rows = await trx.unsafe(`
+      SELECT id FROM oauth_grants
+      WHERE id = ${sql.param(1)} AND subject_type = ${sql.param(2)}
+        AND subject_id = ${sql.param(3)} AND revoked_at IS NULL
+      LIMIT 1${lock}
+    `, [grantId, subjectType, subjectId]) as unknown[]
+    if (rows.length !== 1)
+      return false
+
+    const now = sqlDateTime(new Date())
+    const changed = await trx.unsafe(`
+      UPDATE oauth_grants
+      SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
+      WHERE id = ${sql.param(3)} AND subject_type = ${sql.param(4)}
+        AND subject_id = ${sql.param(5)} AND revoked_at IS NULL
+    `, [now, now, grantId, subjectType, subjectId])
+    if (mutationCount(changed) !== 1)
+      return false
+
+    await trx.unsafe(`
+      UPDATE oauth_auth_codes
+      SET consumed_at = ${sql.param(1)}
+      WHERE grant_id = ${sql.param(2)} AND consumed_at IS NULL
+    `, [now, grantId])
+    await trx.unsafe(`
+      UPDATE oauth_refresh_tokens
+      SET revoked = ${sql.boolTrue}
+      WHERE access_token_id IN (
+        SELECT id FROM oauth_access_tokens WHERE oauth_grant_id = ${sql.param(1)}
+      )
+    `, [grantId])
+    await trx.unsafe(`
+      UPDATE oauth_access_tokens
+      SET revoked = ${sql.boolTrue}, updated_at = ${sql.param(1)}
+      WHERE oauth_grant_id = ${sql.param(2)}
+    `, [now, grantId])
+    return true
+  })
+
+  if (disconnected)
+    markContextWrote()
+  return disconnected
 }
