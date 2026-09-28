@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.22...v0.75.23)
+
+## ✨ Features
+
+- **mobile**: the Craft-backed components a phone app is built from, and Apple Health reads ([c350cc3](https://github.com/stacksjs/stacks/commit/c350cc3)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- count the four new Native components ([3f95b13](https://github.com/stacksjs/stacks/commit/3f95b13)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.21...v0.75.22)
 
 ## 🐛 Bug Fixes
