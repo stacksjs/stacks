@@ -6,6 +6,49 @@
  * automatically be injected into the Bun process.
  */
 
+/**
+ * Every global the runtime defined before this file assigned any.
+ *
+ * Taken first, at module load, because the auto-import loops below write
+ * framework exports onto globalThis, and a name the runtime already owns must
+ * never be one of them. A hand-kept list of such names is how `Worker` slipped
+ * through: `@stacksjs/queue` exports a queue `Worker`, it replaced Bun's Web
+ * Worker in every Stacks process, and anything calling `new Worker(url)` built
+ * a queue worker instead - stx's image warm-up failed silently, an app's own
+ * syntax-highlighter worker broke. `reportError` from `@stacksjs/validation`
+ * was overwriting the web `reportError` the same way.
+ */
+const HOST_GLOBALS: ReadonlySet<string> = new Set(Object.getOwnPropertyNames(globalThis))
+
+/**
+ * Names never auto-imported onto globalThis, even when the runtime does not
+ * define them: another runtime's globals (`window`, `Deno`), module-scope
+ * bindings (`require`, `__dirname`), and the ones listed long before the
+ * snapshot above existed, kept so nothing that relied on them changes.
+ */
+const RESERVED_GLOBALS: ReadonlySet<string> = new Set([
+  'process', 'globalThis', 'global', 'window', 'self',
+  'console', 'require', 'module', 'exports', '__dirname', '__filename',
+  'Buffer', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval',
+  'setImmediate', 'clearImmediate', 'queueMicrotask',
+  'fetch', 'Request', 'Response', 'Headers', 'URL', 'URLSearchParams',
+  'TextEncoder', 'TextDecoder', 'Blob', 'File', 'FormData',
+  'crypto', 'performance', 'navigator', 'location',
+  'Promise', 'Symbol', 'Proxy', 'Reflect', 'WeakMap', 'WeakSet', 'Map', 'Set',
+  'Array', 'Object', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Error',
+  'JSON', 'Math', 'Intl', 'eval', 'isNaN', 'isFinite', 'parseInt', 'parseFloat',
+  'encodeURI', 'encodeURIComponent', 'decodeURI', 'decodeURIComponent',
+  'Bun', 'Deno', 'Node',
+])
+
+/**
+ * Whether an auto-import must leave `name` alone: the runtime already defines
+ * it, or it is reserved. `hostGlobals` is injectable for tests.
+ */
+export function isProtectedGlobal(name: string, hostGlobals: ReadonlySet<string> = HOST_GLOBALS): boolean {
+  return RESERVED_GLOBALS.has(name) || hostGlobals.has(name)
+}
+
 // Skip preloader for fast CLI commands (e.g. `buddy dev`, `buddy --version`) to
 // maximize startup speed. We must NOT skip when running a server script directly
 // (e.g. `bun --watch storage/framework/core/actions/src/dev/api.ts`) — Bun
@@ -214,22 +257,6 @@ export async function loadAutoImports() {
   const path = await import('../../../core/path/src/index.ts')
     .catch(() => import(pathPackage))
 
-  // CRITICAL: Never overwrite these built-in globals
-  const protectedGlobals = new Set([
-    'process', 'globalThis', 'global', 'window', 'self',
-    'console', 'require', 'module', 'exports', '__dirname', '__filename',
-    'Buffer', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval',
-    'setImmediate', 'clearImmediate', 'queueMicrotask',
-    'fetch', 'Request', 'Response', 'Headers', 'URL', 'URLSearchParams',
-    'TextEncoder', 'TextDecoder', 'Blob', 'File', 'FormData',
-    'crypto', 'performance', 'navigator', 'location',
-    'Promise', 'Symbol', 'Proxy', 'Reflect', 'WeakMap', 'WeakSet', 'Map', 'Set',
-    'Array', 'Object', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Error',
-    'JSON', 'Math', 'Intl', 'eval', 'isNaN', 'isFinite', 'parseInt', 'parseFloat',
-    'encodeURI', 'encodeURIComponent', 'decodeURI', 'decodeURIComponent',
-    'Bun', 'Deno', 'Node',
-  ])
-
   // 1. Load Stacks framework packages into globalThis
   const stacksPackages = [
     '@stacksjs/actions',
@@ -275,8 +302,8 @@ export async function loadAutoImports() {
     try {
       const module = await import(pkg)
       for (const [name, value] of Object.entries(module)) {
-        // Skip default exports and protected globals
-        if (name === 'default' || protectedGlobals.has(name)) continue
+        // Skip default exports and anything the runtime already owns
+        if (name === 'default' || isProtectedGlobal(name)) continue
         if (typeof value !== 'undefined') {
           Reflect.set(globalThis, name, value)
         }
@@ -295,8 +322,8 @@ export async function loadAutoImports() {
     try {
       const module = await import(file)
       for (const [name, value] of Object.entries(module)) {
-        // Skip default exports and protected globals
-        if (name === 'default' || protectedGlobals.has(name)) continue
+        // Skip default exports and anything the runtime already owns
+        if (name === 'default' || isProtectedGlobal(name)) continue
         if (typeof value !== 'undefined') {
           Reflect.set(globalThis, name, value)
         }
@@ -326,7 +353,7 @@ export async function loadAutoImports() {
         if (file.endsWith('.d.ts') || file.endsWith('/index.ts')) continue
 
         const modelName = file.split('/').pop()?.replace('.ts', '') || ''
-        if (!modelName || loadedModels.has(modelName) || protectedGlobals.has(modelName)) continue
+        if (!modelName || loadedModels.has(modelName) || isProtectedGlobal(modelName)) continue
 
         try {
           const module = await import(file)
@@ -357,7 +384,7 @@ export async function loadAutoImports() {
       if (file.endsWith('.d.ts') || file.endsWith('/index.ts')) continue
 
       const jobName = file.split('/').pop()?.replace('.ts', '') || ''
-      if (!jobName || loadedJobs.has(jobName) || protectedGlobals.has(jobName)) continue
+      if (!jobName || loadedJobs.has(jobName) || isProtectedGlobal(jobName)) continue
 
       try {
         const module = await import(file)
@@ -392,7 +419,7 @@ export async function loadAutoImports() {
         if (file.endsWith('.d.ts') || file.endsWith('/index.ts')) continue
 
         const controllerName = file.split('/').pop()?.replace('.ts', '') || ''
-        if (!controllerName || loadedControllers.has(controllerName) || protectedGlobals.has(controllerName)) continue
+        if (!controllerName || loadedControllers.has(controllerName) || isProtectedGlobal(controllerName)) continue
 
         try {
           const module = await import(file)

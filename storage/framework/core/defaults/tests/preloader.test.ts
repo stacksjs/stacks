@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdir, mkdtemp, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
+import { isProtectedGlobal } from '../../../defaults/resources/plugins/preloader'
 
 const tempDirs: string[] = []
 
@@ -123,4 +124,54 @@ describe('default preloader', () => {
     expect(stdout).toBe('')
     expect(await child.exited).toBe(0)
   })
+})
+
+// Auto-imports write framework exports onto globalThis. A name the runtime
+// already owns must survive that: `@stacksjs/queue` exports a queue `Worker`,
+// and it replaced Bun's Web Worker in every Stacks process, so `new Worker(url)`
+// built a queue worker. stx's image warm-up failed silently on it and an app's
+// own highlighter worker broke. `reportError` from `@stacksjs/validation` was
+// overwriting the web `reportError` the same way.
+describe('auto-imports leave host globals alone', () => {
+  it('protects whatever the runtime defined, not only a hand-kept list', () => {
+    expect(isProtectedGlobal('Worker')).toBeTrue()
+    expect(isProtectedGlobal('reportError')).toBeTrue()
+    expect(isProtectedGlobal('structuredClone')).toBeTrue()
+    expect(isProtectedGlobal('EventTarget')).toBeTrue()
+  })
+
+  it('still protects reserved names the runtime does not define', () => {
+    expect(isProtectedGlobal('window', new Set())).toBeTrue()
+    expect(isProtectedGlobal('Deno', new Set())).toBeTrue()
+  })
+
+  it('lets framework names through', () => {
+    expect(isProtectedGlobal('collect')).toBeFalse()
+    expect(isProtectedGlobal('Post')).toBeFalse()
+    expect(isProtectedGlobal('Worker', new Set())).toBeFalse()
+  })
+
+  it('the real preloader keeps the Web Worker and reportError', async () => {
+    // From the repository root, so bunfig.toml preloads the real preloader
+    // with the full auto-import graph, the way a Stacks process starts.
+    const tempDir = await mkdtemp(resolve(tmpdir(), 'stacks-preloader-globals-'))
+    tempDirs.push(tempDir)
+    const probe = resolve(tempDir, 'probe.ts')
+    await Bun.write(probe, `
+      console.log(JSON.stringify({
+        workerIsWeb: typeof Worker === 'function' && typeof Worker.prototype.addEventListener === 'function',
+        reportErrorIsNative: String(globalThis.reportError).includes('[native code]'),
+        autoImported: typeof (globalThis as any).collect === 'function',
+      }))
+    `)
+    const child = Bun.spawn([process.execPath, probe], {
+      cwd: resolve(import.meta.dir, '../../../../..'),
+      stderr: 'pipe',
+      stdout: 'pipe',
+    })
+    const stdout = await new Response(child.stdout).text()
+    expect(await child.exited).toBe(0)
+    const line = stdout.trim().split('\n').filter(l => l.startsWith('{')).at(-1)!
+    expect(JSON.parse(line)).toEqual({ workerIsWeb: true, reportErrorIsNative: true, autoImported: true })
+  }, 60_000)
 })
