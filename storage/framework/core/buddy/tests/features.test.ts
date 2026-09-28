@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -13,6 +13,7 @@ import {
   featurePathsPresent,
   migrationFeature,
   migrationTable,
+  setFeatureEnabled,
   uninstallAllFeatures,
 } from '../src/commands/features'
 
@@ -533,5 +534,92 @@ describe('migrationFeature() - filename → owning feature', () => {
 
   it('returns null for unrecognised migration shapes', () => {
     expect(migrationFeature('0000000098-revoke-legacy-long-lived-tokens.sql')).toBeNull()
+  })
+})
+
+/**
+ * `--dry-run` is registered for every buddy command, and `<feature>:install
+ * --dry-run` used to install anyway: it wrote config/<feature>.ts and stamped
+ * the bundle into the project. Each half now previews instead.
+ */
+describe('--dry-run', () => {
+  let source: string
+
+  beforeEach(() => {
+    source = mkdtempSync(join(tmpdir(), 'stacks-features-dry-'))
+  })
+
+  afterEach(async () => {
+    await rm(source, { recursive: true, force: true })
+  })
+
+  async function stamp(dir: string, rel: string, body = ''): Promise<void> {
+    const full = join(dir, rel)
+    await mkdir(join(full, '..'), { recursive: true })
+    await writeFile(full, body)
+  }
+
+  function listed(dir: string): string[] {
+    const found: string[] = []
+    const walk = (at: string, prefix: string): void => {
+      for (const entry of readdirSync(at, { withFileTypes: true })) {
+        if (entry.isDirectory()) walk(join(at, entry.name), `${prefix}${entry.name}/`)
+        else found.push(`${prefix}${entry.name}`)
+      }
+    }
+    walk(dir, '')
+    return found.sort()
+  }
+
+  it('install copies nothing, but reports what it would copy', async () => {
+    await stamp(source, 'app/Actions/Commerce/CouponIndexAction.ts', 'export default {}')
+    await stamp(source, 'app/Models/PaymentMethod.ts', 'export default {}')
+
+    const { copied } = await copyFeatureFiles('commerce', { source, target: root, dryRun: true })
+
+    expect(copied).toEqual(['app/Actions/Commerce/', 'app/Models/PaymentMethod.ts'])
+    expect(listed(root)).toEqual([])
+  })
+
+  it('install leaves config/<feature>.ts unwritten, whether it would create or flip it', async () => {
+    expect(await setFeatureEnabled('commerce', true, { createIfMissing: true, root, dryRun: true })).toBe('created')
+    expect(existsSync(join(root, 'config/commerce.ts'))).toBe(false)
+
+    await stamp(root, 'config/commerce.ts', 'export default {\n  enabled: false,\n}\n')
+    expect(await setFeatureEnabled('commerce', true, { createIfMissing: true, root, dryRun: true })).toBe('flipped')
+    expect(readFileSync(join(root, 'config/commerce.ts'), 'utf8')).toContain('enabled: false')
+  })
+
+  it('uninstall removes nothing, but reports what it would remove and keep', async () => {
+    await stamp(source, 'app/Models/Tag.ts', 'from defaults')
+    await stamp(source, 'app/Models/Comment.ts', 'from defaults')
+    await stamp(root, 'app/Models/Tag.ts', 'from defaults')
+    await stamp(root, 'app/Models/Comment.ts', 'my version')
+    await stamp(root, 'config/cms.ts', 'export default {\n  enabled: true,\n}\n')
+
+    const { removed, preserved } = await deleteFeatureFiles('cms', root, { source, dryRun: true })
+    expect(removed).toEqual(['app/Models/Tag.ts'])
+    expect(preserved).toEqual(['app/Models/Comment.ts'])
+    expect(await setFeatureEnabled('cms', false, { createIfMissing: false, root, dryRun: true })).toBe('flipped')
+
+    expect(listed(root)).toEqual(['app/Models/Comment.ts', 'app/Models/Tag.ts', 'config/cms.ts'])
+    expect(readFileSync(join(root, 'config/cms.ts'), 'utf8')).toContain('enabled: true')
+  })
+
+  it('uninstall --force --dry-run still removes nothing', async () => {
+    await stamp(root, 'app/Actions/Cms/PostIndexAction.ts', 'edited')
+
+    const { removed } = await deleteFeatureFiles('cms', root, { source, force: true, dryRun: true })
+
+    expect(removed).toContain('app/Actions/Cms/')
+    expect(existsSync(join(root, 'app/Actions/Cms/PostIndexAction.ts'))).toBe(true)
+  })
+
+  it('without the flag, both still do the real thing', async () => {
+    await stamp(source, 'app/Models/PaymentMethod.ts', 'export default {}')
+    await copyFeatureFiles('commerce', { source, target: root })
+    expect(existsSync(join(root, 'app/Models/PaymentMethod.ts'))).toBe(true)
+    expect(await setFeatureEnabled('commerce', true, { createIfMissing: true, root })).toBe('created')
+    expect(existsSync(join(root, 'config/commerce.ts'))).toBe(true)
   })
 })

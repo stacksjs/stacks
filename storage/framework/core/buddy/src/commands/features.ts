@@ -111,6 +111,8 @@ export interface DeleteFeatureFilesOptions {
   force?: boolean
   /** Source root holding the framework defaults. Override for tests. */
   source?: string
+  /** Report what would be removed and kept, and remove nothing. */
+  dryRun?: boolean
 }
 
 /**
@@ -144,6 +146,11 @@ export async function deleteFeatureFiles(
 ): Promise<{ removed: string[], preserved: string[] }> {
   const source = options.source ?? frameworkPath('defaults')
   const force = options.force === true
+  const dryRun = options.dryRun === true
+  const remove = async (path: string, recursive = false): Promise<void> => {
+    if (!dryRun)
+      await rm(path, { recursive, force: true })
+  }
 
   const removed: string[] = []
   const preserved: string[] = []
@@ -153,7 +160,7 @@ export async function deleteFeatureFiles(
     if (!existsSync(full)) continue
 
     if (force) {
-      await rm(full, { recursive: true, force: true })
+      await remove(full, true)
       removed.push(rel)
       continue
     }
@@ -162,7 +169,7 @@ export async function deleteFeatureFiles(
 
     if (!statSync(full).isDirectory()) {
       if (matchesTemplate(full, template)) {
-        await rm(full, { force: true })
+        await remove(full)
         removed.push(rel)
       }
       else {
@@ -177,7 +184,7 @@ export async function deleteFeatureFiles(
     for (const child of filesUnder(full)) {
       const projectFile = join(full, child)
       if (matchesTemplate(projectFile, join(template, child))) {
-        await rm(projectFile, { force: true })
+        await remove(projectFile)
         removed.push(`${rel}${child}`)
       }
       else {
@@ -186,6 +193,8 @@ export async function deleteFeatureFiles(
       }
     }
 
+    if (dryRun)
+      continue
     pruneEmptyDirs(root, full)
     if (!keptAny && existsSync(full))
       await rm(full, { recursive: true, force: true })
@@ -212,6 +221,8 @@ export interface CopyFeatureFilesOptions {
    * `projectPath()`.
    */
   target?: string
+  /** Report what would be copied, and copy nothing. */
+  dryRun?: boolean
 }
 
 /**
@@ -249,7 +260,8 @@ export async function copyFeatureFiles(
       skipped.push(rel)
       continue
     }
-    await cp(sourceFull, targetFull, { recursive: true, force })
+    if (options.dryRun !== true)
+      await cp(sourceFull, targetFull, { recursive: true, force })
     copied.push(rel)
   }
 
@@ -439,8 +451,14 @@ export type SetFeatureEnabledOutcome = 'created' | 'flipped' | 'unchanged' | 'mi
 export async function setFeatureEnabled(
   feature: FeatureName,
   enabled: boolean,
-  options: { createIfMissing: boolean, root?: string },
+  options: { createIfMissing: boolean, root?: string, dryRun?: boolean },
 ): Promise<SetFeatureEnabledOutcome> {
+  // With `dryRun` the outcome is worked out exactly as below and nothing is
+  // written: `write` is the only thing that touches the disk.
+  const write = async (target: string, contents: string): Promise<void> => {
+    if (options.dryRun !== true)
+      await Bun.write(target, contents)
+  }
   const path = options.root
     ? join(options.root, `config/${feature}.ts`)
     : projectPath(`config/${feature}.ts`)
@@ -448,7 +466,7 @@ export async function setFeatureEnabled(
 
   if (!(await file.exists())) {
     if (!options.createIfMissing) return 'missing'
-    await Bun.write(path, STARTER_TEMPLATES[feature])
+    await write(path, STARTER_TEMPLATES[feature])
     return 'created'
   }
 
@@ -465,7 +483,7 @@ export async function setFeatureEnabled(
       return `${anchor}${ws}enabled: ${enabled}${trailing}`
     })
     if (replaced === src) return 'unchanged'
-    await Bun.write(path, replaced)
+    await write(path, replaced)
     return 'flipped'
   }
 
@@ -480,7 +498,7 @@ export async function setFeatureEnabled(
     )
   }
   const next = src.replace(insertRegex, `$1\n  enabled: ${enabled},`)
-  await Bun.write(path, next)
+  await write(path, next)
   return 'flipped'
 }
 
@@ -523,6 +541,19 @@ export async function uninstallAllFeatures(
   return results
 }
 
+/**
+ * Whether this run is a preview. `--dry-run` is registered process-wide (see
+ * global-options.ts), so it shows in every command's help; install and
+ * uninstall used to ignore it, and `commerce:install --dry-run` wrote the
+ * config flag and stamped the whole commerce bundle into the project - which
+ * a running dev server then turned into migrations. Read from argv as well as
+ * the parsed options, as `buddy setup` does, so it holds however the flag
+ * arrives.
+ */
+function isDryRun(options: { dryRun?: boolean }): boolean {
+  return options.dryRun === true || process.argv.includes('--dry-run')
+}
+
 function registerInstallPair(buddy: CLI, feature: FeatureName): void {
   const desc = FEATURE_DESCRIPTIONS[feature]
   const configRel = `config/${feature}.ts`
@@ -530,31 +561,37 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
   buddy
     .command(`${feature}:install`, `Activate the ${feature} feature bundle. ${desc}`)
     .option('--force', `Overwrite any existing ${feature} files in the project (default skips existing paths so the install is idempotent).`)
-    .action(async (options: { force?: boolean }) => {
+    .action(async (options: { force?: boolean, dryRun?: boolean }) => {
       try {
-        const outcome = await setFeatureEnabled(feature, true, { createIfMissing: true })
+        const dryRun = isDryRun(options)
+        const mark = dryRun ? '·' : '✓'
+        const outcome = await setFeatureEnabled(feature, true, { createIfMissing: true, dryRun })
         switch (outcome) {
           case 'created':
-            console.log(`✓ Created ${configRel} with '${feature}' enabled.`)
+            console.log(dryRun ? `${mark} Would create ${configRel} with '${feature}' enabled.` : `${mark} Created ${configRel} with '${feature}' enabled.`)
             break
           case 'flipped':
-            console.log(`✓ Enabled '${feature}' in ${configRel}.`)
+            console.log(dryRun ? `${mark} Would enable '${feature}' in ${configRel}.` : `${mark} Enabled '${feature}' in ${configRel}.`)
             break
           case 'unchanged':
-            console.log(`✓ '${feature}' is already enabled in ${configRel}.`)
+            console.log(`${mark} '${feature}' is already enabled in ${configRel}.`)
             break
         }
 
-        const { copied } = await copyFeatureFiles(feature, { force: options.force === true })
+        const { copied } = await copyFeatureFiles(feature, { force: options.force === true, dryRun })
         if (copied.length > 0) {
-          console.log(`✓ Copied ${copied.length} stamped path(s) from framework defaults:`)
+          console.log(dryRun
+            ? `${mark} Would copy ${copied.length} stamped path(s) from framework defaults:`
+            : `${mark} Copied ${copied.length} stamped path(s) from framework defaults:`)
           for (const path of copied) console.log(`    - ${path}`)
         }
         else if (featurePathsPresent(feature).length > 0) {
           console.log(`  → ${feature} scaffolding already in place - use --force to overwrite.`)
         }
 
-        console.log(`  → next ./buddy dev will boot with ${feature} loaded.`)
+        console.log(dryRun
+          ? `  → Dry run: nothing was written. Run it without --dry-run to install ${feature}.`
+          : `  → next ./buddy dev will boot with ${feature} loaded.`)
         process.exit(ExitCode.Success)
       }
       catch (err) {
@@ -567,18 +604,20 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
     .command(`${feature}:uninstall`, `Deactivate the ${feature} feature bundle.`)
     .option('--keep-files', `Don't delete the ${feature} scaffolding (action/model/view files). Flip the flag only.`)
     .option('--force', `Delete the ${feature} scaffolding even where you have edited it. Without this, changed files are kept.`)
-    .action(async (options: { keepFiles?: boolean, force?: boolean }) => {
+    .action(async (options: { keepFiles?: boolean, force?: boolean, dryRun?: boolean }) => {
       try {
-        const outcome = await setFeatureEnabled(feature, false, { createIfMissing: false })
+        const dryRun = isDryRun(options)
+        const mark = dryRun ? '·' : '✓'
+        const outcome = await setFeatureEnabled(feature, false, { createIfMissing: false, dryRun })
         switch (outcome) {
           case 'missing':
-            console.log(`✓ '${feature}' is already disabled (${configRel} is absent).`)
+            console.log(`${mark} '${feature}' is already disabled (${configRel} is absent).`)
             break
           case 'flipped':
-            console.log(`✓ Disabled '${feature}' in ${configRel}. Custom config preserved.`)
+            console.log(dryRun ? `${mark} Would disable '${feature}' in ${configRel}.` : `${mark} Disabled '${feature}' in ${configRel}. Custom config preserved.`)
             break
           case 'unchanged':
-            console.log(`✓ '${feature}' is already disabled in ${configRel}.`)
+            console.log(`${mark} '${feature}' is already disabled in ${configRel}.`)
             break
           case 'created':
             // Defensive — setFeatureEnabled is called with createIfMissing:false,
@@ -593,20 +632,24 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
             console.log(`  → ${stillPresent.length} stamped path(s) preserved (--keep-files).`)
         }
         else {
-          const { removed, preserved } = await deleteFeatureFiles(feature, projectPath(), { force: options.force })
+          const { removed, preserved } = await deleteFeatureFiles(feature, projectPath(), { force: options.force, dryRun })
           if (removed.length > 0) {
-            console.log(`✓ Removed ${removed.length} stamped path(s):`)
+            console.log(dryRun ? `${mark} Would remove ${removed.length} stamped path(s):` : `${mark} Removed ${removed.length} stamped path(s):`)
             for (const path of removed) console.log(`    - ${path}`)
           }
           if (preserved.length > 0) {
             // Named rather than counted: the whole point is that the developer
             // can see which of their edits survived, and decide.
-            console.log(`  → Kept ${preserved.length} path(s) you have edited (re-run with --force to remove):`)
+            console.log(dryRun
+              ? `  → Would keep ${preserved.length} path(s) you have edited (--force would remove them):`
+              : `  → Kept ${preserved.length} path(s) you have edited (re-run with --force to remove):`)
             for (const path of preserved) console.log(`    - ${path}`)
           }
         }
 
-        console.log(`  → next ./buddy dev will boot without ${feature}.`)
+        console.log(dryRun
+          ? `  → Dry run: nothing was written or removed. Run it without --dry-run to uninstall ${feature}.`
+          : `  → next ./buddy dev will boot without ${feature}.`)
         process.exit(ExitCode.Success)
       }
       catch (err) {
