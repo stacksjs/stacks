@@ -161,7 +161,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.317",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.11",
+        "@stacksjs/ts-cloud": "^0.16.14",
         "@stacksjs/ts-md": "^0.1.1",
         "@stacksjs/tunnel": "workspace:*",
         "@stacksjs/types": "workspace:*",
@@ -188,7 +188,7 @@
       "dependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.11",
+        "@stacksjs/ts-cloud": "^0.16.14",
       },
       "devDependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.2.79",
@@ -385,7 +385,7 @@
         "@stacksjs/testing": "^0.75.8",
         "@stacksjs/tinker": "^0.75.8",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.11",
+        "@stacksjs/ts-cloud": "^0.16.14",
         "@stacksjs/tunnel": "^0.75.8",
         "@stacksjs/types": "^0.75.8",
         "@stacksjs/ui": "^0.75.8",
@@ -489,7 +489,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.11",
+        "@stacksjs/ts-cloud": "^0.16.14",
         "@stacksjs/ts-xml": "^0.1.0",
       },
       "devDependencies": {
@@ -637,7 +637,7 @@
       "name": "@stacksjs/deploy",
       "version": "0.75.8",
       "dependencies": {
-        "@stacksjs/ts-cloud": "^0.16.11",
+        "@stacksjs/ts-cloud": "^0.16.14",
       },
     },
     "storage/framework/core/desktop": {
@@ -1736,7 +1736,7 @@
 
     "@stacksjs/ts-cache": ["@stacksjs/ts-cache@0.1.7", "", { "dependencies": { "@stacksjs/clapp": "^0.2.5", "bunfig": "^0.15.11", "clone": "^2.1.2" }, "bin": { "cache": "./dist/bin/cli.js" } }, "sha512-NsbR7cqKrB7NMk1PmYbOLpRgaiUvhelCcDHW1cpnQyMh6Od6VpKBxNAQfDzm74R0pT7rhFxxG5tW8r4vWjC5/Q=="],
 
-    "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.16.13", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.2", "@ts-cloud/aws-types": "0.16.13", "@ts-cloud/core": "0.16.13", "hash-wasm": "^4.12.0" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-16eFyFB1Qj6fl9+mTdNzb4W42jWhIDZgCzjwB0CWMS9Fs6E9oj/pc/cccaSrbjKz7fVEpXAJGfrPmQ40wWGdeA=="],
+    "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.16.14", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.2", "@ts-cloud/aws-types": "0.16.14", "@ts-cloud/core": "0.16.14", "hash-wasm": "^4.12.0" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-JwTWmhlyFzUyBxW9cG12F5zYxGN3HYn4hzdFgFNJxhGU2HLHDf8XmSh5ZJCCIql8nFWsTz6YQY7SWvZupR4JRg=="],
 
     "@stacksjs/ts-css": ["@stacksjs/ts-css@0.3.6", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "cssx": "./dist/bin/cssx.js", "ts-css": "./dist/bin/cli.js" } }, "sha512-7NJcQN9JshAA73FmwvpVdnO+iXnQiEyqtQ/ta+8UQbI3O+34mvRTNBtcx2oQNNKZ8TxM1g/Z/TvMaaan2p8tAA=="],
 
@@ -1806,9 +1806,9 @@
 
     "@ts-charts/time-format": ["@ts-charts/time-format@0.2.7", "", { "dependencies": { "@ts-charts/time": "0.2.7" } }, "sha512-iYipyprcy3V9P7lz6SwYt5zXCGI2VoGE2fXuCmVQ22g5sS7jPP+9odiOQQKhQYS44mX2+mIuPeSWfR5mGg160Q=="],
 
-    "@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.16.13", "", {}, "sha512-BQy7DmW0qHCEbBb1m93fktCJLH24QtqImDlCy3wZgNAmA6LIw8JFzd1XM2eRbGH1Z83AuUSRB3QNiNlq42TdNQ=="],
+    "@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.16.14", "", {}, "sha512-xpZxAzVx29bWNomNzrthhfa8Nq1c1+YKER9MJ0igXxAV/TLgA3R5LJXfRirtPpOa9vjI6hpURHwDaRL5aX1IRA=="],
 
-    "@ts-cloud/core": ["@ts-cloud/core@0.16.13", "", { "dependencies": { "@ts-cloud/aws-types": "0.16.13" } }, "sha512-0hInGDnUxjHRV4BXWvib47V4WBnfJ8GvB57haHG6EmVlMcTyk5qOmdO+KF7wAlmb+hA8N6cN9xLjLfmR1qIfgw=="],
+    "@ts-cloud/core": ["@ts-cloud/core@0.16.14", "", { "dependencies": { "@ts-cloud/aws-types": "0.16.14" } }, "sha512-k/v40pvoxVP5J8yjmLsUhgg4fMZDi4wcZwhDwrInGVlOuTo2jJOBdP4ZpysW14whV45iMNErEEgocEeRUqnK1A=="],
 
     "@ts-videos/mp4": ["@ts-videos/mp4@0.1.1", "", { "peerDependencies": { "ts-videos": "0.1.1" } }, "sha512-QbNeELrRjlR/FnR0JTEiYd54RFaM2VgxiIwHz3azzyeSB2ZZlJfHmIcx0ir5ZDU4zCaI4ygqqhJTn5HsHGd+/A=="],
 
