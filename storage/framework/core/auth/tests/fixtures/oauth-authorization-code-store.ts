@@ -63,6 +63,7 @@ const {
   exchangeOAuthAuthorizationCode,
   findToken,
   handleOAuthRevocationRequest,
+  handleOAuthAuthorizationConsentRequest,
   handleOAuthTokenRequest,
   hasReusableOAuthConsent,
   issueAuthorizationCode,
@@ -335,6 +336,59 @@ try {
     .where('id', '=', rememberedGrant.id)
     .execute()
   assert.equal(await hasReusableOAuthConsent(rememberedConsent), false)
+
+  const handledApprovalRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const handledApproval = await handleOAuthAuthorizationConsentRequest({
+    provider,
+    request: new Request('https://id.example.com/oauth/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ request_id: handledApprovalRequestId, decision: 'approve' }),
+    }),
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+  })
+  assert.equal(handledApproval.status, 302)
+  const handledApprovalLocation = new URL(handledApproval.headers.get('location')!)
+  assert.equal(`${handledApprovalLocation.origin}${handledApprovalLocation.pathname}`, validatedRequest.redirectUri)
+  assert.equal(handledApprovalLocation.searchParams.get('state'), validatedRequest.state)
+  assert.match(handledApprovalLocation.searchParams.get('code')!, /^[A-Za-z0-9_-]{43}$/)
+
+  const handledDenialRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const handledDenial = await handleOAuthAuthorizationConsentRequest({
+    provider,
+    request: new Request('https://id.example.com/oauth/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' },
+      body: new URLSearchParams({ request_id: handledDenialRequestId, decision: 'deny' }),
+    }),
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+  })
+  assert.equal(handledDenial.status, 302)
+  const handledDenialLocation = new URL(handledDenial.headers.get('location')!)
+  assert.equal(handledDenialLocation.searchParams.get('error'), 'access_denied')
+  assert.equal(handledDenialLocation.searchParams.get('state'), validatedRequest.state)
+  assert.equal(handledDenialLocation.searchParams.has('code'), false)
+
+  const wrongMediaRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const wrongMediaResponse = await handleOAuthAuthorizationConsentRequest({
+    provider,
+    request: new Request('https://id.example.com/oauth/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request_id: wrongMediaRequestId, decision: 'deny' }),
+    }),
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+  })
+  assert.equal(wrongMediaResponse.status, 415)
+  assert.deepEqual(await wrongMediaResponse.json(), { error: 'invalid_request' })
+  assert(await loadOAuthAuthorizationRequestSession(wrongMediaRequestId, browserSession), 'invalid form media must not consume the request')
 
   const consentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const consent = await approveOAuthAuthorizationRequestSession({
