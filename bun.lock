@@ -1133,7 +1133,7 @@
       "name": "@stacksjs/router",
       "version": "0.75.17",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.18",
+        "@stacksjs/bun-router": "^0.1.20",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",

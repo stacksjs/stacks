@@ -9,6 +9,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { ENRICHED_NOT_FOUND_RESPONSE } from '@stacksjs/bun-router/runtime'
 
 let server: any = null
 let port = 0
@@ -131,6 +132,36 @@ describe('an error body', () => {
       path: '/_rid_missing',
       method: 'GET',
     })
+  })
+
+  it('trusts a marked router 404 without cloning its body', async () => {
+    const { route, serverResponse } = await import('../src')
+    const originalHandleRequest = route.handleRequest
+    const answer = Response.json({
+      success: false,
+      message: 'Not Found',
+      path: '/_rid_marked_missing',
+      method: 'GET',
+    }, { status: 404 })
+    const markedAnswer = answer as Response & { [ENRICHED_NOT_FOUND_RESPONSE]?: boolean }
+    markedAnswer[ENRICHED_NOT_FOUND_RESPONSE] = true
+
+    let clones = 0
+    const originalClone = answer.clone.bind(answer)
+    answer.clone = () => {
+      clones++
+      return originalClone()
+    }
+    route.handleRequest = async () => answer
+
+    try {
+      const response = await serverResponse(new Request('http://127.0.0.1/_rid_marked_missing'))
+      expect(response).toBe(answer)
+      expect(clones).toBe(0)
+    }
+    finally {
+      route.handleRequest = originalHandleRequest
+    }
   })
 
   it('still enriches a generic user 404', async () => {

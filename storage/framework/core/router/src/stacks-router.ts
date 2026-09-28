@@ -9,6 +9,7 @@ import type { Server } from 'bun'
 import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
 import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareHandler as BunMiddlewareHandler, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
+import { ENRICHED_NOT_FOUND_RESPONSE } from '@stacksjs/bun-router/runtime'
 // Type-only: the sole value use was an `instanceof` check in
 // `adaptMiddlewareForBunRouter`, which now detects the same objects
 // structurally. An application that registers no global middleware therefore
@@ -6011,6 +6012,12 @@ async function handleServerRequestBeforeRoutes(request: Request): Promise<Respon
 
 async function handleLoadedServerRequest(request: Request): Promise<Response> {
   const response = await route.handleRequest(request)
+
+  // bun-router has already attached the requested path and method to this
+  // response. Trust its public marker instead of cloning and parsing the body
+  // on every framework-generated 404.
+  if ((response as unknown as Record<symbol, unknown>)[ENRICHED_NOT_FOUND_RESPONSE] === true)
+    return response
 
   // Enrich generic 404s with the requested path so client-side debugging
   // (typo'd endpoint, missing route in api.ts, stale SPA cache) is one
