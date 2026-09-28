@@ -230,6 +230,10 @@ export interface EmailServerConfig {
    * retrievable, and the next deploy reads it back as an explicit password
    * rather than rotating it out from under every configured client.
    *
+   * A generated password is printed only to an interactive terminal outside
+   * CI. A CI deploy logs where it was saved instead; read it back with
+   * `buddy env:get MAIL_PASSWORD_<LOCALPART> --file .env.production`.
+   *
    * Leave it off to declare each password yourself.
    * @default false
    */

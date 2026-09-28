@@ -3262,8 +3262,12 @@ export interface MailTenantResult {
    * inherits its `DKIM_SELECTOR`, which need not be `mail`.
    */
   dkimSelector?: string
-  /** Mailboxes newly created this run (address + password), for reporting. */
-  created: Array<{ address: string, password: string }>
+  /**
+   * Mailboxes newly created this run. No passwords: a result is something a
+   * caller may log, and the one place a password may be shown is
+   * `reportMailboxCredentials`.
+   */
+  created: Array<{ address: string, generated: boolean }>
 }
 
 /**
@@ -3481,6 +3485,71 @@ export async function resolveAttachTargetBox(
 }
 
 /**
+ * Whether a secret may be written to stdout right now.
+ *
+ * Only to a person at a terminal. A CI run log is stored, searchable, and
+ * readable by everyone with access to the repository, and a piped stdout is
+ * headed for a file somebody else will read. A mailbox password printed by
+ * this reconcile ended up in a GitHub Actions log in plain text exactly that
+ * way. Computed per call (not `@stacksjs/env`'s frozen `isCI`) for the same
+ * reason as `canPromptInteractively`.
+ */
+export function canRevealSecrets(env: Record<string, string | undefined> = process.env, stdout: { isTTY?: boolean } = process.stdout): boolean {
+  if (env.CI || env.CONTINUOUS_INTEGRATION || env.GITHUB_ACTIONS || env.BUILD_NUMBER || env.RUN_ID)
+    return false
+
+  return Boolean(stdout.isTTY)
+}
+
+/** The env var a mailbox's password lives in: `MAIL_PASSWORD_<LOCALPART>`. */
+function mailboxPasswordKey(box: Pick<ResolvedMailbox, 'localPart'>): string {
+  return `MAIL_PASSWORD_${box.localPart.replace(/[^A-Z0-9]/g, '_')}`
+}
+
+/**
+ * Say which mailboxes a reconcile created, and show a password only when that
+ * is both necessary and safe.
+ *
+ * A password from `config/email.ts` or the environment is never printed: the
+ * operator already has it, so printing it adds nothing but a copy in the log.
+ * A generated one is shown only to an interactive terminal outside CI.
+ * Everywhere else the log says where the encrypted copy was written.
+ */
+export function reportMailboxCredentials(
+  logger: Pick<typeof log, 'info' | 'warn'>,
+  created: Array<Pick<ResolvedMailbox, 'address' | 'localPart' | 'password' | 'generated'>>,
+  options: { interactive: boolean, persisted: boolean },
+): void {
+  const declared = created.filter(box => !box.generated)
+  if (declared.length)
+    logger.info(`Mail: created ${declared.length} mailbox(es) with their declared password (config/email.ts or MAIL_PASSWORD_<LOCALPART>): ${declared.map(box => box.address).join(', ')}`)
+
+  const generated = created.filter(box => box.generated)
+  if (!generated.length)
+    return
+
+  if (options.interactive) {
+    logger.info(options.persisted
+      ? `Mail: created ${generated.length} mailbox(es) with generated passwords, saved encrypted to .env.production and shown once here:`
+      : `Mail: created ${generated.length} mailbox(es) with generated passwords that were NOT saved - store them now, they are shown once:`)
+    for (const box of generated)
+      logger.info(`  ${box.address}  ${box.password}`)
+    return
+  }
+
+  if (!options.persisted) {
+    // provisionMailTenant drops these before provisioning; this is the
+    // backstop, and it still does not print them.
+    logger.warn(`Mail: ${generated.length} mailbox(es) have generated passwords that were neither saved nor shown: ${generated.map(box => box.address).join(', ')}. Set ${generated.map(mailboxPasswordKey).join(', ')} and deploy again.`)
+    return
+  }
+
+  logger.info(`Mail: created ${generated.length} mailbox(es) with generated passwords, saved encrypted to .env.production (not printed: this is not an interactive terminal):`)
+  for (const box of generated)
+    logger.info(`  ${box.address}  ->  buddy env:get ${mailboxPasswordKey(box)} --file .env.production`)
+}
+
+/**
  * Everything is MERGE-based so a shared mail server keeps every other tenant's
  * domains, keys, users, and forward rules untouched. Best-effort — a hiccup is
  * logged, never fails the release. Returns what the DNS step needs (mail host +
@@ -3537,7 +3606,8 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   // Each one is persisted (encrypted) below, which is what makes it safe.
   const generatePasswords = cfg.server?.generatePasswords === true
   const resolved = domain ? resolveMailboxesWithSkipped(cfg.mailboxes, domain, generatePasswords) : { boxes: [], skipped: [] }
-  const boxes = resolved.boxes
+  let boxes = resolved.boxes
+  const interactive = canRevealSecrets()
 
   // Persist generated passwords BEFORE provisioning uses them.
   //
@@ -3547,11 +3617,12 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   // encrypted fixes both: it is retrievable, and the next deploy reads it back
   // as an explicit password and changes nothing.
   const generated = boxes.filter(box => box.generated)
+  let persisted = true
   if (generated.length > 0) {
     try {
       const { setEnv } = await import('@stacksjs/env')
       for (const box of generated) {
-        await setEnv(`MAIL_PASSWORD_${box.localPart.replace(/[^A-Z0-9]/g, '_')}`, box.password, {
+        await setEnv(mailboxPasswordKey(box), box.password, {
           file: '.env.production',
           // No `encrypt` option: `setEnv` encrypts by default and `plain: true`
           // is how you opt OUT. Passing `encrypt` did not typecheck, and would
@@ -3562,7 +3633,18 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
       logger.success(`Mail: generated and saved ${generated.length} mailbox password(s) to .env.production (encrypted)`)
     }
     catch (err) {
-      logger.warn(`Mail: could not save the generated password(s) to .env.production - they are printed below and will otherwise be regenerated next deploy: ${getErrorMessage(err)}`)
+      persisted = false
+      if (interactive) {
+        logger.warn(`Mail: could not save the generated password(s) to .env.production - they are printed below and will otherwise be regenerated next deploy: ${getErrorMessage(err)}`)
+      }
+      else {
+        // Unsaved AND unprintable (CI logs are not a secret store): creating
+        // the mailbox would lock everyone out of it. Leave it for a run that
+        // can either save or show the password.
+        const unsaved = new Set(generated.map(box => box.address))
+        boxes = boxes.filter(box => !unsaved.has(box.address))
+        logger.warn(`Mail: could not save the generated password(s) to .env.production, and this is not an interactive terminal, so ${[...unsaved].join(', ')} were not created: ${getErrorMessage(err)}`)
+      }
     }
   }
 
@@ -3713,7 +3795,8 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   echo "DKIMSEL:$SEL"
   echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
 fi
-# 3) Create the configured mailboxes as per-domain isolated users (skip existing).
+# 3) Create the configured mailboxes as per-domain isolated users, and bring an
+# existing one's password in line with the declared one.
 if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
   echo "$BOXES_B64" | base64 -d | while IFS=$'\t' read -r addr pw; do
     [ -z "$addr" ] && continue
@@ -3761,8 +3844,23 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
       else
         echo "MADE:$addr"
       fi
-    else
+    elif SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local info "$addr" 2>&1 | grep -qi 'enabled: false'; then
+      # A disabled account never verifies, so it would be rewritten on every
+      # deploy. Leave it alone: disabling it was somebody's decision.
       echo "EXISTS:$addr"
+    elif SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -q '^Credentials valid'; then
+      echo "EXISTS:$addr"
+    else
+      # The declared password is authoritative. Without this, rotating
+      # MAIL_PASSWORD_<LOCALPART> changed the env file and nothing else: the
+      # mailbox kept the old (possibly leaked) password and the deploy called
+      # it current. stdin, so the new password is not in the process list.
+      printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" --password-stdin >/dev/null 2>&1 || true
+      if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -q '^Credentials valid'; then
+        echo "UPDATED:$addr"
+      else
+        echo "UPDATEFAIL:$addr"
+      fi
     fi
   done
 fi
@@ -3998,14 +4096,17 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       logger.warn(`Mail: ${dkimStaleKey} is an unused DKIM key left by an earlier deploy — nothing signs with it. Remove it with: rm ${dkimStaleKey}`)
     const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const migratedAddrs = new Set([...out.matchAll(/MIGRATED:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
-    const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
+    const updatedAddrs = new Set([...out.matchAll(/^UPDATED:([^\n]+)/gm)].flatMap(m => m[1] ? [m[1].trim()] : []))
+    const updateFailed = [...out.matchAll(/^UPDATEFAIL:([^\n]+)/gm)].flatMap(m => m[1] ? [m[1].trim()] : [])
+    const createdBoxes = boxes.filter(b => madeAddrs.has(b.address))
+    const created = createdBoxes.map(b => ({ address: b.address, generated: b.generated }))
 
     logger.success(`Mail routing reconciled (${line.replace('MAILTENANT:', '')})`)
 
     // A mailbox the server refused is worth saying out loud. This used to be
     // swallowed: only MADE lines were read, so a declared mailbox that never
     // appeared looked exactly like one that already existed.
-    const failed = [...out.matchAll(/FAIL:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])
+    const failed = [...out.matchAll(/^FAIL:([^\n]+)/gm)].flatMap(m => m[1] ? [m[1].trim()] : [])
     if (failed.length)
       logger.warn(`Mail: the server refused ${failed.length} mailbox(es): ${failed.join(', ')}`)
 
@@ -4023,16 +4124,16 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
 
     // Declared, not created, not reported as existing: the reconcile never
     // saw it. Silence here is how a missing mailbox reaches production.
-    const seen = new Set([...madeAddrs, ...migratedAddrs, ...[...out.matchAll(/EXISTS:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])])
+    const seen = new Set([...madeAddrs, ...migratedAddrs, ...updatedAddrs, ...updateFailed, ...[...out.matchAll(/EXISTS:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])])
     const unaccounted = boxes.filter(b => !seen.has(b.address)).map(b => b.address)
     if (unaccounted.length)
       logger.warn(`Mail: ${unaccounted.length} declared mailbox(es) were not reconciled: ${unaccounted.join(', ')}`)
 
-    if (created.length) {
-      logger.info(`Mail: created ${created.length} mailbox(es) - credentials below (save them; shown once):`)
-      for (const b of created)
-        logger.info(`  ${b.address}  ${b.password}`)
-    }
+    reportMailboxCredentials(logger, createdBoxes, { interactive, persisted })
+    if (updatedAddrs.size)
+      logger.success(`Mail: set the declared password on ${updatedAddrs.size} existing mailbox(es): ${[...updatedAddrs].join(', ')}`)
+    if (updateFailed.length)
+      logger.warn(`Mail: could not set the declared password on ${updateFailed.length} existing mailbox(es) - they still accept the old one: ${updateFailed.join(', ')}`)
     if (migratedAddrs.size)
       logger.success(`Mail: migrated ${migratedAddrs.size} legacy mailbox username(s) to isolated full addresses`)
 
