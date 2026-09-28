@@ -150,3 +150,20 @@ export function applyAppPackageTemplate(root: string, identity: AppIdentity): st
   writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
   return changed
 }
+
+/**
+ * Replace the framework's CHANGELOG.md with an empty one for the app.
+ *
+ * The download carried "# Stacks Changelog": about a megabyte of the
+ * framework's own release history, which every app then committed, and which
+ * the app's first `release` appended its own notes onto. Returns whether a
+ * changelog was replaced.
+ */
+export function applyAppChangelogTemplate(root: string, identity: AppIdentity): boolean {
+  const file = join(root, 'CHANGELOG.md')
+  if (!existsSync(file))
+    return false
+
+  writeFileSync(file, `# ${identity.displayName} Changelog\n`)
+  return true
+}

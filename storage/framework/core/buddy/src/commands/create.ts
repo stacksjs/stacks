@@ -10,7 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 import { resultFailed } from '../result'
-import { appIdentity, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../scaffold-app'
+import { appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
 import { fetchPublishedVersions } from '../registry'
 
@@ -374,12 +374,16 @@ function applyAppEnv(path: string) {
  * Give the app its own `package.json` identity: its name, a 0.0.0 version,
  * and no repository, bugs, homepage or funding links pointing at
  * stacksjs/stacks. `appPackageValues` in `../scaffold-app` lists the keys.
+ * Its CHANGELOG.md starts empty rather than as the framework's history.
  */
 function applyAppPackage(path: string) {
   try {
-    const changed = applyAppPackageTemplate(path, appIdentity(path))
+    const identity = appIdentity(path)
+    const changed = applyAppPackageTemplate(path, identity)
     if (changed.length > 0)
       log.success(`Named the app in package.json (${changed.join(', ')})`)
+    if (applyAppChangelogTemplate(path, identity))
+      log.success('Started the app its own CHANGELOG.md')
   }
   catch (error) {
     log.warn(`Could not name the app in package.json: ${error instanceof Error ? error.message : String(error)}`)

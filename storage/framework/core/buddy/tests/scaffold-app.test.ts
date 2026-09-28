@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { appEnvValues, appIdentity, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../src/scaffold-app'
+import { appEnvValues, appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../src/scaffold-app'
 
 const REPO = join(import.meta.dir, '../../../../..')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -123,6 +123,28 @@ describe('the app package.json', () => {
     expect(pkg.dependencies).toEqual(original.dependencies)
     expect(pkg.engines).toEqual(original.engines)
     expect(Object.keys(pkg).slice(0, 2)).toEqual(Object.keys(original).slice(0, 2))
+  })
+})
+
+describe('the app CHANGELOG.md', () => {
+  test('starts empty instead of as the framework\'s release history', () => {
+    const app = mkdtempSync(join(tmpdir(), 'stacks-app-changelog-'))
+    try {
+      copyFileSync(join(REPO, 'CHANGELOG.md'), join(app, 'CHANGELOG.md'))
+      expect(readFileSync(join(app, 'CHANGELOG.md'), 'utf8')).toStartWith('# Stacks Changelog')
+
+      expect(applyAppChangelogTemplate(app, appIdentity(join(app, 'my-app')))).toBe(true)
+      expect(readFileSync(join(app, 'CHANGELOG.md'), 'utf8')).toBe('# My App Changelog\n')
+    }
+    finally {
+      rmSync(app, { recursive: true, force: true })
+    }
+  })
+
+  test('leaves a project without one alone', () => {
+    const app = mkdtempSync(join(tmpdir(), 'stacks-app-changelog-'))
+    expect(applyAppChangelogTemplate(app, appIdentity(app))).toBe(false)
+    rmSync(app, { recursive: true, force: true })
   })
 })
 
