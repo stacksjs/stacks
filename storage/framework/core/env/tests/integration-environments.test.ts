@@ -9,6 +9,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import {
+  initializeIntegration,
   integrationEnvironment,
   integrationGate,
   normalizeEnvironmentName,
@@ -42,6 +43,50 @@ function runningAs(name: string | undefined): void {
 }
 
 describe('integration environment allowlist', () => {
+  it('does not initialize an excluded adapter', () => {
+    runningAs('local')
+    let initialized = 0
+
+    const result = initializeIntegration(
+      { environments: ['production'] },
+      () => {
+        initialized += 1
+        return { close: () => {} }
+      },
+    )
+
+    expect(initialized).toBe(0)
+    expect(result).toEqual({
+      initialized: false,
+      gate: {
+        enabled: false,
+        environment: 'local',
+        reason: 'environment-excluded',
+      },
+    })
+  })
+
+  it('initializes an included adapter with the normalized environment metadata', () => {
+    runningAs('prod')
+    const received: string[] = []
+
+    const result = initializeIntegration({}, ({ environment }) => {
+      received.push(environment)
+      return { environment }
+    })
+
+    expect(received).toEqual(['production'])
+    expect(result).toEqual({
+      initialized: true,
+      gate: {
+        enabled: true,
+        environment: 'production',
+        reason: 'environment-allowed',
+      },
+      value: { environment: 'production' },
+    })
+  })
+
   it('admits a deployed environment and excludes a developer machine by default', () => {
     runningAs('production')
     expect(integrationGate({})).toEqual({ enabled: true, environment: 'production', reason: 'environment-allowed' })

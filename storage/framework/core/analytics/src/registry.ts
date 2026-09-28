@@ -13,7 +13,7 @@
  */
 
 import type { AnalyticsConfig, AnalyticsOptions } from '@stacksjs/types'
-import { integrationGate } from '@stacksjs/env'
+import { initializeIntegration } from '@stacksjs/env'
 import type { AnalyticsHeadTag } from './drivers/shared'
 import { getAnalyticsHqHead } from './drivers/analyticshq'
 import { getFathomAnalyticsHead } from './drivers/fathom'
@@ -72,8 +72,15 @@ export function getAnalyticsHead(config: AnalyticsConfig): AnalyticsHeadTag[] {
    */
   if (config.enabled === false)
     return []
-  if (config.environments !== undefined && !integrationGate(config).enabled)
-    return []
+  if (config.environments !== undefined) {
+    const result = initializeIntegration(config, () => resolveAnalyticsHead(config, driver))
+    return result.initialized ? result.value : []
+  }
+
+  return resolveAnalyticsHead(config, driver)
+}
+
+function resolveAnalyticsHead(config: AnalyticsConfig, driver: AnalyticsDriverName): AnalyticsHeadTag[] {
 
   if (!isAnalyticsDriver(driver)) {
     throw new Error(

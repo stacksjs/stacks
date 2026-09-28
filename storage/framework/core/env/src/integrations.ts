@@ -81,6 +81,17 @@ export interface IntegrationGate {
   reason: IntegrationGateReason
 }
 
+/** Context Stacks resolves before an integration is allowed to initialize. */
+export interface IntegrationContext {
+  /** Normalized effective environment, ready to attach to remote events. */
+  environment: string
+}
+
+/** The observable result of an environment-gated initialization attempt. */
+export type IntegrationInitialization<T> =
+  | { initialized: false, gate: IntegrationGate }
+  | { initialized: true, gate: IntegrationGate, value: T }
+
 /**
  * Fold the spellings that mean the same deployment onto one name, so an
  * allowlist of `['prod']` admits `APP_ENV=production` and the reverse.
@@ -166,4 +177,35 @@ export function integrationGate(
   return permitted.has(environment)
     ? { enabled: true, environment, reason: 'environment-allowed' }
     : { enabled: false, environment, reason: 'environment-excluded' }
+}
+
+/**
+ * Initialize an integration only when its environment gate is open.
+ *
+ * The callback is never evaluated for an excluded environment, so constructing
+ * an SDK client, registering hooks, or starting a flush timer inside it is
+ * safe. Included adapters receive the normalized environment without exposing
+ * a second `environment` option to application configuration.
+ *
+ * @example
+ * ```ts
+ * const result = initializeIntegration(config.bughq, ({ environment }) =>
+ *   installBugHq({ key: config.bughq.key, environment }))
+ * ```
+ */
+export function initializeIntegration<T>(
+  options: EnvironmentGatedIntegration | undefined | null,
+  initialize: (context: IntegrationContext) => T,
+  defaultEnvironments: readonly string[] = REMOTE_TELEMETRY_ENVIRONMENTS,
+): IntegrationInitialization<T> {
+  const gate = integrationGate(options, defaultEnvironments)
+
+  if (!gate.enabled || gate.environment === undefined)
+    return { initialized: false, gate }
+
+  return {
+    initialized: true,
+    gate,
+    value: initialize({ environment: gate.environment }),
+  }
 }

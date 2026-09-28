@@ -293,6 +293,40 @@ console.log(provider) // 'github' | 'gitlab' | 'vercel' | etc.
 console.log(providerInfo) // { name: 'GitHub Actions', detected: true }
 ```
 
+## Remote Integration Environments
+
+Use `initializeIntegration()` before creating a remote telemetry client. The
+initializer is not called when the current `APP_ENV` is excluded, so no client,
+capture hook, upload timer, or network transport is created. Included adapters
+receive the normalized environment for event metadata.
+
+```typescript
+import { initializeIntegration } from '@stacksjs/env'
+import { loghqTransport } from '@loghq/stacks'
+
+const loghq = {
+  key: process.env.LOGHQ_KEY,
+  environments: ['production', 'staging'],
+}
+
+const result = initializeIntegration(loghq, ({ environment }) =>
+  loghqTransport({ key: loghq.key, environment }))
+
+export const transports = result.initialized ? [result.value] : []
+```
+
+The same helper is suitable for BugHQ, workers, web and API servers, dashboard
+processes, and Buddy commands. Browser integrations should receive only the
+resolved public enablement or metadata they need, never a server credential.
+
+- `enabled: false` always disables initialization.
+- `enabled: true` does not bypass the environment allowlist.
+- An empty allowlist disables every environment.
+- Unknown or malformed environment names fail closed.
+- `local`, `development`, and `test` are distinct labels.
+- `APP_ENV` is configuration, not deployment proof. A local process launched
+  with `APP_ENV=production` qualifies for a production allowlist.
+
 ### Supported CI/CD Providers
 
 - GitHub Actions

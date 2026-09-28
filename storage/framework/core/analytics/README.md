@@ -12,15 +12,34 @@ This package integrates analytics features into your application.
 bun install -d @stacksjs/analytics
 ```
 
-You may now use:
+Render the driver selected in `config/analytics.ts`:
 
 ```ts
-import { analytics } from '@stacksjs/analytics'
+import { generateAnalyticsScript } from '@stacksjs/analytics'
+import { analytics } from '@stacksjs/config'
 
-// analytics.track('event', {
-//   property: 'value'
-// })
+const head = generateAnalyticsScript(analytics)
 ```
+
+Remote analytics can be limited to explicit application environments:
+
+```ts
+import type { AnalyticsConfig } from '@stacksjs/types'
+
+export default {
+  driver: 'analyticshq',
+  environments: ['production', 'staging'],
+  drivers: {
+    analyticshq: { siteId: 'YOUR_APP_ID' },
+  },
+} satisfies AnalyticsConfig
+```
+
+Stacks resolves `APP_ENV` before selecting or initializing the driver. An
+excluded environment emits no tracking tag. `enabled: false` always wins, an
+empty allowlist disables every environment, and local environments can opt in
+by naming their exact label. Leaving `environments` unset preserves existing
+application behavior.
 
 Learn more in the docs.
 
