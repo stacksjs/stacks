@@ -63,7 +63,11 @@ function tapBack(event: MouseEvent): void {
 </div>
 
 <style>
-  .native-nav { display: contents; }
+  /* The element stx wraps each component in is a box too, as tall as the bar
+     and its title; the bar stuck inside it and scrolled away with the title.
+     Both boxes step aside so the bar sticks to the page. */
+  .native-nav,
+  [data-stx-scope]:has(> .native-nav) { display: contents; }
 
   .native-nav-bar {
     position: sticky;
