@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.7...v0.75.8)
+
+## 🐛 Bug Fixes
+
+- **cms**: stx leaves the article script alone ([0bc9018](https://github.com/stacksjs/stacks/commit/0bc9018)) _(by Chris <chris@stacksjs.com>)_
+- **cms**: satisfy noUncheckedIndexedAccess in the article image reader ([7b220b7](https://github.com/stacksjs/stacks/commit/7b220b7)) _(by Chris <chris@stacksjs.com>)_
+- **typecheck**: resolve every @stacksjs subpath to source, not a stale dist ([44f3324](https://github.com/stacksjs/stacks/commit/44f3324)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.6...v0.75.7)
 
 ## ✨ Features
