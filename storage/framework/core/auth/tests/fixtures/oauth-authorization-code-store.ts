@@ -52,6 +52,7 @@ await ormReady
 const {
   approveOAuthAuthorizationRequestSession,
   authorizeOAuthDelegatedToken,
+  beginOAuthAuthorizationRequest,
   createOAuthGrant,
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
@@ -100,6 +101,7 @@ try {
   const provider = resolveOAuthProviderConfig({
     enabled: true,
     issuer: 'https://id.example.com',
+    lifetimes: { authorizationRequest: 90_000 },
     scopes: {
       'issues:read': { description: 'Read issues', resources: ['bughq'] },
       'profile:read': { description: 'Read profile' },
@@ -155,6 +157,49 @@ try {
   })
   assert.equal(validatedRequest.clientType, 'public')
   const browserSession = 'browser-session-token-with-high-entropy'
+  const begunRequest = await beginOAuthAuthorizationRequest({
+    provider,
+    browserSessionId: browserSession,
+    query: new URLSearchParams([
+      ['response_type', 'code'],
+      ['client_id', String(publicRegistration.client.id)],
+      ['redirect_uri', 'https://client.example.com/callback'],
+      ['scope', 'issues:read'],
+      ['resource', 'https://api.bughq.example'],
+      ['state', 'registered-client-state'],
+      ['code_challenge', codeChallenge],
+      ['code_challenge_method', 'S256'],
+    ]),
+  })
+  assert.match(begunRequest.requestId, /^[A-Za-z0-9_-]{43}$/)
+  assert.deepEqual(await loadOAuthAuthorizationRequestSession(begunRequest.requestId, browserSession), validatedRequest)
+  const begunRequestRow = await db.selectFrom('oauth_authorization_requests')
+    .where('request_hash', '=', createHash('sha256').update(begunRequest.requestId).digest('hex'))
+    .selectAll()
+    .executeTakeFirstOrThrow() as Record<string, unknown>
+  assert.equal(
+    new Date(String(begunRequestRow.expires_at)).getTime() - new Date(String(begunRequestRow.created_at)).getTime(),
+    provider.lifetimes.authorizationRequest,
+  )
+  const requestCountBeforeUnknownClient = Number((await db.selectFrom('oauth_authorization_requests')
+    .select(db.raw('COUNT(*) AS count'))
+    .executeTakeFirstOrThrow() as { count: number | string }).count)
+  await assert.rejects(beginOAuthAuthorizationRequest({
+    provider,
+    browserSessionId: browserSession,
+    query: new URLSearchParams([
+      ['response_type', 'code'],
+      ['client_id', '999999'],
+      ['redirect_uri', 'https://attacker.example/callback'],
+      ['code_challenge', codeChallenge],
+      ['code_challenge_method', 'S256'],
+    ]),
+  }), error => error instanceof Error
+    && error.name === 'OAuthAuthorizationRequestError'
+    && (error as { redirectUri?: unknown }).redirectUri === null)
+  assert.equal(Number((await db.selectFrom('oauth_authorization_requests')
+    .select(db.raw('COUNT(*) AS count'))
+    .executeTakeFirstOrThrow() as { count: number | string }).count), requestCountBeforeUnknownClient)
   const requestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const requestHash = createHash('sha256').update(requestId).digest('hex')
   const storedRequest = await db.selectFrom('oauth_authorization_requests').where('request_hash', '=', requestHash).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
