@@ -1,3 +1,19 @@
+<script server>
+/**
+ * A development tool: it lists scenarios that throw on purpose. The routes
+ * that fill it (`/test-error/*`, TestErrorAction) are only mounted for a local
+ * deployment, but the view fallback served this file on its own, so every
+ * deployed app answered 200 at /errors/tester with an empty "Error Page
+ * Tester" shell. Same gate as those routes.
+ */
+import { isLocalDeployment } from '@stacksjs/env'
+
+if (!isLocalDeployment())
+  notFound()
+
+const scenarios = typeof context !== 'undefined' && Array.isArray(context?.scenarios) ? context.scenarios : []
+</script>
+
 <div class="mx-auto px-6 py-12 max-w-3xl">
   <h1 class="mb-2 font-semibold text-3xl text-neutral-950 dark:text-white">Error Page Tester</h1>
   <p class="mb-8 text-neutral-500 text-sm dark:text-neutral-400">
