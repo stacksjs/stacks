@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.13...v0.75.14)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: retire scaffold routes whose action the framework removed ([a58b00f](https://github.com/stacksjs/stacks/commit/a58b00f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **browser**: drop sideEffects: false, which cost /register its useStorage ([8be1d47](https://github.com/stacksjs/stacks/commit/8be1d47)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1957](https://github.com/stacksjs/stacks/issues/1957))
+- **queue**: accept a job name without its Job suffix, as the runtime does ([c5c8a6c](https://github.com/stacksjs/stacks/commit/c5c8a6c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: stop auditing a polymorphic id column as a foreign key ([28478f0](https://github.com/stacksjs/stacks/commit/28478f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: give the trait pivot unique guarantee the corpus's index names ([35871b1](https://github.com/stacksjs/stacks/commit/35871b1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: restore unique indexes a later table rebuild dropped, in the same migrate ([036f771](https://github.com/stacksjs/stacks/commit/036f771)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.12...v0.75.13)
 
 ## 🐛 Bug Fixes
