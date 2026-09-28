@@ -51,10 +51,12 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const {
   createOAuthGrant,
+  createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
   exchangeAuthorizationCode,
   findToken,
   issueAuthorizationCode,
+  loadOAuthAuthorizationRequestSession,
   loadOAuthAuthorizationClient,
   registerOAuthClient,
   resolveOAuthProviderConfig,
@@ -112,7 +114,7 @@ try {
     scopes: ['issues:read'],
     resources: ['bughq'],
   })
-  assert.equal(validateOAuthAuthorizationRequest(provider, loadedPublic!, {
+  const validatedRequest = validateOAuthAuthorizationRequest(provider, loadedPublic!, {
     responseType: 'code',
     clientId: String(publicRegistration.client.id),
     redirectUri: 'https://client.example.com/callback',
@@ -121,7 +123,24 @@ try {
     state: 'registered-client-state',
     codeChallenge,
     codeChallengeMethod: 'S256',
-  }).clientType, 'public')
+  })
+  assert.equal(validatedRequest.clientType, 'public')
+  const browserSession = 'browser-session-token-with-high-entropy'
+  const requestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const requestHash = createHash('sha256').update(requestId).digest('hex')
+  const storedRequest = await db.selectFrom('oauth_authorization_requests').where('request_hash', '=', requestHash).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
+  assert.equal(storedRequest.browser_session_hash, createHash('sha256').update(browserSession).digest('hex'))
+  assert.notEqual(storedRequest.request_hash, requestId)
+  assert.equal('browser_session' in storedRequest, false)
+  assert.deepEqual(await loadOAuthAuthorizationRequestSession(requestId, browserSession), validatedRequest)
+  assert.equal(await loadOAuthAuthorizationRequestSession(requestId, 'different-browser-session-token'), null)
+  assert.equal(await loadOAuthAuthorizationRequestSession('malformed', browserSession), null)
+  const expiredRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await db.updateTable('oauth_authorization_requests')
+    .set({ expires_at: sqlDateTime(new Date(Date.now() - 1000)) } as never)
+    .where('request_hash', '=', createHash('sha256').update(expiredRequestId).digest('hex'))
+    .execute()
+  assert.equal(await loadOAuthAuthorizationRequestSession(expiredRequestId, browserSession), null)
   assert.equal(await loadOAuthAuthorizationClient(String(client.id)), null, 'legacy personal clients must not enter the provider flow')
 
   const confidentialRegistration = await registerOAuthClient(provider, 42, {
@@ -143,6 +162,7 @@ try {
   assert.equal((await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)))?.revoked, true)
   await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
   assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
+  assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'saved requests must recheck current client policy')
   await assert.rejects(registerOAuthClient(provider, 0, {
     name: 'Ownerless integration',
     type: 'public',
