@@ -420,15 +420,13 @@ Component tests run under `bun test` against [very-happy-dom](https://github.com
 
 ### Setup
 
-Register the browser globals once as a preload:
+Register the browser globals once from a preload:
 
 ```toml
 # bunfig.toml
 [test]
-preload = ["very-happy-dom/register"]
+preload = ["./tests/setup.ts"]
 ```
-
-Or register them yourself when you want to pass options:
 
 ```typescript
 // tests/setup.ts
@@ -458,20 +456,21 @@ describe('Checkout', () => {
     email.value = 'test@example.com'
     email.dispatchEvent(new Event('input', { bubbles: true }))
 
-    let submitted: FormData | null = null
+    let submittedEmail: string | null = null
     document.querySelector('form')!.addEventListener('submit', (event) => {
       event.preventDefault()
-      submitted = new FormData(event.target as HTMLFormElement)
+      const form = event.target as HTMLFormElement
+      submittedEmail = form.querySelector<HTMLInputElement>('[name="email"]')!.value
     })
 
     document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click()
 
-    expect(submitted!.get('email')).toBe('test@example.com')
+    expect(submittedEmail).toBe('test@example.com')
   })
 })
 ```
 
-Events bubble, `addEventListener` supports `once`/`capture`/`signal`, and `new FormData(form)` populates from the form's fields — so most testing-library patterns work unchanged.
+Events bubble, `addEventListener` supports `once`/`capture`/`signal`, and form controls expose their live values through the DOM API, so most testing-library patterns work unchanged.
 
 ### What this layer can and cannot assert
 

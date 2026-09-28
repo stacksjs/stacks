@@ -83,7 +83,8 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.16.15"
+    "@stacksjs/ts-cloud": "^0.16.15",
+    "very-happy-dom": "^0.1.10"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
