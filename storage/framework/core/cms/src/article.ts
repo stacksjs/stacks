@@ -58,8 +58,8 @@ export function imageSize(bytes: Uint8Array): ImageSize | null {
       return { width: (b & 0x3FFF) + 1, height: ((b >> 14) & 0x3FFF) + 1 }
     }
     if (chunk === 'VP8X') {
-      const w = bytes[24] | (bytes[25] << 8) | (bytes[26] << 16)
-      const h = bytes[27] | (bytes[28] << 8) | (bytes[29] << 16)
+      const w = bytes[24]! | (bytes[25]! << 8) | (bytes[26]! << 16)
+      const h = bytes[27]! | (bytes[28]! << 8) | (bytes[29]! << 16)
       return { width: w + 1, height: h + 1 }
     }
     return null
@@ -82,7 +82,7 @@ export function imageSize(bytes: Uint8Array): ImageSize | null {
         i++
         continue
       }
-      const marker = bytes[i + 1]
+      const marker = bytes[i + 1]!
       if (marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
         i += 2
         continue
@@ -125,7 +125,7 @@ export function publicImageResolver(publicDir: string = join(process.cwd(), 'pub
       return null
     let path: string
     try {
-      path = normalize(join(root, decodeURIComponent(src.split(/[?#]/)[0])))
+      path = normalize(join(root, decodeURIComponent(src.split(/[?#]/)[0]!)))
     }
     catch {
       return null
@@ -186,7 +186,7 @@ export function articleScript(): string {
     // mountArticle by whatever local name the bundler gave it.
     const exports = source.match(/export\s*\{([^}]*)\};?\s*$/)
     const binding = exports?.[1]
-      .split(',')
+      ?.split(',')
       .map(part => part.trim().split(/\s+as\s+/))
       .find(([local, name]) => (name ?? local) === 'mountArticle')?.[0]
     // Without the binding the page still works, it just does not zoom.
