@@ -356,6 +356,16 @@ export const MANAGED_PATHS: ManagedPath[] = [
     // Don't clobber it during update.
     skip: ['node_modules', 'dist', '.DS_Store', '.discovered-models.json'],
   },
+  {
+    // The framework's type declarations (model events, env, gates, ...). Most
+    // are hand-written and never regenerated, so an app that is not handed
+    // them here keeps the set it was created with. The two the runtime
+    // generates for this app are skipped.
+    localPath: 'storage/framework/types',
+    subPath: 'storage/framework/types',
+    label: 'types',
+    skip: ['server-auto-imports.d.ts', 'browser-auto-imports.d.ts', '.DS_Store'],
+  },
   { localPath: 'buddy', subPath: 'buddy', label: 'buddy', isFile: true, executable: true },
   { localPath: 'bootstrap', subPath: 'bootstrap', label: 'bootstrap', isFile: true, executable: true },
 ]

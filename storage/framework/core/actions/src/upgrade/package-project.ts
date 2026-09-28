@@ -66,6 +66,49 @@ const SUPPORT_FILES: Array<{ source: string, target: string, executable?: boolea
   },
 ]
 
+/**
+ * The framework's type declarations, which an app needs and never regenerates.
+ *
+ * `storage/framework/types` is mostly hand-written declarations ("derived
+ * rather than generated": model events, env, gates, registries, ...). A new app
+ * gets them with the rest of the scaffold, and `buddy upgrade` used to deliver
+ * none of them, so every declaration added after an app was created was simply
+ * missing - `model-events.d.ts` among them, which is what makes
+ * `'user:created'` exist on `AppEvents` (trifitla, upgrading 0.72.57 -> 0.75.11,
+ * failed typecheck on its own `app/Events.ts`).
+ *
+ * Added and updated, never pruned: an app can still hold older generated
+ * declarations here that something imports. The two files the runtime writes
+ * for this app are left alone.
+ */
+export const FRAMEWORK_TYPES_SUPPORT_DIRECTORY = {
+  source: 'project/storage/framework/types',
+  target: 'storage/framework/types',
+}
+
+/** Declarations the runtime generates per app; syncing them would clobber that. */
+export const GENERATED_FRAMEWORK_TYPES = ['server-auto-imports.d.ts', 'browser-auto-imports.d.ts']
+
+function copyDirectoryIfChanged(
+  source: string,
+  target: string,
+  projectRoot: string,
+  changes: ProjectStructureChange[],
+  options: PackageProjectOptions,
+  skip: ReadonlySet<string>,
+): void {
+  for (const entry of readdirSync(source)) {
+    if (skip.has(entry) || LOCAL_DEFAULT_IGNORES.has(entry))
+      continue
+    const sourcePath = join(source, entry)
+    const targetPath = join(target, entry)
+    if (lstatSync(sourcePath).isDirectory())
+      copyDirectoryIfChanged(sourcePath, targetPath, projectRoot, changes, options, skip)
+    else
+      copyFileIfChanged(sourcePath, targetPath, projectRoot, changes, options)
+  }
+}
+
 function sameFile(left: string, right: string, shallow = false): boolean {
   if (!existsSync(left) || !existsSync(right))
     return false
@@ -180,6 +223,18 @@ export function syncPackageProjectFiles(
       changes,
       options,
       file.executable,
+    )
+  }
+
+  const typesSource = join(defaultsPackageRoot, FRAMEWORK_TYPES_SUPPORT_DIRECTORY.source)
+  if (existsSync(typesSource)) {
+    copyDirectoryIfChanged(
+      typesSource,
+      join(projectRoot, FRAMEWORK_TYPES_SUPPORT_DIRECTORY.target),
+      projectRoot,
+      changes,
+      options,
+      new Set(GENERATED_FRAMEWORK_TYPES),
     )
   }
 

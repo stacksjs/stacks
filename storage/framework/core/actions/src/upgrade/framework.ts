@@ -3,7 +3,7 @@
 // `@stacksjs/logging`'s async writes flush) and rely on top-level await
 // to drive the sync pipeline.
 /* eslint-disable no-console, ts/no-top-level-await */
-import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
@@ -640,6 +640,20 @@ async function syncFromLocal(stacksRoot: string, managed: ManagedPath, localTarg
 }
 
 async function syncFromGitHub(ref: string, managed: ManagedPath, localTarget: string, force: boolean): Promise<void> {
+  // The download has no filter, so a top-level entry `skip` names that the
+  // repository also ships - the app's own generated `server-auto-imports.d.ts`
+  // under types/ - would be overwritten with the framework's copy. Put those
+  // back afterwards, the way the local sync never touches them.
+  const kept = new Map<string, Buffer>()
+  for (const name of managed.skip ?? []) {
+    const file = join(localTarget, name)
+    try {
+      if (existsSync(file) && statSync(file).isFile())
+        kept.set(file, readFileSync(file))
+    }
+    catch { /* unreadable; the download decides */ }
+  }
+
   const template = buildTemplateString(ref, managed.subPath)
   await downloadTemplate(template, {
     dir: localTarget,
@@ -647,6 +661,9 @@ async function syncFromGitHub(ref: string, managed: ManagedPath, localTarget: st
     forceClean: false,
     preferOffline: !force,
   })
+
+  for (const [file, contents] of kept)
+    writeFileSync(file, contents)
 }
 
 async function syncRootFilesFromGitHub(ref: string): Promise<void> {

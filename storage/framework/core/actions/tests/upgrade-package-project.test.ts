@@ -98,6 +98,51 @@ describe('package project file sync', () => {
   })
 })
 
+describe('framework type declarations', () => {
+  // trifitla upgraded 0.72.57 -> 0.75.11 and its own app/Events.ts stopped
+  // typechecking: `'user:created'` lives on AppEvents through
+  // storage/framework/types/model-events.d.ts, which `buddy new` ships and
+  // `buddy upgrade` never delivered.
+  it('adds and updates them, leaving generated and legacy files alone', () => {
+    writeDefault('project/storage/framework/types/model-events.d.ts', 'model events\n')
+    writeDefault('project/storage/framework/types/env.d.ts', 'current env\n')
+    writeDefault('project/storage/framework/types/src/auth.ts', 'auth\n')
+    writeDefault('project/storage/framework/types/server-auto-imports.d.ts', 'the framework\'s own\n')
+    write('storage/framework/types/env.d.ts', 'old env\n')
+    write('storage/framework/types/server-auto-imports.d.ts', 'this app\'s globals\n')
+    write('storage/framework/types/events.ts', 'legacy generated events\n')
+
+    const changes = syncPackageProjectFiles(root, defaultsRoot)
+
+    expect(readFileSync(join(root, 'storage/framework/types/model-events.d.ts'), 'utf8')).toBe('model events\n')
+    expect(readFileSync(join(root, 'storage/framework/types/env.d.ts'), 'utf8')).toBe('current env\n')
+    expect(readFileSync(join(root, 'storage/framework/types/src/auth.ts'), 'utf8')).toBe('auth\n')
+    expect(readFileSync(join(root, 'storage/framework/types/server-auto-imports.d.ts'), 'utf8')).toBe('this app\'s globals\n')
+    expect(readFileSync(join(root, 'storage/framework/types/events.ts'), 'utf8')).toBe('legacy generated events\n')
+
+    expect(changes).toContainEqual({ path: 'storage/framework/types/model-events.d.ts', action: 'add' })
+    expect(changes).toContainEqual({ path: 'storage/framework/types/env.d.ts', action: 'update' })
+    expect(changes.some(change => change.path.endsWith('server-auto-imports.d.ts'))).toBe(false)
+    expect(changes.some(change => change.action === 'remove' && change.path.startsWith('storage/framework/types'))).toBe(false)
+
+    expect(syncPackageProjectFiles(root, defaultsRoot).filter(change => change.path.startsWith('storage/framework/types'))).toEqual([])
+  })
+
+  it('are a managed path for vendored apps too, minus the generated ones', async () => {
+    const { MANAGED_PATHS } = await import('../src/upgrade/framework-utils')
+    const types = MANAGED_PATHS.find(managed => managed.localPath === 'storage/framework/types')
+    expect(types?.subPath).toBe('storage/framework/types')
+    expect(types?.skip).toEqual(expect.arrayContaining(['server-auto-imports.d.ts', 'browser-auto-imports.d.ts']))
+  })
+
+  it('ship in the defaults package, minus the generated ones', () => {
+    const build = readFileSync(join(import.meta.dir, '../../defaults/build.ts'), 'utf8')
+    expect(build).toContain(`join(here, 'project/storage/framework/types')`)
+    expect(build).toContain('server-auto-imports.d.ts')
+    expect(existsSync(join(import.meta.dir, '../../../types/model-events.d.ts'))).toBe(true)
+  })
+})
+
 describe('framework defaults provenance', () => {
   const markerPath = (): string => join(root, 'storage/framework/defaults', DEFAULTS_SYNC_MARKER)
 

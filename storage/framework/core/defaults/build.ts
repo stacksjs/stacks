@@ -40,3 +40,15 @@ for (const file of projectFiles) {
   // eslint-disable-next-line no-console
   console.log(`@stacksjs/defaults: copied project support file ${file.source}`)
 }
+
+// The framework's type declarations, which `buddy upgrade` keeps current in a
+// package app (see FRAMEWORK_TYPES_SUPPORT_DIRECTORY in
+// actions/src/upgrade/package-project.ts). The two the runtime generates per
+// app stay out of the package.
+const generatedTypes = new Set(['server-auto-imports.d.ts', 'browser-auto-imports.d.ts'])
+await cp(join(here, '../../types'), join(here, 'project/storage/framework/types'), {
+  recursive: true,
+  filter: source => !generatedTypes.has(source.split('/').pop() ?? ''),
+})
+// eslint-disable-next-line no-console
+console.log('@stacksjs/defaults: copied the framework type declarations')
