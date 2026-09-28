@@ -63,6 +63,7 @@ const {
   findToken,
   handleOAuthRevocationRequest,
   handleOAuthTokenRequest,
+  hasReusableOAuthConsent,
   issueAuthorizationCode,
   listOAuthClients,
   listOAuthConnections,
@@ -212,6 +213,50 @@ try {
   }), /synthetic consent failure/)
   assert.equal(await db.selectFrom('issued_markers').where('marker', '=', 'authorization-request-must-roll-back').select('marker').executeTakeFirst(), undefined)
   assert.equal((await withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async request => request)).ok, true)
+
+  const rememberedGrant = await createOAuthGrant({
+    clientId: publicRegistration.client.id,
+    subjectType: 'users',
+    subjectId: 42,
+    scopes: validatedRequest.scopes,
+    resources: validatedRequest.resources,
+    audiences: validatedRequest.audiences,
+    workspaceId: 'workspace-1',
+  })
+  const rememberedConsent = {
+    request: validatedRequest,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+    rememberForMs: 60_000,
+  }
+  assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, rememberForMs: 0 }), false)
+  assert.equal(await hasReusableOAuthConsent(rememberedConsent), true)
+  assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, workspaceId: 'workspace-2' }), false)
+  assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, subjectId: 43 }), false)
+  assert.equal(await hasReusableOAuthConsent({
+    ...rememberedConsent,
+    request: { ...validatedRequest, scopes: ['issues:read', 'profile:read'] },
+  }), false, 'remembered consent must not authorize expanded scopes')
+  await db.updateTable('oauth_grants')
+    .set({ audiences: JSON.stringify(['https://different.example']) })
+    .where('id', '=', rememberedGrant.id)
+    .execute()
+  assert.equal(await hasReusableOAuthConsent(rememberedConsent), false, 'resource and audience bindings must stay paired')
+  await db.updateTable('oauth_grants')
+    .set({ audiences: JSON.stringify(validatedRequest.audiences) })
+    .where('id', '=', rememberedGrant.id)
+    .execute()
+  await db.updateTable('oauth_grants')
+    .set({ created_at: sqlDateTime(new Date(Date.now() - 120_000)) })
+    .where('id', '=', rememberedGrant.id)
+    .execute()
+  assert.equal(await hasReusableOAuthConsent(rememberedConsent), false)
+  await db.updateTable('oauth_grants')
+    .set({ created_at: sqlDateTime(new Date()), revoked_at: sqlDateTime(new Date()) })
+    .where('id', '=', rememberedGrant.id)
+    .execute()
+  assert.equal(await hasReusableOAuthConsent(rememberedConsent), false)
 
   const consentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const consent = await approveOAuthAuthorizationRequestSession({
