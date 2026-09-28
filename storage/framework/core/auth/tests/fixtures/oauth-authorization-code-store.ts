@@ -242,7 +242,12 @@ try {
   const newRefreshTokens = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', 'in', newTokenIds).select('id').get()
   assert.equal(newRefreshTokens.length, 1, 'one consumed code must mint exactly one refresh token')
   if (exchanged.ok) {
-    assert(await findToken(exchanged.value.accessToken))
+    const resolved = await findToken(exchanged.value.accessToken)
+    assert(resolved)
+    assert.equal(resolved.grantId, grant.id)
+    assert.deepEqual(resolved.resources, grant.resources)
+    assert.deepEqual(resolved.audiences, grant.audiences)
+    assert.equal(resolved.workspaceId, grant.workspaceId)
     assert.equal(await revokeOAuthGrant(grant.id), true)
     assert.equal(await findToken(exchanged.value.accessToken), null, 'revoking consent must invalidate its access tokens')
   }

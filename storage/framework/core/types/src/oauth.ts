@@ -89,6 +89,14 @@ export interface AccessToken {
   readonly userId: number
   /** ID of the OAuth client that issued this token */
   readonly clientId: number
+  /** Immutable consent grant backing a delegated token. Null for personal tokens. */
+  readonly grantId?: string | null
+  /** Resource identifiers approved by the delegated grant. */
+  readonly resources?: readonly string[]
+  /** Audience URLs approved by the delegated grant. */
+  readonly audiences?: readonly string[]
+  /** Workspace boundary approved by the delegated grant. */
+  readonly workspaceId?: string | null
   /** Human-readable name for the token */
   readonly name: string
   /** Array of scopes/abilities granted to this token */
@@ -212,6 +220,10 @@ export interface OAuthAccessTokenRow {
   id: number
   user_id: number
   oauth_client_id: number
+  oauth_grant_id?: string | null
+  resources?: string | null
+  audiences?: string | null
+  workspace_id?: string | null
   token: string
   name: string | null
   scopes: string | null

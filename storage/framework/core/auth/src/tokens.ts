@@ -218,11 +218,22 @@ interface AccessTokenRow {
   user_agent: string | null
   oauth_client_id: number
   oauth_grant_id: string | null
+  resources: string | null
+  audiences: string | null
+  workspace_id: string | null
   password_changed_at: string | null
   access_token_id: number | null
   provider: string | null
 }
 
+function delegatedContext(row: AccessTokenRow): Pick<AccessToken, 'grantId' | 'resources' | 'audiences' | 'workspaceId'> {
+  return {
+    grantId: row.oauth_grant_id ?? null,
+    resources: row.oauth_grant_id ? parseScopes(row.resources) : [],
+    audiences: row.oauth_grant_id ? parseScopes(row.audiences) : [],
+    workspaceId: row.oauth_grant_id ? row.workspace_id ?? null : null,
+  }
+}
 
 export async function getPasswordChangedAt(
   ownerId: unknown,
@@ -330,6 +341,7 @@ export async function tokens(userId: number, tokenableType: string = DEFAULT_TOK
     id: row.id,
     userId: row.user_id,
     clientId: row.oauth_client_id,
+    ...delegatedContext(row),
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
@@ -388,6 +400,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     id: row.id,
     userId: row.user_id,
     clientId: row.oauth_client_id,
+    ...delegatedContext(row),
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
