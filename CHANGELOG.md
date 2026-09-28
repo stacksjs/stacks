@@ -1,5 +1,61 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.15...v0.75.16)
+
+## ✨ Features
+
+- **analytics**: default to AnalyticsHQ ([2419952](https://github.com/stacksjs/stacks/commit/2419952)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: deny OAuth consent safely ([f58df5a](https://github.com/stacksjs/stacks/commit/f58df5a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke delegated OAuth tokens ([a223a4b](https://github.com/stacksjs/stacks/commit/a223a4b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: disconnect OAuth applications ([28adb47](https://github.com/stacksjs/stacks/commit/28adb47)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce delegated bearer context ([abb2e34](https://github.com/stacksjs/stacks/commit/abb2e34)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: execute OAuth token requests ([8d67723](https://github.com/stacksjs/stacks/commit/8d67723)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow delegated refresh scopes ([dd610b6](https://github.com/stacksjs/stacks/commit/dd610b6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: format OAuth token responses ([b934de5](https://github.com/stacksjs/stacks/commit/b934de5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: parse OAuth token requests ([a043062](https://github.com/stacksjs/stacks/commit/a043062)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: edit OAuth client policy ([af759b6](https://github.com/stacksjs/stacks/commit/af759b6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: list owned OAuth clients ([78d6693](https://github.com/stacksjs/stacks/commit/78d6693)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: rotate OAuth client secrets ([f46217b](https://github.com/stacksjs/stacks/commit/f46217b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: disable OAuth clients atomically ([0961b45](https://github.com/stacksjs/stacks/commit/0961b45)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: rotate delegated refresh tokens ([f224315](https://github.com/stacksjs/stacks/commit/f224315)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: initialize delegated refresh families ([81f5eba](https://github.com/stacksjs/stacks/commit/81f5eba)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: track delegated refresh families ([880c6ae](https://github.com/stacksjs/stacks/commit/880c6ae)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce OAuth token client policy ([8d1e20d](https://github.com/stacksjs/stacks/commit/8d1e20d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: authenticate OAuth token clients ([b6f8d43](https://github.com/stacksjs/stacks/commit/b6f8d43)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: issue codes from OAuth consent ([ef42f29](https://github.com/stacksjs/stacks/commit/ef42f29)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: consume authorization requests atomically ([6c6ee69](https://github.com/stacksjs/stacks/commit/6c6ee69)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind authorization requests to sessions ([e4f972a](https://github.com/stacksjs/stacks/commit/e4f972a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: persist authorization requests ([466e851](https://github.com/stacksjs/stacks/commit/466e851)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: load provider client policy ([01e79d7](https://github.com/stacksjs/stacks/commit/01e79d7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: register OAuth provider clients ([3274c00](https://github.com/stacksjs/stacks/commit/3274c00)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: persist provider client policy ([df0cac6](https://github.com/stacksjs/stacks/commit/df0cac6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose delegated token context ([99267ee](https://github.com/stacksjs/stacks/commit/99267ee)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: exchange codes for delegated tokens ([7faec6f](https://github.com/stacksjs/stacks/commit/7faec6f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: store delegated token context ([d253954](https://github.com/stacksjs/stacks/commit/d253954)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind authorization codes to grants ([2914709](https://github.com/stacksjs/stacks/commit/2914709)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: persist single-use authorization codes ([4100bb5](https://github.com/stacksjs/stacks/commit/4100bb5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate OAuth client registration ([03d2b18](https://github.com/stacksjs/stacks/commit/03d2b18)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate OAuth authorization requests ([4067e56](https://github.com/stacksjs/stacks/commit/4067e56)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: name legacy client user exchange ([eca16ec](https://github.com/stacksjs/stacks/commit/eca16ec)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: add S256 PKCE primitives ([4544d3d](https://github.com/stacksjs/stacks/commit/4544d3d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: define OAuth provider contract ([8f5af81](https://github.com/stacksjs/stacks/commit/8f5af81)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **env**: gate integration initialization ([6b9ae20](https://github.com/stacksjs/stacks/commit/6b9ae20)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: stx 0.2.323 and ts-cloud 0.16.15, so a cold deploy stays up ([8b42d8e](https://github.com/stacksjs/stacks/commit/8b42d8e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: reject invalid OAuth provider policy ([deeea63](https://github.com/stacksjs/stacks/commit/deeea63)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **ci**: the error tester lists its scenarios, and pantry.lock keeps craft-native 0.0.92 ([9580e39](https://github.com/stacksjs/stacks/commit/9580e39)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge branch 'fix/ci-tester-context-and-lockfile' ([f2090cd](https://github.com/stacksjs/stacks/commit/f2090cd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.14...v0.75.15)
 
 ## 🐛 Bug Fixes
