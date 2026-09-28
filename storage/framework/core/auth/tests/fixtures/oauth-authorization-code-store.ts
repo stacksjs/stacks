@@ -66,6 +66,7 @@ const {
   validateRefreshToken,
   validateOAuthAuthorizationRequest,
   withAuthorizationCode,
+  withAuthenticatedOAuthTokenClient,
   withOAuthAuthorizationRequestSession,
 } = await import('../../src')
 
@@ -116,6 +117,15 @@ try {
     scopes: ['issues:read'],
     resources: ['bughq'],
   })
+  assert.deepEqual(
+    await withAuthenticatedOAuthTokenClient(String(publicRegistration.client.id), undefined, async client => client),
+    loadedPublic,
+  )
+  assert.equal(await withAuthenticatedOAuthTokenClient(
+    String(publicRegistration.client.id),
+    'unexpected-secret',
+    async client => client,
+  ), null)
   const validatedRequest = validateOAuthAuthorizationRequest(provider, loadedPublic!, {
     responseType: 'code',
     clientId: String(publicRegistration.client.id),
@@ -261,8 +271,40 @@ try {
   assert(String(storedConfidential.secret).startsWith('$2'))
   const { verifyHash } = await import('@stacksjs/security')
   assert.equal(await verifyHash(confidentialRegistration.plainTextSecret, String(storedConfidential.secret)), true)
+  assert.deepEqual(
+    await withAuthenticatedOAuthTokenClient(
+      String(confidentialRegistration.client.id),
+      confidentialRegistration.plainTextSecret,
+      async client => client,
+    ),
+    await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)),
+  )
+  assert.equal(await withAuthenticatedOAuthTokenClient(
+    String(confidentialRegistration.client.id),
+    undefined,
+    async client => client,
+  ), null)
+  assert.equal(await withAuthenticatedOAuthTokenClient(
+    String(confidentialRegistration.client.id),
+    'wrong-secret',
+    async client => client,
+  ), null)
+  await assert.rejects(withAuthenticatedOAuthTokenClient(
+    String(confidentialRegistration.client.id),
+    confidentialRegistration.plainTextSecret,
+    async () => {
+      await db.insertInto('issued_markers').values({ marker: 'client-auth-must-roll-back' }).execute()
+      throw new Error('synthetic token endpoint failure')
+    },
+  ), /synthetic token endpoint failure/)
+  assert.equal(await db.selectFrom('issued_markers').where('marker', '=', 'client-auth-must-roll-back').select('marker').executeTakeFirst(), undefined)
   await db.updateTable('oauth_clients').set({ revoked: true }).where('id', '=', confidentialRegistration.client.id).execute()
   assert.equal((await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)))?.revoked, true)
+  assert.equal(await withAuthenticatedOAuthTokenClient(
+    String(confidentialRegistration.client.id),
+    confidentialRegistration.plainTextSecret,
+    async client => client,
+  ), null)
   await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
   assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
   assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'saved requests must recheck current client policy')

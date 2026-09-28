@@ -9,7 +9,7 @@ import {
   sqlDateTime,
   sqlHelpers,
 } from '@stacksjs/database/runtime'
-import { makeHash } from '@stacksjs/security'
+import { makeHash, verifyHash } from '@stacksjs/security'
 import { isValidOAuthRedirectUri } from './oauth-authorization'
 
 export type OAuthTokenEndpointAuthMethod = 'client_secret_basic' | 'none'
@@ -170,20 +170,10 @@ function storedFlag(value: boolean | number): boolean | null {
   return null
 }
 
-/** Load only complete provider registration metadata from authoritative storage. */
-export async function loadOAuthAuthorizationClient(clientId: string): Promise<OAuthAuthorizationClientRegistration | null> {
-  const id = Number(clientId)
-  if (!Number.isSafeInteger(id) || id <= 0)
-    return null
-
-  const sql = sqlHelpers(getDatabaseDialect())
-  const rows = await db.primary.unsafe(`
-    SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
-      token_endpoint_auth_method, allowed_scopes, allowed_resources,
-      personal_access_client, password_client, revoked
-    FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
-  `, [id]) as StoredOAuthClient[]
-  const row = rows[0]
+function authorizationClientFromStored(
+  row: StoredOAuthClient | undefined,
+  id: number,
+): OAuthAuthorizationClientRegistration | null {
   const redirectUris = storedValues(row?.redirect_uris ?? null)
   const grantTypes = storedValues(row?.grant_types ?? null)
   const scopes = storedValues(row?.allowed_scopes ?? null)
@@ -208,6 +198,69 @@ export async function loadOAuthAuthorizationClient(clientId: string): Promise<OA
     return null
 
   return { id, type, revoked, redirectUris, grantTypes, scopes, resources }
+}
+
+async function storedAuthorizationClient(clientId: string): Promise<{
+  client: OAuthAuthorizationClientRegistration
+  row: StoredOAuthClient
+} | null> {
+  const id = Number(clientId)
+  if (!Number.isSafeInteger(id) || id <= 0)
+    return null
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const rows = await db.primary.unsafe(`
+    SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
+      token_endpoint_auth_method, allowed_scopes, allowed_resources,
+      personal_access_client, password_client, revoked
+    FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
+  `, [id]) as StoredOAuthClient[]
+  const row = rows[0]
+  const client = authorizationClientFromStored(row, id)
+  return row && client ? { client, row } : null
+}
+
+/** Load only complete provider registration metadata from authoritative storage. */
+export async function loadOAuthAuthorizationClient(clientId: string): Promise<OAuthAuthorizationClientRegistration | null> {
+  return (await storedAuthorizationClient(clientId))?.client ?? null
+}
+
+/** Authenticate one provider client and hold its policy stable through completion. */
+export async function withAuthenticatedOAuthTokenClient<T>(
+  clientId: string,
+  clientSecret: string | undefined,
+  complete: (client: OAuthAuthorizationClientRegistration) => Promise<T>,
+): Promise<T | null> {
+  const id = Number(clientId)
+  if (!Number.isSafeInteger(id) || id <= 0 || (clientSecret != null && clientSecret.length > 4096))
+    return null
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const lock = sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
+  return db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const rows = await trx.unsafe(`
+      SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
+        token_endpoint_auth_method, allowed_scopes, allowed_resources,
+        personal_access_client, password_client, revoked
+      FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1${lock}
+    `, [id]) as StoredOAuthClient[]
+    const row = rows[0]
+    const client = authorizationClientFromStored(row, id)
+    if (!row || !client || client.revoked)
+      return null
+    if (client.type === 'public')
+      return clientSecret === undefined ? complete(client) : null
+    if (!clientSecret || !row.secret)
+      return null
+
+    let verified = false
+    try { verified = await verifyHash(clientSecret, row.secret) }
+    catch {
+      return null
+    }
+    return verified ? complete(client) : null
+  })
 }
 
 /** Validate and persist one owner-managed provider client. */
