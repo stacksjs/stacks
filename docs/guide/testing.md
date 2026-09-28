@@ -1,10 +1,10 @@
 ---
 title: Application Testing
-description: "Stacks provides a comprehensive testing framework built on Bun's native test runner. Write unit tests, integration tests, and end-to-end tests with excelle..."
+description: "Stacks provides a comprehensive testing framework built on Bun's native test runner. Write unit tests, integration tests, and component tests with excelle..."
 ---
 # Testing
 
-Stacks provides a comprehensive testing framework built on Bun's native test runner. Write unit tests, integration tests, and end-to-end tests with excellent developer experience.
+Stacks provides a comprehensive testing framework built on Bun's native test runner. Write unit tests, integration tests, and component tests with excellent developer experience.
 
 ## Overview
 
@@ -15,7 +15,7 @@ Testing in Stacks offers:
 - **Rich assertions** - Comprehensive assertion library
 - **Database utilities** - Transaction rollback, factories
 - **HTTP testing** - Test API endpoints easily
-- **Browser testing** - E2E with Playwright integration
+- **Component testing** - DOM tests in-process with very-happy-dom
 
 ## Quick Start
 
@@ -140,8 +140,8 @@ tests/
 │   │   └── LoginTest.ts
 │   └── Api/
 │       └── UsersTest.ts
-├── Browser/              # E2E tests
-│   └── CheckoutTest.ts
+├── browser/              # Component & DOM tests
+│   └── checkout.test.ts
 └── helpers/              # Test utilities
     └── index.ts
 ```
@@ -414,30 +414,83 @@ it('processes payment', async () => {
 })
 ```
 
-## Browser Testing
+## Component & DOM Testing
 
-### Playwright Integration
+Component tests run under `bun test` against [very-happy-dom](https://github.com/stacksjs/very-happy-dom), a virtual DOM built for Bun. There is no browser and no server — you get `document`, `window` and the DOM APIs in-process, which makes these tests fast enough to run on every save.
+
+### Setup
+
+Register the browser globals once as a preload:
+
+```toml
+# bunfig.toml
+[test]
+preload = ["very-happy-dom/register"]
+```
+
+Or register them yourself when you want to pass options:
 
 ```typescript
-// tests/Browser/CheckoutTest.ts
-import { test, expect } from '@playwright/test'
+// tests/setup.ts
+import { GlobalRegistrator } from 'very-happy-dom'
 
-test.describe('Checkout', () => {
-  test('completes purchase', async ({ page }) => {
-    await page.goto('/products/1')
+GlobalRegistrator.register({ url: 'https://example.com/' })
+```
 
-    await page.click('button:has-text("Add to Cart")')
-    await page.click('a:has-text("Checkout")')
+### Writing a component test
 
-    await page.fill('[name="email"]', 'test@example.com')
-    await page.fill('[name="card"]', '4242424242424242')
+Drive the DOM directly. `document` is the interface — there is no `page` object.
 
-    await page.click('button:has-text("Pay")')
+```typescript
+// tests/browser/checkout.test.ts
+import { beforeEach, describe, expect, it } from 'bun:test'
+import { renderCheckout } from '../../resources/components/checkout'
 
-    await expect(page.locator('.success-message')).toBeVisible()
+describe('Checkout', () => {
+  beforeEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('submits the form with the entered details', () => {
+    document.body.appendChild(renderCheckout())
+
+    const email = document.querySelector<HTMLInputElement>('[name="email"]')!
+    email.value = 'test@example.com'
+    email.dispatchEvent(new Event('input', { bubbles: true }))
+
+    let submitted: FormData | null = null
+    document.querySelector('form')!.addEventListener('submit', (event) => {
+      event.preventDefault()
+      submitted = new FormData(event.target as HTMLFormElement)
+    })
+
+    document.querySelector<HTMLButtonElement>('button[type="submit"]')!.click()
+
+    expect(submitted!.get('email')).toBe('test@example.com')
   })
 })
 ```
+
+Events bubble, `addEventListener` supports `once`/`capture`/`signal`, and `new FormData(form)` populates from the form's fields — so most testing-library patterns work unchanged.
+
+### What this layer can and cannot assert
+
+very-happy-dom implements the DOM, not a browser. It covers DOM structure and mutation, CSS selectors and XPath, events and focus, forms and constraint validation, storage, `fetch`, timers, observers, web components and Shadow DOM.
+
+It deliberately does not implement four things, and tests must not assert on them:
+
+- **Real navigation.** Nothing is fetched or loaded; assigning a URL does not load a document, and client-side routing does not run.
+- **The CSS cascade.** `getComputedStyle()` reads inline styles only. A rule from a stylesheet — including any utility class — is not applied, so class-based style assertions will not reflect what a browser renders.
+- **Layout.** `getBoundingClientRect()` reports the element's inline-style size at the origin. Positions, overlap, scroll offsets and element geometry are not computed.
+- **Visibility and pixels.** Because there is no cascade and no layout, "is this visible?" cannot be answered here, and neither can anything about how the page actually looks.
+
+Assertions that depend on those four belong in real-browser QA. Writing them against a virtual DOM produces tests that pass without checking anything — comparing `0` to `0` for a geometry check, for instance — which reads as coverage while providing none.
+
+### Real-browser QA
+
+For behaviour that needs a real engine — navigation, layout, visibility, screenshots — use the [`stacks-browse`](/skills/craft/browse) skill, which drives Chrome over the DevTools Protocol.
+
+It is a QA and diagnosis tool rather than a test runner: it has no spec files, fixtures or reporters, and a scenario is expressed as CLI steps rather than as a committed test. Use it to verify a flow in a real browser, capture screenshots, or inspect console and network output. If you need real-browser behaviour gated in CI, reach for a dedicated browser-test runner in its own package, kept out of the application's dependency tree.
 
 ## Code Coverage
 

@@ -309,7 +309,7 @@ Convention over configuration, while staying wholly configurable. _No more boile
 - 🔤 **Spell Checker** _be notified once there are typos_
 - 🛠️ **Essential Utilities** _powers at your fingertips. Collections, STX composables, and more_
 - 👥 **Team Management** _manage your team & their permissions_
-- 🧪 **Streamlined Testing** _unit & e2e tests powered by Bun, Vitest & Playwright_
+- 🧪 **Streamlined Testing** _unit, feature & component tests powered by Bun & very-happy-dom_
 
 No matter whether you are a beginner or an expert, the approachable Stacks design allows you to learn at your own pace, using our thorough documentation covering every aspect of the framework. Stacks is extremely beginner & expert-friendly.
 
