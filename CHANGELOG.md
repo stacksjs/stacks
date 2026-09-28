@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.11...v0.75.12)
+
+## 🐛 Bug Fixes
+
+- **database**: carry framework model renames into upgraded apps' snapshot and database ([2ed5869](https://github.com/stacksjs/stacks/commit/2ed5869)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2382](https://github.com/stacksjs/stacks/issues/2382))
+- **desktop**: build:dmg produces a bundle that can be signed and notarized ([96cc509](https://github.com/stacksjs/stacks/commit/96cc509)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.10...v0.75.11)
 
 ## 🐛 Bug Fixes
