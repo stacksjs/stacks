@@ -116,6 +116,33 @@ describe('declared FKs mirror the generator\'s belongsTo rule', () => {
     expect(fksFor('events')).toEqual(['session_id→sessions', 'turn_id→turns'])
   })
 
+  it('never declares a key for one half of a polymorphic pair', () => {
+    // `categorizable_id` beside `categorizable_type` points at whichever table
+    // the type names. The generator emits no constraint for it, so the audit
+    // reported `categorizables.categorizable_id -> categorizables.id` missing on
+    // every migrate, fresh ones included, and recommended `migrate:fresh`.
+    const fks = getDeclaredFKsFromModels([
+      {
+        name: 'Categorizable',
+        table: 'categorizables',
+        primaryKey: 'id',
+        attributes: { categorizableId: { type: 'integer' }, categorizableType: { validation: {} } },
+      },
+      { name: 'Post', table: 'posts', primaryKey: 'id', attributes: {} },
+      {
+        name: 'Comment',
+        table: 'comments',
+        attributes: { commentableId: { foreignKey: { table: 'posts' } }, commentableType: {}, postId: {} },
+      },
+    ] as any)
+
+    expect(fks.filter(fk => fk.fromTable === 'categorizables')).toEqual([])
+    // Declared or inferred makes no difference, exactly as in the generator.
+    expect(fks.some(fk => fk.fromColumn === 'commentable_id')).toBe(false)
+    // An ordinary key beside it is still audited.
+    expect(fks).toContainEqual({ fromTable: 'comments', fromColumn: 'post_id', toTable: 'posts', toColumn: 'id', model: 'Comment' })
+  })
+
   it('lets an explicit attribute foreignKey win even when belongsTo is declared', () => {
     const fks = getDeclaredFKsFromModels([
       { name: 'Turn', table: 'turns', primaryKey: 'id', attributes: {} },

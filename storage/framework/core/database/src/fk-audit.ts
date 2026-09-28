@@ -140,9 +140,20 @@ export function getDeclaredFKsFromModels(models: Model[]): DeclaredFK[] {
     // just noise.
     const declaresBelongsTo = relations.length > 0
 
+    // One half of a polymorphic pair: `categorizable_id` beside
+    // `categorizable_type` points at whichever table the row's type names, so
+    // no single-table constraint can be right. The generator never emits one
+    // for such a column, declared or inferred (bun-query-builder's
+    // `polymorphicColumns`), and the audit has to agree. It did not, so
+    // `Categorizable.categorizableId` read as a self-reference to
+    // `categorizables.id` and every migrate - a fresh one included - reported
+    // it missing and recommended `migrate:fresh`, which wipes the database.
+    const columns = new Set(Object.keys(attributes).map(name => snakeCase(name)))
+    const polymorphic = (column: string): boolean => columns.has(`${column.slice(0, -'_id'.length)}_type`)
+
     for (const [attributeName, attribute] of Object.entries(attributes)) {
       const fromColumn = snakeCase(attributeName)
-      if (!fromColumn.endsWith('_id') || attribute.foreignKey === false)
+      if (!fromColumn.endsWith('_id') || attribute.foreignKey === false || polymorphic(fromColumn))
         continue
 
       // An explicit `foreignKey` on the attribute is authoritative either way.
@@ -182,7 +193,7 @@ export function getDeclaredFKsFromModels(models: Model[]): DeclaredFK[] {
         : `${snakeCase(relatedName)}_id`
       // An explicit attribute is already authoritative above, just as it is
       // in the migration planner.
-      if (Object.keys(attributes).some(attribute => snakeCase(attribute) === fromColumn))
+      if (Object.keys(attributes).some(attribute => snakeCase(attribute) === fromColumn) || polymorphic(fromColumn))
         continue
       const related = meta.get(relatedName)
       if (related)
