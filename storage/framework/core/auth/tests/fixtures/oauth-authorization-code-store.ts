@@ -52,8 +52,12 @@ await ormReady
 const {
   createOAuthGrant,
   createS256CodeChallenge,
+  exchangeAuthorizationCode,
+  findToken,
   issueAuthorizationCode,
+  refreshToken,
   revokeOAuthGrant,
+  validateRefreshToken,
   withAuthorizationCode,
 } = await import('../../src')
 
@@ -181,6 +185,67 @@ try {
     resources: [],
     audiences: [],
   }), /client is not active/)
+
+  const exchangeCode = await issueAuthorizationCode(base)
+  const exchanged = await exchangeAuthorizationCode({
+    code: exchangeCode,
+    ...expected,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert.equal(exchanged.ok, true)
+  if (exchanged.ok) {
+    const tokenRow = await db.selectFrom('oauth_access_tokens')
+      .where('oauth_grant_id', '=', grant.id)
+      .selectAll()
+      .executeTakeFirstOrThrow() as Record<string, unknown>
+    assert.equal(tokenRow.token, createHash('sha256').update(exchanged.value.accessToken).digest('hex'))
+    assert.notEqual(tokenRow.token, exchanged.value.accessToken)
+    assert.equal(String(tokenRow.oauth_client_id), String(grant.clientId))
+    assert.equal(String(tokenRow.tokenable_id), String(grant.subjectId))
+    assert.equal(tokenRow.tokenable_type, grant.subjectType)
+    assert.deepEqual(JSON.parse(String(tokenRow.scopes)), grant.scopes)
+    assert.deepEqual(JSON.parse(String(tokenRow.resources)), grant.resources)
+    assert.deepEqual(JSON.parse(String(tokenRow.audiences)), grant.audiences)
+    assert.equal(tokenRow.workspace_id, grant.workspaceId)
+
+    const refreshRow = await db.selectFrom('oauth_refresh_tokens')
+      .where('access_token_id', '=', tokenRow.id as number)
+      .selectAll()
+      .executeTakeFirstOrThrow() as Record<string, unknown>
+    assert.equal(refreshRow.token, createHash('sha256').update(exchanged.value.refreshToken).digest('hex'))
+    assert.notEqual(refreshRow.token, exchanged.value.refreshToken)
+    assert.equal(await validateRefreshToken(exchanged.value.refreshToken), false)
+    await assert.rejects(refreshToken(exchanged.value.refreshToken), /Invalid or expired refresh token/)
+    assert(await db.selectFrom('oauth_refresh_tokens').where('id', '=', refreshRow.id as number).where('revoked', '=', false).executeTakeFirst())
+  }
+  assert.deepEqual(await exchangeAuthorizationCode({
+    code: exchangeCode,
+    ...expected,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_grant' })
+
+  const concurrentExchangeCode = await issueAuthorizationCode(base)
+  const tokensBefore = await db.selectFrom('oauth_access_tokens').where('oauth_grant_id', '=', grant.id).select('id').get()
+  const concurrentExchanges = await Promise.all(Array.from({ length: 8 }, () => exchangeAuthorizationCode({
+    code: concurrentExchangeCode,
+    ...expected,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })))
+  assert.equal(concurrentExchanges.filter(result => result.ok).length, 1)
+  assert.equal(concurrentExchanges.filter(result => !result.ok).length, 7)
+  const tokensAfter = await db.selectFrom('oauth_access_tokens').where('oauth_grant_id', '=', grant.id).select('id').get()
+  assert.equal(tokensAfter.length, tokensBefore.length + 1, 'one consumed code must mint exactly one access token')
+  const newTokenIds = tokensAfter.filter(token => !tokensBefore.some(previous => String(previous.id) === String(token.id))).map(token => token.id)
+  const newRefreshTokens = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', 'in', newTokenIds).select('id').get()
+  assert.equal(newRefreshTokens.length, 1, 'one consumed code must mint exactly one refresh token')
+  if (exchanged.ok) {
+    assert(await findToken(exchanged.value.accessToken))
+    assert.equal(await revokeOAuthGrant(grant.id), true)
+    assert.equal(await findToken(exchanged.value.accessToken), null, 'revoking consent must invalidate its access tokens')
+  }
 
   console.log('oauth authorization code store OK')
 }

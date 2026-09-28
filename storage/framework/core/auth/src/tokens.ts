@@ -217,6 +217,7 @@ interface AccessTokenRow {
   ip_address: string | null
   user_agent: string | null
   oauth_client_id: number
+  oauth_grant_id: string | null
   password_changed_at: string | null
   access_token_id: number | null
   provider: string | null
@@ -354,10 +355,23 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
   const hashedToken = bearerLookupHash(plainTextToken)
 
   const rows = await db.unsafe(`
-    SELECT * FROM oauth_access_tokens
-    WHERE token = ${param(1)}
-    AND revoked = ${boolFalse}
-    AND (expires_at IS NULL OR expires_at > ${appNow()})
+    SELECT t.* FROM oauth_access_tokens t
+    WHERE t.token = ${param(1)}
+    AND t.revoked = ${boolFalse}
+    AND (t.expires_at IS NULL OR t.expires_at > ${appNow()})
+    AND (t.oauth_grant_id IS NULL OR EXISTS (
+      SELECT 1 FROM oauth_grants g
+      JOIN oauth_clients c ON c.id = g.client_id AND c.revoked = ${boolFalse}
+      WHERE g.id = t.oauth_grant_id
+        AND g.revoked_at IS NULL
+        AND g.client_id = t.oauth_client_id
+        AND g.subject_type = t.tokenable_type
+        AND g.subject_id = t.tokenable_id
+        AND g.scopes = t.scopes
+        AND g.resources = t.resources
+        AND g.audiences = t.audiences
+        AND (g.workspace_id = t.workspace_id OR (g.workspace_id IS NULL AND t.workspace_id IS NULL))
+    ))
     LIMIT 1
   `, [hashedToken])
 
@@ -754,7 +768,7 @@ export async function refreshToken(
     // access tokens from unrelated users can all share this client (#2631).
     const forUpdate = (isPostgres || isMysql) ? ' FOR UPDATE' : ''
     const refreshRows = await trx.unsafe(`
-      SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.name, t.scopes
+      SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.oauth_grant_id, t.name, t.scopes
       FROM oauth_refresh_tokens r
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
       WHERE ${selector}
@@ -771,6 +785,11 @@ export async function refreshToken(
     if (!refreshRow || refreshRow.access_token_id == null || !validTokenExpiry(refreshRow.expires_at)) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
+
+    // Delegated grants require their own client-authenticated refresh flow.
+    // Never let the legacy first-party endpoint strip grant/resource binding.
+    if (refreshRow.oauth_grant_id != null)
+      throw new HttpError(401, 'Invalid or expired refresh token')
 
     // The locking JOIN can wait after its statement snapshot saw an active
     // client. Recheck with a current shared lock before issuing, and retain
@@ -910,6 +929,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     AND EXISTS (
       SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
     )
+    AND t.oauth_grant_id IS NULL
     AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
     LIMIT 1
   `, [hashedRefreshToken])

@@ -8,6 +8,7 @@ export * from './oauth-client-registration'
 export * from './oauth-grants'
 export * from './oauth-provider'
 export * from './oauth-pkce'
+export * from './oauth-token-exchange'
 export * from './rate-limiter'
 
 // WebAuthn/Passkey support (now using ts-auth - no external dependencies)
