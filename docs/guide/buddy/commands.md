@@ -3604,6 +3604,7 @@ Migrates your database
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-d`, `--diff` | Show the SQL that would be run | boolean, optional | `false` |
+| `--pretend` | Same as --diff (and --dry-run): preview, change nothing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
 | `--no-auth` | Skip auth/oauth table migrations | boolean, optional, negated | `true` |
@@ -3626,7 +3627,8 @@ Drop all tables and re-run every migration (destroys all data)
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-d`, `--diff` | Show the SQL that would be run | boolean, optional | `false` |
+| `-d`, `--diff` | Show what would be dropped and replayed, and change nothing | boolean, optional | `false` |
+| `--pretend` | Same as --diff (and --dry-run): preview, change nothing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-s`, `--seed` | Run database seeders after migration | boolean, optional | `false` |
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
