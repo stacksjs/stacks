@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.9...v0.75.10)
+
+## 🐛 Bug Fixes
+
+- **views**: serve a default page only while its route bundle is mounted ([a264dce](https://github.com/stacksjs/stacks/commit/a264dce)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: stx 0.2.319, whose serve() can exclude pages from a root ([8545fb2](https://github.com/stacksjs/stacks/commit/8545fb2)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: keep mailbox passwords out of deploy logs, and apply rotated ones ([111b617](https://github.com/stacksjs/stacks/commit/111b617)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.8...v0.75.9)
 
 ## 🐛 Bug Fixes
