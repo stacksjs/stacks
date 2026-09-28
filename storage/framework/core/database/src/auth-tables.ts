@@ -3,6 +3,7 @@
  *
  * Creates the authentication-related tables:
  * - oauth_clients
+ * - oauth_auth_codes
  * - oauth_access_tokens
  * - oauth_refresh_tokens
  * - password_resets
@@ -48,6 +49,7 @@ function getDbDriver(): string {
  */
 export const AUTH_TABLES: readonly string[] = [
   'oauth_clients',
+  'oauth_auth_codes',
   'oauth_access_tokens',
   'oauth_refresh_tokens',
   'password_resets',
@@ -285,6 +287,38 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     }
     catch (error) {
       if (!isDuplicateColumnError(error)) throw error
+    }
+
+    if (options.verbose) log.info('Creating oauth_auth_codes table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_auth_codes (
+        code_hash VARCHAR(64) PRIMARY KEY,
+        client_id BIGINT NOT NULL,
+        subject_type VARCHAR(255) NOT NULL,
+        subject_id BIGINT NOT NULL,
+        redirect_uri VARCHAR(2000) NOT NULL,
+        scopes TEXT NOT NULL,
+        resources TEXT NOT NULL,
+        audiences TEXT NOT NULL,
+        workspace_id VARCHAR(255),
+        code_challenge VARCHAR(43) NOT NULL,
+        code_challenge_method VARCHAR(10) NOT NULL,
+        expires_at ${datetime} NOT NULL,
+        consumed_at ${nullableTimestamp},
+        created_at ${datetime} DEFAULT ${utcNow}
+      )
+    `).execute()
+
+    for (const statement of [
+      'CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_client_id ON oauth_auth_codes(client_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_expires_at ON oauth_auth_codes(expires_at)',
+    ]) {
+      try {
+        await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute()
+      }
+      catch (error) {
+        if (!isDuplicateIndexError(error)) throw error
+      }
     }
 
     if (options.verbose) log.info('Creating oauth_access_tokens table...')
@@ -572,6 +606,9 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // LIMIT 0 checks the schema without reading any stored credentials.
     await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, personal_access_client,
       password_client, revoked, created_at, updated_at FROM oauth_clients LIMIT 0`).execute()
+    await db.unsafe(`SELECT code_hash, client_id, subject_type, subject_id, redirect_uri, scopes,
+      resources, audiences, workspace_id, code_challenge, code_challenge_method, expires_at,
+      consumed_at, created_at FROM oauth_auth_codes LIMIT 0`).execute()
     await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,
       token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at
       FROM oauth_access_tokens LIMIT 0`).execute()
