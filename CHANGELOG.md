@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.21...v0.75.22)
+
+## 🐛 Bug Fixes
+
+- **config**: give the account's Stripe webhook secret a home ([fb1701b](https://github.com/stacksjs/stacks/commit/fb1701b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.20...v0.75.21)
 
 ## ✨ Features
