@@ -72,6 +72,7 @@ const {
   loadOAuthAuthorizationConsentView,
   loadOAuthAuthorizationRequestSession,
   loadOAuthAuthorizationClient,
+  oauthAuthorizationBrowserSessionCookieName,
   refreshOAuthDelegatedToken,
   registerOAuthClient,
   rotateOAuthClientSecret,
@@ -158,7 +159,7 @@ try {
     codeChallengeMethod: 'S256',
   })
   assert.equal(validatedRequest.clientType, 'public')
-  const browserSession = 'browser-session-token-with-high-entropy'
+  const browserSession = 'b'.repeat(43)
   const begunRequest = await beginOAuthAuthorizationRequest({
     provider,
     browserSessionId: browserSession,
@@ -342,10 +343,12 @@ try {
     provider,
     request: new Request('https://id.example.com/oauth/authorize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cookie': `${oauthAuthorizationBrowserSessionCookieName(provider)}=${browserSession}`,
+      },
       body: new URLSearchParams({ request_id: handledApprovalRequestId, decision: 'approve' }),
     }),
-    browserSessionId: browserSession,
     subjectType: 'users',
     subjectId: 42,
     workspaceId: 'workspace-1',
@@ -361,10 +364,12 @@ try {
     provider,
     request: new Request('https://id.example.com/oauth/authorize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+        'Cookie': `${oauthAuthorizationBrowserSessionCookieName(provider)}=${browserSession}`,
+      },
       body: new URLSearchParams({ request_id: handledDenialRequestId, decision: 'deny' }),
     }),
-    browserSessionId: browserSession,
     subjectType: 'users',
     subjectId: 42,
   })
@@ -374,15 +379,31 @@ try {
   assert.equal(handledDenialLocation.searchParams.get('state'), validatedRequest.state)
   assert.equal(handledDenialLocation.searchParams.has('code'), false)
 
+  const unboundRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const unboundResponse = await handleOAuthAuthorizationConsentRequest({
+    provider,
+    request: new Request('https://id.example.com/oauth/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ request_id: unboundRequestId, decision: 'approve' }),
+    }),
+    subjectType: 'users',
+    subjectId: 42,
+  })
+  assert.equal(unboundResponse.status, 400)
+  assert(await loadOAuthAuthorizationRequestSession(unboundRequestId, browserSession), 'missing browser binding must not consume the request')
+
   const wrongMediaRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const wrongMediaResponse = await handleOAuthAuthorizationConsentRequest({
     provider,
     request: new Request('https://id.example.com/oauth/authorize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `${oauthAuthorizationBrowserSessionCookieName(provider)}=${browserSession}`,
+      },
       body: JSON.stringify({ request_id: wrongMediaRequestId, decision: 'deny' }),
     }),
-    browserSessionId: browserSession,
     subjectType: 'users',
     subjectId: 42,
   })
@@ -410,10 +431,12 @@ try {
     provider: changedProvider,
     request: new Request('https://id.example.com/oauth/authorize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cookie': `${oauthAuthorizationBrowserSessionCookieName(changedProvider)}=${browserSession}`,
+      },
       body: new URLSearchParams({ request_id: changedProviderRequestId, decision: 'approve' }),
     }),
-    browserSessionId: browserSession,
     subjectType: 'users',
     subjectId: 42,
   })

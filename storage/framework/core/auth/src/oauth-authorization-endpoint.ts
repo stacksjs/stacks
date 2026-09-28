@@ -35,7 +35,6 @@ export interface BegunOAuthAuthorizationRequest {
 export interface HandleOAuthAuthorizationConsentRequestInput {
   provider: ResolvedOAuthProviderConfig
   request: Request
-  browserSessionId: string
   subjectType: string
   subjectId: number
   workspaceId?: string | null
@@ -230,8 +229,10 @@ export async function handleOAuthAuthorizationConsentRequest(
     throw error
   }
 
+  const browserSessionId = oauthAuthorizationBrowserSession(input.request, input.provider).id
+
   if (consent.decision === 'deny') {
-    const denied = await denyOAuthAuthorizationRequestSession(consent.requestId, input.browserSessionId)
+    const denied = await denyOAuthAuthorizationRequestSession(consent.requestId, browserSessionId)
     return denied.ok ? oauthAuthorizationConsentResponse(denied.value) : localAuthorizationError(400)
   }
 
@@ -240,7 +241,7 @@ export async function handleOAuthAuthorizationConsentRequest(
     approved = await approveOAuthAuthorizationRequestSession({
       provider: input.provider,
       requestId: consent.requestId,
-      browserSessionId: input.browserSessionId,
+      browserSessionId,
       subjectType: input.subjectType,
       subjectId: input.subjectId,
       workspaceId: input.workspaceId,
