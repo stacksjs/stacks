@@ -78,6 +78,32 @@ export default {
   },
 
   /**
+   * OAuth 2.0 authorization server. This is separate from social sign-in,
+   * where Stacks acts as a client of GitHub or another provider.
+   *
+   * Keep this disabled until the provider routes and persistence release gate
+   * are complete. When enabled, the profile is authorization code with S256
+   * PKCE, opaque access tokens, and rotating refresh tokens. Implicit and
+   * password grants are not supported.
+   */
+  oauthProvider: {
+    enabled: false,
+    issuer: env.APP_URL,
+    scopes: {},
+    resources: {},
+    clientTypes: ['confidential', 'public'],
+    lifetimes: {
+      authorizationCode: 10 * 60 * 1000,
+      accessToken: tokenExpiry,
+      refreshToken: env.AUTH_REFRESH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
+    },
+    consent: {
+      rememberFor: 0,
+      view: 'auth/oauth/consent',
+    },
+  },
+
+  /**
    * Browser cookie attributes shared by issuance and logout.
    *
    * Leave `maxAge` unset for framework browser sessions: their actual issued

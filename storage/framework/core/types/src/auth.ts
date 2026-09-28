@@ -54,6 +54,52 @@ export interface BrowserSessionConfig {
   logoutRedirect?: string
 }
 
+export interface OAuthProviderScopeConfig {
+  /** Human-readable permission shown on the consent screen. */
+  description: string
+  /** Resource keys this scope may authorize. */
+  resources?: readonly string[]
+}
+
+export interface OAuthProviderResourceConfig {
+  /** Audience value bound to tokens issued for this resource. */
+  audience: string
+  /** Human-readable resource name shown during consent. */
+  description?: string
+}
+
+export interface OAuthProviderConfig {
+  /** The authorization server is opt-in and remains unavailable when false or absent. */
+  enabled?: boolean
+  /** Canonical absolute issuer URL. Never inferred from an inbound Host header. */
+  issuer?: string
+  /** Endpoint paths or same-origin URLs published by provider discovery. */
+  endpoints?: {
+    authorization?: string
+    token?: string
+    revocation?: string
+    introspection?: string
+  }
+  /** Permissions an authorization request may ask the user to grant. */
+  scopes?: Record<string, OAuthProviderScopeConfig>
+  /** APIs or workspaces delegated tokens may target. */
+  resources?: Record<string, OAuthProviderResourceConfig>
+  /** Which client kinds may be registered. Both are allowed by default. */
+  clientTypes?: readonly ('confidential' | 'public')[]
+  /** Absolute lifetimes in milliseconds. */
+  lifetimes?: {
+    authorizationCode?: number
+    accessToken?: number
+    refreshToken?: number
+  }
+  consent?: {
+    /** How long an approval may be reused. Zero requires consent every time. */
+    rememberFor?: number
+    /** Overridable stx view used for approve and deny. */
+    view?: string
+  }
+}
+
 export interface AuthOptions {
   /**
    * Top-level feature gate. When `false`, the auth feature is inert at boot
@@ -141,6 +187,9 @@ export interface AuthOptions {
 
   /** First-party browser-session expiry and refresh policy. */
   browserSession?: BrowserSessionConfig
+
+  /** Opt-in OAuth 2.0 authorization server configuration. */
+  oauthProvider?: OAuthProviderConfig
 
   /**
    * The token rotation time in hours
