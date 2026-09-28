@@ -1,4 +1,5 @@
 import type { LogErrorOptions } from '@stacksjs/logging'
+import type { ErrorReportContext } from '@stacksjs/types'
 import fs from 'node:fs'
 import { dirname } from 'node:path'
 import * as process from 'node:process'
@@ -13,19 +14,12 @@ function stripAnsi(str: string): string {
 }
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types/exit-code'
+import { captureError } from './reporters'
 
 /**
  * Context information attached to errors for better debugging.
  */
-export interface ErrorContext {
-  requestId?: string
-  url?: string
-  method?: string
-  userId?: string | number
-  ip?: string
-  userAgent?: string
-  [key: string]: unknown
-}
+export interface ErrorContext extends ErrorReportContext {}
 
 type ErrorMessage = string
 
@@ -70,6 +64,7 @@ export class ErrorHandler {
         error.stack = `${error.name}: ${errorMessage}\n${err.stack.split('\n').slice(1).join('\n')}`
     }
 
+    captureError(error)
     this.writeErrorToFile(error).catch(e => console.error(e))
 
     return error
@@ -261,6 +256,9 @@ export function handleError(
   // points at the throw site, with the label as its first line.
   if (cause?.stack)
     error.stack = `${error.name}: ${errorMessage}\n${cause.stack.split('\n').slice(1).join('\n')}`
+
+  if (contextData)
+    captureError(error, contextData)
 
   return ErrorHandler.handle(error, errorOptions)
 }

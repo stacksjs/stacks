@@ -1,6 +1,7 @@
 /* eslint no-console: 0 */
 import type { LogContext, LogLevel, LogRecord, LogTransport } from '@stacksjs/types'
 import type { Logger } from '@stacksjs/clarity'
+import { captureError, flushErrorReporters } from '@stacksjs/error-handling/reporters'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import process from 'node:process'
 
@@ -1046,6 +1047,7 @@ export const log: Log = {
     // deliver. `beforeExit` already calls this, so a buffering transport gets
     // its chance on a natural shutdown without registering its own hook.
     await flushTransports()
+    await flushErrorReporters()
 
     // If the logger never initialized there's nothing to flush — `getLogger`
     // would create one we don't need. Same for the init-in-flight case;
@@ -1136,6 +1138,7 @@ export function report(error: unknown, options: ReportOptions = {}): void {
     return
   }
 
+  captureError(error, { ...context, ...(options.label ? { label: options.label } : {}) })
   void log.error(message, error, context)
 }
 

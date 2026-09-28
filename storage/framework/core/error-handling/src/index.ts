@@ -1,6 +1,7 @@
 export * from './handler'
 export * from './http'
 export * from './model'
+export * from './reporters'
 export * from './utils'
 
 // Result type exports
