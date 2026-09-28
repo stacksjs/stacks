@@ -14,6 +14,9 @@ export default {
    */
   driver: 'bcrypt',
 
+  /** Upgrade outdated password hashes after the user successfully logs in. */
+  rehashOnLogin: true,
+
   bcrypt: {
     /**
      * Bcrypt rounds (cost factor)

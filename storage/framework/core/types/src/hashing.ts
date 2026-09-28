@@ -24,6 +24,14 @@ export interface HashingOptions {
   driver: 'argon2' | 'argon2id' | 'argon2i' | 'argon2d' | 'bcrypt'
 
   /**
+   * Upgrade a user's stored password hash after a successful login when the
+   * configured algorithm or work factor has changed.
+   *
+   * @default true
+   */
+  rehashOnLogin?: boolean
+
+  /**
    * **Bcrypt Option**
    *
    * Here you may specify the configuration options that should be used when

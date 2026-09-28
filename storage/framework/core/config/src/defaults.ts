@@ -506,6 +506,7 @@ export const defaults: StacksOptions = {
 
   hashing: {
     driver: 'bcrypt', // Laravel default
+    rehashOnLogin: true,
 
     bcrypt: {
       rounds: 12, // Laravel default is 10-12, higher = more secure but slower

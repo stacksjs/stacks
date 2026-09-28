@@ -25,6 +25,13 @@ import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
 import { withVerifiedPassword } from './credential-version'
 import { tokenDate, tokenTimestamps } from './token-dates'
+import { schedulePasswordRehash } from './password-rehash'
+
+interface VerifiedCredentials {
+  user: UserModel
+  plaintext: string
+  hash: string
+}
 
 /**
  * Per-request auth state, scoped to the active `EnhancedRequest` via
@@ -271,15 +278,16 @@ export class Auth {
    * Similar to Laravel's Auth::attempt()
    */
   public static async attempt(credentials: AuthCredentials): Promise<boolean> {
-    const user = await this.verifyCredentials(credentials)
-    if (!user) return false
+    const verified = await this.verifyCredentials(credentials)
+    if (!verified) return false
+    schedulePasswordRehash(verified.user.id!, verified.plaintext, verified.hash)
     const state = authStateOrNull()
-    if (state) state.authUser = user
+    if (state) state.authUser = verified.user
     return true
   }
 
   /** Return the exact user/password snapshot checked by bcrypt. */
-  private static async verifyCredentials(credentials: AuthCredentials): Promise<UserModel | null> {
+  private static async verifyCredentials(credentials: AuthCredentials): Promise<VerifiedCredentials | null> {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
@@ -317,7 +325,7 @@ export class Auth {
 
     if (hashCheck && user) {
       await RateLimiter.resetAttempts(email)
-      return user
+      return { user, plaintext: authPass, hash: hashToVerify }
     }
 
     await RateLimiter.recordFailedAttempt(email)
@@ -353,9 +361,12 @@ export class Auth {
    * concurrently changed credentials; storage failures propagate.
    */
   public static async withVerifiedCredentials<T>(credentials: AuthCredentials, issue: (user: UserModel) => Promise<T>): Promise<T | null> {
-    const user = await this.verifyCredentials(credentials)
-    if (!user) return null
-    return withVerifiedPassword(user.id!, user.password, () => issue(user))
+    const verified = await this.verifyCredentials(credentials)
+    if (!verified) return null
+    const result = await withVerifiedPassword(verified.user.id!, verified.hash, () => issue(verified.user))
+    if (result !== null)
+      schedulePasswordRehash(verified.user.id!, verified.plaintext, verified.hash)
+    return result
   }
 
   /**

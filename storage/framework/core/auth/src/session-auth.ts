@@ -9,6 +9,7 @@ import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
 import { withVerifiedPassword } from './credential-version'
+import { schedulePasswordRehash } from './password-rehash'
 
 function generateSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
@@ -180,6 +181,7 @@ export async function sessionLogin(
   if (!persisted)
     throw new HttpError(401, 'Invalid credentials')
 
+  schedulePasswordRehash(user.id!, password, hashToVerify)
   log.debug(`[auth] Session created for user#${user.id}`)
   return { user, sessionId }
 }
