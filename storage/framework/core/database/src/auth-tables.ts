@@ -31,6 +31,34 @@ function getDbDriver(): string {
 }
 
 /**
+ * Every table {@link migrateAuthTables} creates. The auth layer owns these: their
+ * schema is whatever that function declares, created before the model
+ * migrations run and repaired by it on every migrate.
+ *
+ * So the migration generator must never emit DDL for them, even when a model
+ * maps one (`PersonalAccessToken` over `oauth_access_tokens`). A model's
+ * attributes describe the columns it reads, not the table: an app whose
+ * snapshot predated that model was handed a `create-oauth_access_tokens-table`
+ * built from the model alone, without `user_id` or `oauth_client_id`, and where
+ * that ran first the auth layer's CREATE IF NOT EXISTS became a no-op and its
+ * backfill failed with "no such column: user_id".
+ *
+ * Kept in step with the CREATE statements below by
+ * `tests/auth-owned-tables.test.ts`.
+ */
+export const AUTH_TABLES: readonly string[] = [
+  'oauth_clients',
+  'oauth_access_tokens',
+  'oauth_refresh_tokens',
+  'password_resets',
+  'email_verifications',
+  'passkeys',
+  'webauthn_challenges',
+  'two_factor_challenges',
+  'two_factor_pending_secrets',
+]
+
+/**
  * Defensive ALTER guaranteeing `users.email_verified_at` — the column
  * `verifyEmail()` writes and the `verified` middleware reads, but which
  * no generated users migration ever creates (stacksjs/stacks#1948).

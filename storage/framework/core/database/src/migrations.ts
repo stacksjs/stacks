@@ -55,6 +55,7 @@ import { acquireMigrationLock } from './migration-lock'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablesMissingCreateStatements } from './notification-tables'
 import { traitTableNames } from './trait-tables'
+import { AUTH_TABLES } from './auth-tables'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
@@ -245,6 +246,45 @@ export function prepareMigrationModelsDir(): {
     excludedTables,
     protectedTables: [...new Set([...excludedTables, ...traitTableNames()])],
   }
+}
+
+/**
+ * The tables a generated statement acts on. A SQLite rebuild arrives as one
+ * string of several statements; each resolves to the table being rebuilt.
+ */
+function generatedStatementTables(statement: string): string[] {
+  return statement
+    .split(';')
+    .map(part => part.trim())
+    .filter(Boolean)
+    .flatMap((part) => {
+      const table = rebuiltTable(part) ?? statementTable(part)
+      const index = /^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?\w+["`]?\s+ON\s+["`]?(\w+)["`]?/i.exec(part)?.[1]
+      const dropped = DROP_TABLE_RE.exec(part)?.[1]
+      return [table, index, dropped].filter((name): name is string => Boolean(name)).map(name => name.toLowerCase())
+    })
+}
+
+/**
+ * Leave out generated DDL for tables the framework creates at runtime rather
+ * than through a migration - the auth tables, see {@link AUTH_TABLES}.
+ *
+ * A model may map one of them to read it, and that puts the table in the
+ * differ's plan; the generated CREATE, built from the model's attributes alone,
+ * then races the auth layer's own and can win with half the columns. The
+ * snapshot still records the table, so the same statements are not proposed
+ * again next run.
+ */
+export function withoutRuntimeOwnedTableSql(statements: string[], owned: readonly string[] = AUTH_TABLES): { statements: string[], removed: string[] } {
+  const ownedSet = new Set(owned.map(table => table.toLowerCase()))
+  const removed: string[] = []
+  const kept = statements.filter((statement) => {
+    if (!generatedStatementTables(statement).some(table => ownedSet.has(table)))
+      return true
+    removed.push(statement)
+    return false
+  })
+  return { statements: kept, removed }
 }
 
 const DROP_TABLE_RE = /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
@@ -2290,7 +2330,10 @@ export async function pendingMigrationOperations(options: GenerateMigrationsOpti
   const corrected = fromDb ? undefined : catchUpSnapshotFrameworkRenames({ persist: false }).plan
   if (corrected && result.plan)
     result.operations = generateDiffOperations(corrected, result.plan, { applyRenames, dryRun: true }).operations
-  let operations = result.operations ?? []
+  // Tables the auth layer creates itself are never generated, so they are
+  // never pending either (see `withoutRuntimeOwnedTableSql`).
+  const authOwned = new Set(AUTH_TABLES)
+  let operations = (result.operations ?? []).filter((op: MigrationOperation) => !authOwned.has(op.table.toLowerCase()))
   // Protected tables are never dropped (see `withoutProtectedTableDropSql`),
   // so they must not appear in the confirmation gate either — sixty phantom
   // drops would train the user to approve a prompt that is, on any other run,
@@ -2529,6 +2572,12 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     let sqlStatements = result.sqlStatements ?? []
     if (dialect === 'sqlite')
       sqlStatements = inlineSqliteAddedColumnReferences(sqlStatements, result.plan)
+    {
+      const runtimeOwned = withoutRuntimeOwnedTableSql(sqlStatements)
+      if (runtimeOwned.removed.length > 0)
+        log.debug(`[migration] Left out ${runtimeOwned.removed.length} generated statement(s) for tables the auth layer creates itself`)
+      sqlStatements = runtimeOwned.statements
+    }
     if (result.hasChanges && sqlStatements.length > 0) {
       const filtered = withoutManagedColumnDropSql(sqlStatements, await frameworkManagedColumns(), result.operations ?? [])
       if (filtered.removed.length > 0)
