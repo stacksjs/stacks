@@ -44,6 +44,7 @@ import {
   shouldRefreshPostSyncDependencies,
   shouldRunPostSyncHooks,
 } from './framework-hooks'
+import { describeDanglingRouteActions, findDanglingRouteActions, pruneRetiredScaffoldRoutes } from './route-actions'
 
 interface UpgradeOptions {
   version?: string
@@ -288,6 +289,20 @@ for (const { managed, summary } of perPath) {
         `  ${managed.label.padEnd(10)} +${summary.added} ~${summary.changed} -${summary.removed} (${summary.unchanged} unchanged)`,
       )
     }
+  }
+}
+
+// Scaffold routes whose action this release removed, and any other route that
+// names a missing action. Same step as the package path (see ./route-actions).
+{
+  const pruned = pruneRetiredScaffoldRoutes(projectRoot)
+  for (const route of pruned)
+    console.log(`Removed ${route.file}:${route.line}, the scaffold route to ${route.action}: removed in ${route.removedIn}, ${route.reason}`)
+  const dangling = findDanglingRouteActions(projectRoot)
+  if (dangling.length > 0) {
+    console.warn(`${dangling.length} route(s) name an action this version does not ship. Point them at an action that exists, or delete them:`)
+    for (const line of describeDanglingRouteActions(dangling).split('\n'))
+      console.warn(`  ${line}`)
   }
 }
 

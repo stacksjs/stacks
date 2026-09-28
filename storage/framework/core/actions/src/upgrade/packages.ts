@@ -18,6 +18,7 @@ import {
   summarizeStructureChanges,
   syncPackageProjectFiles,
 } from './package-project'
+import { describeDanglingRouteActions, findDanglingRouteActions, pruneRetiredScaffoldRoutes } from './route-actions'
 
 export interface PackageUpgradeOptions {
   /** Pin an exact target version (e.g. 0.70.70). Overrides channel. */
@@ -268,6 +269,8 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
       console.log(`    ${summarizeStructureChanges(pending)}   in storage/framework/defaults and project support files\n`)
     }
 
+    reportRouteActions(projectRoot, true)
+
     console.log('  --dry-run: no files were written and nothing was installed.\n')
     process.exit(0)
   }
@@ -310,6 +313,8 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     : []
   const tsconfigChanges = migratePackageProjectTsconfig(projectRoot)
 
+  const prunedRoutes = reportRouteActions(projectRoot, false)
+
   if (structureChanges.length > 0 || tsconfigChanges.length > 0) {
     const added = structureChanges.filter(change => change.action === 'add').length
     const updated = structureChanges.filter(change => change.action === 'update').length + tsconfigChanges.length
@@ -342,12 +347,36 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     || dependenciesNeedInstall
     || structureChanges.length > 0
     || tsconfigChanges.length > 0
+    || prunedRoutes > 0
 
   if (!didChange && !options.force)
     console.log('\n✔ Already up to date - dependencies and managed project files match the target.\n')
   else
     console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
   process.exit(0)
+}
+
+/**
+ * Retire scaffold routes whose action the framework removed, and report every
+ * other route that names a missing action. See `./route-actions`.
+ *
+ * Returns how many lines were (or would be) removed. Runs after the defaults
+ * sync, so an action that merely moved into the new defaults resolves.
+ */
+function reportRouteActions(projectRoot: string, dryRun: boolean): number {
+  const pruned = pruneRetiredScaffoldRoutes(projectRoot, { dryRun })
+  for (const route of pruned)
+    console.log(`  ${dryRun ? 'Would remove' : 'Removed'} ${route.file}:${route.line}, the scaffold route to ${route.action}: removed in ${route.removedIn}, ${route.reason}`)
+
+  const dangling = findDanglingRouteActions(projectRoot)
+  if (dangling.length > 0) {
+    console.warn(`\n  ${dangling.length} route${dangling.length === 1 ? '' : 's'} name${dangling.length === 1 ? 's' : ''} an action this version does not ship. Point ${dangling.length === 1 ? 'it' : 'them'} at an action that exists, or delete ${dangling.length === 1 ? 'it' : 'them'}:`)
+    for (const line of describeDanglingRouteActions(dangling).split('\n'))
+      console.warn(`    ${line}`)
+    console.warn('')
+  }
+
+  return pruned.length
 }
 
 /**

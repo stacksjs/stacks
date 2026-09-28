@@ -52,6 +52,8 @@ export type { StxLintConfig, StxLintReport, StxLintResult } from './lint/stx-gat
 // import. The cheap version-level check lives in @stacksjs/path, because the
 // boot path consults it and cannot depend on this package.
 export { measureDefaultsDrift, summarizeStructureChanges } from './upgrade/package-project'
+export { describeDanglingRouteActions, findDanglingRouteActions } from './upgrade/route-actions'
+export type { RouteActionReference } from './upgrade/route-actions'
 export type { ProjectStructureChange } from './upgrade/package-project'
 export * from './setup'
 

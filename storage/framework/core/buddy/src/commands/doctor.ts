@@ -157,6 +157,23 @@ export function doctor(buddy: CLI): void {
         )
       }, 8000)
 
+      // A route naming an action the framework no longer ships. `routes/` is
+      // the app's own, so an upgrade that removes an action the scaffold's
+      // routes pointed at leaves the route behind, and it surfaces only as a
+      // `buddy test:types` failure or a 500 on the path (stacksjs/stacks#2056
+      // removed `Actions/Buddy/CommandsAction` from under every older app).
+      await probe(checks, 'Route actions', async () => {
+        const { describeDanglingRouteActions, findDanglingRouteActions } = await import('@stacksjs/actions')
+        const dangling = findDanglingRouteActions(resolve(process.cwd()))
+        if (dangling.length === 0)
+          return 'Every action a route names exists'
+
+        throw new ProbeWarning(
+          `${describeDanglingRouteActions(dangling).split('\n').join('; ')}. `
+          + 'Point each route at an action that exists, or delete it. `buddy upgrade` removes the ones the scaffold wrote.',
+        )
+      })
+
       // Check Bun version against the framework minimum
       const bunVersion = process.versions.bun
       if (bunVersion && isSupportedBunVersion(bunVersion)) {
