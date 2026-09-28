@@ -1,8 +1,9 @@
 import { randomBytes } from 'node:crypto'
-import { config } from '@stacksjs/config'
+import { config, feature, overridesReady } from '@stacksjs/config'
 import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
+import { mountedDefaultRouteBundles } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { authLinkBase } from '../link-url'
 import { sessionDestroyAll } from '../session-auth'
@@ -180,6 +181,8 @@ export function passwordResets(email: string): PasswordResetActions {
     const base = authLinkBase()
     const tpl = config.auth.passwordReset?.url
       ?? '/password/reset/{token}?email={email}'
+    if (!config.auth.passwordReset?.url)
+      await warnIfDefaultResetPageMissing()
     const filled = tpl.replace('{token}', token).replace('{email}', encodeURIComponent(email))
     const resetUrl = /^https?:\/\//.test(filled) ? filled : `${base}${filled.startsWith('/') ? '' : '/'}${filled}`
 
@@ -361,4 +364,29 @@ export function passwordResets(email: string): PasswordResetActions {
     verifyToken,
     resetPassword,
   }
+}
+
+let warnedDefaultResetPage = false
+
+/**
+ * The default link lands on the framework's `/password/reset/{token}` page,
+ * which posts to the `auth` route bundle's endpoints and is only served where
+ * that bundle is mounted. An app that calls this mailer from its
+ * own action with the bundle off would otherwise mail links to a 404 with
+ * nothing in the logs to say why. Once per process: the answer cannot change
+ * without a restart.
+ */
+async function warnIfDefaultResetPageMissing(): Promise<void> {
+  if (warnedDefaultResetPage)
+    return
+  warnedDefaultResetPage = true
+  try {
+    await overridesReady
+    if (mountedDefaultRouteBundles(feature).has('auth'))
+      return
+  }
+  catch {
+    return
+  }
+  log.warn('[PasswordReset] Reset links point at the default /password/reset/{token} page, which needs the auth route bundle, and it is not mounted (it mounts with the dashboard, or with STACKS_DEFAULT_ROUTES=auth). Set config.auth.passwordReset.url to your own reset page, or mount the bundle.')
 }
