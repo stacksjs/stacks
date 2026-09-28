@@ -98,3 +98,55 @@ export function applyAppEnvTemplate(root: string, identity: AppIdentity): string
   writeFileSync(file, lines.join('\n'))
   return changed
 }
+
+/**
+ * The `package.json` keys that describe the Stacks repository rather than the
+ * app, since the download IS that repository. Every app was named `stacks` at
+ * the framework's version, credited its maintainer, and pointed `repository`,
+ * `bugs`, `homepage` and `funding` at stacksjs/stacks - so tooling that reads
+ * them (npm, GitHub's dependency graph, buddy-bot's PR links) described the
+ * framework instead. `undefined` removes the key.
+ */
+export function appPackageValues(identity: AppIdentity): Record<string, unknown> {
+  return {
+    name: identity.kebab,
+    version: '0.0.0',
+    description: identity.displayName,
+    author: undefined,
+    contributors: undefined,
+    funding: undefined,
+    homepage: undefined,
+    repository: undefined,
+    bugs: undefined,
+  }
+}
+
+/**
+ * Rewrite `package.json` for the new app, touching only the keys
+ * `appPackageValues` names and keeping the rest (scripts, dependencies,
+ * engines, git hooks) in their original order. Returns the keys it changed.
+ */
+export function applyAppPackageTemplate(root: string, identity: AppIdentity): string[] {
+  const file = join(root, 'package.json')
+  if (!existsSync(file))
+    return []
+
+  const pkg = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
+  const changed: string[] = []
+
+  for (const [key, value] of Object.entries(appPackageValues(identity))) {
+    if (value === undefined) {
+      if (key in pkg) {
+        delete pkg[key]
+        changed.push(key)
+      }
+    }
+    else if (pkg[key] !== value) {
+      pkg[key] = value
+      changed.push(key)
+    }
+  }
+
+  writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
+  return changed
+}

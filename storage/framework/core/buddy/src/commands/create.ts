@@ -10,7 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 import { resultFailed } from '../result'
-import { appIdentity, applyAppEnvTemplate, renderTemplate } from '../scaffold-app'
+import { appIdentity, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
 import { fetchPublishedVersions } from '../registry'
 
@@ -83,6 +83,7 @@ export function create(buddy: CLI): void {
   applyAppVcsTemplate(path)
   applyAppConfigTemplate(path)
   applyAppEnv(path)
+  applyAppPackage(path)
   replaceFrameworkSite(path)
   removeFrameworkTests(path)
   await ensureEnv(path, options)
@@ -366,6 +367,22 @@ function applyAppEnv(path: string) {
   }
   catch (error) {
     log.warn(`Could not name the app in .env.example: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Give the app its own `package.json` identity: its name, a 0.0.0 version,
+ * and no repository, bugs, homepage or funding links pointing at
+ * stacksjs/stacks. `appPackageValues` in `../scaffold-app` lists the keys.
+ */
+function applyAppPackage(path: string) {
+  try {
+    const changed = applyAppPackageTemplate(path, appIdentity(path))
+    if (changed.length > 0)
+      log.success(`Named the app in package.json (${changed.join(', ')})`)
+  }
+  catch (error) {
+    log.warn(`Could not name the app in package.json: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 

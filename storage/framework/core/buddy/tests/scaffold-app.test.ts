@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { appEnvValues, appIdentity, applyAppEnvTemplate, renderTemplate } from '../src/scaffold-app'
+import { appEnvValues, appIdentity, applyAppEnvTemplate, applyAppPackageTemplate, renderTemplate } from '../src/scaffold-app'
 
 const REPO = join(import.meta.dir, '../../../../..')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -85,8 +85,53 @@ describe('the app .env.example', () => {
   })
 })
 
+describe('the app package.json', () => {
+  // Run over the repository's real package.json, which is what the download
+  // gives every app: until this step existed, each one was named `stacks`, at
+  // the framework's version, with the framework's repository and funding links.
+  let app: string
+  let pkg: Record<string, any>
+  let changed: string[]
+
+  beforeAll(() => {
+    app = mkdtempSync(join(tmpdir(), 'stacks-app-pkg-'))
+    copyFileSync(join(REPO, 'package.json'), join(app, 'package.json'))
+    changed = applyAppPackageTemplate(app, appIdentity(join(app, 'Uplink')))
+    pkg = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'))
+  })
+
+  afterAll(() => rmSync(app, { recursive: true, force: true }))
+
+  test('names the app and starts it at 0.0.0', () => {
+    expect(pkg.name).toBe('uplink')
+    expect(pkg.version).toBe('0.0.0')
+    expect(pkg.description).toBe('Uplink')
+    expect(changed).toContain('name')
+  })
+
+  test('drops every link and credit that points at the framework', () => {
+    const text = JSON.stringify({ ...pkg, dependencies: undefined, devDependencies: undefined, scripts: undefined, overrides: undefined })
+    expect(text).not.toContain('github.com/stacksjs/stacks')
+    expect(text).not.toContain('chrisbbreuer')
+    for (const key of ['repository', 'bugs', 'homepage', 'funding', 'contributors', 'author'])
+      expect(pkg).not.toHaveProperty(key)
+  })
+
+  test('keeps what the app runs on, in its original order', () => {
+    const original = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'))
+    expect(pkg.scripts).toEqual(original.scripts)
+    expect(pkg.dependencies).toEqual(original.dependencies)
+    expect(pkg.engines).toEqual(original.engines)
+    expect(Object.keys(pkg).slice(0, 2)).toEqual(Object.keys(original).slice(0, 2))
+  })
+})
+
 describe('buddy new wiring', () => {
   const source = readFileSync(CREATE_COMMAND, 'utf8')
+
+  test('names the app in package.json too', () => {
+    expect(source).toContain('applyAppPackage(path)')
+  })
 
   test('names the app before .env is copied from the example', () => {
     expect(source).toContain('applyAppEnv(path)')
