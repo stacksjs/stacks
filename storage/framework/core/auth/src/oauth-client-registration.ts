@@ -5,6 +5,7 @@ import {
   db,
   getDatabaseDialect,
   markContextWrote,
+  mutationCount,
   parseSqlDateTime,
   sqlDateTime,
   sqlHelpers,
@@ -352,4 +353,66 @@ export async function registerOAuthClient(
     },
     ...(plainTextSecret === undefined ? {} : { plainTextSecret }),
   }
+}
+
+/** Disable one owner-managed client and revoke every credential it issued. */
+export async function disableOAuthClient(ownerId: number, clientId: number): Promise<boolean> {
+  if (!Number.isSafeInteger(ownerId) || ownerId <= 0 || !Number.isSafeInteger(clientId) || clientId <= 0)
+    return false
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const lock = sql.isSqlite ? '' : ' FOR UPDATE'
+  const disabled = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const rows = await trx.unsafe(`
+      SELECT id, revoked FROM oauth_clients
+      WHERE id = ${sql.param(1)} AND user_id = ${sql.param(2)}
+      LIMIT 1${lock}
+    `, [clientId, ownerId]) as unknown as Array<{ id: number | string, revoked: boolean | number }>
+    if (!rows[0] || !inactive(rows[0].revoked))
+      return false
+
+    const now = sqlDateTime(new Date())
+    const revoked = sql.isPostgres ? true : 1
+    const active = sql.isPostgres ? false : 0
+    const changed = await trx.unsafe(`
+      UPDATE oauth_clients
+      SET revoked = ${sql.param(1)}, updated_at = ${sql.param(2)}
+      WHERE id = ${sql.param(3)} AND user_id = ${sql.param(4)} AND revoked = ${sql.param(5)}
+    `, [revoked, now, clientId, ownerId, active])
+    if (mutationCount(changed) !== 1)
+      return false
+
+    await trx.unsafe(`
+      UPDATE oauth_grants
+      SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
+      WHERE client_id = ${sql.param(3)} AND revoked_at IS NULL
+    `, [now, now, clientId])
+    await trx.unsafe(`
+      UPDATE oauth_auth_codes
+      SET consumed_at = ${sql.param(1)}
+      WHERE client_id = ${sql.param(2)} AND consumed_at IS NULL
+    `, [now, clientId])
+    await trx.unsafe(`
+      UPDATE oauth_authorization_requests
+      SET consumed_at = ${sql.param(1)}
+      WHERE client_id = ${sql.param(2)} AND consumed_at IS NULL
+    `, [now, clientId])
+    await trx.unsafe(`
+      UPDATE oauth_refresh_tokens
+      SET revoked = ${sql.param(1)}
+      WHERE access_token_id IN (
+        SELECT id FROM oauth_access_tokens WHERE oauth_client_id = ${sql.param(2)}
+      )
+    `, [revoked, clientId])
+    await trx.unsafe(`
+      UPDATE oauth_access_tokens
+      SET revoked = ${sql.param(1)}, updated_at = ${sql.param(2)}
+      WHERE oauth_client_id = ${sql.param(3)}
+    `, [revoked, now, clientId])
+    return true
+  })
+  if (disabled)
+    markContextWrote()
+  return disabled
 }

@@ -54,6 +54,7 @@ const {
   createOAuthGrant,
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
+  disableOAuthClient,
   exchangeAuthorizationCode,
   exchangeOAuthAuthorizationCode,
   findToken,
@@ -483,6 +484,75 @@ try {
     confidentialRegistration.plainTextSecret,
     async client => client,
   ), null)
+
+  const disableRegistration = await registerOAuthClient(provider, 42, {
+    name: 'Disposable integration',
+    type: 'public',
+    tokenEndpointAuthMethod: 'none',
+    redirectUris: ['https://disable.example.com/callback'],
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  const disableRequest = validateOAuthAuthorizationRequest(provider, (await loadOAuthAuthorizationClient(String(disableRegistration.client.id)))!, {
+    responseType: 'code',
+    clientId: String(disableRegistration.client.id),
+    redirectUri: 'https://disable.example.com/callback',
+    scope: 'issues:read',
+    resource: 'https://api.bughq.example',
+    codeChallenge,
+    codeChallengeMethod: 'S256',
+  })
+  const disableRequestId = await createOAuthAuthorizationRequestSession(disableRequest, browserSession, 60_000)
+  const disableConsent = await approveOAuthAuthorizationRequestSession({
+    requestId: disableRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(disableConsent.ok)
+  const disableTokens = await exchangeOAuthAuthorizationCode({
+    code: disableConsent.value.code,
+    clientId: disableRegistration.client.id,
+    redirectUri: disableRequest.redirectUri,
+    codeVerifier: verifier,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert(disableTokens.ok)
+  const pendingDisableRequestId = await createOAuthAuthorizationRequestSession(disableRequest, browserSession, 60_000)
+  const pendingCodeRequestId = await createOAuthAuthorizationRequestSession(disableRequest, browserSession, 60_000)
+  const pendingDisableCode = await approveOAuthAuthorizationRequestSession({
+    requestId: pendingCodeRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(pendingDisableCode.ok)
+  assert(await findToken(disableTokens.value.accessToken))
+  assert.equal(await disableOAuthClient(7, disableRegistration.client.id), false, 'another owner must not disable the client')
+  assert(await findToken(disableTokens.value.accessToken))
+  assert.equal(await disableOAuthClient(42, disableRegistration.client.id), true)
+  assert.equal(await disableOAuthClient(42, disableRegistration.client.id), false, 'disable must be idempotent')
+  assert.equal(await findToken(disableTokens.value.accessToken), null)
+  assert.equal(await loadOAuthAuthorizationRequestSession(pendingDisableRequestId, browserSession), null)
+  assert.deepEqual(await withAuthorizationCode(pendingDisableCode.value.code, {
+    clientId: disableRegistration.client.id,
+    redirectUri: disableRequest.redirectUri,
+    codeVerifier: verifier,
+  }, async grant => grant), { ok: false, reason: 'invalid_grant' })
+  const disabledGrant = await db.selectFrom('oauth_grants').where('id', '=', disableTokens.value.grantId).select(['revoked_at']).executeTakeFirstOrThrow()
+  assert(disabledGrant.revoked_at)
+  const disabledAccess = await db.selectFrom('oauth_access_tokens').where('oauth_grant_id', '=', disableTokens.value.grantId).select(['revoked']).get()
+  assert(disabledAccess.every(token => Boolean(token.revoked)))
+  const disabledRefresh = await db.selectFrom('oauth_refresh_tokens')
+    .innerJoin('oauth_access_tokens', 'oauth_access_tokens.id', '=', 'oauth_refresh_tokens.access_token_id')
+    .where('oauth_access_tokens.oauth_grant_id', '=', disableTokens.value.grantId)
+    .select('oauth_refresh_tokens.revoked')
+    .get()
+  assert(disabledRefresh.every(token => Boolean(token.revoked)))
   await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
   assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
   assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'saved requests must recheck current client policy')
