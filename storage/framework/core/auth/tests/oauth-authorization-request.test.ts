@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   OAuthAuthorizationRequestError,
+  parseOAuthAuthorizationRequest,
   validateOAuthAuthorizationRequest,
 } from '../src/oauth-authorization'
 import type {
@@ -60,6 +61,75 @@ function captureError(
     return error as OAuthAuthorizationRequestError
   }
 }
+
+function captureParseError(query: string): OAuthAuthorizationRequestError {
+  try {
+    parseOAuthAuthorizationRequest(query)
+    throw new Error('Expected authorization request parsing to fail.')
+  }
+  catch (error) {
+    expect(error).toBeInstanceOf(OAuthAuthorizationRequestError)
+    return error as OAuthAuthorizationRequestError
+  }
+}
+
+describe('OAuth authorization request parsing', () => {
+  it('preserves repeatable resource indicators and ignores extension parameters', () => {
+    expect(parseOAuthAuthorizationRequest(new URLSearchParams([
+      ['response_type', 'code'],
+      ['client_id', 'client-123'],
+      ['redirect_uri', 'https://client.example.com/callback'],
+      ['scope', 'issues:read profile:read'],
+      ['resource', 'https://api.bughq.example'],
+      ['resource', 'https://api.loghq.example'],
+      ['state', 'opaque-client-state'],
+      ['code_challenge', 'a'.repeat(43)],
+      ['code_challenge_method', 'S256'],
+      ['extension', 'ignored'],
+    ]))).toEqual({
+      responseType: 'code',
+      clientId: 'client-123',
+      redirectUri: 'https://client.example.com/callback',
+      scope: 'issues:read profile:read',
+      resource: ['https://api.bughq.example', 'https://api.loghq.example'],
+      state: 'opaque-client-state',
+      codeChallenge: 'a'.repeat(43),
+      codeChallengeMethod: 'S256',
+    })
+  })
+
+  it('rejects repeated scalar parameters before exposing a callback target', () => {
+    for (const name of [
+      'response_type',
+      'client_id',
+      'redirect_uri',
+      'scope',
+      'state',
+      'code_challenge',
+      'code_challenge_method',
+    ]) {
+      const query = new URLSearchParams({
+        response_type: 'code',
+        client_id: 'client-123',
+        redirect_uri: 'https://client.example.com/callback',
+        code_challenge: 'a'.repeat(43),
+        code_challenge_method: 'S256',
+      })
+      if (name === 'scope' || name === 'state')
+        query.append(name, 'first')
+      query.append(name, 'duplicate')
+      const error = captureParseError(query.toString())
+      expect(error.code).toBe('invalid_request')
+      expect(error.redirectUri).toBeNull()
+      expect(error.state).toBeNull()
+    }
+  })
+
+  it('rejects missing required values and oversized browser requests', () => {
+    expect(captureParseError('response_type=code').code).toBe('invalid_request')
+    expect(captureParseError(`state=${'s'.repeat(8193)}`).code).toBe('invalid_request')
+  })
+})
 
 describe('OAuth authorization request validation', () => {
   it('normalizes a request only after every registered boundary passes', () => {

@@ -66,6 +66,45 @@ function reject(
   throw new OAuthAuthorizationRequestError(code, message, redirectUri, state)
 }
 
+function scalarParameter(params: URLSearchParams, name: string, required = false): string | undefined {
+  const values = params.getAll(name)
+  if (values.length > 1)
+    reject('invalid_request', `OAuth authorization parameter must not be repeated: ${name}`)
+  if (required && (!values.length || values[0] === ''))
+    reject('invalid_request', `OAuth authorization parameter is required: ${name}`)
+  return values[0]
+}
+
+/** Parse the browser query without trusting any callback URL it contains. */
+export function parseOAuthAuthorizationRequest(
+  query: string | URLSearchParams,
+): OAuthAuthorizationRequestInput {
+  const encoded = typeof query === 'string' ? query.replace(/^\?/, '') : query.toString()
+  if (encoded.length > 8192)
+    reject('invalid_request', 'OAuth authorization request is too large.')
+
+  const params = typeof query === 'string' ? new URLSearchParams(encoded) : query
+  const responseType = scalarParameter(params, 'response_type', true)!
+  const clientId = scalarParameter(params, 'client_id', true)!
+  const redirectUri = scalarParameter(params, 'redirect_uri', true)!
+  const scope = scalarParameter(params, 'scope')
+  const state = scalarParameter(params, 'state')
+  const codeChallenge = scalarParameter(params, 'code_challenge', true)!
+  const codeChallengeMethod = scalarParameter(params, 'code_challenge_method', true)!
+  const resources = params.getAll('resource')
+
+  return {
+    responseType,
+    clientId,
+    redirectUri,
+    codeChallenge,
+    codeChallengeMethod,
+    ...(scope === undefined ? {} : { scope }),
+    ...(resources.length ? { resource: resources } : {}),
+    ...(state === undefined ? {} : { state }),
+  }
+}
+
 /** Whether a registered callback is safe for exact redirect matching. */
 export function isValidOAuthRedirectUri(value: string): boolean {
   if (value.includes('*'))
