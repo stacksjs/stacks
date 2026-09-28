@@ -28,7 +28,6 @@
     "ts-css",
     "tailwind"
   ],
-  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
