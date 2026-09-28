@@ -70,7 +70,7 @@ describe('article assets', () => {
   it('ships the stylesheet and a self-mounting module script', () => {
     expect(articleCss()).toContain('.me-grid')
     const script = articleScript()
-    expect(script.startsWith('<script type="module">')).toBe(true)
+    expect(script.startsWith('<script type="module" data-stx-scoped>')).toBe(true)
     expect(script).not.toMatch(/export\s*\{/)
     expect(script.slice(0, -'</script>'.length)).not.toContain('</script')
   })

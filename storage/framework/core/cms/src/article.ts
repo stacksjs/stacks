@@ -189,9 +189,13 @@ export function articleScript(): string {
       ?.split(',')
       .map(part => part.trim().split(/\s+as\s+/))
       .find(([local, name]) => (name ?? local) === 'mountArticle')?.[0]
-    // Without the binding the page still works, it just does not zoom.
+    // `data-stx-scoped` tells stx the script is already self-contained, so it
+    // neither bridges server variables into it (the bundle's own `html` and
+    // `data` would otherwise be shadowed by a view's) nor checks it for
+    // auto-imports. Without the binding the page still works, it just does
+    // not zoom.
     cachedScript = exports && binding
-      ? `<script type="module">${source.slice(0, exports.index)}\n${binding}()</script>`
+      ? `<script type="module" data-stx-scoped>${source.slice(0, exports.index)}\n${binding}()</script>`
       : ''
   }
   return cachedScript
