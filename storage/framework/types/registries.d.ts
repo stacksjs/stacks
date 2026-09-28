@@ -57,6 +57,13 @@ type EmailTemplateName = keyof EmailTemplates & string
 type WithoutActionsPrefix<T> = T extends `Actions/${infer TRest}` ? TRest : never
 
 /**
+ * `'SendEmailJob'` → `'SendEmail'`. `resolveJobFile` tries `<name>.ts` and then
+ * `<name>Job.ts`, so a job is reachable by either spelling; `@stacksjs/queue`
+ * derives the same for `job(…)` from the `Jobs` registry below.
+ */
+type WithoutJobSuffix<T> = T extends `${infer TBase}Job` ? (TBase extends '' ? never : TBase) : never
+
+/**
  * What `app/Events.ts` may name against an event: a listener module, or an
  * action by the name `resolveListener` joins back on (no `Actions/` prefix).
  */
@@ -126,7 +133,7 @@ declare module '@stacksjs/actions' {
 }
 
 declare module '@stacksjs/scheduler' {
-  interface SchedulableJobs extends Record<JobName, true> {}
+  interface SchedulableJobs extends Record<JobName | WithoutJobSuffix<JobName>, true> {}
   interface SchedulableActions extends Record<ActionName, true> {}
 }
 

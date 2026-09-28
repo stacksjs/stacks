@@ -516,7 +516,21 @@ export interface Jobs {}
  * `job('SendWelcomeEmial')` is a compile error rather than a dispatch that
  * resolves to nothing.
  */
-export type JobName = keyof Jobs extends never ? string : keyof Jobs & string
+export type JobName = keyof Jobs extends never ? string : RegisteredJobName | WithoutJobSuffix<RegisteredJobName>
+
+type RegisteredJobName = keyof Jobs & string
+
+/**
+ * `'SendEmailJob'` → `'SendEmail'`, the other spelling {@link resolveJobFile}
+ * finds a job under.
+ *
+ * The runtime tries `<name>.ts` and then `<name>Job.ts`, because the mailer
+ * dispatches `SendEmail` while the framework ships `SendEmailJob.ts`. The type
+ * only knew the file names, so `job('SendEmail')` - what `mail.queue()` does,
+ * and what the framework's own tests call - was a compile error in every app
+ * whose registry had been filled. A generic, so it distributes over the union.
+ */
+type WithoutJobSuffix<T> = T extends `${infer Base}Job` ? (Base extends '' ? never : Base) : never
 
 /**
  * The payload the named job's handler declares.
@@ -531,8 +545,14 @@ export type JobName = keyof Jobs extends never ? string : keyof Jobs & string
  * while the registry is empty.
  */
 export type JobPayload<N extends JobName> = N extends keyof Jobs
-  ? (Jobs[N] extends Job<infer P> ? P : unknown)
-  : unknown
+  ? PayloadOf<Jobs[N]>
+  // The suffix-less spelling, resolved the way the runtime does: `<name>.ts`
+  // first (the branch above), then `<name>Job.ts`.
+  : `${N}Job` extends keyof Jobs
+    ? PayloadOf<Jobs[`${N}Job`]>
+    : unknown
+
+type PayloadOf<J> = J extends Job<infer P> ? P : unknown
 
 export function job<const N extends JobName>(name: N, payload?: JobPayload<N>): JobBuilder {
   return new JobBuilder(name, payload)
