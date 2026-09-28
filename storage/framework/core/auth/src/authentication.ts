@@ -607,10 +607,13 @@ export class Auth {
   }
 
   /**
-   * Request token using client credentials
-   * Similar to Laravel Passport's client credentials grant
+   * Authenticate an end user and an OAuth client, then issue a user token.
+   *
+   * This legacy password exchange is not the OAuth client credentials grant:
+   * it requires user credentials and the resulting token belongs to that user.
+   * New delegated integrations should use the authorization-code provider.
    */
-  public static async requestToken(credentials: AuthCredentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
+  public static async requestUserTokenWithClient(credentials: AuthCredentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
     const client = await this.verifiedClient(clientId, clientSecret)
     if (!client)
       throw new HttpError(401, 'Invalid client credentials')
@@ -630,6 +633,15 @@ export class Auth {
     const state = authStateOrNull()
     if (result && state) state.authUser = result.user
     return result ? { token: result.token } : null
+  }
+
+  /**
+   * @deprecated This is not an OAuth client credentials grant. Use
+   * {@link requestUserTokenWithClient} for the legacy password exchange, or the
+   * authorization-code provider for delegated access.
+   */
+  public static async requestToken(credentials: AuthCredentials, clientId: number, clientSecret: string): Promise<{ token: AuthToken } | null> {
+    return this.requestUserTokenWithClient(credentials, clientId, clientSecret)
   }
 
   // ============================================================================

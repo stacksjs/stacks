@@ -164,8 +164,11 @@ async function verifyClients(): Promise<void> {
     assert(row.secret !== owned.plainTextSecret, 'plaintext must only appear in the creation result')
     assert.equal(await verifyHash(owned.plainTextSecret, String(row.secret)), true)
     // Empty user credentials deliberately stop after public client validation.
+    assert.equal(await Auth.requestUserTokenWithClient({}, owned.client.id, owned.plainTextSecret), null)
+    await assert.rejects(Auth.requestUserTokenWithClient({}, owned.client.id, `${owned.plainTextSecret.slice(0, -1)}z`), /Invalid client credentials/)
+    // The old name remains a behavior-compatible alias while applications
+    // migrate. It must not silently become a different OAuth grant.
     assert.equal(await Auth.requestToken({}, owned.client.id, owned.plainTextSecret), null)
-    await assert.rejects(Auth.requestToken({}, owned.client.id, `${owned.plainTextSecret.slice(0, -1)}z`), /Invalid client credentials/)
   })
   if (process.env.STACKS_CLIENT_TEST_MODE === 'legacy') {
     await check('legacy client secrets remain usable', async () => {

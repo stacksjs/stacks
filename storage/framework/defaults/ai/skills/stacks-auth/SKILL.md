@@ -75,7 +75,8 @@ The `PersonalAccessToken` model maps the same table, so `owner.with('tokenable')
 lists exactly what `createToken` minted. It deliberately generates no CRUD
 routes: minting and revoking both carry semantics a generic route does not.
 - `Auth.once(credentials: AuthCredentials): Promise<boolean>` — one-time auth without token
-- `Auth.requestToken(credentials, clientId, clientSecret): Promise<{ token } | null>` — OAuth token request
+- `Auth.requestUserTokenWithClient(credentials, clientId, clientSecret): Promise<{ token } | null>` authenticates both a legacy OAuth client and an end user password, then issues a user token. It is not the client credentials grant.
+- `Auth.requestToken(...)` is the deprecated compatibility alias for that same legacy exchange. New delegated integrations use the authorization-code provider.
 
 ### User State
 - `Auth.user(): Promise<UserModel | undefined>` — get authenticated user from bearer token
