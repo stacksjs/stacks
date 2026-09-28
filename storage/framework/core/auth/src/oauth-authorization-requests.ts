@@ -49,6 +49,10 @@ export type OAuthAuthorizationRequestSessionResult<T>
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{43}$/
 const invalidRequest = { ok: false as const, reason: 'invalid_request' as const }
 
+export function isOAuthAuthorizationRequestId(value: string): boolean {
+  return REQUEST_ID_PATTERN.test(value)
+}
+
 function requestHash(value: string): string {
   return createHash('sha256').update(value, 'ascii').digest('hex')
 }
@@ -215,7 +219,7 @@ export async function loadOAuthAuthorizationRequestSession(
   requestId: string,
   browserSessionId: string,
 ): Promise<ValidatedOAuthAuthorizationRequest | null> {
-  if (!REQUEST_ID_PATTERN.test(requestId) || !validBrowserSession(browserSessionId))
+  if (!isOAuthAuthorizationRequestId(requestId) || !validBrowserSession(browserSessionId))
     return null
 
   const sql = sqlHelpers(getDatabaseDialect())
@@ -250,7 +254,7 @@ export async function withOAuthAuthorizationRequestSession<T>(
   browserSessionId: string,
   complete: (request: ValidatedOAuthAuthorizationRequest) => Promise<T>,
 ): Promise<OAuthAuthorizationRequestSessionResult<T>> {
-  if (!REQUEST_ID_PATTERN.test(requestId) || !validBrowserSession(browserSessionId))
+  if (!isOAuthAuthorizationRequestId(requestId) || !validBrowserSession(browserSessionId))
     return invalidRequest
 
   const sql = sqlHelpers(getDatabaseDialect())

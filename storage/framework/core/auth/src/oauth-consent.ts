@@ -7,7 +7,11 @@ import {
 } from './oauth-authorization'
 import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { issueAuthorizationCode } from './oauth-authorization-codes'
-import { loadOAuthAuthorizationRequestSession, withOAuthAuthorizationRequestSession } from './oauth-authorization-requests'
+import {
+  isOAuthAuthorizationRequestId,
+  loadOAuthAuthorizationRequestSession,
+  withOAuthAuthorizationRequestSession,
+} from './oauth-authorization-requests'
 import { loadOAuthAuthorizationClient, loadOAuthAuthorizationClientDetails } from './oauth-client-registration'
 import { createOAuthGrant } from './oauth-grants'
 
@@ -65,6 +69,20 @@ export interface OAuthAuthorizationConsentView {
   }>
 }
 
+export interface OAuthAuthorizationConsentRequest {
+  requestId: string
+  decision: 'approve' | 'deny'
+}
+
+export class OAuthAuthorizationConsentRequestError extends Error {
+  readonly code = 'invalid_request' as const
+
+  constructor(message: string) {
+    super(message)
+    this.name = 'OAuthAuthorizationConsentRequestError'
+  }
+}
+
 interface StoredRememberedConsent {
   scopes: string
   resources: string
@@ -102,6 +120,31 @@ function includesResourceBindings(
     const approvedIndex = approvedResources.indexOf(resource)
     return approvedIndex >= 0 && approvedAudiences[approvedIndex] === requestedAudiences[index]
   })
+}
+
+function consentParameter(params: URLSearchParams, name: string): string {
+  const values = params.getAll(name)
+  if (values.length !== 1 || values[0] === '')
+    throw new OAuthAuthorizationConsentRequestError(`OAuth consent parameter must appear exactly once: ${name}`)
+  return values[0]!
+}
+
+/** Parse only the opaque handle and decision from a CSRF-verified form body. */
+export function parseOAuthAuthorizationConsentRequest(
+  body: string | URLSearchParams,
+): OAuthAuthorizationConsentRequest {
+  const encoded = typeof body === 'string' ? body : body.toString()
+  if (encoded.length > 4096)
+    throw new OAuthAuthorizationConsentRequestError('OAuth consent request is too large.')
+
+  const params = typeof body === 'string' ? new URLSearchParams(body) : body
+  const requestId = consentParameter(params, 'request_id')
+  const decision = consentParameter(params, 'decision')
+  if (!isOAuthAuthorizationRequestId(requestId))
+    throw new OAuthAuthorizationConsentRequestError('OAuth consent request identifier is invalid.')
+  if (decision !== 'approve' && decision !== 'deny')
+    throw new OAuthAuthorizationConsentRequestError('OAuth consent decision is invalid.')
+  return { requestId, decision }
 }
 
 /** Build consent-safe display data without returning callback or PKCE fields. */
