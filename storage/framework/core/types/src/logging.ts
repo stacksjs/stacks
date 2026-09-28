@@ -96,6 +96,38 @@ export interface LogTransport {
 }
 
 /**
+ * LogHQ delivery configured alongside the ordinary console and file logger.
+ *
+ * The ingest key selects the LogHQ project. `project` is also attached to each
+ * entry as searchable context, which is useful when one key receives logs from
+ * more than one Stacks process.
+ */
+export interface LogHqLoggingOptions {
+  /** Project ingest key. An empty key disables the transport. */
+  key?: string
+  /** Ingest origin for a self-hosted LogHQ instance. */
+  baseUrl?: string
+  /** Searchable project label attached to every entry. */
+  project?: string
+  /** Minimum severity delivered to LogHQ. */
+  level?: LogLevel
+  /** Master switch. The environment allowlist still applies when true. */
+  enabled?: boolean
+  /** Environment labels permitted to transmit. */
+  environments?: readonly string[]
+  /** Flush when this many records are queued. */
+  batchSize?: number
+  /** Maximum time between flushes in milliseconds. Zero disables the timer. */
+  flushInterval?: number
+  /** Maximum records retained during a delivery outage. */
+  maxQueueSize?: number
+  /** Per-request timeout in milliseconds. */
+  timeout?: number
+  /** Delivery attempts before a batch is discarded. */
+  maxRetries?: number
+}
+
+/**
  * **Logging Options**
  *
  * This configuration defines all of your logging options. Because Stacks is fully-typed, you
@@ -154,6 +186,14 @@ export interface LoggingOptions {
    * @default true
    */
   writeToFile?: boolean
+
+  /**
+   * **LogHQ**
+   *
+   * Remote log delivery. Supplying an ingest key registers the transport in
+   * an allowed environment; an empty key is a no-op.
+   */
+  loghq?: LogHqLoggingOptions
 
   /**
    * **Transports**

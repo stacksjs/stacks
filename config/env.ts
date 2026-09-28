@@ -30,6 +30,21 @@ const envSchema = defineEnv({
     default: 'base64:1234567890',
   },
 
+  LOGHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LOGHQ_BASE_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LOGHQ_PROJECT: {
+    validation: schema.string(),
+    default: '',
+  },
+
   PORT: {
     validation: schema.number(),
     default: 3000,

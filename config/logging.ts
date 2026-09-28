@@ -1,5 +1,23 @@
-import type { LoggingConfig } from '@stacksjs/types'
+import type { LogHqLoggingOptions, LoggingConfig } from '@stacksjs/types'
+import { env, initializeIntegration, REMOTE_TELEMETRY_ENVIRONMENTS } from '@stacksjs/env'
+import { createLogHqTransport } from '@stacksjs/logging/loghq'
 import { storagePath } from '@stacksjs/path'
+
+const loghq = {
+  key: env.LOGHQ_KEY,
+  baseUrl: env.LOGHQ_BASE_URL || undefined,
+  project: env.LOGHQ_PROJECT || env.APP_NAME,
+  level: 'info',
+  environments: REMOTE_TELEMETRY_ENVIRONMENTS,
+} satisfies LogHqLoggingOptions
+
+const loghqInitialization = loghq.key
+  ? initializeIntegration(loghq, ({ environment }) => createLogHqTransport({ ...loghq, environment }))
+  : null
+
+const remoteTransport = loghqInitialization?.initialized
+  ? loghqInitialization.value
+  : null
 
 /**
  * **Logging Configuration**
@@ -8,7 +26,7 @@ import { storagePath } from '@stacksjs/path'
  * may hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
-export default {
+export const loggingConfig = {
   /**
    * **Log File Path**
    *
@@ -28,6 +46,15 @@ export default {
    * @default 'storage/logs/deployments.log'
    */
   deploymentsPath: storagePath('logs/deployments.log'),
+
+  /**
+   * **LogHQ**
+   *
+   * Set `LOGHQ_KEY` to ship logs from production and staging. Local, test and
+   * CI processes do not construct the transport. `LOGHQ_BASE_URL` is only for
+   * a self-hosted instance; `LOGHQ_PROJECT` adds a searchable project label.
+   */
+  loghq,
 
   /**
    * **Transports**
@@ -52,5 +79,7 @@ export default {
    *
    * @default []
    */
-  transports: [],
+  transports: remoteTransport ? [remoteTransport] : [],
 } satisfies LoggingConfig
+
+export default loggingConfig

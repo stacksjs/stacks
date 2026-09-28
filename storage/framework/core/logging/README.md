@@ -33,6 +33,37 @@ echo('some echo message')
 
 Learn more in the docs.
 
+## LogHQ
+
+Stacks includes a buffered LogHQ transport. Set the ingest key and the default
+logging config registers it in production and staging:
+
+```env
+LOGHQ_KEY=loghq_your_project_key
+```
+
+`LOGHQ_BASE_URL` targets a self-hosted LogHQ instance. `LOGHQ_PROJECT` adds a
+searchable project label to every entry and otherwise defaults to `APP_NAME`.
+An empty key, or an environment outside the configured allowlist, creates no
+transport, timer, queue, or request.
+
+The transport buffers on the caller path and drains through `log.flush()`. Its
+network failures are contained and reported only through the SDK's optional
+console diagnostics, never back through `log`, so a delivery failure cannot
+re-enter the transport.
+
+For direct configuration, use the public adapter:
+
+```ts
+import { createLogHqTransport } from '@stacksjs/logging/loghq'
+
+const transport = createLogHqTransport({
+  key: process.env.LOGHQ_KEY,
+  environment: 'production',
+  level: 'debug',
+})
+```
+
 ## 🧪 Testing
 
 ```bash
