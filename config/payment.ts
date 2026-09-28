@@ -14,6 +14,9 @@ export default {
   stripe: {
     publishableKey: env.STRIPE_PUBLISHABLE_KEY || '',
     secretKey: env.STRIPE_SECRET_KEY || '',
+    // Verifies the account's webhook deliveries (checkout, subscriptions,
+    // invoices) - the signing secret of the endpoint in your Stripe dashboard.
+    webhookSecret: env.STRIPE_WEBHOOK_SECRET || '',
   },
 
   /**

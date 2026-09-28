@@ -283,6 +283,11 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  STRIPE_WEBHOOK_SECRET: {
+    validation: schema.string(),
+    default: '',
+  },
+
   STRIPE_CONNECT_ENABLED: {
     validation: schema.boolean(),
     default: false,
