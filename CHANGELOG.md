@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.19...v0.75.20)
+
+## 🐛 Bug Fixes
+
+- **buddy**: upgrade no longer resets .claude/launch.json ([d03e05d](https://github.com/stacksjs/stacks/commit/d03e05d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.18...v0.75.19)
 
 ## 🐛 Bug Fixes
