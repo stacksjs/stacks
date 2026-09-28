@@ -68,3 +68,29 @@ describe('resolveDesktopLauncher', () => {
     expect(typeof resolveDesktopLauncher()).toBe('string')
   })
 })
+
+describe('desktopLauncherCompileArgs', () => {
+  // Compiles a real launcher and starts it from a directory whose bunfig.toml
+  // preloads a package that does not exist and whose .env sets a variable -
+  // an app's project directory, in miniature. The launcher must ignore both.
+  test('a compiled launcher ignores the bunfig.toml and .env of its working directory', async () => {
+    const { desktopLauncherCompileArgs } = await import('../src/index')
+    const root = project(false)
+    const entry = join(root, 'launcher.ts')
+    const outfile = join(root, 'launcher-bin')
+    writeFileSync(entry, 'console.log(`ran:${process.env.FROM_CWD_DOTENV ?? "clean"}`)\n')
+
+    const build = Bun.spawnSync([process.execPath, ...desktopLauncherCompileArgs({ entry, outfile, minify: false })])
+    expect(build.exitCode).toBe(0)
+
+    const cwd = join(root, 'app-project')
+    mkdirSync(cwd)
+    writeFileSync(join(cwd, 'bunfig.toml'), 'preload = ["@stacksjs/not-installed/plugin.js"]\n')
+    writeFileSync(join(cwd, '.env'), 'FROM_CWD_DOTENV=leaked\n')
+
+    const run = Bun.spawnSync([outfile], { cwd, env: { PATH: process.env.PATH, HOME: process.env.HOME } })
+    expect(run.stderr.toString()).not.toContain('preload not found')
+    expect(run.stdout.toString().trim()).toBe('ran:clean')
+    expect(run.exitCode).toBe(0)
+  }, 60_000)
+})

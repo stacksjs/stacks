@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, hasUserlandDesktopLauncher, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
+import { assertDesktopReleaseChannel, desktopLauncherCompileArgs, hasUserlandDesktopLauncher, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 const outputDir = storagePath('framework/desktop-dist')
@@ -74,15 +74,7 @@ if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSo
 const minify = process.env.DESKTOP_MINIFY !== 'false'
 const launcherEntry = resolveDesktopLauncher(projectPath())
 await runBuildStep(
-  [
-    'bun',
-    'build',
-    '--compile',
-    ...(minify ? ['--minify'] : []),
-    launcherEntry,
-    '--outfile',
-    join(outputDir, launcherName),
-  ],
+  ['bun', ...desktopLauncherCompileArgs({ entry: launcherEntry, outfile: join(outputDir, launcherName), minify })],
   { cwd: projectPath(), describe: 'Compiling the desktop launcher' },
 )
 

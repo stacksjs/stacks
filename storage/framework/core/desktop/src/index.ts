@@ -119,6 +119,37 @@ export function hasUserlandDesktopLauncher(projectRoot: string = process.cwd()):
  * exists rather than assuming the monorepo layout, which is what previously
  * made desktop builds impossible outside this repo.
  */
+export interface DesktopLauncherCompileOptions {
+  entry: string
+  outfile: string
+  minify?: boolean
+}
+
+/**
+ * The `bun build` arguments that compile a desktop launcher.
+ *
+ * A compiled executable autoloads `bunfig.toml` and `.env` from its working
+ * directory by default, which is wrong for one that ships to users: its cwd
+ * is wherever it happens to be started. Launched from an app's project
+ * directory - by launchd with a `WorkingDirectory`, `open` from a terminal,
+ * or a developer testing the build - it applied the app's bunfig preloads to
+ * itself and died with `preload not found "@stacksjs/env/plugin.js"` before
+ * running a line. From any other directory it silently loaded that
+ * directory's `.env` into the launcher and everything it spawns.
+ */
+export function desktopLauncherCompileArgs(options: DesktopLauncherCompileOptions): string[] {
+  return [
+    'build',
+    '--compile',
+    ...(options.minify === false ? [] : ['--minify']),
+    '--no-compile-autoload-bunfig',
+    '--no-compile-autoload-dotenv',
+    options.entry,
+    '--outfile',
+    options.outfile,
+  ]
+}
+
 export function resolveDesktopLauncher(projectRoot: string = process.cwd()): string {
   const userland = join(projectRoot, USERLAND_LAUNCHER)
   if (existsSync(userland))
