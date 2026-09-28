@@ -12,7 +12,10 @@ interface DesktopManifest {
 }
 
 const bundleDir = dirname(process.execPath)
-const manifestPath = join(bundleDir, 'desktop.json')
+// Contents/Resources in a bundle build:dmg made (codesign treats anything in
+// Contents/MacOS as code); beside the executable in desktop-dist and older bundles.
+const manifestPath = [join(bundleDir, '..', 'Resources', 'desktop.json'), join(bundleDir, 'desktop.json')]
+  .find(candidate => existsSync(candidate)) ?? join(bundleDir, 'desktop.json')
 const craftPath = join(bundleDir, process.platform === 'win32' ? 'craft-runtime.exe' : 'craft-runtime')
 
 if (!existsSync(manifestPath))

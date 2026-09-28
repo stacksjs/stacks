@@ -440,7 +440,9 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
 
   copyFileSync(launcher, join(macosDir, 'stacks-desktop'))
   copyFileSync(runtime, join(macosDir, 'craft-runtime'))
-  copyFileSync(manifest, join(macosDir, 'desktop.json'))
+  // Resources, not MacOS: codesign treats everything in MacOS as code and
+  // refuses to seal a bundle with unsigned data beside the executable.
+  copyFileSync(manifest, join(resourcesDir, 'desktop.json'))
   copyFileSync(config.provisioningProfile, join(contents, 'embedded.provisionprofile'))
   chmodSync(join(macosDir, 'stacks-desktop'), 0o755)
   chmodSync(join(macosDir, 'craft-runtime'), 0o755)

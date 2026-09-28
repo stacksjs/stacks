@@ -351,6 +351,68 @@ export interface BundledRuntime {
  * Size first because it is a `stat`, then the marker, so the expensive check
  * only runs on the handful of files large enough to be a runtime at all.
  */
+/** Mach-O magic numbers: thin 32/64-bit in either byte order, and universal. */
+const MACH_O_MAGIC = new Set([0xFEEDFACE, 0xCEFAEDFE, 0xFEEDFACF, 0xCFFAEDFE, 0xCAFEBABE, 0xBEBAFECA])
+
+/** Whether `path` is a Mach-O executable, by its first four bytes. */
+export function isMachO(path: string): boolean {
+  try {
+    const fd = openSync(path, 'r')
+    try {
+      const head = Buffer.alloc(4)
+      if (readSync(fd, head, 0, 4, 0) < 4)
+        return false
+      return MACH_O_MAGIC.has(head.readUInt32BE(0))
+    }
+    finally {
+      closeSync(fd)
+    }
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * Where a file `build:desktop` emitted belongs inside a `.app`.
+ *
+ * `codesign` treats everything in `Contents/MacOS` as code. The manifest,
+ * provenance and checksums used to sit there beside the launcher, so signing
+ * the launcher or the bundle failed with "code object is not signed at all.
+ * In subcomponent: .../Contents/MacOS/desktop.json" - no bundle this produced
+ * could ever be signed, which went unnoticed because nothing had signed one.
+ * Executables go in MacOS; everything else in Resources.
+ */
+export function bundleDirectoryFor(path: string): 'MacOS' | 'Resources' {
+  return isMachO(path) ? 'MacOS' : 'Resources'
+}
+
+export interface CodesignOptions {
+  identity: string
+  target: string
+  entitlements?: string
+}
+
+/**
+ * The `codesign` invocation for one target in a distributable bundle:
+ * hardened runtime (notarization rejects anything without it) and a secure
+ * timestamp (notarization also rejects "The signature does not include a
+ * secure timestamp"). Ad-hoc signing (`-`) cannot be timestamped.
+ */
+export function codesignArgs(options: CodesignOptions): string[] {
+  return [
+    'codesign',
+    '--force',
+    options.identity === '-' ? '--timestamp=none' : '--timestamp',
+    '--options',
+    'runtime',
+    ...(options.entitlements ? ['--entitlements', options.entitlements] : []),
+    '--sign',
+    options.identity,
+    options.target,
+  ]
+}
+
 export function looksLikeBunExecutable(
   path: string,
   read: (path: string) => { size: number, tail: string } | null = readTail,

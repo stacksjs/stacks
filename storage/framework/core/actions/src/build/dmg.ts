@@ -4,7 +4,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { describeRuntimeDuplication, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -16,7 +16,11 @@ import { runBuildStep } from './run-build-step'
  *
  * The result is UNSIGNED unless a Developer ID identity is supplied, so
  * Gatekeeper will refuse it on first open (right-click → Open, once). Set
- * `DESKTOP_SIGNING_IDENTITY` to sign, and notarize separately for distribution.
+ * `DESKTOP_SIGNING_IDENTITY` to sign (a certificate name, or its SHA-1 when two
+ * share a name), and `DESKTOP_NOTARY_PROFILE` - a `xcrun notarytool
+ * store-credentials` keychain profile - to notarize and staple the DMG so it
+ * opens without a warning on other Macs. `app/Desktop/Entitlements.plist`, if
+ * present, is applied to every executable.
  */
 
 if (process.platform !== 'darwin')
@@ -37,6 +41,7 @@ const appName = process.env.DESKTOP_APP_NAME || manifest.title || process.env.AP
 const bundleId = process.env.DESKTOP_BUNDLE_ID || `sh.stacks.${appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 const version = process.env.DESKTOP_APP_VERSION || '0.0.0'
 const signingIdentity = process.env.DESKTOP_SIGNING_IDENTITY
+const notaryProfile = process.env.DESKTOP_NOTARY_PROFILE
 
 const outputDir = storagePath('framework/desktop-dmg')
 if (existsSync(outputDir)) rmSync(outputDir, { recursive: true })
@@ -76,7 +81,10 @@ const launcherName = appName
 const bundledFiles = readdirSync(desktopDist).filter(name => statSync(join(desktopDist, name)).isFile())
 for (const file of bundledFiles) {
   const target = file === builtLauncher ? launcherName : file
-  await runBuildStep(['cp', join(desktopDist, file), join(macosDir, target)], {
+  // Executables in MacOS, the manifest and checksums in Resources: codesign
+  // treats everything in MacOS as code and refuses to sign beside data.
+  const directory = bundleDirectoryFor(join(desktopDist, file)) === 'MacOS' ? macosDir : resourcesDir
+  await runBuildStep(['cp', join(desktopDist, file), join(directory, target)], {
     cwd: projectPath(),
     describe: `Copying ${file} into the bundle`,
   })
@@ -212,15 +220,22 @@ if (signingIdentity) {
   // Inside-out: every nested executable, then the launcher, then the bundle.
   // Signing the parent first invalidates its seal the moment an inner binary is
   // signed after it — and an app-owned launcher may ship several.
-  const nested = bundledFiles
-    .filter(name => name !== builtLauncher && !name.endsWith('.json') && !name.endsWith('.sha256'))
+  const nested = readdirSync(macosDir)
+    .filter(name => name !== launcherName)
     .map(name => join(macosDir, name))
+
+  // An app's own entitlements - Apple Events for an app that scripts another,
+  // say - go on every executable. Re-signing also drops whatever a bundled
+  // runtime arrived with: the published Craft binary carries the App Sandbox
+  // entitlement, under which it traps at launch outside a sandboxed bundle.
+  const declaredEntitlements = appPath('Desktop/Entitlements.plist')
+  const entitlements = existsSync(declaredEntitlements) ? declaredEntitlements : undefined
 
   // A failed `codesign` used to be invisible: the DMG was still built and
   // still announced as signed, and the first sign that it was not came from
   // Gatekeeper on someone else's Mac.
   for (const target of [...nested, join(macosDir, launcherName), appDir]) {
-    await runBuildStep(['codesign', '--force', '--options', 'runtime', '--sign', signingIdentity, target], {
+    await runBuildStep(codesignArgs({ identity: signingIdentity, target, entitlements }), {
       cwd: staging,
       describe: `Signing ${basename(target)}`,
     })
@@ -245,7 +260,36 @@ if (created.isErr)
 rmSync(staging, { recursive: true, force: true })
 rmSync(scratch, { recursive: true, force: true })
 
+if (signingIdentity) {
+  // The image is signed too: Gatekeeper checks the DMG a person opens before
+  // it ever looks at the app inside.
+  await runBuildStep(['codesign', '--force', '--timestamp', '--sign', signingIdentity, dmgPath], {
+    cwd: outputDir,
+    describe: 'Signing the DMG',
+  })
+}
+
+if (notaryProfile) {
+  if (!signingIdentity)
+    throw new Error('DESKTOP_NOTARY_PROFILE needs DESKTOP_SIGNING_IDENTITY: Apple only notarizes signed code.')
+  log.info('Notarizing (Apple usually answers within a few minutes)...')
+  // `--wait` exits 0 for "Invalid" too, so the status line is what decides.
+  const submitted = Bun.spawnSync(['xcrun', 'notarytool', 'submit', dmgPath, '--keychain-profile', notaryProfile, '--wait'], { stderr: 'pipe' })
+  const report = `${submitted.stdout.toString()}${submitted.stderr.toString()}`
+  const status = report.match(/status: (\w[\w ]*)/g)?.pop()?.replace('status: ', '')
+  if (submitted.exitCode !== 0 || status !== 'Accepted') {
+    console.error(report.trim())
+    const id = report.match(/id: ([0-9a-f-]{36})/)?.[1]
+    throw new Error(`Notarization ${status ?? 'failed'}${id ? ` - see \`xcrun notarytool log ${id} --keychain-profile ${notaryProfile}\`` : ''}`)
+  }
+  await runBuildStep(['xcrun', 'stapler', 'staple', dmgPath], { cwd: outputDir, describe: 'Stapling the notarization ticket' })
+  log.success('Notarized and stapled')
+}
+
 log.success(`Built ${dmgPath}`)
 if (!signingIdentity) {
-  log.info('Unsigned build: Gatekeeper blocks the first launch. Right-click the app and choose Open, or set DESKTOP_SIGNING_IDENTITY and notarize before distributing.')
+  log.info('Unsigned build: Gatekeeper blocks the first launch. Right-click the app and choose Open, or set DESKTOP_SIGNING_IDENTITY and DESKTOP_NOTARY_PROFILE before distributing.')
+}
+else if (!notaryProfile) {
+  log.info('Signed but not notarized: other Macs still warn on first open. Set DESKTOP_NOTARY_PROFILE to notarize.')
 }
