@@ -33,6 +33,12 @@ describe('config defaults', () => {
     })
   })
 
+  describe('analytics defaults', () => {
+    test('uses the first-party AnalyticsHQ driver', () => {
+      expect(defaults.analytics?.driver).toBe('analyticshq')
+    })
+  })
+
   describe('database defaults', () => {
     test('has default connection set to sqlite', () => {
       expect(defaults.database).toBeDefined()

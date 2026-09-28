@@ -52,6 +52,7 @@ export const AUTH_TABLES: readonly string[] = [
   'oauth_clients',
   'oauth_grants',
   'oauth_auth_codes',
+  'oauth_authorization_requests',
   'oauth_access_tokens',
   'oauth_refresh_tokens',
   'password_resets',
@@ -126,6 +127,23 @@ export function usersStripeIdSql(): string {
 }
 
 /**
+ * Authorization-server registration policy stored on provider clients.
+ *
+ * Nullable upgrades preserve legacy personal/password clients. Provider
+ * registration requires the complete set and treats a partial row as invalid.
+ */
+export function oauthClientProviderColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_clients ADD COLUMN client_type VARCHAR(20)`,
+    `ALTER TABLE oauth_clients ADD COLUMN redirect_uris TEXT`,
+    `ALTER TABLE oauth_clients ADD COLUMN grant_types TEXT`,
+    `ALTER TABLE oauth_clients ADD COLUMN token_endpoint_auth_method VARCHAR(32)`,
+    `ALTER TABLE oauth_clients ADD COLUMN allowed_scopes TEXT`,
+    `ALTER TABLE oauth_clients ADD COLUMN allowed_resources TEXT`,
+  ]
+}
+
+/**
  * The polymorphic owner columns on `oauth_access_tokens`.
  *
  * A token used to belong to a user and only a user: the table's owner column
@@ -192,6 +210,31 @@ export function oauthAccessTokenDeviceColumnsSql(): string[] {
   return [
     `ALTER TABLE oauth_access_tokens ADD COLUMN user_agent VARCHAR(255)`,
     `ALTER TABLE oauth_access_tokens ADD COLUMN ip_address VARCHAR(45)`,
+  ]
+}
+
+/**
+ * Nullable delegation metadata for OAuth-provider access tokens.
+ *
+ * Personal access tokens deliberately leave every column null. A provider
+ * token fills all four from the immutable consent grant, which lets resource
+ * authorization distinguish delegated access from a first-party session
+ * without overloading token scopes or the polymorphic owner columns.
+ */
+export function oauthAccessTokenDelegationColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_access_tokens ADD COLUMN oauth_grant_id VARCHAR(32)`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN resources TEXT`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN audiences TEXT`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN workspace_id VARCHAR(255)`,
+  ]
+}
+
+/** Nullable rotation-family metadata used only by delegated refresh tokens. */
+export function oauthRefreshTokenDelegationColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_refresh_tokens ADD COLUMN family_id VARCHAR(64)`,
+    `ALTER TABLE oauth_refresh_tokens ADD COLUMN parent_id BIGINT`,
   ]
 }
 
@@ -274,6 +317,12 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         secret VARCHAR(100),
         provider VARCHAR(255),
         redirect VARCHAR(2000) NOT NULL,
+        client_type VARCHAR(20),
+        redirect_uris TEXT,
+        grant_types TEXT,
+        token_endpoint_auth_method VARCHAR(32),
+        allowed_scopes TEXT,
+        allowed_resources TEXT,
         personal_access_client BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         password_client BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
@@ -289,6 +338,15 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     }
     catch (error) {
       if (!isDuplicateColumnError(error)) throw error
+    }
+
+    for (const alterSql of oauthClientProviderColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
+      }
     }
 
     if (options.verbose) log.info('Creating oauth_grants table...')
@@ -362,6 +420,38 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       }
     }
 
+    if (options.verbose) log.info('Creating oauth_authorization_requests table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_authorization_requests (
+        request_hash VARCHAR(64) PRIMARY KEY,
+        browser_session_hash VARCHAR(64) NOT NULL,
+        client_id BIGINT NOT NULL,
+        client_type VARCHAR(20) NOT NULL,
+        redirect_uri VARCHAR(2000) NOT NULL,
+        scopes TEXT NOT NULL,
+        resources TEXT NOT NULL,
+        audiences TEXT NOT NULL,
+        state TEXT,
+        code_challenge VARCHAR(43) NOT NULL,
+        code_challenge_method VARCHAR(10) NOT NULL,
+        expires_at ${datetime} NOT NULL,
+        consumed_at ${nullableTimestamp},
+        created_at ${datetime} DEFAULT ${utcNow}
+      )
+    `).execute()
+
+    for (const statement of [
+      'CREATE INDEX IF NOT EXISTS idx_oauth_authorization_requests_client_id ON oauth_authorization_requests(client_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_authorization_requests_expires_at ON oauth_authorization_requests(expires_at)',
+    ]) {
+      try {
+        await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute()
+      }
+      catch (error) {
+        if (!isDuplicateIndexError(error)) throw error
+      }
+    }
+
     if (options.verbose) log.info('Creating oauth_access_tokens table...')
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_access_tokens (
@@ -381,6 +471,10 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         token TEXT NOT NULL,
         name VARCHAR(255),
         scopes TEXT,
+        oauth_grant_id VARCHAR(32),
+        resources TEXT,
+        audiences TEXT,
+        workspace_id VARCHAR(255),
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         expires_at ${nullableTimestamp},
         -- What the browser called itself and where it came from, so a person
@@ -410,6 +504,17 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       }
     }
 
+    // Delegated OAuth tokens bind to an immutable grant and its authorization
+    // context. Existing personal tokens remain valid with null metadata.
+    for (const alterSql of oauthAccessTokenDelegationColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
+      }
+    }
+
     // The polymorphic owner pair, then the backfill that gives every existing
     // token an owner in it. Order matters and the backfill is not optional: the
     // reads switched to these columns, so a row left with an empty
@@ -435,11 +540,22 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         ${pkColumn},
         access_token_id INTEGER NOT NULL,
         token TEXT NOT NULL,
+        family_id VARCHAR(64),
+        parent_id BIGINT,
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         expires_at ${nullableTimestamp},
         created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
+
+    for (const alterSql of oauthRefreshTokenDelegationColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
+      }
+    }
 
     await createTokenIndex('idx_oauth_refresh_tokens_token', 'oauth_refresh_tokens', 'token')
 
@@ -449,7 +565,9 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // Run after the legacy owner-column upgrade as well as on fresh installs.
     for (const statement of [
       'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_owner ON oauth_access_tokens(tokenable_type, tokenable_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_access_tokens_grant_id ON oauth_access_tokens(oauth_grant_id)',
       'CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_access_token_id ON oauth_refresh_tokens(access_token_id)',
+      'CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_family_id ON oauth_refresh_tokens(family_id)',
     ]) {
       try { await db.unsafe(indexSqlForDialect(statement, dbDriver)).execute() }
       catch (error) { if (!isDuplicateIndexError(error)) throw error }
@@ -645,17 +763,23 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // CREATE IF NOT EXISTS cannot repair an arbitrary partial table. Verify
     // the token API's required columns before reporting a usable auth schema.
     // LIMIT 0 checks the schema without reading any stored credentials.
-    await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, personal_access_client,
-      password_client, revoked, created_at, updated_at FROM oauth_clients LIMIT 0`).execute()
+    await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, client_type, redirect_uris,
+      grant_types, token_endpoint_auth_method, allowed_scopes, allowed_resources,
+      personal_access_client, password_client, revoked, created_at, updated_at
+      FROM oauth_clients LIMIT 0`).execute()
     await db.unsafe(`SELECT id, client_id, subject_type, subject_id, scopes, resources, audiences,
       workspace_id, revoked_at, created_at, updated_at FROM oauth_grants LIMIT 0`).execute()
     await db.unsafe(`SELECT code_hash, grant_id, client_id, subject_type, subject_id, redirect_uri, scopes,
       resources, audiences, workspace_id, code_challenge, code_challenge_method, expires_at,
       consumed_at, created_at FROM oauth_auth_codes LIMIT 0`).execute()
+    await db.unsafe(`SELECT request_hash, browser_session_hash, client_id, client_type, redirect_uri,
+      scopes, resources, audiences, state, code_challenge, code_challenge_method,
+      expires_at, consumed_at, created_at FROM oauth_authorization_requests LIMIT 0`).execute()
     await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,
-      token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at
+      token, name, scopes, oauth_grant_id, resources, audiences, workspace_id, revoked, expires_at,
+      user_agent, ip_address, created_at, updated_at
       FROM oauth_access_tokens LIMIT 0`).execute()
-    await db.unsafe(`SELECT id, access_token_id, token, revoked, expires_at, created_at
+    await db.unsafe(`SELECT id, access_token_id, token, family_id, parent_id, revoked, expires_at, created_at
       FROM oauth_refresh_tokens LIMIT 0`).execute()
 
     if (options.verbose) log.info('Ensuring personal access client exists...')

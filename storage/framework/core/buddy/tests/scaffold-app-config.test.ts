@@ -19,7 +19,7 @@ describe('the generated app config template', () => {
     // shipping stacksjs.com: each named the site (its description and redirect
     // domain, "The Stacks Blog", stacksjs.com/docs, the @stacksjs npm scope,
     // com.stacksjs.app) or counted its pages (lint baselines).
-    expect(templates.sort()).toEqual(['app.ts', 'blog.ts', 'buddy-bot.ts', 'cloud.ts', 'dns.ts', 'docs.ts', 'email.ts', 'library.ts', 'lint.ts', 'mobile.ts', 'team.ts'])
+    expect(templates.sort()).toEqual(['analytics.ts', 'app.ts', 'blog.ts', 'buddy-bot.ts', 'cloud.ts', 'dns.ts', 'docs.ts', 'email.ts', 'library.ts', 'lint.ts', 'mobile.ts', 'team.ts'])
   })
 
   test('contains no Stacks production ownership', () => {
@@ -58,11 +58,14 @@ describe('the generated app config template', () => {
   })
 
   test('keeps external infrastructure opt-in', () => {
+    const analytics = readFileSync(join(APP_CONFIG, 'analytics.ts'), 'utf8')
     const cloud = readFileSync(join(APP_CONFIG, 'cloud.ts'), 'utf8')
     const dns = readFileSync(join(APP_CONFIG, 'dns.ts'), 'utf8')
     const email = readFileSync(join(APP_CONFIG, 'email.ts'), 'utf8')
     const team = readFileSync(join(APP_CONFIG, 'team.ts'), 'utf8')
 
+    expect(analytics).toContain("driver: 'analyticshq'")
+    expect(analytics).toContain("siteId: ''")
     expect(cloud).toContain('APP_DOMAIN = env.APP_DOMAIN || undefined')
     expect(cloud).not.toContain('hostedZoneId')
     expect(dns).toContain('a: []')

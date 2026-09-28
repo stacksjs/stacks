@@ -8,10 +8,19 @@
  */
 import { isLocalDeployment } from '@stacksjs/env'
 
+/*
+ * Handed in by TestErrorAction's renderTemplate call, which spreads its
+ * `context` into the template scope - there is no `context` variable here.
+ * Undefined when the view fallback serves this file on its own. Read into a
+ * differently named list: a local `const scenarios = ...` shadows the injected
+ * one and the page lists nothing.
+ */
+declare const scenarios: Array<{ title: string, description: string, status: number, href: string }> | undefined
+
 if (!isLocalDeployment())
   notFound()
 
-const scenarios = typeof context !== 'undefined' && Array.isArray(context?.scenarios) ? context.scenarios : []
+const scenarioList = typeof scenarios !== 'undefined' && Array.isArray(scenarios) ? scenarios : []
 </script>
 
 <div class="mx-auto px-6 py-12 max-w-3xl">
@@ -21,7 +30,7 @@ const scenarios = typeof context !== 'undefined' && Array.isArray(context?.scena
   </p>
 
   <div class="grid gap-3">
-    @foreach(scenarios as scenario)
+    @foreach(scenarioList as scenario)
     <a
       href="{{ scenario.href }}"
       class="block p-4 bg-white dark:bg-white/[2%] border border-neutral-200 rounded-lg dark:border-white/10 hover:border-rose-500 transition-colors"

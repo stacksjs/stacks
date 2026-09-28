@@ -28,6 +28,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 const { createToken, findToken, refreshToken, tokens } = await import('../../src/tokens')
 const sql = sqlHelpers(dialect)
 const legacyBearer = 'synthetic-pre-upgrade-bearer'
+const legacyRefresh = 'synthetic-pre-upgrade-refresh'
 async function verifySetup(): Promise<void> {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
@@ -71,6 +72,16 @@ async function verifySetup(): Promise<void> {
     )`).execute()
     await db.insertInto('oauth_access_tokens').values({ user_id: 42, oauth_client_id: 37,
       token: createHash('sha256').update(legacyBearer).digest('hex'), name: 'existing', scopes: '["read"]' }).execute()
+    await db.unsafe(`CREATE TABLE oauth_refresh_tokens (
+      ${sql.pkColumn}, access_token_id INTEGER NOT NULL, token TEXT NOT NULL,
+      revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse}, expires_at ${sql.nullableTimestamp},
+      created_at ${sql.datetime} DEFAULT ${sql.utcNow}
+    )`).execute()
+    const legacyAccess = await db.selectFrom('oauth_access_tokens').select('id').executeTakeFirstOrThrow()
+    await db.insertInto('oauth_refresh_tokens').values({
+      access_token_id: legacyAccess.id,
+      token: createHash('sha256').update(legacyRefresh).digest('hex'),
+    }).execute()
   }
   if (mode === 'failed-backfill') {
     if (dialect === 'postgres') {
@@ -116,6 +127,12 @@ async function verifySetup(): Promise<void> {
     const activeClients = clients.filter(client => !client.revoked && client.personal_access_client)
     assert.equal(activeClients.length, 1, 'successful setup must provide one usable personal client')
     const client = activeClients[0]!
+    assert.equal(client.client_type, null, 'legacy personal clients must not claim provider registration metadata')
+    assert.equal(client.redirect_uris, null)
+    assert.equal(client.grant_types, null)
+    assert.equal(client.token_endpoint_auth_method, null)
+    assert.equal(client.allowed_scopes, null)
+    assert.equal(client.allowed_resources, null)
     if (mode === 'legacy') {
       assert.equal(Number(client.id), 37)
       assert.equal(client.secret, 'synthetic-existing-secret')
@@ -130,13 +147,38 @@ async function verifySetup(): Promise<void> {
     assert(previous, 'existing access tokens must remain usable after setup')
     assert.deepEqual(previous.scopes, ['read'])
     assert((await tokens(42)).some(token => Number(token.id) === Number(previous.id)), 'existing tokens must receive their polymorphic owner backfill')
+    const previousRefresh = await db.selectFrom('oauth_refresh_tokens')
+      .where('token', '=', createHash('sha256').update(legacyRefresh).digest('hex'))
+      .selectAll()
+      .executeTakeFirstOrThrow() as Record<string, unknown>
+    assert.equal(previousRefresh.family_id, null, 'legacy refresh rows must survive without claiming a delegated family')
+    assert.equal(previousRefresh.parent_id, null, 'legacy refresh rows must survive without claiming a delegated parent')
   }
   const pair = await createToken(42, 'after-setup', ['read'], { userAgent: 'setup-fixture', ipAddress: '127.0.0.1' })
-  const issued = await db.selectFrom('oauth_access_tokens').where('id', '=', pair.accessToken.id).selectAll().executeTakeFirstOrThrow()
+  const issued = await db.selectFrom('oauth_access_tokens').where('id', '=', pair.accessToken.id).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
   assert.equal(Number(issued.oauth_client_id), Number(clientBefore!.id), 'issuance must use the active client established by setup')
-  assert(await findToken(pair.plainTextToken))
+  assert.equal(issued.oauth_grant_id, null, 'personal tokens must not claim a delegated grant')
+  assert.equal(issued.resources, null, 'personal tokens must not inherit delegated resources')
+  assert.equal(issued.audiences, null, 'personal tokens must not inherit delegated audiences')
+  assert.equal(issued.workspace_id, null, 'personal tokens must not inherit a delegated workspace')
+  const resolvedPersonalToken = await findToken(pair.plainTextToken)
+  assert(resolvedPersonalToken)
+  assert.equal(resolvedPersonalToken.grantId, null)
+  assert.deepEqual(resolvedPersonalToken.resources, [])
+  assert.deepEqual(resolvedPersonalToken.audiences, [])
+  assert.equal(resolvedPersonalToken.workspaceId, null)
   const replacement = await refreshToken(pair.refreshToken!)
   assert(await findToken(replacement.plainTextToken))
+  const personalRefresh = await db.selectFrom('oauth_refresh_tokens')
+    .where('access_token_id', '=', replacement.accessToken.id)
+    .selectAll()
+    .executeTakeFirstOrThrow() as Record<string, unknown>
+  assert.equal(personalRefresh.family_id, null, 'personal refresh tokens must not claim a delegated family')
+  assert.equal(personalRefresh.parent_id, null, 'personal refresh tokens must not claim a delegated parent')
+  await db.unsafe(`SELECT request_hash, browser_session_hash, client_id, client_type, redirect_uri,
+    scopes, resources, audiences, state, code_challenge, code_challenge_method,
+    expires_at, consumed_at, created_at FROM oauth_authorization_requests LIMIT 0`).execute()
+  await db.unsafe('SELECT id, access_token_id, token, family_id, parent_id, revoked, expires_at, created_at FROM oauth_refresh_tokens LIMIT 0').execute()
   const user = await db.selectFrom('users').where('id', '=', 42).select(['email_verified_at', 'password_changed_at', 'two_factor_enabled']).executeTakeFirstOrThrow()
   assert.equal(Boolean(user.two_factor_enabled), false)
   assert.equal(user.password_changed_at, null)

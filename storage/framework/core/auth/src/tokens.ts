@@ -217,11 +217,24 @@ interface AccessTokenRow {
   ip_address: string | null
   user_agent: string | null
   oauth_client_id: number
+  oauth_grant_id: string | null
+  resources: string | null
+  audiences: string | null
+  workspace_id: string | null
+  grant_scopes: string | null
   password_changed_at: string | null
   access_token_id: number | null
   provider: string | null
 }
 
+function delegatedContext(row: AccessTokenRow): Pick<AccessToken, 'grantId' | 'resources' | 'audiences' | 'workspaceId'> {
+  return {
+    grantId: row.oauth_grant_id ?? null,
+    resources: row.oauth_grant_id ? parseScopes(row.resources) : [],
+    audiences: row.oauth_grant_id ? parseScopes(row.audiences) : [],
+    workspaceId: row.oauth_grant_id ? row.workspace_id ?? null : null,
+  }
+}
 
 export async function getPasswordChangedAt(
   ownerId: unknown,
@@ -326,9 +339,12 @@ export async function tokens(userId: number, tokenableType: string = DEFAULT_TOK
   `, [userId, tokenableType])
 
   return (rows as unknown as AccessTokenRow[]).map(row => ({
-    id: row.id,
-    userId: row.user_id,
-    clientId: row.oauth_client_id,
+    id: Number(row.id),
+    userId: Number(row.user_id),
+    subjectType: row.tokenable_type,
+    subjectId: Number(row.tokenable_id),
+    clientId: Number(row.oauth_client_id),
+    ...delegatedContext(row),
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
@@ -354,15 +370,36 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
   const hashedToken = bearerLookupHash(plainTextToken)
 
   const rows = await db.unsafe(`
-    SELECT * FROM oauth_access_tokens
-    WHERE token = ${param(1)}
-    AND revoked = ${boolFalse}
-    AND (expires_at IS NULL OR expires_at > ${appNow()})
+    SELECT t.*, g.scopes AS grant_scopes FROM oauth_access_tokens t
+    LEFT JOIN oauth_grants g ON g.id = t.oauth_grant_id
+    LEFT JOIN oauth_clients c ON c.id = g.client_id
+    WHERE t.token = ${param(1)}
+    AND t.revoked = ${boolFalse}
+    AND (t.expires_at IS NULL OR t.expires_at > ${appNow()})
+    AND (t.oauth_grant_id IS NULL OR (
+      g.id IS NOT NULL
+      AND c.revoked = ${boolFalse}
+      AND g.revoked_at IS NULL
+      AND g.client_id = t.oauth_client_id
+      AND g.subject_type = t.tokenable_type
+      AND g.subject_id = t.tokenable_id
+      AND g.resources = t.resources
+      AND g.audiences = t.audiences
+      AND (g.workspace_id = t.workspace_id OR (g.workspace_id IS NULL AND t.workspace_id IS NULL))
+    ))
     LIMIT 1
   `, [hashedToken])
 
   const row = (rows as unknown as AccessTokenRow[])[0]
   if (!row || !validTokenExpiry(row.expires_at)) return null
+  if (row.oauth_grant_id) {
+    const scopes = parseScopes(row.scopes)
+    const grantScopes = parseScopes(row.grant_scopes)
+    if (!scopes.length
+      || new Set(scopes).size !== scopes.length
+      || scopes.some(scope => typeof scope !== 'string' || !grantScopes.includes(scope)))
+      return null
+  }
 
   // Reject any token issued before the user last changed their password
   // (stacksjs/stacks#1957). This is the use-time backstop that makes the
@@ -371,9 +408,12 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     return null
 
   return {
-    id: row.id,
-    userId: row.user_id,
-    clientId: row.oauth_client_id,
+    id: Number(row.id),
+    userId: Number(row.user_id),
+    subjectType: row.tokenable_type,
+    subjectId: Number(row.tokenable_id),
+    clientId: Number(row.oauth_client_id),
+    ...delegatedContext(row),
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
     revoked: !!row.revoked,
@@ -754,7 +794,7 @@ export async function refreshToken(
     // access tokens from unrelated users can all share this client (#2631).
     const forUpdate = (isPostgres || isMysql) ? ' FOR UPDATE' : ''
     const refreshRows = await trx.unsafe(`
-      SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.name, t.scopes
+      SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.oauth_grant_id, t.name, t.scopes
       FROM oauth_refresh_tokens r
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
       WHERE ${selector}
@@ -771,6 +811,11 @@ export async function refreshToken(
     if (!refreshRow || refreshRow.access_token_id == null || !validTokenExpiry(refreshRow.expires_at)) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
+
+    // Delegated grants require their own client-authenticated refresh flow.
+    // Never let the legacy first-party endpoint strip grant/resource binding.
+    if (refreshRow.oauth_grant_id != null)
+      throw new HttpError(401, 'Invalid or expired refresh token')
 
     // The locking JOIN can wait after its statement snapshot saw an active
     // client. Recheck with a current shared lock before issuing, and retain
@@ -910,6 +955,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     AND EXISTS (
       SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
     )
+    AND t.oauth_grant_id IS NULL
     AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
     LIMIT 1
   `, [hashedRefreshToken])

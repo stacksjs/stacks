@@ -48,4 +48,19 @@ describe('errors/tester view', () => {
     expect(status).toBeUndefined()
     expect(html).toContain('Error Page Tester')
   })
+
+  // The 404 gate added a `<script server>` that assigned a local `scenarios`
+  // from a `context` the script never sees, shadowing the list TestErrorAction
+  // passes in. The page rendered, listing nothing.
+  it('lists the scenarios TestErrorAction passes in', async () => {
+    for (const key of KEYS)
+      delete process.env[key]
+    Object.assign(process.env, { APP_ENV: 'development', APP_URL: 'my-app.localhost' })
+    const { renderTemplate } = await import('@stacksjs/stx')
+    const html = String(await renderTemplate(VIEW, {
+      context: { scenarios: [{ title: 'Scenario Under Test', description: 'd', status: 500, href: '/test-error?type=probe' }] },
+    }))
+    expect(html).toContain('Scenario Under Test')
+    expect(html).toContain('/test-error?type=probe')
+  })
 })

@@ -21,6 +21,10 @@ import { analytics } from '@stacksjs/config'
 const head = generateAnalyticsScript(analytics)
 ```
 
+AnalyticsHQ is the default driver. It emits no tags until
+`drivers.analyticshq.siteId` is set, so a new application never sends a broken
+or unidentified event. Name another driver explicitly to use it instead.
+
 Remote analytics can be limited to explicit application environments:
 
 ```ts

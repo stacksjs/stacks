@@ -96,7 +96,7 @@ export const defaults: StacksOptions = {
   },
 
   analytics: {
-    driver: undefined,
+    driver: 'analyticshq',
   },
 
   // api: {

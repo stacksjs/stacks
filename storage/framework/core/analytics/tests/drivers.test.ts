@@ -162,26 +162,46 @@ describe('Analytics driver registry', () => {
       .toThrow(/Unknown analytics driver "matomo"/)
   })
 
-  test('a selected but unconfigured driver throws and names the config key', () => {
+  test('a selected but unconfigured third-party driver throws and names the config key', () => {
     expect(() => getAnalyticsHead({ driver: 'fathom' })).toThrow(/drivers\.fathom\.siteId/)
     expect(() => getAnalyticsHead({ driver: 'plausible', drivers: {} })).toThrow(/drivers\.plausible\.domain/)
     expect(() => getAnalyticsHead({ driver: 'google-analytics', drivers: {} }))
       .toThrow(/drivers\.googleAnalytics\.trackingId/)
     expect(() => getAnalyticsHead({ driver: 'self-hosted', drivers: { selfHosted: { siteId: 's', apiEndpoint: '' } } }))
       .toThrow(/drivers\.selfHosted\.apiEndpoint/)
-    expect(() => getAnalyticsHead({ driver: 'analyticshq', drivers: {} })).toThrow(/drivers\.analyticshq\.siteId/)
   })
 
-  test('no configured driver is not an error', () => {
+  test('defaults to AnalyticsHQ when its site id is present', () => {
+    const config: AnalyticsConfig = {
+      drivers: { analyticshq: { siteId: 'first-party-site' } },
+    }
+
+    expect(generateAnalyticsScript(config)).toContain('data-site="first-party-site"')
+  })
+
+  test('the AnalyticsHQ default is a no-op until a site id is present', () => {
     expect(getAnalyticsHead({})).toEqual([])
     expect(generateAnalyticsScript({})).toBe('')
+    expect(getAnalyticsHead({ driver: 'analyticshq', drivers: {} })).toEqual([])
   })
 })
 
 describe('the shipped config resolves', () => {
-  test('config/analytics.ts selects a driver that works', async () => {
+  test('config/analytics.ts selects AnalyticsHQ only in allowed environments', async () => {
     const analytics = (await import('../../../../../config/analytics')).default
-    expect(() => getAnalyticsHead(analytics)).not.toThrow()
-    expect(generateAnalyticsScript(analytics)).toContain('<script')
+    const previous = process.env.APP_ENV
+
+    try {
+      process.env.APP_ENV = 'test'
+      expect(generateAnalyticsScript(analytics)).toBe('')
+
+      process.env.APP_ENV = 'production'
+      expect(generateAnalyticsScript(analytics)).toContain('data-site="d61994a9bf380d24c81029c3"')
+    }
+    finally {
+      if (previous === undefined)
+        delete process.env.APP_ENV
+      else process.env.APP_ENV = previous
+    }
   })
 })

@@ -87,8 +87,20 @@ export interface AccessToken {
   readonly id: number
   /** ID of the user this token belongs to */
   readonly userId: number
+  /** Polymorphic subject table bound to this token. */
+  readonly subjectType?: string
+  /** Polymorphic subject identifier bound to this token. */
+  readonly subjectId?: number
   /** ID of the OAuth client that issued this token */
   readonly clientId: number
+  /** Immutable consent grant backing a delegated token. Null for personal tokens. */
+  readonly grantId?: string | null
+  /** Resource identifiers approved by the delegated grant. */
+  readonly resources?: readonly string[]
+  /** Audience URLs approved by the delegated grant. */
+  readonly audiences?: readonly string[]
+  /** Workspace boundary approved by the delegated grant. */
+  readonly workspaceId?: string | null
   /** Human-readable name for the token */
   readonly name: string
   /** Array of scopes/abilities granted to this token */
@@ -212,6 +224,10 @@ export interface OAuthAccessTokenRow {
   id: number
   user_id: number
   oauth_client_id: number
+  oauth_grant_id?: string | null
+  resources?: string | null
+  audiences?: string | null
+  workspace_id?: string | null
   token: string
   name: string | null
   scopes: string | null
@@ -228,6 +244,8 @@ export interface OAuthRefreshTokenRow {
   id: number
   access_token_id: number
   token: string
+  family_id?: string | null
+  parent_id?: number | null
   revoked: boolean | number
   expires_at: string | null
   created_at: string | null
