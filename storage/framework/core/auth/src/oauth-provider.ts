@@ -5,6 +5,7 @@ import type {
 } from '@stacksjs/types'
 
 const DEFAULT_LIFETIMES = {
+  authorizationRequest: 10 * 60 * 1000,
   authorizationCode: 10 * 60 * 1000,
   accessToken: 60 * 60 * 1000,
   refreshToken: 30 * 24 * 60 * 60 * 1000,
@@ -33,6 +34,7 @@ export interface ResolvedOAuthProviderConfig {
   scopes: Record<string, OAuthProviderScopeConfig>
   resources: Record<string, OAuthProviderResourceConfig>
   lifetimes: {
+    authorizationRequest: number
     authorizationCode: number
     accessToken: number
     refreshToken: number
@@ -181,6 +183,10 @@ export function resolveOAuthProviderConfig(
   const resources = resolvedResources(options.resources)
   const scopes = resolvedScopes(options.scopes, resources)
   const lifetimes = {
+    authorizationRequest: positiveLifetime(
+      'authorizationRequest',
+      options.lifetimes?.authorizationRequest ?? DEFAULT_LIFETIMES.authorizationRequest,
+    ),
     authorizationCode: positiveLifetime(
       'authorizationCode',
       options.lifetimes?.authorizationCode ?? DEFAULT_LIFETIMES.authorizationCode,

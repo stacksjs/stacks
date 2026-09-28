@@ -88,6 +88,7 @@ export interface OAuthProviderConfig {
   clientTypes?: readonly ('confidential' | 'public')[]
   /** Absolute lifetimes in milliseconds. */
   lifetimes?: {
+    authorizationRequest?: number
     authorizationCode?: number
     accessToken?: number
     refreshToken?: number

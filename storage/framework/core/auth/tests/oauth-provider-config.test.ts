@@ -41,6 +41,7 @@ describe('OAuth authorization server configuration', () => {
         bughq: { audience: 'https://api.bughq.example' },
       },
       lifetimes: {
+        authorizationRequest: 10 * 60 * 1000,
         authorizationCode: 10 * 60 * 1000,
         accessToken: 60 * 60 * 1000,
         refreshToken: 30 * 24 * 60 * 60 * 1000,
@@ -59,6 +60,11 @@ describe('OAuth authorization server configuration', () => {
       enabled: true,
       issuer: 'https://id.example.com?tenant=other',
     })).toThrow('query or fragment')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      lifetimes: { authorizationRequest: 0 },
+    })).toThrow('authorizationRequest')
     expect(() => resolveOAuthProviderConfig({
       enabled: true,
       issuer: 'https://id.example.com',

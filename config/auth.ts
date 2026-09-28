@@ -93,6 +93,7 @@ export default {
     resources: {},
     clientTypes: ['confidential', 'public'],
     lifetimes: {
+      authorizationRequest: 10 * 60 * 1000,
       authorizationCode: 10 * 60 * 1000,
       accessToken: tokenExpiry,
       refreshToken: env.AUTH_REFRESH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
