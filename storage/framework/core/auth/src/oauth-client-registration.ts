@@ -25,6 +25,14 @@ export interface OAuthClientRegistrationInput {
   resources: readonly string[]
 }
 
+export interface OAuthClientUpdateInput {
+  name: string
+  redirectUris: readonly string[]
+  grantTypes: readonly string[]
+  scopes: readonly string[]
+  resources: readonly string[]
+}
+
 export interface ValidatedOAuthClientRegistration extends OAuthClientRegistrationInput {
   name: string
   redirectUris: string[]
@@ -84,6 +92,12 @@ interface StoredOAuthClient {
   revoked: boolean | number
   created_at: string | Date
 }
+
+interface UnsafeTransaction {
+  unsafe: (statement: string, params?: unknown[]) => Promise<unknown>
+}
+
+type OAuthSqlHelpers = ReturnType<typeof sqlHelpers>
 
 export class OAuthClientRegistrationError extends Error {
   constructor(message: string) {
@@ -177,6 +191,46 @@ function storedValues(value: string | null): string[] | null {
 
 function inactive(value: boolean | number): boolean {
   return value === false || value === 0
+}
+
+function sameValues(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index])
+}
+
+async function revokeOAuthClientAuthorizationState(
+  trx: UnsafeTransaction,
+  sql: OAuthSqlHelpers,
+  clientId: number,
+  now: string,
+): Promise<void> {
+  const revoked = sql.isPostgres ? true : 1
+  await trx.unsafe(`
+    UPDATE oauth_grants
+    SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
+    WHERE client_id = ${sql.param(3)} AND revoked_at IS NULL
+  `, [now, now, clientId])
+  await trx.unsafe(`
+    UPDATE oauth_auth_codes
+    SET consumed_at = ${sql.param(1)}
+    WHERE client_id = ${sql.param(2)} AND consumed_at IS NULL
+  `, [now, clientId])
+  await trx.unsafe(`
+    UPDATE oauth_authorization_requests
+    SET consumed_at = ${sql.param(1)}
+    WHERE client_id = ${sql.param(2)} AND consumed_at IS NULL
+  `, [now, clientId])
+  await trx.unsafe(`
+    UPDATE oauth_refresh_tokens
+    SET revoked = ${sql.param(1)}
+    WHERE access_token_id IN (
+      SELECT id FROM oauth_access_tokens WHERE oauth_client_id = ${sql.param(2)}
+    )
+  `, [revoked, clientId])
+  await trx.unsafe(`
+    UPDATE oauth_access_tokens
+    SET revoked = ${sql.param(1)}, updated_at = ${sql.param(2)}
+    WHERE oauth_client_id = ${sql.param(3)}
+  `, [revoked, now, clientId])
 }
 
 function storedFlag(value: boolean | number): boolean | null {
@@ -278,6 +332,93 @@ export async function listOAuthClients(ownerId: number): Promise<ManagedOAuthCli
   })
 }
 
+/** Edit one active owner-managed client without changing its authentication class. */
+export async function updateOAuthClient(
+  provider: ResolvedOAuthProviderConfig,
+  ownerId: number,
+  clientId: number,
+  input: OAuthClientUpdateInput,
+): Promise<ManagedOAuthClient | null> {
+  if (!Number.isSafeInteger(ownerId) || ownerId <= 0 || !Number.isSafeInteger(clientId) || clientId <= 0)
+    return null
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const lock = sql.isSqlite ? '' : ' FOR UPDATE'
+  const result = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as UnsafeTransaction
+    const rows = await trx.unsafe(`
+      SELECT id, user_id, name, secret, redirect, client_type, redirect_uris, grant_types,
+        token_endpoint_auth_method, allowed_scopes, allowed_resources, personal_access_client,
+        password_client, revoked, created_at
+      FROM oauth_clients
+      WHERE id = ${sql.param(1)} AND user_id = ${sql.param(2)}
+      LIMIT 1${lock}
+    `, [clientId, ownerId]) as unknown as StoredOAuthClient[]
+    const row = rows[0]
+    const current = authorizationClientFromStored(row, clientId)
+    const createdAt = row ? parseSqlDateTime(row.created_at) : null
+    if (!row || !current || current.revoked || !createdAt)
+      return null
+
+    const validated = validateOAuthClientRegistration(provider, {
+      ...input,
+      type: current.type,
+      tokenEndpointAuthMethod: row.token_endpoint_auth_method as OAuthTokenEndpointAuthMethod,
+    })
+    const policyChanged = !sameValues(current.redirectUris, validated.redirectUris)
+      || !sameValues(current.grantTypes, validated.grantTypes)
+      || !sameValues(current.scopes, validated.scopes)
+      || !sameValues(current.resources, validated.resources)
+    const changed = policyChanged || row.name !== validated.name
+    const client: ManagedOAuthClient = {
+      id: clientId,
+      ownerId,
+      name: validated.name,
+      type: current.type,
+      tokenEndpointAuthMethod: validated.tokenEndpointAuthMethod,
+      redirectUris: validated.redirectUris,
+      grantTypes: validated.grantTypes,
+      scopes: validated.scopes,
+      resources: validated.resources,
+      revoked: false,
+      createdAt,
+    }
+    if (!changed)
+      return { changed: false, client }
+
+    const active = sql.isPostgres ? false : 0
+    const now = sqlDateTime(new Date())
+    const updated = await trx.unsafe(`
+      UPDATE oauth_clients
+      SET name = ${sql.param(1)}, redirect = ${sql.param(2)}, redirect_uris = ${sql.param(3)},
+        grant_types = ${sql.param(4)}, allowed_scopes = ${sql.param(5)}, allowed_resources = ${sql.param(6)},
+        updated_at = ${sql.param(7)}
+      WHERE id = ${sql.param(8)} AND user_id = ${sql.param(9)} AND revoked = ${sql.param(10)}
+    `, [
+      validated.name,
+      validated.redirectUris[0],
+      JSON.stringify(validated.redirectUris),
+      JSON.stringify(validated.grantTypes),
+      JSON.stringify(validated.scopes),
+      JSON.stringify(validated.resources),
+      now,
+      clientId,
+      ownerId,
+      active,
+    ])
+    if (mutationCount(updated) !== 1)
+      return null
+    if (policyChanged)
+      await revokeOAuthClientAuthorizationState(trx, sql, clientId, now)
+    return { changed: true, client }
+  })
+  if (!result)
+    return null
+  if (result.changed)
+    markContextWrote()
+  return result.client
+}
+
 /** Authenticate one provider client and hold its policy stable through completion. */
 export async function withAuthenticatedOAuthTokenClient<T>(
   clientId: string,
@@ -291,7 +432,7 @@ export async function withAuthenticatedOAuthTokenClient<T>(
   const sql = sqlHelpers(getDatabaseDialect())
   const lock = sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
   return db.transaction(async (rawTrx) => {
-    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const trx = rawTrx as unknown as UnsafeTransaction
     const rows = await trx.unsafe(`
       SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
         token_endpoint_auth_method, allowed_scopes, allowed_resources,
@@ -334,7 +475,7 @@ export async function registerOAuthClient(
   const disabled = sql.isPostgres ? false : 0
 
   const stored = await db.transaction(async (rawTrx) => {
-    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const trx = rawTrx as unknown as UnsafeTransaction
     const values = sql.params(
       ownerId,
       client.name,
@@ -479,33 +620,7 @@ export async function disableOAuthClient(ownerId: number, clientId: number): Pro
     if (mutationCount(changed) !== 1)
       return false
 
-    await trx.unsafe(`
-      UPDATE oauth_grants
-      SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
-      WHERE client_id = ${sql.param(3)} AND revoked_at IS NULL
-    `, [now, now, clientId])
-    await trx.unsafe(`
-      UPDATE oauth_auth_codes
-      SET consumed_at = ${sql.param(1)}
-      WHERE client_id = ${sql.param(2)} AND consumed_at IS NULL
-    `, [now, clientId])
-    await trx.unsafe(`
-      UPDATE oauth_authorization_requests
-      SET consumed_at = ${sql.param(1)}
-      WHERE client_id = ${sql.param(2)} AND consumed_at IS NULL
-    `, [now, clientId])
-    await trx.unsafe(`
-      UPDATE oauth_refresh_tokens
-      SET revoked = ${sql.param(1)}
-      WHERE access_token_id IN (
-        SELECT id FROM oauth_access_tokens WHERE oauth_client_id = ${sql.param(2)}
-      )
-    `, [revoked, clientId])
-    await trx.unsafe(`
-      UPDATE oauth_access_tokens
-      SET revoked = ${sql.param(1)}, updated_at = ${sql.param(2)}
-      WHERE oauth_client_id = ${sql.param(3)}
-    `, [revoked, now, clientId])
+    await revokeOAuthClientAuthorizationState(trx, sql, clientId, now)
     return true
   })
   if (disabled)

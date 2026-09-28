@@ -68,6 +68,7 @@ const {
   resolveOAuthProviderConfig,
   refreshToken,
   revokeOAuthGrant,
+  updateOAuthClient,
   validateRefreshToken,
   validateOAuthAuthorizationRequest,
   withAuthorizationCode,
@@ -588,6 +589,49 @@ try {
   assert.equal(ownedClients.find(client => client.id === disableRegistration.client.id)?.revoked, true)
   assert(ownedClients.every(client => !('secret' in client)))
   assert.deepEqual(await listOAuthClients(7), [])
+  const publicUpdate = {
+    name: 'Browser integration renamed',
+    redirectUris: ['https://client.example.com/callback'],
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  }
+  assert.equal(await updateOAuthClient(provider, 7, publicRegistration.client.id, publicUpdate), null, 'another owner must not edit the client')
+  await assert.rejects(updateOAuthClient(provider, 42, publicRegistration.client.id, {
+    ...publicUpdate,
+    scopes: ['issues:write'],
+  }), /scope/)
+  const renamedPublic = await updateOAuthClient(provider, 42, publicRegistration.client.id, publicUpdate)
+  assert.equal(renamedPublic?.name, publicUpdate.name)
+  assert(await loadOAuthAuthorizationRequestSession(requestId, browserSession), 'a name-only edit must preserve pending authorization')
+  const pendingCodesBeforeEdit = await db.selectFrom('oauth_auth_codes')
+    .where('client_id', '=', publicRegistration.client.id)
+    .whereNull('consumed_at')
+    .select('code_hash')
+    .get()
+  assert(pendingCodesBeforeEdit.length > 0)
+  const editedPublic = await updateOAuthClient(provider, 42, publicRegistration.client.id, {
+    ...publicUpdate,
+    redirectUris: ['https://client.example.com/new-callback'],
+  })
+  assert.deepEqual(editedPublic?.redirectUris, ['https://client.example.com/new-callback'])
+  assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'a policy edit must consume stale authorization requests')
+  const publicGrantsAfterEdit = await db.selectFrom('oauth_grants')
+    .where('client_id', '=', publicRegistration.client.id)
+    .select('revoked_at')
+    .get()
+  assert(publicGrantsAfterEdit.length > 0)
+  assert(publicGrantsAfterEdit.every(grant => grant.revoked_at != null))
+  const publicCodesAfterEdit = await db.selectFrom('oauth_auth_codes')
+    .where('client_id', '=', publicRegistration.client.id)
+    .select('consumed_at')
+    .get()
+  assert(publicCodesAfterEdit.every(code => code.consumed_at != null))
+  const publicAccessAfterEdit = await db.selectFrom('oauth_access_tokens')
+    .where('oauth_client_id', '=', publicRegistration.client.id)
+    .select('revoked')
+    .get()
+  assert(publicAccessAfterEdit.every(token => Boolean(token.revoked)))
   await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
   assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
   assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'saved requests must recheck current client policy')
