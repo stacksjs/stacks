@@ -673,6 +673,22 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
+      // Catch a database that predates a framework model rename up to the new
+      // names before anything diffs it (stacksjs/stacks#2382). Renames, never
+      // drops, so rows survive; a no-op on a database that never had the old
+      // names. The snapshot gets the same correction inside the differ, which
+      // is what keeps an upgraded app from proposing to drop the renamed
+      // tables - on every run, fresh database included.
+      try {
+        const { catchUpFrameworkRenames } = await import('@stacksjs/database')
+        await catchUpFrameworkRenames()
+      }
+      catch (error) {
+        lock.release()
+        log.syncError(error instanceof Error ? error.message : String(error))
+        process.exit(ExitCode.FatalError)
+      }
+
       // Gate destructive MODEL-DERIVED changes while we still have the
       // interactive TTY — the migrate action runs in a subprocess. A
       // `--no-generate` deploy applies only committed, reviewed SQL, so there

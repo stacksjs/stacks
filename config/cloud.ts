@@ -790,15 +790,9 @@ export const tsCloud: TsCloudConfig = {
         'bun install || (bun upgrade && bun install)',
         'mkdir -p storage/framework/runtime/production',
         'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/buddy/src/serve-entry.ts --outdir storage/framework/runtime/production --entry-naming serve.js --chunk-naming chunks/[name]-[hash].js',
-        // Catch a pre-rename database up to the Courier rename before the
-        // differ sees it (stacksjs/stacks#2382). Without this the differ finds
-        // two tables no model declares, proposes dropping them, and refuses to
-        // do that unattended - which is correct behaviour that nonetheless
-        // blocks every deploy until somebody intervenes. Renames instead of
-        // drops, so rows survive. A no-op on any database that never had the
-        // old tables, so it is safe to leave here and safe to delete once no
-        // deployed database predates the rename.
-        'sh storage/framework/scripts/rename-driver-tables-to-courier',
+        // `migrate` catches a database and snapshot that predate a framework
+        // model rename (Driver -> Courier, stacksjs/stacks#2382) up to the new
+        // names before it diffs, so this no longer needs a script of its own.
         'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate',
       ],
       // PORT_API is how this site's same-origin `/api` proxy finds the API,

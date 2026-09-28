@@ -76,6 +76,10 @@ export * from './types'
 // Migrations
 export * from './migrations'
 
+// Renames the framework made to its own default models, carried into databases
+// and snapshots that predate them (stacksjs/stacks#2382).
+export * from './framework-renames'
+
 // Query logger DI hook (router calls setQueryTracker on init)
 export { setQueryTracker, logQuery } from './query-logger'
 

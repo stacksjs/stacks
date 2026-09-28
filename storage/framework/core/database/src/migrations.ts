@@ -30,6 +30,7 @@ import type { MigrationOperation, MigrationPlan } from '@stacksjs/query-builder'
 import {
   createQueryBuilder,
   executeMigration as qbExecuteMigration,
+  generateDiffOperations,
   generateMigration as qbGenerateMigration,
   resetDatabase as qbResetDatabase,
   config as qbConfig,
@@ -45,7 +46,9 @@ import {
   probeTargetDatabase,
   resolveConnectionTarget,
 } from './ensure-database'
-import { resolveModelSources } from './model-sources'
+import { declaredModelTables, resolveModelSources } from './model-sources'
+import type { DatabaseRenameResult, FrameworkRename, RenameSqlRunner } from './framework-renames'
+import { applicableFrameworkRenames, applyFrameworkRenamesToDatabase, applyFrameworkRenamesToPlan } from './framework-renames'
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
@@ -56,7 +59,7 @@ import { traitTableNames } from './trait-tables'
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
 import { getConnectionDefaults } from './defaults'
-import { isVitessSharded } from './dialect'
+import { isVitessSharded, toSqlIntrospectionDialect } from './dialect'
 
 // Shell-provided values must win over the loaded .env file. The migration
 // executor already follows process.env, so resolving preprocessing against
@@ -1793,9 +1796,16 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // messaging gap).
     const appliedBefore = await countAppliedMigrations()
 
+    // Framework renames, on both sides of the files. Before, so a pending file
+    // written for the new names finds them. After, because an app's own corpus
+    // predates the rename, so a fresh database gets the OLD tables from it.
+    await catchUpFrameworkRenames()
+
     // Execute existing migration files
     log.debug(`[migration] Running migrations from: ${corpusDir}`)
     await qbExecuteMigration(corpusDir)
+
+    await catchUpFrameworkRenames()
 
     // Complete the guarantee after the model batch. This creates tables absent
     // from both the corpus and the preflight, and validates existing shapes.
@@ -2109,6 +2119,92 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
 }
 
 /**
+ * The framework renames that apply to this app: every recorded rename whose
+ * old table no model still declares. See `framework-renames.ts`.
+ */
+function frameworkRenamesForThisApp(): FrameworkRename[] {
+  return applicableFrameworkRenames(declaredModelTables())
+}
+
+function describeRenames(renames: readonly FrameworkRename[]): string {
+  return renames.map(rename => `${rename.id}, ${rename.reference}`).join('; ')
+}
+
+/**
+ * Carry recorded framework renames into the stored model snapshot.
+ *
+ * The snapshot is the baseline the differ reads instead of the database, so an
+ * app upgrading across a rename holds one that still describes the old names,
+ * and the differ proposes dropping them - on every run, fresh database or
+ * not. Rewritten under the new names it describes the schema the app already
+ * has, and the diff goes quiet.
+ *
+ * With `persist` the corrected snapshot replaces the stored one. Without it
+ * nothing is written, and the corrected plan is returned for a dry run to diff
+ * against. Either way `plan` is the corrected plan, or undefined when there was
+ * nothing to correct.
+ */
+export function catchUpSnapshotFrameworkRenames(options: { persist: boolean }): { changes: string[], plan?: MigrationPlan } {
+  configureQueryBuilder()
+  const dialect = getQbDialect()
+  const stored = readStoredMigrationPlan(dialect)
+  if (!stored)
+    return { changes: [] }
+
+  const renames = frameworkRenamesForThisApp()
+  if (renames.length === 0)
+    return { changes: [] }
+
+  const { plan, changes } = applyFrameworkRenamesToPlan(stored, renames)
+  if (changes.length === 0)
+    return { changes }
+
+  if (options.persist) {
+    saveMigrationSnapshot(plan, { dialect })
+    log.info(`[migration] Updated the model snapshot for framework renames (${describeRenames(renames)}): ${changes.join(', ')}`)
+  }
+  else {
+    log.debug(`[migration] Previewing against the snapshot with framework renames applied: ${changes.join(', ')}`)
+  }
+  return { changes, plan }
+}
+
+/**
+ * Carry recorded framework renames into the live database, renaming rather
+ * than dropping so rows survive. Idempotent, and a no-op on any database that
+ * never had the old names.
+ *
+ * `buddy migrate` runs it before it diffs and on both sides of the migration
+ * files: before, so a pending file written for the new names finds them; after,
+ * because an app's own corpus predates the rename and a fresh database gets the
+ * OLD tables from it.
+ *
+ * Throws when an old and a new table both hold rows. That needs a human, and
+ * migrating on regardless would leave the app reading the wrong one.
+ */
+export async function catchUpFrameworkRenames(options: { runner?: RenameSqlRunner } = {}): Promise<DatabaseRenameResult> {
+  const dialect = toSqlIntrospectionDialect(getDialect())
+  if (dialect === 'other')
+    return { applied: [], skipped: [] }
+
+  const renames = frameworkRenamesForThisApp()
+  if (renames.length === 0)
+    return { applied: [], skipped: [] }
+
+  const runner: RenameSqlRunner = options.runner ?? (async (sql: string) => {
+    const result = await db.unsafe(sql).execute()
+    return Array.isArray(result) ? result : []
+  })
+
+  const result = await applyFrameworkRenamesToDatabase(runner, dialect, renames)
+  if (result.applied.length > 0)
+    log.info(`[migration] Applied framework renames to the database (${describeRenames(renames)}): ${result.applied.join(', ')}`)
+  for (const skipped of result.skipped)
+    log.warn(`[migration] Framework rename not applied: ${skipped}`)
+  return result
+}
+
+/**
  * Generate migrations based on model changes.
  *
  * Compares the current `app/Models/*` definitions to the stored snapshot
@@ -2186,6 +2282,14 @@ export async function pendingMigrationOperations(options: GenerateMigrationsOpti
     applyRenames,
     fromDb,
   })
+  // A preview writes nothing, so a snapshot that predates a framework rename is
+  // corrected in memory and the models' plan diffed against that, which is the
+  // same diff the real generate produces after persisting the correction.
+  // (Pointing the library at a corrected copy on disk does not survive: loading
+  // the models reconfigures it back to the real snapshot directory.)
+  const corrected = fromDb ? undefined : catchUpSnapshotFrameworkRenames({ persist: false }).plan
+  if (corrected && result.plan)
+    result.operations = generateDiffOperations(corrected, result.plan, { applyRenames, dryRun: true }).operations
   let operations = result.operations ?? []
   // Protected tables are never dropped (see `withoutProtectedTableDropSql`),
   // so they must not appear in the confirmation gate either — sixty phantom
@@ -2378,6 +2482,10 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
         + `${snapshotDir}/model-snapshot.${mismatch}.json first.`,
       ))
     }
+    // Before the stored plan is read: a snapshot that predates a framework
+    // rename would otherwise have the differ drop the renamed tables.
+    catchUpSnapshotFrameworkRenames({ persist: true })
+
     const storedPlan = readStoredMigrationPlan(getQbDialect())
 
     const { modelsDir, skip, excludedTables, protectedTables } = prepareMigrationModelsDir()

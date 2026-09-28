@@ -392,3 +392,40 @@ export function cleanupModelStaging(): void {
   }
   catch { /* best effort */ }
 }
+
+/**
+ * Every table any model declares, from every root: userland, the framework
+ * defaults and installed packages, whether or not the generator has them in
+ * scope.
+ *
+ * For questions about ownership rather than generation. The framework-rename
+ * catch-up (`framework-renames.ts`) uses it to leave alone a table the app
+ * still declares a model for, and scope does not change that answer: an app
+ * model over `drivers` owns `drivers` whether or not defaults are merged in.
+ *
+ * Reads files only. Nothing is staged, so it is safe to call on a path that
+ * must not write.
+ */
+export function declaredModelTables(options: {
+  userRoot?: string
+  frameworkRoot?: string
+  packageRoots?: PackageModelRoot[]
+} = {}): Set<string> {
+  let packageRoots = options.packageRoots
+  if (!packageRoots) {
+    try {
+      packageRoots = packageModelRoots()
+    }
+    catch {
+      packageRoots = []
+    }
+  }
+
+  const models = [
+    ...collectModels(options.userRoot ?? path.userModelsPath(), 'user'),
+    ...collectModels(options.frameworkRoot ?? path.frameworkPath('defaults/app/Models'), 'framework'),
+    ...packageRoots.flatMap(root => collectModels(root.dir, 'package', root.package)),
+  ]
+
+  return new Set(models.map(declaredTableName))
+}
