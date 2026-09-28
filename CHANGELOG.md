@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.14...v0.75.15)
+
+## 🐛 Bug Fixes
+
+- **deps**: stx 0.2.321, which bounds image warm-up before the server binds ([e91b22a](https://github.com/stacksjs/stacks/commit/e91b22a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.13...v0.75.14)
 
 ## 🐛 Bug Fixes
