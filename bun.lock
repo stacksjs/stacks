@@ -1031,6 +1031,7 @@
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/orm": "workspace:*",
+        "@stacksjs/types": "workspace:*",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",

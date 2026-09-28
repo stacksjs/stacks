@@ -23,3 +23,12 @@ log.info(dryRun
   : 'Applied:')
 for (const line of formatSetupReport(report))
   log.info(line)
+
+// A conflict is something in the account that differs from config/saas.ts and
+// was deliberately left alone (a coupon cannot be edited). Say so in the exit
+// code too, so a CI step that runs this does not pass over it.
+const conflicts = report.actions.filter(action => action.verb === 'conflict')
+if (conflicts.length) {
+  await log.error(`stripe:setup left ${conflicts.length} conflict${conflicts.length === 1 ? '' : 's'} for you to resolve.`)
+  process.exit(1)
+}

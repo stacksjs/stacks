@@ -64,7 +64,8 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/orm": "workspace:*"
+    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "peerDependencies": {
     "@stripe/stripe-js": "^9.10.0",

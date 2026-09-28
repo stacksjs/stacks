@@ -15,6 +15,7 @@ import { manageCustomer } from './billable/customer'
 import { manageInvoice } from './billable/invoice'
 import { managePaymentMethod } from './billable/payment-method'
 import { managePrice } from './billable/price'
+import { manageBillingPortal } from './billable/portal'
 import { manageCoupon, managePriceExtended, manageProduct } from './billable/product'
 import { manageSubscription } from './billable/subscription'
 import { manageSetupIntent } from './billable/intent'
@@ -409,6 +410,21 @@ export function toDollars(cents: number): number {
   return cents / 100
 }
 
+/**
+ * A link into the Stripe customer portal, where the customer manages their
+ * subscription, card and invoices. Takes a Stripe customer id, or a user with
+ * one. The link is single-use and short-lived: create it when they click.
+ */
+export async function billingPortal(
+  customer: string | UserModel,
+  options: { returnUrl?: string } = {},
+): Promise<Stripe.BillingPortal.Session> {
+  const customerId = typeof customer === 'string' ? customer : customer.stripe_id
+  if (!customerId)
+    throw new Error('billingPortal needs a Stripe customer: this user has no stripe_id yet.')
+  return manageBillingPortal.createSession(customerId, options)
+}
+
 // =============================================================================
 // Payment Facade Object
 // =============================================================================
@@ -447,6 +463,9 @@ export const Payment = {
   createProduct,
   getPrice,
   listProducts,
+
+  // Customer portal
+  billingPortal,
 
   // Coupons
   createCoupon,

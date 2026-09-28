@@ -292,6 +292,9 @@ if (!result.isErr)
   console.log(formatSetupReport(result.value).join('\n'))
 ```
 
+It also creates the coupons in `saas.coupons` with their promotion codes, and
+the customer portal configuration in `saas.portal` (see Customer Portal).
+
 This iterates `saas.plans` and reconciles each one against the live account: a
 product is matched by name and reused, and each pricing option is matched by its
 `lookup_key` (from the `key` field). Prices are immutable in Stripe, so a changed
@@ -302,6 +305,36 @@ subscriptions keep billing.
 Re-running is safe and converges. It does not use `products.search` on purpose:
 that index is eventually consistent, so a second run inside the lag window would
 find nothing and create a duplicate.
+
+### Customer Portal
+
+The Stripe-hosted page where a customer cancels or changes a subscription,
+updates their card and downloads invoices.
+
+```typescript
+// Customer id, or a user with a stripe_id. Single-use and short-lived:
+// create it when the customer clicks, then redirect to session.url.
+const session = await Payment.billingPortal('cus_xxx', { returnUrl: 'https://app.example/account' })
+```
+
+Declare what the portal allows in `config/saas.ts`, and `buddy stripe:setup`
+keeps one configuration in the account to match it:
+
+```typescript
+portal: {
+  headline: 'Manage your plan',
+  returnUrl: 'https://app.example/account', // used when a session names none
+  cancel: 'at_period_end',                  // or 'immediately', or false
+  paymentMethodUpdate: true,                // default true
+  invoiceHistory: true,                     // default true
+  emailUpdate: true,                        // default true
+}
+```
+
+The configuration is tagged `metadata: { managed_by: 'stacks', stacks_app: <APP_NAME> }`
+and found by that tag, so several apps can share one Stripe account without
+editing each other's portal. `billingPortal()` uses it, or the account default
+when the app declares no portal.
 
 ### Utility Functions
 
@@ -413,12 +446,30 @@ Plans use `productName`, `description`, `metadata`, and a `pricing` array where 
   ],
   webhook: { endpoint: 'your-webhook-endpoint', secret: 'your-webhook-secret' },
   currencies: ['usd'],
-  coupons: [],
+  coupons: [
+    {
+      id: 'six_months_free',         // the Stripe coupon id; how a re-run finds it
+      name: '6 months free',
+      percentOff: 100,               // or amountOff (minor units) + currency
+      duration: 'repeating',         // 'once' | 'repeating' | 'forever'
+      durationInMonths: 6,
+      appliesTo: ['Stacks Hobby'],   // plan productNames; omit for every product
+      codes: ['SIXFREE'],            // what customers type: Stripe promotion codes
+    },
+  ],
   products: [
     { name: 'Stacks Hobby', description: '...', images: ['image-url'] },
   ],
 } satisfies SaasConfig
 ```
+
+Coupons are immutable in Stripe. One that exists with a different discount is
+reported as a conflict and left alone (deleting it would void codes already
+handed out), and `stripe:setup` exits non-zero so CI notices. Change a
+discount by giving it a new `id`. Stripe restricts a coupon by product, not
+price, so a plan that must not get a discount needs a product of its own - or
+apply the promotion code yourself at checkout (`discounts: [{ promotion_code }]`)
+for the plans it is meant for.
 
 ## Database Tables Used
 - `subscriptions` -- columns: `user_id`, `type`, `unit_price`, `provider_id`, `provider_status`, `provider_price_id`, `quantity`, `trial_ends_at`, `ends_at`, `provider_type`, `last_used_at`
