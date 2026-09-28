@@ -1,3 +1,4 @@
+export * from './bughq'
 export * from './handler'
 export * from './http'
 export * from './model'

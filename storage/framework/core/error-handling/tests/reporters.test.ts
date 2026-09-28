@@ -21,6 +21,34 @@ function attach(reports: ErrorReport[], options: Partial<ErrorReporter> = {}): v
 }
 
 describe('error reporters', () => {
+  test('loads reporters declared by monitoring config before the first delivery', async () => {
+    const moduleUrl = new URL('../src/reporters.ts', import.meta.url).href
+    const marker = '__STACKS_CONFIGURED_REPORTERS__'
+    const child = Bun.spawn({
+      cmd: [process.execPath, '-e', [
+        `const received = []`,
+        `globalThis[Symbol.for('@stacksjs/config:overrides')] = { monitoring: { reporters: [{ name: 'configured', report: event => received.push(event.error.message) }] } }`,
+        `const { captureError } = await import(${JSON.stringify(moduleUrl)})`,
+        `captureError(new Error('configured failure'))`,
+        `console.log(${JSON.stringify(marker)} + JSON.stringify(received))`,
+      ].join(';')],
+      cwd: new URL('../../../../../', import.meta.url).pathname,
+      env: process.env,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+
+    expect(exitCode, stderr).toBe(0)
+    const line = stdout.split('\n').find(value => value.startsWith(marker))
+    expect(line, stdout).toBeDefined()
+    expect(JSON.parse(line!.slice(marker.length))).toEqual(['configured failure'])
+  })
+
   test('receive errors handled by ErrorHandler', () => {
     const reports: ErrorReport[] = []
     attach(reports)

@@ -45,6 +45,31 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  BUGHQ_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BUGHQ_DSN: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BUGHQ_HOST: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BUGHQ_PROJECT: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BUGHQ_RELEASE: {
+    validation: schema.string(),
+    default: '',
+  },
+
   PORT: {
     validation: schema.number(),
     default: 3000,

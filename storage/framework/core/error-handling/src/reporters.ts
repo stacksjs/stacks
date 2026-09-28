@@ -4,6 +4,25 @@ import process from 'node:process'
 const registered: ErrorReporter[] = []
 const reported = new WeakSet<Error>()
 const broken = new WeakSet<ErrorReporter>()
+const configuredSeen = new Set<unknown>()
+const CONFIG_OVERRIDES_KEY = Symbol.for('@stacksjs/config:overrides')
+
+function attachConfiguredReporters(): void {
+  const overrides = (globalThis as Record<symbol, unknown>)[CONFIG_OVERRIDES_KEY] as {
+    monitoring?: { reporters?: unknown }
+  } | undefined
+  const configured = overrides?.monitoring?.reporters
+  if (!Array.isArray(configured))
+    return
+
+  for (const reporter of configured) {
+    if (configuredSeen.has(reporter))
+      continue
+    configuredSeen.add(reporter)
+    if (!registered.includes(reporter as ErrorReporter))
+      registerErrorReporter(reporter as ErrorReporter)
+  }
+}
 
 function asError(value: unknown): Error {
   if (value instanceof Error)
@@ -36,6 +55,7 @@ export function registerErrorReporter(reporter: ErrorReporter): () => void {
 
 /** A copy of the reporters attached to this process. */
 export function reporters(): readonly ErrorReporter[] {
+  attachConfiguredReporters()
   return [...registered]
 }
 
@@ -47,6 +67,7 @@ export function reporters(): readonly ErrorReporter[] {
  * still one failure and each reporter receives it once.
  */
 export function captureError(value: unknown, context?: ErrorReportContext): Error {
+  attachConfiguredReporters()
   const error = asError(value)
   if (registered.length === 0 || reported.has(error))
     return error
@@ -72,6 +93,7 @@ export function captureError(value: unknown, context?: ErrorReportContext): Erro
 
 /** Drain every buffering reporter without turning shutdown into a failure. */
 export async function flushErrorReporters(): Promise<void> {
+  attachConfiguredReporters()
   const pending = registered
     .filter(reporter => typeof reporter.flush === 'function')
     .map(reporter => Promise.resolve().then(() => reporter.flush!()))

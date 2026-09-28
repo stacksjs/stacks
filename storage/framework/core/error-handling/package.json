@@ -57,6 +57,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@bughq/sdk": "^0.2.2",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/stx": "^0.2.323",
     "@stacksjs/types": "workspace:*",
