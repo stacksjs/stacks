@@ -87,6 +87,10 @@ export interface AccessToken {
   readonly id: number
   /** ID of the user this token belongs to */
   readonly userId: number
+  /** Polymorphic subject table bound to this token. */
+  readonly subjectType?: string
+  /** Polymorphic subject identifier bound to this token. */
+  readonly subjectId?: number
   /** ID of the OAuth client that issued this token */
   readonly clientId: number
   /** Immutable consent grant backing a delegated token. Null for personal tokens. */

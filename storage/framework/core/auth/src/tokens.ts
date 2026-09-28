@@ -339,9 +339,11 @@ export async function tokens(userId: number, tokenableType: string = DEFAULT_TOK
   `, [userId, tokenableType])
 
   return (rows as unknown as AccessTokenRow[]).map(row => ({
-    id: row.id,
-    userId: row.user_id,
-    clientId: row.oauth_client_id,
+    id: Number(row.id),
+    userId: Number(row.user_id),
+    subjectType: row.tokenable_type,
+    subjectId: Number(row.tokenable_id),
+    clientId: Number(row.oauth_client_id),
     ...delegatedContext(row),
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),
@@ -406,9 +408,11 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     return null
 
   return {
-    id: row.id,
-    userId: row.user_id,
-    clientId: row.oauth_client_id,
+    id: Number(row.id),
+    userId: Number(row.user_id),
+    subjectType: row.tokenable_type,
+    subjectId: Number(row.tokenable_id),
+    clientId: Number(row.oauth_client_id),
     ...delegatedContext(row),
     name: row.name || 'access-token',
     scopes: parseScopes(row.scopes),

@@ -51,6 +51,7 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const {
   approveOAuthAuthorizationRequestSession,
+  authorizeOAuthDelegatedToken,
   createOAuthGrant,
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
@@ -69,6 +70,7 @@ const {
   resolveOAuthProviderConfig,
   refreshToken,
   revokeOAuthGrant,
+  oauthBearerAuthorizationErrorResponse,
   updateOAuthClient,
   validateRefreshToken,
   validateOAuthAuthorizationRequest,
@@ -695,6 +697,49 @@ try {
   assert.equal(refreshedEndpointTokens.scope, 'issues:read')
   assert.equal(await findToken(String(endpointTokens.access_token)), null)
   assert(await findToken(String(refreshedEndpointTokens.access_token)))
+  const endpointBearer = String(refreshedEndpointTokens.access_token)
+  const delegatedAccess = await authorizeOAuthDelegatedToken(endpointBearer, {
+    scopes: ['issues:read'],
+    resource: 'bughq',
+    audience: 'https://api.bughq.example',
+    workspaceId: null,
+    isSubjectEligible: async subject => subject.type === 'users' && subject.id === 42,
+  })
+  assert(delegatedAccess.ok)
+  assert.equal(delegatedAccess.token.subjectType, 'users')
+  assert.equal(delegatedAccess.token.subjectId, 42)
+  const insufficientScope = await authorizeOAuthDelegatedToken(endpointBearer, {
+    scopes: ['issues:write'],
+    resource: 'bughq',
+    audience: 'https://api.bughq.example',
+    workspaceId: null,
+    isSubjectEligible: async () => true,
+  })
+  assert.deepEqual(insufficientScope, { ok: false, reason: 'insufficient_scope', requiredScopes: ['issues:write'] })
+  const scopeResponse = oauthBearerAuthorizationErrorResponse(insufficientScope)
+  assert.equal(scopeResponse.status, 403)
+  assert.equal(scopeResponse.headers.get('www-authenticate'), 'Bearer error="insufficient_scope", scope="issues:write"')
+  assert.deepEqual(await authorizeOAuthDelegatedToken(endpointBearer, {
+    scopes: ['issues:read'],
+    resource: 'loghq',
+    audience: 'https://api.loghq.example',
+    workspaceId: null,
+    isSubjectEligible: async () => true,
+  }), { ok: false, reason: 'invalid_token' })
+  assert.deepEqual(await authorizeOAuthDelegatedToken(endpointBearer, {
+    scopes: ['issues:read'],
+    resource: 'bughq',
+    audience: 'https://api.bughq.example',
+    workspaceId: 'another-workspace',
+    isSubjectEligible: async () => true,
+  }), { ok: false, reason: 'invalid_token' })
+  assert.deepEqual(await authorizeOAuthDelegatedToken(endpointBearer, {
+    scopes: ['issues:read'],
+    resource: 'bughq',
+    audience: 'https://api.bughq.example',
+    workspaceId: null,
+    isSubjectEligible: async () => false,
+  }), { ok: false, reason: 'invalid_token' })
   const publicUpdate = {
     name: 'Browser integration renamed',
     redirectUris: ['https://client.example.com/callback'],
@@ -721,6 +766,13 @@ try {
     redirectUris: ['https://client.example.com/new-callback'],
   })
   assert.deepEqual(editedPublic?.redirectUris, ['https://client.example.com/new-callback'])
+  assert.deepEqual(await authorizeOAuthDelegatedToken(endpointBearer, {
+    scopes: ['issues:read'],
+    resource: 'bughq',
+    audience: 'https://api.bughq.example',
+    workspaceId: null,
+    isSubjectEligible: async () => true,
+  }), { ok: false, reason: 'invalid_token' })
   assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'a policy edit must consume stale authorization requests')
   const publicGrantsAfterEdit = await db.selectFrom('oauth_grants')
     .where('client_id', '=', publicRegistration.client.id)
