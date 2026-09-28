@@ -8,6 +8,11 @@ export function isValidPkceVerifier(value: unknown): value is string {
   return typeof value === 'string' && VERIFIER_PATTERN.test(value)
 }
 
+/** Whether a value is a 256-bit SHA-256 digest encoded as base64url. */
+export function isValidS256CodeChallenge(value: unknown): value is string {
+  return typeof value === 'string' && S256_CHALLENGE_PATTERN.test(value)
+}
+
 /** Generate a 256-bit, 43-character RFC 7636 verifier. */
 export function generatePkceVerifier(): string {
   return randomBytes(32).toString('base64url')
@@ -29,7 +34,7 @@ export async function verifyS256CodeChallenge(
   verifier: string,
   expectedChallenge: string,
 ): Promise<boolean> {
-  if (!isValidPkceVerifier(verifier) || !S256_CHALLENGE_PATTERN.test(expectedChallenge))
+  if (!isValidPkceVerifier(verifier) || !isValidS256CodeChallenge(expectedChallenge))
     return false
 
   const actual = await createS256CodeChallenge(verifier)
