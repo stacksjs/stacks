@@ -77,4 +77,64 @@ describe('OAuth authorization server configuration', () => {
     expect(resolveOAuthProviderConfig({ enabled: true, issuer: 'http://localhost:3000' })?.issuer)
       .toBe('http://localhost:3000')
   })
+
+  it('rejects malformed or ambiguous scope and resource policy', () => {
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      scopes: { 'issues read': { description: 'Invalid scope token' } },
+    })).toThrow('scope')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      scopes: { 'issues:read': { description: 'Read issues', resources: ['missing'] } },
+    })).toThrow('unknown resource')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      resources: { bughq: { audience: '/relative-api' } },
+    })).toThrow('absolute URI')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      resources: {
+        bughq: { audience: 'https://api.example.com' },
+        loghq: { audience: 'https://api.example.com' },
+      },
+    })).toThrow('unique audience')
+  })
+
+  it('rejects duplicate client types and invalid consent policy', () => {
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      clientTypes: ['public', 'public'],
+    })).toThrow('clientTypes')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      consent: { rememberFor: -1 },
+    })).toThrow('rememberFor')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      consent: { view: '../outside' },
+    })).toThrow('consent.view')
+  })
+
+  it('snapshots policy so later config mutation cannot expand authorization', () => {
+    const options = {
+      enabled: true as const,
+      issuer: 'https://id.example.com',
+      scopes: { 'issues:read': { description: 'Read issues', resources: ['bughq'] } },
+      resources: { bughq: { audience: 'https://api.bughq.example' } },
+    }
+    const resolved = resolveOAuthProviderConfig(options)!
+
+    options.scopes['issues:read'].resources.push('loghq')
+    options.resources.bughq.audience = 'https://evil.example'
+
+    expect(resolved.scopes['issues:read']?.resources).toEqual(['bughq'])
+    expect(resolved.resources.bughq?.audience).toBe('https://api.bughq.example')
+  })
 })

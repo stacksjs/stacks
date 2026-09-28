@@ -85,6 +85,83 @@ function positiveLifetime(name: string, value: number): number {
   return value
 }
 
+const POLICY_TOKEN = /^[\x21\x23-\x5B\x5D-\x7E]+$/
+
+function resolvedResources(
+  configured: Record<string, OAuthProviderResourceConfig> | undefined,
+): Record<string, OAuthProviderResourceConfig> {
+  const resources: Record<string, OAuthProviderResourceConfig> = {}
+  const audiences = new Set<string>()
+  for (const [key, resource] of Object.entries(configured ?? {})) {
+    if (!POLICY_TOKEN.test(key))
+      throw new Error(`auth.oauthProvider resource key is not a valid policy token: ${key}`)
+
+    let audience: URL
+    try {
+      audience = new URL(resource.audience)
+    }
+    catch {
+      throw new Error(`auth.oauthProvider resource audience must be an absolute URI: ${key}`)
+    }
+    if (audience.username || audience.password || audience.hash)
+      throw new Error(`auth.oauthProvider resource audience must not contain credentials or a fragment: ${key}`)
+    if (audiences.has(resource.audience))
+      throw new Error(`auth.oauthProvider resources must each have a unique audience: ${resource.audience}`)
+    audiences.add(resource.audience)
+    resources[key] = {
+      audience: resource.audience,
+      ...(resource.description === undefined ? {} : { description: resource.description }),
+    }
+  }
+  return resources
+}
+
+function resolvedScopes(
+  configured: Record<string, OAuthProviderScopeConfig> | undefined,
+  resources: Record<string, OAuthProviderResourceConfig>,
+): Record<string, OAuthProviderScopeConfig> {
+  const scopes: Record<string, OAuthProviderScopeConfig> = {}
+  for (const [key, scope] of Object.entries(configured ?? {})) {
+    if (!POLICY_TOKEN.test(key))
+      throw new Error(`auth.oauthProvider scope is not a valid OAuth scope token: ${key}`)
+    if (!scope.description?.trim())
+      throw new Error(`auth.oauthProvider scope description must not be empty: ${key}`)
+
+    const scopeResources = [...(scope.resources ?? [])]
+    if (new Set(scopeResources).size !== scopeResources.length)
+      throw new Error(`auth.oauthProvider scope contains a duplicate resource: ${key}`)
+    for (const resource of scopeResources) {
+      if (!resources[resource])
+        throw new Error(`auth.oauthProvider scope references an unknown resource: ${key} -> ${resource}`)
+    }
+    scopes[key] = {
+      description: scope.description,
+      ...(scope.resources === undefined ? {} : { resources: scopeResources }),
+    }
+  }
+  return scopes
+}
+
+function resolvedClientTypes(
+  configured: readonly ('confidential' | 'public')[] | undefined,
+): readonly ('confidential' | 'public')[] {
+  const clientTypes = [...(configured ?? ['confidential', 'public'] as const)]
+  if (!clientTypes.length || new Set(clientTypes).size !== clientTypes.length
+    || clientTypes.some(type => type !== 'confidential' && type !== 'public'))
+    throw new Error('auth.oauthProvider.clientTypes must contain unique supported client types.')
+  return clientTypes
+}
+
+function resolvedConsent(options: OAuthProviderConfig['consent']): ResolvedOAuthProviderConfig['consent'] {
+  const rememberFor = options?.rememberFor ?? 0
+  if (!Number.isFinite(rememberFor) || rememberFor < 0)
+    throw new Error('auth.oauthProvider.consent.rememberFor must be a non-negative number of milliseconds.')
+  const view = options?.view ?? 'auth/oauth/consent'
+  if (!view || view.length > 255 || view.startsWith('/') || view.includes('..') || /[\u0000-\u001F\u007F]/.test(view))
+    throw new Error('auth.oauthProvider.consent.view must be a safe relative view name.')
+  return { rememberFor, view }
+}
+
 /**
  * Resolve the disabled-by-default OAuth authorization-server contract.
  *
@@ -101,6 +178,8 @@ export function resolveOAuthProviderConfig(
     return null
 
   const issuer = canonicalIssuer(options.issuer)
+  const resources = resolvedResources(options.resources)
+  const scopes = resolvedScopes(options.scopes, resources)
   const lifetimes = {
     authorizationCode: positiveLifetime(
       'authorizationCode',
@@ -128,13 +207,10 @@ export function resolveOAuthProviderConfig(
     responseTypes: ['code'],
     grantTypes: ['authorization_code', 'refresh_token'],
     codeChallengeMethods: ['S256'],
-    clientTypes: options.clientTypes ?? ['confidential', 'public'],
-    scopes: options.scopes ?? {},
-    resources: options.resources ?? {},
+    clientTypes: resolvedClientTypes(options.clientTypes),
+    scopes,
+    resources,
     lifetimes,
-    consent: {
-      rememberFor: options.consent?.rememberFor ?? 0,
-      view: options.consent?.view ?? 'auth/oauth/consent',
-    },
+    consent: resolvedConsent(options.consent),
   }
 }
