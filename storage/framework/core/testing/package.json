@@ -83,7 +83,7 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.16.0"
+    "@stacksjs/ts-cloud": "^0.16.15"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
