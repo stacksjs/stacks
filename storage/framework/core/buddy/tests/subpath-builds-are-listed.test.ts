@@ -257,6 +257,63 @@ describe('subpath imports', () => {
   })
 
   /**
+   * `bun run typecheck` checks source, not whatever `dist/` was built last.
+   *
+   * CI builds the subpath set before it typechecks, so there an unmapped
+   * subpath resolves to a fresh `dist/` and the job is green. A developer
+   * machine keeps the `dist/` of its last local build, and `bun run typecheck`
+   * reported nine errors on main that described that build rather than the
+   * code: `RuntimeLog` without the `flush` it gained five days earlier, and
+   * `@stacksjs/error-handling/http-error` and
+   * `@stacksjs/validation/request-validator` missing outright, although both
+   * sit in `src/`. tsconfig.framework.json had no entry for either package,
+   * and tsconfig.defaults.json had fewer still: a `paths` block replaces the
+   * one it inherits from tsconfig.app.json, it does not merge with it.
+   *
+   * Type positions count here, unlike in the bundler test above: `typeof
+   * import('…')` is exactly what the typecheck resolves.
+   */
+  it('resolve to source in the typecheck configs, so a stale dist/ cannot answer for them', () => {
+    const packages = workspacePackages()
+    const scanned = [
+      ...[...packages.values()].flatMap(dir => sourceFiles(join(coreDir, dir, 'src'))),
+      ...sourceFiles(join(root, 'storage/framework/defaults')),
+      ...sourceFiles(join(root, 'storage/framework/server/src')),
+    ]
+
+    const specifiers = new Map<string, string>()
+    for (const file of scanned) {
+      const source = readFileSync(file, 'utf-8')
+        .split('\n')
+        .filter((line) => {
+          const code = line.trimStart()
+          return !code.startsWith('*') && !code.startsWith('//') && !code.startsWith('/*')
+        })
+        .join('\n')
+      for (const match of source.matchAll(/(?:from\s+|import\(\s*|require\(\s*)'(@stacksjs\/([a-z0-9-]+)\/[^']+)'/g)) {
+        if (packages.has(`@stacksjs/${match[2]}`))
+          specifiers.set(match[1]!, file.slice(root.length))
+      }
+    }
+
+    // Guards the scan itself: one that found nothing would pass.
+    expect(specifiers.has('@stacksjs/logging/runtime')).toBe(true)
+
+    for (const config of ['tsconfig.framework.json', 'tsconfig.defaults.json']) {
+      const tsconfig = Bun.JSONC.parse(readFileSync(join(root, 'storage/framework', config), 'utf-8')) as { compilerOptions: { paths: Record<string, string[]> } }
+      const mapped = Object.keys(tsconfig.compilerOptions.paths)
+      const covers = (specifier: string): boolean => mapped.some(key => key.endsWith('/*')
+        ? key !== '@stacksjs/*' && specifier.startsWith(key.slice(0, -1))
+        : key === specifier)
+
+      const unmapped = [...specifiers]
+        .filter(([specifier]) => !covers(specifier))
+        .map(([specifier, file]) => `${config}: ${file} imports ${specifier}`)
+      expect(unmapped.sort()).toEqual([])
+    }
+  })
+
+  /**
    * What the running server loads resolves to source too, not only what
    * `bun build` bundled.
    *

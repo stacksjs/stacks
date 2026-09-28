@@ -25,6 +25,19 @@
       "@stacksjs/server/*": ["./core/server/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/router/*": ["./core/router/src/*"],
+      // `paths` here REPLACES the map in tsconfig.app.json rather than merging
+      // with it, so every subpath entry this tree reaches has to be restated.
+      // Missing one falls through to that package's `dist/`, and the check
+      // runs against whatever was built last instead of the source.
+      "@stacksjs/browser/*": ["./core/browser/src/*"],
+      "@stacksjs/cms/*": ["./core/cms/src/*"],
+      "@stacksjs/composables/*": ["./core/composables/src/*"],
+      "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
+      "@stacksjs/logging/*": ["./core/logging/src/*"],
+      "@stacksjs/path/*": ["./core/path/src/*"],
+      "@stacksjs/storage/*": ["./core/storage/src/*"],
+      "@stacksjs/utils/*": ["./core/utils/src/*"],
+      "@stacksjs/validation/*": ["./core/validation/src/*"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
       "@stacksjs/types/exit-code": ["./core/types/src/exit-code.ts"],
       "@stacksjs/*": ["./core/*/src"],

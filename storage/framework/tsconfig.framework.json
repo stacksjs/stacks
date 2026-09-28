@@ -31,6 +31,20 @@
       "@stacksjs/utils/*": ["./core/utils/src/*"],
       "@stacksjs/browser/*": ["./core/browser/src/*"],
       "@stacksjs/composables/*": ["./core/composables/src/*"],
+      // Every package imported by subpath needs its own entry, here as much as in
+      // core/tsconfig.build.json: `@stacksjs/*` below binds the wildcard to the
+      // whole remainder, so `@stacksjs/logging/runtime` looks for
+      // `./core/logging/runtime/src`, misses, and falls through to the package
+      // exports - a `dist/` that is either absent or as old as the last local
+      // build. The typecheck then reports on that stale `dist/` instead of the
+      // source it is meant to check: `RuntimeLog` without `flush`, a missing
+      // `http-error` and `request-validator`, all of them present in `src/`.
+      "@stacksjs/cms/*": ["./core/cms/src/*"],
+      "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
+      "@stacksjs/logging/*": ["./core/logging/src/*"],
+      "@stacksjs/path/*": ["./core/path/src/*"],
+      "@stacksjs/storage/*": ["./core/storage/src/*"],
+      "@stacksjs/validation/*": ["./core/validation/src/*"],
       "@stacksjs/desktop-build": ["./core/desktop/src"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
       "@stacksjs/types/exit-code": ["./core/types/src/exit-code.ts"],
