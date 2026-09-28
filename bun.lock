@@ -515,6 +515,7 @@
         "@stacksjs/slug": "workspace:*",
         "@stacksjs/stx": "^0.2.307",
         "@stacksjs/validation": "workspace:*",
+        "ts-medium-editor": "^0.2.0",
         "ts-slug": "^0.1.0",
         "ts-spreadsheets": "^0.2.0",
       },
@@ -2090,6 +2091,8 @@
     "ts-images": ["ts-images@0.2.21", "", { "dependencies": { "@stacksjs/ts-avif": "^0.1.4", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "^0.1.1", "@stacksjs/ts-webp": "^0.1.2", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-ADJ3bbLLK5ckh0IcuIoAlTo0nJy7Ofeqy8D9td4+C/BQ4Ft7QCB4OSNlRSZfYiwtxvSeg3VE9N7Crht0/QnSJg=="],
 
     "ts-jpeg": ["ts-jpeg@0.3.5", "", {}, "sha512-etdIfMDRDYDF44kDu++z0M5GbR7ph9IKmubSXQop1O8NTUc+xjxE8dPt/niosHRUhMiQ4gaLtuFh0DH6QvfopA=="],
+
+    "ts-medium-editor": ["ts-medium-editor@0.2.0", "", {}, "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="],
 
     "ts-pantry": ["ts-pantry@0.11.64", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-eEshD29GX8rgloOTsh0COhEEAeIKZ4yEvweeHHSteH+FsAOt47NhmXBhwxiP6CFg1BWa9Wz7uuIjyf58Y7tStQ=="],
 

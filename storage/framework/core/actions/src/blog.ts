@@ -18,6 +18,12 @@
  * the app's `config/blog.ts`; the defaults below match the Stacks blog so an
  * unconfigured app renders exactly as before.
  *
+ * Post bodies go through `renderPostHtml` from `@stacksjs/cms/article` (built
+ * on ts-medium-editor's article renderer): images become figures and adjacent
+ * ones grids, sized from the files in public/, with lazy loading and
+ * click-to-zoom, and a bare YouTube, Vimeo or HQ.training link becomes an
+ * embed. stx-native blogs call the same function from their post view.
+ *
  * Two consumers share the same renderers:
  *   - `renderBlog(req)` — dynamic, used by the dev server's onRequest hook.
  *   - `buildBlog({ outDir, baseUrl })` — static, used at deploy time to emit
@@ -26,6 +32,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { articleCss, articleScript, renderPostHtml } from '@stacksjs/cms/article'
 
 const CONTENT_DIR = join(process.cwd(), 'content/blog')
 const THEME_FILE = join(CONTENT_DIR, '.theme.css')
@@ -359,7 +366,7 @@ async function blogConfig(bp: BunPress, fm: Record<string, any>) {
     description: fm.description || cfg.description,
     docsDir: CONTENT_DIR,
     theme: 'bun',
-    markdown: { ...bp.defaultConfig.markdown, css: `${baseCss}\n${themeCss}` },
+    markdown: { ...bp.defaultConfig.markdown, css: `${baseCss}\n${articleCss()}\n${themeCss}` },
     themeConfig: {
       siteTitle: cfg.siteTitle,
       nav: cfg.nav,
@@ -412,7 +419,11 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
     return null
 
   const raw = readFileSync(file, 'utf-8')
-  const { html, frontmatter: fm } = await bp.markdownToHtml(raw, CONTENT_DIR)
+  const rendered = await bp.markdownToHtml(raw, CONTENT_DIR)
+  const fm = rendered.frontmatter
+  // Figures, image grids sized from the files in public/, lazy loading,
+  // click-to-zoom and embeds for bare links (see @stacksjs/cms/article).
+  const html = renderPostHtml(rendered.html)
 
   // Only real posts (title + date) are served; prose docs in content/blog/
   // (e.g. STRATEGY.md) are not addressable as posts. `draft: true` 404s here as
@@ -458,7 +469,7 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
       </nav>`
     : ''
 
-  return bp.wrapInLayout(await blogChrome() + header + html + authorCard + share + more + await blogFooter(), await blogConfig(bp, fm), `/blog/${slug}`, 'page')
+  return bp.wrapInLayout(await blogChrome() + header + html + authorCard + share + more + await blogFooter() + articleScript(), await blogConfig(bp, fm), `/blog/${slug}`, 'page')
 }
 
 /** Full HTML for the blog listing. */
