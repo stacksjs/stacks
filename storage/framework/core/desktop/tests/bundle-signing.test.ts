@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -18,17 +18,17 @@ import { bundleDirectoryFor, codesignArgs, isMachO } from '../src/index'
 const scratch = mkdtempSync(join(tmpdir(), 'stacks-bundle-signing-'))
 afterAll(() => rmSync(scratch, { recursive: true, force: true }))
 
-const binary = join(scratch, 'launcher')
-writeFileSync(join(scratch, 'launcher.ts'), 'console.log("launched")\n')
-const compiled = Bun.spawnSync([process.execPath, 'build', '--compile', join(scratch, 'launcher.ts'), '--outfile', binary])
+const machOBinary = join(scratch, 'synthetic-mach-o')
+writeFileSync(machOBinary, Uint8Array.from([0xFE, 0xED, 0xFA, 0xCF]))
+const launcherSource = join(scratch, 'launcher.ts')
+const compiledBinary = join(scratch, 'launcher')
 const manifest = join(scratch, 'desktop.json')
 writeFileSync(manifest, '{"title":"Test"}\n')
 
 describe('bundleDirectoryFor', () => {
   test('puts executables in MacOS and data in Resources', () => {
-    expect(compiled.exitCode).toBe(0)
-    expect(isMachO(binary)).toBe(true)
-    expect(bundleDirectoryFor(binary)).toBe('MacOS')
+    expect(isMachO(machOBinary)).toBe(true)
+    expect(bundleDirectoryFor(machOBinary)).toBe('MacOS')
     expect(isMachO(manifest)).toBe(false)
     expect(bundleDirectoryFor(manifest)).toBe('Resources')
     expect(isMachO(join(scratch, 'missing'))).toBe(false)
@@ -59,7 +59,7 @@ function bundle(name: string, manifestDir: 'MacOS' | 'Resources'): string {
   <key>CFBundlePackageType</key><string>APPL</string>
 </dict></plist>
 `)
-  copyFileSync(binary, join(app, 'Contents', 'MacOS', name))
+  copyFileSync(compiledBinary, join(app, 'Contents', 'MacOS', name))
   copyFileSync(manifest, join(app, 'Contents', manifestDir, 'desktop.json'))
   return app
 }
@@ -69,6 +69,16 @@ function sign(target: string) {
 }
 
 describe.if(process.platform === 'darwin')('signing a bundle', () => {
+  beforeAll(() => {
+    writeFileSync(launcherSource, 'console.log("launched")\n')
+    const compiled = Bun.spawnSync([process.execPath, 'build', '--compile', launcherSource, '--outfile', compiledBinary])
+
+    if (compiled.exitCode !== 0)
+      throw new Error(compiled.stderr.toString())
+    if (!isMachO(compiledBinary))
+      throw new Error('Bun did not produce a Mach-O launcher on macOS')
+  })
+
   test('succeeds with the manifest in Resources, and verifies', () => {
     const app = bundle('Placed', bundleDirectoryFor(manifest))
     expect(sign(join(app, 'Contents', 'MacOS', 'Placed')).exitCode).toBe(0)
