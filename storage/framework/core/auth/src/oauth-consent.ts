@@ -1,9 +1,14 @@
 import type { OAuthAuthorizationRequestSessionResult } from './oauth-authorization-requests'
-import type { ValidatedOAuthAuthorizationRequest } from './oauth-authorization'
+import type { ResolvedOAuthProviderConfig } from './oauth-provider'
+import {
+  OAuthAuthorizationRequestError,
+  type ValidatedOAuthAuthorizationRequest,
+  validateOAuthAuthorizationRequest,
+} from './oauth-authorization'
 import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { issueAuthorizationCode } from './oauth-authorization-codes'
-import { withOAuthAuthorizationRequestSession } from './oauth-authorization-requests'
-import { loadOAuthAuthorizationClient } from './oauth-client-registration'
+import { loadOAuthAuthorizationRequestSession, withOAuthAuthorizationRequestSession } from './oauth-authorization-requests'
+import { loadOAuthAuthorizationClient, loadOAuthAuthorizationClientDetails } from './oauth-client-registration'
 import { createOAuthGrant } from './oauth-grants'
 
 export interface ApproveOAuthAuthorizationRequestSessionInput {
@@ -34,6 +39,30 @@ export interface ReusableOAuthConsentInput {
   subjectId: number
   workspaceId?: string | null
   rememberForMs: number
+}
+
+export interface LoadOAuthAuthorizationConsentViewInput {
+  provider: ResolvedOAuthProviderConfig
+  requestId: string
+  browserSessionId: string
+}
+
+export interface OAuthAuthorizationConsentView {
+  requestId: string
+  client: {
+    id: string
+    name: string
+    type: 'confidential' | 'public'
+  }
+  permissions: Array<{
+    name: string
+    description: string
+  }>
+  resources: Array<{
+    name: string
+    audience: string
+    description?: string
+  }>
 }
 
 interface StoredRememberedConsent {
@@ -73,6 +102,64 @@ function includesResourceBindings(
     const approvedIndex = approvedResources.indexOf(resource)
     return approvedIndex >= 0 && approvedAudiences[approvedIndex] === requestedAudiences[index]
   })
+}
+
+/** Build consent-safe display data without returning callback or PKCE fields. */
+export async function loadOAuthAuthorizationConsentView(
+  input: LoadOAuthAuthorizationConsentViewInput,
+): Promise<OAuthAuthorizationConsentView | null> {
+  const request = await loadOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId)
+  if (!request)
+    return null
+  const client = await loadOAuthAuthorizationClientDetails(request.clientId)
+  if (!client)
+    return null
+
+  let current: ValidatedOAuthAuthorizationRequest
+  try {
+    current = validateOAuthAuthorizationRequest(input.provider, client, {
+      responseType: request.responseType,
+      clientId: request.clientId,
+      redirectUri: request.redirectUri,
+      scope: request.scopes.join(' '),
+      resource: request.audiences,
+      ...(request.state === null ? {} : { state: request.state }),
+      codeChallenge: request.codeChallenge,
+      codeChallengeMethod: request.codeChallengeMethod,
+    })
+  }
+  catch (error) {
+    if (error instanceof OAuthAuthorizationRequestError)
+      return null
+    throw error
+  }
+
+  const permissions: OAuthAuthorizationConsentView['permissions'] = []
+  for (const name of current.scopes) {
+    const scope = input.provider.scopes[name]
+    if (!scope)
+      return null
+    permissions.push({ name, description: scope.description })
+  }
+  const resources: OAuthAuthorizationConsentView['resources'] = []
+  for (const [index, name] of current.resources.entries()) {
+    const resource = input.provider.resources[name]
+    const audience = current.audiences[index]
+    if (!resource || !audience)
+      return null
+    resources.push({
+      name,
+      audience,
+      ...(resource.description === undefined ? {} : { description: resource.description }),
+    })
+  }
+
+  return {
+    requestId: input.requestId,
+    client: { id: current.clientId, name: client.name, type: current.clientType },
+    permissions,
+    resources,
+  }
 }
 
 /** Whether a recent active grant already covers the requested consent. */

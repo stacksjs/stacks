@@ -68,6 +68,7 @@ const {
   issueAuthorizationCode,
   listOAuthClients,
   listOAuthConnections,
+  loadOAuthAuthorizationConsentView,
   loadOAuthAuthorizationRequestSession,
   loadOAuthAuthorizationClient,
   refreshOAuthDelegatedToken,
@@ -173,6 +174,38 @@ try {
   })
   assert.match(begunRequest.requestId, /^[A-Za-z0-9_-]{43}$/)
   assert.deepEqual(await loadOAuthAuthorizationRequestSession(begunRequest.requestId, browserSession), validatedRequest)
+  const consentView = await loadOAuthAuthorizationConsentView({
+    provider,
+    requestId: begunRequest.requestId,
+    browserSessionId: browserSession,
+  })
+  assert.deepEqual(consentView, {
+    requestId: begunRequest.requestId,
+    client: {
+      id: String(publicRegistration.client.id),
+      name: 'Browser integration',
+      type: 'public',
+    },
+    permissions: [{ name: 'issues:read', description: 'Read issues' }],
+    resources: [{ name: 'bughq', audience: 'https://api.bughq.example' }],
+  })
+  assert.equal('redirectUri' in consentView!, false)
+  assert.equal('codeChallenge' in consentView!, false)
+  assert.equal(await loadOAuthAuthorizationConsentView({
+    provider,
+    requestId: begunRequest.requestId,
+    browserSessionId: 'different-browser-session-token',
+  }), null)
+  assert.equal(await loadOAuthAuthorizationConsentView({
+    provider: resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      scopes: {},
+      resources: {},
+    })!,
+    requestId: begunRequest.requestId,
+    browserSessionId: browserSession,
+  }), null)
   const begunRequestRow = await db.selectFrom('oauth_authorization_requests')
     .where('request_hash', '=', createHash('sha256').update(begunRequest.requestId).digest('hex'))
     .selectAll()

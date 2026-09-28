@@ -61,6 +61,10 @@ export interface RegisteredOAuthClientResult {
   plainTextSecret?: string
 }
 
+export interface OAuthAuthorizationClientDetails extends OAuthAuthorizationClientRegistration {
+  name: string
+}
+
 export interface ManagedOAuthClient {
   id: number
   ownerId: number
@@ -279,7 +283,7 @@ async function storedAuthorizationClient(clientId: string): Promise<{
 
   const sql = sqlHelpers(getDatabaseDialect())
   const rows = await db.primary.unsafe(`
-    SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
+    SELECT id, name, secret, redirect, client_type, redirect_uris, grant_types,
       token_endpoint_auth_method, allowed_scopes, allowed_resources,
       personal_access_client, password_client, revoked
     FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
@@ -292,6 +296,15 @@ async function storedAuthorizationClient(clientId: string): Promise<{
 /** Load only complete provider registration metadata from authoritative storage. */
 export async function loadOAuthAuthorizationClient(clientId: string): Promise<OAuthAuthorizationClientRegistration | null> {
   return (await storedAuthorizationClient(clientId))?.client ?? null
+}
+
+/** Load validated client policy plus the display name used during consent. */
+export async function loadOAuthAuthorizationClientDetails(clientId: string): Promise<OAuthAuthorizationClientDetails | null> {
+  const stored = await storedAuthorizationClient(clientId)
+  const name = typeof stored?.row.name === 'string' ? stored.row.name.trim() : ''
+  if (!stored || !name || name.length > 100 || /[\u0000-\u001F\u007F]/.test(name))
+    return null
+  return { ...stored.client, name }
 }
 
 /** List complete provider clients owned by one account without exposing secret hashes. */
