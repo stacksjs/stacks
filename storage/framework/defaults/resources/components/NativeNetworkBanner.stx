@@ -19,12 +19,18 @@ onMount(() => {
 onDestroy(() => removeListener?.())
 </script>
 
+<!--
+  Visibility is a class, not `:if`. The banner starts connected, and a
+  component's `:if` that removed it on the first pass did not bring it back
+  inside Craft's WebView when the signal changed, so the app never said it had
+  gone offline. Both states go through the one `:class`: a second class
+  binding on the element would overwrite the first.
+-->
 <div
-  :if="!connected()"
   role="status"
   aria-live="polite"
   class="native-network-banner"
-  :class="className()"
+  :class="(connected() ? 'native-network-banner--quiet ' : '') + className()"
 >
   <i aria-hidden="true" class="h-4 w-4 i-hugeicons-wifi-disconnected-01"></i>
   <span>{{ offlineLabel() }}</span>
@@ -46,6 +52,9 @@ onDestroy(() => removeListener?.())
     font-size: 0.8125rem;
     font-weight: 600;
   }
+
+  /* After the base rule and doubled up, so it wins over `display: flex`. */
+  .native-network-banner.native-network-banner--quiet { display: none; }
 
   @media (prefers-color-scheme: dark) {
     .native-network-banner { color: rgb(254 243 199); background: rgb(120 53 15 / 0.96); }

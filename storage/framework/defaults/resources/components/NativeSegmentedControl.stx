@@ -1,0 +1,95 @@
+<script client>
+import { haptics } from '@stacksjs/mobile'
+
+/**
+ * An iOS segmented control: two to five mutually exclusive views of one screen.
+ *
+ * `options` is a list of strings or `{ label, value }`. Bind the choice with
+ * `v-model:value` or listen for `change`. A selection taps the haptic engine
+ * the way UISegmentedControl does.
+ */
+interface SegmentOption { label: string, value: string }
+
+const emit = defineEmits()
+const rawOptions = useReactiveProp<Array<string | SegmentOption>>('options', [])
+const ariaLabel = useReactiveProp<string>('label', 'View')
+const className = useReactiveProp<string>('class', '')
+const selected = useModel('value', { default: '' })
+
+const options = derived<SegmentOption[]>(() => rawOptions().map(option =>
+  typeof option === 'string' ? { label: option, value: option } : option))
+
+const activeIndex = derived(() => Math.max(0, options().findIndex(option => option.value === (selected() || options()[0]?.value))))
+const thumbStyle = derived(() => {
+  const count = Math.max(1, options().length)
+  return `width:calc((100% - 4px) / ${count});transform:translateX(${activeIndex() * 100}%)`
+})
+
+function choose(value: string): void {
+  if (value === selected()) return
+  selected.set(value)
+  void haptics.selection()
+  emit('change', value)
+}
+</script>
+
+<div role="tablist" :aria-label="ariaLabel()" class="native-segmented" :class="className()">
+  <span aria-hidden="true" class="native-segmented-thumb" :style="thumbStyle()"></span>
+  <button
+    :for="(option, index) in options()"
+    :key="option.value"
+    type="button"
+    role="tab"
+    class="native-segmented-option"
+    :aria-selected="index === activeIndex() ? 'true' : 'false'"
+    @click="choose(option.value)"
+  >{{ option.label }}</button>
+</div>
+
+<style>
+  .native-segmented {
+    position: relative;
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    padding: 2px;
+    border-radius: 0.6rem;
+    background: var(--native-segmented-track, rgb(118 118 128 / 0.12));
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .dark .native-segmented { background: var(--native-segmented-track-dark, rgb(118 118 128 / 0.24)); }
+
+  .native-segmented-thumb {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    border-radius: 0.45rem;
+    background: var(--native-segmented-thumb, white);
+    box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04);
+    transition: transform 220ms cubic-bezier(0.3, 0.7, 0.4, 1);
+  }
+
+  .dark .native-segmented-thumb { background: var(--native-segmented-thumb-dark, rgb(99 99 102)); }
+
+  .native-segmented-option {
+    position: relative;
+    z-index: 1;
+    min-height: 2rem;
+    padding: 0 0.75rem;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .native-segmented-option[aria-selected="true"] { font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-segmented-thumb { transition: none; }
+  }
+</style>

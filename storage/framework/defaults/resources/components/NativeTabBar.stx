@@ -23,7 +23,8 @@ function selectTab(): void {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
-    min-height: 4.5rem;
+    min-height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     border-top: 1px solid rgb(148 163 184 / 0.22);
     background: rgb(255 255 255 / 0.9);
     backdrop-filter: blur(24px) saturate(160%);
@@ -44,10 +45,28 @@ function selectTab(): void {
     text-decoration: none;
     transition: color 150ms ease, transform 150ms ease;
     -webkit-tap-highlight-color: transparent;
+    /* No link preview or callout on a long press: a tab is not a link to share. */
+    -webkit-touch-callout: none;
+  }
+
+  .native-tab-glyph { position: relative; display: inline-flex; }
+
+  .native-tab-badge {
+    position: absolute;
+    top: -0.3rem;
+    right: -0.55rem;
+    min-width: 1rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    color: white;
+    background: rgb(225 29 72);
+    font-size: 0.625rem;
+    line-height: 1rem;
+    text-align: center;
   }
 
   .native-tab-item:active { transform: scale(0.96); }
-  .native-tab-item.is-active { color: rgb(5 150 105); }
+  .native-tab-item.is-active { color: var(--native-tab-active, rgb(5 150 105)); }
   .native-tab-icon { width: 1.35rem; height: 1.35rem; }
 
   .dark .native-tab-bar {
@@ -56,7 +75,7 @@ function selectTab(): void {
   }
 
   .dark .native-tab-item { color: rgb(148 163 184); }
-  .dark .native-tab-item.is-active { color: rgb(52 211 153); }
+  .dark .native-tab-item.is-active { color: var(--native-tab-active-dark, rgb(52 211 153)); }
 
   @media (prefers-reduced-transparency: reduce) {
     .native-tab-bar {

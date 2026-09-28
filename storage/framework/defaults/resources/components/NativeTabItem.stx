@@ -3,17 +3,36 @@ interface NativeTabItemProps {
   label: string
   href: string
   icon: string
+  /** A count on the icon. Zero and empty draw nothing. */
+  badge?: string | number
+  /**
+   * More paths that belong to this tab, space-separated: a workout opened from
+   * the calendar keeps the Calendar tab lit. A tab bar is a <nav>, where a
+   * link is otherwise current only on its own page.
+   */
+  match?: string
 }
 
-const { href, icon, label } = defineProps<NativeTabItemProps>()
+const { href, icon, label, badge = '', match = '' } = defineProps<NativeTabItemProps>()
+const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
 </script>
 
+<!-- `draggable="false"`: a slow tap on a busy page reaches the WebView as a
+     long press, and a draggable link starts a native drag instead of
+     navigating. -->
 <StxLink
   to="{{ href }}"
   aria-label="{{ label }}"
   activeClass="is-active"
+  activeMatch="{{ match }}"
   class="native-tab-item"
+  draggable="false"
 >
-  <i aria-hidden="true" class="{{ icon }} native-tab-icon"></i>
+  <span class="native-tab-glyph">
+    <i aria-hidden="true" class="{{ icon }} native-tab-icon"></i>
+    @if(hasBadge)
+      <span class="native-tab-badge">{{ badge }}</span>
+    @endif
+  </span>
   <span>{{ label }}</span>
 </StxLink>

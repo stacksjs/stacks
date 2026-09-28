@@ -1,0 +1,147 @@
+<script>
+interface NativeNavBarProps {
+  /** The screen's name: display-sized under the bar, then in the bar once scrolled. */
+  title?: string
+  /** A parent to go back to. History is used when the app pushed this screen. */
+  back?: string
+  backLabel?: string
+  /** `false` for a pushed screen: the title sits in the bar from the start. */
+  large?: boolean
+}
+
+const { title = '', back = '', backLabel = 'Back', large = true } = defineProps<NativeNavBarProps>()
+</script>
+
+<script client>
+import { goBack, haptics, observePageScroll } from '@stacksjs/mobile'
+
+const isLarge = useReactiveProp<boolean>('large', true)
+// Reactive, so a screen whose name arrives with its data can pass it in.
+const navTitle = useReactiveProp<string>('title', '')
+const scrolled = state(false)
+let stopScroll: (() => void) | null = null
+
+onMount(() => {
+  // The large title is about 44px tall; past it, its name belongs in the bar.
+  stopScroll = observePageScroll(offset => scrolled.set(offset > 40))
+})
+onDestroy(() => stopScroll?.())
+
+const barClass = derived(() => {
+  const collapsed = !isLarge() || scrolled()
+  return `native-nav-bar${collapsed ? ' is-collapsed' : ''}${scrolled() ? ' is-scrolled' : ''}`
+})
+
+function tapBack(event: MouseEvent): void {
+  void haptics.selection()
+  if (goBack()) event.preventDefault()
+}
+</script>
+
+<!-- `display: contents` on the wrapper: a sticky element sticks within its
+     parent, and a wrapper exactly the bar's height would give it no room. -->
+<div class="native-nav" data-native-nav-bar>
+  <header :class="barClass()">
+    <div class="native-nav-side">
+      @if(back)
+        <a href="{{ back }}" class="native-nav-back" aria-label="{{ backLabel }}" draggable="false" @click="tapBack">
+          <i aria-hidden="true" class="i-lucide-chevron-left native-nav-back-icon"></i>
+          <span>{{ backLabel }}</span>
+        </a>
+      @endif
+      <slot name="leading" />
+    </div>
+    <p class="native-nav-title" aria-hidden="{{ large ? 'true' : 'false' }}">{{ navTitle() }}</p>
+    <div class="native-nav-side native-nav-actions">
+      <slot name="actions" />
+    </div>
+  </header>
+  @if(large)
+    <h1 class="native-nav-large-title" :class="navTitle() ? '' : 'is-empty'">{{ navTitle() }}</h1>
+  @endif
+  <slot />
+</div>
+
+<style>
+  .native-nav { display: contents; }
+
+  .native-nav-bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 30;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    border-bottom: 1px solid transparent;
+    transition: background-color 180ms ease, border-color 180ms ease;
+  }
+
+  .native-nav-bar.is-scrolled {
+    border-color: var(--native-bar-border, rgb(148 163 184 / 0.25));
+    background: var(--native-bar-background, rgb(248 250 252 / 0.86));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .dark .native-nav-bar.is-scrolled {
+    border-color: var(--native-bar-border-dark, rgb(51 65 85 / 0.6));
+    background: var(--native-bar-background-dark, rgb(2 6 23 / 0.86));
+  }
+
+  .native-nav-side { display: flex; gap: 0.25rem; align-items: center; min-width: 0; }
+  .native-nav-actions { justify-content: flex-end; }
+
+  .native-nav-title {
+    max-width: 60vw;
+    overflow: hidden;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .native-nav-bar.is-collapsed .native-nav-title { opacity: 1; transform: none; }
+
+  .native-nav-back {
+    display: inline-flex;
+    gap: 0.1rem;
+    align-items: center;
+    min-height: 2.75rem;
+    margin-left: -0.4rem;
+    padding-right: 0.5rem;
+    color: var(--native-accent, rgb(37 99 235));
+    font-size: 1.0625rem;
+    text-decoration: none;
+    -webkit-touch-callout: none;
+  }
+
+  .dark .native-nav-back { color: var(--native-accent-dark, rgb(96 165 250)); }
+  .native-nav-back:active { opacity: 0.55; }
+  .native-nav-back-icon { width: 1.6rem; height: 1.6rem; }
+
+  .native-nav-large-title.is-empty { display: none; }
+
+  .native-nav-large-title {
+    margin: 0.125rem 0 0.5rem;
+    padding: 0 1rem;
+    font-size: 2.125rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-nav-bar, .native-nav-title { transition: none; }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .native-nav-bar.is-scrolled { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--native-bar-solid, rgb(248 250 252)); }
+    .dark .native-nav-bar.is-scrolled { background: var(--native-bar-solid-dark, rgb(2 6 23)); }
+  }
+</style>

@@ -2,16 +2,49 @@
 interface NativeAppShellProps {
   class?: string
   tabBar?: boolean
+  /** Open the app's deep links (`myapp://path`, or a universal link) at their path. */
+  deepLinks?: boolean
 }
 
 const { tabBar = false } = defineProps<NativeAppShellProps>()
 </script>
 
 <script client>
+import { deepLinks as deepLinkService, device, followDeepLinks, isNativeMobile, whenNativeMobile } from '@stacksjs/mobile'
+
 const className = useReactiveProp<string>('class', '')
+// A bare attribute arrives as an empty string.
+const deepLinkProp = useReactiveProp<unknown>('deepLinks', false)
+let stopDeepLinks: (() => void) | null = null
+onMount(() => {
+  const on = deepLinkProp()
+  if (on === true || on === '' || on === 'true')
+    stopDeepLinks = followDeepLinks(path => navigate(path), deepLinkService)
+})
+onDestroy(() => stopDeepLinks?.())
+
+// Asked twice on purpose. Craft installs its bridge after the document starts,
+// so on a phone the answer at setup is often `false`, and every rule hanging
+// off `.native-mobile` would never apply. whenNativeMobile() answers once the
+// host is recognisable or the bridge is ready.
+const nativeMobile = state(isNativeMobile())
+const platform = state('')
+void whenNativeMobile().then((native) => {
+  nativeMobile.set(native)
+  if (native) platform.set(device.isIOS() ? 'ios' : device.isAndroid() ? 'android' : '')
+})
+
+// One class binding: a second binding on the same element overwrites the
+// first's classes whenever it runs.
+const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${className()}`.trim())
 </script>
 
-<div data-native-app-shell class="native-app-shell" :class="className()">
+<div
+  data-native-app-shell
+  class="native-app-shell"
+  :class="shellClass()"
+  :data-native-platform="platform()"
+>
   <!-- The application layout owns the single <main> landmark. This shell is
        structural chrome; making it another <main> creates invalid nested
        landmarks and gives both elements the router's stx-content view-
@@ -32,6 +65,8 @@ const className = useReactiveProp<string>('class', '')
     --native-safe-area-right: env(safe-area-inset-right, 0px);
     --native-safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --native-safe-area-left: env(safe-area-inset-left, 0px);
+    /* The height a fixed tab bar takes, which content and sticky footers clear. */
+    --native-tab-bar-height: 0px;
 
     min-height: 100dvh;
     color: inherit;
@@ -68,27 +103,41 @@ const className = useReactiveProp<string>('class', '')
    * footer that a visitor could scroll into, which reads as a broken page.
    *
    * Scoped to below `md` (768px, the framework's own breakpoint and where
-   * NativeTabBar stops being shown) so the clearance exists exactly when the
-   * thing it is clearing does.
+   * NativeTabBar stops being shown) — or to the phone app at any width — so
+   * the clearance exists exactly when the thing it is clearing does.
    */
   @media (max-width: 767.98px) {
+    .native-app-shell:has(.native-app-tab-slot) { --native-tab-bar-height: 4.5rem; }
     .native-app-shell:has(.native-app-tab-slot) .native-app-content {
       padding-bottom: calc(5rem + var(--native-safe-area-bottom));
     }
+  }
+
+  .native-app-shell.native-mobile:has(.native-app-tab-slot) { --native-tab-bar-height: 4.5rem; }
+  .native-app-shell.native-mobile:has(.native-app-tab-slot) .native-app-content {
+    padding-bottom: calc(5rem + var(--native-safe-area-bottom));
   }
 
   .native-app-sticky-top {
     top: var(--native-safe-area-top);
   }
 
+  /* No inset padding here: the bar inside pads itself, so its background runs
+     under the home indicator instead of leaving a see-through strip there. */
   .native-app-tab-slot {
     position: fixed;
     right: 0;
     bottom: 0;
     left: 0;
     z-index: 30;
-    padding-right: var(--native-safe-area-right);
-    padding-bottom: var(--native-safe-area-bottom);
-    padding-left: var(--native-safe-area-left);
+  }
+
+  /* A phone app does not select its chrome on a long press, or flash it grey
+     on a tap. Text inside the content is left selectable. */
+  .native-app-shell.native-mobile .native-app-tab-slot,
+  .native-app-shell.native-mobile [data-native-nav-bar] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 </style>

@@ -71,8 +71,22 @@ export interface IosMobileConfig {
   webAssets?: string
   fallbackWebAssets?: string
   output?: string
+  /** Pins the interface to Dark (`true`) or Light (`false`). See `appearance`. */
   darkMode?: boolean
+  /**
+   * `system` follows the phone's Light/Dark setting, and the page's
+   * `prefers-color-scheme` with it; `light` and `dark` pin one. Takes
+   * precedence over `darkMode`.
+   */
+  appearance?: 'light' | 'dark' | 'system'
   backgroundColor?: string
+  /** The launch and webview background while the phone is in Dark Mode. */
+  backgroundColorDark?: string
+  /**
+   * An edge swipe goes back (and forward) through the page's history, pushed
+   * routes included, the way an iOS navigation stack does.
+   */
+  swipeNavigation?: boolean
   urlSchemes?: string[]
   trustedOrigins?: string[]
   associatedDomains?: string[]

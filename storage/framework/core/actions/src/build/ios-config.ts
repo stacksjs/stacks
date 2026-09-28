@@ -8,7 +8,10 @@ export interface CraftIosConfig {
   version?: string
   buildNumber?: string
   darkMode?: boolean
+  appearance?: IosMobileConfig['appearance']
   backgroundColor?: string
+  backgroundColorDark?: string
+  swipeNavigation?: boolean
   iosVersion?: string
   watchosVersion?: string
   teamId?: string
@@ -82,7 +85,10 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     version: config.version,
     buildNumber: config.buildNumber,
     darkMode: config.darkMode,
+    appearance: config.appearance,
     backgroundColor: config.backgroundColor,
+    backgroundColorDark: config.backgroundColorDark,
+    swipeNavigation: config.swipeNavigation,
     iosVersion: config.deploymentTarget,
     watchosVersion: config.watchDeploymentTarget,
     teamId: config.teamId,
@@ -102,6 +108,13 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     if (enabled !== undefined) craft[nativeKey] = enabled
   }
   if (config.capabilities?.backgroundLocation) craft.enableGeolocation = true
+
+  // An option the app left unset is left out, not sent as undefined. Craft
+  // releases before 0.0.101 let an undefined `darkMode` erase their default,
+  // and the iOS app then could not read its config at all.
+  for (const key of Object.keys(craft)) {
+    if (craft[key] === undefined) delete craft[key]
+  }
 
   return craft
 }

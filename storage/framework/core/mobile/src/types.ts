@@ -76,6 +76,7 @@ export interface MobileApi {
   liveActivities: LiveActivitiesApi
   watchConnectivity: WatchConnectivityApi
   isNativeMobile: () => boolean
+  whenNative: (timeoutMs?: number) => Promise<boolean>
   onReady: (callback: (event: CraftReadyEvent) => void) => () => void
   withFeedback: <T>(action: () => T | Promise<T>) => Promise<T>
 }
@@ -270,7 +271,8 @@ export interface KeepAwakeApi {
 
 export interface DeepLinksApi {
   getInitialURL: () => Promise<string | null>
-  onLink: (callback: (url: string) => void) => () => void
+  /** `link.initial` marks the link the app was launched with, which getInitialURL also answers. */
+  onLink: (callback: (url: string, link?: { initial: boolean }) => void) => () => void
 }
 
 export interface NetworkStatus {
@@ -293,7 +295,19 @@ export interface PushNotificationsApi {
   onNotification: (callback: (data: Record<string, unknown>) => void) => () => void
 }
 
-export type HealthDataType = 'steps' | 'heartRate' | 'activeEnergy' | 'distance' | 'workouts'
+export type HealthDataType =
+  | 'steps'
+  | 'heartRate'
+  | 'activeEnergy'
+  | 'distance'
+  | 'workouts'
+  | 'restingHeartRate'
+  | 'heartRateVariability'
+  | 'bodyMass'
+  | 'sleep'
+
+/** The types with one value per day. `sleep` is hours asleep, counted on the day you woke. */
+export type HealthDailyType = Exclude<HealthDataType, 'workouts'>
 
 export interface HealthDataOptions {
   startDate?: number
@@ -329,10 +343,58 @@ export interface HealthWorkoutResult {
   id: string
 }
 
+export interface HealthWorkoutQuery {
+  /** Epoch milliseconds. Defaults to 30 days ago. */
+  startDate?: number
+  /** Epoch milliseconds. Defaults to now. */
+  endDate?: number
+  /** At most this many, newest first. Defaults to 200, capped at 1000. */
+  limit?: number
+}
+
+/** The activity of a workout read from Apple Health, named independently of the SDK. */
+export type HealthWorkoutActivity =
+  | 'running' | 'cycling' | 'walking' | 'hiking' | 'swimming' | 'rowing' | 'elliptical'
+  | 'stairClimbing' | 'yoga' | 'pilates' | 'strength' | 'hiit' | 'crossTraining'
+  | 'crossCountrySkiing' | 'skiing' | 'paddling' | 'climbing' | 'dance' | 'mobility' | 'other'
+
+/** A workout recorded by the watch, or by any app that writes to Apple Health. */
+export interface HealthWorkoutSample {
+  /** HealthKit's UUID: stable across reads, so it can key an import. */
+  id: string
+  type: HealthWorkoutActivity
+  startDate: number
+  endDate: number
+  durationSeconds: number
+  sourceName: string
+  indoor: boolean
+  distanceMeters?: number
+  elevationGainMeters?: number
+  activeEnergyCalories?: number
+  averageHeartRate?: number
+  maxHeartRate?: number
+}
+
+export interface HealthDailyValue {
+  /** The local day, YYYY-MM-DD. */
+  date: string
+  value: number
+  unit: string
+}
+
+export interface HealthAuthorizationOptions {
+  /** `false` asks to read only, for an app that never writes back. */
+  write?: boolean
+}
+
 export interface HealthApi {
-  requestAuthorization: (types: HealthDataType[]) => Promise<boolean>
+  requestAuthorization: (types: HealthDataType[], options?: HealthAuthorizationOptions) => Promise<boolean>
   getData: (type: HealthDataType, options?: HealthDataOptions) => Promise<HealthDataResult>
   saveWorkout: (workout: HealthWorkout) => Promise<HealthWorkoutResult>
+  /** Workouts in Apple Health, newest first. iOS only for now. */
+  getWorkouts: (options?: HealthWorkoutQuery) => Promise<HealthWorkoutSample[]>
+  /** One value per local day between two dates. iOS only for now. */
+  getDailyStatistics: (type: HealthDailyType, options?: HealthDataOptions) => Promise<HealthDailyValue[]>
 }
 
 export interface LiveActivityState {

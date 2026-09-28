@@ -59,6 +59,8 @@ import type {
   WatchConnectivityApi,
 } from './types'
 
+export * from './gestures'
+export * from './navigation'
 export * from './types'
 
 export const biometrics: BiometricsApi = craftBiometrics
@@ -84,9 +86,9 @@ export const deepLinks: DeepLinksApi = {
     return normalizeDeepLinkURL(await craftDeepLinks.getInitialURL?.())
   },
   onLink(callback) {
-    return craftDeepLinks.onLink?.((value: unknown) => {
+    return craftDeepLinks.onLink?.((value: unknown, link?: { initial?: boolean }) => {
       const url = normalizeDeepLinkURL(value)
-      if (url) callback(url)
+      if (url) callback(url, { initial: link?.initial === true })
     }) ?? (() => {})
   },
 }
@@ -123,6 +125,57 @@ export function getNativeMobileBridge(): CraftMobileBridge | null {
 
 export function isNativeMobile(): boolean {
   return getNativeMobileBridge() !== null
+}
+
+interface CraftTransports {
+  craft?: unknown
+  CraftAndroid?: unknown
+  webkit?: { messageHandlers?: { craft?: unknown } }
+}
+
+/**
+ * Whether this page runs inside Craft's phone shell, before the bridge exists.
+ *
+ * Craft installs `window.craft` once the page has finished loading — images
+ * and all — so `isNativeMobile()` answers `false` during setup on a phone, and
+ * a layout that decides then renders the website's chrome in the app. The
+ * transports are there from the start: Android's `CraftAndroid` interface, and
+ * on iOS the `craft` message handler. Craft's macOS windows carry that handler
+ * too, so on iOS an iPhone or iPad user agent is what makes it the phone app.
+ */
+export function hasNativeMobileHost(): boolean {
+  if (typeof window === 'undefined') return false
+  const host = window as unknown as CraftTransports
+  if (host.CraftAndroid) return true
+  const agent = typeof navigator === 'undefined' ? '' : navigator.userAgent
+  return Boolean(host.webkit?.messageHandlers?.craft) && /iPhone|iPad|iPod/.test(agent)
+}
+
+/**
+ * Resolves `true` inside the phone shell and `false` in a browser, at a moment
+ * when the answer is right.
+ *
+ * A browser answers at once. A phone answers at once too when its host is
+ * already recognisable, and otherwise once `craftReady` fires. The timeout is
+ * a floor for a host that never fires it: a caller waiting on this has to
+ * decide something to render anything.
+ */
+export function whenNativeMobile(timeoutMs = 2000): Promise<boolean> {
+  if (isNativeMobile() || hasNativeMobileHost()) return Promise.resolve(true)
+  const current = host()
+  const transports = current as unknown as CraftTransports | undefined
+  if (!current || !(transports?.craft || transports?.webkit?.messageHandlers?.craft))
+    return Promise.resolve(false)
+
+  return new Promise<boolean>((resolve) => {
+    const done = (): void => {
+      clearTimeout(timer)
+      current.removeEventListener('craftReady', done)
+      resolve(isNativeMobile())
+    }
+    const timer = setTimeout(done, timeoutMs)
+    current.addEventListener('craftReady', done, { once: true })
+  })
 }
 
 export function onMobileReady(callback: (event: CraftReadyEvent) => void): () => void {
@@ -180,6 +233,7 @@ export const mobile: MobileApi = {
   liveActivities,
   watchConnectivity,
   isNativeMobile,
+  whenNative: whenNativeMobile,
   onReady: onMobileReady,
   withFeedback: withNativeFeedback,
 }

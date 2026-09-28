@@ -26,6 +26,28 @@ describe('iOS mobile build configuration', () => {
     expect(config.deviceFamilies).toEqual(['iphone'])
   })
 
+  it('passes the appearance and the dark background through to Craft', () => {
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training/m',
+      appearance: 'system',
+      backgroundColor: '#f8fafc',
+      backgroundColorDark: '#020617',
+      swipeNavigation: true,
+    })
+
+    expect(config.appearance).toBe('system')
+    expect(config.backgroundColorDark).toBe('#020617')
+    expect(config.swipeNavigation).toBe(true)
+    expect(config.devServerURL).toBe('https://hq.training/m')
+    expect(config.trustedOrigins).toEqual(['https://hq.training'])
+    // Unset options are absent, never undefined: Craft would let an
+    // undefined erase its default.
+    expect('darkMode' in config).toBe(false)
+    expect(Object.values(config).includes(undefined)).toBe(false)
+  })
+
   it('rejects insecure production URLs and malformed associated domains', () => {
     expect(() => validateIosMobileConfig({
       appName: 'WildLoop',

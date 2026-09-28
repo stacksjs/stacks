@@ -1,0 +1,99 @@
+<script client>
+import { observePullToRefresh } from '@stacksjs/mobile'
+
+/**
+ * Pull the page down from its top to refresh it.
+ *
+ * On iOS the pull rides the system's own rubber band, so it feels like a
+ * native list; elsewhere the finger's travel drives it. Crossing the threshold
+ * taps the haptic engine once. The `refresh` event carries `done()`: call it
+ * when the new data is in, and the spinner goes away. A handler that never
+ * calls it is let go after 15 seconds.
+ */
+const emit = defineEmits()
+const threshold = useReactiveProp<number>('threshold', 72)
+const label = useReactiveProp<string>('label', 'Refreshing')
+const distance = state(0)
+const armed = state(false)
+const refreshing = state(false)
+let stop: (() => void) | null = null
+
+onMount(() => {
+  stop = observePullToRefresh({
+    threshold: threshold(),
+    onPull: (pulled, isArmed) => {
+      distance.set(pulled)
+      armed.set(isArmed)
+    },
+    onRefresh: () => new Promise<void>((resolve) => {
+      refreshing.set(true)
+      const finish = (): void => {
+        clearTimeout(timer)
+        refreshing.set(false)
+        resolve()
+      }
+      const timer = setTimeout(finish, 15000)
+      emit('refresh', { done: finish })
+    }),
+  })
+})
+onDestroy(() => stop?.())
+
+const indicatorClass = derived(() => {
+  const visible = refreshing() || distance() > 8
+  return `native-ptr-indicator${visible ? ' is-visible' : ''}${refreshing() ? ' is-refreshing' : ''}${armed() ? ' is-armed' : ''}`
+})
+const indicatorStyle = derived(() => {
+  if (refreshing()) return ''
+  const progress = Math.min(1, distance() / threshold())
+  return `opacity:${progress};transform:translateX(-50%) rotate(${Math.round(progress * 270)}deg) scale(${0.6 + progress * 0.4})`
+})
+</script>
+
+<div class="native-ptr">
+  <div :class="indicatorClass()" :style="indicatorStyle()" role="status" :aria-label="refreshing() ? label() : ''">
+    <i aria-hidden="true" class="i-lucide-loader-circle native-ptr-icon"></i>
+  </div>
+  <slot />
+</div>
+
+<style>
+  .native-ptr { position: relative; }
+
+  .native-ptr-indicator {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 3.25rem);
+    left: 50%;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    color: var(--native-accent, rgb(37 99 235));
+    background: var(--native-ptr-background, white);
+    box-shadow: 0 4px 14px rgb(15 23 42 / 0.14);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) scale(0.6);
+  }
+
+  .dark .native-ptr-indicator { color: var(--native-accent-dark, rgb(96 165 250)); background: var(--native-ptr-background-dark, rgb(30 41 59)); }
+  .native-ptr-indicator.is-visible { opacity: 1; }
+  .native-ptr-icon { width: 1.25rem; height: 1.25rem; }
+
+  .native-ptr-indicator.is-refreshing {
+    opacity: 1;
+    transform: translateX(-50%);
+    transition: opacity 150ms ease;
+  }
+
+  .native-ptr-indicator.is-refreshing .native-ptr-icon { animation: native-ptr-spin 800ms linear infinite; }
+
+  @keyframes native-ptr-spin { to { transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-ptr-indicator.is-refreshing .native-ptr-icon { animation-duration: 2400ms; }
+  }
+</style>

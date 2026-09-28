@@ -1,0 +1,132 @@
+<script client>
+import { haptics } from '@stacksjs/mobile'
+
+/**
+ * A bottom sheet: a task that belongs to this screen, raised over it.
+ *
+ * Bind it with `v-model:open`. It opens with a light haptic tap, closes from
+ * its backdrop, its Done button or Escape, and keeps its content clear of the
+ * home indicator.
+ */
+const emit = defineEmits()
+const open = useModel('open', { default: false })
+const title = useReactiveProp<string>('title', '')
+const doneLabel = useReactiveProp<string>('doneLabel', 'Done')
+
+let wasOpen = false
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) void haptics.impact('light')
+  wasOpen = isOpen
+})
+
+function close(): void {
+  open.set(false)
+  emit('close')
+}
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && open()) close()
+})
+</script>
+
+<div class="native-sheet" :class="open() ? 'is-open' : ''" :aria-hidden="open() ? 'false' : 'true'">
+  <div class="native-sheet-backdrop" @click="close()"></div>
+  <section class="native-sheet-panel" role="dialog" aria-modal="true" :aria-label="title()">
+    <span aria-hidden="true" class="native-sheet-grabber"></span>
+    <header class="native-sheet-header">
+      <h2 class="native-sheet-title">{{ title() }}</h2>
+      <button type="button" class="native-sheet-done" @click="close()">{{ doneLabel() }}</button>
+    </header>
+    <div class="native-sheet-body">
+      <slot />
+    </div>
+  </section>
+</div>
+
+<style>
+  .native-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .native-sheet.is-open { visibility: visible; pointer-events: auto; }
+
+  .native-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(2 6 23 / 0.38);
+    opacity: 0;
+    transition: opacity 240ms ease;
+  }
+
+  .native-sheet.is-open .native-sheet-backdrop { opacity: 1; }
+
+  .native-sheet-panel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1rem);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-radius: 1.25rem 1.25rem 0 0;
+    background: var(--native-sheet-background, rgb(248 250 252));
+    box-shadow: 0 -12px 40px rgb(2 6 23 / 0.18);
+    transform: translateY(105%);
+    transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .dark .native-sheet-panel { background: var(--native-sheet-background-dark, rgb(15 23 42)); }
+  .native-sheet.is-open .native-sheet-panel { transform: none; }
+
+  .native-sheet-grabber {
+    align-self: center;
+    width: 2.25rem;
+    height: 0.3rem;
+    margin-top: 0.4rem;
+    border-radius: 999px;
+    background: rgb(148 163 184 / 0.55);
+  }
+
+  .native-sheet-header {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem 0.25rem;
+  }
+
+  .native-sheet-title { font-size: 1.0625rem; font-weight: 600; }
+
+  .native-sheet-done {
+    min-height: 2.75rem;
+    border: 0;
+    color: var(--native-accent, rgb(37 99 235));
+    background: transparent;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  .dark .native-sheet-done { color: var(--native-accent-dark, rgb(96 165 250)); }
+
+  .native-sheet-body {
+    overflow-y: auto;
+    padding: 0.5rem 1rem 1rem;
+    overscroll-behavior: contain;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-sheet-backdrop, .native-sheet-panel { transition: none; }
+  }
+
+  /* The router names the page's <main> for view transitions, which makes it a
+     stacking context: a sheet inside it stacked under the tab bar whatever its
+     z-index. While a sheet is open <main> gives the name up. Nothing navigates
+     with a sheet open, so no transition is lost. */
+  main:has(.native-sheet.is-open) { view-transition-name: none; }
+</style>
