@@ -330,6 +330,12 @@ jobs:
           echo "::group::core/cms (src/tests)"
           (cd storage/framework/core/cms && bun test ./src/tests) || failed="$failed cms[src/tests]"
           echo "::endgroup::"
+          # The very-happy-dom component example the testing docs describe. Its
+          # bunfig preloads the GlobalRegistrator that gives the test a DOM, so
+          # like the two above it only runs from its own directory.
+          echo "::group::core/testing (component-dom fixture)"
+          (cd storage/framework/core/testing/fixtures/component-dom && bun test ./tests) || failed="$failed testing[fixtures/component-dom]"
+          echo "::endgroup::"
           if [ -n "$failed" ]; then
             echo "Failing core packages:$failed"
             exit 1
