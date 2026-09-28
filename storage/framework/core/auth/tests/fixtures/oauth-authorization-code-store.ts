@@ -65,6 +65,7 @@ const {
   validateRefreshToken,
   validateOAuthAuthorizationRequest,
   withAuthorizationCode,
+  withOAuthAuthorizationRequestSession,
 } = await import('../../src')
 
 const verifier = 'v'.repeat(43)
@@ -141,6 +142,30 @@ try {
     .where('request_hash', '=', createHash('sha256').update(expiredRequestId).digest('hex'))
     .execute()
   assert.equal(await loadOAuthAuthorizationRequestSession(expiredRequestId, browserSession), null)
+
+  const approvalRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const approvalResults = await Promise.all(Array.from({ length: 8 }, () =>
+    withOAuthAuthorizationRequestSession(approvalRequestId, browserSession, async request => request.clientId)))
+  assert.equal(approvalResults.filter(result => result.ok).length, 1)
+  assert.equal(approvalResults.filter(result => !result.ok).length, 7)
+  assert(approvalResults.some(result => result.ok && result.value === validatedRequest.clientId))
+  assert.equal(await loadOAuthAuthorizationRequestSession(approvalRequestId, browserSession), null)
+
+  const wrongSessionRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  assert.deepEqual(
+    await withOAuthAuthorizationRequestSession(wrongSessionRequestId, 'different-browser-session-token', async request => request),
+    { ok: false, reason: 'invalid_request' },
+  )
+  assert.equal((await withOAuthAuthorizationRequestSession(wrongSessionRequestId, browserSession, async request => request)).ok, true)
+
+  const rollbackRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await assert.rejects(withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async () => {
+    await db.insertInto('issued_markers').values({ marker: 'authorization-request-must-roll-back' }).execute()
+    throw new Error('synthetic consent failure')
+  }), /synthetic consent failure/)
+  assert.equal(await db.selectFrom('issued_markers').where('marker', '=', 'authorization-request-must-roll-back').select('marker').executeTakeFirst(), undefined)
+  assert.equal((await withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async request => request)).ok, true)
+
   assert.equal(await loadOAuthAuthorizationClient(String(client.id)), null, 'legacy personal clients must not enter the provider flow')
 
   const confidentialRegistration = await registerOAuthClient(provider, 42, {
@@ -163,6 +188,11 @@ try {
   await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
   assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
   assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'saved requests must recheck current client policy')
+  assert.deepEqual(
+    await withOAuthAuthorizationRequestSession(requestId, browserSession, async request => request),
+    { ok: false, reason: 'invalid_request' },
+    'approval must recheck current client policy before consuming the request',
+  )
   await assert.rejects(registerOAuthClient(provider, 0, {
     name: 'Ownerless integration',
     type: 'public',
