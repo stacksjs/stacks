@@ -54,6 +54,8 @@ interface StoredAccessToken {
 interface StoredRefreshToken {
   access_token_id: number | string
   token: string
+  family_id: string | null
+  parent_id: number | string | null
   revoked: boolean | number
   expires_at: string | Date
 }
@@ -124,6 +126,7 @@ export async function exchangeAuthorizationCode(
 
       const accessToken = randomBytes(40).toString('hex')
       const refreshToken = issueRefreshToken ? randomBytes(40).toString('hex') : undefined
+      const refreshFamilyId = refreshToken ? randomBytes(16).toString('hex') : undefined
       const accessHash = tokenHash(accessToken)
       const refreshHash = refreshToken ? tokenHash(refreshToken) : undefined
       const createdAt = new Date()
@@ -178,21 +181,25 @@ export async function exchangeAuthorizationCode(
         const refreshValues = sql.params(
           Number(storedAccess.id),
           refreshHash,
+          refreshFamilyId,
+          null,
           revoked,
           sqlDateTime(refreshExpiresAt),
           sqlDateTime(createdAt),
         )
         await db.unsafe(`
-          INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+          INSERT INTO oauth_refresh_tokens (access_token_id, token, family_id, parent_id, revoked, expires_at, created_at)
           VALUES (${refreshValues.sql})
         `, refreshValues.values)
         const refreshRows = await db.unsafe(`
-          SELECT access_token_id, token, revoked, expires_at
+          SELECT access_token_id, token, family_id, parent_id, revoked, expires_at
           FROM oauth_refresh_tokens WHERE token = ${sql.param(1)} LIMIT 1
         `, [refreshHash]) as unknown as StoredRefreshToken[]
         const storedRefresh = refreshRows[0]
         if (!storedRefresh
           || String(storedRefresh.access_token_id) !== String(storedAccess.id)
+          || storedRefresh.family_id !== refreshFamilyId
+          || storedRefresh.parent_id != null
           || !activeFlag(storedRefresh.revoked)
           || parseSqlDateTime(storedRefresh.expires_at)?.getTime() !== refreshExpiresAt.getTime())
           throw new Error('Failed to persist the delegated refresh token.')

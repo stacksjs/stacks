@@ -550,6 +550,8 @@ try {
       .executeTakeFirstOrThrow() as Record<string, unknown>
     assert.equal(refreshRow.token, createHash('sha256').update(exchanged.value.refreshToken).digest('hex'))
     assert.notEqual(refreshRow.token, exchanged.value.refreshToken)
+    assert.match(String(refreshRow.family_id), /^[a-f0-9]{32}$/)
+    assert.equal(refreshRow.parent_id, null)
     assert.equal(await validateRefreshToken(exchanged.value.refreshToken), false)
     await assert.rejects(refreshToken(exchanged.value.refreshToken), /Invalid or expired refresh token/)
     assert(await db.selectFrom('oauth_refresh_tokens').where('id', '=', refreshRow.id as number).where('revoked', '=', false).executeTakeFirst())
