@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.8...v0.75.9)
+
+## 🐛 Bug Fixes
+
+- **deps**: require ts-cloud ^0.16.14 for shared Cloudflare cache rules ([490c506](https://github.com/stacksjs/stacks/commit/490c506)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: the error tester view answers 404 outside local development ([b358758](https://github.com/stacksjs/stacks/commit/b358758)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: stx 0.2.317, which carries the module registry across layouts ([432be16](https://github.com/stacksjs/stacks/commit/432be16)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.7...v0.75.8)
 
 ## 🐛 Bug Fixes
