@@ -155,6 +155,19 @@ routes: minting and revoking both carry semantics a generic route does not.
 - `createClient(options: CreateClientOptions): Promise<CreateClientResult>`
 - `revokeClient(clientId): Promise<void>`
 
+### OAuth Provider and PKCE
+
+The authorization server is opt-in through `config/auth.ts` under
+`oauthProvider`. It is separate from social sign-in, where Stacks is the OAuth
+client. The provider profile is Authorization Code with S256 PKCE and rotating
+refresh tokens. It does not support implicit or password grants.
+
+- `resolveOAuthProviderConfig(options)` returns `null` unless explicitly enabled
+- `generatePkceVerifier()` creates a 256-bit RFC 7636 verifier
+- `createS256CodeChallenge(verifier)` derives its S256 challenge
+- `verifyS256CodeChallenge(verifier, challenge)` validates without a plain fallback
+- `isValidPkceVerifier(value)` checks the required 43 to 128 character syntax
+
 ## Two-Factor Authentication (authenticator.ts)
 
 - `generateTwoFactorSecret(): string`
