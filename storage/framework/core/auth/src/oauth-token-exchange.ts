@@ -27,6 +27,7 @@ export interface RefreshOAuthDelegatedTokenInput {
   refreshToken: string
   clientId: number
   clientSecret?: string
+  scopes?: readonly string[]
   accessTokenLifetimeMs: number
   refreshTokenLifetimeMs: number
 }
@@ -111,6 +112,7 @@ class InactiveOAuthClientError extends Error {}
 const invalidGrant = { ok: false as const, reason: 'invalid_grant' as const }
 const invalidClient = { ok: false as const, reason: 'invalid_client' as const }
 const unauthorizedClient = { ok: false as const, reason: 'unauthorized_client' as const }
+const invalidScope = { ok: false as const, reason: 'invalid_scope' as const }
 
 export type OAuthAuthorizationCodeExchangeResult
   = AuthorizationCodeResult<DelegatedTokenPair>
@@ -119,6 +121,7 @@ export type OAuthAuthorizationCodeExchangeResult
 export type OAuthRefreshTokenExchangeResult
   = AuthorizationCodeResult<DelegatedTokenPair>
     | typeof invalidClient
+    | typeof invalidScope
     | typeof unauthorizedClient
 
 function tokenHash(value: string): string {
@@ -274,12 +277,12 @@ function grantFromRefreshRows(
     || !/^[a-f0-9]{32}$/.test(refresh.oauth_grant_id)
     || !Number.isSafeInteger(clientId) || clientId <= 0
     || !Number.isSafeInteger(subjectId) || subjectId <= 0
-    || !scopes || !resources || !audiences
+    || !scopes?.length || new Set(scopes).size !== scopes.length || !resources || !audiences
     || !grantScopes || !grantResources || !grantAudiences
     || String(stored.grant_client_id) !== String(clientId)
     || stored.grant_subject_type !== refresh.tokenable_type
     || String(stored.grant_subject_id) !== String(subjectId)
-    || JSON.stringify(grantScopes) !== JSON.stringify(scopes)
+    || !scopes.every(scope => grantScopes.includes(scope))
     || JSON.stringify(grantResources) !== JSON.stringify(resources)
     || JSON.stringify(grantAudiences) !== JSON.stringify(audiences)
     || stored.grant_workspace_id !== refresh.workspace_id)
@@ -440,6 +443,11 @@ export async function refreshOAuthDelegatedToken(
       await revokeDelegatedRefreshFamily(refresh)
       return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: true }
     }
+    const scopes = input.scopes ? [...input.scopes] : grant.scopes
+    if (!scopes.length
+      || new Set(scopes).size !== scopes.length
+      || !scopes.every(scope => grant.scopes.includes(scope) && client.scopes.includes(scope)))
+      return { result: invalidScope as OAuthRefreshTokenExchangeResult, wrote: false }
 
     const revoked = sql.isPostgres ? true : 1
     const refreshClaim = await db.unsafe(`
@@ -457,7 +465,7 @@ export async function refreshOAuthDelegatedToken(
       return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: true }
     }
 
-    const pair = await mintDelegatedTokenPair(grant, {
+    const pair = await mintDelegatedTokenPair({ ...grant, scopes }, {
       accessLifetimeMs,
       refreshLifetimeMs,
       issueRefreshToken: true,

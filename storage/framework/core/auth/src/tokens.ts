@@ -221,6 +221,7 @@ interface AccessTokenRow {
   resources: string | null
   audiences: string | null
   workspace_id: string | null
+  grant_scopes: string | null
   password_changed_at: string | null
   access_token_id: number | null
   provider: string | null
@@ -367,28 +368,36 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
   const hashedToken = bearerLookupHash(plainTextToken)
 
   const rows = await db.unsafe(`
-    SELECT t.* FROM oauth_access_tokens t
+    SELECT t.*, g.scopes AS grant_scopes FROM oauth_access_tokens t
+    LEFT JOIN oauth_grants g ON g.id = t.oauth_grant_id
+    LEFT JOIN oauth_clients c ON c.id = g.client_id
     WHERE t.token = ${param(1)}
     AND t.revoked = ${boolFalse}
     AND (t.expires_at IS NULL OR t.expires_at > ${appNow()})
-    AND (t.oauth_grant_id IS NULL OR EXISTS (
-      SELECT 1 FROM oauth_grants g
-      JOIN oauth_clients c ON c.id = g.client_id AND c.revoked = ${boolFalse}
-      WHERE g.id = t.oauth_grant_id
-        AND g.revoked_at IS NULL
-        AND g.client_id = t.oauth_client_id
-        AND g.subject_type = t.tokenable_type
-        AND g.subject_id = t.tokenable_id
-        AND g.scopes = t.scopes
-        AND g.resources = t.resources
-        AND g.audiences = t.audiences
-        AND (g.workspace_id = t.workspace_id OR (g.workspace_id IS NULL AND t.workspace_id IS NULL))
+    AND (t.oauth_grant_id IS NULL OR (
+      g.id IS NOT NULL
+      AND c.revoked = ${boolFalse}
+      AND g.revoked_at IS NULL
+      AND g.client_id = t.oauth_client_id
+      AND g.subject_type = t.tokenable_type
+      AND g.subject_id = t.tokenable_id
+      AND g.resources = t.resources
+      AND g.audiences = t.audiences
+      AND (g.workspace_id = t.workspace_id OR (g.workspace_id IS NULL AND t.workspace_id IS NULL))
     ))
     LIMIT 1
   `, [hashedToken])
 
   const row = (rows as unknown as AccessTokenRow[])[0]
   if (!row || !validTokenExpiry(row.expires_at)) return null
+  if (row.oauth_grant_id) {
+    const scopes = parseScopes(row.scopes)
+    const grantScopes = parseScopes(row.grant_scopes)
+    if (!scopes.length
+      || new Set(scopes).size !== scopes.length
+      || scopes.some(scope => typeof scope !== 'string' || !grantScopes.includes(scope)))
+      return null
+  }
 
   // Reject any token issued before the user last changed their password
   // (stacksjs/stacks#1957). This is the use-time backstop that makes the

@@ -92,7 +92,10 @@ try {
   const provider = resolveOAuthProviderConfig({
     enabled: true,
     issuer: 'https://id.example.com',
-    scopes: { 'issues:read': { description: 'Read issues', resources: ['bughq'] } },
+    scopes: {
+      'issues:read': { description: 'Read issues', resources: ['bughq'] },
+      'profile:read': { description: 'Read profile' },
+    },
     resources: { bughq: { audience: 'https://api.bughq.example' } },
   })!
   const publicRegistration = await registerOAuthClient(provider, 42, {
@@ -101,7 +104,7 @@ try {
     tokenEndpointAuthMethod: 'none',
     redirectUris: ['https://client.example.com/callback'],
     grantTypes: ['authorization_code', 'refresh_token'],
-    scopes: ['issues:read'],
+    scopes: ['issues:read', 'profile:read'],
     resources: ['bughq'],
   })
   assert.equal(publicRegistration.plainTextSecret, undefined)
@@ -111,7 +114,7 @@ try {
   assert.equal(storedPublic.secret, null)
   assert.deepEqual(JSON.parse(String(storedPublic.redirect_uris)), ['https://client.example.com/callback'])
   assert.deepEqual(JSON.parse(String(storedPublic.grant_types)), ['authorization_code', 'refresh_token'])
-  assert.deepEqual(JSON.parse(String(storedPublic.allowed_scopes)), ['issues:read'])
+  assert.deepEqual(JSON.parse(String(storedPublic.allowed_scopes)), ['issues:read', 'profile:read'])
   assert.deepEqual(JSON.parse(String(storedPublic.allowed_resources)), ['bughq'])
   const loadedPublic = await loadOAuthAuthorizationClient(String(publicRegistration.client.id))
   assert.deepEqual(loadedPublic, {
@@ -120,7 +123,7 @@ try {
     revoked: false,
     redirectUris: ['https://client.example.com/callback'],
     grantTypes: ['authorization_code', 'refresh_token'],
-    scopes: ['issues:read'],
+    scopes: ['issues:read', 'profile:read'],
     resources: ['bughq'],
   })
   assert.deepEqual(
@@ -589,11 +592,71 @@ try {
   assert.equal(ownedClients.find(client => client.id === disableRegistration.client.id)?.revoked, true)
   assert(ownedClients.every(client => !('secret' in client)))
   assert.deepEqual(await listOAuthClients(7), [])
+  const scopedRequest = validateOAuthAuthorizationRequest(provider, loadedPublic!, {
+    responseType: 'code',
+    clientId: String(publicRegistration.client.id),
+    redirectUri: 'https://client.example.com/callback',
+    scope: 'issues:read profile:read',
+    resource: 'https://api.bughq.example',
+    codeChallenge,
+    codeChallengeMethod: 'S256',
+  })
+  const scopedRequestId = await createOAuthAuthorizationRequestSession(scopedRequest, browserSession, 60_000)
+  const scopedConsent = await approveOAuthAuthorizationRequestSession({
+    requestId: scopedRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(scopedConsent.ok)
+  const scopedTokens = await exchangeOAuthAuthorizationCode({
+    code: scopedConsent.value.code,
+    clientId: publicRegistration.client.id,
+    redirectUri: scopedRequest.redirectUri,
+    codeVerifier: verifier,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert(scopedTokens.ok)
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: scopedTokens.value.refreshToken!,
+    clientId: publicRegistration.client.id,
+    scopes: ['issues:write'],
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_scope' })
+  assert(await findToken(scopedTokens.value.accessToken), 'invalid scope must not consume the refresh family')
+  const narrowedTokens = await refreshOAuthDelegatedToken({
+    refreshToken: scopedTokens.value.refreshToken!,
+    clientId: publicRegistration.client.id,
+    scopes: ['issues:read'],
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert(narrowedTokens.ok)
+  assert.deepEqual(narrowedTokens.value.scopes, ['issues:read'])
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: narrowedTokens.value.refreshToken!,
+    clientId: publicRegistration.client.id,
+    scopes: ['issues:read', 'profile:read'],
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_scope' })
+  assert(await findToken(narrowedTokens.value.accessToken), 'scope re-expansion must not consume the narrowed family')
+  const continuedNarrowing = await refreshOAuthDelegatedToken({
+    refreshToken: narrowedTokens.value.refreshToken!,
+    clientId: publicRegistration.client.id,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  })
+  assert(continuedNarrowing.ok)
+  assert.deepEqual(continuedNarrowing.value.scopes, ['issues:read'])
   const publicUpdate = {
     name: 'Browser integration renamed',
     redirectUris: ['https://client.example.com/callback'],
     grantTypes: ['authorization_code', 'refresh_token'],
-    scopes: ['issues:read'],
+    scopes: ['issues:read', 'profile:read'],
     resources: ['bughq'],
   }
   assert.equal(await updateOAuthClient(provider, 7, publicRegistration.client.id, publicUpdate), null, 'another owner must not edit the client')
