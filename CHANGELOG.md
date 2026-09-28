@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.20...v0.75.21)
+
+## ✨ Features
+
+- **payments**: coupons, promotion codes and the customer portal in stripe:setup ([a6e5894](https://github.com/stacksjs/stacks/commit/a6e5894)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.19...v0.75.20)
 
 ## 🐛 Bug Fixes
