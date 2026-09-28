@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.5...v0.75.6)
+
+## 🐛 Bug Fixes
+
+- **buddy**: buddy new starts the app an empty CHANGELOG.md ([e54f412](https://github.com/stacksjs/stacks/commit/e54f412)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: buddy new gives the app its own package.json identity ([7f9c5f7](https://github.com/stacksjs/stacks/commit/7f9c5f7)) _(by Chris <chris@stacksjs.com>)_
+- **desktop**: compiled launchers ignore the bunfig.toml and .env of their cwd ([1d47d5b](https://github.com/stacksjs/stacks/commit/1d47d5b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.4...v0.75.5)
 
 ## 🐛 Bug Fixes
