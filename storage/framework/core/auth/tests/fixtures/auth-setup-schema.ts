@@ -152,6 +152,9 @@ async function verifySetup(): Promise<void> {
   assert.equal(resolvedPersonalToken.workspaceId, null)
   const replacement = await refreshToken(pair.refreshToken!)
   assert(await findToken(replacement.plainTextToken))
+  await db.unsafe(`SELECT request_hash, browser_session_hash, client_id, client_type, redirect_uri,
+    scopes, resources, audiences, state, code_challenge, code_challenge_method,
+    expires_at, consumed_at, created_at FROM oauth_authorization_requests LIMIT 0`).execute()
   const user = await db.selectFrom('users').where('id', '=', 42).select(['email_verified_at', 'password_changed_at', 'two_factor_enabled']).executeTakeFirstOrThrow()
   assert.equal(Boolean(user.two_factor_enabled), false)
   assert.equal(user.password_changed_at, null)
