@@ -193,4 +193,37 @@ describe('materialize: what --force is allowed to replace', () => {
     expect(lstatSync(claude).isSymbolicLink()).toBe(false)
     expect(readFileSync(claude, 'utf-8')).toBe(authored)
   })
+
+  // Same regression, second file: every `buddy upgrade` reset a project's
+  // .claude/launch.json to the template's one `frontend` server.
+  function runClaudeSetup(options: { force?: boolean }): void {
+    const previousCwd = process.cwd()
+    const templates = join(scratch, 'storage/framework/defaults/ai')
+    mkdirSync(join(templates, 'claude'), { recursive: true })
+    writeFileSync(join(templates, 'AGENTS.md'), '# AGENTS template\n')
+    writeFileSync(join(templates, 'claude/launch.json'), '{ "configurations": [{ "name": "frontend" }] }\n')
+    try {
+      process.chdir(scratch)
+      setupAiProvider('claude', options)
+    }
+    finally {
+      process.chdir(previousCwd)
+    }
+  }
+
+  it('setupAiProvider(claude, --force) keeps the project\'s own .claude/launch.json', () => {
+    const own = '{ "configurations": [{ "name": "frontend" }, { "name": "dev", "port": 3010 }, { "name": "site" }] }\n'
+    mkdirSync(join(scratch, '.claude'), { recursive: true })
+    writeFileSync(join(scratch, '.claude/launch.json'), own)
+
+    runClaudeSetup({ force: true })
+
+    expect(readFileSync(join(scratch, '.claude/launch.json'), 'utf-8')).toBe(own)
+  })
+
+  it('still seeds .claude/launch.json from the template when there is none', () => {
+    runClaudeSetup({ force: true })
+
+    expect(readFileSync(join(scratch, '.claude/launch.json'), 'utf-8')).toContain('"frontend"')
+  })
 })

@@ -192,8 +192,14 @@ export function setupAiProvider(provider: AiProvider, options: SetupAiOptions = 
       if (!linked && existsSync(claudeMd) && !lstatSync(claudeMd, { throwIfNoEntry: false })?.isSymbolicLink())
         log.info(`  · ${rel(claudeMd)} is a real file, so it is left as-is. Move its content into AGENTS.md and delete it to have both agents read one file.`)
 
+      // Seeded when missing, and never with --force, for the same reason as
+      // CLAUDE.md: it is the developer's own list of the servers their agent
+      // may start (ports, a second app, a docs site). `buddy upgrade` runs
+      // this with --force, and every upgrade reset it to the single
+      // `frontend` entry in the template, dropping the rest without a word.
+      // Delete the file to have the template seeded again.
       const launch = projectPath('.claude/launch.json')
-      record(launch, materializeFile(join(defaults, 'claude/launch.json'), launch, options))
+      record(launch, materializeFile(join(defaults, 'claude/launch.json'), launch, { ...options, force: false }))
 
       const skillsDir = projectPath('.claude/skills')
       const { installed, skipped: untouched } = installSkills(skillsDir, options)
