@@ -23,7 +23,7 @@
     "tests",
     "unit",
     "feature",
-    "e2e",
+    "component",
     "testing",
     "utilities",
     "functions",

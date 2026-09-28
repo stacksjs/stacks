@@ -11,6 +11,22 @@ already on the machine over the Chrome DevTools Protocol using only Bun, so
 navigation, screenshots, responsive checks, console and network monitoring and
 accessibility snapshots all work without Playwright or Puppeteer.
 
+## Component tests or browser QA
+
+Reach for this skill when a check needs a real browser engine: real navigation,
+the CSS cascade, layout and element geometry, visibility, or screenshots. A
+virtual DOM cannot answer those, and an assertion about them written against one
+passes without checking anything.
+
+For everything assertable through the DOM API — structure, events, forms,
+storage, web components — use component tests under `bun test` with
+very-happy-dom instead; see [Testing](/guide/testing). They run in-process and
+are fast enough for every save.
+
+Note that this skill is a QA and diagnosis tool, not a test runner: there are no
+spec files, fixtures or reporters, and a scenario is expressed as CLI steps
+rather than as a committed test.
+
 ## When to reach for it
 
 - Navigation
