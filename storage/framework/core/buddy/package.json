@@ -145,7 +145,7 @@
     "@stacksjs/skills": "^0.75.17",
     "@stacksjs/storage": "^0.75.17",
     "@stacksjs/strings": "^0.75.17",
-    "@stacksjs/stx": "^0.2.324",
+    "@stacksjs/stx": "^0.2.325",
     "@stacksjs/testing": "^0.75.17",
     "@stacksjs/tinker": "^0.75.17",
     "@stacksjs/tlsx": "^0.13.19",
