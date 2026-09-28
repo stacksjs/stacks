@@ -53,6 +53,20 @@ export interface RegisteredOAuthClientResult {
   plainTextSecret?: string
 }
 
+export interface ManagedOAuthClient {
+  id: number
+  ownerId: number
+  name: string
+  type: 'confidential' | 'public'
+  tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod
+  redirectUris: readonly string[]
+  grantTypes: readonly string[]
+  scopes: readonly string[]
+  resources: readonly string[]
+  revoked: boolean
+  createdAt: Date
+}
+
 interface StoredOAuthClient {
   id: number | string
   user_id: number | string | null
@@ -224,6 +238,44 @@ async function storedAuthorizationClient(clientId: string): Promise<{
 /** Load only complete provider registration metadata from authoritative storage. */
 export async function loadOAuthAuthorizationClient(clientId: string): Promise<OAuthAuthorizationClientRegistration | null> {
   return (await storedAuthorizationClient(clientId))?.client ?? null
+}
+
+/** List complete provider clients owned by one account without exposing secret hashes. */
+export async function listOAuthClients(ownerId: number): Promise<ManagedOAuthClient[]> {
+  if (!Number.isSafeInteger(ownerId) || ownerId <= 0)
+    return []
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const rows = await db.primary.unsafe(`
+    SELECT id, user_id, name, secret, redirect, client_type, redirect_uris, grant_types,
+      token_endpoint_auth_method, allowed_scopes, allowed_resources, personal_access_client,
+      password_client, revoked, created_at
+    FROM oauth_clients
+    WHERE user_id = ${sql.param(1)}
+    ORDER BY created_at DESC, id DESC
+  `, [ownerId]) as unknown as StoredOAuthClient[]
+
+  return rows.flatMap((row) => {
+    const id = Number(row.id)
+    const storedOwnerId = Number(row.user_id)
+    const client = authorizationClientFromStored(row, id)
+    const createdAt = parseSqlDateTime(row.created_at)
+    if (!client || !Number.isSafeInteger(storedOwnerId) || storedOwnerId !== ownerId || !createdAt)
+      return []
+    return [{
+      id,
+      ownerId,
+      name: row.name,
+      type: client.type,
+      tokenEndpointAuthMethod: row.token_endpoint_auth_method as OAuthTokenEndpointAuthMethod,
+      redirectUris: client.redirectUris,
+      grantTypes: client.grantTypes,
+      scopes: client.scopes,
+      resources: client.resources,
+      revoked: client.revoked,
+      createdAt,
+    }]
+  })
 }
 
 /** Authenticate one provider client and hold its policy stable through completion. */

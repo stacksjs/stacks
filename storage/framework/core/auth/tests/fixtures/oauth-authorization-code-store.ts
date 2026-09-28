@@ -59,6 +59,7 @@ const {
   exchangeOAuthAuthorizationCode,
   findToken,
   issueAuthorizationCode,
+  listOAuthClients,
   loadOAuthAuthorizationRequestSession,
   loadOAuthAuthorizationClient,
   refreshOAuthDelegatedToken,
@@ -576,6 +577,17 @@ try {
     .select('oauth_refresh_tokens.revoked')
     .get()
   assert(disabledRefresh.every(token => Boolean(token.revoked)))
+  const ownedClients = await listOAuthClients(42)
+  assert.deepEqual(new Set(ownedClients.map(client => client.id)), new Set([
+    publicRegistration.client.id,
+    confidentialRegistration.client.id,
+    disableRegistration.client.id,
+  ]))
+  assert.equal(ownedClients.find(client => client.id === publicRegistration.client.id)?.revoked, false)
+  assert.equal(ownedClients.find(client => client.id === confidentialRegistration.client.id)?.revoked, true)
+  assert.equal(ownedClients.find(client => client.id === disableRegistration.client.id)?.revoked, true)
+  assert(ownedClients.every(client => !('secret' in client)))
+  assert.deepEqual(await listOAuthClients(7), [])
   await db.updateTable('oauth_clients').set({ redirect_uris: 'not-json' } as never).where('id', '=', publicRegistration.client.id).execute()
   assert.equal(await loadOAuthAuthorizationClient(String(publicRegistration.client.id)), null, 'malformed provider policy must fail closed')
   assert.equal(await loadOAuthAuthorizationRequestSession(requestId, browserSession), null, 'saved requests must recheck current client policy')
