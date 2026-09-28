@@ -1,0 +1,134 @@
+<script server>
+import type { OAuthAuthorizationConsentView } from '@stacksjs/auth'
+
+/**
+ * The default OAuth consent screen. Applications may replace this file at
+ * `resources/views/auth/oauth/consent.stx` without changing the provider.
+ *
+ * The action supplies display-only identity labels and the consent model. The
+ * form returns only middleware-owned CSRF proof, the opaque request handle,
+ * and the user's decision. Client callback, PKCE, subject, and workspace
+ * authority remain in the server-side authorization-request record.
+ */
+declare const consent: OAuthAuthorizationConsentView
+declare const signedInIdentity: string
+declare const selectedWorkspace: string | null
+declare const consentAction: string
+declare const csrfToken: string
+
+const clientTypeLabel = consent.client.type === 'public' ? 'Public client' : 'Confidential client'
+</script>
+
+<main class="flex min-h-dvh items-center justify-center bg-neutral-50 px-4 py-10 text-neutral-950 dark:bg-neutral-950 dark:text-white sm:px-6">
+  <section class="w-full max-w-xl" aria-labelledby="oauth-consent-title">
+    <div class="mb-5 flex items-center justify-center gap-2 text-neutral-500 text-sm dark:text-neutral-400">
+      <i class="h-5 w-5 i-hugeicons-shield-key" aria-hidden="true"></i>
+      <span>Secure authorization</span>
+    </div>
+
+    <div class="overflow-hidden border border-neutral-200 rounded-2xl bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <header class="border-neutral-200 border-b px-6 py-6 dark:border-neutral-800 sm:px-8">
+        <p class="font-medium text-neutral-500 text-sm dark:text-neutral-400">Authorization request</p>
+        <h1 id="oauth-consent-title" class="mt-2 font-semibold text-2xl tracking-tight sm:text-3xl">
+          {{ consent.client.name }} wants to connect
+        </h1>
+        <p class="mt-3 text-neutral-600 text-sm leading-6 dark:text-neutral-300">
+          Review exactly what this application can access before you continue.
+        </p>
+      </header>
+
+      <div class="space-y-7 px-6 py-6 sm:px-8">
+        <dl class="grid gap-4 rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800/60">
+          <div class="flex gap-3 items-start">
+            <i class="mt-0.5 h-5 w-5 shrink-0 text-neutral-500 i-hugeicons-user-circle dark:text-neutral-400" aria-hidden="true"></i>
+            <div>
+              <dt class="font-medium text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Signed in as</dt>
+              <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ signedInIdentity }}</dd>
+            </div>
+          </div>
+
+          @if (selectedWorkspace)
+            <div class="flex gap-3 items-start">
+              <i class="mt-0.5 h-5 w-5 shrink-0 text-neutral-500 i-hugeicons-building-03 dark:text-neutral-400" aria-hidden="true"></i>
+              <div>
+                <dt class="font-medium text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Workspace</dt>
+                <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ selectedWorkspace }}</dd>
+              </div>
+            </div>
+          @endif
+
+          <div class="flex gap-3 items-start">
+            <i class="mt-0.5 h-5 w-5 shrink-0 text-neutral-500 i-hugeicons-computer-programming-01 dark:text-neutral-400" aria-hidden="true"></i>
+            <div>
+              <dt class="font-medium text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Application type</dt>
+              <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ clientTypeLabel }}</dd>
+            </div>
+          </div>
+        </dl>
+
+        <section aria-labelledby="oauth-permissions-title">
+          <h2 id="oauth-permissions-title" class="font-semibold text-base">Permissions requested</h2>
+          <ul class="mt-3 divide-y divide-neutral-200 border border-neutral-200 rounded-xl dark:divide-neutral-800 dark:border-neutral-800">
+            @foreach (consent.permissions as permission)
+              <li class="flex gap-3 px-4 py-4 items-start">
+                <i class="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 i-hugeicons-key-01 dark:text-emerald-400" aria-hidden="true"></i>
+                <div>
+                  <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ permission.description }}</p>
+                  <p class="mt-1 font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ permission.name }}</p>
+                </div>
+              </li>
+            @endforeach
+          </ul>
+        </section>
+
+        @if (consent.resources.length)
+          <section aria-labelledby="oauth-resources-title">
+            <h2 id="oauth-resources-title" class="font-semibold text-base">Data access</h2>
+            <ul class="mt-3 space-y-2">
+              @foreach (consent.resources as resource)
+                <li class="flex gap-3 rounded-xl bg-neutral-50 px-4 py-3 items-start dark:bg-neutral-800/60">
+                  <i class="mt-0.5 h-5 w-5 shrink-0 text-neutral-500 i-hugeicons-database-02 dark:text-neutral-400" aria-hidden="true"></i>
+                  <div>
+                    <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ resource.name }}</p>
+                    @if (resource.description)
+                      <p class="mt-1 text-neutral-600 text-sm leading-5 dark:text-neutral-300">{{ resource.description }}</p>
+                    @endif
+                  </div>
+                </li>
+              @endforeach
+            </ul>
+          </section>
+        @endif
+
+        <p class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 text-sm leading-5 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
+          Only approve if you recognize this application and trust it with the permissions listed above.
+        </p>
+      </div>
+
+      <form method="POST" action="{{ consentAction }}" class="flex flex-col-reverse gap-3 border-neutral-200 border-t px-6 py-5 dark:border-neutral-800 sm:flex-row sm:justify-end sm:px-8">
+        <input type="hidden" name="_token" value="{{ csrfToken }}">
+        <input type="hidden" name="request_id" value="{{ consent.requestId }}">
+        <button
+          type="submit"
+          name="decision"
+          value="deny"
+          class="inline-flex min-h-11 items-center justify-center rounded-lg border border-neutral-300 px-5 py-2.5 font-semibold text-neutral-800 text-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800 dark:focus:ring-offset-neutral-900"
+        >
+          Deny
+        </button>
+        <button
+          type="submit"
+          name="decision"
+          value="approve"
+          class="inline-flex min-h-11 items-center justify-center rounded-lg bg-neutral-950 px-5 py-2.5 font-semibold text-sm text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 dark:focus:ring-white dark:focus:ring-offset-neutral-900"
+        >
+          Allow access
+        </button>
+      </form>
+    </div>
+
+    <p class="mt-5 text-center text-neutral-500 text-xs leading-5 dark:text-neutral-400">
+      You can revoke this connection later from your connected applications settings.
+    </p>
+  </section>
+</main>
