@@ -1,6 +1,7 @@
 import type { OAuthAuthorizationRequestSessionResult } from './oauth-authorization-requests'
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
 import {
+  assertOAuthAuthorizationProviderPolicy,
   OAuthAuthorizationRequestError,
   type ValidatedOAuthAuthorizationRequest,
   validateOAuthAuthorizationRequest,
@@ -16,6 +17,7 @@ import { loadOAuthAuthorizationClient, loadOAuthAuthorizationClientDetails } fro
 import { createOAuthGrant } from './oauth-grants'
 
 export interface ApproveOAuthAuthorizationRequestSessionInput {
+  provider: ResolvedOAuthProviderConfig
   requestId: string
   browserSessionId: string
   subjectType: string
@@ -267,6 +269,7 @@ export async function approveOAuthAuthorizationRequestSession(
     throw new TypeError('OAuth authorization code lifetime must be a positive safe integer.')
 
   return withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request) => {
+    assertOAuthAuthorizationProviderPolicy(input.provider, request)
     const grant = await createOAuthGrant({
       clientId: Number(request.clientId),
       subjectType: input.subjectType,

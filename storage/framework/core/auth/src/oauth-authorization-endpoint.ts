@@ -12,7 +12,10 @@ import {
   OAuthAuthorizationConsentRequestError,
   parseOAuthAuthorizationConsentRequest,
 } from './oauth-consent'
-import { oauthAuthorizationConsentResponse } from './oauth-authorization-response'
+import {
+  oauthAuthorizationConsentResponse,
+  oauthAuthorizationRequestErrorResponse,
+} from './oauth-authorization-response'
 
 export interface BeginOAuthAuthorizationRequestInput {
   provider: ResolvedOAuthProviderConfig
@@ -98,13 +101,22 @@ export async function handleOAuthAuthorizationConsentRequest(
     return denied.ok ? oauthAuthorizationConsentResponse(denied.value) : localAuthorizationError(400)
   }
 
-  const approved = await approveOAuthAuthorizationRequestSession({
-    requestId: consent.requestId,
-    browserSessionId: input.browserSessionId,
-    subjectType: input.subjectType,
-    subjectId: input.subjectId,
-    workspaceId: input.workspaceId,
-    authorizationCodeLifetimeMs: input.provider.lifetimes.authorizationCode,
-  })
+  let approved
+  try {
+    approved = await approveOAuthAuthorizationRequestSession({
+      provider: input.provider,
+      requestId: consent.requestId,
+      browserSessionId: input.browserSessionId,
+      subjectType: input.subjectType,
+      subjectId: input.subjectId,
+      workspaceId: input.workspaceId,
+      authorizationCodeLifetimeMs: input.provider.lifetimes.authorizationCode,
+    })
+  }
+  catch (error) {
+    if (error instanceof OAuthAuthorizationRequestError)
+      return oauthAuthorizationRequestErrorResponse(error) ?? localAuthorizationError(400)
+    throw error
+  }
   return approved.ok ? oauthAuthorizationConsentResponse(approved.value) : localAuthorizationError(400)
 }

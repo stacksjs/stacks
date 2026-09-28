@@ -390,8 +390,42 @@ try {
   assert.deepEqual(await wrongMediaResponse.json(), { error: 'invalid_request' })
   assert(await loadOAuthAuthorizationRequestSession(wrongMediaRequestId, browserSession), 'invalid form media must not consume the request')
 
+  const changedProviderRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const changedProvider = resolveOAuthProviderConfig({
+    enabled: true,
+    issuer: 'https://id.example.com',
+    scopes: {},
+    resources: {},
+  })!
+  await assert.rejects(approveOAuthAuthorizationRequestSession({
+    provider: changedProvider,
+    requestId: changedProviderRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  }), /scope is no longer registered/)
+  assert(await loadOAuthAuthorizationRequestSession(changedProviderRequestId, browserSession), 'provider drift must not consume the request')
+  const changedProviderResponse = await handleOAuthAuthorizationConsentRequest({
+    provider: changedProvider,
+    request: new Request('https://id.example.com/oauth/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ request_id: changedProviderRequestId, decision: 'approve' }),
+    }),
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+  })
+  assert.equal(changedProviderResponse.status, 302)
+  const changedProviderLocation = new URL(changedProviderResponse.headers.get('location')!)
+  assert.equal(changedProviderLocation.searchParams.get('error'), 'invalid_scope')
+  assert.equal(changedProviderLocation.searchParams.get('state'), validatedRequest.state)
+  assert(await loadOAuthAuthorizationRequestSession(changedProviderRequestId, browserSession), 'failed provider policy must roll back request consumption')
+
   const consentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const consent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: consentRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -428,6 +462,7 @@ try {
       assert.equal(redeemedConsent.value.grantId, consent.value.grantId)
   }
   assert.deepEqual(await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: consentRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -440,6 +475,7 @@ try {
   const grantsBeforeConsent = await db.selectFrom('oauth_grants').where('client_id', '=', publicRegistration.client.id).select('id').get()
   const codesBeforeConsent = await db.selectFrom('oauth_auth_codes').where('client_id', '=', publicRegistration.client.id).select('code_hash').get()
   const concurrentConsents = await Promise.all(Array.from({ length: 8 }, () => approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: concurrentConsentRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -453,6 +489,7 @@ try {
 
   const failedConsentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   await assert.rejects(approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: failedConsentRequestId,
     browserSessionId: browserSession,
     subjectType: 'invalid subject type',
@@ -460,6 +497,7 @@ try {
     authorizationCodeLifetimeMs: 60_000,
   }), /subject type is invalid/)
   assert.equal((await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: failedConsentRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -469,6 +507,7 @@ try {
 
   const publicExchangeRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const publicConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: publicExchangeRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -547,6 +586,7 @@ try {
 
     const concurrentRefreshRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
     const concurrentRefreshConsent = await approveOAuthAuthorizationRequestSession({
+      provider,
       requestId: concurrentRefreshRequestId,
       browserSessionId: browserSession,
       subjectType: 'users',
@@ -671,6 +711,7 @@ try {
   })
   const confidentialRequestId = await createOAuthAuthorizationRequestSession(confidentialRequest, browserSession, 60_000)
   const confidentialConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: confidentialRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -737,6 +778,7 @@ try {
   })
   const disableRequestId = await createOAuthAuthorizationRequestSession(disableRequest, browserSession, 60_000)
   const disableConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: disableRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -756,6 +798,7 @@ try {
   const pendingDisableRequestId = await createOAuthAuthorizationRequestSession(disableRequest, browserSession, 60_000)
   const pendingCodeRequestId = await createOAuthAuthorizationRequestSession(disableRequest, browserSession, 60_000)
   const pendingDisableCode = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: pendingCodeRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -807,6 +850,7 @@ try {
   })
   const scopedRequestId = await createOAuthAuthorizationRequestSession(scopedRequest, browserSession, 60_000)
   const scopedConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: scopedRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -888,6 +932,7 @@ try {
   }), { ok: false, reason: 'invalid_grant' })
   const endpointRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const endpointConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: endpointRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',
@@ -995,6 +1040,7 @@ try {
   )
   const revocationRequestId = await createOAuthAuthorizationRequestSession(revocationRequest, browserSession, 60_000)
   const revocationConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
     requestId: revocationRequestId,
     browserSessionId: browserSession,
     subjectType: 'users',

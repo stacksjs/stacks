@@ -155,6 +155,32 @@ function requestedAudiences(
   return [...new Set(resources)]
 }
 
+/** Recheck provider-owned policy immediately before consent creates a grant. */
+export function assertOAuthAuthorizationProviderPolicy(
+  provider: ResolvedOAuthProviderConfig,
+  request: ValidatedOAuthAuthorizationRequest,
+): void {
+  if (!provider.clientTypes.includes(request.clientType))
+    reject('unauthorized_client', 'OAuth client type is no longer enabled by this provider.', request.redirectUri, request.state)
+  for (const scope of request.scopes) {
+    if (!provider.scopes[scope])
+      reject('invalid_scope', `OAuth scope is no longer registered by this provider: ${scope}`, request.redirectUri, request.state)
+  }
+  if (request.resources.length !== request.audiences.length)
+    reject('invalid_target', 'OAuth resource bindings are invalid.', request.redirectUri, request.state)
+  for (const [index, resource] of request.resources.entries()) {
+    if (provider.resources[resource]?.audience !== request.audiences[index])
+      reject('invalid_target', `OAuth resource is no longer registered by this provider: ${resource}`, request.redirectUri, request.state)
+  }
+  for (const scope of request.scopes) {
+    const allowedResources = provider.scopes[scope]?.resources
+    if (!allowedResources?.length)
+      continue
+    if (!request.resources.length || request.resources.some(resource => !allowedResources.includes(resource)))
+      reject('invalid_target', `OAuth scope is not valid for the requested resource: ${scope}`, request.redirectUri, request.state)
+  }
+}
+
 /**
  * Validate the complete, browser-facing authorization request boundary.
  *
@@ -191,7 +217,7 @@ export function validateOAuthAuthorizationRequest(
 
   const scopes = requestedScopes(input.scope, redirectUri, state)
   for (const scope of scopes) {
-    if (!provider.scopes[scope] || !client.scopes.includes(scope))
+    if (!client.scopes.includes(scope))
       reject('invalid_scope', `OAuth scope is not registered for this client: ${scope}`, redirectUri, state)
   }
 
@@ -206,15 +232,7 @@ export function validateOAuthAuthorizationRequest(
     resources.push(matchingResources[0]!)
   }
 
-  for (const scope of scopes) {
-    const allowedResources = provider.scopes[scope]?.resources
-    if (!allowedResources?.length)
-      continue
-    if (!resources.length || resources.some(resource => !allowedResources.includes(resource)))
-      reject('invalid_target', `OAuth scope is not valid for the requested resource: ${scope}`, redirectUri, state)
-  }
-
-  return {
+  const validated: ValidatedOAuthAuthorizationRequest = {
     responseType: 'code',
     clientId: input.clientId,
     clientType: client.type,
@@ -226,4 +244,6 @@ export function validateOAuthAuthorizationRequest(
     codeChallenge: input.codeChallenge,
     codeChallengeMethod: 'S256',
   }
+  assertOAuthAuthorizationProviderPolicy(provider, validated)
+  return validated
 }
