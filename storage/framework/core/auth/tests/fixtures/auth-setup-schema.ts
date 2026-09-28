@@ -116,6 +116,12 @@ async function verifySetup(): Promise<void> {
     const activeClients = clients.filter(client => !client.revoked && client.personal_access_client)
     assert.equal(activeClients.length, 1, 'successful setup must provide one usable personal client')
     const client = activeClients[0]!
+    assert.equal(client.client_type, null, 'legacy personal clients must not claim provider registration metadata')
+    assert.equal(client.redirect_uris, null)
+    assert.equal(client.grant_types, null)
+    assert.equal(client.token_endpoint_auth_method, null)
+    assert.equal(client.allowed_scopes, null)
+    assert.equal(client.allowed_resources, null)
     if (mode === 'legacy') {
       assert.equal(Number(client.id), 37)
       assert.equal(client.secret, 'synthetic-existing-secret')

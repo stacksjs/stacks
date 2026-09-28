@@ -126,6 +126,23 @@ export function usersStripeIdSql(): string {
 }
 
 /**
+ * Authorization-server registration policy stored on provider clients.
+ *
+ * Nullable upgrades preserve legacy personal/password clients. Provider
+ * registration requires the complete set and treats a partial row as invalid.
+ */
+export function oauthClientProviderColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_clients ADD COLUMN client_type VARCHAR(20)`,
+    `ALTER TABLE oauth_clients ADD COLUMN redirect_uris TEXT`,
+    `ALTER TABLE oauth_clients ADD COLUMN grant_types TEXT`,
+    `ALTER TABLE oauth_clients ADD COLUMN token_endpoint_auth_method VARCHAR(32)`,
+    `ALTER TABLE oauth_clients ADD COLUMN allowed_scopes TEXT`,
+    `ALTER TABLE oauth_clients ADD COLUMN allowed_resources TEXT`,
+  ]
+}
+
+/**
  * The polymorphic owner columns on `oauth_access_tokens`.
  *
  * A token used to belong to a user and only a user: the table's owner column
@@ -291,6 +308,12 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         secret VARCHAR(100),
         provider VARCHAR(255),
         redirect VARCHAR(2000) NOT NULL,
+        client_type VARCHAR(20),
+        redirect_uris TEXT,
+        grant_types TEXT,
+        token_endpoint_auth_method VARCHAR(32),
+        allowed_scopes TEXT,
+        allowed_resources TEXT,
         personal_access_client BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         password_client BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
@@ -306,6 +329,15 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     }
     catch (error) {
       if (!isDuplicateColumnError(error)) throw error
+    }
+
+    for (const alterSql of oauthClientProviderColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
+      }
     }
 
     if (options.verbose) log.info('Creating oauth_grants table...')
@@ -678,8 +710,10 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // CREATE IF NOT EXISTS cannot repair an arbitrary partial table. Verify
     // the token API's required columns before reporting a usable auth schema.
     // LIMIT 0 checks the schema without reading any stored credentials.
-    await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, personal_access_client,
-      password_client, revoked, created_at, updated_at FROM oauth_clients LIMIT 0`).execute()
+    await db.unsafe(`SELECT id, user_id, name, secret, provider, redirect, client_type, redirect_uris,
+      grant_types, token_endpoint_auth_method, allowed_scopes, allowed_resources,
+      personal_access_client, password_client, revoked, created_at, updated_at
+      FROM oauth_clients LIMIT 0`).execute()
     await db.unsafe(`SELECT id, client_id, subject_type, subject_id, scopes, resources, audiences,
       workspace_id, revoked_at, created_at, updated_at FROM oauth_grants LIMIT 0`).execute()
     await db.unsafe(`SELECT code_hash, grant_id, client_id, subject_type, subject_id, redirect_uri, scopes,
