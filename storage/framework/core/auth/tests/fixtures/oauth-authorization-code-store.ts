@@ -50,6 +50,7 @@ if (dialect === 'sqlite')
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const {
+  approveOAuthAuthorizationRequestSession,
   createOAuthGrant,
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
@@ -166,6 +167,83 @@ try {
   assert.equal(await db.selectFrom('issued_markers').where('marker', '=', 'authorization-request-must-roll-back').select('marker').executeTakeFirst(), undefined)
   assert.equal((await withOAuthAuthorizationRequestSession(rollbackRequestId, browserSession, async request => request)).ok, true)
 
+  const consentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const consent = await approveOAuthAuthorizationRequestSession({
+    requestId: consentRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert.equal(consent.ok, true)
+  if (consent.ok) {
+    assert.equal(consent.value.redirectUri, validatedRequest.redirectUri)
+    assert.equal(consent.value.state, validatedRequest.state)
+    assert.match(consent.value.code, /^[A-Za-z0-9_-]{43}$/)
+    const consentGrant = await db.selectFrom('oauth_grants').where('id', '=', consent.value.grantId).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
+    assert.equal(String(consentGrant.client_id), validatedRequest.clientId)
+    assert.equal(consentGrant.subject_type, 'users')
+    assert.equal(String(consentGrant.subject_id), '42')
+    assert.deepEqual(JSON.parse(String(consentGrant.scopes)), validatedRequest.scopes)
+    assert.deepEqual(JSON.parse(String(consentGrant.resources)), validatedRequest.resources)
+    assert.deepEqual(JSON.parse(String(consentGrant.audiences)), validatedRequest.audiences)
+    assert.equal(consentGrant.workspace_id, 'workspace-1')
+    const consentCode = await db.selectFrom('oauth_auth_codes')
+      .where('code_hash', '=', createHash('sha256').update(consent.value.code).digest('hex'))
+      .selectAll()
+      .executeTakeFirstOrThrow() as Record<string, unknown>
+    assert.equal(consentCode.grant_id, consent.value.grantId)
+    assert.equal(consentCode.code_challenge, validatedRequest.codeChallenge)
+    const redeemedConsent = await withAuthorizationCode(consent.value.code, {
+      clientId: publicRegistration.client.id,
+      redirectUri: validatedRequest.redirectUri,
+      codeVerifier: verifier,
+    }, async grant => grant)
+    assert.equal(redeemedConsent.ok, true)
+    if (redeemedConsent.ok)
+      assert.equal(redeemedConsent.value.grantId, consent.value.grantId)
+  }
+  assert.deepEqual(await approveOAuthAuthorizationRequestSession({
+    requestId: consentRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+    authorizationCodeLifetimeMs: 60_000,
+  }), { ok: false, reason: 'invalid_request' })
+
+  const concurrentConsentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const grantsBeforeConsent = await db.selectFrom('oauth_grants').where('client_id', '=', publicRegistration.client.id).select('id').get()
+  const codesBeforeConsent = await db.selectFrom('oauth_auth_codes').where('client_id', '=', publicRegistration.client.id).select('code_hash').get()
+  const concurrentConsents = await Promise.all(Array.from({ length: 8 }, () => approveOAuthAuthorizationRequestSession({
+    requestId: concurrentConsentRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+    authorizationCodeLifetimeMs: 60_000,
+  })))
+  assert.equal(concurrentConsents.filter(result => result.ok).length, 1)
+  assert.equal((await db.selectFrom('oauth_grants').where('client_id', '=', publicRegistration.client.id).select('id').get()).length, grantsBeforeConsent.length + 1)
+  assert.equal((await db.selectFrom('oauth_auth_codes').where('client_id', '=', publicRegistration.client.id).select('code_hash').get()).length, codesBeforeConsent.length + 1)
+
+  const failedConsentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await assert.rejects(approveOAuthAuthorizationRequestSession({
+    requestId: failedConsentRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'invalid subject type',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  }), /subject type is invalid/)
+  assert.equal((await approveOAuthAuthorizationRequestSession({
+    requestId: failedConsentRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })).ok, true)
+
   assert.equal(await loadOAuthAuthorizationClient(String(client.id)), null, 'legacy personal clients must not enter the provider flow')
 
   const confidentialRegistration = await registerOAuthClient(provider, 42, {
@@ -232,7 +310,10 @@ try {
   }
 
   const plain = await issueAuthorizationCode(base)
-  const stored = await db.selectFrom('oauth_auth_codes').selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
+  const stored = await db.selectFrom('oauth_auth_codes')
+    .where('code_hash', '=', createHash('sha256').update(plain).digest('hex'))
+    .selectAll()
+    .executeTakeFirstOrThrow() as Record<string, unknown>
   assert.equal(stored.code_hash, createHash('sha256').update(plain).digest('hex'))
   assert.equal(stored.grant_id, grant.id)
   assert.equal('code' in stored, false)
