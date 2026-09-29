@@ -218,7 +218,7 @@ export class Auth {
       const client = await db.primary.selectFrom('oauth_clients')
         .where('personal_access_client', '=', true)
         .where('revoked', '=', false)
-        .selectAll()
+        .select(['id', 'secret'])
         .executeTakeFirst()
 
       if (!client)
@@ -244,7 +244,7 @@ export class Auth {
     const client = await db.primary.selectFrom('oauth_clients')
       .where('id', '=', clientId)
       .where('revoked', '=', false)
-      .selectAll()
+      .select(['id', 'secret'])
       .executeTakeFirst()
 
     // Always run a `timingSafeEqual` against a fixed buffer so the
