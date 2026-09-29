@@ -83,6 +83,11 @@ describe('OAuth authorization server configuration', () => {
     expect(() => resolveOAuthProviderConfig({
       enabled: true,
       issuer: 'https://id.example.com',
+      lifetimes: { refreshToken: Number.MAX_SAFE_INTEGER },
+    })).toThrow('supported date range')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
       consent: { rememberFor: 1.5 },
     })).toThrow('rememberFor')
     expect(() => resolveOAuthProviderConfig({

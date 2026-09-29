@@ -85,6 +85,8 @@ function endpoint(issuer: URL, configured: string | undefined, fallback: string)
 function positiveLifetime(name: string, value: number): number {
   if (!Number.isSafeInteger(value) || value <= 0)
     throw new Error(`auth.oauthProvider.lifetimes.${name} must be a positive safe integer of milliseconds.`)
+  if (!Number.isFinite(new Date(Date.now() + value).getTime()))
+    throw new Error(`auth.oauthProvider.lifetimes.${name} is outside the supported date range.`)
   return value
 }
 
