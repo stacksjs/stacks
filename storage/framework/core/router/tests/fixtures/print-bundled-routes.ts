@@ -14,6 +14,22 @@
  */
 
 if (import.meta.main) {
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady
+  if (process.env.STACKS_TEST_OAUTH_ENDPOINTS === '1') {
+    config.auth.oauthProvider = {
+      enabled: true,
+      issuer: 'https://id.example.com',
+      endpoints: {
+        authorization: '/connect/authorize',
+        token: '/connect/token',
+        revocation: '/connect/revoke',
+        introspection: '/connect/introspect',
+      },
+      scopes: {},
+      resources: {},
+    }
+  }
   const { listRegisteredRoutes, route } = await import('@stacksjs/router')
   await route.importRoutes()
 

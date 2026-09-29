@@ -46,6 +46,7 @@ async function routesFor(vars: Record<string, string | undefined>): Promise<Set<
   // Scrub inherited values so each scenario controls the gate's input.
   delete env.STACKS_DEFAULT_ROUTES
   delete env.STACKS_SKIP_DEFAULT_ROUTES
+  delete env.STACKS_TEST_OAUTH_ENDPOINTS
   for (const [key, value] of Object.entries(vars)) {
     if (value === undefined)
       delete env[key]
@@ -90,6 +91,21 @@ const AUTH_ROUTES = [
 describe('resolveDefaultRouteBundles (#2229)', () => {
   test('an app that says nothing gets every bundle', () => {
     expect(resolveDefaultRouteBundles({})).toEqual(new Set(DEFAULT_ROUTE_BUNDLES))
+  })
+
+  test('the auth bundle mounts configured OAuth provider endpoints', async () => {
+    const routes = await routesFor({
+      STACKS_DEFAULT_ROUTES: 'auth',
+      STACKS_TEST_OAUTH_ENDPOINTS: '1',
+    })
+
+    expect(routes).toContain('GET /connect/authorize')
+    expect(routes).toContain('POST /connect/authorize')
+    expect(routes).toContain('POST /connect/token')
+    expect(routes).toContain('POST /connect/revoke')
+    expect(routes).not.toContain('GET /oauth/authorize')
+    expect(routes).not.toContain('POST /oauth/token')
+    expect(routes).not.toContain('POST /oauth/revoke')
   })
 
   // Opt-in bundles (#2276): recognized when named, part of neither the

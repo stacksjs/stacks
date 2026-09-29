@@ -200,16 +200,19 @@ export function resolveOAuthProviderConfig(
       options.lifetimes?.refreshToken ?? DEFAULT_LIFETIMES.refreshToken,
     ),
   }
+  const endpoints = {
+    authorization: endpoint(issuer, options.endpoints?.authorization, DEFAULT_ENDPOINTS.authorization),
+    token: endpoint(issuer, options.endpoints?.token, DEFAULT_ENDPOINTS.token),
+    revocation: endpoint(issuer, options.endpoints?.revocation, DEFAULT_ENDPOINTS.revocation),
+    introspection: endpoint(issuer, options.endpoints?.introspection, DEFAULT_ENDPOINTS.introspection),
+  }
+  if (new Set(Object.values(endpoints)).size !== Object.keys(endpoints).length)
+    throw new Error('auth.oauthProvider endpoints must each use a unique URL.')
 
   return {
     enabled: true,
     issuer: issuer.toString().replace(/\/$/, ''),
-    endpoints: {
-      authorization: endpoint(issuer, options.endpoints?.authorization, DEFAULT_ENDPOINTS.authorization),
-      token: endpoint(issuer, options.endpoints?.token, DEFAULT_ENDPOINTS.token),
-      revocation: endpoint(issuer, options.endpoints?.revocation, DEFAULT_ENDPOINTS.revocation),
-      introspection: endpoint(issuer, options.endpoints?.introspection, DEFAULT_ENDPOINTS.introspection),
-    },
+    endpoints,
     responseTypes: ['code'],
     grantTypes: ['authorization_code', 'refresh_token'],
     codeChallengeMethods: ['S256'],
