@@ -71,6 +71,8 @@ const AUTH_ROUTES = [
   'POST /register',
   'POST /oauth/token',
   'POST /oauth/revoke',
+  'GET /oauth/authorize',
+  'POST /oauth/authorize',
   'GET /.well-known/oauth-authorization-server',
   'POST /logout-all',
   'POST /generate-two-factor-secret',

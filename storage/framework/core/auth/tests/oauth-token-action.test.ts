@@ -1,6 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
+import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAuthorizationAction'
+import OAuthConsentAction from '../../../defaults/app/Actions/Auth/OAuthConsentAction'
 import OAuthMetadataAction from '../../../defaults/app/Actions/Auth/OAuthMetadataAction'
 import OAuthRevocationAction from '../../../defaults/app/Actions/Auth/OAuthRevocationAction'
 import OAuthTokenAction from '../../../defaults/app/Actions/Auth/OAuthTokenAction'
@@ -14,6 +16,20 @@ function request(contentType: string, body: string): RequestInstance {
     headers: new Headers({ 'content-type': contentType }),
     rawBody: async () => body,
   } as RequestInstance
+}
+
+function browserRequest(
+  url: string,
+  init: RequestInit = {},
+  user?: { id: number | string, email: string, name?: string },
+): RequestInstance {
+  const value = new Request(url, init) as Request & {
+    user: () => Promise<typeof user>
+    _csrfToken?: string
+  }
+  value.user = async () => user
+  value._csrfToken = 'csrf-proof'
+  return value as unknown as RequestInstance
 }
 
 afterEach(() => {
@@ -109,5 +125,54 @@ describe('OAuth metadata route action', () => {
     expect(metadata.revocation_endpoint).toBe('https://id.example.com/oauth/revoke')
     expect(metadata.scopes_supported).toEqual(['issues:read'])
     expect(metadata).not.toHaveProperty('introspection_endpoint')
+  })
+})
+
+describe('OAuth browser authorization route actions', () => {
+  it('keeps the browser flow unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const getResult = await OAuthAuthorizationAction.handle(browserRequest('https://id.example.com/oauth/authorize'))
+    const postResult = await OAuthConsentAction.handle(browserRequest('https://id.example.com/oauth/authorize', { method: 'POST' }))
+
+    expect(getResult.status).toBe(404)
+    expect(postResult.status).toBe(404)
+  })
+
+  it('delegates malformed browser requests to the protocol boundary without exposing redirects', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const result = await OAuthAuthorizationAction.handle(browserRequest('https://id.example.com/oauth/authorize'))
+
+    expect(result.status).toBe(400)
+    expect(result.headers.get('location')).toBeNull()
+    expect(result.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('requires an authenticated subject for consent and preserves normal CSRF handling', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const anonymous = await OAuthConsentAction.handle(browserRequest(
+      'https://id.example.com/oauth/authorize',
+      { method: 'POST' },
+    ))
+    const authenticated = await OAuthConsentAction.handle(browserRequest(
+      'https://id.example.com/oauth/authorize',
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' },
+      { id: '42', email: 'ada@example.com' },
+    ))
+
+    expect(OAuthConsentAction.skipCsrf).not.toBe(true)
+    expect(anonymous.status).toBe(401)
+    expect(authenticated.status).toBe(415)
+    expect(authenticated.headers.get('location')).toBeNull()
   })
 })

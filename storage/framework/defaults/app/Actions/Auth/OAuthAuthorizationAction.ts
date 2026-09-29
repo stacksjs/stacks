@@ -1,0 +1,53 @@
+import type { OAuthAuthorizationConsentPageContext } from '@stacksjs/auth'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { Action } from '@stacksjs/actions'
+import { resolveDefaultsResources } from '@stacksjs/actions/dev/defaults-resources'
+import { handleOAuthAuthorizationPageRequest, resolveOAuthProviderConfig } from '@stacksjs/auth'
+import { config } from '@stacksjs/config'
+import { path } from '@stacksjs/path'
+import { response } from '@stacksjs/router'
+
+function identityLabel(user: { email: string, [key: string]: unknown }): string {
+  const name = typeof user.name === 'string' ? user.name.trim() : ''
+  return name || user.email.trim()
+}
+
+async function renderConsentView(
+  view: string,
+  context: OAuthAuthorizationConsentPageContext,
+): Promise<string> {
+  const relative = view.endsWith('.stx') ? view : `${view}.stx`
+  const applicationView = path.userViewsPath(relative)
+  const frameworkView = join(resolveDefaultsResources(), 'views', relative)
+  const template = existsSync(applicationView) ? applicationView : frameworkView
+  const { renderTemplate } = await import('@stacksjs/stx')
+
+  return String(await renderTemplate(template, {
+    context,
+    injectCSS: true,
+    templateOnly: true,
+    processClientScripts: false,
+  }))
+}
+
+export default new Action({
+  name: 'OAuthAuthorizationAction',
+  description: 'Start or resume an OAuth authorization request',
+  method: 'GET',
+
+  async handle(request: RequestInstance) {
+    const provider = resolveOAuthProviderConfig(config.auth.oauthProvider)
+    if (!provider)
+      return response.notFound('OAuth provider is not enabled')
+
+    const user = await request.user()
+    return handleOAuthAuthorizationPageRequest({
+      provider,
+      request: request as unknown as Request,
+      identity: user ? { label: identityLabel(user) } : null,
+      csrfToken: (request as unknown as { _csrfToken?: string })._csrfToken,
+      dependencies: { render: renderConsentView },
+    })
+  },
+})

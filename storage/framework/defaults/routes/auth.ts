@@ -39,6 +39,8 @@ route.post('/register', 'Actions/Auth/RegisterAction').rateLimit(3, 'minute')
 // the endpoint's credential boundary, so the action opts out of browser CSRF.
 route.post('/oauth/token', 'Actions/Auth/OAuthTokenAction').rateLimit(30, 'minute')
 route.post('/oauth/revoke', 'Actions/Auth/OAuthRevocationAction').rateLimit(30, 'minute')
+route.get('/oauth/authorize', 'Actions/Auth/OAuthAuthorizationAction').rateLimit(60, 'minute')
+route.post('/oauth/authorize', 'Actions/Auth/OAuthConsentAction').middleware('auth').rateLimit(30, 'minute')
 route.get('/.well-known/oauth-authorization-server', 'Actions/Auth/OAuthMetadataAction')
 // Magic links (config.auth.magicLink.enabled gates both, 404 when off).
 // The send endpoint answers a uniform 202 either way (anti-enumeration
