@@ -239,29 +239,49 @@ export class RedisRateLimiterStore implements RateLimiterStore {
   }
 }
 
-let store: RateLimiterStore = new MemoryStore()
+let store: RateLimiterStore | undefined
+
+function replaceStore(next: RateLimiterStore | undefined): void {
+  const previous = store
+  store = next
+  if (previous && previous !== next && previous.close)
+    void Promise.resolve(previous.close()).catch(() => {})
+}
+
+async function configuredStore(): Promise<RateLimiterStore> {
+  if (store)
+    return store
+  const { cache } = await import('@stacksjs/config')
+  store ??= cache.driver === 'redis' ? new RedisRateLimiterStore() : new MemoryStore()
+  return store
+}
 
 export class RateLimiter {
   /** Swap the backing store (e.g. a Redis/db-backed shared store). */
   static useStore(custom: RateLimiterStore): void {
-    store = custom
+    replaceStore(custom)
   }
 
   /** Use a Redis-backed store with an atomic cross-worker failure update. */
   static useSharedStore(options: RedisRateLimiterStoreOptions = {}): void {
-    store = new RedisRateLimiterStore(options)
+    replaceStore(new RedisRateLimiterStore(options))
   }
 
   /** Reset to the process-local in-memory store (the default). */
   static useMemoryStore(): void {
-    store = new MemoryStore()
+    replaceStore(new MemoryStore())
+  }
+
+  /** Re-read cache configuration before the next limiter operation. */
+  static useConfiguredStore(): void {
+    replaceStore(undefined)
   }
 
   static async isRateLimited(email: string): Promise<boolean> {
     email = email.toLowerCase()
 
     const now = Date.now()
-    const userAttempts = await store.get(email)
+    const userAttempts = await (await configuredStore()).get(email)
 
     if (!userAttempts)
       return false
@@ -274,19 +294,20 @@ export class RateLimiter {
   static async recordFailedAttempt(email: string): Promise<void> {
     email = email.toLowerCase()
     const now = Date.now()
-    if (store.recordFailedAttempt) {
-      await store.recordFailedAttempt(email, now, LOCKOUT_DURATION)
+    const active = await configuredStore()
+    if (active.recordFailedAttempt) {
+      await active.recordFailedAttempt(email, now, LOCKOUT_DURATION)
       return
     }
 
     // Legacy custom stores retain their existing contract. Shared stores must
     // implement recordFailedAttempt so the update is atomic across workers.
-    const entry = recordFailure(await store.get(email), now)
-    await store.set(email, entry, LOCKOUT_DURATION)
+    const entry = recordFailure(await active.get(email), now)
+    await active.set(email, entry, LOCKOUT_DURATION)
   }
 
   static async resetAttempts(email: string): Promise<void> {
-    await store.delete(email.toLowerCase())
+    await (await configuredStore()).delete(email.toLowerCase())
   }
 
   static async validateAttempt(email: string): Promise<void> {
