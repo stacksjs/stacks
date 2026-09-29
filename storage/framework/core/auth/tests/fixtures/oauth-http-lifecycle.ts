@@ -123,14 +123,7 @@ try {
       resources: ['bughq'],
     })
 
-    const start = await fetch(`${issuer}/fixture/start`)
-    assert.equal(start.status, 200)
-    const csrfCookie = responseCookie(start, 'X-CSRF-Token')
-    const csrfToken = cookieValue(csrfCookie)
-    await start.arrayBuffer()
-
-    const authorizationUrl = new URL('/oauth/authorize', issuer)
-    authorizationUrl.search = new URLSearchParams({
+    const authorizationParams = {
       response_type: 'code',
       client_id: String(registration.client.id),
       redirect_uri: redirectUri,
@@ -139,7 +132,48 @@ try {
       state: 'oauth-http-state',
       code_challenge: challenge,
       code_challenge_method: 'S256',
+    }
+    const invalidRedirect = new URL('/oauth/authorize', issuer)
+    invalidRedirect.search = new URLSearchParams({
+      ...authorizationParams,
+      redirect_uri: 'https://attacker.example.test/callback',
     }).toString()
+    const invalidRedirectResponse = await fetch(invalidRedirect, { redirect: 'manual' })
+    assert.equal(invalidRedirectResponse.status, 400)
+    assert.equal(invalidRedirectResponse.headers.get('location'), null)
+    assert.equal((await invalidRedirectResponse.json() as { error?: string }).error, 'invalid_request')
+
+    const duplicateClient = new URL('/oauth/authorize', issuer)
+    duplicateClient.search = new URLSearchParams(authorizationParams).toString()
+    duplicateClient.searchParams.append('client_id', String(registration.client.id))
+    const duplicateClientResponse = await fetch(duplicateClient, { redirect: 'manual' })
+    assert.equal(duplicateClientResponse.status, 400)
+    assert.equal(duplicateClientResponse.headers.get('location'), null)
+    assert.equal((await duplicateClientResponse.json() as { error?: string }).error, 'invalid_request')
+
+    const pkceDowngrade = new URL('/oauth/authorize', issuer)
+    pkceDowngrade.search = new URLSearchParams({
+      ...authorizationParams,
+      code_challenge_method: 'plain',
+    }).toString()
+    const pkceDowngradeResponse = await fetch(pkceDowngrade, { redirect: 'manual' })
+    assert.equal(pkceDowngradeResponse.status, 302)
+    const pkceDowngradeCallback = new URL(pkceDowngradeResponse.headers.get('location')!)
+    assert.equal(`${pkceDowngradeCallback.origin}${pkceDowngradeCallback.pathname}`, redirectUri)
+    assert.equal(pkceDowngradeCallback.searchParams.get('error'), 'invalid_request')
+    assert.equal(pkceDowngradeCallback.searchParams.get('state'), 'oauth-http-state')
+    assert.equal(Number((await db.selectFrom('oauth_authorization_requests')
+      .select(db.fn.count('request_hash').as('count'))
+      .executeTakeFirstOrThrow()).count), 0)
+
+    const start = await fetch(`${issuer}/fixture/start`)
+    assert.equal(start.status, 200)
+    const csrfCookie = responseCookie(start, 'X-CSRF-Token')
+    const csrfToken = cookieValue(csrfCookie)
+    await start.arrayBuffer()
+
+    const authorizationUrl = new URL('/oauth/authorize', issuer)
+    authorizationUrl.search = new URLSearchParams(authorizationParams).toString()
     const anonymousAuthorization = await fetch(authorizationUrl, {
       headers: { cookie: csrfCookie },
       redirect: 'manual',
