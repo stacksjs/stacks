@@ -73,8 +73,9 @@ const CREATED_ROW = { id: 7, email: 'fresh@example.com', name: 'Fresh' }
 let transactionCalled = false
 let insertRanOnTrx = false
 let insertedValues: Record<string, unknown> | null = null
-let selectCalls = 0
 let userFindId: number | null = null
+let lookupSql = ''
+let lookupParams: unknown[] = []
 
 function resetState(): void {
   ops.length = 0
@@ -83,23 +84,28 @@ function resetState(): void {
   transactionCalled = false
   insertRanOnTrx = false
   insertedValues = null
-  selectCalls = 0
   userFindId = null
+  lookupSql = ''
+  lookupParams = []
 }
 
 // ─── Module stubs (must precede the register import) ────────────────
 
 function makeTrx() {
   return {
+    unsafe: async (statement: string, params: unknown[]) => {
+      ops.push('select')
+      lookupSql = statement
+      lookupParams = params
+      return scenario.existingRow ? [scenario.existingRow] : []
+    },
     selectFrom: () => {
       const chain = {
         where: () => chain,
         selectAll: () => chain,
         executeTakeFirst: async () => {
           ops.push('select')
-          selectCalls++
-          // First select = existence check, second = post-insert read-back.
-          return selectCalls === 1 ? scenario.existingRow : CREATED_ROW
+          return CREATED_ROW
         },
       }
       return chain
@@ -197,6 +203,16 @@ describe('register() timing-oracle hardening (#1953)', () => {
     // registered emails returned in ~1ms while fresh ones paid bcrypt.
     expect(ops).toEqual(['hash', 'select'])
   })
+
+  test('case-only variants collide with an existing account', async () => {
+    scenario.existingRow = { id: 1, email: 'Legacy@Example.com' }
+
+    await expect(register({ email: 'LEGACY@EXAMPLE.COM', password: 'long-enough-pw', name: 'X' } as any))
+      .rejects.toMatchObject({ status: 422 })
+
+    expect(lookupSql).toContain('LOWER(email)')
+    expect(lookupParams).toEqual(['legacy@example.com'])
+  })
 })
 
 // stacksjs/stacks#2281 — #1985 built the generic-response seam but left it
@@ -272,6 +288,12 @@ describe('register() transactional create (#1953)', () => {
     // an email lookup that resolves arbitrarily once duplicates exist.
     expect(userFindId).toBe(7)
     expect(ops).toEqual(['hash', 'select', 'insert', 'select', 'find'])
+  })
+
+  test('stores one canonical email form', async () => {
+    await register({ email: '  Fresh@Example.COM  ', password: 'long-enough-pw', name: 'Fresh' } as any)
+
+    expect(insertedValues).toMatchObject({ email: 'fresh@example.com' })
   })
 
   for (const [label, err] of [

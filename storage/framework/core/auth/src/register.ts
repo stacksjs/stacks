@@ -2,11 +2,12 @@ import type { NewUser } from '@stacksjs/orm'
 import type { TokenCreateOptions } from '@stacksjs/types'
 import type { AuthToken } from './token'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
+import { normalizeAuthEmail } from './credential-user'
 import { isUniqueViolation } from './rbac-store-bqb'
 import { attributeReferral } from './referrals'
 
@@ -69,7 +70,8 @@ export interface RegistrationResult {
  * Additive, so `const { token } = await register(...)` is unaffected.
  */
 export async function register(credentials: NewUser & { referralCode?: string }, tokenOptions?: TokenCreateOptions): Promise<RegistrationResult> {
-  const { email, password, name } = credentials
+  const { email: rawEmail, password, name } = credentials
+  const email = typeof rawEmail === 'string' ? normalizeAuthEmail(rawEmail) : rawEmail
 
   // Cheap structural validation before we hit the DB. Bad-email registration
   // attempts used to insert "" or "user" as an email and only fail at the
@@ -102,11 +104,12 @@ export async function register(credentials: NewUser & { referralCode?: string },
     // the typing of the top-level `db` proxy so chained calls type-check the same way.
     const trx = rawTrx as unknown as typeof db
 
-    const existingUser = await trx
-      .selectFrom('users')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst()
+    const sql = sqlHelpers(getDatabaseDialect())
+    const existing = await trx.unsafe(
+      `SELECT id FROM users WHERE LOWER(email) = ${sql.param(1)} LIMIT 1`,
+      [email],
+    ) as unknown as Record<string, unknown>[]
+    const existingUser = existing[0]
     if (existingUser)
       throw duplicateEmailError()
 
