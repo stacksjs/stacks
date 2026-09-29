@@ -217,9 +217,10 @@ export interface AuthOptions {
   oauthProvider?: OAuthProviderConfig
 
   /**
-   * The token rotation time in hours
+   * @deprecated Automatic rotation cannot return the replacement bearer.
+   * Use `Auth.rotateToken()` or a refresh-token exchange instead.
    */
-  tokenRotation: number
+  tokenRotation?: number
 
   /**
    * The token abilities that are granted by default

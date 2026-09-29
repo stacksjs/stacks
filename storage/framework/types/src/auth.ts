@@ -19,7 +19,8 @@ export interface AuthConfig {
   username: string
   password: string
   tokenExpiry: number
-  tokenRotation: number
+  /** @deprecated Use explicit bearer rotation or a refresh-token exchange. */
+  tokenRotation?: number
   defaultAbilities: string[]
   defaultTokenName: string
 }

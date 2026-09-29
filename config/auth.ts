@@ -119,11 +119,6 @@ export default {
   },
 
   /**
-   * The token rotation time in hours (default: 24 hours).
-   */
-  tokenRotation: env.AUTH_TOKEN_ROTATION || 24,
-
-  /**
    * The token abilities that are granted by default.
    */
   defaultAbilities: ['*'],
