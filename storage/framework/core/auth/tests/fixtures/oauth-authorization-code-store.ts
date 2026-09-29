@@ -97,6 +97,8 @@ const codeChallenge = await createS256CodeChallenge(verifier)
 try {
   assert.equal((await migrateAuthTables()).success, true)
   assert.equal((await migrateAuthTables()).success, true)
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('users').values({ id: 42 }).execute()
   await db.unsafe('CREATE TABLE issued_markers (marker VARCHAR(255) PRIMARY KEY)').execute()
   const client = await db.selectFrom('oauth_clients')
     .where('personal_access_client', '=', true)

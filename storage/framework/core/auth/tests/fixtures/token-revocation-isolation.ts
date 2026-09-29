@@ -49,7 +49,7 @@ async function check(name: string, fn: () => Promise<void>) {
 }
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
-  await db.insertInto('users').values({ id: 42 }).execute()
+  await db.insertInto('users').values([{ id: 42 }, { id: 43 }]).execute()
   await ensureFrameworkAuthTables()
   for (const mode of ['raw', 'raw-id', 'auth', 'auth-id', 'cookie'] as const) {
     for (const rejectedTable of ['oauth_access_tokens', 'oauth_refresh_tokens']) {

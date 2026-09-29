@@ -644,6 +644,18 @@ export async function createToken(
       throw new HttpError(500, 'No personal access client found. Run ./buddy auth:setup first.')
     }
 
+    // The default token owner is a real user, not merely an integer label.
+    // Lock that owner on server databases so deletion cannot race issuance and
+    // leave a credential that was orphaned before this transaction committed.
+    // Custom polymorphic owners remain the caller's responsibility.
+    if (tokenableType === DEFAULT_TOKENABLE_TYPE) {
+      const owners = await trx.unsafe(`
+        SELECT id FROM users WHERE id = ${param(1)} LIMIT 1${isPostgres || isMysql ? ' FOR UPDATE' : ''}
+      `, [userId])
+      if ((owners as unknown[]).length === 0)
+        throw new HttpError(404, 'Token user not found')
+    }
+
     // Generate and hash access token
     const plainTextToken = generateSecureToken(40)
     const hashedToken = hashToken(plainTextToken)

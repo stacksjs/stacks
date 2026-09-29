@@ -41,7 +41,7 @@ async function live(pair: Awaited<ReturnType<typeof createToken>>, expected: boo
 }
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
-  await db.insertInto('users').values({ id: 42 }).execute()
+  await db.insertInto('users').values([{ id: 42 }, { id: 43 }]).execute()
   await ensureFrameworkAuthTables()
   for (const mode of ['raw-all', 'auth-all', 'raw-other', 'auth-other']) {
     for (const table of ['oauth_access_tokens', 'oauth_refresh_tokens']) {

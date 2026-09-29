@@ -40,6 +40,22 @@ try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
   assert.equal((await migrateAuthTables()).success, true)
+  await check('user tokens require an existing owner', async () => {
+    await assert.rejects(createToken(404, 'orphaned session', ['read']), /user.*not found/i)
+    const rows = await db.primary.selectFrom('oauth_access_tokens')
+      .where('tokenable_type', '=', 'users')
+      .where('tokenable_id', '=', 404)
+      .select('id')
+      .execute()
+    assert.deepEqual(rows, [])
+  })
+  await check('custom token owners do not require a users row', async () => {
+    const token = await createToken(404, 'external owner', ['read'], {
+      tokenableType: 'service_accounts',
+      withRefreshToken: false,
+    })
+    assert.equal(Number(token.accessToken.userId), 404)
+  })
   for (const legacy of [false, true]) {
     await check(`${legacy ? 'legacy' : 'raw'} parallel callers consume once`, async () => {
       // MySQL's auth schema stores whole seconds, so choose a deadline all

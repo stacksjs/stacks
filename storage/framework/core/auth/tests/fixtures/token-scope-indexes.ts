@@ -51,7 +51,11 @@ async function indexColumns(table: string, name: string): Promise<string[]> {
 }
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
-  await db.insertInto('users').values([{ id: 1 }, { id: 2 }]).execute()
+  await db.insertInto('users').values([
+    { id: 1 },
+    { id: 2 },
+    ...Array.from({ length: 50 }, (_, index) => ({ id: index + 10 })),
+  ]).execute()
   await ensureFrameworkAuthTables()
   await check('fresh and repeated migrations install both scope indexes', async () => {
     for (const [table, name, columns] of indexes) assert.deepEqual(await indexColumns(table, name), [...columns])

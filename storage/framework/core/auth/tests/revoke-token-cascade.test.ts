@@ -93,6 +93,8 @@ beforeAll(async () => {
   releaseDbConfigLock = await acquireDbConfigLock()
   await forceConfig()
 
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('users').values([{ id: USER_ID }, { id: OTHER_USER_ID }]).execute()
   // Seeds the personal access client `createToken()` requires, too.
   await ensureFrameworkAuthTables()
 })
