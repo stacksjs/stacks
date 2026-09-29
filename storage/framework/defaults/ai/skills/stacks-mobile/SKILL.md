@@ -132,6 +132,16 @@ supported web APIs provide fallback behavior outside a native host.
   between views of one screen, with selection haptics.
 - `<NativeSheet v-model:open="editing" title="…">` raises a bottom sheet for a
   task that belongs to the screen, above the tab bar.
+- `<NativeProgressRing :value="percent" :size="176">` fills a ring as something
+  completes (sets done, a countdown running out), with its content in the
+  slot. Colours follow `--native-ring` and `--native-ring-track`.
+- A screen that is a task of its own (a workout player, a composer) marks an
+  element `data-native-hide-tab-bar`, and the tab bar steps away while it is
+  shown, its reserved space with it.
+- `<Video :src="current.url">` is the framework's player (ts-video-player):
+  YouTube, Vimeo, HLS, DASH or a file. `src` is reactive, so one player in a
+  sheet can show whichever video is chosen; clearing it pauses the player.
+  Craft lets an https iframe load inside the app, so embeds play inline.
 
 `<NativeTabItem match="/m/workout">` keeps a tab lit on the detail screens
 opened from it. A tab bar is a `<nav>`, where a link is otherwise current only

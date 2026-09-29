@@ -132,6 +132,16 @@ const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${cla
     z-index: 30;
   }
 
+  /* A screen that is a task of its own — a workout player, a composer —
+     marks itself with data-native-hide-tab-bar, and the tab bar steps away
+     while it is shown, as iOS does for a pushed screen that hides the bottom
+     bar. Its clearance goes with it. */
+  .native-app-shell:has([data-native-hide-tab-bar]) { --native-tab-bar-height: 0px; }
+  .native-app-shell:has([data-native-hide-tab-bar]) .native-app-tab-slot { display: none; }
+  .native-app-shell:has([data-native-hide-tab-bar]) .native-app-content {
+    padding-bottom: var(--native-safe-area-bottom);
+  }
+
   /* A phone app does not select its chrome on a long press, or flash it grey
      on a tap. Text inside the content is left selectable. */
   .native-app-shell.native-mobile .native-app-tab-slot,

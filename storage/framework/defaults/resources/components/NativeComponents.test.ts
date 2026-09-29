@@ -50,4 +50,17 @@ describe('Native components', () => {
     expect(control).toContain('haptics.selection()')
     expect(control).toContain("emit('change', value)")
   })
+
+  it('steps the tab bar away for a screen that is a task of its own', () => {
+    const shell = read('NativeAppShell')
+    expect(shell).toContain('.native-app-shell:has([data-native-hide-tab-bar]) .native-app-tab-slot { display: none; }')
+    expect(shell).toContain('.native-app-shell:has([data-native-hide-tab-bar]) { --native-tab-bar-height: 0px; }')
+  })
+
+  it('fills a ring to its value, clamped, with its content in the middle', () => {
+    const ring = read('NativeProgressRing')
+    expect(ring).toContain('Math.max(0, Math.min(100, Number(value()) || 0))')
+    expect(ring).toContain('conic-gradient(var(--native-ring')
+    expect(ring).toContain('<slot />')
+  })
 })
