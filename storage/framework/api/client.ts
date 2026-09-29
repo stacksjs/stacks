@@ -93,6 +93,13 @@ export function createClient(config: ClientConfig) {
     config,
 
   /**
+   * GET /.well-known/oauth-authorization-server
+   */
+  getWellKnownOauthAuthorizationServer(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/.well-known/oauth-authorization-server", {}, [], false, options)
+  },
+
+  /**
    * GET /_stacks/email/unsubscribe/{token}
    */
   getStacksEmailUnsubscribeToken(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -7058,6 +7065,55 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /auth/oauth/clients
+   */
+  getAuthOauthClients(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/auth/oauth/clients", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/oauth/clients
+   */
+  postAuthOauthClients(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/oauth/clients", {}, [], false, options)
+  },
+
+  /**
+   * PATCH /auth/oauth/clients/{id}
+   */
+  patchAuthOauthClientsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/auth/oauth/clients/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/oauth/clients/{id}/disable
+   */
+  postAuthOauthClientsIdDisable(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/oauth/clients/{id}/disable", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/oauth/clients/{id}/rotate-secret
+   */
+  postAuthOauthClientsIdRotateSecret(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/oauth/clients/{id}/rotate-secret", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /auth/oauth/connections
+   */
+  getAuthOauthConnections(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/auth/oauth/connections", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/oauth/connections/{id}/disconnect
+   */
+  postAuthOauthConnectionsIdDisconnect(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/oauth/connections/{id}/disconnect", input ?? {}, [], false, options)
+  },
+
+  /**
    * POST /auth/refresh
    */
   postAuthRefresh(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -7776,6 +7832,34 @@ export function createClient(config: ClientConfig) {
    */
   getModelsUserCount(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/models/user-count", {}, [], false, options)
+  },
+
+  /**
+   * GET /oauth/authorize
+   */
+  getOauthAuthorize(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/oauth/authorize", {}, [], false, options)
+  },
+
+  /**
+   * POST /oauth/authorize
+   */
+  postOauthAuthorize(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/oauth/authorize", {}, [], false, options)
+  },
+
+  /**
+   * POST /oauth/revoke
+   */
+  postOauthRevoke(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/oauth/revoke", {}, [], false, options)
+  },
+
+  /**
+   * POST /oauth/token
+   */
+  postOauthToken(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/oauth/token", {}, [], false, options)
   },
 
   /**

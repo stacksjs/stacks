@@ -170,8 +170,8 @@ Prune expired and revoked tokens
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--expired` | Prune expired tokens (default: true) | boolean, optional | `true` |
-| `--revoked` | Prune revoked tokens (default: true) | boolean, optional | `true` |
+| `--no-expired` | Skip pruning expired tokens | boolean, optional, negated | `true` |
+| `--no-revoked` | Skip pruning revoked tokens | boolean, optional, negated | `true` |
 | `-d`, `--days` | Prune revoked tokens older than N days | value, optional | `7` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
