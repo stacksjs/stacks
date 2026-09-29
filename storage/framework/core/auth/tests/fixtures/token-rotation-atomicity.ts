@@ -162,10 +162,13 @@ try {
   }
   await check('an absent owner returns null without partially revoking the pair', async () => {
     const original = await createToken(42, 'missing owner', ['read'])
+    const before = await tokens(42)
     await db.deleteFrom('users').where('id', '=', 42).execute()
     assert.equal(await Auth.rotateToken(original.plainTextToken), null)
-    assert(Boolean(await findToken(original.plainTextToken)))
-    assert.equal(await validateRefreshToken(original.refreshToken!), true)
+    assert.equal(await findToken(original.plainTextToken), null)
+    assert.equal(await validateRefreshToken(original.refreshToken!), false)
+    await assert.rejects(refreshToken(original.refreshToken!), /Invalid or expired refresh token/)
+    assert.deepEqual(await tokens(42), before, 'owner rejection must not partially revoke the stored pair')
   })
   assert.deepEqual(failures, [])
   console.log('bearer rotation atomicity OK')

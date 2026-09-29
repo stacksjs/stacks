@@ -376,6 +376,9 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     WHERE t.token = ${param(1)}
     AND t.revoked = ${boolFalse}
     AND (t.expires_at IS NULL OR t.expires_at > ${appNow()})
+    AND (t.tokenable_type <> ${param(2)} OR EXISTS (
+      SELECT 1 FROM users u WHERE u.id = t.tokenable_id
+    ))
     AND (t.oauth_grant_id IS NULL OR (
       g.id IS NOT NULL
       AND c.revoked = ${boolFalse}
@@ -388,7 +391,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
       AND (g.workspace_id = t.workspace_id OR (g.workspace_id IS NULL AND t.workspace_id IS NULL))
     ))
     LIMIT 1
-  `, [hashedToken])
+  `, [hashedToken, DEFAULT_TOKENABLE_TYPE])
 
   const row = (rows as unknown as AccessTokenRow[])[0]
   if (!row || !validTokenExpiry(row.expires_at)) return null
@@ -779,6 +782,8 @@ export async function refreshToken(
       selector = 'r.id = ? AND r.token = ?'
       bindings = [candidate.id, hashedRefreshToken]
     }
+    const ownerType = param(bindings.length + 1)
+    bindings.push(DEFAULT_TOKENABLE_TYPE)
 
     // Find the refresh token and its associated access token.
     //
@@ -803,6 +808,9 @@ export async function refreshToken(
       AND EXISTS (
         SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
       )
+      AND (t.tokenable_type <> ${ownerType} OR EXISTS (
+        SELECT 1 FROM users u WHERE u.id = t.tokenable_id
+      ))
       AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
       LIMIT 1${forUpdate}
     `, bindings)
@@ -955,10 +963,13 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     AND EXISTS (
       SELECT 1 FROM oauth_clients c WHERE c.id = t.oauth_client_id AND c.revoked = ${boolFalse}
     )
+    AND (t.tokenable_type <> ${param(2)} OR EXISTS (
+      SELECT 1 FROM users u WHERE u.id = t.tokenable_id
+    ))
     AND t.oauth_grant_id IS NULL
     AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
     LIMIT 1
-  `, [hashedRefreshToken])
+  `, [hashedRefreshToken, DEFAULT_TOKENABLE_TYPE])
 
   const row = (rows as unknown as AccessTokenRow[])[0]
   return row != null && validTokenExpiry(row.expires_at)
