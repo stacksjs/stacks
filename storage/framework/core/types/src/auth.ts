@@ -98,7 +98,6 @@ export interface OAuthProviderConfig {
     authorization?: string
     token?: string
     revocation?: string
-    introspection?: string
   }
   /** Permissions an authorization request may ask the user to grant. */
   scopes?: Record<string, OAuthProviderScopeConfig>

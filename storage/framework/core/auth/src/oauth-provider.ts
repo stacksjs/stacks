@@ -19,7 +19,6 @@ const DEFAULT_ENDPOINTS = {
   authorization: 'oauth/authorize',
   token: 'oauth/token',
   revocation: 'oauth/revoke',
-  introspection: 'oauth/introspect',
 } as const
 
 export interface ResolvedOAuthProviderConfig {
@@ -29,7 +28,6 @@ export interface ResolvedOAuthProviderConfig {
     authorization: string
     token: string
     revocation: string
-    introspection: string
   }
   responseTypes: readonly ['code']
   grantTypes: readonly ['authorization_code', 'refresh_token']
@@ -231,7 +229,6 @@ export function resolveOAuthProviderConfig(
     authorization: endpoint(issuer, options.endpoints?.authorization, DEFAULT_ENDPOINTS.authorization),
     token: endpoint(issuer, options.endpoints?.token, DEFAULT_ENDPOINTS.token),
     revocation: endpoint(issuer, options.endpoints?.revocation, DEFAULT_ENDPOINTS.revocation),
-    introspection: endpoint(issuer, options.endpoints?.introspection, DEFAULT_ENDPOINTS.introspection),
   }
   if (new Set(Object.values(endpoints)).size !== Object.keys(endpoints).length)
     throw new Error('auth.oauthProvider endpoints must each use a unique URL.')
