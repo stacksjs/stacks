@@ -67,10 +67,12 @@ effect(() => {
 })
 </script>
 
+{{-- No src attribute until there is a video: an empty one resolves to the
+     page's own URL, which the browser then downloads as the video. --}}
 <figure class="m-0 {{ className }}">
   <video-player
     ref="player"
-    src="{{ src }}"
+    @if(src) src="{{ src }}" @endif
     :src="liveSrc() || null"
     :poster="livePoster() || null"
     data-media-config="{{ playerConfig }}"
@@ -93,7 +95,7 @@ effect(() => {
     @if(isEmbed)
       <a data-native-fallback href="{{ src }}" target="_blank" rel="noopener" class="flex items-center justify-center h-full w-full text-sm text-white underline">Watch {{ title }}</a>
     @else
-    <video data-native-fallback src="{{ src }}" @if(poster) poster="{{ poster }}" @endif @if(width) width="{{ width }}" @endif @if(height) height="{{ height }}" @endif @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif @if(inline) playsinline @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif controlslist="{{ controlslist }}" @if(props.disablePictureInPicture) disablepictureinpicture @endif aria-label="{{ title }}" class="object-contain h-full w-full">
+    <video data-native-fallback @if(src) src="{{ src }}" @endif @if(poster) poster="{{ poster }}" @endif @if(width) width="{{ width }}" @endif @if(height) height="{{ height }}" @endif @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif @if(inline) playsinline @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif controlslist="{{ controlslist }}" @if(props.disablePictureInPicture) disablepictureinpicture @endif aria-label="{{ title }}" class="object-contain h-full w-full">
       @foreach (sources as source)
         <source src="{{ source.src }}" @if(source.type) type="{{ source.type }}" @endif>
       @endforeach

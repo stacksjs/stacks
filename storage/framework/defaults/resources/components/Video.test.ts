@@ -11,6 +11,14 @@ describe('Video', () => {
     expect(video).toContain(`:poster="livePoster() || null"`)
   })
 
+  it('renders no src attribute without a video, which would fetch the page itself', () => {
+    // An empty src resolves to the document's URL: the browser downloads the
+    // whole page as the video and fails, every time a player with nothing
+    // chosen yet renders.
+    expect(video).not.toMatch(/(?<!@if\(src\) )src="\{\{ src \}\}"/)
+    expect(video.match(/@if\(src\) src="\{\{ src \}\}" @endif/g)?.length).toBe(2)
+  })
+
   it('pauses when its src is cleared, as closing a sheet does', () => {
     expect(video).toContain(`useRef('player')`)
     expect(video).toContain('ref="player"')
