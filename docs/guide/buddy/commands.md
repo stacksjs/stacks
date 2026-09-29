@@ -148,9 +148,14 @@ Create a new OAuth client
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-n`, `--name` | Client name | value, optional | `"OAuth Client"` |
-| `-r`, `--redirect` | Redirect URI | value, optional | `"http://localhost"` |
+| `-r`, `--redirect` | Redirect URI, or comma-separated provider URIs | value, optional | `"http://localhost"` |
 | `--personal` | Create a personal access client | boolean, optional | `false` |
 | `--password` | Create a password grant client | boolean, optional | `false` |
+| `--provider` | Create an authorization-server client | boolean, optional | `false` |
+| `--owner` | Owner user id for a provider client | value, optional | - |
+| `--public` | Create a public PKCE client without a secret | boolean, optional | `false` |
+| `--scopes` | Comma-separated provider scopes | value, optional | - |
+| `--resources` | Comma-separated provider resources | value, optional | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

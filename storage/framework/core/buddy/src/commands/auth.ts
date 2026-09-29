@@ -74,9 +74,14 @@ export function auth(buddy: CLI): void {
   buddy
     .command('auth:client', descriptions.client)
     .option('-n, --name [name]', 'Client name', { default: 'OAuth Client' })
-    .option('-r, --redirect [redirect]', 'Redirect URI', { default: 'http://localhost' })
+    .option('-r, --redirect [redirect]', 'Redirect URI, or comma-separated provider URIs', { default: 'http://localhost' })
     .option('--personal', 'Create a personal access client', { default: false })
     .option('--password', 'Create a password grant client', { default: false })
+    .option('--provider', 'Create an authorization-server client', { default: false })
+    .option('--owner [id]', 'Owner user id for a provider client')
+    .option('--public', 'Create a public PKCE client without a secret', { default: false })
+    .option('--scopes [scopes]', 'Comma-separated provider scopes')
+    .option('--resources [resources]', 'Comma-separated provider resources')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options) => {

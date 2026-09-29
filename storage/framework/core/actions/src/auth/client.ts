@@ -1,55 +1,61 @@
 import process from 'node:process'
-import { createClient } from '@stacksjs/auth'
+import { createClient, registerOAuthClient, resolveOAuthProviderConfig } from '@stacksjs/auth'
+import { config } from '@stacksjs/config'
 import { ensureDatabaseConfigLoaded } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
+import { parseAuthClientArgs } from './client-options'
 
-// Parse arguments from process.argv
-const args = process.argv.slice(2)
-const getArg = (name: string): string | undefined => {
-  const idx = args.findIndex(a => a.startsWith(`--${name}=`) || a.startsWith(`-${name.charAt(0)}=`))
-  if (idx !== -1) {
-    const arg = args[idx]
-    if (!arg) return undefined
-    const eqIdx = arg.indexOf('=')
-    return eqIdx >= 0 ? arg.slice(eqIdx + 1) : undefined
-  }
+const options = parseAuthClientArgs(process.argv.slice(2))
 
-  const flagIdx = args.findIndex(a => a === `--${name}` || a === `-${name.charAt(0)}`)
-  const value = flagIdx !== -1 ? args[flagIdx + 1] : undefined
-  if (value && !value.startsWith('-')) {
-    return value
-  }
-  return undefined
-}
-
-const hasFlag = (name: string): boolean => {
-  return args.includes(`--${name}`)
-}
-
-const name = getArg('name') || 'OAuth Client'
-const redirect = getArg('redirect') || 'http://localhost'
-const isPersonalAccess = hasFlag('personal')
-const isPasswordClient = hasFlag('password')
-
-log.info(`Creating OAuth client: ${name}`)
+log.info(`Creating OAuth client: ${options.name}`)
 
 await ensureDatabaseConfigLoaded()
-const { client, plainTextSecret } = await createClient({
-  name,
-  redirect,
-  personalAccessClient: isPersonalAccess,
-  passwordClient: isPasswordClient,
-})
+const result = options.provider
+  ? await createProviderClient()
+  : await createClient({
+      name: options.name,
+      redirect: options.redirects[0] || 'http://localhost',
+      personalAccessClient: options.personal,
+      passwordClient: options.password,
+    })
+
+async function createProviderClient() {
+  if (options.personal || options.password)
+    throw new Error('Provider clients cannot use --personal or --password.')
+  if (!options.ownerId)
+    throw new Error('Provider clients require a positive --owner user id.')
+  if (!options.scopes.length)
+    throw new Error('Provider clients require at least one --scopes value.')
+
+  const provider = resolveOAuthProviderConfig(config.auth.oauthProvider)
+  if (!provider)
+    throw new Error('The OAuth authorization server is not enabled in config/auth.ts.')
+
+  return registerOAuthClient(provider, options.ownerId, {
+    name: options.name,
+    type: options.type,
+    tokenEndpointAuthMethod: options.type === 'public' ? 'none' : 'client_secret_basic',
+    redirectUris: options.redirects,
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: options.scopes,
+    resources: options.resources,
+  })
+}
+
+const { client, plainTextSecret } = result
 
 log.success('OAuth client created successfully')
 log.info('')
 log.info('Client Details:')
 log.info(`  Client ID: ${client.id}`)
-log.info('  Client Secret: [REDACTED]')
-process.stdout.write(`Client Secret (save now, shown once): ${plainTextSecret}\n`)
-log.info(`  Redirect URI: ${redirect}`)
+if (plainTextSecret)
+  process.stdout.write(`Client Secret (save now, shown once): ${plainTextSecret}\n`)
+else
+  log.info('  Client Secret: none (public client)')
+log.info(`  Redirect URI: ${options.redirects.join(', ')}`)
 log.info('')
-log.warn('Make sure to save the client secret. You will not be able to retrieve it again.')
+if (plainTextSecret)
+  log.warn('Make sure to save the client secret. You will not be able to retrieve it again.')
 
 await log.flush()
 process.exit(0)
