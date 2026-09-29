@@ -154,6 +154,56 @@ export async function revokeOAuthGrant(id: string): Promise<boolean> {
   return revoked
 }
 
+/** Revoke one subject's delegated grants and pending codes during recovery. */
+export async function revokeOAuthSubjectAuthorizationState(subjectType: string, subjectId: number): Promise<void> {
+  if (!/^[A-Za-z0-9_.:-]{1,255}$/.test(subjectType) || !validIdentifier(subjectId))
+    throw new TypeError('OAuth authorization subject is invalid.')
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const now = sqlDateTime(new Date())
+  try {
+    // Keep missing optional OAuth tables from aborting an enclosing recovery
+    // transaction on PostgreSQL. Other storage failures must still roll back
+    // the password, reset-token claim, and every credential revocation.
+    await db.transaction(async (rawTrx) => {
+      const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+      await trx.unsafe(`
+        UPDATE oauth_grants
+        SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
+        WHERE subject_type = ${sql.param(3)} AND subject_id = ${sql.param(4)}
+          AND revoked_at IS NULL
+      `, [now, now, subjectType, subjectId])
+      await trx.unsafe(`
+        UPDATE oauth_auth_codes
+        SET consumed_at = ${sql.param(1)}
+        WHERE subject_type = ${sql.param(2)} AND subject_id = ${sql.param(3)}
+          AND consumed_at IS NULL
+      `, [now, subjectType, subjectId])
+
+      const remaining = await trx.unsafe(`
+        SELECT id FROM oauth_grants
+        WHERE subject_type = ${sql.param(1)} AND subject_id = ${sql.param(2)}
+          AND revoked_at IS NULL
+        UNION ALL
+        SELECT code_hash FROM oauth_auth_codes
+        WHERE subject_type = ${sql.param(3)} AND subject_id = ${sql.param(4)}
+          AND consumed_at IS NULL
+        LIMIT 1
+      `, [subjectType, subjectId, subjectType, subjectId]) as unknown[]
+      if (remaining.length > 0)
+        throw new Error('[auth] OAuth authorization state could not be revoked.')
+    })
+  }
+  catch (error) {
+    const message = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+      ? error.message : String(error)
+    if (/^(?:no such table: (?:main\.)?oauth_(?:grants|auth_codes)|relation "oauth_(?:grants|auth_codes)" does not exist|Table '(?:[^'.]+\.)?oauth_(?:grants|auth_codes)' doesn't exist)$/i.test(message))
+      return
+    throw error
+  }
+  markContextWrote()
+}
+
 /** List the active third-party applications connected to one OAuth subject. */
 export async function listOAuthConnections(subjectType: string, subjectId: number): Promise<OAuthConnectedApplication[]> {
   if (!/^[A-Za-z0-9_.:-]{1,255}$/.test(subjectType) || !validIdentifier(subjectId))
