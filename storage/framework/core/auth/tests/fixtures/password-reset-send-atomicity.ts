@@ -27,6 +27,10 @@ mock.module('@stacksjs/email', () => ({
 const { overrides, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 overrides.app = { ...overrides.app, key: 'synthetic-reset-send-key' }
+overrides.auth = {
+  ...overrides.auth,
+  passwordReset: { ...overrides.auth.passwordReset, throttle: 0 },
+}
 const { db, initializeDbConfig, ensureDatabaseConfigLoaded, closeDatabaseConnection, sqlDateTime } = await import('@stacksjs/database/runtime')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {

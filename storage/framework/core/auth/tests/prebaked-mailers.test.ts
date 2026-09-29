@@ -188,7 +188,7 @@ afterAll(() => {
   releaseDbConfigLock?.()
 })
 
-beforeEach(() => {
+beforeEach(async () => {
   sent.length = 0
   templateMode = 'ok'
   mailMode = 'ok'
@@ -197,6 +197,8 @@ beforeEach(() => {
   // non-empty userland auth object (readMerged falls through to defaults
   // when the object is empty).
   ;(overrides as any).auth = { ...realAuthCaptured }
+  await db.deleteFrom('password_resets').execute()
+  await db.deleteFrom('email_verifications').execute()
 })
 
 async function resetRowCount(email: string): Promise<number> {
@@ -228,6 +230,10 @@ describe('password reset anti-enumeration (#1944)', () => {
   })
 
   test('repeat send rotates the token but keeps exactly one row', async () => {
+    ;(overrides as any).auth = {
+      ...realAuthCaptured,
+      passwordReset: { ...realAuthCaptured.passwordReset, throttle: 0 },
+    }
     await passwordResets(KNOWN_EMAIL).sendEmail()
     const first = String(lastTemplateVars?.resetUrl)
     await passwordResets(KNOWN_EMAIL).sendEmail()
@@ -235,6 +241,26 @@ describe('password reset anti-enumeration (#1944)', () => {
 
     expect(await resetRowCount(KNOWN_EMAIL)).toBe(1)
     expect(first).not.toBe(second)
+  })
+
+  test('configured throttle preserves the outstanding token and suppresses repeat delivery', async () => {
+    ;(overrides as any).auth = {
+      ...realAuthCaptured,
+      passwordReset: { ...realAuthCaptured.passwordReset, throttle: 60 },
+    }
+
+    await passwordResets(KNOWN_EMAIL).sendEmail()
+    const first = String(lastTemplateVars?.resetUrl)
+    await passwordResets(KNOWN_EMAIL).sendEmail()
+
+    expect(await resetRowCount(KNOWN_EMAIL)).toBe(1)
+    expect(sent).toHaveLength(1)
+    expect(String(lastTemplateVars?.resetUrl)).toBe(first)
+
+    await db.unsafe("UPDATE password_resets SET created_at = datetime('now', '-61 seconds') WHERE email = ?", [KNOWN_EMAIL]).execute()
+    await passwordResets(KNOWN_EMAIL).sendEmail()
+    expect(sent).toHaveLength(2)
+    expect(String(lastTemplateVars?.resetUrl)).not.toBe(first)
   })
 })
 

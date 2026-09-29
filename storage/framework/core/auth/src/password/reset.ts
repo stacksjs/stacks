@@ -29,6 +29,21 @@ function getTokenExpireMinutes(): number {
   return config.auth.passwordReset?.expire ?? 60
 }
 
+function getResetThrottleMilliseconds(): number {
+  const seconds = config.auth.passwordReset?.throttle ?? 60
+  if (seconds === 0)
+    return 0
+  const milliseconds = seconds * 1000
+  return Number.isFinite(milliseconds) && milliseconds > 0 ? milliseconds : 60_000
+}
+
+function resetRequestIsThrottled(createdAt: unknown, throttleMs: number): boolean {
+  if (throttleMs === 0)
+    return false
+  const created = parseSqlDateTime(createdAt)
+  return created != null && created.getTime() + throttleMs > Date.now()
+}
+
 /**
  * True when the given password_resets row is still valid. Prefers
  * the explicit `expires_at` column (set at insert time by
@@ -101,6 +116,13 @@ export function passwordResets(value: string): PasswordResetActions {
   }
 
   async function createResetToken(userId: number): Promise<string | undefined> {
+    const throttleMs = getResetThrottleMilliseconds()
+    const observed = await db.primary.selectFrom('password_resets')
+      .where('email', '=', email).select('created_at')
+      .orderBy('created_at', 'desc').executeTakeFirst()
+    if (resetRequestIsThrottled(observed?.created_at, throttleMs))
+      return undefined
+
     const token = generateResetToken()
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
     const expireMinutes = getTokenExpireMinutes()
@@ -120,6 +142,11 @@ export function passwordResets(value: string): PasswordResetActions {
       if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
       const owner = await ownerQuery.executeTakeFirst()
       if (!owner || normalizeAuthEmail(String(owner.email ?? '')) !== email) return false
+
+      const current = await db.primary.selectFrom('password_resets')
+        .where('email', '=', email).select('created_at')
+        .orderBy('created_at', 'desc').executeTakeFirst()
+      if (resetRequestIsThrottled(current?.created_at, throttleMs)) return false
 
       const createdAt = new Date()
       const expiresAt = sqlDateTime(new Date(createdAt.getTime() + expireMinutes * 60_000))
