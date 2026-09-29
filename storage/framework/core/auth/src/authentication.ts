@@ -83,6 +83,34 @@ async function userTokenOwnerExists(userId: unknown): Promise<boolean> {
     .executeTakeFirst()
   return owner !== undefined
 }
+
+interface AccessTokenActivity {
+  id: number
+  created_at: string | null
+  updated_at: string | null
+}
+
+function accessTokenExceededIdleTimeout(accessToken: AccessTokenActivity): boolean {
+  const idleMs = config.auth?.idleTimeout ?? 0
+  if (idleMs <= 0)
+    return false
+
+  const lastSeen = parseSqlDateTime(accessToken.updated_at ?? accessToken.created_at)
+  return lastSeen !== null && Date.now() - lastSeen.getTime() > idleMs
+}
+
+async function revokeObservedIdleAccessToken(accessToken: AccessTokenActivity): Promise<void> {
+  let revoke = db.updateTable('oauth_access_tokens')
+    .set({ revoked: true })
+    .where('id', '=', accessToken.id)
+    .where('revoked', '=', false)
+
+  revoke = accessToken.updated_at === null
+    ? revoke.whereNull('updated_at')
+    : revoke.where('updated_at', '=', accessToken.updated_at)
+
+  await revoke.execute()
+}
 import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
@@ -714,6 +742,14 @@ export class Auth {
     if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
       return false
 
+    // An idle credential is already invalid. Revoke only the activity version
+    // this request observed, so a concurrent successful validation cannot be
+    // overwritten by this stale reader.
+    if (accessTokenExceededIdleTimeout(accessToken)) {
+      await revokeObservedIdleAccessToken(accessToken)
+      return false
+    }
+
     // Mark the token as freshly-used. Used to be a rotation path here
     // (`if (hoursSinceLastUse >= 24h) await this.rotateToken(token)`)
     // but the rotated bearer was **discarded** by the caller —
@@ -769,21 +805,14 @@ export class Auth {
      * framework, and one imposed by surprise reads as being logged out at
      * random.
      */
-    const idleMs = config.auth?.idleTimeout ?? 0
-    if (idleMs > 0) {
-      const lastSeen = parseSqlDateTime(accessToken.updated_at ?? accessToken.created_at)
-
-      if (lastSeen && Date.now() - lastSeen.getTime() > idleMs) {
-        // Revoked rather than deleted, unlike the absolute-expiry branch above.
-        // A row that went idle is one somebody may ask about - "when did that
-        // session stop?" - and the answer costs one boolean.
-        await db.updateTable('oauth_access_tokens')
-          .set({ revoked: true })
-          .where('id', '=', accessToken.id)
-          .execute()
-
-        return undefined
-      }
+    if (accessTokenExceededIdleTimeout(accessToken)) {
+      // Revoked rather than deleted, unlike the absolute-expiry branch above.
+      // A row that went idle is one somebody may ask about - "when did that
+      // session stop?" - and the answer costs one boolean. Compare against the
+      // observed activity version so this stale reader cannot revoke a session
+      // another request renewed while this one was waiting.
+      await revokeObservedIdleAccessToken(accessToken)
+      return undefined
     }
 
     if (!accessToken?.tokenable_id)

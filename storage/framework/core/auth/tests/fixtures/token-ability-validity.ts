@@ -87,6 +87,18 @@ try {
     }
   }
 
+  const idleValidation = await createToken(1, 'idle-validation', ['posts:read'], { withRefreshToken: false })
+  await db.updateTable('oauth_access_tokens')
+    .set({ updated_at: sqlDateTime(new Date(now.getTime() - 60_001)) })
+    .where('id', '=', idleValidation.accessToken.id)
+    .execute()
+  assert.equal(await Auth.validateToken(idleValidation.plainTextToken), false)
+  const rejectedIdle = await db.selectFrom('oauth_access_tokens')
+    .where('id', '=', idleValidation.accessToken.id)
+    .select('revoked')
+    .executeTakeFirstOrThrow()
+  assert.equal(Boolean(rejectedIdle.revoked), true)
+
   await db.updateTable('users').set({ password_changed_at: null }).where('id', '=', 1).execute()
   const orphaned = await createToken(1, 'orphaned-session', ['posts:read'], { withRefreshToken: false })
   await db.deleteFrom('users').where('id', '=', 1).execute()
