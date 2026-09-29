@@ -276,13 +276,49 @@ async function sessionOwnerExists(userId: number, lock = false): Promise<boolean
   return owner !== undefined
 }
 
+function sessionIdleTimeoutExceeded(lastActivity: unknown): boolean {
+  const idleMs = config.auth?.idleTimeout ?? 0
+  if (idleMs <= 0)
+    return false
+
+  const seconds = Number(lastActivity)
+  if (!Number.isFinite(seconds) || seconds <= 0)
+    return true
+  return Date.now() - seconds * 1000 > idleMs
+}
+
+async function deleteObservedIdleSession(sessionId: string, userId: number, expiresAt: unknown, lastActivity: unknown): Promise<void> {
+  let cleanup = db.deleteFrom('sessions')
+    .where('id', '=', sessionId)
+    .where('user_id', '=', userId)
+  cleanup = expiresAt == null
+    ? cleanup.whereNull('expires_at')
+    : cleanup.where('expires_at', '=', expiresAt)
+  cleanup = lastActivity == null
+    ? cleanup.whereNull('last_activity')
+    : cleanup.where('last_activity', '=', lastActivity)
+  await cleanup.execute()
+}
+
+async function touchSessionActivity(sessionId: string, expiresAt: unknown, lastActivity: unknown): Promise<void> {
+  if ((config.auth?.idleTimeout ?? 0) <= 0)
+    return
+
+  let touch = db.updateTable('sessions')
+    .set({ last_activity: Math.floor(Date.now() / 1000) })
+    .where('id', '=', sessionId)
+  touch = expiresAt == null ? touch.whereNull('expires_at') : touch.where('expires_at', '=', expiresAt)
+  touch = lastActivity == null ? touch.whereNull('last_activity') : touch.where('last_activity', '=', lastActivity)
+  await touch.execute()
+}
+
 /** Get the authenticated user from a session ID. */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
   try {
     const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
     const session = config.auth?.session?.enforceFingerprint
-      ? await query.select(['user_id', 'expires_at', 'ip_address', 'user_agent']).executeTakeFirst()
-      : await query.select(['user_id', 'expires_at']).executeTakeFirst()
+      ? await query.select(['user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['user_id', 'expires_at', 'last_activity']).executeTakeFirst()
 
     if (!session)
       return undefined
@@ -292,6 +328,11 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
       // Delete only the expired version we read. A concurrent refresh may have
       // renewed this session before the cleanup reaches the database.
       await deleteObservedExpiredSession(sessionId, session.expires_at)
+      return undefined
+    }
+
+    if (sessionIdleTimeoutExceeded(session.last_activity)) {
+      await deleteObservedIdleSession(sessionId, session.user_id as number, session.expires_at, session.last_activity)
       return undefined
     }
 
@@ -305,6 +346,7 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
       await deleteObservedOrphanedSession(sessionId, userId, session.expires_at)
       return undefined
     }
+    await touchSessionActivity(sessionId, session.expires_at, session.last_activity)
     return await User.find(userId)
   }
   catch {
@@ -320,8 +362,8 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
   try {
     const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
     const session = config.auth?.session?.enforceFingerprint
-      ? await query.select(['user_id', 'expires_at', 'ip_address', 'user_agent']).executeTakeFirst()
-      : await query.select(['user_id', 'expires_at']).executeTakeFirst()
+      ? await query.select(['user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['user_id', 'expires_at', 'last_activity']).executeTakeFirst()
 
     if (!session)
       return false
@@ -329,6 +371,11 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
       await deleteObservedExpiredSession(sessionId, session.expires_at)
+      return false
+    }
+
+    if (sessionIdleTimeoutExceeded(session.last_activity)) {
+      await deleteObservedIdleSession(sessionId, session.user_id as number, session.expires_at, session.last_activity)
       return false
     }
 
@@ -340,6 +387,8 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
       await deleteObservedOrphanedSession(sessionId, userId, session.expires_at)
       return false
     }
+
+    await touchSessionActivity(sessionId, session.expires_at, session.last_activity)
 
     return true
   }
@@ -359,8 +408,8 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
   try {
     const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
     const session = config.auth?.session?.enforceFingerprint
-      ? await query.select(['user_id', 'expires_at', 'ip_address', 'user_agent']).executeTakeFirst()
-      : await query.select(['user_id', 'expires_at']).executeTakeFirst()
+      ? await query.select(['user_id', 'expires_at', 'last_activity', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['user_id', 'expires_at', 'last_activity']).executeTakeFirst()
 
     if (!session)
       return false
@@ -368,6 +417,11 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() >= expiresAt) {
       await deleteObservedExpiredSession(sessionId, session.expires_at)
+      return false
+    }
+
+    if (sessionIdleTimeoutExceeded(session.last_activity)) {
+      await deleteObservedIdleSession(sessionId, session.user_id as number, session.expires_at, session.last_activity)
       return false
     }
 
