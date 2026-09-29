@@ -48,6 +48,8 @@ export async function generateAppIconSet(
 
   const favicons = appIcons.favicon
     ? await generateFavicons(source, projectFile(appIcons.faviconDir ?? 'public', root), {
+        // Crop the source's transparent margin so the icon fills a 16px tab.
+        trim: appIcons.trim,
         /*
          * Forwarded rather than left to the renderer's defaults, which name
          * the application "App" and paint it a colour belonging to no brand -

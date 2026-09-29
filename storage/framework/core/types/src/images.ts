@@ -195,6 +195,15 @@ export interface AppIconsConfig {
   /** @default 'public' */
   faviconDir?: string
   /**
+   * Crop the source's transparent margin before drawing the favicons.
+   *
+   * An icon on Apple's grid is a squircle inside a margin a fifth of its
+   * width, which in a 16px tab leaves a speck. Set `false` to keep a margin
+   * the design means to have.
+   * @default true
+   */
+  trim?: boolean
+  /**
    * The `site.webmanifest` written beside the favicons. `false` writes none.
    *
    * Without this the manifest is generated with the renderer's placeholder
@@ -206,7 +215,17 @@ export interface AppIconsConfig {
     name?: string
     shortName?: string
     themeColor?: ImageColor
+    /**
+     * Also the colour the apple-touch-icon is flattened onto, because iOS
+     * fills a touch icon's transparency with black.
+     */
     backgroundColor?: ImageColor
+    /**
+     * Declare the manifest icons maskable. Only for a source drawn inside the
+     * central 80% safe zone: Android crops everything outside it.
+     * @default false
+     */
+    maskable?: boolean
     /** URL prefix for the icon paths, when they are not at the document root. */
     pathPrefix?: string
   }

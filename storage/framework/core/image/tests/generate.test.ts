@@ -11,7 +11,7 @@ import { resolveFontPath } from '../src/fonts'
 import { drawsGlyphs } from '../src/fonts'
 import { renderOnDemandSocialCard, socialCardName, socialMetaTags, textSizes } from '../src/social'
 import { generateSocialCardSet } from '../src/social'
-import { background, color, device, themed } from '../src/theme'
+import { background, color, device, themed, trimTransparentEdges } from '../src/theme'
 
 describe('theme translation', () => {
   test('reads colours out of configuration strings', () => {
@@ -412,5 +412,38 @@ describe('social card text sizes', () => {
 
   test('says nothing when neither does, leaving the renderer its defaults', () => {
     expect(textSizes(undefined)).toEqual({ titleSize: undefined, eyebrowSize: undefined, subtitleSize: undefined })
+  })
+})
+
+describe('the brand mark', () => {
+  /** An opaque band inside a transparent canvas, like an exported logo with padding. */
+  function padded(size: number, width: number, height: number) {
+    const image = createImageData(size, size, { hasAlpha: true, fill: { r: 0, g: 0, b: 0, a: 0 } })
+    const left = Math.floor((size - width) / 2)
+    const top = Math.floor((size - height) / 2)
+    for (let y = top; y < top + height; y++) {
+      for (let x = left; x < left + width; x++)
+        image.data[(y * size + x) * 4 + 3] = 255
+    }
+    return image
+  }
+
+  test('crops a transparent margin, so the visible shape fills the box the card sized', () => {
+    // A macOS icon: the squircle is 824 of 1024 pixels.
+    const trimmed = trimTransparentEdges(padded(1024, 824, 824))
+    expect(trimmed.width).toBe(824)
+    expect(trimmed.height).toBe(824)
+  })
+
+  test('keeps a wordmark its own proportions rather than squaring it', () => {
+    const trimmed = trimTransparentEdges(padded(400, 300, 60))
+    expect(trimmed.width / trimmed.height).toBe(5)
+  })
+
+  test('leaves a full-bleed or empty mark alone', () => {
+    const full = padded(64, 64, 64)
+    expect(trimTransparentEdges(full)).toBe(full)
+    const empty = padded(64, 0, 0)
+    expect(trimTransparentEdges(empty)).toBe(empty)
   })
 })

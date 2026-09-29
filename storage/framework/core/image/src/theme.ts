@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
-import { decode, drawImage, parseColor } from 'ts-images'
+import { crop, decode, drawImage, parseColor } from 'ts-images'
 
 /**
  * Turn the declarative half of `config/images.ts` into the shapes ts-images
@@ -101,7 +101,7 @@ export async function markPainter(
   if (!path)
     return undefined
 
-  const mark = await decode(new Uint8Array(await readFile(projectFile(path, root))))
+  const mark = trimTransparentEdges(await decode(new Uint8Array(await readFile(projectFile(path, root)))))
 
   /*
    * Keep the mark's own proportions rather than fitting it inside a square.
@@ -128,6 +128,44 @@ export async function markPainter(
       })
     },
   }
+}
+
+/**
+ * Crop the transparent margin off a mark, keeping its own proportions.
+ *
+ * An app icon drawn on Apple's grid is a squircle inside a transparent margin
+ * a fifth of its width, and a logo exported from a design tool often carries
+ * padding too. Drawn as is, the visible shape comes out smaller than the box
+ * the card sized for it, beside a wordmark that is exactly the size asked for.
+ * Bounds are found on alpha alone, since a transparent pixel's colour channels
+ * are whatever the encoder left there.
+ */
+export function trimTransparentEdges(image: ImageData, alphaThreshold = 8): ImageData {
+  let left = image.width
+  let top = image.height
+  let right = -1
+  let bottom = -1
+
+  for (let y = 0; y < image.height; y++) {
+    for (let x = 0; x < image.width; x++) {
+      if ((image.data[(y * image.width + x) * 4 + 3] ?? 0) > alphaThreshold) {
+        if (x < left)
+          left = x
+        if (x > right)
+          right = x
+        if (y < top)
+          top = y
+        if (y > bottom)
+          bottom = y
+      }
+    }
+  }
+
+  // Fully transparent, or nothing to crop.
+  if (right < 0 || (left === 0 && top === 0 && right === image.width - 1 && bottom === image.height - 1))
+    return image
+
+  return crop(image, { left, top, width: right - left + 1, height: bottom - top + 1 })
 }
 
 /** The palette keys a generator inherits from the top level of the config. */
