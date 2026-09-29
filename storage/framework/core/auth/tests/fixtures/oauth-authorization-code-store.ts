@@ -1476,6 +1476,14 @@ try {
     redirectUri: base.redirectUri,
     codeVerifier: verifier,
   }
+  await assert.rejects(issueAuthorizationCode({
+    ...base,
+    lifetimeMs: 1.5,
+  }), /positive safe integer/)
+  await assert.rejects(issueAuthorizationCode({
+    ...base,
+    lifetimeMs: Number.MAX_SAFE_INTEGER + 1,
+  }), /positive safe integer/)
 
   const plain = await issueAuthorizationCode(base)
   const stored = await db.selectFrom('oauth_auth_codes')
