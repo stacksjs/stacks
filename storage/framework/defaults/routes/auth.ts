@@ -75,6 +75,8 @@ route.post('/verify-two-factor-login', 'Actions/Auth/VerifyTwoFactorLoginAction'
 
 route.group({ prefix: '/auth' }, () => {
   route.post('/refresh', 'Actions/Auth/RefreshTokenAction').rateLimit(10, 'minute')
+  route.get('/oauth/connections', 'Actions/Auth/OAuthConnectionsAction').middleware('auth')
+  route.post('/oauth/connections/{id}/disconnect', 'Actions/Auth/OAuthDisconnectAction').middleware('auth').rateLimit(10, 'minute')
   route.get('/tokens', 'Actions/Auth/ListTokensAction').middleware('auth')
   route.post('/token', 'Actions/Auth/CreateTokenAction').middleware('auth').rateLimit(10, 'minute')
   route.delete('/tokens/{id}', 'Actions/Auth/RevokeTokenAction').middleware('auth')

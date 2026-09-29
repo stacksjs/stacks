@@ -74,6 +74,8 @@ const AUTH_ROUTES = [
   'GET /oauth/authorize',
   'POST /oauth/authorize',
   'GET /.well-known/oauth-authorization-server',
+  'GET /auth/oauth/connections',
+  'POST /auth/oauth/connections/{id}/disconnect',
   'POST /logout-all',
   'POST /generate-two-factor-secret',
   'POST /password/forgot',

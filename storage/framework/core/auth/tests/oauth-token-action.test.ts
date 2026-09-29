@@ -2,7 +2,9 @@ import type { RequestInstance } from '@stacksjs/types'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
 import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAuthorizationAction'
+import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConnectionsAction'
 import OAuthConsentAction from '../../../defaults/app/Actions/Auth/OAuthConsentAction'
+import OAuthDisconnectAction from '../../../defaults/app/Actions/Auth/OAuthDisconnectAction'
 import OAuthMetadataAction from '../../../defaults/app/Actions/Auth/OAuthMetadataAction'
 import OAuthRevocationAction from '../../../defaults/app/Actions/Auth/OAuthRevocationAction'
 import OAuthTokenAction from '../../../defaults/app/Actions/Auth/OAuthTokenAction'
@@ -174,5 +176,56 @@ describe('OAuth browser authorization route actions', () => {
     expect(anonymous.status).toBe(401)
     expect(authenticated.status).toBe(415)
     expect(authenticated.headers.get('location')).toBeNull()
+  })
+})
+
+describe('OAuth connected application route actions', () => {
+  it('keeps connected applications unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const listResult = await OAuthConnectionsAction.handle(browserRequest('https://id.example.com/auth/oauth/connections'))
+    const disconnectResult = await OAuthDisconnectAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/connections/0123456789abcdef0123456789abcdef/disconnect',
+      { method: 'POST' },
+    ))
+
+    expect(listResult.status).toBe(404)
+    expect(disconnectResult.status).toBe(404)
+  })
+
+  it('requires an authenticated subject for listing and disconnecting applications', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const listResult = await OAuthConnectionsAction.handle(browserRequest('https://id.example.com/auth/oauth/connections'))
+    const disconnectResult = await OAuthDisconnectAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/connections/0123456789abcdef0123456789abcdef/disconnect',
+      { method: 'POST' },
+    ))
+
+    expect(listResult.status).toBe(401)
+    expect(disconnectResult.status).toBe(401)
+  })
+
+  it('rejects malformed grant identifiers before touching the store', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+    const value = browserRequest(
+      'https://id.example.com/auth/oauth/connections/not-a-grant/disconnect',
+      { method: 'POST' },
+      { id: '42', email: 'ada@example.com' },
+    ) as RequestInstance & { getParam: (name: string) => string }
+    value.getParam = () => 'not-a-grant'
+
+    const result = await OAuthDisconnectAction.handle(value)
+
+    expect(OAuthDisconnectAction.skipCsrf).not.toBe(true)
+    expect(result.status).toBe(400)
   })
 })
