@@ -118,6 +118,8 @@ try {
 
   const OAuthClientDisableAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientDisableAction')).default
   const OAuthClientsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientsAction')).default
+  const OAuthAuthorizationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthAuthorizationAction')).default
+  const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConsentAction')).default
   const OAuthClientSecretRotateAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction')).default
   const OAuthClientStoreAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientStoreAction')).default
   const OAuthClientUpdateAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientUpdateAction')).default
@@ -492,6 +494,62 @@ try {
   assert.equal(`${handledApprovalLocation.origin}${handledApprovalLocation.pathname}`, validatedRequest.redirectUri)
   assert.equal(handledApprovalLocation.searchParams.get('state'), validatedRequest.state)
   assert.match(handledApprovalLocation.searchParams.get('code')!, /^[A-Za-z0-9_-]{43}$/)
+
+  let workspaceResolutions = 0
+  config.auth.oauthProvider = {
+    ...providerConfig,
+    consent: {
+      resolveWorkspace: async ({ user }: { user: { id: number | string } }) => {
+        workspaceResolutions++
+        assert.equal(String(user.id), '42')
+        return { id: 'workspace-1', label: 'Acme Workspace' }
+      },
+    },
+  } as never
+  const workspaceProvider = resolveOAuthProviderConfig(config.auth.oauthProvider)!
+  const workspaceRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const workspacePageRequest = new Request(
+    `https://id.example.com/oauth/authorize?request_id=${workspaceRequestId}`,
+    { headers: { Cookie: `${oauthAuthorizationBrowserSessionCookieName(workspaceProvider)}=${browserSession}` } },
+  ) as Request & { user: () => Promise<{ id: string, email: string }>, _csrfToken: string }
+  workspacePageRequest.user = async () => ({ id: '42', email: 'ada@example.com' })
+  workspacePageRequest._csrfToken = 'csrf-proof'
+  const workspacePage = await OAuthAuthorizationAction.handle(workspacePageRequest as never)
+  assert.equal(workspacePage.status, 200)
+  assert.match(await workspacePage.text(), /Acme Workspace/)
+
+  const workspaceApprovalRequest = new Request('https://id.example.com/oauth/authorize', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': `${oauthAuthorizationBrowserSessionCookieName(workspaceProvider)}=${browserSession}`,
+    },
+    body: new URLSearchParams({ request_id: workspaceRequestId, decision: 'approve' }),
+  }) as Request & { user: () => Promise<{ id: string, email: string }> }
+  workspaceApprovalRequest.user = async () => ({ id: '42', email: 'ada@example.com' })
+  const workspaceApproval = await OAuthConsentAction.handle(workspaceApprovalRequest as never)
+  assert.equal(workspaceApproval.status, 302)
+  const workspaceCode = new URL(workspaceApproval.headers.get('location')!).searchParams.get('code')!
+  const workspaceCodeRow = await db.selectFrom('oauth_auth_codes')
+    .where('code_hash', '=', createHash('sha256').update(workspaceCode).digest('hex'))
+    .select('workspace_id')
+    .executeTakeFirstOrThrow()
+  assert.equal(workspaceCodeRow.workspace_id, 'workspace-1')
+  assert.equal(workspaceResolutions, 2)
+  const workspaceDenialRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const workspaceDenialRequest = new Request('https://id.example.com/oauth/authorize', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': `${oauthAuthorizationBrowserSessionCookieName(workspaceProvider)}=${browserSession}`,
+    },
+    body: new URLSearchParams({ request_id: workspaceDenialRequestId, decision: 'deny' }),
+  }) as Request & { user: () => Promise<{ id: string, email: string }> }
+  workspaceDenialRequest.user = async () => ({ id: '42', email: 'ada@example.com' })
+  const workspaceDenial = await OAuthConsentAction.handle(workspaceDenialRequest as never)
+  assert.equal(workspaceDenial.status, 302)
+  assert.equal(workspaceResolutions, 2, 'denial must not require current workspace membership')
+  config.auth.oauthProvider = providerConfig
 
   const handledDenialRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const handledDenial = await handleOAuthAuthorizationConsentRequest({

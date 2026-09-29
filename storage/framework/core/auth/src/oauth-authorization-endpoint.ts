@@ -39,6 +39,8 @@ export interface HandleOAuthAuthorizationConsentRequestInput {
   subjectType: string
   subjectId: number
   workspaceId?: string | null
+  /** Resolve current workspace authority only after an approval is parsed. */
+  resolveWorkspaceId?: () => Promise<string | null>
 }
 
 export interface OAuthAuthorizationPageIdentity {
@@ -280,13 +282,16 @@ export async function handleOAuthAuthorizationConsentRequest(
 
   let approved
   try {
+    const workspaceId = input.resolveWorkspaceId
+      ? await input.resolveWorkspaceId()
+      : input.workspaceId
     approved = await approveOAuthAuthorizationRequestSession({
       provider: input.provider,
       requestId: consent.requestId,
       browserSessionId,
       subjectType: input.subjectType,
       subjectId: input.subjectId,
-      workspaceId: input.workspaceId,
+      workspaceId,
       authorizationCodeLifetimeMs: input.provider.lifetimes.authorizationCode,
     })
   }

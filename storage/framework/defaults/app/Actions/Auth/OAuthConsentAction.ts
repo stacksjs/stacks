@@ -1,5 +1,9 @@
 import { Action } from '@stacksjs/actions'
-import { handleOAuthAuthorizationConsentRequest, resolveOAuthProviderConfig } from '@stacksjs/auth'
+import {
+  handleOAuthAuthorizationConsentRequest,
+  resolveOAuthConsentWorkspace,
+  resolveOAuthProviderConfig,
+} from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import { oauthPositiveId } from './oauth-request'
@@ -24,6 +28,7 @@ export default new Action({
       request: request as unknown as Request,
       subjectType: 'users',
       subjectId: id,
+      resolveWorkspaceId: async () => (await resolveOAuthConsentWorkspace(provider, { request, user }))?.id ?? null,
     })
   },
 })

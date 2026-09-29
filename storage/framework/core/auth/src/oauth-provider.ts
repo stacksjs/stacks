@@ -1,4 +1,7 @@
 import type {
+  OAuthProviderConsentWorkspace,
+  OAuthProviderConsentWorkspaceContext,
+  OAuthProviderConsentWorkspaceResolver,
   OAuthProviderConfig,
   OAuthProviderResourceConfig,
   OAuthProviderScopeConfig,
@@ -43,6 +46,7 @@ export interface ResolvedOAuthProviderConfig {
   consent: {
     rememberFor: number
     view: string
+    resolveWorkspace?: OAuthProviderConsentWorkspaceResolver
   }
 }
 
@@ -164,7 +168,27 @@ function resolvedConsent(options: OAuthProviderConfig['consent']): ResolvedOAuth
   const view = options?.view ?? 'auth/oauth/consent'
   if (!view || view.length > 255 || view.startsWith('/') || view.includes('..') || /[\u0000-\u001F\u007F]/.test(view))
     throw new Error('auth.oauthProvider.consent.view must be a safe relative view name.')
-  return { rememberFor, view }
+  const resolveWorkspace = options?.resolveWorkspace
+  if (resolveWorkspace !== undefined && typeof resolveWorkspace !== 'function')
+    throw new Error('auth.oauthProvider.consent.resolveWorkspace must be a function.')
+  return { rememberFor, view, ...(resolveWorkspace ? { resolveWorkspace } : {}) }
+}
+
+/** Resolve and validate application-owned workspace authority for consent. */
+export async function resolveOAuthConsentWorkspace(
+  provider: ResolvedOAuthProviderConfig,
+  context: OAuthProviderConsentWorkspaceContext,
+): Promise<OAuthProviderConsentWorkspace | null> {
+  const resolved = await provider.consent.resolveWorkspace?.(context) ?? null
+  if (resolved === null)
+    return null
+  if (typeof resolved.id !== 'string' || !resolved.id || resolved.id.length > 255
+    || /[\u0000-\u001F\u007F]/.test(resolved.id))
+    throw new Error('OAuth consent workspace id must contain 1 to 255 characters without controls.')
+  if (typeof resolved.label !== 'string' || !resolved.label.trim() || resolved.label.length > 255
+    || /[\u0000-\u001F\u007F]/.test(resolved.label))
+    throw new Error('OAuth consent workspace label must contain 1 to 255 characters without controls.')
+  return { id: resolved.id, label: resolved.label.trim() }
 }
 
 /**

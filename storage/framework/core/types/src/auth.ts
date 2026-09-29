@@ -1,3 +1,5 @@
+import type { AuthenticatedUser, RequestInstance } from './request'
+
 /**
  * The browser cookie that carries a personal access token.
  *
@@ -68,6 +70,24 @@ export interface OAuthProviderResourceConfig {
   description?: string
 }
 
+export interface OAuthProviderConsentWorkspace {
+  /** Stable server-owned workspace identifier bound to the delegated grant. */
+  id: string
+  /** Human-readable workspace name shown on the consent page. */
+  label: string
+}
+
+export interface OAuthProviderConsentWorkspaceContext {
+  /** Current authenticated user. Never derived from the consent form body. */
+  user: AuthenticatedUser
+  /** Current server request, for application-owned membership resolution. */
+  request: RequestInstance
+}
+
+export type OAuthProviderConsentWorkspaceResolver = (
+  context: OAuthProviderConsentWorkspaceContext,
+) => OAuthProviderConsentWorkspace | null | Promise<OAuthProviderConsentWorkspace | null>
+
 export interface OAuthProviderConfig {
   /** The authorization server is opt-in and remains unavailable when false or absent. */
   enabled?: boolean
@@ -98,6 +118,11 @@ export interface OAuthProviderConfig {
     rememberFor?: number
     /** Overridable stx view used for approve and deny. */
     view?: string
+    /**
+     * Resolve the current user's workspace from authoritative application data.
+     * Called once when rendering consent and again immediately before approval.
+     */
+    resolveWorkspace?: OAuthProviderConsentWorkspaceResolver
   }
 }
 

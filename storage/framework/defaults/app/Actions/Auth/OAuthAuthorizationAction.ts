@@ -3,7 +3,11 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Action } from '@stacksjs/actions'
 import { resolveDefaultsResources } from '@stacksjs/actions/dev/defaults-resources'
-import { handleOAuthAuthorizationPageRequest, resolveOAuthProviderConfig } from '@stacksjs/auth'
+import {
+  handleOAuthAuthorizationPageRequest,
+  resolveOAuthConsentWorkspace,
+  resolveOAuthProviderConfig,
+} from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { response } from '@stacksjs/router'
@@ -44,11 +48,14 @@ export default new Action({
 
     const user = await request.user()
     const subjectId = user ? oauthPositiveId(user.id) : null
+    const workspace = user && subjectId
+      ? await resolveOAuthConsentWorkspace(provider, { request, user })
+      : null
     return handleOAuthAuthorizationPageRequest({
       provider,
       request: request as unknown as Request,
-      identity: user ? { label: identityLabel(user) } : null,
-      subject: subjectId ? { type: 'users', id: subjectId } : null,
+      identity: user ? { label: identityLabel(user), workspaceLabel: workspace?.label } : null,
+      subject: subjectId ? { type: 'users', id: subjectId, workspaceId: workspace?.id } : null,
       csrfToken: (request as unknown as { _csrfToken?: string })._csrfToken,
       dependencies: { render: renderConsentView },
     })

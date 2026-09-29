@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 import authConfig from '../../../../../config/auth'
-import { resolveOAuthProviderConfig } from '../src/oauth-provider'
+import {
+  resolveOAuthConsentWorkspace,
+  resolveOAuthProviderConfig,
+} from '../src/oauth-provider'
 
 describe('OAuth authorization server configuration', () => {
   it('is unavailable unless the provider is explicitly enabled', () => {
@@ -156,6 +159,33 @@ describe('OAuth authorization server configuration', () => {
       issuer: 'https://id.example.com',
       consent: { view: '../outside' },
     })).toThrow('consent.view')
+  })
+
+  it('resolves and validates server-owned consent workspaces', async () => {
+    const request = {} as never
+    const user = { id: '42', email: 'ada@example.com' }
+    const provider = resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      consent: {
+        resolveWorkspace: (context) => {
+          expect(context).toEqual({ request, user })
+          return { id: 'workspace-1', label: ' Acme Workspace ' }
+        },
+      },
+    })!
+
+    expect(await resolveOAuthConsentWorkspace(provider, { request, user })).toEqual({
+      id: 'workspace-1',
+      label: 'Acme Workspace',
+    })
+
+    const invalid = resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      consent: { resolveWorkspace: () => ({ id: '', label: 'Missing id' }) },
+    })!
+    await expect(resolveOAuthConsentWorkspace(invalid, { request, user })).rejects.toThrow('workspace id')
   })
 
   it('snapshots policy so later config mutation cannot expand authorization', () => {
