@@ -376,9 +376,11 @@ export function isIssuedBeforePasswordChange(createdAt: unknown, changedAt: Date
 export async function tokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<AccessToken[]> {
   const { boolFalse, param } = tokenSql()
   const rows = await db.unsafe(`
-    SELECT t.*, c.provider as client_provider
+    SELECT t.id, t.user_id, t.tokenable_type, t.tokenable_id,
+      t.oauth_client_id, t.oauth_grant_id, t.resources, t.audiences,
+      t.workspace_id, t.name, t.scopes, t.revoked, t.expires_at,
+      t.created_at, t.updated_at, t.user_agent, t.ip_address
     FROM oauth_access_tokens t
-    LEFT JOIN oauth_clients c ON t.oauth_client_id = c.id
     WHERE t.tokenable_id = ${param(1)}
     AND t.tokenable_type = ${param(2)}
     AND t.revoked = ${boolFalse}
