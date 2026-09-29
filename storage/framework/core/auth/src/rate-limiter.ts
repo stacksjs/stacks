@@ -1,4 +1,5 @@
 import { HttpError } from '@stacksjs/error-handling'
+import { RedisClient } from 'bun'
 
 // Rate limiting configuration
 const MAX_ATTEMPTS = 5
@@ -27,13 +28,16 @@ function recordFailure(current: RateLimitEntry | undefined, now: number): RateLi
  * default {@link MemoryStore} is process-local (fine for single-instance and
  * dev). On a horizontally-scaled deployment the in-memory store is trivially
  * bypassed by spreading attempts across instances, so production should swap
- * in a shared store via `RateLimiter.useSharedStore()` (cache-backed; becomes
- * cluster-wide when the cache driver is Redis) or a custom `useStore()`.
+ * in the atomic Redis store via `RateLimiter.useSharedStore()` or provide a
+ * custom store whose `recordFailedAttempt` operation is atomic.
  */
 export interface RateLimiterStore {
   get: (key: string) => Promise<RateLimitEntry | undefined> | RateLimitEntry | undefined
   set: (key: string, entry: RateLimitEntry, ttlMs: number) => Promise<void> | void
   delete: (key: string) => Promise<void> | void
+  /** Required for stores shared across processes. */
+  recordFailedAttempt?: (key: string, now: number, ttlMs: number) => Promise<void> | void
+  close?: () => Promise<void> | void
 }
 
 const INITIAL_EVICTION_SIZE = 10_000
@@ -94,21 +98,110 @@ class MemoryStore implements RateLimiterStore {
   }
 }
 
-/**
- * Cache-backed store. Cross-instance when the configured cache driver is
- * Redis; otherwise behaves like an in-memory store with TTL eviction. Entries
- * carry a TTL so attempts decay automatically — no separate eviction pass.
- */
-class CacheStore implements RateLimiterStore {
-  private prefix = 'auth:ratelimit:'
+export interface RedisRateLimiterStoreOptions {
+  url?: string
+  prefix?: string
+}
+
+const RECORD_FAILURE_SCRIPT = `
+local attempts = 0
+local locked_until = 0
+local raw = redis.call('GET', KEYS[1])
+if raw then
+  local decoded_ok, decoded = pcall(cjson.decode, raw)
+  if decoded_ok and type(decoded) == 'table' then
+    attempts = tonumber(decoded.attempts) or 0
+    locked_until = tonumber(decoded.lockedUntil) or 0
+  end
+end
+local now = tonumber(ARGV[1])
+local ttl = tonumber(ARGV[2])
+local maximum = tonumber(ARGV[3])
+if locked_until > 0 and locked_until <= now then
+  attempts = 0
+  locked_until = 0
+end
+attempts = attempts + 1
+if attempts >= maximum then
+  locked_until = now + ttl
+  attempts = 0
+end
+redis.call('SET', KEYS[1], cjson.encode({ attempts = attempts, lockedUntil = locked_until }), 'PX', ttl)
+return locked_until
+`
+
+function redisUrl(options: RedisRateLimiterStoreOptions, configured: {
+  driver?: string
+  prefix?: string
+  drivers?: { redis?: {
+    url?: string
+    host?: string
+    port?: number
+    username?: string
+    password?: string
+    database?: number
+    tls?: boolean
+  } }
+}): { url: string, prefix: string } {
+  const redis = configured.drivers?.redis
+  if (options.url)
+    return { url: options.url, prefix: options.prefix ?? configured.prefix ?? 'stacks' }
+  if (configured.driver !== 'redis' || !redis)
+    throw new Error('Shared auth rate limiting requires the Redis cache driver or an explicit Redis URL.')
+  if (redis.url)
+    return { url: redis.url, prefix: options.prefix ?? configured.prefix ?? 'stacks' }
+
+  const protocol = redis.tls ? 'rediss' : 'redis'
+  const credentials = redis.username
+    ? `${encodeURIComponent(redis.username)}:${encodeURIComponent(redis.password ?? '')}@`
+    : redis.password
+      ? `:${encodeURIComponent(redis.password)}@`
+      : ''
+  const database = redis.database == null ? '' : `/${redis.database}`
+  return {
+    url: `${protocol}://${credentials}${redis.host ?? '127.0.0.1'}:${redis.port ?? 6379}${database}`,
+    prefix: options.prefix ?? configured.prefix ?? 'stacks',
+  }
+}
+
+/** Redis-backed store whose Lua update is atomic across workers. */
+export class RedisRateLimiterStore implements RateLimiterStore {
+  private clientPromise?: Promise<{ client: RedisClient, prefix: string }>
+
+  constructor(private readonly options: RedisRateLimiterStoreOptions = {}) {}
+
+  private async client(): Promise<{ client: RedisClient, prefix: string }> {
+    if (!this.clientPromise) {
+      this.clientPromise = (async () => {
+        const { cache: configured } = await import('@stacksjs/config')
+        const resolved = redisUrl(this.options, configured)
+        const client = new RedisClient(resolved.url)
+        await client.connect()
+        return { client, prefix: resolved.prefix }
+      })().catch((error) => {
+        this.clientPromise = undefined
+        throw error
+      })
+    }
+    return this.clientPromise
+  }
+
+  private async key(key: string): Promise<{ client: RedisClient, key: string }> {
+    const { client, prefix } = await this.client()
+    return { client, key: `${prefix}:auth:ratelimit:${key}` }
+  }
 
   async get(key: string): Promise<RateLimitEntry | undefined> {
-    const { cache } = await import('@stacksjs/cache')
-    const raw = await cache.get(`${this.prefix}${key}`)
+    const resolved = await this.key(key)
+    const raw = await resolved.client.get(resolved.key)
     if (raw == null)
       return undefined
     try {
-      return typeof raw === 'string' ? JSON.parse(raw) : (raw as RateLimitEntry)
+      const entry = JSON.parse(raw) as Partial<RateLimitEntry>
+      if (!Number.isSafeInteger(entry.attempts) || entry.attempts! < 0
+        || !Number.isSafeInteger(entry.lockedUntil) || entry.lockedUntil! < 0)
+        return undefined
+      return { attempts: entry.attempts!, lockedUntil: entry.lockedUntil! }
     }
     catch {
       return undefined
@@ -116,13 +209,33 @@ class CacheStore implements RateLimiterStore {
   }
 
   async set(key: string, entry: RateLimitEntry, ttlMs: number): Promise<void> {
-    const { cache } = await import('@stacksjs/cache')
-    await cache.set(`${this.prefix}${key}`, JSON.stringify(entry), Math.ceil(ttlMs / 1000))
+    const resolved = await this.key(key)
+    await resolved.client.send('SET', [resolved.key, JSON.stringify(entry), 'PX', String(ttlMs)])
   }
 
   async delete(key: string): Promise<void> {
-    const { cache } = await import('@stacksjs/cache')
-    await cache.remove(`${this.prefix}${key}`)
+    const resolved = await this.key(key)
+    await resolved.client.del(resolved.key)
+  }
+
+  async recordFailedAttempt(key: string, now: number, ttlMs: number): Promise<void> {
+    const resolved = await this.key(key)
+    await resolved.client.send('EVAL', [
+      RECORD_FAILURE_SCRIPT,
+      '1',
+      resolved.key,
+      String(now),
+      String(ttlMs),
+      String(MAX_ATTEMPTS),
+    ])
+  }
+
+  async close(): Promise<void> {
+    if (!this.clientPromise)
+      return
+    const { client } = await this.clientPromise
+    client.close()
+    this.clientPromise = undefined
   }
 }
 
@@ -134,9 +247,9 @@ export class RateLimiter {
     store = custom
   }
 
-  /** Use the cache-backed store (cluster-wide when cache is Redis). */
-  static useSharedStore(): void {
-    store = new CacheStore()
+  /** Use a Redis-backed store with an atomic cross-worker failure update. */
+  static useSharedStore(options: RedisRateLimiterStoreOptions = {}): void {
+    store = new RedisRateLimiterStore(options)
   }
 
   /** Reset to the process-local in-memory store (the default). */
@@ -161,13 +274,13 @@ export class RateLimiter {
   static async recordFailedAttempt(email: string): Promise<void> {
     email = email.toLowerCase()
     const now = Date.now()
-    if (store instanceof MemoryStore) {
-      store.recordFailedAttempt(email, now)
+    if (store.recordFailedAttempt) {
+      await store.recordFailedAttempt(email, now, LOCKOUT_DURATION)
       return
     }
 
-    // Preserve the pluggable store contract and TTL. Separate asynchronous
-    // get/set calls do not promise an atomic distributed increment.
+    // Legacy custom stores retain their existing contract. Shared stores must
+    // implement recordFailedAttempt so the update is atomic across workers.
     const entry = recordFailure(await store.get(email), now)
     await store.set(email, entry, LOCKOUT_DURATION)
   }
