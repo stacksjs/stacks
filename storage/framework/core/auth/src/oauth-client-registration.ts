@@ -590,14 +590,18 @@ export async function rotateOAuthClientSecret(ownerId: number, clientId: number)
       return false
 
     const active = sql.isPostgres ? false : 0
+    const now = sqlDateTime(new Date())
     const changed = await trx.unsafe(`
       UPDATE oauth_clients
       SET secret = ${sql.param(1)}, updated_at = ${sql.param(2)}
       WHERE id = ${sql.param(3)} AND user_id = ${sql.param(4)}
         AND client_type = ${sql.param(5)} AND token_endpoint_auth_method = ${sql.param(6)}
         AND revoked = ${sql.param(7)}
-    `, [storedSecret, sqlDateTime(new Date()), clientId, ownerId, 'confidential', 'client_secret_basic', active])
-    return mutationCount(changed) === 1
+    `, [storedSecret, now, clientId, ownerId, 'confidential', 'client_secret_basic', active])
+    if (mutationCount(changed) !== 1)
+      return false
+    await revokeOAuthClientAuthorizationState(trx, sql, clientId, now)
+    return true
   })
   if (!rotated)
     return null

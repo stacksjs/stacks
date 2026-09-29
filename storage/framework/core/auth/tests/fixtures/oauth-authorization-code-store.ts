@@ -719,7 +719,7 @@ try {
     type: 'confidential',
     tokenEndpointAuthMethod: 'client_secret_basic',
     redirectUris: ['https://server.example.com/callback'],
-    grantTypes: ['authorization_code'],
+    grantTypes: ['authorization_code', 'refresh_token'],
     scopes: ['issues:read'],
     resources: ['bughq'],
   })
@@ -791,7 +791,7 @@ try {
     clientSecret: rotatedSecret,
     accessTokenLifetimeMs: 60_000,
     refreshTokenLifetimeMs: 120_000,
-  }), { ok: false, reason: 'unauthorized_client' })
+  }), { ok: false, reason: 'invalid_grant' })
 
   const confidentialRequest = validateOAuthAuthorizationRequest(provider, loadedConfidential!, {
     responseType: 'code',
@@ -812,6 +812,8 @@ try {
     authorizationCodeLifetimeMs: 60_000,
   })
   assert.equal(confidentialConsent.ok, true)
+  let confidentialAccessToken = ''
+  let confidentialRefreshToken = ''
   if (confidentialConsent.ok) {
     const confidentialInput = {
       code: confidentialConsent.value.code,
@@ -829,24 +831,49 @@ try {
     })
     assert.equal(confidentialExchange.ok, true)
     if (confidentialExchange.ok) {
-      assert.equal(confidentialExchange.value.refreshToken, undefined)
-      const refreshRows = await db.selectFrom('oauth_refresh_tokens')
-        .innerJoin('oauth_access_tokens', 'oauth_access_tokens.id', '=', 'oauth_refresh_tokens.access_token_id')
-        .where('oauth_access_tokens.oauth_grant_id', '=', confidentialExchange.value.grantId)
-        .select('oauth_refresh_tokens.id')
-        .get()
-      assert.equal(refreshRows.length, 0)
+      confidentialAccessToken = confidentialExchange.value.accessToken
+      confidentialRefreshToken = confidentialExchange.value.refreshToken!
+      assert(confidentialRefreshToken)
     }
     assert.deepEqual(await exchangeOAuthAuthorizationCode({
       ...confidentialInput,
       clientSecret: rotatedSecret,
     }), { ok: false, reason: 'invalid_grant' })
   }
+  const pendingConfidentialRequestId = await createOAuthAuthorizationRequestSession(confidentialRequest, browserSession, 60_000)
+  const pendingConfidentialConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
+    requestId: pendingConfidentialRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(pendingConfidentialConsent.ok)
+  const replacementSecret = await rotateOAuthClientSecret(42, confidentialRegistration.client.id)
+  assert(replacementSecret)
+  assert.equal(await findToken(confidentialAccessToken), null, 'secret rotation must revoke existing access tokens')
+  assert.deepEqual(await refreshOAuthDelegatedToken({
+    refreshToken: confidentialRefreshToken,
+    clientId: confidentialRegistration.client.id,
+    clientSecret: replacementSecret,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_grant' }, 'secret rotation must revoke existing refresh families')
+  assert.deepEqual(await exchangeOAuthAuthorizationCode({
+    code: pendingConfidentialConsent.value.code,
+    clientId: confidentialRegistration.client.id,
+    clientSecret: replacementSecret,
+    redirectUri: confidentialRequest.redirectUri,
+    codeVerifier: verifier,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }), { ok: false, reason: 'invalid_grant' }, 'secret rotation must consume pending authorization codes')
   await db.updateTable('oauth_clients').set({ revoked: true }).where('id', '=', confidentialRegistration.client.id).execute()
   assert.equal((await loadOAuthAuthorizationClient(String(confidentialRegistration.client.id)))?.revoked, true)
   assert.equal(await withAuthenticatedOAuthTokenClient(
     String(confidentialRegistration.client.id),
-    rotatedSecret,
+    replacementSecret,
     async client => client,
   ), null)
   assert.equal(await rotateOAuthClientSecret(42, confidentialRegistration.client.id), null, 'revoked clients must not rotate secrets')
