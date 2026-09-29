@@ -1,0 +1,292 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+
+const database = process.env.STACKS_OAUTH_HTTP_FIXTURE_DB
+assert(database, 'Only run with an isolated OAuth HTTP fixture database')
+assert.equal(process.env.DB_CONNECTION, 'sqlite')
+assert.equal(process.env.DB_DATABASE_PATH, database)
+
+const { config, overridesReady } = await import('@stacksjs/config')
+const {
+  db,
+  ensureDatabaseConfigLoaded,
+  initializeDbConfig,
+  resetDatabaseConnection,
+} = await import('@stacksjs/database')
+await overridesReady
+await ensureDatabaseConfigLoaded()
+initializeDbConfig({
+  app: { env: 'test' },
+  database: {
+    default: 'sqlite',
+    connections: { sqlite: { database } },
+    queryLogging: { enabled: false },
+  },
+})
+
+const { configureOrm, releaseOrm } = await import('bun-query-builder')
+configureOrm({ database })
+const { ormReady } = await import('@stacksjs/orm')
+await ormReady
+
+const {
+  authenticatedUser,
+  authCookieName,
+  createS256CodeChallenge,
+  registerOAuthClient,
+  resolveOAuthProviderConfig,
+} = await import('../../src')
+const { makeHash } = await import('@stacksjs/security')
+const { createStacksRouter } = await import('@stacksjs/router')
+const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
+const LoginAction = (await import('../../../../defaults/app/Actions/Auth/LoginAction')).default
+const OAuthAuthorizationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthAuthorizationAction')).default
+const OAuthConnectionsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConnectionsAction')).default
+const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConsentAction')).default
+const OAuthDisconnectAction = (await import('../../../../defaults/app/Actions/Auth/OAuthDisconnectAction')).default
+const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
+
+const email = 'oauth-http@example.test'
+const password = 'oauth-http-password'
+const redirectUri = 'https://client.example.test/callback'
+const verifier = 'v'.repeat(43)
+const challenge = await createS256CodeChallenge(verifier)
+
+function responseCookie(response: Response, name: string): string {
+  const value = response.headers.getSetCookie().find(cookie => cookie.startsWith(`${name}=`))
+  assert(value, `response did not set ${name}`)
+  return value.split(';', 1)[0]!
+}
+
+function cookieValue(cookie: string): string {
+  return cookie.slice(cookie.indexOf('=') + 1)
+}
+
+try {
+  await db.unsafe(`CREATE TABLE users (
+    id INTEGER PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
+    password_changed_at TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+  )`).execute()
+  await db.unsafe(`CREATE TABLE sessions (
+    id TEXT PRIMARY KEY, user_id INTEGER NOT NULL, ip_address TEXT, user_agent TEXT,
+    payload TEXT NOT NULL, last_activity INTEGER NOT NULL, expires_at TIMESTAMP
+  )`).execute()
+  await db.insertInto('users').values({
+    id: 1,
+    name: 'OAuth HTTP User',
+    email,
+    password: await makeHash(password, { algorithm: 'bcrypt' }),
+  }).execute()
+  await ensureFrameworkAuthTables()
+
+  const router = createStacksRouter({ autoDiscoverRoutes: false })
+  router.get('/fixture/start', () => new Response('<p>OAuth fixture</p>', {
+    headers: { 'Content-Type': 'text/html' },
+  }))
+  router.post('/login', LoginAction)
+  router.get('/oauth/authorize', OAuthAuthorizationAction)
+  router.post('/oauth/authorize', OAuthConsentAction).middleware('auth')
+  router.post('/oauth/token', OAuthTokenAction)
+  router.get('/auth/oauth/connections', OAuthConnectionsAction).middleware('auth')
+  router.post('/auth/oauth/connections/{id}/disconnect', OAuthDisconnectAction).middleware('auth')
+  router.get('/fixture/resource', async (request) => {
+    const user = await authenticatedUser(request)
+    return {
+      subject: Number(user?.id),
+      canReadIssues: await request.tokenCan?.('issues:read') ?? false,
+      canWriteIssues: await request.tokenCan?.('issues:write') ?? false,
+    }
+  }).middleware('auth')
+
+  const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
+  try {
+    const issuer = `http://127.0.0.1:${server.port}`
+    config.auth.oauthProvider = {
+      enabled: true,
+      issuer,
+      scopes: {
+        'issues:read': { description: 'Read issues', resources: ['bughq'] },
+      },
+      resources: {
+        bughq: { audience: `${issuer}/fixture/resource` },
+      },
+    }
+    const provider = resolveOAuthProviderConfig(config.auth.oauthProvider)
+    assert(provider)
+    const registration = await registerOAuthClient(provider, 1, {
+      name: 'HTTP lifecycle client',
+      type: 'public',
+      tokenEndpointAuthMethod: 'none',
+      redirectUris: [redirectUri],
+      grantTypes: ['authorization_code', 'refresh_token'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })
+
+    const start = await fetch(`${issuer}/fixture/start`)
+    assert.equal(start.status, 200)
+    const csrfCookie = responseCookie(start, 'X-CSRF-Token')
+    const csrfToken = cookieValue(csrfCookie)
+    await start.arrayBuffer()
+
+    const authorizationUrl = new URL('/oauth/authorize', issuer)
+    authorizationUrl.search = new URLSearchParams({
+      response_type: 'code',
+      client_id: String(registration.client.id),
+      redirect_uri: redirectUri,
+      scope: 'issues:read',
+      resource: `${issuer}/fixture/resource`,
+      state: 'oauth-http-state',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+    }).toString()
+    const anonymousAuthorization = await fetch(authorizationUrl, {
+      headers: { cookie: csrfCookie },
+      redirect: 'manual',
+    })
+    assert.equal(anonymousAuthorization.status, 302)
+    assert.match(anonymousAuthorization.headers.get('location') ?? '', /^\/login\?redirect=/)
+    const oauthCookie = responseCookie(anonymousAuthorization, 'stacks-oauth-session')
+    await anonymousAuthorization.arrayBuffer()
+
+    const login = await fetch(`${issuer}/login`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        cookie: `${csrfCookie}; ${oauthCookie}`,
+        'x-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({ email, password }),
+    })
+    assert.equal(login.status, 200, await login.clone().text())
+    const authCookie = responseCookie(login, authCookieName())
+    await login.arrayBuffer()
+    const browserCookies = `${csrfCookie}; ${oauthCookie}; ${authCookie}`
+
+    const resumeLocation = new URL(anonymousAuthorization.headers.get('location')!, issuer)
+      .searchParams.get('redirect')
+    assert(resumeLocation)
+    const consentPage = await fetch(new URL(resumeLocation, issuer), {
+      headers: { accept: 'text/html,application/xhtml+xml', cookie: browserCookies },
+      redirect: 'manual',
+    })
+    assert.equal(
+      consentPage.status,
+      200,
+      `unexpected consent response: ${consentPage.status} ${consentPage.headers.get('location') ?? ''} ${await consentPage.clone().text()}`,
+    )
+    const consentHtml = await consentPage.text()
+    assert.match(consentHtml, /HTTP lifecycle client/)
+    const requestId = /name="request_id" value="([A-Za-z0-9_-]{43})"/.exec(consentHtml)?.[1]
+    assert(requestId, 'consent page did not contain the opaque request id')
+
+    const approval = await fetch(`${issuer}/oauth/authorize`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        cookie: browserCookies,
+        'x-csrf-token': csrfToken,
+      },
+      body: new URLSearchParams({ request_id: requestId, decision: 'approve' }),
+      redirect: 'manual',
+    })
+    assert.equal(approval.status, 302, await approval.clone().text())
+    const callback = new URL(approval.headers.get('location')!)
+    assert.equal(`${callback.origin}${callback.pathname}`, redirectUri)
+    assert.equal(callback.searchParams.get('state'), 'oauth-http-state')
+    const code = callback.searchParams.get('code')
+    assert(code)
+
+    const exchange = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: String(registration.client.id),
+        code,
+        redirect_uri: redirectUri,
+        code_verifier: verifier,
+      }),
+    })
+    assert.equal(exchange.status, 200, await exchange.clone().text())
+    assert.equal(exchange.headers.get('cache-control'), 'no-store')
+    const firstPair = await exchange.json() as { access_token: string, refresh_token: string }
+
+    const readResource = async (token: string, status = 200) => {
+      const response = await fetch(`${issuer}/fixture/resource`, {
+        headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
+      })
+      assert.equal(response.status, status)
+      if (status === 200) {
+        assert.deepEqual(await response.json(), {
+          subject: 1,
+          canReadIssues: true,
+          canWriteIssues: false,
+        })
+      }
+      else await response.arrayBuffer()
+    }
+    await readResource(firstPair.access_token)
+
+    const refresh = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: String(registration.client.id),
+        refresh_token: firstPair.refresh_token,
+      }),
+    })
+    assert.equal(refresh.status, 200, await refresh.clone().text())
+    const secondPair = await refresh.json() as { access_token: string, refresh_token: string }
+    assert.notEqual(secondPair.access_token, firstPair.access_token)
+    assert.notEqual(secondPair.refresh_token, firstPair.refresh_token)
+    await readResource(firstPair.access_token, 401)
+    await readResource(secondPair.access_token)
+
+    const connections = await fetch(`${issuer}/auth/oauth/connections`, {
+      headers: { cookie: browserCookies, accept: 'application/json' },
+    })
+    assert.equal(connections.status, 200, await connections.clone().text())
+    const connectionBody = await connections.json() as {
+      count: number
+      connections: Array<{ grant_id: string }>
+    }
+    assert.equal(connectionBody.count, 1)
+    const grantId = connectionBody.connections[0]?.grant_id
+    assert.match(grantId ?? '', /^[a-f0-9]{32}$/)
+
+    const disconnect = await fetch(`${issuer}/auth/oauth/connections/${grantId}/disconnect`, {
+      method: 'POST',
+      headers: {
+        cookie: browserCookies,
+        'x-csrf-token': csrfToken,
+      },
+    })
+    assert.equal(disconnect.status, 200, await disconnect.clone().text())
+    await disconnect.arrayBuffer()
+    await readResource(secondPair.access_token, 401)
+
+    const storedGrant = await db.selectFrom('oauth_grants')
+      .where('id', '=', grantId!)
+      .select('revoked_at')
+      .executeTakeFirstOrThrow()
+    assert(storedGrant.revoked_at)
+    const tokenHash = createHash('sha256').update(secondPair.access_token, 'ascii').digest('hex')
+    const storedAccess = await db.selectFrom('oauth_access_tokens')
+      .where('token', '=', tokenHash)
+      .select('revoked')
+      .executeTakeFirstOrThrow()
+    assert.equal(Number(storedAccess.revoked), 1)
+
+    console.log('PASS OAuth HTTP lifecycle')
+  }
+  finally {
+    server.stop()
+  }
+}
+finally {
+  await releaseOrm()
+  await resetDatabaseConnection()
+}

@@ -4302,6 +4302,7 @@ function fuseRequestEnhancements(router: Router, initializeRequestIds = true): v
 interface CsrfModule {
   generateCsrfToken: () => string
   CSRF_COOKIE_NAME: string
+  csrfCookieToken: (req: Request) => string
   createCsrfCookie?: (req: Request, token?: string) => string
   seedCsrfCookieIfMissing: (req: Request, res: Response, token?: string, responseHasNoCookies?: boolean) => Response
 }
@@ -4374,19 +4375,25 @@ function hasCsrfCookie(cookieHeader: string): boolean {
  * and a request that has nothing to seed never allocates a promise at all.
  */
 function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }, cookieHeader = req.headers?.get?.('cookie') ?? ''): void | Promise<void> {
-  if (hasCsrfCookie(cookieHeader))
-    return
-
   const mod = loadCsrfModule()
   if (mod === null)
     return
   if (mod instanceof Promise) {
     return mod.then((resolved) => {
-      if (resolved)
-        applyCsrfRenderToken(req, cookieHeader, resolved)
+      if (!resolved)
+        return
+      if (hasCsrfCookie(cookieHeader)) {
+        req._csrfToken = resolved.csrfCookieToken(req) || undefined
+        return
+      }
+      applyCsrfRenderToken(req, cookieHeader, resolved)
     })
   }
 
+  if (hasCsrfCookie(cookieHeader)) {
+    req._csrfToken = mod.csrfCookieToken(req) || undefined
+    return
+  }
   applyCsrfRenderToken(req, cookieHeader, mod)
 }
 
@@ -5483,6 +5490,15 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
   const handleSafeRequest = (request: Request, rendersCsrf: boolean): Promise<Response> => {
     const cookieHeader = request.headers.get('cookie') ?? ''
     if (hasCsrfCookie(cookieHeader)) {
+      if (rendersCsrf && requestMayRenderHtml(request)) {
+        const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
+        if (seeding) {
+          return seeding.then(() => {
+            ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
+            return original(request)
+          })
+        }
+      }
       ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
       return original(request)
     }

@@ -4,13 +4,15 @@ import { join } from 'node:path'
 import { Action } from '@stacksjs/actions'
 import { resolveDefaultsResources } from '@stacksjs/actions/dev/defaults-resources'
 import {
+  authenticatedUser,
+  authUser,
   handleOAuthAuthorizationPageRequest,
   resolveOAuthConsentWorkspace,
   resolveOAuthProviderConfig,
 } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { response } from '@stacksjs/router'
+import { getCurrentRequest, response } from '@stacksjs/router'
 import { oauthPositiveId } from './oauth-request'
 
 function identityLabel(user: { email: string, [key: string]: unknown }): string {
@@ -46,7 +48,13 @@ export default new Action({
     if (!provider)
       return response.notFound('OAuth provider is not enabled')
 
-    const user = await request.user()
+    // This GET route must stay public so an anonymous browser can persist the
+    // request before login. `request.user()` only exposes identity populated
+    // by auth middleware, which this route deliberately cannot use, so fall
+    // through to the lazy cookie/bearer resolver after honoring a directly
+    // injected action-test or upstream middleware identity.
+    const user = await authenticatedUser(request)
+      ?? (getCurrentRequest() ? await authUser() : undefined)
     const subjectId = user ? oauthPositiveId(user.id) : null
     const workspace = user && subjectId
       ? await resolveOAuthConsentWorkspace(provider, { request, user })

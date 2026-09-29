@@ -471,6 +471,23 @@ describe('the request path keeps its defaults', () => {
     expect(answer.headers.get('set-cookie') ?? '').toContain(`X-CSRF-Token=${body.token}`)
   })
 
+  it('makes the existing CSRF cookie available to a browser document render', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    const existing = 'a'.repeat(64)
+    direct.get('/_hot/existing-document-csrf', request => ({ token: request._csrfToken ?? null }))
+
+    const answer = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/existing-document-csrf', {
+      headers: {
+        accept: 'text/html,application/xhtml+xml',
+        cookie: `X-CSRF-Token=${existing}`,
+      },
+    }))
+
+    expect(await answer.json()).toEqual({ token: existing })
+    expect(answer.headers.get('set-cookie') ?? '').toContain(`X-CSRF-Token=${existing}`)
+  })
+
   it('distinguishes native API and browser CSRF timing', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()

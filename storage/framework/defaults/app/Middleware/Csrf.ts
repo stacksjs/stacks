@@ -215,7 +215,7 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
  * Last duplicate wins; the canonical name takes precedence over the legacy
  * name unless its final value is empty. Malformed pairs are skipped.
  */
-function csrfCookieToken(req: Request): string {
+export function csrfCookieToken(req: Request): string {
   const header = req.headers.get('cookie')
   if (!header) return ''
   // The cookie this framework emits has one exact, whitespace-free shape.
