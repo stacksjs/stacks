@@ -1,4 +1,5 @@
 import process from 'node:process'
+import { pruneOAuthAuthorizationArtifacts } from '@stacksjs/auth'
 import { db, sql } from '@stacksjs/database/runtime'
 import { log } from '@stacksjs/logging'
 
@@ -32,6 +33,7 @@ log.info('Pruning authentication tokens...')
 
 let expiredCount = 0
 let revokedCount = 0
+let oauthCount = 0
 
 // Prune expired tokens
 if (pruneExpired) {
@@ -42,6 +44,13 @@ if (pruneExpired) {
     .execute()
 
   log.success(`Removed ${expiredCount} expired token(s)`)
+
+  const oauth = await pruneOAuthAuthorizationArtifacts({
+    consumedRetentionMs: daysOld * 24 * 60 * 60 * 1000,
+  })
+  oauthCount = oauth.authorizationRequests + oauth.authorizationCodes
+  log.success(`Removed ${oauth.authorizationRequests} OAuth authorization request(s)`)
+  log.success(`Removed ${oauth.authorizationCodes} OAuth authorization code(s)`)
 }
 
 // Prune revoked tokens older than specified days
@@ -59,7 +68,7 @@ if (pruneRevoked) {
   log.success(`Removed ${revokedCount} revoked token(s)`)
 }
 
-log.success(`Token pruning complete. Total removed: ${expiredCount + revokedCount}`)
+log.success(`Token pruning complete. Total removed: ${expiredCount + revokedCount + oauthCount}`)
 
 await log.flush()
 process.exit(0)

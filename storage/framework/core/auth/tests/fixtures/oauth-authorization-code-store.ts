@@ -74,6 +74,7 @@ const {
   loadOAuthAuthorizationClient,
   oauthAuthorizationBrowserSessionCookieName,
   refreshOAuthDelegatedToken,
+  pruneOAuthAuthorizationArtifacts,
   registerOAuthClient,
   rotateOAuthClientSecret,
   resolveOAuthProviderConfig,
@@ -1484,6 +1485,73 @@ try {
     assert.equal(await revokeOAuthGrant(grant.id), true)
     assert.equal(await findToken(exchanged.value.accessToken), null, 'revoking consent must invalidate its access tokens')
   }
+
+  const activePruneRegistration = await registerOAuthClient(provider, 55, {
+    name: 'Prune preservation client',
+    type: 'public',
+    tokenEndpointAuthMethod: 'none',
+    redirectUris: ['https://prune.example.com/callback'],
+    grantTypes: ['authorization_code'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  const activePruneClient = await loadOAuthAuthorizationClient(String(activePruneRegistration.client.id))
+  assert(activePruneClient)
+  const activePruneRequest = validateOAuthAuthorizationRequest(provider, activePruneClient, {
+    responseType: 'code',
+    clientId: String(activePruneRegistration.client.id),
+    redirectUri: 'https://prune.example.com/callback',
+    scope: 'issues:read',
+    resource: 'https://api.bughq.example',
+    state: 'prune-active-state',
+    codeChallenge,
+    codeChallengeMethod: 'S256',
+  })
+  const activePruneRequestId = await createOAuthAuthorizationRequestSession(activePruneRequest, browserSession, 60_000)
+  const activePruneGrant = await createOAuthGrant({
+    clientId: activePruneRegistration.client.id,
+    subjectType: 'users',
+    subjectId: 42,
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+    audiences: ['https://api.bughq.example'],
+  })
+  const activePruneCode = await issueAuthorizationCode({
+    grantId: activePruneGrant.id,
+    clientId: activePruneGrant.clientId,
+    subjectType: activePruneGrant.subjectType,
+    subjectId: activePruneGrant.subjectId,
+    redirectUri: 'https://prune.example.com/callback',
+    scopes: activePruneGrant.scopes,
+    resources: activePruneGrant.resources,
+    audiences: activePruneGrant.audiences,
+    workspaceId: activePruneGrant.workspaceId,
+    codeChallenge,
+    lifetimeMs: 60_000,
+  })
+  const pruned = await pruneOAuthAuthorizationArtifacts({ now: new Date(), consumedRetentionMs: 60_000 })
+  assert(pruned.authorizationRequests > 0)
+  assert(pruned.authorizationCodes > 0)
+  assert.equal(await db.selectFrom('oauth_authorization_requests')
+    .where('request_hash', '=', createHash('sha256').update(expiredRequestId).digest('hex'))
+    .select('request_hash')
+    .executeTakeFirst(), undefined)
+  assert.equal(await db.selectFrom('oauth_auth_codes')
+    .where('code_hash', '=', createHash('sha256').update(expiredCode).digest('hex'))
+    .select('code_hash')
+    .executeTakeFirst(), undefined)
+  assert(await db.selectFrom('oauth_authorization_requests')
+    .where('request_hash', '=', createHash('sha256').update(activePruneRequestId).digest('hex'))
+    .select('request_hash')
+    .executeTakeFirst())
+  assert(await db.selectFrom('oauth_auth_codes')
+    .where('code_hash', '=', createHash('sha256').update(activePruneCode).digest('hex'))
+    .select('code_hash')
+    .executeTakeFirst())
+  assert.deepEqual(
+    await pruneOAuthAuthorizationArtifacts({ now: new Date(), consumedRetentionMs: 60_000 }),
+    { authorizationRequests: 0, authorizationCodes: 0 },
+  )
 
   console.log('oauth authorization code store OK')
 }
