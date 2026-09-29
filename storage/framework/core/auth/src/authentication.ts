@@ -1086,7 +1086,7 @@ export class Auth {
       // consume the original, and a failed mint must restore its whole pair.
       let query = db.primary.selectFrom('oauth_access_tokens')
         .where('id', '=', candidate.id)
-        .selectAll()
+        .select(['id', 'revoked', 'tokenable_type', 'tokenable_id', 'expires_at', 'name', 'scopes'])
       if (getDatabaseDialect() !== 'sqlite') query = query.lockForUpdate()
       const owner = await query.executeTakeFirst()
       if (!owner || owner.revoked || owner.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
