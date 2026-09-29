@@ -5,6 +5,7 @@ import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
+import { authPruneActionOptions } from './auth-prune-options'
 
 export function auth(buddy: CLI): void {
   const descriptions = {
@@ -109,8 +110,8 @@ export function auth(buddy: CLI): void {
   // auth:prune - Prune expired and revoked tokens
   buddy
     .command('auth:prune', descriptions.prune)
-    .option('--expired', 'Prune expired tokens (default: true)', { default: true })
-    .option('--revoked', 'Prune revoked tokens (default: true)', { default: true })
+    .option('--no-expired', 'Skip pruning expired tokens')
+    .option('--no-revoked', 'Skip pruning revoked tokens')
     .option('-d, --days [days]', 'Prune revoked tokens older than N days', { default: 7 })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -118,7 +119,7 @@ export function auth(buddy: CLI): void {
       log.debug('Running `buddy auth:prune` ...', options)
 
       const perf = await intro('buddy auth:prune')
-      const result = await runAction(Action.AuthPrune, options)
+      const result = await runAction(Action.AuthPrune, authPruneActionOptions(options))
 
       if (resultFailed(result)) {
         await outro(
