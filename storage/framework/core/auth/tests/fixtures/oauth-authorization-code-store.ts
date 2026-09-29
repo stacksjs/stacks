@@ -312,12 +312,31 @@ try {
       state,
     }, browserSession, 60_000), /state/)
   }
+  for (const malformed of [
+    { scopes: [] },
+    { scopes: ['issues:read', 'issues:read'] },
+    {
+      resources: ['bughq', 'bughq'],
+      audiences: ['https://api.bughq.example', 'https://api.bughq.example'],
+    },
+  ]) {
+    await assert.rejects(createOAuthAuthorizationRequestSession({
+      ...validatedRequest,
+      ...malformed,
+    }, browserSession, 60_000), /scopes|resources|audiences/)
+  }
   const staleStateRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   await db.updateTable('oauth_authorization_requests')
     .set({ state: 'line\nbreak' })
     .where('request_hash', '=', createHash('sha256').update(staleStateRequestId).digest('hex'))
     .execute()
   assert.equal(await loadOAuthAuthorizationRequestSession(staleStateRequestId, browserSession), null)
+  const staleScopesRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await db.updateTable('oauth_authorization_requests')
+    .set({ scopes: JSON.stringify(['issues:read', 'issues:read']) })
+    .where('request_hash', '=', createHash('sha256').update(staleScopesRequestId).digest('hex'))
+    .execute()
+  assert.equal(await loadOAuthAuthorizationRequestSession(staleScopesRequestId, browserSession), null)
   const requestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const requestHash = createHash('sha256').update(requestId).digest('hex')
   const storedRequest = await db.selectFrom('oauth_authorization_requests').where('request_hash', '=', requestHash).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>

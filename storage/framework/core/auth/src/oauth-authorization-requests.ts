@@ -68,11 +68,19 @@ function validBrowserSession(value: string): boolean {
   return value.length >= 16 && value.length <= 4096
 }
 
+function validValues(values: readonly string[]): boolean {
+  return values.every(value => value.length > 0) && new Set(values).size === values.length
+}
+
 function storedValues(value: string | null): string[] | null {
   if (value == null) return null
   try {
     const parsed: unknown = JSON.parse(value)
-    return Array.isArray(parsed) && parsed.every(item => typeof item === 'string') ? parsed : null
+    return Array.isArray(parsed)
+      && parsed.every(item => typeof item === 'string')
+      && validValues(parsed)
+      ? parsed
+      : null
   }
   catch {
     return null
@@ -102,7 +110,7 @@ function requestFromStoredRow(row: StoredAuthorizationRequest, now: number): Val
   const scopes = storedValues(row.scopes)
   const resources = storedValues(row.resources)
   const audiences = storedValues(row.audiences)
-  if (!scopes || !resources || !audiences || resources.length !== audiences.length)
+  if (!scopes?.length || !resources || !audiences || resources.length !== audiences.length)
     return null
 
   return {
@@ -164,6 +172,11 @@ export async function createOAuthAuthorizationRequestSession(
     throw new TypeError('OAuth authorization request lifetime must be a positive safe integer.')
   if (request.state != null && !isValidOAuthState(request.state))
     throw new TypeError('OAuth authorization request state must contain 1 to 4096 visible ASCII characters.')
+  if (!request.scopes.length || !validValues(request.scopes))
+    throw new TypeError('OAuth authorization request scopes must contain unique non-empty values.')
+  if (!validValues(request.resources) || !validValues(request.audiences)
+    || request.resources.length !== request.audiences.length)
+    throw new TypeError('OAuth authorization request resources and audiences must contain unique paired values.')
   if (!isValidOAuthRedirectUri(request.redirectUri)
     || !isValidS256CodeChallenge(request.codeChallenge)
     || request.codeChallengeMethod !== 'S256'
