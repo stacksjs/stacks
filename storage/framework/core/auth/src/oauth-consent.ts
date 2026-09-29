@@ -305,11 +305,14 @@ export async function reuseOAuthAuthorizationRequestSession(
     return null
 
   try {
-    return await withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request) => {
+    return await withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request, workspace) => {
       assertOAuthAuthorizationProviderPolicy(input.provider, request)
       const workspaceId = input.resolveWorkspaceId
         ? await input.resolveWorkspaceId()
         : input.workspaceId
+      if (input.provider.consent.resolveWorkspace
+        && (!workspace.bound || workspace.id !== (workspaceId ?? null)))
+        throw new NoReusableOAuthConsentError()
       const grantId = await reusableOAuthConsentGrantId({
         request,
         subjectType: input.subjectType,
@@ -348,11 +351,14 @@ export async function approveOAuthAuthorizationRequestSession(
   if (!Number.isSafeInteger(input.authorizationCodeLifetimeMs) || input.authorizationCodeLifetimeMs <= 0)
     throw new TypeError('OAuth authorization code lifetime must be a positive safe integer.')
 
-  return withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request) => {
+  return withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request, workspace) => {
     assertOAuthAuthorizationProviderPolicy(input.provider, request)
     const workspaceId = input.resolveWorkspaceId
       ? await input.resolveWorkspaceId()
       : input.workspaceId
+    if (input.provider.consent.resolveWorkspace
+      && (!workspace.bound || workspace.id !== (workspaceId ?? null)))
+      throw new OAuthAuthorizationRequestError('invalid_request', 'OAuth consent workspace changed after it was displayed.')
     const grant = await createOAuthGrant({
       clientId: Number(request.clientId),
       subjectType: input.subjectType,

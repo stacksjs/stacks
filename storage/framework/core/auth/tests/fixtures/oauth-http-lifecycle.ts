@@ -105,6 +105,7 @@ try {
   const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
   try {
     const issuer = `http://127.0.0.1:${server.port}`
+    let activeWorkspace = { id: 'workspace-a', label: 'Workspace A' }
     config.auth.oauthProvider = {
       enabled: true,
       issuer,
@@ -114,6 +115,9 @@ try {
       },
       resources: {
         bughq: { audience: `${issuer}/fixture/resource` },
+      },
+      consent: {
+        resolveWorkspace: async () => activeWorkspace,
       },
     }
     const provider = resolveOAuthProviderConfig(config.auth.oauthProvider)
@@ -309,6 +313,48 @@ try {
       else await response.arrayBuffer()
     }
     await readResource(firstPair.access_token)
+
+    const workspaceGrantCount = async () => Number((await db.selectFrom('oauth_grants')
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirstOrThrow()).count)
+    const grantsBeforeWorkspaceChange = await workspaceGrantCount()
+    const workspaceChangeUrl = new URL(authorizationUrl)
+    workspaceChangeUrl.searchParams.set('state', 'workspace-change-state')
+    const workspaceChangePage = await fetch(workspaceChangeUrl, {
+      headers: { accept: 'text/html,application/xhtml+xml', cookie: browserCookies },
+      redirect: 'manual',
+    })
+    assert.equal(workspaceChangePage.status, 200, await workspaceChangePage.clone().text())
+    const workspaceChangeHtml = await workspaceChangePage.text()
+    assert.match(workspaceChangeHtml, /Workspace A/)
+    const workspaceChangeRequestId = /name="request_id" value="([A-Za-z0-9_-]{43})"/.exec(workspaceChangeHtml)?.[1]
+    assert(workspaceChangeRequestId)
+    const workspaceChangeBody = new URLSearchParams({
+      _token: csrfToken,
+      request_id: workspaceChangeRequestId,
+      decision: 'approve',
+    })
+    const approveWorkspaceChange = async () => await fetch(`${issuer}/oauth/authorize`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        cookie: browserCookies,
+      },
+      body: workspaceChangeBody,
+      redirect: 'manual',
+    })
+    activeWorkspace = { id: 'workspace-b', label: 'Workspace B' }
+    const changedWorkspaceApproval = await approveWorkspaceChange()
+    assert.equal(changedWorkspaceApproval.status, 400)
+    assert.equal(await workspaceGrantCount(), grantsBeforeWorkspaceChange)
+    const pendingWorkspaceRequest = await db.selectFrom('oauth_authorization_requests')
+      .where('request_hash', '=', createHash('sha256').update(workspaceChangeRequestId).digest('hex'))
+      .select(['workspace_id', 'workspace_bound', 'consumed_at'])
+      .executeTakeFirstOrThrow()
+    assert.equal(pendingWorkspaceRequest.workspace_id, 'workspace-a')
+    assert.equal(Boolean(pendingWorkspaceRequest.workspace_bound), true)
+    assert.equal(pendingWorkspaceRequest.consumed_at, null)
+    activeWorkspace = { id: 'workspace-a', label: 'Workspace A' }
 
     const expandedRefresh = await fetch(`${issuer}/oauth/token`, {
       method: 'POST',

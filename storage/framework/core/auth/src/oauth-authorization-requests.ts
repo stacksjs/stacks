@@ -23,6 +23,8 @@ interface StoredAuthorizationRequest {
   scopes: string
   resources: string
   audiences: string
+  workspace_id: string | null
+  workspace_bound: boolean | number
   state: string | null
   code_challenge: string
   code_challenge_method: string
@@ -51,6 +53,11 @@ export type OAuthAuthorizationRequestSessionResult<T>
 
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{43}$/
 const invalidRequest = { ok: false as const, reason: 'invalid_request' as const }
+
+export interface OAuthAuthorizationRequestWorkspaceBinding {
+  bound: boolean
+  id: string | null
+}
 
 export function isOAuthAuthorizationRequestId(value: string): boolean {
   return REQUEST_ID_PATTERN.test(value)
@@ -93,6 +100,20 @@ function includesAll(allowed: readonly string[], requested: readonly string[]): 
 
 function inactive(value: boolean | number): boolean {
   return value === false || value === 0
+}
+
+function workspaceBindingFromStoredRow(
+  row: StoredAuthorizationRequest,
+): OAuthAuthorizationRequestWorkspaceBinding | null {
+  const bound = row.workspace_bound === true || row.workspace_bound === 1
+  if (!bound && !inactive(row.workspace_bound))
+    return null
+  if (row.workspace_id !== null
+    && (!row.workspace_id || row.workspace_id.length > 255 || /[\u0000-\u001F\u007F]/.test(row.workspace_id)))
+    return null
+  if (!bound && row.workspace_id !== null)
+    return null
+  return { bound, id: row.workspace_id }
 }
 
 function requestFromStoredRow(row: StoredAuthorizationRequest, now: number): ValidatedOAuthAuthorizationRequest | null {
@@ -240,7 +261,7 @@ export async function loadOAuthAuthorizationRequestSession(
 
   const sql = sqlHelpers(getDatabaseDialect())
   const rows = await db.primary.unsafe(`
-    SELECT client_id, client_type, redirect_uri, scopes, resources, audiences,
+    SELECT client_id, client_type, redirect_uri, scopes, resources, audiences, workspace_id, workspace_bound,
       state, code_challenge, code_challenge_method, expires_at, consumed_at
     FROM oauth_authorization_requests
     WHERE request_hash = ${sql.param(1)}
@@ -253,8 +274,9 @@ export async function loadOAuthAuthorizationRequestSession(
   if (!row)
     return null
   const request = requestFromStoredRow(row, Date.now())
+  const workspace = workspaceBindingFromStoredRow(row)
   const registered = await loadOAuthAuthorizationClient(String(row.client_id))
-  if (!request || !registered || registered.revoked || registered.type !== request.clientType
+  if (!request || !workspace || !registered || registered.revoked || registered.type !== request.clientType
     || !registered.redirectUris.includes(request.redirectUri)
     || !registered.grantTypes.includes('authorization_code')
     || !includesAll(registered.scopes, request.scopes)
@@ -264,11 +286,64 @@ export async function loadOAuthAuthorizationRequestSession(
   return request
 }
 
+/** Bind the opaque request to the workspace displayed on its consent page. */
+export async function bindOAuthAuthorizationRequestWorkspace(
+  requestId: string,
+  browserSessionId: string,
+  workspaceId: string | null,
+): Promise<boolean> {
+  if (!isOAuthAuthorizationRequestId(requestId) || !validBrowserSession(browserSessionId)
+    || (workspaceId !== null
+      && (!workspaceId || workspaceId.length > 255 || /[\u0000-\u001F\u007F]/.test(workspaceId))))
+    return false
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const hash = requestHash(requestId)
+  const sessionHash = browserSessionHash(browserSessionId)
+  const requestLock = sql.isSqlite ? '' : ' FOR UPDATE'
+  const result = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const now = sqlDateTime(new Date())
+    const rows = await trx.unsafe(`
+      SELECT workspace_id, workspace_bound, expires_at, consumed_at
+      FROM oauth_authorization_requests
+      WHERE request_hash = ${sql.param(1)}
+        AND browser_session_hash = ${sql.param(2)}
+      LIMIT 1${requestLock}
+    `, [hash, sessionHash]) as unknown as StoredAuthorizationRequest[]
+    const row = rows[0]
+    const binding = row ? workspaceBindingFromStoredRow(row) : null
+    if (!row || !binding || row.consumed_at != null
+      || (parseSqlDateTime(row.expires_at)?.getTime() ?? 0) <= Date.now())
+      return { matches: false, wrote: false }
+    if (binding.bound)
+      return { matches: binding.id === workspaceId, wrote: false }
+
+    const updated = await trx.unsafe(`
+      UPDATE oauth_authorization_requests
+      SET workspace_id = ${sql.param(1)}, workspace_bound = ${sql.boolTrue}
+      WHERE request_hash = ${sql.param(2)}
+        AND browser_session_hash = ${sql.param(3)}
+        AND workspace_bound = ${sql.boolFalse}
+        AND consumed_at IS NULL
+        AND expires_at > ${sql.param(4)}
+    `, [workspaceId, hash, sessionHash, now])
+    const wrote = mutationCount(updated) === 1
+    return { matches: wrote, wrote }
+  })
+  if (result.wrote)
+    markContextWrote()
+  return result.matches
+}
+
 /** Claim one browser-bound request and complete consent in the same transaction. */
 export async function withOAuthAuthorizationRequestSession<T>(
   requestId: string,
   browserSessionId: string,
-  complete: (request: ValidatedOAuthAuthorizationRequest) => Promise<T>,
+  complete: (
+    request: ValidatedOAuthAuthorizationRequest,
+    workspace: OAuthAuthorizationRequestWorkspaceBinding,
+  ) => Promise<T>,
 ): Promise<OAuthAuthorizationRequestSessionResult<T>> {
   if (!isOAuthAuthorizationRequestId(requestId) || !validBrowserSession(browserSessionId))
     return invalidRequest
@@ -283,7 +358,7 @@ export async function withOAuthAuthorizationRequestSession<T>(
     const now = new Date()
     const nowSql = sqlDateTime(now)
     const rows = await trx.unsafe(`
-      SELECT client_id, client_type, redirect_uri, scopes, resources, audiences,
+      SELECT client_id, client_type, redirect_uri, scopes, resources, audiences, workspace_id, workspace_bound,
         state, code_challenge, code_challenge_method, expires_at, consumed_at
       FROM oauth_authorization_requests
       WHERE request_hash = ${sql.param(1)}
@@ -291,7 +366,8 @@ export async function withOAuthAuthorizationRequestSession<T>(
       LIMIT 1${requestLock}
     `, [hash, sessionHash]) as unknown as StoredAuthorizationRequest[]
     const request = rows[0] ? requestFromStoredRow(rows[0], now.getTime()) : null
-    if (!request)
+    const workspace = rows[0] ? workspaceBindingFromStoredRow(rows[0]) : null
+    if (!request || !workspace)
       return invalidRequest
 
     const clients = await trx.unsafe(`
@@ -316,7 +392,7 @@ export async function withOAuthAuthorizationRequestSession<T>(
     if (mutationCount(claimed) !== 1)
       return invalidRequest
 
-    return { ok: true, value: await complete(request) }
+    return { ok: true, value: await complete(request, workspace) }
   })
   if (result.ok)
     markContextWrote()

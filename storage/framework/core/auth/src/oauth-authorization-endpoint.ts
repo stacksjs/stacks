@@ -4,7 +4,11 @@ import {
   parseOAuthAuthorizationRequest,
   validateOAuthAuthorizationRequest,
 } from './oauth-authorization'
-import { createOAuthAuthorizationRequestSession } from './oauth-authorization-requests'
+import {
+  bindOAuthAuthorizationRequestWorkspace,
+  createOAuthAuthorizationRequestSession,
+  isOAuthAuthorizationRequestId,
+} from './oauth-authorization-requests'
 import { loadOAuthAuthorizationClient } from './oauth-client-registration'
 import {
   approveOAuthAuthorizationRequestSession,
@@ -15,7 +19,6 @@ import {
   reuseOAuthAuthorizationRequestSession,
 } from './oauth-consent'
 import type { OAuthAuthorizationConsentView } from './oauth-consent'
-import { isOAuthAuthorizationRequestId } from './oauth-authorization-requests'
 import { oauthAuthorizationBrowserSession } from './oauth-browser-session'
 import {
   oauthAuthorizationConsentResponse,
@@ -166,6 +169,16 @@ export async function handleOAuthAuthorizationPageRequest(
       headers.set('Set-Cookie', browser.cookie)
       return new Response(protocol.body, { status: protocol.status, headers })
     }
+  }
+
+  if (input.identity && input.subject && input.provider.consent.resolveWorkspace) {
+    const bound = await bindOAuthAuthorizationRequestWorkspace(
+      requestId,
+      browser.id,
+      input.subject.workspaceId ?? null,
+    )
+    if (!bound)
+      return pageResponse(JSON.stringify({ error: 'invalid_request' }), 400, browser.cookie, { 'Content-Type': 'application/json; charset=utf-8' })
   }
 
   if (input.identity && input.subject && input.provider.consent.rememberFor > 0) {
