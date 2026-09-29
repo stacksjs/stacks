@@ -99,10 +99,11 @@ async function linkBase(siteId: number | undefined): Promise<string> {
  */
 export async function sendMagicLink(email: string, options: SendMagicLinkOptions = {}): Promise<void> {
   const normalized = normalizeAuthEmail(email)
+  const rateKey = `magic:${normalized}`
 
-  if (await RateLimiter.isRateLimited(normalized))
+  if (await RateLimiter.isRateLimited(rateKey))
     return
-  await RateLimiter.recordFailedAttempt(normalized)
+  await RateLimiter.recordFailedAttempt(rateKey)
 
   // Sending a sign-in credential must use current email ownership. A lagged
   // replica may retain an address the account has already removed.

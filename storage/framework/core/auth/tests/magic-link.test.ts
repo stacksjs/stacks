@@ -175,6 +175,16 @@ describe('sendMagicLink', () => {
     expect(sentMails).toHaveLength(0)
   })
 
+  test('magic-link throttling cannot lock password login', async () => {
+    const email = 'parent@example.com'
+    await seedUser(email)
+    for (let attempt = 0; attempt < 5; attempt++)
+      await sendMagicLink(email)
+
+    expect(await RateLimiter.isRateLimited(`magic:${email}`)).toBe(true)
+    expect(await RateLimiter.isRateLimited(email)).toBe(false)
+  })
+
   test('known email stores sha256 at rest, never the raw token', async () => {
     await seedUser('parent@example.com')
     await sendMagicLink('parent@example.com')
