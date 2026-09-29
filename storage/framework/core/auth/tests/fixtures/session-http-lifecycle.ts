@@ -44,7 +44,7 @@ const { createStacksRouter } = await import('@stacksjs/router')
 const LogoutAction = (await import('../../../../defaults/app/Actions/Auth/LogoutAction')).default
 const LoginAction = (await import('../../../../defaults/app/Actions/Auth/LoginAction')).default
 
-const emails = ['alice@session.test', 'bob@session.test']
+const emails = ['Alice@Session.Test', 'bob@session.test']
 const password = 'session-fixture-password'
 const timestamp = dialect === 'mysql' ? 'DATETIME(3)' : 'TIMESTAMP'
 
@@ -184,10 +184,11 @@ try {
       cookies = []
       browserCookies = []
       for (const email of emails) {
+        const loginEmail = email === emails[0] ? email.toUpperCase() : email
         const response = await fetch(`${base}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', accept: 'application/json', cookie: csrfCookie, 'x-csrf-token': csrfToken },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: loginEmail, password }),
         })
         assert.equal(response.status, 200, `login must succeed: ${response.status === 200 ? '' : await response.clone().text()}`)
         const cookie = response.headers.getSetCookie().find(value => value.startsWith('session_id='))
@@ -199,7 +200,7 @@ try {
         const browserLogin = await fetch(`${base}/browser-login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', accept: 'application/json', cookie: csrfCookie, 'x-csrf-token': csrfToken },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: loginEmail, password }),
         })
         assert.equal(browserLogin.status, 200, `browser login must succeed: ${browserLogin.status === 200 ? '' : await browserLogin.clone().text()}`)
         const browserCookie = browserLogin.headers.getSetCookie().find(value => value.startsWith(`${authCookieName()}=`))

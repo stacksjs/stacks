@@ -22,6 +22,7 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { log } from '@stacksjs/logging'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
+import { findAuthUserByEmail, normalizeAuthEmail } from './credential-user'
 import { RateLimiter } from './rate-limiter'
 import { withVerifiedPassword } from './credential-version'
 import { tokenDate, tokenTimestamps } from './token-dates'
@@ -291,11 +292,12 @@ export class Auth {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
-    const email = credentials[username]
+    const rawEmail = credentials[username]
 
     // Validate email first to avoid unnecessary work and prevent timing leaks
-    if (!email)
+    if (!rawEmail)
       return null
+    const email = normalizeAuthEmail(rawEmail)
 
     // Per-email lockout enforcement. Without this check the framework
     // recorded failed attempts but never actually refused new ones, so
@@ -305,7 +307,7 @@ export class Auth {
     // keeps targeting one inbox).
     const isRateLimited = await RateLimiter.isRateLimited(email)
 
-    const user = await User.where('email', '=', email).first()
+    const user = await findAuthUserByEmail(email)
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
@@ -340,11 +342,12 @@ export class Auth {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
-    const email = credentials[username]
-    if (!email)
+    const rawEmail = credentials[username]
+    if (!rawEmail)
       return false
+    const email = normalizeAuthEmail(rawEmail)
 
-    const user = await User.where('email', '=', email).first()
+    const user = await findAuthUserByEmail(email)
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
@@ -1085,11 +1088,12 @@ export class Auth {
     const username = config.auth.username || 'email'
     const password = config.auth.password || 'password'
 
-    const email = credentials[username]
-    if (!email)
+    const rawEmail = credentials[username]
+    if (!rawEmail)
       return false
+    const email = normalizeAuthEmail(rawEmail)
 
-    const user = await User.where('email', '=', email).first()
+    const user = await findAuthUserByEmail(email)
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration

@@ -7,6 +7,7 @@ import { config } from '@stacksjs/config'
 import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
+import { findAuthUserByEmail, normalizeAuthEmail } from './credential-user'
 import { RateLimiter } from './rate-limiter'
 import { withVerifiedPassword } from './credential-version'
 import { schedulePasswordRehash } from './password-rehash'
@@ -119,10 +120,10 @@ export async function sessionLogin(
   // AFTER the unconditional hash below, so a locked-out account and a
   // wrong-password attempt spend the same CPU and can't be told apart by
   // response timing (the lockout-timing oracle, stacksjs/stacks#1860 H-9).
-  const normalizedEmail = (email || '').toLowerCase()
+  const normalizedEmail = normalizeAuthEmail(email || '')
   const isRateLimited = await RateLimiter.isRateLimited(normalizedEmail)
 
-  const user = await User.where('email', email).first()
+  const user = await findAuthUserByEmail(normalizedEmail)
 
   // Always run hash verification to prevent timing-based user enumeration
   const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
