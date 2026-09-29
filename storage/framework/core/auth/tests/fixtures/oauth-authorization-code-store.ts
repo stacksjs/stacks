@@ -1033,18 +1033,33 @@ try {
     authorizationCodeLifetimeMs: 60_000,
   })
   assert(ineligibleConsent.ok)
+  const siblingIneligibleCode = await issueAuthorizationCode({
+    grantId: ineligibleConsent.value.grantId,
+    redirectUri: validatedRequest.redirectUri,
+    codeChallenge,
+    lifetimeMs: 60_000,
+  })
+  const ineligibleBody = (code: string) => new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: String(publicRegistration.client.id),
+    code,
+    redirect_uri: validatedRequest.redirectUri,
+    code_verifier: verifier,
+  }).toString()
   const ineligibleExchange = await handleOAuthTokenRequest(provider, {
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      client_id: String(publicRegistration.client.id),
-      code: ineligibleConsent.value.code,
-      redirect_uri: validatedRequest.redirectUri,
-      code_verifier: verifier,
-    }).toString(),
+    body: ineligibleBody(ineligibleConsent.value.code),
     contentType: 'application/x-www-form-urlencoded',
   }, { isSubjectEligible: async () => false })
   assert.equal(ineligibleExchange.status, 400)
   assert.deepEqual(await ineligibleExchange.json(), { error: 'invalid_grant' })
+  for (const code of [ineligibleConsent.value.code, siblingIneligibleCode]) {
+    const afterIneligibility = await handleOAuthTokenRequest(provider, {
+      body: ineligibleBody(code),
+      contentType: 'application/x-www-form-urlencoded',
+    }, { isSubjectEligible: async () => true })
+    assert.equal(afterIneligibility.status, 400)
+    assert.deepEqual(await afterIneligibility.json(), { error: 'invalid_grant' })
+  }
   const endpointRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const endpointConsent = await approveOAuthAuthorizationRequestSession({
     provider,

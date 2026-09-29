@@ -113,12 +113,12 @@ interface MintDelegatedTokenOptions {
 type DelegatedGrant = Omit<AuthorizationCodeGrant, 'redirectUri'>
 
 class InactiveOAuthClientError extends Error {}
-class InactiveOAuthSubjectError extends Error {}
 
 const invalidGrant = { ok: false as const, reason: 'invalid_grant' as const }
 const invalidClient = { ok: false as const, reason: 'invalid_client' as const }
 const unauthorizedClient = { ok: false as const, reason: 'unauthorized_client' as const }
 const invalidScope = { ok: false as const, reason: 'invalid_scope' as const }
+const inactiveSubject = Symbol('inactive-oauth-subject')
 
 export type OAuthAuthorizationCodeExchangeResult
   = AuthorizationCodeResult<DelegatedTokenPair>
@@ -339,7 +339,7 @@ export async function exchangeAuthorizationCode(
   const refreshLifetimeMs = issueRefreshToken ? validLifetime(input.refreshTokenLifetimeMs) : 0
 
   try {
-    return await withAuthorizationCode(input.code, input, async (grant) => {
+    const result = await withAuthorizationCode<DelegatedTokenPair | typeof inactiveSubject>(input.code, input, async (grant) => {
       // Hold the client active through commit. Client revocation then orders
       // before this exchange or waits until the pair is durably issued.
       const clientLock = sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
@@ -356,8 +356,32 @@ export async function exchangeAuthorizationCode(
         clientId: grant.clientId,
         grantId: grant.grantId,
         workspaceId: grant.workspaceId,
-      }))
-        throw new InactiveOAuthSubjectError()
+      })) {
+        const now = sqlDateTime(new Date())
+        const revoked = await db.unsafe(`
+          UPDATE oauth_grants
+          SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
+          WHERE id = ${sql.param(3)} AND revoked_at IS NULL
+        `, [now, now, grant.grantId])
+        if (mutationCount(revoked) !== 1)
+          throw new Error('Inactive OAuth subject grant could not be revoked.')
+        await db.unsafe(`
+          UPDATE oauth_auth_codes
+          SET consumed_at = ${sql.param(1)}
+          WHERE grant_id = ${sql.param(2)} AND consumed_at IS NULL
+        `, [now, grant.grantId])
+        const remaining = await db.unsafe(`
+          SELECT id FROM oauth_grants
+          WHERE id = ${sql.param(1)} AND revoked_at IS NULL
+          UNION ALL
+          SELECT code_hash FROM oauth_auth_codes
+          WHERE grant_id = ${sql.param(2)} AND consumed_at IS NULL
+          LIMIT 1
+        `, [grant.grantId, grant.grantId]) as unknown[]
+        if (remaining.length > 0)
+          throw new Error('Inactive OAuth subject authorization state could not be revoked.')
+        return inactiveSubject
+      }
 
       return mintDelegatedTokenPair(grant, {
         accessLifetimeMs,
@@ -365,9 +389,12 @@ export async function exchangeAuthorizationCode(
         issueRefreshToken,
       })
     })
+    if (!result.ok)
+      return result
+    return result.value === inactiveSubject ? invalidGrant : { ok: true, value: result.value }
   }
   catch (error) {
-    if (error instanceof InactiveOAuthClientError || error instanceof InactiveOAuthSubjectError)
+    if (error instanceof InactiveOAuthClientError)
       return invalidGrant
     throw error
   }
