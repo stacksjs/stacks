@@ -36,10 +36,11 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 } })
 const { passwordResets } = await import('../../src/password/reset')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const user = { id: 1, email: 'synthetic@example.invalid' }
+const user = { id: 1, email: 'Synthetic@Example.Invalid' }
+const requestedEmail = 'synthetic@example.invalid'
 if (process.argv[2] === 'send-worker') {
   try {
-    await passwordResets(user.email).sendEmail()
+    await passwordResets(requestedEmail).sendEmail()
     console.log(JSON.stringify({ delivered }))
   }
   finally { await closeDatabaseConnection() }
@@ -54,7 +55,7 @@ async function seed() {
   sent = 0
   delivered.length = 0
   await db.deleteFrom('password_resets').execute()
-  await db.insertInto('password_resets').values({ email: user.email, token: 'previous-hash', expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
+  await db.insertInto('password_resets').values({ email: requestedEmail, token: 'previous-hash', expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
 }
 async function hashes() {
   return (await db.primary.selectFrom('password_resets').selectAll().execute()).map(row => row.token)
@@ -74,7 +75,7 @@ try {
     else
       await db.unsafe("CREATE TRIGGER reject_reset_send BEFORE INSERT ON password_resets BEGIN SELECT RAISE(ABORT, 'fixture replacement denied'); END").execute()
     try {
-      await assert.rejects(passwordResets(user.email).sendEmail(), /fixture replacement denied/)
+      await assert.rejects(passwordResets(requestedEmail).sendEmail(), /fixture replacement denied/)
       assert.deepEqual(await hashes(), ['previous-hash'])
       assert.equal(sent, 0)
     }
@@ -86,7 +87,7 @@ try {
   await check('outer rollback never delivers an invalid link', async () => {
     await seed()
     await assert.rejects(db.transaction(async () => {
-      await passwordResets(user.email).sendEmail()
+      await passwordResets(requestedEmail).sendEmail()
       throw new Error('fixture rollback')
     }), /fixture rollback/)
     assert.deepEqual(await hashes(), ['previous-hash'])
@@ -103,7 +104,7 @@ try {
         else
           await db.unsafe(`CREATE TRIGGER suppress_reset_send BEFORE ${operation} ON password_resets BEGIN SELECT RAISE(IGNORE); END`).execute()
         try {
-          await assert.rejects(passwordResets(user.email).sendEmail(), 'a silently skipped write must not send a link')
+          await assert.rejects(passwordResets(requestedEmail).sendEmail(), 'a silently skipped write must not send a link')
           assert.deepEqual(await hashes(), ['previous-hash'])
           assert.equal(sent, 0)
         }
@@ -117,7 +118,7 @@ try {
   await check('outer commit delivers only after the token exists durably', async () => {
     await seed()
     await db.transaction(async () => {
-      await passwordResets(user.email).sendEmail()
+      await passwordResets(requestedEmail).sendEmail()
       assert.equal(sent, 0, 'mail cannot escape before the outer commit')
     })
     assert.equal(sent, 1)
@@ -128,7 +129,7 @@ try {
   await check('standalone delivery failure remains visible to the caller', async () => {
     await seed()
     failDelivery = true
-    try { await assert.rejects(passwordResets(user.email).sendEmail(), /fixture delivery unavailable/) }
+    try { await assert.rejects(passwordResets(requestedEmail).sendEmail(), /fixture delivery unavailable/) }
     finally { failDelivery = false }
   })
   for (const legacy of [false, true]) {
@@ -156,7 +157,7 @@ try {
       const failed = results.filter(result => result.status === 'rejected')
       assert.equal(failed.length, 0, failed.map(result => String(result.reason)).join('\n'))
       const tokens = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : [])
-      const validity = await Promise.all(tokens.map(token => passwordResets(user.email).verifyToken(token)))
+      const validity = await Promise.all(tokens.map(token => passwordResets(requestedEmail).verifyToken(token)))
       assert.equal(validity.filter(Boolean).length, 1, 'only the last replacement may remain usable')
       const rows = await db.primary.selectFrom('password_resets').selectAll().execute()
       assert.equal(rows.length, 2)

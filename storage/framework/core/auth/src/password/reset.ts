@@ -6,6 +6,7 @@ import { log } from '@stacksjs/logging'
 import { mountedDefaultRouteBundles } from '@stacksjs/router'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { authLinkBase } from '../link-url'
+import { findAuthUserRowByEmail, normalizeAuthEmail } from '../credential-user'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
 import { revokeTwoFactorChallenges } from '../two-factor'
@@ -92,7 +93,9 @@ async function sendPasswordChangedNotification(userEmail: string): Promise<void>
   }
 }
 
-export function passwordResets(email: string): PasswordResetActions {
+export function passwordResets(value: string): PasswordResetActions {
+  const email = normalizeAuthEmail(value)
+
   function generateResetToken(): string {
     return randomBytes(32).toString('hex')
   }
@@ -113,9 +116,10 @@ export function passwordResets(email: string): PasswordResetActions {
       // replacements otherwise race between DELETE and INSERT on Postgres,
       // including on legacy schemas without the unique email index.
       let ownerQuery = db.primary.selectFrom('users')
-        .where('id', '=', userId).where('email', '=', email).select('id')
+        .where('id', '=', userId).select(['id', 'email'])
       if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
-      if (!await ownerQuery.executeTakeFirst()) return false
+      const owner = await ownerQuery.executeTakeFirst()
+      if (!owner || normalizeAuthEmail(String(owner.email ?? '')) !== email) return false
 
       const createdAt = new Date()
       const expiresAt = sqlDateTime(new Date(createdAt.getTime() + expireMinutes * 60_000))
@@ -153,15 +157,14 @@ export function passwordResets(email: string): PasswordResetActions {
     // link" response without leaking which addresses are registered.
     // Replica lag must not suppress recovery for a current account or send
     // a reset to an address that no longer belongs to one.
-    const user = await db.primary
-      .selectFrom('users')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst()
+    const user = await findAuthUserRowByEmail(email)
     if (!user)
       return
 
-    const token = await createResetToken(user.id)
+    const userId = Number(user.id)
+    if (!Number.isSafeInteger(userId) || userId <= 0)
+      return
+    const token = await createResetToken(userId)
     if (!token) return
     // A caller's outer rollback must not send a link that never committed.
     // Standalone sends still await delivery and surface provider failures.
@@ -257,6 +260,13 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   async function resetPassword(token: string, newPassword: string): Promise<PasswordResetResult> {
+    const owner = await findAuthUserRowByEmail(email)
+    if (!owner)
+      return { success: false, message: 'Invalid or expired reset token' }
+    const ownerId = Number(owner.id)
+    if (!Number.isSafeInteger(ownerId) || ownerId <= 0)
+      return { success: false, message: 'Invalid or expired reset token' }
+
     const result = await db.transaction(async (rawTrx) => {
       // The transaction callback receives bun-query-builder's raw `QueryBuilder<DB>`,
       // which marks chained fluent methods like `selectAll` as optional. We mirror
@@ -264,10 +274,10 @@ export function passwordResets(email: string): PasswordResetActions {
       const trx = rawTrx as unknown as typeof db
       // Match issuance's owner-then-token order. Reversing it can deadlock a
       // redemption against a concurrent reset request for the same account.
-      let userQuery = trx.selectFrom('users').where('email', '=', email).selectAll()
+      let userQuery = trx.selectFrom('users').where('id', '=', ownerId).selectAll()
       if (getDatabaseDialect() !== 'sqlite') userQuery = userQuery.lockForUpdate()
       const user = await userQuery.executeTakeFirst()
-      if (!user)
+      if (!user || normalizeAuthEmail(String(user.email ?? '')) !== email)
         return { success: false as const, message: 'Invalid or expired reset token' }
 
       // First verify the token exists

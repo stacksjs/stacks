@@ -6,25 +6,32 @@ export function normalizeAuthEmail(value: string): string {
   return value.trim().toLowerCase()
 }
 
-/** Resolve an email without making existing mixed-case accounts unloginable. */
-export async function findAuthUserByEmail(value: string): Promise<UserModel | undefined> {
+/** Resolve the stored row without requiring the ORM model runtime to be booted. */
+export async function findAuthUserRowByEmail(value: string): Promise<Record<string, unknown> | undefined> {
   const email = normalizeAuthEmail(value)
   if (!email)
     return undefined
 
-  // Canonical rows use the unique email index. The fallback keeps accounts
-  // created before canonicalization usable on case-sensitive databases.
-  const exact = await User.where('email', '=', email).first()
-  if (exact)
-    return exact
-
-  const definition: { table?: string, traits?: { useSoftDeletes?: unknown } } = User.getDefinition()
+  const definition: { table?: string, traits?: { useSoftDeletes?: unknown } }
+    = typeof User.getDefinition === 'function' ? User.getDefinition() : {}
   const table = definition.table || 'users'
   if (!/^[A-Z_][A-Z0-9_]*$/i.test(table))
     throw new TypeError('Auth user table must be a plain SQL identifier.')
   const softDelete = definition.traits?.useSoftDeletes ? sql.raw(' AND deleted_at IS NULL') : sql.raw('')
-  const query = sql`SELECT * FROM ${sql.raw(table)} WHERE LOWER(email) = ${email}${softDelete} LIMIT 1`
-  const rows = await db.primary.unsafe(query.sql, query.parameters) as Record<string, unknown>[]
-  const row = rows[0]
+  const exactQuery = sql`SELECT * FROM ${sql.raw(table)} WHERE email = ${email}${softDelete} LIMIT 1`
+  const exact = await db.primary.unsafe(exactQuery.sql, exactQuery.parameters) as Record<string, unknown>[]
+  if (exact[0])
+    return exact[0]
+
+  // Canonical rows use the unique email index. The fallback keeps accounts
+  // created before canonicalization usable on case-sensitive databases.
+  const fallbackQuery = sql`SELECT * FROM ${sql.raw(table)} WHERE LOWER(email) = ${email}${softDelete} LIMIT 1`
+  const fallback = await db.primary.unsafe(fallbackQuery.sql, fallbackQuery.parameters) as Record<string, unknown>[]
+  return fallback[0]
+}
+
+/** Resolve an email without making existing mixed-case accounts unloginable. */
+export async function findAuthUserByEmail(value: string): Promise<UserModel | undefined> {
+  const row = await findAuthUserRowByEmail(value)
   return row ? await User.make(row) as UserModel : undefined
 }

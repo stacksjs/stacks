@@ -67,7 +67,7 @@ try {
   }
   process.env.TZ = 'UTC'
   await db.deleteFrom('password_resets').execute()
-  await db.insertInto('users').values({ id: 1, email: 'reset@example.invalid', password: 'original' }).execute()
+  await db.insertInto('users').values({ id: 1, email: 'Reset@Example.Invalid', password: 'original' }).execute()
   await db.insertInto('password_resets').values({ email: 'reset@example.invalid', token: hashedToken, expires_at: sqlDateTime(new Date(now.getTime() + 60_000)) } as never).execute()
   await check('one successful password reset', async () => {
     const attempts = await Promise.allSettled(Array.from({ length: 6 }, () => passwordResets('reset@example.invalid').resetPassword(token, 'new-synthetic-password')))
