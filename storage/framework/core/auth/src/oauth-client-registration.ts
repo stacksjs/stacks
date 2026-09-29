@@ -464,7 +464,12 @@ export async function registerOAuthClient(
     if (!Number.isSafeInteger(id) || id <= 0)
       throw new Error('Failed to resolve the registered OAuth client identifier.')
 
-    const rows = await trx.unsafe(`SELECT * FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1`, [id]) as StoredOAuthClient[]
+    const rows = await trx.unsafe(`
+      SELECT id, user_id, name, secret, redirect, client_type, redirect_uris,
+        grant_types, token_endpoint_auth_method, allowed_scopes, allowed_resources,
+        personal_access_client, password_client, revoked, created_at
+      FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
+    `, [id]) as StoredOAuthClient[]
     const row = rows[0]
     if (!row
       || String(row.user_id) !== String(ownerId)
