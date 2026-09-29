@@ -14,12 +14,14 @@ else {
   assert(process.env.DB_PORT && !['5432', '3306'].includes(process.env.DB_PORT))
 }
 let sent = 0
+const recipients: string[] = []
 let failDelivery = false
 mock.module('@stacksjs/email', () => ({
   template: async () => ({ html: '<p>synthetic verification</p>', text: 'synthetic verification' }),
-  mail: { sendOrFail: async () => {
+  mail: { sendOrFail: async (message: { to: string }) => {
     if (failDelivery) throw new Error('fixture delivery unavailable')
     sent++
+    recipients.push(message.to)
   } },
 }))
 const { overrides, overridesReady } = await import('@stacksjs/config')
@@ -34,7 +36,8 @@ initializeDbConfig({ app: { env: 'test' }, database: {
 } })
 const { sendVerificationEmail } = await import('../../src/email-verification')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const user = { id: 1, email: 'synthetic@example.invalid' }
+const user = { id: 1, email: 'stale@example.invalid' }
+const currentEmail = 'current@example.invalid'
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
   try { await run(); console.log(`PASS ${name}`) }
@@ -42,6 +45,7 @@ async function check(name: string, run: () => Promise<void>) {
 }
 async function seed() {
   sent = 0
+  recipients.length = 0
   await db.deleteFrom('email_verifications').execute()
   await db.insertInto('email_verifications').values({ user_id: 1, token: 'previous-hash', expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
 }
@@ -49,8 +53,8 @@ async function hashes() {
   return (await db.primary.selectFrom('email_verifications').selectAll().execute()).map(row => row.token)
 }
 try {
-  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
-  await db.insertInto('users').values({ id: 1 }).execute()
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, email VARCHAR(255), name TEXT)').execute()
+  await db.insertInto('users').values({ id: 1, email: currentEmail, name: 'Current Owner' }).execute()
   await ensureFrameworkAuthTables()
   await check('failed replacement preserves the previous link and sends nothing', async () => {
     await seed()
@@ -110,6 +114,7 @@ try {
       assert.equal(sent, 0, 'mail cannot escape before the outer commit')
     })
     assert.equal(sent, 1)
+    assert.deepEqual(recipients, [currentEmail])
     const current = await hashes()
     assert.equal(current.length, 1)
     assert.notEqual(current[0], 'previous-hash')

@@ -120,7 +120,15 @@ async function prepareVerificationEmail(user: { id: number, email: string, name?
   const expiresAt = new Date(createdAt.getTime() + expiryMinutes * 60 * 1000)
 
   // A failed replacement must not destroy the user's previous working link.
-  await db.transaction(async () => {
+  // Lock and read the owner here so a stale caller cannot send a credential
+  // to an address that no longer belongs to this account.
+  const currentUser = await db.transaction(async () => {
+    let ownerQuery = db.primary.selectFrom('users').where('id', '=', user.id).selectAll()
+    if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
+    const owner = await ownerQuery.executeTakeFirst()
+    if (!owner || typeof owner.email !== 'string' || !owner.email)
+      throw new Error('[auth] Email verification owner no longer exists or has no email.')
+
     await db
       .deleteFrom('email_verifications')
       .where('user_id', '=', user.id)
@@ -143,9 +151,15 @@ async function prepareVerificationEmail(user: { id: number, email: string, name?
       .where('user_id', '=', user.id).selectAll().execute()
     if (stored.length !== 1 || stored[0]?.token !== hash)
       throw new Error('[auth] Email verification could not replace the token.')
+
+    return {
+      id: Number(owner.id),
+      email: owner.email,
+      name: typeof owner.name === 'string' ? owner.name : user.name,
+    }
   })
 
-  return () => deliverVerificationEmail(user, token, expiryMinutes)
+  return () => deliverVerificationEmail(currentUser, token, expiryMinutes)
 }
 
 async function deliverAfterCommit(deliver: () => Promise<void>): Promise<void> {

@@ -66,12 +66,12 @@ async function seed(older: boolean = false) {
   sent.length = 0
   await db.deleteFrom('email_verifications').execute()
   await db.deleteFrom('users').execute()
-  await db.insertInto('users').values({ id: 1 }).execute()
+  await db.insertInto('users').values({ id: 1, email: user.email, name: 'Synthetic User' }).execute()
   if (older)
     await db.insertInto('email_verifications').values({ user_id: 1, token: 'old-hash', created_at: sqlDateTime(new Date(Date.now() - 120_000)), expires_at: sqlDateTime(new Date(Date.now() + 60_000)) }).execute()
 }
 try {
-  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, email VARCHAR(255), name TEXT)').execute()
   await ensureFrameworkAuthTables()
   for (const older of [false, true]) {
     await check(`${older ? 'expired cooldown' : 'first send'} has one concurrent winner`, async () => {
