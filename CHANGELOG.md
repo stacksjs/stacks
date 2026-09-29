@@ -1,5 +1,52 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.32...v0.75.33)
+
+## 🐛 Bug Fixes
+
+- **mobile**: open the link an app was launched with ([95a74f3](https://github.com/stacksjs/stacks/commit/95a74f3)) _(by Chris <chris@stacksjs.com>)_
+- **database**: isolate replica pool identities ([77a856e](https://github.com/stacksjs/stacks/commit/77a856e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: protect live migration locks ([8deac00](https://github.com/stacksjs/stacks/commit/8deac00)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce idle timeout for sessions ([29f88de](https://github.com/stacksjs/stacks/commit/29f88de)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce idle timeout in token helpers ([31677ab](https://github.com/stacksjs/stacks/commit/31677ab)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: typecheck the idle-timeout helpers and OAuth consent actions ([88e1804](https://github.com/stacksjs/stacks/commit/88e1804)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **auth**: narrow registration readback ([c382c93](https://github.com/stacksjs/stacks/commit/c382c93)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow bearer rotation lock read ([3e62777](https://github.com/stacksjs/stacks/commit/3e62777)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow RBAC record projections ([9a4e6e8](https://github.com/stacksjs/stacks/commit/9a4e6e8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow OAuth registration readback ([b9ff115](https://github.com/stacksjs/stacks/commit/b9ff115)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow WebAuthn challenge reads ([6fbdc71](https://github.com/stacksjs/stacks/commit/6fbdc71)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow password reset projections ([b6b03da](https://github.com/stacksjs/stacks/commit/b6b03da)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow email verification projections ([b6a48ea](https://github.com/stacksjs/stacks/commit/b6a48ea)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow two-factor credential reads ([b29fc5f](https://github.com/stacksjs/stacks/commit/b29fc5f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow OAuth credential reads ([6b2aa84](https://github.com/stacksjs/stacks/commit/6b2aa84)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow OAuth client projections ([6dd37bf](https://github.com/stacksjs/stacks/commit/6dd37bf)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow token issuance readbacks ([7aac2b5](https://github.com/stacksjs/stacks/commit/7aac2b5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow token list projection ([242acc4](https://github.com/stacksjs/stacks/commit/242acc4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow token management reads ([bff94b3](https://github.com/stacksjs/stacks/commit/bff94b3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: project bearer token reads ([973b350](https://github.com/stacksjs/stacks/commit/973b350)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow session refresh reads ([2b95965](https://github.com/stacksjs/stacks/commit/2b95965)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow session user reads ([a1b075f](https://github.com/stacksjs/stacks/commit/a1b075f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow session check reads ([4c6f717](https://github.com/stacksjs/stacks/commit/4c6f717)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: collapse RBAC permission reads ([5ed40c1](https://github.com/stacksjs/stacks/commit/5ed40c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: collapse token owner reads ([f33970d](https://github.com/stacksjs/stacks/commit/f33970d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: short-circuit invalid token owners ([4790f96](https://github.com/stacksjs/stacks/commit/4790f96)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **auth**: update session and token contracts ([3bb45a3](https://github.com/stacksjs/stacks/commit/3bb45a3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **auth**: reject malformed OAuth token requests ([3bfab36](https://github.com/stacksjs/stacks/commit/3bfab36)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.31...v0.75.32)
 
 ## ✨ Features
