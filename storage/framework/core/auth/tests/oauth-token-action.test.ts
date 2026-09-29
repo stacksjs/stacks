@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
 import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAuthorizationAction'
+import OAuthClientsAction from '../../../defaults/app/Actions/Auth/OAuthClientsAction'
 import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConnectionsAction'
 import OAuthConsentAction from '../../../defaults/app/Actions/Auth/OAuthConsentAction'
 import OAuthDisconnectAction from '../../../defaults/app/Actions/Auth/OAuthDisconnectAction'
@@ -227,5 +228,27 @@ describe('OAuth connected application route actions', () => {
 
     expect(OAuthDisconnectAction.skipCsrf).not.toBe(true)
     expect(result.status).toBe(400)
+  })
+})
+
+describe('OAuth client management route actions', () => {
+  it('keeps client management unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const result = await OAuthClientsAction.handle(browserRequest('https://id.example.com/auth/oauth/clients'))
+
+    expect(result.status).toBe(404)
+  })
+
+  it('requires an authenticated owner to list clients', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const result = await OAuthClientsAction.handle(browserRequest('https://id.example.com/auth/oauth/clients'))
+
+    expect(result.status).toBe(401)
   })
 })
