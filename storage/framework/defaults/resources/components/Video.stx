@@ -44,17 +44,35 @@ const controlslist = props.controlslist || 'nodownload'
 const className = props.class || ''
 const playerSources = (sources.length ? sources : src ? [{ src }] : []).map(source => props.drm && (source.type === 'application/dash+xml' || source.src.split(/[?#]/, 1)[0].toLowerCase().endsWith('.mpd')) ? { ...source, type: 'application/dash+xml', drm: props.drm } : source)
 const playerTracks = tracks.map(track => ({ ...track, language: track.srclang }))
+// A YouTube or Vimeo link is a web page, not a media file: the native <video>
+// fallback cannot play it, so without the player it offers the link instead.
+const isEmbed = /^https?:\/\/(?:[\w-]+\.)*(?:youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com)\//i.test(src)
 const playerConfig = JSON.stringify({ sources: playerSources, tracks: playerTracks, ...(props.drm ? { drm: props.drm } : {}) }).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')
 </script>
 
 <script client>
 import { registerElements } from 'ts-video-player/elements'
 registerElements()
+
+// `src` and `poster` follow the parent, so one player can show whichever
+// video is chosen: `<Video :src="current.url" />` in a sheet. An empty `src`
+// pauses it, which is what closing that sheet should do.
+const liveSrc = useReactiveProp<string>('src', '')
+const livePoster = useReactiveProp<string>('poster', '')
+const element = useRef('player')
+
+effect(() => {
+  if (!liveSrc())
+    (element.current as { player?: { pause: () => void } } | null)?.player?.pause()
+})
 </script>
 
 <figure class="m-0 {{ className }}">
   <video-player
+    ref="player"
     src="{{ src }}"
+    :src="liveSrc() || null"
+    :poster="livePoster() || null"
     data-media-config="{{ playerConfig }}"
     @if(poster) poster="{{ poster }}" @endif
     @if(controls) controls @endif
@@ -72,6 +90,9 @@ registerElements()
     style="aspect-ratio: {{ ratio }};"
   >
     <media-error-display></media-error-display>
+    @if(isEmbed)
+      <a data-native-fallback href="{{ src }}" target="_blank" rel="noopener" class="flex items-center justify-center h-full w-full text-sm text-white underline">Watch {{ title }}</a>
+    @else
     <video data-native-fallback src="{{ src }}" @if(poster) poster="{{ poster }}" @endif @if(width) width="{{ width }}" @endif @if(height) height="{{ height }}" @endif @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif @if(inline) playsinline @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif controlslist="{{ controlslist }}" @if(props.disablePictureInPicture) disablepictureinpicture @endif aria-label="{{ title }}" class="object-contain h-full w-full">
       @foreach (sources as source)
         <source src="{{ source.src }}" @if(source.type) type="{{ source.type }}" @endif>
@@ -81,6 +102,7 @@ registerElements()
       @endforeach
       Your browser does not support video playback.
     </video>
+    @endif
     <video-skin>
       <media-seek-button slot="left" seconds="-10" aria-label="Back 10 seconds"></media-seek-button>
       <media-play-button slot="left" aria-label="Play or pause"></media-play-button>
