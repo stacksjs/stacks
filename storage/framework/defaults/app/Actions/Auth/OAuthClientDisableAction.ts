@@ -2,11 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { disableOAuthClient, resolveOAuthProviderConfig } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
-
-function positiveId(value: number | string): number | null {
-  const id = Number(value)
-  return Number.isSafeInteger(id) && id > 0 ? id : null
-}
+import { oauthPositiveId } from './oauth-request'
 
 export default new Action({
   name: 'OAuthClientDisableAction',
@@ -19,12 +15,12 @@ export default new Action({
       return response.notFound('OAuth provider is not enabled')
 
     const user = await request.user()
-    const ownerId = user ? positiveId(user.id) : null
+    const ownerId = user ? oauthPositiveId(user.id) : null
     if (!ownerId)
       return response.unauthorized('Authentication required')
 
     const rawClientId = request.getParam('id')
-    const clientId = /^\d+$/.test(rawClientId) ? positiveId(rawClientId) : null
+    const clientId = /^\d+$/.test(rawClientId) ? oauthPositiveId(rawClientId) : null
     if (!clientId)
       return response.badRequest('Invalid OAuth client ID')
 

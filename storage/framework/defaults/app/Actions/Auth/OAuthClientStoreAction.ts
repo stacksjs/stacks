@@ -6,17 +6,7 @@ import {
 } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
-
-function positiveId(value: number | string): number | null {
-  const id = Number(value)
-  return Number.isSafeInteger(id) && id > 0 ? id : null
-}
-
-function stringList(value: unknown): string[] | null {
-  return Array.isArray(value) && value.every(item => typeof item === 'string')
-    ? value
-    : null
-}
+import { oauthPositiveId, oauthStringList } from './oauth-request'
 
 export default new Action({
   name: 'OAuthClientStoreAction',
@@ -29,16 +19,16 @@ export default new Action({
       return response.notFound('OAuth provider is not enabled')
 
     const user = await request.user()
-    const ownerId = user ? positiveId(user.id) : null
+    const ownerId = user ? oauthPositiveId(user.id) : null
     if (!ownerId)
       return response.unauthorized('Authentication required')
 
     const body = await request.all() as Record<string, unknown>
     const name = typeof body.name === 'string' ? body.name : null
     const type = body.type === 'public' || body.type === 'confidential' ? body.type : null
-    const redirectUris = stringList(body.redirect_uris)
-    const scopes = stringList(body.scopes)
-    const resources = stringList(body.resources)
+    const redirectUris = oauthStringList(body.redirect_uris)
+    const scopes = oauthStringList(body.scopes)
+    const resources = oauthStringList(body.resources)
     if (!name || !type || !redirectUris || !scopes || !resources)
       return response.badRequest('OAuth client registration metadata is invalid')
 
