@@ -21,6 +21,22 @@ const DEFAULT_ENDPOINTS = {
   revocation: 'oauth/revoke',
 } as const
 
+const RESERVED_AUTH_GET_PATHS = new Set([
+  '/generate-registration-options',
+  '/generate-authentication-options',
+])
+
+const RESERVED_AUTH_POST_PATHS = new Set([
+  '/login',
+  '/register',
+  '/verify-registration',
+  '/verify-authentication',
+  '/generate-two-factor-secret',
+  '/enable-two-factor',
+  '/disable-two-factor',
+  '/verify-two-factor-login',
+])
+
 export interface ResolvedOAuthProviderConfig {
   enabled: true
   issuer: string
@@ -82,6 +98,20 @@ function endpoint(issuer: URL, configured: string | undefined, fallback: string)
   if (resolved.username || resolved.password || resolved.search || resolved.hash)
     throw new Error('OAuth provider endpoints must not contain credentials, a query, or a fragment.')
   return resolved.toString().replace(/\/$/, '')
+}
+
+function assertEndpointRouteAvailable(
+  name: string,
+  value: string,
+  methods: readonly ('GET' | 'POST')[],
+): void {
+  const pathname = new URL(value).pathname
+  const reservedNamespace = pathname === '/auth' || pathname.startsWith('/auth/')
+  const reservedMethod = methods.some(method => method === 'GET'
+    ? RESERVED_AUTH_GET_PATHS.has(pathname)
+    : RESERVED_AUTH_POST_PATHS.has(pathname))
+  if (reservedNamespace || reservedMethod)
+    throw new Error(`auth.oauthProvider ${name} endpoint must not shadow a reserved auth route: ${pathname}`)
 }
 
 function positiveLifetime(name: string, value: number): number {
@@ -232,6 +262,9 @@ export function resolveOAuthProviderConfig(
   }
   if (new Set(Object.values(endpoints)).size !== Object.keys(endpoints).length)
     throw new Error('auth.oauthProvider endpoints must each use a unique URL.')
+  assertEndpointRouteAvailable('authorization', endpoints.authorization, ['GET', 'POST'])
+  assertEndpointRouteAvailable('token', endpoints.token, ['POST'])
+  assertEndpointRouteAvailable('revocation', endpoints.revocation, ['POST'])
   if (new URL(endpoints.authorization).pathname === oauthAuthorizationServerMetadataPath(issuer.toString()))
     throw new Error('auth.oauthProvider authorization endpoint must not shadow the metadata route.')
 

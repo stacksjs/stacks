@@ -107,6 +107,21 @@ describe('OAuth authorization server configuration', () => {
       issuer: 'https://id.example.com/tenant/acme',
       endpoints: { authorization: '/.well-known/oauth-authorization-server/tenant/acme' },
     })).toThrow('metadata route')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      endpoints: { token: '/login' },
+    })).toThrow('reserved auth route')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      endpoints: { authorization: '/generate-authentication-options' },
+    })).toThrow('reserved auth route')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      endpoints: { revocation: '/auth/oauth/clients' },
+    })).toThrow('reserved auth route')
   })
 
   it('allows plain HTTP only for loopback development issuers', () => {
