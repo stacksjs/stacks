@@ -33,6 +33,23 @@ runtime entry. The root entry remains the complete compatibility surface.
 import { createStacksRouter } from '@stacksjs/router/runtime'
 ```
 
+For immutable health, readiness, redirect, or configuration responses, register
+the final response explicitly:
+
+```ts
+const router = createStacksRouter()
+
+router.staticResponse('GET', '/ready', new Response('{"ready":true}', {
+  headers: { 'content-type': 'application/json' },
+}))
+```
+
+This is Bun's direct static dispatch. It bypasses every request-time Stacks
+facility, including middleware, request IDs, CSRF, cookies, rate limits,
+request context, header mutation, compression, and response formatting. The
+supplied `Response` must already contain the final status, headers, and bytes.
+Do not use it for a response that depends on the request.
+
 Learn more in the docs.
 
 ## 🧪 Testing

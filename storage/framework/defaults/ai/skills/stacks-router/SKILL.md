@@ -32,6 +32,28 @@ route.options('/users', handler)
 route.health()  // GET /health endpoint
 ```
 
+### Zero-allocation static responses
+
+Use `staticResponse()` only when the response is final at registration time and
+must bypass the request pipeline entirely:
+
+```typescript
+route.staticResponse('GET', '/ready', new Response('{"ready":true}', {
+  headers: { 'content-type': 'application/json' },
+}))
+```
+
+Bun serves that `Response` directly from its native route table. No handler,
+middleware, request ID, CSRF check or cookie, rate limit, request context,
+security or CORS header mutation, compression, or response formatting runs.
+Supply the final status, headers, and body bytes yourself.
+
+Static responses return the router, not a chainable route, so `.middleware()`,
+`.name()`, `.skipCsrf()`, `.requireCsrf()`, and `.rateLimit()` cannot be attached
+and silently bypassed. A static response inside a group with middleware or
+`apiResponse: true` throws during registration. Prefix-only groups are valid.
+Duplicate method and path registrations keep the first response.
+
 ### Chainable Methods
 ```typescript
 route.get('/admin', handler)
