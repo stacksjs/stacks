@@ -11,6 +11,8 @@ class FakePage extends EventTarget {
   }
 }
 
+const nextFrame = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 20))
+
 describe('page gestures', () => {
   it('measures a pull by the rubber band on iOS and by the finger elsewhere', () => {
     expect(pullDistance(-80, 0)).toBe(80)
@@ -41,10 +43,13 @@ describe('page gestures', () => {
 
     page.touch('touchstart', 100)
     page.touch('touchmove', 180) // 40: under the threshold
+    await nextFrame()
     page.touch('touchmove', 240) // 70: armed
+    await nextFrame()
     page.touch('touchend')
     await Promise.resolve()
     expect(refreshed).toBe(1)
+    expect(pulls).toContainEqual([40, false])
     expect(pulls).toContainEqual([70, true])
     expect(pulls.at(-1)).toEqual([0, false])
 
@@ -62,6 +67,26 @@ describe('page gestures', () => {
     page.touch('touchcancel')
     await Promise.resolve()
     expect(refreshed).toBe(1)
+    stop()
+  })
+
+  it('reports a pull once a frame however fast the touches come, and its end at once', async () => {
+    const page = new FakePage()
+    const pulls: Array<[number, boolean]> = []
+    const stop = observePullToRefresh({ host: page, onPull: (distance, armed) => pulls.push([distance, armed]), onRefresh: () => {} })
+
+    page.touch('touchstart', 100)
+    for (let y = 102; y <= 140; y += 2) page.touch('touchmove', y)
+    expect(pulls).toEqual([])
+    await nextFrame()
+    expect(pulls).toEqual([[20, false]])
+
+    // Let go before the frame: the stale move never lands after the end.
+    page.touch('touchmove', 150)
+    page.touch('touchend')
+    expect(pulls.at(-1)).toEqual([0, false])
+    await nextFrame()
+    expect(pulls.at(-1)).toEqual([0, false])
     stop()
   })
 

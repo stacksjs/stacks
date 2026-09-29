@@ -77,6 +77,8 @@ const indicatorStyle = derived(() => {
     opacity: 0;
     pointer-events: none;
     transform: translateX(-50%) scale(0.6);
+    /* Restyled every frame of a pull: its own layer keeps that off the page's paint. */
+    will-change: transform, opacity;
   }
 
   .dark .native-ptr-indicator { color: var(--native-accent-dark, rgb(96 165 250)); background: var(--native-ptr-background-dark, rgb(30 41 59)); }

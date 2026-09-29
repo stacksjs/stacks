@@ -79,18 +79,30 @@ function tapBack(event: MouseEvent): void {
     align-items: center;
     min-height: 2.75rem;
     padding: 0 0.75rem;
-    border-bottom: 1px solid transparent;
-    transition: background-color 180ms ease, border-color 180ms ease;
   }
 
-  .native-nav-bar.is-scrolled {
-    border-color: var(--native-bar-border, rgb(148 163 184 / 0.25));
+  /* The frosted material is always there and only fades. Adding or removing
+     backdrop-filter rebuilds the page's layers, which took 50-140ms of the
+     main thread at the moment the page crossed the threshold, mid-scroll. An
+     opacity change is the compositor's alone, as long as it never reaches 0:
+     WebKit drops a transparent layer and builds it again on the way back. */
+  .native-nav-bar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-bottom: 1px solid var(--native-bar-border, rgb(148 163 184 / 0.25));
     background: var(--native-bar-background, rgb(248 250 252 / 0.86));
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
+    opacity: 0.001;
+    pointer-events: none;
+    transition: opacity 180ms ease;
   }
 
-  .dark .native-nav-bar.is-scrolled {
+  .native-nav-bar.is-scrolled::before { opacity: 1; }
+
+  .dark .native-nav-bar::before {
     border-color: var(--native-bar-border-dark, rgb(51 65 85 / 0.6));
     background: var(--native-bar-background-dark, rgb(2 6 23 / 0.86));
   }
@@ -141,11 +153,11 @@ function tapBack(event: MouseEvent): void {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .native-nav-bar, .native-nav-title { transition: none; }
+    .native-nav-bar::before, .native-nav-title { transition: none; }
   }
 
   @media (prefers-reduced-transparency: reduce) {
-    .native-nav-bar.is-scrolled { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--native-bar-solid, rgb(248 250 252)); }
-    .dark .native-nav-bar.is-scrolled { background: var(--native-bar-solid-dark, rgb(2 6 23)); }
+    .native-nav-bar::before { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--native-bar-solid, rgb(248 250 252)); }
+    .dark .native-nav-bar::before { background: var(--native-bar-solid-dark, rgb(2 6 23)); }
   }
 </style>

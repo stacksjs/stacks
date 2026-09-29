@@ -91,7 +91,23 @@ export function observePullToRefresh(options: PullToRefreshOptions): () => void 
   let armed = false
   let refreshing = false
 
-  const report = (distance: number): void => options.onPull?.(distance, armed)
+  // Touches arrive faster than the screen draws, twice as fast again on a
+  // 120Hz display, and each report restyles the indicator. A pull's moves are
+  // coalesced into one report a frame; its ends report at once.
+  const frame = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (run: () => void) => setTimeout(run, 16)
+  let queued: number | null = null
+  const report = (distance: number): void => {
+    queued = null
+    options.onPull?.(distance, armed)
+  }
+  const reportNextFrame = (distance: number): void => {
+    const scheduled = queued !== null
+    queued = distance
+    if (scheduled) return
+    frame(() => {
+      if (queued !== null) report(queued)
+    })
+  }
 
   const touchY = (event: Event): number | null => {
     const touch = (event as TouchEvent).touches?.[0]
@@ -116,7 +132,7 @@ export function observePullToRefresh(options: PullToRefreshOptions): () => void 
     else if (armed && distance < threshold * 0.8) {
       armed = false
     }
-    report(distance)
+    reportNextFrame(distance)
   }
 
   const onEnd = async (): Promise<void> => {
@@ -128,7 +144,7 @@ export function observePullToRefresh(options: PullToRefreshOptions): () => void 
     }
     armed = false
     refreshing = true
-    options.onPull?.(threshold, false)
+    report(threshold)
     try {
       await options.onRefresh()
     }
@@ -151,6 +167,7 @@ export function observePullToRefresh(options: PullToRefreshOptions): () => void 
   host.addEventListener('touchend', onEnd)
   host.addEventListener('touchcancel', onCancel)
   return () => {
+    queued = null
     host.removeEventListener('touchstart', onStart)
     host.removeEventListener('touchmove', onMove)
     host.removeEventListener('touchend', onEnd)
