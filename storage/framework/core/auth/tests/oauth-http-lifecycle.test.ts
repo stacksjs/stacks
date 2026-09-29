@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-test('OAuth authorization, denial, refresh, and disconnect work through real HTTP routes', async () => {
+test('OAuth delegated lifecycle and replay containment work through real HTTP routes', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'stacks-oauth-http-'))
   const database = join(directory, 'oauth.sqlite')
   try {

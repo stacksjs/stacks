@@ -32,7 +32,9 @@ await ormReady
 const {
   authenticatedUser,
   authCookieName,
+  createOAuthGrant,
   createS256CodeChallenge,
+  issueAuthorizationCode,
   registerOAuthClient,
   resolveOAuthProviderConfig,
 } = await import('../../src')
@@ -343,6 +345,46 @@ try {
       .select('revoked')
       .executeTakeFirstOrThrow()
     assert.equal(Number(storedAccess.revoked), 1)
+
+    const replayGrant = await createOAuthGrant({
+      clientId: registration.client.id,
+      subjectType: 'users',
+      subjectId: 1,
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+      audiences: [`${issuer}/fixture/resource`],
+    })
+    const replayCode = await issueAuthorizationCode({
+      grantId: replayGrant.id,
+      redirectUri,
+      codeChallenge: challenge,
+      lifetimeMs: provider.lifetimes.authorizationCode,
+    })
+    const replayBody = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: String(registration.client.id),
+      code: replayCode,
+      redirect_uri: redirectUri,
+      code_verifier: verifier,
+    })
+    const exchangeReplayCode = async () => await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: replayBody,
+    })
+    const replayExchange = await exchangeReplayCode()
+    assert.equal(replayExchange.status, 200, await replayExchange.clone().text())
+    const replayPair = await replayExchange.json() as { access_token: string }
+    await readResource(replayPair.access_token)
+    const replay = await exchangeReplayCode()
+    assert.equal(replay.status, 400)
+    assert.equal((await replay.json() as { error?: string }).error, 'invalid_grant')
+    await readResource(replayPair.access_token, 401)
+    assert.equal(await db.selectFrom('oauth_grants')
+      .where('id', '=', replayGrant.id)
+      .whereNull('revoked_at')
+      .select('id')
+      .executeTakeFirst(), undefined)
 
     console.log('PASS OAuth HTTP lifecycle')
   }
