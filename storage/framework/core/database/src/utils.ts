@@ -27,7 +27,7 @@ import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-confi
 import { getConnectionDefaults } from './defaults'
 import { isMysqlWire, isPostgresWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
-import { configureDatabaseRoutingContext, contextInTransaction, markContextWrote, resolveReplicaConnection, runInDatabaseRoutingContext, selectReplica, shouldRouteToReplica, withDatabaseRoutingContext, withTransactionContext } from './replicas'
+import { configureDatabaseRoutingContext, contextInTransaction, markContextWrote, replicaConnectionKey, resolveReplicaConnection, runInDatabaseRoutingContext, selectReplica, shouldRouteToReplica, withDatabaseRoutingContext, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
@@ -954,7 +954,8 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
 }
 
 /**
- * Query builders bound to a replica, keyed by `host:port`.
+ * Query builders bound to a replica, keyed by the full resolved connection
+ * identity so per-replica credential overrides cannot reuse the wrong pool.
  *
  * Cached because a builder owns a connection pool — rebuilding one per
  * read would open a fresh pool on every SELECT. Cleared alongside
@@ -1045,7 +1046,7 @@ export function closeDatabaseConnection(): Promise<void> {
 function getReplicaDb(replica: ReplicaConfig): ReturnType<typeof createQueryBuilder> {
   const primary = getDbConfig()
   const resolved = resolveReplicaConnection(replica, primary)
-  const key = `${resolved.host}:${resolved.port ?? ''}`
+  const key = replicaConnectionKey(resolved)
 
   const cached = _replicaInstances.get(key)
   if (cached)

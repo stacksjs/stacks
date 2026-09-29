@@ -49,6 +49,7 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { createHash } from 'node:crypto'
 import type { ReadPolicyConfig, ReplicaConfig } from './driver-config'
 
 /**
@@ -226,7 +227,7 @@ export function selectReplica(
 export function resolveReplicaConnection(
   replica: ReplicaConfig,
   primary: { name?: string, database?: string, host?: string, port?: number, username?: string, password?: string },
-): { database: string, host: string, port?: number, username?: string, password?: string } {
+): ResolvedReplicaConnection {
   return {
     database: primary.name ?? primary.database ?? '',
     host: replica.host,
@@ -234,4 +235,30 @@ export function resolveReplicaConnection(
     username: replica.username ?? primary.username,
     password: replica.password ?? primary.password,
   }
+}
+
+export interface ResolvedReplicaConnection {
+  database: string
+  host: string
+  port?: number
+  username?: string
+  password?: string
+}
+
+/**
+ * Stable cache identity for a replica pool.
+ *
+ * The returned key is a digest so a password can distinguish pools without
+ * being retained in a Map key or accidentally exposed by diagnostics. Every
+ * resolved connection attribute participates: two replicas may share a host
+ * and port while using different credentials.
+ */
+export function replicaConnectionKey(connection: ResolvedReplicaConnection): string {
+  return createHash('sha256').update(JSON.stringify([
+    connection.host,
+    connection.port ?? null,
+    connection.database,
+    connection.username ?? null,
+    connection.password ?? null,
+  ])).digest('hex')
 }

@@ -19,6 +19,7 @@ import {
   contextHasWritten,
   contextInTransaction,
   markContextWrote,
+  replicaConnectionKey,
   resetReplicaCursor,
   resolveReplicaConnection,
   selectReplica,
@@ -29,6 +30,26 @@ import {
 
 const REPLICAS: ReplicaConfig[] = [{ host: 'replica-a' }, { host: 'replica-b' }]
 const AUTO = { autoRoute: true } as const
+
+describe('replica pool identity', () => {
+  const connection = {
+    database: 'stacks',
+    host: 'db.internal',
+    port: 5432,
+    username: 'reader-a',
+    password: 'secret-a',
+  }
+
+  test('distinguishes credentials and database settings without exposing secrets', () => {
+    const key = replicaConnectionKey(connection)
+
+    expect(replicaConnectionKey({ ...connection })).toBe(key)
+    expect(replicaConnectionKey({ ...connection, username: 'reader-b' })).not.toBe(key)
+    expect(replicaConnectionKey({ ...connection, password: 'secret-b' })).not.toBe(key)
+    expect(replicaConnectionKey({ ...connection, database: 'other' })).not.toBe(key)
+    expect(key).not.toContain(connection.password)
+  })
+})
 
 describe('rule 1: auto-routing is opt-in', () => {
   test('does not route when autoRoute is unset or false', () => {
