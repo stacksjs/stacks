@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.24...v0.75.25)
+
+## ✨ Features
+
+- **video**: range-aware file responses and inspectVideo for uploads ([f1eb5a7](https://github.com/stacksjs/stacks/commit/f1eb5a7)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: NativeProgressRing, and screens that hide the tab bar ([bf152d0](https://github.com/stacksjs/stacks/commit/bf152d0)) _(by Chris <chris@stacksjs.com>)_
+- **video**: a <Video> that follows its src, for a player in a sheet ([4ef5d80](https://github.com/stacksjs/stacks/commit/4ef5d80)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- count NativeProgressRing among the components ([e34b21c](https://github.com/stacksjs/stacks/commit/e34b21c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: lock ts-videos 0.1.2, @ts-videos/mp4 and webm, craft-native 0.0.103 ([af96bf7](https://github.com/stacksjs/stacks/commit/af96bf7)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: require craft-native 0.0.103, the published build with embedded frames ([8e25ad9](https://github.com/stacksjs/stacks/commit/8e25ad9)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.23...v0.75.24)
 
 ## 🐛 Bug Fixes
