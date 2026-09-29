@@ -476,18 +476,21 @@ Events bubble, `addEventListener` supports `once`/`capture`/`signal`, and form c
 
 very-happy-dom implements the DOM, not a browser. It covers DOM structure and mutation, CSS selectors and XPath, events and focus, forms and constraint validation, storage, `fetch`, timers, observers, web components and Shadow DOM.
 
-It deliberately does not implement four things, and tests must not assert on them:
+Since 0.1.11 it also resolves the **CSS cascade**. `getComputedStyle()` applies rules from stylesheets, honouring specificity, `!important` and author-origin order, so a class-based style assertion reflects what the cascade computes rather than only what an inline `style` attribute says.
 
-- **Real navigation.** Nothing is fetched or loaded; assigning a URL does not load a document, and client-side routing does not run.
-- **The CSS cascade.** `getComputedStyle()` reads inline styles only. A rule from a stylesheet — including any utility class — is not applied, so class-based style assertions will not reflect what a browser renders.
-- **Layout.** `getBoundingClientRect()` reports the element's inline-style size at the origin. Positions, overlap, scroll offsets and element geometry are not computed.
-- **Visibility and pixels.** Because there is no cascade and no layout, "is this visible?" cannot be answered here, and neither can anything about how the page actually looks.
+It still does not implement three things, and tests must not assert on them:
 
-Assertions that depend on those four belong in real-browser QA. Writing them against a virtual DOM produces tests that pass without checking anything — comparing `0` to `0` for a geometry check, for instance — which reads as coverage while providing none.
+- **Real navigation.** Nothing is fetched or loaded; assigning `location.href` changes the URL without loading a document, and client-side routing does not run.
+- **Layout.** No geometry is computed. `getBoundingClientRect()` reflects inline styles only, so an element sized by a stylesheet reports `0` even where `getComputedStyle()` returns its width. Positions, overlap and scroll offsets are not computed either.
+- **Pixels.** Nothing is painted, so nothing can be asserted about how the page actually looks.
+
+Visibility sits across that line, and the distinction is worth keeping straight. "Is this hidden by a style?" is answerable and reliable: `display: none` and `visibility: hidden` resolve through the cascade, including when they come from an ancestor. "Is this visible to a user?" — on screen, not zero-sized, not covered by something else — is not, because that needs layout.
+
+Assertions that depend on layout or pixels belong in real-browser QA. Writing them against a virtual DOM produces tests that pass without checking anything — comparing `0` to `0` for a geometry check, for instance — which reads as coverage while providing none.
 
 ### Real-browser QA
 
-For behaviour that needs a real engine — navigation, layout, visibility, screenshots — use the [`stacks-browse`](/skills/craft/browse) skill, which drives Chrome over the DevTools Protocol.
+For behaviour that needs a real engine — navigation, layout, geometry-based visibility, screenshots — use the [`stacks-browse`](/skills/craft/browse) skill, which drives Chrome over the DevTools Protocol.
 
 It is a QA and diagnosis tool rather than a test runner: it has no spec files, fixtures or reporters, and a scenario is expressed as CLI steps rather than as a committed test. Use it to verify a flow in a real browser, capture screenshots, or inspect console and network output. If you need real-browser behaviour gated in CI, reach for a dedicated browser-test runner in its own package, kept out of the application's dependency tree.
 
