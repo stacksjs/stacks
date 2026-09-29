@@ -80,6 +80,21 @@ describe('OAuth client registration policy', () => {
     })).toThrow('redirect')
   })
 
+  it('rejects redirect URIs that the token endpoint cannot accept', () => {
+    const redirectUri = `https://client.example.com/${'a'.repeat(2022)}`
+    expect(redirectUri.length).toBe(2049)
+
+    expect(() => validateOAuthClientRegistration(provider, {
+      name: 'Oversized callback app',
+      type: 'public',
+      tokenEndpointAuthMethod: 'none',
+      redirectUris: [redirectUri],
+      grantTypes: ['authorization_code'],
+      scopes: ['profile:read'],
+      resources: [],
+    })).toThrow('redirect')
+  })
+
   it('permits exact loopback HTTP registration without relaxing other hosts', () => {
     expect(validateOAuthClientRegistration(provider, {
       name: 'Native development app',

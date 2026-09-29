@@ -188,6 +188,14 @@ describe('OAuth authorization request validation', () => {
     }
   })
 
+  it('does not reflect oversized state into a callback or persist it for consent', () => {
+    const error = captureError({ state: 's'.repeat(4097) })
+
+    expect(error.code).toBe('invalid_request')
+    expect(error.redirectUri).toBe(validRequest.redirectUri)
+    expect(error.state).toBeNull()
+  })
+
   it('allows only absolute HTTPS redirects, with exact loopback HTTP for development', () => {
     const loopback = {
       ...client,

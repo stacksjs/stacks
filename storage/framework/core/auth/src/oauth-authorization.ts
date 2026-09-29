@@ -107,7 +107,7 @@ export function parseOAuthAuthorizationRequest(
 
 /** Whether a registered callback is safe for exact redirect matching. */
 export function isValidOAuthRedirectUri(value: string): boolean {
-  if (value.includes('*'))
+  if (value.length > 2048 || value.includes('*'))
     return false
 
   let url: URL
@@ -205,6 +205,9 @@ export function validateOAuthAuthorizationRequest(
 
   const state = typeof input.state === 'string' ? input.state : null
   const redirectUri = input.redirectUri
+
+  if (state !== null && state.length > 4096)
+    reject('invalid_request', 'OAuth authorization request state exceeds 4096 characters.', redirectUri)
 
   if (input.responseType !== 'code')
     reject('unsupported_response_type', 'Only response_type=code is supported.', redirectUri, state)
