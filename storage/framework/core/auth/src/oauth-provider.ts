@@ -3,6 +3,7 @@ import type {
   OAuthProviderResourceConfig,
   OAuthProviderScopeConfig,
 } from '@stacksjs/types'
+import { oauthAuthorizationServerMetadataPath } from './oauth-metadata'
 
 const DEFAULT_LIFETIMES = {
   authorizationRequest: 10 * 60 * 1000,
@@ -208,6 +209,8 @@ export function resolveOAuthProviderConfig(
   }
   if (new Set(Object.values(endpoints)).size !== Object.keys(endpoints).length)
     throw new Error('auth.oauthProvider endpoints must each use a unique URL.')
+  if (new URL(endpoints.authorization).pathname === oauthAuthorizationServerMetadataPath(issuer.toString()))
+    throw new Error('auth.oauthProvider authorization endpoint must not shadow the metadata route.')
 
   return {
     enabled: true,

@@ -95,6 +95,11 @@ describe('OAuth authorization server configuration', () => {
       issuer: 'https://id.example.com',
       endpoints: { token: '/oauth/revoke' },
     })).toThrow('unique URL')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com/tenant/acme',
+      endpoints: { authorization: '/.well-known/oauth-authorization-server/tenant/acme' },
+    })).toThrow('metadata route')
   })
 
   it('allows plain HTTP only for loopback development issuers', () => {
