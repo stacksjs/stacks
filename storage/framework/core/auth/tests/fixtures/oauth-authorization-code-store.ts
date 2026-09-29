@@ -736,6 +736,26 @@ try {
     authorizationCodeLifetimeMs: 60_000,
   })).ok, true)
 
+  const failedWorkspaceResolutionRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await assert.rejects(approveOAuthAuthorizationRequestSession({
+    provider,
+    requestId: failedWorkspaceResolutionRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'stale-workspace',
+    resolveWorkspaceId: async () => {
+      await db.insertInto('issued_markers').values({ marker: 'workspace-resolution-must-roll-back' }).execute()
+      throw new Error('synthetic workspace resolution failure')
+    },
+    authorizationCodeLifetimeMs: 60_000,
+  }), /synthetic workspace resolution failure/)
+  assert.equal(await db.selectFrom('issued_markers')
+    .where('marker', '=', 'workspace-resolution-must-roll-back')
+    .select('marker')
+    .executeTakeFirst(), undefined)
+  assert(await loadOAuthAuthorizationRequestSession(failedWorkspaceResolutionRequestId, browserSession), 'failed workspace resolution must not consume the request')
+
   const publicExchangeRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const publicConsent = await approveOAuthAuthorizationRequestSession({
     provider,

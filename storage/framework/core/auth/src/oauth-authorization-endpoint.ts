@@ -285,16 +285,14 @@ export async function handleOAuthAuthorizationConsentRequest(
 
   let approved
   try {
-    const workspaceId = input.resolveWorkspaceId
-      ? await input.resolveWorkspaceId()
-      : input.workspaceId
     approved = await approveOAuthAuthorizationRequestSession({
       provider: input.provider,
       requestId: consent.requestId,
       browserSessionId,
       subjectType: input.subjectType,
       subjectId: input.subjectId,
-      workspaceId,
+      workspaceId: input.workspaceId,
+      resolveWorkspaceId: input.resolveWorkspaceId,
       authorizationCodeLifetimeMs: input.provider.lifetimes.authorizationCode,
     })
   }

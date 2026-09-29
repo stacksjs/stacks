@@ -23,6 +23,8 @@ export interface ApproveOAuthAuthorizationRequestSessionInput {
   subjectType: string
   subjectId: number
   workspaceId?: string | null
+  /** Recheck current workspace authority inside the approval transaction. */
+  resolveWorkspaceId?: () => Promise<string | null>
   authorizationCodeLifetimeMs: number
 }
 
@@ -348,6 +350,9 @@ export async function approveOAuthAuthorizationRequestSession(
 
   return withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request) => {
     assertOAuthAuthorizationProviderPolicy(input.provider, request)
+    const workspaceId = input.resolveWorkspaceId
+      ? await input.resolveWorkspaceId()
+      : input.workspaceId
     const grant = await createOAuthGrant({
       clientId: Number(request.clientId),
       subjectType: input.subjectType,
@@ -355,7 +360,7 @@ export async function approveOAuthAuthorizationRequestSession(
       scopes: request.scopes,
       resources: request.resources,
       audiences: request.audiences,
-      workspaceId: input.workspaceId,
+      workspaceId,
     })
     const code = await issueAuthorizationCode({
       grantId: grant.id,
