@@ -186,6 +186,15 @@ function generateSecureToken(bytes: number = 40): string {
  */
 export const DEFAULT_TOKENABLE_TYPE = 'users'
 
+export interface TokenOwnerCredentialState {
+  exists: boolean
+  passwordChangedAt: Date | null
+}
+
+function databaseBoolean(value: unknown): boolean {
+  return value === true || value === 1 || value === 1n || value === '1' || value === 't'
+}
+
 /**
  * The token tables, as these queries select them.
  *
@@ -238,60 +247,95 @@ function delegatedContext(row: AccessTokenRow): Pick<AccessToken, 'grantId' | 'r
   }
 }
 
-export async function getPasswordChangedAt(
+export async function getTokenOwnerCredentialState(
   ownerId: unknown,
   q: { unsafe: (sql: string, params?: any[]) => any } = db,
   ownerType: string = DEFAULT_TOKENABLE_TYPE,
-): Promise<Date | null> {
+): Promise<TokenOwnerCredentialState> {
   const { isMysql, isPostgres, param } = tokenSql()
   if (ownerId === null || ownerId === undefined)
-    return null
+    return { exists: false, passwordChangedAt: null }
   // The polymorphic discriminator is a table name, not SQL. Escape its quote
   // delimiter while keeping the owner ID bound as a query parameter.
   const quote = isMysql ? '`' : '"'
   const table = `${quote}${ownerType.replaceAll(quote, quote + quote)}${quote}`
+  const readOwner = async (includePasswordStamp: boolean): Promise<TokenOwnerCredentialState> => {
+    const rows = await q.unsafe(`
+      SELECT ${includePasswordStamp ? 'id, password_changed_at' : 'id'} FROM ${table} WHERE id = ${param(1)} LIMIT 1
+    `, [ownerId]) as Array<{ id?: unknown, password_changed_at?: unknown }>
+    const row = rows[0]
+    if (!row)
+      return { exists: false, passwordChangedAt: null }
+    const value = row.password_changed_at
+    return {
+      exists: true,
+      passwordChangedAt: value === null || value === undefined ? null : parseSqlDateTime(value),
+    }
+  }
   try {
     if (isMysql) {
       // This stamp is optional on legacy models. Check existence instead of
       // preparing an invalid query: MySQL drivers can retain a failed prepare
       // even after a later schema upgrade adds the missing table or column.
-      const columns = await q.unsafe(`
-        SELECT 1 FROM information_schema.columns
-        WHERE table_schema = DATABASE() AND table_name = ?
-        AND column_name = 'password_changed_at'
-      `, [ownerType])
-      if ((columns as unknown[]).length === 0)
-        return null
+      const rows = await q.unsafe(`
+        SELECT
+          EXISTS(SELECT 1 FROM information_schema.tables
+            WHERE table_schema = DATABASE() AND table_name = ?) AS table_exists,
+          EXISTS(SELECT 1 FROM information_schema.columns
+            WHERE table_schema = DATABASE() AND table_name = ?
+            AND column_name = 'password_changed_at') AS stamp_exists
+      `, [ownerType, ownerType])
+      const schema = (rows as Array<{ table_exists?: unknown, stamp_exists?: unknown }>)[0]
+      if (!databaseBoolean(schema?.table_exists))
+        return { exists: false, passwordChangedAt: null }
+      return readOwner(databaseBoolean(schema?.stamp_exists))
     }
     else if (isPostgres && q !== db) {
       // A missing optional column aborts a PostgreSQL transaction even when
       // its error is caught. Probe without raising before using a tx runner.
-      const columns = await q.unsafe(`
-        SELECT 1 FROM pg_attribute
-        WHERE attrelid = to_regclass($1) AND attname = 'password_changed_at'
-        AND attnum > 0 AND NOT attisdropped
+      const rows = await q.unsafe(`
+        SELECT
+          to_regclass($1) IS NOT NULL AS table_exists,
+          EXISTS(SELECT 1 FROM pg_attribute
+            WHERE attrelid = to_regclass($1) AND attname = 'password_changed_at'
+            AND attnum > 0 AND NOT attisdropped) AS stamp_exists
       `, [table])
-      if ((columns as unknown[]).length === 0)
-        return null
+      const schema = (rows as Array<{ table_exists?: unknown, stamp_exists?: unknown }>)[0]
+      if (!databaseBoolean(schema?.table_exists))
+        return { exists: false, passwordChangedAt: null }
+      return readOwner(databaseBoolean(schema?.stamp_exists))
     }
-    const rows = await q.unsafe(`
-      SELECT password_changed_at FROM ${table} WHERE id = ${param(1)} LIMIT 1
-    `, [ownerId])
-    const value = (rows as unknown as AccessTokenRow[])[0]?.password_changed_at
-    if (value === null || value === undefined)
-      return null
-    return parseSqlDateTime(value)
+    return await readOwner(true)
   }
   catch (error) {
-    // Only absent legacy schema is compatible with a null stamp. Losing
+    // Only absent legacy schema is compatible with a missing stamp. Losing
     // access to existing credential state must never authorize a token.
     const message = error instanceof Error ? error.message : String(error)
     const missingColumn = /^(?:no such column: password_changed_at|column "password_changed_at" does not exist)$/im.test(message)
     const missingOwner = message === `no such table: ${ownerType}` || message === `relation "${ownerType}" does not exist`
-    if (missingColumn || missingOwner)
-      return null
+    if (missingOwner)
+      return { exists: false, passwordChangedAt: null }
+    if (missingColumn) {
+      try {
+        return await readOwner(false)
+      }
+      catch (fallbackError) {
+        const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+        if (fallbackMessage === `no such table: ${ownerType}` || fallbackMessage === `relation "${ownerType}" does not exist`)
+          return { exists: false, passwordChangedAt: null }
+        throw fallbackError
+      }
+    }
     throw error
   }
+}
+
+export async function getPasswordChangedAt(
+  ownerId: unknown,
+  q: { unsafe: (sql: string, params?: any[]) => any } = db,
+  ownerType: string = DEFAULT_TOKENABLE_TYPE,
+): Promise<Date | null> {
+  return (await getTokenOwnerCredentialState(ownerId, q, ownerType)).passwordChangedAt
 }
 
 /**

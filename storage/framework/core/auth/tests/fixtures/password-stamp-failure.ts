@@ -21,7 +21,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   }, queryLogging: { enabled: false },
 } })
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken, findToken, refreshToken, getPasswordChangedAt } = await import('../../src/tokens')
+const { createToken, findToken, refreshToken, getPasswordChangedAt, getTokenOwnerCredentialState } = await import('../../src/tokens')
 const failures: string[] = []
 async function check(name: string, run: () => Promise<void>) {
   try { await run() }
@@ -29,6 +29,18 @@ async function check(name: string, run: () => Promise<void>) {
 }
 
 try {
+  if (dialect === 'sqlite') {
+    const queries: string[] = []
+    const owner = await getTokenOwnerCredentialState(1, {
+      unsafe(sql: string) {
+        queries.push(sql)
+        return [{ id: 1, password_changed_at: null }]
+      },
+    })
+    assert.deepEqual(owner, { exists: true, passwordChangedAt: null })
+    assert.equal(queries.length, 1, 'owner existence and password stamp share one normal-schema read')
+  }
+
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
   await db.insertInto('users').values({ id: 1 }).execute()
   await ensureFrameworkAuthTables()

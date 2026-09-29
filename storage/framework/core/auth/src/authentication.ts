@@ -74,16 +74,6 @@ function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
 
-async function userTokenOwnerExists(userId: unknown): Promise<boolean> {
-  if (userId === null || userId === undefined)
-    return false
-  const owner = await db.primary.selectFrom('users')
-    .where('id', '=', userId as number)
-    .select('id')
-    .executeTakeFirst()
-  return owner !== undefined
-}
-
 /**
  * The activity columns of an `oauth_access_tokens` row, as a raw read returns
  * them. `unknown` on purpose: `db.primary` rows are untyped, and the
@@ -121,7 +111,7 @@ async function revokeObservedIdleAccessToken(accessToken: AccessTokenActivity): 
 
   await revoke.execute()
 }
-import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, deleteRevokedTokens, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
+import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, deleteRevokedTokens, getPasswordChangedAt, getTokenOwnerCredentialState, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -744,13 +734,14 @@ export class Auth {
     // Resolve the owner only after the credential's own cheap rejection
     // checks. Revoked and expired rows are already unusable and must not add an
     // avoidable users-table query to a common denial path.
-    if (!await userTokenOwnerExists(accessToken.tokenable_id))
+    const owner = await getTokenOwnerCredentialState(accessToken.tokenable_id)
+    if (!owner.exists)
       return false
 
     // Reject tokens issued before the user last changed their password
     // (stacksjs/stacks#1957). Binds validity to the durable users row,
     // so a stolen token survives neither a reset nor the sweep gap.
-    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
+    if (isIssuedBeforePasswordChange(accessToken.created_at, owner.passwordChangedAt))
       return false
 
     // An idle credential is already invalid. Revoke only the activity version
@@ -889,9 +880,6 @@ export class Auth {
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE || accessToken.revoked)
       return undefined
 
-    if (!await userTokenOwnerExists(accessToken.tokenable_id))
-      return undefined
-
     if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
       return undefined
 
@@ -900,7 +888,8 @@ export class Auth {
     if (idleMs > 0 && lastSeen && Date.now() - lastSeen.getTime() > idleMs)
       return undefined
 
-    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
+    const owner = await getTokenOwnerCredentialState(accessToken.tokenable_id)
+    if (!owner.exists || isIssuedBeforePasswordChange(accessToken.created_at, owner.passwordChangedAt))
       return undefined
 
     const token = this.tokenFromRow(accessToken)
