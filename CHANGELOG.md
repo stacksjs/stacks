@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.30...v0.75.31)
+
+## 🐛 Bug Fixes
+
+- **auth**: enforce password reset throttle ([001481a](https://github.com/stacksjs/stacks/commit/001481a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **mobile**: centre the tab bar's tabs instead of pinning them to its top border ([39209eb](https://github.com/stacksjs/stacks/commit/39209eb)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: isolate magic-link throttling ([49887c8](https://github.com/stacksjs/stacks/commit/49887c8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject orphaned user tokens ([c53211c](https://github.com/stacksjs/stacks/commit/c53211c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind session renewal to owner ([cb0276b](https://github.com/stacksjs/stacks/commit/cb0276b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind verification tokens to email ([e633c52](https://github.com/stacksjs/stacks/commit/e633c52)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: send verification to current owner ([f311cc2](https://github.com/stacksjs/stacks/commit/f311cc2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: canonicalize magic-link owners ([4580699](https://github.com/stacksjs/stacks/commit/4580699)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: canonicalize password recovery emails ([5fce036](https://github.com/stacksjs/stacks/commit/5fce036)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: match legacy social accounts canonically ([25387b1](https://github.com/stacksjs/stacks/commit/25387b1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: resolve canonical passkey accounts ([3778868](https://github.com/stacksjs/stacks/commit/3778868)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: require stx 0.2.339, where browser composables load again ([bac10cd](https://github.com/stacksjs/stacks/commit/bac10cd)) _(by Chris <chris@stacksjs.com>)_
+- release through @stacksjs/bumpx, not the unrelated npm 'bumpx' ([b30f234](https://github.com/stacksjs/stacks/commit/b30f234)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.29...v0.75.30)
 
 ## 🐛 Bug Fixes
