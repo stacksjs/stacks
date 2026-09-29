@@ -146,6 +146,51 @@ describe('createStacksRouter - group()', () => {
     const routes = router.bunRouter.routes
     expect(routes.some((r: any) => r.method === 'GET' && r.path === '/api/v1/items')).toBe(true)
   })
+
+  test('restores group state before rethrowing a synchronous registration error', async () => {
+    const router = createStacksRouter({ autoDiscoverRoutes: false })
+    const failure = new Error('registration failed')
+
+    expect(() => router.group({ prefix: '/failed', middleware: 'auth', apiResponse: true }, () => {
+      throw failure
+    })).toThrow(failure)
+
+    router.get('/public', () => 'ok')
+    expect(router.routes.some(route => route.path === '/public')).toBe(true)
+    expect(router.routes.some(route => route.path === '/failed/public')).toBe(false)
+
+    const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.port}/public`, {
+        headers: { accept: 'text/html' },
+      })
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).not.toContain('application/json')
+      expect(await response.text()).toBe('ok')
+    }
+    finally {
+      server.stop()
+    }
+  })
+
+  test('restores a failed nested group to its enclosing group', () => {
+    const router = createStacksRouter()
+
+    router.group({ prefix: '/api' }, () => {
+      try {
+        router.group({ prefix: '/failed' }, () => {
+          throw new Error('nested registration failed')
+        })
+      }
+      catch {}
+      router.get('/still-grouped', () => new Response('ok'))
+    })
+    router.get('/outside', () => new Response('ok'))
+
+    expect(router.routes.some(route => route.path === '/api/still-grouped')).toBe(true)
+    expect(router.routes.some(route => route.path === '/api/failed/still-grouped')).toBe(false)
+    expect(router.routes.some(route => route.path === '/outside')).toBe(true)
+  })
 })
 
 // ============================================================================

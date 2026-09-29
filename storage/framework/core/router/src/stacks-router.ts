@@ -4848,6 +4848,11 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       const previousPrefix = currentPrefix
       const previousMiddleware = [...currentGroupMiddleware]
       const previousApiResponse = currentGroupApiResponse
+      const restoreGroupState = () => {
+        currentPrefix = previousPrefix
+        currentGroupMiddleware = previousMiddleware
+        currentGroupApiResponse = previousApiResponse
+      }
 
       // Apply prefix
       if (options.prefix) {
@@ -4871,8 +4876,14 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
       log.debug(`[router] Entering group: prefix=${options.prefix || '/'} middleware=[${middlewareList?.join(', ') || ''}]${currentGroupApiResponse ? ' apiResponse=true' : ''}`)
 
-      // Call the callback
-      const result = callback()
+      let result: void | Promise<void>
+      try {
+        result = callback()
+      }
+      catch (error) {
+        restoreGroupState()
+        throw error
+      }
 
       // For async callbacks that need to import files, we need to wait
       // But for regular async callbacks (with sync route registrations inside),
@@ -4880,23 +4891,11 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       if (result instanceof Promise) {
         // Check if this is a dynamic import scenario (route-loader)
         // by returning a promise that properly waits
-        return result.then(() => {
-          currentPrefix = previousPrefix
-          currentGroupMiddleware = previousMiddleware
-          currentGroupApiResponse = previousApiResponse
-          return stacksRouter
-        }).catch((err) => {
-          currentPrefix = previousPrefix
-          currentGroupMiddleware = previousMiddleware
-          currentGroupApiResponse = previousApiResponse
-          throw err
-        })
+        return result.then(() => stacksRouter).finally(restoreGroupState)
       }
 
       // Sync callback - restore state immediately
-      currentPrefix = previousPrefix
-      currentGroupMiddleware = previousMiddleware
-      currentGroupApiResponse = previousApiResponse
+      restoreGroupState()
       return stacksRouter
     },
 
