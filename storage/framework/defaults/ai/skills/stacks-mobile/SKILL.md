@@ -113,6 +113,11 @@ await withNativeFeedback(() => saveActivity())
 The runtime is browser-safe. Craft-backed operations use the native bridge;
 supported web APIs provide fallback behavior outside a native host.
 
+For a run or ride, `createRouteRecorder({ location, onUpdate })` starts, pauses,
+resumes and stops the native recording, re-attaches to one that outlived the
+app (`attach()`), and reports live distance and pace from `routeStats(fixes)`,
+which ignores GPS drift, inaccurate fixes and the ground crossed during a pause.
+
 ## STX components
 
 - `<NativeAppShell>` applies iOS safe-area insets and reserves tab-bar space.

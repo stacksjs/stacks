@@ -1,22 +1,43 @@
 <script client>
-import { network } from '@stacksjs/mobile'
+import { lifecycle, network, whenNativeMobile } from '@stacksjs/mobile'
 import { onDestroy, onMount } from 'stx'
 
 const className = useReactiveProp<string>('class', '')
 const offlineLabel = useReactiveProp<string>('offlineLabel', 'You are offline. Changes will sync automatically.')
 const connected = state(true)
 let removeListener: (() => void) | null = null
+let removeLifecycle: (() => void) | null = null
 
 function applyStatus(status: { isConnected: boolean }): void {
   connected.set(status.isConnected)
 }
 
+// Asking can fail (the bridge not ready yet at launch, a request that timed
+// out): that is no answer, not "offline". Treating it as offline stuck the
+// banner on screen while everything was loading fine.
+function refresh(): void {
+  void network.getStatus().then(applyStatus).catch(() => {})
+}
+
 onMount(() => {
-  void network.getStatus().then(applyStatus).catch(() => connected.set(false))
+  refresh()
   removeListener = network.onChange(applyStatus)
+  // Once the native host is there, ask it; and again whenever the app comes
+  // back to the front, where a change may have gone by unseen.
+  void whenNativeMobile().then(native => native && refresh())
+  removeLifecycle = lifecycle.onStateChange((appState) => {
+    if (appState === 'active') refresh()
+  })
 })
 
-onDestroy(() => removeListener?.())
+// The webview's own view, for the moments the host has not spoken yet.
+useEventListener('online', () => connected.set(true))
+useEventListener('offline', () => refresh())
+
+onDestroy(() => {
+  removeListener?.()
+  removeLifecycle?.()
+})
 </script>
 
 <!--

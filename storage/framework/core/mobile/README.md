@@ -76,6 +76,33 @@ const hrv = await health.getDailyStatistics('heartRateVariability', { startDate:
 
 Both are iOS only for now; on Android they reject as unavailable.
 
+## Recording a route
+
+Craft records the route natively: fixes go to disk, keep coming with the screen
+locked (`capabilities.backgroundLocation`), and survive the app being closed.
+`createRouteRecorder` drives that recording and reads it back every few seconds
+while the page is in front, turning it into the numbers a runner watches:
+
+```ts
+import { createRouteRecorder, location, paceLabel } from '@stacksjs/mobile'
+
+const recorder = createRouteRecorder({
+  location,
+  onUpdate: stats => console.log(stats.distanceM, paceLabel(stats.paceSPerKm)),
+})
+
+await recorder.attach() ?? await recorder.start() // pick up a recording that outlived the app
+await recorder.pause()
+await recorder.resume()
+const fixes = await recorder.stop() // every fix, for the server to keep
+```
+
+`routeStats(fixes)` is the arithmetic on its own: distance counted from an
+anchor so GPS drift while standing still adds nothing, fixes less accurate than
+25 m left out, a gap of more than `ROUTE_GAP_S` (a pause) not counted as ground
+covered, moving time, and pace over the last 30 seconds and the whole route.
+`paceLabel` and `speedLabel` format min/km and km/h.
+
 ## Before the bridge arrives
 
 Craft installs `window.craft` once the page has finished loading, so

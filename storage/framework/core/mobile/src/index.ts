@@ -61,6 +61,7 @@ import type {
 
 export * from './gestures'
 export * from './navigation'
+export * from './route'
 export * from './types'
 
 export const biometrics: BiometricsApi = craftBiometrics
