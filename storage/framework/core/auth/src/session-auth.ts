@@ -267,11 +267,12 @@ async function deleteObservedOrphanedSession(
   await cleanup.execute()
 }
 
-async function sessionOwnerExists(userId: number): Promise<boolean> {
-  const owner = await db.primary.selectFrom('users')
+async function sessionOwnerExists(userId: number, lock = false): Promise<boolean> {
+  let query = db.primary.selectFrom('users')
     .where('id', '=', userId)
     .select('id')
-    .executeTakeFirst()
+  if (lock && getDatabaseDialect() !== 'sqlite') query = query.lockForUpdate()
+  const owner = await query.executeTakeFirst()
   return owner !== undefined
 }
 
@@ -385,7 +386,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
         if (!current) return false
       }
       const userId = session.user_id as number
-      if (!await sessionOwnerExists(userId)) {
+      if (!await sessionOwnerExists(userId, true)) {
         await deleteObservedOrphanedSession(sessionId, userId, session.expires_at)
         return false
       }
@@ -429,6 +430,8 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
         || Number(stored.last_activity) !== lastActivity
         || Date.now() >= Math.min(expiresAt, newExpiry.getTime()))
         throw new Error('[auth] Session renewal did not persist the requested credential.')
+      if (!await sessionOwnerExists(userId, true))
+        throw new Error('[auth] Session owner disappeared during renewal.')
       return true
     })
   }

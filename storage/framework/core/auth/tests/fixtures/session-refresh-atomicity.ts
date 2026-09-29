@@ -141,6 +141,33 @@ try {
       }
     })
   }
+  await check('owner loss during renewal rolls the change back', async () => {
+    const before = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
+    if (dialect === 'postgres') {
+      await db.unsafe('CREATE FUNCTION remove_session_owner() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN DELETE FROM users WHERE id = NEW.user_id; RETURN NEW; END; $$').execute()
+      await db.unsafe('CREATE TRIGGER remove_session_owner AFTER UPDATE ON sessions FOR EACH ROW EXECUTE FUNCTION remove_session_owner()').execute()
+    }
+    else if (dialect === 'mysql')
+      await db.unsafe('CREATE TRIGGER remove_session_owner AFTER UPDATE ON sessions FOR EACH ROW DELETE FROM users WHERE id = NEW.user_id').execute()
+    else
+      await db.unsafe('CREATE TRIGGER remove_session_owner AFTER UPDATE ON sessions BEGIN DELETE FROM users WHERE id = NEW.user_id; END').execute()
+    let renewed = false
+    let after: unknown
+    let owner: unknown
+    try {
+      renewed = await SessionAuth.refresh('target', 120_000)
+      after = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
+      owner = await db.primary.selectFrom('users').where('id', '=', 1).select('id').executeTakeFirst()
+    }
+    finally {
+      await db.unsafe(`DROP TRIGGER remove_session_owner${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
+      if (dialect === 'postgres') await db.unsafe('DROP FUNCTION remove_session_owner()').execute()
+      if (!owner) await db.insertInto('users').values({ id: 1 }).execute()
+    }
+    assert.equal(renewed, false, 'a renewal must not survive its owner')
+    assert.deepEqual(after, before)
+    assert(owner, 'failed renewal must restore its owner')
+  })
   await check('a TTL shorter than stored clock precision cannot expire an active session', async () => {
     const before = await db.primary.selectFrom('sessions').where('id', '=', 'target').selectAll().executeTakeFirstOrThrow()
     assert.equal(await SessionAuth.refresh('target', 0.1), false)
