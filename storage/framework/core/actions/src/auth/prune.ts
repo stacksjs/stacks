@@ -1,6 +1,9 @@
 import process from 'node:process'
-import { pruneOAuthAuthorizationArtifacts } from '@stacksjs/auth'
-import { db, sql } from '@stacksjs/database/runtime'
+import {
+  deleteExpiredTokens,
+  deleteRevokedTokens,
+  pruneOAuthAuthorizationArtifacts,
+} from '@stacksjs/auth'
 import { log } from '@stacksjs/logging'
 
 // Parse arguments from process.argv
@@ -39,9 +42,7 @@ let oauthCount = 0
 if (pruneExpired) {
   log.info('Removing expired tokens...')
 
-  expiredCount = await db.deleteFrom('personal_access_tokens')
-    .where('expires_at', '<', sql.raw('NOW()'))
-    .execute()
+  expiredCount = await deleteExpiredTokens()
 
   log.success(`Removed ${expiredCount} expired token(s)`)
 
@@ -57,13 +58,7 @@ if (pruneExpired) {
 if (pruneRevoked) {
   log.info(`Removing tokens revoked more than ${daysOld} day(s) ago...`)
 
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - daysOld)
-
-  revokedCount = await db.deleteFrom('personal_access_tokens')
-    .whereNotNull('revoked_at')
-    .where('revoked_at', '<', cutoffDate.toISOString())
-    .execute()
+  revokedCount = await deleteRevokedTokens(daysOld)
 
   log.success(`Removed ${revokedCount} revoked token(s)`)
 }
