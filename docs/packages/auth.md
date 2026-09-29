@@ -63,7 +63,6 @@ export default {
     // secure: true, // defaults from the configured app URL
   },
   tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
-  tokenRotation: 24, // Rotate after 24 hours
 
   // Password requirements
   password: {
@@ -279,6 +278,10 @@ await Auth.revokeOtherTokens(userId)
 // Rotate token (refresh)
 const newToken = await Auth.rotateToken(oldToken)
 ```
+
+Rotation is explicit because the caller must return the replacement bearer to
+the client. Validation never rotates a token behind the client's back. Use a
+refresh-token exchange for ordinary long-lived sessions.
 
 Individual revocation updates an access token and its paired refresh tokens in
 one transaction. If storage rejects either update, neither change is committed

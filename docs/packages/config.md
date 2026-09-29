@@ -424,7 +424,6 @@ export default {
 
   // Token settings
   tokenExpiry: 30 _ 24 _ 60 _ 60 _ 1000, // 30 days
-  tokenRotation: 24, // hours
   defaultTokenName: 'auth-token',
   defaultAbilities: ['_'],
 

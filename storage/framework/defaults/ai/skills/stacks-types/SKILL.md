@@ -29,7 +29,7 @@ interface AuthConfig {
   username: string
   password: string
   tokenExpiry: number           // 30 days
-  tokenRotation: number         // 7 days
+  tokenRotation?: number        // deprecated; rotate explicitly
   defaultAbilities: string[]
   defaultTokenName: string
 }

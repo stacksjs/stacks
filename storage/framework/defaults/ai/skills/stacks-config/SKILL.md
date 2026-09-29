@@ -66,7 +66,7 @@ they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
 | File | Type | Key Settings |
 |------|------|-------------|
 | `app.ts` | AppConfig | name, env, url, debug, key, timezone, locale |
-| `auth.ts` | AuthConfig | guards, providers, tokenExpiry(30d), tokenRotation(7d), passwordReset |
+| `auth.ts` | AuthConfig | guards, providers, token and browser-session lifetimes, passwordReset |
 | `database.ts` | DatabaseConfig | default driver, connections (sqlite/mysql/postgres/dynamodb), queryLogging |
 | `cache.ts` | CacheConfig | driver('memory'), ttl(3600), maxKeys(-1), redis config |
 | `env.ts` | EnvConfig | validation schemas for env vars |

@@ -441,7 +441,6 @@ export default {
   username: 'email',
   password: 'password',
   tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
-  tokenRotation: 24, // hours
 
   passwordReset: {
     expire: 60, // minutes

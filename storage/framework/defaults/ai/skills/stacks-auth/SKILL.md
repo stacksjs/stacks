@@ -395,7 +395,6 @@ await authUser.authorize('edit-post', post)  // throws if denied
     withRefreshToken: false, // fixed browser lifetime, no unused refresh token
     logoutRedirect: '/login?logged_out=1', // local path for HTML logout only
   },
-  tokenRotation: 24,       // hours
   defaultAbilities: ['*'],
   defaultTokenName: 'auth-token',
   passwordReset: { expire: 60, throttle: 60 }
