@@ -88,6 +88,25 @@ try {
   }
 
   await db.updateTable('users').set({ password_changed_at: null }).where('id', '=', 1).execute()
+  const orphaned = await createToken(1, 'orphaned-session', ['posts:read'], { withRefreshToken: false })
+  await db.deleteFrom('users').where('id', '=', 1).execute()
+  try {
+    const req = enhanceRequest(new Request('https://abilities.invalid/account', {
+      headers: { authorization: `Bearer ${orphaned.plainTextToken}` },
+    }))
+    await runWithRequest(req, async () => {
+      assert.equal(await Auth.validateToken(orphaned.plainTextToken), false)
+      assert.equal(await Auth.currentAccessToken(), undefined)
+      assert.equal(await Auth.tokenCan('posts:read'), false)
+      assert.deepEqual(await Auth.tokenAbilities(), [])
+      assert.equal(await currentAccessToken(), null)
+    })
+  }
+  finally {
+    await db.insertInto('users').values({ id: 1, name: 'Fixture', email: 'abilities@example.invalid', password: 'unused' }).execute()
+  }
+
+  await db.updateTable('users').set({ password_changed_at: null }).where('id', '=', 1).execute()
   const active = await createToken(1, 'active-session', ['posts:read'], { withRefreshToken: false })
   for (const elapsed of [45_000, 90_000]) {
     setSystemTime(new Date(now.getTime() + elapsed))

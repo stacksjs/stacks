@@ -73,6 +73,16 @@ function authStateOrNull(): RequestAuthState | null {
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
+
+async function userTokenOwnerExists(userId: unknown): Promise<boolean> {
+  if (userId === null || userId === undefined)
+    return false
+  const owner = await db.primary.selectFrom('users')
+    .where('id', '=', userId as number)
+    .select('id')
+    .executeTakeFirst()
+  return owner !== undefined
+}
 import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
@@ -684,6 +694,9 @@ export class Auth {
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
       return false
 
+    if (!await userTokenOwnerExists(accessToken.tokenable_id))
+      return false
+
     log.debug(`[auth] Token validated for token#${accessToken.id}`)
 
     // An expired access credential can still own a live refresh grant.
@@ -833,6 +846,9 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE || accessToken.revoked)
+      return undefined
+
+    if (!await userTokenOwnerExists(accessToken.tokenable_id))
       return undefined
 
     if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
