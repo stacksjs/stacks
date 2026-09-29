@@ -83,7 +83,7 @@ try {
       const rows = await db.primary.selectFrom('email_verifications').where('user_id', '=', 1).selectAll().execute()
       assert.equal(rows.length, 1)
       const nonce = new URL(sent[0]!).pathname.split('/').pop()!
-      assert.equal(rows[0]!.token, createHmac('sha256', key).update(`1:${nonce}`).digest('hex'))
+      assert.equal(rows[0]!.token, createHmac('sha256', key).update(`1:${user.email}:${nonce}`).digest('hex'))
       assert.equal((await resendVerificationEmail(user)).success, false)
     })
   }

@@ -17,6 +17,7 @@ import { config } from '@stacksjs/config'
 import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
+import { normalizeAuthEmail } from './credential-user'
 import { authLinkBase } from './link-url'
 
 export interface EmailVerificationResult {
@@ -45,11 +46,12 @@ function getVerificationKey(): string {
 
 /**
  * Generate an HMAC-based verification token.
- * Uses the user ID and a random nonce so that each token is unique.
+ * Uses the user ID, current email ownership, and a random nonce so a token
+ * cannot verify a replacement address after the account email changes.
  */
-function generateVerificationToken(userId: number): { token: string, hash: string } {
+function generateVerificationToken(userId: number, email: string): { token: string, hash: string } {
   const nonce = randomBytes(32).toString('hex')
-  const payload = `${userId}:${nonce}`
+  const payload = `${userId}:${normalizeAuthEmail(email)}:${nonce}`
   const hash = createHmac('sha256', getVerificationKey()).update(payload).digest('hex')
   return { token: nonce, hash }
 }
@@ -57,8 +59,8 @@ function generateVerificationToken(userId: number): { token: string, hash: strin
 /**
  * Verify a token matches the stored hash
  */
-function verifyToken(userId: number, token: string, storedHash: string): boolean {
-  const payload = `${userId}:${token}`
+function verifyToken(userId: number, email: string, token: string, storedHash: string): boolean {
+  const payload = `${userId}:${normalizeAuthEmail(email)}:${token}`
   const hash = createHmac('sha256', getVerificationKey()).update(payload).digest('hex')
   const a = Buffer.from(hash)
   const b = Buffer.from(storedHash)
@@ -113,8 +115,6 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
 }
 
 async function prepareVerificationEmail(user: { id: number, email: string, name?: string }): Promise<() => Promise<void>> {
-  // Generate token
-  const { token, hash } = generateVerificationToken(user.id)
   const expiryMinutes = getExpiryMinutes()
   const createdAt = new Date()
   const expiresAt = new Date(createdAt.getTime() + expiryMinutes * 60 * 1000)
@@ -122,12 +122,13 @@ async function prepareVerificationEmail(user: { id: number, email: string, name?
   // A failed replacement must not destroy the user's previous working link.
   // Lock and read the owner here so a stale caller cannot send a credential
   // to an address that no longer belongs to this account.
-  const currentUser = await db.transaction(async () => {
+  const prepared = await db.transaction(async () => {
     let ownerQuery = db.primary.selectFrom('users').where('id', '=', user.id).selectAll()
     if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
     const owner = await ownerQuery.executeTakeFirst()
     if (!owner || typeof owner.email !== 'string' || !owner.email)
       throw new Error('[auth] Email verification owner no longer exists or has no email.')
+    const { token, hash } = generateVerificationToken(user.id, owner.email)
 
     await db
       .deleteFrom('email_verifications')
@@ -153,13 +154,16 @@ async function prepareVerificationEmail(user: { id: number, email: string, name?
       throw new Error('[auth] Email verification could not replace the token.')
 
     return {
-      id: Number(owner.id),
-      email: owner.email,
-      name: typeof owner.name === 'string' ? owner.name : user.name,
+      currentUser: {
+        id: Number(owner.id),
+        email: owner.email,
+        name: typeof owner.name === 'string' ? owner.name : user.name,
+      },
+      token,
     }
   })
 
-  return () => deliverVerificationEmail(currentUser, token, expiryMinutes)
+  return () => deliverVerificationEmail(prepared.currentUser, prepared.token, expiryMinutes)
 }
 
 async function deliverAfterCommit(deliver: () => Promise<void>): Promise<void> {
@@ -241,16 +245,16 @@ export async function verifyEmail(userId: number, token: string): Promise<EmailV
       return { success: false, message: 'Verification link has expired. Please request a new one.' }
     }
 
-    if (!verifyToken(userId, token, record.token as string))
-      return { success: false, message: 'Invalid verification link.' }
-
     // Lock the owner so deletion cannot turn the later UPDATE into a no-op.
     // MySQL's zero changed-row count also covers an already verified user,
     // so a mutation count alone cannot establish that the owner exists.
     let owner = db.primary.selectFrom('users').where('id', '=', userId).selectAll()
     if (getDatabaseDialect() !== 'sqlite') owner = owner.lockForUpdate()
     const user = await owner.executeTakeFirst()
-    if (!user)
+    if (!user || typeof user.email !== 'string' || !user.email)
+      return { success: false, message: 'Invalid verification link.' }
+
+    if (!verifyToken(userId, user.email, token, record.token as string))
       return { success: false, message: 'Invalid verification link.' }
 
     if (mutationCount(await claim.execute()) !== 1)

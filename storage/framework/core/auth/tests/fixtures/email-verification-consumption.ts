@@ -30,7 +30,8 @@ const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 const failures: string[] = []
 const now = new Date('2030-01-02T03:04:05.000Z')
 const token = 'synthetic-nonce'
-const hash = (nonce: string) => createHmac('sha256', signingKey).update(`1:${nonce}`).digest('hex')
+const ownerEmail = 'owner@example.invalid'
+const hash = (nonce: string, email: string = ownerEmail) => createHmac('sha256', signingKey).update(`1:${email}:${nonce}`).digest('hex')
 async function check(name: string, run: () => Promise<void>) {
   try { await run(); console.log(`PASS ${name}`) }
   catch (error) { failures.push(`${name}: ${error}`) }
@@ -38,11 +39,11 @@ async function check(name: string, run: () => Promise<void>) {
 async function seed(offset: number = 60_000) {
   await db.deleteFrom('email_verifications').execute()
   await db.deleteFrom('users').execute()
-  await db.insertInto('users').values({ id: 1 } as never).execute()
+  await db.insertInto('users').values({ id: 1, email: ownerEmail } as never).execute()
   await db.insertInto('email_verifications').values({ user_id: 1, token: hash(token), expires_at: sqlDateTime(new Date(now.getTime() + offset)) } as never).execute()
 }
 try {
-  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, email VARCHAR(255))').execute()
   await ensureFrameworkAuthTables()
   setSystemTime(now)
   // The shipped MySQL DATETIME column stores whole seconds, unlike the
@@ -67,6 +68,11 @@ try {
   await check('missing user cannot be verified', async () => {
     await seed()
     await db.deleteFrom('users').execute()
+    assert.equal((await verifyEmail(1, token)).success, false)
+  })
+  await check('an email change invalidates the issued token', async () => {
+    await seed()
+    await db.updateTable('users').set({ email: 'replacement@example.invalid' }).where('id', '=', 1).execute()
     assert.equal((await verifyEmail(1, token)).success, false)
   })
   await check('an already verified owner remains idempotent', async () => {
