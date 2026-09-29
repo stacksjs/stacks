@@ -170,7 +170,7 @@ export async function consumePendingTwoFactorSecret(userId: number): Promise<str
   const row = await db.primary
     .selectFrom('two_factor_pending_secrets')
     .where('user_id', '=', userId)
-    .selectAll()
+    .select(['secret', 'expires_at'])
     .executeTakeFirst()
 
   if (!row) return null
@@ -308,7 +308,7 @@ export async function consumeTwoFactorChallenge(challengeToken: string): Promise
   const row = await db.primary
     .selectFrom('two_factor_challenges')
     .where('id', '=', challengeToken)
-    .selectAll()
+    .select(['user_id', 'expires_at'])
     .executeTakeFirst()
 
   if (!row) return null
