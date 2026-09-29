@@ -38,6 +38,7 @@ route.post('/register', 'Actions/Auth/RegisterAction').rateLimit(3, 'minute')
 // config.auth.oauthProvider.enabled is explicitly true. PKCE or HTTP Basic is
 // the endpoint's credential boundary, so the action opts out of browser CSRF.
 route.post('/oauth/token', 'Actions/Auth/OAuthTokenAction').rateLimit(30, 'minute')
+route.post('/oauth/revoke', 'Actions/Auth/OAuthRevocationAction').rateLimit(30, 'minute')
 // Magic links (config.auth.magicLink.enabled gates both, 404 when off).
 // The send endpoint answers a uniform 202 either way (anti-enumeration
 // lives in sendMagicLink); the consume endpoint is a POST because email

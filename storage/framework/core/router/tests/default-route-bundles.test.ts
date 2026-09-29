@@ -70,6 +70,7 @@ const AUTH_ROUTES = [
   'POST /login',
   'POST /register',
   'POST /oauth/token',
+  'POST /oauth/revoke',
   'POST /logout-all',
   'POST /generate-two-factor-secret',
   'POST /password/forgot',
