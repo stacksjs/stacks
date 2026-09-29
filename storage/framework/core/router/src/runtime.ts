@@ -6,5 +6,5 @@
  * eagerly loading root-only sessions, signed URLs, model binding, and typed
  * client helpers.
  */
-export { response } from '@stacksjs/bun-router'
+export { response } from '@stacksjs/bun-router/runtime'
 export * from './stacks-router'

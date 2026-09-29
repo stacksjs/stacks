@@ -38,6 +38,13 @@ describe('router import graph', () => {
 
     expect(result.success).toBe(true)
     const inputs = Object.keys(result.metafile?.inputs ?? {})
+    expect(inputs.some(source => source.endsWith('/@stacksjs/bun-router/dist/runtime.js'))).toBe(true)
+    const runtimeEntries = Object.entries(result.metafile?.inputs ?? {})
+      .filter(([source]) => source.endsWith('/router/src/runtime.ts') || source.endsWith('/router/src/stacks-router.ts'))
+    const eagerRootImports = runtimeEntries.flatMap(([source, meta]) => meta.imports
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.original === '@stacksjs/bun-router')
+      .map(() => source))
+    expect(eagerRootImports).toEqual([])
     for (const module of [
       'encrypted-session-store.ts',
       // The `Middleware` class is a type here: an application that registers no

@@ -7,9 +7,8 @@
 
 import type { Server } from 'bun'
 import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
-import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareHandler as BunMiddlewareHandler, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
-import { response } from '@stacksjs/bun-router'
-import { ENRICHED_NOT_FOUND_RESPONSE } from '@stacksjs/bun-router/runtime'
+import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareHandler as BunMiddlewareHandler, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router/runtime'
+import { applyRequestEnhancements, applyResponseCompression, ENRICHED_NOT_FOUND_RESPONSE, response, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router/runtime'
 // Type-only: the sole value use was an `instanceof` check in
 // `adaptMiddlewareForBunRouter`, which now detects the same objects
 // structurally. An application that registers no global middleware therefore
@@ -25,7 +24,6 @@ import { existsSync } from 'node:fs'
 import { log, report } from '@stacksjs/logging/runtime'
 import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
-import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router'
 
 type QueryTracker = typeof import('./query-tracking').trackQuery
 const DATABASE_QUERY_TRACKER_KEY = Symbol.for('stacks.database.queryTracker')
