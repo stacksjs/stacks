@@ -26,7 +26,7 @@ import process from 'node:process'
 const routerEntry = process.env.BENCH_ROUTER_ENTRY ?? 'runtime'
 if (routerEntry !== 'runtime' && routerEntry !== 'root')
   throw new Error(`Unknown benchmark router entry: ${routerEntry}`)
-const { createStacksRouter, disableViewRouting } = routerEntry === 'root'
+const { createStacksRouter, disableViewRouting, response } = routerEntry === 'root'
   ? await import('@stacksjs/router')
   : await import('@stacksjs/router/runtime')
 
@@ -41,6 +41,7 @@ const benchmarkFlag = (name: string, fallback: boolean): boolean => {
   throw new Error(`${name} must be true or false, received ${value}`)
 }
 const withDb = process.env.BENCH_DB === '1'
+const staticResponse = benchmarkFlag('BENCH_STATIC_RESPONSE', false)
 const sqliteProfile = process.env.BENCH_SQLITE_PROFILE ?? 'stock'
 if (sqliteProfile !== 'stock' && sqliteProfile !== 'wal-full')
   throw new Error(`Unknown benchmark SQLite profile: ${sqliteProfile}`)
@@ -67,8 +68,12 @@ const router = createStacksRouter({
 // configuration to do the same.
 disableViewRouting(router.bunRouter)
 
-if (serves('static-json'))
-  router.get('/bench/json', () => ({ hello: 'world' }))
+if (serves('static-json')) {
+  if (staticResponse)
+    router.staticResponse('GET', '/bench/json', response.json({ hello: 'world' }))
+  else
+    router.get('/bench/json', () => ({ hello: 'world' }))
+}
 
 if (serves('path-param'))
   router.get('/bench/users/{id}', (req: any) => ({ id: req.params.id }))

@@ -92,6 +92,19 @@ describe('ablation targets stay reachable', () => {
     expect({ ...noContext.env }).toEqual({ ...minimal.env, BENCH_REQUEST_CONTEXT: 'false' })
   })
 
+  it('keeps explicit static-response dispatch separate from the stock Stacks rows', () => {
+    const target = TARGETS.find(candidate => candidate.id === 'stacks-static-response')
+    const source = readFileSync(new URL('./servers/stacks.ts', import.meta.url), 'utf8')
+
+    expect(target).toMatchObject({
+      server: 'stacks.ts',
+      env: { BENCH_STATIC_RESPONSE: 'true' },
+      optIn: true,
+    })
+    expect(DEFAULT_TARGETS.map(candidate => candidate.id)).not.toContain('stacks-static-response')
+    expect(source).toContain("router.staticResponse('GET', '/bench/json', response.json({ hello: 'world' }))")
+  })
+
   it('lets the routing diagnostic choose targets and repeat count without changing the defaults', () => {
     expect(workflow).toContain('      targets:')
     expect(workflow).toContain('      runs:')

@@ -34,6 +34,13 @@ export const TARGETS: readonly Target[] = [
     cookie: true,
   },
   {
+    id: 'stacks-static-response',
+    label: 'Stacks (explicit static-response dispatch)',
+    server: 'stacks.ts',
+    env: { BENCH_STATIC_RESPONSE: 'true' },
+    optIn: true,
+  },
+  {
     id: 'stacks-no-csrf',
     label: 'Stacks (request IDs and security headers on, CSRF off)',
     server: 'stacks.ts',
