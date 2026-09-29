@@ -4296,6 +4296,39 @@ export function resolveDmarcPolicy(policy: unknown): 'none' | 'quarantine' | 're
 }
 
 /**
+ * The Gmail Postmaster Tools verification TXT to publish, from
+ * `email.server.postmaster.google`.
+ *
+ * Accepts the value as Postmaster Tools shows it or the bare token, and
+ * returns the full `google-site-verification=<token>` record. Anything that is
+ * not a token (base64url) is refused rather than published: the value is
+ * interpolated into a TXT record, and a pasted fragment or a whole sentence
+ * would publish a record that verifies nothing, silently.
+ */
+export function resolvePostmasterRecord(value: unknown): string | undefined {
+  if (typeof value !== 'string')
+    return undefined
+  const token = value.trim().replace(/^"|"$/g, '').replace(/^google-site-verification=/i, '')
+  return /^[\w-]{20,}$/.test(token) ? `google-site-verification=${token}` : undefined
+}
+
+/**
+ * What to tell a deploy whose mail domain is not in Gmail Postmaster Tools.
+ *
+ * Authentication can pass everywhere and Gmail still file the mail as spam;
+ * Postmaster Tools is the only place that says why, and its verification value
+ * cannot be generated for an account. One line per deploy, naming the page and
+ * the config key, until the value is set or the project opts out with `false`.
+ */
+export function postmasterHint(domain: string, postmaster: unknown): string | undefined {
+  if (postmaster === false)
+    return undefined
+  if (postmaster && typeof postmaster === 'object' && resolvePostmasterRecord((postmaster as { google?: unknown }).google))
+    return undefined
+  return `Gmail Postmaster Tools: add ${domain} at https://postmaster.google.com/v2/u/0/add_domain, then set email.server.postmaster.google to the TXT value it shows; the next deploy publishes it (false silences this).`
+}
+
+/**
  * Normalize a provider's record name to a lowercase FQDN.
  *
  * Providers disagree: some return `_dmarc`, some `_dmarc.example.com.`, some
@@ -4445,6 +4478,12 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
   const rua = dmarcCfg.reportTo || fromAddress || firstBox || `chris@${domain}`
   const dmarc = `v=DMARC1; p=${resolveDmarcPolicy(dmarcCfg.policy)}; rua=mailto:${rua}`
   const dkim = dkimPubB64 ? `v=DKIM1; k=rsa; p=${dkimPubB64}` : undefined
+  // Gmail Postmaster Tools. The value comes from Google, per account, so it is
+  // published when configured and asked for when not (see `postmasterHint`).
+  const postmasterCfg = cfg.server?.postmaster
+  const postmaster = postmasterCfg ? resolvePostmasterRecord(postmasterCfg.google) : undefined
+  if (postmasterCfg && postmasterCfg.google && !postmaster)
+    logger.warn(`  Mail DNS: email.server.postmaster.google is not a Postmaster Tools token, so it was not published. Copy the TXT value Postmaster Tools shows for ${domain}.`)
 
   const byHand = (reason: string): void => {
     logger.warn(`Mail DNS not published for ${domain}: ${reason}`)
@@ -4453,6 +4492,7 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     logger.info(`  TXT   @                 ${spf}`)
     if (dkim) logger.info(`  TXT   ${dkimName.padEnd(17)}${dkim}`)
     logger.info(`  TXT   _dmarc            ${dmarc}`)
+    if (postmaster) logger.info(`  TXT   @                 ${postmaster}`)
     logger.info(`  A     mail              ${ip}`)
   }
 
@@ -4558,6 +4598,11 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     if (dkim)
       await replaceTxt(dkimFqdn, dkim, () => true)
     await replaceTxt(dmarcFqdn, dmarc, existing => existing.toLowerCase().startsWith('v=dmarc1'))
+    // Owns only its exact value: other google-site-verification records at the
+    // apex belong to Search Console, Workspace or another account's Postmaster,
+    // and a verification record removed is ownership lost without a word.
+    if (postmaster)
+      await replaceTxt(apex, postmaster, existing => existing === postmaster)
 
     // `mail.<domain>` pointing at the box, because that is the hostname a
     // person types into Mail.app or Outlook. Without it the name resolved to
@@ -4578,13 +4623,17 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
           { label: 'SPF', fqdn: apex, type: 'TXT', owns: content => content.toLowerCase().startsWith('v=spf1') },
           ...(dkim ? [{ label: 'DKIM', fqdn: dkimFqdn, type: 'TXT' }] : []),
           { label: 'DMARC', fqdn: dmarcFqdn, type: 'TXT', owns: content => content.toLowerCase().startsWith('v=dmarc1') },
+          ...(postmaster ? [{ label: 'Postmaster Tools', fqdn: apex, type: 'TXT', owns: (content: string) => content === postmaster }] : []),
         ], domain)
       : []
 
     for (const anomaly of anomalies)
       logger.warn(`  Mail DNS: ${anomaly}`)
 
-    logger.success(`Mail DNS published for ${domain} via ${provider.name} (MX→${mailHost}, SPF, DKIM at ${dkimName}, DMARC, ${mailFqdn}→${ip})`)
+    logger.success(`Mail DNS published for ${domain} via ${provider.name} (MX→${mailHost}, SPF, DKIM at ${dkimName}, DMARC, ${postmaster ? 'Postmaster Tools, ' : ''}${mailFqdn}→${ip})`)
+    const hint = postmasterHint(domain, postmasterCfg)
+    if (hint)
+      logger.info(`  ${hint}`)
   }
   catch (err) {
     logger.warn(`Mail DNS reconcile skipped for ${domain}: ${getErrorMessage(err)}`)

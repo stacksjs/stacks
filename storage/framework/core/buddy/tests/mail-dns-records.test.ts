@@ -27,7 +27,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { dnsProviderConfigsFromEnv, findMailDnsAnomalies, planTxtReplacement, resolveDmarcPolicy, selectRecordsAt, txtContent, zoneFqdn } from '../src/commands/deploy'
+import { dnsProviderConfigsFromEnv, findMailDnsAnomalies, planTxtReplacement, postmasterHint, resolveDmarcPolicy, resolvePostmasterRecord, selectRecordsAt, txtContent, zoneFqdn } from '../src/commands/deploy'
 
 /**
  * Mirrors the publisher's selector derivation. `mail` is the fallback only for
@@ -263,5 +263,52 @@ describe('DMARC policy', () => {
     // while the record appears to exist.
     for (const bad of ['quaranine', 'NONE', 'p=none', '', null, 0, {}])
       expect(resolveDmarcPolicy(bad)).toBe('quarantine')
+  })
+})
+
+/**
+ * Gmail Postmaster Tools verification.
+ *
+ * With SPF, DKIM and DMARC all passing, Gmail can still file a domain's mail
+ * as spam, and Postmaster Tools is the only place that says why. Its value is
+ * issued per Google account, so the deploy publishes it when configured and
+ * asks for it when not. Publishing it must never cost another verification
+ * record at the apex: Search Console and Workspace use the same prefix.
+ */
+describe('Gmail Postmaster Tools record', () => {
+  const token = 'tEYT8VqGcB7WEF_vRq55p8HWJhmL0rD-uqIjM8fNbKg'
+
+  it('takes the value as Postmaster Tools shows it, or the bare token', () => {
+    expect(resolvePostmasterRecord(`google-site-verification=${token}`)).toBe(`google-site-verification=${token}`)
+    expect(resolvePostmasterRecord(token)).toBe(`google-site-verification=${token}`)
+    expect(resolvePostmasterRecord(`  "google-site-verification=${token}"  `)).toBe(`google-site-verification=${token}`)
+  })
+
+  it('refuses anything that is not a token rather than publish a record that verifies nothing', () => {
+    expect(resolvePostmasterRecord(undefined)).toBeUndefined()
+    expect(resolvePostmasterRecord('')).toBeUndefined()
+    expect(resolvePostmasterRecord('google-site-verification=')).toBeUndefined()
+    expect(resolvePostmasterRecord('paste the TXT value here')).toBeUndefined()
+    expect(resolvePostmasterRecord('tEYT8Vq')).toBeUndefined()
+  })
+
+  it('never removes another Google verification at the apex', () => {
+    const record = `google-site-verification=${token}`
+    const searchConsole = { name: 'example.com', type: 'TXT', content: 'google-site-verification=SearchConsoleTokenAbcdefghijklmn' }
+    const spf = { name: 'example.com', type: 'TXT', content: 'v=spf1 ip4:1.2.3.4 ~all' }
+
+    const fresh = planTxtReplacement([searchConsole, spf], record, existing => existing === record)
+    expect(fresh).toEqual({ remove: [], create: true })
+
+    const already = planTxtReplacement([searchConsole, spf, { name: 'example.com', type: 'TXT', content: record }], record, existing => existing === record)
+    expect(already).toEqual({ remove: [], create: false })
+  })
+
+  it('asks for the value until it is set, and stays quiet when told to', () => {
+    expect(postmasterHint('example.com', undefined)).toContain('postmaster.google.com')
+    expect(postmasterHint('example.com', undefined)).toContain('email.server.postmaster.google')
+    expect(postmasterHint('example.com', { google: 'not a token' })).toBeDefined()
+    expect(postmasterHint('example.com', { google: token })).toBeUndefined()
+    expect(postmasterHint('example.com', false)).toBeUndefined()
   })
 })

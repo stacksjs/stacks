@@ -53,6 +53,13 @@ export default {
     enabled: true,
     scan: true, // scans for spam and viruses
     subdomain: 'mail', // mail.stacksjs.com
+    /**
+     * Gmail Postmaster Tools for stacksjs.com (added under chrisbreuer93@gmail.com).
+     * Every deploy keeps this TXT published at the apex.
+     */
+    postmaster: {
+      google: 'google-site-verification=tEYT8VqGcB7WEF_vRq55p8HWJhmL0rD-uqIjM8fNbKg',
+    },
 
     /**
      * Server mode:

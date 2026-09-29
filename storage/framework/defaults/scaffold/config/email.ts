@@ -19,5 +19,9 @@ export default {
     enabled: false,
     scan: true,
     subdomain: 'mail',
+    // Gmail Postmaster Tools shows how Gmail receives your mail. Add your
+    // domain at https://postmaster.google.com, paste the TXT value it shows,
+    // and every deploy keeps it published.
+    // postmaster: { google: 'google-site-verification=...' },
   },
 } satisfies EmailConfig

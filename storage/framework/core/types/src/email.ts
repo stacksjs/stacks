@@ -274,6 +274,25 @@ export interface EmailServerConfig {
     reportTo?: string
   }
 
+  /**
+   * Gmail Postmaster Tools, which reports how Gmail receives this domain's
+   * mail: spam rate, reputation, authentication. It is the only view of why
+   * Gmail files mail as spam when SPF, DKIM and DMARC all pass.
+   *
+   * Google issues the verification value per Google account, so it cannot be
+   * generated: add the domain at https://postmaster.google.com (Manage domains,
+   * Add new domain), copy the TXT value it shows, and set it here. Every
+   * `buddy deploy` then keeps that record published at the apex beside the
+   * SPF record, without touching any other verification TXT there. Until it is
+   * set, the deploy prints where to get it; `false` silences that.
+   *
+   * @example { google: 'google-site-verification=tEYT8VqGcB7WEF_vRq55p8HWJhmL0rD-uqIjM8fNbKg' }
+   */
+  postmaster?: false | {
+    /** The TXT value, with or without its `google-site-verification=` prefix. */
+    google?: string
+  }
+
   storage?: {
     bucket?: string
     retentionDays?: number
