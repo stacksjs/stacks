@@ -20,6 +20,7 @@ import type {
   TokenScopes,
 } from '@stacksjs/types'
 import { createHash, randomBytes } from 'node:crypto'
+import { config } from '@stacksjs/config'
 import { db, getDatabaseDialect, markContextWrote, mutationCount } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
@@ -445,6 +446,12 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
 
   const row = (rows as unknown as AccessTokenRow[])[0]
   if (!row || !validTokenExpiry(row.expires_at)) return null
+
+  const idleMs = config.auth?.idleTimeout ?? 0
+  const lastSeen = parseSqlDateTime(row.updated_at ?? row.created_at)
+  if (idleMs > 0 && lastSeen && Date.now() - lastSeen.getTime() > idleMs)
+    return null
+
   if (row.oauth_grant_id) {
     const scopes = parseScopes(row.scopes)
     const grantScopes = parseScopes(row.grant_scopes)

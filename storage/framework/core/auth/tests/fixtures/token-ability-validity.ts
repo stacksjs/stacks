@@ -19,7 +19,7 @@ configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken, currentAccessToken, tokenCan, tokenCanAll, tokenCanAny } = await import('../../src/tokens')
+const { createToken, currentAccessToken, findToken, tokenCan, tokenCanAll, tokenCanAny } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const { authCookie } = await import('../../src/cookie-auth')
 const { enhanceRequest } = await import('@stacksjs/router')
@@ -98,6 +98,19 @@ try {
     .select('revoked')
     .executeTakeFirstOrThrow()
   assert.equal(Boolean(rejectedIdle.revoked), true)
+
+  const idleStandalone = await createToken(1, 'idle-standalone', ['posts:read'], { withRefreshToken: false })
+  await db.updateTable('oauth_access_tokens')
+    .set({ updated_at: sqlDateTime(new Date(now.getTime() - 60_001)) })
+    .where('id', '=', idleStandalone.accessToken.id)
+    .execute()
+  const idleRequest = enhanceRequest(new Request('https://abilities.invalid/account', {
+    headers: { authorization: `Bearer ${idleStandalone.plainTextToken}` },
+  }))
+  await runWithRequest(idleRequest, async () => {
+    assert.equal(await currentAccessToken(), null, 'standalone current token rejects idle credentials')
+  })
+  assert.equal(await findToken(idleStandalone.plainTextToken), null, 'standalone token lookup rejects idle credentials')
 
   await db.updateTable('users').set({ password_changed_at: null }).where('id', '=', 1).execute()
   const orphaned = await createToken(1, 'orphaned-session', ['posts:read'], { withRefreshToken: false })
