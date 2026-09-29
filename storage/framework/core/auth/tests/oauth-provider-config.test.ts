@@ -73,6 +73,21 @@ describe('OAuth authorization server configuration', () => {
     expect(() => resolveOAuthProviderConfig({
       enabled: true,
       issuer: 'https://id.example.com',
+      lifetimes: { authorizationRequest: 1.5 },
+    })).toThrow('authorizationRequest')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      lifetimes: { accessToken: Number.MAX_SAFE_INTEGER + 1 },
+    })).toThrow('accessToken')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      consent: { rememberFor: 1.5 },
+    })).toThrow('rememberFor')
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
       endpoints: { token: 'https://tokens.example.net/oauth/token' },
     })).toThrow('issuer origin')
     expect(() => resolveOAuthProviderConfig({

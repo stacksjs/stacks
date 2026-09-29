@@ -82,8 +82,8 @@ function endpoint(issuer: URL, configured: string | undefined, fallback: string)
 }
 
 function positiveLifetime(name: string, value: number): number {
-  if (!Number.isFinite(value) || value <= 0)
-    throw new Error(`auth.oauthProvider.lifetimes.${name} must be a positive number of milliseconds.`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new Error(`auth.oauthProvider.lifetimes.${name} must be a positive safe integer of milliseconds.`)
   return value
 }
 
@@ -156,8 +156,8 @@ function resolvedClientTypes(
 
 function resolvedConsent(options: OAuthProviderConfig['consent']): ResolvedOAuthProviderConfig['consent'] {
   const rememberFor = options?.rememberFor ?? 0
-  if (!Number.isFinite(rememberFor) || rememberFor < 0)
-    throw new Error('auth.oauthProvider.consent.rememberFor must be a non-negative number of milliseconds.')
+  if (!Number.isSafeInteger(rememberFor) || rememberFor < 0)
+    throw new Error('auth.oauthProvider.consent.rememberFor must be a non-negative safe integer of milliseconds.')
   const view = options?.view ?? 'auth/oauth/consent'
   if (!view || view.length > 255 || view.startsWith('/') || view.includes('..') || /[\u0000-\u001F\u007F]/.test(view))
     throw new Error('auth.oauthProvider.consent.view must be a safe relative view name.')
