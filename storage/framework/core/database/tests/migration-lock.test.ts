@@ -92,6 +92,16 @@ describe('acquireMigrationLock (sqlite) - stacksjs/stacks#1876 D-1', () => {
       acquireMigrationLock('sqlite', null, { sqliteLockPath: lockPath, timeoutMs: 300 }),
     ).rejects.toThrow(/another migration is in progress/i)
   })
+
+  test('does NOT reclaim an old lock while its owner is still alive', async () => {
+    writeFileSync(lockPath, JSON.stringify({ pid: process.pid, startedAt: '2020-01-01T00:00:00Z' }))
+    const oldTime = (Date.now() - 120_000) / 1000
+    utimesSync(lockPath, oldTime, oldTime)
+
+    await expect(
+      acquireMigrationLock('sqlite', null, { sqliteLockPath: lockPath, timeoutMs: 300 }),
+    ).rejects.toThrow(/another migration is in progress/i)
+  })
 })
 
 describe('default sqlite lock path is project-aware', () => {

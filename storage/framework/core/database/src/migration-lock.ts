@@ -18,7 +18,8 @@
  *     releases on session end.
  *   - **SQLite** — atomic file creation (`O_CREAT | O_EXCL`) on a
  *     lock file next to the DB. PID + start time written for forensic
- *     debugging. Stale-lock recovery is age-based (60s).
+ *     debugging. A lock older than 60s is reclaimed only when its owner
+ *     process is no longer alive.
  *
  * All three support a short polling loop with backoff: if another
  * process has the lock, we wait up to ~30s before giving up with a
@@ -29,7 +30,7 @@
 
 import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
-import { closeSync, openSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { userDatabasePath } from '@stacksjs/path'
 
@@ -52,10 +53,11 @@ const INITIAL_BACKOFF_MS = 100
 const MAX_BACKOFF_MS = 2000
 
 /**
- * SQLite lock files older than this are assumed stale (the process
- * that wrote them crashed without unlinking) and forcibly reclaimed.
- * Keep this comfortably larger than DEFAULT_TIMEOUT_MS so we never
- * reclaim a lock that's still being legitimately held.
+ * SQLite lock files older than this are eligible for stale-owner checks.
+ * The age alone is not enough to reclaim a lock: a migration can
+ * legitimately run longer than this, so the recorded owner PID must also
+ * be dead. Keep this comfortably larger than DEFAULT_TIMEOUT_MS so a
+ * waiter does not reclaim a lock while its owner is still starting up.
  */
 const STALE_LOCK_MS = 60_000
 
@@ -273,19 +275,46 @@ function reclaimIfStale(path: string): void {
   try {
     const st = statSync(path)
     const age = Date.now() - st.mtimeMs
-    if (age > STALE_LOCK_MS) {
-      try {
-        unlinkSync(path)
-      }
-      catch {
-        // Lost the race to another reclaimer — fine, they'll be the
-        // ones to acquire next iteration.
-      }
+    if (age <= STALE_LOCK_MS || lockOwnerIsAlive(path)) return
+    try {
+      unlinkSync(path)
+    }
+    catch {
+      // Lost the race to another reclaimer - fine, they'll be the
+      // ones to acquire next iteration.
     }
   }
   catch {
     // File was deleted between our open-attempt and the stat — fine,
     // next loop iteration will see it gone.
+  }
+}
+
+/**
+ * Check the PID written by the lock holder without making the lock's age
+ * itself a reason to break it. `kill(pid, 0)` does not send a signal; it only
+ * asks the OS whether that PID currently exists. EPERM also means the process
+ * exists, just without permission to signal it.
+ *
+ * Malformed or legacy lock files return false so age-based recovery remains
+ * available for locks that cannot identify their owner.
+ */
+function lockOwnerIsAlive(path: string): boolean {
+  try {
+    const payload = JSON.parse(readFileSync(path, 'utf8')) as { pid?: unknown }
+    const pid = payload.pid
+    if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0)
+      return false
+    try {
+      process.kill(pid, 0)
+      return true
+    }
+    catch (error) {
+      return (error as { code?: string }).code === 'EPERM'
+    }
+  }
+  catch {
+    return false
   }
 }
 
