@@ -342,7 +342,7 @@ export async function consumeWebAuthnChallenge(
     .selectFrom('webauthn_challenges')
     .where('user_id', '=', userId)
     .where('purpose', '=', purpose)
-    .selectAll()
+    .select(['challenge', 'expires_at'])
     .executeTakeFirst()
 
   if (!row) return null
