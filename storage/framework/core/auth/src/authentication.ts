@@ -722,11 +722,6 @@ export class Auth {
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
       return false
 
-    if (!await userTokenOwnerExists(accessToken.tokenable_id))
-      return false
-
-    log.debug(`[auth] Token validated for token#${accessToken.id}`)
-
     // An expired access credential can still own a live refresh grant.
     // Reject its use without deleting the row needed for the next exchange.
     if (accessToken.expires_at != null && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date())
@@ -734,6 +729,12 @@ export class Auth {
 
     // Check if token is revoked
     if (accessToken.revoked)
+      return false
+
+    // Resolve the owner only after the credential's own cheap rejection
+    // checks. Revoked and expired rows are already unusable and must not add an
+    // avoidable users-table query to a common denial path.
+    if (!await userTokenOwnerExists(accessToken.tokenable_id))
       return false
 
     // Reject tokens issued before the user last changed their password
@@ -765,6 +766,7 @@ export class Auth {
       .where('id', '=', accessToken.id)
       .execute()
 
+    log.debug(`[auth] Token validated for token#${accessToken.id}`)
     return true
   }
 

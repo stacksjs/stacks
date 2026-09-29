@@ -161,6 +161,16 @@ try {
       }
     }
   }
+
+  setSystemTime(now)
+  const revokedWithoutOwnerLookup = await createToken(1, 'revoked-short-circuit', ['posts:read'], { withRefreshToken: false })
+  await db.updateTable('oauth_access_tokens')
+    .set({ revoked: true })
+    .where('id', '=', revokedWithoutOwnerLookup.accessToken.id)
+    .execute()
+  await db.unsafe('DROP TABLE users').execute()
+  assert.equal(await Auth.validateToken(revokedWithoutOwnerLookup.plainTextToken), false, 'revoked tokens reject before owner lookup')
+
   assert.deepEqual(failures, [])
   console.log('token ability validity OK')
 }
