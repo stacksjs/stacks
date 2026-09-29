@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
 import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAuthorizationAction'
+import OAuthClientDisableAction from '../../../defaults/app/Actions/Auth/OAuthClientDisableAction'
 import OAuthClientSecretRotateAction from '../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction'
 import OAuthClientsAction from '../../../defaults/app/Actions/Auth/OAuthClientsAction'
 import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConnectionsAction'
@@ -285,6 +286,42 @@ describe('OAuth client management route actions', () => {
     const malformedResult = await OAuthClientSecretRotateAction.handle(malformed)
 
     expect(OAuthClientSecretRotateAction.skipCsrf).not.toBe(true)
+    expect(anonymous.status).toBe(401)
+    expect(malformedResult.status).toBe(400)
+  })
+
+  it('keeps client disable unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const result = await OAuthClientDisableAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients/17/disable',
+      { method: 'POST' },
+    ))
+
+    expect(result.status).toBe(404)
+  })
+
+  it('requires an authenticated owner and a valid client id to disable a client', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const anonymous = await OAuthClientDisableAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients/17/disable',
+      { method: 'POST' },
+    ))
+    const malformed = browserRequest(
+      'https://id.example.com/auth/oauth/clients/not-a-client/disable',
+      { method: 'POST' },
+      { id: '42', email: 'ada@example.com' },
+    ) as RequestInstance & { getParam: (name: string) => string }
+    malformed.getParam = () => 'not-a-client'
+
+    const malformedResult = await OAuthClientDisableAction.handle(malformed)
+
+    expect(OAuthClientDisableAction.skipCsrf).not.toBe(true)
     expect(anonymous.status).toBe(401)
     expect(malformedResult.status).toBe(400)
   })
