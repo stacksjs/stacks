@@ -51,11 +51,21 @@ export default new Action({
     const workspace = user && subjectId
       ? await resolveOAuthConsentWorkspace(provider, { request, user })
       : null
+    const resolveWorkspaceId = user
+      ? async () => (await resolveOAuthConsentWorkspace(provider, { request, user }))?.id ?? null
+      : undefined
     return handleOAuthAuthorizationPageRequest({
       provider,
       request: request as unknown as Request,
       identity: user ? { label: identityLabel(user), workspaceLabel: workspace?.label } : null,
-      subject: subjectId ? { type: 'users', id: subjectId, workspaceId: workspace?.id } : null,
+      subject: subjectId
+        ? {
+            type: 'users',
+            id: subjectId,
+            workspaceId: workspace?.id,
+            resolveWorkspaceId,
+          }
+        : null,
       csrfToken: (request as unknown as { _csrfToken?: string })._csrfToken,
       dependencies: { render: renderConsentView },
     })

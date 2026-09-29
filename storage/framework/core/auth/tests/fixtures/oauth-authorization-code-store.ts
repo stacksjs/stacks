@@ -438,6 +438,22 @@ try {
     redirectUri: validatedRequest.redirectUri,
     codeVerifier: verifier,
   }, async grant => grant.grantId)).ok, true)
+  const changedWorkspaceRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  let changedWorkspaceResolutions = 0
+  assert.equal(await reuseOAuthAuthorizationRequestSession({
+    provider: rememberingProvider,
+    requestId: changedWorkspaceRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+    resolveWorkspaceId: async () => {
+      changedWorkspaceResolutions++
+      return 'workspace-2'
+    },
+  }), null)
+  assert.equal(changedWorkspaceResolutions, 1)
+  assert(await loadOAuthAuthorizationRequestSession(changedWorkspaceRequestId, browserSession), 'changed workspace must not consume the request')
   assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, workspaceId: 'workspace-2' }), false)
   assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, subjectId: 43 }), false)
   assert.equal(await hasReusableOAuthConsent({

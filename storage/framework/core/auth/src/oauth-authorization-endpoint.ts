@@ -54,6 +54,8 @@ export interface OAuthAuthorizationPageSubject {
   type: string
   id: number
   workspaceId?: string | null
+  /** Recheck current workspace authority before remembered consent is reused. */
+  resolveWorkspaceId?: () => Promise<string | null>
 }
 
 export interface OAuthAuthorizationConsentPageContext {
@@ -176,6 +178,7 @@ export async function handleOAuthAuthorizationPageRequest(
         subjectType: input.subject.type,
         subjectId: input.subject.id,
         workspaceId: input.subject.workspaceId,
+        resolveWorkspaceId: input.subject.resolveWorkspaceId,
       })
       if (reused) {
         if (!reused.ok)

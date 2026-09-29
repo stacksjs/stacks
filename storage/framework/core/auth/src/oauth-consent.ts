@@ -54,6 +54,8 @@ export interface ReuseOAuthAuthorizationRequestSessionInput {
   subjectType: string
   subjectId: number
   workspaceId?: string | null
+  /** Recheck current workspace authority inside the reuse transaction. */
+  resolveWorkspaceId?: () => Promise<string | null>
 }
 
 export interface LoadOAuthAuthorizationConsentViewInput {
@@ -303,11 +305,14 @@ export async function reuseOAuthAuthorizationRequestSession(
   try {
     return await withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request) => {
       assertOAuthAuthorizationProviderPolicy(input.provider, request)
+      const workspaceId = input.resolveWorkspaceId
+        ? await input.resolveWorkspaceId()
+        : input.workspaceId
       const grantId = await reusableOAuthConsentGrantId({
         request,
         subjectType: input.subjectType,
         subjectId: input.subjectId,
-        workspaceId: input.workspaceId,
+        workspaceId,
         rememberForMs: input.provider.consent.rememberFor,
       }, { exact: true, lock: true })
       if (!grantId)
