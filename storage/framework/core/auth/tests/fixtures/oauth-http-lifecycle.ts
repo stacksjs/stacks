@@ -388,6 +388,42 @@ try {
       .select('id')
       .executeTakeFirst(), undefined)
 
+    const expiredGrant = await createOAuthGrant({
+      clientId: registration.client.id,
+      subjectType: 'users',
+      subjectId: 1,
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+      audiences: [`${issuer}/fixture/resource`],
+    })
+    const expiredCode = await issueAuthorizationCode({
+      grantId: expiredGrant.id,
+      redirectUri,
+      codeChallenge: challenge,
+      lifetimeMs: provider.lifetimes.authorizationCode,
+    })
+    await db.updateTable('oauth_auth_codes')
+      .set({ expires_at: new Date(0).toISOString() })
+      .where('grant_id', '=', expiredGrant.id)
+      .execute()
+    const expiredExchange = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: String(registration.client.id),
+        code: expiredCode,
+        redirect_uri: redirectUri,
+        code_verifier: verifier,
+      }),
+    })
+    assert.equal(expiredExchange.status, 400)
+    assert.equal((await expiredExchange.json() as { error?: string }).error, 'invalid_grant')
+    assert.equal(Number((await db.selectFrom('oauth_access_tokens')
+      .where('oauth_grant_id', '=', expiredGrant.id)
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirstOrThrow()).count), 0)
+
     const confidential = await registerOAuthClient(provider, 1, {
       name: 'HTTP confidential client',
       type: 'confidential',
