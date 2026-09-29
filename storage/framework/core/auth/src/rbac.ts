@@ -154,6 +154,8 @@ export interface RbacStore {
   syncUserRoles(userId: number, roleIds: number[]): Promise<void>
 
   // User-Permission operations (direct)
+  /** Optional set-based fast path for direct and role-derived permissions. */
+  getUserPermissions?(userId: number): Promise<PermissionRecord[]>
   getUserDirectPermissions(userId: number): Promise<PermissionRecord[]>
   assignPermissionToUser(userId: number, permissionId: number): Promise<void>
   removePermissionFromUser(userId: number, permissionId: number): Promise<void>
@@ -452,7 +454,14 @@ export async function getUserPermissions(user: UserModel | { id: number } | numb
 
   if (cache.userPermissions.has(userId)) return cache.userPermissions.get(userId)!
 
-  const directPermissions = await getStore().getUserDirectPermissions(userId)
+  const rbacStore = getStore()
+  if ('getUserPermissions' in rbacStore && rbacStore.getUserPermissions) {
+    const permissions = await rbacStore.getUserPermissions(userId)
+    cache.userPermissions.set(userId, permissions)
+    return permissions
+  }
+
+  const directPermissions = await rbacStore.getUserDirectPermissions(userId)
   const roles = await getUserRoles(user)
 
   const rolePermissions: PermissionRecord[] = []

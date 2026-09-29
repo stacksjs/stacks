@@ -329,6 +329,30 @@ export function createBqbRbacStore(): RbacStore {
 
     // ─── User-Permission pivot ────────────────────────────────────────
 
+    async getUserPermissions(userId: number): Promise<PermissionRecord[]> {
+      // Resolve direct grants and every role-derived grant in one set-based
+      // read. The public RBAC layer keeps the fallback for custom stores that
+      // implement only the original three primitives.
+      const rows: Array<Record<string, unknown>> = await (db.primary.selectFrom('permissions'))
+        .leftJoin('user_permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+        .leftJoin('role_permissions', 'role_permissions.permission_id', '=', 'permissions.id')
+        .leftJoin('user_roles', 'user_roles.role_id', '=', 'role_permissions.role_id')
+        .select([
+          'permissions.id as id',
+          'permissions.name as name',
+          'permissions.guard_name as guard_name',
+          'permissions.description as description',
+          'permissions.created_at as created_at',
+          'permissions.updated_at as updated_at',
+        ])
+        .where('user_permissions.user_id', '=', userId)
+        .orWhere('user_roles.user_id', '=', userId)
+        .distinct()
+        .orderBy('permissions.id', 'asc')
+        .execute()
+      return rows.map(row => toRecord<PermissionRecord>(row)!).filter(Boolean)
+    },
+
     async getUserDirectPermissions(userId: number): Promise<PermissionRecord[]> {
       // See `getUserRoles` above for the bqb API contracts on
       // `innerJoin(..., '=', ...)` and array-form `.select([])`.
