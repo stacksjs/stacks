@@ -1146,6 +1146,24 @@ try {
     workspaceId: null,
     isSubjectEligible: async () => false,
   }), { ok: false, reason: 'invalid_token' })
+  const siblingFamilyCode = await issueAuthorizationCode({
+    grantId: endpointConsent.value.grantId,
+    redirectUri: validatedRequest.redirectUri,
+    codeChallenge,
+    lifetimeMs: 60_000,
+  })
+  const siblingFamilyExchange = await handleOAuthTokenRequest(provider, {
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: String(publicRegistration.client.id),
+      code: siblingFamilyCode,
+      redirect_uri: validatedRequest.redirectUri,
+      code_verifier: verifier,
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  }, { isSubjectEligible: async () => true })
+  assert.equal(siblingFamilyExchange.status, 200)
+  const siblingFamilyTokens = await siblingFamilyExchange.json() as Record<string, unknown>
   const ineligibleRefreshBody = new URLSearchParams({
     grant_type: 'refresh_token',
     client_id: String(publicRegistration.client.id),
@@ -1158,6 +1176,17 @@ try {
   }, { isSubjectEligible: async () => false })
   assert.equal(ineligibleRefresh.status, 400)
   assert.deepEqual(await ineligibleRefresh.json(), { error: 'invalid_grant' })
+  assert.equal(await findToken(String(siblingFamilyTokens.access_token)), null)
+  const siblingFamilyRefresh = await handleOAuthTokenRequest(provider, {
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: String(publicRegistration.client.id),
+      refresh_token: String(siblingFamilyTokens.refresh_token),
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  }, { isSubjectEligible: async () => true })
+  assert.equal(siblingFamilyRefresh.status, 400)
+  assert.deepEqual(await siblingFamilyRefresh.json(), { error: 'invalid_grant' })
   const revokedFamilyRefresh = await handleOAuthTokenRequest(provider, {
     body: ineligibleRefreshBody,
     contentType: 'application/x-www-form-urlencoded',

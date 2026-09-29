@@ -12,6 +12,7 @@ import {
 } from '@stacksjs/database/runtime'
 import { withAuthorizationCode } from './oauth-authorization-codes'
 import { withAuthenticatedOAuthTokenClient } from './oauth-client-registration'
+import { disconnectOAuthGrant } from './oauth-grants'
 
 export interface ExchangeAuthorizationCodeInput extends AuthorizationCodeRedemption {
   code: string
@@ -357,28 +358,7 @@ export async function exchangeAuthorizationCode(
         grantId: grant.grantId,
         workspaceId: grant.workspaceId,
       })) {
-        const now = sqlDateTime(new Date())
-        const revoked = await db.unsafe(`
-          UPDATE oauth_grants
-          SET revoked_at = ${sql.param(1)}, updated_at = ${sql.param(2)}
-          WHERE id = ${sql.param(3)} AND revoked_at IS NULL
-        `, [now, now, grant.grantId])
-        if (mutationCount(revoked) !== 1)
-          throw new Error('Inactive OAuth subject grant could not be revoked.')
-        await db.unsafe(`
-          UPDATE oauth_auth_codes
-          SET consumed_at = ${sql.param(1)}
-          WHERE grant_id = ${sql.param(2)} AND consumed_at IS NULL
-        `, [now, grant.grantId])
-        const remaining = await db.unsafe(`
-          SELECT id FROM oauth_grants
-          WHERE id = ${sql.param(1)} AND revoked_at IS NULL
-          UNION ALL
-          SELECT code_hash FROM oauth_auth_codes
-          WHERE grant_id = ${sql.param(2)} AND consumed_at IS NULL
-          LIMIT 1
-        `, [grant.grantId, grant.grantId]) as unknown[]
-        if (remaining.length > 0)
+        if (!await disconnectOAuthGrant(grant.subjectType, grant.subjectId, grant.grantId))
           throw new Error('Inactive OAuth subject authorization state could not be revoked.')
         return inactiveSubject
       }
@@ -469,7 +449,7 @@ export async function refreshOAuthDelegatedToken(
     if ((parseSqlDateTime(refresh.expires_at)?.getTime() ?? 0) <= Date.now())
       return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: false }
 
-    const grantLock = sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
+    const grantLock = sql.isSqlite ? '' : ' FOR UPDATE'
     const grants = await db.unsafe(`
       SELECT id, client_id AS grant_client_id, subject_type AS grant_subject_type,
         subject_id AS grant_subject_id, scopes AS grant_scopes,
@@ -491,7 +471,8 @@ export async function refreshOAuthDelegatedToken(
       grantId: grant.grantId,
       workspaceId: grant.workspaceId,
     })) {
-      await revokeDelegatedRefreshFamily(refresh)
+      if (!await disconnectOAuthGrant(grant.subjectType, grant.subjectId, grant.grantId))
+        throw new Error('Inactive OAuth subject authorization state could not be revoked.')
       return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: true }
     }
     const scopes = input.scopes ? [...input.scopes] : grant.scopes
