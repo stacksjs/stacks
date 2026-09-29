@@ -19,6 +19,12 @@ function selectTab(): void {
 </nav>
 
 <style>
+  /* Each tab is a component, and stx wraps a component in a box of its own:
+     that box stretched to the bar's height while the link inside kept the
+     height of its icon and label, pressed against the bar's top border. The
+     box steps aside, so the link is the grid item and centres in the bar. */
+  .native-tab-bar > [data-stx-scope]:has(> .native-tab-item) { display: contents; }
+
   .native-tab-bar {
     display: grid;
     grid-auto-flow: column;

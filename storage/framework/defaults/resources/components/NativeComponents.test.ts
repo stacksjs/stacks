@@ -20,6 +20,13 @@ describe('Native components', () => {
     expect(item).toContain('draggable="false"')
   })
 
+  it('centres each tab in the bar rather than against its top border', () => {
+    // stx wraps each NativeTabItem in a scope box; the box stretched while
+    // the link inside kept its own height, so icons sat on the border.
+    const bar = read('NativeTabBar')
+    expect(bar).toContain('.native-tab-bar > [data-stx-scope]:has(> .native-tab-item) { display: contents; }')
+  })
+
   it('shows the offline banner by class, so it can come back', () => {
     const banner = read('NativeNetworkBanner')
     expect(banner).not.toContain(':if="!connected()"')
