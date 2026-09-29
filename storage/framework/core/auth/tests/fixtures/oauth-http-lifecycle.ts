@@ -386,6 +386,59 @@ try {
       .select('id')
       .executeTakeFirst(), undefined)
 
+    const confidential = await registerOAuthClient(provider, 1, {
+      name: 'HTTP confidential client',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: ['https://server.example.test/callback'],
+      grantTypes: ['authorization_code', 'refresh_token'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })
+    assert(confidential.plainTextSecret)
+    const confidentialGrant = await createOAuthGrant({
+      clientId: confidential.client.id,
+      subjectType: 'users',
+      subjectId: 1,
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+      audiences: [`${issuer}/fixture/resource`],
+    })
+    const confidentialRedirect = confidential.client.redirectUris[0]!
+    const confidentialCode = await issueAuthorizationCode({
+      grantId: confidentialGrant.id,
+      redirectUri: confidentialRedirect,
+      codeChallenge: challenge,
+      lifetimeMs: provider.lifetimes.authorizationCode,
+    })
+    const confidentialBody = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: confidentialCode,
+      redirect_uri: confidentialRedirect,
+      code_verifier: verifier,
+    })
+    const confidentialExchange = async (secret: string) => await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${btoa(`${confidential.client.id}:${secret}`)}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: confidentialBody,
+    })
+    const wrongConfidentialSecret = await confidentialExchange('wrong-secret')
+    assert.equal(wrongConfidentialSecret.status, 401)
+    assert.equal(wrongConfidentialSecret.headers.get('www-authenticate'), 'Basic realm="oauth-token"')
+    assert.equal((await wrongConfidentialSecret.json() as { error?: string }).error, 'invalid_client')
+    assert.equal((await db.selectFrom('oauth_auth_codes')
+      .where('grant_id', '=', confidentialGrant.id)
+      .select('consumed_at')
+      .executeTakeFirstOrThrow()).consumed_at, null)
+
+    const correctConfidentialSecret = await confidentialExchange(confidential.plainTextSecret)
+    assert.equal(correctConfidentialSecret.status, 200, await correctConfidentialSecret.clone().text())
+    const confidentialPair = await correctConfidentialSecret.json() as { access_token: string }
+    await readResource(confidentialPair.access_token)
+
     console.log('PASS OAuth HTTP lifecycle')
   }
   finally {
