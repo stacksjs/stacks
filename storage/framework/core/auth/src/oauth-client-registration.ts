@@ -12,6 +12,12 @@ import {
 } from '@stacksjs/database/runtime'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { isValidOAuthRedirectUri } from './oauth-authorization'
+import {
+  isInactiveOAuthFlag,
+  oauthAuthorizationClientFromStored,
+  type StoredOAuthAuthorizationClient,
+  storedOAuthValues,
+} from './oauth-client-policy'
 
 export type OAuthTokenEndpointAuthMethod = 'client_secret_basic' | 'none'
 
@@ -79,21 +85,9 @@ export interface ManagedOAuthClient {
   createdAt: Date
 }
 
-interface StoredOAuthClient {
-  id: number | string
+interface StoredOAuthClient extends StoredOAuthAuthorizationClient {
   user_id: number | string | null
   name: string
-  secret: string | null
-  redirect: string
-  client_type: string | null
-  redirect_uris: string | null
-  grant_types: string | null
-  token_endpoint_auth_method: string | null
-  allowed_scopes: string | null
-  allowed_resources: string | null
-  personal_access_client: boolean | number
-  password_client: boolean | number
-  revoked: boolean | number
   created_at: string | Date
 }
 
@@ -182,21 +176,6 @@ export function validateOAuthClientRegistration(
   }
 }
 
-function storedValues(value: string | null): string[] | null {
-  if (value == null) return null
-  try {
-    const parsed: unknown = JSON.parse(value)
-    return Array.isArray(parsed) && parsed.every(item => typeof item === 'string') ? parsed : null
-  }
-  catch {
-    return null
-  }
-}
-
-function inactive(value: boolean | number): boolean {
-  return value === false || value === 0
-}
-
 function sameValues(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index])
 }
@@ -237,42 +216,6 @@ async function revokeOAuthClientAuthorizationState(
   `, [revoked, now, clientId])
 }
 
-function storedFlag(value: boolean | number): boolean | null {
-  if (value === false || value === 0) return false
-  if (value === true || value === 1) return true
-  return null
-}
-
-function authorizationClientFromStored(
-  row: StoredOAuthClient | undefined,
-  id: number,
-): OAuthAuthorizationClientRegistration | null {
-  const redirectUris = storedValues(row?.redirect_uris ?? null)
-  const grantTypes = storedValues(row?.grant_types ?? null)
-  const scopes = storedValues(row?.allowed_scopes ?? null)
-  const resources = storedValues(row?.allowed_resources ?? null)
-  const revoked = row ? storedFlag(row.revoked) : null
-  const type = row?.client_type
-  const method = row?.token_endpoint_auth_method
-  if (!row || String(row.id) !== String(id)
-    || (type !== 'public' && type !== 'confidential')
-    || (method !== 'none' && method !== 'client_secret_basic')
-    || (type === 'public' ? method !== 'none' || row.secret != null : method !== 'client_secret_basic' || !row.secret)
-    || !redirectUris?.length || !grantTypes?.includes('authorization_code') || !scopes?.length || !resources
-    || new Set(redirectUris).size !== redirectUris.length
-    || new Set(grantTypes).size !== grantTypes.length
-    || new Set(scopes).size !== scopes.length
-    || new Set(resources).size !== resources.length
-    || redirectUris.some(uri => !isValidOAuthRedirectUri(uri))
-    || row.redirect !== redirectUris[0]
-    || !inactive(row.personal_access_client)
-    || !inactive(row.password_client)
-    || revoked == null)
-    return null
-
-  return { id, type, revoked, redirectUris, grantTypes, scopes, resources }
-}
-
 async function storedAuthorizationClient(clientId: string): Promise<{
   client: OAuthAuthorizationClientRegistration
   row: StoredOAuthClient
@@ -289,7 +232,7 @@ async function storedAuthorizationClient(clientId: string): Promise<{
     FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1
   `, [id]) as unknown as StoredOAuthClient[]
   const row = rows[0]
-  const client = authorizationClientFromStored(row, id)
+  const client = oauthAuthorizationClientFromStored(row, id)
   return row && client ? { client, row } : null
 }
 
@@ -325,7 +268,7 @@ export async function listOAuthClients(ownerId: number): Promise<ManagedOAuthCli
   return rows.flatMap((row) => {
     const id = Number(row.id)
     const storedOwnerId = Number(row.user_id)
-    const client = authorizationClientFromStored(row, id)
+    const client = oauthAuthorizationClientFromStored(row, id)
     const createdAt = parseSqlDateTime(row.created_at)
     if (!client || !Number.isSafeInteger(storedOwnerId) || storedOwnerId !== ownerId || !createdAt)
       return []
@@ -368,7 +311,7 @@ export async function updateOAuthClient(
       LIMIT 1${lock}
     `, [clientId, ownerId]) as unknown as StoredOAuthClient[]
     const row = rows[0]
-    const current = authorizationClientFromStored(row, clientId)
+    const current = oauthAuthorizationClientFromStored(row, clientId)
     const createdAt = row ? parseSqlDateTime(row.created_at) : null
     if (!row || !current || current.revoked || !createdAt)
       return null
@@ -453,7 +396,7 @@ export async function withAuthenticatedOAuthTokenClient<T>(
       FROM oauth_clients WHERE id = ${sql.param(1)} LIMIT 1${lock}
     `, [id]) as unknown as StoredOAuthClient[]
     const row = rows[0]
-    const client = authorizationClientFromStored(row, id)
+    const client = oauthAuthorizationClientFromStored(row, id)
     if (!row || !client || client.revoked)
       return null
     if (client.type === 'public')
@@ -529,14 +472,14 @@ export async function registerOAuthClient(
       || row.secret !== storedSecret
       || row.redirect !== client.redirectUris[0]
       || row.client_type !== client.type
-      || JSON.stringify(storedValues(row.redirect_uris)) !== JSON.stringify(client.redirectUris)
-      || JSON.stringify(storedValues(row.grant_types)) !== JSON.stringify(client.grantTypes)
+      || JSON.stringify(storedOAuthValues(row.redirect_uris)) !== JSON.stringify(client.redirectUris)
+      || JSON.stringify(storedOAuthValues(row.grant_types)) !== JSON.stringify(client.grantTypes)
       || row.token_endpoint_auth_method !== client.tokenEndpointAuthMethod
-      || JSON.stringify(storedValues(row.allowed_scopes)) !== JSON.stringify(client.scopes)
-      || JSON.stringify(storedValues(row.allowed_resources)) !== JSON.stringify(client.resources)
-      || !inactive(row.personal_access_client)
-      || !inactive(row.password_client)
-      || !inactive(row.revoked))
+      || JSON.stringify(storedOAuthValues(row.allowed_scopes)) !== JSON.stringify(client.scopes)
+      || JSON.stringify(storedOAuthValues(row.allowed_resources)) !== JSON.stringify(client.resources)
+      || !isInactiveOAuthFlag(row.personal_access_client)
+      || !isInactiveOAuthFlag(row.password_client)
+      || !isInactiveOAuthFlag(row.revoked))
       throw new Error('Failed to persist the registered OAuth client policy.')
 
     return { id, createdAt: parseSqlDateTime(row.created_at) ?? createdAt }
@@ -586,7 +529,7 @@ export async function rotateOAuthClientSecret(ownerId: number, clientId: number)
     if (!client
       || client.client_type !== 'confidential'
       || client.token_endpoint_auth_method !== 'client_secret_basic'
-      || !inactive(client.revoked))
+      || !isInactiveOAuthFlag(client.revoked))
       return false
 
     const active = sql.isPostgres ? false : 0
@@ -623,7 +566,7 @@ export async function disableOAuthClient(ownerId: number, clientId: number): Pro
       WHERE id = ${sql.param(1)} AND user_id = ${sql.param(2)}
       LIMIT 1${lock}
     `, [clientId, ownerId]) as unknown as Array<{ id: number | string, revoked: boolean | number }>
-    if (!rows[0] || !inactive(rows[0].revoked))
+    if (!rows[0] || !isInactiveOAuthFlag(rows[0].revoked))
       return false
 
     const now = sqlDateTime(new Date())

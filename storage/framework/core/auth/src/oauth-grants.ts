@@ -8,6 +8,10 @@ import {
   sqlDateTime,
   sqlHelpers,
 } from '@stacksjs/database/runtime'
+import {
+  oauthAuthorizationClientFromStored,
+  type StoredOAuthAuthorizationClient,
+} from './oauth-client-policy'
 
 export interface CreateOAuthGrantInput {
   clientId: number
@@ -89,6 +93,10 @@ export async function createOAuthGrant(input: CreateOAuthGrantInput): Promise<OA
   const scopes = explicitValues('scopes', input.scopes)
   const resources = explicitValues('resources', input.resources)
   const audiences = explicitValues('audiences', input.audiences)
+  if (scopes.length === 0)
+    throw new TypeError('OAuth grant must contain at least one scope.')
+  if (resources.length !== audiences.length)
+    throw new TypeError('OAuth grant resource and audience bindings must have equal lengths.')
   const id = randomBytes(16).toString('hex')
   const createdAt = new Date()
   const sql = sqlHelpers(getDatabaseDialect())
@@ -108,12 +116,20 @@ export async function createOAuthGrant(input: CreateOAuthGrantInput): Promise<OA
     const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
     const clientLock = sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
     const clients = await trx.unsafe(`
-      SELECT id FROM oauth_clients
-      WHERE id = ${sql.param(1)} AND revoked = ${sql.boolFalse}
+      SELECT id, secret, redirect, client_type, redirect_uris, grant_types,
+        token_endpoint_auth_method, allowed_scopes, allowed_resources,
+        personal_access_client, password_client, revoked
+      FROM oauth_clients
+      WHERE id = ${sql.param(1)}
       LIMIT 1${clientLock}
-    `, [input.clientId]) as unknown[]
-    if (clients.length !== 1)
-      throw new Error('OAuth client is not active.')
+    `, [input.clientId]) as unknown as StoredOAuthAuthorizationClient[]
+    const client = oauthAuthorizationClientFromStored(clients[0], input.clientId)
+    if (!client || client.revoked)
+      throw new Error('OAuth client is not an active provider authorization client.')
+    if (scopes.some(scope => !client.scopes.includes(scope)))
+      throw new Error('OAuth grant scope is not registered to the client.')
+    if (resources.some(resource => !client.resources.includes(resource)))
+      throw new Error('OAuth grant resource is not registered to the client.')
 
     await trx.unsafe(`
       INSERT INTO oauth_grants (

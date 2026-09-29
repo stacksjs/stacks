@@ -1414,14 +1414,49 @@ try {
     resources: ['bughq'],
   }), /owner identifier/)
 
-  const grant = await createOAuthGrant({
-    clientId: Number(client.id),
+  const grantPolicyRegistration = await registerOAuthClient(provider, 42, {
+    name: 'Grant policy integration',
+    type: 'public',
+    tokenEndpointAuthMethod: 'none',
+    redirectUris: ['https://grant.example.com/callback'],
+    grantTypes: ['authorization_code', 'refresh_token'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  const grantPolicyInput = {
+    clientId: grantPolicyRegistration.client.id,
     subjectType: 'users',
     subjectId: 42,
     scopes: ['issues:read'],
     resources: ['bughq'],
     audiences: ['https://api.bughq.example'],
     workspaceId: 'workspace-1',
+  }
+  await assert.rejects(createOAuthGrant({
+    ...grantPolicyInput,
+    clientId: Number(client.id),
+  }), /provider authorization client/)
+  await assert.rejects(createOAuthGrant({
+    ...grantPolicyInput,
+    scopes: [],
+  }), /at least one scope/)
+  await assert.rejects(createOAuthGrant({
+    ...grantPolicyInput,
+    scopes: ['profile:read'],
+  }), /scope is not registered/)
+  await assert.rejects(createOAuthGrant({
+    ...grantPolicyInput,
+    resources: ['unknown'],
+  }), /resource is not registered/)
+  await assert.rejects(createOAuthGrant({
+    ...grantPolicyInput,
+    audiences: [],
+  }), /resource and audience bindings/)
+
+  const grant = await createOAuthGrant({
+    ...grantPolicyInput,
+    subjectType: 'users',
+    subjectId: 42,
   })
   const base = {
     grantId: grant.id,
@@ -1455,7 +1490,7 @@ try {
   assert.equal(first.ok, true)
   if (first.ok) {
     assert.equal(first.value.grantId, grant.id)
-    assert.equal(first.value.clientId, Number(client.id))
+    assert.equal(first.value.clientId, grantPolicyRegistration.client.id)
     assert.equal(first.value.subjectType, 'users')
     assert.equal(first.value.subjectId, 42)
     assert.deepEqual(first.value.scopes, ['issues:read'])
@@ -1497,12 +1532,12 @@ try {
   assert.deepEqual(await withAuthorizationCode(expiredCode, expected, async grant => grant), { ok: false, reason: 'invalid_grant' })
 
   const revokedGrant = await createOAuthGrant({
-    clientId: Number(client.id),
+    clientId: grantPolicyRegistration.client.id,
     subjectType: 'users',
     subjectId: 42,
-    scopes: ['profile:read'],
-    resources: [],
-    audiences: [],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+    audiences: ['https://api.bughq.example'],
   })
   const revokedBase = {
     ...base,
@@ -1527,7 +1562,7 @@ try {
     scopes: ['profile:read'],
     resources: [],
     audiences: [],
-  }), /client is not active/)
+  }), /client is not an active provider authorization client/)
 
   const exchangeCode = await issueAuthorizationCode(base)
   const exchanged = await exchangeAuthorizationCode({
