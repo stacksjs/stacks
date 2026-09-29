@@ -30,23 +30,40 @@ Learn more in the docs.
 
 ## OAuth authorization provider
 
-The authorization provider is opt-in through `config/auth.ts`. Enabling it
-requires an explicit issuer, registered scopes and resources, and a reviewed
-client policy. Provider routes remain unavailable until the complete consent
-and token-exchange flow is registered.
+The authorization provider is disabled by default under `oauthProvider` in
+`config/auth.ts`. Enabling it requires a canonical issuer plus explicit scope
+and resource policy:
 
-The framework currently exports protocol primitives for incremental provider
-integration:
+```ts
+oauthProvider: {
+  enabled: true,
+  issuer: env.APP_URL,
+  scopes: {
+    'issues:read': { description: 'Read issues', resources: ['bughq'] },
+  },
+  resources: {
+    bughq: { audience: 'https://api.example.com/issues' },
+  },
+}
+```
 
-- `resolveOAuthProviderConfig()` validates and snapshots provider policy.
-- `validateOAuthClientRegistration()` validates client-controlled metadata.
-- `validateOAuthAuthorizationRequest()` validates exact redirects, scopes,
-  resources, and S256 PKCE before login or consent.
-- `issueAuthorizationCode()` and `withAuthorizationCode()` provide hash-only,
-  short-lived, atomic, single-use authorization codes.
+The default auth route bundle then serves:
 
-These primitives do not turn personal access tokens into delegated OAuth
-tokens, and they do not register public endpoints by themselves.
+- `GET` and `POST /oauth/authorize` for login, consent, denial, and S256 PKCE
+- `POST /oauth/token` for authorization-code exchange and rotating refresh tokens
+- `POST /oauth/revoke` for client-owned access and refresh token revocation
+- `GET /.well-known/oauth-authorization-server` for RFC 8414 metadata
+- authenticated client registration, editing, secret rotation, and disable routes under `/auth/oauth/clients`
+- authenticated connected-application listing and disconnect routes under `/auth/oauth/connections`
+
+The implementation stores only hashes for codes, access tokens, refresh
+tokens, browser authorization state, and confidential client secrets. Client
+redirects use exact matching. Consent and issued credentials remain bound to
+the client, subject, scopes, resources, audiences, and optional workspace.
+
+This profile does not implement client credentials, token introspection, or
+OpenID Connect. Do not configure or advertise those capabilities until their
+authentication and authorization policies are implemented.
 
 ## 🧪 Testing
 

@@ -161,7 +161,28 @@ routes: minting and revoking both carry semantics a generic route does not.
 The authorization server is opt-in through `config/auth.ts` under
 `oauthProvider`. It is separate from social sign-in, where Stacks is the OAuth
 client. The provider profile is Authorization Code with S256 PKCE and rotating
-refresh tokens. It does not support implicit or password grants.
+refresh tokens. It does not support implicit, password, or client-credentials
+grants. It also does not implement token introspection or OpenID Connect.
+
+When enabled, the default auth route bundle registers:
+
+- `GET` and `POST /oauth/authorize`
+- `POST /oauth/token`
+- `POST /oauth/revoke`
+- `GET /.well-known/oauth-authorization-server`
+- owner-managed clients under `/auth/oauth/clients`
+- user-managed connected applications under `/auth/oauth/connections`
+
+Set a canonical `issuer`, then register every scope and resource explicitly.
+Resource audiences are absolute URIs and redirect URIs use exact matching.
+The consent view is `auth/oauth/consent` by default and can be overridden with
+`oauthProvider.consent.view`. Use `oauthProvider.consent.resolveWorkspace` when
+the application must bind consent to current server-owned workspace authority.
+
+Provider actions return 404 while `oauthProvider.enabled` is false. The token
+and revocation endpoints use protocol credentials and intentionally skip
+browser CSRF. Authorization approval, client management, and disconnect remain
+authenticated and CSRF protected.
 
 - `resolveOAuthProviderConfig(options)` returns `null` unless explicitly enabled
 - `generatePkceVerifier()` creates a 256-bit RFC 7636 verifier
