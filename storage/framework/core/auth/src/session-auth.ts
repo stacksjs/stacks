@@ -357,10 +357,10 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
     return false
 
   try {
-    const session = await db.primary.selectFrom('sessions')
-      .where('id', '=', sessionId)
-      .selectAll()
-      .executeTakeFirst()
+    const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
+    const session = config.auth?.session?.enforceFingerprint
+      ? await query.select(['user_id', 'expires_at', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['user_id', 'expires_at']).executeTakeFirst()
 
     if (!session)
       return false
