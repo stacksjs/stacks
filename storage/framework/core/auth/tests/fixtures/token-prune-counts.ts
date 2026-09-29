@@ -24,6 +24,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 const { createToken, revokeAllTokens, deleteExpiredTokens, deleteRevokedTokens, deleteExpiredRefreshTokens, deleteRevokedRefreshTokens } = await import('../../src/tokens')
+const { Auth } = await import('../../src/authentication')
 
 async function rows(table: 'oauth_access_tokens' | 'oauth_refresh_tokens'): Promise<number> {
   return (await db.selectFrom(table).selectAll().execute() as unknown[]).length
@@ -57,6 +58,22 @@ async function check(name: string, mode: 'expired' | 'revoked', table: 'oauth_ac
   catch (error) { failures.push(`${name}: ${error instanceof Error ? error.message : String(error)}`) }
 }
 
+async function checkAuthRevokedPairs() {
+  await seed('revoked')
+  try {
+    const accessBefore = await rows('oauth_access_tokens')
+    const refreshBefore = await rows('oauth_refresh_tokens')
+    const returned = await Auth.pruneRevokedTokens()
+    const accessRemoved = accessBefore - await rows('oauth_access_tokens')
+    const refreshRemoved = refreshBefore - await rows('oauth_refresh_tokens')
+    assert.equal(accessRemoved, 2, 'Auth.pruneRevokedTokens should prune the two revoked access tokens')
+    assert.equal(refreshRemoved, 2, 'Auth.pruneRevokedTokens should prune their paired refresh tokens')
+    assert.equal(returned, accessRemoved, 'Auth.pruneRevokedTokens should return its access-token delete count')
+    console.log('PASS Auth.pruneRevokedTokens')
+  }
+  catch (error) { failures.push(`Auth.pruneRevokedTokens: ${error instanceof Error ? error.message : String(error)}`) }
+}
+
 try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
@@ -69,6 +86,7 @@ try {
   await check('deleteRevokedRefreshTokens', 'revoked', 'oauth_refresh_tokens', () => deleteRevokedRefreshTokens(-1))
   await check('deleteExpiredTokens', 'expired', 'oauth_access_tokens', () => deleteExpiredTokens())
   await check('deleteRevokedTokens', 'revoked', 'oauth_access_tokens', () => deleteRevokedTokens(-1))
+  await checkAuthRevokedPairs()
 
   assert.deepEqual(failures, [], `${dialect}: every prune helper must return the rows it removed`)
   console.log('token prune counts OK')

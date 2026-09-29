@@ -111,7 +111,7 @@ async function revokeObservedIdleAccessToken(accessToken: AccessTokenActivity): 
 
   await revoke.execute()
 }
-import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
+import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, deleteRevokedTokens, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -1055,11 +1055,10 @@ export class Auth {
    * Delete all revoked tokens (cleanup)
    */
   public static async pruneRevokedTokens(): Promise<number> {
-    const result = await db.deleteFrom('oauth_access_tokens')
-      .where('revoked', '=', true)
-      .executeTakeFirst()
-
-    return Number(result?.numDeletedRows) || 0
+    // Preserve the facade's immediate-prune behavior while delegating to the
+    // paired cleanup. Deleting access rows directly strands their refresh rows
+    // because the auth schema intentionally has no cascade foreign key.
+    return deleteRevokedTokens(-1)
   }
 
   /**
