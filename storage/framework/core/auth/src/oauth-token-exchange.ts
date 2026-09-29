@@ -1,4 +1,5 @@
 import type { AuthorizationCodeGrant, AuthorizationCodeRedemption, AuthorizationCodeResult } from './oauth-authorization-codes'
+import type { OAuthDelegatedSubject } from './oauth-delegated-access'
 import { createHash, randomBytes } from 'node:crypto'
 import {
   db,
@@ -17,6 +18,7 @@ export interface ExchangeAuthorizationCodeInput extends AuthorizationCodeRedempt
   accessTokenLifetimeMs: number
   refreshTokenLifetimeMs: number
   issueRefreshToken?: boolean
+  isSubjectEligible?: OAuthSubjectEligibility
 }
 
 export interface ExchangeOAuthAuthorizationCodeInput extends ExchangeAuthorizationCodeInput {
@@ -30,7 +32,10 @@ export interface RefreshOAuthDelegatedTokenInput {
   scopes?: readonly string[]
   accessTokenLifetimeMs: number
   refreshTokenLifetimeMs: number
+  isSubjectEligible?: OAuthSubjectEligibility
 }
+
+export type OAuthSubjectEligibility = (subject: OAuthDelegatedSubject) => boolean | Promise<boolean>
 
 export interface DelegatedTokenPair {
   accessToken: string
@@ -108,6 +113,7 @@ interface MintDelegatedTokenOptions {
 type DelegatedGrant = Omit<AuthorizationCodeGrant, 'redirectUri'>
 
 class InactiveOAuthClientError extends Error {}
+class InactiveOAuthSubjectError extends Error {}
 
 const invalidGrant = { ok: false as const, reason: 'invalid_grant' as const }
 const invalidClient = { ok: false as const, reason: 'invalid_client' as const }
@@ -344,6 +350,14 @@ export async function exchangeAuthorizationCode(
       `, [grant.clientId]) as unknown[]
       if (clients.length !== 1)
         throw new InactiveOAuthClientError()
+      if (input.isSubjectEligible && !await input.isSubjectEligible({
+        type: grant.subjectType,
+        id: grant.subjectId,
+        clientId: grant.clientId,
+        grantId: grant.grantId,
+        workspaceId: grant.workspaceId,
+      }))
+        throw new InactiveOAuthSubjectError()
 
       return mintDelegatedTokenPair(grant, {
         accessLifetimeMs,
@@ -353,7 +367,7 @@ export async function exchangeAuthorizationCode(
     })
   }
   catch (error) {
-    if (error instanceof InactiveOAuthClientError)
+    if (error instanceof InactiveOAuthClientError || error instanceof InactiveOAuthSubjectError)
       return invalidGrant
     throw error
   }
@@ -440,6 +454,16 @@ export async function refreshOAuthDelegatedToken(
     `, [refresh.oauth_grant_id]) as unknown as StoredOAuthGrant[]
     const grant = grantFromRefreshRows(refresh, grants[0])
     if (!grant) {
+      await revokeDelegatedRefreshFamily(refresh)
+      return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: true }
+    }
+    if (input.isSubjectEligible && !await input.isSubjectEligible({
+      type: grant.subjectType,
+      id: grant.subjectId,
+      clientId: grant.clientId,
+      grantId: grant.grantId,
+      workspaceId: grant.workspaceId,
+    })) {
       await revokeDelegatedRefreshFamily(refresh)
       return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: true }
     }

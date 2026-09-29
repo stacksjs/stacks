@@ -1,4 +1,5 @@
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
+import type { OAuthSubjectEligibility } from './oauth-token-exchange'
 import {
   exchangeOAuthAuthorizationCode,
   refreshOAuthDelegatedToken,
@@ -18,10 +19,15 @@ export interface OAuthTokenEndpointRequest {
   authorization?: string | null
 }
 
+export interface OAuthTokenEndpointDependencies {
+  isSubjectEligible: OAuthSubjectEligibility
+}
+
 /** Execute one token request against the resolved provider without registering a route. */
 export async function handleOAuthTokenRequest(
   provider: ResolvedOAuthProviderConfig,
   input: OAuthTokenEndpointRequest,
+  dependencies: OAuthTokenEndpointDependencies,
 ): Promise<Response> {
   const basic = /^Basic\s/i.test(input.authorization ?? '')
   const responseOptions = { clientAuthenticatedWithBasic: basic }
@@ -40,6 +46,7 @@ export async function handleOAuthTokenRequest(
         codeVerifier: request.codeVerifier,
         accessTokenLifetimeMs: provider.lifetimes.accessToken,
         refreshTokenLifetimeMs: provider.lifetimes.refreshToken,
+        isSubjectEligible: dependencies.isSubjectEligible,
       })
       return oauthTokenExchangeResponse(result, responseOptions)
     }
@@ -51,6 +58,7 @@ export async function handleOAuthTokenRequest(
       scopes: request.scopes,
       accessTokenLifetimeMs: provider.lifetimes.accessToken,
       refreshTokenLifetimeMs: provider.lifetimes.refreshToken,
+      isSubjectEligible: dependencies.isSubjectEligible,
     })
     return oauthTokenExchangeResponse(result, responseOptions)
   }

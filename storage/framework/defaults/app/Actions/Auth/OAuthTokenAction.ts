@@ -1,7 +1,17 @@
+import type { OAuthSubjectEligibility } from '@stacksjs/auth'
 import { Action } from '@stacksjs/actions'
 import { handleOAuthTokenRequest, resolveOAuthProviderConfig } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
+import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
+
+const isSubjectEligible: OAuthSubjectEligibility = async (subject) => {
+  if (subject.type !== 'users') return false
+  return Boolean(await db.primary.selectFrom('users')
+    .where('id', '=', subject.id)
+    .select('id')
+    .executeTakeFirst())
+}
 
 export default new Action({
   name: 'OAuthTokenAction',
@@ -20,6 +30,6 @@ export default new Action({
       body: (await request.rawBody?.()) ?? '',
       contentType: request.headers.get('content-type'),
       authorization: request.headers.get('authorization'),
-    })
+    }, { isSubjectEligible })
   },
 })

@@ -1023,6 +1023,28 @@ try {
     accessTokenLifetimeMs: 60_000,
     refreshTokenLifetimeMs: 120_000,
   }), { ok: false, reason: 'invalid_grant' })
+  const ineligibleRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const ineligibleConsent = await approveOAuthAuthorizationRequestSession({
+    provider,
+    requestId: ineligibleRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    authorizationCodeLifetimeMs: 60_000,
+  })
+  assert(ineligibleConsent.ok)
+  const ineligibleExchange = await handleOAuthTokenRequest(provider, {
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: String(publicRegistration.client.id),
+      code: ineligibleConsent.value.code,
+      redirect_uri: validatedRequest.redirectUri,
+      code_verifier: verifier,
+    }).toString(),
+    contentType: 'application/x-www-form-urlencoded',
+  }, { isSubjectEligible: async () => false })
+  assert.equal(ineligibleExchange.status, 400)
+  assert.deepEqual(await ineligibleExchange.json(), { error: 'invalid_grant' })
   const endpointRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const endpointConsent = await approveOAuthAuthorizationRequestSession({
     provider,
@@ -1042,7 +1064,7 @@ try {
       code_verifier: verifier,
     }).toString(),
     contentType: 'application/x-www-form-urlencoded',
-  })
+  }, { isSubjectEligible: async subject => subject.type === 'users' && subject.id === 42 })
   assert.equal(endpointExchange.status, 200)
   assert.equal(endpointExchange.headers.get('cache-control'), 'no-store')
   const endpointTokens = await endpointExchange.json() as Record<string, unknown>
@@ -1060,7 +1082,7 @@ try {
       scope: 'issues:read',
     }).toString(),
     contentType: 'application/x-www-form-urlencoded',
-  })
+  }, { isSubjectEligible: async subject => subject.type === 'users' && subject.id === 42 })
   assert.equal(endpointRefresh.status, 200)
   const refreshedEndpointTokens = await endpointRefresh.json() as Record<string, unknown>
   assert.equal(refreshedEndpointTokens.scope, 'issues:read')
@@ -1109,6 +1131,24 @@ try {
     workspaceId: null,
     isSubjectEligible: async () => false,
   }), { ok: false, reason: 'invalid_token' })
+  const ineligibleRefreshBody = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: String(publicRegistration.client.id),
+    refresh_token: String(refreshedEndpointTokens.refresh_token),
+    scope: 'issues:read',
+  }).toString()
+  const ineligibleRefresh = await handleOAuthTokenRequest(provider, {
+    body: ineligibleRefreshBody,
+    contentType: 'application/x-www-form-urlencoded',
+  }, { isSubjectEligible: async () => false })
+  assert.equal(ineligibleRefresh.status, 400)
+  assert.deepEqual(await ineligibleRefresh.json(), { error: 'invalid_grant' })
+  const revokedFamilyRefresh = await handleOAuthTokenRequest(provider, {
+    body: ineligibleRefreshBody,
+    contentType: 'application/x-www-form-urlencoded',
+  }, { isSubjectEligible: async () => true })
+  assert.equal(revokedFamilyRefresh.status, 400)
+  assert.deepEqual(await revokedFamilyRefresh.json(), { error: 'invalid_grant' })
   const revocationRegistration = await registerOAuthClient(provider, 42, {
     name: 'Revocation integration',
     type: 'public',
