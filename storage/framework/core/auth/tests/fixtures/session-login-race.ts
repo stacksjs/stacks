@@ -59,7 +59,7 @@ try {
     // The public asynchronous limiter-store seam is reached after the real
     // bcrypt verification, but before session persistence. Commit a competing
     // credential change there without mocking the database or hash verifier.
-    RateLimiter.useStore({ get: () => undefined, set() {}, async delete() {
+    RateLimiter.useStore({ get: () => undefined, recordFailedAttempt() {}, async delete() {
       changed = true
       if (change === 'password') {
         await db.updateTable('users').set({ password: newHash, password_changed_at: sqlDateTime() } as never).where('id', '=', 1).execute()
@@ -241,7 +241,7 @@ try {
       await db.updateTable('oauth_clients').set({ secret: grantClient.plainTextSecret }).where('id', '=', grantClient.client.id).execute()
     const before = await db.primary.selectFrom('oauth_access_tokens').selectAll().orderBy('id').execute()
     let intervened = false
-    RateLimiter.useStore({ get: () => undefined, set() {}, async delete() {
+    RateLimiter.useStore({ get: () => undefined, recordFailedAttempt() {}, async delete() {
       intervened = true
       if (change === 'revoked') await revokeClient(grantClient.client.id)
       if (change === 'rotated') await db.updateTable('oauth_clients').set({ secret: 'synthetic-replaced-secret' }).where('id', '=', grantClient.client.id).execute()
@@ -276,7 +276,7 @@ try {
       let held = false
       let done = false
       let pending: Promise<unknown> | undefined
-      RateLimiter.useStore({ get: () => undefined, set() {}, async delete() {
+      RateLimiter.useStore({ get: () => undefined, recordFailedAttempt() {}, async delete() {
         await blocker.unsafe('BEGIN'); held = true
         await blocker.unsafe(`UPDATE oauth_clients SET revoked = TRUE WHERE id = ${dialect === 'postgres' ? '$1' : '?'}`, [grantClient.client.id])
       } })

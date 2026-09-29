@@ -33,10 +33,9 @@ function recordFailure(current: RateLimitEntry | undefined, now: number): RateLi
  */
 export interface RateLimiterStore {
   get: (key: string) => Promise<RateLimitEntry | undefined> | RateLimitEntry | undefined
-  set: (key: string, entry: RateLimitEntry, ttlMs: number) => Promise<void> | void
   delete: (key: string) => Promise<void> | void
-  /** Required for stores shared across processes. */
-  recordFailedAttempt?: (key: string, now: number, ttlMs: number) => Promise<void> | void
+  /** Must update one failure atomically when the store is shared. */
+  recordFailedAttempt: (key: string, now: number, ttlMs: number) => Promise<void> | void
   close?: () => Promise<void> | void
 }
 
@@ -295,15 +294,7 @@ export class RateLimiter {
     email = email.toLowerCase()
     const now = Date.now()
     const active = await configuredStore()
-    if (active.recordFailedAttempt) {
-      await active.recordFailedAttempt(email, now, LOCKOUT_DURATION)
-      return
-    }
-
-    // Legacy custom stores retain their existing contract. Shared stores must
-    // implement recordFailedAttempt so the update is atomic across workers.
-    const entry = recordFailure(await active.get(email), now)
-    await active.set(email, entry, LOCKOUT_DURATION)
+    await active.recordFailedAttempt(email, now, LOCKOUT_DURATION)
   }
 
   static async resetAttempts(email: string): Promise<void> {

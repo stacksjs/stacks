@@ -53,8 +53,12 @@ test('preserves sequential custom-store calls, normalized keys and TTL', async (
   const writes: Array<{ key: string, ttl: number }> = []
   RateLimiter.useStore({
     async get(key) { return entries.get(key) },
-    async set(key, entry, ttl) {
-      entries.set(key, { ...entry })
+    recordFailedAttempt(key, now, ttl) {
+      const current = entries.get(key) ?? { attempts: 0, lockedUntil: 0 }
+      const attempts = current.lockedUntil > 0 && current.lockedUntil <= now ? 1 : current.attempts + 1
+      entries.set(key, attempts >= 5
+        ? { attempts: 0, lockedUntil: now + ttl }
+        : { attempts, lockedUntil: current.lockedUntil })
       writes.push({ key, ttl })
     },
     async delete(key) { entries.delete(key) },
@@ -66,12 +70,15 @@ test('preserves sequential custom-store calls, normalized keys and TTL', async (
   expect(await RateLimiter.isRateLimited('custom@example.invalid')).toBe(false)
 })
 
-test.each(['get', 'set'] as const)('propagates a custom-store %s failure', async (method) => {
+test.each(['get', 'recordFailedAttempt'] as const)('propagates a custom-store %s failure', async (method) => {
   const failure = new Error(`fixture ${method} failure`)
   RateLimiter.useStore({
     async get() { if (method === 'get') throw failure; return undefined },
-    async set() { if (method === 'set') throw failure },
+    async recordFailedAttempt() { if (method === 'recordFailedAttempt') throw failure },
     async delete() {},
   })
-  await expect(RateLimiter.recordFailedAttempt('failure@example.invalid')).rejects.toBe(failure)
+  const operation = method === 'get'
+    ? RateLimiter.isRateLimited('failure@example.invalid')
+    : RateLimiter.recordFailedAttempt('failure@example.invalid')
+  await expect(operation).rejects.toBe(failure)
 })

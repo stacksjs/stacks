@@ -5,6 +5,20 @@ import { RateLimiter } from '../src/rate-limiter'
 
 afterEach(() => RateLimiter.useMemoryStore())
 
+async function recordCacheFailure(
+  cache: ReturnType<typeof createMemoryCache>,
+  key: string,
+  now: number,
+  ttl: number,
+): Promise<void> {
+  const current = await cache.get<RateLimitEntry>(key)
+  const expired = current && current.lockedUntil > 0 && current.lockedUntil <= now
+  const attempts = (current && !expired ? current.attempts : 0) + 1
+  await cache.set(key, attempts >= 5
+    ? { attempts: 0, lockedUntil: now + ttl }
+    : { attempts, lockedUntil: current && !expired ? current.lockedUntil : 0 }, ttl / 1000)
+}
+
 test('an expired read cannot delete a concurrently renewed lockout', async () => {
   const cache = createMemoryCache({ checkPeriod: 0 })
   const key = 'renewal@example.invalid'
@@ -23,7 +37,7 @@ test('an expired read cannot delete a concurrently renewed lockout', async () =>
         }
         return entry
       },
-      async set(key, entry, ttl) { await cache.set(key, entry, ttl / 1000) },
+      recordFailedAttempt: (key, now, ttl) => recordCacheFailure(cache, key, now, ttl),
       async delete(key) { await cache.remove(key) },
     })
     const expiredRead = RateLimiter.isRateLimited(key)
@@ -47,7 +61,7 @@ test('recording after expiry starts a fresh count without needing an earlier che
     await cache.set(key, { attempts: 4, lockedUntil: Date.now() - 1 })
     RateLimiter.useStore({
       get: key => cache.get<RateLimitEntry>(key),
-      async set(key, entry, ttl) { await cache.set(key, entry, ttl / 1000) },
+      recordFailedAttempt: (key, now, ttl) => recordCacheFailure(cache, key, now, ttl),
       async delete(key) { await cache.remove(key) },
     })
     await RateLimiter.recordFailedAttempt(key)

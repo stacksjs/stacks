@@ -165,7 +165,7 @@ try {
     assert.equal((await verify(wrong, 'ABCDEF')).status, 401)
     assert.equal((await verify(wrong)).status, 401)
     const limited = await createTwoFactorChallenge(1)
-    RateLimiter.useStore({ get: () => ({ attempts: 0, lockedUntil: Date.now() + 60_000 }), set: () => {}, delete: () => {} })
+    RateLimiter.useStore({ get: () => ({ attempts: 0, lockedUntil: Date.now() + 60_000 }), recordFailedAttempt: () => {}, delete: () => {} })
     try { await assert.rejects(verify(limited), (error: unknown) => error instanceof Error && 'status' in error && error.status === 429) }
     finally { RateLimiter.useMemoryStore() }
     assert.equal((await verify(limited)).status, 401)
@@ -228,7 +228,7 @@ try {
       let reached = false
       // Exercise the public asynchronous limiter-store boundary after the
       // real TOTP step is claimed, before the real action mints its token.
-      RateLimiter.useStore({ get: () => undefined, set: () => {}, delete: async () => {
+      RateLimiter.useStore({ get: () => undefined, recordFailedAttempt: () => {}, delete: async () => {
         reached = true
         child = Bun.spawn([process.execPath, `--config=${configPath}`, '--no-env-file', import.meta.path], {
           env: { ...process.env, STACKS_TWOFACTOR_RECOVERY_WORKER: 'reset' }, stdout: 'pipe', stderr: 'pipe',
