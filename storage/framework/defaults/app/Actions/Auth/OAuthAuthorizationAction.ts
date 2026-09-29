@@ -7,6 +7,7 @@ import { handleOAuthAuthorizationPageRequest, resolveOAuthProviderConfig } from 
 import { config } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { response } from '@stacksjs/router'
+import { oauthPositiveId } from './oauth-request'
 
 function identityLabel(user: { email: string, [key: string]: unknown }): string {
   const name = typeof user.name === 'string' ? user.name.trim() : ''
@@ -42,10 +43,12 @@ export default new Action({
       return response.notFound('OAuth provider is not enabled')
 
     const user = await request.user()
+    const subjectId = user ? oauthPositiveId(user.id) : null
     return handleOAuthAuthorizationPageRequest({
       provider,
       request: request as unknown as Request,
       identity: user ? { label: identityLabel(user) } : null,
+      subject: subjectId ? { type: 'users', id: subjectId } : null,
       csrfToken: (request as unknown as { _csrfToken?: string })._csrfToken,
       dependencies: { render: renderConsentView },
     })

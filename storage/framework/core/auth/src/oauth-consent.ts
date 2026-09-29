@@ -47,6 +47,15 @@ export interface ReusableOAuthConsentInput {
   rememberForMs: number
 }
 
+export interface ReuseOAuthAuthorizationRequestSessionInput {
+  provider: ResolvedOAuthProviderConfig
+  requestId: string
+  browserSessionId: string
+  subjectType: string
+  subjectId: number
+  workspaceId?: string | null
+}
+
 export interface LoadOAuthAuthorizationConsentViewInput {
   provider: ResolvedOAuthProviderConfig
   requestId: string
@@ -86,11 +95,14 @@ export class OAuthAuthorizationConsentRequestError extends Error {
 }
 
 interface StoredRememberedConsent {
+  id: string
   scopes: string
   resources: string
   audiences: string
   created_at: string | Date
 }
+
+class NoReusableOAuthConsentError extends Error {}
 
 function storedValues(value: string): string[] | null {
   try {
@@ -207,18 +219,20 @@ export async function loadOAuthAuthorizationConsentView(
   }
 }
 
-/** Whether a recent active grant already covers the requested consent. */
-export async function hasReusableOAuthConsent(input: ReusableOAuthConsentInput): Promise<boolean> {
+async function reusableOAuthConsentGrantId(
+  input: ReusableOAuthConsentInput,
+  options: { exact?: boolean, lock?: boolean } = {},
+): Promise<string | null> {
   if (!Number.isFinite(input.rememberForMs) || input.rememberForMs <= 0
     || !Number.isSafeInteger(input.subjectId) || input.subjectId <= 0
     || !/^[A-Za-z0-9_.:-]{1,255}$/.test(input.subjectType)
     || (input.workspaceId != null && (!input.workspaceId || input.workspaceId.length > 255)))
-    return false
+    return null
 
   const clientId = Number(input.request.clientId)
   const cutoff = new Date(Date.now() - input.rememberForMs)
   if (!Number.isSafeInteger(clientId) || clientId <= 0 || !Number.isFinite(cutoff.getTime()))
-    return false
+    return null
 
   const client = await loadOAuthAuthorizationClient(input.request.clientId)
   if (!client || client.revoked || client.type !== input.request.clientType
@@ -226,7 +240,7 @@ export async function hasReusableOAuthConsent(input: ReusableOAuthConsentInput):
     || !client.grantTypes.includes('authorization_code')
     || !includesAll(client.scopes, input.request.scopes)
     || !includesAll(client.resources, input.request.resources))
-    return false
+    return null
 
   const sql = sqlHelpers(getDatabaseDialect())
   const params: unknown[] = [clientId, input.subjectType, input.subjectId, sqlDateTime(cutoff)]
@@ -234,8 +248,11 @@ export async function hasReusableOAuthConsent(input: ReusableOAuthConsentInput):
   const workspacePredicate = workspace === null
     ? 'g.workspace_id IS NULL'
     : `g.workspace_id = ${sql.param(params.push(workspace))}`
+  const lock = options.lock
+    ? sql.isPostgres ? ' FOR SHARE' : sql.isMysql ? ' LOCK IN SHARE MODE' : ''
+    : ''
   const rows = await db.primary.unsafe(`
-    SELECT g.scopes, g.resources, g.audiences, g.created_at
+    SELECT g.id, g.scopes, g.resources, g.audiences, g.created_at
     FROM oauth_grants g
     JOIN oauth_clients c ON c.id = g.client_id AND c.revoked = ${sql.boolFalse}
     WHERE g.client_id = ${sql.param(1)}
@@ -244,21 +261,77 @@ export async function hasReusableOAuthConsent(input: ReusableOAuthConsentInput):
       AND g.revoked_at IS NULL
       AND g.created_at >= ${sql.param(4)}
       AND ${workspacePredicate}
-    ORDER BY g.created_at DESC, g.id DESC
+    ORDER BY g.created_at DESC, g.id DESC${lock}
   `, params) as unknown as StoredRememberedConsent[]
 
-  return rows.some((row) => {
+  for (const row of rows) {
+    const grantId = String(row.id)
     const scopes = storedValues(row.scopes)
     const resources = storedValues(row.resources)
     const audiences = storedValues(row.audiences)
     const createdAt = parseSqlDateTime(row.created_at)?.getTime() ?? 0
-    return createdAt >= cutoff.getTime()
+    const covers = /^[a-f0-9]{32}$/.test(grantId)
+      && createdAt >= cutoff.getTime()
       && scopes !== null
       && resources !== null
       && audiences !== null
       && includesAll(scopes, input.request.scopes)
       && includesResourceBindings(resources, audiences, input.request.resources, input.request.audiences)
-  })
+    if (!covers)
+      continue
+    if (options.exact && (JSON.stringify(scopes) !== JSON.stringify(input.request.scopes)
+      || JSON.stringify(resources) !== JSON.stringify(input.request.resources)
+      || JSON.stringify(audiences) !== JSON.stringify(input.request.audiences)))
+      continue
+    return grantId
+  }
+  return null
+}
+
+/** Whether a recent active grant already covers the requested consent. */
+export async function hasReusableOAuthConsent(input: ReusableOAuthConsentInput): Promise<boolean> {
+  return await reusableOAuthConsentGrantId(input) !== null
+}
+
+/** Reuse one exact remembered grant without creating a duplicate connection. */
+export async function reuseOAuthAuthorizationRequestSession(
+  input: ReuseOAuthAuthorizationRequestSessionInput,
+): Promise<OAuthAuthorizationRequestSessionResult<OAuthAuthorizationConsentResult> | null> {
+  if (input.provider.consent.rememberFor <= 0)
+    return null
+
+  try {
+    return await withOAuthAuthorizationRequestSession(input.requestId, input.browserSessionId, async (request) => {
+      assertOAuthAuthorizationProviderPolicy(input.provider, request)
+      const grantId = await reusableOAuthConsentGrantId({
+        request,
+        subjectType: input.subjectType,
+        subjectId: input.subjectId,
+        workspaceId: input.workspaceId,
+        rememberForMs: input.provider.consent.rememberFor,
+      }, { exact: true, lock: true })
+      if (!grantId)
+        throw new NoReusableOAuthConsentError()
+
+      const code = await issueAuthorizationCode({
+        grantId,
+        redirectUri: request.redirectUri,
+        codeChallenge: request.codeChallenge,
+        lifetimeMs: input.provider.lifetimes.authorizationCode,
+      })
+      return {
+        code,
+        grantId,
+        redirectUri: request.redirectUri,
+        state: request.state,
+      }
+    })
+  }
+  catch (error) {
+    if (error instanceof NoReusableOAuthConsentError)
+      return null
+    throw error
+  }
 }
 
 /** Atomically turn one authenticated browser approval into a grant and code. */

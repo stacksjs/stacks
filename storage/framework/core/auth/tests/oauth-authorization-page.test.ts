@@ -90,6 +90,50 @@ describe('OAuth authorization page boundary', () => {
     expect(response.headers.get('referrer-policy')).toBe('no-referrer')
   })
 
+  it('reuses remembered consent for the authenticated subject without rendering the form', async () => {
+    let rendered = false
+    let reuseInput: Record<string, unknown> = {}
+    const response = await handleOAuthAuthorizationPageRequest({
+      provider: {
+        ...provider,
+        consent: { ...provider.consent, rememberFor: 60_000 },
+      },
+      request: new Request(`https://id.example.com/oauth/authorize?request_id=${requestId}`, {
+        headers: { cookie: `__Host-stacks-oauth-session=${'b'.repeat(43)}` },
+      }),
+      identity: { label: 'Ada Lovelace' },
+      subject: { type: 'users', id: 42, workspaceId: 'workspace-1' },
+      dependencies: dependencies({
+        reuseConsent: async (input: Record<string, unknown>) => {
+          reuseInput = input
+          return {
+            ok: true,
+            value: {
+              code: 'c'.repeat(43),
+              grantId: 'a'.repeat(32),
+              redirectUri: 'https://client.example.com/callback',
+              state: 'client-state',
+            },
+          }
+        },
+        render: async () => {
+          rendered = true
+          return '<main>Must not render</main>'
+        },
+      }),
+    })
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('https://client.example.com/callback?code=ccccccccccccccccccccccccccccccccccccccccccc&state=client-state')
+    expect(reuseInput).toMatchObject({
+      requestId,
+      subjectType: 'users',
+      subjectId: 42,
+      workspaceId: 'workspace-1',
+    })
+    expect(rendered).toBe(false)
+  })
+
   it('fails locally instead of redirecting malformed, expired, or mixed resume requests', async () => {
     for (const url of [
       'https://id.example.com/oauth/authorize?request_id=bad',

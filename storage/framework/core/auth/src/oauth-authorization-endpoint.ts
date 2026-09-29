@@ -12,6 +12,7 @@ import {
   loadOAuthAuthorizationConsentView,
   OAuthAuthorizationConsentRequestError,
   parseOAuthAuthorizationConsentRequest,
+  reuseOAuthAuthorizationRequestSession,
 } from './oauth-consent'
 import type { OAuthAuthorizationConsentView } from './oauth-consent'
 import { isOAuthAuthorizationRequestId } from './oauth-authorization-requests'
@@ -47,6 +48,12 @@ export interface OAuthAuthorizationPageIdentity {
   workspaceLabel?: string | null
 }
 
+export interface OAuthAuthorizationPageSubject {
+  type: string
+  id: number
+  workspaceId?: string | null
+}
+
 export interface OAuthAuthorizationConsentPageContext {
   consent: OAuthAuthorizationConsentView
   signedInIdentity: string
@@ -58,6 +65,7 @@ export interface OAuthAuthorizationConsentPageContext {
 export interface OAuthAuthorizationPageDependencies {
   begin?: typeof beginOAuthAuthorizationRequest
   loadConsent?: typeof loadOAuthAuthorizationConsentView
+  reuseConsent?: typeof reuseOAuthAuthorizationRequestSession
   render: (view: string, context: OAuthAuthorizationConsentPageContext) => Promise<string>
 }
 
@@ -66,6 +74,8 @@ export interface HandleOAuthAuthorizationPageRequestInput {
   request: Request
   /** Null until ordinary login and any required 2FA have completed. */
   identity: OAuthAuthorizationPageIdentity | null
+  /** Server-derived authority used only for remembered-consent checks. */
+  subject?: OAuthAuthorizationPageSubject | null
   /** Router-seeded CSRF proof, required only when rendering the form. */
   csrfToken?: string
   dependencies: OAuthAuthorizationPageDependencies
@@ -141,6 +151,38 @@ export async function handleOAuthAuthorizationPageRequest(
         query: url.searchParams,
         browserSessionId: browser.id,
       })).requestId
+    }
+    catch (error) {
+      if (!(error instanceof OAuthAuthorizationRequestError))
+        throw error
+      const protocol = oauthAuthorizationRequestErrorResponse(error)
+      if (!protocol)
+        return pageResponse(JSON.stringify({ error: 'invalid_request' }), 400, browser.cookie, { 'Content-Type': 'application/json; charset=utf-8' })
+      const headers = new Headers(protocol.headers)
+      headers.set('Set-Cookie', browser.cookie)
+      return new Response(protocol.body, { status: protocol.status, headers })
+    }
+  }
+
+  if (input.identity && input.subject && input.provider.consent.rememberFor > 0) {
+    try {
+      const reuseConsent = input.dependencies.reuseConsent ?? reuseOAuthAuthorizationRequestSession
+      const reused = await reuseConsent({
+        provider: input.provider,
+        requestId,
+        browserSessionId: browser.id,
+        subjectType: input.subject.type,
+        subjectId: input.subject.id,
+        workspaceId: input.subject.workspaceId,
+      })
+      if (reused) {
+        if (!reused.ok)
+          return pageResponse(JSON.stringify({ error: 'invalid_request' }), 400, browser.cookie, { 'Content-Type': 'application/json; charset=utf-8' })
+        const protocol = oauthAuthorizationConsentResponse(reused.value)
+        const headers = new Headers(protocol.headers)
+        headers.set('Set-Cookie', browser.cookie)
+        return new Response(protocol.body, { status: protocol.status, headers })
+      }
     }
     catch (error) {
       if (!(error instanceof OAuthAuthorizationRequestError))

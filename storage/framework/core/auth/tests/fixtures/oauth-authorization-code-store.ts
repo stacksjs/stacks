@@ -76,6 +76,7 @@ const {
   refreshOAuthDelegatedToken,
   pruneOAuthAuthorizationArtifacts,
   registerOAuthClient,
+  reuseOAuthAuthorizationRequestSession,
   rotateOAuthClientSecret,
   resolveOAuthProviderConfig,
   refreshToken,
@@ -382,6 +383,28 @@ try {
   }
   assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, rememberForMs: 0 }), false)
   assert.equal(await hasReusableOAuthConsent(rememberedConsent), true)
+  const rememberingProvider = resolveOAuthProviderConfig({
+    ...providerConfig,
+    consent: { rememberFor: 60_000 },
+  })!
+  const rememberedRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const grantsBeforeReuse = await db.selectFrom('oauth_grants').select('id').get()
+  const reusedConsent = await reuseOAuthAuthorizationRequestSession({
+    provider: rememberingProvider,
+    requestId: rememberedRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+  })
+  assert(reusedConsent?.ok)
+  assert.equal(reusedConsent.value.grantId, rememberedGrant.id)
+  assert.equal((await db.selectFrom('oauth_grants').select('id').get()).length, grantsBeforeReuse.length)
+  assert.equal((await withAuthorizationCode(reusedConsent.value.code, {
+    clientId: publicRegistration.client.id,
+    redirectUri: validatedRequest.redirectUri,
+    codeVerifier: verifier,
+  }, async grant => grant.grantId)).ok, true)
   assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, workspaceId: 'workspace-2' }), false)
   assert.equal(await hasReusableOAuthConsent({ ...rememberedConsent, subjectId: 43 }), false)
   assert.equal(await hasReusableOAuthConsent({
@@ -407,6 +430,16 @@ try {
     .where('id', '=', rememberedGrant.id)
     .execute()
   assert.equal(await hasReusableOAuthConsent(rememberedConsent), false)
+  const revokedRememberedRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  assert.equal(await reuseOAuthAuthorizationRequestSession({
+    provider: rememberingProvider,
+    requestId: revokedRememberedRequestId,
+    browserSessionId: browserSession,
+    subjectType: 'users',
+    subjectId: 42,
+    workspaceId: 'workspace-1',
+  }), null)
+  assert(await loadOAuthAuthorizationRequestSession(revokedRememberedRequestId, browserSession), 'failed reuse must not consume the authorization request')
 
   const handledApprovalRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const handledApproval = await handleOAuthAuthorizationConsentRequest({
