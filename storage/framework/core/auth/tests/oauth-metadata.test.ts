@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'bun:test'
-import { oauthAuthorizationServerMetadata } from '../src/oauth-metadata'
+import {
+  oauthAuthorizationServerMetadata,
+  oauthAuthorizationServerMetadataPath,
+} from '../src/oauth-metadata'
 import { resolveOAuthProviderConfig } from '../src/oauth-provider'
 
 describe('OAuth authorization-server metadata', () => {
+  it('derives the RFC 8414 discovery path from the complete issuer', () => {
+    expect(oauthAuthorizationServerMetadataPath('https://id.example.com')).toBe('/.well-known/oauth-authorization-server')
+    expect(oauthAuthorizationServerMetadataPath('https://id.example.com/tenant/acme'))
+      .toBe('/.well-known/oauth-authorization-server/tenant/acme')
+  })
+
   it('advertises only the provider capabilities that are implemented', () => {
     const provider = resolveOAuthProviderConfig({
       enabled: true,

@@ -103,9 +103,11 @@ describe('resolveDefaultRouteBundles (#2229)', () => {
     expect(routes).toContain('POST /connect/authorize')
     expect(routes).toContain('POST /connect/token')
     expect(routes).toContain('POST /connect/revoke')
+    expect(routes).toContain('GET /.well-known/oauth-authorization-server/tenant/acme')
     expect(routes).not.toContain('GET /oauth/authorize')
     expect(routes).not.toContain('POST /oauth/token')
     expect(routes).not.toContain('POST /oauth/revoke')
+    expect(routes).not.toContain('GET /.well-known/oauth-authorization-server')
   })
 
   // Opt-in bundles (#2276): recognized when named, part of neither the

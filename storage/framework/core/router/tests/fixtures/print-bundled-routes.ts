@@ -19,7 +19,7 @@ if (import.meta.main) {
   if (process.env.STACKS_TEST_OAUTH_ENDPOINTS === '1') {
     config.auth.oauthProvider = {
       enabled: true,
-      issuer: 'https://id.example.com',
+      issuer: 'https://id.example.com/tenant/acme',
       endpoints: {
         authorization: '/connect/authorize',
         token: '/connect/token',

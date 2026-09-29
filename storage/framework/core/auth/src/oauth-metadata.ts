@@ -22,6 +22,12 @@ function clientAuthenticationMethods(provider: ResolvedOAuthProviderConfig): str
   return methods
 }
 
+/** Derive the RFC 8414 well-known path, including an issuer path when present. */
+export function oauthAuthorizationServerMetadataPath(issuer: string): string {
+  const issuerPath = new URL(issuer).pathname.replace(/^\/+|\/+$/g, '')
+  return `/.well-known/oauth-authorization-server${issuerPath ? `/${issuerPath}` : ''}`
+}
+
 /** Build RFC 8414 metadata from the provider profile Stacks actually serves. */
 export function oauthAuthorizationServerMetadata(
   provider: ResolvedOAuthProviderConfig,
