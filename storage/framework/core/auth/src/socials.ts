@@ -1,5 +1,6 @@
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
+import { findAuthUserByEmail } from './credential-user'
 
 /**
  * The social sign-in policy: which local user a provider identity resolves to
@@ -102,13 +103,8 @@ function defaultStore(): SocialSignInStore {
     },
 
     async findUserIdByEmail(email) {
-      const row = await db
-        .selectFrom('users')
-        .select(['id'])
-        .where('email', '=', email)
-        .executeTakeFirst() as { id: number | string } | undefined
-
-      return row ? Number(row.id) : undefined
+      const user = await findAuthUserByEmail(email)
+      return user ? Number(user.id) : undefined
     },
 
     async createUser(attrs) {
