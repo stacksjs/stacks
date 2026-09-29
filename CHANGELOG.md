@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.29...v0.75.30)
+
+## 🐛 Bug Fixes
+
+- **auth**: canonicalize registered emails ([32b6c21](https://github.com/stacksjs/stacks/commit/32b6c21)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: match login emails case insensitively ([91a310f](https://github.com/stacksjs/stacks/commit/91a310f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject orphaned sessions ([5621cf7](https://github.com/stacksjs/stacks/commit/5621cf7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **image**: the brand mark and favicons fill the box they are given ([e5c29a9](https://github.com/stacksjs/stacks/commit/e5c29a9)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **testing**: very-happy-dom resolves the cascade now ([9f2918e](https://github.com/stacksjs/stacks/commit/9f2918e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1600](https://github.com/stacksjs/stacks/issues/1600))
+
+## 🔧 Chores
+
+- **deps**: require stx 0.2.337, where a head partial's @seo sees its own variables ([c5d7066](https://github.com/stacksjs/stacks/commit/c5d7066)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.28...v0.75.29)
 
 ## ✨ Features
