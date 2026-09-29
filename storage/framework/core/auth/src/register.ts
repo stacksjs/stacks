@@ -128,11 +128,11 @@ export async function register(credentials: NewUser & { referralCode?: string },
       throw err
     }
 
-    const created = await trx
-      .selectFrom('users')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst()
+    const createdRows = await trx.unsafe(
+      `SELECT id FROM users WHERE email = ${sql.param(1)} LIMIT 1`,
+      [email],
+    ) as unknown as Array<{ id: unknown }>
+    const created = createdRows[0]
 
     if (!created)
       throw new Error('Failed to retrieve created user')

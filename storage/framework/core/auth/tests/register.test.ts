@@ -97,7 +97,9 @@ function makeTrx() {
       ops.push('select')
       lookupSql = statement
       lookupParams = params
-      return scenario.existingRow ? [scenario.existingRow] : []
+      if (/LOWER\(email\)/i.test(statement))
+        return scenario.existingRow ? [scenario.existingRow] : []
+      return [CREATED_ROW]
     },
     selectFrom: () => {
       const chain = {
