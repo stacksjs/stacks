@@ -388,6 +388,42 @@ try {
       .select('id')
       .executeTakeFirst(), undefined)
 
+    const retryGrant = await createOAuthGrant({
+      clientId: registration.client.id,
+      subjectType: 'users',
+      subjectId: 1,
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+      audiences: [`${issuer}/fixture/resource`],
+    })
+    const retryCode = await issueAuthorizationCode({
+      grantId: retryGrant.id,
+      redirectUri,
+      codeChallenge: challenge,
+      lifetimeMs: provider.lifetimes.authorizationCode,
+    })
+    const retryExchange = async (exchangeRedirect: string, codeVerifier: string) => await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: String(registration.client.id),
+        code: retryCode,
+        redirect_uri: exchangeRedirect,
+        code_verifier: codeVerifier,
+      }),
+    })
+    const wrongVerifier = await retryExchange(redirectUri, 'w'.repeat(43))
+    assert.equal(wrongVerifier.status, 400)
+    assert.equal((await wrongVerifier.json() as { error?: string }).error, 'invalid_grant')
+    const wrongExchangeRedirect = await retryExchange('https://client.example.test/other', verifier)
+    assert.equal(wrongExchangeRedirect.status, 400)
+    assert.equal((await wrongExchangeRedirect.json() as { error?: string }).error, 'invalid_grant')
+    const validRetry = await retryExchange(redirectUri, verifier)
+    assert.equal(validRetry.status, 200, await validRetry.clone().text())
+    const validRetryPair = await validRetry.json() as { access_token: string }
+    await readResource(validRetryPair.access_token)
+
     const expiredGrant = await createOAuthGrant({
       clientId: registration.client.id,
       subjectType: 'users',
