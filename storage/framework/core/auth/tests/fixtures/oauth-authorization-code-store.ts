@@ -1798,6 +1798,48 @@ try {
     assert.equal(await findToken(exchanged.value.accessToken), null, 'revoking consent must invalidate its access tokens')
   }
 
+  const replayGrant = await createOAuthGrant({
+    clientId: grantPolicyRegistration.client.id,
+    subjectType: 'users',
+    subjectId: 42,
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+    audiences: ['https://api.bughq.example'],
+  })
+  const replayCode = await issueAuthorizationCode({
+    ...base,
+    grantId: replayGrant.id,
+    clientId: replayGrant.clientId,
+    scopes: replayGrant.scopes,
+    resources: replayGrant.resources,
+    audiences: replayGrant.audiences,
+    workspaceId: replayGrant.workspaceId,
+  })
+  const replayInput = {
+    code: replayCode,
+    ...expected,
+    clientId: replayGrant.clientId,
+    accessTokenLifetimeMs: 60_000,
+    refreshTokenLifetimeMs: 120_000,
+  }
+  const replayPair = await exchangeOAuthAuthorizationCode(replayInput)
+  assert.equal(replayPair.ok, true)
+  if (replayPair.ok) {
+    assert(await findToken(replayPair.value.accessToken))
+    assert.deepEqual(await exchangeOAuthAuthorizationCode({
+      ...replayInput,
+      codeVerifier: 'x'.repeat(43),
+    }), { ok: false, reason: 'invalid_grant' })
+    assert(await findToken(replayPair.value.accessToken), 'a replay without the bound verifier must not revoke the grant')
+    assert.deepEqual(await exchangeOAuthAuthorizationCode(replayInput), { ok: false, reason: 'invalid_grant' })
+    assert.equal(await findToken(replayPair.value.accessToken), null, 'replaying a bound code must revoke the minted access token')
+    assert.equal(await db.selectFrom('oauth_grants')
+      .where('id', '=', replayGrant.id)
+      .whereNull('revoked_at')
+      .select('id')
+      .executeTakeFirst(), undefined, 'replaying a bound code must revoke its grant')
+  }
+
   const activePruneRegistration = await registerOAuthClient(provider, 55, {
     name: 'Prune preservation client',
     type: 'public',

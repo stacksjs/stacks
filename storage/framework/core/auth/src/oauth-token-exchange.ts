@@ -13,6 +13,7 @@ import {
 import { withAuthorizationCode } from './oauth-authorization-codes'
 import { withAuthenticatedOAuthTokenClient } from './oauth-client-registration'
 import { disconnectOAuthGrant } from './oauth-grants'
+import { verifyS256CodeChallenge } from './oauth-pkce'
 
 export interface ExchangeAuthorizationCodeInput extends AuthorizationCodeRedemption {
   code: string
@@ -103,6 +104,17 @@ interface StoredOAuthGrant {
   grant_revoked_at: string | Date | null
 }
 
+interface ConsumedAuthorizationCode {
+  grant_id: string | null
+  client_id: number | string
+  subject_type: string
+  subject_id: number | string
+  redirect_uri: string
+  code_challenge: string
+  code_challenge_method: string
+  consumed_at: string | Date | null
+}
+
 interface MintDelegatedTokenOptions {
   accessLifetimeMs: number
   refreshLifetimeMs: number
@@ -133,6 +145,34 @@ export type OAuthRefreshTokenExchangeResult
 
 function tokenHash(value: string): string {
   return createHash('sha256').update(value, 'ascii').digest('hex')
+}
+
+async function containAuthorizationCodeReplay(input: ExchangeAuthorizationCodeInput): Promise<void> {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(input.code))
+    return
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const rows = await db.unsafe(`
+    SELECT grant_id, client_id, subject_type, subject_id, redirect_uri,
+      code_challenge, code_challenge_method, consumed_at
+    FROM oauth_auth_codes
+    WHERE code_hash = ${sql.param(1)}
+    LIMIT 1
+  `, [tokenHash(input.code)]) as unknown as ConsumedAuthorizationCode[]
+  const code = rows[0]
+  const subjectId = Number(code?.subject_id)
+  if (!code?.consumed_at
+    || !code.grant_id
+    || !/^[a-f0-9]{32}$/.test(code.grant_id)
+    || String(code.client_id) !== String(input.clientId)
+    || !Number.isSafeInteger(subjectId)
+    || subjectId <= 0
+    || code.redirect_uri !== input.redirectUri
+    || code.code_challenge_method !== 'S256'
+    || !await verifyS256CodeChallenge(input.codeVerifier, code.code_challenge))
+    return
+
+  await disconnectOAuthGrant(code.subject_type, subjectId, code.grant_id)
 }
 
 function validLifetime(lifetimeMs: number): number {
@@ -385,11 +425,15 @@ export async function exchangeOAuthAuthorizationCode(
   input: ExchangeOAuthAuthorizationCodeInput,
 ): Promise<OAuthAuthorizationCodeExchangeResult> {
   const { clientSecret, ...exchange } = input
-  const result = await withAuthenticatedOAuthTokenClient(String(input.clientId), clientSecret, async client =>
-    exchangeAuthorizationCode({
+  const result = await withAuthenticatedOAuthTokenClient(String(input.clientId), clientSecret, async (client) => {
+    const exchanged = await exchangeAuthorizationCode({
       ...exchange,
       issueRefreshToken: client.grantTypes.includes('refresh_token'),
-    }))
+    })
+    if (!exchanged.ok)
+      await containAuthorizationCodeReplay(exchange)
+    return exchanged
+  })
   return result ?? invalidClient
 }
 
