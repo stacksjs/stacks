@@ -645,7 +645,7 @@ export function mailCommands(buddy: CLI): void {
   buddy
     .command('mail:provision', 'Provision this app\'s mail from config/email.ts onto the shared mail server (domain + DKIM + mailboxes + MX/SPF/DKIM/DMARC DNS). Reusable + idempotent; the same reconcile buddy deploy runs.')
     .option('--ip <ip>', 'Mail server IP (defaults to the A record of config.email.domain)')
-    .action(async (options: { ip?: string, env?: string }) => {
+    .action(async (options: { ip?: string, env?: string, dryRun?: boolean }) => {
       // Mailbox passwords come from `MAIL_PASSWORD_<LOCALPART>`, which belong in
       // the target environment's encrypted env file — but nothing here loaded
       // that file, so `mail:provision --env production` read the development
@@ -688,10 +688,41 @@ export function mailCommands(buddy: CLI): void {
       }
 
       const { provisionMailTenant, reconcileMailDns } = await import('./deploy')
+      const serverEnabled = (emailConfig as { server?: { enabled?: boolean } })?.server?.enabled !== false
+
+      // `--dry-run` is a global buddy option, and this command used to accept it
+      // and then provision anyway: SSH to the server, write its config, create
+      // mailboxes, publish DNS. Against a shared mail server that is the one
+      // flag that has to mean what it says. Report the plan and stop.
+      if (options.dryRun) {
+        const mailboxes = ((emailConfig as { mailboxes?: Array<string | { address?: string, username?: string }> })?.mailboxes ?? [])
+          .map(box => typeof box === 'string' ? (box.includes('@') ? box : `${box}@${domain}`) : (box.address ?? box.username ?? '?'))
+        log.info(`Dry run: nothing is written to ${ip}.`)
+        if (!serverEnabled) {
+          log.warn('config/email.ts sets server.enabled: false, so a real run would provision nothing.')
+        }
+        else {
+          log.info(`Would register ${domain} as a local domain and make sure it has a DKIM key.`)
+          for (const address of mailboxes)
+            log.info(`Would create or update mailbox ${address} (needs MAIL_PASSWORD_${address.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')})`)
+          log.info(`Would reconcile ${domain}'s MX, SPF, DKIM and DMARC records.`)
+        }
+        await log.flush()
+        process.exit(ExitCode.Success)
+      }
+
       log.info(`Provisioning mail for ${domain} on ${ip}...`)
       const res = await provisionMailTenant(ip!, log)
-      if (res)
-        await reconcileMailDns(res, ip!, log)
+      // Null is "nothing to do", not success: the command used to report
+      // "Mail provisioned" for an app whose config turns the mail server off.
+      if (!res) {
+        log.warn(serverEnabled
+          ? `Nothing was provisioned: config/email.ts declares no mailboxes or forwards for ${domain}.`
+          : 'Nothing was provisioned: config/email.ts sets server.enabled: false.')
+        await log.flush()
+        process.exit(ExitCode.Success)
+      }
+      await reconcileMailDns(res, ip!, log)
       log.success(`Mail provisioned for ${domain}. Add MAIL_PASSWORD_<LOCALPART> env vars to pin mailbox passwords.`)
       await log.flush()
       process.exit(ExitCode.Success)
