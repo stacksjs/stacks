@@ -295,7 +295,7 @@ interface RbacStore { findRoleByName, createRole, deleteRole, getAllRoles, findP
 - `SessionAuth.check(sessionId): boolean`
 - `SessionAuth.refresh(sessionId, ttlMs?): boolean`, rejects non-positive or non-finite TTLs without changing the session
 
-Internal: in-memory Map with 10k session limit, 5-minute eviction interval, timing-safe password comparison with dummy bcrypt hash.
+Internal: database-backed `sessions` rows with expiry, optional IP/User-Agent fingerprint checks, transactional logout and refresh, and timing-safe password comparison with a dummy bcrypt hash. Sessions survive process restarts and are shared by workers through the configured database.
 
 ## Email Verification (email-verification.ts)
 
@@ -504,12 +504,12 @@ traits: {
 
 - Auth depends on `@stacksjs/ts-auth` for TOTP and passkey functions
 - Password hashing defaults to bcrypt with 12 rounds (config/hashing.ts)
-- Rate limiter uses in-memory Map, resets on server restart — not shared across workers
-- Session auth also uses in-memory Map with 10k limit — for SPA cookie auth
-- Token format is `tokenId|plainText` — the `|` separates the encrypted ID from the plain token
-- The `parseToken()` helper splits on `|` to extract both parts
+- Rate limiting uses a process-local memory store by default. Production deployments with multiple workers should configure the atomic Redis store or provide a custom atomic store.
+- Session auth is database-backed through the `sessions` table, so it survives server restarts and is shared across workers.
+- New personal and delegated access tokens are opaque 40-byte hex bearers hashed at rest. Legacy `jwt:encryptedId` bearers remain readable during migration.
+- Token validation hashes the bearer directly. Do not parse or expose token contents, and never log plaintext bearer values.
 - Bearer tokens come from the `Authorization: Bearer <token>` header
-- `Auth.user()` internally calls `getBearerToken()` → `parseToken()` → `getTokenFromId()` → validates hash
+- `Auth.user()` internally calls `getBearerToken()` and resolves the bearer through a hashed token lookup
 - RBAC has an internal cache (`userRoles`, `userPermissions`, `rolePermissions`) — call `Rbac.flushCache()` after direct DB changes
 - `syncRoles()` and `syncPermissions()` are guard-scoped replacements: they preserve assignments belonging to other guards
 - Gate `before` callbacks can short-circuit — return `true` to allow, `null` to continue checking
