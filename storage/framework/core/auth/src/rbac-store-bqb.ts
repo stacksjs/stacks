@@ -81,7 +81,7 @@ async function insertAndFetch(
     .execute()
 
   const row = await (db.primary.selectFrom(table))
-    .selectAll()
+    .select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
     .where('name', '=', name)
     .where('guard_name', '=', guardName)
     .orderBy('id', 'desc')
@@ -198,7 +198,7 @@ export function createBqbRbacStore(): RbacStore {
 
     async findRoleByName(name: string, guardName: string = 'web'): Promise<RoleRecord | null> {
       const row = await (db.primary.selectFrom('roles'))
-        .selectAll()
+        .select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
         .where('name', '=', name)
         .where('guard_name', '=', guardName)
         .limit(1)
@@ -208,7 +208,7 @@ export function createBqbRbacStore(): RbacStore {
 
     async findRoleById(id: number): Promise<RoleRecord | null> {
       const row = await (db.primary.selectFrom('roles'))
-        .selectAll()
+        .select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
         .where('id', '=', id)
         .limit(1)
         .executeTakeFirst()
@@ -231,7 +231,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async getAllRoles(guardName?: string): Promise<RoleRecord[]> {
-      let q = (db.primary.selectFrom('roles')).selectAll()
+      let q = (db.primary.selectFrom('roles')).select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
       if (guardName)
         q = q.where('guard_name', '=', guardName)
       const rows: Array<Record<string, unknown>> = await q.orderBy('id', 'asc').execute()
@@ -242,7 +242,7 @@ export function createBqbRbacStore(): RbacStore {
 
     async findPermissionByName(name: string, guardName: string = 'web'): Promise<PermissionRecord | null> {
       const row = await (db.primary.selectFrom('permissions'))
-        .selectAll()
+        .select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
         .where('name', '=', name)
         .where('guard_name', '=', guardName)
         .limit(1)
@@ -252,7 +252,7 @@ export function createBqbRbacStore(): RbacStore {
 
     async findPermissionById(id: number): Promise<PermissionRecord | null> {
       const row = await (db.primary.selectFrom('permissions'))
-        .selectAll()
+        .select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
         .where('id', '=', id)
         .limit(1)
         .executeTakeFirst()
@@ -270,7 +270,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async getAllPermissions(guardName?: string): Promise<PermissionRecord[]> {
-      let q = (db.primary.selectFrom('permissions')).selectAll()
+      let q = (db.primary.selectFrom('permissions')).select(['id', 'name', 'guard_name', 'description', 'created_at', 'updated_at'])
       if (guardName)
         q = q.where('guard_name', '=', guardName)
       const rows: Array<Record<string, unknown>> = await q.orderBy('id', 'asc').execute()
