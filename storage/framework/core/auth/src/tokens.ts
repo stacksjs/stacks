@@ -416,7 +416,11 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
   const hashedToken = bearerLookupHash(plainTextToken)
 
   const rows = await db.unsafe(`
-    SELECT t.*, g.scopes AS grant_scopes FROM oauth_access_tokens t
+    SELECT t.id, t.user_id, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.oauth_grant_id,
+      t.resources, t.audiences, t.workspace_id, t.name, t.scopes,
+      t.revoked, t.expires_at, t.created_at, t.updated_at,
+      g.scopes AS grant_scopes
+    FROM oauth_access_tokens t
     LEFT JOIN oauth_grants g ON g.id = t.oauth_grant_id
     LEFT JOIN oauth_clients c ON c.id = g.client_id
     WHERE t.token = ${param(1)}

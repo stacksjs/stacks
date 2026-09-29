@@ -716,7 +716,7 @@ export class Auth {
     const hashedPlainToken = hashToken(token)
     const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashedPlainToken)
-      .selectAll()
+      .select(['id', 'tokenable_type', 'tokenable_id', 'revoked', 'expires_at', 'created_at', 'updated_at'])
       .executeTakeFirst()
 
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE)
@@ -780,7 +780,7 @@ export class Auth {
     const hashedPlainToken = hashToken(token)
     const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashedPlainToken)
-      .selectAll()
+      .select(['id', 'user_id', 'oauth_client_id', 'name', 'scopes', 'tokenable_type', 'tokenable_id', 'revoked', 'expires_at', 'created_at', 'updated_at'])
       .executeTakeFirst()
 
     // This facade resolves User records. A polymorphic token's numeric owner
@@ -875,7 +875,7 @@ export class Auth {
     // doc for context (stacksjs/stacks#1867 follow-up).
     const accessToken = await db.primary.selectFrom('oauth_access_tokens')
       .where('token', '=', hashToken(bearerToken))
-      .selectAll()
+      .select(['id', 'user_id', 'oauth_client_id', 'name', 'scopes', 'revoked', 'expires_at', 'created_at', 'updated_at', 'tokenable_type', 'tokenable_id'])
       .executeTakeFirst()
     if (!accessToken || accessToken.tokenable_type !== DEFAULT_TOKENABLE_TYPE || accessToken.revoked)
       return undefined
