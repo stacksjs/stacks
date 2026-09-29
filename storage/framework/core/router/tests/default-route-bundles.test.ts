@@ -69,6 +69,7 @@ async function routesFor(vars: Record<string, string | undefined>): Promise<Set<
 const AUTH_ROUTES = [
   'POST /login',
   'POST /register',
+  'POST /oauth/token',
   'POST /logout-all',
   'POST /generate-two-factor-secret',
   'POST /password/forgot',
