@@ -78,6 +78,7 @@ const AUTH_ROUTES = [
   'POST /auth/oauth/connections/{id}/disconnect',
   'GET /auth/oauth/clients',
   'POST /auth/oauth/clients',
+  'PATCH /auth/oauth/clients/{id}',
   'POST /auth/oauth/clients/{id}/rotate-secret',
   'POST /auth/oauth/clients/{id}/disable',
   'POST /logout-all',

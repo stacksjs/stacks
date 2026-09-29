@@ -5,6 +5,7 @@ import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAu
 import OAuthClientDisableAction from '../../../defaults/app/Actions/Auth/OAuthClientDisableAction'
 import OAuthClientStoreAction from '../../../defaults/app/Actions/Auth/OAuthClientStoreAction'
 import OAuthClientSecretRotateAction from '../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction'
+import OAuthClientUpdateAction from '../../../defaults/app/Actions/Auth/OAuthClientUpdateAction'
 import OAuthClientsAction from '../../../defaults/app/Actions/Auth/OAuthClientsAction'
 import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConnectionsAction'
 import OAuthConsentAction from '../../../defaults/app/Actions/Auth/OAuthConsentAction'
@@ -293,6 +294,51 @@ describe('OAuth client management route actions', () => {
     const malformedResult = await OAuthClientStoreAction.handle(malformed)
 
     expect(OAuthClientStoreAction.skipCsrf).not.toBe(true)
+    expect(anonymous.status).toBe(401)
+    expect(malformedResult.status).toBe(400)
+  })
+
+  it('keeps client editing unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const result = await OAuthClientUpdateAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients/17',
+      { method: 'PATCH' },
+    ))
+
+    expect(result.status).toBe(404)
+  })
+
+  it('requires an authenticated owner and explicit edit metadata', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const anonymous = await OAuthClientUpdateAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients/17',
+      { method: 'PATCH' },
+    ))
+    const malformed = browserRequest(
+      'https://id.example.com/auth/oauth/clients/not-a-client',
+      { method: 'PATCH' },
+      { id: '42', email: 'ada@example.com' },
+    ) as RequestInstance & {
+      all: () => Record<string, unknown>
+      getParam: (name: string) => string
+    }
+    malformed.getParam = () => 'not-a-client'
+    malformed.all = () => ({
+      name: 'Updated client',
+      redirect_uris: ['https://client.example/callback'],
+      scopes: ['issues:read'],
+      resources: [],
+    })
+
+    const malformedResult = await OAuthClientUpdateAction.handle(malformed)
+
+    expect(OAuthClientUpdateAction.skipCsrf).not.toBe(true)
     expect(anonymous.status).toBe(401)
     expect(malformedResult.status).toBe(400)
   })

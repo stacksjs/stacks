@@ -1,0 +1,83 @@
+import { Action } from '@stacksjs/actions'
+import {
+  OAuthClientRegistrationError,
+  resolveOAuthProviderConfig,
+  updateOAuthClient,
+} from '@stacksjs/auth'
+import { config } from '@stacksjs/config'
+import { response } from '@stacksjs/router'
+
+function positiveId(value: number | string): number | null {
+  const id = Number(value)
+  return Number.isSafeInteger(id) && id > 0 ? id : null
+}
+
+function stringList(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every(item => typeof item === 'string')
+    ? value
+    : null
+}
+
+export default new Action({
+  name: 'OAuthClientUpdateAction',
+  description: 'Update an OAuth client owned by the authenticated user',
+  method: 'PATCH',
+
+  async handle(request: RequestInstance) {
+    const provider = resolveOAuthProviderConfig(config.auth.oauthProvider)
+    if (!provider)
+      return response.notFound('OAuth provider is not enabled')
+
+    const user = await request.user()
+    const ownerId = user ? positiveId(user.id) : null
+    if (!ownerId)
+      return response.unauthorized('Authentication required')
+
+    const rawClientId = request.getParam('id')
+    const clientId = /^\d+$/.test(rawClientId) ? positiveId(rawClientId) : null
+    if (!clientId)
+      return response.badRequest('Invalid OAuth client ID')
+
+    const body = await request.all() as Record<string, unknown>
+    const name = typeof body.name === 'string' ? body.name : null
+    const redirectUris = stringList(body.redirect_uris)
+    const scopes = stringList(body.scopes)
+    const resources = stringList(body.resources)
+    if (!name || !redirectUris || !scopes || !resources)
+      return response.badRequest('OAuth client update metadata is invalid')
+
+    try {
+      const client = await updateOAuthClient(provider, ownerId, clientId, {
+        name,
+        redirectUris,
+        grantTypes: ['authorization_code', 'refresh_token'],
+        scopes,
+        resources,
+      })
+      if (!client)
+        return response.notFound('OAuth client not found')
+
+      return response.json({
+        client: {
+          id: client.id,
+          name: client.name,
+          type: client.type,
+          token_endpoint_auth_method: client.tokenEndpointAuthMethod,
+          redirect_uris: client.redirectUris,
+          grant_types: client.grantTypes,
+          scopes: client.scopes,
+          resources: client.resources,
+          revoked: client.revoked,
+          created_at: client.createdAt.toISOString(),
+        },
+      }, {
+        headers: { 'Cache-Control': 'no-store' },
+      })
+    }
+    catch (error) {
+      if (error instanceof OAuthClientRegistrationError)
+        return response.json({ message: error.message }, { status: 422 })
+      throw error
+    }
+  },
+})
