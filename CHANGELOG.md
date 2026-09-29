@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.27...v0.75.28)
+
+## ✨ Features
+
+- **email**: a finished base design for every email, and <EmailCode> ([938dfce](https://github.com/stacksjs/stacks/commit/938dfce)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **mail**: mail:provision honours --dry-run, and stops reporting a no-op as success ([a30b3cf](https://github.com/stacksjs/stacks/commit/a30b3cf)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- 407 components, now that <EmailCode> is one of them ([f351a98](https://github.com/stacksjs/stacks/commit/f351a98)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.26...v0.75.27)
 
 ## 🔧 Chores
