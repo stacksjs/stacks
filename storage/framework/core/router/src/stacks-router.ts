@@ -360,6 +360,9 @@ type TypedInlineRouteHandler<TPath extends string>
 
 export type StacksHandler = ActionPath | InlineRouteHandler | RouterAction
 
+type StaticResponseMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS'
+const STATIC_RESPONSE_METHODS = new Set<StaticResponseMethod>(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
+
 export interface StacksRouterConfig {
   verbose?: boolean
   apiPrefix?: string
@@ -4699,10 +4702,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   const routeStates = new Map<string, RouteRuntimeState>()
 
   // Helper to register a route with group middleware applied
-  function registerRoute(method: string, path: string, _handler: StacksHandler) {
+  function registerRoute(method: string, path: string, _handler: StacksHandler | Response) {
     const fullPath = currentPrefix + path
     const routeKey = `${method}:${fullPath}`
-    log.debug(`[router] ${method} ${fullPath} → ${typeof _handler === 'string' ? _handler : 'function'}`)
+    const handlerKind = _handler instanceof Response
+      ? 'static response'
+      : typeof _handler === 'string' ? _handler : 'function'
+    log.debug(`[router] ${method} ${fullPath} → ${handlerKind}`)
 
     // A second registration of the same method+path never serves: bun-router's
     // compiler skips it (`RouteCompiler.addRoute` returns false on a duplicate
@@ -4770,6 +4776,34 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Get all routes
     get routes(): Route[] {
       return bunRouter.routes
+    },
+
+    staticResponse(method: StaticResponseMethod, path: string, response: Response) {
+      if (!STATIC_RESPONSE_METHODS.has(method)) {
+        throw new TypeError(`[Router] staticResponse(): unsupported HTTP method '${String(method)}'`)
+      }
+      if (!(response instanceof Response)) {
+        throw new TypeError('[Router] staticResponse(): response must be a prebuilt Response')
+      }
+      if (currentGroupMiddleware.length > 0) {
+        throw new Error('[Router] staticResponse() cannot be registered inside a group with middleware because static responses bypass middleware')
+      }
+      if (currentGroupApiResponse) {
+        throw new Error('[Router] staticResponse() cannot be registered inside a group with apiResponse because static responses bypass response formatting')
+      }
+
+      const { fullPath, shadowed } = registerRoute(method, path, response)
+      if (!shadowed) {
+        switch (method) {
+          case 'GET': bunRouter.get(fullPath, response); break
+          case 'POST': bunRouter.post(fullPath, response); break
+          case 'PUT': bunRouter.put(fullPath, response); break
+          case 'PATCH': bunRouter.patch(fullPath, response); break
+          case 'DELETE': bunRouter.delete(fullPath, response); break
+          case 'OPTIONS': bunRouter.options(fullPath, response); break
+        }
+      }
+      return stacksRouter
     },
 
     // HTTP methods with string handler support
@@ -5592,6 +5626,21 @@ export function disableViewRouting(bunRouter: Router): boolean {
 export interface StacksRouterInstance {
   bunRouter: Router
   routes: Route[]
+  /**
+   * Register final response bytes for Bun's direct static dispatch.
+   *
+   * This deliberately bypasses the fetch handler and every Stacks request
+   * facility: middleware, request IDs, CSRF, cookies, rate limits, request
+   * context, response headers, compression, and response formatting do not
+   * run. The supplied Response must already contain the final status, headers,
+   * and body. The router instance is returned rather than a route chain so
+   * bypassed behavior cannot be attached accidentally.
+   */
+  staticResponse: (
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS',
+    path: string,
+    response: Response,
+  ) => StacksRouterInstance
   /*
    * Two call signatures each, and the order matters. The first types an inline
    * arrow's request from the path literal; the second accepts every other
