@@ -106,6 +106,42 @@ export default {
 }
 ```
 
+## The base design: email components
+
+STX templates build on a bundled component library (`defaults/resources/components/Email`),
+which every bundled template uses and which gives an app a finished look with a few props:
+
+```html
+<EmailLayout
+  title="Your license key"
+  preheader="Shown after the subject in the inbox"
+  brand="Uplink" brandUrl="https://uplink.example" accent="#f59e0b"
+  footer="You are getting this because you bought Uplink."
+>
+  <EmailText size="heading">You have Uplink Monthly.</EmailText>
+  <EmailText>Here is your license key.</EmailText>
+  <EmailCode>UPLK-7RKR-Z2BJ-V6QV-4PUH</EmailCode>
+  <EmailButton href="https://uplink.example/activate" bg="#f59e0b" color="#18181b">Activate</EmailButton>
+  <EmailDivider />
+  <EmailText size="sm">Small print.</EmailText>
+</EmailLayout>
+```
+
+- `<EmailLayout>`: a muted page with one bordered card (a border, not a shadow: Gmail strips
+  shadows), an optional brand header and footer, a hidden `preheader`, and `@media` rules for
+  dark mode and phones on the class hooks the other components carry. Clients that ignore
+  `@media` keep the inline light design.
+- `<EmailText size="heading|lg|md|sm">`, `<EmailButton>`, `<EmailDivider>`, `<EmailSection>`,
+  `<EmailImage>`, `<EmailLink>`.
+- `<EmailCode>`: a key or one-time code, large and monospace, selectable in one tap, wrapping at
+  hyphens on a phone.
+
+A colour passed as a prop is the template's own choice: that element gets no dark-mode hook.
+
+Two stx traps when writing a component or template: never put the literal text of a style
+tag inside a `<script server>` comment (the parser takes it for one), and write head CSS as a
+raw string (`{!! css !!}`) rather than a style element, which stx lifts out as component CSS.
+
 ## Template Locations
 - STX templates: `.stx` files processed by STX engine
 - HTML templates: `.html` files with `{{ }}` variable interpolation

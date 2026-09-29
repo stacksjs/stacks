@@ -1,0 +1,28 @@
+<script server>
+// A code the reader copies: a license key, a one-time passcode, a recovery
+// code. Large monospace on a tinted block, spaced so O and 0, l and 1 are
+// told apart, and selectable as one unit where the client allows it
+// (`user-select: all`), so a tap or double-click takes the whole code. On a
+// narrow screen it wraps at a hyphen rather than mid-group, and only breaks
+// inside a group when a code has no hyphens to wrap at.
+//
+//   <EmailCode>UPLK-7RKR-Z2BJ-V6QV-4PUH</EmailCode>
+//   <EmailCode size="32px" align="center">482 913</EmailCode>
+interface EmailCodeProps {
+  size?: string
+  align?: 'left' | 'center' | 'right'
+  spacing?: string
+}
+
+const props = defineProps<EmailCodeProps>()
+const size = props.size || '22px'
+const align = props.align || 'center'
+const spacing = props.spacing || '24px'
+</script>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:separate;margin:0 0 {{ spacing }} 0;">
+  <tr>
+    <td class="email-code" align="{{ align }}" style="padding:18px 20px;background-color:#f4f4f5;border:1px solid #e4e4e7;border-radius:10px;color:#18181b;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:{{ size }};font-weight:600;letter-spacing:0.08em;line-height:1.4;text-align:{{ align }};-webkit-user-select:all;user-select:all;overflow-wrap:anywhere;">
+      <slot />
+    </td>
+  </tr>
+</table>

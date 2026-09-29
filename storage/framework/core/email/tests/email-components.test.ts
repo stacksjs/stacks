@@ -99,3 +99,60 @@ describe('bundled email templates use the <EmailLayout> component', () => {
     expect(html).toContain('mso-padding-alt:14px 32px')
   })
 })
+
+describe('the base email design', () => {
+  async function renderInline(body: string, vars: Record<string, unknown> = {}): Promise<string> {
+    const { mkdtempSync, writeFileSync } = await import('node:fs')
+    const { tmpdir } = await import('node:os')
+    const { join } = await import('node:path')
+    const dir = mkdtempSync(join(tmpdir(), 'stacks-email-design-'))
+    const file = join(dir, 'probe.stx')
+    writeFileSync(file, body)
+    const { renderEmail } = await import('@stacksjs/stx')
+    const { html } = await renderEmail(file, vars, { componentsDir: defaultsResourcesPath('components/Email') })
+    return html
+  }
+
+  test('<EmailLayout> brand, preheader and footer render when given, and are absent when not', async () => {
+    const html = await renderInline(`<EmailLayout title="Hi" preheader="Your key is inside" brand="Acme" brandUrl="https://acme.test" accent="#f59e0b" footer="Sent because you bought Acme."><EmailText>Body</EmailText></EmailLayout>`)
+    expect(html).toContain('Your key is inside')
+    expect(html).toContain('mso-hide:all')
+    expect(html).toContain('>Acme</a>')
+    expect(html).toContain('href="https://acme.test"')
+    expect(html).toContain('background-color:#f59e0b')
+    expect(html).toContain('Sent because you bought Acme.')
+
+    const bare = await renderInline(`<EmailLayout title="Hi"><EmailText>Body</EmailText></EmailLayout>`)
+    expect(bare).not.toContain('mso-hide:all')
+    expect(bare).not.toContain('class="email-brand-name"')
+  })
+
+  test('the card has a border, since Gmail strips a shadow, and dark mode and phone rules ship', async () => {
+    const html = await renderInline(`<EmailLayout title="Hi"><EmailText>Body</EmailText></EmailLayout>`)
+    expect(html).toContain('border:1px solid #e4e4e7')
+    expect(html).toContain('border-radius:12px')
+    expect(html).toContain('@media (prefers-color-scheme: dark)')
+    expect(html).toContain('@media only screen and (max-width: 620px)')
+    // The rules are in the head, and the component's own source is not
+    // appended to the email, which is what a style element in the component
+    // used to cause.
+    expect(html.indexOf('@media (prefers-color-scheme: dark)')).toBeLessThan(html.indexOf('</head>'))
+    expect(html).not.toContain('defineProps')
+  })
+
+  test('<EmailText> hooks into dark mode unless the template chose its own colour', async () => {
+    const html = await renderInline(`<EmailLayout><EmailText size="heading">Title</EmailText><EmailText>Plain</EmailText><EmailText color="#b45309">Brand</EmailText></EmailLayout>`)
+    expect(html).toContain('class="email-heading"')
+    expect(html).toContain('class="email-text"')
+    expect(html).toMatch(/<p class="" style="[^"]*color:#b45309/)
+  })
+
+  test('<EmailCode> is large, monospace and selectable as one unit', async () => {
+    const html = await renderInline(`<EmailLayout><EmailCode>UPLK-7RKR-Z2BJ-V6QV-4PUH</EmailCode></EmailLayout>`)
+    expect(html).toContain('UPLK-7RKR-Z2BJ-V6QV-4PUH')
+    expect(html).toContain('class="email-code"')
+    expect(html).toContain('ui-monospace')
+    expect(html).toContain('user-select:all')
+    expect(html).not.toContain('break-all')
+  })
+})

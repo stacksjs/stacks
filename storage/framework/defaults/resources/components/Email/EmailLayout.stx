@@ -3,10 +3,25 @@
 //
 // Wraps content in the table-based body that Outlook + Gmail (Android)
 // require, plus the standard meta block (charset / viewport /
-// X-UA-Compatible / colour-scheme). Two-tone bodyBg / contentBg
-// mirrors the bundled templates: muted page colour outside, white
-// card inside. Named slots: head / header / footer. See README for
-// usage examples.
+// X-UA-Compatible / colour-scheme). Named slots: head / header / footer.
+//
+// The base design, which every bundled template inherits:
+//   - a muted page with one white card, a hairline border and a 12px radius.
+//     A border rather than a shadow: Gmail strips box-shadow, so a shadow-only
+//     card lost its edge in the most-used client.
+//   - `preheader`: the line an inbox shows after the subject. Without it the
+//     inbox shows whatever text comes first - usually the brand name again.
+//   - `brand` / `accent` / `brandUrl`: a small brand header (an accent dot and
+//     the name) when the template does not fill the `header` slot itself.
+//   - `footer`: a muted, centred line under the card when the template does
+//     not fill the `footer` slot.
+//   - dark mode and a tighter phone layout, as `@media` rules on the class
+//     hooks below. The CSS inliner leaves `@media` rules in the head
+//     (stacksjs/stacks#1902), so clients that honour them (Apple Mail, iOS,
+//     Outlook for Mac) get them and the rest keep the inline light design.
+//   - those rules are written out raw from here, not as a style element in
+//     the template: stx treats a component's own style element as component
+//     CSS and lifts it out of the head, which lost them.
 //
 // Notes on `defineProps()`: stx fills missing props with an empty
 // string (not `undefined`), so destructure defaults silently no-op
@@ -17,6 +32,11 @@ interface EmailLayoutProps {
   width?: number | string
   bodyBg?: string
   contentBg?: string
+  preheader?: string
+  brand?: string
+  brandUrl?: string
+  accent?: string
+  footer?: string
 }
 
 const props = defineProps<EmailLayoutProps>()
@@ -24,6 +44,32 @@ const title = props.title || ''
 const width = props.width || 600
 const bodyBg = props.bodyBg || '#f4f4f5'
 const contentBg = props.contentBg || '#ffffff'
+const preheader = props.preheader || ''
+const brand = props.brand || ''
+const brandUrl = props.brandUrl || ''
+const accent = props.accent || '#3451b2'
+const footer = props.footer || ''
+const fontStack = '-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif'
+
+const responsiveCss = [
+  '<style>',
+  '@media only screen and (max-width: 620px) {',
+  '  .email-outer { padding: 16px 8px !important; }',
+  '  .email-pad { padding: 28px 24px !important; }',
+  '  .email-brand { padding: 24px 24px 0 !important; }',
+  '  .email-code { font-size: 18px !important; letter-spacing: 0.04em !important; }',
+  '}',
+  '@media (prefers-color-scheme: dark) {',
+  '  .email-body, .email-outer { background-color: #0c0c0e !important; }',
+  '  .email-card { background-color: #141417 !important; border-color: #27272a !important; }',
+  '  .email-heading, .email-brand-name { color: #f4f4f5 !important; }',
+  '  .email-text { color: #d4d4d8 !important; }',
+  '  .email-muted { color: #a1a1aa !important; }',
+  '  .email-code { background-color: #1c1c20 !important; border-color: #27272a !important; color: #f4f4f5 !important; }',
+  '  .email-divider { background-color: #27272a !important; }',
+  '}',
+  '</style>',
+].join('\n')
 </script>
 
 <!DOCTYPE html>
@@ -35,19 +81,42 @@ const contentBg = props.contentBg || '#ffffff'
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
   <title>{{ title }}</title>
+  {!! responsiveCss !!}
   <slot name="head" />
 </head>
-<body style="margin:0;padding:0;background-color:{{ bodyBg }};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body class="email-body" style="margin:0;padding:0;background-color:{{ bodyBg }};font-family:{{ fontStack }};line-height:1.6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  @if(preheader)
+    <div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;mso-hide:all;font-size:1px;line-height:1px;color:{{ bodyBg }};">{{ preheader }}&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+  @endif
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;background-color:{{ bodyBg }};">
     <tr>
-      <td align="center" style="padding:40px 20px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:{{ width }}px;width:100%;background-color:{{ contentBg }};border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <td class="email-outer" align="center" style="padding:40px 20px;background-color:{{ bodyBg }};">
+        <table class="email-card" role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:{{ width }}px;width:100%;background-color:{{ contentBg }};border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;border-collapse:separate;">
+          @if(brand)
+            <tr>
+              <td class="email-brand" style="padding:32px 40px 0;">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:5px;background-color:{{ accent }};vertical-align:middle;margin-right:10px;"></span>
+                @if(brandUrl)
+                  <a class="email-brand-name" href="{{ brandUrl }}" style="color:#18181b;text-decoration:none;font-size:15px;font-weight:600;letter-spacing:-0.01em;vertical-align:middle;font-family:{{ fontStack }};">{{ brand }}</a>
+                @else
+                  <span class="email-brand-name" style="color:#18181b;font-size:15px;font-weight:600;letter-spacing:-0.01em;vertical-align:middle;font-family:{{ fontStack }};">{{ brand }}</span>
+                @endif
+              </td>
+            </tr>
+          @endif
           <slot name="header" />
-          <tr><td style="padding:40px;">
+          <tr><td class="email-pad" style="padding:32px 40px 40px;">
             <slot />
           </td></tr>
           <slot name="footer" />
         </table>
+        @if(footer)
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:{{ width }}px;width:100%;border-collapse:collapse;">
+            <tr>
+              <td class="email-muted" style="padding:20px 24px 0;text-align:center;color:#71717a;font-size:12px;line-height:1.6;font-family:{{ fontStack }};">{{ footer }}</td>
+            </tr>
+          </table>
+        @endif
       </td>
     </tr>
   </table>

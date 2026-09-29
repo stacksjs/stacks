@@ -10,11 +10,11 @@ interface EmailDividerProps {
 }
 
 const props = defineProps<EmailDividerProps>()
-const color = props.color || '#e5e7eb'
+const color = props.color || '#e4e4e7'
 const spacing = props.spacing || '24px'
 </script>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:{{ spacing }} 0;">
   <tr>
-    <td style="height:1px;font-size:1px;line-height:1px;background-color:{{ color }};">&nbsp;</td>
+    <td class="email-divider" style="height:1px;font-size:1px;line-height:1px;background-color:{{ color }};">&nbsp;</td>
   </tr>
 </table>
