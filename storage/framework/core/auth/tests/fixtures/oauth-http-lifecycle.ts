@@ -436,8 +436,33 @@ try {
 
     const correctConfidentialSecret = await confidentialExchange(confidential.plainTextSecret)
     assert.equal(correctConfidentialSecret.status, 200, await correctConfidentialSecret.clone().text())
-    const confidentialPair = await correctConfidentialSecret.json() as { access_token: string }
+    const confidentialPair = await correctConfidentialSecret.json() as { access_token: string, refresh_token: string }
     await readResource(confidentialPair.access_token)
+    const confidentialRefresh = async (secret: string) => await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${btoa(`${confidential.client.id}:${secret}`)}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: confidentialPair.refresh_token,
+      }),
+    })
+    const wrongRefreshSecret = await confidentialRefresh('wrong-secret')
+    assert.equal(wrongRefreshSecret.status, 401)
+    assert.equal((await wrongRefreshSecret.json() as { error?: string }).error, 'invalid_client')
+    await readResource(confidentialPair.access_token)
+
+    const confidentialRotation = await confidentialRefresh(confidential.plainTextSecret)
+    assert.equal(confidentialRotation.status, 200, await confidentialRotation.clone().text())
+    const rotatedConfidentialPair = await confidentialRotation.json() as { access_token: string }
+    await readResource(confidentialPair.access_token, 401)
+    await readResource(rotatedConfidentialPair.access_token)
+    const confidentialReplay = await confidentialRefresh(confidential.plainTextSecret)
+    assert.equal(confidentialReplay.status, 400)
+    assert.equal((await confidentialReplay.json() as { error?: string }).error, 'invalid_grant')
+    await readResource(rotatedConfidentialPair.access_token, 401)
 
     console.log('PASS OAuth HTTP lifecycle')
   }
