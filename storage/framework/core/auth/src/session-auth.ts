@@ -279,10 +279,10 @@ async function sessionOwnerExists(userId: number, lock = false): Promise<boolean
 /** Get the authenticated user from a session ID. */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
   try {
-    const session = await db.primary.selectFrom('sessions')
-      .where('id', '=', sessionId)
-      .selectAll()
-      .executeTakeFirst()
+    const query = db.primary.selectFrom('sessions').where('id', '=', sessionId)
+    const session = config.auth?.session?.enforceFingerprint
+      ? await query.select(['user_id', 'expires_at', 'ip_address', 'user_agent']).executeTakeFirst()
+      : await query.select(['user_id', 'expires_at']).executeTakeFirst()
 
     if (!session)
       return undefined
