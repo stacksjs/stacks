@@ -33,6 +33,8 @@ async function seed() {
     await db.insertInto('sessions').values({ id, user_id: owner, expires_at: sqlDateTime(new Date(Date.now() + 60_000)), last_activity: 0 }).execute()
 }
 try {
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('users').values([{ id: 1 }, { id: 2 }]).execute()
   await db.unsafe('CREATE TABLE sessions (id VARCHAR(255) PRIMARY KEY, user_id INTEGER, expires_at TIMESTAMP, last_activity INTEGER)').execute()
   for (const bulk of [false, true]) {
     const revoke = () => bulk ? SessionAuth.destroyAll(1) : SessionAuth.logout('target')

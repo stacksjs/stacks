@@ -60,6 +60,8 @@ function replaceExpiry(expiresAt: string) {
   assert.equal(child.exitCode, 0, new TextDecoder().decode(child.stderr))
 }
 try {
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('users').values({ id: 1 }).execute()
   await db.unsafe('CREATE TABLE sessions (id VARCHAR(255) PRIMARY KEY, user_id INTEGER, expires_at TIMESTAMP, last_activity INTEGER)').execute()
   for (const offset of [-1000, 300_000]) {
     await check(`refresh preserves a competing ${offset < 0 ? 'expiry' : 'renewal'}`, async () => {
@@ -215,6 +217,23 @@ try {
       }
     })
   }
+  await check('an orphaned session cannot be renewed', async () => {
+    await db.deleteFrom('users').where('id', '=', 1).execute()
+    assert.equal(await SessionAuth.refresh('target', 120_000), false)
+    assert.equal(await db.primary.selectFrom('sessions').where('id', '=', 'target').select('id').executeTakeFirst(), undefined)
+  })
+  await db.insertInto('users').values({ id: 1 }).execute()
+  await check('an orphaned session is not authenticated', async () => {
+    await db.deleteFrom('users').where('id', '=', 1).execute()
+    assert.equal(await SessionAuth.check('target'), false)
+    assert.equal(await db.primary.selectFrom('sessions').where('id', '=', 'target').select('id').executeTakeFirst(), undefined)
+  })
+  await db.insertInto('users').values({ id: 1 }).execute()
+  await check('an orphaned session cannot resolve a user', async () => {
+    await db.deleteFrom('users').where('id', '=', 1).execute()
+    assert.equal(await SessionAuth.user('target'), undefined)
+    assert.equal(await db.primary.selectFrom('sessions').where('id', '=', 'target').select('id').executeTakeFirst(), undefined)
+  })
   assert.deepEqual(failures, [])
   console.log('session renewal atomicity OK')
 }

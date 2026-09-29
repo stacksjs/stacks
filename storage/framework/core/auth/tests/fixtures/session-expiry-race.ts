@@ -22,6 +22,8 @@ const failures: string[] = []
 try {
   const now = new Date('2030-01-02T03:04:05.000Z')
   setSystemTime(now)
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('users').values({ id: 1 }).execute()
   await db.unsafe('CREATE TABLE sessions (id TEXT PRIMARY KEY, user_id INTEGER, expires_at TEXT, last_activity INTEGER, ip_address TEXT, user_agent TEXT)').execute()
   for (const method of ['user', 'check', 'refresh'] as const) {
     const id = `renewed-during-${method}`

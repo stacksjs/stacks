@@ -251,6 +251,29 @@ async function deleteObservedExpiredSession(sessionId: string, expiresAt: unknow
     : cleanup.where('expires_at', '=', expiresAt)).execute()
 }
 
+/** Delete only the orphaned session version whose absent owner we observed. */
+async function deleteObservedOrphanedSession(
+  sessionId: string,
+  userId: number,
+  expiresAt: unknown,
+): Promise<void> {
+  let cleanup = db.deleteFrom('sessions')
+    .where('id', '=', sessionId)
+    .where('user_id', '=', userId)
+  cleanup = expiresAt == null
+    ? cleanup.whereNull('expires_at')
+    : cleanup.where('expires_at', '=', expiresAt)
+  await cleanup.execute()
+}
+
+async function sessionOwnerExists(userId: number): Promise<boolean> {
+  const owner = await db.primary.selectFrom('users')
+    .where('id', '=', userId)
+    .select('id')
+    .executeTakeFirst()
+  return owner !== undefined
+}
+
 /** Get the authenticated user from a session ID. */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
   try {
@@ -275,7 +298,12 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
       return undefined
     }
 
-    return await User.find(session.user_id as number)
+    const userId = session.user_id as number
+    if (!await sessionOwnerExists(userId)) {
+      await deleteObservedOrphanedSession(sessionId, userId, session.expires_at)
+      return undefined
+    }
+    return await User.find(userId)
   }
   catch {
     // Sessions table may not exist
@@ -304,6 +332,12 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
 
     if (sessionFingerprintRejected(session))
       return false
+
+    const userId = session.user_id as number
+    if (!await sessionOwnerExists(userId)) {
+      await deleteObservedOrphanedSession(sessionId, userId, session.expires_at)
+      return false
+    }
 
     return true
   }
@@ -348,6 +382,11 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
           .where('id', '=', sessionId).where('expires_at', '=', session.expires_at)
           .select('id').lockForUpdate().executeTakeFirst()
         if (!current) return false
+      }
+      const userId = session.user_id as number
+      if (!await sessionOwnerExists(userId)) {
+        await deleteObservedOrphanedSession(sessionId, userId, session.expires_at)
+        return false
       }
       const newExpiry = new Date(Date.now() + ttlMs)
       // MySQL's whole-second TIMESTAMP must not round the promised deadline
