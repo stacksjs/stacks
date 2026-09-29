@@ -1295,7 +1295,9 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
 export async function clients(userId: number): Promise<OAuthClient[]> {
   const { boolFalse, param } = tokenSql()
   const rows = await db.unsafe(`
-    SELECT * FROM oauth_clients
+    SELECT id, name, secret, provider, redirect, personal_access_client,
+      password_client, revoked, created_at, updated_at
+    FROM oauth_clients
     WHERE user_id = ${param(1)} AND revoked = ${boolFalse}
     ORDER BY created_at DESC
   `, [userId])
@@ -1313,7 +1315,9 @@ export async function clients(userId: number): Promise<OAuthClient[]> {
 export async function findClient(clientId: number): Promise<OAuthClient | null> {
   const { param } = tokenSql()
   const rows = await db.unsafe(`
-    SELECT * FROM oauth_clients WHERE id = ${param(1)} LIMIT 1
+    SELECT id, name, secret, provider, redirect, personal_access_client,
+      password_client, revoked, created_at, updated_at
+    FROM oauth_clients WHERE id = ${param(1)} LIMIT 1
   `, [clientId])
 
   // An oauth_clients row, not a token row.
