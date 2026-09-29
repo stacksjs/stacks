@@ -149,7 +149,7 @@ async function prepareVerificationEmail(user: { id: number, email: string, name?
     // A trigger can suppress an INSERT without throwing. Do not send a link
     // whose hash never persisted, or keep an older link alongside its successor.
     const stored = await db.primary.selectFrom('email_verifications')
-      .where('user_id', '=', user.id).selectAll().execute()
+      .where('user_id', '=', user.id).select(['token']).execute()
     if (stored.length !== 1 || stored[0]?.token !== hash)
       throw new Error('[auth] Email verification could not replace the token.')
 
@@ -224,7 +224,7 @@ export async function verifyEmail(userId: number, token: string): Promise<EmailV
     const record = await db.primary
       .selectFrom('email_verifications')
       .where('user_id', '=', userId)
-      .selectAll()
+      .select(['id', 'token', 'expires_at'])
       .executeTakeFirst()
 
     if (!record)
@@ -296,7 +296,7 @@ export async function resendVerificationEmail(user: { id: number, email: string,
     // A locking read sees the latest committed cooldown even when a caller's
     // outer MySQL transaction established an older repeatable-read snapshot.
     let existingQuery = db.primary.selectFrom('email_verifications')
-      .where('user_id', '=', user.id).selectAll()
+      .where('user_id', '=', user.id).select(['created_at'])
     if (getDatabaseDialect() !== 'sqlite') existingQuery = existingQuery.lockForUpdate()
     const existing = await existingQuery.executeTakeFirst()
     if (existing) {
