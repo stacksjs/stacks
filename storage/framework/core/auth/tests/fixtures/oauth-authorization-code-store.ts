@@ -15,7 +15,7 @@ else {
   assert(process.env.DB_PORT && !['5432', '3306'].includes(process.env.DB_PORT))
 }
 
-const { overridesReady } = await import('@stacksjs/config')
+const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 const {
   db,
@@ -101,7 +101,7 @@ try {
     .select('id')
     .executeTakeFirstOrThrow()
 
-  const provider = resolveOAuthProviderConfig({
+  const providerConfig = {
     enabled: true,
     issuer: 'https://id.example.com',
     lifetimes: { authorizationRequest: 90_000 },
@@ -110,7 +110,76 @@ try {
       'profile:read': { description: 'Read profile' },
     },
     resources: { bughq: { audience: 'https://api.bughq.example' } },
-  })!
+  }
+  config.auth.oauthProvider = providerConfig
+  const provider = resolveOAuthProviderConfig(providerConfig)!
+
+  const OAuthClientDisableAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientDisableAction')).default
+  const OAuthClientsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientsAction')).default
+  const OAuthClientSecretRotateAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction')).default
+  const OAuthClientStoreAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientStoreAction')).default
+  const OAuthClientUpdateAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientUpdateAction')).default
+  const actionOwner = { id: '84', email: 'owner@example.com' }
+  const actionRequest = (body: Record<string, unknown> = {}, id = '') => ({
+    user: async () => actionOwner,
+    all: () => body,
+    getParam: () => id,
+  })
+  const storedByAction = await OAuthClientStoreAction.handle(actionRequest({
+    name: 'Action-managed client',
+    type: 'confidential',
+    redirect_uris: ['https://actions.example.com/callback'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  }) as never)
+  assert.equal(storedByAction.status, 201)
+  assert.equal(storedByAction.headers.get('cache-control'), 'no-store')
+  assert.equal(storedByAction.headers.get('pragma'), 'no-cache')
+  const storedByActionBody = await storedByAction.json() as {
+    client: { id: number, name: string }
+    client_secret: string
+  }
+  assert.equal(storedByActionBody.client.name, 'Action-managed client')
+  assert.match(storedByActionBody.client_secret, /^[a-f0-9]{80}$/)
+
+  const listedByAction = await OAuthClientsAction.handle(actionRequest() as never)
+  assert.equal(listedByAction.status, 200)
+  assert.equal(listedByAction.headers.get('cache-control'), 'no-store')
+  const listedByActionBody = await listedByAction.json() as {
+    clients: Array<Record<string, unknown>>
+    count: number
+  }
+  assert.equal(listedByActionBody.count, 1)
+  assert.equal(listedByActionBody.clients[0]?.id, storedByActionBody.client.id)
+  assert.equal('secret' in listedByActionBody.clients[0]!, false)
+  assert.equal('client_secret' in listedByActionBody.clients[0]!, false)
+
+  const rotatedByAction = await OAuthClientSecretRotateAction.handle(actionRequest({}, String(storedByActionBody.client.id)) as never)
+  assert.equal(rotatedByAction.status, 200)
+  assert.equal(rotatedByAction.headers.get('cache-control'), 'no-store')
+  assert.equal(rotatedByAction.headers.get('pragma'), 'no-cache')
+  const rotatedByActionBody = await rotatedByAction.json() as { client_secret: string }
+  assert.match(rotatedByActionBody.client_secret, /^[a-f0-9]{80}$/)
+  assert.notEqual(rotatedByActionBody.client_secret, storedByActionBody.client_secret)
+
+  const updatedByAction = await OAuthClientUpdateAction.handle(actionRequest({
+    name: 'Updated action-managed client',
+    redirect_uris: ['https://actions.example.com/updated-callback'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  }, String(storedByActionBody.client.id)) as never)
+  assert.equal(updatedByAction.status, 200)
+  assert.equal(updatedByAction.headers.get('cache-control'), 'no-store')
+  const updatedByActionBody = await updatedByAction.json() as { client: { name: string, redirect_uris: string[] } }
+  assert.equal(updatedByActionBody.client.name, 'Updated action-managed client')
+  assert.deepEqual(updatedByActionBody.client.redirect_uris, ['https://actions.example.com/updated-callback'])
+
+  const disabledByAction = await OAuthClientDisableAction.handle(actionRequest({}, String(storedByActionBody.client.id)) as never)
+  assert.equal(disabledByAction.status, 200)
+  assert.equal(disabledByAction.headers.get('cache-control'), 'no-store')
+  const disabledListByAction = await OAuthClientsAction.handle(actionRequest() as never)
+  const disabledListBody = await disabledListByAction.json() as { clients: Array<{ id: number, revoked: boolean }> }
+  assert.equal(disabledListBody.clients.find(client => client.id === storedByActionBody.client.id)?.revoked, true)
   const publicRegistration = await registerOAuthClient(provider, 42, {
     name: 'Browser integration',
     type: 'public',
