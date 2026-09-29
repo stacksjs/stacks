@@ -53,6 +53,7 @@ const {
   approveOAuthAuthorizationRequestSession,
   authorizeOAuthDelegatedToken,
   beginOAuthAuthorizationRequest,
+  bindOAuthAuthorizationRequestWorkspace,
   createOAuthGrant,
   createOAuthAuthorizationRequestSession,
   createS256CodeChallenge,
@@ -533,6 +534,23 @@ try {
   const workspacePage = await OAuthAuthorizationAction.handle(workspacePageRequest as never)
   assert.equal(workspacePage.status, 200)
   assert.match(await workspacePage.text(), /Acme Workspace/)
+
+  const workspaceBindingRaceRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  const workspaceBindingRace = await Promise.all([
+    bindOAuthAuthorizationRequestWorkspace(workspaceBindingRaceRequestId, browserSession, 'workspace-a'),
+    bindOAuthAuthorizationRequestWorkspace(workspaceBindingRaceRequestId, browserSession, 'workspace-b'),
+  ])
+  assert.equal(workspaceBindingRace.filter(Boolean).length, 1)
+  const winningWorkspace = workspaceBindingRace[0] ? 'workspace-a' : 'workspace-b'
+  const losingWorkspace = winningWorkspace === 'workspace-a' ? 'workspace-b' : 'workspace-a'
+  assert.equal(await bindOAuthAuthorizationRequestWorkspace(workspaceBindingRaceRequestId, browserSession, winningWorkspace), true)
+  assert.equal(await bindOAuthAuthorizationRequestWorkspace(workspaceBindingRaceRequestId, browserSession, losingWorkspace), false)
+  const workspaceBindingRow = await db.selectFrom('oauth_authorization_requests')
+    .where('request_hash', '=', createHash('sha256').update(workspaceBindingRaceRequestId).digest('hex'))
+    .select(['workspace_id', 'workspace_bound'])
+    .executeTakeFirstOrThrow()
+  assert.equal(workspaceBindingRow.workspace_id, winningWorkspace)
+  assert.equal(Boolean(workspaceBindingRow.workspace_bound), true)
 
   const workspaceApprovalRequest = new Request('https://id.example.com/oauth/authorize', {
     method: 'POST',
