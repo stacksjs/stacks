@@ -167,6 +167,18 @@ try {
     assert.equal(`${pkceDowngradeCallback.origin}${pkceDowngradeCallback.pathname}`, redirectUri)
     assert.equal(pkceDowngradeCallback.searchParams.get('error'), 'invalid_request')
     assert.equal(pkceDowngradeCallback.searchParams.get('state'), 'oauth-http-state')
+
+    const unregisteredResource = new URL('/oauth/authorize', issuer)
+    unregisteredResource.search = new URLSearchParams({
+      ...authorizationParams,
+      resource: 'https://api.attacker.example.test',
+    }).toString()
+    const unregisteredResourceResponse = await fetch(unregisteredResource, { redirect: 'manual' })
+    assert.equal(unregisteredResourceResponse.status, 302)
+    const resourceCallback = new URL(unregisteredResourceResponse.headers.get('location')!)
+    assert.equal(`${resourceCallback.origin}${resourceCallback.pathname}`, redirectUri)
+    assert.equal(resourceCallback.searchParams.get('error'), 'invalid_target')
+    assert.equal(resourceCallback.searchParams.get('state'), 'oauth-http-state')
     assert.equal(Number((await db.selectFrom('oauth_authorization_requests')
       .select(db.fn.count('request_hash').as('count'))
       .executeTakeFirstOrThrow()).count), 0)
