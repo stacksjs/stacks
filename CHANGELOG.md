@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.25...v0.75.26)
+
+## ✨ Features
+
+- **mobile**: record a route, with live distance and pace ([07f78e1](https://github.com/stacksjs/stacks/commit/07f78e1)) _(by Chris <chris@stacksjs.com>)_
+- **router**: add static response routes ([d88df44](https://github.com/stacksjs/stacks/commit/d88df44)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: restore group state after errors ([66c8044](https://github.com/stacksjs/stacks/commit/66c8044)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: benchmark static response dispatch ([f2ebe47](https://github.com/stacksjs/stacks/commit/f2ebe47)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **router**: document static response routes ([05a8bd5](https://github.com/stacksjs/stacks/commit/05a8bd5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 💄 Styles
+
+- **mobile**: normalize README newline ([8e954cc](https://github.com/stacksjs/stacks/commit/8e954cc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.24...v0.75.25)
 
 ## ✨ Features
