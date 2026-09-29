@@ -75,7 +75,7 @@ try {
   const id = dialect === 'sqlite' ? 'INTEGER PRIMARY KEY' : dialect === 'mysql' ? 'INTEGER PRIMARY KEY AUTO_INCREMENT' : 'BIGSERIAL PRIMARY KEY'
   await db.unsafe(`CREATE TABLE users (id ${id}, email VARCHAR(255) UNIQUE, name TEXT, password TEXT, created_at TIMESTAMP, updated_at TIMESTAMP)`).execute()
   await db.unsafe(`CREATE TABLE magic_link_tokens (id ${id}, email VARCHAR(255), user_id INTEGER, token VARCHAR(64) UNIQUE, expires_at TIMESTAMP, consumed_at TIMESTAMP, redirect_to TEXT, site_id INTEGER, created_at TIMESTAMP, updated_at TIMESTAMP)`).execute()
-  await db.insertInto('users').values({ email }).execute()
+  await db.insertInto('users').values({ email: 'Synthetic@Example.Invalid' }).execute()
   await check('failed replacement preserves the previous link and sends nothing', async () => {
     if (dialect === 'postgres') {
       await db.unsafe("CREATE FUNCTION reject_magic_send() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture replacement denied'; END; $$").execute()

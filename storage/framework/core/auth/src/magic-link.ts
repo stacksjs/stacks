@@ -3,6 +3,7 @@ import { config } from '@stacksjs/config'
 import { db, enqueueAfterCommit, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { mail, templateByName } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
+import { findAuthUserRowByEmail, normalizeAuthEmail } from './credential-user'
 import { authLinkBase } from './link-url'
 import { RateLimiter } from './rate-limiter'
 
@@ -97,7 +98,7 @@ async function linkBase(siteId: number | undefined): Promise<string> {
  * with their route's `.rateLimit()`; this adds a per-email limiter on top.
  */
 export async function sendMagicLink(email: string, options: SendMagicLinkOptions = {}): Promise<void> {
-  const normalized = email.trim().toLowerCase()
+  const normalized = normalizeAuthEmail(email)
 
   if (await RateLimiter.isRateLimited(normalized))
     return
@@ -105,11 +106,7 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
 
   // Sending a sign-in credential must use current email ownership. A lagged
   // replica may retain an address the account has already removed.
-  let user = await db.primary
-    .selectFrom('users')
-    .where('email', '=', normalized)
-    .select(['id', 'email'])
-    .executeTakeFirst() as { id: number, email: string } | undefined
+  let user = await findAuthUserRowByEmail(normalized)
 
   if (!user && options.createUser) {
     // Passwordless provisioning: a user row with no password. The password
@@ -126,24 +123,23 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
       } as never)
       .execute()
 
-    user = await db.primary
-      .selectFrom('users')
-      .where('email', '=', normalized)
-      .select(['id', 'email'])
-      .executeTakeFirst() as { id: number, email: string } | undefined
+    user = await findAuthUserRowByEmail(normalized)
   }
 
   if (!user)
     return
 
-  const userId = user.id
+  const userId = Number(user.id)
+  if (!Number.isSafeInteger(userId) || userId <= 0)
+    return
   const issued = await db.transaction(async () => {
     // Serialize even the first issue, when no token row exists to lock.
     // Recheck ownership before issuing against the earlier user lookup.
     let ownerQuery = db.primary.selectFrom('users')
-      .where('id', '=', userId).where('email', '=', normalized).select('id')
+      .where('id', '=', userId).select(['id', 'email'])
     if (getDatabaseDialect() !== 'sqlite') ownerQuery = ownerQuery.lockForUpdate()
-    if (!await ownerQuery.executeTakeFirst()) return undefined
+    const owner = await ownerQuery.executeTakeFirst()
+    if (!owner || normalizeAuthEmail(String(owner.email ?? '')) !== normalized) return undefined
 
     const raw = randomBytes(32).toString('base64url')
     const ttl = options.ttlMinutes ?? expireMinutes()
