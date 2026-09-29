@@ -1953,12 +1953,12 @@
       "source": "pantry",
       "resolved": "registry:bun.sh@1.4.2"
     },
-    "craft-native@0.0.92": {
+    "craft-native@0.0.104": {
       "name": "craft-native",
-      "version": "0.0.92",
+      "version": "0.0.104",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.92.tgz",
-      "integrity": "sha512-ZItXbEfrR3uYpEyHz65BYce/O2SUeV8TXKlG2QEzOmg4svD9/eD+/C4bfA5jgthmszcJMYKmHc6yKE+JIECZqw==",
+      "resolved": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.104.tgz",
+      "integrity": "sha512-o2Pd0fPiE6mZ6wbuOXH2elrljsncL102L9c8lGGG/n0anZ3k7gom+Tfsm3+ekEtCJK9LW8LoYq+5z97QsrTq6Q==",
       "bin": {
         "craft-sdk": "./dist/cli.js"
       }
