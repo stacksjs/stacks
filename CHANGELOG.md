@@ -1,5 +1,32 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.31...v0.75.32)
+
+## ✨ Features
+
+- **deploy**: keep the Gmail Postmaster Tools record published with the mail DNS ([aabffe4](https://github.com/stacksjs/stacks/commit/aabffe4)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **auth**: deprecate inert token rotation config ([d5f6edc](https://github.com/stacksjs/stacks/commit/d5f6edc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: make revoked token pruning atomic ([ade9d9b](https://github.com/stacksjs/stacks/commit/ade9d9b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: prune revoked token pairs ([8aefabe](https://github.com/stacksjs/stacks/commit/8aefabe)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce idle timeout during validation ([87a9db5](https://github.com/stacksjs/stacks/commit/87a9db5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject orphaned facade tokens ([b9ec9db](https://github.com/stacksjs/stacks/commit/b9ec9db)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2811](https://github.com/stacksjs/stacks/issues/2811))
+- **auth**: preserve refresh token lifetimes ([1fc473f](https://github.com/stacksjs/stacks/commit/1fc473f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2810](https://github.com/stacksjs/stacks/issues/2810))
+- **ci**: regenerate the action registry and pin craft-native in the lock ([515b2a6](https://github.com/stacksjs/stacks/commit/515b2a6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind token issuance to users ([d9147d4](https://github.com/stacksjs/stacks/commit/d9147d4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2809](https://github.com/stacksjs/stacks/issues/2809))
+
+## 📝 Documentation
+
+- 647 default actions, with the OAuth ones ([7b9d051](https://github.com/stacksjs/stacks/commit/7b9d051)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: describe explicit token rotation ([3758c80](https://github.com/stacksjs/stacks/commit/3758c80)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.30...v0.75.31)
 
 ## 🐛 Bug Fixes
