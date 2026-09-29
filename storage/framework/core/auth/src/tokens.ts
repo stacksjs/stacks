@@ -740,7 +740,9 @@ export async function createToken(
 
     // Get the inserted token
     const inserted = await trx.unsafe(`
-      SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
+      SELECT id, user_id, tokenable_type, tokenable_id, oauth_client_id,
+        name, scopes, revoked, expires_at, created_at, updated_at
+      FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
     `, [hashedToken])
 
     const row = (inserted as unknown as AccessTokenRow[])[0]
@@ -950,7 +952,9 @@ export async function refreshToken(
 
     // Get the new access token
     const inserted = await trx.unsafe(`
-      SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
+      SELECT id, user_id, tokenable_type, tokenable_id, oauth_client_id,
+        name, scopes, revoked, expires_at, created_at, updated_at
+      FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
     `, [hashedToken])
 
     const row = (inserted as unknown as AccessTokenRow[])[0]
