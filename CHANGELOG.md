@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.26...v0.75.27)
+
+## 🔧 Chores
+
+- **deps**: record stx 0.2.334 in pantry.lock ([09cdf1c](https://github.com/stacksjs/stacks/commit/09cdf1c)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: take stx 0.2.334 ([84032b2](https://github.com/stacksjs/stacks/commit/84032b2)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.25...v0.75.26)
 
 ## ✨ Features
