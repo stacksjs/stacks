@@ -1,4 +1,8 @@
-import type { ValidatedOAuthAuthorizationRequest } from './oauth-authorization'
+import {
+  isValidOAuthRedirectUri,
+  isValidOAuthState,
+  type ValidatedOAuthAuthorizationRequest,
+} from './oauth-authorization'
 import { createHash, randomBytes } from 'node:crypto'
 import {
   db,
@@ -9,7 +13,6 @@ import {
   sqlDateTime,
   sqlHelpers,
 } from '@stacksjs/database/runtime'
-import { isValidOAuthRedirectUri } from './oauth-authorization'
 import { loadOAuthAuthorizationClient } from './oauth-client-registration'
 import { isValidS256CodeChallenge } from './oauth-pkce'
 
@@ -93,7 +96,7 @@ function requestFromStoredRow(row: StoredAuthorizationRequest, now: number): Val
     || !isValidS256CodeChallenge(row.code_challenge)
     || (parseSqlDateTime(row.expires_at)?.getTime() ?? 0) <= now
     || row.consumed_at != null
-    || (row.state != null && row.state.length > 4096))
+    || (row.state != null && !isValidOAuthState(row.state)))
     return null
 
   const scopes = storedValues(row.scopes)
@@ -159,8 +162,8 @@ export async function createOAuthAuthorizationRequestSession(
     throw new TypeError('OAuth authorization request requires a valid browser session identifier.')
   if (!Number.isSafeInteger(lifetimeMs) || lifetimeMs <= 0)
     throw new TypeError('OAuth authorization request lifetime must be a positive safe integer.')
-  if (request.state != null && request.state.length > 4096)
-    throw new TypeError('OAuth authorization request state exceeds 4096 characters.')
+  if (request.state != null && !isValidOAuthState(request.state))
+    throw new TypeError('OAuth authorization request state must contain 1 to 4096 visible ASCII characters.')
   if (!isValidOAuthRedirectUri(request.redirectUri)
     || !isValidS256CodeChallenge(request.codeChallenge)
     || request.codeChallengeMethod !== 'S256'

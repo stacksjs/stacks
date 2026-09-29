@@ -127,6 +127,11 @@ export function isValidOAuthRedirectUri(value: string): boolean {
   return url.protocol === 'https:' || (url.protocol === 'http:' && loopback)
 }
 
+/** Whether an optional OAuth state value is safe to persist and reflect. */
+export function isValidOAuthState(value: string): boolean {
+  return /^[\x20-\x7E]{1,4096}$/.test(value)
+}
+
 function requestedScopes(
   value: string | undefined,
   redirectUri: string,
@@ -206,7 +211,7 @@ export function validateOAuthAuthorizationRequest(
   const state = typeof input.state === 'string' ? input.state : null
   const redirectUri = input.redirectUri
 
-  if (state !== null && !/^[\x20-\x7E]{1,4096}$/.test(state))
+  if (state !== null && !isValidOAuthState(state))
     reject('invalid_request', 'OAuth authorization request state must contain 1 to 4096 visible ASCII characters.', redirectUri)
 
   if (input.responseType !== 'code')

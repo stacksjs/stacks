@@ -306,6 +306,18 @@ try {
   assert.equal(Number((await db.selectFrom('oauth_authorization_requests')
     .select(db.raw('COUNT(*) AS count'))
     .executeTakeFirstOrThrow() as { count: number | string }).count), requestCountBeforeUnknownClient)
+  for (const state of ['', 'line\nbreak', '🔐', 's'.repeat(4097)]) {
+    await assert.rejects(createOAuthAuthorizationRequestSession({
+      ...validatedRequest,
+      state,
+    }, browserSession, 60_000), /state/)
+  }
+  const staleStateRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await db.updateTable('oauth_authorization_requests')
+    .set({ state: 'line\nbreak' })
+    .where('request_hash', '=', createHash('sha256').update(staleStateRequestId).digest('hex'))
+    .execute()
+  assert.equal(await loadOAuthAuthorizationRequestSession(staleStateRequestId, browserSession), null)
   const requestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const requestHash = createHash('sha256').update(requestId).digest('hex')
   const storedRequest = await db.selectFrom('oauth_authorization_requests').where('request_hash', '=', requestHash).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
