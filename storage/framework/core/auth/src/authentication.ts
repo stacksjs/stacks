@@ -285,7 +285,7 @@ export class Auth {
   private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {
     const result = await db.primary.selectFrom('oauth_access_tokens')
       .where('id', '=', tokenId)
-      .selectAll()
+      .select(['id', 'user_id', 'oauth_client_id', 'name', 'scopes', 'revoked', 'expires_at', 'created_at', 'updated_at'])
       .executeTakeFirst()
 
     if (!result)
@@ -978,7 +978,7 @@ export class Auth {
       .where('tokenable_id', '=', uid)
       .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
       .where('revoked', '=', false)
-      .selectAll()
+      .select(['id', 'user_id', 'oauth_client_id', 'name', 'scopes', 'revoked', 'expires_at', 'created_at', 'updated_at'])
       .execute()
 
     return tokens.map((token: Record<string, unknown>) => ({

@@ -54,10 +54,12 @@ try {
     })), async () => {
       assert(await currentAccessToken())
     })
+    assert.equal((await Auth.tokens(1)).length, 1)
+    assert(await Auth.findToken(pair.accessToken.id))
   }
   finally { unregister() }
 
-  assert.equal(tokenReads.length, 3)
+  assert.equal(tokenReads.length, 5)
   for (const sql of tokenReads)
     assert(!/\bselect\s+(?:\w+\.)?\*/i.test(sql), `token lookup must not transfer every column: ${sql}`)
 
