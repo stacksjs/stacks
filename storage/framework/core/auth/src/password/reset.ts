@@ -166,7 +166,7 @@ export function passwordResets(value: string): PasswordResetActions {
         .executeTakeFirst()
 
       const stored = await db.primary.selectFrom('password_resets')
-        .where('email', '=', email).selectAll().execute()
+        .where('email', '=', email).select(['token']).execute()
       if (stored.length !== 1 || stored[0]?.token !== hashedToken)
         throw new Error('Password reset could not replace its token')
       return true
@@ -262,7 +262,7 @@ export function passwordResets(value: string): PasswordResetActions {
     const result = await db.primary
       .selectFrom('password_resets')
       .where('email', '=', email)
-      .selectAll()
+      .select(['token', 'expires_at', 'created_at'])
       .executeTakeFirst()
 
     if (!result)
@@ -311,7 +311,7 @@ export function passwordResets(value: string): PasswordResetActions {
       let resetQuery = trx
         .selectFrom('password_resets')
         .where('email', '=', email)
-        .selectAll()
+        .select(['token', 'expires_at', 'created_at'])
       // Lock before the expensive hash checks. SQLite's transaction executor
       // already serializes writers; server databases need an explicit row lock.
       if (getDatabaseDialect() !== 'sqlite') resetQuery = resetQuery.lockForUpdate()
