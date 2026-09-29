@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
 import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAuthorizationAction'
+import OAuthClientSecretRotateAction from '../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction'
 import OAuthClientsAction from '../../../defaults/app/Actions/Auth/OAuthClientsAction'
 import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConnectionsAction'
 import OAuthConsentAction from '../../../defaults/app/Actions/Auth/OAuthConsentAction'
@@ -250,5 +251,41 @@ describe('OAuth client management route actions', () => {
     const result = await OAuthClientsAction.handle(browserRequest('https://id.example.com/auth/oauth/clients'))
 
     expect(result.status).toBe(401)
+  })
+
+  it('keeps secret rotation unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const result = await OAuthClientSecretRotateAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients/17/rotate-secret',
+      { method: 'POST' },
+    ))
+
+    expect(result.status).toBe(404)
+  })
+
+  it('requires an authenticated owner and a valid client id to rotate a secret', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const anonymous = await OAuthClientSecretRotateAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients/17/rotate-secret',
+      { method: 'POST' },
+    ))
+    const malformed = browserRequest(
+      'https://id.example.com/auth/oauth/clients/not-a-client/rotate-secret',
+      { method: 'POST' },
+      { id: '42', email: 'ada@example.com' },
+    ) as RequestInstance & { getParam: (name: string) => string }
+    malformed.getParam = () => 'not-a-client'
+
+    const malformedResult = await OAuthClientSecretRotateAction.handle(malformed)
+
+    expect(OAuthClientSecretRotateAction.skipCsrf).not.toBe(true)
+    expect(anonymous.status).toBe(401)
+    expect(malformedResult.status).toBe(400)
   })
 })
