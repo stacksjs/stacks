@@ -82,15 +82,38 @@ export function normalizeDeepLinkURL(value: unknown): string | null {
   return typeof url === 'string' && url.trim() ? url : null
 }
 
+/**
+ * Deep links, asked of the bridge once there is one.
+ *
+ * A page mounts before Craft installs its bridge, and a page that follows its
+ * links from mount (NativeAppShell does) asked too early: getInitialURL found
+ * no bridge and answered null, and the launch link, delivered a moment later
+ * marked `initial`, was skipped as already handled. An app opened from a link
+ * landed on its home screen. Both calls now wait for the bridge; Craft holds
+ * any link that arrives meanwhile until the first subscriber.
+ */
 export const deepLinks: DeepLinksApi = {
   async getInitialURL() {
+    if (!await whenBridgeReady()) return null
     return normalizeDeepLinkURL(await craftDeepLinks.getInitialURL?.())
   },
   onLink(callback) {
-    return craftDeepLinks.onLink?.((value: unknown, link?: { initial?: boolean }) => {
-      const url = normalizeDeepLinkURL(value)
-      if (url) callback(url, { initial: link?.initial === true })
-    }) ?? (() => {})
+    let stop: (() => void) | null = null
+    let cancelled = false
+    const subscribe = (): void => {
+      if (cancelled) return
+      stop = craftDeepLinks.onLink?.((value: unknown, link?: { initial?: boolean }) => {
+        const url = normalizeDeepLinkURL(value)
+        if (url) callback(url, { initial: link?.initial === true })
+      }) ?? null
+    }
+    // Synchronous when the bridge is already there.
+    if (host()?.craft) subscribe()
+    else void whenBridgeReady().then(subscribe)
+    return () => {
+      cancelled = true
+      stop?.()
+    }
   },
 }
 export const keepAwake: KeepAwakeApi = craftKeepAwake
@@ -176,6 +199,32 @@ export function whenNativeMobile(timeoutMs = 2000): Promise<boolean> {
     }
     const timer = setTimeout(done, timeoutMs)
     current.addEventListener('craftReady', done, { once: true })
+  })
+}
+
+/**
+ * Resolves once the bridge object (`window.craft`) is installed: `true` then,
+ * `false` in a browser at once, or after `timeoutMs` in a host that never
+ * installs it.
+ *
+ * Not whenNativeMobile(), which answers `true` as soon as the phone shell is
+ * recognisable, before the bridge exists and before anything can be asked of it.
+ */
+export function whenBridgeReady(timeoutMs = 15_000): Promise<boolean> {
+  const current = host()
+  if (current?.craft) return Promise.resolve(true)
+  const transports = current as unknown as CraftTransports | undefined
+  if (!current || !(hasNativeMobileHost() || transports?.webkit?.messageHandlers?.craft))
+    return Promise.resolve(false)
+
+  return new Promise<boolean>((resolve) => {
+    const done = (): void => {
+      clearTimeout(timer)
+      current.removeEventListener('craftReady', done)
+      resolve(Boolean(current.craft))
+    }
+    const timer = setTimeout(done, timeoutMs)
+    current.addEventListener('craftReady', done)
   })
 }
 

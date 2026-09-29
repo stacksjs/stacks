@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { getNativeMobileBridge, isNativeMobile, mobile, onMobileReady } from '../src'
+import { deepLinks, getNativeMobileBridge, isNativeMobile, mobile, onMobileReady, whenBridgeReady } from '../src'
 
 const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
 
@@ -99,5 +99,68 @@ describe('native mobile bridge availability', () => {
     current.craft = { platform: 'ios' }
     current.dispatchEvent(new Event('craftReady'))
     expect(calls).toBe(0)
+  })
+})
+
+describe('deep links before the bridge', () => {
+  /** The phone shell as a page first sees it: Craft's transport, no bridge yet. */
+  function appHostWithoutBridge(): EventTarget & { craft?: unknown } {
+    const current = setHost()
+    Object.assign(current, { webkit: { messageHandlers: { craft: { postMessage() {} } } } })
+    return current
+  }
+
+  function installBridge(current: EventTarget & { craft?: unknown }, links: { initial: string | null, subscribers: Array<(detail: unknown) => void> }): void {
+    current.craft = {
+      platform: 'ios',
+      capabilities: { deepLinks: true },
+      deepLinks: {
+        getInitialURL: async () => (links.initial ? { url: links.initial } : null),
+        onLink: (callback: (detail: unknown) => void) => {
+          links.subscribers.push(callback)
+          return () => {}
+        },
+      },
+    }
+    current.dispatchEvent(new Event('craftReady'))
+  }
+
+  it('reads the launch link once the bridge is installed, not null before it', async () => {
+    const current = appHostWithoutBridge()
+    const links = { initial: 'hqtraining://m/go/9739', subscribers: [] as Array<(detail: unknown) => void> }
+    const initial = deepLinks.getInitialURL()
+    await Promise.resolve()
+    installBridge(current, links)
+    expect(await initial).toBe('hqtraining://m/go/9739')
+  })
+
+  it('subscribes to links once the bridge is installed', async () => {
+    const current = appHostWithoutBridge()
+    const links = { initial: null, subscribers: [] as Array<(detail: unknown) => void> }
+    const received: string[] = []
+    const stop = deepLinks.onLink(url => received.push(url))
+    installBridge(current, links)
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(links.subscribers.length).toBe(1)
+    links.subscribers[0]!({ url: 'hqtraining://m/calendar', initial: false })
+    expect(received).toEqual(['hqtraining://m/calendar'])
+    stop()
+  })
+
+  it('does not subscribe after an unsubscribe that came first', async () => {
+    const current = appHostWithoutBridge()
+    const links = { initial: null, subscribers: [] as Array<(detail: unknown) => void> }
+    deepLinks.onLink(() => {})()
+    installBridge(current, links)
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(links.subscribers.length).toBe(0)
+  })
+
+  it('answers at once in a browser, which has no deep links', async () => {
+    setHost()
+    expect(await whenBridgeReady()).toBe(false)
+    expect(await deepLinks.getInitialURL()).toBeNull()
   })
 })
