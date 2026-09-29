@@ -110,6 +110,7 @@ try {
       issuer,
       scopes: {
         'issues:read': { description: 'Read issues', resources: ['bughq'] },
+        'issues:write': { description: 'Write issues', resources: ['bughq'] },
       },
       resources: {
         bughq: { audience: `${issuer}/fixture/resource` },
@@ -123,7 +124,7 @@ try {
       tokenEndpointAuthMethod: 'none',
       redirectUris: [redirectUri],
       grantTypes: ['authorization_code', 'refresh_token'],
-      scopes: ['issues:read'],
+      scopes: ['issues:read', 'issues:write'],
       resources: ['bughq'],
     })
 
@@ -295,6 +296,20 @@ try {
       }
       else await response.arrayBuffer()
     }
+    await readResource(firstPair.access_token)
+
+    const expandedRefresh = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: String(registration.client.id),
+        refresh_token: firstPair.refresh_token,
+        scope: 'issues:read issues:write',
+      }),
+    })
+    assert.equal(expandedRefresh.status, 400)
+    assert.equal((await expandedRefresh.json() as { error?: string }).error, 'invalid_scope')
     await readResource(firstPair.access_token)
 
     const refresh = await fetch(`${issuer}/oauth/token`, {
