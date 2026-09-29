@@ -162,7 +162,15 @@ try {
       assert(restored, 'the refresh delete must roll back with the failed access delete')
       assert.equal(contextHasWritten(), true, 'an attempted prune still conservatively pins the request')
     })
-    console.log('PASS rolled-back prune preserves both rows and the request write pin')
+    const revokedPartial = await seedPrunable('revoked')
+    await withRoutingContext(async () => {
+      assert.equal(contextHasWritten(), false)
+      await assert.rejects(deleteRevokedTokens(-1), 'the guarded revoked-token delete must fail')
+      const restored = await db.selectFrom('oauth_refresh_tokens').where('access_token_id', '=', revokedPartial.accessToken.id).selectAll().executeTakeFirst()
+      assert(restored, 'the revoked refresh delete must roll back with the failed access delete')
+      assert.equal(contextHasWritten(), true, 'an attempted revoked prune still conservatively pins the request')
+    })
+    console.log('PASS rolled-back prunes preserve both rows and the request write pin')
   }
   finally {
     const drops = dialect === 'postgres'

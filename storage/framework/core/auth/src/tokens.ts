@@ -1199,21 +1199,25 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
-  // Delete associated refresh tokens first
-  await db.unsafe(`
-    DELETE FROM oauth_refresh_tokens
-    WHERE access_token_id IN (
-      SELECT id FROM oauth_access_tokens WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
-    )
-  `, [sqlDateTime(cutoffDate)])
-  markContextWrote()
+  return db.transaction(async (trx) => {
+    // The auth schema intentionally has no cascading foreign key. Delete both
+    // halves in one transaction so a rejected access-token delete cannot leave
+    // a partial cleanup with its refresh rows already gone.
+    await trx.unsafe(`
+      DELETE FROM oauth_refresh_tokens
+      WHERE access_token_id IN (
+        SELECT id FROM oauth_access_tokens WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
+      )
+    `, [sqlDateTime(cutoffDate)])
+    markContextWrote()
 
-  const result = await db.unsafe(`
-    DELETE FROM oauth_access_tokens
-    WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
-  `, [sqlDateTime(cutoffDate)])
+    const result = await trx.unsafe(`
+      DELETE FROM oauth_access_tokens
+      WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
+    `, [sqlDateTime(cutoffDate)])
 
-  return mutationCount(result)
+    return mutationCount(result)
+  }, { retries: 2, sqlStates: ['40001', '40P01'] })
 }
 
 // ============================================================================
