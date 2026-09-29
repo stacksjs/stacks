@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.33...v0.75.34)
+
+## ⚡ Performance Improvements
+
+- **mobile**: scrolling past the nav bar's threshold no longer stalls a frame ([abf5d4e](https://github.com/stacksjs/stacks/commit/abf5d4e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: fetch every tab's page while the current one is idle ([f43d3d3](https://github.com/stacksjs/stacks/commit/f43d3d3)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.341, with passive touch listeners and faster navigation ([23e4a49](https://github.com/stacksjs/stacks/commit/23e4a49)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.32...v0.75.33)
 
 ## 🐛 Bug Fixes
