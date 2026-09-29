@@ -206,8 +206,8 @@ export function validateOAuthAuthorizationRequest(
   const state = typeof input.state === 'string' ? input.state : null
   const redirectUri = input.redirectUri
 
-  if (state !== null && state.length > 4096)
-    reject('invalid_request', 'OAuth authorization request state exceeds 4096 characters.', redirectUri)
+  if (state !== null && !/^[\x20-\x7E]{1,4096}$/.test(state))
+    reject('invalid_request', 'OAuth authorization request state must contain 1 to 4096 visible ASCII characters.', redirectUri)
 
   if (input.responseType !== 'code')
     reject('unsupported_response_type', 'Only response_type=code is supported.', redirectUri, state)
