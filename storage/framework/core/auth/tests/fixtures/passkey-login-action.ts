@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { mock, setSystemTime } from 'bun:test'
 import { releaseOrm } from 'bun-query-builder'
 
-const user = { id: 7, email: 'passkey@example.com', name: 'Passkey User' }
+const user = { id: 7, email: 'Passkey@Example.com', name: 'Passkey User' }
+const loginEmail = 'PASSKEY@EXAMPLE.COM'
 let verified = true
 let newCounter = 2
 let expectedStoredCounter = 1
@@ -64,10 +65,11 @@ mock.module('@stacksjs/auth', () => ({
 
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const { findToken, storeWebAuthnChallenge } = realAuth
+const GenerateAuthenticationAction = (await import('../../../../defaults/app/Actions/Auth/GenerateAuthenticationAction')).default
 const VerifyAuthenticationAction = (await import('../../../../defaults/app/Actions/Auth/VerifyAuthenticationAction')).default
 const request = {
   all: () => ({ res: { id: 'credential-1' } }),
-  get: (key: string) => key === 'email' ? user.email : undefined,
+  get: (key: string) => key === 'email' ? loginEmail : undefined,
 } as any
 
 async function accessTokenCount(): Promise<number> {
@@ -92,6 +94,9 @@ try {
     transports: JSON.stringify(['internal']),
     last_used_at: sqlDateTime(),
   }).execute()
+
+  const options = await GenerateAuthenticationAction.handle(request) as { challenge?: unknown }
+  assert(options.challenge)
 
   const issuedAt = new Date('2030-01-02T03:04:05.000Z')
   setSystemTime(issuedAt)

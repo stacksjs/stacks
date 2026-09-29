@@ -4,6 +4,7 @@ import {
   Auth,
   authCookieForBrowserSession,
   consumeWebAuthnChallenge,
+  findAuthUserByEmail,
   getUserPasskey,
   resolveBrowserSessionPolicy,
   updatePasskeyCounter,
@@ -11,7 +12,6 @@ import {
 } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
-import { User } from '@stacksjs/orm'
 
 export default new Action({
   name: 'VerifyAuthenticationAction',
@@ -23,7 +23,7 @@ export default new Action({
 
     const email = request.get('email') ?? ''
 
-    const user = await User.where('email', email).first()
+    const user = await findAuthUserByEmail(email)
 
     if (!user)
       return response.notFound('User not found')

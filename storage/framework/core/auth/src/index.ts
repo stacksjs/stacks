@@ -1,6 +1,7 @@
 export * from './authentication'
 export * from './authenticator'
 export * from './client'
+export * from './credential-user'
 export * from './middleware'
 export * from './oauth-authorization'
 export * from './oauth-authorization-endpoint'

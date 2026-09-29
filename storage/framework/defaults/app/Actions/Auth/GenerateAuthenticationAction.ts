@@ -1,13 +1,13 @@
 import type { PublicKeyCredentialRequestOptionsJSON } from '@stacksjs/auth'
 import { Action } from '@stacksjs/actions'
 import {
+  findAuthUserByEmail,
   generateAuthenticationOptions,
   getUserPasskeys,
   passkeyDescriptors,
   storeWebAuthnChallenge,
 } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
-import { User } from '@stacksjs/orm'
 
 export default new Action({
   name: 'PasskeyAuthenticationAction',
@@ -20,7 +20,7 @@ export default new Action({
       return Response.json({ error: 'Email is required' }, { status: 422 })
     }
 
-    const user = await User.where('email', email).first()
+    const user = await findAuthUserByEmail(email)
 
     if (!user) {
       return Response.json({ error: 'User not found' }, { status: 404 })
