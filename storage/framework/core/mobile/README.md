@@ -105,4 +105,3 @@ The phone-native behaviour a screen expects, kept out of STX templates:
 
 The framework's `NativeNavBar`, `NativePullToRefresh`, `NativeSegmentedControl`
 and `NativeSheet` components are built on these.
-
