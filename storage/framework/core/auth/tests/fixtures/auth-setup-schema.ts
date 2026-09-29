@@ -176,7 +176,7 @@ async function verifySetup(): Promise<void> {
   assert.equal(personalRefresh.family_id, null, 'personal refresh tokens must not claim a delegated family')
   assert.equal(personalRefresh.parent_id, null, 'personal refresh tokens must not claim a delegated parent')
   await db.unsafe(`SELECT request_hash, browser_session_hash, client_id, client_type, redirect_uri,
-    scopes, resources, audiences, state, code_challenge, code_challenge_method,
+    scopes, resources, audiences, workspace_id, workspace_bound, state, code_challenge, code_challenge_method,
     expires_at, consumed_at, created_at FROM oauth_authorization_requests LIMIT 0`).execute()
   await db.unsafe('SELECT id, access_token_id, token, family_id, parent_id, revoked, expires_at, created_at FROM oauth_refresh_tokens LIMIT 0').execute()
   const user = await db.selectFrom('users').where('id', '=', 42).select(['email_verified_at', 'password_changed_at', 'two_factor_enabled']).executeTakeFirstOrThrow()

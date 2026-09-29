@@ -431,6 +431,8 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         scopes TEXT NOT NULL,
         resources TEXT NOT NULL,
         audiences TEXT NOT NULL,
+        workspace_id VARCHAR(255),
+        workspace_bound BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         state TEXT,
         code_challenge VARCHAR(43) NOT NULL,
         code_challenge_method VARCHAR(10) NOT NULL,
@@ -439,6 +441,18 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
+
+    for (const statement of [
+      'ALTER TABLE oauth_authorization_requests ADD COLUMN workspace_id VARCHAR(255)',
+      `ALTER TABLE oauth_authorization_requests ADD COLUMN workspace_bound BOOLEAN NOT NULL DEFAULT ${sql.boolFalse}`,
+    ]) {
+      try {
+        await db.unsafe(statement).execute()
+      }
+      catch (error) {
+        if (!isDuplicateColumnError(error)) throw error
+      }
+    }
 
     for (const statement of [
       'CREATE INDEX IF NOT EXISTS idx_oauth_authorization_requests_client_id ON oauth_authorization_requests(client_id)',
@@ -773,7 +787,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       resources, audiences, workspace_id, code_challenge, code_challenge_method, expires_at,
       consumed_at, created_at FROM oauth_auth_codes LIMIT 0`).execute()
     await db.unsafe(`SELECT request_hash, browser_session_hash, client_id, client_type, redirect_uri,
-      scopes, resources, audiences, state, code_challenge, code_challenge_method,
+      scopes, resources, audiences, workspace_id, workspace_bound, state, code_challenge, code_challenge_method,
       expires_at, consumed_at, created_at FROM oauth_authorization_requests LIMIT 0`).execute()
     await db.unsafe(`SELECT id, tokenable_type, tokenable_id, user_id, oauth_client_id,
       token, name, scopes, oauth_grant_id, resources, audiences, workspace_id, revoked, expires_at,
