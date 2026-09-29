@@ -18,8 +18,12 @@ export default new Action({
     if (!provider)
       return response.notFound('OAuth provider is not enabled')
 
+    // Check `user` itself rather than only through `id`, so the workspace
+    // resolver below sees a narrowed user instead of `AuthenticatedUser | undefined`.
     const user = await request.user()
-    const id = user ? oauthPositiveId(user.id) : null
+    if (!user)
+      return response.unauthorized('Authentication required')
+    const id = oauthPositiveId(user.id)
     if (!id)
       return response.unauthorized('Authentication required')
 

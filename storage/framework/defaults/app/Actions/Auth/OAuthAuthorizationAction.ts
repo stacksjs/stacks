@@ -31,7 +31,9 @@ async function renderConsentView(
   const { renderTemplate } = await import('@stacksjs/stx')
 
   return String(await renderTemplate(template, {
-    context,
+    // Spread into a literal: an interface has no index signature, so it is
+    // not a Record<string, unknown> until it becomes an object literal.
+    context: { ...context },
     injectCSS: true,
     templateOnly: true,
     processClientScripts: false,

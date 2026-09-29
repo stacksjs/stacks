@@ -84,10 +84,18 @@ async function userTokenOwnerExists(userId: unknown): Promise<boolean> {
   return owner !== undefined
 }
 
+/**
+ * The activity columns of an `oauth_access_tokens` row, as a raw read returns
+ * them. `unknown` on purpose: `db.primary` rows are untyped, and the
+ * timestamps are strings on SQLite but may come back as `Date` elsewhere, so a
+ * `string | null` here promised a shape the read never checked.
+ * `parseSqlDateTime` takes either, and the revoke compares against the value
+ * exactly as it was read.
+ */
 interface AccessTokenActivity {
-  id: number
-  created_at: string | null
-  updated_at: string | null
+  id?: unknown
+  created_at?: unknown
+  updated_at?: unknown
 }
 
 function accessTokenExceededIdleTimeout(accessToken: AccessTokenActivity): boolean {
@@ -105,7 +113,9 @@ async function revokeObservedIdleAccessToken(accessToken: AccessTokenActivity): 
     .where('id', '=', accessToken.id)
     .where('revoked', '=', false)
 
-  revoke = accessToken.updated_at === null
+  // `== null`: a row read without the column is as unseen as one holding NULL,
+  // and `updated_at = undefined` would match nothing.
+  revoke = accessToken.updated_at == null
     ? revoke.whereNull('updated_at')
     : revoke.where('updated_at', '=', accessToken.updated_at)
 
