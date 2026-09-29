@@ -30,11 +30,13 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 
 const {
+  authorizeOAuthDelegatedToken,
   authenticatedUser,
   authCookieName,
   createOAuthGrant,
   createS256CodeChallenge,
   issueAuthorizationCode,
+  oauthBearerAuthorizationErrorResponse,
   registerOAuthClient,
   resolveOAuthProviderConfig,
 } = await import('../../src')
@@ -101,6 +103,22 @@ try {
       canWriteIssues: await request.tokenCan?.('issues:write') ?? false,
     }
   }).middleware('auth')
+  router.get('/fixture/workspaces/{workspace}/issues', async (request) => {
+    const bearer = /^Bearer ([^\s]+)$/.exec(request.headers.get('authorization') ?? '')?.[1]
+    const workspaceId = request.params.workspace
+    const authorization = bearer
+      ? await authorizeOAuthDelegatedToken(bearer, {
+          scopes: ['issues:read'],
+          resource: 'bughq',
+          audience: `${new URL(request.url).origin}/fixture/resource`,
+          workspaceId,
+          isSubjectEligible: subject => subject.type === 'users' && subject.id === 1,
+        })
+      : { ok: false as const, reason: 'invalid_token' as const }
+    if (!authorization.ok)
+      return oauthBearerAuthorizationErrorResponse(authorization)
+    return { subject: authorization.token.subjectId, workspace: workspaceId }
+  })
 
   const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
   try {
@@ -313,6 +331,20 @@ try {
       else await response.arrayBuffer()
     }
     await readResource(firstPair.access_token)
+    const readWorkspaceResource = async (workspace: string, status: number) => {
+      const response = await fetch(`${issuer}/fixture/workspaces/${workspace}/issues`, {
+        headers: { authorization: `Bearer ${firstPair.access_token}`, accept: 'application/json' },
+      })
+      assert.equal(response.status, status)
+      if (status === 200)
+        assert.deepEqual(await response.json(), { subject: 1, workspace })
+      else {
+        assert.match(response.headers.get('www-authenticate') ?? '', /error="invalid_token"/)
+        assert.equal((await response.json() as { error?: string }).error, 'invalid_token')
+      }
+    }
+    await readWorkspaceResource('workspace-a', 200)
+    await readWorkspaceResource('workspace-b', 401)
 
     const workspaceGrantCount = async () => Number((await db.selectFrom('oauth_grants')
       .select(db.fn.count('id').as('count'))
