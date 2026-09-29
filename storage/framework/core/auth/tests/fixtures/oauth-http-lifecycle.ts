@@ -164,6 +164,35 @@ try {
     await login.arrayBuffer()
     const browserCookies = `${csrfCookie}; ${oauthCookie}; ${authCookie}`
 
+    const denialUrl = new URL(authorizationUrl)
+    denialUrl.searchParams.set('state', 'oauth-http-denial-state')
+    const denialPage = await fetch(denialUrl, {
+      headers: { accept: 'text/html,application/xhtml+xml', cookie: browserCookies },
+      redirect: 'manual',
+    })
+    assert.equal(denialPage.status, 200, await denialPage.clone().text())
+    const denialHtml = await denialPage.text()
+    const denialRequestId = /name="request_id" value="([A-Za-z0-9_-]{43})"/.exec(denialHtml)?.[1]
+    assert(denialRequestId, 'denial page did not contain the opaque request id')
+    const denialBody = new URLSearchParams({ _token: csrfToken, request_id: denialRequestId, decision: 'deny' })
+    const deny = async () => await fetch(`${issuer}/oauth/authorize`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        cookie: browserCookies,
+      },
+      body: denialBody,
+      redirect: 'manual',
+    })
+    const denial = await deny()
+    assert.equal(denial.status, 302, await denial.clone().text())
+    const denialCallback = new URL(denial.headers.get('location')!)
+    assert.equal(`${denialCallback.origin}${denialCallback.pathname}`, redirectUri)
+    assert.equal(denialCallback.searchParams.get('error'), 'access_denied')
+    assert.equal(denialCallback.searchParams.get('state'), 'oauth-http-denial-state')
+    assert.equal((await deny()).status, 400, 'a denial request must be single-use')
+    assert.equal(Number((await db.selectFrom('oauth_grants').select(db.fn.count('id').as('count')).executeTakeFirstOrThrow()).count), 0)
+
     const resumeLocation = new URL(anonymousAuthorization.headers.get('location')!, issuer)
       .searchParams.get('redirect')
     assert(resumeLocation)
