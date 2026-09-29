@@ -178,6 +178,8 @@ try {
     )
     const consentHtml = await consentPage.text()
     assert.match(consentHtml, /HTTP lifecycle client/)
+    const consentCsrfToken = /name="_token" value="([a-f0-9]{64})"/.exec(consentHtml)?.[1]
+    assert.equal(consentCsrfToken, csrfToken, 'consent form did not render the browser CSRF token')
     const requestId = /name="request_id" value="([A-Za-z0-9_-]{43})"/.exec(consentHtml)?.[1]
     assert(requestId, 'consent page did not contain the opaque request id')
 
@@ -186,9 +188,8 @@ try {
       headers: {
         'content-type': 'application/x-www-form-urlencoded',
         cookie: browserCookies,
-        'x-csrf-token': csrfToken,
       },
-      body: new URLSearchParams({ request_id: requestId, decision: 'approve' }),
+      body: new URLSearchParams({ _token: consentCsrfToken, request_id: requestId, decision: 'approve' }),
       redirect: 'manual',
     })
     assert.equal(approval.status, 302, await approval.clone().text())
