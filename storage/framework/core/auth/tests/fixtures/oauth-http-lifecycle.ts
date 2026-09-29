@@ -282,7 +282,7 @@ try {
     assert.equal(exchange.headers.get('cache-control'), 'no-store')
     const firstPair = await exchange.json() as { access_token: string, refresh_token: string }
 
-    const readResource = async (token: string, status = 200) => {
+    const readResource = async (token: string, status = 200, canWriteIssues = false) => {
       const response = await fetch(`${issuer}/fixture/resource`, {
         headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
       })
@@ -291,7 +291,7 @@ try {
         assert.deepEqual(await response.json(), {
           subject: 1,
           canReadIssues: true,
-          canWriteIssues: false,
+          canWriteIssues,
         })
       }
       else await response.arrayBuffer()
@@ -553,12 +553,12 @@ try {
     assert.equal((await confidentialReplay.json() as { error?: string }).error, 'invalid_grant')
     await readResource(rotatedConfidentialPair.access_token, 401)
 
-    const mintPublicPair = async () => {
+    const mintPublicPair = async (scopes: readonly string[] = ['issues:read']) => {
       const grant = await createOAuthGrant({
         clientId: registration.client.id,
         subjectType: 'users',
         subjectId: 1,
-        scopes: ['issues:read'],
+        scopes,
         resources: ['bughq'],
         audiences: [`${issuer}/fixture/resource`],
       })
@@ -644,6 +644,23 @@ try {
     await readResource(refreshRevocationPair.access_token)
     assert.equal((await revoke(refreshRevocationPair.refresh_token, 'refresh_token')).status, 200)
     await readResource(refreshRevocationPair.access_token, 401)
+
+    const broadPair = await mintPublicPair(['issues:read', 'issues:write'])
+    await readResource(broadPair.access_token, 200, true)
+    const narrowedRefresh = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: String(registration.client.id),
+        refresh_token: broadPair.refresh_token,
+        scope: 'issues:read',
+      }),
+    })
+    assert.equal(narrowedRefresh.status, 200, await narrowedRefresh.clone().text())
+    const narrowedPair = await narrowedRefresh.json() as { access_token: string }
+    await readResource(broadPair.access_token, 401)
+    await readResource(narrowedPair.access_token)
 
     console.log('PASS OAuth HTTP lifecycle')
   }
