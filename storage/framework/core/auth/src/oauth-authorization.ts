@@ -133,7 +133,7 @@ function requestedScopes(
   state: string | null,
 ): string[] {
   if (value == null || value === '')
-    return []
+    reject('invalid_scope', 'OAuth authorization requests require at least one scope.', redirectUri, state)
 
   const scopes = value.split(' ')
   if (scopes.some(scope => !scope || !/^[\x21\x23-\x5B\x5D-\x7E]+$/.test(scope)))

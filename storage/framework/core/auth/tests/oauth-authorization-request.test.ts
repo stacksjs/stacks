@@ -168,6 +168,8 @@ describe('OAuth authorization request validation', () => {
   })
 
   it('rejects unregistered or cross-resource permissions', () => {
+    expect(captureError({ scope: undefined }).code).toBe('invalid_scope')
+    expect(captureError({ scope: '' }).code).toBe('invalid_scope')
     expect(captureError({ scope: 'issues:write' }).code).toBe('invalid_scope')
     expect(captureError({}, { scopes: ['profile:read'] }).code).toBe('invalid_scope')
     expect(captureError({ resource: ['https://api.loghq.example'] }).code).toBe('invalid_target')
