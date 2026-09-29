@@ -147,3 +147,7 @@ export function videoAssetHeaders(path: string, bytes?: number, etag?: string, p
   if (etag) headers.ETag = `"${etag}"`
   return headers
 }
+export { parseByteRange, videoContentType, videoFileResponse } from './files'
+export type { ByteRange, VideoFileResponseOptions } from './files'
+export { inspectVideo } from './inspect'
+export type { VideoInspection } from './inspect'
