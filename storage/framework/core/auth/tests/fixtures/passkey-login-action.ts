@@ -12,6 +12,7 @@ assert(database)
 
 const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
+config.app.url = 'https://app.example'
 config.auth.browserSession = {
   baselineLifetime: 2 * 60 * 1000,
   rememberedLifetime: 5 * 60 * 1000,
