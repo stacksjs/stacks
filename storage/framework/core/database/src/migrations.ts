@@ -58,6 +58,8 @@ import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
 import { sqlStatementsOf } from './sql-statements'
 import { corpusUniqueIndexes, hasIndex, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
+import { ensureUuidColumns } from './uuid-columns'
+import { sqlHelpers } from './sql-helpers'
 
 export { sqlStatementsOf } from './sql-statements'
 
@@ -1778,6 +1780,14 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // messaging gap).
     const appliedBefore = await countAppliedMigrations()
 
+    // SQLite accepts a quoted unknown identifier in an index as a string
+    // expression. An older corpus can therefore create `ON users ("uuid")`
+    // before the trait-driven UUID guarantee adds the column. RENAME COLUMN
+    // reparses every index in the schema and then rejects that index. Repair
+    // established databases before the pre-batch framework rename pass.
+    if (dialect === 'sqlite' && appliedBefore > 0)
+      await ensureUuidColumns(sqlHelpers(dialect))
+
     // Framework renames, on both sides of the files. Before, so a pending file
     // written for the new names finds them. After, because an app's own corpus
     // predates the rename, so a fresh database gets the OLD tables from it.
@@ -1786,6 +1796,12 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // Execute existing migration files
     log.debug(`[migration] Running migrations from: ${corpusDir}`)
     await qbExecuteMigration(corpusDir)
+
+    const appliedAfter = await countAppliedMigrations()
+    // A fresh corpus may have just created the same quoted-index shape. Add
+    // model-declared UUID columns before the post-batch rename reparses it.
+    if (dialect === 'sqlite' && appliedAfter > appliedBefore)
+      await ensureUuidColumns(sqlHelpers(dialect))
 
     await catchUpFrameworkRenames()
 
@@ -1816,7 +1832,6 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
      */
     await ensureNotificationForeignKeys()
 
-    const appliedAfter = await countAppliedMigrations()
     const appliedCount = Math.max(0, appliedAfter - appliedBefore)
     await writeMigrateMarker(appliedCount)
 

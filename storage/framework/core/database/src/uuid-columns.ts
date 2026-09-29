@@ -117,9 +117,10 @@ export async function findUuidTables(): Promise<string[]> {
  * Guarantee-ALTER `uuid` onto every table whose model declares
  * `useUuid: true`, independently try/catch-swallowed per table so one
  * already-having-the-column (or not-yet-existing) table never skips the
- * rest. Exported so `buddy migrate`/`migrate:fresh` can call it after model
- * migrations run, same pattern as {@link ensureUsersAuthColumns} — see the
- * call sites in buddy/src/commands/migrate.ts.
+ * rest. The migration runner calls this before framework schema renames:
+ * SQLite reparses every index during `RENAME COLUMN`, including indexes on
+ * unrelated tables that were created before their UUID column existed. Buddy
+ * also runs it after model migrations as the all-dialect trait guarantee.
  */
 export async function ensureUuidColumns(sql: SqlHelpers, options: { verbose?: boolean } = {}): Promise<void> {
   const tables = await findUuidTables()
