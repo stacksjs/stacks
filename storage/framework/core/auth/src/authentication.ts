@@ -556,7 +556,7 @@ export class Auth {
       : (config.auth.tokenExpiry ?? 60 * 60 * 1000)
     const expiresAt = new Date(options?.expiresAt?.getTime() ?? Date.now() + accessTtlMs)
     const refreshExpiresInDays = options?.refreshExpiresInDays
-      ?? Math.max(1, Math.round((config.auth.refreshTokenExpiry ?? 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)))
+      ?? (config.auth.refreshTokenExpiry ?? 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)
 
     log.debug(`[auth] Creating token for user#${user.id}: ${name}`)
 

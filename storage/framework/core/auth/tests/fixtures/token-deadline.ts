@@ -13,7 +13,7 @@ else {
   assert(['127.0.0.1', 'localhost', '[::1]'].includes(process.env.DB_HOST!))
   assert(process.env.DB_PORT && !['5432', '3306'].includes(process.env.DB_PORT))
 }
-const { overridesReady } = await import('@stacksjs/config')
+const { config, overridesReady } = await import('@stacksjs/config')
 await overridesReady
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, sqlDateTime, parseSqlDateTime } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
@@ -44,6 +44,25 @@ try {
   assert(user)
   const now = new Date('2030-01-02T03:04:05.800Z')
   setSystemTime(now)
+
+  await check('configured sub-day refresh lifetime stays exact', async () => {
+    const original = config.auth.refreshTokenExpiry
+    config.auth.refreshTokenExpiry = 90_000
+    try {
+      const result = await Auth.createTokenForUser(user)
+      const refresh = await db.selectFrom('oauth_refresh_tokens')
+        .where('access_token_id', '=', result.accessToken.id)
+        .select('expires_at')
+        .executeTakeFirstOrThrow()
+      assert.equal(
+        parseSqlDateTime(refresh.expires_at)?.getTime(),
+        storedDeadline(now.getTime() + 90_000),
+      )
+    }
+    finally {
+      config.auth.refreshTokenExpiry = original
+    }
+  })
 
   for (const offset of [30_123, 90_500, 0, -1000]) {
     await check(`explicit expiry ${offset}`, async () => {

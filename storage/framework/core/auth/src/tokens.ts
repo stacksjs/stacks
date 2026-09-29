@@ -102,8 +102,10 @@ function verifyAccessTokenInsert(row: AccessTokenRow, expected: {
 
 function refreshDeadline(days: number): Date {
   const { isMysql } = tokenSql()
-  const deadline = new Date()
-  deadline.setDate(deadline.getDate() + days)
+  // A duration is elapsed time, not a calendar date mutation. Date.setDate()
+  // truncates fractional days, so sub-day refresh policies became immediate
+  // while the Auth facade rounded the same values up to a full day.
+  const deadline = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
   // The shipped MySQL TIMESTAMP has whole-second precision and normally
   // rounds. Choose an exact representable deadline without extending it.
   if (isMysql) deadline.setUTCMilliseconds(0)
