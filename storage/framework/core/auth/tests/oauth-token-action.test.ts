@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
+import OAuthMetadataAction from '../../../defaults/app/Actions/Auth/OAuthMetadataAction'
 import OAuthRevocationAction from '../../../defaults/app/Actions/Auth/OAuthRevocationAction'
 import OAuthTokenAction from '../../../defaults/app/Actions/Auth/OAuthTokenAction'
 
@@ -78,5 +79,35 @@ describe('OAuth revocation route action', () => {
     expect(result.status).toBe(400)
     expect(result.headers.get('cache-control')).toBe('no-store')
     expect(await result.json()).toEqual({ error: 'invalid_request' })
+  })
+})
+
+describe('OAuth metadata route action', () => {
+  it('stays unavailable until the provider is explicitly enabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const result = await OAuthMetadataAction.handle({} as RequestInstance)
+
+    expect(result.status).toBe(404)
+  })
+
+  it('publishes only the capabilities the enabled provider implements', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+      scopes: { 'issues:read': { description: 'Read issues' } },
+    }
+
+    const result = await OAuthMetadataAction.handle({} as RequestInstance)
+    const metadata = await result.json() as Record<string, unknown>
+
+    expect(result.status).toBe(200)
+    expect(result.headers.get('cache-control')).toBe('public, max-age=300')
+    expect(metadata.issuer).toBe('https://id.example.com')
+    expect(metadata.token_endpoint).toBe('https://id.example.com/oauth/token')
+    expect(metadata.revocation_endpoint).toBe('https://id.example.com/oauth/revoke')
+    expect(metadata.scopes_supported).toEqual(['issues:read'])
+    expect(metadata).not.toHaveProperty('introspection_endpoint')
   })
 })
