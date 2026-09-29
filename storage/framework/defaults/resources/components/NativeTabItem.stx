@@ -19,7 +19,9 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
 
 <!-- `draggable="false"`: a slow tap on a busy page reaches the WebView as a
      long press, and a draggable link starts a native drag instead of
-     navigating. -->
+     navigating. `data-stx-prefetch="eager"`: every tab's page is fetched once
+     the current one is idle, so switching tabs is served from the router's
+     cache, as instant as a native tab bar. -->
 <StxLink
   to="{{ href }}"
   aria-label="{{ label }}"
@@ -27,6 +29,7 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
   activeMatch="{{ match }}"
   class="native-tab-item"
   draggable="false"
+  data-stx-prefetch="eager"
 >
   <span class="native-tab-glyph">
     <i aria-hidden="true" class="{{ icon }} native-tab-icon"></i>
