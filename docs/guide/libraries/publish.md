@@ -22,7 +22,7 @@ Stacks libraries publish compiled JavaScript and declarations, not source-only f
   "scripts": {
     "build": "bun --bun build.ts",
     "prepublishOnly": "bun run build",
-    "release:patch": "bunx --bun bumpx patch --commit --tag --push --yes"
+    "release:patch": "bunx --bun @stacksjs/bumpx patch --commit --tag --push --yes"
   },
   "publishConfig": {
     "access": "public",
