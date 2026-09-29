@@ -46,6 +46,7 @@ const OAuthAuthorizationAction = (await import('../../../../defaults/app/Actions
 const OAuthConnectionsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConnectionsAction')).default
 const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConsentAction')).default
 const OAuthDisconnectAction = (await import('../../../../defaults/app/Actions/Auth/OAuthDisconnectAction')).default
+const OAuthRevocationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthRevocationAction')).default
 const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
 
 const email = 'oauth-http@example.test'
@@ -88,6 +89,7 @@ try {
   router.post('/login', LoginAction)
   router.get('/oauth/authorize', OAuthAuthorizationAction)
   router.post('/oauth/authorize', OAuthConsentAction).middleware('auth')
+  router.post('/oauth/revoke', OAuthRevocationAction)
   router.post('/oauth/token', OAuthTokenAction)
   router.get('/auth/oauth/connections', OAuthConnectionsAction).middleware('auth')
   router.post('/auth/oauth/connections/{id}/disconnect', OAuthDisconnectAction).middleware('auth')
@@ -463,6 +465,98 @@ try {
     assert.equal(confidentialReplay.status, 400)
     assert.equal((await confidentialReplay.json() as { error?: string }).error, 'invalid_grant')
     await readResource(rotatedConfidentialPair.access_token, 401)
+
+    const mintPublicPair = async () => {
+      const grant = await createOAuthGrant({
+        clientId: registration.client.id,
+        subjectType: 'users',
+        subjectId: 1,
+        scopes: ['issues:read'],
+        resources: ['bughq'],
+        audiences: [`${issuer}/fixture/resource`],
+      })
+      const freshCode = await issueAuthorizationCode({
+        grantId: grant.id,
+        redirectUri,
+        codeChallenge: challenge,
+        lifetimeMs: provider.lifetimes.authorizationCode,
+      })
+      const response = await fetch(`${issuer}/oauth/token`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: String(registration.client.id),
+          code: freshCode,
+          redirect_uri: redirectUri,
+          code_verifier: verifier,
+        }),
+      })
+      assert.equal(response.status, 200, await response.clone().text())
+      return await response.json() as { access_token: string, refresh_token: string }
+    }
+    const revoke = async (token: string, tokenTypeHint: 'access_token' | 'refresh_token') => await fetch(`${issuer}/oauth/revoke`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: String(registration.client.id),
+        token,
+        token_type_hint: tokenTypeHint,
+      }),
+    })
+
+    const accessRevocationPair = await mintPublicPair()
+    await readResource(accessRevocationPair.access_token)
+    const invalidRevocation = await fetch(`${issuer}/oauth/revoke`, {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${btoa(`${confidential.client.id}:wrong-secret`)}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        token: accessRevocationPair.access_token,
+        token_type_hint: 'access_token',
+      }),
+    })
+    assert.equal(invalidRevocation.status, 401)
+    assert.equal(invalidRevocation.headers.get('www-authenticate'), 'Basic realm="oauth-revoke"')
+    await readResource(accessRevocationPair.access_token)
+
+    const crossClientRevocation = await fetch(`${issuer}/oauth/revoke`, {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${btoa(`${confidential.client.id}:${confidential.plainTextSecret}`)}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        token: accessRevocationPair.access_token,
+        token_type_hint: 'access_token',
+      }),
+    })
+    assert.equal(crossClientRevocation.status, 200)
+    await readResource(accessRevocationPair.access_token)
+
+    const accessRevocation = await revoke(accessRevocationPair.access_token, 'access_token')
+    assert.equal(accessRevocation.status, 200)
+    assert.equal(accessRevocation.headers.get('cache-control'), 'no-store')
+    await readResource(accessRevocationPair.access_token, 401)
+    const revokedRefresh = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: String(registration.client.id),
+        refresh_token: accessRevocationPair.refresh_token,
+      }),
+    })
+    assert.equal(revokedRefresh.status, 400)
+    assert.equal((await revokedRefresh.json() as { error?: string }).error, 'invalid_grant')
+    assert.equal((await revoke(accessRevocationPair.access_token, 'access_token')).status, 200)
+
+    const refreshRevocationPair = await mintPublicPair()
+    await readResource(refreshRevocationPair.access_token)
+    assert.equal((await revoke(refreshRevocationPair.refresh_token, 'refresh_token')).status, 200)
+    await readResource(refreshRevocationPair.access_token, 401)
 
     console.log('PASS OAuth HTTP lifecycle')
   }
