@@ -1,5 +1,99 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.28...v0.75.29)
+
+## ✨ Features
+
+- **database**: persist OAuth consent workspace binding ([fc63bd0](https://github.com/stacksjs/stacks/commit/fc63bd0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: resolve workspace consent authority ([205af14](https://github.com/stacksjs/stacks/commit/205af14)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reuse remembered OAuth consent ([52f3686](https://github.com/stacksjs/stacks/commit/52f3686)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: prune expired OAuth artifacts ([73d1fac](https://github.com/stacksjs/stacks/commit/73d1fac)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: update managed OAuth clients ([7d82026](https://github.com/stacksjs/stacks/commit/7d82026)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: register owned OAuth clients ([e6ba5a5](https://github.com/stacksjs/stacks/commit/e6ba5a5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: disable managed OAuth clients ([c326ae9](https://github.com/stacksjs/stacks/commit/c326ae9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: rotate managed OAuth secrets ([e2e0fb7](https://github.com/stacksjs/stacks/commit/e2e0fb7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: list managed OAuth clients ([6ce4308](https://github.com/stacksjs/stacks/commit/6ce4308)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: manage connected OAuth applications ([001b8e0](https://github.com/stacksjs/stacks/commit/001b8e0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: register OAuth provider clients ([86c11c2](https://github.com/stacksjs/stacks/commit/86c11c2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose OAuth authorization flow ([87e25c2](https://github.com/stacksjs/stacks/commit/87e25c2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: publish OAuth server metadata ([ec57d2c](https://github.com/stacksjs/stacks/commit/ec57d2c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose OAuth token revocation ([561c081](https://github.com/stacksjs/stacks/commit/561c081)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose OAuth token endpoint ([4815fae](https://github.com/stacksjs/stacks/commit/4815fae)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **video**: no src attribute until there is a video ([c371544](https://github.com/stacksjs/stacks/commit/c371544)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: require atomic rate-limit stores ([a0c3fac](https://github.com/stacksjs/stacks/commit/a0c3fac)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: select shared limiter from config ([6e56f95](https://github.com/stacksjs/stacks/commit/6e56f95)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: make shared rate limits atomic ([875f3ce](https://github.com/stacksjs/stacks/commit/875f3ce)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bind consent to rendered workspace ([eaee6fb](https://github.com/stacksjs/stacks/commit/eaee6fb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject colliding OAuth endpoints ([efa5a66](https://github.com/stacksjs/stacks/commit/efa5a66)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: remove phantom introspection endpoint ([d6d44e5](https://github.com/stacksjs/stacks/commit/d6d44e5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke grants on code replay ([24ba245](https://github.com/stacksjs/stacks/commit/24ba245)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: complete OAuth browser consent over HTTP ([7f3ad1b](https://github.com/stacksjs/stacks/commit/7f3ad1b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: recheck workspace inside approval ([300a128](https://github.com/stacksjs/stacks/commit/300a128)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: recheck workspace before consent reuse ([a475604](https://github.com/stacksjs/stacks/commit/a475604)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject malformed OAuth request records ([07a039d](https://github.com/stacksjs/stacks/commit/07a039d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revalidate stored OAuth state ([37897e8](https://github.com/stacksjs/stacks/commit/37897e8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate OAuth state syntax ([2d22226](https://github.com/stacksjs/stacks/commit/2d22226)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject unrepresentable OAuth lifetimes ([086a9af](https://github.com/stacksjs/stacks/commit/086a9af)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: bound OAuth redirect state ([08c2a5e](https://github.com/stacksjs/stacks/commit/08c2a5e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate authorization code lifetimes ([41b9b37](https://github.com/stacksjs/stacks/commit/41b9b37)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reserve OAuth metadata route ([d2861b1](https://github.com/stacksjs/stacks/commit/d2861b1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce client policy when creating grants ([e21bbc5](https://github.com/stacksjs/stacks/commit/e21bbc5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate OAuth lifetimes at startup ([fb2417e](https://github.com/stacksjs/stacks/commit/fb2417e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: mount issuer-scoped OAuth metadata ([8887683](https://github.com/stacksjs/stacks/commit/8887683)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: mount configured OAuth endpoints ([f5625b3](https://github.com/stacksjs/stacks/commit/f5625b3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke grants on client secret rotation ([a40aa07](https://github.com/stacksjs/stacks/commit/a40aa07)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: require OAuth authorization scopes ([0412984](https://github.com/stacksjs/stacks/commit/0412984)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke grants on ineligible refresh ([93b241b](https://github.com/stacksjs/stacks/commit/93b241b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: retire grants for inactive subjects ([983eeb9](https://github.com/stacksjs/stacks/commit/983eeb9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: recheck OAuth subjects before minting ([bb64aa4](https://github.com/stacksjs/stacks/commit/bb64aa4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: revoke OAuth grants on recovery ([8c1ba81](https://github.com/stacksjs/stacks/commit/8c1ba81)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: prepare UUID columns before renames ([90665ba](https://github.com/stacksjs/stacks/commit/90665ba)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: forward prune skip flags ([88bddba](https://github.com/stacksjs/stacks/commit/88bddba)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: use cross-dialect token pruning ([a1a0631](https://github.com/stacksjs/stacks/commit/a1a0631)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: adopt bun-router runtime entry ([ab7873d](https://github.com/stacksjs/stacks/commit/ab7873d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **auth**: share OAuth request parsing ([9f22161](https://github.com/stacksjs/stacks/commit/9f22161)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **auth**: describe delegated OAuth provider ([2354c66](https://github.com/stacksjs/stacks/commit/2354c66)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **auth**: enforce OAuth workspace resources ([7d8d7e3](https://github.com/stacksjs/stacks/commit/7d8d7e3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve OAuth workspace binding ([8599d9e](https://github.com/stacksjs/stacks/commit/8599d9e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject unregistered OAuth resources ([2a9df08](https://github.com/stacksjs/stacks/commit/2a9df08)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: narrow OAuth scopes during refresh ([1deb71b](https://github.com/stacksjs/stacks/commit/1deb71b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject OAuth refresh scope escalation ([16c0fbb](https://github.com/stacksjs/stacks/commit/16c0fbb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: preserve OAuth codes after invalid exchange ([1f0429b](https://github.com/stacksjs/stacks/commit/1f0429b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject expired OAuth codes over HTTP ([5cad9a2](https://github.com/stacksjs/stacks/commit/5cad9a2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify OAuth revocation over HTTP ([f813b05](https://github.com/stacksjs/stacks/commit/f813b05)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify refresh replay over HTTP ([fa536b9](https://github.com/stacksjs/stacks/commit/fa536b9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: exercise confidential OAuth exchange ([a8adc1b](https://github.com/stacksjs/stacks/commit/a8adc1b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify code replay over HTTP ([fc3ddde](https://github.com/stacksjs/stacks/commit/fc3ddde)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject unsafe OAuth browser requests ([7caf5ba](https://github.com/stacksjs/stacks/commit/7caf5ba)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: exercise OAuth denial over HTTP ([a79291b](https://github.com/stacksjs/stacks/commit/a79291b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: submit rendered OAuth consent proof ([4c483f2](https://github.com/stacksjs/stacks/commit/4c483f2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: isolate passkey app origin ([bfd21b5](https://github.com/stacksjs/stacks/commit/bfd21b5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: exercise OAuth client actions ([10fc129](https://github.com/stacksjs/stacks/commit/10fc129)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **docs**: regenerate the API artifacts and buddy reference for the OAuth routes ([3756893](https://github.com/stacksjs/stacks/commit/3756893)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.27...v0.75.28)
 
 ## ✨ Features
