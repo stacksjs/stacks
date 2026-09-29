@@ -150,6 +150,29 @@ try {
       resources: ['bughq'],
     })
 
+    const tokenError = async (body: string, contentType = 'application/x-www-form-urlencoded') => {
+      const result = await fetch(`${issuer}/oauth/token`, {
+        method: 'POST',
+        headers: { 'content-type': contentType },
+        body,
+      })
+      assert.equal(result.status, 400)
+      assert.equal(result.headers.get('cache-control'), 'no-store')
+      assert.equal(result.headers.get('pragma'), 'no-cache')
+      return (await result.json() as { error?: string }).error
+    }
+    assert.equal(await tokenError('{}', 'application/json'), 'invalid_request')
+    assert.equal(await tokenError(new URLSearchParams({
+      grant_type: 'password',
+      client_id: String(registration.client.id),
+    }).toString()), 'unsupported_grant_type')
+    const duplicateGrant = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: String(registration.client.id),
+    })
+    duplicateGrant.append('grant_type', 'refresh_token')
+    assert.equal(await tokenError(duplicateGrant.toString()), 'invalid_request')
+
     const authorizationParams = {
       response_type: 'code',
       client_id: String(registration.client.id),
