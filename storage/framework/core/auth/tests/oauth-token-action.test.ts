@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { config } from '@stacksjs/config'
 import OAuthAuthorizationAction from '../../../defaults/app/Actions/Auth/OAuthAuthorizationAction'
 import OAuthClientDisableAction from '../../../defaults/app/Actions/Auth/OAuthClientDisableAction'
+import OAuthClientStoreAction from '../../../defaults/app/Actions/Auth/OAuthClientStoreAction'
 import OAuthClientSecretRotateAction from '../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction'
 import OAuthClientsAction from '../../../defaults/app/Actions/Auth/OAuthClientsAction'
 import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConnectionsAction'
@@ -252,6 +253,48 @@ describe('OAuth client management route actions', () => {
     const result = await OAuthClientsAction.handle(browserRequest('https://id.example.com/auth/oauth/clients'))
 
     expect(result.status).toBe(401)
+  })
+
+  it('keeps client registration unavailable while the provider is disabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+
+    const result = await OAuthClientStoreAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients',
+      { method: 'POST' },
+    ))
+
+    expect(result.status).toBe(404)
+  })
+
+  it('requires an authenticated owner and explicit registration metadata', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const anonymous = await OAuthClientStoreAction.handle(browserRequest(
+      'https://id.example.com/auth/oauth/clients',
+      { method: 'POST' },
+    ))
+    const malformed = browserRequest(
+      'https://id.example.com/auth/oauth/clients',
+      { method: 'POST' },
+      { id: '42', email: 'ada@example.com' },
+    ) as RequestInstance & { all: () => Record<string, unknown> }
+    malformed.all = () => ({
+      name: 'Browser client',
+      type: 'public',
+      redirect_uris: 'https://client.example/callback',
+      scopes: ['issues:read'],
+      resources: [],
+    })
+
+    const malformedResult = await OAuthClientStoreAction.handle(malformed)
+
+    expect(OAuthClientStoreAction.skipCsrf).not.toBe(true)
+    expect(anonymous.status).toBe(401)
+    expect(malformedResult.status).toBe(400)
   })
 
   it('keeps secret rotation unavailable while the provider is disabled', async () => {
