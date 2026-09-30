@@ -291,12 +291,25 @@ export function applyAliases(cli: CLI, signature: string, aliases: string[]): bo
 async function dynamicImports(buddy: CLI) {
   const { loadCommands } = await import('@stacksjs/cli')
 
+  const commands = () => ((buddy as unknown as { commands?: Array<{ name?: string, aliasNames?: string[] }> }).commands ?? [])
+  const before = commands().length
+
   await loadCommands(buddy, {
     commandsDir: p.appPath('Commands'),
     registryPath: p.appPath('Commands.ts'),
     onError: (message, error) => log.error(`${message}:`, error),
     onDebug: message => log.debug(message),
   })
+
+  // An application command is application code, run in this process: it saves
+  // models and dispatches events like an action does, so it gets the boot an
+  // action gets (globals, then listeners, then gates). Only when one of them
+  // is the command being run - `buddy lint` has no use for the app's listeners.
+  const appCommandNames = new Set(commands().slice(before).flatMap(command => [command.name ?? '', ...(command.aliasNames ?? [])]))
+  if (appCommandNames.has(requestedCommand)) {
+    const { injectGlobalAutoImports } = await import('@stacksjs/server')
+    await injectGlobalAutoImports()
+  }
 
   // Load console listeners
   try {

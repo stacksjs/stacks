@@ -1,4 +1,4 @@
-import { registerAppListeners } from '@stacksjs/events'
+import { bootAppListeners } from '@stacksjs/events'
 import { path as p } from '@stacksjs/path'
 
 /**
@@ -33,5 +33,8 @@ export async function handleEvents(): Promise<number> {
   // command, a test runner or a worker started from a subdirectory would
   // otherwise look for `app/Events.ts` beside wherever it happened to be
   // launched, find nothing, and register no listeners without saying so.
-  return registerAppListeners({ base: p.projectPath() })
+  //
+  // `bootAppListeners` so this and the framework's own boot register once
+  // between them in any process, whichever runs first.
+  return bootAppListeners({ base: p.projectPath() })
 }

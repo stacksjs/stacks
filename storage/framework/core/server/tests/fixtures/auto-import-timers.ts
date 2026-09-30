@@ -11,11 +11,11 @@ const fixture = join(root, 'primitive.ts')
 await Bun.write(fixture, mode === 'success' ? 'export const timerProbe = 42' : mode === 'failure' ? 'throw new Error("primitive fixture failed")' : 'await new Promise(() => {}); export const timerProbe = 42')
 const warnings: string[] = []
 mock.module('../../src/primitive-imports', () => ({ primitiveModules: [[fixture, ['timerProbe']]], primitiveAutoImportEntries: () => [] }))
-mock.module('@stacksjs/path', () => ({ path: { storagePath: (name: string) => join(root, name) } }))
+mock.module('@stacksjs/path', () => ({ path: { storagePath: (name: string) => join(root, name), projectPath: (name = '') => join(root, name) } }))
 mock.module('@stacksjs/storage', () => ({ globSync: () => [] }))
 mock.module('@stacksjs/logging', () => ({ log: { debug() {}, warn() {}, flush() {} } }))
 mock.module('@stacksjs/i18n', () => ({ ensureLocalesLoaded() {} }))
-mock.module('@stacksjs/events', () => ({ registerAppListeners() {} }))
+mock.module('@stacksjs/events', () => ({ bootAppListeners() {} }))
 mock.module('@stacksjs/auth', () => ({ initializeAuthorization() {} }))
 const { injectGlobalAutoImports } = await import('../../src/imports')
 const originalSetTimeout = globalThis.setTimeout

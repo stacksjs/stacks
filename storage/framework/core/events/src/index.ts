@@ -696,9 +696,43 @@ type DispatchAndCollect = <Key extends keyof StacksEvents>(_type: Key, _event: S
 const emitter: Emitter<StacksEvents> = events
 const useEvents: Emitter<StacksEvents> = events
 
-const dispatch: Dispatch = emitter.emit
-const dispatchAsync: DispatchAsync = emitter.emitAsync
-const dispatchAndCollect: DispatchAndCollect = emitter.emitAndCollect
+/*
+ * A hook the listener boot (./discover) fills in, called with the event name
+ * on each dispatch until it removes itself.
+ *
+ * It exists for one question: did this process dispatch an event before, or
+ * without, registering the application's listeners? A scheduler that opened
+ * incidents for two weeks without a single notification going out answered
+ * "yes" with no log line at all, because a dispatch to an emitter nobody is
+ * listening on returns exactly like one that was handled. The hook lets the
+ * boot say so once. Kept on `globalThis` for the same reason the emitter is,
+ * and deleted after its first decision, so a steady-state dispatch pays one
+ * property read.
+ */
+const DISPATCH_OBSERVER = Symbol.for('stacks.events.dispatchObserver')
+
+interface ObserverHost {
+  [DISPATCH_OBSERVER]?: (_event: string) => void
+}
+
+function observe(type: unknown): void {
+  const observer = (globalThis as unknown as ObserverHost)[DISPATCH_OBSERVER]
+  if (observer)
+    observer(String(type))
+}
+
+const dispatch: Dispatch = (type, event) => {
+  observe(type)
+  return emitter.emit(type, event)
+}
+const dispatchAsync: DispatchAsync = (type, event) => {
+  observe(type)
+  return emitter.emitAsync(type, event)
+}
+const dispatchAndCollect: DispatchAndCollect = (type, event) => {
+  observe(type)
+  return emitter.emitAndCollect(type, event)
+}
 const useEvent: Dispatch = dispatch
 const all: EventHandlerMap<StacksEvents> = emitter.all
 const listen: Listen = emitter.on
@@ -724,7 +758,7 @@ export {
 // Boot-time listener auto-discovery (stacksjs/stacks#1878 E-3,
 // closing F-3 from #1874). Scans `app/Listeners/**/*.ts` for
 // default-exported `{ listensTo, handle }` modules and registers them.
-export { defineListener, discoverListeners, registerAppListeners, resetListenerRegistry, resetNameRegistries } from './discover'
+export { appListenersBooted, bootAppListeners, defineListener, discoverListeners, registerAppListeners, resetListenerRegistry, resetNameRegistries } from './discover'
 export type { EventSubscription, ListenerModule, SubscriptionPayload } from './discover'
 
 // Singleton-friendly scope alias (#1878 E-5). Use to create a

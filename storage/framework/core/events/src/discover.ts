@@ -300,7 +300,16 @@ function eventsOf(listensTo: unknown): string[] {
  * the wrapper below is a fresh closure each time, so function identity would
  * never match.
  */
-const claimed = new Set<string>()
+const CLAIMED_SLOT = Symbol.for('stacks.events.claimedListeners')
+
+/*
+ * On `globalThis`, like the emitter it guards. Two installed copies of this
+ * package share one emitter already (see EMITTER_SLOT in ./index); with a
+ * registry per copy, each copy's boot would add the same listeners again to
+ * that one emitter and every event would be handled twice.
+ */
+const claimed: Set<string> = ((globalThis as Record<symbol, unknown>)[CLAIMED_SLOT] as Set<string> | undefined)
+  ?? ((globalThis as Record<symbol, unknown>)[CLAIMED_SLOT] = new Set<string>()) as Set<string>
 
 function claim(event: string, moduleId: string): boolean {
   const key = `${event}\0${moduleId}`
@@ -316,7 +325,135 @@ function claim(event: string, moduleId: string): boolean {
 /** For tests, and for a dev server that genuinely wants to start over. */
 export function resetListenerRegistry(): void {
   claimed.clear()
+  delete bootHost()[BOOT_SLOT]
+  bootHost()[DISPATCH_OBSERVER] = observeFirstDispatch
 }
+
+const BOOT_SLOT = Symbol.for('stacks.events.appListenersBoot')
+const DISPATCH_OBSERVER = Symbol.for('stacks.events.dispatchObserver')
+
+interface BootHost {
+  [BOOT_SLOT]?: Promise<number>
+  [DISPATCH_OBSERVER]?: (_event: string) => void
+}
+
+function bootHost(): BootHost {
+  return globalThis as unknown as BootHost
+}
+
+/**
+ * Whether this process has started registering the application's listeners.
+ * True from the moment {@link bootAppListeners} is called, not when it
+ * finishes, so a listener that dispatches while it is being imported does not
+ * read as a process that never booted.
+ */
+export function appListenersBooted(): boolean {
+  return bootHost()[BOOT_SLOT] !== undefined
+}
+
+/**
+ * Register the application's listeners in this process, once.
+ *
+ * Every entry point that runs application code calls this - the HTTP server
+ * (through `injectGlobalAutoImports`), the scheduler, the queue worker, a
+ * seeder, an application command - and a process that goes through two of
+ * them (a dev server that also runs the scheduler, a command that calls the
+ * seeder) still registers once: the first call's promise is what every later
+ * call gets. The per-listener registry below that makes the same guarantee
+ * for anything that calls {@link registerAppListeners} directly.
+ *
+ * Returns how many listeners the first call registered. When the application
+ * declares listeners and none could be registered, it says so here, at
+ * startup, rather than leaving the first missing notification to say it.
+ */
+export function bootAppListeners(options: RegisterOptions = {}): Promise<number> {
+  const host = bootHost()
+  const existing = host[BOOT_SLOT]
+  if (existing)
+    return existing
+
+  const booting = (async () => {
+    const base = options.base ?? process.cwd()
+    const registered = await registerAppListeners(options)
+
+    if (registered === 0) {
+      const declared = await declaredListenerCount(base)
+      if (declared > 0) {
+        const warn = options.log?.warn ?? ((msg: string) => console.warn(msg))
+        warn(`[events] app/Events.ts declares ${declared} listener${declared === 1 ? '' : 's'}, but none could be registered in this process, so the events they handle will reach nobody. See the errors above.`)
+      }
+    }
+
+    return registered
+  })()
+
+  host[BOOT_SLOT] = booting
+  return booting
+}
+
+/**
+ * How many listener names `app/Events.ts` maps, or 0 when there is no map or
+ * it cannot be read. Only the map is counted: `app/Listeners/` holds CLI
+ * listeners too (the framework's own `Console.ts`), so a file there says
+ * nothing about events.
+ */
+async function declaredListenerCount(base: string): Promise<number> {
+  const eventsFile = ['ts', 'js']
+    .map(extension => join(base, 'app', `Events.${extension}`))
+    .find(candidate => existsSync(candidate))
+
+  if (!eventsFile)
+    return 0
+
+  try {
+    const mod = await import(eventsFile)
+    const map = (mod?.default ?? mod) as Record<string, unknown>
+    if (!map || typeof map !== 'object')
+      return 0
+
+    return Object.values(map)
+      .flatMap(names => Array.isArray(names) ? names : [names])
+      .filter(name => typeof name === 'string' && name.trim() !== '')
+      .length
+  }
+  catch {
+    return 0
+  }
+}
+
+/*
+ * The first dispatch in a process that never booted its listeners, and only
+ * that one, checks whether the application declares any and warns once if it
+ * does. This is how a new entry point that forgets to boot is found the first
+ * time it runs, rather than two weeks later by someone wondering why an alert
+ * never came. A process that boots first (every framework entry point does)
+ * pays nothing: the observer removes itself on its first call either way.
+ */
+function observeFirstDispatch(event: string): void {
+  const host = bootHost()
+  delete host[DISPATCH_OBSERVER]
+
+  if (appListenersBooted())
+    return
+
+  const base = process.cwd()
+  void declaredListenerCount(base).then((declared) => {
+    // Booted while the map was being read: the dispatch raced the boot, it did
+    // not skip it.
+    if (declared === 0 || appListenersBooted())
+      return
+
+    console.warn(
+      `[events] "${event}" was dispatched, but this process never registered the application's listeners, `
+      + `so nothing handles it or any later event (app/Events.ts declares ${declared}). `
+      + 'An entry point that runs application code must call injectGlobalAutoImports() from @stacksjs/server, '
+      + 'or bootAppListeners() from @stacksjs/events, before its first dispatch.',
+    )
+  })
+}
+
+if (!bootHost()[DISPATCH_OBSERVER] && !appListenersBooted())
+  bootHost()[DISPATCH_OBSERVER] = observeFirstDispatch
 
 interface RegisterOptions extends DiscoverOptions {
   /** Project root. Defaults to `process.cwd()`. */

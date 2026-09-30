@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { startProcessor, stopProcessor } from '@stacksjs/queue'
+import { injectGlobalAutoImports } from '@stacksjs/server'
 
 // Prevent unhandled rejections from crashing the worker
 process.on('unhandledRejection', (reason) => {
@@ -52,6 +53,12 @@ const options = parseArgs()
 
 const queue = options.queue
 const concurrency = Number(options.concurrency) || 1
+
+// Jobs are application code, and a job that saves a model or dispatches an
+// event needs the application's listeners in THIS process - the worker, not
+// whichever process queued the job. Same boot as the HTTP server and the
+// scheduler, before the first job is taken.
+await injectGlobalAutoImports()
 
 log.info(`Starting queue worker with ${concurrency} concurrent worker(s)...`)
 

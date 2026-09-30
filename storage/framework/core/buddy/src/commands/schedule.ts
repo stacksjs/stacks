@@ -124,6 +124,11 @@ export function schedule(buddy: CLI): void {
     .command('schedule:run-one <name>', descriptions.runOne)
     .action(async (name: string) => {
       try {
+        // Runs the job in this process, so it needs the same boot as the
+        // scheduler entry (actions/src/schedule/run.ts): without it the
+        // events the job dispatches reach no listener.
+        const { injectGlobalAutoImports } = await import('@stacksjs/server')
+        await injectGlobalAutoImports()
         const { runScheduler, Schedule } = await import('@stacksjs/scheduler')
         await runScheduler()
         await Promise.resolve()

@@ -1399,14 +1399,27 @@ export async function injectGlobalAutoImports(): Promise<void> {
   // be imported once those are on globalThis.
   //
   // Here rather than in the router because listeners are not an HTTP concern -
-  // `buddy seed`, a scheduled job and a console command all dispatch events,
-  // and every one of those paths comes through this function. Before this call
-  // existed, nothing registered listeners anywhere: `app/Events.ts` was read
-  // only by a test, `discoverListeners` was exported and never called, and
-  // `dispatch` succeeded into an emitter with no handlers on it.
+  // `buddy seed`, a scheduled job and a console command all dispatch events.
+  // Before this call existed, nothing registered listeners anywhere:
+  // `app/Events.ts` was read only by a test, `discoverListeners` was exported
+  // and never called, and `dispatch` succeeded into an emitter with no
+  // handlers on it.
+  //
+  // That comment used to say every one of those paths comes through this
+  // function. The scheduler and the queue worker did not, so for as long as
+  // that was true every incident a scheduled job opened notified nobody. They
+  // call it now (actions/src/schedule/run.ts, actions/src/queue/work.ts), as do
+  // application commands (buddy/src/cli.ts). `bootAppListeners` rather than
+  // `registerAppListeners`: once per process however many of those a process
+  // goes through, and a startup warning when the application declares
+  // listeners and none could be registered.
   try {
-    const { registerAppListeners } = await import('@stacksjs/events')
-    await registerAppListeners()
+    const { bootAppListeners } = await import('@stacksjs/events')
+    // The project root, not `process.cwd()`: this registration now happens
+    // once per process, so whichever entry point boots first decides where
+    // app/Events.ts is looked for, and a worker started from a subdirectory
+    // must not decide "nowhere".
+    await bootAppListeners({ base: path.projectPath() })
   }
   catch (err) {
     errors.push(err as Error)
