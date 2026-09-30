@@ -19,7 +19,8 @@ import { describe, expect, it } from 'bun:test'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { canRevealSecrets, reportMailboxCredentials } from '../src/commands/deploy'
+import process from 'node:process'
+import { canRevealSecrets, reportMailboxCredentials, resolveMailboxesWithSkipped } from '../src/commands/deploy'
 
 const SOURCE = path.resolve(import.meta.dir, '../src/commands/deploy.ts')
 
@@ -240,5 +241,46 @@ describe('the mailbox reconcile on the server', () => {
     const run = runMailboxes({}, { 'new@example.com': 'fresh' })
     expect(run.stdout).toContain('MADE:new@example.com')
     expect(run.passwordOf('new@example.com')).toBe('fresh')
+  })
+})
+
+describe('resolveMailboxesWithSkipped', () => {
+  const KEY = 'MAIL_PASSWORD_CIPHERTEXTCHECK'
+
+  function withEnv(value: string | undefined, fn: () => void): void {
+    const before = process.env[KEY]
+    if (value === undefined)
+      delete process.env[KEY]
+    else
+      process.env[KEY] = value
+    try {
+      fn()
+    }
+    finally {
+      if (before === undefined)
+        delete process.env[KEY]
+      else
+        process.env[KEY] = before
+    }
+  }
+
+  // A production deploy read .env.development's ciphertext for this key (Bun
+  // preloads that file natively) and made it the live password on three
+  // mailboxes. An undecrypted value is not a declared password.
+  for (const prefix of ['encrypted:', 'encrypted:v2:', 'enc:']) {
+    it(`does not take ${prefix} ciphertext as a password`, () => {
+      withEnv(`${prefix}ZlillOP1YzOZdcP65S3X6b7sxqZsldTDuGsh`, () => {
+        const { boxes, skipped } = resolveMailboxesWithSkipped(['ciphertextcheck'], 'example.com')
+        expect(boxes).toEqual([])
+        expect(skipped).toEqual(['ciphertextcheck@example.com'])
+      })
+    })
+  }
+
+  it('still takes a plaintext password from the environment', () => {
+    withEnv('real-password', () => {
+      const { boxes } = resolveMailboxesWithSkipped(['ciphertextcheck'], 'example.com')
+      expect(boxes.map(b => [b.address, b.password])).toEqual([['ciphertextcheck@example.com', 'real-password']])
+    })
   })
 })

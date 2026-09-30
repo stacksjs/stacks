@@ -3192,7 +3192,7 @@ function generateMailboxPassword(): string {
 }
 
 /** `resolveMailboxes`, plus the addresses left out for want of a password. */
-function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, generatePassword = false): { boxes: ResolvedMailbox[], skipped: string[] } {
+export function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, generatePassword = false): { boxes: ResolvedMailbox[], skipped: string[] } {
   if (!Array.isArray(mailboxes))
     return { boxes: [], skipped: [] }
   const out: ResolvedMailbox[] = []
@@ -3215,7 +3215,15 @@ function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, generat
       continue
     const address = `${localPart}@${domain}`
     const envKey = `MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`
-    const envPw = explicitPw || process.env[envKey]
+    const declaredPw = explicitPw || process.env[envKey]
+    // Ciphertext is never a password. This reconcile makes the declared value
+    // authoritative, so an undecrypted `encrypted:...` string - which is what a
+    // production deploy read from Bun's natively preloaded .env.development -
+    // became the live password on chris@, blake@ and glenn@stacksjs.com and
+    // locked every mail client out. Treat it as undeclared instead.
+    const envPw = declaredPw && /^enc(?:rypted)?:/.test(declaredPw) ? undefined : declaredPw
+    if (declaredPw && !envPw)
+      log.warn(`Mail: ${envKey} is still encrypted (no key for it in this environment), so ${address} keeps its current password`)
     // Only provision a mailbox whose password is explicitly supplied (config
     // object or MAIL_PASSWORD_<LOCALPART> env). A routine deploy must never
     // conjure random-password mailboxes the operator never asked for and can't
