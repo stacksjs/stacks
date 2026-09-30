@@ -52,6 +52,7 @@ The default auth route bundle then serves:
 - `GET` and `POST /oauth/authorize` for login, consent, denial, and S256 PKCE
 - `POST /oauth/token` for authorization-code exchange, rotating refresh tokens, and opt-in confidential client-credentials tokens
 - `POST /oauth/revoke` for client-owned access and refresh token revocation
+- `POST /oauth/introspect` when `oauthProvider.introspection` is enabled
 - `GET /.well-known/oauth-authorization-server` for RFC 8414 metadata
 - authenticated client registration, editing, secret rotation, and disable routes under `/auth/oauth/clients`
 - authenticated connected-application listing and disconnect routes under `/auth/oauth/connections`
@@ -64,8 +65,10 @@ the client, subject, scopes, resources, audiences, and optional workspace.
 Client credentials are disabled by default. When enabled with
 `oauthProvider.clientCredentials`, only confidential clients may use the grant,
 and it mints access-only tokens with scopes and resource audiences derived from
-the registered client policy. Token introspection and OpenID Connect are not
-implemented.
+the registered client policy. Protected resource-server introspection is
+separately opt-in through `oauthProvider.introspection`; it authenticates a
+confidential client and checks its resource audience against the token.
+OpenID Connect is not implemented.
 
 ## 🧪 Testing
 

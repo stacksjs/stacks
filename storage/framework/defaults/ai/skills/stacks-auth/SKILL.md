@@ -163,8 +163,10 @@ The authorization server is opt-in through `config/auth.ts` under
 client. The provider profile is Authorization Code with S256 PKCE and rotating
 refresh tokens. Confidential client credentials are opt-in through
 `oauthProvider.clientCredentials` and mint access-only tokens without refresh
-tokens. It does not support implicit or password grants, token introspection,
-or OpenID Connect.
+tokens. Protected resource-server introspection is separately opt-in through
+`oauthProvider.introspection`; it authenticates a confidential client and
+requires that client to share a configured resource audience with the token.
+It does not support implicit or password grants or OpenID Connect.
 
 When enabled, the default auth route bundle registers:
 
