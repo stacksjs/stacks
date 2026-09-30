@@ -67,6 +67,45 @@ async function probe(
   }
 }
 
+/**
+ * The mail DNS checks (see ../mail-dns-health.ts), or one "skipped" line for
+ * an app that does not run its own mail. Always against production: that is
+ * the environment whose deploy publishes the records.
+ */
+async function mailDnsChecks(): Promise<HealthCheck[]> {
+  const { hasExplicitEmailConfig, declaredDnsProvider, loadTsCloudConfig } = await import('./deploy')
+  if (!hasExplicitEmailConfig())
+    return [{ name: 'Mail DNS', status: 'pass', message: 'No config/email.ts (skipped)' }]
+
+  const { email } = await import('@stacksjs/config')
+  const cfg = (email ?? {}) as { domain?: string, from?: { address?: string }, server?: { enabled?: boolean, postmaster?: unknown, dmarc?: { policy?: unknown } } }
+  if (cfg.server?.enabled !== true)
+    return [{ name: 'Mail DNS', status: 'pass', message: 'email.server.enabled is off (skipped)' }]
+
+  const { describeMailDnsProvider, describeMailDnsRecords, describePostmaster, gatherMailDnsFacts, mailDomainFromConfig } = await import('../mail-dns-health')
+  const { envFileForEnvironment, envFileKeys } = await import('../dns-credentials')
+  const domain = mailDomainFromConfig(cfg)
+  if (!domain)
+    return [{ name: 'Mail DNS', status: 'warn', message: 'email.server.enabled is on but config/email.ts names no domain (set `domain` or a from-address)' }]
+
+  const fs = await import('node:fs')
+  const envFile = envFileForEnvironment('production')
+  const envPath = resolve(process.cwd(), envFile)
+  const fileKeys = fs.existsSync(envPath) ? envFileKeys(fs.readFileSync(envPath, 'utf8')) : new Set<string>()
+  const dkimSelector = 'mail'
+
+  const [declared, facts] = await Promise.all([
+    loadTsCloudConfig('production').then(declaredDnsProvider).catch(() => undefined),
+    gatherMailDnsFacts(domain, dkimSelector),
+  ])
+
+  return [
+    { name: 'Mail DNS provider', ...describeMailDnsProvider({ domain, zone: facts.zone, nameservers: facts.nameservers, declared, fileKeys, envFile }) },
+    { name: 'Mail DNS records', ...describeMailDnsRecords({ domain, records: facts.records, dkimSelector, dmarcPolicy: cfg.server?.dmarc?.policy, mxAddresses: facts.mxAddresses }) },
+    { name: 'Postmaster Tools', ...describePostmaster(domain, cfg.server?.postmaster, facts.records.filter(record => record.type === 'TXT' && record.name === domain).map(record => record.content)) },
+  ]
+}
+
 export function doctor(buddy: CLI): void {
   buddy
     .command('doctor', 'Run health checks on your Stacks installation')
@@ -490,6 +529,25 @@ export function doctor(buddy: CLI): void {
         const driver = (config as { email?: { default?: string } }).email?.default ?? 'log'
         return `Driver: ${driver}`
       })
+
+      // Mail DNS for an app that runs its own mail (`email.server.enabled`).
+      //
+      // `buddy deploy` publishes MX/SPF/DKIM/DMARC through whichever provider
+      // holds the zone, and prints them "by hand" when no configured one does.
+      // That is easy to miss for months - stacksjs.com's zone is on Cloudflare
+      // and no deploy ever had a CLOUDFLARE_API_TOKEN - so this says it without
+      // a deploy: which provider the nameservers name, whether its keys are in
+      // .env.production (names only, never values), what public DNS actually
+      // serves, and whether Postmaster Tools is set up. Public lookups only,
+      // each with a short timeout; never SSH.
+      {
+        const budget = new Promise<HealthCheck[]>(resolve => setTimeout(() => resolve([{ name: 'Mail DNS', status: 'warn', message: 'DNS lookups timed out (>6s) (skipped)' }]), 6000).unref?.())
+        checks.push(...await Promise.race([mailDnsChecks(), budget]).catch((err: unknown): HealthCheck[] => [{
+          name: 'Mail DNS',
+          status: 'warn',
+          message: `Could not audit mail DNS: ${err instanceof Error ? err.message : String(err)}`,
+        }]))
+      }
 
       // Runtime directories — all of them live under storage/ now, and nothing
       // is left in the project root. Something still sitting at `.stx`,

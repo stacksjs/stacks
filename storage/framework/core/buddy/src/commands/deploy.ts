@@ -16,6 +16,7 @@ import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { withDeployNotification } from '../deploy-notify'
+import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
@@ -4493,15 +4494,31 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
   if (postmasterCfg && postmasterCfg.google && !postmaster)
     logger.warn(`  Mail DNS: email.server.postmaster.google is not a Postmaster Tools token, so it was not published. Copy the TXT value Postmaster Tools shows for ${domain}.`)
 
-  const byHand = (reason: string): void => {
-    logger.warn(`Mail DNS not published for ${domain}: ${reason}`)
-    logger.info(`Add these records by hand, or point a configured provider at the zone:`)
-    logger.info(`  MX    @                 10 ${mailHost}`)
-    logger.info(`  TXT   @                 ${spf}`)
-    if (dkim) logger.info(`  TXT   ${dkimName.padEnd(17)}${dkim}`)
-    logger.info(`  TXT   _dmarc            ${dmarc}`)
-    if (postmaster) logger.info(`  TXT   @                 ${postmaster}`)
-    logger.info(`  A     mail              ${ip}`)
+  /*
+   * Nothing this deploy can reach administers the zone, so nothing is
+   * published - and nothing will be on any later deploy either, until the
+   * environment changes. That used to be one warning line and a block of
+   * info-level records, which is easy to scroll past for months: stacksjs.com's
+   * zone is on Cloudflare and no deploy had a CLOUDFLARE_API_TOKEN, so its mail
+   * records were never published by any of them. So it says what breaks, and
+   * names the one command that fixes it for the provider the zone's
+   * nameservers actually belong to. `buddy doctor` reports the same thing
+   * without a deploy ("Mail DNS provider").
+   */
+  const envFile = envFileForEnvironment(process.env.APP_ENV || 'production')
+  const byHand = async (reason: string, knownProvider?: string): Promise<void> => {
+    const ns = knownProvider ? { nameservers: [] as string[] } : await resolveZoneNameservers(domain).catch(() => ({ nameservers: [] as string[] }))
+    const provider = knownProvider ?? dnsProviderNameFromNameservers(ns.nameservers)
+
+    logger.warn(`Mail DNS NOT published for ${domain}: ${reason}. Until these records exist, mail from ${domain} fails SPF, DKIM and DMARC and lands in spam or bounces.`)
+    logger.warn(`  Fix: ${dnsCredentialFix(provider, envFile, ns.nameservers)}`)
+    logger.warn(`  Or add these records by hand at the DNS host:`)
+    logger.warn(`    MX    @                 10 ${mailHost}`)
+    logger.warn(`    TXT   @                 ${spf}`)
+    if (dkim) logger.warn(`    TXT   ${dkimName.padEnd(17)}${dkim}`)
+    logger.warn(`    TXT   _dmarc            ${dmarc}`)
+    if (postmaster) logger.warn(`    TXT   @                 ${postmaster}`)
+    logger.warn(`    A     mail              ${ip}`)
   }
 
   const declared = declaredDnsProvider(await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined))
@@ -4509,7 +4526,7 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
   const declaredProblem = declaredDnsProviderProblem(declared, providerConfigs)
   if (declaredProblem) {
     logger.warn(`  DNS: ${declaredProblem}`)
-    return byHand(`the declared provider '${declared}' has no credentials in this environment`)
+    return byHand(`the declared provider '${declared}' has no credentials in this environment`, declared)
   }
   if (providerConfigs.length === 0)
     return byHand('no DNS provider credentials are configured')
