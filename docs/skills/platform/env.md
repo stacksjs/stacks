@@ -17,6 +17,7 @@ commands.
 - X25519 and AES-256-GCM encryption/decryption of env values
 - runtime/platform detection
 - CI provider detection
+- Environment gating for integrations that transmit off the box
 - The env CLI commands
 
 ## Covers
@@ -34,6 +35,7 @@ The sections an agent reads once the skill loads.
 - Adding your own variables
 - Runtime Detection
 - CI Provider Detection
+- Remote integration environments
 - .env File Loading
 - .env Parser
 - Encryption (X25519 + AES-256-GCM)

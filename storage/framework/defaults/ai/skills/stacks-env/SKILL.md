@@ -106,6 +106,70 @@ provider        // 'github-actions' | 'gitlab-ci' | 'circleci' | 'travis' | 'jen
 providerInfo    // { name: string, ... }
 ```
 
+## Remote integration environments
+
+Gate anything that transmits off the box - error reporting, analytics, log
+shipping - through `@stacksjs/env`, rather than inventing a policy per adapter.
+Without a shared gate, every developer machine and CI run reports into the same
+project as production, and a local startup failure reads as a live incident
+(stacksjs/stacks#2792).
+
+```typescript
+import { initializeIntegration } from '@stacksjs/env'
+
+// The callback does not run when the gate is closed, so constructing a client,
+// registering hooks or starting a flush timer inside it is safe.
+const result = initializeIntegration(config.bughq, ({ environment }) =>
+  installBugHq({ key: config.bughq.key, environment }))
+
+if (!result.initialized)
+  log.debug(`BugHQ not installed: ${result.gate.reason}`)
+```
+
+An application declares **only** `environments`. Do not add a sibling
+`environment` option and do not ask the app to repeat `env.APP_ENV`: the gate
+resolves the effective label once and hands it to the adapter for event
+metadata.
+
+Extend `EnvironmentGatedIntegration` from the adapter's own options type so
+the application gets `enabled` and `environments` and nothing else. Analytics
+is the adapter shipping this today:
+
+```typescript
+// config/analytics.ts
+export default {
+  driver: 'analyticshq',
+  environments: ['production', 'staging'], // omit to get exactly this
+  drivers: { analyticshq: { siteId: '...' } },
+} satisfies AnalyticsConfig
+```
+
+| Configuration | Result |
+|---|---|
+| `environments` omitted | `REMOTE_TELEMETRY_ENVIRONMENTS`, which is `production` and `staging` |
+| `environments: []` | off everywhere, the explicit way to disable without removing credentials |
+| `enabled: false` | off, always; checked before the allowlist so it is the last word |
+| `enabled: true` | does **not** bypass the allowlist |
+| `APP_ENV` unset or malformed | off, with `reason: 'environment-unknown'` |
+
+The gate reads `APP_ENV` only, and reads it at call time. It does not fall back
+to `NODE_ENV` the way `appEnv()` does, because an absent `APP_ENV` must not be
+guessed into a label an allowlist might admit. Call time rather than import time
+matters because a test harness or a CLI resolving `--env` routinely sets it
+after the module graph has loaded (stacksjs/stacks#2581).
+
+`prod`, `stage` and `dev` fold onto `production`, `staging` and `development`.
+`local`, `development` and `test` are deliberately **not** folded together:
+allowing your own machine must not also allow CI.
+
+The answer is the same in a web or API server, the dashboard, a worker and a
+Buddy command, because all of them read the same variable. Browser integrations
+receive only the resolved public label, never server credentials.
+
+`APP_ENV` is a configuration label, not proof of deployment identity: a local
+command launched with `APP_ENV=production` qualifies. It prevents accidents; it
+is not a security boundary.
+
 ## .env File Loading
 
 ```typescript

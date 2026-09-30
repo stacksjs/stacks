@@ -496,6 +496,77 @@ if (env('APP_ENV') === 'staging') {
 }
 ```
 
+## Remote Integration Environments
+
+Any integration that transmits off the box - error reporting, analytics, log
+shipping - is gated on `APP_ENV`, so a developer machine and a CI run do not
+report into the same project as production. Without this, a local startup
+failure arrives looking like a live incident.
+
+Declare the environments permitted to transmit. There is one option, and it is
+`environments`:
+
+```typescript
+// config/analytics.ts
+export default {
+  driver: 'analyticshq',
+  environments: ['production', 'staging'], // omit to get exactly this
+
+  drivers: {
+    analyticshq: { siteId: 'your-site-id' },
+  },
+} satisfies AnalyticsConfig
+```
+
+Analytics is the adapter shipping this today. Others adopt the same option as
+they land, so the rules below are worth knowing once rather than per
+integration.
+
+You never repeat `env.APP_ENV` in an integration. Stacks resolves the effective
+label once, uses it to check the allowlist, and hands the same value to the SDK
+as event metadata.
+
+| Configuration | Result |
+|---|---|
+| `environments` omitted | `production` and `staging` |
+| `environments: []` | off everywhere, the explicit way to disable an integration without removing its credentials |
+| `environments: ['production', 'staging', 'local']` | also reports from your machine, which is how you opt in deliberately |
+| `enabled: false` | off, always. It is checked first, so it is the last word |
+| `enabled: true` | does **not** bypass the allowlist |
+| `APP_ENV` unset or malformed | off |
+
+An excluded environment never initializes the adapter at all. No upload client
+is constructed, no capture hook is registered, no tracking script is injected
+and no flush timer starts. Ordinary local console and file logging is
+unaffected, so you still see everything on your own machine.
+
+`prod`, `stage` and `dev` are accepted as spellings of `production`, `staging`
+and `development`. `local`, `development` and `test` are three different places
+and are deliberately not treated as one, so allowing your machine does not also
+allow CI.
+
+The same rule applies in web and API servers, the dashboard, workers and
+`buddy` commands, because each reads the same `APP_ENV`. Browser integrations
+receive only the resolved public label, never server credentials.
+
+::: warning APP_ENV is a label, not an identity
+A local command launched with `APP_ENV=production` qualifies for a production
+allowlist. This prevents accidents; it is not a security boundary. Keep app IDs
+and ingest keys configured per environment and per project so a mislabelled
+process cannot write into a project it does not own.
+:::
+
+### Migrating an existing installation
+
+Reporting behaviour does not change until an integration opts in. An adapter
+without an `environments` option behaves exactly as it did before.
+
+When you do adopt it, check what you are turning **off** rather than on. An
+installation that has been reporting from developer machines stops doing so the
+moment it takes the default allowlist, which is usually the point, but it is a
+change in what you will see. If you depend on local reports, add `local` or
+`development` explicitly instead of discovering the gap later.
+
 ## Configuration Caching
 
 Stacks does not ship a config cache command today. The only config-related CLI applies config-shape codemods when you upgrade:
