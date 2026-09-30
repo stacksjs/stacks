@@ -1,5 +1,6 @@
 import type { AuthorizationCodeGrant, AuthorizationCodeRedemption, AuthorizationCodeResult } from './oauth-authorization-codes'
 import type { OAuthDelegatedSubject } from './oauth-delegated-access'
+import type { ResolvedOAuthProviderConfig } from './oauth-provider'
 import { createHash, randomBytes } from 'node:crypto'
 import {
   db,
@@ -12,7 +13,7 @@ import {
 } from '@stacksjs/database/runtime'
 import { withAuthorizationCode } from './oauth-authorization-codes'
 import { withAuthenticatedOAuthTokenClient } from './oauth-client-registration'
-import { disconnectOAuthGrant } from './oauth-grants'
+import { createOAuthGrant, disconnectOAuthGrant } from './oauth-grants'
 import { verifyS256CodeChallenge } from './oauth-pkce'
 
 export interface ExchangeAuthorizationCodeInput extends AuthorizationCodeRedemption {
@@ -35,6 +36,14 @@ export interface RefreshOAuthDelegatedTokenInput {
   accessTokenLifetimeMs: number
   refreshTokenLifetimeMs: number
   isSubjectEligible?: OAuthSubjectEligibility
+}
+
+export interface ExchangeOAuthClientCredentialsInput {
+  provider: ResolvedOAuthProviderConfig
+  clientId: number
+  clientSecret?: string
+  scopes?: readonly string[]
+  accessTokenLifetimeMs: number
 }
 
 export type OAuthSubjectEligibility = (subject: OAuthDelegatedSubject) => boolean | Promise<boolean>
@@ -138,6 +147,12 @@ export type OAuthAuthorizationCodeExchangeResult
     | typeof invalidClient
 
 export type OAuthRefreshTokenExchangeResult
+  = AuthorizationCodeResult<DelegatedTokenPair>
+    | typeof invalidClient
+    | typeof invalidScope
+    | typeof unauthorizedClient
+
+export type OAuthClientCredentialsExchangeResult
   = AuthorizationCodeResult<DelegatedTokenPair>
     | typeof invalidClient
     | typeof invalidScope
@@ -435,6 +450,60 @@ export async function exchangeOAuthAuthorizationCode(
     return exchanged
   })
   return result ?? invalidClient
+}
+
+/** Authenticate a confidential machine client and mint one access-only grant. */
+export async function exchangeOAuthClientCredentials(
+  input: ExchangeOAuthClientCredentialsInput,
+): Promise<OAuthClientCredentialsExchangeResult> {
+  const accessLifetimeMs = validLifetime(input.accessTokenLifetimeMs)
+  const authenticated = await withAuthenticatedOAuthTokenClient(String(input.clientId), input.clientSecret, async (client) => {
+    if (!input.provider.clientCredentials
+      || client.type !== 'confidential'
+      || !client.grantTypes.includes('client_credentials'))
+      return { result: unauthorizedClient as OAuthClientCredentialsExchangeResult, wrote: false }
+
+    const scopes = input.scopes ? [...input.scopes] : [...client.scopes]
+    if (!scopes.length
+      || new Set(scopes).size !== scopes.length
+      || !scopes.every(scope => client.scopes.includes(scope) && input.provider.scopes[scope]))
+      return { result: invalidScope as OAuthClientCredentialsExchangeResult, wrote: false }
+
+    const resources = [...new Set(scopes.flatMap(scope => input.provider.scopes[scope]?.resources ?? []))]
+    if (!resources.every(resource => client.resources.includes(resource) && input.provider.resources[resource]))
+      return { result: invalidScope as OAuthClientCredentialsExchangeResult, wrote: false }
+
+    const machineClientId = Number(client.id)
+    const grant = await createOAuthGrant({
+      clientId: machineClientId,
+      subjectType: 'oauth_clients',
+      subjectId: machineClientId,
+      scopes,
+      resources,
+      audiences: resources.map(resource => input.provider.resources[resource]!.audience),
+    })
+    const pair = await mintDelegatedTokenPair({
+      grantId: grant.id,
+      clientId: grant.clientId,
+      subjectType: grant.subjectType,
+      subjectId: grant.subjectId,
+      scopes: grant.scopes,
+      resources: grant.resources,
+      audiences: grant.audiences,
+      workspaceId: grant.workspaceId,
+    }, {
+      accessLifetimeMs,
+      refreshLifetimeMs: 0,
+      issueRefreshToken: false,
+    })
+    return { result: { ok: true as const, value: pair }, wrote: true }
+  })
+
+  if (!authenticated)
+    return invalidClient
+  if (authenticated.wrote)
+    markContextWrote()
+  return authenticated.result
 }
 
 /** Rotate one delegated refresh token and contain reuse to its token family. */

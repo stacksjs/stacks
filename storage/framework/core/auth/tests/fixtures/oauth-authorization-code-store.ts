@@ -61,6 +61,7 @@ const {
   disableOAuthClient,
   disconnectOAuthGrant,
   exchangeAuthorizationCode,
+  exchangeOAuthClientCredentials,
   exchangeOAuthAuthorizationCode,
   findToken,
   handleOAuthRevocationRequest,
@@ -109,6 +110,7 @@ try {
   const providerConfig = {
     enabled: true,
     issuer: 'https://id.example.com',
+    clientCredentials: true,
     lifetimes: { authorizationRequest: 90_000 },
     scopes: {
       'issues:read': { description: 'Read issues', resources: ['bughq'] },
@@ -224,6 +226,31 @@ try {
     'unexpected-secret',
     async client => client,
   ), null)
+  const machineRegistration = await registerOAuthClient(provider, 42, {
+    name: 'Issue worker',
+    type: 'confidential',
+    tokenEndpointAuthMethod: 'client_secret_basic',
+    redirectUris: [],
+    grantTypes: ['client_credentials'],
+    scopes: ['issues:read'],
+    resources: ['bughq'],
+  })
+  assert(machineRegistration.plainTextSecret)
+  const machineExchange = await exchangeOAuthClientCredentials({
+    provider,
+    clientId: machineRegistration.client.id,
+    clientSecret: machineRegistration.plainTextSecret,
+    scopes: ['issues:read'],
+    accessTokenLifetimeMs: 60_000,
+  })
+  assert.equal(machineExchange.ok, true)
+  if (machineExchange.ok) {
+    assert.match(machineExchange.value.accessToken, /^[a-f0-9]{80}$/)
+    assert.equal(machineExchange.value.refreshToken, undefined)
+    assert.deepEqual(machineExchange.value.scopes, ['issues:read'])
+    assert.deepEqual(machineExchange.value.resources, ['bughq'])
+    assert.deepEqual(machineExchange.value.audiences, ['https://api.bughq.example'])
+  }
   const validatedRequest = validateOAuthAuthorizationRequest(provider, loadedPublic!, {
     responseType: 'code',
     clientId: String(publicRegistration.client.id),
@@ -1130,10 +1157,12 @@ try {
   assert.deepEqual(new Set(ownedClients.map(client => client.id)), new Set([
     publicRegistration.client.id,
     confidentialRegistration.client.id,
+    machineRegistration.client.id,
     disableRegistration.client.id,
   ]))
   assert.equal(ownedClients.find(client => client.id === publicRegistration.client.id)?.revoked, false)
   assert.equal(ownedClients.find(client => client.id === confidentialRegistration.client.id)?.revoked, true)
+  assert.equal(ownedClients.find(client => client.id === machineRegistration.client.id)?.revoked, false)
   assert.equal(ownedClients.find(client => client.id === disableRegistration.client.id)?.revoked, true)
   assert(ownedClients.every(client => !('secret' in client)))
   assert.deepEqual(await listOAuthClients(7), [])
@@ -1691,7 +1720,7 @@ try {
   assert.deepEqual(await withAuthorizationCode(plain, expected, async grant => grant), { ok: false, reason: 'invalid_grant' })
 
   for (const invalid of [
-    { ...expected, clientId: 8 },
+    { ...expected, clientId: 999999 },
     { ...expected, redirectUri: `${expected.redirectUri}/` },
     { ...expected, codeVerifier: 'x'.repeat(43) },
   ]) {

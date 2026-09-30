@@ -1,6 +1,7 @@
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
 import type { OAuthSubjectEligibility } from './oauth-token-exchange'
 import {
+  exchangeOAuthClientCredentials,
   exchangeOAuthAuthorizationCode,
   refreshOAuthDelegatedToken,
 } from './oauth-token-exchange'
@@ -47,6 +48,17 @@ export async function handleOAuthTokenRequest(
         accessTokenLifetimeMs: provider.lifetimes.accessToken,
         refreshTokenLifetimeMs: provider.lifetimes.refreshToken,
         isSubjectEligible: dependencies.isSubjectEligible,
+      })
+      return oauthTokenExchangeResponse(result, responseOptions)
+    }
+
+    if (request.grantType === 'client_credentials') {
+      const result = await exchangeOAuthClientCredentials({
+        provider,
+        clientId: request.clientId,
+        clientSecret: request.clientSecret,
+        scopes: request.scopes,
+        accessTokenLifetimeMs: provider.lifetimes.accessToken,
       })
       return oauthTokenExchangeResponse(result, responseOptions)
     }
