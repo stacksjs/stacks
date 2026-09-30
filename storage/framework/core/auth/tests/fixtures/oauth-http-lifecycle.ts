@@ -48,6 +48,7 @@ const OAuthAuthorizationAction = (await import('../../../../defaults/app/Actions
 const OAuthConnectionsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConnectionsAction')).default
 const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConsentAction')).default
 const OAuthDisconnectAction = (await import('../../../../defaults/app/Actions/Auth/OAuthDisconnectAction')).default
+const OAuthIntrospectionAction = (await import('../../../../defaults/app/Actions/Auth/OAuthIntrospectionAction')).default
 const OAuthRevocationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthRevocationAction')).default
 const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
 
@@ -92,6 +93,7 @@ try {
   router.get('/oauth/authorize', OAuthAuthorizationAction)
   router.post('/oauth/authorize', OAuthConsentAction).middleware('auth')
   router.post('/oauth/revoke', OAuthRevocationAction)
+  router.post('/oauth/introspect', OAuthIntrospectionAction)
   router.post('/oauth/token', OAuthTokenAction)
   router.get('/auth/oauth/connections', OAuthConnectionsAction).middleware('auth')
   router.post('/auth/oauth/connections/{id}/disconnect', OAuthDisconnectAction).middleware('auth')
@@ -130,10 +132,14 @@ try {
       scopes: {
         'issues:read': { description: 'Read issues', resources: ['bughq'] },
         'issues:write': { description: 'Write issues', resources: ['bughq'] },
+        'service:read': { description: 'Read service metadata' },
       },
       resources: {
         bughq: { audience: `${issuer}/fixture/resource` },
+        other: { audience: `${issuer}/fixture/other` },
       },
+      clientCredentials: true,
+      introspection: true,
       consent: {
         resolveWorkspace: async () => activeWorkspace,
       },
@@ -149,6 +155,88 @@ try {
       scopes: ['issues:read', 'issues:write'],
       resources: ['bughq'],
     })
+    const machine = await registerOAuthClient(provider, 1, {
+      name: 'HTTP resource server',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })
+    assert(machine.plainTextSecret)
+    const otherResourceClient = await registerOAuthClient(provider, 1, {
+      name: 'HTTP other resource server',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: ['https://other.example.test/callback'],
+      grantTypes: ['authorization_code'],
+      scopes: ['service:read'],
+      resources: ['other'],
+    })
+    assert(otherResourceClient.plainTextSecret)
+    const machineAuthorization = `Basic ${btoa(`${machine.client.id}:${machine.plainTextSecret}`)}`
+    const machineExchange = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        authorization: machineAuthorization,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        scope: 'issues:read',
+      }),
+    })
+    assert.equal(machineExchange.status, 200, await machineExchange.clone().text())
+    const machinePair = await machineExchange.json() as { access_token: string }
+    assert.match(machinePair.access_token, /^[a-f0-9]{80}$/)
+
+    const introspectMachineToken = async (authorization: string, token = machinePair.access_token) => await fetch(`${issuer}/oauth/introspect`, {
+      method: 'POST',
+      headers: {
+        authorization,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ token, token_type_hint: 'access_token' }),
+    })
+    const activeIntrospection = await introspectMachineToken(machineAuthorization)
+    assert.equal(activeIntrospection.status, 200, await activeIntrospection.clone().text())
+    assert.equal(activeIntrospection.headers.get('cache-control'), 'no-store')
+    assert.equal(activeIntrospection.headers.get('pragma'), 'no-cache')
+    const activeClaims = await activeIntrospection.json() as Record<string, unknown>
+    assert.equal(activeClaims.active, true)
+    assert.equal(activeClaims.client_id, String(machine.client.id))
+    assert.equal(activeClaims.sub, `oauth_clients:${machine.client.id}`)
+    assert.equal(activeClaims.scope, 'issues:read')
+    assert.equal(activeClaims.token_type, 'Bearer')
+    assert.deepEqual(activeClaims.aud, [`${issuer}/fixture/resource`])
+    assert.equal(activeClaims.iss, issuer)
+    assert.equal(typeof activeClaims.iat, 'number')
+    assert.equal(typeof activeClaims.exp, 'number')
+
+    const invalidIntrospection = await introspectMachineToken('Basic invalid')
+    assert.equal(invalidIntrospection.status, 401)
+    assert.equal(invalidIntrospection.headers.get('www-authenticate'), 'Basic realm="oauth-introspect"')
+    assert.equal((await invalidIntrospection.json() as { error?: string }).error, 'invalid_client')
+
+    const wrongAudienceIntrospection = await introspectMachineToken(
+      `Basic ${btoa(`${otherResourceClient.client.id}:${otherResourceClient.plainTextSecret}`)}`,
+    )
+    assert.equal(wrongAudienceIntrospection.status, 200)
+    assert.deepEqual(await wrongAudienceIntrospection.json(), { active: false })
+
+    const machineRevocation = await fetch(`${issuer}/oauth/revoke`, {
+      method: 'POST',
+      headers: {
+        authorization: machineAuthorization,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ token: machinePair.access_token, token_type_hint: 'access_token' }),
+    })
+    assert.equal(machineRevocation.status, 200, await machineRevocation.clone().text())
+    const revokedIntrospection = await introspectMachineToken(machineAuthorization)
+    assert.equal(revokedIntrospection.status, 200)
+    assert.deepEqual(await revokedIntrospection.json(), { active: false })
 
     const tokenError = async (body: string, contentType = 'application/x-www-form-urlencoded') => {
       const result = await fetch(`${issuer}/oauth/token`, {
@@ -260,6 +348,9 @@ try {
     await login.arrayBuffer()
     const browserCookies = `${csrfCookie}; ${oauthCookie}; ${authCookie}`
 
+    const grantsBeforeDenial = Number((await db.selectFrom('oauth_grants')
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirstOrThrow()).count)
     const denialUrl = new URL(authorizationUrl)
     denialUrl.searchParams.set('state', 'oauth-http-denial-state')
     const denialPage = await fetch(denialUrl, {
@@ -287,7 +378,7 @@ try {
     assert.equal(denialCallback.searchParams.get('error'), 'access_denied')
     assert.equal(denialCallback.searchParams.get('state'), 'oauth-http-denial-state')
     assert.equal((await deny()).status, 400, 'a denial request must be single-use')
-    assert.equal(Number((await db.selectFrom('oauth_grants').select(db.fn.count('id').as('count')).executeTakeFirstOrThrow()).count), 0)
+    assert.equal(Number((await db.selectFrom('oauth_grants').select(db.fn.count('id').as('count')).executeTakeFirstOrThrow()).count), grantsBeforeDenial)
 
     const resumeLocation = new URL(anonymousAuthorization.headers.get('location')!, issuer)
       .searchParams.get('redirect')
