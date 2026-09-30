@@ -80,6 +80,24 @@ describe('OAuth token request parsing', () => {
     })
   })
 
+  it('parses client-credentials requests only with Basic authentication', () => {
+    expect(parseOAuthTokenRequest(new URLSearchParams({
+      grant_type: 'client_credentials',
+      scope: 'issues:read',
+    }).toString(), basic('42', 'machine-secret'))).toEqual({
+      grantType: 'client_credentials',
+      clientId: 42,
+      clientSecret: 'machine-secret',
+      scopes: ['issues:read'],
+    })
+
+    expect(parseOAuthTokenRequest('grant_type=client_credentials', basic('42', 'machine-secret'))).toEqual({
+      grantType: 'client_credentials',
+      clientId: 42,
+      clientSecret: 'machine-secret',
+    })
+  })
+
   it.each([
     ['grant_type=authorization_code&grant_type=refresh_token&client_id=42&code=x&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcallback&code_verifier=v', undefined, 'invalid_request'],
     ['grant_type=authorization_code&client_id=42&client_secret=secret&code=x&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcallback&code_verifier=v', undefined, 'invalid_request'],
@@ -87,6 +105,7 @@ describe('OAuth token request parsing', () => {
     ['grant_type=authorization_code&client_id=42&code=x&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcallback&code_verifier=v', basic('42', 'secret'), 'invalid_request'],
     ['grant_type=authorization_code&code=x&redirect_uri=https%3A%2F%2Fclient.example.com%2Fcallback&code_verifier=v', 'Basic !!!', 'invalid_client'],
     ['grant_type=password&client_id=42', undefined, 'unsupported_grant_type'],
+    ['grant_type=client_credentials&client_id=42', undefined, 'invalid_client'],
     ['grant_type=refresh_token&client_id=42', undefined, 'invalid_request'],
     ['grant_type=refresh_token&client_id=42&refresh_token=token&scope=issues%3Aread+issues%3Aread', undefined, 'invalid_request'],
   ])('rejects ambiguous or unsupported token request %#', (body, authorization, expected) => {

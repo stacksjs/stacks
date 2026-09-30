@@ -28,7 +28,12 @@ export interface OAuthRefreshTokenRequest {
   scopes?: string[]
 }
 
-export type OAuthTokenRequest = OAuthAuthorizationCodeTokenRequest | OAuthRefreshTokenRequest
+export interface OAuthClientCredentialsTokenRequest extends OAuthClientCredentials {
+  grantType: 'client_credentials'
+  scopes?: string[]
+}
+
+export type OAuthTokenRequest = OAuthAuthorizationCodeTokenRequest | OAuthRefreshTokenRequest | OAuthClientCredentialsTokenRequest
 
 export interface OAuthRevocationRequest extends OAuthClientCredentials {
   token: string
@@ -138,7 +143,7 @@ function requestedScopes(params: URLSearchParams): string[] | undefined {
     return undefined
   const scopes = value.split(' ')
   if (scopes.some(scope => !/^[\x21\x23-\x5B\x5D-\x7E]+$/.test(scope)) || new Set(scopes).size !== scopes.length)
-    reject('invalid_request', 'OAuth refresh scope must contain unique scope tokens.')
+    reject('invalid_request', 'OAuth scope must contain unique scope tokens.')
   return scopes
 }
 
@@ -182,6 +187,16 @@ export function parseOAuthTokenRequest(body: string, authorization?: string | nu
       grantType,
       ...credentials,
       refreshToken: tokenValue(params, 'refresh_token'),
+      ...(scopes ? { scopes } : {}),
+    }
+  }
+  if (grantType === 'client_credentials') {
+    if (!authorization || !credentials.clientSecret)
+      reject('invalid_client', 'The client_credentials grant requires Basic client authentication.')
+    const scopes = requestedScopes(params)
+    return {
+      grantType,
+      ...credentials,
       ...(scopes ? { scopes } : {}),
     }
   }

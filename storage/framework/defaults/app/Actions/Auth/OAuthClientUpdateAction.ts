@@ -30,17 +30,20 @@ export default new Action({
 
     const body = await request.all() as Record<string, unknown>
     const name = typeof body.name === 'string' ? body.name : null
-    const redirectUris = oauthStringList(body.redirect_uris)
+    const redirectUris = body.redirect_uris === undefined ? [] : oauthStringList(body.redirect_uris)
+    const grantTypes = body.grant_types === undefined
+      ? ['authorization_code', 'refresh_token']
+      : oauthStringList(body.grant_types)
     const scopes = oauthStringList(body.scopes)
     const resources = oauthStringList(body.resources)
-    if (!name || !redirectUris || !scopes || !resources)
+    if (!name || !redirectUris || !grantTypes || !scopes || !resources)
       return response.badRequest('OAuth client update metadata is invalid')
 
     try {
       const client = await updateOAuthClient(provider, ownerId, clientId, {
         name,
         redirectUris,
-        grantTypes: ['authorization_code', 'refresh_token'],
+        grantTypes,
         scopes,
         resources,
       })
