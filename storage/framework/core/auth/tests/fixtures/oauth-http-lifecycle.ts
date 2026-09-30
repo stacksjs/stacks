@@ -35,6 +35,9 @@ const {
   authCookieName,
   createOAuthGrant,
   createS256CodeChallenge,
+  enableTwoFactor,
+  generateTwoFactorSecret,
+  generateTwoFactorToken,
   issueAuthorizationCode,
   oauthBearerAuthorizationErrorResponse,
   registerOAuthClient,
@@ -57,6 +60,7 @@ const OAuthIntrospectionAction = (await import('../../../../defaults/app/Actions
 const OAuthMetadataAction = (await import('../../../../defaults/app/Actions/Auth/OAuthMetadataAction')).default
 const OAuthRevocationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthRevocationAction')).default
 const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
+const VerifyTwoFactorLoginAction = (await import('../../../../defaults/app/Actions/Auth/VerifyTwoFactorLoginAction')).default
 
 const email = 'oauth-http@example.test'
 const password = 'oauth-http-password'
@@ -77,7 +81,8 @@ function cookieValue(cookie: string): string {
 try {
   await db.unsafe(`CREATE TABLE users (
     id INTEGER PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
-    password_changed_at TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+    password_changed_at TIMESTAMP, two_factor_secret TEXT, two_factor_enabled BOOLEAN NOT NULL DEFAULT 0,
+    two_factor_last_used_step BIGINT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
   )`).execute()
   await db.unsafe(`CREATE TABLE sessions (
     id TEXT PRIMARY KEY, user_id INTEGER NOT NULL, ip_address TEXT, user_agent TEXT,
@@ -102,6 +107,7 @@ try {
   router.post('/oauth/introspect', OAuthIntrospectionAction)
   router.post('/oauth/token', OAuthTokenAction)
   router.get('/.well-known/oauth-authorization-server', OAuthMetadataAction)
+  router.post('/verify-two-factor-login', VerifyTwoFactorLoginAction)
   router.get('/auth/oauth/clients', OAuthClientsAction).middleware('auth')
   router.post('/auth/oauth/clients', OAuthClientStoreAction).middleware('auth')
   router.patch('/auth/oauth/clients/{id}', OAuthClientUpdateAction).middleware('auth')
@@ -224,6 +230,8 @@ try {
     assert(otherResourceClient.plainTextSecret)
     const machineAuthorization = `Basic ${btoa(`${machine.client.id}:${machine.plainTextSecret}`)}`
     const introspectionAuthorization = `Basic ${btoa(`${introspectionClient.client.id}:${introspectionClient.plainTextSecret}`)}`
+    const twoFactorSecret = generateTwoFactorSecret()
+    assert.equal(await enableTwoFactor(1, twoFactorSecret, await generateTwoFactorToken(twoFactorSecret)), true)
     const machineExchange = await fetch(`${issuer}/oauth/token`, {
       method: 'POST',
       headers: {
@@ -396,8 +404,25 @@ try {
       body: JSON.stringify({ email, password }),
     })
     assert.equal(login.status, 200, await login.clone().text())
-    const authCookie = responseCookie(login, authCookieName())
-    await login.arrayBuffer()
+    const loginBody = await login.json() as { requires_two_factor?: boolean, challenge_token?: string }
+    assert.equal(loginBody.requires_two_factor, true)
+    assert.match(loginBody.challenge_token ?? '', /^baseline\.[a-f0-9]{64}$/)
+    const twoFactorLogin = await fetch(`${issuer}/verify-two-factor-login`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        cookie: `${csrfCookie}; ${oauthCookie}`,
+        'x-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({
+        challenge_token: loginBody.challenge_token,
+        code: await generateTwoFactorToken(twoFactorSecret),
+      }),
+    })
+    assert.equal(twoFactorLogin.status, 200, await twoFactorLogin.clone().text())
+    const authCookie = responseCookie(twoFactorLogin, authCookieName())
+    await twoFactorLogin.arrayBuffer()
     const browserCookies = `${csrfCookie}; ${oauthCookie}; ${authCookie}`
 
     const managedClientResponse = await fetch(`${issuer}/auth/oauth/clients`, {
