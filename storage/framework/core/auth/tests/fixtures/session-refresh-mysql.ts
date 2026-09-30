@@ -23,6 +23,13 @@ try {
     assert(status[0]?.Value, 'the refresh connection must negotiate TLS')
   }
   setSystemTime(new Date('2030-01-02T03:04:05.000Z'))
+  // `sessionRefresh` reads the owner under a row lock before it renews
+  // (cb0276b608), so this fixture needs a `users` row for the session it
+  // creates. Without one the very first refresh throws "table doesn't exist",
+  // is swallowed by the function's catch, and reports a plain `false` - which
+  // reads as the idempotency regression this test is named for.
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY)').execute()
+  await db.insertInto('users').values({ id: 1 }).execute()
   await db.unsafe('CREATE TABLE sessions (id VARCHAR(255) PRIMARY KEY, user_id INTEGER, expires_at DATETIME, last_activity BIGINT, ip_address TEXT, user_agent TEXT)').execute()
   await db.insertInto('sessions').values({ id: 'mysql-refresh', user_id: 1, expires_at: sqlDateTime(new Date(Date.now() + 60_000)), last_activity: 0 }).execute()
   assert.equal(await sessionRefresh('mysql-refresh', 120_000), true, 'first refresh must renew the session')

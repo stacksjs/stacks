@@ -47,7 +47,12 @@ try {
       .where('tokenable_id', '=', 404)
       .select('id')
       .execute()
-    assert.deepEqual(rows, [])
+    // Length, not deep equality against `[]`. Bun's Postgres and MySQL drivers
+    // return a `SQLResultArray`, which carries `command`, `count`,
+    // `affectedRows` and `lastInsertRowid` as own properties, so
+    // `deepStrictEqual` against a plain array literal fails on the wrapper
+    // rather than on the rows. SQLite returns a plain array and passed.
+    assert.equal(rows.length, 0, 'a rejected owner must leave no token row behind')
   })
   await check('custom token owners do not require a users row', async () => {
     const token = await createToken(404, 'external owner', ['read'], {
