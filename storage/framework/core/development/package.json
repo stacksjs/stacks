@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/development",
-  "version": "0.75.35",
+  "version": "0.75.36",
   "sideEffects": false,
   "private": true,
   "main": "index.ts"

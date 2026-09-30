@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.35...v0.75.36)
+
+## 🐛 Bug Fixes
+
+- **database**: keep quoted-literal SQLite indexes from blocking renames or corrupting rows ([7cba75a](https://github.com/stacksjs/stacks/commit/7cba75a)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.34...v0.75.35)
 
 ## ✨ Features
