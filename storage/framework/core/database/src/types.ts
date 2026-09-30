@@ -113,9 +113,10 @@ function createSqlFragment(text: string, parameters: unknown[]): Sql {
  *
  * Every interpolated value becomes a literal `?`, whatever the connection is.
  * That is correct only because the query builder re-renders placeholders for
- * the dialect when it compiles the statement, so a fragment handed to
- * `.set()`, `.whereRaw()` or any other builder method comes out as `$1` on
- * Postgres.
+ * the dialect when it compiles the statement, so a fragment handed to `.set()`
+ * comes out as `$1` on Postgres. `.whereRaw()` does not accept a fragment with
+ * bound values at all: it throws and names `raw` or `where()` instead, because
+ * that path renders text verbatim and would drop the parameters.
  *
  * **Do not read `.sql` and `.parameters` off one of these and run it through
  * `unsafe()`.** Nothing re-renders it on that path, so Postgres receives the
