@@ -51,6 +51,82 @@ const isAuthenticated = await Auth.check()
 
 The built-in API routes include `POST /login`, `POST /register`, `POST /auth/refresh`, `GET /auth/tokens`, `GET /me`, and `POST /logout`.
 
+## Expose delegated OAuth access
+
+Stacks can act as an opt-in OAuth authorization server for integrations that
+need user-approved API access. It is disabled unless `oauthProvider.enabled`
+is `true`, and an enabled provider requires an explicit issuer, scope policy,
+and resource policy:
+
+```ts
+export default {
+  oauthProvider: {
+    enabled: true,
+    issuer: env.APP_URL,
+    scopes: {
+      'issues:read': {
+        description: 'Read issues',
+        resources: ['bughq'],
+      },
+      'issues:write': {
+        description: 'Write issues',
+        resources: ['bughq'],
+      },
+    },
+    resources: {
+      bughq: { audience: 'https://api.example.com/issues' },
+    },
+    // Keep machine grants and resource-server introspection opt-in too.
+    clientCredentials: false,
+    introspection: false,
+  },
+}
+```
+
+The initial profile is authorization code with S256 PKCE and rotating refresh
+tokens. Implicit and resource-owner-password grants are not accepted. The
+issuer must be canonical and HTTPS outside loopback development. Redirect URIs
+are exact matches, web redirects require HTTPS, and native loopback HTTP is
+the only development exception.
+
+The default route bundle provides:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /oauth/authorize` | Validate the client request, then show login or consent |
+| `POST /oauth/authorize` | Approve or deny consent with CSRF protection |
+| `POST /oauth/token` | Exchange a code or rotate a refresh token |
+| `POST /oauth/revoke` | Revoke a token owned by the calling client |
+| `GET /.well-known/oauth-authorization-server` | Publish RFC 8414 discovery metadata |
+| `GET /auth/oauth/clients` | List the signed-in user's clients |
+| `POST /auth/oauth/clients` | Register a public or confidential client |
+| `PATCH /auth/oauth/clients/{id}` | Edit an owned client policy |
+| `POST /auth/oauth/clients/{id}/rotate-secret` | Rotate a confidential secret |
+| `POST /auth/oauth/clients/{id}/disable` | Disable a client and revoke its credentials |
+| `GET /auth/oauth/connections` | List connected applications |
+| `POST /auth/oauth/connections/{id}/disconnect` | Revoke a connected application |
+
+The browser flow is: generate a verifier and state, send the public client's
+exact redirect URI and S256 challenge to `/oauth/authorize`, verify `state` on
+the callback, and exchange the one-time code at `/oauth/token`. A confidential
+client authenticates with HTTP Basic. A public client proves possession of the
+verifier instead. Request only the scopes and resources the integration needs.
+
+Access and refresh tokens, authorization codes, browser request handles, and
+confidential secrets are stored as hashes. Plaintext confidential secrets are
+returned only at registration or rotation. Token responses use `no-store` and
+`no-cache` headers. Client disablement, disconnect, password reset, and logout-all
+revoke the associated delegated credentials according to their owner and grant
+boundaries. Resource servers may opt into protected `POST /oauth/introspect`
+when they need authoritative status for opaque tokens.
+
+Client credentials are a separate opt-in for confidential service clients. Set
+`clientCredentials: true`, register a confidential client with the
+`client_credentials` grant, and authenticate with its rotated secret. These
+tokens have no refresh token and do not represent a logged-in end user. OpenID
+Connect, implicit grants, dynamic registration, and device authorization are
+not part of this profile.
+
 ## Configure browser sessions
 
 `browserSession` controls credentials issued by the default `/login`,
