@@ -60,6 +60,7 @@ const OAuthIntrospectionAction = (await import('../../../../defaults/app/Actions
 const OAuthMetadataAction = (await import('../../../../defaults/app/Actions/Auth/OAuthMetadataAction')).default
 const OAuthRevocationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthRevocationAction')).default
 const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
+const LogoutAllAction = (await import('../../../../defaults/app/Actions/Auth/LogoutAllAction')).default
 const VerifyTwoFactorLoginAction = (await import('../../../../defaults/app/Actions/Auth/VerifyTwoFactorLoginAction')).default
 
 const email = 'oauth-http@example.test'
@@ -108,6 +109,7 @@ try {
   router.post('/oauth/token', OAuthTokenAction)
   router.get('/.well-known/oauth-authorization-server', OAuthMetadataAction)
   router.post('/verify-two-factor-login', VerifyTwoFactorLoginAction)
+  router.post('/logout-all', LogoutAllAction).middleware('auth')
   router.get('/auth/oauth/clients', OAuthClientsAction).middleware('auth')
   router.post('/auth/oauth/clients', OAuthClientStoreAction).middleware('auth')
   router.patch('/auth/oauth/clients/{id}', OAuthClientUpdateAction).middleware('auth')
@@ -1077,6 +1079,23 @@ try {
     )
     assert.equal(disabledClientIntrospection.status, 200)
     assert.deepEqual(await disabledClientIntrospection.json(), { active: false })
+
+    const logoutAllPair = await mintPublicPair()
+    await readResource(logoutAllPair.access_token)
+    const logoutAll = await fetch(`${issuer}/logout-all`, {
+      method: 'POST',
+      headers: {
+        cookie: browserCookies,
+        'x-csrf-token': csrfToken,
+      },
+    })
+    assert.equal(logoutAll.status, 200, await logoutAll.clone().text())
+    assert.match(logoutAll.headers.getSetCookie().find(cookie => cookie.startsWith(`${authCookieName()}=`)) ?? '', /Max-Age=0/)
+    assert.deepEqual(await logoutAll.json(), { message: 'Successfully logged out from all devices' })
+    await readResource(logoutAllPair.access_token, 401)
+    const logoutIntrospection = await introspectMachineToken(introspectionAuthorization, logoutAllPair.access_token)
+    assert.equal(logoutIntrospection.status, 200)
+    assert.deepEqual(await logoutIntrospection.json(), { active: false })
 
     console.log('PASS OAuth HTTP lifecycle')
   }
