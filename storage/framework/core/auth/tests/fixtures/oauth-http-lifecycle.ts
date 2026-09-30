@@ -883,6 +883,15 @@ try {
     await readResource(broadPair.access_token, 401)
     await readResource(narrowedPair.access_token)
 
+    const expiredIntrospectionPair = await mintPublicPair()
+    await db.updateTable('oauth_access_tokens')
+      .set({ expires_at: new Date(0).toISOString() })
+      .where('token', '=', createHash('sha256').update(expiredIntrospectionPair.access_token, 'ascii').digest('hex'))
+      .execute()
+    const expiredIntrospection = await introspectMachineToken(machineAuthorization, expiredIntrospectionPair.access_token)
+    assert.equal(expiredIntrospection.status, 200)
+    assert.deepEqual(await expiredIntrospection.json(), { active: false })
+
     console.log('PASS OAuth HTTP lifecycle')
   }
   finally {
