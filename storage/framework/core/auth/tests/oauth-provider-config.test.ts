@@ -133,11 +133,14 @@ describe('OAuth authorization server configuration', () => {
   })
 
   it('explicitly opts confidential machine clients into client credentials', () => {
-    expect(resolveOAuthProviderConfig({
+    const provider = resolveOAuthProviderConfig({
       enabled: true,
       issuer: 'https://id.example.com',
       clientCredentials: true,
-    })?.clientCredentials).toBe(true)
+    })!
+
+    expect(provider.clientCredentials).toBe(true)
+    expect(provider.grantTypes).toEqual(['authorization_code', 'refresh_token', 'client_credentials'])
   })
 
   it('rejects malformed or ambiguous scope and resource policy', () => {

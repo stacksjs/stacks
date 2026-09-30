@@ -46,7 +46,7 @@ export interface ResolvedOAuthProviderConfig {
     revocation: string
   }
   responseTypes: readonly ['code']
-  grantTypes: readonly ['authorization_code', 'refresh_token']
+  grantTypes: readonly ('authorization_code' | 'refresh_token' | 'client_credentials')[]
   clientCredentials: boolean
   codeChallengeMethods: readonly ['S256']
   clientTypes: readonly ('confidential' | 'public')[]
@@ -269,12 +269,16 @@ export function resolveOAuthProviderConfig(
   if (new URL(endpoints.authorization).pathname === oauthAuthorizationServerMetadataPath(issuer.toString()))
     throw new Error('auth.oauthProvider authorization endpoint must not shadow the metadata route.')
 
+  const grantTypes = options.clientCredentials
+    ? ['authorization_code', 'refresh_token', 'client_credentials'] as const
+    : ['authorization_code', 'refresh_token'] as const
+
   return {
     enabled: true,
     issuer: issuer.toString().replace(/\/$/, ''),
     endpoints,
     responseTypes: ['code'],
-    grantTypes: ['authorization_code', 'refresh_token'],
+    grantTypes,
     clientCredentials: options.clientCredentials === true,
     codeChallengeMethods: ['S256'],
     clientTypes: resolvedClientTypes(options.clientTypes),

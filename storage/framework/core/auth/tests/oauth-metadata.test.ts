@@ -54,4 +54,15 @@ describe('OAuth authorization-server metadata', () => {
     expect(metadata.token_endpoint_auth_methods_supported).toEqual(['none'])
     expect(metadata.revocation_endpoint_auth_methods_supported).toEqual(['none'])
   })
+
+  it('advertises client credentials only when the provider enables it', () => {
+    const provider = resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      clientCredentials: true,
+    })!
+
+    expect(oauthAuthorizationServerMetadata(provider).grant_types_supported)
+      .toEqual(['authorization_code', 'refresh_token', 'client_credentials'])
+  })
 })
