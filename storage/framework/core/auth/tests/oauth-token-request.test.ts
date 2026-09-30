@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { describe, expect, it } from 'bun:test'
 import {
   OAuthTokenRequestError,
+  parseOAuthIntrospectionRequest,
   parseOAuthRevocationRequest,
   parseOAuthTokenRequest,
 } from '../src/oauth-token-request'
@@ -31,6 +32,17 @@ function revocationError(body: string, authorization?: string): OAuthTokenReques
     return error as OAuthTokenRequestError
   }
   throw new Error('Expected OAuth revocation request parsing to fail.')
+}
+
+function introspectionError(body: string, authorization?: string): OAuthTokenRequestError {
+  try {
+    parseOAuthIntrospectionRequest(body, authorization)
+  }
+  catch (error) {
+    expect(error).toBeInstanceOf(OAuthTokenRequestError)
+    return error as OAuthTokenRequestError
+  }
+  throw new Error('Expected OAuth introspection request parsing to fail.')
 }
 
 describe('OAuth token request parsing', () => {
@@ -96,6 +108,19 @@ describe('OAuth token request parsing', () => {
       clientId: 42,
       clientSecret: 'machine-secret',
     })
+  })
+
+  it('parses introspection requests only with confidential Basic authentication', () => {
+    expect(parseOAuthIntrospectionRequest(new URLSearchParams({
+      token: 'a'.repeat(80),
+      token_type_hint: 'access_token',
+    }).toString(), basic('42', 'resource-secret'))).toEqual({
+      clientId: 42,
+      clientSecret: 'resource-secret',
+      token: 'a'.repeat(80),
+      tokenTypeHint: 'access_token',
+    })
+    expect(introspectionError('token=' + 'a'.repeat(80)).error).toBe('invalid_client')
   })
 
   it.each([

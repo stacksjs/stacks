@@ -35,6 +35,7 @@ describe('OAuth authorization server configuration', () => {
       responseTypes: ['code'],
       grantTypes: ['authorization_code', 'refresh_token'],
       clientCredentials: false,
+      introspection: false,
       codeChallengeMethods: ['S256'],
       clientTypes: ['confidential', 'public'],
       scopes: {
@@ -140,6 +141,7 @@ describe('OAuth authorization server configuration', () => {
     })!
 
     expect(provider.clientCredentials).toBe(true)
+    expect(provider.introspection).toBe(false)
     expect(provider.grantTypes).toEqual(['authorization_code', 'refresh_token', 'client_credentials'])
   })
 

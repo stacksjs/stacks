@@ -67,6 +67,7 @@ const {
   handleOAuthRevocationRequest,
   handleOAuthAuthorizationConsentRequest,
   handleOAuthTokenRequest,
+  introspectOAuthToken,
   hasReusableOAuthConsent,
   issueAuthorizationCode,
   listOAuthClients,
@@ -111,6 +112,7 @@ try {
     enabled: true,
     issuer: 'https://id.example.com',
     clientCredentials: true,
+    introspection: true,
     lifetimes: { authorizationRequest: 90_000 },
     scopes: {
       'issues:read': { description: 'Read issues', resources: ['bughq'] },
@@ -250,6 +252,26 @@ try {
     assert.deepEqual(machineExchange.value.scopes, ['issues:read'])
     assert.deepEqual(machineExchange.value.resources, ['bughq'])
     assert.deepEqual(machineExchange.value.audiences, ['https://api.bughq.example'])
+    const machineIntrospection = await introspectOAuthToken({
+      provider,
+      request: {
+        clientId: machineRegistration.client.id,
+        clientSecret: machineRegistration.plainTextSecret,
+        token: machineExchange.value.accessToken,
+      },
+    })
+    assert.deepEqual(machineIntrospection, {
+      active: true,
+      clientId: String(machineRegistration.client.id),
+      subject: `oauth_clients:${machineRegistration.client.id}`,
+      scope: 'issues:read',
+      tokenType: 'Bearer',
+      audience: ['https://api.bughq.example'],
+      issuedAt: machineIntrospection.issuedAt,
+      expiresAt: machineIntrospection.expiresAt,
+      issuer: 'https://id.example.com',
+      workspaceId: null,
+    })
   }
   const validatedRequest = validateOAuthAuthorizationRequest(provider, loadedPublic!, {
     responseType: 'code',

@@ -48,6 +48,7 @@ export interface ResolvedOAuthProviderConfig {
   responseTypes: readonly ['code']
   grantTypes: readonly ('authorization_code' | 'refresh_token' | 'client_credentials')[]
   clientCredentials: boolean
+  introspection: boolean
   codeChallengeMethods: readonly ['S256']
   clientTypes: readonly ('confidential' | 'public')[]
   scopes: Record<string, OAuthProviderScopeConfig>
@@ -280,6 +281,7 @@ export function resolveOAuthProviderConfig(
     responseTypes: ['code'],
     grantTypes,
     clientCredentials: options.clientCredentials === true,
+    introspection: options.introspection === true,
     codeChallengeMethods: ['S256'],
     clientTypes: resolvedClientTypes(options.clientTypes),
     scopes,

@@ -40,6 +40,11 @@ export interface OAuthRevocationRequest extends OAuthClientCredentials {
   tokenTypeHint?: 'access_token' | 'refresh_token'
 }
 
+export interface OAuthIntrospectionRequest extends OAuthClientCredentials {
+  token: string
+  tokenTypeHint?: 'access_token' | 'refresh_token'
+}
+
 export class OAuthTokenRequestError extends Error {
   constructor(
     public readonly error: OAuthTokenRequestErrorCode,
@@ -216,6 +221,29 @@ export function parseOAuthRevocationRequest(body: string, authorization?: string
   const tokenTypeHint = single(params, 'token_type_hint')
   if (tokenTypeHint !== undefined && tokenTypeHint !== 'access_token' && tokenTypeHint !== 'refresh_token')
     reject('unsupported_token_type', 'OAuth revocation token type is not supported.')
+
+  return {
+    ...credentials,
+    token,
+    ...(tokenTypeHint ? { tokenTypeHint } : {}),
+  }
+}
+
+/** Parse one RFC 7662 introspection request using confidential Basic authentication. */
+export function parseOAuthIntrospectionRequest(body: string, authorization?: string | null): OAuthIntrospectionRequest {
+  if (body.length > 16_384)
+    reject('invalid_request', 'OAuth introspection request is too large.')
+  const params = new URLSearchParams(body)
+  for (const name of ['client_id', 'client_secret', 'token', 'token_type_hint'])
+    single(params, name)
+
+  if (!authorization)
+    reject('invalid_client', 'OAuth introspection requires Basic client authentication.')
+  const credentials = clientCredentials(params, authorization)
+  const token = tokenValue(params, 'token')
+  const tokenTypeHint = single(params, 'token_type_hint')
+  if (tokenTypeHint !== undefined && tokenTypeHint !== 'access_token' && tokenTypeHint !== 'refresh_token')
+    reject('unsupported_token_type', 'OAuth introspection token type is not supported.')
 
   return {
     ...credentials,

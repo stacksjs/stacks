@@ -107,6 +107,8 @@ export interface OAuthProviderConfig {
   clientTypes?: readonly ('confidential' | 'public')[]
   /** Permit confidential machine clients to use the client-credentials grant. */
   clientCredentials?: boolean
+  /** Permit authorized resource servers to introspect delegated tokens. */
+  introspection?: boolean
   /** Absolute lifetimes in milliseconds. */
   lifetimes?: {
     authorizationRequest?: number
