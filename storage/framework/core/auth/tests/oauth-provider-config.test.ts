@@ -31,6 +31,7 @@ describe('OAuth authorization server configuration', () => {
         authorization: 'https://id.example.com/oauth/authorize',
         token: 'https://id.example.com/oauth/token',
         revocation: 'https://id.example.com/oauth/revoke',
+        introspection: 'https://id.example.com/oauth/introspect',
       },
       responseTypes: ['code'],
       grantTypes: ['authorization_code', 'refresh_token'],

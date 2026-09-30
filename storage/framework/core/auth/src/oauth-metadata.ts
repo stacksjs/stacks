@@ -5,6 +5,7 @@ export interface OAuthAuthorizationServerMetadata {
   authorization_endpoint: string
   token_endpoint: string
   revocation_endpoint: string
+  introspection_endpoint?: string
   response_types_supported: string[]
   grant_types_supported: string[]
   code_challenge_methods_supported: string[]
@@ -34,7 +35,7 @@ export function oauthAuthorizationServerMetadata(
 ): OAuthAuthorizationServerMetadata {
   const clientMethods = clientAuthenticationMethods(provider)
 
-  return {
+  const metadata: OAuthAuthorizationServerMetadata = {
     issuer: provider.issuer,
     authorization_endpoint: provider.endpoints.authorization,
     token_endpoint: provider.endpoints.token,
@@ -46,4 +47,9 @@ export function oauthAuthorizationServerMetadata(
     revocation_endpoint_auth_methods_supported: [...clientMethods],
     scopes_supported: Object.keys(provider.scopes).sort(),
   }
+
+  if (provider.introspection)
+    metadata.introspection_endpoint = provider.endpoints.introspection
+
+  return metadata
 }

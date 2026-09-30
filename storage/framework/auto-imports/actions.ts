@@ -32,6 +32,7 @@ export const actions = {
   'Actions/Auth/OAuthConnectionsAction': '../defaults/app/Actions/Auth/OAuthConnectionsAction.ts',
   'Actions/Auth/OAuthConsentAction': '../defaults/app/Actions/Auth/OAuthConsentAction.ts',
   'Actions/Auth/OAuthDisconnectAction': '../defaults/app/Actions/Auth/OAuthDisconnectAction.ts',
+  'Actions/Auth/OAuthIntrospectionAction': '../defaults/app/Actions/Auth/OAuthIntrospectionAction.ts',
   'Actions/Auth/OAuthMetadataAction': '../defaults/app/Actions/Auth/OAuthMetadataAction.ts',
   'Actions/Auth/OAuthRevocationAction': '../defaults/app/Actions/Auth/OAuthRevocationAction.ts',
   'Actions/Auth/OAuthTokenAction': '../defaults/app/Actions/Auth/OAuthTokenAction.ts',

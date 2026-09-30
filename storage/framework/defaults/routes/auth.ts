@@ -31,6 +31,7 @@ const oauthProvider = resolveOAuthProviderConfig(config.auth.oauthProvider)
 const oauthAuthorizationPath = oauthProvider ? new URL(oauthProvider.endpoints.authorization).pathname : '/oauth/authorize'
 const oauthTokenPath = oauthProvider ? new URL(oauthProvider.endpoints.token).pathname : '/oauth/token'
 const oauthRevocationPath = oauthProvider ? new URL(oauthProvider.endpoints.revocation).pathname : '/oauth/revoke'
+const oauthIntrospectionPath = oauthProvider ? new URL(oauthProvider.endpoints.introspection).pathname : '/oauth/introspect'
 const oauthMetadataPath = oauthProvider
   ? oauthAuthorizationServerMetadataPath(oauthProvider.issuer)
   : '/.well-known/oauth-authorization-server'
@@ -49,6 +50,7 @@ route.post('/register', 'Actions/Auth/RegisterAction').rateLimit(3, 'minute')
 // the endpoint's credential boundary, so the action opts out of browser CSRF.
 route.post(oauthTokenPath, 'Actions/Auth/OAuthTokenAction').rateLimit(30, 'minute')
 route.post(oauthRevocationPath, 'Actions/Auth/OAuthRevocationAction').rateLimit(30, 'minute')
+route.post(oauthIntrospectionPath, 'Actions/Auth/OAuthIntrospectionAction').rateLimit(30, 'minute')
 route.get(oauthAuthorizationPath, 'Actions/Auth/OAuthAuthorizationAction').rateLimit(60, 'minute')
 route.post(oauthAuthorizationPath, 'Actions/Auth/OAuthConsentAction').middleware('auth').rateLimit(30, 'minute')
 route.get(oauthMetadataPath, 'Actions/Auth/OAuthMetadataAction')

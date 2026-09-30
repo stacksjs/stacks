@@ -11,6 +11,7 @@ import OAuthConnectionsAction from '../../../defaults/app/Actions/Auth/OAuthConn
 import OAuthConsentAction from '../../../defaults/app/Actions/Auth/OAuthConsentAction'
 import OAuthDisconnectAction from '../../../defaults/app/Actions/Auth/OAuthDisconnectAction'
 import OAuthMetadataAction from '../../../defaults/app/Actions/Auth/OAuthMetadataAction'
+import OAuthIntrospectionAction from '../../../defaults/app/Actions/Auth/OAuthIntrospectionAction'
 import OAuthRevocationAction from '../../../defaults/app/Actions/Auth/OAuthRevocationAction'
 import OAuthTokenAction from '../../../defaults/app/Actions/Auth/OAuthTokenAction'
 
@@ -99,6 +100,49 @@ describe('OAuth revocation route action', () => {
     ))
 
     expect(OAuthRevocationAction.skipCsrf).toBe(true)
+    expect(result.status).toBe(400)
+    expect(result.headers.get('cache-control')).toBe('no-store')
+    expect(await result.json()).toEqual({ error: 'invalid_request' })
+  })
+})
+
+describe('OAuth introspection route action', () => {
+  it('stays unavailable until introspection is explicitly enabled', async () => {
+    config.auth.oauthProvider = { ...originalProvider, enabled: false }
+    const disabled = await OAuthIntrospectionAction.handle(request(
+      'application/x-www-form-urlencoded',
+      'token=unknown',
+    ))
+
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      introspection: false,
+      issuer: 'https://id.example.com',
+    }
+    const optedOut = await OAuthIntrospectionAction.handle(request(
+      'application/x-www-form-urlencoded',
+      'token=unknown',
+    ))
+
+    expect(disabled.status).toBe(404)
+    expect(optedOut.status).toBe(404)
+  })
+
+  it('forwards enabled requests to the protected protocol boundary without CSRF', async () => {
+    config.auth.oauthProvider = {
+      ...originalProvider,
+      enabled: true,
+      introspection: true,
+      issuer: 'https://id.example.com',
+    }
+
+    const result = await OAuthIntrospectionAction.handle(request(
+      'application/json',
+      '{"token":"unknown"}',
+    ))
+
+    expect(OAuthIntrospectionAction.skipCsrf).toBe(true)
     expect(result.status).toBe(400)
     expect(result.headers.get('cache-control')).toBe('no-store')
     expect(await result.json()).toEqual({ error: 'invalid_request' })

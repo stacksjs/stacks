@@ -65,4 +65,15 @@ describe('OAuth authorization-server metadata', () => {
     expect(oauthAuthorizationServerMetadata(provider).grant_types_supported)
       .toEqual(['authorization_code', 'refresh_token', 'client_credentials'])
   })
+
+  it('advertises introspection only when the provider enables it', () => {
+    const provider = resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      introspection: true,
+    })!
+
+    expect(oauthAuthorizationServerMetadata(provider).introspection_endpoint)
+      .toBe('https://id.example.com/oauth/introspect')
+  })
 })

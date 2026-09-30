@@ -7849,6 +7849,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /oauth/introspect
+   */
+  postOauthIntrospect(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/oauth/introspect", {}, [], false, options)
+  },
+
+  /**
    * POST /oauth/revoke
    */
   postOauthRevoke(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

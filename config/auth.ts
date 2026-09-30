@@ -84,13 +84,15 @@ export default {
    * Keep this disabled until the provider routes and persistence release gate
    * are complete. When enabled, the profile supports authorization code with
    * S256 PKCE and rotating refresh tokens. Set clientCredentials to true to
-   * allow confidential machine clients to mint access-only tokens. Implicit
-   * and password grants are not supported.
+   * allow confidential machine clients to mint access-only tokens. Set
+   * introspection to true to expose protected resource-server token
+   * introspection. Implicit and password grants are not supported.
    */
   oauthProvider: {
     enabled: false,
     issuer: env.APP_URL,
     clientCredentials: false,
+    introspection: false,
     scopes: {},
     resources: {},
     clientTypes: ['confidential', 'public'],

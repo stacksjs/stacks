@@ -3,6 +3,14 @@ import type { OAuthIntrospectionRequest } from './oauth-token-request'
 import { createHash } from 'node:crypto'
 import { db, getDatabaseDialect, parseSqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { withAuthenticatedOAuthTokenClient } from './oauth-client-registration'
+import { OAuthTokenRequestError, parseOAuthIntrospectionRequest } from './oauth-token-request'
+import { oauthTokenErrorResponse } from './oauth-token-response'
+
+export interface OAuthIntrospectionHttpRequest {
+  body: string
+  contentType?: string | null
+  authorization?: string | null
+}
 
 export interface OAuthIntrospectionEndpointInput {
   provider: ResolvedOAuthProviderConfig
@@ -186,4 +194,59 @@ export async function introspectOAuthToken(
     },
   )
   return authenticated ?? inactive
+}
+
+function introspectionResponse(result: OAuthIntrospectionResult): Response {
+  if (!result.active) {
+    return new Response(JSON.stringify({ active: false }), {
+      status: 200,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Pragma': 'no-cache',
+      },
+    })
+  }
+
+  return new Response(JSON.stringify({
+    active: true,
+    client_id: result.clientId,
+    sub: result.subject,
+    scope: result.scope,
+    token_type: result.tokenType,
+    aud: result.audience,
+    exp: result.expiresAt,
+    iat: result.issuedAt,
+    iss: result.issuer,
+    ...(result.workspaceId === null ? {} : { workspace_id: result.workspaceId }),
+  }), {
+    status: 200,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'application/json; charset=utf-8',
+      'Pragma': 'no-cache',
+    },
+  })
+}
+
+/** Execute one RFC 7662 request without registering a route. */
+export async function handleOAuthIntrospectionRequest(
+  provider: ResolvedOAuthProviderConfig,
+  input: OAuthIntrospectionHttpRequest,
+): Promise<Response> {
+  const basic = /^Basic\s/i.test(input.authorization ?? '')
+  const responseOptions = { clientAuthenticatedWithBasic: basic, basicRealm: 'oauth-introspect' }
+  const mediaType = input.contentType?.split(';', 1)[0]?.trim().toLowerCase()
+  if (mediaType !== 'application/x-www-form-urlencoded')
+    return oauthTokenErrorResponse('invalid_request', responseOptions)
+
+  try {
+    const request = parseOAuthIntrospectionRequest(input.body, input.authorization)
+    return introspectionResponse(await introspectOAuthToken({ provider, request }))
+  }
+  catch (error) {
+    if (error instanceof OAuthTokenRequestError)
+      return oauthTokenErrorResponse(error.error, responseOptions)
+    throw error
+  }
 }
