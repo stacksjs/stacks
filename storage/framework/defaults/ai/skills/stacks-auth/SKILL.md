@@ -184,8 +184,9 @@ The consent view is `auth/oauth/consent` by default and can be overridden with
 the application must bind consent to current server-owned workspace authority.
 Use `oauthProvider.subjectEligibility` when account status is represented by
 application data that is not simply the presence of a user row. The callback
-is rechecked before delegated code exchange and refresh, and by introspection;
-returning false revokes the affected grant and reports the token inactive.
+is rechecked before consent approval, delegated code exchange and refresh, and
+by introspection; returning false revokes the affected grant and reports the
+token inactive.
 
 Provider actions return 404 while `oauthProvider.enabled` is false. The token
 and revocation endpoints use protocol credentials and intentionally skip

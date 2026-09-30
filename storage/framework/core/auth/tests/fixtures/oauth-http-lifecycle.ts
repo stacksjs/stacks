@@ -1073,6 +1073,32 @@ try {
     assert.deepEqual(await ineligibleIntrospection.json(), { active: false })
     oauthSubjectActive = true
 
+    const ineligibleAuthorizationUrl = new URL(authorizationUrl)
+    ineligibleAuthorizationUrl.searchParams.set('state', 'oauth-ineligible-state')
+    const ineligibleConsentPage = await fetch(ineligibleAuthorizationUrl, {
+      headers: { accept: 'text/html,application/xhtml+xml', cookie: browserCookies },
+      redirect: 'manual',
+    })
+    assert.equal(ineligibleConsentPage.status, 200, await ineligibleConsentPage.clone().text())
+    const ineligibleConsentHtml = await ineligibleConsentPage.text()
+    const ineligibleRequestId = /name="request_id" value="([A-Za-z0-9_-]{43})"/.exec(ineligibleConsentHtml)?.[1]
+    assert(ineligibleRequestId)
+    oauthSubjectActive = false
+    const ineligibleApproval = await fetch(`${issuer}/oauth/authorize`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        cookie: browserCookies,
+      },
+      body: new URLSearchParams({ _token: csrfToken, request_id: ineligibleRequestId, decision: 'approve' }),
+      redirect: 'manual',
+    })
+    assert.equal(ineligibleApproval.status, 302)
+    const ineligibleCallback = new URL(ineligibleApproval.headers.get('location')!)
+    assert.equal(ineligibleCallback.searchParams.get('error'), 'invalid_request')
+    assert.equal(ineligibleCallback.searchParams.get('state'), 'oauth-ineligible-state')
+    oauthSubjectActive = true
+
     const disableProbeExchange = await fetch(`${issuer}/oauth/token`, {
       method: 'POST',
       headers: {

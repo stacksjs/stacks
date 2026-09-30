@@ -128,9 +128,9 @@ Use `subjectEligibility` when an application has account states that the
 framework cannot infer from the existence of a row, such as disabled or
 suspended users. The callback receives the subject, client, grant, and
 workspace binding. Returning `false` rejects authorization-code and refresh
-exchanges, revokes the affected grant, and makes introspection return
-`{ active: false }`. Service subjects must be handled explicitly by the
-application callback.
+exchanges, refuses a consent approval, revokes the affected grant when a
+refresh arrives, and makes introspection return `{ active: false }`. Service
+subjects must be handled explicitly by the application callback.
 
 Client credentials are a separate opt-in for confidential service clients. Set
 `clientCredentials: true`, register a confidential client with the

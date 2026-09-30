@@ -66,6 +66,24 @@ export interface LoadOAuthAuthorizationConsentViewInput {
   browserSessionId: string
 }
 
+async function assertOAuthSubjectEligibility(
+  provider: ResolvedOAuthProviderConfig,
+  request: ValidatedOAuthAuthorizationRequest,
+  subjectType: string,
+  subjectId: number,
+  grantId: string,
+  workspaceId: string | null,
+): Promise<void> {
+  if (provider.subjectEligibility && !await provider.subjectEligibility({
+    type: subjectType,
+    id: subjectId,
+    clientId: Number(request.clientId),
+    grantId,
+    workspaceId,
+  }))
+    throw new OAuthAuthorizationRequestError('invalid_request', 'OAuth subject is not eligible.', request.redirectUri, request.state)
+}
+
 export interface OAuthAuthorizationConsentView {
   requestId: string
   client: {
@@ -323,6 +341,15 @@ export async function reuseOAuthAuthorizationRequestSession(
       if (!grantId)
         throw new NoReusableOAuthConsentError()
 
+      await assertOAuthSubjectEligibility(
+        input.provider,
+        request,
+        input.subjectType,
+        input.subjectId,
+        grantId,
+        workspaceId ?? null,
+      )
+
       const code = await issueAuthorizationCode({
         grantId,
         redirectUri: request.redirectUri,
@@ -368,6 +395,14 @@ export async function approveOAuthAuthorizationRequestSession(
       audiences: request.audiences,
       workspaceId,
     })
+    await assertOAuthSubjectEligibility(
+      input.provider,
+      request,
+      input.subjectType,
+      input.subjectId,
+      grant.id,
+      workspaceId ?? null,
+    )
     const code = await issueAuthorizationCode({
       grantId: grant.id,
       redirectUri: request.redirectUri,
