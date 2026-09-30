@@ -202,11 +202,15 @@ describe('integration environment allowlist', () => {
     expect(gate.environment).toBe('production')
   })
 
-  it('falls back to NODE_ENV when APP_ENV is absent', () => {
+  it('does not treat NODE_ENV=production as an APP_ENV deployment label', () => {
     delete process.env.APP_ENV
     process.env.NODE_ENV = 'production'
-    expect(integrationEnvironment()).toBe('production')
-    expect(integrationGate({}).enabled).toBe(true)
+    expect(integrationEnvironment()).toBeUndefined()
+    expect(integrationGate({ environments: ['production'] })).toEqual({
+      enabled: false,
+      environment: undefined,
+      reason: 'environment-unknown',
+    })
   })
 
   it('reads the environment at call time, not at import', () => {

@@ -129,12 +129,14 @@ export function normalizeEnvironmentName(value: string | undefined | null): stri
  * module graph loads - a test harness pinning it, a CLI resolving `--env` - and
  * a const would freeze whatever happened to be set first (stacksjs/stacks#2581).
  *
- * Unlike `appEnv()`, which answers `local` so callers always have a string, this
- * answers `undefined`. The difference matters here: an unset or unreadable
- * `APP_ENV` must not be *guessed* into a label that an allowlist might admit.
+ * Unlike `appEnv()`, which falls back to `NODE_ENV` and answers `local` so
+ * callers always have a string, this reads only `APP_ENV` and answers
+ * `undefined` when it is absent. The difference matters here: an unset or
+ * unreadable `APP_ENV` must not be *guessed* into a label that an allowlist
+ * might admit.
  */
 export function integrationEnvironment(): string | undefined {
-  return normalizeEnvironmentName(process.env.APP_ENV) ?? normalizeEnvironmentName(process.env.NODE_ENV)
+  return normalizeEnvironmentName(process.env.APP_ENV)
 }
 
 /**
