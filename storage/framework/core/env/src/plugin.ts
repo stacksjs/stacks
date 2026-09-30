@@ -350,7 +350,63 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
     }
   }
 
+  scrubForeignCiphertext(privateKey)
+
   return { loaded, errors }
+}
+
+const reportedForeignCiphertext = new Set<string>()
+
+/**
+ * Resolve or remove ciphertext that none of the loaded files accounted for.
+ *
+ * Bun loads `.env.<NODE_ENV>` natively, and with NODE_ENV unset that is
+ * `.env.development` - whatever APP_ENV says. So a production deploy started
+ * its life holding the development file's ciphertext, and the loop above only
+ * replaces keys the production file also defines. Everything else stayed
+ * `encrypted:...` in process.env, where a direct reader took it as a real
+ * value. The mail reconcile did exactly that: it set the development file's
+ * MAIL_PASSWORD_<LOCALPART> ciphertext as the live password on three
+ * production mailboxes, and every mail client using the real one was locked out.
+ *
+ * The env proxy already treats such a value as unset when it cannot decrypt
+ * it; this gives direct process.env readers the same answer.
+ */
+function scrubForeignCiphertext(privateKey: string | undefined): void {
+  const undecryptable: string[] = []
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!isEncryptedValue(value))
+      continue
+    let plaintext: string | undefined
+    if (privateKey) {
+      try {
+        plaintext = decryptValue(value!.startsWith('enc:') ? `encrypted:${value!.slice(4)}` : value!, privateKey)
+      }
+      catch {}
+    }
+    if (plaintext === undefined)
+      undecryptable.push(key)
+    else
+      process.env[key] = plaintext
+  }
+  if (!undecryptable.length)
+    return
+
+  // Also drop anything Bun interpolated from those values.
+  const usable = plaintextEnv(process.env, undecryptable)
+  for (const key of Object.keys(process.env)) {
+    if (!Object.hasOwn(usable, key))
+      delete process.env[key]
+  }
+
+  const fresh = undecryptable.filter(key => !reportedForeignCiphertext.has(key))
+  if (!fresh.length)
+    return
+  for (const key of fresh)
+    reportedForeignCiphertext.add(key)
+  const preview = fresh.slice(0, 5).join(', ')
+  const rest = fresh.length > 5 ? `, … +${fresh.length - 5} more` : ''
+  console.warn(`[env] warning: unset ${fresh.length} encrypted value(s) no loaded env file could decrypt (Bun preloads .env.<NODE_ENV> on its own): ${preview}${rest}`)
 }
 
 /**
