@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
 import { basename, dirname } from 'node:path'
 
@@ -65,6 +66,7 @@ const {
   exchangeOAuthAuthorizationCode,
   findToken,
   handleOAuthRevocationRequest,
+  handleOAuthIntrospectionRequest,
   handleOAuthAuthorizationConsentRequest,
   handleOAuthTokenRequest,
   introspectOAuthToken,
@@ -272,6 +274,35 @@ try {
       issuer: 'https://id.example.com',
       workspaceId: null,
     })
+    const basic = `Basic ${Buffer.from(`${machineRegistration.client.id}:${machineRegistration.plainTextSecret}`).toString('base64')}`
+    const httpIntrospection = await handleOAuthIntrospectionRequest(provider, {
+      body: new URLSearchParams({
+        token: machineExchange.value.accessToken,
+        token_type_hint: 'access_token',
+      }).toString(),
+      contentType: 'application/x-www-form-urlencoded',
+      authorization: basic,
+    })
+    assert.equal(httpIntrospection.status, 200)
+    assert.equal(httpIntrospection.headers.get('cache-control'), 'no-store')
+    assert.deepEqual(await httpIntrospection.json(), {
+      active: true,
+      client_id: String(machineRegistration.client.id),
+      sub: `oauth_clients:${machineRegistration.client.id}`,
+      scope: 'issues:read',
+      token_type: 'Bearer',
+      aud: ['https://api.bughq.example'],
+      exp: machineIntrospection.expiresAt,
+      iat: machineIntrospection.issuedAt,
+      iss: 'https://id.example.com',
+    })
+    const inactiveHttpIntrospection = await handleOAuthIntrospectionRequest(provider, {
+      body: new URLSearchParams({ token: 'f'.repeat(80) }).toString(),
+      contentType: 'application/x-www-form-urlencoded',
+      authorization: basic,
+    })
+    assert.equal(inactiveHttpIntrospection.status, 200)
+    assert.deepEqual(await inactiveHttpIntrospection.json(), { active: false })
   }
   const validatedRequest = validateOAuthAuthorizationRequest(provider, loadedPublic!, {
     responseType: 'code',
