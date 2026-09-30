@@ -349,6 +349,51 @@ if (await isDownForMaintenance()) {
 await up()
 ```
 
+## Sitemap and robots.txt (core/actions/src/seo.ts)
+
+The views server answers `/sitemap.xml` and `/robots.txt` for every app, generated from
+`resources/views` at request time. `buddy dev` (`core/actions/src/dev/views.ts`) and `buddy serve`
+(`core/buddy/src/production-server.ts`) call the same `createSiteSeoHandler()` at the same point in
+`onRequest` (after redirects and rewrites), so dev and production answer identically. No route, no
+build step, no app code. Do not add `route.get('/sitemap.xml')` to `routes/`: the views server does
+not forward root GETs to the API.
+
+- **Listed**: every static route under `resources/views`, with `lastmod` from the file, plus the
+  blog's published posts (`content/blog`, or a CMS-built `dist/blog/sitemap.xml`) merged into the
+  same file. `/blog/sitemap.xml` is still served too.
+- **Not listed**: dynamic routes (`[slug].stx`), error and holding pages (`404`, `errors/*`,
+  `coming-soon`), `components/`, `layouts/`, `partials/`, `emails/`, `_`-prefixed files, pages behind
+  `definePageMeta({ middleware: ['auth'] })`, paths in `seo.sitemap.exclude`, paths robots.txt
+  disallows, and any page that says **noindex**. The framework's default views (`/login`, ...) are
+  never listed.
+- **noindex**, the one signal, read from the page source: `<meta name="robots" content="noindex">`,
+  `robots: 'noindex'` in a head object, or `const noindex = true` in the server script (the flag a
+  shared head partial turns into the tag - the scan cannot follow an `@include`, so spell it that
+  way). `definePageMeta({ sitemap: false })` also keeps a page out.
+- **robots.txt**: `User-agent: *`, `Allow: /`, `Disallow: /api/` plus `seo.robots.disallow`, extra
+  groups from `seo.robots.rules`, and `Sitemap: <origin>/sitemap.xml`. Never disallow a page just to
+  hide it: a crawler that cannot fetch it never sees its noindex.
+- **Hand-written files win**: `public/sitemap.xml` / `public/robots.txt` are served instead, and the
+  server warns at boot when the hand-written sitemap misses a page it would list. Delete the file to
+  switch, or set `seo.handwritten: 'replace'`.
+- **Origin**: `seo.origin`, else `app.url` (APP_URL), else the request origin (local dev only).
+- **Config** (`config/app.ts`, type `SeoOptions` in `core/types/src/seo.ts`):
+
+```ts
+seo: {
+  sitemap: {
+    include: ['/products/blue-mug'],            // instances of dynamic routes
+    entries: async () => (await Product.all()).map(p => `/products/${p.slug}`),
+    exclude: ['/styleguide', '/internal/'],     // trailing / or * = subtree
+  },
+  robots: { disallow: ['/checkout/', '/thanks'], rules: [{ userAgent: 'GPTBot', disallow: ['/'] }] },
+  // sitemap: false / robots: false turn either off
+}
+```
+
+Production caches each file for ten minutes (for `entries()`); development regenerates per request.
+Static frontend builds (`buddy build views`) use stx's own SSG sitemap instead.
+
 ## Docker Build Pipeline (server/build.ts)
 
 The build process (`bun build.ts` from `storage/framework/server/`):

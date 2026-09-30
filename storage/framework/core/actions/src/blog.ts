@@ -33,6 +33,10 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { articleCss, articleScript, renderPostHtml } from '@stacksjs/cms/article'
+import { usableOrigin } from './site-origin'
+
+// Re-exported: it lived here first, and callers import it from this module.
+export { usableOrigin }
 
 const CONTENT_DIR = join(process.cwd(), 'content/blog')
 const THEME_FILE = join(CONTENT_DIR, '.theme.css')
@@ -161,35 +165,6 @@ function escapeHtml(s: string): string {
 
 function escapeXml(s: string): string {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&apos;' }[c]!))
-}
-
-/**
- * An origin safe to bake into absolute links, or '' when it is not usable.
- *
- * The deploy-time build takes its baseUrl from `APP_URL`, which is not always
- * plaintext: a release that loads an env file it cannot decrypt leaves the
- * literal ciphertext there, and prefixing it with `https://` produced feed and
- * sitemap URLs like `https://encrypted:tLq7…==/blog/introducing-stacks` on the
- * live site. Anything that is not a parseable http(s) origin with a dotted
- * hostname is rejected here so callers fall back to the configured site url.
- */
-export function usableOrigin(value?: string): string {
-  if (!value)
-    return ''
-
-  try {
-    const url = new URL(/^https?:\/\//.test(value) ? value : `https://${value}`)
-
-    if (url.protocol !== 'http:' && url.protocol !== 'https:')
-      return ''
-    if (!url.hostname.includes('.') || !/^[a-z0-9.-]+$/i.test(url.hostname))
-      return ''
-
-    return url.origin
-  }
-  catch {
-    return ''
-  }
 }
 
 function postUrl(baseUrl: string, slug: string): string {
@@ -374,13 +349,28 @@ async function blogConfig(bp: BunPress, fm: Record<string, any>) {
   }
 }
 
-function listPosts(): { slug: string, fm: Record<string, string> }[] {
-  if (!existsSync(CONTENT_DIR))
+/**
+ * The published blog's paths, for the site-wide `/sitemap.xml` to merge in
+ * (see `./seo.ts`). Empty when there are no published posts, so an app with an
+ * empty `content/blog` does not advertise a listing page.
+ *
+ * Driven by `listPosts()` like the feed and `/blog/sitemap.xml`, so a draft is
+ * missing from every one of them rather than from some.
+ */
+export function blogSitemapPaths(contentDir: string = CONTENT_DIR): string[] {
+  const posts = listPosts(contentDir)
+  if (posts.length === 0)
     return []
-  return readdirSync(CONTENT_DIR)
+  return ['/blog', ...posts.map(post => `/blog/${post.slug}`)]
+}
+
+function listPosts(contentDir: string = CONTENT_DIR): { slug: string, fm: Record<string, string> }[] {
+  if (!existsSync(contentDir))
+    return []
+  return readdirSync(contentDir)
     .filter(f => f.endsWith('.md'))
     .map((f) => {
-      const { data } = parseFrontmatter(readFileSync(join(CONTENT_DIR, f), 'utf-8'))
+      const { data } = parseFrontmatter(readFileSync(join(contentDir, f), 'utf-8'))
       return { slug: f.replace(/\.md$/, ''), fm: data }
     })
     // A real post needs a title + date; this skips docs like STRATEGY.md

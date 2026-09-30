@@ -335,6 +335,16 @@ export async function startProductionServer(options?: { port?: string | number, 
       if (rewriteRules.size > 0)
         log.info(`Rewrites: ${describeRewriteRules(rewriteRules)}`)
 
+      // /sitemap.xml and /robots.txt, generated from the views. The same
+      // handler `buddy dev` uses, cached here because views only change with a
+      // deploy, which restarts this process; the TTL is for
+      // `seo.sitemap.entries()`, which may read rows that change without one.
+      const { createSiteSeoHandler, describeSeoAtBoot } = await import('@stacksjs/actions/seo')
+      const seoOptions = { root: process.cwd(), seo: config.app?.seo, appUrl: config.app?.url }
+      const siteSeo = createSiteSeoHandler({ ...seoOptions, cacheTtlMs: 10 * 60 * 1000 })
+      for (const note of await describeSeoAtBoot(seoOptions).catch(() => []))
+        log.warn(note)
+
       const cacheConfig = config.server?.cache
       const documentCacheControl = buildDocumentCacheControl(cacheConfig?.documents)
       if (cacheConfig?.renders)
@@ -454,6 +464,12 @@ export async function startProductionServer(options?: { port?: string | number, 
               return new Response('Bad Gateway', { status: 502 })
             }
           }
+
+          // After rewrites, as in `buddy dev`: an app that serves its own
+          // sitemap from the API keeps doing so.
+          const seoFile = await siteSeo(req)
+          if (seoFile)
+            return seoFile
 
           // Mirror the dev server's API forwarding: `/api/**`, any mutating
           // verb, and anything `config/server.ts` adds under `proxy` belong to

@@ -128,9 +128,20 @@ async function startDefaultServer() {
   if (redirectRules.size > 0) {
     // eslint-disable-next-line no-console
     console.log(`  Redirects: ${describeRedirectRules(redirectRules)}`)
-  if (rewriteRules.size > 0)
+  }
+  if (rewriteRules.size > 0) {
+    // eslint-disable-next-line no-console
     console.log(`  Rewrites: ${describeRewriteRules(rewriteRules)}`)
   }
+
+  // /sitemap.xml and /robots.txt, generated from the views (see ../seo.ts).
+  // Built from the same options `buddy serve` passes, except the cache: a page
+  // added in development is listed on the next request.
+  const { createSiteSeoHandler, describeSeoAtBoot } = await import('../seo')
+  const seoOptions = { root: projectPath(), seo: config.app?.seo, appUrl: config.app?.url }
+  const siteSeo = createSiteSeoHandler({ ...seoOptions, cacheTtlMs: 0 })
+  for (const note of await describeSeoAtBoot(seoOptions).catch(() => []))
+    log.warn(note)
 
   // Whether `/docs` belongs to the docs dev server at all
   // (stacksjs/stacks#2213).
@@ -246,6 +257,12 @@ async function startDefaultServer() {
         const target = new URL(`${rewritten}${url.search}`, url.origin)
         return proxyToBackend(new Request(target, req), apiBase)
       }
+
+      // After rewrites, so an app that serves its own sitemap from the API
+      // (`rewrites: { '/sitemap.xml': '/api/sitemap.xml' }`) keeps doing so.
+      const seoFile = await siteSeo(req)
+      if (seoFile)
+        return seoFile
 
       // Blog rendering. By default the blog is rendered by BunPress with a
       // custom Stacks theme (see ./blog.ts) — intercept /blog and /blog/<slug>

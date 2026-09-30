@@ -190,6 +190,8 @@ email. Moderate without a dashboard with `buddy comments:list [--status] [--type
 | GET | `/blog/feed.xml` | RSS 2.0 feed (20 recent) |
 | GET | `/blog/sitemap.xml` | XML sitemap for SEO |
 
+The site-wide `/sitemap.xml` merges the published posts in, so crawlers find them from the root sitemap too (see `stacks-server`, "Sitemap and robots.txt").
+
 ## Post Bodies: Images, Grids, Zoom and Embeds
 
 Blog post HTML goes through `renderPostHtml` from `@stacksjs/cms/article`, built on ts-medium-editor's article renderer. The BunPress blog (`core/actions/src/blog.ts`) does this already; an stx-native blog calls it from its post view:

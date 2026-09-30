@@ -32,6 +32,7 @@ The sections an agent reads once the skill loads.
 - Auto-Imports System (core/server/src/imports.ts)
 - Base Controller (core/server/src/controllers/base.ts)
 - Maintenance Mode (core/server/src/maintenance.ts)
+- Sitemap and robots.txt (core/actions/src/seo.ts)
 - Docker Build Pipeline (server/build.ts)
 - Dockerfile
 - dev Script (server/dev)

@@ -29,4 +29,21 @@ export default {
   locale: 'en',
   fallbackLocale: 'en',
   cipher: 'aes-256-cbc',
+
+  // /sitemap.xml and /robots.txt are generated from resources/views, in dev
+  // and production alike. A page that says `noindex` (a robots meta tag, or
+  // `const noindex = true` in its server script) is left out, as are dynamic
+  // [param] routes, error pages and anything robots.txt disallows. A file you
+  // put in public/ wins over the generated one.
+  seo: {
+    sitemap: {
+      // Concrete URLs for dynamic routes, e.g. '/products/blue-mug'.
+      include: [],
+      exclude: [],
+    },
+    robots: {
+      // Added to the default '/api/'.
+      disallow: [],
+    },
+  },
 } satisfies AppConfig

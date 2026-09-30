@@ -1,3 +1,5 @@
+import type { SeoOptions } from './seo'
+
 // `(string & {})` rather than a bare `string`, which would absorb every
 // literal beside it and collapse the union to `string` - erasing the named
 // environments from completions while claiming to list them.
@@ -211,6 +213,16 @@ export interface AppOptions {
    * @example "support@example.com"
    */
   supportEmail: string
+
+  /**
+   * **SEO**
+   *
+   * How `/sitemap.xml` and `/robots.txt` are generated from your views. Both
+   * are served with no configuration; this only adjusts them.
+   *
+   * @example { robots: { disallow: ['/checkout/'] }, sitemap: { exclude: ['/styleguide'] } }
+   */
+  seo?: SeoOptions
 }
 
 export type AppConfig = Partial<AppOptions>
