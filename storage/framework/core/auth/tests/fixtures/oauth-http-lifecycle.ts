@@ -45,6 +45,10 @@ const { createStacksRouter } = await import('@stacksjs/router')
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
 const LoginAction = (await import('../../../../defaults/app/Actions/Auth/LoginAction')).default
 const OAuthAuthorizationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthAuthorizationAction')).default
+const OAuthClientSecretRotateAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientSecretRotateAction')).default
+const OAuthClientStoreAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientStoreAction')).default
+const OAuthClientUpdateAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientUpdateAction')).default
+const OAuthClientsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientsAction')).default
 const OAuthConnectionsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConnectionsAction')).default
 const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConsentAction')).default
 const OAuthDisconnectAction = (await import('../../../../defaults/app/Actions/Auth/OAuthDisconnectAction')).default
@@ -96,6 +100,10 @@ try {
   router.post('/oauth/revoke', OAuthRevocationAction)
   router.post('/oauth/introspect', OAuthIntrospectionAction)
   router.post('/oauth/token', OAuthTokenAction)
+  router.get('/auth/oauth/clients', OAuthClientsAction).middleware('auth')
+  router.post('/auth/oauth/clients', OAuthClientStoreAction).middleware('auth')
+  router.patch('/auth/oauth/clients/{id}', OAuthClientUpdateAction).middleware('auth')
+  router.post('/auth/oauth/clients/{id}/rotate-secret', OAuthClientSecretRotateAction).middleware('auth')
   router.get('/auth/oauth/connections', OAuthConnectionsAction).middleware('auth')
   router.post('/auth/oauth/connections/{id}/disconnect', OAuthDisconnectAction).middleware('auth')
   router.post('/auth/oauth/clients/{id}/disable', OAuthClientDisableAction).middleware('auth')
@@ -374,6 +382,86 @@ try {
     const authCookie = responseCookie(login, authCookieName())
     await login.arrayBuffer()
     const browserCookies = `${csrfCookie}; ${oauthCookie}; ${authCookie}`
+
+    const managedClientResponse = await fetch(`${issuer}/auth/oauth/clients`, {
+      method: 'POST',
+      headers: {
+        cookie: browserCookies,
+        'content-type': 'application/json',
+        'x-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({
+        name: 'HTTP managed client',
+        type: 'confidential',
+        redirect_uris: [],
+        grant_types: ['client_credentials'],
+        scopes: ['issues:read'],
+        resources: ['bughq'],
+      }),
+    })
+    assert.equal(managedClientResponse.status, 201, await managedClientResponse.clone().text())
+    assert.equal(managedClientResponse.headers.get('cache-control'), 'no-store')
+    assert.equal(managedClientResponse.headers.get('pragma'), 'no-cache')
+    const managedClientBody = await managedClientResponse.json() as {
+      client: { id: number, name: string }
+      client_secret: string
+    }
+    assert.equal(managedClientBody.client.name, 'HTTP managed client')
+    assert.match(managedClientBody.client_secret, /^[a-f0-9]{80}$/)
+
+    const managedClientsResponse = await fetch(`${issuer}/auth/oauth/clients`, {
+      headers: { cookie: browserCookies, accept: 'application/json' },
+    })
+    assert.equal(managedClientsResponse.status, 200, await managedClientsResponse.clone().text())
+    const managedClientsBody = await managedClientsResponse.json() as {
+      count: number
+      clients: Array<{ id: number, name: string, revoked: boolean }>
+    }
+    assert.equal(managedClientsBody.clients.find(client => client.id === managedClientBody.client.id)?.name, 'HTTP managed client')
+    assert.equal(managedClientsBody.count, managedClientsBody.clients.length)
+
+    const updateManagedClient = await fetch(`${issuer}/auth/oauth/clients/${managedClientBody.client.id}`, {
+      method: 'PATCH',
+      headers: {
+        cookie: browserCookies,
+        'content-type': 'application/json',
+        'x-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({
+        name: 'HTTP managed client updated',
+        redirect_uris: [],
+        grant_types: ['client_credentials'],
+        scopes: ['issues:read'],
+        resources: ['bughq'],
+      }),
+    })
+    assert.equal(updateManagedClient.status, 200, await updateManagedClient.clone().text())
+    const updatedClientBody = await updateManagedClient.json() as { client: { name: string } }
+    assert.equal(updatedClientBody.client.name, 'HTTP managed client updated')
+
+    const managedToken = async (secret: string) => await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${btoa(`${managedClientBody.client.id}:${secret}`)}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ grant_type: 'client_credentials', scope: 'issues:read' }),
+    })
+    assert.equal((await managedToken(managedClientBody.client_secret)).status, 200)
+    const rotateManagedClient = await fetch(`${issuer}/auth/oauth/clients/${managedClientBody.client.id}/rotate-secret`, {
+      method: 'POST',
+      headers: {
+        cookie: browserCookies,
+        'x-csrf-token': csrfToken,
+      },
+    })
+    assert.equal(rotateManagedClient.status, 200, await rotateManagedClient.clone().text())
+    assert.equal(rotateManagedClient.headers.get('cache-control'), 'no-store')
+    assert.equal(rotateManagedClient.headers.get('pragma'), 'no-cache')
+    const rotatedClientBody = await rotateManagedClient.json() as { client_secret: string }
+    assert.notEqual(rotatedClientBody.client_secret, managedClientBody.client_secret)
+    assert.equal((await managedToken(managedClientBody.client_secret)).status, 401)
+    assert.equal((await managedToken(rotatedClientBody.client_secret)).status, 200)
 
     const grantsBeforeDenial = Number((await db.selectFrom('oauth_grants')
       .select(db.fn.count('id').as('count'))

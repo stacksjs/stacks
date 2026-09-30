@@ -363,7 +363,7 @@ export async function updateOAuthClient(
       WHERE id = ${sql.param(8)} AND user_id = ${sql.param(9)} AND revoked = ${sql.param(10)}
     `, [
       validated.name,
-      validated.redirectUris[0],
+      validated.redirectUris[0] ?? '',
       JSON.stringify(validated.redirectUris),
       JSON.stringify(validated.grantTypes),
       JSON.stringify(validated.scopes),
