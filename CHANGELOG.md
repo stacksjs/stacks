@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.36...v0.75.37)
+
+## 🐛 Bug Fixes
+
+- **events**: register the app's listeners in the scheduler, the queue worker and app commands ([5ea70b2](https://github.com/stacksjs/stacks/commit/5ea70b2)) _(by Chris <chris@stacksjs.com>)_
+- **ci**: accept the router's runtime entry, and restore the craft-native pin a release reverted ([a3769dc](https://github.com/stacksjs/stacks/commit/a3769dc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: render the placeholder the dialect accepts when resolving a login email ([d7b49fa](https://github.com/stacksjs/stacks/commit/d7b49fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **database**: warn that a standalone sql`` fragment renders `?` on every dialect ([764be52](https://github.com/stacksjs/stacks/commit/764be52)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2842](https://github.com/stacksjs/stacks/issues/2842))
+
+## ✅ Tests
+
+- **auth**: give the MySQL session fixture an owner, and compare rows rather than the result wrapper ([95ce4dd](https://github.com/stacksjs/stacks/commit/95ce4dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.35...v0.75.36)
 
 ## 🐛 Bug Fixes
