@@ -1662,6 +1662,10 @@ try {
     ...base,
     lifetimeMs: Number.MAX_SAFE_INTEGER + 1,
   }), /positive safe integer/)
+  await assert.rejects(issueAuthorizationCode({
+    ...base,
+    lifetimeMs: Number.MAX_SAFE_INTEGER,
+  }), /outside the supported date range/)
 
   const plain = await issueAuthorizationCode(base)
   const stored = await db.selectFrom('oauth_auth_codes')

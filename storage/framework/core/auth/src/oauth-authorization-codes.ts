@@ -97,6 +97,9 @@ export async function issueAuthorizationCode(input: IssueAuthorizationCodeInput)
     throw new TypeError('OAuth authorization code lifetime must be a positive safe integer of milliseconds.')
   const plainTextCode = randomBytes(32).toString('base64url')
   const createdAt = new Date()
+  const expiresAt = new Date(createdAt.getTime() + input.lifetimeMs)
+  if (!Number.isFinite(expiresAt.getTime()))
+    throw new TypeError('OAuth authorization code lifetime is outside the supported date range.')
   const sql = sqlHelpers(getDatabaseDialect())
 
   await db.transaction(async (rawTrx) => {
@@ -125,7 +128,7 @@ export async function issueAuthorizationCode(input: IssueAuthorizationCodeInput)
       grant.workspace_id ?? null,
       input.codeChallenge,
       'S256',
-      sqlDateTime(new Date(createdAt.getTime() + input.lifetimeMs)),
+      sqlDateTime(expiresAt),
       sqlDateTime(createdAt),
     )
     await trx.unsafe(`
