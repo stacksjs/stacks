@@ -1930,6 +1930,10 @@ try {
     await pruneOAuthAuthorizationArtifacts({ now: new Date(), consumedRetentionMs: 60_000 }),
     { authorizationRequests: 0, authorizationCodes: 0 },
   )
+  await assert.rejects(
+    pruneOAuthAuthorizationArtifacts({ now: new Date(), consumedRetentionMs: Number.MAX_SAFE_INTEGER }),
+    /outside the supported date range/,
+  )
 
   console.log('oauth authorization code store OK')
 }

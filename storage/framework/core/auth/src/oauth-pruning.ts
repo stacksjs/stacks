@@ -25,12 +25,15 @@ export async function pruneOAuthAuthorizationArtifacts(
   const consumedRetentionMs = options.consumedRetentionMs ?? 7 * 24 * 60 * 60 * 1000
   if (!Number.isFinite(now.getTime()))
     throw new TypeError('OAuth authorization prune time must be a valid date.')
-  if (!Number.isFinite(consumedRetentionMs) || consumedRetentionMs < 0)
-    throw new TypeError('OAuth authorization consumed retention must be a non-negative number of milliseconds.')
+  if (!Number.isSafeInteger(consumedRetentionMs) || consumedRetentionMs < 0)
+    throw new TypeError('OAuth authorization consumed retention must be a non-negative safe integer of milliseconds.')
 
   const sql = sqlHelpers(getDatabaseDialect())
   const nowSql = sqlDateTime(now)
-  const consumedBefore = sqlDateTime(new Date(now.getTime() - consumedRetentionMs))
+  const consumedBeforeDate = new Date(now.getTime() - consumedRetentionMs)
+  if (!Number.isFinite(consumedBeforeDate.getTime()))
+    throw new TypeError('OAuth authorization consumed retention is outside the supported date range.')
+  const consumedBefore = sqlDateTime(consumedBeforeDate)
   const result = await db.transaction(async (rawTrx) => {
     const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
     const requests = await trx.unsafe(`
