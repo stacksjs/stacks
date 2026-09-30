@@ -1,5 +1,5 @@
 import type { AuthorizationCodeGrant, AuthorizationCodeRedemption, AuthorizationCodeResult } from './oauth-authorization-codes'
-import type { OAuthDelegatedSubject } from './oauth-delegated-access'
+import type { OAuthProviderSubjectEligibility } from '@stacksjs/types'
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
 import { createHash, randomBytes } from 'node:crypto'
 import {
@@ -46,7 +46,7 @@ export interface ExchangeOAuthClientCredentialsInput {
   accessTokenLifetimeMs: number
 }
 
-export type OAuthSubjectEligibility = (subject: OAuthDelegatedSubject) => boolean | Promise<boolean>
+export type OAuthSubjectEligibility = OAuthProviderSubjectEligibility
 
 export interface DelegatedTokenPair {
   accessToken: string

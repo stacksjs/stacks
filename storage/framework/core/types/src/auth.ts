@@ -88,6 +88,26 @@ export type OAuthProviderConsentWorkspaceResolver = (
   context: OAuthProviderConsentWorkspaceContext,
 ) => OAuthProviderConsentWorkspace | null | Promise<OAuthProviderConsentWorkspace | null>
 
+/** Current subject and delegated grant presented to an OAuth policy hook. */
+export interface OAuthProviderSubject {
+  type: string
+  id: number
+  clientId: number
+  grantId: string
+  workspaceId: string | null
+}
+
+/**
+ * Application-owned eligibility policy for delegated OAuth subjects.
+ *
+ * The default provider can verify that a user row still exists, but only the
+ * application knows whether an account is disabled, suspended, or otherwise
+ * barred from receiving delegated access.
+ */
+export type OAuthProviderSubjectEligibility = (
+  subject: OAuthProviderSubject,
+) => boolean | Promise<boolean>
+
 export interface OAuthProviderConfig {
   /** The authorization server is opt-in and remains unavailable when false or absent. */
   enabled?: boolean
@@ -110,6 +130,8 @@ export interface OAuthProviderConfig {
   clientCredentials?: boolean
   /** Permit authorized resource servers to introspect delegated tokens. */
   introspection?: boolean
+  /** Recheck current account or service-principal eligibility at token boundaries. */
+  subjectEligibility?: OAuthProviderSubjectEligibility
   /** Absolute lifetimes in milliseconds. */
   lifetimes?: {
     authorizationRequest?: number

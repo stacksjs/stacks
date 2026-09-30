@@ -26,10 +26,12 @@ export default new Action({
     if (!provider)
       return response.notFound('OAuth provider is not enabled')
 
+    const eligible = provider.subjectEligibility ?? isSubjectEligible
+
     return handleOAuthTokenRequest(provider, {
       body: (await request.rawBody?.()) ?? '',
       contentType: request.headers.get('content-type'),
       authorization: request.headers.get('authorization'),
-    }, { isSubjectEligible })
+    }, { isSubjectEligible: eligible })
   },
 })

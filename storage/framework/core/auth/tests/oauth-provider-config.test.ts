@@ -146,6 +146,34 @@ describe('OAuth authorization server configuration', () => {
     expect(provider.grantTypes).toEqual(['authorization_code', 'refresh_token', 'client_credentials'])
   })
 
+  it('preserves the application subject eligibility policy', async () => {
+    const seen: unknown[] = []
+    const subjectEligibility = async (subject: { id: number }) => {
+      seen.push(subject)
+      return subject.id === 42
+    }
+    const provider = resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      subjectEligibility,
+    })!
+
+    expect(provider.subjectEligibility).toBe(subjectEligibility)
+    expect(await provider.subjectEligibility!({
+      type: 'users',
+      id: 42,
+      clientId: 1,
+      grantId: 'grant-1',
+      workspaceId: null,
+    })).toBe(true)
+    expect(seen).toHaveLength(1)
+    expect(() => resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      subjectEligibility: 'not-a-function' as never,
+    })).toThrow('subjectEligibility')
+  })
+
   it('rejects malformed or ambiguous scope and resource policy', () => {
     expect(() => resolveOAuthProviderConfig({
       enabled: true,

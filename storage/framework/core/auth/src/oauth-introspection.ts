@@ -179,6 +179,15 @@ export async function introspectOAuthToken(
         || !client.resources.some(resource => resources.includes(resource)))
         return inactive
 
+      if (input.provider.subjectEligibility && !await input.provider.subjectEligibility({
+        type: row.tokenable_type,
+        id: subjectId,
+        clientId,
+        grantId: String(row.oauth_grant_id),
+        workspaceId: row.workspace_id ?? null,
+      }))
+        return inactive
+
       return {
         active: true,
         clientId: String(clientId),

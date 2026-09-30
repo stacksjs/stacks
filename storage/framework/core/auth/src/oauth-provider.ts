@@ -5,6 +5,7 @@ import type {
   OAuthProviderConfig,
   OAuthProviderResourceConfig,
   OAuthProviderScopeConfig,
+  OAuthProviderSubjectEligibility,
 } from '@stacksjs/types'
 import { oauthAuthorizationServerMetadataPath } from './oauth-metadata'
 
@@ -51,6 +52,7 @@ export interface ResolvedOAuthProviderConfig {
   grantTypes: readonly ('authorization_code' | 'refresh_token' | 'client_credentials')[]
   clientCredentials: boolean
   introspection: boolean
+  subjectEligibility?: OAuthProviderSubjectEligibility
   codeChallengeMethods: readonly ['S256']
   clientTypes: readonly ('confidential' | 'public')[]
   scopes: Record<string, OAuthProviderScopeConfig>
@@ -239,6 +241,9 @@ export function resolveOAuthProviderConfig(
     return null
 
   const issuer = canonicalIssuer(options.issuer)
+  const subjectEligibility = options.subjectEligibility
+  if (subjectEligibility !== undefined && typeof subjectEligibility !== 'function')
+    throw new Error('auth.oauthProvider.subjectEligibility must be a function.')
   const resources = resolvedResources(options.resources)
   const scopes = resolvedScopes(options.scopes, resources)
   const lifetimes = {
@@ -286,6 +291,7 @@ export function resolveOAuthProviderConfig(
     grantTypes,
     clientCredentials: options.clientCredentials === true,
     introspection: options.introspection === true,
+    ...(subjectEligibility ? { subjectEligibility } : {}),
     codeChallengeMethods: ['S256'],
     clientTypes: resolvedClientTypes(options.clientTypes),
     scopes,

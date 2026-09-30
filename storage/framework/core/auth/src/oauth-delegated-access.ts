@@ -1,13 +1,7 @@
-import type { AccessToken } from '@stacksjs/types'
+import type { AccessToken, OAuthProviderSubject } from '@stacksjs/types'
 import { findToken } from './tokens'
 
-export interface OAuthDelegatedSubject {
-  type: string
-  id: number
-  clientId: number
-  grantId: string
-  workspaceId: string | null
-}
+export type OAuthDelegatedSubject = OAuthProviderSubject
 
 export interface OAuthDelegatedAccessRequirement {
   scopes: readonly string[]

@@ -146,6 +146,7 @@ try {
   try {
     const issuer = `http://127.0.0.1:${server.port}`
     let activeWorkspace = { id: 'workspace-a', label: 'Workspace A' }
+    let oauthSubjectActive = true
     config.auth.oauthProvider = {
       enabled: true,
       issuer,
@@ -160,6 +161,9 @@ try {
       },
       clientCredentials: true,
       introspection: true,
+      subjectEligibility: subject => subject.type === 'users'
+        ? subject.id === 1 && oauthSubjectActive
+        : true,
       consent: {
         resolveWorkspace: async () => activeWorkspace,
       },
@@ -1046,6 +1050,28 @@ try {
     const expiredIntrospection = await introspectMachineToken(machineAuthorization, expiredIntrospectionPair.access_token)
     assert.equal(expiredIntrospection.status, 200)
     assert.deepEqual(await expiredIntrospection.json(), { active: false })
+
+    const eligibilityPair = await mintPublicPair()
+    await readResource(eligibilityPair.access_token)
+    oauthSubjectActive = false
+    const ineligibleRefresh = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: String(registration.client.id),
+        refresh_token: eligibilityPair.refresh_token,
+      }),
+    })
+    assert.equal(ineligibleRefresh.status, 400)
+    assert.equal((await ineligibleRefresh.json() as { error?: string }).error, 'invalid_grant')
+    const ineligibleIntrospection = await introspectMachineToken(
+      introspectionAuthorization,
+      eligibilityPair.access_token,
+    )
+    assert.equal(ineligibleIntrospection.status, 200)
+    assert.deepEqual(await ineligibleIntrospection.json(), { active: false })
+    oauthSubjectActive = true
 
     const disableProbeExchange = await fetch(`${issuer}/oauth/token`, {
       method: 'POST',
