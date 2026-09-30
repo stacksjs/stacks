@@ -111,9 +111,28 @@ function createSqlFragment(text: string, parameters: unknown[]): Sql {
  * SQL template tag function.
  * Creates parameterized SQL queries from template literals.
  *
+ * Every interpolated value becomes a literal `?`, whatever the connection is.
+ * That is correct only because the query builder re-renders placeholders for
+ * the dialect when it compiles the statement, so a fragment handed to
+ * `.set()`, `.whereRaw()` or any other builder method comes out as `$1` on
+ * Postgres.
+ *
+ * **Do not read `.sql` and `.parameters` off one of these and run it through
+ * `unsafe()`.** Nothing re-renders it on that path, so Postgres receives the
+ * `?`, parses it as an operator, and fails at the following token - which is
+ * why the whole Postgres auth suite once failed with
+ * `syntax error at or near "LIMIT"` (stacksjs/stacks#2842). Build the string
+ * with `sqlHelpers(getDatabaseDialect()).param(n)` and pass the values as an
+ * array instead.
+ *
  * @example
  * ```ts
- * const query = sql`SELECT * FROM users WHERE id = ${userId}`
+ * // Safe: the builder compiles this for the connection's dialect.
+ * query.whereRaw(sql`created_at > ${cutoff}`)
+ *
+ * // Broken on Postgres: `?` reaches the server verbatim.
+ * const q = sql`SELECT * FROM users WHERE id = ${userId}`
+ * await db.primary.unsafe(q.sql, q.parameters)
  * ```
  */
 export function sql(strings: TemplateStringsArray, ...values: unknown[]): Sql {
