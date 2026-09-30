@@ -240,6 +240,30 @@ function showSearch(): void {
 - **Markdown** — Markdown rendering with syntax highlighting
 - **A11y** — Accessibility checking and auto-fixing
 
+### SEO directives
+
+Every argument is an expression evaluated against the template context (`<script server>` variables, the render context, and, inside an `@include` partial, the partial's own `<script server>`). A quoted string is literal text.
+
+```html
+<script server>
+const seo = { title: post.title, description: post.excerpt, canonical: url, openGraph: { image: post.cover } }
+</script>
+
+@seo(seo)                              <!-- or @seo({ ...seo, title }), @seo(buildSeo(post)), @seo({ title: 'Literal' }) -->
+@seo(page.seo ?? {})                   <!-- a variable only some pages define -->
+@meta('author', post.author)           <!-- unquoted value: an expression -->
+@meta('description', 'Plain text')     <!-- quoted value: literal, never looked up -->
+@meta('keywords', tags)                <!-- an array joins with ", " -->
+@meta('og:title')                      <!-- one argument: reads `title`, then `openGraph.title` -->
+@metaTag({ httpEquiv: 'refresh', content: '30' })
+@structuredData(product)               <!-- object or array of objects; @context defaults to schema.org -->
+```
+
+- `@seo` reads only `title`, `description`, `keywords`, `robots`, `canonical`, `openGraph`, `twitter`, `structuredData`. `image`, `url` and `type` are not top-level keys (use `openGraph.image`, `canonical`, `openGraph.type`); stray keys are ignored with a warning.
+- A directive that cannot produce its tag (a variable that is not defined, a value of the wrong type, a syntax error, an unclosed call) leaves `<!-- [SEO Error ...] -->` in its place and logs `[stx] @seo(seo) in <file>: ...`. A defined variable holding `null` renders nothing, quietly. Read those warnings; they are the only sign a page shipped without its preview card.
+- `@meta` in a page is staged into `<head>`. `@seo`, `@metaTag` and `@structuredData` write where they sit, so put them inside `<head>` (a layout or head partial). In a page body use `useSeoMeta({ title, description, ogImage })` in `<script server>`, which always reaches `<head>`.
+- Requires `@stacksjs/stx` >= 0.2.343. Older versions only matched `@seo({ ... })` literally and sent unquoted `@meta` values such as `post.author` as text, without a warning.
+
 ### Dev Tools
 - **Dev server** with HMR (Hot Module Replacement)
 - **Image optimization**
@@ -291,4 +315,5 @@ await addLayout('admin', { nav: true, footer: true })
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs
 - **Pre-paint state** - use `@appearanceBootstrap`, never a raw browser script in the template
 - **Components go in `resources/`** — not in `app/` or `storage/`
+- **SEO directives take expressions** - `@seo(seo)`, `@meta('author', post.author)` and `@structuredData(product)` are evaluated; a failure shows up as an inline `<!-- [... Error] -->` comment plus a `[stx]` console warning naming the file, never as silent emptiness. Keep `@seo` inside `<head>`
 - **118+ modules** — STX is a comprehensive framework covering rendering, routing, forms, i18n, SEO, PWA, and more
