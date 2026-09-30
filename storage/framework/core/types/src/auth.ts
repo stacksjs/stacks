@@ -105,6 +105,8 @@ export interface OAuthProviderConfig {
   resources?: Record<string, OAuthProviderResourceConfig>
   /** Which client kinds may be registered. Both are allowed by default. */
   clientTypes?: readonly ('confidential' | 'public')[]
+  /** Permit confidential machine clients to use the client-credentials grant. */
+  clientCredentials?: boolean
   /** Absolute lifetimes in milliseconds. */
   lifetimes?: {
     authorizationRequest?: number

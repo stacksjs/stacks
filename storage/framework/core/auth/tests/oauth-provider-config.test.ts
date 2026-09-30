@@ -34,6 +34,7 @@ describe('OAuth authorization server configuration', () => {
       },
       responseTypes: ['code'],
       grantTypes: ['authorization_code', 'refresh_token'],
+      clientCredentials: false,
       codeChallengeMethods: ['S256'],
       clientTypes: ['confidential', 'public'],
       scopes: {
@@ -129,6 +130,14 @@ describe('OAuth authorization server configuration', () => {
       .toBe('http://127.0.0.1:3000')
     expect(resolveOAuthProviderConfig({ enabled: true, issuer: 'http://localhost:3000' })?.issuer)
       .toBe('http://localhost:3000')
+  })
+
+  it('explicitly opts confidential machine clients into client credentials', () => {
+    expect(resolveOAuthProviderConfig({
+      enabled: true,
+      issuer: 'https://id.example.com',
+      clientCredentials: true,
+    })?.clientCredentials).toBe(true)
   })
 
   it('rejects malformed or ambiguous scope and resource policy', () => {

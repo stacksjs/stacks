@@ -134,15 +134,26 @@ export function validateOAuthClientRegistration(
   if (input.type === 'confidential' && input.tokenEndpointAuthMethod !== 'client_secret_basic')
     reject('Confidential OAuth clients must use token endpoint authentication method client_secret_basic.')
 
-  const redirectUris = explicitUnique('redirect URI', input.redirectUris, { required: true })
+  const grantTypes = explicitUnique('grant type', input.grantTypes, { required: true })
+  const authorizationCode = grantTypes.includes('authorization_code')
+  const clientCredentials = grantTypes.includes('client_credentials')
+  if (!authorizationCode && !clientCredentials)
+    reject('OAuth client grant types must include authorization_code or client_credentials.')
+  if (clientCredentials && input.type !== 'confidential')
+    reject('The client_credentials grant is available only to confidential OAuth clients.')
+  if (grantTypes.includes('refresh_token') && !authorizationCode)
+    reject('OAuth refresh_token requires the authorization_code grant.')
+
+  const redirectUris = explicitUnique('redirect URI', input.redirectUris, { required: authorizationCode })
+  if (!authorizationCode && redirectUris.length > 0)
+    reject('OAuth client credentials clients must not register redirect URIs.')
   if (redirectUris.some(uri => !isValidOAuthRedirectUri(uri)))
     reject('OAuth client redirect URIs must be exact HTTPS URLs or exact loopback HTTP URLs, without credentials, fragments, or wildcards.')
 
-  const grantTypes = explicitUnique('grant type', input.grantTypes, { required: true })
-  if (!grantTypes.includes('authorization_code'))
-    reject('OAuth client grant types must include authorization_code.')
   for (const grantType of grantTypes) {
-    if (!provider.grantTypes.includes(grantType as 'authorization_code' | 'refresh_token'))
+    const supported = provider.grantTypes.includes(grantType as 'authorization_code' | 'refresh_token')
+      || (grantType === 'client_credentials' && provider.clientCredentials)
+    if (!supported)
       reject(`OAuth client requested an unsupported grant type: ${grantType}`)
   }
 
@@ -437,7 +448,7 @@ export async function registerOAuthClient(
       client.name,
       storedSecret,
       'local',
-      client.redirectUris[0],
+      client.redirectUris[0] ?? '',
       client.type,
       JSON.stringify(client.redirectUris),
       JSON.stringify(client.grantTypes),
@@ -475,7 +486,7 @@ export async function registerOAuthClient(
       || String(row.user_id) !== String(ownerId)
       || row.name !== client.name
       || row.secret !== storedSecret
-      || row.redirect !== client.redirectUris[0]
+      || row.redirect !== (client.redirectUris[0] ?? '')
       || row.client_type !== client.type
       || JSON.stringify(storedOAuthValues(row.redirect_uris)) !== JSON.stringify(client.redirectUris)
       || JSON.stringify(storedOAuthValues(row.grant_types)) !== JSON.stringify(client.grantTypes)

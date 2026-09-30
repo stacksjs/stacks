@@ -45,20 +45,26 @@ export function oauthAuthorizationClientFromStored(
   const grantTypes = storedOAuthValues(row?.grant_types ?? null)
   const scopes = storedOAuthValues(row?.allowed_scopes ?? null)
   const resources = storedOAuthValues(row?.allowed_resources ?? null)
+  if (!row || !redirectUris || !grantTypes || !scopes || !resources) return null
   const revoked = row ? storedOAuthFlag(row.revoked) : null
   const type = row?.client_type
   const method = row?.token_endpoint_auth_method
-  if (!row || String(row.id) !== String(id)
+  const authorizationCode = grantTypes.includes('authorization_code')
+  const clientCredentials = grantTypes.includes('client_credentials')
+  if (String(row.id) !== String(id)
     || (type !== 'public' && type !== 'confidential')
     || (method !== 'none' && method !== 'client_secret_basic')
     || (type === 'public' ? method !== 'none' || row.secret != null : method !== 'client_secret_basic' || !row.secret)
-    || !redirectUris?.length || !grantTypes?.includes('authorization_code') || !scopes?.length || !resources
+    || (!authorizationCode && !clientCredentials)
+    || (authorizationCode ? !redirectUris.length : redirectUris.length > 0)
+    || (clientCredentials && type !== 'confidential')
+    || !scopes.length
     || new Set(redirectUris).size !== redirectUris.length
     || new Set(grantTypes).size !== grantTypes.length
     || new Set(scopes).size !== scopes.length
     || new Set(resources).size !== resources.length
     || redirectUris.some(uri => !isValidOAuthRedirectUri(uri))
-    || row.redirect !== redirectUris[0]
+    || row.redirect !== (authorizationCode ? redirectUris[0] : '')
     || !isInactiveOAuthFlag(row.personal_access_client)
     || !isInactiveOAuthFlag(row.password_client)
     || revoked == null)

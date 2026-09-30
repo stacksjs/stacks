@@ -18,6 +18,18 @@ const provider = resolveOAuthProviderConfig({
   },
 })!
 
+const machineProvider = resolveOAuthProviderConfig({
+  enabled: true,
+  issuer: 'https://id.example.com',
+  clientCredentials: true,
+  scopes: {
+    'issues:read': { description: 'Read issues', resources: ['bughq'] },
+  },
+  resources: {
+    bughq: { audience: 'https://api.bughq.example' },
+  },
+})!
+
 describe('OAuth client registration policy', () => {
   it('normalizes an explicit public authorization-code client', () => {
     expect(validateOAuthClientRegistration(provider, {
@@ -60,6 +72,47 @@ describe('OAuth client registration policy', () => {
       scopes: ['profile:read'],
       resources: [],
     })).toThrow('client_secret_basic')
+  })
+
+  it('permits an explicitly enabled confidential machine client without redirects', () => {
+    expect(validateOAuthClientRegistration(machineProvider, {
+      name: '  Issue worker  ',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })).toEqual({
+      name: 'Issue worker',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+      requiresSecret: true,
+    })
+
+    expect(() => validateOAuthClientRegistration(provider, {
+      name: 'Disabled machine client',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })).toThrow('unsupported grant')
+
+    expect(() => validateOAuthClientRegistration(machineProvider, {
+      name: 'Public machine client',
+      type: 'public',
+      tokenEndpointAuthMethod: 'none',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })).toThrow('confidential')
   })
 
   it.each([
