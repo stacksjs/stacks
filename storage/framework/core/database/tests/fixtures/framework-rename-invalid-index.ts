@@ -23,6 +23,18 @@ try {
     const userColumns = db.query('PRAGMA table_info("users")').all() as Array<{ name: string }>
     assert(userColumns.some(column => column.name === 'uuid'))
     assert.deepEqual(db.query('PRAGMA integrity_check').all(), [{ integrity_check: 'ok' }])
+
+    // Existing rows stay writable, and uuid is now a real unique column.
+    db.run(`UPDATE "users" SET "uuid" = 'uuid-' || "id"`)
+    db.run(`INSERT INTO "users" ("name", "uuid") VALUES ('new', 'fresh')`)
+    assert.throws(() => db.run(`INSERT INTO "users" ("name", "uuid") VALUES ('dup', 'fresh')`), /UNIQUE/)
+    assert.deepEqual(db.query('PRAGMA integrity_check').all(), [{ integrity_check: 'ok' }])
+
+    // An index on a column nothing provides is dropped rather than left to
+    // block the rename; the model-backed uuid index is kept.
+    const userIndexes = (db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'users' AND sql IS NOT NULL`).all() as Array<{ name: string }>).map(index => index.name)
+    assert(userIndexes.includes('users_users_uuid_unique'))
+    assert(!userIndexes.includes('users_users_nickname_index'))
     assert.deepEqual(db.query('PRAGMA foreign_key_check').all(), [])
   }
   finally {

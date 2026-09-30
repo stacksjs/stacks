@@ -28,6 +28,7 @@ import {
   FrameworkRenameConflictError,
   renameIdentifierPart,
   replaceIndexName,
+  sqliteLiteralIndexColumns,
 } from '../src/framework-renames'
 
 const COMMITTED_SNAPSHOT = join(import.meta.dir, '../../../database/model-snapshot.sqlite.json')
@@ -136,6 +137,18 @@ describe('the registry', () => {
       .toBe(`CREATE UNIQUE INDEX "couriers_uuid_unique" ON "couriers" ("uuid")`)
     expect(replaceIndexName('CREATE INDEX idx_a ON t (a)', 'idx_a', 'idx_b')).toBe('CREATE INDEX idx_b ON t (a)')
     expect(replaceIndexName('something else', 'idx_a', 'idx_b')).toBeUndefined()
+  })
+
+  it('finds the quoted key names SQLite would have read as string constants', () => {
+    const users = ['id', 'name', 'email']
+    expect(sqliteLiteralIndexColumns(`CREATE UNIQUE INDEX IF NOT EXISTS "users_users_uuid_unique" ON "users" ("uuid")`, users)).toEqual(['uuid'])
+    expect(sqliteLiteralIndexColumns(`CREATE INDEX "users_email_uuid" ON "users" ("email" COLLATE NOCASE DESC, "uuid" ASC) WHERE "email" IS NOT NULL`, users)).toEqual(['uuid'])
+    expect(sqliteLiteralIndexColumns(`CREATE INDEX "users_email_name_index" ON "users" ("EMAIL", "name")`, users)).toEqual([])
+    // Expressions and unquoted names are not the misread shape; unquoted
+    // unknown names never get into the schema at all.
+    expect(sqliteLiteralIndexColumns(`CREATE INDEX "users_lower_email" ON "users" (lower("email"), 'x')`, users)).toEqual([])
+    expect(sqliteLiteralIndexColumns('CREATE INDEX idx ON users (name)', users)).toEqual([])
+    expect(sqliteLiteralIndexColumns('not an index', users)).toEqual([])
   })
 })
 
@@ -256,6 +269,44 @@ describe('database catch-up (sqlite)', () => {
     expect(applied).toContain('dropped empty legacy drivers (couriers holds the rows)')
     expect(tables(leftover)).not.toContain('drivers')
     expect(count(leftover, 'couriers')).toBe(1)
+  })
+
+  // StatusHQ CI (stacksjs/status run 36730075894): its corpus creates
+  // users_users_uuid_unique ON users ("uuid") while users has no uuid column,
+  // and the post-batch catch-up died on `RENAME COLUMN` with "error in index
+  // users_users_uuid_unique after rename: no such column: uuid".
+  it('drops an index SQLite keyed on a string constant instead of failing every rename on it', async () => {
+    const db = preRenameDatabase()
+    db.run(`CREATE TABLE "users" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT, "email" TEXT)`)
+    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS "users_users_uuid_unique" ON "users" ("uuid")`)
+    db.run(`CREATE INDEX "users_email_index" ON "users" ("email")`)
+    db.run(`INSERT INTO users (name) VALUES ('first')`)
+    // The constant key is what makes this index harmful and not merely odd.
+    expect(() => db.run(`INSERT INTO users (name) VALUES ('second')`)).toThrow(/UNIQUE/)
+    // And what the rename trips over, before this module handled it.
+    expect(() => db.run(`ALTER TABLE "delivery_routes" RENAME COLUMN "vehicle" TO "vehicle_probe"`)).toThrow(/users_users_uuid_unique after rename: no such column: uuid/)
+
+    const { applied } = await applyFrameworkRenamesToDatabase(runnerFor(db), 'sqlite')
+
+    expect(applied[0]).toMatch(/^dropped index users_users_uuid_unique: users has no column uuid/)
+    expect(applied).toContain('renamed drivers -> couriers')
+    expect(applied).toContain('renamed delivery_routes.driver -> courier')
+    expect(columns(db, 'delivery_routes')).toEqual(['id', 'courier', 'vehicle', 'courier_id'])
+    const indexes = (db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'users'`).all() as Array<{ name: string }>).map(r => r.name)
+    expect(indexes).toEqual(['users_email_index'])
+    db.run(`INSERT INTO users (name) VALUES ('second')`)
+    expect(count(db, 'users')).toBe(2)
+    expect(db.query('PRAGMA integrity_check').all()).toEqual([{ integrity_check: 'ok' }])
+
+    expect(await applyFrameworkRenamesToDatabase(runnerFor(db), 'sqlite')).toEqual({ applied: [], skipped: [] })
+  })
+
+  it('leaves such an index alone on a database with nothing to rename', async () => {
+    const db = new Database(':memory:')
+    db.run(`CREATE TABLE "users" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT)`)
+    db.run(`CREATE UNIQUE INDEX "users_users_uuid_unique" ON "users" ("uuid")`)
+    expect(await applyFrameworkRenamesToDatabase(runnerFor(db), 'sqlite')).toEqual({ applied: [], skipped: [] })
+    expect(db.query(`SELECT name FROM sqlite_master WHERE name = 'users_users_uuid_unique'`).get()).toEqual({ name: 'users_users_uuid_unique' })
   })
 })
 

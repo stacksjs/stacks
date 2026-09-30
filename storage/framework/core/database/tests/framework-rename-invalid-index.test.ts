@@ -7,6 +7,7 @@ import { Database } from 'bun:sqlite'
 const legacySchema = `
 CREATE TABLE "users" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "name" TEXT);
 CREATE UNIQUE INDEX "users_users_uuid_unique" ON "users" ("uuid");
+CREATE INDEX "users_users_nickname_index" ON "users" ("nickname");
 CREATE TABLE "drivers" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "uuid" TEXT);
 CREATE TABLE "delivery_routes" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,6 +81,11 @@ test('a trait-backed index cannot block the pre-migration framework rename pass'
     const database = new Database(databasePath)
     try {
       database.exec(legacySchema)
+      // A user from before the uuid column existed. SQLite indexed this row
+      // under the string 'uuid'; once the column is added that entry is stale
+      // and the first write to the row fails as "database disk image is
+      // malformed" unless the guarantee rebuilds the index.
+      database.exec(`INSERT INTO "users" ("name") VALUES ('existing')`)
       database.exec(`CREATE TABLE migrations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         migration TEXT NOT NULL UNIQUE,

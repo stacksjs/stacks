@@ -133,7 +133,32 @@ export async function ensureUuidColumns(sql: SqlHelpers, options: { verbose?: bo
     catch {
       // Column already exists (or table missing) — safe to ignore.
       if (options.verbose) log.debug(`[uuid-columns] Skipped (already applied or ${table} missing): uuid column`)
+      continue
     }
+
+    if (sql.isSqlite)
+      await reindexAfterAddingUuid(table)
+  }
+}
+
+/**
+ * Rebuild a SQLite table's indexes after `uuid` was just added to it.
+ *
+ * An older corpus can run `CREATE UNIQUE INDEX ... ON users ("uuid")` before
+ * this guarantee adds the column. SQLite accepts that by reading `"uuid"` as
+ * the string 'uuid', so every row already in the table was indexed under that
+ * constant. Once the column exists the same stored statement means the
+ * column, and those entries no longer match their rows: `integrity_check`
+ * reports them missing, and the first UPDATE or DELETE of such a row fails
+ * with "database disk image is malformed". REINDEX recomputes them from the
+ * rows. It only runs when the column was actually added, so once per table.
+ */
+async function reindexAfterAddingUuid(table: string): Promise<void> {
+  try {
+    await db.unsafe(`REINDEX "${table.replace(/"/g, '""')}"`).execute()
+  }
+  catch (error) {
+    log.warn(`[uuid-columns] Added uuid to ${table} but could not rebuild its indexes: ${error instanceof Error ? error.message : String(error)}. Run REINDEX "${table}" before writing to it.`)
   }
 }
 

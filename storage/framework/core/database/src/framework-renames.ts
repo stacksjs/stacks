@@ -267,7 +267,88 @@ function catalog(dialect: RenameDialect, run: RenameSqlRunner) {
       const rows = await run(`SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = ${literal(table)} AND sql IS NOT NULL`)
       return rows.map(row => ({ name: pickString(row, 'name'), sql: pickString(row, 'sql') })).filter(index => index.name && index.sql)
     },
+
+    /** SQLite only: every explicitly created index, with its table and CREATE statement. */
+    async sqliteAllIndexes(): Promise<Array<{ name: string, table: string, sql: string }>> {
+      const rows = await run(`SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'index' AND sql IS NOT NULL`)
+      return rows
+        .map(row => ({ name: pickString(row, 'name'), table: pickString(row, 'tbl_name'), sql: pickString(row, 'sql') }))
+        .filter(index => index.name && index.table && index.sql)
+    },
+
+    /** SQLite only: the table's column names. */
+    async sqliteColumns(table: string): Promise<string[]> {
+      const rows = await run(`SELECT name FROM pragma_table_info(${literal(table)})`)
+      return rows.map(row => pickString(row, 'name')).filter(Boolean)
+    },
   }
+}
+
+/**
+ * The double-quoted names in a stored `CREATE INDEX` key list that are not
+ * columns of the indexed table.
+ *
+ * SQLite reads a double-quoted name that matches no column as a string
+ * literal, so `CREATE UNIQUE INDEX users_users_uuid_unique ON users ("uuid")`
+ * run before `users.uuid` exists succeeds, and indexes the constant 'uuid'.
+ * Every `ALTER TABLE ... RENAME` then re-checks the whole schema with that
+ * leniency off and fails on it - "error in index users_users_uuid_unique
+ * after rename: no such column: uuid" - however unrelated the renamed table
+ * is. As a unique index on a constant it also lets the table hold one row.
+ *
+ * Returns [] for anything it cannot read as a plain key list, so an index it
+ * does not understand is left alone.
+ */
+export function sqliteLiteralIndexColumns(createSql: string, tableColumns: Iterable<string>): string[] {
+  const on = /\bON\s+(?:"(?:[^"]|"")+"|`[^`]+`|\[[^\]]+\]|[\w$]+)\s*\(/i.exec(createSql)
+  if (!on)
+    return []
+
+  // The key list runs to the parenthesis that closes the one after ON.
+  const terms: string[] = []
+  let depth = 1
+  let quote: string | undefined
+  let term = ''
+  for (let i = on.index + on[0].length; i < createSql.length; i++) {
+    const char = createSql[i]!
+    if (quote) {
+      term += char
+      if (char === quote)
+        quote = undefined
+      continue
+    }
+    if (char === '"' || char === '\'' || char === '`') {
+      quote = char
+      term += char
+      continue
+    }
+    if (char === '(')
+      depth++
+    if (char === ')' && --depth === 0) {
+      terms.push(term)
+      break
+    }
+    if (char === ',' && depth === 1) {
+      terms.push(term)
+      term = ''
+      continue
+    }
+    term += char
+  }
+  if (depth !== 0)
+    return []
+
+  const known = new Set([...tableColumns].map(column => column.toLowerCase()))
+  const missing: string[] = []
+  for (const raw of terms) {
+    const match = /^\s*"((?:[^"]|"")+)"(?:\s+COLLATE\s+(?:"[^"]*"|\w+))?(?:\s+(?:ASC|DESC))?\s*$/i.exec(raw)
+    if (!match)
+      continue
+    const name = match[1]!.replace(/""/g, '"')
+    if (!known.has(name.toLowerCase()))
+      missing.push(name)
+  }
+  return missing
 }
 
 /**
@@ -301,6 +382,28 @@ export async function applyFrameworkRenamesToDatabase(
         + 'and renaming with them off leaves other tables referencing the old table name.',
       )
     }
+
+    // A rename re-checks every index in the schema, and one that names a
+    // column its table does not have fails that check (see
+    // sqliteLiteralIndexColumns). Such an index is keyed on a string
+    // constant: it orders nothing, and as a unique index it caps its table
+    // at one row. The migration runner adds model-declared uuid columns
+    // before this runs, so what is left here names a column nothing
+    // provides. Drop it rather than let it stop every rename; a unique one
+    // the corpus declares is put back by restoreDroppedUniqueIndexes once
+    // its column exists. Only when a rename is about to run, so a database
+    // with nothing to rename is not touched.
+    for (const index of await db.sqliteAllIndexes()) {
+      const missing = sqliteLiteralIndexColumns(index.sql, await db.sqliteColumns(index.table))
+      if (missing.length === 0)
+        continue
+      await run(`DROP INDEX ${q(index.name)}`)
+      result.applied.push(
+        `dropped index ${index.name}: ${index.table} has no column ${missing.join(', ')}, so SQLite had indexed `
+        + `${missing.length === 1 ? 'that name' : 'those names'} as a string constant, which blocks every rename`,
+      )
+    }
+
     foreignKeysChecked = true
   }
 
