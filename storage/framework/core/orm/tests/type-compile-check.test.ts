@@ -645,7 +645,12 @@ describe('stacks-router types its handler strings', () => {
 
   test('ActionPath comes from the router that reads the type registry', () => {
     const content = readFileSync(routerFile, 'utf-8')
-    expect(content).toMatch(/import type \{[^}]*\bActionPath\b[^}]*\} from '@stacksjs\/bun-router'/)
+    // The runtime subpath counts. `ab7873d69a` moved this import to
+    // `@stacksjs/bun-router/runtime` on purpose, and pinning the bare specifier
+    // asserted the entry point rather than the thing this test is named for,
+    // which is that `ActionPath` comes from the router package rather than
+    // being redeclared locally.
+    expect(content).toMatch(/import type \{[^}]*\bActionPath\b[^}]*\} from '@stacksjs\/bun-router(?:\/runtime)?'/)
   })
 
   test('the superseded StacksActionPath placeholder is gone', () => {
