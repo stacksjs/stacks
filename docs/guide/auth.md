@@ -101,6 +101,7 @@ The default route bundle provides:
 | `POST /oauth/authorize` | Approve or deny consent with CSRF protection |
 | `POST /oauth/token` | Exchange a code or rotate a refresh token |
 | `POST /oauth/revoke` | Revoke a token owned by the calling client |
+| `POST /oauth/introspect` | Return bounded token status to an authorized resource server |
 | `GET /.well-known/oauth-authorization-server` | Publish RFC 8414 discovery metadata |
 | `GET /auth/oauth/clients` | List the signed-in user's clients |
 | `POST /auth/oauth/clients` | Register a public or confidential client |
@@ -123,6 +124,58 @@ returned only at registration or rotation. Token responses use `no-store` and
 revoke the associated delegated credentials according to their owner and grant
 boundaries. Resource servers may opt into protected `POST /oauth/introspect`
 when they need authoritative status for opaque tokens.
+
+### Client integration sketches
+
+A public client keeps its verifier and state in its own browser session, then
+opens the authorization endpoint with the exact registered callback:
+
+```ts
+const authorize = new URL('https://id.example.com/oauth/authorize')
+authorize.search = new URLSearchParams({
+  response_type: 'code',
+  client_id: 'PUBLIC_CLIENT_ID',
+  redirect_uri: 'https://app.example/callback',
+  scope: 'issues:read',
+  resource: 'https://api.example.com/issues',
+  state,
+  code_challenge: challenge,
+  code_challenge_method: 'S256',
+}).toString()
+window.location.assign(authorize)
+```
+
+After verifying `state` on the callback, exchange the one-time code without a
+client secret:
+
+```ts
+const tokenResponse = await fetch('https://id.example.com/oauth/token', {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  body: new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: 'PUBLIC_CLIENT_ID',
+    code,
+    redirect_uri: 'https://app.example/callback',
+    code_verifier: verifier,
+  }),
+})
+```
+
+A confidential service client uses HTTP Basic authentication and never puts
+its secret in browser code:
+
+```bash
+curl --user 'CLIENT_ID:CLIENT_SECRET' \\
+  --data grant_type=client_credentials \\
+  --data scope=issues:read \\
+  https://id.example.com/oauth/token
+```
+
+Only enable `clientCredentials` for clients that need machine access. A
+resource server can authenticate its own confidential client at
+`/oauth/introspect` to check an opaque access or refresh token without
+receiving the token's secret claims from an untrusted caller.
 
 Use `subjectEligibility` when an application has account states that the
 framework cannot infer from the existence of a row, such as disabled or
