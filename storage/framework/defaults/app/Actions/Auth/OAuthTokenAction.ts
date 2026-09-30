@@ -15,7 +15,7 @@ const isSubjectEligible: OAuthSubjectEligibility = async (subject) => {
 
 export default new Action({
   name: 'OAuthTokenAction',
-  description: 'Exchange OAuth authorization codes and refresh tokens',
+  description: 'Exchange OAuth authorization codes, refresh tokens, and machine credentials',
   method: 'POST',
   // OAuth clients authenticate with PKCE or HTTP Basic and cannot obtain the
   // browser CSRF cookie. The protocol boundary validates its own credentials.

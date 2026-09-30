@@ -161,8 +161,10 @@ routes: minting and revoking both carry semantics a generic route does not.
 The authorization server is opt-in through `config/auth.ts` under
 `oauthProvider`. It is separate from social sign-in, where Stacks is the OAuth
 client. The provider profile is Authorization Code with S256 PKCE and rotating
-refresh tokens. It does not support implicit, password, or client-credentials
-grants. It also does not implement token introspection or OpenID Connect.
+refresh tokens. Confidential client credentials are opt-in through
+`oauthProvider.clientCredentials` and mint access-only tokens without refresh
+tokens. It does not support implicit or password grants, token introspection,
+or OpenID Connect.
 
 When enabled, the default auth route bundle registers:
 

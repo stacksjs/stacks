@@ -82,13 +82,15 @@ export default {
    * where Stacks acts as a client of GitHub or another provider.
    *
    * Keep this disabled until the provider routes and persistence release gate
-   * are complete. When enabled, the profile is authorization code with S256
-   * PKCE, opaque access tokens, and rotating refresh tokens. Implicit and
-   * password grants are not supported.
+   * are complete. When enabled, the profile supports authorization code with
+   * S256 PKCE and rotating refresh tokens. Set clientCredentials to true to
+   * allow confidential machine clients to mint access-only tokens. Implicit
+   * and password grants are not supported.
    */
   oauthProvider: {
     enabled: false,
     issuer: env.APP_URL,
+    clientCredentials: false,
     scopes: {},
     resources: {},
     clientTypes: ['confidential', 'public'],
