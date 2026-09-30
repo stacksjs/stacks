@@ -54,6 +54,7 @@ const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/
 const OAuthDisconnectAction = (await import('../../../../defaults/app/Actions/Auth/OAuthDisconnectAction')).default
 const OAuthClientDisableAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientDisableAction')).default
 const OAuthIntrospectionAction = (await import('../../../../defaults/app/Actions/Auth/OAuthIntrospectionAction')).default
+const OAuthMetadataAction = (await import('../../../../defaults/app/Actions/Auth/OAuthMetadataAction')).default
 const OAuthRevocationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthRevocationAction')).default
 const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
 
@@ -100,6 +101,7 @@ try {
   router.post('/oauth/revoke', OAuthRevocationAction)
   router.post('/oauth/introspect', OAuthIntrospectionAction)
   router.post('/oauth/token', OAuthTokenAction)
+  router.get('/.well-known/oauth-authorization-server', OAuthMetadataAction)
   router.get('/auth/oauth/clients', OAuthClientsAction).middleware('auth')
   router.post('/auth/oauth/clients', OAuthClientStoreAction).middleware('auth')
   router.patch('/auth/oauth/clients/{id}', OAuthClientUpdateAction).middleware('auth')
@@ -156,6 +158,21 @@ try {
     }
     const provider = resolveOAuthProviderConfig(config.auth.oauthProvider)
     assert(provider)
+    const metadataResponse = await fetch(`${issuer}/.well-known/oauth-authorization-server`)
+    assert.equal(metadataResponse.status, 200, await metadataResponse.clone().text())
+    assert.equal(metadataResponse.headers.get('cache-control'), 'public, max-age=300')
+    const metadata = await metadataResponse.json() as Record<string, unknown>
+    assert.equal(metadata.issuer, issuer)
+    assert.equal(metadata.authorization_endpoint, `${issuer}/oauth/authorize`)
+    assert.equal(metadata.token_endpoint, `${issuer}/oauth/token`)
+    assert.equal(metadata.revocation_endpoint, `${issuer}/oauth/revoke`)
+    assert.equal(metadata.introspection_endpoint, `${issuer}/oauth/introspect`)
+    assert.deepEqual(metadata.response_types_supported, ['code'])
+    assert.deepEqual(metadata.grant_types_supported, ['authorization_code', 'refresh_token', 'client_credentials'])
+    assert.deepEqual(metadata.code_challenge_methods_supported, ['S256'])
+    assert.deepEqual(metadata.token_endpoint_auth_methods_supported, ['client_secret_basic', 'none'])
+    assert.deepEqual(metadata.revocation_endpoint_auth_methods_supported, ['client_secret_basic', 'none'])
+    assert.deepEqual(metadata.scopes_supported, ['issues:read', 'issues:write', 'service:read'])
     const registration = await registerOAuthClient(provider, 1, {
       name: 'HTTP lifecycle client',
       type: 'public',
