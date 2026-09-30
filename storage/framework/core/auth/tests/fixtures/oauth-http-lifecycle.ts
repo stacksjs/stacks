@@ -48,6 +48,7 @@ const OAuthAuthorizationAction = (await import('../../../../defaults/app/Actions
 const OAuthConnectionsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConnectionsAction')).default
 const OAuthConsentAction = (await import('../../../../defaults/app/Actions/Auth/OAuthConsentAction')).default
 const OAuthDisconnectAction = (await import('../../../../defaults/app/Actions/Auth/OAuthDisconnectAction')).default
+const OAuthClientDisableAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientDisableAction')).default
 const OAuthIntrospectionAction = (await import('../../../../defaults/app/Actions/Auth/OAuthIntrospectionAction')).default
 const OAuthRevocationAction = (await import('../../../../defaults/app/Actions/Auth/OAuthRevocationAction')).default
 const OAuthTokenAction = (await import('../../../../defaults/app/Actions/Auth/OAuthTokenAction')).default
@@ -97,6 +98,7 @@ try {
   router.post('/oauth/token', OAuthTokenAction)
   router.get('/auth/oauth/connections', OAuthConnectionsAction).middleware('auth')
   router.post('/auth/oauth/connections/{id}/disconnect', OAuthDisconnectAction).middleware('auth')
+  router.post('/auth/oauth/clients/{id}/disable', OAuthClientDisableAction).middleware('auth')
   router.get('/fixture/resource', async (request) => {
     const user = await authenticatedUser(request)
     return {
@@ -165,6 +167,26 @@ try {
       resources: ['bughq'],
     })
     assert(machine.plainTextSecret)
+    const introspectionClient = await registerOAuthClient(provider, 1, {
+      name: 'HTTP introspection observer',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })
+    assert(introspectionClient.plainTextSecret)
+    const disableProbe = await registerOAuthClient(provider, 1, {
+      name: 'HTTP disable probe',
+      type: 'confidential',
+      tokenEndpointAuthMethod: 'client_secret_basic',
+      redirectUris: [],
+      grantTypes: ['client_credentials'],
+      scopes: ['issues:read'],
+      resources: ['bughq'],
+    })
+    assert(disableProbe.plainTextSecret)
     const otherResourceClient = await registerOAuthClient(provider, 1, {
       name: 'HTTP other resource server',
       type: 'confidential',
@@ -176,6 +198,7 @@ try {
     })
     assert(otherResourceClient.plainTextSecret)
     const machineAuthorization = `Basic ${btoa(`${machine.client.id}:${machine.plainTextSecret}`)}`
+    const introspectionAuthorization = `Basic ${btoa(`${introspectionClient.client.id}:${introspectionClient.plainTextSecret}`)}`
     const machineExchange = await fetch(`${issuer}/oauth/token`, {
       method: 'POST',
       headers: {
@@ -891,6 +914,39 @@ try {
     const expiredIntrospection = await introspectMachineToken(machineAuthorization, expiredIntrospectionPair.access_token)
     assert.equal(expiredIntrospection.status, 200)
     assert.deepEqual(await expiredIntrospection.json(), { active: false })
+
+    const disableProbeExchange = await fetch(`${issuer}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${btoa(`${disableProbe.client.id}:${disableProbe.plainTextSecret}`)}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        scope: 'issues:read',
+      }),
+    })
+    assert.equal(disableProbeExchange.status, 200, await disableProbeExchange.clone().text())
+    const disableProbePair = await disableProbeExchange.json() as { access_token: string }
+    const disableClient = await fetch(`${issuer}/auth/oauth/clients/${disableProbe.client.id}/disable`, {
+      method: 'POST',
+      headers: {
+        cookie: browserCookies,
+        'x-csrf-token': csrfToken,
+      },
+    })
+    assert.equal(disableClient.status, 200, await disableClient.clone().text())
+    assert.equal(disableClient.headers.get('cache-control'), 'no-store')
+    assert.deepEqual(await disableClient.json(), {
+      message: 'OAuth client disabled successfully',
+      client_id: disableProbe.client.id,
+    })
+    const disabledClientIntrospection = await introspectMachineToken(
+      introspectionAuthorization,
+      disableProbePair.access_token,
+    )
+    assert.equal(disabledClientIntrospection.status, 200)
+    assert.deepEqual(await disabledClientIntrospection.json(), { active: false })
 
     console.log('PASS OAuth HTTP lifecycle')
   }
