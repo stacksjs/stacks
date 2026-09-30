@@ -1,5 +1,63 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.34...v0.75.35)
+
+## ✨ Features
+
+- **auth**: enforce OAuth subject eligibility ([068781f](https://github.com/stacksjs/stacks/commit/068781f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose protected token introspection ([571fcf1](https://github.com/stacksjs/stacks/commit/571fcf1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: add protected introspection core ([f444698](https://github.com/stacksjs/stacks/commit/f444698)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: advertise enabled machine grants ([a87fcc9](https://github.com/stacksjs/stacks/commit/a87fcc9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: issue machine access tokens ([f92feb3](https://github.com/stacksjs/stacks/commit/f92feb3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: expose machine client registration inputs ([ac055d8](https://github.com/stacksjs/stacks/commit/ac055d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: opt confidential clients into machine grants ([82e1a58](https://github.com/stacksjs/stacks/commit/82e1a58)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **doctor**: flag a mail domain whose DNS zone no deploy can write ([57d0955](https://github.com/stacksjs/stacks/commit/57d0955)) _(by Chris <chris@stacksjs.com>)_
+- **views**: generate /sitemap.xml and /robots.txt from the app's views ([4053274](https://github.com/stacksjs/stacks/commit/4053274)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **auto-imports**: re-export names two barrels share from the winning one ([ccfdb34](https://github.com/stacksjs/stacks/commit/ccfdb34)) _(by Chris <chris@stacksjs.com>)_
+- **docs**: refresh default action counts ([0d0bb14](https://github.com/stacksjs/stacks/commit/0d0bb14)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **env**: fail closed without APP_ENV ([702fed8](https://github.com/stacksjs/stacks/commit/702fed8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: enforce OAuth eligibility during consent ([33d5863](https://github.com/stacksjs/stacks/commit/33d5863)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: normalize empty OAuth redirect storage ([b46b110](https://github.com/stacksjs/stacks/commit/b46b110)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: validate OAuth prune date ranges ([4e47a37](https://github.com/stacksjs/stacks/commit/4e47a37)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject unrepresentable OAuth code lifetimes ([54bdf81](https://github.com/stacksjs/stacks/commit/54bdf81)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deploy**: never set an encrypted value as a mailbox password ([7dd9353](https://github.com/stacksjs/stacks/commit/7dd9353)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: unset ciphertext no loaded env file can decrypt ([9d4b47c](https://github.com/stacksjs/stacks/commit/9d4b47c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **env**: document the integration environment gate and how to migrate onto it ([b3ff12a](https://github.com/stacksjs/stacks/commit/b3ff12a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2792](https://github.com/stacksjs/stacks/issues/2792))
+- **auth**: add OAuth client integration examples ([622dee8](https://github.com/stacksjs/stacks/commit/622dee8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: document OAuth subject policy ([3cae683](https://github.com/stacksjs/stacks/commit/3cae683)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: document delegated OAuth profile ([013ae47](https://github.com/stacksjs/stacks/commit/013ae47)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: document protected introspection ([d0e5b59](https://github.com/stacksjs/stacks/commit/d0e5b59)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: document machine token opt-in ([1560594](https://github.com/stacksjs/stacks/commit/1560594)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **stx**: the SEO directives take expressions and report failures ([9b646db](https://github.com/stacksjs/stacks/commit/9b646db)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **auth**: cover OAuth logout-all revocation ([ffc0a2e](https://github.com/stacksjs/stacks/commit/ffc0a2e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: cover OAuth consent after two-factor login ([8a33882](https://github.com/stacksjs/stacks/commit/8a33882)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: verify OAuth restart persistence ([5bfa721](https://github.com/stacksjs/stacks/commit/5bfa721)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: cover OAuth discovery over HTTP ([741a7f0](https://github.com/stacksjs/stacks/commit/741a7f0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: cover OAuth client disablement ([0c44a94](https://github.com/stacksjs/stacks/commit/0c44a94)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: reject expired introspection tokens ([138769d](https://github.com/stacksjs/stacks/commit/138769d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: cover OAuth refresh introspection ([223c222](https://github.com/stacksjs/stacks/commit/223c222)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: exercise OAuth introspection over HTTP ([c3e2e6e](https://github.com/stacksjs/stacks/commit/c3e2e6e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: cover introspection HTTP claims ([6f56377](https://github.com/stacksjs/stacks/commit/6f56377)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **pantry**: sync the lock with the ranges the workspace now declares ([5fd8895](https://github.com/stacksjs/stacks/commit/5fd8895)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: stx 0.2.343, whose SEO directives take expressions ([885cc47](https://github.com/stacksjs/stacks/commit/885cc47)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.33...v0.75.34)
 
 ## ⚡ Performance Improvements
