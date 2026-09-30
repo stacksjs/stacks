@@ -191,13 +191,17 @@ try {
     const machinePair = await machineExchange.json() as { access_token: string }
     assert.match(machinePair.access_token, /^[a-f0-9]{80}$/)
 
-    const introspectMachineToken = async (authorization: string, token = machinePair.access_token) => await fetch(`${issuer}/oauth/introspect`, {
+    const introspectMachineToken = async (
+      authorization: string,
+      token = machinePair.access_token,
+      tokenTypeHint: 'access_token' | 'refresh_token' = 'access_token',
+    ) => await fetch(`${issuer}/oauth/introspect`, {
       method: 'POST',
       headers: {
         authorization,
         'content-type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({ token, token_type_hint: 'access_token' }),
+      body: new URLSearchParams({ token, token_type_hint: tokenTypeHint }),
     })
     const activeIntrospection = await introspectMachineToken(machineAuthorization)
     assert.equal(activeIntrospection.status, 200, await activeIntrospection.clone().text())
@@ -429,6 +433,16 @@ try {
     assert.equal(exchange.status, 200, await exchange.clone().text())
     assert.equal(exchange.headers.get('cache-control'), 'no-store')
     const firstPair = await exchange.json() as { access_token: string, refresh_token: string }
+    const activeRefreshIntrospection = await introspectMachineToken(machineAuthorization, firstPair.refresh_token, 'refresh_token')
+    assert.equal(activeRefreshIntrospection.status, 200, await activeRefreshIntrospection.clone().text())
+    const activeRefreshClaims = await activeRefreshIntrospection.json() as Record<string, unknown>
+    assert.equal(activeRefreshClaims.active, true)
+    assert.equal(activeRefreshClaims.client_id, String(registration.client.id))
+    assert.equal(activeRefreshClaims.sub, 'users:1')
+    assert.equal(activeRefreshClaims.scope, 'issues:read')
+    assert.equal(activeRefreshClaims.token_type, 'refresh_token')
+    assert.deepEqual(activeRefreshClaims.aud, [`${issuer}/fixture/resource`])
+    assert.equal(activeRefreshClaims.iss, issuer)
 
     const readResource = async (token: string, status = 200, canWriteIssues = false) => {
       const response = await fetch(`${issuer}/fixture/resource`, {
@@ -531,6 +545,9 @@ try {
     assert.notEqual(secondPair.refresh_token, firstPair.refresh_token)
     await readResource(firstPair.access_token, 401)
     await readResource(secondPair.access_token)
+    const rotatedRefreshIntrospection = await introspectMachineToken(machineAuthorization, firstPair.refresh_token, 'refresh_token')
+    assert.equal(rotatedRefreshIntrospection.status, 200)
+    assert.deepEqual(await rotatedRefreshIntrospection.json(), { active: false })
 
     const connections = await fetch(`${issuer}/auth/oauth/connections`, {
       headers: { cookie: browserCookies, accept: 'application/json' },
