@@ -79,6 +79,10 @@ export default {
     // Keep machine grants and resource-server introspection opt-in too.
     clientCredentials: false,
     introspection: false,
+    // Recheck account status before code exchange, refresh, and introspection.
+    subjectEligibility: async subject => subject.type === 'users'
+      ? await accountIsAllowed(subject.id)
+      : true,
   },
 }
 ```
@@ -119,6 +123,14 @@ returned only at registration or rotation. Token responses use `no-store` and
 revoke the associated delegated credentials according to their owner and grant
 boundaries. Resource servers may opt into protected `POST /oauth/introspect`
 when they need authoritative status for opaque tokens.
+
+Use `subjectEligibility` when an application has account states that the
+framework cannot infer from the existence of a row, such as disabled or
+suspended users. The callback receives the subject, client, grant, and
+workspace binding. Returning `false` rejects authorization-code and refresh
+exchanges, revokes the affected grant, and makes introspection return
+`{ active: false }`. Service subjects must be handled explicitly by the
+application callback.
 
 Client credentials are a separate opt-in for confidential service clients. Set
 `clientCredentials: true`, register a confidential client with the

@@ -86,7 +86,9 @@ export default {
    * S256 PKCE and rotating refresh tokens. Set clientCredentials to true to
    * allow confidential machine clients to mint access-only tokens. Set
    * introspection to true to expose protected resource-server token
-   * introspection. Implicit and password grants are not supported.
+   * introspection. Set subjectEligibility when the app has disabled or
+   * suspended account states beyond the existence of a users row. Implicit
+   * and password grants are not supported.
    */
   oauthProvider: {
     enabled: false,
