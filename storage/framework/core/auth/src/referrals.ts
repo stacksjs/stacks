@@ -44,16 +44,34 @@ async function duplicate(error: unknown): Promise<boolean> {
   return isUniqueViolation(error)
 }
 
+/**
+ * Dialect-aware placeholders (stacksjs/stacks#2846).
+ *
+ * Postgres numbers its parameters and has no `?` at all: it reads the token as
+ * an operator, looks for a right operand and rejects the next word, so a query
+ * written with `?` fails tens of characters past the real fault while the
+ * bindings were never going to arrive. Every query below ran that way, which is
+ * why referrals worked on SQLite and MySQL and on Postgres did not work at all.
+ *
+ * Resolved lazily, like the connection and the unique-violation check above, so
+ * this module still imports no database runtime until something calls it.
+ */
+async function placeholder(): Promise<(index: number) => string> {
+  const { getDatabaseDialect, sqlHelpers } = await import('@stacksjs/database/runtime')
+  return sqlHelpers(getDatabaseDialect()).param
+}
+
 /** Stable, unguessable share code. The unique user constraint handles concurrent creation. */
 export async function createReferralCode(ownerId: number, database?: ReferralDatabase): Promise<string> {
   userId(ownerId)
   const db = await connection(database)
+  const param = await placeholder()
   for (let attempt = 0; attempt < 5; attempt++) {
-    const existing = await rows<ReferralCode>(db, 'SELECT code, user_id FROM referral_codes WHERE user_id = ?', [ownerId])
+    const existing = await rows<ReferralCode>(db, `SELECT code, user_id FROM referral_codes WHERE user_id = ${param(1)}`, [ownerId])
     if (existing[0]) return existing[0].code
     const code = randomBytes(12).toString('hex')
     try {
-      await db.unsafe('INSERT INTO referral_codes (user_id, code) VALUES (?, ?)', [ownerId, code]).execute()
+      await db.unsafe(`INSERT INTO referral_codes (user_id, code) VALUES (${param(1)}, ${param(2)})`, [ownerId, code]).execute()
       return code
     }
     catch (error) {
@@ -73,11 +91,12 @@ export async function attributeReferral(newUserId: number, input: unknown, datab
   const code = normalizeReferralCode(input)
   if (!code) return false
   const db = await connection(database)
-  const owner = (await rows<ReferralCode>(db, 'SELECT code, user_id FROM referral_codes WHERE code = ?', [code]))[0]
+  const param = await placeholder()
+  const owner = (await rows<ReferralCode>(db, `SELECT code, user_id FROM referral_codes WHERE code = ${param(1)}`, [code]))[0]
   if (!owner || Number(owner.user_id) === newUserId) return false
   try {
     await db.unsafe(
-      'INSERT INTO referrals (referrer_id, referred_user_id, code, status) VALUES (?, ?, ?, ?)',
+      `INSERT INTO referrals (referrer_id, referred_user_id, code, status) VALUES (${param(1)}, ${param(2)}, ${param(3)}, ${param(4)})`,
       [Number(owner.user_id), newUserId, code, 'registered'],
     ).execute()
     return true
@@ -92,9 +111,11 @@ export async function attributeReferral(newUserId: number, input: unknown, datab
 export async function qualifyReferral(referredUserId: number, database?: ReferralDatabase): Promise<void> {
   userId(referredUserId)
   const db = await connection(database)
+  const param = await placeholder()
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
   await db.unsafe(
-    'UPDATE referrals SET status = ?, qualified_at = ?, updated_at = ? WHERE referred_user_id = ? AND status = ?',
+    `UPDATE referrals SET status = ${param(1)}, qualified_at = ${param(2)}, updated_at = ${param(3)} `
+    + `WHERE referred_user_id = ${param(4)} AND status = ${param(5)}`,
     ['qualified', now, now, referredUserId, 'registered'],
   ).execute()
 }
@@ -103,9 +124,11 @@ export async function qualifyReferral(referredUserId: number, database?: Referra
 export async function referralSummary(ownerId: number, database?: ReferralDatabase): Promise<ReferralSummary> {
   userId(ownerId)
   const db = await connection(database)
-  const codes = await rows<ReferralCode>(db, 'SELECT code, user_id FROM referral_codes WHERE user_id = ?', [ownerId])
+  const param = await placeholder()
+  const codes = await rows<ReferralCode>(db, `SELECT code, user_id FROM referral_codes WHERE user_id = ${param(1)}`, [ownerId])
   const counts = await rows<{ total: number, qualified: number }>(db,
-    'SELECT COUNT(*) AS total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS qualified FROM referrals WHERE referrer_id = ?',
+    `SELECT COUNT(*) AS total, SUM(CASE WHEN status = ${param(1)} THEN 1 ELSE 0 END) AS qualified `
+    + `FROM referrals WHERE referrer_id = ${param(2)}`,
     ['qualified', ownerId])
   return { code: codes[0]?.code ?? null, referred: Number(counts[0]?.total ?? 0), qualified: Number(counts[0]?.qualified ?? 0) }
 }

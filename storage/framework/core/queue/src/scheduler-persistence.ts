@@ -30,7 +30,8 @@ async function ensureTable(): Promise<boolean> {
   try {
     const { db } = await import('@stacksjs/database/runtime')
     // `VARCHAR(255) PRIMARY KEY` is the framework's portable PK pattern across
-    // sqlite / mysql / postgres; no dialect-specific bits are needed here.
+    // sqlite / mysql / postgres. The DDL needs no dialect-specific bits; the
+    // placeholders in the queries below do, and used not to have them (#2846).
     await db.unsafe(
       'CREATE TABLE IF NOT EXISTS scheduled_job_runs ('
       + 'job_name VARCHAR(255) PRIMARY KEY, '
@@ -124,9 +125,12 @@ export function overlapPayloadPattern(jobName: string): string {
 
 export async function hasUnfinishedRun(jobName: string): Promise<boolean> {
   try {
-    const { db } = await import('@stacksjs/database/runtime')
+    const { db, getDatabaseDialect, sqlHelpers } = await import('@stacksjs/database/runtime')
+    // The LIKE and its ESCAPE are portable; the placeholder is not. Postgres
+    // has no `?` parameter, so this bound nothing there (stacksjs/stacks#2846).
+    const { param } = sqlHelpers(getDatabaseDialect())
     const rows = await db.unsafe(
-      `SELECT 1 AS present FROM jobs WHERE payload LIKE ? ESCAPE '\\' LIMIT 1`,
+      `SELECT 1 AS present FROM jobs WHERE payload LIKE ${param(1)} ESCAPE '\\' LIMIT 1`,
       [overlapPayloadPattern(jobName)],
     ).execute()
     // Drivers disagree on the empty-result shape (`[]`, `{ rows: [] }`, or a

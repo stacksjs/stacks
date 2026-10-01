@@ -1,5 +1,5 @@
 import type { ModelRow, Review, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
@@ -60,9 +60,12 @@ export async function updateVotes(
       ? `COALESCE("${column}", 0) + 1`
       : `MAX(COALESCE("${column}", 0) - 1, 0)`
 
+    // Postgres numbers its parameters, so a `?` here reached the server as an
+    // operator and the bindings never bound (stacksjs/stacks#2846).
+    const { param } = sqlHelpers(getDatabaseDialect())
     const result = await db
       .unsafe(
-        `UPDATE "reviews" SET "${column}" = ${expr}, "updated_at" = ? WHERE "id" = ? RETURNING *`,
+        `UPDATE "reviews" SET "${column}" = ${expr}, "updated_at" = ${param(1)} WHERE "id" = ${param(2)} RETURNING *`,
         [formatDate(new Date()), id],
       )
       .execute()
