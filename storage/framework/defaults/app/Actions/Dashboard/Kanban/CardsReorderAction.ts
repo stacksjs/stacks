@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface ColumnReorder {
@@ -86,8 +86,11 @@ export default new Action({
 
     try {
       // Verify all columns belong to the same board.
+      // Postgres numbers its parameters, so every IN list below is numbered
+      // rather than repeating `?` (stacksjs/stacks#2846).
+      const { param } = sqlHelpers(getDatabaseDialect())
       const columnIds = reorders.map(r => r.columnId)
-      const colPlaceholders = columnIds.map(() => '?').join(',')
+      const colPlaceholders = columnIds.map((_, index) => param(index + 1)).join(',')
       const colRows = await db.unsafe(
         `SELECT id, board_id FROM board_columns WHERE id IN (${colPlaceholders})`,
         columnIds,
@@ -105,9 +108,9 @@ export default new Action({
       // page from moving cards in from a sibling board).
       if (allCardIds.size > 0) {
         const cardIdList = Array.from(allCardIds)
-        const cardPlaceholders = cardIdList.map(() => '?').join(',')
+        const cardPlaceholders = cardIdList.map((_, index) => param(index + 1)).join(',')
         const cardRows = await db.unsafe(
-          `SELECT id FROM cards WHERE id IN (${cardPlaceholders}) AND board_id = ?`,
+          `SELECT id FROM cards WHERE id IN (${cardPlaceholders}) AND board_id = ${param(cardIdList.length + 1)}`,
           [...cardIdList, boardId],
         ).execute() as Array<{ id: number }>
         if (cardRows.length !== cardIdList.length) {

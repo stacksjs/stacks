@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { BoardColumn, Card } from '@stacksjs/orm'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
@@ -54,8 +54,9 @@ export default new Action({
       if (!Number.isFinite(boardId) || boardId <= 0)
         return kanbanError('Column is not attached to a valid board.', 409)
 
+      const { param } = sqlHelpers(getDatabaseDialect())
       const maxRow = await db.unsafe(
-        'SELECT COALESCE(MAX(position), -1) AS m FROM cards WHERE column_id = ?',
+        `SELECT COALESCE(MAX(position), -1) AS m FROM cards WHERE column_id = ${param(1)}`,
         [columnId],
       ).execute() as Array<{ m: number }>
       const nextPosition = (Number(maxRow?.[0]?.m ?? -1) + 1) || 0

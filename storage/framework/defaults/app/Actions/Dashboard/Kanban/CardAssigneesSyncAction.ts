@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface SyncInput {
@@ -48,13 +48,16 @@ export default new Action({
     const uniqueUserIds = Array.from(new Set(userIds))
 
     try {
-      const cardRows = await db.unsafe('SELECT id FROM cards WHERE id = ? LIMIT 1', [cardId]).execute() as Array<{ id: number }>
+      // Postgres numbers its parameters, so the `?` these carried bound
+      // nothing there, the dynamic IN lists included (stacksjs/stacks#2846).
+      const { param } = sqlHelpers(getDatabaseDialect())
+      const cardRows = await db.unsafe(`SELECT id FROM cards WHERE id = ${param(1)} LIMIT 1`, [cardId]).execute() as Array<{ id: number }>
       if (!cardRows?.length)
         return kanbanError('Card not found.', 404)
 
       // Validate user ids exist.
       if (uniqueUserIds.length > 0) {
-        const placeholders = uniqueUserIds.map(() => '?').join(',')
+        const placeholders = uniqueUserIds.map((_, index) => param(index + 1)).join(',')
         const userRows = await db.unsafe(
           `SELECT id FROM users WHERE id IN (${placeholders})`,
           uniqueUserIds,
@@ -84,7 +87,7 @@ export default new Action({
       // Return the resolved user rows for the optimistic UI to confirm.
       let assignees: Array<{ userId: number, name: string | null, email: string | null }> = []
       if (uniqueUserIds.length > 0) {
-        const placeholders = uniqueUserIds.map(() => '?').join(',')
+        const placeholders = uniqueUserIds.map((_, index) => param(index + 1)).join(',')
         const rows = await db.unsafe(
           `SELECT id, name, email FROM users WHERE id IN (${placeholders}) ORDER BY name ASC`,
           uniqueUserIds,

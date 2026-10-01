@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { modelBoolean } from './kanban-model'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
@@ -47,8 +47,11 @@ export default new Action({
     }
 
     try {
+      // Postgres numbers its parameters, so the `?` these carried bound
+      // nothing there (stacksjs/stacks#2846).
+      const { param } = sqlHelpers(getDatabaseDialect())
       const cardRows = await db.unsafe(
-        'SELECT * FROM cards WHERE id = ? LIMIT 1',
+        `SELECT * FROM cards WHERE id = ${param(1)} LIMIT 1`,
         [id],
       ).execute() as unknown as CardRow[]
       const card = cardRows?.[0]
@@ -61,7 +64,7 @@ export default new Action({
           `SELECT l.id, l.name, l.color
           FROM card_labels cl
           JOIN labels l ON l.id = cl.label_id
-          WHERE cl.card_id = ?
+          WHERE cl.card_id = ${param(1)}
           ORDER BY l.name ASC`,
           [id],
         ).execute() as Promise<Array<{ id: number, name: string, color: string }>>,
@@ -69,14 +72,14 @@ export default new Action({
           `SELECT ca.user_id, ca.assigned_by_user_id, ca.created_at, u.name, u.email
           FROM card_assignees ca
           LEFT JOIN users u ON u.id = ca.user_id
-          WHERE ca.card_id = ?`,
+          WHERE ca.card_id = ${param(1)}`,
           [id],
         ).execute() as Promise<Array<{ user_id: number, assigned_by_user_id: number | null, created_at: string | null, name: string | null, email: string | null }>>,
         db.unsafe(
           `SELECT cc.id, cc.uuid, cc.user_id, cc.body, cc.created_at, cc.updated_at, u.name, u.email
           FROM card_comments cc
           LEFT JOIN users u ON u.id = cc.user_id
-          WHERE cc.card_id = ?
+          WHERE cc.card_id = ${param(1)}
           ORDER BY cc.created_at ASC, cc.id ASC`,
           [id],
         ).execute() as Promise<Array<{ id: number, uuid: string | null, user_id: number | null, body: string, created_at: string | null, updated_at: string | null, name: string | null, email: string | null }>>,
