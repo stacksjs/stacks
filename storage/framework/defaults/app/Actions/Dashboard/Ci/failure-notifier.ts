@@ -20,7 +20,7 @@
 
 import type { DashboardData, FailedTransition, PreviousRunState } from '@stacksjs/github'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { detectNewlyFailedRuns } from '@stacksjs/github'
 import { notify } from '@stacksjs/notifications'
 
@@ -60,13 +60,17 @@ async function upsertSnapshotStates(snapshot: DashboardData): Promise<void> {
   const nowIso = new Date().toISOString()
   for (const r of snapshot.repos) {
     const runId = parseRunIdFromUrl(r.runUrl)
-    // Two-step upsert — works across SQLite/MySQL/Postgres without
-    // dialect-specific ON CONFLICT shapes. Each repo is its own
-    // round-trip, but the table is small (one row per repo, so
-    // typically O(50) for a busy fleet) and this runs in the
-    // background after the response goes out.
+    // Two-step upsert, which avoids the dialect-specific ON CONFLICT
+    // shapes. Each repo is its own round-trip, but the table is small
+    // (one row per repo, so typically O(50) for a busy fleet) and this
+    // runs in the background after the response goes out.
+    //
+    // The upsert shape is portable; the placeholder is not. Postgres
+    // numbers its parameters, so the `?` this used to carry bound
+    // nothing there (stacksjs/stacks#2846).
+    const { param } = sqlHelpers(getDatabaseDialect())
     const existing = await db.unsafe(
-      'SELECT repo_full_name FROM ci_run_states WHERE repo_full_name = ? LIMIT 1',
+      `SELECT repo_full_name FROM ci_run_states WHERE repo_full_name = ${param(1)} LIMIT 1`,
       [r.fullName],
     ).execute() as Array<{ repo_full_name: string }>
     if (existing?.length) {

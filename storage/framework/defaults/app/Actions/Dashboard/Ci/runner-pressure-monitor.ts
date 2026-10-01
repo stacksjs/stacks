@@ -26,7 +26,7 @@
 
 import type { DashboardData, PressureAction, RunnerAlertState, RunnerSample } from '@stacksjs/github'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { detectRunnerPressure } from '@stacksjs/github'
 import { notify } from '@stacksjs/notifications'
 
@@ -69,8 +69,9 @@ async function pruneOldSamples(retentionHours: number, nowMs: number): Promise<v
 
 async function loadWindowSamples(windowMinutes: number, nowMs: number): Promise<RunnerSample[]> {
   const cutoffIso = new Date(nowMs - windowMinutes * 60_000).toISOString()
+  const { param } = sqlHelpers(getDatabaseDialect())
   const rows = await db.unsafe(
-    'SELECT org, running, queued, cap, sampled_at FROM ci_runner_samples WHERE sampled_at >= ? ORDER BY sampled_at ASC',
+    `SELECT org, running, queued, cap, sampled_at FROM ci_runner_samples WHERE sampled_at >= ${param(1)} ORDER BY sampled_at ASC`,
     [cutoffIso],
   ).execute() as unknown as SampleRow[]
 
@@ -102,11 +103,15 @@ async function loadAlertStates(): Promise<Map<string, RunnerAlertState>> {
 
 async function upsertAlertState(org: string, alerting: boolean, nowIso: string): Promise<void> {
   // Cross-dialect upsert: SELECT-then-INSERT/UPDATE. Same shape as
-  // the failure-notifier's state writes — keep the patterns
-  // consistent so future maintainers don't second-guess the
+  // the failure-notifier's state writes, so keep the patterns
+  // consistent and future maintainers don't second-guess the
   // dialect choice in one place vs another.
+  //
+  // That portability covers the upsert, not the placeholder, which has
+  // to be rendered per dialect (stacksjs/stacks#2846).
+  const { param } = sqlHelpers(getDatabaseDialect())
   const existing = await db.unsafe(
-    'SELECT org FROM ci_runner_alert_states WHERE org = ? LIMIT 1',
+    `SELECT org FROM ci_runner_alert_states WHERE org = ${param(1)} LIMIT 1`,
     [org],
   ).execute() as Array<{ org: string }>
 
@@ -241,12 +246,13 @@ export async function fetchRunnerHistory(
 
   // ASC-by-newest then re-reverse so we get the N most recent samples
   // in ASC order (oldest → newest) — what the sparkline path needs.
+  const { param } = sqlHelpers(getDatabaseDialect())
   const rows = await db.unsafe(
     `SELECT org, running, queued, cap, sampled_at
     FROM ci_runner_samples
-    WHERE org = ? AND sampled_at >= ?
+    WHERE org = ${param(1)} AND sampled_at >= ${param(2)}
     ORDER BY sampled_at DESC
-    LIMIT ?`,
+    LIMIT ${param(3)}`,
     [org, cutoffIso, limit],
   ).execute() as unknown as SampleRow[]
 
