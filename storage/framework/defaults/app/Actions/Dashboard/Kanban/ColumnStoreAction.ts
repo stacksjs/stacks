@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { Board, BoardColumn } from '@stacksjs/orm'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
@@ -47,8 +47,9 @@ export default new Action({
         return kanbanError('Board not found.', 404)
       }
 
+      const { param } = sqlHelpers(getDatabaseDialect())
       const maxRow = await db.unsafe(
-        'SELECT COALESCE(MAX(position), -1) AS m FROM board_columns WHERE board_id = ?',
+        `SELECT COALESCE(MAX(position), -1) AS m FROM board_columns WHERE board_id = ${param(1)}`,
         [boardId],
       ).execute() as Array<{ m: number }>
       const nextPosition = (Number(maxRow?.[0]?.m ?? -1) + 1) || 0

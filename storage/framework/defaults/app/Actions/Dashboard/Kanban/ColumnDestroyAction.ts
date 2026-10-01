@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 /**
@@ -29,17 +29,20 @@ export default new Action({
     try {
       await db.transaction(async (rawTrx) => {
         const qb = rawTrx as unknown as typeof db
+        // Postgres numbers its parameters, so the `?` these carried bound
+        // nothing there (stacksjs/stacks#2846).
+        const { param } = sqlHelpers(getDatabaseDialect())
         await qb.unsafe(
-          'DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE column_id = ?)',
+          `DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE column_id = ${param(1)})`,
           [id],
         ).execute()
         await qb.unsafe(
-          'DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE column_id = ?)',
+          `DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE column_id = ${param(1)})`,
           [id],
         ).execute()
         // Card comments are card-scoped children.
         await qb.unsafe(
-          'DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE column_id = ?)',
+          `DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE column_id = ${param(1)})`,
           [id],
         ).execute()
         await qb.deleteFrom('cards').where('column_id', '=', id).execute()

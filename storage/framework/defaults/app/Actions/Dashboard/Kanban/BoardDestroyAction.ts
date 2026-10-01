@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 /**
@@ -33,19 +33,22 @@ export default new Action({
     try {
       await db.transaction(async (rawTrx) => {
         const qb = rawTrx as unknown as typeof db
+        // Postgres numbers its parameters, so the `?` these carried bound
+        // nothing there (stacksjs/stacks#2846).
+        const { param } = sqlHelpers(getDatabaseDialect())
         // Pivots + card-scoped children first — they reference cards.
         await qb.unsafe(
-          'DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
+          `DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)})`,
           [id],
         ).execute()
         await qb.unsafe(
-          'DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
+          `DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)})`,
           [id],
         ).execute()
         // Card comments use the same
         // card-scoped pattern as the pivots.
         await qb.unsafe(
-          'DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
+          `DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)})`,
           [id],
         ).execute()
         // Cards (denormalised board_id avoids the column join).

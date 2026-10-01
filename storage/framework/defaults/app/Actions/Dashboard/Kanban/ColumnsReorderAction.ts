@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface ReorderInput {
@@ -53,9 +53,13 @@ export default new Action({
     try {
       // Verify every column actually belongs to the named board.
       // Single round-trip via a count of rows that match both criteria.
-      const placeholders = ids.map(() => '?').join(',')
+      // Postgres numbers its parameters, so the IN list has to be numbered
+      // alongside the trailing board id rather than repeating `?`
+      // (stacksjs/stacks#2846).
+      const { param } = sqlHelpers(getDatabaseDialect())
+      const placeholders = ids.map((_, index) => param(index + 1)).join(',')
       const matchRows = await db.unsafe(
-        `SELECT COUNT(*) AS c FROM board_columns WHERE id IN (${placeholders}) AND board_id = ?`,
+        `SELECT COUNT(*) AS c FROM board_columns WHERE id IN (${placeholders}) AND board_id = ${param(ids.length + 1)}`,
         [...ids, boardId],
       ).execute() as Array<{ c: number }>
       const matched = Number(matchRows?.[0]?.c ?? 0)
