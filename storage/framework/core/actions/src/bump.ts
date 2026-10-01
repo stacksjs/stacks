@@ -3,6 +3,7 @@ import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { versionBump } from '@stacksjs/bumpx'
 import { isCalendarBump, nextCalendarVersion } from './calendar-version'
+import { pantryLockViolations } from './pantry-lock'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -305,6 +306,27 @@ async function refreshPantryLock(): Promise<void> {
     throw new Error(
       'Release aborted: Pantry could not refresh pantry.lock without lifecycle scripts. The previous lockfile was restored.',
       { cause: error },
+    )
+  }
+
+  // `pantry install` is not reproducible across platforms today, and a release
+  // runs it on whichever machine is cutting the release (stacksjs/stacks#2843).
+  // An install that succeeds is therefore not evidence that it produced a
+  // lockfile this workspace can use: the same `craft-native` record was walked
+  // back below its declared range by five consecutive releases, each of them
+  // silently re-breaking `compile` on main hours after the fix landed.
+  //
+  // Check it here, where the previous lockfile is still in hand, rather than
+  // leaving CI to report it on a commit nobody will connect to the release.
+  const violations = pantryLockViolations(readFileSync(lockPath, 'utf8'), previousLock.toString('utf8'))
+  if (violations.length > 0) {
+    writeFileSync(lockPath, previousLock)
+    throw new Error(
+      'Release aborted: refreshing pantry.lock produced a lockfile that does not describe this workspace, '
+      + 'so the previous one has been restored.\n'
+      + violations.map(violation => `  - ${violation}`).join('\n')
+      + '\n\nThis is platform divergence in `pantry install`, not something the version bump did. '
+      + 'Regenerate pantry.lock on the platform CI validates against, commit that on its own, then re-run the release.',
     )
   }
 }
