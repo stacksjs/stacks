@@ -82,12 +82,32 @@ describe('raw SQL is dialect-portable', () => {
     const offenders: string[] = []
 
     for (const { path, source } of files) {
-      // Each `db.unsafe(` call, up to the closing backtick of its template.
-      for (const call of source.matchAll(/db\.unsafe\(\s*`([\s\S]*?)`/g)) {
-        const sql = withoutInterpolations(call[1]!)
+      // Any `.unsafe(` call and the SQL it is handed, whether that is a
+      // template or a quoted string.
+      //
+      // The receiver is not anchored and the dot may sit on its own line. This
+      // used to require a literal `db.unsafe(`, so
+      //
+      //   const result = await db
+      //     .unsafe(
+      //       `UPDATE "reviews" SET ... "updated_at" = ? WHERE "id" = ?`,
+      //
+      // never matched, and the one statement in this package that actually had
+      // the bug was the one the check skipped (stacksjs/stacks#2846). It is
+      // also `qb.unsafe(` and `trx.unsafe(` inside a transaction.
+      for (const call of source.matchAll(/\.unsafe\(\s*(`[\s\S]*?`|'[^'\n]*'|"[^"\n]*")/g)) {
+        const raw = call[1]!
+        const body = raw.slice(1, -1)
+        const sql = raw.startsWith('`') ? withoutInterpolations(body) : body
         if (/=\s*\?|\(\s*\?|,\s*\?|\s\?\s/.test(sql))
           offenders.push(`${path}: hardcoded '?' placeholder`)
       }
+
+      // The same bug with nothing to find in the SQL: an IN list built in code
+      // leaves the placeholder out of the string entirely, which is how five of
+      // them survived a scan of the statements.
+      if (/map\(\s*\(\s*\)\s*=>\s*['"]\?['"]\s*\)/.test(source))
+        offenders.push(`${path}: '?' placeholder list built in code`)
     }
 
     expect(offenders).toEqual([])

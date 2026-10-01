@@ -1,5 +1,6 @@
 import type { ModelRow, Review, UpdateModelData } from '@stacksjs/orm'
-import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
+import { db, sqlHelpers } from '@stacksjs/database/runtime'
+import { env } from '@stacksjs/env'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
@@ -61,8 +62,10 @@ export async function updateVotes(
       : `MAX(COALESCE("${column}", 0) - 1, 0)`
 
     // Postgres numbers its parameters, so a `?` here reached the server as an
-    // operator and the bindings never bound (stacksjs/stacks#2846).
-    const { param } = sqlHelpers(getDatabaseDialect())
+    // operator and the bindings never bound (stacksjs/stacks#2846). Resolved
+    // from the connection the way this package's other raw statements do, which
+    // `src/tests/sql-dialect-portability.test.ts` holds every commerce caller to.
+    const { param } = sqlHelpers(env.DB_CONNECTION || 'sqlite')
     const result = await db
       .unsafe(
         `UPDATE "reviews" SET "${column}" = ${expr}, "updated_at" = ${param(1)} WHERE "id" = ${param(2)} RETURNING *`,
