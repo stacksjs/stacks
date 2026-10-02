@@ -3,11 +3,13 @@ import type {
   CommerceProductRecord,
   ProductOption,
   ProductReviewSummary,
+  ProductWritePayload,
   ProductUnitDetail,
   ProductVariantDetail,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface ProductDetailResponse {
   record: CommerceProductRecord
@@ -17,20 +19,6 @@ interface ProductDetailResponse {
   categories: ProductOption[]
   manufacturers: ProductOption[]
   defaultCurrency: string
-}
-
-interface ProductWritePayload {
-  name: string
-  description: string
-  price: number
-  imageUrl: string
-  isAvailable: boolean
-  inventoryCount: number
-  preparationTime: number
-  allergens: string
-  nutritionalInfo: string
-  categoryId: number | null
-  manufacturerId: number | null
 }
 
 const route = useRoute()
@@ -55,12 +43,7 @@ function productId(): string {
 }
 
 function formatMoney(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: defaultCurrency() }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${defaultCurrency()}`
-  }
+  return formatCurrency(value, defaultCurrency())
 }
 
 function formatDate(value: string): string {

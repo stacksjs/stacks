@@ -112,7 +112,8 @@ async function existingReceipt(order: any) {
   }))
   const taxAmount = receiptNumber(field(order, 'tax_amount', 'taxAmount'), source, 'tax_amount', { min: 0 })
   const totalAmount = receiptNumber(field(order, 'total_amount', 'totalAmount'), source, 'total_amount', { min: 0 })
-  const subtotal = Math.round((totalAmount - taxAmount + Number.EPSILON) * 100) / 100
+  // Integer minor units, as the sale was recorded (stacksjs/stacks#2851).
+  const subtotal = totalAmount - taxAmount
   if (subtotal < 0)
     throw new TypeError(`${source}.tax_amount cannot exceed total_amount.`)
   const taxRate = deriveCommercePosTaxRate(subtotal, taxAmount)
@@ -137,7 +138,7 @@ async function existingReceipt(order: any) {
         name,
         quantity,
         unitPrice,
-        lineTotal: Math.round((unitPrice * quantity + Number.EPSILON) * 100) / 100,
+        lineTotal: unitPrice * quantity,
         specialInstructions: receiptOptionalText(
           field(item, 'special_instructions', 'specialInstructions'),
           itemSource,

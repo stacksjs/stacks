@@ -51,8 +51,13 @@ export class CommercePosAvailabilityError extends Error {
   }
 }
 
+/**
+ * Amounts are integer minor units, as `products.price` is (stacksjs/stacks#2851).
+ * Line totals and sums of integers are already whole; tax is the one product
+ * that can land between two units, and it rounds to the nearest one.
+ */
 function money(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100
+  return Math.round(value)
 }
 
 function value(record: any, ...keys: string[]): unknown {
@@ -206,8 +211,8 @@ export function calculateCommercePosSale(
     const id = Number(product.id)
     if (!Number.isSafeInteger(id) || id <= 0)
       throw new TypeError(`Product id "${product.id}" is invalid.`)
-    if (!Number.isFinite(product.price) || product.price < 0)
-      throw new TypeError(`Product ${id} has an invalid price.`)
+    if (!Number.isSafeInteger(product.price) || product.price < 0)
+      throw new TypeError(`Product ${id} has an invalid price: expected integer minor units.`)
     if (!Number.isSafeInteger(product.inventoryCount) || product.inventoryCount < 0)
       throw new TypeError(`Product ${id} has an invalid inventory count.`)
     return [id, product] as const

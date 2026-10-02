@@ -6,6 +6,7 @@ import type {
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { formatCurrency, minorToInput } from '@stacksjs/commerce/money'
 
 interface OrderIndexResponse {
   records: CommerceOrderRecord[]
@@ -75,16 +76,7 @@ function timestamp(value: string): number {
 }
 
 function formatMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 2,
-    }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${currency}`
-  }
+  return formatCurrency(value, currency)
 }
 
 function label(value: string): string {
@@ -154,12 +146,12 @@ function exportHref(): string {
     record.status,
     record.orderType,
     String(record.itemCount),
-    String(record.totalAmount),
+    minorToInput(record.totalAmount, record.currency),
     record.currency,
-    String(record.taxAmount),
-    String(record.discountAmount),
-    String(record.deliveryFee),
-    String(record.tipAmount),
+    minorToInput(record.taxAmount, record.currency),
+    minorToInput(record.discountAmount, record.currency),
+    minorToInput(record.deliveryFee, record.currency),
+    minorToInput(record.tipAmount, record.currency),
     record.deliveryAddress,
     record.createdAt,
   ])

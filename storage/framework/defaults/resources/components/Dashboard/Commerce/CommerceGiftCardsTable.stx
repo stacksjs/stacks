@@ -1,5 +1,6 @@
 <script client>
 import type { GiftCardRecord, GiftCardStatus } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const { records = [], loading = false } = defineProps<{ records: GiftCardRecord[], loading?: boolean }>()
 const emit = defineEmits<{
@@ -9,12 +10,7 @@ const emit = defineEmits<{
 }>()
 
 function money(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
-  }
-  catch {
-    return `${currency} ${value.toFixed(2)}`
-  }
+  return formatCurrency(value, currency)
 }
 
 function date(value: string): string {

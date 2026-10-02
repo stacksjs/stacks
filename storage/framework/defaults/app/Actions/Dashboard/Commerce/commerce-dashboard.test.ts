@@ -64,13 +64,13 @@ describe('commerce dashboard', () => {
   test('builds aligned metrics and chart buckets without counting cancelled revenue', () => {
     const result = buildCommerceDashboard(
       [
-        { id: '1', status: 'DELIVERED', totalAmount: 100, currency: 'USD', customerId: '9', createdAt: '2026-07-29 10:00:00' },
-        { id: '2', status: 'CANCELED', totalAmount: 60, currency: 'USD', customerId: '', createdAt: '2026-07-29 11:00:00' },
-        { id: '3', status: 'DELIVERED', totalAmount: 50, currency: 'USD', customerId: '9', createdAt: '2026-07-28 10:00:00' },
+        { id: '1', status: 'DELIVERED', totalAmount: 10000, currency: 'USD', customerId: '9', createdAt: '2026-07-29 10:00:00' },
+        { id: '2', status: 'CANCELED', totalAmount: 6000, currency: 'USD', customerId: '', createdAt: '2026-07-29 11:00:00' },
+        { id: '3', status: 'DELIVERED', totalAmount: 5000, currency: 'USD', customerId: '9', createdAt: '2026-07-28 10:00:00' },
       ],
       [
-        { orderId: '1', productId: '4', quantity: 2, price: 50 },
-        { orderId: '2', productId: '4', quantity: 1, price: 60 },
+        { orderId: '1', productId: '4', quantity: 2, price: 5000 },
+        { orderId: '2', productId: '4', quantity: 1, price: 6000 },
       ],
       [{ id: '4', name: 'Native Kit' }],
       [{ id: '9', name: 'Ada Lovelace' }],
@@ -82,6 +82,7 @@ describe('commerce dashboard', () => {
     expect(result.stats.map(stat => stat.value)).toEqual(['$100.00', '2', '$100.00', '100.0%'])
     expect(result.charts.labels).toHaveLength(13)
     expect(result.charts.orders.reduce((sum, value) => sum + value, 0)).toBe(2)
+    // Stored in cents, charted in dollars.
     expect(result.charts.revenue[0].data.reduce((sum, value) => sum + value, 0)).toBe(100)
     expect(result.topProducts).toEqual([
       { id: '4:USD', name: 'Native Kit', sales: 2, revenue: '$100.00' },
@@ -98,12 +99,12 @@ describe('commerce dashboard', () => {
   test('keeps currencies separate in revenue, averages, charts, and product totals', () => {
     const result = buildCommerceDashboard(
       [
-        { id: '1', status: 'DELIVERED', totalAmount: 100, currency: 'USD', customerId: '', createdAt: '2026-07-29T08:00:00.000Z' },
-        { id: '2', status: 'DELIVERED', totalAmount: 80, currency: 'EUR', customerId: '', createdAt: '2026-07-29T09:00:00.000Z' },
+        { id: '1', status: 'DELIVERED', totalAmount: 10000, currency: 'USD', customerId: '', createdAt: '2026-07-29T08:00:00.000Z' },
+        { id: '2', status: 'DELIVERED', totalAmount: 8000, currency: 'EUR', customerId: '', createdAt: '2026-07-29T09:00:00.000Z' },
       ],
       [
-        { orderId: '1', productId: '4', quantity: 2, price: 50 },
-        { orderId: '2', productId: '4', quantity: 1, price: 80 },
+        { orderId: '1', productId: '4', quantity: 2, price: 5000 },
+        { orderId: '2', productId: '4', quantity: 1, price: 8000 },
       ],
       [{ id: '4', name: 'Native Kit' }],
       [],
@@ -117,6 +118,25 @@ describe('commerce dashboard', () => {
     expect(result.stats[2].value).toBe('Mixed currencies')
     expect(result.charts.revenue.map(series => series.currency)).toEqual(['EUR', 'USD'])
     expect(result.topProducts).toHaveLength(2)
+  })
+
+  test('shows integer minor units in each currency precision (stacksjs/stacks#2851)', () => {
+    const result = buildCommerceDashboard(
+      [
+        { id: '1', status: 'DELIVERED', totalAmount: 1999, currency: 'USD', customerId: '', createdAt: '2026-07-29T08:00:00.000Z' },
+        { id: '2', status: 'DELIVERED', totalAmount: 1999, currency: 'JPY', customerId: '', createdAt: '2026-07-29T09:00:00.000Z' },
+      ],
+      [{ orderId: '1', productId: '4', quantity: 1, price: 1999 }],
+      [{ id: '4', name: 'Native Kit' }],
+      [],
+      'today',
+      now,
+    )
+
+    expect(result.stats[0].detail).toContain('$19.99')
+    expect(result.stats[0].detail).toContain('¥1,999')
+    expect(result.topProducts[0]?.revenue).toBe('$19.99')
+    expect(result.charts.revenue.find(series => series.currency === 'USD')?.data.reduce((sum, value) => sum + value, 0)).toBe(19.99)
   })
 
   test('compares the selected range with the immediately preceding range', () => {

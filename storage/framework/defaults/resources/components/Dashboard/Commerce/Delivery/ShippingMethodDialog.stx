@@ -1,4 +1,5 @@
 <script client>
+import { minorToInput, moneyInputError, parseMoneyInput } from '@stacksjs/commerce/money'
 interface ShippingMethodRecord {
   id: number
   name: string
@@ -33,33 +34,34 @@ effect(() => {
   hydrationKey = nextKey
   name.set(current?.name || '')
   description.set(current?.description || '')
-  baseRate.set(current ? (current.base_rate / 100).toFixed(2) : '')
+  baseRate.set(current ? minorToInput(current.base_rate, 'USD') : '')
   freeShipping.set(current?.free_shipping === null || current?.free_shipping === undefined
     ? ''
-    : (current.free_shipping / 100).toFixed(2))
+    : minorToInput(current.free_shipping, 'USD'))
   status.set(current?.status || 'active')
 })
 
+// Amounts are typed in dollars and stored as integer cents.
 function submit(): void {
-  const baseRateValue = Number(baseRate())
-  const freeShippingValue = freeShipping().trim() === '' ? null : Number(freeShipping())
   if (!name().trim()) {
     emit('invalid', 'Method name is required.')
     return
   }
-  if (!Number.isFinite(baseRateValue) || baseRateValue < 0) {
-    emit('invalid', 'Base rate must be a non-negative amount.')
+  const baseRateError = moneyInputError(baseRate(), 'USD')
+  if (baseRateError) {
+    emit('invalid', `Base rate: ${baseRateError}`)
     return
   }
-  if (freeShippingValue !== null && (!Number.isFinite(freeShippingValue) || freeShippingValue < 0)) {
-    emit('invalid', 'Free shipping threshold must be empty or a non-negative amount.')
+  const freeShippingError = moneyInputError(freeShipping(), 'USD', { required: false })
+  if (freeShippingError) {
+    emit('invalid', `Free shipping threshold: ${freeShippingError}`)
     return
   }
   emit('submit', {
     name: name().trim(),
     description: description().trim(),
-    baseRate: Math.round(baseRateValue * 100),
-    freeShipping: freeShippingValue === null ? null : Math.round(freeShippingValue * 100),
+    baseRate: parseMoneyInput(baseRate(), 'USD'),
+    freeShipping: parseMoneyInput(freeShipping(), 'USD', { required: false }),
     status: status(),
   })
 }

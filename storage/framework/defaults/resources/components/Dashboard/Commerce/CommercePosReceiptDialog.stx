@@ -1,4 +1,5 @@
 <script client>
+import { formatCurrency } from '@stacksjs/commerce/money'
 interface PosReceiptLine {
   productId: number
   name: string
@@ -25,14 +26,7 @@ const receipt = useReactiveProp('receipt', null as PosReceipt | null)
 const emit = defineEmits()
 
 function formatMoney(value: number): string {
-  const current = receipt()
-  const currency = current?.currency || 'USD'
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${currency}`
-  }
+  return formatCurrency(value, receipt()?.currency || 'USD')
 }
 
 function formatDate(value: string): string {

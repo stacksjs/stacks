@@ -1,6 +1,7 @@
 <script client>
 import { dashboardApi } from '../../../../../functions/dashboard-api'
 import { pushToast } from '../../../../../functions/toasts'
+import { formatCurrency, minorToInput } from '@stacksjs/commerce/money'
 
 interface ShippingResourceOption {
   id: number
@@ -69,7 +70,7 @@ function filteredRecords(): ShippingRateRecord[] {
     record.shipping_zone?.name,
     record.weight_from,
     record.weight_to,
-    record.rate / 100,
+    minorToInput(record.rate, 'USD'),
   ].some(value => String(value ?? '').toLowerCase().includes(query)))
 }
 
@@ -86,7 +87,7 @@ function averageRate(): string {
   if (!records().length)
     return '$0.00'
   const average = records().reduce((sum, record) => sum + record.rate, 0) / records().length
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(average / 100)
+  return formatCurrency(average, 'USD', 'en-US')
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {

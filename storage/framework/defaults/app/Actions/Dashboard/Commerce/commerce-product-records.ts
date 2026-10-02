@@ -1,9 +1,11 @@
+import { moneyInputError, parseMoneyInput } from '@stacksjs/commerce/money'
 import { commerceTimestamp } from './commerce-record'
 
 export interface CommerceProductRecord {
   id: string
   name: string
   description: string
+  /** Integer minor units of the store currency (1999 is $19.99 in USD). */
   price: number
   imageUrl: string
   isAvailable: boolean
@@ -58,6 +60,73 @@ export interface ProductReviewSummary {
   approved: number
   pending: number
   averageRating: number
+}
+
+/**
+ * The product form as the dashboard dialog holds it: every field is the text
+ * the person typed, including the price in MAJOR units (`"19.99"`).
+ */
+export interface ProductFormFields {
+  name: string
+  description: string
+  price: string
+  imageUrl: string
+  isAvailable: boolean
+  inventoryCount: string
+  preparationTime: string
+  allergens: string
+  nutritionalInfo: string
+  categoryId: string
+  manufacturerId: string
+}
+
+/** What the dialog sends to `POST`/`PATCH /api/dashboard/commerce/products`. */
+export interface ProductWritePayload {
+  name: string
+  description: string
+  /** Integer minor units, never a decimal (stacksjs/stacks#2851). */
+  price: number
+  imageUrl: string
+  isAvailable: boolean
+  inventoryCount: number
+  preparationTime: number
+  allergens: string
+  nutritionalInfo: string
+  categoryId: number | null
+  manufacturerId: number | null
+}
+
+/** One minor unit (a cent in USD): the Product model's `price` minimum. */
+export const MIN_PRODUCT_PRICE = 1
+
+/** Why a typed price cannot be saved in `currency`, or `''` when it can. */
+export function productPriceInputError(price: string, currency: string): string {
+  return moneyInputError(price, currency, { min: MIN_PRODUCT_PRICE })
+}
+
+/**
+ * The dialog's fields as the payload the products API stores.
+ *
+ * The one place a typed price becomes the stored integer: `"19.99"` in USD is
+ * `1999`, by string arithmetic, so the dashboard writes the same unit the
+ * catalog importer and order totals read. Throws `PriceFormatError` for a
+ * price `productPriceInputError` would reject.
+ */
+export function productWritePayload(form: ProductFormFields, currency: string): ProductWritePayload {
+  const allergens = form.allergens.split(',').map(item => item.trim()).filter(Boolean)
+  return {
+    name: form.name.trim(),
+    description: form.description.trim(),
+    price: parseMoneyInput(form.price, currency, { min: MIN_PRODUCT_PRICE }),
+    imageUrl: form.imageUrl.trim(),
+    isAvailable: form.isAvailable,
+    inventoryCount: Number(form.inventoryCount),
+    preparationTime: Number(form.preparationTime),
+    allergens: JSON.stringify(allergens),
+    nutritionalInfo: form.nutritionalInfo.trim() || '{}',
+    categoryId: form.categoryId ? Number(form.categoryId) : null,
+    manufacturerId: form.manufacturerId ? Number(form.manufacturerId) : null,
+  }
 }
 
 function value(record: any, ...keys: string[]): unknown {

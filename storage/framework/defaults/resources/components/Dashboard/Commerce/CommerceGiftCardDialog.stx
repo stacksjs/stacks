@@ -1,5 +1,6 @@
 <script client>
 import type { GiftCardRecord, GiftCardStatus } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
+import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
@@ -8,8 +9,9 @@ const busy = useReactiveProp('busy', false)
 const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits()
 const code = state('')
-const initialBalance = state('50')
-const currentBalance = state('50')
+// Balances as typed, in major units. Stored as integer minor units.
+const initialBalance = state('50.00')
+const currentBalance = state('50.00')
 const currency = state('USD')
 const status = state<GiftCardStatus>('ACTIVE')
 const purchaserId = state('')
@@ -24,7 +26,7 @@ const lastUsedDate = state('')
 const templateId = state('')
 const customerId = state('')
 let hydrationKey = ''
-let previousInitialBalance = '50'
+let previousInitialBalance = '50.00'
 
 function generatedCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -61,11 +63,12 @@ effect(() => {
     return
   hydrationKey = key
   code.set(current?.code || generatedCode())
-  const hydratedInitialBalance = String(current?.initialBalance || 50)
+  const cardCurrency = current?.currency || 'USD'
+  const hydratedInitialBalance = current?.initialBalance ? minorToInput(current.initialBalance, cardCurrency) : '50.00'
   initialBalance.set(hydratedInitialBalance)
-  currentBalance.set(String(current?.currentBalance ?? current?.initialBalance ?? 50))
+  currentBalance.set(current ? minorToInput(current.currentBalance ?? current.initialBalance, cardCurrency) : hydratedInitialBalance)
   previousInitialBalance = hydratedInitialBalance
-  currency.set(current?.currency || 'USD')
+  currency.set(cardCurrency)
   status.set(current?.status || 'ACTIVE')
   purchaserId.set(current?.purchaserId || '')
   recipientEmail.set(current?.recipientEmail || '')
@@ -102,13 +105,13 @@ function optionalCustomerId(): number | undefined {
 }
 
 function balanceError(): string {
-  const initial = Number(initialBalance())
-  const current = Number(currentBalance())
-  if (!Number.isFinite(initial) || initial < 1)
-    return 'Initial balance must be at least 1.'
-  if (!Number.isFinite(current) || current < 0)
-    return 'Current balance cannot be negative.'
-  if (current > initial)
+  const initialError = moneyInputError(initialBalance(), currency(), { min: 1 })
+  if (initialError)
+    return `Initial balance: ${initialError}`
+  const currentError = moneyInputError(currentBalance(), currency())
+  if (currentError)
+    return `Current balance: ${currentError}`
+  if (parseMoneyInput(currentBalance(), currency()) > parseMoneyInput(initialBalance(), currency()))
     return 'Current balance cannot exceed the initial balance.'
   return ''
 }
@@ -126,8 +129,8 @@ function submit(): void {
     return
   emit('submit', {
     code: code().trim().toUpperCase(),
-    initialBalance: Number(initialBalance()),
-    currentBalance: Number(currentBalance()),
+    initialBalance: parseMoneyInput(initialBalance(), currency()),
+    currentBalance: parseMoneyInput(currentBalance(), currency()),
     currency: currency().trim().toUpperCase(),
     status: status(),
     purchaser_id: purchaserId().trim() || undefined,
@@ -165,8 +168,8 @@ function errorMessages(): string[] {
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input x-model="code" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Initial balance</span><input x-model="initialBalance" type="number" min="1" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="syncCurrentBalance($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Current balance</span><input x-model="currentBalance" :max="initialBalance()" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Initial balance</span><input x-model="initialBalance" type="number" min="0" :step="moneyInputStep(currency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="syncCurrentBalance($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Current balance</span><input x-model="currentBalance" :max="initialBalance()" type="number" min="0" :step="moneyInputStep(currency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <p :if="balanceError()" class="sm:col-span-2 -mt-2 text-red-600 text-xs dark:text-red-400">{{ balanceError() }}</p>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input x-model="currency" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>

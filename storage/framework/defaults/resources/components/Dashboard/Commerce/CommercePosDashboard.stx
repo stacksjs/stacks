@@ -6,6 +6,7 @@ import type {
 import type { ProductOption } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface PosPaymentMethod {
   id: string
@@ -91,8 +92,10 @@ const checkoutKey = state('')
 const receipt = state<PosReceipt | null>(null)
 const receiptOpen = state(false)
 
+// Amounts are integer minor units (cents for USD). Only tax can produce a
+// fraction of one, and it rounds to the nearest unit as the server does.
 function money(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100
+  return Math.round(value)
 }
 
 function cartUnits(): number {
@@ -112,12 +115,7 @@ function totalAmount(): number {
 }
 
 function formatMoney(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: defaultCurrency() }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${defaultCurrency()}`
-  }
+  return formatCurrency(value, defaultCurrency())
 }
 
 function visibleProducts(): CommercePosProduct[] {

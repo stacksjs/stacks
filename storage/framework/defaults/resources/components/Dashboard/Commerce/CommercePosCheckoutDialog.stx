@@ -1,5 +1,6 @@
 <script client>
 import type { CommercePosCustomer } from '../../../../app/Actions/Dashboard/Commerce/commerce-pos'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface PosPaymentMethod {
   id: string
@@ -38,12 +39,7 @@ effect(() => {
 })
 
 function formatMoney(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency() }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${currency()}`
-  }
+  return formatCurrency(value, currency())
 }
 
 function submit(): void {

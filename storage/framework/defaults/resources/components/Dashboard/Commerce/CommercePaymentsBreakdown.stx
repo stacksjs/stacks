@@ -3,6 +3,7 @@ import type {
   PaymentRecord,
 } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
 import { isSuccessfulPayment } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 interface CountRow {
   key: string
@@ -55,12 +56,7 @@ function label(value: string): string {
 }
 
 function money(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value / 100)
-  }
-  catch {
-    return `${currency} ${(value / 100).toFixed(2)}`
-  }
+  return formatCurrency(value, currency)
 }
 </script>
 

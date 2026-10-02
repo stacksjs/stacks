@@ -2,6 +2,7 @@ import type { SpreadsheetWrapper } from 'ts-spreadsheets'
 import type { OrderWithTotals } from '../types'
 import { db } from '@stacksjs/database/runtime'
 import { createSpreadsheet } from 'ts-spreadsheets'
+import { formatMinor } from '../money'
 
 /**
  * Represents the structure of an exported order
@@ -10,7 +11,8 @@ export interface ExportedOrder {
   'Order ID': number
   'Customer': string
   'Date': string
-  'Total': number
+  /** The stored minor units as a decimal with its currency, e.g. `19.99 USD`. */
+  'Total': string
   'Status': string
   'Items': string
 }
@@ -94,10 +96,14 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
 
 /**
  * Prepare orders data for spreadsheet export
+ *
+ * Amounts are stored as integer minor units, so `total_amount: 1999` in USD is
+ * written as `19.99 USD`, never as `1999` or `$1999` (stacksjs/stacks#2851).
+ *
  * @param orders Array of order objects
  * @returns Spreadsheet data structure
  */
-function prepareOrdersForExport(orders: OrderWithTotals[]) {
+export function prepareOrdersForExport(orders: OrderWithTotals[]): { headings: (keyof ExportedOrder)[], data: (string | number)[][] } {
   // Define headings
   const headings: (keyof ExportedOrder)[] = [
     'Order ID',
@@ -110,16 +116,18 @@ function prepareOrdersForExport(orders: OrderWithTotals[]) {
 
   // Transform orders into export format
   const data = orders.map((order: any) => {
+    const currency = typeof order.currency === 'string' && order.currency ? order.currency : null
+
     // Convert items to a readable string
     const itemsString = order.order_items
-      ?.map((item: any) => `${item.product?.name} (Qty: ${item.quantity}, Price: $${item.price})`)
+      ?.map((item: any) => `${item.product?.name} (Qty: ${item.quantity}, Price: ${formatMinor(Number(item.price ?? 0), currency)})`)
       .join(' | ') || 'No Items'
 
     return [
       order.id,
       order.customer?.name || 'N/A',
       order.created_at,
-      order.total_amount,
+      formatMinor(Number(order.total_amount ?? 0), currency),
       order.status,
       itemsString,
     ]

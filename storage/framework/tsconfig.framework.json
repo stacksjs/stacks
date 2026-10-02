@@ -40,6 +40,7 @@
       // source it is meant to check: `RuntimeLog` without `flush`, a missing
       // `http-error` and `request-validator`, all of them present in `src/`.
       "@stacksjs/cms/*": ["./core/cms/src/*"],
+      "@stacksjs/commerce/*": ["./core/commerce/src/*"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
       "@stacksjs/logging/*": ["./core/logging/src/*"],
       "@stacksjs/path/*": ["./core/path/src/*"],

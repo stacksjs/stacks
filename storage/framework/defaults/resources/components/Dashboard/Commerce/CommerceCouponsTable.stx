@@ -1,8 +1,10 @@
 <script client>
 import type { CouponRecord } from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as CouponRecord[])
 const loading = useReactiveProp('loading', false)
+const currency = useReactiveProp('currency', 'USD')
 const emit = defineEmits()
 
 function statusClass(status: string): string {
@@ -13,10 +15,11 @@ function statusClass(status: string): string {
   return 'bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-neutral-300'
 }
 
+// A percentage is a rate, not money; a fixed amount is integer minor units.
 function discount(record: CouponRecord): string {
   return record.discountType === 'percentage'
     ? `${record.discountValue}%`
-    : new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(record.discountValue)
+    : formatCurrency(record.discountValue, currency())
 }
 
 function date(value: string): string {

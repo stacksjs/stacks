@@ -31,6 +31,7 @@
       // runs against whatever was built last instead of the source.
       "@stacksjs/browser/*": ["./core/browser/src/*"],
       "@stacksjs/cms/*": ["./core/cms/src/*"],
+      "@stacksjs/commerce/*": ["./core/commerce/src/*"],
       "@stacksjs/composables/*": ["./core/composables/src/*"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
       "@stacksjs/logging/*": ["./core/logging/src/*"],

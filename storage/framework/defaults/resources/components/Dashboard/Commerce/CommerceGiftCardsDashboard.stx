@@ -6,6 +6,7 @@ import type {
 } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { minorToInput } from '@stacksjs/commerce/money'
 
 interface GiftCardIndexResponse {
   records: GiftCardRecord[]
@@ -125,8 +126,8 @@ function exportHref(): string {
     record.isDigital ? 'Digital' : 'Physical',
     record.isReloadable ? 'Reloadable' : 'Single use',
     record.currency,
-    String(record.initialBalance),
-    String(record.currentBalance),
+    minorToInput(record.initialBalance, record.currency),
+    minorToInput(record.currentBalance, record.currency),
     record.expiryDate,
     record.lastUsedDate,
   ])

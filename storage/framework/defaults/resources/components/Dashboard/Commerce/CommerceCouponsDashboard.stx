@@ -7,6 +7,7 @@ import type {
 } from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { minorToInput } from '@stacksjs/commerce/money'
 
 interface CouponIndexResponse {
   records: CouponRecord[]
@@ -104,7 +105,8 @@ function exportHref(): string {
     record.status,
     record.isActive ? 'Enabled' : 'Disabled',
     record.discountType,
-    String(record.discountValue),
+    // A fixed amount is stored in minor units; the CSV carries the decimal.
+    record.discountType === 'fixed_amount' ? minorToInput(record.discountValue, 'USD') : String(record.discountValue),
     String(record.usageCount),
     record.usageLimit === null ? '' : String(record.usageLimit),
     record.startDate,

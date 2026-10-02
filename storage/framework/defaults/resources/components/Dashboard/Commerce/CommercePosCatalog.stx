@@ -1,6 +1,7 @@
 <script client>
 import type { CommercePosProduct } from '../../../../app/Actions/Dashboard/Commerce/commerce-pos'
 import type { ProductOption } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const products = useReactiveProp('products', [] as CommercePosProduct[])
 const categories = useReactiveProp('categories', [] as ProductOption[])
@@ -16,12 +17,7 @@ function initials(name: string): string {
 }
 
 function formatMoney(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency() }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${currency()}`
-  }
+  return formatCurrency(value, currency())
 }
 
 function sellable(product: CommercePosProduct): boolean {

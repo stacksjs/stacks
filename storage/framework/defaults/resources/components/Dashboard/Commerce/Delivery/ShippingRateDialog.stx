@@ -1,4 +1,5 @@
 <script client>
+import { minorToInput, moneyInputError, parseMoneyInput } from '@stacksjs/commerce/money'
 interface ShippingResourceOption {
   id: number
   name: string
@@ -42,7 +43,7 @@ effect(() => {
   zoneId.set(current ? String(current.shipping_zone_id) : '')
   weightFrom.set(current ? String(current.weight_from) : '')
   weightTo.set(current ? String(current.weight_to) : '')
-  amount.set(current ? (current.rate / 100).toFixed(2) : '')
+  amount.set(current ? minorToInput(current.rate, 'USD') : '')
 })
 
 function submit(): void {
@@ -50,7 +51,6 @@ function submit(): void {
   const selectedZoneId = Number(zoneId())
   const from = Number(weightFrom())
   const to = Number(weightTo())
-  const rate = Number(amount())
 
   if (!Number.isInteger(selectedMethodId) || selectedMethodId < 1) {
     emit('invalid', 'Select a shipping method.')
@@ -68,8 +68,10 @@ function submit(): void {
     emit('invalid', 'Ending weight must be greater than or equal to the starting weight.')
     return
   }
-  if (!Number.isFinite(rate) || rate < 0) {
-    emit('invalid', 'Rate must be a non-negative amount.')
+  // Typed in dollars, stored as integer cents.
+  const rateError = moneyInputError(amount(), 'USD')
+  if (rateError) {
+    emit('invalid', `Rate: ${rateError}`)
     return
   }
 
@@ -78,7 +80,7 @@ function submit(): void {
     shippingZoneId: selectedZoneId,
     weightFrom: from,
     weightTo: to,
-    rate: Math.round(rate * 100),
+    rate: parseMoneyInput(amount(), 'USD'),
   })
 }
 </script>

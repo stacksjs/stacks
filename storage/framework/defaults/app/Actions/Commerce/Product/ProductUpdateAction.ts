@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { products } from '@stacksjs/commerce'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { commerceIdentifier, commerceNotFound } from '../commerce-action'
+import { commerceIdentifier, commerceMinorAmountError, commerceNotFound } from '../commerce-action'
 
 export default new Action({
   name: 'Product Update',
@@ -16,6 +16,9 @@ export default new Action({
     const { id } = identifier
 
     await request.validate()
+    const priceError = commerceMinorAmountError(request, 'price', 'Price', { min: 1 })
+    if (priceError)
+      return priceError
     const data = toSnakeCaseKeys(request.all())
 
     const model = await products.items.update(id, data)

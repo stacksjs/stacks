@@ -32,6 +32,7 @@
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/composables/*": ["./composables/src/*"],
       "@stacksjs/cms/*": ["./cms/src/*"],
+      "@stacksjs/commerce/*": ["./commerce/src/*"],
       "@stacksjs/database/*": ["./database/src/*"],
       "@stacksjs/error-handling/*": ["./error-handling/src/*"],
       // The deploy box has no `dist/` at all, so this is the only way the

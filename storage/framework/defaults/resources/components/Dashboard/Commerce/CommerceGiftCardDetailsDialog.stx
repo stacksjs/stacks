@@ -1,17 +1,13 @@
 <script client>
 import type { GiftCardRecord } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as GiftCardRecord | null)
 const emit = defineEmits()
 
 function money(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
-  }
-  catch {
-    return `${currency} ${value.toFixed(2)}`
-  }
+  return formatCurrency(value, currency)
 }
 
 function dateTime(value: string): string {

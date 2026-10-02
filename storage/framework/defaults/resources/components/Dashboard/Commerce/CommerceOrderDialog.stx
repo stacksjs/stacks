@@ -3,6 +3,7 @@ import type {
   CommerceOrderRecord,
   OrderCustomerOption,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
+import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
@@ -43,12 +44,14 @@ effect(() => {
   customerId.set(current?.customerId || '')
   couponId.set(current?.couponId || '')
   status.set(current?.status || statuses()[0] || 'PENDING')
-  totalAmount.set(String(current?.totalAmount ?? 0))
-  currency.set(current?.currency || defaultCurrency())
-  taxAmount.set(String(current?.taxAmount ?? 0))
-  discountAmount.set(String(current?.discountAmount ?? 0))
-  deliveryFee.set(String(current?.deliveryFee ?? 0))
-  tipAmount.set(String(current?.tipAmount ?? 0))
+  // Stored amounts are integer minor units; the fields show the decimal.
+  const orderCurrency = current?.currency || defaultCurrency()
+  currency.set(orderCurrency)
+  totalAmount.set(minorToInput(current?.totalAmount ?? 0, orderCurrency))
+  taxAmount.set(minorToInput(current?.taxAmount ?? 0, orderCurrency))
+  discountAmount.set(minorToInput(current?.discountAmount ?? 0, orderCurrency))
+  deliveryFee.set(minorToInput(current?.deliveryFee ?? 0, orderCurrency))
+  tipAmount.set(minorToInput(current?.tipAmount ?? 0, orderCurrency))
   orderType.set(current?.orderType || orderTypes()[0] || 'DELIVERY')
   deliveryAddress.set(current?.deliveryAddress || '')
   specialInstructions.set(current?.specialInstructions || '')
@@ -60,9 +63,14 @@ function label(value: string): string {
   return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
 }
 
-function validNumber(value: string): boolean {
-  const result = Number(value)
-  return Number.isFinite(result) && result >= 0
+// An empty optional amount means zero, as it did before amounts were
+// converted to minor units.
+function validNumber(value: string, required = false): boolean {
+  return !moneyInputError(value, currency(), { required })
+}
+
+function minorAmount(value: string): number {
+  return parseMoneyInput(value, currency(), { required: false }) ?? 0
 }
 
 function valid(): boolean {
@@ -70,7 +78,7 @@ function valid(): boolean {
     status().trim()
     && orderType().trim()
     && currency().trim().length === 3
-    && validNumber(totalAmount())
+    && validNumber(totalAmount(), true)
     && validNumber(taxAmount())
     && validNumber(discountAmount())
     && validNumber(deliveryFee())
@@ -85,12 +93,12 @@ function submit(): void {
     customerId: customerId() ? Number(customerId()) : undefined,
     couponId: couponId() ? Number(couponId()) : undefined,
     status: status().trim(),
-    totalAmount: Number(totalAmount()),
+    totalAmount: parseMoneyInput(totalAmount(), currency()),
     currency: currency().trim().toUpperCase(),
-    taxAmount: Number(taxAmount()),
-    discountAmount: Number(discountAmount()),
-    deliveryFee: Number(deliveryFee()),
-    tipAmount: Number(tipAmount()),
+    taxAmount: minorAmount(taxAmount()),
+    discountAmount: minorAmount(discountAmount()),
+    deliveryFee: minorAmount(deliveryFee()),
+    tipAmount: minorAmount(tipAmount()),
     orderType: orderType().trim(),
     deliveryAddress: deliveryAddress().trim() || undefined,
     specialInstructions: specialInstructions().trim() || undefined,
@@ -123,11 +131,11 @@ function errorMessages(): string[] {
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><template :for="option in statuses()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order type</span><select x-model="orderType" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><template :for="option in orderTypes()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input x-model="currency" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Total amount</span><input x-model="totalAmount" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Tax amount</span><input x-model="taxAmount" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount amount</span><input x-model="discountAmount" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Delivery fee</span><input x-model="deliveryFee" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Tip amount</span><input x-model="tipAmount" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Total amount</span><input x-model="totalAmount" type="number" min="0" :step="moneyInputStep(currency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Tax amount</span><input x-model="taxAmount" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount amount</span><input x-model="discountAmount" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Delivery fee</span><input x-model="deliveryFee" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Tip amount</span><input x-model="tipAmount" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Estimated delivery time</span><input x-model="estimatedDeliveryTime" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Coupon relation ID</span><input x-model="couponId" type="number" min="1" step="1" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Applied coupon reference</span><input x-model="appliedCouponId" type="text" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>

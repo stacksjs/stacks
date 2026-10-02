@@ -1,4 +1,5 @@
 <script client>
+import { formatCurrency } from '@stacksjs/commerce/money'
 interface PosCartLine {
   productId: string
   name: string
@@ -17,12 +18,7 @@ const totalAmount = useReactiveProp('totalAmount', 0)
 const emit = defineEmits()
 
 function formatMoney(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency() }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${currency()}`
-  }
+  return formatCurrency(value, currency())
 }
 </script>
 

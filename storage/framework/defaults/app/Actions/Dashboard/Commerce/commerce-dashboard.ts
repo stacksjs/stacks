@@ -1,3 +1,4 @@
+import { formatCurrency, minorToMajor } from '@stacksjs/commerce/money'
 import {
   commerceCurrency,
   commerceIdentifier,
@@ -45,6 +46,7 @@ export interface CommerceDashboardStat {
 
 export interface CommerceDashboardChartSeries {
   labels: string[]
+  /** Major units per bucket (19.99, not 1999): chart axes are read by people. */
   revenue: Array<{ currency: string, data: number[] }>
   orders: number[]
 }
@@ -239,18 +241,9 @@ function percentChange(current: number, previous: number): string {
   return `${sign}${percentage.toFixed(1)}%`
 }
 
+/** Order amounts are integer minor units (stacksjs/stacks#2851). */
 function formatMoney(amount: number, code: string): string {
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: code,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount)
-  }
-  catch {
-    return `${code} ${amount.toFixed(2)}`
-  }
+  return formatCurrency(amount, code, 'en-US')
 }
 
 function formatCurrencyTotals(totals: Map<string, number>): { value: string, detail: string } {
@@ -505,7 +498,7 @@ export function buildCommerceDashboard(
       labels: buckets.map(bucket => bucket.label),
       revenue: [...revenueSeries.entries()]
         .sort(([left], [right]) => left.localeCompare(right))
-        .map(([code, data]) => ({ currency: code, data })),
+        .map(([code, data]) => ({ currency: code, data: data.map(amount => minorToMajor(amount, code)) })),
       orders: orderSeries,
     },
     topProducts: [...productTotals.entries()]

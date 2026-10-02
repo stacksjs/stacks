@@ -3,9 +3,11 @@ import type {
   CommerceProductRecord,
   CommerceProductSummary,
   ProductOption,
+  ProductWritePayload,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { minorToInput } from '@stacksjs/commerce/money'
 
 interface ProductIndexResponse {
   records: CommerceProductRecord[]
@@ -13,20 +15,6 @@ interface ProductIndexResponse {
   categories: ProductOption[]
   manufacturers: ProductOption[]
   defaultCurrency: string
-}
-
-interface ProductWritePayload {
-  name: string
-  description: string
-  price: number
-  imageUrl: string
-  isAvailable: boolean
-  inventoryCount: number
-  preparationTime: number
-  allergens: string
-  nutritionalInfo: string
-  categoryId: number | null
-  manufacturerId: number | null
 }
 
 const emptySummary: CommerceProductSummary = {
@@ -135,7 +123,8 @@ function exportHref(): string {
     record.id,
     record.name,
     record.description,
-    String(record.price),
+    // Stored as integer minor units; the CSV carries the decimal a person reads.
+    minorToInput(record.price, defaultCurrency()),
     defaultCurrency(),
     record.isAvailable ? 'Available' : 'Unavailable',
     String(record.inventoryCount),

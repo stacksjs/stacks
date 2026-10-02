@@ -1,4 +1,5 @@
 <script client>
+import { formatCurrency as formatMinorUnits } from '@stacksjs/commerce/money'
 interface ResourceSummary {
   id: number
   name: string
@@ -18,11 +19,9 @@ interface ShippingRateRow {
 const rates = useReactiveProp('rates', [] as ShippingRateRow[])
 const emit = defineEmits()
 
+// Shipping amounts are stored as integer cents, in USD.
 function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(cents / 100)
+  return formatMinorUnits(cents, 'USD', 'en-US')
 }
 
 function formatWeight(weight: number): string {

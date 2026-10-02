@@ -1,12 +1,15 @@
 <script client>
 import type { CouponRecord } from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CouponRecord | null)
+const currency = useReactiveProp('currency', 'USD')
 const emit = defineEmits()
 
+// Fixed discounts and order thresholds are integer minor units.
 function money(value: number): string {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(value)
+  return formatCurrency(value, currency())
 }
 
 function discount(current: CouponRecord | null): string {

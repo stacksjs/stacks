@@ -7,6 +7,7 @@ import * as customers from './customers'
 import * as devices from './devices'
 import * as errors from './errors'
 import * as giftCards from './gift-cards'
+import * as money from './money'
 import * as orders from './orders'
 import * as payments from './payments'
 import * as products from './products'
@@ -83,6 +84,7 @@ export {
   devices,
   errors,
   giftCards,
+  money,
   orders,
   payments,
   products,
@@ -92,3 +94,21 @@ export {
   tax,
   waitlists,
 }
+
+// Money conversion at the display and input boundary: stored amounts are
+// integer minor units everywhere (stacksjs/stacks#2851). Browser code imports
+// the same functions from `@stacksjs/commerce/money`, which pulls in nothing else.
+export {
+  currencyExponent,
+  decimalToMinor,
+  formatCurrency,
+  formatMinor,
+  minorToDecimal,
+  minorToInput,
+  minorToMajor,
+  moneyInputError,
+  moneyInputStep,
+  parseMoneyInput,
+  PriceFormatError,
+} from './money'
+export type { MoneyInputOptions } from './money'

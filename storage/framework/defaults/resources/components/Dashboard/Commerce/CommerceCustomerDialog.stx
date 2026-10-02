@@ -1,5 +1,6 @@
 <script client>
 import type { CommerceCustomerRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-customer-records'
+import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
@@ -30,7 +31,8 @@ effect(() => {
   name.set(current?.name || '')
   email.set(current?.email || '')
   phone.set(current?.phone || '')
-  totalSpent.set(String(current?.totalSpent ?? 0))
+  // Stored as integer minor units; the field shows the decimal.
+  totalSpent.set(minorToInput(current?.totalSpent ?? 0, currency()))
   lastOrder.set(current?.lastOrder.slice(0, 10) || '')
   status.set(current?.status === 'Inactive' ? 'Inactive' : 'Active')
   avatar.set(current?.avatar || '')
@@ -47,12 +49,10 @@ function validAvatar(): boolean {
 }
 
 function valid(): boolean {
-  const spend = Number(totalSpent())
   return Boolean(
     name().trim().length >= 2
     && email().trim()
-    && Number.isFinite(spend)
-    && spend >= 0
+    && !moneyInputError(totalSpent(), currency())
     && validAvatar()
   )
 }
@@ -64,7 +64,7 @@ function submit(): void {
     name: name().trim(),
     email: email().trim(),
     phone: phone().trim(),
-    totalSpent: Number(totalSpent()),
+    totalSpent: parseMoneyInput(totalSpent(), currency()),
     lastOrder: lastOrder() || undefined,
     status: status(),
     avatar: avatar().trim(),
@@ -95,7 +95,7 @@ function errorMessages(): string[] {
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span><input x-model="email" type="email" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone <span class="font-normal text-gray-400 dark:text-neutral-500">(optional)</span></span><input x-model="phone" type="tel" maxlength="50" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recorded spend ({{ currency() }})</span><input x-model="totalSpent" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recorded spend ({{ currency() }})</span><input x-model="totalSpent" type="number" min="0" :step="moneyInputStep(currency())" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last order</span><input x-model="lastOrder" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span><input x-model="avatar" type="url" placeholder="https://cdn.example.com/customers/avatar.jpg" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span class="block mt-1 text-gray-400 text-xs dark:text-neutral-500">Use a persisted HTTP asset URL. The dashboard uses initials when rendering the table.</span></label>
         </div>

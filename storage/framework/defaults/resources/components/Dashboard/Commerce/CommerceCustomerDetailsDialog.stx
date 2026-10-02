@@ -1,5 +1,6 @@
 <script client>
 import type { CommerceCustomerRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-customer-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const record = useReactiveProp('record', null as CommerceCustomerRecord | null)
@@ -7,12 +8,7 @@ const currency = useReactiveProp('currency', 'USD')
 const emit = defineEmits()
 
 function formatMoney(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency() }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${currency()}`
-  }
+  return formatCurrency(value, currency())
 }
 
 function formatDate(value: string): string {
