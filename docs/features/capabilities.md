@@ -33,23 +33,21 @@ is a driver you cannot select.
 | Driver | Status | Topology | Live service | Evidence |
 |---|---|---|---|---|
 | `sqlite` | **supported** | embedded | - | `integration.test.ts`<br>`sqlite-tx-serialization.test.ts` |
-| `mysql` | **partial** | client-server | - | `integration.test.ts` |
+| `mysql` | **supported** | client-server | mysql 26.7.0 | `integration.test.ts`<br>`affected-rows.test.ts`<br>`ensure-database-sessions.test.ts`<br>`session-refresh-mysql.test.ts` |
 | `singlestore` | **experimental** | client-server | - | none retained |
 | `vitess` | **experimental** | mysql-behind-vtgate | - | `vitess-constraints.test.ts` |
-| `postgres` | **partial** | client-server | - | `postgres-pivot-timestamptz.test.ts` |
+| `postgres` | **supported** | client-server | postgres 17.11 | `postgres-pivot-timestamptz.test.ts`<br>`postgres-transaction-scope.test.ts`<br>`affected-rows.test.ts`<br>`ensure-database-sessions.test.ts` |
 | `dynamodb` | **unsupported** | managed-service | - | none retained |
 
 **Limitations**
 
-- **`mysql`** - The default CI suite does not yet publish a dedicated dialect report.
-- **`mysql`** - The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on MySQL. They must be regenerated against MySQL before migrating.
+- **`mysql`** - The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on MySQL. Regenerate them against MySQL (`buddy generate:migrations`) before migrating.
 - **`singlestore`** - MySQL wire compatibility exists, but a dedicated conformance matrix is not published.
 - **`vitess`** - No live cluster in CI; the retained evidence covers unsharded and sharded DDL profiles plus VSchema generation, not a round trip through vtgate.
 - **`vitess`** - Set DB_VITESS_SHARDED=true for a sharded keyspace; those keyspaces reject cross-shard foreign keys and AUTO_INCREMENT, so use application-generated IDs and a VSchema.
 - **`vitess`** - Schema changes on sharded keyspaces should go through Vitess online DDL.
 - **`vitess`** - A transaction spanning shards is best-effort or two-phase, not the single-node ACID the ORM assumes.
-- **`postgres`** - The default CI suite does not provision PostgreSQL.
-- **`postgres`** - The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on PostgreSQL. They must be regenerated against PostgreSQL before migrating.
+- **`postgres`** - The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on PostgreSQL. Regenerate them against PostgreSQL (`buddy generate:migrations`) before migrating.
 - **`dynamodb`** - DynamoDB helpers are not an ORM SQL driver and cannot be selected as database.default.
 
 ### Queue

@@ -168,7 +168,9 @@ jobs:
 
     services:
       mysql:
-        image: mysql:latest
+        # Pinned: the version is the liveServiceContract in
+        # core/config/src/capabilities.ts, and `latest` would move under it.
+        image: mysql:26.7.0
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test_db
@@ -184,7 +186,8 @@ jobs:
           --health-retries 10
 
       postgres:
-        image: postgres:17
+        # Pinned to the liveServiceContract version in capabilities.ts.
+        image: postgres:17.11
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
