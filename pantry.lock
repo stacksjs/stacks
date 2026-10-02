@@ -282,7 +282,7 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^10.0.0",
         "better-dx": "^0.2.24"
       }
     },
@@ -1781,12 +1781,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/ts-xml/-/ts-xml-0.1.2.tgz",
       "integrity": "sha512-G20EuKCmpwWwnXfFlX0kxCXnJ6ocTgBl8lcHkOzmomC8L/Ld+UKeNLlvOQf9ArnS7/SHUQ2+fZpM0t6lhwoyPw=="
     },
-    "@stripe/stripe-js@9.17.0": {
+    "@stripe/stripe-js@10.0.0": {
       "name": "@stripe/stripe-js",
-      "version": "9.17.0",
+      "version": "10.0.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stripe/stripe-js/-/stripe-js-9.17.0.tgz",
-      "integrity": "sha512-uidL4OJum5kivsOAQnVfQmYLJ2zdgirtmT0zWgskASZ4TPXxpXQ0MNrzW4NsXB90uEqmPHpSEtciLFbF1QQvNA=="
+      "resolved": "https://registry.npmjs.org/@stripe/stripe-js/-/stripe-js-10.0.0.tgz",
+      "integrity": "sha512-y5LKFTtnz1ciM+IQfrDfHcpjGlsm5Ao4onaUn4scurI/B6rNhrmV+ScTPDo+3Ges5oF8ol4tBkBAIZyVXVBIXw=="
     },
     "@ts-audio/core@0.1.2": {
       "name": "@ts-audio/core",
