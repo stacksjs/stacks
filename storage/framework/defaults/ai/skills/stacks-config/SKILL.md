@@ -127,7 +127,7 @@ they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
 ### Other
 | File | Type | Key Settings |
 |------|------|-------------|
-| `buddy-bot.ts` | BuddyBotConfig | repository, dashboard, workflows |
+| `buddy-bot.ts` | BuddyConfig (`@buddysh/buddy`) | repository, dashboard, workflows |
 | `cli.ts` | BinaryConfig | name, command, description |
 | `deps.ts` | PantryConfig | system dependencies (bun, sqlite, redis, etc.) |
 | `errors.ts` | ErrorConfig | comprehensive validation error messages |

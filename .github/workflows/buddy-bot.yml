@@ -115,7 +115,9 @@ jobs:
             # buddy-bot updates a PR body → fires edited event → re-triggers workflow)
             if [[ "$ACTOR" == *"[bot]"* ]] || [[ "$ACTOR" == "github-actions[bot]" ]] || [[ "$ACTOR" == "buddy-bot" ]]; then
               echo "ℹ️ Skipping — PR edit was made by bot actor: $ACTOR"
-            elif [[ "$BRANCH" == buddy-bot/* ]]; then
+            # @buddysh/buddy opens `buddy/` branches; `buddy-bot/` is the prefix
+            # pull requests opened before the rename still carry.
+            elif [[ "$BRANCH" == buddy/* ]] || [[ "$BRANCH" == buddy-bot/* ]]; then
               echo "run_check=true" >> $GITHUB_OUTPUT
               echo "ℹ️ buddy-bot PR edited by user — running rebase check for branch: $BRANCH"
             else
@@ -239,10 +241,10 @@ jobs:
 
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             echo "📋 Running in DRY RUN mode..."
-            bunx buddy-bot update-check --dry-run --verbose
+            bunx @buddysh/buddy update-check --dry-run --verbose
           else
             echo "🔄 Running in LIVE mode..."
-            bunx buddy-bot update-check --verbose
+            bunx @buddysh/buddy update-check --verbose
           fi
 
         env:
@@ -335,15 +337,15 @@ jobs:
 
           if [ "$PACKAGES" != "" ]; then
             if [ "$VERBOSE" = "true" ]; then
-              bunx buddy-bot update --packages "$PACKAGES" --verbose
+              bunx @buddysh/buddy update --packages "$PACKAGES" --verbose
             else
-              bunx buddy-bot update --packages "$PACKAGES"
+              bunx @buddysh/buddy update --packages "$PACKAGES"
             fi
           else
             if [ "$VERBOSE" = "true" ]; then
-              bunx buddy-bot update --strategy "$STRATEGY" --verbose
+              bunx @buddysh/buddy update --strategy "$STRATEGY" --verbose
             else
-              bunx buddy-bot update --strategy "$STRATEGY"
+              bunx @buddysh/buddy update --strategy "$STRATEGY"
             fi
           fi
 
@@ -459,7 +461,7 @@ jobs:
           set -e  # Exit on any error
 
           # Build the command
-          COMMAND="bunx buddy-bot dashboard"
+          COMMAND="bunx @buddysh/buddy dashboard"
 
           if [ "$TITLE" != "" ]; then
             COMMAND="$COMMAND --title \"$TITLE\""
@@ -482,9 +484,9 @@ jobs:
             # Run scan to show what would be included
             echo "🔍 Scanning for dependencies that would be included:"
             if [ "$VERBOSE" = "true" ]; then
-              bunx buddy-bot scan --verbose
+              bunx @buddysh/buddy scan --verbose
             else
-              bunx buddy-bot scan
+              bunx @buddysh/buddy scan
             fi
           else
             echo "🚀 Executing dashboard update:"

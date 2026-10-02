@@ -1,4 +1,4 @@
-import type { BuddyBotConfig } from 'buddy-bot'
+import type { BuddyConfig } from '@buddysh/buddy'
 
 /**
  * buddy-bot is the one dependency bot a Stacks app runs.
@@ -47,4 +47,4 @@ export default {
   },
 
   verbose: false,
-} satisfies BuddyBotConfig
+} satisfies BuddyConfig

@@ -9,7 +9,7 @@
         "stacks": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.24"
+        "better-dx": "^0.2.27"
       },
       "system": {
         "bun.sh": "1.4.2",
@@ -1874,13 +1874,14 @@
         "require-from-string": "^2.0.2"
       }
     },
-    "better-dx@0.2.25": {
+    "better-dx@0.2.27": {
       "name": "better-dx",
-      "version": "0.2.25",
+      "version": "0.2.27",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.25.tgz",
-      "integrity": "sha512-7GQ3EDXDwdZbpzwqWrOC2kzKkfw2Ptd30Bl1VlLS1SV82MvU5VIYXtGsRcJ5+6M17n9hQwGuT2TGEZEaWgZQaw==",
+      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.27.tgz",
+      "integrity": "sha512-xuBvXFjXx5gtNLKHixp0w+fTUJRLt5yYg0VSxWnicLUuvGlgtvfS4jKAL9WZrceNziubMIthLxeJpZLNe7nUwg==",
       "dependencies": {
+        "@buddysh/buddy": "^0.11.4",
         "@stacksjs/bumpx": "^0.2.14",
         "@stacksjs/bunpress": "^0.2.8",
         "@stacksjs/clapp": "^0.2.12",
@@ -1888,9 +1889,8 @@
         "@stacksjs/gitlint": "^0.1.7",
         "@stacksjs/logsmith": "^0.2.6",
         "@types/bun": "^1.3.14",
-        "buddy-bot": "^0.10.5",
         "bun-git-hooks": "^0.3.2",
-        "bun-plugin-dtsx": "^0.11.1",
+        "bun-plugin-dtsx": "^0.11.10",
         "bunfig": "^0.15.15",
         "pickier": "^0.1.40",
         "ts-error-handling": "^0.1.3",

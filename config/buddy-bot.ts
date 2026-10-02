@@ -1,4 +1,4 @@
-import type { BuddyBotConfig } from 'buddy-bot'
+import type { BuddyConfig } from '@buddysh/buddy'
 
 export default {
   repository: {
@@ -34,4 +34,4 @@ export default {
     ],
   },
   verbose: false,
-} satisfies BuddyBotConfig
+} satisfies BuddyConfig

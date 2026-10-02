@@ -73,10 +73,13 @@ async function buildDashboardData(opts: DashboardOptions): Promise<DashboardData
   const repos = await fetchAllRepos(orgs, opts.ignoreRepos)
   const statuses = await mapWithConcurrency(repos, 8, r => fetchRepoStatus(r.owner, r.name, r.default_branch))
 
+  // `head:` matches a branch-name prefix, so `buddy` covers both the `buddy/`
+  // branches @buddysh/buddy opens and the `buddy-bot/` ones from before the
+  // rename.
   const prCountMaps = await Promise.all(
     orgs.flatMap(org => [
-      fetchPullRequestCounts(org, 'head:buddy-bot').then(m => ({ type: 'buddy-bot' as const, map: m })),
-      fetchPullRequestCounts(org, 'author:app/github-actions -head:buddy-bot').then(m => ({ type: 'actions' as const, map: m })),
+      fetchPullRequestCounts(org, 'head:buddy').then(m => ({ type: 'buddy-bot' as const, map: m })),
+      fetchPullRequestCounts(org, 'author:app/github-actions -head:buddy').then(m => ({ type: 'actions' as const, map: m })),
     ]),
   )
   const buddyBotCounts = new Map<string, number>()
@@ -92,9 +95,9 @@ async function buildDashboardData(opts: DashboardOptions): Promise<DashboardData
     s.buddyBotPRs = buddyBotCount
     s.actionsPRs = aCount
     if (buddyBotCount > 0)
-      s.buddyBotPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open head:buddy-bot')}`
+      s.buddyBotPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open head:buddy')}`
     if (aCount > 0)
-      s.actionsPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open author:app/github-actions -head:buddy-bot')}`
+      s.actionsPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open author:app/github-actions -head:buddy')}`
   }
 
   const runnerCounts = await mapWithConcurrency(repos, 8, async r => ({

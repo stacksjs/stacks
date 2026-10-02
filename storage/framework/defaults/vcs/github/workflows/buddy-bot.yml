@@ -98,12 +98,12 @@ jobs:
 
       - name: Open and refresh update pull requests
         if: ${{ github.event.schedule == '0 */2 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "update"]'), inputs.job)) }}
-        run: bunx buddy-bot update --strategy "${{ inputs.strategy || 'patch' }}" ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: bunx @buddysh/buddy update --strategy "${{ inputs.strategy || 'patch' }}" ${{ inputs.dry_run && '--dry-run' || '' }}
 
       - name: Update the dependency dashboard
         if: ${{ github.event.schedule == '15 */2 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "dashboard"]'), inputs.job)) }}
-        run: bunx buddy-bot dashboard ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: bunx @buddysh/buddy dashboard ${{ inputs.dry_run && '--dry-run' || '' }}
 
       - name: Close landed pull requests and clean up branches
         if: ${{ github.event.schedule == '0 4 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "check"]'), inputs.job)) }}
-        run: bunx buddy-bot update-check ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: bunx @buddysh/buddy update-check ${{ inputs.dry_run && '--dry-run' || '' }}
