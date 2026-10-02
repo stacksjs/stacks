@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.39...v0.75.40)
+
+## 🐛 Bug Fixes
+
+- **build**: build @stacksjs/commerce again now browser code imports it ([d9bf874](https://github.com/stacksjs/stacks/commit/d9bf874)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2851](https://github.com/stacksjs/stacks/issues/2851), [#2848](https://github.com/stacksjs/stacks/issues/2848))
+- **storefront**: price carts, checkout and orders in minor units ([2fdfb2e](https://github.com/stacksjs/stacks/commit/2fdfb2e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2851](https://github.com/stacksjs/stacks/issues/2851))
+
+## 📝 Documentation
+
+- **deps**: the two lockfiles, who writes them, and how to regenerate ([57d36ce](https://github.com/stacksjs/stacks/commit/57d36ce)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2843](https://github.com/stacksjs/stacks/issues/2843), [#2843](https://github.com/stacksjs/stacks/issues/2843), [#2848](https://github.com/stacksjs/stacks/issues/2848))
+
+## 🔧 Chores
+
+- **deps**: better-dx ^0.2.31, for @buddysh/buddy 0.11.8 ([149afb2](https://github.com/stacksjs/stacks/commit/149afb2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+- **deps**: better-dx ^0.2.29, for @buddysh/buddy 0.11.6 ([b800032](https://github.com/stacksjs/stacks/commit/b800032)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+- **ci**: pantry 0.11.65, so pantry.lock agrees with bun.lock ([ab43618](https://github.com/stacksjs/stacks/commit/ab43618)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848), [#235](https://github.com/stacksjs/stacks/issues/235), [#2843](https://github.com/stacksjs/stacks/issues/2843), [#2850](https://github.com/stacksjs/stacks/issues/2850))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.38...v0.75.39)
 
 ## ✨ Features
