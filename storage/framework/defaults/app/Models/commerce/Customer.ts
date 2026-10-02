@@ -82,7 +82,8 @@ export default defineModel({
           min: 'Total spent cannot be negative',
         },
       },
-      factory: faker => faker.number.int({ min: 0, max: 2000 }),
+      // Integer minor units: $0 to $5,000.
+      factory: faker => faker.number.int({ min: 0, max: 500000 }),
     },
 
     lastOrder: {

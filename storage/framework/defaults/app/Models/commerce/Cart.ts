@@ -65,7 +65,8 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 0, max: 1000 }),
+      // Integer minor units, like every commerce amount: 1999 is $19.99.
+      factory: faker => faker.number.int({ min: 1000, max: 20000 }),
     },
 
     taxAmount: {
@@ -75,7 +76,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 0, max: 200 }),
+      factory: faker => faker.number.int({ min: 0, max: 1500 }),
     },
 
     discountAmount: {
@@ -85,7 +86,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 0, max: 100 }),
+      factory: faker => faker.number.int({ min: 0, max: 1000 }),
     },
 
     total: {
@@ -95,7 +96,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 0, max: 1200 }),
+      factory: faker => faker.number.int({ min: 1000, max: 21500 }),
     },
 
     expiresAt: {

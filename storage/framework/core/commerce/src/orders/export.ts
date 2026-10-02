@@ -23,8 +23,8 @@ export interface ExportedOrder {
  * @returns Spreadsheet object ready for download or storage
  */
 export async function exportOrders(format: 'csv' | 'excel' = 'csv'): Promise<SpreadsheetWrapper> {
-  // Fetch all orders with their details
-  const orders = await fetchAllWithDetails()
+  // Fetch all orders with their customers and line items
+  const orders = await fetchOrdersForExport()
 
   // Prepare data for spreadsheet
   const spreadsheetData = prepareOrdersForExport(orders)
@@ -34,64 +34,113 @@ export async function exportOrders(format: 'csv' | 'excel' = 'csv'): Promise<Spr
 }
 
 /**
- * Fetch all orders with customer names and order items
+ * How many ids go into one `IN (...)` list. SQLite caps bound parameters per
+ * statement (32766 on current builds, 999 on old ones), so a large export is
+ * read in slices rather than as one statement that fails past the cap.
  */
-async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
-  const ordersWithCustomers = await db
+const ID_CHUNK = 500
+
+function chunks<T>(values: T[], size = ID_CHUNK): T[][] {
+  const result: T[][] = []
+  for (let index = 0; index < values.length; index += size)
+    result.push(values.slice(index, index + size))
+  return result
+}
+
+function uniqueIds(values: unknown[]): number[] {
+  const ids = new Set<number>()
+  for (const value of values) {
+    const id = Number(value)
+    if (Number.isSafeInteger(id) && id > 0)
+      ids.add(id)
+  }
+  return [...ids]
+}
+
+/**
+ * Every order with its customer and its line items (each with its product),
+ * ready for `prepareOrdersForExport`.
+ *
+ * Four flat queries, whatever the number of orders: the orders, then the
+ * customers, line items and products they reference, each read with `IN` and
+ * stitched together in memory. Nothing is fetched per order.
+ *
+ * The orders are read on their own rather than joined to customers: a
+ * `SELECT *` across that join returns two `id` columns, and the customer's
+ * silently replaces the order's in the row object.
+ */
+export async function fetchOrdersForExport(): Promise<OrderWithTotals[]> {
+  const orders = await db
     .selectFrom('orders')
-    .leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
     .selectAll()
-    .select(['customers.name as customer_name', 'customers.email as customer_email'])
-    .execute()
+    .orderBy('id', 'asc')
+    .execute() as Record<string, any>[]
 
-  const orderIds = ordersWithCustomers.map((order: any) => order.id)
-
-  if (orderIds.length === 0) {
+  if (orders.length === 0)
     return []
+
+  const orderIds = uniqueIds(orders.map(order => order.id))
+  const customerIds = uniqueIds(orders.map(order => order.customer_id))
+
+  const customers = new Map<number, Record<string, any>>()
+  for (const ids of chunks(customerIds)) {
+    const rows = await db
+      .selectFrom('customers')
+      .where('id', 'in', ids)
+      .select(['id', 'name', 'email'])
+      .execute() as Record<string, any>[]
+    for (const row of rows)
+      customers.set(Number(row.id), row)
   }
 
-  // Fetch order items related only to the fetched orders
-  const allOrderItems = await db
-    .selectFrom('order_items')
-    .where('order_items.order_id', 'in', orderIds)
-    .select([
-      'order_items.order_id',
-      'order_items.quantity',
-      'order_items.price',
-    ])
-    .execute()
+  const items: Record<string, any>[] = []
+  for (const ids of chunks(orderIds)) {
+    const rows = await db
+      .selectFrom('order_items')
+      .where('order_id', 'in', ids)
+      .select(['id', 'order_id', 'product_id', 'quantity', 'price'])
+      .orderBy('id', 'asc')
+      .execute() as Record<string, any>[]
+    items.push(...rows)
+  }
 
-  const orderItemsMap = allOrderItems.reduce(
-    (acc: any, item: any) => {
-      if (!item.order_id)
-        return acc // Skip items without order_id
+  const products = new Map<number, Record<string, any>>()
+  for (const ids of chunks(uniqueIds(items.map(item => item.product_id)))) {
+    const rows = await db
+      .selectFrom('products')
+      .where('id', 'in', ids)
+      .select(['id', 'name'])
+      .execute() as Record<string, any>[]
+    for (const row of rows)
+      products.set(Number(row.id), row)
+  }
 
-      if (!acc[item.order_id]) {
-        acc[item.order_id] = {
-          totalItems: 0,
-          totalPrice: 0,
-        }
-      }
+  const itemsByOrder = new Map<number, Record<string, any>[]>()
+  for (const item of items) {
+    const orderId = Number(item.order_id)
+    const line = { ...item, product: products.get(Number(item.product_id)) }
+    const lines = itemsByOrder.get(orderId)
+    if (lines)
+      lines.push(line)
+    else
+      itemsByOrder.set(orderId, [line])
+  }
 
-      acc[item.order_id].totalItems += item.quantity
-      acc[item.order_id].totalPrice += item.price * item.quantity
-
-      return acc
-    },
-    {},
-  )
-
-  const enrichedOrders = ordersWithCustomers.map((order: any) => {
-    const orderItemData = orderItemsMap[order.id] || { totalItems: 0, totalPrice: 0 }
+  return orders.map((order) => {
+    const lines = itemsByOrder.get(Number(order.id)) ?? []
+    const customer = customers.get(Number(order.customer_id))
 
     return {
       ...order,
-      totalItems: orderItemData.totalItems,
-      totalPrice: orderItemData.totalPrice,
-    }
+      customer,
+      customer_name: customer?.name ?? null,
+      customer_email: customer?.email ?? null,
+      order_items: lines,
+      totalItems: lines.reduce((sum, line) => sum + Number(line.quantity ?? 0), 0),
+      // Integer minor units, like every amount it is summed from.
+      totalPrice: lines.reduce((sum, line) => sum + Number(line.price ?? 0) * Number(line.quantity ?? 0), 0),
+    } as unknown as OrderWithTotals
   })
-
-  return enrichedOrders as OrderWithTotals[]
 }
 
 /**
@@ -120,12 +169,12 @@ export function prepareOrdersForExport(orders: OrderWithTotals[]): { headings: (
 
     // Convert items to a readable string
     const itemsString = order.order_items
-      ?.map((item: any) => `${item.product?.name} (Qty: ${item.quantity}, Price: ${formatMinor(Number(item.price ?? 0), currency)})`)
+      ?.map((item: any) => `${item.product?.name || `Product #${item.product_id ?? '?'}`} (Qty: ${item.quantity}, Price: ${formatMinor(Number(item.price ?? 0), currency)})`)
       .join(' | ') || 'No Items'
 
     return [
       order.id,
-      order.customer?.name || 'N/A',
+      order.customer?.name || order.customer_name || 'N/A',
       order.created_at,
       formatMinor(Number(order.total_amount ?? 0), currency),
       order.status,

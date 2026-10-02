@@ -111,7 +111,8 @@ export function buildSalesAnalytics(
       gross: total.gross,
       cancelled: total.cancelled,
       net: total.gross - total.cancelled,
-      average: total.orders > 0 ? Math.round((total.gross / total.orders) * 100) / 100 : 0,
+      // Amounts are integer minor units, so the average rounds to a whole one.
+      average: total.orders > 0 ? Math.round(total.gross / total.orders) : 0,
     }))
     .sort((left, right) => right.net - left.net)
 

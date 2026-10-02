@@ -1,4 +1,6 @@
 <script server>
+import { formatCurrency } from '@stacksjs/commerce/money'
+
 interface indexProps {
   transactionHistory?: any[]
 }
@@ -15,8 +17,9 @@ function formatTimestampDate(timestamp: number) {
     return lineData?.[0]?.plan?.interval || ''
   }
 
-  function getUnitPrice(lineData: Array<{ price?: { unit_amount?: number | string } }> | undefined) {
-    return (Number(lineData?.[0]?.price?.unit_amount || 0) / 100).toFixed(2)
+  // Stripe reports `unit_amount` in the currency's minor unit.
+  function getUnitPrice(lineData: Array<{ price?: { unit_amount?: number | string, currency?: string } }> | undefined) {
+    return formatCurrency(lineData?.[0]?.price?.unit_amount || 0, lineData?.[0]?.price?.currency || 'USD')
   }
 
   function getLastDigits(paymentIntent: { payment_method?: { card?: { last4?: string } } } | undefined) {
@@ -66,7 +69,7 @@ function formatTimestampDate(timestamp: number) {
                   {{ formatTimestampDate(transaction.created_at) }}
                 </td>
                 <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                  ${{ getUnitPrice(transaction.unit_price) }}
+                  {{ getUnitPrice(transaction.unit_price) }}
                 </td>
                 <td class="flex items-center px-3 py-4 space-x-2 text-gray-500 text-sm whitespace-nowrap">
                   <slot name="cardBrand" />

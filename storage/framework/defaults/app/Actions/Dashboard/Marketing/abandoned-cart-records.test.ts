@@ -314,3 +314,42 @@ describe('composing a recovery campaign', () => {
     expect(JSON.parse(data.segment_definition).rules[1].value).toBe(4)
   })
 })
+
+describe('cart money is integer minor units (stacksjs/stacks#2851)', () => {
+  test('a 1999-cent cart is worth $19.99, and the average rounds to a whole cent', () => {
+    const result = normalizeAbandonedCarts(
+      [cart({ id: 1, total: 1999 }), cart({ id: 2, customer_id: 12, total: 1000 })],
+      [],
+      CUSTOMERS,
+      [],
+      [],
+      { now: NOW },
+    )
+
+    expect(result.records[0].value).toBe(1999)
+    expect(result.summary.openValue).toBe(2999)
+    // 1499.5 cents is not an amount anything can hold.
+    expect(result.summary.averageValue).toBe(1500)
+  })
+
+  test('the dialog\'s threshold arrives in minor units and is compared against cart totals as such', () => {
+    // RecoveryCampaignDialog sends parseMoneyInput('25.00', 'USD'), which is 2500.
+    const data = recoveryCampaignWriteData({ name: 'Recovery', subject: 'Still here', minimumValue: 2500 })
+    expect(JSON.parse(data.segment_definition).rules[2]).toEqual({ field: 'cart.value', operator: 'gte', value: 2500 })
+
+    const records = normalizeAbandonedCarts(
+      [cart({ id: 1, total: 2499 }), cart({ id: 2, customer_id: 12, total: 2500 })],
+      [],
+      CUSTOMERS,
+      [],
+      [],
+      { now: NOW },
+    ).records
+    expect(reachOf(records, 1, 2500)).toEqual({ carts: 1, value: 2500 })
+  })
+
+  test('a fractional threshold is rounded to a whole minor unit', () => {
+    const data = recoveryCampaignWriteData({ name: 'Recovery', subject: 'Still here', minimumValue: 2500.4 })
+    expect(JSON.parse(data.segment_definition).rules[2].value).toBe(2500)
+  })
+})

@@ -1,6 +1,7 @@
 <script client>
 import type { AbandonedCartRecord } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
 import { reachOf } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+import { formatCurrency, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const records = useReactiveProp('records', [] as AbandonedCartRecord[])
@@ -16,7 +17,9 @@ const text = state('')
 const fromName = state('')
 const fromAddress = state('')
 const idleHours = state(4)
-const minimumValue = state(0)
+// The threshold as typed, in major units. Carts and the stored rule hold
+// integer minor units (stacksjs/stacks#2851).
+const minimumValue = state('0')
 const scheduledAt = state('')
 let hydrated = false
 
@@ -34,7 +37,7 @@ effect(() => {
   fromName.set('')
   fromAddress.set('')
   idleHours.set(defaultIdleHours())
-  minimumValue.set(0)
+  minimumValue.set('0')
   scheduledAt.set('')
 })
 
@@ -46,21 +49,29 @@ effect(() => {
  * still choosing it, not after they have scheduled a send to an empty room.
  */
 function reach(): { carts: number, value: number } {
-  return reachOf(records(), Number(idleHours()) || 0, Number(minimumValue()) || 0)
+  return reachOf(records(), Number(idleHours()) || 0, minimumMinor())
+}
+
+function minimumError(): string {
+  return moneyInputError(minimumValue(), defaultCurrency(), { required: false })
+}
+
+/** The typed threshold in minor units, or 0 while it is empty or unreadable. */
+function minimumMinor(): number {
+  if (minimumError())
+    return 0
+  return parseMoneyInput(minimumValue(), defaultCurrency(), { required: false }) ?? 0
 }
 
 function money(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: defaultCurrency() || 'USD' }).format(value)
-  }
-  catch {
-    return `${value.toFixed(2)} ${defaultCurrency()}`
-  }
+  return formatCurrency(value, defaultCurrency())
 }
 
 function submit(): void {
   const when = scheduledAt() ? new Date(scheduledAt()) : null
   if (when && !Number.isFinite(when.getTime()))
+    return
+  if (minimumError())
     return
 
   emit('submit', {
@@ -70,7 +81,7 @@ function submit(): void {
     fromName: fromName(),
     fromAddress: fromAddress(),
     idleHours: Number(idleHours()) || 0,
-    minimumValue: Number(minimumValue()) || 0,
+    minimumValue: minimumMinor(),
     scheduledAt: when ? when.toISOString() : null,
     currency: defaultCurrency(),
   })
@@ -101,8 +112,9 @@ function submit(): void {
       </label>
       <label class="block">
         <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Minimum cart value</span>
-        <input x-model="minimumValue" type="number" min="0" step="1" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-        <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave at zero to chase every cart.</span>
+        <input x-model="minimumValue" type="number" min="0" :step="moneyInputStep(defaultCurrency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+        <span :if="minimumError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ minimumError() }}</span>
+        <span :if="!minimumError()" class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave at zero to chase every cart.</span>
       </label>
     </div>
 
@@ -139,7 +151,7 @@ function submit(): void {
   <template #footer>
     <div class="flex gap-2 justify-end w-full">
       <Button :disabled="busy()" variant="secondary" @click="emit('close')">Close</Button>
-      <Button :disabled="busy() || !name() || !subject()" :loading="busy()" @click="submit()">{{ scheduledAt() ? 'Schedule campaign' : 'Save as draft' }}</Button>
+      <Button :disabled="busy() || !name() || !subject() || !!minimumError()" :loading="busy()" @click="submit()">{{ scheduledAt() ? 'Schedule campaign' : 'Save as draft' }}</Button>
     </div>
   </template>
 </Modal>

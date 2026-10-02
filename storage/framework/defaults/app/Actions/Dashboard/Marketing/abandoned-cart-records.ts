@@ -34,6 +34,7 @@ export interface AbandonedCartRecord {
   itemCount: number
   /** The first few product names, for a row that says what was left behind. */
   items: string[]
+  /** The cart's total, in integer minor units of `currency` (1999 is $19.99). */
   value: number
   currency: string
   abandonedAt: string
@@ -48,7 +49,7 @@ export interface AbandonedCartRecord {
 export interface AbandonedCartSummary {
   /** Carts sitting abandoned or expired right now. */
   open: number
-  /** What those carts are worth. */
+  /** What those carts are worth, in integer minor units. */
   openValue: number
   /** Of those, how many have already been written to. */
   contacted: number
@@ -57,6 +58,7 @@ export interface AbandonedCartSummary {
   recoveredValue: number
   /** Recovered as a share of everything that was ever chased. */
   recoveryRate: number
+  /** Rounded to a whole minor unit. */
   averageValue: number
   currency: string
 }
@@ -66,6 +68,7 @@ export interface RecoveryCampaignRecord {
   name: string
   status: string
   idleHours: number
+  /** The smallest cart total the campaign writes about, in integer minor units. */
   minimumValue: number
   sentCount: number
   openedCount: number
@@ -314,7 +317,7 @@ export function normalizeAbandonedCarts(
       recovered: recovered.length,
       recoveredValue,
       recoveryRate: chased > 0 ? recovered.length / chased * 100 : 0,
-      averageValue: open.length > 0 ? openValue / open.length : 0,
+      averageValue: open.length > 0 ? Math.round(openValue / open.length) : 0,
       currency: records[0]?.currency || defaultCurrency,
     },
     campaigns,
@@ -354,6 +357,7 @@ export interface RecoveryCampaignInput {
   fromAddress: string
   emailListId: number | null
   idleHours: number
+  /** Integer minor units, compared against a cart's `total`. */
   minimumValue: number
   scheduledAt: string | null
   currency: string
@@ -378,7 +382,9 @@ export function recoveryCampaignWriteData(
   currency: string
 } {
   const idleHours = Math.max(1, Math.round(Number(input.idleHours)) || DEFAULT_IDLE_HOURS)
-  const minimumValue = Math.max(0, Number(input.minimumValue) || 0)
+  // Minor units, like the cart totals it is compared against: a fraction of a
+  // cent is not a threshold anybody set.
+  const minimumValue = Math.max(0, Math.round(Number(input.minimumValue)) || 0)
   const emailListId = Number(input.emailListId ?? input.email_list_id)
   const scheduledAt = text(input.scheduledAt ?? input.scheduled_at).trim()
 

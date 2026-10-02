@@ -84,6 +84,21 @@ describe('commerce delivery overview', () => {
     })
   })
 
+  test('formats shipping rates in the currency\'s own minor unit (stacksjs/stacks#2851)', () => {
+    const methods = (currency: string) => buildDeliveryOverview(
+      [{ id: 1, name: 'Express', status: 'active', base_rate: 1500, free_shipping: 5000 }],
+      [],
+      [],
+      [],
+      currency,
+      now,
+    ).methods[0]
+
+    // A yen has no minor unit, so 1500 is 1,500 yen, not 15.
+    expect(methods('JPY')).toMatchObject({ baseRate: '¥1,500', freeShipping: '¥5,000' })
+    expect(methods('USD')).toMatchObject({ baseRate: '$15.00', freeShipping: '$50.00' })
+  })
+
   test('rejects corrupt delivery records and missing courier relationships', () => {
     expect(() => buildDeliveryOverview(
       [{ id: 1, name: 'Ground', status: 'active', base_rate: 'free', free_shipping: null }],

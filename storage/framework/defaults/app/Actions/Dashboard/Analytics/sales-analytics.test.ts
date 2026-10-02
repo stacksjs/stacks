@@ -63,4 +63,23 @@ describe('sales analytics', () => {
       currency: 'USD',
     }])
   })
+
+  test('averages integer minor units to a whole minor unit (stacksjs/stacks#2851)', () => {
+    const result = buildSalesAnalytics(
+      [
+        { id: '1', status: 'DELIVERED', totalAmount: 1999, currency: 'USD', createdAt: '2026-07-29T10:00:00.000Z' },
+        { id: '2', status: 'DELIVERED', totalAmount: 1000, currency: 'USD', createdAt: '2026-07-29T10:30:00.000Z' },
+      ],
+      [],
+      [],
+      [],
+      [],
+      'day',
+      now,
+    )
+
+    // 1499.5 cents would render as $15.00 anyway; the payload should not carry
+    // an amount no column can hold.
+    expect(result.currencyTotals[0]).toMatchObject({ gross: 2999, net: 2999, average: 1500 })
+  })
 })

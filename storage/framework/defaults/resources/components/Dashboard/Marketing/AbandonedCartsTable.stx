@@ -1,18 +1,13 @@
 <script client>
 import type { AbandonedCartRecord } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const records = useReactiveProp('records', [] as AbandonedCartRecord[])
 const loading = useReactiveProp('loading', false)
 
+/** A cart's total is integer minor units, like every commerce amount (stacksjs/stacks#2851). */
 function money(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(value)
-  }
-  catch {
-    // A currency the browser does not know is not a reason to render nothing
-    // where a number belongs.
-    return `${value.toFixed(2)} ${currency}`
-  }
+  return formatCurrency(value, currency)
 }
 
 /**

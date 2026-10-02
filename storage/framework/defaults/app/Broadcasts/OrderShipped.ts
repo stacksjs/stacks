@@ -43,7 +43,7 @@ const orderData = {
     { id: 'prod_1', name: 'Widget', quantity: 2 },
     { id: 'prod_2', name: 'Gadget', quantity: 1 },
   ],
-  totalAmount: 99.99,
+  totalAmount: 9999, // integer minor units: $99.99
   shippingAddress: {
     street: '123 Main St',
     city: 'Anytown',

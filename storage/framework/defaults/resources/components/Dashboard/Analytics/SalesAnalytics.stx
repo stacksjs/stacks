@@ -1,8 +1,12 @@
 <script client>
 import type { AnalyticsRange, SalesAnalyticsResponse } from '../../../../functions/analytics'
+import { formatCurrency } from '@stacksjs/commerce/money'
 import { fetchSalesAnalytics } from '../../../../functions/analytics'
 import { pushToast } from '../../../../functions/toasts'
 
+// Every amount on this page is a sum of order, payment and line-item columns,
+// which hold integer minor units. formatCurrency converts them for display
+// (stacksjs/stacks#2851).
 const analytics = state<SalesAnalyticsResponse | null>(null)
 const analyticsRange = state<AnalyticsRange>('month')
 const dateRangeDisplay = state('Last 30 days')
@@ -13,9 +17,6 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat().format(value)
 }
 
-function formatCurrency(value: number, currency: string): string {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
-}
 
 function formatDateRange(start: string, end: string): string {
   const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })

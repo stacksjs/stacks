@@ -5,6 +5,7 @@ import type {
   AbandonedCartSummary,
   RecoveryCampaignRecord,
 } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+import { formatCurrency } from '@stacksjs/commerce/money'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -88,17 +89,9 @@ effect(() => {
   page.set(1)
 })
 
+/** Cart totals and campaign thresholds are integer minor units (stacksjs/stacks#2851). */
 function money(value: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: summary().currency || defaultCurrency() || 'USD',
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-  catch {
-    return `${Math.round(value)} ${defaultCurrency()}`
-  }
+  return formatCurrency(value, summary().currency || defaultCurrency())
 }
 
 function percentage(value: number): string {

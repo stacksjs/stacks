@@ -1,3 +1,5 @@
+import { formatCurrency } from '@stacksjs/commerce/money'
+
 export interface DeliveryOverviewStat {
   label: string
   value: string
@@ -45,16 +47,12 @@ export interface DeliveryOverviewResult {
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-function formatMoney(cents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).format(cents / 100)
-  }
-  catch {
-    return `${currency} ${(cents / 100).toFixed(2)}`
-  }
+/**
+ * Shipping rates and thresholds are integer minor units. Dividing by 100 was
+ * right for USD and EUR and a hundred times off for JPY (stacksjs/stacks#2851).
+ */
+function formatMoney(minor: number, currency: string): string {
+  return formatCurrency(minor, currency, 'en-US')
 }
 
 export function deliveryTimestamp(input: unknown, source = 'DeliveryRoute', field = 'last_active'): number {

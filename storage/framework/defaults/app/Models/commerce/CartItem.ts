@@ -52,7 +52,8 @@ export default defineModel({
       validation: {
         rule: schema.number().required().min(0),
       },
-      factory: faker => faker.number.int({ min: 1, max: 1000 }),
+      // Integer minor units, in the same range as Product.price.
+      factory: faker => faker.number.int({ min: 100, max: 10000 }),
     },
 
     totalPrice: {
@@ -61,7 +62,7 @@ export default defineModel({
       validation: {
         rule: schema.number().required().min(0),
       },
-      factory: faker => faker.number.int({ min: 1, max: 1000 }),
+      factory: faker => faker.number.int({ min: 100, max: 50000 }),
     },
 
     taxRate: {
@@ -79,7 +80,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 0, max: 50 }),
+      factory: faker => faker.number.int({ min: 0, max: 1000 }),
     },
 
     discountPercentage: {
@@ -97,7 +98,8 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 0, max: 25 }),
+      // At most $1.00, so it never exceeds the smallest unit price above.
+      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     productName: {

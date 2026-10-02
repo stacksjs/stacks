@@ -36,7 +36,8 @@ export default defineModel({
           min: 'Price cannot be negative',
         },
       },
-      factory: faker => faker.number.int({ min: 5, max: 50 }),
+      // Integer minor units, in the same range as Product.price.
+      factory: faker => faker.number.int({ min: 100, max: 10000 }),
     },
 
     special_instructions: {

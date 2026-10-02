@@ -1,5 +1,6 @@
 <script client>
 import type { BillingSubscription } from '../../../../functions/billing/dashboard'
+import { formatCurrency } from '@stacksjs/commerce/money'
 
 const subscription = useReactiveProp<BillingSubscription | null>('subscription', null)
 
@@ -16,7 +17,9 @@ function amount(): string {
     return 'Not reported'
   if (!currency)
     return `${new Intl.NumberFormat().format(value)} minor units`
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency.toUpperCase() }).format(value / 100)
+  // Provider amounts are integer minor units: dividing by 100 was a hundred
+  // times too small for a zero-decimal currency such as JPY.
+  return formatCurrency(value, currency)
 }
 
 function date(value: string): string {

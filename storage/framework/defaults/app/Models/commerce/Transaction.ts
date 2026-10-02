@@ -41,9 +41,10 @@ export default defineModel({
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(0.01),
+        // Integer minor units: the smallest amount is one cent, not 0.01 of one.
+        rule: schema.number().integer().required().min(1),
       },
-      factory: faker => faker.number.int({ min: 5, max: 500 }),
+      factory: faker => faker.number.int({ min: 500, max: 50000 }),
     },
 
     status: {
