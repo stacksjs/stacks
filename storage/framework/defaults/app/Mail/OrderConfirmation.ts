@@ -1,9 +1,11 @@
+import { formatCurrency } from '@stacksjs/commerce/money'
 import { config } from '@stacksjs/config'
 import { escapeHtml, mail, safe, template } from '@stacksjs/email'
 
 export interface OrderConfirmationItem {
   name: string
   qty: number
+  /** Integer minor units of the order's currency. */
   lineTotal: number
 }
 
@@ -12,6 +14,8 @@ export interface OrderConfirmationOptions {
   orderId: number | string
   customerName?: string
   items: OrderConfirmationItem[]
+  /** The amounts below are integer minor units of this currency (1999 is $19.99). */
+  currency?: string
   subtotal: number
   shipping: number
   total: number
@@ -33,6 +37,8 @@ export async function sendOrderConfirmation(options: OrderConfirmationOptions): 
   const appName = config.app.name || 'PetStore'
   const fromAddress = config.email.from?.address || 'hello@stacksjs.com'
 
+  const currency = options.currency || 'USD'
+
   const { html, text } = await template('order-confirmation', {
     variables: {
       orderId: options.orderId,
@@ -41,10 +47,15 @@ export async function sendOrderConfirmation(options: OrderConfirmationOptions): 
       // A template variable is a scalar - an array would be interpolated as
       // "[object Object],[object Object]". The rows are rendered here and
       // marked safe, with every value the customer supplied escaped first.
-      itemRows: safe(renderItemRows(options.items)),
+      itemRows: safe(renderItemRows(options.items, currency)),
       subtotal: options.subtotal,
       shipping: options.shipping,
       total: options.total,
+      // Formatted here, through @stacksjs/commerce/money, so the template
+      // never has to know the amounts are minor units or which currency.
+      subtotalLabel: formatCurrency(options.subtotal, currency),
+      shippingLabel: formatCurrency(options.shipping, currency),
+      totalLabel: formatCurrency(options.total, currency),
       shippingAddress: options.shippingAddress || '',
       appName,
     },
@@ -60,15 +71,11 @@ export async function sendOrderConfirmation(options: OrderConfirmationOptions): 
   })
 }
 
-function formatMoney(amount: number): string {
-  return (amount / 100).toFixed(2)
-}
-
-function renderItemRows(items: OrderConfirmationItem[]): string {
+function renderItemRows(items: OrderConfirmationItem[], currency: string): string {
   return items
     .map(item => `<tr>
       <td style="padding: 12px 0; color: #d4d4d4; font-size: 15px;">${escapeHtml(item.name)} &times; ${Number(item.qty) || 0}</td>
-      <td style="padding: 12px 0; color: #ececec; font-size: 15px; text-align: right;">${formatMoney(Number(item.lineTotal) || 0)}</td>
+      <td style="padding: 12px 0; color: #ececec; font-size: 15px; text-align: right;">${escapeHtml(formatCurrency(Number(item.lineTotal) || 0, currency))}</td>
     </tr>`)
     .join('\n')
 }

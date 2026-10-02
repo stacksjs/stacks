@@ -5,6 +5,7 @@ import type {
   CampaignStatus,
   CampaignType,
 } from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
+import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
@@ -25,6 +26,9 @@ const fromName = state('')
 const fromAddress = state('')
 const emailListId = state('')
 const scheduledAt = state('')
+// Budget and spend as typed, in major units of `currency`. The record and
+// the API hold integer minor units (1999 is $19.99), converted at this
+// boundary through @stacksjs/commerce/money.
 const budget = state('')
 const spent = state('0')
 const currency = state('USD')
@@ -32,6 +36,8 @@ const startDate = state('')
 const endDate = state('')
 const canSubmit = derived(() => {
   if (!name().trim())
+    return false
+  if (budgetError() || spentError())
     return false
   return type() !== 'email'
     || Boolean(subject().trim() && template().trim() && emailListId())
@@ -67,12 +73,21 @@ effect(() => {
   fromAddress.set(current?.fromAddress || '')
   emailListId.set(current?.emailListId || '')
   scheduledAt.set(localDateTime(current?.scheduledAt || ''))
-  budget.set(current?.budget ? String(current.budget) : '')
-  spent.set(String(current?.spent || 0))
-  currency.set(current?.currency || defaultCurrency())
+  const recordCurrency = current?.currency || defaultCurrency()
+  budget.set(current?.budget ? minorToInput(current.budget, recordCurrency) : '')
+  spent.set(minorToInput(current?.spent || 0, recordCurrency))
+  currency.set(recordCurrency)
   startDate.set(localDateTime(current?.startDate || ''))
   endDate.set(localDateTime(current?.endDate || ''))
 })
+
+function budgetError(): string {
+  return moneyInputError(budget(), currency(), { required: false })
+}
+
+function spentError(): string {
+  return moneyInputError(spent(), currency(), { required: false })
+}
 
 function normalizeType(event: Event): void {
   const nextType = (event.target as HTMLSelectElement).value as CampaignType
@@ -85,6 +100,7 @@ function normalizeType(event: Event): void {
 function submit(): void {
   if (!canSubmit())
     return
+  const code = currency().trim().toUpperCase()
   emit('submit', {
     name: name().trim(),
     description: description().trim(),
@@ -97,9 +113,9 @@ function submit(): void {
     fromAddress: fromAddress().trim(),
     emailListId: emailListId() || null,
     scheduledAt: databaseDateTime(scheduledAt()) || null,
-    budget: budget(),
-    spent: spent(),
-    currency: currency().trim().toUpperCase(),
+    budget: parseMoneyInput(budget(), code, { required: false }),
+    spent: parseMoneyInput(spent(), code, { required: false }) ?? 0,
+    currency: code,
     startDate: databaseDateTime(startDate()),
     endDate: databaseDateTime(endDate()),
   })
@@ -200,12 +216,14 @@ function submit(): void {
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Budget</span>
-            <input x-model="budget" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+            <input x-model="budget" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+            <span :if="budgetError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ budgetError() }}</span>
           </label>
           <div class="grid gap-3 grid-cols-[1fr_7rem]">
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Spent</span>
-              <input x-model="spent" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+              <input x-model="spent" type="number" min="0" :step="moneyInputStep(currency())" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+              <span :if="spentError()" class="block mt-1 text-red-600 text-xs dark:text-red-400">{{ spentError() }}</span>
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span>

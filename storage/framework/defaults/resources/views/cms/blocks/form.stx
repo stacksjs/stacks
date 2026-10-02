@@ -8,6 +8,7 @@
 <div class="cms-form mx-auto max-w-xl px-6 py-8" data-form-uuid="{{ props.formUuid }}">
   <script client>
   import type { PublicFormDefinition, PublicFormField, SubmissionErrors } from '@stacksjs/forms'
+  import { moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
 
   // `_form` carries a whole-form failure; the rest are keyed by field name.
   type FormErrors = SubmissionErrors & { _form?: string }
@@ -115,6 +116,54 @@
   }
 
   /**
+   * The currency a `currency` field is typed in: the form's payment currency,
+   * or USD, which is what the server's public definition defaults to.
+   */
+  function formCurrency(): string {
+    return definition()?.payment?.currency ?? 'USD'
+  }
+
+  /** What a text-like input records: the typed text, or minor units for a `currency` field. */
+  function setInput(field: PublicFormField, raw: string): void {
+    if (field.type === 'currency')
+      setAmount(field, raw)
+    else
+      values[field.name] = raw
+  }
+
+  /**
+   * Record what was typed into a `currency` field as integer minor units.
+   *
+   * The server takes a currency field as a whole number of minor units
+   * (`"19.99"` in USD is `1999`). This used to multiply the typed float by
+   * a hundred and round, which is float math (`1.005` came out as 100 cents,
+   * not 101), assumed two decimals for every currency, and turned an empty
+   * field into 0. The conversion is `@stacksjs/commerce/money`'s, at the
+   * form currency's precision.
+   *
+   * An amount the currency cannot hold (`19.999` in USD) is kept as typed and
+   * shown as an error, rather than rounded into a different amount, and the
+   * server rejects it on submit as well.
+   */
+  function setAmount(field: PublicFormField, raw: string): void {
+    const currency = formCurrency()
+    const error = moneyInputError(raw, currency, { required: false })
+    if (error) {
+      values[field.name] = raw
+      errors.set({ ...errors(), [field.name]: error })
+      return
+    }
+
+    const minor = parseMoneyInput(raw, currency, { required: false })
+    if (minor === null)
+      delete values[field.name]
+    else
+      values[field.name] = minor
+    if (errors()[field.name])
+      errors.set({ ...errors(), [field.name]: '' })
+  }
+
+  /**
    * The `accept` attribute for a field's picker.
    *
    * A convenience only - a file dialog filter is a suggestion, and the server
@@ -210,7 +259,7 @@
                 <p :if="uploading[field.name]" class="mt-1.5 text-[13px] text-gray-500">Uploading...</p>
                 <p :else-if="attached[field.name]" class="mt-1.5 text-[13px] text-green-700">Attached {{ attached[field.name] }}</p>
               </div>
-              <input :else type="{{ field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : (field.type === 'date' ? 'date' : (field.type === 'currency' ? 'number' : 'text'))) }}" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" @input="values[field.name] = field.type === 'currency' ? Math.round(Number($event.target.value) * 100) : $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]">
+              <input :else type="{{ field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : (field.type === 'date' ? 'date' : (field.type === 'currency' ? 'number' : 'text'))) }}" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" :step="field.type === 'currency' ? moneyInputStep(formCurrency()) : null" @input="setInput(field, $event.target.value)" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]">
               <p :if="errors()[field.name]" class="mt-1.5 text-[13px] text-red-600">{{ errors()[field.name] }}</p>
             </template>
           </div>

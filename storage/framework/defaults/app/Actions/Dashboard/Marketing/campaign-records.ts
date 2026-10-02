@@ -44,7 +44,9 @@ export interface CampaignRecord {
   openRate: number
   clickRate: number
   conversionRate: number
+  /** Integer minor units of `currency` (1999 is $19.99). */
   budget: number
+  /** Integer minor units of `currency`. */
   spent: number
   currency: string
   startDate: string
@@ -224,8 +226,11 @@ export function campaignWriteData(input: Record<string, unknown>, defaultCurrenc
   end_date: string | null
 } {
   const emailListId = Number(input.emailListId ?? input.email_list_id)
+  // Integer minor units of the campaign's currency: the dialog converts what
+  // was typed through @stacksjs/commerce/money before sending it, and
+  // validateCampaignWriteData refuses anything that is not a whole amount.
   const budget = text(input.budget).trim()
-  const spent = Number(input.spent)
+  const spent = text(input.spent).trim()
   return {
     name: text(input.name).trim(),
     description: text(input.description).trim() || null,
@@ -238,8 +243,8 @@ export function campaignWriteData(input: Record<string, unknown>, defaultCurrenc
     from_address: text(input.fromAddress ?? input.from_address).trim() || null,
     email_list_id: Number.isInteger(emailListId) && emailListId > 0 ? emailListId : null,
     scheduled_at: text(input.scheduledAt ?? input.scheduled_at).trim() || null,
-    budget: budget ? Math.max(0, Number(budget) || 0) : null,
-    spent: Number.isFinite(spent) ? Math.max(0, spent) : 0,
+    budget: budget ? Number(budget) : null,
+    spent: spent ? Number(spent) : 0,
     currency: text(input.currency).trim().toUpperCase() || defaultCurrency,
     start_date: text(input.startDate ?? input.start_date).trim() || null,
     end_date: text(input.endDate ?? input.end_date).trim() || null,
@@ -267,6 +272,10 @@ export function validateCampaignWriteData(
     if (scheduledAt <= now.getTime())
       return 'Campaign schedule time must be in the future.'
   }
+  if (data.budget !== null && !isMinorAmount(data.budget))
+    return 'Campaign budgets must be a whole number of minor units, for example 1999 for 19.99.'
+  if (!isMinorAmount(data.spent))
+    return 'Campaign spend must be a whole number of minor units, for example 1999 for 19.99.'
   if (data.start_date && data.end_date) {
     const startsAt = new Date(data.start_date.replace(' ', 'T')).getTime()
     const endsAt = new Date(data.end_date.replace(' ', 'T')).getTime()
@@ -274,4 +283,9 @@ export function validateCampaignWriteData(
       return 'Campaign end time must be after its start time.'
   }
   return ''
+}
+
+/** A non-negative whole number of minor units, which is all a money column holds. */
+function isMinorAmount(value: number): boolean {
+  return Number.isSafeInteger(value) && value >= 0
 }

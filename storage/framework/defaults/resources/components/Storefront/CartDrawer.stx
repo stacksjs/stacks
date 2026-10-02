@@ -143,7 +143,11 @@
     return String(s ?? '').replace(/[&<>"']/g, c => entities[c] ?? c)
   }
 
-  const render = (items: Array<{ slug?: string, name?: string, image?: string, qty?: number | string, price?: number | string, lineTotal?: number | string }> | null | undefined, subtotal: number | string) => {
+  // Amounts arrive from /api/cart already formatted (`priceLabel`,
+  // `lineTotalLabel`, `subtotalLabel`): the stored values are integer minor
+  // units of the cart's currency, and only the server formats them, through
+  // @stacksjs/commerce/money.
+  const render = (items: Array<{ slug?: string, name?: string, image?: string, qty?: number | string, priceLabel?: string, lineTotalLabel?: string }> | null | undefined, subtotalLabel: string) => {
     if (!list || !empty || !footer) return
     if (!items || items.length === 0) {
       list.classList.add('hidden')
@@ -159,8 +163,8 @@
       const name = escapeHtml(it.name || '')
       const image = escapeHtml(it.image || '')
       const qty = Number(it.qty) || 0
-      const price = Number(it.price) || 0
-      const lineTotal = Number(it.lineTotal) || 0
+      const priceLabel = escapeHtml(it.priceLabel || '')
+      const lineTotalLabel = escapeHtml(it.lineTotalLabel || '')
       return [
         '<li class="flex gap-3 items-start">',
         '  <a href="/products/' + slug + '" class="block overflow-hidden flex-shrink-0 h-16 w-16 bg-stone-200 rounded-xl">',
@@ -168,13 +172,13 @@
         '  </a>',
         '  <div class="flex-1 min-w-0">',
         '    <p class="font-semibold text-sm text-stone-900 truncate">' + name + '</p>',
-        '    <p class="mt-0.5 text-stone-500 text-xs">Qty ' + qty + ' · $' + price.toFixed(2) + '</p>',
+        '    <p class="mt-0.5 text-stone-500 text-xs">Qty ' + qty + ' · ' + priceLabel + '</p>',
         '  </div>',
-        '  <p class="font-semibold text-sm text-stone-900">$' + lineTotal.toFixed(2) + '</p>',
+        '  <p class="font-semibold text-sm text-stone-900">' + lineTotalLabel + '</p>',
         '</li>',
       ].join('')
     }).join('')
-    if (subtotalEl) subtotalEl.textContent = '$' + (Number(subtotal) || 0).toFixed(2)
+    if (subtotalEl) subtotalEl.textContent = subtotalLabel
   }
 
   let inflightRefresh: Promise<void> | null = null
@@ -193,7 +197,7 @@
         })
         if (!res.ok) return
         const data = await res.json()
-        render(data.items || [], data.subtotal || 0)
+        render(data.items || [], data.subtotalLabel || '')
         const badge = document.querySelector('[data-stx-cart-count]')
         if (badge) {
           const total = (data.items || []).reduce((sum: number, item: { qty?: number | string }) => sum + (Number(item.qty) || 0), 0)

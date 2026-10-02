@@ -15,15 +15,17 @@ interface CartItemRow {
   weight_grams: number | null
 }
 
-// The column of `carts` this page reads. The query selects `*`.
+// The columns of `carts` this page reads. The query selects `*`.
 interface CartRow {
   id: number
+  currency: string | null
 }
 
 interface StorefrontLineItem { lineTotal: number }
 
 const { verifyCartCookie } = require('../../app/Storefront/CartCookie')
 const { readStorefront } = require('../../app/Storefront/StorefrontDatabase')
+const { storefrontCurrency, storefrontMoney, storefrontSummary } = require('../../app/Storefront/StorefrontMoney')
 
 // Signed by the storefront actions as the token, a dot and its HMAC. An
 // unsigned or tampered cookie is no cart, and is never looked up.
@@ -35,6 +37,8 @@ const found = token
       if (!row)
         return { cart: null, items: [] }
 
+      // Every amount below is integer minor units of the cart's currency.
+      const currency = storefrontCurrency(row.currency)
       const lines = db.query<CartItemRow, [number]>(`
         SELECT ci.id, ci.quantity, ci.unit_price, ci.total_price, ci.product_name,
               ci.product_image, ci.product_sku, p.weight_grams
@@ -52,9 +56,9 @@ const found = token
           name: line.product_name,
           weight: line.weight_grams ? `${line.weight_grams}g` : '',
           qty,
-          priceLabel: `$${price.toFixed(2)}`,
+          priceLabel: storefrontMoney(price, currency),
           lineTotal,
-          lineTotalLabel: `$${lineTotal.toFixed(2)}`,
+          lineTotalLabel: storefrontMoney(lineTotal, currency),
           image: line.product_image,
         }
       })
@@ -66,27 +70,19 @@ const found = token
 const cart = found.cart
 const items = found.items
 
-// Mirror the rule used by PlaceOrderAction so the price the shopper
-// sees in their cart matches the total they're actually charged. Both
-// sides read STOREFRONT_FREE_SHIPPING_THRESHOLD / STOREFRONT_FLAT_SHIPPING
-// from the environment with the same defaults — keep them in sync via
-// app/Actions/Storefront/_shipping.ts when changing.
-const FREE_SHIPPING_THRESHOLD = Number(process.env.STOREFRONT_FREE_SHIPPING_THRESHOLD ?? 40) || 40
-const FLAT_SHIPPING = Number(process.env.STOREFRONT_FLAT_SHIPPING ?? 5) || 5
+// The same shipping rule PlaceOrderAction charges with
+// (app/Actions/Storefront/_shipping.ts), in minor units, so the price the
+// shopper sees in their cart matches the total they're actually charged.
 const subtotal = items.reduce((sum: number, i: StorefrontLineItem) => sum + i.lineTotal, 0)
-const shipping = subtotal <= 0 ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING)
-const total = subtotal + shipping
-const remainingForFree = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
 
-// Pre-format every numeric so the OrderSummary component template doesn't
-// have to call .toFixed() on a defineProps local — STX's SSR pass doesn't
-// reliably expose those locals, so callers do the formatting.
-const subtotalLabel = `$${subtotal.toFixed(2)}`
-const shippingLabel = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`
-const totalLabel = `$${total.toFixed(2)}`
-const freeShippingNote = (shipping > 0 && remainingForFree > 0)
-  ? `Add $${remainingForFree.toFixed(2)} more for free shipping.`
-  : ''
+// Pre-format every amount so the OrderSummary component template doesn't
+// have to format a defineProps local — STX's SSR pass doesn't reliably
+// expose those locals, so callers do the formatting.
+const summary = storefrontSummary(subtotal, storefrontCurrency(cart?.currency))
+const subtotalLabel = summary.subtotalLabel
+const shippingLabel = summary.shippingLabel
+const totalLabel = summary.totalLabel
+const freeShippingNote = summary.freeShippingNote
 </script>
 
 @section('content')

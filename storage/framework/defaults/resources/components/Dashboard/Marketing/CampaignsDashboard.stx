@@ -27,8 +27,10 @@ interface CampaignPayload {
   fromAddress: string
   emailListId: string | null
   scheduledAt: string | null
-  budget: string
-  spent: string
+  /** Integer minor units of `currency`, or null for no budget. */
+  budget: number | null
+  /** Integer minor units of `currency`. */
+  spent: number
   currency: string
   startDate: string
   endDate: string

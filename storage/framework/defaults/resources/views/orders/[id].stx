@@ -18,6 +18,7 @@ interface StorefrontLineItem { lineTotal: number }
 
 const Database = require('bun:sqlite').Database
 const path = require('path')
+const { storefrontCurrency, storefrontMoney } = require('../../../app/Storefront/StorefrontMoney')
 
 const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
 const db = new Database(dbPath, { readonly: true })
@@ -36,6 +37,10 @@ const order = orderId
     `).get(orderId)
   : null
 
+// Every amount is integer minor units of the order's currency (1999 is
+// $19.99): `order_items.price`, `orders.delivery_fee` and `orders.total_amount`.
+const currency = storefrontCurrency(order?.currency)
+
 const items = order
   ? db.query(`
       SELECT oi.quantity, oi.price, p.name, p.image_url, p.slug, p.weight_grams
@@ -51,12 +56,16 @@ const items = order
       qty: Number(row.quantity),
       price: Number(row.price),
       lineTotal: Number(row.quantity) * Number(row.price),
+      lineTotalLabel: storefrontMoney(Number(row.quantity) * Number(row.price), currency),
     }))
   : []
 
 const subtotal = items.reduce((s: number, i: StorefrontLineItem) => s + i.lineTotal, 0)
 const shipping = order ? Number(order.delivery_fee || 0) : 0
 const total = order ? Number(order.total_amount || 0) : 0
+const subtotalLabel = storefrontMoney(subtotal, currency)
+const shippingLabel = shipping === 0 ? 'Free' : storefrontMoney(shipping, currency)
+const totalLabel = storefrontMoney(total, currency)
 </script>
 
 @section('content')
@@ -90,7 +99,7 @@ const total = order ? Number(order.total_amount || 0) : 0
                 <p class="font-semibold text-stone-900">{{ item.name }}</p>
                 <p class="text-stone-500 text-xs">{{ item.weight }} · qty {{ item.qty }}</p>
               </div>
-              <p class="font-semibold text-stone-900">${{ item.lineTotal.toFixed(2) }}</p>
+              <p class="font-semibold text-stone-900">{{ item.lineTotalLabel }}</p>
             </li>
           @endforeach
         </ul>
@@ -98,9 +107,9 @@ const total = order ? Number(order.total_amount || 0) : 0
         <hr class="my-6 border-stone-200">
 
         <dl class="space-y-2 text-sm">
-          <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">${{ subtotal.toFixed(2) }}</dd></div>
-          <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}` }}</dd></div>
-          <div class="flex justify-between pt-2 text-base border-stone-200 border-t"><dt class="font-semibold text-stone-900">Total</dt><dd class="font-bold text-stone-900">${{ total.toFixed(2) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">{{ subtotalLabel }}</dd></div>
+          <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shippingLabel }}</dd></div>
+          <div class="flex justify-between pt-2 text-base border-stone-200 border-t"><dt class="font-semibold text-stone-900">Total</dt><dd class="font-bold text-stone-900">{{ totalLabel }}</dd></div>
         </dl>
 
         <div class="mt-6 p-4 text-sm bg-stone-100 rounded-xl">

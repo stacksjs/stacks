@@ -4,6 +4,7 @@ import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { sendOrderConfirmation } from '../../Mail/OrderConfirmation'
 import { readCartCookie } from '../../Storefront/CartCookie'
+import { storefrontCurrency } from '../../Storefront/StorefrontMoney'
 import { totalsFor } from './_shipping'
 
 const CART_COOKIE = 'stacks_cart'
@@ -73,8 +74,10 @@ export default new Action({
         .executeTakeFirst()
     }
 
+    // Integer minor units of the cart's currency, like every amount here.
+    const currency = storefrontCurrency(cart.currency)
     const itemsSubtotal = items.reduce((s: number, i: any) => s + Number(i.total_price || 0), 0)
-    const { subtotal, shipping, total } = totalsFor(itemsSubtotal)
+    const { subtotal, shipping, total } = totalsFor(itemsSubtotal, currency)
 
     const fullAddress = [
       cart.shipping_address,
@@ -88,6 +91,7 @@ export default new Action({
         status: 'paid',
         order_type: 'shipping',
         total_amount: total,
+        currency,
         delivery_fee: shipping,
         delivery_address: fullAddress,
       })
@@ -169,6 +173,7 @@ export default new Action({
         qty: Number(row.quantity),
         lineTotal: Number(row.total_price || 0),
       })),
+      currency,
       subtotal,
       shipping,
       total,

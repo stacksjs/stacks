@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { readCartCookie } from '../../Storefront/CartCookie'
+import { storefrontCurrency, storefrontMoney } from '../../Storefront/StorefrontMoney'
 
 const CART_COOKIE = 'stacks_cart'
 
@@ -9,6 +10,10 @@ const CART_COOKIE = 'stacks_cart'
  * Read-only cart endpoint used by the slide-in CartDrawer to refresh
  * its contents after an add/remove. Returns the same shape the drawer
  * renders directly so the client doesn't have to do any reshaping.
+ *
+ * Amounts are integer minor units of `currency` (1999 is $19.99), and each
+ * comes with a `*Label` already formatted through `@stacksjs/commerce/money`,
+ * so the drawer never formats money itself.
  */
 export default new Action({
   name: 'GetCartAction',
@@ -39,20 +44,30 @@ export default new Action({
       .selectAll()
       .execute()
 
-    const items = rawItems.map((row: any) => ({
-      id: row.id,
-      slug: row.product_sku,
-      name: row.product_name,
-      image: row.product_image,
-      qty: Number(row.quantity),
-      price: Number(row.unit_price),
-      lineTotal: Number(row.total_price || 0),
-    }))
+    const currency = storefrontCurrency(cart.currency)
+    const items = rawItems.map((row: any) => {
+      const price = Number(row.unit_price)
+      const lineTotal = Number(row.total_price || 0)
+      return {
+        id: row.id,
+        slug: row.product_sku,
+        name: row.product_name,
+        image: row.product_image,
+        qty: Number(row.quantity),
+        price,
+        priceLabel: storefrontMoney(price, currency),
+        lineTotal,
+        lineTotalLabel: storefrontMoney(lineTotal, currency),
+      }
+    })
+    const subtotal = Number(cart.subtotal || 0)
 
     return response.json({
       items,
       total_items: Number(cart.total_items || 0),
-      subtotal: Number(cart.subtotal || 0),
+      subtotal,
+      subtotalLabel: storefrontMoney(subtotal, currency),
+      currency,
     })
   },
 })

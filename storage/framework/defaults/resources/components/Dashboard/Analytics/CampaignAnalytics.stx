@@ -1,6 +1,7 @@
 <script client>
 import type { AnalyticsRange, CampaignAnalyticsResponse } from '../../../../functions/analytics'
 import { fetchCampaignAnalytics } from '../../../../functions/analytics'
+import { formatCurrency } from '@stacksjs/commerce/money'
 import { pushToast } from '../../../../functions/toasts'
 
 const analytics = state<CampaignAnalyticsResponse | null>(null)
@@ -15,10 +16,9 @@ function formatNumber(value: number | null | undefined): string {
     : new Intl.NumberFormat().format(value)
 }
 
-function formatCurrency(value: number | null, currency: string): string {
-  return value === null
-    ? 'Not recorded'
-    : new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+/** Campaign budgets and spend are integer minor units of `currency` (1999 is $19.99). */
+function formatMoney(value: number | null, currency: string): string {
+  return value === null ? 'Not recorded' : formatCurrency(value, currency)
 }
 
 function formatRate(value: number | null | undefined): string {
@@ -165,7 +165,7 @@ onMount(() => {
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.opens) }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.clicks) }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.conversions) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(campaign.spent, campaign.currency) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatMoney(campaign.spent, campaign.currency) }}</td>
               </tr>
             </template>
           </tbody>
@@ -186,8 +186,8 @@ onMount(() => {
                 <p class="text-gray-500 text-xs dark:text-neutral-400">{{ spend.campaigns }} campaigns</p>
               </div>
               <div class="text-right">
-                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatCurrency(spend.spent, spend.currency) }}</p>
-                <p class="text-gray-500 text-xs dark:text-neutral-400">of {{ formatCurrency(spend.budget, spend.currency) }}</p>
+                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatMoney(spend.spent, spend.currency) }}</p>
+                <p class="text-gray-500 text-xs dark:text-neutral-400">of {{ formatMoney(spend.budget, spend.currency) }}</p>
               </div>
             </div>
           </template>
@@ -233,7 +233,7 @@ onMount(() => {
                 <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ channel.currency }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.campaigns }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(channel.sent) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(channel.spent, channel.currency) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatMoney(channel.spent, channel.currency) }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.clickRate) }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.conversionRate) }}</td>
               </tr>

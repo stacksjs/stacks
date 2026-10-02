@@ -1,8 +1,10 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import { readCartCookie, writeCartCookie } from '../../Storefront/CartCookie'
+import { storefrontCurrency } from '../../Storefront/StorefrontMoney'
 
 const CART_COOKIE = 'stacks_cart'
 const COOKIE_OPTS = {
@@ -64,7 +66,8 @@ export default new Action({
           total_items: 0,
           subtotal: 0,
           total: 0,
-          currency: 'USD',
+          // The store's currency: unit_price and the totals are minor units of it.
+          currency: storefrontCurrency(config.commerce?.currency),
           session_token: token,
           checkout_step: 'cart',
         })

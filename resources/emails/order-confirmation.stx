@@ -4,13 +4,13 @@ const customerName = props.customerName || 'there'
 const orderId = props.orderId || ''
 const orderUrl = props.orderUrl || '#'
 const itemRows = props.itemRows || ''
-const subtotal = props.subtotal || 0
-const shipping = props.shipping || 0
-const total = props.total || 0
+// Formatted by the sender through @stacksjs/commerce/money: the stored
+// amounts are integer minor units of the order's currency.
+const subtotalLabel = props.subtotalLabel || ''
+const shippingLabel = props.shippingLabel || ''
+const totalLabel = props.totalLabel || ''
 const shippingAddress = props.shippingAddress || ''
 const year = new Date().getFullYear()
-
-const money = (cents: number | string) => (Number(cents) / 100).toFixed(2)
 </script>
 
 <!DOCTYPE html>
@@ -49,15 +49,15 @@ const money = (cents: number | string) => (Number(cents) / 100).toFixed(2)
               <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; border-top: 1px solid #2a2a2a; margin-top: 8px;">
                 <tr>
                   <td style="padding: 12px 0 4px; color: #a0a0a0; font-size: 14px;">Subtotal</td>
-                  <td style="padding: 12px 0 4px; color: #a0a0a0; font-size: 14px; text-align: right;">{{ money(subtotal) }}</td>
+                  <td style="padding: 12px 0 4px; color: #a0a0a0; font-size: 14px; text-align: right;">{{ subtotalLabel }}</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #a0a0a0; font-size: 14px;">Shipping</td>
-                  <td style="padding: 4px 0; color: #a0a0a0; font-size: 14px; text-align: right;">{{ money(shipping) }}</td>
+                  <td style="padding: 4px 0; color: #a0a0a0; font-size: 14px; text-align: right;">{{ shippingLabel }}</td>
                 </tr>
                 <tr>
                   <td style="padding: 12px 0 0; color: #ececec; font-size: 16px; font-weight: 600;">Total</td>
-                  <td style="padding: 12px 0 0; color: #ececec; font-size: 16px; font-weight: 600; text-align: right;">{{ money(total) }}</td>
+                  <td style="padding: 12px 0 0; color: #ececec; font-size: 16px; font-weight: 600; text-align: right;">{{ totalLabel }}</td>
                 </tr>
               </table>
 

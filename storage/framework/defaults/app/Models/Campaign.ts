@@ -267,13 +267,17 @@ export default defineModel({
       factory: faker => faker.number.float({ min: 0.5, max: 8, fractionDigits: 1 }),
     },
 
+    // Integer minor units of `currency`, like every money column (1999 is
+    // $19.99). The columns are INTEGER; a decimal here was stored as a REAL by
+    // SQLite and truncated by MySQL and Postgres.
     budget: {
       required: false,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().integer().min(0),
       },
-      factory: faker => faker.number.float({ min: 100, max: 10000, fractionDigits: 2 }),
+      // $100 to $10,000.
+      factory: faker => faker.number.int({ min: 10000, max: 1000000 }),
     },
 
     spent: {
@@ -281,9 +285,10 @@ export default defineModel({
       fillable: true,
       default: 0,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.number().integer().min(0),
       },
-      factory: faker => faker.number.float({ min: 0, max: 5000, fractionDigits: 2 }),
+      // Within the budget drawn above, so a seeded campaign is never over it.
+      factory: (faker, { budget }) => faker.number.int({ min: 0, max: Number(budget) || 0 }),
     },
 
     currency: {
