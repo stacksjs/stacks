@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.37...v0.75.38)
+
+## 🐛 Bug Fixes
+
+- **config**: MySQL and PostgreSQL are supported database drivers ([c677438](https://github.com/stacksjs/stacks/commit/c677438)) _(by Chris <chris@stacksjs.com>)_
+- **commerce**: resolve the review-vote dialect the way this package's guard requires ([e793e8e](https://github.com/stacksjs/stacks/commit/e793e8e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2846](https://github.com/stacksjs/stacks/issues/2846), [#2846](https://github.com/stacksjs/stacks/issues/2846))
+- **dashboard**: bind Postgres parameters in the Kanban card actions ([07dc2de](https://github.com/stacksjs/stacks/commit/07dc2de)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2846](https://github.com/stacksjs/stacks/issues/2846), [#2846](https://github.com/stacksjs/stacks/issues/2846))
+- **dashboard**: bind Postgres parameters in the Kanban board and column actions ([65a7348](https://github.com/stacksjs/stacks/commit/65a7348)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2846](https://github.com/stacksjs/stacks/issues/2846))
+- **dashboard**: bind Postgres parameters in the CI dashboard actions ([ccd0ee1](https://github.com/stacksjs/stacks/commit/ccd0ee1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2846](https://github.com/stacksjs/stacks/issues/2846))
+- **database**: bind Postgres parameters in referrals, review votes and the scheduler ([c77d604](https://github.com/stacksjs/stacks/commit/c77d604)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2846](https://github.com/stacksjs/stacks/issues/2846), [#2846](https://github.com/stacksjs/stacks/issues/2846), [#2842](https://github.com/stacksjs/stacks/issues/2842))
+- **release**: refuse a pantry.lock that violates the ranges it records ([fdbdf2e](https://github.com/stacksjs/stacks/commit/fdbdf2e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2843](https://github.com/stacksjs/stacks/issues/2843), [#231](https://github.com/stacksjs/stacks/issues/231), [#232](https://github.com/stacksjs/stacks/issues/232), [#233](https://github.com/stacksjs/stacks/issues/233))
+- **pantry**: pin craft-native to a version its range allows ([6b2e47f](https://github.com/stacksjs/stacks/commit/6b2e47f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- **dashboard**: detect an unresolved component by either shape stx reports it in ([9465a28](https://github.com/stacksjs/stacks/commit/9465a28)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2817](https://github.com/stacksjs/stacks/issues/2817), [#2004](https://github.com/stacksjs/stacks/issues/2004), [#2817](https://github.com/stacksjs/stacks/issues/2817), [#2641](https://github.com/stacksjs/stacks/issues/2641))
+- **database**: fail the build when a sql`` fragment is executed outside the builder ([c06d379](https://github.com/stacksjs/stacks/commit/c06d379)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2842](https://github.com/stacksjs/stacks/issues/2842), [#2842](https://github.com/stacksjs/stacks/issues/2842))
+
+## 🔧 Chores
+
+- **deps**: bun-query-builder ^0.3.4, for the unsafe() guard ([7842538](https://github.com/stacksjs/stacks/commit/7842538)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2842](https://github.com/stacksjs/stacks/issues/2842))
+- **deps**: declare one meilisearch range, so one copy is installed ([c59eb61](https://github.com/stacksjs/stacks/commit/c59eb61)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2817](https://github.com/stacksjs/stacks/issues/2817), [#2817](https://github.com/stacksjs/stacks/issues/2817), [#2843](https://github.com/stacksjs/stacks/issues/2843), [#2817](https://github.com/stacksjs/stacks/issues/2817))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.36...v0.75.37)
 
 ## 🐛 Bug Fixes
