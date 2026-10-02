@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.38...v0.75.39)
+
+## ✨ Features
+
+- **commerce**: import a Shopware 6 catalog ([2e631d3](https://github.com/stacksjs/stacks/commit/2e631d3)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1321](https://github.com/stacksjs/stacks/issues/1321))
+- **database**: pass a factory the attributes its record already has ([640484d](https://github.com/stacksjs/stacks/commit/640484d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: give product variants a SKU, price, compare-at and stock ([18fb76d](https://github.com/stacksjs/stacks/commit/18fb76d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2852](https://github.com/stacksjs/stacks/issues/2852))
+- **commerce**: import a Shopify or WooCommerce catalog ([a31dbde](https://github.com/stacksjs/stacks/commit/a31dbde)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1319](https://github.com/stacksjs/stacks/issues/1319), [#1321](https://github.com/stacksjs/stacks/issues/1321), [#1320](https://github.com/stacksjs/stacks/issues/1320))
+- **analytics**: label AnalyticsHQ events with the admitted environment ([e5bf9eb](https://github.com/stacksjs/stacks/commit/e5bf9eb)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2792](https://github.com/stacksjs/stacks/issues/2792), [#60](https://github.com/stacksjs/stacks/issues/60))
+- **desktop**: build a universal arm64 + x86_64 Mac App Store app ([4882378](https://github.com/stacksjs/stacks/commit/4882378)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2199](https://github.com/stacksjs/stacks/issues/2199), [#2062](https://github.com/stacksjs/stacks/issues/2062))
+- **ai**: provider-neutral textToSpeech, speechToText and storeSpeech ([15e9324](https://github.com/stacksjs/stacks/commit/15e9324)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#306](https://github.com/stacksjs/stacks/issues/306))
+
+## 🐛 Bug Fixes
+
+- **commerce**: finish the minor-units sweep: marketing, analytics, factories, export ([ebae855](https://github.com/stacksjs/stacks/commit/ebae855)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2851](https://github.com/stacksjs/stacks/issues/2851))
+- **commerce**: keep dashboard money in minor units end to end ([dfaf156](https://github.com/stacksjs/stacks/commit/dfaf156)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2851](https://github.com/stacksjs/stacks/issues/2851))
+- **views**: pass typecheck:views again ([407b433](https://github.com/stacksjs/stacks/commit/407b433)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2850](https://github.com/stacksjs/stacks/issues/2850), [#2019](https://github.com/stacksjs/stacks/issues/2019))
+- **deps**: move to @buddysh/buddy, which better-dx now ships ([7994957](https://github.com/stacksjs/stacks/commit/7994957)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2850](https://github.com/stacksjs/stacks/issues/2850), [#1457](https://github.com/stacksjs/stacks/issues/1457))
+
+## 📝 Documentation
+
+- **types**: stop advertising Fastly as a CDN driver example ([c1f2174](https://github.com/stacksjs/stacks/commit/c1f2174)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#265](https://github.com/stacksjs/stacks/issues/265))
+- **desktop**: drop the closed Craft blocker and document the trust boundaries ([d15f107](https://github.com/stacksjs/stacks/commit/d15f107)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2059](https://github.com/stacksjs/stacks/issues/2059), [#11](https://github.com/stacksjs/stacks/issues/11), [#2062](https://github.com/stacksjs/stacks/issues/2062), [#11](https://github.com/stacksjs/stacks/issues/11))
+
+## 🔧 Chores
+
+- **api**: regenerate the OpenAPI spec for Transaction.amount in minor units ([c3bf11f](https://github.com/stacksjs/stacks/commit/c3bf11f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2851](https://github.com/stacksjs/stacks/issues/2851))
+- **buddy**: declare @stacksjs/commerce, which the catalog import command uses ([21951f5](https://github.com/stacksjs/stacks/commit/21951f5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1319](https://github.com/stacksjs/stacks/issues/1319), [#1320](https://github.com/stacksjs/stacks/issues/1320))
+- **deps**: better-dx ^0.2.28, whose bot regenerates pantry.lock ([d80ae08](https://github.com/stacksjs/stacks/commit/d80ae08)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.37...v0.75.38)
 
 ## 🐛 Bug Fixes
