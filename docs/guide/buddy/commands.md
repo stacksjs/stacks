@@ -1188,6 +1188,9 @@ Build, sandbox, sign, and package a Mac App Store desktop app
 | `--provisioning-profile` | Mac App Store provisioning profile | value, required | - |
 | `--icon` | Optional .icns app icon | value, required | - |
 | `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | - |
+| `--universal` | Ship one arm64 + x86_64 binary, merged with lipo | boolean, optional | - |
+| `--craft-arm64` | Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64) | value, required | - |
+| `--craft-x64` | Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64) | value, required | - |
 
 ### `desktop:apple:provision`
 
@@ -1236,6 +1239,9 @@ Build and validate or upload a signed Mac App Store package
 | `--provisioning-profile` | Mac App Store provisioning profile | value, required | - |
 | `--icon` | Optional .icns app icon | value, required | - |
 | `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | - |
+| `--universal` | Ship one arm64 + x86_64 binary, merged with lipo | boolean, optional | - |
+| `--craft-arm64` | Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64) | value, required | - |
+| `--craft-x64` | Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64) | value, required | - |
 | `--api-key-id` | App Store Connect API key ID | value, required | - |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
 | `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |

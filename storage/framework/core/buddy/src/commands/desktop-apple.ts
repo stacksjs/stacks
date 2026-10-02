@@ -42,6 +42,9 @@ interface AppleDesktopOptions {
   profileName?: string
   output?: string
   commonName?: string
+  universal?: boolean
+  craftArm64?: string
+  craftX64?: string
 }
 
 export interface AppleDesktopConfig {
@@ -59,6 +62,14 @@ export interface AppleDesktopConfig {
   apiIssuerId: string
   apiKeyPath: string
   icon?: string
+  /**
+   * Ship one arm64 + x86_64 binary instead of the build machine's own
+   * architecture. Needs a thin Craft runtime for each, from the same Craft
+   * revision; the launcher is cross-compiled by Bun.
+   */
+  universal?: boolean
+  craftArm64?: string
+  craftX64?: string
 }
 
 const REQUIRED_TOOLS = ['codesign', 'security', 'productbuild', 'pkgutil', 'xcrun']
@@ -88,6 +99,8 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}): Ap
   const metadata = packageMetadata()
   const provisioningProfile = options.provisioningProfile || env('APPLE_PROVISIONING_PROFILE')
   const apiKeyPath = options.apiKeyPath || env('APP_STORE_CONNECT_API_KEY_PATH')
+  const craftArm64 = options.craftArm64 || env('CRAFT_BIN_ARM64')
+  const craftX64 = options.craftX64 || env('CRAFT_BIN_X64')
   return {
     appName: options.appName || env('APPLE_APP_NAME') || env('APP_NAME') || metadata.name,
     bundleId: options.bundleId || env('APPLE_BUNDLE_ID'),
@@ -103,6 +116,9 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}): Ap
     apiIssuerId: options.apiIssuerId || env('APP_STORE_CONNECT_API_ISSUER_ID'),
     apiKeyPath: apiKeyPath ? resolve(apiKeyPath) : '',
     icon: options.icon || env('APPLE_APP_ICON') || undefined,
+    universal: Boolean(options.universal) || env('APPLE_UNIVERSAL') === 'true',
+    craftArm64: craftArm64 ? resolve(craftArm64) : undefined,
+    craftX64: craftX64 ? resolve(craftX64) : undefined,
   }
 }
 
@@ -128,7 +144,16 @@ export function validateAppleDesktopConfig(config: AppleDesktopConfig, includeAp
     if (!config.apiIssuerId) errors.push('APP_STORE_CONNECT_API_ISSUER_ID is required')
     if (!config.apiKeyPath || !existsSync(config.apiKeyPath)) errors.push('APP_STORE_CONNECT_API_KEY_PATH must point to an existing .p8 file')
   }
-  for (const tool of REQUIRED_TOOLS) {
+  if (config.universal) {
+    // Named up front rather than discovered after the host build and two
+    // launcher compiles: a universal app needs both Craft slices, and they have
+    // to be native binaries, not the dev wrapper script `CRAFT_BIN` can name.
+    for (const [variable, path] of [['CRAFT_BIN_ARM64', config.craftArm64], ['CRAFT_BIN_X64', config.craftX64]] as const) {
+      if (!path || !existsSync(path)) errors.push(`${variable} must point to a native Craft runtime for a universal build`)
+      else if (readFileSync(path).subarray(0, 2).toString() === '#!') errors.push(`${variable} points at a script, not a native Craft runtime: ${path}`)
+    }
+  }
+  for (const tool of config.universal ? [...REQUIRED_TOOLS, 'lipo'] : REQUIRED_TOOLS) {
     if (!Bun.which(tool)) errors.push(`Required Apple command is unavailable: ${tool}`)
   }
   return errors
@@ -308,6 +333,7 @@ jobs:
       app-version: \${{ vars.APPLE_APP_VERSION }}
       app-signing-identity: \${{ vars.APPLE_APP_SIGNING_IDENTITY }}
       installer-signing-identity: \${{ vars.APPLE_INSTALLER_SIGNING_IDENTITY }}
+      universal: \${{ vars.APPLE_UNIVERSAL == 'true' }}
       release-tag: \${{ inputs.release-tag }}
       validate-only: \${{ inputs.validate-only }}
       mirror-s3: \${{ inputs.mirror-s3 }}
@@ -378,6 +404,132 @@ export function signingPlan(input: SigningPlanInput): string[][] {
   ]
 }
 
+/**
+ * Runs one process and returns its stdout, throwing on a non-zero exit.
+ *
+ * Injected wherever the packager's decisions depend on what a tool reports, so
+ * a test can drive the whole sequence without `lipo`, `bun build` or anything
+ * Apple installed - and assert the order the commands ran in.
+ */
+export type CommandRunner = (args: string[]) => string
+
+export const captureCommand: CommandRunner = (args) => {
+  const result = Bun.spawnSync(args, {
+    cwd: projectPath(),
+    stdin: 'inherit',
+    stdout: 'pipe',
+    stderr: 'inherit',
+  })
+  if (result.exitCode !== 0)
+    throw new Error(`${args[0]} ${args.slice(1).join(' ')} exited with code ${result.exitCode}`)
+  return result.stdout.toString()
+}
+
+export type DarwinArchitecture = 'arm64' | 'x64'
+
+/** Node's architecture names, as Mach-O and `lipo` spell them. */
+export const MACH_O_ARCHITECTURE: Record<DarwinArchitecture, string> = {
+  arm64: 'arm64',
+  x64: 'x86_64',
+}
+
+/** The architectures `lipo -archs` printed, sorted so they compare as a set. */
+export function parseLipoArchs(output: string): string[] {
+  return output.trim().split(/\s+/).filter(Boolean).sort()
+}
+
+export interface UniversalBinaryInput {
+  /** What the binary is, for the error message. */
+  name: string
+  arm64: string
+  x64: string
+  output: string
+}
+
+/**
+ * Merge a thin arm64 and a thin x86_64 Mach-O into one universal binary, and
+ * prove the result holds both (stacksjs/stacks#2199).
+ *
+ * Each input is checked first. `lipo -create` given two slices of the same
+ * architecture fails with "have the same architectures", and given a slice that
+ * is already universal it fails the same way - both read as a lipo problem
+ * when the real mistake is which file was passed, so the check names the file
+ * and what it actually contains.
+ *
+ * The output is checked last because nothing else would notice a wrong one:
+ * the app launches fine on the build machine whichever slice it carries, and
+ * the missing architecture only shows up on the other kind of Mac.
+ */
+export function mergeUniversalBinary(input: UniversalBinaryInput, run: CommandRunner = captureCommand): string[] {
+  for (const architecture of ['arm64', 'x64'] as const) {
+    const expected = MACH_O_ARCHITECTURE[architecture]
+    const found = parseLipoArchs(run(['lipo', '-archs', input[architecture]]))
+    if (found.length !== 1 || found[0] !== expected) {
+      throw new Error(
+        `${input.name}: the ${architecture} input ${input[architecture]} contains ${found.join(' + ') || 'no architectures'}, expected only ${expected}`,
+      )
+    }
+  }
+
+  run(['lipo', '-create', '-output', input.output, input.arm64, input.x64])
+
+  const merged = parseLipoArchs(run(['lipo', '-archs', input.output]))
+  const expected = Object.values(MACH_O_ARCHITECTURE).sort()
+  if (merged.join(' ') !== expected.join(' '))
+    throw new Error(`${input.name}: the universal binary ${input.output} contains ${merged.join(' + ') || 'no architectures'}, expected ${expected.join(' + ')}`)
+
+  return merged
+}
+
+export interface UniversalPayloadInput {
+  /** Where the per-architecture slices and the merged binaries are written. */
+  directory: string
+  /** The `bun build --compile` command for one launcher slice. */
+  launcherCompileArgs: (architecture: DarwinArchitecture, outfile: string) => string[]
+  /** A thin Craft runtime per architecture, from the same Craft revision. */
+  craft: Record<DarwinArchitecture, string>
+}
+
+export interface UniversalPayload {
+  launcher: string
+  runtime: string
+  architectures: string[]
+}
+
+/**
+ * The two executables a Mac App Store bundle carries, as universal binaries.
+ *
+ * `build:desktop` emits the build machine's architecture only. The launcher can
+ * be cross-compiled - Bun builds any darwin target from any host - so both of
+ * its slices come from the same source in one run. Craft cannot be built that
+ * way from here, so its slices are inputs: Craft's own releases publish one per
+ * architecture, and the reusable workflow cross-compiles the second from the
+ * same pinned revision.
+ */
+export function buildUniversalPayload(input: UniversalPayloadInput, run: CommandRunner = captureCommand): UniversalPayload {
+  const slice = (architecture: DarwinArchitecture): string => join(input.directory, architecture, 'stacks-desktop')
+
+  for (const architecture of ['arm64', 'x64'] as const) {
+    mkdirSync(join(input.directory, architecture), { recursive: true })
+    run(input.launcherCompileArgs(architecture, slice(architecture)))
+  }
+
+  const launcher = join(input.directory, 'stacks-desktop')
+  const runtime = join(input.directory, 'craft-runtime')
+  mergeUniversalBinary({ name: 'stacks-desktop', arm64: slice('arm64'), x64: slice('x64'), output: launcher }, run)
+  const architectures = mergeUniversalBinary({ name: 'craft-runtime', arm64: input.craft.arm64, x64: input.craft.x64, output: runtime }, run)
+
+  return { launcher, runtime, architectures }
+}
+
+/**
+ * The launcher compile command for one darwin architecture: the same arguments
+ * `build:desktop` uses, plus the cross-compilation target.
+ */
+export function launcherSliceCompileArgs(base: string[], architecture: DarwinArchitecture): string[] {
+  return ['bun', ...base, `--target=bun-darwin-${architecture}`]
+}
+
 function signingIdentityExists(identity: string): boolean {
   if (!identity) return false
   const result = Bun.spawnSync(['security', 'find-identity', '-v'], {
@@ -422,11 +574,33 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   if (!skipBuild) await buildDesktop()
 
   const desktopDist = storagePath('framework/desktop-dist')
-  const launcher = join(desktopDist, 'stacks-desktop')
-  const runtime = join(desktopDist, 'craft-runtime')
+  let launcher = join(desktopDist, 'stacks-desktop')
+  let runtime = join(desktopDist, 'craft-runtime')
   const manifest = join(desktopDist, 'desktop.json')
   for (const path of [launcher, runtime, manifest]) {
     if (!existsSync(path)) throw new Error(`Desktop build artifact is missing: ${path}`)
+  }
+
+  let architectures = [process.arch === 'x64' ? 'x86_64' : process.arch]
+  let craftSlices: Record<DarwinArchitecture, string> | undefined
+  if (config.universal) {
+    const universalDir = join(desktopDist, 'universal')
+    if (existsSync(universalDir)) rmSync(universalDir, { recursive: true })
+    const { desktopLauncherCompileArgs, resolveDesktopLauncher } = await import('@stacksjs/desktop-build')
+    const entry = resolveDesktopLauncher(projectPath())
+    // Same switch as build:desktop, so the two slices are built the way the
+    // host launcher was.
+    const minify = process.env.DESKTOP_MINIFY !== 'false'
+    const payload = buildUniversalPayload({
+      directory: universalDir,
+      launcherCompileArgs: (architecture, outfile) =>
+        launcherSliceCompileArgs(desktopLauncherCompileArgs({ entry, outfile, minify }), architecture),
+      craft: { arm64: config.craftArm64!, x64: config.craftX64! },
+    })
+    launcher = payload.launcher
+    runtime = payload.runtime
+    architectures = payload.architectures
+    craftSlices = { arm64: config.craftArm64!, x64: config.craftX64! }
   }
 
   const appleDir = join(desktopDist, 'apple')
@@ -442,7 +616,15 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   copyFileSync(runtime, join(macosDir, 'craft-runtime'))
   // Resources, not MacOS: codesign treats everything in MacOS as code and
   // refuses to seal a bundle with unsigned data beside the executable.
-  copyFileSync(manifest, join(resourcesDir, 'desktop.json'))
+  if (config.universal) {
+    // build:desktop recorded the build machine's architecture, which is no
+    // longer what the bundle carries.
+    const parsed = JSON.parse(readFileSync(manifest, 'utf8')) as Record<string, unknown>
+    writeFileSync(join(resourcesDir, 'desktop.json'), `${JSON.stringify({ ...parsed, architecture: 'universal' }, null, 2)}\n`)
+  }
+  else {
+    copyFileSync(manifest, join(resourcesDir, 'desktop.json'))
+  }
   copyFileSync(config.provisioningProfile, join(contents, 'embedded.provisionprofile'))
   chmodSync(join(macosDir, 'stacks-desktop'), 0o755)
   chmodSync(join(macosDir, 'craft-runtime'), 0o755)
@@ -499,9 +681,15 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     version: config.version,
     buildNumber: config.buildNumber,
     minimumMacos: config.minimumMacos,
+    architectures,
     package: { name: basename(packagePath), sha256: packageHash },
     sourceRevision: Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() }).stdout.toString().trim(),
-    craft: { sha256: sha256(join(macosDir, 'craft-runtime')) },
+    craft: {
+      sha256: sha256(join(macosDir, 'craft-runtime')),
+      // The thin inputs as well as the merged binary: the merged hash changes
+      // with lipo's layout, so only these compare against a Craft release.
+      ...(craftSlices && { slices: { arm64: sha256(craftSlices.arm64), x64: sha256(craftSlices.x64) } }),
+    },
   }, null, 2)}\n`)
 
   return packagePath
@@ -744,6 +932,9 @@ export function desktopApple(buddy: CLI): void {
     .option('--provisioning-profile <path>', 'Mac App Store provisioning profile')
     .option('--icon <path>', 'Optional .icns app icon')
     .option('--skip-build', 'Package existing storage/framework/desktop-dist artifacts')
+    .option('--universal', 'Ship one arm64 + x86_64 binary, merged with lipo')
+    .option('--craft-arm64 <path>', 'Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64)')
+    .option('--craft-x64 <path>', 'Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64)')
 
   addSharedOptions(buddy.command('desktop:apple:package', 'Build, sandbox, sign, and package a Mac App Store desktop app'))
     .action(async (options: AppleDesktopOptions) => {

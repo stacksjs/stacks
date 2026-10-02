@@ -49,6 +49,11 @@ on:
         default: bf75807669e3af6cfb4ae34724be5c613442aee2
         required: false
         type: string
+      universal:
+        description: Ship one arm64 + x86_64 app, cross-compiling Craft's x86_64 slice from the same pinned revision
+        default: false
+        required: false
+        type: boolean
       validate-only:
         description: Validate the signed package without uploading it
         default: true
@@ -141,6 +146,7 @@ jobs:
       APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
       APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
       CRAFT_BIN: ${{ github.workspace }}/.craft-contract/packages/zig/zig-out/bin/craft
+      APPLE_UNIVERSAL: ${{ inputs.universal }}
 
     steps:
       - name: Checkout application
@@ -177,6 +183,26 @@ jobs:
           bun run build:core
           test "$(git rev-parse HEAD)" = "${{ inputs.craft-revision }}"
           test -x packages/zig/zig-out/bin/craft
+
+      # The runner is Apple Silicon, so the build above is the arm64 slice. The
+      # x86_64 one is cross-compiled from the same checkout, into its own prefix
+      # so CRAFT_BIN keeps pointing at the native build. `-Dmacos-sdk` is not
+      # optional once `-Dtarget` is given: naming a target puts Zig in
+      # cross-compilation mode, where it stops finding the SDK on its own.
+      # `buddy desktop:apple:package` checks each slice with `lipo -archs`
+      # before merging, so a wrong one fails the build rather than the review.
+      - name: Cross-compile pinned Craft runtime for x86_64
+        if: inputs.universal
+        working-directory: .craft-contract
+        run: |
+          set -euo pipefail
+          eval "$(pantry env | sed -n '/^export /,$p')"
+          VERSION="$(jq -r .version packages/zig/package.json)"
+          (cd packages/zig && zig build -Doptimize=ReleaseSafe -Dversion="$VERSION" -Dtarget=x86_64-macos -Dmacos-sdk="$(xcrun --show-sdk-path)" --prefix "$RUNNER_TEMP/craft-x64")
+          test "$(lipo -archs packages/zig/zig-out/bin/craft)" = arm64
+          test "$(lipo -archs "$RUNNER_TEMP/craft-x64/bin/craft")" = x86_64
+          printf 'CRAFT_BIN_ARM64=%s\n' "$CRAFT_BIN" >> "$GITHUB_ENV"
+          printf 'CRAFT_BIN_X64=%s\n' "$RUNNER_TEMP/craft-x64/bin/craft" >> "$GITHUB_ENV"
 
       # The Action owns the keychain: it creates an ephemeral one, imports both
       # identities, writes the provisioning profile, and deletes the keychain in

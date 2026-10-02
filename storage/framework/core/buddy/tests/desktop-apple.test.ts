@@ -1,7 +1,14 @@
+import type { CommandRunner } from '../src/commands/desktop-apple'
 import { describe, expect, it, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import {
+  buildUniversalPayload,
+  captureCommand,
+  launcherSliceCompileArgs,
+  mergeUniversalBinary,
+  parseLipoArchs,
   renderAppEntitlements,
   renderFailure,
   renderAppleWorkflowCaller,
@@ -46,6 +53,23 @@ describe('Mac App Store desktop automation', () => {
     expect(app).toContain('<string>ABCDEFGHIJ.com.stacksjs.postline</string>')
     expect(helper).toContain('<key>com.apple.security.inherit</key>')
     expect(helper).not.toContain('<key>com.apple.security.network.client</key>')
+  })
+
+  /**
+   * The boundaries docs/packages/desktop.md states for the Store path
+   * (stacksjs/stacks#2059). If one of these starts failing, the page is wrong
+   * too.
+   */
+  test('grants the Store bundle only what the desktop docs say it gets', () => {
+    const plist = renderInfoPlist(config)
+    expect(plist).not.toContain('CFBundleURLTypes')
+    expect(plist).not.toContain('NSAppTransportSecurity')
+    expect(plist).not.toContain('UsageDescription')
+
+    const granted = (entitlements: string): string[] =>
+      [...entitlements.matchAll(/<key>(com\.apple\.security\.[^<]+)<\/key>/g)].map(match => match[1]!)
+    expect(granted(renderAppEntitlements(config))).toEqual(['com.apple.security.app-sandbox', 'com.apple.security.network.client'])
+    expect(granted(renderHelperEntitlements())).toEqual(['com.apple.security.app-sandbox', 'com.apple.security.inherit'])
   })
 
   /**
@@ -103,6 +127,7 @@ describe('Mac App Store desktop automation', () => {
     expect(workflow).toContain('s3-bucket: ${{ vars.RELEASE_S3_BUCKET }}')
     expect(workflow).toContain('validate-only:')
     expect(workflow).toContain('secrets: inherit')
+    expect(workflow).toContain("universal: ${{ vars.APPLE_UNIVERSAL == 'true' }}")
   })
 
   test('reports malformed and missing release inputs before packaging', () => {
@@ -257,5 +282,163 @@ describe('isAppleCategory', () => {
    */
   it('accepts a category it has never heard of, as long as it is shaped right', () => {
     expect(isAppleCategory('public.app-category.something-new')).toBeTrue()
+  })
+})
+
+/**
+ * A fake `lipo` and `bun build`: records every command and answers `-archs`
+ * from a table, so the merge sequence can be asserted without a Mac.
+ */
+function fakeRunner(archs: Record<string, string>): { run: CommandRunner, calls: string[][] } {
+  const calls: string[][] = []
+  const run: CommandRunner = (args) => {
+    calls.push(args)
+    if (args[0] === 'lipo' && args[1] === '-archs') {
+      const answer = archs[args[2]!]
+      if (answer === undefined) throw new Error(`lipo -archs ${args[2]} exited with code 1`)
+      return `${answer}\n`
+    }
+    return ''
+  }
+  return { run, calls }
+}
+
+/**
+ * The universal arm64 + x86_64 merge (stacksjs/stacks#2199). A Store build
+ * that carries only the build machine's architecture launches fine on that
+ * machine and is missing on every other kind of Mac, so nothing short of
+ * reading the binary back would notice.
+ */
+describe('universal binary merge', () => {
+  const input = { name: 'craft-runtime', arm64: '/in/arm64/craft', x64: '/in/x64/craft', output: '/out/craft-runtime' }
+
+  it('reads lipo -archs as a set', () => {
+    expect(parseLipoArchs('x86_64 arm64\n')).toEqual(['arm64', 'x86_64'])
+    expect(parseLipoArchs('arm64')).toEqual(['arm64'])
+    expect(parseLipoArchs('')).toEqual([])
+  })
+
+  it('checks both inputs, merges, then reads the result back', () => {
+    const { run, calls } = fakeRunner({ '/in/arm64/craft': 'arm64', '/in/x64/craft': 'x86_64', '/out/craft-runtime': 'x86_64 arm64' })
+
+    expect(mergeUniversalBinary(input, run)).toEqual(['arm64', 'x86_64'])
+    expect(calls).toEqual([
+      ['lipo', '-archs', '/in/arm64/craft'],
+      ['lipo', '-archs', '/in/x64/craft'],
+      ['lipo', '-create', '-output', '/out/craft-runtime', '/in/arm64/craft', '/in/x64/craft'],
+      ['lipo', '-archs', '/out/craft-runtime'],
+    ])
+  })
+
+  it('names the file when an input is the wrong architecture, before running lipo -create', () => {
+    // Two arm64 slices is the likely mistake on an Apple Silicon runner, and
+    // lipo's own message ("have the same architectures") does not say which.
+    const { run, calls } = fakeRunner({ '/in/arm64/craft': 'arm64', '/in/x64/craft': 'arm64' })
+
+    expect(() => mergeUniversalBinary(input, run)).toThrow('craft-runtime: the x64 input /in/x64/craft contains arm64, expected only x86_64')
+    expect(calls.some(args => args[1] === '-create')).toBeFalse()
+  })
+
+  it('refuses an input that is already universal', () => {
+    const { run } = fakeRunner({ '/in/arm64/craft': 'x86_64 arm64', '/in/x64/craft': 'x86_64' })
+    expect(() => mergeUniversalBinary(input, run)).toThrow('contains arm64 + x86_64, expected only arm64')
+  })
+
+  it('fails when the merged binary does not carry both architectures', () => {
+    const { run } = fakeRunner({ '/in/arm64/craft': 'arm64', '/in/x64/craft': 'x86_64', '/out/craft-runtime': 'arm64' })
+    expect(() => mergeUniversalBinary(input, run)).toThrow('the universal binary /out/craft-runtime contains arm64, expected arm64 + x86_64')
+  })
+
+  it('cross-compiles the launcher for each darwin target', () => {
+    expect(launcherSliceCompileArgs(['build', '--compile', 'launcher.ts', '--outfile', '/o'], 'x64'))
+      .toEqual(['bun', 'build', '--compile', 'launcher.ts', '--outfile', '/o', '--target=bun-darwin-x64'])
+  })
+
+  it('builds both launcher slices from one source, then merges launcher and runtime', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-universal-'))
+    try {
+      const { run, calls } = fakeRunner({
+        [join(directory, 'arm64/stacks-desktop')]: 'arm64',
+        [join(directory, 'x64/stacks-desktop')]: 'x86_64',
+        [join(directory, 'stacks-desktop')]: 'arm64 x86_64',
+        '/craft/arm64': 'arm64',
+        '/craft/x64': 'x86_64',
+        [join(directory, 'craft-runtime')]: 'arm64 x86_64',
+      })
+
+      const payload = buildUniversalPayload({
+        directory,
+        launcherCompileArgs: (architecture, outfile) => launcherSliceCompileArgs(['build', 'launcher.ts', '--outfile', outfile], architecture),
+        craft: { arm64: '/craft/arm64', x64: '/craft/x64' },
+      }, run)
+
+      expect(payload).toEqual({
+        launcher: join(directory, 'stacks-desktop'),
+        runtime: join(directory, 'craft-runtime'),
+        architectures: ['arm64', 'x86_64'],
+      })
+      expect(calls.filter(args => args[0] === 'bun').map(args => args.at(-1))).toEqual(['--target=bun-darwin-arm64', '--target=bun-darwin-x64'])
+      expect(calls.filter(args => args[1] === '-create').map(args => args[3])).toEqual([
+        join(directory, 'stacks-desktop'),
+        join(directory, 'craft-runtime'),
+      ])
+    }
+    finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('names both Craft slices as missing when --universal has neither', () => {
+    const errors = validateAppleDesktopConfig({ ...config, universal: true }, false)
+    expect(errors).toContain('CRAFT_BIN_ARM64 must point to a native Craft runtime for a universal build')
+    expect(errors).toContain('CRAFT_BIN_X64 must point to a native Craft runtime for a universal build')
+  })
+
+  it('refuses a wrapper script as a Craft slice', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-universal-'))
+    try {
+      const script = join(directory, 'craft')
+      writeFileSync(script, '#!/bin/sh\nexec craft "$@"\n')
+      const errors = validateAppleDesktopConfig({ ...config, universal: true, craftArm64: script, craftX64: script }, false)
+      expect(errors).toContain(`CRAFT_BIN_ARM64 points at a script, not a native Craft runtime: ${script}`)
+    }
+    finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('leaves a single-architecture build alone', () => {
+    const errors = validateAppleDesktopConfig(config, false)
+    expect(errors.filter(error => error.includes('CRAFT_BIN'))).toEqual([])
+  })
+
+  it('wires the reusable workflow to cross-compile Craft only when asked', () => {
+    const workflow = readFileSync(resolve(import.meta.dir, '../../../../../.github/workflows/desktop-app-store.yml'), 'utf8')
+    expect(workflow).toContain('APPLE_UNIVERSAL: ${{ inputs.universal }}')
+    expect(workflow).toContain('if: inputs.universal')
+    expect(workflow).toContain('-Dtarget=x86_64-macos')
+    expect(workflow).toContain('CRAFT_BIN_X64=')
+  })
+
+  /**
+   * The real tools, when they are here. Everything above trusts the fake's
+   * idea of what lipo prints; this is the check that the idea is right.
+   */
+  const realTools = process.platform === 'darwin' && Boolean(Bun.which('lipo')) && Boolean(Bun.which('clang'))
+  it.skipIf(!realTools)('merges two real thin Mach-O binaries into one that lipo reports as universal', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-universal-real-'))
+    try {
+      const source = join(directory, 'main.c')
+      writeFileSync(source, 'int main(void) { return 0; }\n')
+      for (const [architecture, flag] of [['arm64', 'arm64'], ['x64', 'x86_64']] as const)
+        captureCommand(['clang', '-arch', flag, source, '-o', join(directory, architecture)])
+
+      const output = join(directory, 'universal')
+      expect(mergeUniversalBinary({ name: 'fixture', arm64: join(directory, 'arm64'), x64: join(directory, 'x64'), output })).toEqual(['arm64', 'x86_64'])
+      expect(parseLipoArchs(captureCommand(['lipo', '-archs', output]))).toEqual(['arm64', 'x86_64'])
+    }
+    finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 })
