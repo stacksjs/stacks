@@ -22,38 +22,42 @@ that asks for a stable desktop artifact fails instead of shipping one.
 
 | Target | Status | Tested on | Package | Signing | Notarization | Install + launch | Blocked by |
 |---|---|---|---|---|---|---|---|
-| macOS arm64 | **experimental** | macOS 15 runner | DMG + PKG | pending | pending | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062), [home-lang/craft#11](https://github.com/home-lang/craft/issues/11) |
-| macOS x64 | **experimental** | macOS 15 Intel runner | DMG + PKG | pending | pending | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062), [home-lang/craft#11](https://github.com/home-lang/craft/issues/11) |
-| Linux x64 | **experimental** | Ubuntu 24.04 runner | DEB | pending | not-applicable | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062), [home-lang/craft#11](https://github.com/home-lang/craft/issues/11) |
-| Windows x64 | **experimental** | Windows Server 2025 runner | MSI + ZIP | pending | not-applicable | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062), [home-lang/craft#11](https://github.com/home-lang/craft/issues/11) |
+| macOS arm64 | **experimental** | macOS 15 runner | DMG + PKG | pending | pending | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
+| macOS x64 | **experimental** | macOS 15 Intel runner | DMG + PKG | pending | pending | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
+| Linux x64 | **experimental** | Ubuntu 24.04 runner | DEB | pending | not-applicable | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
+| Windows x64 | **experimental** | Windows Server 2025 runner | MSI + ZIP | pending | not-applicable | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
 
 ### Known limitations
 
 - **macOS arm64** - Lifecycle fixtures are unsigned while platform identities remain unprovisioned.
-- **macOS arm64** - Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy.
+- **macOS arm64** - Lifecycle evidence was produced against Craft v0.0.48 built from source (bf75807). Craft now publishes a prebuilt craft-darwin-arm64.zip with every release, and no Stacks lifecycle run has re-verified a prebuilt release yet.
 - **macOS x64** - Lifecycle fixtures are unsigned while platform identities remain unprovisioned.
-- **macOS x64** - Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy.
+- **macOS x64** - Lifecycle evidence was produced against Craft v0.0.48 built from source (bf75807). Craft now publishes a prebuilt craft-darwin-x64.zip with every release, and no Stacks lifecycle run has re-verified a prebuilt release yet.
 - **Linux x64** - The lifecycle fixture is unsigned and no package repository support policy is published.
-- **Linux x64** - Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy.
+- **Linux x64** - Lifecycle evidence was produced against Craft v0.0.48 built from source (bf75807). Craft now publishes a prebuilt craft-linux-x64.zip with every release, and no Stacks lifecycle run has re-verified a prebuilt release yet.
 - **Windows x64** - The lifecycle fixture is not Authenticode-signed.
-- **Windows x64** - Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy.
+- **Windows x64** - Lifecycle evidence was produced against Craft v0.0.48 built from source (bf75807). Craft now publishes a prebuilt craft-windows-x64.zip with every release, and no Stacks lifecycle run has re-verified a prebuilt release yet.
 
 <!-- desktop-support-matrix:end -->
 
 ## What "experimental" is waiting on
 
-Two things, and neither is a code change here:
+One blocker, and it is not a code change here:
 
-1. **Platform identities.** Apple Developer ID and notarization credentials, and an
-   Authenticode certificate for Windows. Tracked in
-   [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) - this is a
-   procurement step, not an engineering one.
-2. **A Craft release.** v0.0.48 is source-tagged, but its upstream release workflow is
-   blocked by repository Actions policy
-   ([home-lang/craft#11](https://github.com/home-lang/craft/issues/11)).
+- **Platform identities.** Apple Developer ID and notarization credentials, and an
+  Authenticode certificate for Windows. Tracked in
+  [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) - this is a
+  procurement step, not an engineering one.
 
-Once both land, each row's `signing` and `notarization` move to `enforced`, its `status`
-moves to `stable`, and the guard stops refusing.
+Craft releases are no longer a blocker. Its release workflow was restored
+([home-lang/craft#11](https://github.com/home-lang/craft/issues/11), closed), and every
+release now publishes prebuilt `craft-darwin-arm64`, `craft-darwin-x64`, `craft-linux-x64`
+and `craft-windows-x64` archives. The lifecycle evidence above still comes from Craft
+v0.0.48 built from source, so the next lifecycle run should move to a published release.
+
+Once the identities exist and a signed artifact has passed install, update and rollback,
+that row's `signing` and `notarization` move to `enforced`, its `status` moves to `stable`,
+and the guard stops refusing.
 
 ## Reading the matrix
 
@@ -67,6 +71,63 @@ moves to `stable`, and the guard stops refusing.
 The table is generated from `desktopSupportMatrix` in `@stacksjs/desktop` by
 `buddy docs:desktop-matrix`, and CI fails when the two disagree. Change the source, not
 this page.
+
+## Permissions, storage, and protocol handlers
+
+What a Stacks desktop app is allowed to do, where it keeps things, and which URLs reach
+it. Every statement here is about what the framework itself produces. An application can
+widen most of it, and the notes say how.
+
+### Permissions
+
+There are two packaging paths, and they grant different things.
+
+| | `buddy build:dmg` (direct download) | `buddy desktop:apple:package` (Mac App Store) |
+|---|---|---|
+| App Sandbox | Off. When `DESKTOP_SIGNING_IDENTITY` is set, every executable is signed with `app/Desktop/Entitlements.plist` if it exists and with no entitlements if not. | On. The bundle gets `com.apple.security.app-sandbox` and `com.apple.security.network.client`, nothing else. |
+| Craft runtime | When signing, re-signed with the launcher's entitlements, which drops the sandbox entitlement a published Craft binary arrives with. Unsigned, it keeps whatever signature it was built with. | Signed first, with only `app-sandbox` and `com.apple.security.inherit`, so it runs inside the parent's sandbox and cannot hold grants of its own. |
+| Extra capabilities | Whatever `app/Desktop/Entitlements.plist` declares. | Not configurable yet. User-selected files, camera, microphone and every other sandbox capability are not granted. |
+| Permission prompt text | `NS*UsageDescription` keys from `app/Desktop/Info.plist.json`. | Not read. The Store `Info.plist` carries no usage descriptions. |
+| Network transport | The framework launcher allows arbitrary loads, because its window opens a remote URL. An app-owned launcher gets a loopback-only exception instead. `Info.plist.json` can replace either. | Default App Transport Security, which requires HTTPS. Outbound only: listening on a port, as an app-owned launcher serving on loopback does, needs `com.apple.security.network.server`, which is not granted. |
+
+In both, the framework launcher starts Craft with `--no-devtools`, so the web inspector is
+not available in a packaged app. An app-owned launcher decides that for itself.
+
+**The page in the window is the trust boundary.** Craft exposes a `window.craft` bridge
+to it, which the framework wraps in `useCraft()`, `useWindowControls()` and
+`useAppControls()`: window controls (minimize, close, show, hide, toggle), app controls
+(quit, notifications, app info), sidebar selection, and the system tray. Stacks adds no
+origin check of its own, and whether Craft limits the bridge by origin is Craft's contract,
+so treat any page the window can navigate to as able to call those.
+
+### Storage
+
+- **The bundle is not a secret store.** `desktop.json` (the URL, title, window size and
+  flags) sits in `Contents/Resources` in plain text, and the launcher and runtime are
+  readable by anyone with the app. Ship no credentials in either.
+- **The launcher does not load `.env` or `bunfig.toml`.** It is compiled with
+  `--no-compile-autoload-dotenv` and `--no-compile-autoload-bunfig`, so it never picks up
+  configuration from whatever directory it was started in.
+- **Web storage belongs to Craft's WebView**, not to Stacks. Cookies, `localStorage` and
+  IndexedDB live wherever the WebView keeps them. Under the App Sandbox, anything the app
+  writes lands in its own container.
+- **No secret-storage API.** Stacks does not wrap the Keychain, Credential Manager or
+  Secret Service. An app that holds tokens needs its own.
+- **Updates are staged, not installed.** `stageDesktopUpdate` refuses a manifest without
+  a valid Ed25519 signature from a trusted key, refuses plain HTTP outside loopback,
+  checks the exact size and SHA-256, then writes the file with mode `0700` through a
+  temporary name and an atomic rename. Applying it is the caller's job.
+
+### Protocol handlers
+
+- **Stacks registers no URL scheme.** Neither `Info.plist` it writes declares
+  `CFBundleURLTypes`, and there is no API for one.
+- **A scheme declared through `Info.plist.json` is not a supported path.** `build:dmg`
+  would copy the key in, but the bundle's executable is the launcher, and the framework
+  launcher opens the URL from `desktop.json` without forwarding an activation URL to Craft. Craft has
+  added deep-link handling in its own packaging, and Stacks has not adopted it.
+- **Invite links are web links.** `createInviteLink` builds an `https://` URL to
+  `/invite`, which opens in a browser, not in the app.
 
 ## Querying it from code
 
@@ -83,5 +144,8 @@ assertDesktopReleaseChannel('experimental')
 ## Related
 
 - `buddy desktop:apple:*` - Mac App Store packaging and delivery
-  ([#2199](https://github.com/stacksjs/stacks/issues/2199))
+  ([#2199](https://github.com/stacksjs/stacks/issues/2199)). `desktop:apple:package
+  --universal` ships one arm64 + x86_64 app: Bun cross-compiles both launcher slices, the
+  two Craft slices come from `CRAFT_BIN_ARM64` and `CRAFT_BIN_X64`, and `lipo` merges each
+  pair after checking what every input actually contains.
 - The `stacks-mobile` skill covers the iOS and Android side of the same Craft bridge

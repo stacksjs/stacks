@@ -62,7 +62,7 @@ install/launch/update/rollback evidence and enforced platform signing. See the
 and issues [#2059](https://github.com/stacksjs/stacks/issues/2059),
 [#2062](https://github.com/stacksjs/stacks/issues/2062), and
 [#2063](https://github.com/stacksjs/stacks/issues/2063). The pinned Craft source,
-file digests, matrix, and current upstream Actions blocker are recorded in
+file digests, and matrix are recorded in
 [`evidence/craft.json`](https://github.com/stacksjs/protocol/blob/main/evidence/craft.json).
 
 ## Desktop API

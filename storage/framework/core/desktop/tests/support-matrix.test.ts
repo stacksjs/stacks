@@ -99,4 +99,19 @@ describe('the published page agrees with the source', () => {
     // enforce on its own: the words around it must not say otherwise.
     expect(published).toContain('Every desktop target is experimental')
   })
+
+  test('documents the permission, storage and protocol-handler boundaries', () => {
+    // #2059's "permissions, storage, and protocol-handler boundaries are
+    // documented". The claims themselves are pinned beside the code they
+    // describe, in buddy's desktop-apple tests.
+    expect(published).toContain('## Permissions, storage, and protocol handlers')
+    expect(published).toContain('Stacks registers no URL scheme')
+  })
+
+  test('names no closed upstream blocker', () => {
+    // home-lang/craft#11 sat in every row for a month after it closed, and the
+    // page told readers Craft could not release while it was publishing them.
+    for (const row of desktopSupportMatrix)
+      expect(row.blockingIssues).not.toContain('https://github.com/home-lang/craft/issues/11')
+  })
 })
