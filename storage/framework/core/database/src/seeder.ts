@@ -609,6 +609,11 @@ async function generateRecord(
   report: boolean = false,
 ): Promise<Record<string, unknown>> {
   const record: Record<string, unknown> = {}
+  // What this record's factories have produced so far, by attribute name and
+  // before hashing, so a factory can depend on an attribute declared above it
+  // (a coupon's value on its discount type) the way a Laravel factory closure
+  // receives the attributes array.
+  const generated: Record<string, unknown> = {}
 
   for (const [fieldName, attr] of Object.entries(attributes)) {
     // Convert field name to snake_case for database column
@@ -620,7 +625,7 @@ async function generateRecord(
       try {
         // Cast: the faker singleton is a wrapped object that exposes additional helpers
         // beyond the BaseFaker type used in the factory signature.
-        value = attr.factory(faker)
+        value = attr.factory(faker, generated)
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
@@ -644,6 +649,8 @@ async function generateRecord(
       // Skip fields without factory or default - they may be nullable or auto-generated
       continue
     }
+
+    generated[fieldName] = value
 
     // Hash password fields using bcrypt (to match the User model's set.password)
     if (isPasswordField(fieldName, attr) && typeof value === 'string') {

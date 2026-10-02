@@ -424,7 +424,12 @@ export interface Attribute {
   guarded?: boolean
   /** Disable, infer, or explicitly configure a foreign-key constraint. */
   foreignKey?: boolean | ForeignKeyConfig
-  factory?: (faker: Faker) => any
+  /**
+   * Fake value for seeding. Receives the attributes this record's factories
+   * have already produced (those declared above it, by attribute name), so a
+   * value can depend on another: `(faker, { discountType }) => ...`.
+   */
+  factory?: (faker: Faker, attributes: Readonly<Record<string, unknown>>) => any
   validation: {
     rule: ValidationType
     message?: ValidatorMessage

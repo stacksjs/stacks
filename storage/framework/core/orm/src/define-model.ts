@@ -2162,7 +2162,12 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
 type BQBModelAttribute = BQBModelDefinition['attributes'][string]
 
 export type StacksModelAttribute = Omit<BQBModelAttribute, 'factory'> & {
-  factory?: (faker: Faker) => unknown
+  /**
+   * Fake value for seeding. Receives the attributes this record's factories
+   * have already produced (those declared above it, by attribute name), so a
+   * value can depend on another: `(faker, { discountType }) => ...`.
+   */
+  factory?: (faker: Faker, attributes: Readonly<Record<string, unknown>>) => unknown
 }
 
 export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits' | 'dashboard'> {

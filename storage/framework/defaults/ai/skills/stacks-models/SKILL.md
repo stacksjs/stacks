@@ -88,7 +88,7 @@ generated model types stay precise.
 | `guarded` | Block mass assignment |
 | `hidden` | Exclude from JSON serialization (passwords, tokens) |
 | `foreignKey` | Disable, infer, or configure the FK constraint |
-| `factory` | `(faker) => value`, used by seeders and tests |
+| `factory` | `(faker, attributes) => value`, used by seeders and tests. `attributes` holds what this record's earlier-declared factories produced, so one value can depend on another: `(faker, { discountType }) => ...` |
 | `validation` | `{ rule, message? }` - `rule` from `schema`, `message` keyed by rule name |
 
 ### Traits
