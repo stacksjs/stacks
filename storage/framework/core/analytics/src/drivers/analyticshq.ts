@@ -33,11 +33,22 @@ export interface AnalyticsHqConfig {
 /** The hosted script, used when `scriptUrl` is not set. */
 export const ANALYTICSHQ_DEFAULT_SCRIPT = 'https://analyticshq.org/script.js'
 
+/** What the framework resolves for the driver, as opposed to what an app configures. */
+export interface AnalyticsHqContext {
+  /**
+   * The environment the integration gate admitted. Written as
+   * `data-environment`, which the tracker attaches to every pageview, custom
+   * event and Web Vitals beacon (stacksjs/analyticshq#60). It is a label only:
+   * whether the script is emitted at all was decided by the gate.
+   */
+  environment?: string
+}
+
 /**
  * Build the AnalyticsHQ head tags. Values are raw; escaping happens when the
  * tags are rendered.
  */
-export function getAnalyticsHqHead(config: AnalyticsHqConfig): AnalyticsHeadTag[] {
+export function getAnalyticsHqHead(config: AnalyticsHqConfig, context: AnalyticsHqContext = {}): AnalyticsHeadTag[] {
   if (!config.siteId)
     return []
 
@@ -52,6 +63,8 @@ export function getAnalyticsHqHead(config: AnalyticsHqConfig): AnalyticsHeadTag[
     attributes['data-respect-dnt'] = 'false'
   if (config.vitals === false)
     attributes['data-vitals'] = 'false'
+  if (context.environment)
+    attributes['data-environment'] = context.environment
 
   return [['script', attributes]]
 }

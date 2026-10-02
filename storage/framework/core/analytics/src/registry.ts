@@ -72,14 +72,16 @@ export function getAnalyticsHead(config: AnalyticsConfig): AnalyticsHeadTag[] {
   if (config.enabled === false)
     return []
   if (config.environments !== undefined) {
-    const result = initializeIntegration(config, () => resolveAnalyticsHead(config, driver))
+    // The gate's resolved environment becomes the event label, so an
+    // application never repeats APP_ENV in its config.
+    const result = initializeIntegration(config, ({ environment }) => resolveAnalyticsHead(config, driver, environment))
     return result.initialized ? result.value : []
   }
 
   return resolveAnalyticsHead(config, driver)
 }
 
-function resolveAnalyticsHead(config: AnalyticsConfig, driver: AnalyticsDriverName): AnalyticsHeadTag[] {
+function resolveAnalyticsHead(config: AnalyticsConfig, driver: AnalyticsDriverName, environment?: string): AnalyticsHeadTag[] {
 
   if (!isAnalyticsDriver(driver)) {
     throw new Error(
@@ -127,7 +129,7 @@ function resolveAnalyticsHead(config: AnalyticsConfig, driver: AnalyticsDriverNa
       if (!options?.siteId)
         return []
 
-      return getAnalyticsHqHead(options)
+      return getAnalyticsHqHead(options, { environment })
     }
 
     default: {

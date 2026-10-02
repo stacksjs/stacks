@@ -99,3 +99,47 @@ describe('analytics environment gate', () => {
     expect(() => getAnalyticsHead(unconfigured)).toThrow()
   })
 })
+
+/**
+ * Included events carry the effective APP_ENV (stacksjs/stacks#2792). The gate
+ * resolves the environment once and hands it to the driver, so an application
+ * never repeats `env.APP_ENV` in its config. AnalyticsHQ's tracker reads
+ * `data-environment` and attaches it to every beacon (stacksjs/analyticshq#60).
+ */
+describe('analytics environment label', () => {
+  const analyticshq: AnalyticsConfig = {
+    driver: 'analyticshq',
+    drivers: { analyticshq: { siteId: 'site_123' } },
+    environments: ['production', 'staging'],
+  }
+
+  it('labels the AnalyticsHQ tag with the environment the gate admitted', () => {
+    runningAs('staging')
+    const [[, attributes]] = getAnalyticsHead(analyticshq) as [[string, Record<string, string>]]
+
+    expect(attributes['data-environment']).toBe('staging')
+    expect(generateAnalyticsScript(analyticshq)).toContain('data-environment="staging"')
+  })
+
+  it('labels with the normalized spelling, not the raw APP_ENV', () => {
+    runningAs('prod')
+    const [[, attributes]] = getAnalyticsHead(analyticshq) as [[string, Record<string, string>]]
+
+    expect(attributes['data-environment']).toBe('production')
+  })
+
+  it('adds no label when the installation never opted into the gate', () => {
+    runningAs('production')
+    const { environments: _, ...ungated } = analyticshq
+    const [[, attributes]] = getAnalyticsHead(ungated) as [[string, Record<string, string>]]
+
+    expect(attributes).not.toHaveProperty('data-environment')
+  })
+
+  it('leaves drivers whose trackers have no environment field untouched', () => {
+    runningAs('production')
+    const [[, attributes]] = getAnalyticsHead({ ...configured, environments: ['production'] }) as [[string, Record<string, string>]]
+
+    expect(attributes).not.toHaveProperty('data-environment')
+  })
+})

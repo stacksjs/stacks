@@ -547,7 +547,10 @@ allow CI.
 
 The same rule applies in web and API servers, the dashboard, workers and
 `buddy` commands, because each reads the same `APP_ENV`. Browser integrations
-receive only the resolved public label, never server credentials.
+receive only the resolved public label, never server credentials. With the
+AnalyticsHQ driver that label is the tag's `data-environment` attribute, which
+the tracker attaches to every pageview, custom event and Web Vitals beacon, so
+`staging` traffic is distinguishable without a second site id.
 
 ::: warning APP_ENV is a label, not an identity
 A local command launched with `APP_ENV=production` qualifies for a production
