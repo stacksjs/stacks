@@ -54357,7 +54357,7 @@
                           },
                           "amount": {
                             "type": "number",
-                            "minimum": 0.01
+                            "minimum": 1
                           },
                           "status": {
                             "type": "string"
@@ -54434,7 +54434,7 @@
                         },
                         "amount": {
                           "type": "number",
-                          "minimum": 0.01
+                          "minimum": 1
                         },
                         "status": {
                           "type": "string"
@@ -54546,7 +54546,7 @@
                         },
                         "amount": {
                           "type": "number",
-                          "minimum": 0.01
+                          "minimum": 1
                         },
                         "status": {
                           "type": "string"
@@ -54631,7 +54631,7 @@
                         },
                         "amount": {
                           "type": "number",
-                          "minimum": 0.01
+                          "minimum": 1
                         },
                         "status": {
                           "type": "string"
@@ -54716,7 +54716,7 @@
                         },
                         "amount": {
                           "type": "number",
-                          "minimum": 0.01
+                          "minimum": 1
                         },
                         "status": {
                           "type": "string"
@@ -54801,7 +54801,7 @@
                         },
                         "amount": {
                           "type": "number",
-                          "minimum": 0.01
+                          "minimum": 1
                         },
                         "status": {
                           "type": "string"
@@ -66695,7 +66695,7 @@
           },
           "amount": {
             "type": "number",
-            "minimum": 0.01
+            "minimum": 1
           },
           "status": {
             "type": "string"
