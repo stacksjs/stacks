@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { catalogUuid, uuidV5 } from '../imports/identity'
 import { normalizeStoreUrl, storeHost } from '../imports/http'
-import { currencyExponent, decimalToMinor, formatMinor, minorToDecimal, PriceFormatError, rescaleMinor } from '../imports/money'
+import { currencyExponent, decimalToMinor, formatMinor, minorToDecimal, numberToDecimalString, numberToMinor, PriceFormatError, rescaleMinor } from '../imports/money'
 import { cleanName, decodeHtmlEntities } from '../imports/text'
 
 /**
@@ -61,6 +61,57 @@ describe('decimalToMinor', () => {
 
   it('accepts a number that arrived as JSON', () => {
     expect(decimalToMinor(19.99)).toBe(1999)
+  })
+})
+
+describe('numberToMinor (Shopware sends JSON numbers)', () => {
+  it.each([
+    [19.99, 1999],
+    [0.1, 10],
+    [1999.5, 199950],
+    [49.9, 4990],
+    [0, 0],
+    [4.35, 435],
+    [1.005, 101],
+    [0.1 + 0.2, 30],
+    [1234567.89, 123456789],
+  ])('reads %p as %p cents', (input, cents) => {
+    expect(numberToMinor(input)).toBe(cents)
+  })
+
+  it('never multiplies a float', () => {
+    // The float route gets these wrong; the decimal string route does not.
+    expect(Math.round(1.005 * 100)).toBe(100)
+    expect(Math.trunc(19.99 * 100)).toBe(1998)
+    expect(numberToMinor(1.005)).toBe(101)
+    expect(numberToMinor(19.99)).toBe(1999)
+  })
+
+  it('writes the number out as the literal the source serialized, expanding exponent form', () => {
+    expect(numberToDecimalString(19.99)).toBe('19.99')
+    expect(numberToDecimalString(0.1)).toBe('0.1')
+    expect(numberToDecimalString(1999.5)).toBe('1999.5')
+    expect(numberToDecimalString(1e-7)).toBe('0.0000001')
+    expect(numberToDecimalString(1.5e-7)).toBe('0.00000015')
+    expect(numberToDecimalString(1e21)).toBe('1000000000000000000000')
+    expect(numberToDecimalString(1.25e22)).toBe('12500000000000000000000')
+    expect(numberToDecimalString(-0)).toBe('0')
+  })
+
+  it('respects the currency precision', () => {
+    expect(numberToMinor(1999, 0)).toBe(1999)
+    expect(numberToMinor(12.345, 3)).toBe(12345)
+    expect(numberToMinor(1e-7)).toBe(0)
+  })
+
+  it('treats missing as unpriced, reads a numeric string, and rejects what is not an amount', () => {
+    expect(numberToMinor(null)).toBeNull()
+    expect(numberToMinor(undefined)).toBeNull()
+    expect(numberToMinor('19.99')).toBe(1999)
+    expect(() => numberToMinor(-1)).toThrow(PriceFormatError)
+    expect(() => numberToMinor(Number.NaN)).toThrow(PriceFormatError)
+    expect(() => numberToMinor(Number.POSITIVE_INFINITY)).toThrow(PriceFormatError)
+    expect(() => numberToMinor(1e21)).toThrow('too large to store exactly')
   })
 })
 

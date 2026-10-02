@@ -1,0 +1,126 @@
+{
+  "total": 4,
+  "aggregations": [],
+  "page": 1,
+  "limit": 100,
+  "elements": [
+    {
+      "translated": {
+        "name": "Leinenhemd  Classic",
+        "description": "<p>Luftiges Hemd aus <strong>100% Leinen</strong>.</p>"
+      },
+      "parentId": null,
+      "childCount": 3,
+      "active": true,
+      "productNumber": "SW10001",
+      "stock": 0,
+      "availableStock": 0,
+      "available": true,
+      "name": "Linen Shirt Classic",
+      "description": "<p>Airy shirt made of <strong>100% linen</strong>.</p>",
+      "manufacturer": { "translated": { "name": "Nordlicht Textil" }, "name": "Nordlicht Textil", "apiAlias": "product_manufacturer" },
+      "seoCategory": null,
+      "categories": [
+        { "translated": { "name": "Hemden & Blusen" }, "name": "Hemden & Blusen", "apiAlias": "category" },
+        { "translated": { "name": "Sommer" }, "name": "Sommer", "apiAlias": "category" }
+      ],
+      "tags": [{ "name": "linen", "apiAlias": "tag" }, { "name": "summer", "apiAlias": "tag" }],
+      "cover": {
+        "position": 0,
+        "media": { "translated": { "alt": "Leinenhemd, vorne", "title": null }, "title": null, "alt": "Linen shirt, front", "url": "https://cdn.shop.example.de/media/a1/b2/c3/shirt-front.jpg?ts=1717000000", "apiAlias": "media" },
+        "apiAlias": "product_media"
+      },
+      "media": [
+        {
+          "position": 1,
+          "media": { "translated": [], "title": "Back", "alt": null, "url": "https://cdn.shop.example.de/media/d4/e5/f6/shirt-back.jpg?ts=1717000000", "apiAlias": "media" },
+          "apiAlias": "product_media"
+        },
+        {
+          "position": 0,
+          "media": { "translated": { "alt": "Leinenhemd, vorne", "title": null }, "title": null, "alt": "Linen shirt, front", "url": "https://cdn.shop.example.de/media/a1/b2/c3/shirt-front.jpg?ts=1717000000", "apiAlias": "media" },
+          "apiAlias": "product_media"
+        },
+        { "position": 2, "media": null, "apiAlias": "product_media" }
+      ],
+      "options": null,
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5a61",
+      "calculatedPrice": { "unitPrice": 49.9, "quantity": 1, "listPrice": null, "apiAlias": "calculated_price" },
+      "apiAlias": "product"
+    },
+    {
+      "translated": [],
+      "parentId": null,
+      "childCount": 0,
+      "active": true,
+      "productNumber": "SW10002",
+      "stock": 12,
+      "availableStock": 10,
+      "available": true,
+      "name": "Espresso Cup Set",
+      "description": "<ul><li>2 cups</li><li>Dishwasher safe</li></ul>",
+      "manufacturer": { "translated": [], "name": "Porzellan Werk", "apiAlias": "product_manufacturer" },
+      "seoCategory": { "translated": { "name": "Küche" }, "name": "Küche", "apiAlias": "category" },
+      "categories": [
+        { "translated": { "name": "Geschenke" }, "name": "Geschenke", "apiAlias": "category" },
+        { "translated": { "name": "Küche" }, "name": "Küche", "apiAlias": "category" }
+      ],
+      "tags": [],
+      "cover": {
+        "position": 0,
+        "media": { "translated": { "alt": null, "title": null }, "title": null, "alt": null, "url": "https://cdn.shop.example.de/media/11/22/33/cups.png?ts=1717000000", "apiAlias": "media" },
+        "apiAlias": "product_media"
+      },
+      "media": [],
+      "options": null,
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5a62",
+      "calculatedPrice": { "unitPrice": 19.99, "quantity": 1, "listPrice": { "price": 24.99, "discount": -5, "percentage": 20.01, "apiAlias": "cart_list_price" }, "apiAlias": "calculated_price" },
+      "apiAlias": "product"
+    },
+    {
+      "translated": { "name": "Muster: Stoffprobe", "description": null },
+      "parentId": null,
+      "childCount": 0,
+      "active": true,
+      "productNumber": "SW10003",
+      "stock": -4,
+      "availableStock": -4,
+      "available": true,
+      "name": "Sample: Fabric swatch",
+      "description": null,
+      "manufacturer": null,
+      "seoCategory": null,
+      "categories": [],
+      "tags": null,
+      "cover": null,
+      "media": [],
+      "options": null,
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5a63",
+      "calculatedPrice": { "unitPrice": 0.1, "quantity": 1, "listPrice": { "price": 0.05, "apiAlias": "cart_list_price" }, "apiAlias": "calculated_price" },
+      "apiAlias": "product"
+    },
+    {
+      "translated": { "name": "Gutschein (Preis auf Anfrage)" },
+      "parentId": null,
+      "childCount": 0,
+      "active": true,
+      "productNumber": "SW10004",
+      "stock": 0,
+      "availableStock": 0,
+      "available": false,
+      "name": "Voucher (price on request)",
+      "description": null,
+      "manufacturer": null,
+      "seoCategory": null,
+      "categories": [],
+      "tags": [],
+      "cover": null,
+      "media": [],
+      "options": null,
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5a64",
+      "calculatedPrice": null,
+      "apiAlias": "product"
+    }
+  ],
+  "apiAlias": "dal_entity_search_result"
+}

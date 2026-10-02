@@ -671,27 +671,41 @@ buddy commerce:import https://shop.example.com --from shopify
 
 # WooCommerce 6+: reads the Store API at /wp-json/wc/store/v1/products
 buddy commerce:import https://example.com/shop --from woocommerce --limit 50
+
+# Shopware 6: reads the Store API at /store-api/product
+buddy commerce:import https://shop.example.de --from shopware --access-key SWSC... --dry-run
+SHOPWARE_ACCESS_KEY=SWSC... buddy commerce:import https://shop.example.de --from shopware
 ```
 
 | Flag | Meaning |
 |------|---------|
-| `--from <platform>` | `shopify` or `woocommerce` (required) |
+| `--from <platform>` | `shopify`, `woocommerce` or `shopware` (required) |
+| `--access-key <key>` | Shopware only, and required there: the sales channel access key. `SHOPWARE_ACCESS_KEY` works too; the flag wins |
 | `--dry-run` | Print what would be created or updated, write nothing |
 | `--limit <count>` | Stop after this many products |
-| `--currency <code>` | Shopify only: the shop currency, when `/meta.json` does not report it |
+| `--currency <code>` | The store currency, when the store does not report it (Shopify `/meta.json`, Shopware `/store-api/context`) |
+
+### Shopware 6
+
+Shopware's Store API answers only requests that carry a sales channel access key in the `sw-access-key` header. The key is public by design: every headless storefront ships it in its page source, and it only selects which sales channel answers, so it reads exactly what an anonymous shopper can see. Find it in the Shopware Administration under **Sales Channels**: open the storefront or headless sales channel and copy the key from its **API access** card. It starts with `SWSC`; a key starting with `SWIA` belongs to an Admin API integration and is refused. You can pass the storefront URL or the API endpoint (`https://shop.example.de/store-api`).
+
+- **Prices** are `calculatedPrice.unitPrice`: the price one unit costs in the sales channel's currency, gross for a B2C channel, as a shopper sees it. The list price becomes the compare-at price when it is higher. The JSON number is converted through its decimal string, never multiplied as a float, so `19.99` is `1999`.
+- **Currency** comes from `/store-api/context`. The Store API cannot convert, so a `--currency` that contradicts the sales channel is ignored with a warning; it only fills in when the context does not report one.
+- **Variants** are Shopware's child products. Each becomes a `product_variants` row with the child's product number as `sku`, its own price and list price, its available stock as `inventory_count` (oversold, negative stock reads as 0), and its option values in the property groups' order. A parent whose variants are all hidden from the sales channel is imported without a price, with a warning.
+- **Names and descriptions** use the sales channel's language (`translated`), falling back to the default-language fields. The first category is the product's SEO category when the channel has one.
 
 What lands where:
 
 - **Products**: name, HTML description, the lowest variant price (integer minor units), availability, and the first image URL (images are not downloaded).
 - **Variants**: one `product_variants` row per real option combination. Option values go in `options`, and the SKU, price, compare-at price and stock (when the source exposes it) go in `sku`, `price`, `compare_at_price` and `inventory_count`, money in integer minor units. A SKU is unique per product, so a source variant repeating one is imported without it, with a warning.
-- **Categories**: the Shopify product type, or the first WooCommerce category, matched by slug.
-- **Manufacturers**: the Shopify vendor, or the WooCommerce brand, matched by name.
+- **Categories**: the Shopify product type, or the first WooCommerce or Shopware category, matched by slug.
+- **Manufacturers**: the Shopify vendor, the WooCommerce brand, or the Shopware manufacturer, matched by name.
 
 Re-running is safe. Each imported product and variant gets a `uuid` derived from the store host and the source id, so a second run updates the rows the first one wrote instead of duplicating them. Columns you own on the Stacks side (`preparation_time`, `allergens`, `nutritional_info`, a variant's `description`) are never overwritten, and neither is a stock count or variant SKU the source does not report.
 
 Prices are stored in the source store's currency. `products.price` has no currency column, so the command warns when that differs from `currency` in `config/commerce.ts`.
 
-**Scope: catalog only.** Customers, orders, reviews, exact stock levels, collections and redirects are not imported. They are only available through the Shopify Admin API or the WooCommerce REST API, which need an access token or consumer keys.
+**Scope: catalog only.** Customers, orders, reviews, exact stock levels (Shopify and WooCommerce), collections and redirects are not imported. They are only available through the Shopify Admin API, the WooCommerce REST API or the Shopware Admin API, which need an access token, consumer keys or an integration's credentials.
 
 To add another platform, implement a `CatalogAdapter` (a pure payload mapper plus a pager) and register it in `catalogAdapters`:
 

@@ -1,0 +1,66 @@
+{
+  "total": 3,
+  "aggregations": [],
+  "page": 1,
+  "limit": 100,
+  "elements": [
+    {
+      "translated": { "name": "Leinenhemd  Classic", "description": "<p>Luftiges Hemd aus <strong>100% Leinen</strong>.</p>" },
+      "parentId": "0190a1b2c3d47e8f9a0b1c2d3e4f5a61",
+      "childCount": 0,
+      "active": true,
+      "productNumber": "SW10001.3",
+      "stock": 3,
+      "availableStock": 2,
+      "available": true,
+      "name": null,
+      "description": null,
+      "options": [
+        { "translated": { "name": "Weiß" }, "name": "White", "position": 1, "groupId": "f1000000000000000000000000000001", "group": { "translated": { "name": "Farbe" }, "name": "Color", "position": 2, "id": "f1000000000000000000000000000001", "apiAlias": "property_group" }, "id": "a1000000000000000000000000000001", "apiAlias": "property_group_option" },
+        { "translated": { "name": "L" }, "name": "L", "position": 3, "groupId": "f2000000000000000000000000000002", "group": { "translated": { "name": "Größe" }, "name": "Size", "position": 1, "id": "f2000000000000000000000000000002", "apiAlias": "property_group" }, "id": "a2000000000000000000000000000003", "apiAlias": "property_group_option" }
+      ],
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5b03",
+      "calculatedPrice": { "unitPrice": 1999.5, "quantity": 1, "listPrice": null, "apiAlias": "calculated_price" },
+      "apiAlias": "product"
+    },
+    {
+      "translated": { "name": "Leinenhemd  Classic", "description": "<p>Luftiges Hemd aus <strong>100% Leinen</strong>.</p>" },
+      "parentId": "0190a1b2c3d47e8f9a0b1c2d3e4f5a61",
+      "childCount": 0,
+      "active": true,
+      "productNumber": "SW10001.1",
+      "stock": 8,
+      "availableStock": 8,
+      "available": true,
+      "name": null,
+      "description": null,
+      "options": [
+        { "translated": { "name": "S" }, "name": "S", "position": 1, "groupId": "f2000000000000000000000000000002", "group": { "translated": { "name": "Größe" }, "name": "Size", "position": 1, "id": "f2000000000000000000000000000002", "apiAlias": "property_group" }, "id": "a2000000000000000000000000000001", "apiAlias": "property_group_option" },
+        { "translated": { "name": "Weiß" }, "name": "White", "position": 1, "groupId": "f1000000000000000000000000000001", "group": { "translated": { "name": "Farbe" }, "name": "Color", "position": 2, "id": "f1000000000000000000000000000001", "apiAlias": "property_group" }, "id": "a1000000000000000000000000000001", "apiAlias": "property_group_option" }
+      ],
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5b01",
+      "calculatedPrice": { "unitPrice": 49.9, "quantity": 1, "listPrice": { "price": 59.9, "apiAlias": "cart_list_price" }, "apiAlias": "calculated_price" },
+      "apiAlias": "product"
+    },
+    {
+      "translated": { "name": "Leinenhemd  Classic" },
+      "parentId": "0190a1b2c3d47e8f9a0b1c2d3e4f5a61",
+      "childCount": 0,
+      "active": true,
+      "productNumber": "SW10001.2",
+      "stock": 0,
+      "availableStock": 0,
+      "available": false,
+      "name": null,
+      "description": null,
+      "options": [
+        { "translated": [], "name": "Navy", "position": 2, "groupId": "f1000000000000000000000000000001", "group": { "translated": { "name": "Farbe" }, "name": "Color", "position": 2, "id": "f1000000000000000000000000000001", "apiAlias": "property_group" }, "id": "a1000000000000000000000000000002", "apiAlias": "property_group_option" },
+        { "translated": { "name": "S" }, "name": "S", "position": 1, "groupId": "f2000000000000000000000000000002", "group": { "translated": { "name": "Größe" }, "name": "Size", "position": 1, "id": "f2000000000000000000000000000002", "apiAlias": "property_group" }, "id": "a2000000000000000000000000000001", "apiAlias": "property_group_option" }
+      ],
+      "id": "0190a1b2c3d47e8f9a0b1c2d3e4f5b02",
+      "calculatedPrice": { "unitPrice": 49.9, "quantity": 1, "listPrice": null, "apiAlias": "calculated_price" },
+      "apiAlias": "product"
+    }
+  ],
+  "apiAlias": "dal_entity_search_result"
+}

@@ -484,7 +484,7 @@ export async function importCatalog(options: ImportCatalogOptions): Promise<Impo
     }
   }
 
-  for await (const page of adapter.pages(storeUrl, { limit: options.limit, fetch: options.fetch, currency: options.currency })) {
+  for await (const page of adapter.pages(storeUrl, { limit: options.limit, fetch: options.fetch, currency: options.currency, accessKey: options.accessKey })) {
     result.pages.push(page.url)
     result.warnings.push(...page.warnings)
 

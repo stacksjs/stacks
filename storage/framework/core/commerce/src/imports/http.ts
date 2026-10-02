@@ -9,11 +9,20 @@ import type { FetchLike } from './types'
  */
 
 export class CatalogFetchError extends Error {
-  constructor(public readonly url: string, message: string, public readonly status?: number) {
+  constructor(
+    public readonly url: string,
+    message: string,
+    public readonly status?: number,
+    /** The start of the response body, when the server sent one with an error status. */
+    public readonly body?: string,
+  ) {
     super(message)
     this.name = 'CatalogFetchError'
   }
 }
+
+/** How much of an error response body to keep for the operator. */
+const ERROR_BODY_MAX = 2000
 
 const DEFAULT_TIMEOUT_MS = 30_000
 
@@ -56,14 +65,27 @@ export interface JsonResponse<T> {
   headers: Headers
 }
 
-/** GET a URL and parse it as JSON, or throw a `CatalogFetchError` naming it. */
-export async function fetchJson<T = unknown>(url: string, fetcher: FetchLike = fetch, hint = ''): Promise<JsonResponse<T>> {
+/** A request other than a plain GET: Shopware's Store API takes criteria as a POST body. */
+export interface JsonRequest {
+  method?: 'GET' | 'POST'
+  headers?: Record<string, string>
+  /** Serialized as JSON, with a matching content-type. */
+  json?: unknown
+}
+
+/** Fetch a URL and parse it as JSON (GET unless `request` says otherwise), or throw a `CatalogFetchError` naming it. */
+export async function fetchJson<T = unknown>(url: string, fetcher: FetchLike = fetch, hint = '', request: JsonRequest = {}): Promise<JsonResponse<T>> {
   const suffix = hint ? ` ${hint}` : ''
+  const headers: Record<string, string> = { accept: 'application/json', ...request.headers }
+  if (request.json !== undefined)
+    headers['content-type'] = 'application/json'
 
   let response: Response
   try {
     response = await fetcher(url, {
-      headers: { accept: 'application/json' },
+      method: request.method ?? (request.json !== undefined ? 'POST' : 'GET'),
+      headers,
+      ...(request.json !== undefined ? { body: JSON.stringify(request.json) } : {}),
       signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
     })
   }
@@ -74,7 +96,8 @@ export async function fetchJson<T = unknown>(url: string, fetcher: FetchLike = f
 
   if (!response.ok) {
     const status = `${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
-    throw new CatalogFetchError(url, `${url} responded ${status}.${suffix}`, response.status)
+    const body = await response.text().catch(() => '')
+    throw new CatalogFetchError(url, `${url} responded ${status}.${suffix}`, response.status, body ? body.slice(0, ERROR_BODY_MAX) : undefined)
   }
 
   const body = await response.text()

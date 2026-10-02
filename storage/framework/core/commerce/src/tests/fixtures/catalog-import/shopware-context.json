@@ -1,0 +1,17 @@
+{
+  "token": "Kq3ZbCzSO8pYwL0nWm7rE2tVx5uHgA1d",
+  "currentCustomerGroup": { "name": "Standard customer group", "displayGross": true, "apiAlias": "customer_group" },
+  "currency": {
+    "isoCode": "EUR",
+    "factor": 1,
+    "symbol": "€",
+    "shortName": "EUR",
+    "name": "Euro",
+    "itemRounding": { "decimals": 2, "interval": 0.01, "roundForNet": true, "apiAlias": "shopware_core_framework_data_abstraction_layer_pricing_cash_rounding_config" },
+    "totalRounding": { "decimals": 2, "interval": 0.01, "roundForNet": true, "apiAlias": "shopware_core_framework_data_abstraction_layer_pricing_cash_rounding_config" },
+    "id": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+    "apiAlias": "currency"
+  },
+  "salesChannel": { "name": "Storefront", "id": "98432def39fc4624b33213a56b8c944d", "apiAlias": "sales_channel" },
+  "apiAlias": "sales_channel_context"
+}

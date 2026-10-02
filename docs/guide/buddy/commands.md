@@ -857,7 +857,7 @@ buddy comments:reject 12
 
 ### `commerce:import`
 
-Import a Shopify or WooCommerce catalog (products, variants, categories, brands, image URLs)
+Import a Shopify, WooCommerce or Shopware 6 catalog (products, variants, categories, brands, image URLs)
 
 - Usage: `$ buddy commerce:import <url>`
 - Namespace: `commerce`
@@ -866,9 +866,10 @@ Import a Shopify or WooCommerce catalog (products, variants, categories, brands,
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--from` | Where the catalog comes from: shopify or woocommerce | value, required | - |
+| `--from` | Where the catalog comes from: shopify, woocommerce, shopware | value, required | - |
+| `--access-key` | Shopware only: the sales channel access key (public, from Sales Channels > API access), or set SHOPWARE_ACCESS_KEY | value, required | - |
 | `--limit` | Import at most this many products | value, required | - |
-| `--currency` | ISO 4217 currency, for a Shopify store whose /meta.json does not report one | value, required | - |
+| `--currency` | ISO 4217 currency, for a store that does not report one (Shopify /meta.json, Shopware /store-api/context) | value, required | - |
 | `--dry-run` | Show what would be created or updated without writing anything | boolean, optional | `false` |
 
 Examples:
@@ -876,6 +877,7 @@ Examples:
 ```bash
 buddy commerce:import https://shop.example.com --from shopify --dry-run
 buddy commerce:import example.com/shop --from woocommerce --limit 50
+buddy commerce:import https://shop.example.de --from shopware --access-key SWSC... --dry-run
 ```
 
 ### `commerce:install`

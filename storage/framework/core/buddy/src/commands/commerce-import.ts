@@ -5,13 +5,14 @@ import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 
 /**
- * `buddy commerce:import <store-url> --from shopify|woocommerce`
+ * `buddy commerce:import <store-url> --from shopify|woocommerce|shopware`
  *
  * Moves a store's CATALOG into the built-in commerce tables: products,
- * variants, categories, brands and image URLs (stacksjs/stacks#1319, #1320).
- * It reads only each platform's public storefront API, so it needs no
- * credentials, and for the same reason it cannot see customers or orders.
- * Those need the platform's admin API and are not imported.
+ * variants, categories, brands and image URLs (stacksjs/stacks#1319, #1320,
+ * #1321). It reads only each platform's public storefront API, so it needs no
+ * credentials (Shopware's Store API asks for the sales channel access key,
+ * which is public by design), and for the same reason it cannot see customers
+ * or orders. Those need the platform's admin API and are not imported.
  *
  * Re-running is safe: rows are matched on a UUID derived from the source
  * product id, so a second run updates what the first one wrote.
@@ -20,12 +21,13 @@ import { ExitCode } from '@stacksjs/types'
 type ImportResult = catalogImport.ImportResult
 type ImportedProduct = catalogImport.ImportedProduct
 
-export const SUPPORTED_SOURCES = ['shopify', 'woocommerce'] as const
+export const SUPPORTED_SOURCES = ['shopify', 'woocommerce', 'shopware'] as const
 
 export interface CommerceImportFlags {
   from?: string
   limit?: string | number
   currency?: string
+  accessKey?: string
   dryRun?: boolean
 }
 
@@ -33,11 +35,20 @@ export interface CommerceImportSettings {
   source: typeof SUPPORTED_SOURCES[number]
   limit?: number
   currency?: string
+  /** Shopware's sales channel access key; set only for `--from shopware`. */
+  accessKey?: string
   dryRun: boolean
 }
 
-/** Validate the flags, or throw with the message the operator should see. */
-export function parseImportFlags(flags: CommerceImportFlags): CommerceImportSettings {
+/** Where to find a Shopware sales channel access key, for the error that asks for one. */
+export const SHOPWARE_ACCESS_KEY_HELP = 'It is public by design, not a secret. Find it in the Shopware Administration under Sales Channels: open the storefront or headless sales channel and copy the key from its "API access" card.'
+
+/**
+ * Validate the flags, or throw with the message the operator should see.
+ *
+ * `env` is read for `SHOPWARE_ACCESS_KEY` only, and only for `--from shopware`.
+ */
+export function parseImportFlags(flags: CommerceImportFlags, env: Record<string, string | undefined> = process.env): CommerceImportSettings {
   const source = String(flags.from ?? '').trim().toLowerCase()
   if (!source)
     throw new Error(`Say where the catalog comes from: --from ${SUPPORTED_SOURCES.join(' or --from ')}.`)
@@ -58,7 +69,29 @@ export function parseImportFlags(flags: CommerceImportFlags): CommerceImportSett
       throw new Error(`--currency must be a three-letter ISO 4217 code such as USD; got "${flags.currency}".`)
   }
 
-  return { source: source as CommerceImportSettings['source'], limit, currency, dryRun: flags.dryRun === true }
+  const flagKey = flags.accessKey === undefined ? '' : String(flags.accessKey).trim()
+  let accessKey: string | undefined
+  if (source === 'shopware') {
+    accessKey = flagKey || env.SHOPWARE_ACCESS_KEY?.trim() || undefined
+    if (!accessKey)
+      throw new Error(`Shopware's Store API needs the sales channel access key: pass --access-key <key> or set SHOPWARE_ACCESS_KEY. ${SHOPWARE_ACCESS_KEY_HELP}`)
+    if (/\s/.test(accessKey))
+      throw new Error('--access-key must be a single key with no spaces.')
+    // Shopware prefixes generated keys: SWSC sales channel, SWIA integration, SWUA user.
+    if (/^SW(?:IA|UA)/i.test(accessKey))
+      throw new Error(`That looks like an Admin API key (it starts with ${accessKey.slice(0, 4).toUpperCase()}), not a sales channel access key (SWSC...). ${SHOPWARE_ACCESS_KEY_HELP}`)
+  }
+  else if (flagKey) {
+    throw new Error(`--access-key only applies to --from shopware; ${source} needs no key.`)
+  }
+
+  return {
+    source: source as CommerceImportSettings['source'],
+    limit,
+    currency,
+    ...(accessKey ? { accessKey } : {}),
+    dryRun: flags.dryRun === true,
+  }
 }
 
 function money(minor: number | null, currency: string | null, format: (minor: number, currency: string | null) => string): string {
@@ -105,7 +138,7 @@ export function currencyMismatch(result: ImportResult, configured: string | unde
   return `Prices were imported in ${other.join(', ')} minor units, but config/commerce.ts sets currency to ${configured}. products.price has no currency column, so set commerce.currency to match.`
 }
 
-export const OUT_OF_SCOPE_NOTE = 'Catalog only. Customers and orders are not imported: they need the Shopify Admin API or WooCommerce REST API keys.'
+export const OUT_OF_SCOPE_NOTE = 'Catalog only. Customers and orders are not imported: they need the Shopify Admin API, WooCommerce REST API keys or a Shopware Admin API integration.'
 
 async function fail(message: string): Promise<never> {
   await log.error(message)
@@ -115,13 +148,15 @@ async function fail(message: string): Promise<never> {
 
 export function commerceImport(buddy: CLI): void {
   buddy
-    .command('commerce:import <url>', 'Import a Shopify or WooCommerce catalog (products, variants, categories, brands, image URLs)')
-    .option('--from <platform>', `Where the catalog comes from: ${SUPPORTED_SOURCES.join(' or ')}`)
+    .command('commerce:import <url>', 'Import a Shopify, WooCommerce or Shopware 6 catalog (products, variants, categories, brands, image URLs)')
+    .option('--from <platform>', `Where the catalog comes from: ${SUPPORTED_SOURCES.join(', ')}`)
+    .option('--access-key <key>', 'Shopware only: the sales channel access key (public, from Sales Channels > API access), or set SHOPWARE_ACCESS_KEY')
     .option('--limit <count>', 'Import at most this many products')
-    .option('--currency <code>', 'ISO 4217 currency, for a Shopify store whose /meta.json does not report one')
+    .option('--currency <code>', 'ISO 4217 currency, for a store that does not report one (Shopify /meta.json, Shopware /store-api/context)')
     .option('--dry-run', 'Show what would be created or updated without writing anything', { default: false })
     .example('buddy commerce:import https://shop.example.com --from shopify --dry-run')
     .example('buddy commerce:import example.com/shop --from woocommerce --limit 50')
+    .example('buddy commerce:import https://shop.example.de --from shopware --access-key SWSC... --dry-run')
     .action(async (url: string, options: CommerceImportFlags) => {
       let settings: CommerceImportSettings
       try {
@@ -165,6 +200,7 @@ export function commerceImport(buddy: CLI): void {
           dryRun: settings.dryRun,
           limit: settings.limit,
           currency: settings.currency,
+          accessKey: settings.accessKey,
           onProduct: product => process.stdout.write(`${formatImportedProduct(product, catalogImport.formatMinor, settings.dryRun)}\n`),
         })
       }

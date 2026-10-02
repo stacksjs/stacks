@@ -11,7 +11,7 @@
  */
 
 /** A source registered with the importer. */
-export type CatalogSourceName = 'shopify' | 'woocommerce' | (string & {})
+export type CatalogSourceName = 'shopify' | 'woocommerce' | 'shopware' | (string & {})
 
 export interface CatalogImage {
   /** Absolute URL on the source's CDN. Never downloaded by the importer. */
@@ -99,6 +99,13 @@ export interface CatalogFetchOptions {
   fetch?: FetchLike
   /** ISO 4217 override when the source does not report its currency. */
   currency?: string
+  /**
+   * A public, per-storefront key the source requires on every request.
+   * Shopware's sales channel access key (`sw-access-key`) is the only one so
+   * far: it ships in every headless storefront's page source and identifies
+   * the sales channel, and grants nothing an anonymous shopper lacks.
+   */
+  accessKey?: string
 }
 
 /**

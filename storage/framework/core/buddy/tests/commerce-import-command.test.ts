@@ -46,8 +46,45 @@ describe('parseImportFlags', () => {
   })
 
   it('requires --from rather than guessing the platform', () => {
-    expect(() => parseImportFlags({})).toThrow('--from shopify or --from woocommerce')
-    expect(() => parseImportFlags({ from: 'shopware' })).toThrow('--from must be one of shopify, woocommerce; got "shopware"')
+    expect(() => parseImportFlags({})).toThrow('--from shopify or --from woocommerce or --from shopware')
+    expect(() => parseImportFlags({ from: 'magento' })).toThrow('--from must be one of shopify, woocommerce, shopware; got "magento"')
+  })
+
+  describe('--access-key', () => {
+    const noEnv = {}
+
+    it('is required for shopware, before anything is fetched, and says where to find it', () => {
+      const error = (() => {
+        try {
+          parseImportFlags({ from: 'shopware' }, noEnv)
+        }
+        catch (caught) {
+          return caught as Error
+        }
+      })()
+      expect(error?.message).toContain('pass --access-key <key> or set SHOPWARE_ACCESS_KEY')
+      expect(error?.message).toContain('public by design, not a secret')
+      expect(error?.message).toContain('Sales Channels')
+      expect(error?.message).toContain('"API access"')
+      expect(() => parseImportFlags({ from: 'shopware', accessKey: '  ' }, noEnv)).toThrow('--access-key')
+    })
+
+    it('comes from the flag, or from SHOPWARE_ACCESS_KEY, the flag winning', () => {
+      expect(parseImportFlags({ from: 'Shopware', accessKey: ' SWSCFLAGKEY ' }, noEnv))
+        .toEqual({ source: 'shopware', limit: undefined, currency: undefined, accessKey: 'SWSCFLAGKEY', dryRun: false })
+      expect(parseImportFlags({ from: 'shopware' }, { SHOPWARE_ACCESS_KEY: 'SWSCENVKEY' }).accessKey).toBe('SWSCENVKEY')
+      expect(parseImportFlags({ from: 'shopware', accessKey: 'SWSCFLAGKEY' }, { SHOPWARE_ACCESS_KEY: 'SWSCENVKEY' }).accessKey).toBe('SWSCFLAGKEY')
+    })
+
+    it('rejects an Admin API key pasted in its place', () => {
+      expect(() => parseImportFlags({ from: 'shopware', accessKey: 'SWIAEXAMPLEINTEGRATIONKEY' }, noEnv)).toThrow('looks like an Admin API key (it starts with SWIA)')
+      expect(() => parseImportFlags({ from: 'shopware', accessKey: 'SWSC KEY' }, noEnv)).toThrow('no spaces')
+    })
+
+    it('is refused for the platforms that need no key, and the env var is ignored for them', () => {
+      expect(() => parseImportFlags({ from: 'shopify', accessKey: 'SWSCKEY' }, noEnv)).toThrow('--access-key only applies to --from shopware; shopify needs no key.')
+      expect(parseImportFlags({ from: 'woocommerce' }, { SHOPWARE_ACCESS_KEY: 'SWSCENVKEY' })).not.toHaveProperty('accessKey')
+    })
   })
 
   it.each(['0', '-3', '2.5', 'ten'])('rejects --limit %p', (limit) => {
