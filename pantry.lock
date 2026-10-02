@@ -9,7 +9,7 @@
         "stacks": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.27"
+        "better-dx": "^0.2.28"
       },
       "system": {
         "bun.sh": "1.4.2",
@@ -316,6 +316,7 @@
         "@stacksjs/cloud": "^0.75.38",
         "@stacksjs/cms": "^0.75.38",
         "@stacksjs/collections": "^0.75.38",
+        "@stacksjs/commerce": "^0.75.38",
         "@stacksjs/config": "^0.75.38",
         "@stacksjs/database": "^0.75.38",
         "@stacksjs/desktop-build": "^0.75.38",
@@ -1874,14 +1875,14 @@
         "require-from-string": "^2.0.2"
       }
     },
-    "better-dx@0.2.27": {
+    "better-dx@0.2.28": {
       "name": "better-dx",
-      "version": "0.2.27",
+      "version": "0.2.28",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.27.tgz",
-      "integrity": "sha512-xuBvXFjXx5gtNLKHixp0w+fTUJRLt5yYg0VSxWnicLUuvGlgtvfS4jKAL9WZrceNziubMIthLxeJpZLNe7nUwg==",
+      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.28.tgz",
+      "integrity": "sha512-d9fdAH7X8EYpzUUJvEKUFoa5maEEtKDIgy1rw5f5i43Je8im7Rt86WecGw1XGgWHsvGqWA3Rp9TQFW/UbSl54g==",
       "dependencies": {
-        "@buddysh/buddy": "^0.11.4",
+        "@buddysh/buddy": "^0.11.5",
         "@stacksjs/bumpx": "^0.2.14",
         "@stacksjs/bunpress": "^0.2.8",
         "@stacksjs/clapp": "^0.2.12",
