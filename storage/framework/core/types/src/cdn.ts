@@ -7,7 +7,10 @@ export interface CdnOptions {
    *
    * @default "cloudfront"
    * @example "cloudfront"
-   * @example "fastly" wip
+   *
+   * CloudFront is the only implemented driver. Fastly is requested in
+   * stacksjs/stacks#265 and does not exist yet, so naming it here configures
+   * nothing.
    *
    * @see https://stacks.js.org/docs/cdn
    */
