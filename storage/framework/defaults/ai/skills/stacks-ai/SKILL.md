@@ -1,6 +1,6 @@
 ---
 name: stacks-ai
-description: Use when integrating AI capabilities into a Stacks application - using Anthropic/OpenAI/Ollama/AWS Bedrock drivers, image generation (DALL-E), vision analysis, RAG/vector search, embeddings, MCP (Model Context Protocol) clients, text summarization, sentiment analysis, content classification, personalization, or the buddy AI assistant. Covers @stacksjs/ai and config/ai.ts.
+description: Use when integrating AI capabilities into a Stacks application - using Anthropic/OpenAI/Ollama/AWS Bedrock drivers, image generation (DALL-E), vision analysis, RAG/vector search, embeddings, text-to-speech and speech-to-text, MCP (Model Context Protocol) clients, text summarization, sentiment analysis, content classification, personalization, or the buddy AI assistant. Covers @stacksjs/ai and config/ai.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -23,6 +23,7 @@ ai/src/
 │   ├── ollama.ts         # Local LLM driver
 │   └── bedrock.ts        # AWS Bedrock utilities
 ├── image.ts              # Image generation & vision
+├── speech.ts             # Provider-neutral text-to-speech & speech-to-text
 ├── search.ts             # RAG, embeddings, vector index
 ├── mcp.ts                # Model Context Protocol client
 ├── personalization.ts    # Sentiment, classification, recommendations
@@ -76,6 +77,28 @@ if (configuration.configured) {
   const result = await client.generate([{ role: 'user', content: 'Draft a launch plan.' }])
 }
 ```
+
+## Speech (Text-to-Speech, Speech-to-Text)
+
+Provider-neutral, in `ai/src/speech.ts`. The driver is the `driver` option, else
+`default` from `config/ai.ts`. Only `openai` implements speech (`SPEECH_DRIVERS`);
+any other driver throws naming itself and the supported ones - do not catch that
+and fall back to a different provider.
+
+```typescript
+import { speechToText, storeSpeech, textToSpeech } from '@stacksjs/ai'
+
+const speech = await textToSpeech('Hello', { voice: 'nova', format: 'mp3', speed: 1.1 })
+// { audio: Uint8Array, mimeType: 'audio/mpeg', format, driver, model, voice }
+await storeSpeech(speech, 'audio/hello.mp3', { disk: 'public' }) // disk name or adapter
+const { text } = await speechToText(Bun.file('memo.m4a'), { language: 'en' })
+```
+
+Defaults: model `gpt-4o-mini-tts`, voice `alloy`, format `mp3`, speed omitted
+(provider default 1.0); transcription model `whisper-1`. `instructions` is
+rejected for `tts-1` / `tts-1-hd`. OpenAI caps input at 4096 characters per
+request. HTTP failures throw with the status and a body snippet. In tests, mock
+`globalThis.fetch` and pass `config` explicitly (see `ai/tests/speech.test.ts`).
 
 ## Ollama Driver (Local LLMs)
 

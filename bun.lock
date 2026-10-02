@@ -188,6 +188,7 @@
       "dependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
+        "@stacksjs/storage": "workspace:*",
         "@stacksjs/ts-cloud": "^0.16.15",
       },
       "devDependencies": {

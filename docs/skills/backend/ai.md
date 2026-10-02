@@ -17,6 +17,7 @@ summarization, sentiment and classification.
 - Vision analysis
 - RAG/vector search
 - Embeddings
+- Text-to-speech and speech-to-text
 - MCP (Model Context Protocol) clients
 - Text summarization
 - Sentiment analysis
@@ -37,6 +38,7 @@ The sections an agent reads once the skill loads.
 - Anthropic Driver
 - OpenAI Driver
 - Provider-Neutral Client
+- Speech (Text-to-Speech, Speech-to-Text)
 - Ollama Driver (Local LLMs)
 - Image Generation
 - RAG & Vector Search

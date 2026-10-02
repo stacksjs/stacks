@@ -490,6 +490,45 @@ const sentiment = await analyzeSentiment(
 // Returns: { sentiment: 'positive', score: 0.95 }
 ```
 
+## Text-to-Speech and Speech-to-Text
+
+`textToSpeech()` and `speechToText()` are provider-neutral. They use the driver
+you pass as `driver`, or `default` from `config/ai.ts` when you pass none. Only
+the OpenAI driver implements speech today; any other driver throws an error that
+names it and lists the drivers that do support speech, instead of quietly
+switching provider.
+
+```typescript
+import { speechToText, storeSpeech, textToSpeech } from '@stacksjs/ai'
+
+const speech = await textToSpeech('Your order has shipped.', {
+  voice: 'nova', // default 'alloy'
+  format: 'mp3', // mp3 | opus | aac | flac | wav | pcm, default 'mp3'
+  model: 'gpt-4o-mini-tts', // the default; 'tts-1' and 'tts-1-hd' also work
+  speed: 1.1, // 0.25 to 4.0, omitted means 1.0
+  instructions: 'Calm and friendly.', // gpt-4o-mini-tts only
+})
+// { audio: Uint8Array, mimeType: 'audio/mpeg', format, driver, model, voice }
+
+// Serve it directly...
+return new Response(speech.audio, { headers: { 'Content-Type': speech.mimeType } })
+
+// ...or write it to a storage disk (the default disk when `disk` is omitted)
+await storeSpeech(speech, 'audio/order-shipped.mp3', { disk: 'public' })
+
+// Transcribe a recording
+const { text } = await speechToText(Bun.file('storage/app/memo.m4a'), { language: 'en' })
+```
+
+Credentials come from `drivers.openai.apiKey` in `config/ai.ts` or the
+`OPENAI_API_KEY` environment variable, and `drivers.openai.baseUrl` points the
+requests at a proxy. OpenAI accepts at most 4096 characters per speech request,
+so split longer text yourself. `storeSpeech()` also accepts any storage adapter
+as `disk`, for example `Storage.disk('s3')` or `createMemoryStorage()` in tests.
+
+The lower-level `openai.textToSpeech()` and `openai.transcribe()` driver
+functions remain available when you want the raw OpenAI response.
+
 ## Error Handling
 
 ```typescript
@@ -595,6 +634,14 @@ try {
 | `ollama.stream(options)` | Stream local model |
 | `ollama.list()` | List installed models |
 | `ollama.pull(model)` | Download model |
+
+### Speech Functions
+
+| Function | Description |
+|----------|-------------|
+| `textToSpeech(text, options)` | Synthesize speech, returns `{ audio, mimeType, format, driver, model, voice }` |
+| `storeSpeech(speech, path, { disk })` | Write synthesized audio to a storage disk |
+| `speechToText(audio, options)` | Transcribe audio, returns `{ text, driver, model }` |
 
 ### Bedrock Functions
 

@@ -22,6 +22,9 @@ export * from './text'
 // Image generation & vision
 export * from './image'
 
+// Text-to-speech & speech-to-text (stacksjs/stacks#306)
+export * from './speech'
+
 // Semantic search, embeddings & RAG
 export * from './search'
 
