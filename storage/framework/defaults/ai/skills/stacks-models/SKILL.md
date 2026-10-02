@@ -294,7 +294,7 @@ list, or `buddy list` for what a given project resolves.
 
 ### Commerce (20+ models)
 - **Product** — name(max100), description, price(min1), imageUrl, isAvailable, inventoryCount, preparationTime, allergens(JSON), nutritionalInfo(JSON) | belongsTo: Category, Manufacturer | hasMany: Review, ProductUnit, ProductVariant, LicenseKey, WaitlistProduct, Coupon | seeder: 10, dashboard: highlighted
-- **ProductVariant** — SKU, options, pricing
+- **ProductVariant** — variant, type, options, status, sku (unique per product), price / compareAtPrice (minor units, null price inherits the product's), inventoryCount (null = untracked) | belongsTo: Product | seeder: 50
 - **ProductUnit** — unit-specific pricing
 - **Cart** — status(active|abandoned|converted|expired), totalItems, subtotal, taxAmount, discountAmount, total, expiresAt, currency(USD), notes | hasMany: CartItem | belongsTo: Customer, Coupon
 - **CartItem** — quantity(min1), unitPrice, totalPrice, taxRate, taxAmount, discountPercentage, productName, productSku | belongsTo: Cart

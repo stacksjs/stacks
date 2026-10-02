@@ -79,7 +79,7 @@ Each sub-module typically provides:
 | Model | Key Fields | Relationships |
 |-------|-----------|---------------|
 | Product | name, price, inventoryCount, allergens(JSON) | belongsTo: Category, Manufacturer; hasMany: Review, ProductUnit, ProductVariant |
-| ProductVariant | SKU, options, pricing | belongsTo: Product |
+| ProductVariant | variant, type, options, status, sku (unique per product), price / compareAtPrice (minor units; null price inherits the product's), inventoryCount (null = untracked) | belongsTo: Product |
 | ProductUnit | unit pricing | belongsTo: Product |
 | Category | name, slug, isActive, displayOrder | hasMany: Product |
 | Cart | status, total, currency(USD), expiresAt | hasMany: CartItem; belongsTo: Customer |

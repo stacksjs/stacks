@@ -683,11 +683,11 @@ buddy commerce:import https://example.com/shop --from woocommerce --limit 50
 What lands where:
 
 - **Products**: name, HTML description, the lowest variant price (integer minor units), availability, and the first image URL (images are not downloaded).
-- **Variants**: one `product_variants` row per real option combination. Option values go in `options`; SKU, price, compare-at price and stock (when the source exposes it) are written into the variant's `description`, because the table has no columns for them yet.
+- **Variants**: one `product_variants` row per real option combination. Option values go in `options`, and the SKU, price, compare-at price and stock (when the source exposes it) go in `sku`, `price`, `compare_at_price` and `inventory_count`, money in integer minor units. A SKU is unique per product, so a source variant repeating one is imported without it, with a warning.
 - **Categories**: the Shopify product type, or the first WooCommerce category, matched by slug.
 - **Manufacturers**: the Shopify vendor, or the WooCommerce brand, matched by name.
 
-Re-running is safe. Each imported product and variant gets a `uuid` derived from the store host and the source id, so a second run updates the rows the first one wrote instead of duplicating them. Columns you own on the Stacks side (`preparation_time`, `allergens`, `nutritional_info`) are never overwritten.
+Re-running is safe. Each imported product and variant gets a `uuid` derived from the store host and the source id, so a second run updates the rows the first one wrote instead of duplicating them. Columns you own on the Stacks side (`preparation_time`, `allergens`, `nutritional_info`, a variant's `description`) are never overwritten, and neither is a stock count or variant SKU the source does not report.
 
 Prices are stored in the source store's currency. `products.price` has no currency column, so the command warns when that differs from `currency` in `config/commerce.ts`.
 

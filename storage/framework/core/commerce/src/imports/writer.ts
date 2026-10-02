@@ -4,7 +4,6 @@ import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import { normalizeStoreUrl, storeHost } from './http'
 import { catalogUuid } from './identity'
-import { formatMinor } from './money'
 
 /**
  * Writing a normalized catalog into the built-in commerce tables.
@@ -23,15 +22,26 @@ import { formatMinor } from './money'
  * | first product type/category | `categories` by slug, then `category_id`       |
  * | vendor / brand              | `manufacturers` by name, then `manufacturer_id` |
  * | each real option variant    | `product_variants` (uuid from the variant id)  |
+ * | variant SKU                 | `product_variants.sku`, unique per product     |
+ * | variant price / compare-at  | `product_variants.price` / `compare_at_price`  |
+ * | variant stock, when exposed | `product_variants.inventory_count`             |
  *
- * `product_variants` has no SKU, price or stock columns, so a variant's SKU,
- * price, compare-at price and stock are written into its `description` as a
- * readable line rather than dropped. `options` holds the option values as the
- * JSON string array the dashboard reads.
+ * Variant money is integer minor units, like `products.price`. A NULL variant
+ * `price` means "inherits the product price"; a NULL `inventory_count` means
+ * stock is not tracked. `options` holds the option values as the JSON string
+ * array the dashboard reads. A variant's `description` is never written: the
+ * source has no per-variant description, so the column is the merchant's.
  *
  * Re-running updates the rows a previous run wrote (matched on `uuid`) and
  * leaves alone the columns an operator owns: `preparation_time`, `allergens`,
- * `nutritional_info`, and `inventory_count` when the source does not report it.
+ * `nutritional_info`, a variant's `description`, and a product's or variant's
+ * `inventory_count` or a variant's `sku` when the source does not report one.
+ *
+ * The source wins a SKU. Before a product's variants are updated, the SKUs it
+ * is about to write are released from whichever of that product's variants
+ * holds them (see `releaseVariantSkus`), so a SKU that moved between variants
+ * at the source, or still sits on a variant the source has since deleted,
+ * cannot trip the per-product unique index halfway through the product.
  */
 
 export interface ProductRow {
@@ -54,9 +64,16 @@ export interface VariantRow {
   product_id: number
   variant: string
   type: string
-  description: string
   options: string
   status: 'active' | 'inactive'
+  /** Omitted on update when the source reports none, so a merchant's SKU stays. */
+  sku?: string | null
+  /** Integer minor units; null inherits `products.price`. */
+  price: number | null
+  /** Integer minor units; null when the variant is not on sale. */
+  compare_at_price: number | null
+  /** Null means untracked. Omitted on update when the source reports none. */
+  inventory_count?: number | null
   created_at?: string
   updated_at: string
 }
@@ -101,6 +118,12 @@ export interface CatalogRepository {
   findVariants: (uuids: string[]) => Promise<Map<string, number>>
   createVariant: (row: VariantRow) => Promise<number>
   updateVariant: (id: number, row: Omit<VariantRow, 'uuid'>) => Promise<void>
+  /**
+   * Clear `sku` on whichever of `productId`'s variants hold one of `skus`, so
+   * the variants about to claim them cannot collide with the per-product
+   * unique index, whatever order they are written in.
+   */
+  releaseVariantSkus: (productId: number, skus: string[]) => Promise<void>
   /** Run `work` atomically, so a product never lands without its variants. */
   transaction?: <T>(work: (repository: CatalogRepository) => Promise<T>) => Promise<T>
 }
@@ -112,6 +135,9 @@ export const UNKNOWN_COUNTRY = 'Unknown'
 const DEFAULT_PREPARATION_TIME = 1
 
 const TYPE_MAX = 50
+
+/** `product_variants.sku` is a 100-character column (see the model). */
+export const SKU_MAX = 100
 
 /** The lowest price among a product's priced variants. */
 export function lowestPrice(variants: CatalogVariant[]): number | null {
@@ -126,14 +152,39 @@ export function totalInventory(variants: CatalogVariant[]): number | null {
   return variants.reduce((sum, variant) => sum + (variant.inventory ?? 0), 0)
 }
 
-/** The readable line a variant's SKU and prices are kept in. */
-export function variantSummary(variant: CatalogVariant, currency: string | null): string {
-  return [
-    variant.sku ? `SKU ${variant.sku}` : null,
-    variant.priceMinor !== null ? `Price ${formatMinor(variant.priceMinor, currency)}` : 'Unpriced',
-    variant.compareAtMinor !== null ? `Compare at ${formatMinor(variant.compareAtMinor, currency)}` : null,
-    variant.inventory !== null ? `${variant.inventory} in stock` : null,
-  ].filter(Boolean).join('. ')
+/**
+ * The SKU each of a product's variants may write, keyed by variant id.
+ *
+ * `product_variants.sku` is unique per product, but no source enforces that:
+ * Shopify accepts the same SKU on every variant. The first variant to carry a
+ * SKU keeps it; a later duplicate, or a SKU too long for the column, is
+ * written as no SKU and reported, rather than failing the whole product.
+ */
+export function variantSkus(product: CatalogProduct): { skus: Map<string, string | null>, warnings: CatalogWarning[] } {
+  const skus = new Map<string, string | null>()
+  const warnings: CatalogWarning[] = []
+  const claimed = new Set<string>()
+
+  for (const variant of product.variants) {
+    const sku = variant.sku
+    if (sku === null) {
+      skus.set(variant.externalId, null)
+    }
+    else if (sku.length > SKU_MAX) {
+      skus.set(variant.externalId, null)
+      warnings.push({ externalId: product.externalId, message: `"${product.name}" variant "${variant.title}" has a SKU longer than ${SKU_MAX} characters; imported without it` })
+    }
+    else if (claimed.has(sku)) {
+      skus.set(variant.externalId, null)
+      warnings.push({ externalId: product.externalId, message: `"${product.name}" variant "${variant.title}" repeats SKU ${sku}; imported without it` })
+    }
+    else {
+      claimed.add(sku)
+      skus.set(variant.externalId, sku)
+    }
+  }
+
+  return { skus, warnings }
 }
 
 export interface ProductRefs {
@@ -174,20 +225,40 @@ export function productRow(product: CatalogProduct, host: string, refs: ProductR
   return row
 }
 
-/** The `product_variants` row for one variant of a catalog product. Pure. */
-export function variantRow(product: CatalogProduct, variant: CatalogVariant, host: string, productId: number, now: string, mode: 'create' | 'update'): VariantRow {
+/**
+ * The `product_variants` row for one variant of a catalog product. Pure.
+ *
+ * `sku` is the SKU this variant may claim (see `variantSkus`), which can be
+ * null even when the source reported one.
+ */
+export function variantRow(product: CatalogProduct, variant: CatalogVariant, host: string, productId: number, now: string, mode: 'create' | 'update', sku: string | null = variant.sku): VariantRow {
   const row: VariantRow = {
     uuid: catalogUuid(product.source, host, 'variant', variant.externalId),
     product_id: productId,
     variant: variant.title,
     type: (product.optionNames.join(' / ') || 'Option').slice(0, TYPE_MAX),
-    description: variantSummary(variant, product.currency),
     options: JSON.stringify(variant.optionValues),
     status: variant.available ? 'active' : 'inactive',
+    // The source owns pricing, so both are written on every run. A null
+    // compare-at is information too: the variant is no longer on sale.
+    price: variant.priceMinor,
+    compare_at_price: variant.compareAtMinor,
     updated_at: now,
   }
-  if (mode === 'create')
+
+  if (mode === 'create') {
+    row.sku = sku
+    row.inventory_count = variant.inventory
     row.created_at = now
+  }
+  else {
+    // Only overwrite what the source actually told us.
+    if (sku !== null)
+      row.sku = sku
+    if (variant.inventory !== null)
+      row.inventory_count = variant.inventory
+  }
+
   return row
 }
 
@@ -377,14 +448,23 @@ export async function importCatalog(options: ImportCatalogOptions): Promise<Impo
 
     const variants = { create: 0, update: 0 }
     if (product.hasOptions) {
+      const { skus, warnings } = variantSkus(product)
+      result.warnings.push(...warnings)
+
+      // A product created just now has no variants to collide with.
+      const claimed = [...skus.values()].filter((sku): sku is string => sku !== null)
+      if (existing !== undefined && claimed.length > 0)
+        await repo.releaseVariantSkus(productId, claimed)
+
       for (const variant of product.variants) {
+        const sku = skus.get(variant.externalId) ?? null
         const found = known.variants.get(catalogUuid(product.source, host, 'variant', variant.externalId))
         if (found === undefined) {
-          await repo.createVariant(variantRow(product, variant, host, productId, now, 'create'))
+          await repo.createVariant(variantRow(product, variant, host, productId, now, 'create', sku))
           variants.create++
         }
         else {
-          await repo.updateVariant(found, withoutUuid(variantRow(product, variant, host, productId, now, 'update')))
+          await repo.updateVariant(found, withoutUuid(variantRow(product, variant, host, productId, now, 'update', sku)))
           variants.update++
         }
       }
@@ -513,6 +593,15 @@ export function createDatabaseRepository(connection: any = db): CatalogRepositor
     async updateVariant(id, row) {
       await connection.updateTable('product_variants').set(row).where('id', '=', id).execute()
     },
+    async releaseVariantSkus(productId, skus) {
+      for (let start = 0; start < skus.length; start += 500) {
+        await connection.updateTable('product_variants')
+          .set({ sku: null })
+          .where('product_id', '=', productId)
+          .where('sku', 'in', skus.slice(start, start + 500))
+          .execute()
+      }
+    },
   }
 
   if (connection === db) {
@@ -561,6 +650,12 @@ export function createMemoryRepository(): CatalogRepository & { tables: Record<s
     findVariants: async uuids => byUuid('product_variants', uuids),
     createVariant: async row => insert('product_variants', row),
     updateVariant: async (id, row) => update('product_variants', id, row),
+    releaseVariantSkus: async (productId, skus) => {
+      for (const row of tables.product_variants!) {
+        if (row.product_id === productId && skus.includes(row.sku))
+          row.sku = null
+      }
+    },
   }
 }
 
@@ -583,5 +678,6 @@ export function createReadOnlyRepository(inner: CatalogRepository): CatalogRepos
     createVariant: fake,
     updateProduct: async () => {},
     updateVariant: async () => {},
+    releaseVariantSkus: async () => {},
   }
 }

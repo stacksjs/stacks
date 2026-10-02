@@ -5891,14 +5891,14 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/product-variants
    */
-  getProductVariants(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+  getProductVariants(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
     return request(config, "GET", "/api/product-variants", {}, [], false, options)
   },
 
   /**
    * POST /api/product-variants
    */
-  postProductVariants(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  postProductVariants(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "POST", "/api/product-variants", {}, [], false, options)
   },
 
@@ -5912,28 +5912,28 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/product-variants/{id}
    */
-  getProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  getProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "GET", "/api/product-variants/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PUT /api/product-variants/{id}
    */
-  putProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  putProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PUT", "/api/product-variants/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * DELETE /api/product-variants/{id}
    */
-  deleteProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  deleteProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "DELETE", "/api/product-variants/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PATCH /api/product-variants/{id}
    */
-  patchProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  patchProductVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PATCH", "/api/product-variants/{id}", input ?? {}, [], false, options)
   },
 

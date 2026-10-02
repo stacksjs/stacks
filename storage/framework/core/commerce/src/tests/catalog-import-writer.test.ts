@@ -10,7 +10,9 @@ import {
   mapShopifyProduct,
   mapWooProduct,
   productRow,
-  variantSummary,
+  SKU_MAX,
+  variantRow,
+  variantSkus,
 } from '../imports'
 import shopifyFixture from './fixtures/catalog-import/shopify-products.json'
 import wooProducts from './fixtures/catalog-import/woocommerce-products.json'
@@ -115,9 +117,17 @@ describe('importCatalog into the database', () => {
       type: 'Size / Color',
       options: '["S","Black"]',
       status: 'active',
-      description: 'SKU TEE-S-BLK. Price 24.00 USD. Compare at 30.00 USD',
+      sku: 'TEE-S-BLK',
+      price: 2400,
+      compare_at_price: 3000,
+      // Shopify's public storefront API does not expose stock: untracked, not zero.
+      inventory_count: null,
+      // The source has no per-variant description; the column is the merchant's.
+      description: null,
     })
     expect(variants[1].status).toBe('inactive')
+    // A variant with no SKU at the source has none here, and its own price.
+    expect(variants[2]).toMatchObject({ variant: 'L / Natural', sku: null, price: 2650, compare_at_price: null })
   })
 
   it('updates in place on a second run, creating nothing', async () => {
@@ -147,7 +157,9 @@ describe('importCatalog into the database', () => {
     const products = await rows('products')
     expect(products).toHaveLength(3)
     expect(products[0]).toMatchObject({ name: 'Organic Cotton Tee (2026)', price: 1999, preparation_time: 15 })
-    expect(await rows('product_variants')).toHaveLength(3)
+    const variants = await rows('product_variants')
+    expect(variants).toHaveLength(3)
+    expect(variants[0]).toMatchObject({ sku: 'TEE-S-BLK', price: 1999, compare_at_price: 3000 })
     expect(await rows('categories')).toHaveLength(2)
     expect(await rows('manufacturers')).toHaveLength(1)
   })
@@ -214,11 +226,84 @@ describe('importCatalog into the database', () => {
       ['Logo Collection', 0, 0],
     ])
     const variants = await rows('product_variants')
-    expect(variants.map(variant => [variant.variant, variant.description])).toEqual([
-      ['Blue / Large', 'SKU woo-vneck-tee-blue-l. Price 20.00 GBP. 2 in stock'],
-      ['Green / Any', 'SKU woo-vneck-tee-green. Price 15.00 GBP. Compare at 18.00 GBP'],
+    expect(variants.map(variant => [variant.variant, variant.sku, variant.price, variant.compare_at_price, variant.inventory_count, variant.description])).toEqual([
+      ['Blue / Large', 'woo-vneck-tee-blue-l', 2000, null, 2, null],
+      ['Green / Any', 'woo-vneck-tee-green', 1500, 1800, null, null],
     ])
     expect((await rows('manufacturers'))[0].manufacturer).toBe('Thread & Needle')
+  })
+
+  it('keeps the merchant\'s variant stock, SKU and description when the source reports none', async () => {
+    const repository = createDatabaseRepository()
+    await importCatalog({ adapter: staticAdapter('woocommerce', wooCatalog()), storeUrl: WOO, repository, now: NOW })
+
+    // The merchant starts tracking stock on the untracked variant, gives the
+    // tracked one a description, and the source stops reporting both SKUs.
+    const [blue, green] = await rows('product_variants')
+    await (db as any).updateTable('product_variants').set({ inventory_count: 12 }).where('id', '=', green.id).execute()
+    await (db as any).updateTable('product_variants').set({ description: 'Runs small' }).where('id', '=', blue.id).execute()
+
+    const catalog = wooCatalog()
+    for (const variant of catalog[1]!.variants) {
+      variant.sku = null
+      variant.inventory = null
+    }
+    await importCatalog({ adapter: staticAdapter('woocommerce', catalog), storeUrl: WOO, repository, now: NOW })
+
+    const [blueAfter, greenAfter] = await rows('product_variants')
+    expect(greenAfter).toMatchObject({ inventory_count: 12, sku: 'woo-vneck-tee-green', price: 1500 })
+    expect(blueAfter).toMatchObject({ inventory_count: 2, sku: 'woo-vneck-tee-blue-l', description: 'Runs small' })
+  })
+
+  it('moves a SKU between variants on a re-run without tripping the per-product unique index', async () => {
+    const repository = createDatabaseRepository()
+    await importCatalog({ adapter: staticAdapter('shopify', shopifyProducts()), storeUrl: SHOP, repository, now: NOW })
+
+    // The merchant swaps two SKUs at the source. Written in order, the first
+    // variant would claim a SKU the second still holds.
+    const swapped = shopifyProducts((raw) => {
+      raw[0]!.variants![0]!.sku = 'TEE-M-BLK'
+      raw[0]!.variants![1]!.sku = 'TEE-S-BLK'
+      return raw
+    })
+    const result = await importCatalog({ adapter: staticAdapter('shopify', swapped), storeUrl: SHOP, repository, now: NOW })
+
+    expect(result.counts.variants).toEqual({ created: 0, updated: 3 })
+    expect((await rows('product_variants')).map(variant => [variant.variant, variant.sku])).toEqual([
+      ['S / Black', 'TEE-M-BLK'],
+      ['M / Black', 'TEE-S-BLK'],
+      ['L / Natural', null],
+    ])
+  })
+
+  it('imports a product whose variants repeat a SKU, keeping it on the first', async () => {
+    const products = shopifyProducts((raw) => {
+      raw[0]!.variants![1]!.sku = 'TEE-S-BLK'
+      return raw
+    })
+    const result = await importCatalog({ adapter: staticAdapter('shopify', products), storeUrl: SHOP, repository: createDatabaseRepository(), now: NOW })
+
+    expect(result.counts.variants.created).toBe(3)
+    expect(result.warnings.map(warning => warning.message)).toContain('"Organic Cotton Tee" variant "M / Black" repeats SKU TEE-S-BLK; imported without it')
+    expect((await rows('product_variants')).map(variant => variant.sku)).toEqual(['TEE-S-BLK', null, null])
+  })
+
+  it('enforces one SKU per product, but lets two products share one', async () => {
+    await importCatalog({ adapter: staticAdapter('shopify', shopifyProducts()), storeUrl: SHOP, repository: createDatabaseRepository(), now: NOW })
+    const [first] = await rows('product_variants')
+
+    const insert = (productId: number) => (db as any).insertInto('product_variants').values({
+      uuid: `manual-${productId}`,
+      product_id: productId,
+      variant: 'Copy',
+      type: 'Size',
+      status: 'active',
+      sku: 'TEE-S-BLK',
+    }).execute()
+
+    await expect(insert(first.product_id)).rejects.toThrow()
+    await insert(first.product_id + 1)
+    expect((await rows('product_variants')).filter(variant => variant.sku === 'TEE-S-BLK')).toHaveLength(2)
   })
 
   it('writes nothing on a dry run, and reports what a real run would do', async () => {
@@ -267,7 +352,45 @@ describe('the writer, without a database', () => {
     expect(row).not.toHaveProperty('created_at')
   })
 
-  it('summarizes an unpriced variant as unpriced, not free', () => {
-    expect(variantSummary({ externalId: '1', title: 'x', sku: null, priceMinor: null, compareAtMinor: null, available: true, inventory: null, optionValues: [] }, 'USD')).toBe('Unpriced')
+  it('writes an unpriced variant as inheriting the product price, not free', () => {
+    const [tee] = shopifyProducts()
+    const variant = { externalId: '1', title: 'x', sku: null, priceMinor: null, compareAtMinor: null, available: true, inventory: null, optionValues: [] }
+    const row = variantRow(tee!, variant, 'shop.example.com', 1, '2026-10-02 12:00:00', 'create')
+    expect(row).toMatchObject({ price: null, compare_at_price: null, sku: null, inventory_count: null })
+    expect(row).not.toHaveProperty('description')
+  })
+
+  it('does not overwrite a variant\'s SKU or stock on update when the source reports none', () => {
+    const [tee] = shopifyProducts()
+    const variant = { ...tee!.variants[0]!, sku: null, inventory: null }
+    const row = variantRow(tee!, variant, 'shop.example.com', 1, '2026-10-02 12:00:00', 'update')
+    expect(row).not.toHaveProperty('sku')
+    expect(row).not.toHaveProperty('inventory_count')
+    expect(row).not.toHaveProperty('description')
+    expect(row).not.toHaveProperty('created_at')
+    // Pricing is the source's, so it is always written.
+    expect(row).toMatchObject({ price: 2400, compare_at_price: 3000 })
+  })
+
+  it('drops a SKU too long for the column, with a warning', () => {
+    const [tee] = shopifyProducts()
+    tee!.variants[0]!.sku = 'X'.repeat(SKU_MAX + 1)
+    const { skus, warnings } = variantSkus(tee!)
+    expect(skus.get(tee!.variants[0]!.externalId)).toBeNull()
+    expect(skus.get(tee!.variants[1]!.externalId)).toBe('TEE-M-BLK')
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]!.message).toContain(`longer than ${SKU_MAX} characters`)
+  })
+
+  it('releases a SKU in the in-memory repository the same way', async () => {
+    const repository = createMemoryRepository()
+    await importCatalog({ adapter: staticAdapter('shopify', shopifyProducts()), storeUrl: SHOP, repository, now: NOW })
+    const swapped = shopifyProducts((raw) => {
+      raw[0]!.variants![0]!.sku = 'TEE-M-BLK'
+      raw[0]!.variants![1]!.sku = 'TEE-S-BLK'
+      return raw
+    })
+    await importCatalog({ adapter: staticAdapter('shopify', swapped), storeUrl: SHOP, repository, now: NOW })
+    expect(repository.tables.product_variants!.map(variant => variant.sku)).toEqual(['TEE-M-BLK', 'TEE-S-BLK', null])
   })
 })

@@ -1202,6 +1202,10 @@ declare module '@stacksjs/database' {
       description: string
       options: string
       status: "active" | "inactive" | "draft"
+      sku: string | null
+      price: number | null
+      compare_at_price: number | null
+      inventory_count: number | null
       product_id: number
     }
     products: {

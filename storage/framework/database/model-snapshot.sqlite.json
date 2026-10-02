@@ -2029,6 +2029,39 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "sku",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 100
+          },
+          {
+            "name": "price",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "compare_at_price",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "inventory_count",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
           }
         ],
         "indexes": [
@@ -2036,6 +2069,14 @@
             "name": "product_variants_uuid_unique",
             "columns": [
               "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "product_variants_product_sku_unique",
+            "columns": [
+              "product_id",
+              "sku"
             ],
             "type": "unique"
           }
@@ -13281,7 +13322,7 @@
       }
     ]
   },
-  "hash": "2706ba665026d867b80b043c3099ce347ff4ac2a99b27339d645d76b51936e8d",
+  "hash": "5901fd3af76ccf6cfce628b528086a0e77bb93a649e7cf6d6bdf4e4f83599ec9",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-25T00:57:31.427Z"
+  "updatedAt": "2026-10-02T20:57:07.770Z"
 }

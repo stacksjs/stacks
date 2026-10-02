@@ -44136,6 +44136,22 @@
                               "draft"
                             ]
                           },
+                          "sku": {
+                            "type": "string",
+                            "maxLength": 100
+                          },
+                          "price": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "compare_at_price": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "inventory_count": {
+                            "type": "number",
+                            "minimum": 0
+                          },
                           "product_id": {
                             "type": "integer"
                           },
@@ -44213,6 +44229,22 @@
                             "inactive",
                             "draft"
                           ]
+                        },
+                        "sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "compare_at_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "inventory_count": {
+                          "type": "number",
+                          "minimum": 0
                         },
                         "product_id": {
                           "type": "integer"
@@ -44327,6 +44359,22 @@
                             "draft"
                           ]
                         },
+                        "sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "compare_at_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "inventory_count": {
+                          "type": "number",
+                          "minimum": 0
+                        },
                         "product_id": {
                           "type": "integer"
                         },
@@ -44412,6 +44460,22 @@
                             "inactive",
                             "draft"
                           ]
+                        },
+                        "sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "compare_at_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "inventory_count": {
+                          "type": "number",
+                          "minimum": 0
                         },
                         "product_id": {
                           "type": "integer"
@@ -44499,6 +44563,22 @@
                             "draft"
                           ]
                         },
+                        "sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "compare_at_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "inventory_count": {
+                          "type": "number",
+                          "minimum": 0
+                        },
                         "product_id": {
                           "type": "integer"
                         },
@@ -44584,6 +44664,22 @@
                             "inactive",
                             "draft"
                           ]
+                        },
+                        "sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "compare_at_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "inventory_count": {
+                          "type": "number",
+                          "minimum": 0
                         },
                         "product_id": {
                           "type": "integer"
@@ -65438,6 +65534,22 @@
               "inactive",
               "draft"
             ]
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "compare_at_price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "inventory_count": {
+            "type": "number",
+            "minimum": 0
           },
           "product_id": {
             "type": "integer"

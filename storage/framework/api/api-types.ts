@@ -15648,7 +15648,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
+      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -15663,7 +15663,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -15707,7 +15707,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -15721,7 +15721,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -15736,7 +15736,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -15752,7 +15752,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -22500,7 +22500,7 @@ export interface components {
     "PrintDevice": { "id": number; "uuid": string; "name"?: string; "mac_address"?: string; "location"?: string; "terminal"?: string; "status"?: "online" | "offline" | "warning"; "last_ping"?: unknown; "print_count"?: number; "created_at"?: string; "updated_at"?: string }
     "Product": { "id": number; "uuid": string; "name"?: string; "description"?: string; "price"?: number; "image_url"?: string; "is_available"?: boolean; "inventory_count"?: number; "preparation_time"?: number; "allergens"?: string; "nutritional_info"?: string; "category_id"?: number; "manufacturer_id"?: number; "created_at"?: string; "updated_at"?: string }
     "ProductUnit": { "id": number; "uuid": string; "name"?: string; "abbreviation"?: string; "type"?: string; "description"?: string; "is_default"?: boolean; "product_id"?: number; "created_at"?: string; "updated_at"?: string }
-    "ProductVariant": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "product_id"?: number; "created_at"?: string; "updated_at"?: string }
+    "ProductVariant": { "id": number; "uuid": string; "variant"?: string; "type"?: string; "description"?: string; "options"?: string; "status"?: "active" | "inactive" | "draft"; "sku"?: string; "price"?: number; "compare_at_price"?: number; "inventory_count"?: number; "product_id"?: number; "created_at"?: string; "updated_at"?: string }
     "QueryLog": { "id": number; "query": string; "normalized_query"?: string; "duration"?: number; "connection"?: string; "status"?: "completed" | "failed" | "slow"; "error"?: string; "executed_at": string; "model"?: string; "method"?: string; "line"?: number; "memory_usage"?: number; "rows_affected"?: number; "transaction_id"?: string; "tags"?: string; "affected_tables"?: string; "indexes_used"?: string; "missing_indexes"?: string; "explain_plan"?: string; "optimization_suggestions"?: string; "created_at"?: string; "updated_at"?: string }
     "Receipt": { "id": number; "uuid": string; "printer"?: string; "document"?: string; "timestamp"?: unknown; "status"?: "success" | "failed" | "warning"; "size"?: number; "pages"?: number; "duration"?: number; "metadata"?: string; "print_device_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Redirect": { "id": number; "from_path": string; "to_path": string; "status_code"?: number; "source"?: "slug-change" | "manual"; "site_id"?: number; "created_at"?: string; "updated_at"?: string }
