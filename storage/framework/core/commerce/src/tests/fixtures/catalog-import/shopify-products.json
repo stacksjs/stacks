@@ -1,0 +1,155 @@
+{
+  "products": [
+    {
+      "id": 7612345678901,
+      "title": "Organic Cotton Tee",
+      "handle": "organic-cotton-tee",
+      "body_html": "<p>Soft, breathable and <strong>100% organic</strong> cotton.</p>",
+      "published_at": "2026-03-04T10:12:44-05:00",
+      "created_at": "2026-03-04T10:12:40-05:00",
+      "updated_at": "2026-09-21T08:01:02-04:00",
+      "vendor": "Northwind Apparel",
+      "product_type": "T-Shirts",
+      "tags": ["cotton", "organic", "summer"],
+      "variants": [
+        {
+          "id": 42811111111101,
+          "title": "S / Black",
+          "option1": "S",
+          "option2": "Black",
+          "option3": null,
+          "sku": "TEE-S-BLK",
+          "requires_shipping": true,
+          "taxable": true,
+          "featured_image": null,
+          "available": true,
+          "price": "24.00",
+          "grams": 180,
+          "compare_at_price": "30.00",
+          "position": 1,
+          "product_id": 7612345678901,
+          "created_at": "2026-03-04T10:12:41-05:00",
+          "updated_at": "2026-09-21T08:01:02-04:00"
+        },
+        {
+          "id": 42811111111102,
+          "title": "M / Black",
+          "option1": "M",
+          "option2": "Black",
+          "option3": null,
+          "sku": "TEE-M-BLK",
+          "requires_shipping": true,
+          "taxable": true,
+          "featured_image": null,
+          "available": false,
+          "price": "24.00",
+          "grams": 190,
+          "compare_at_price": null,
+          "position": 2,
+          "product_id": 7612345678901,
+          "created_at": "2026-03-04T10:12:41-05:00",
+          "updated_at": "2026-09-21T08:01:02-04:00"
+        },
+        {
+          "id": 42811111111103,
+          "title": "L / Natural",
+          "option1": "L",
+          "option2": "Natural",
+          "option3": null,
+          "sku": "",
+          "requires_shipping": true,
+          "taxable": true,
+          "featured_image": null,
+          "available": true,
+          "price": "26.5",
+          "grams": 200,
+          "compare_at_price": null,
+          "position": 3,
+          "product_id": 7612345678901,
+          "created_at": "2026-03-04T10:12:41-05:00",
+          "updated_at": "2026-09-21T08:01:02-04:00"
+        }
+      ],
+      "images": [
+        {
+          "id": 33300000000002,
+          "created_at": "2026-03-04T10:12:42-05:00",
+          "position": 2,
+          "updated_at": "2026-03-04T10:12:42-05:00",
+          "product_id": 7612345678901,
+          "variant_ids": [],
+          "src": "https://cdn.shopify.com/s/files/1/0000/0001/products/tee-back.jpg?v=1709565162",
+          "width": 1600,
+          "height": 1600
+        },
+        {
+          "id": 33300000000001,
+          "created_at": "2026-03-04T10:12:42-05:00",
+          "position": 1,
+          "updated_at": "2026-03-04T10:12:42-05:00",
+          "product_id": 7612345678901,
+          "variant_ids": [],
+          "src": "https://cdn.shopify.com/s/files/1/0000/0001/products/tee-front.jpg?v=1709565162",
+          "width": 1600,
+          "height": 1600
+        }
+      ],
+      "options": [
+        { "name": "Size", "position": 1, "values": ["S", "M", "L"] },
+        { "name": "Color", "position": 2, "values": ["Black", "Natural"] }
+      ]
+    },
+    {
+      "id": 7612345678902,
+      "title": "Gift Card Sleeve",
+      "handle": "gift-card-sleeve",
+      "body_html": "",
+      "published_at": "2026-05-01T09:00:00-04:00",
+      "created_at": "2026-05-01T09:00:00-04:00",
+      "updated_at": "2026-05-01T09:00:00-04:00",
+      "vendor": "Northwind Apparel",
+      "product_type": "",
+      "tags": [],
+      "variants": [
+        {
+          "id": 42811111111201,
+          "title": "Default Title",
+          "option1": "Default Title",
+          "option2": null,
+          "option3": null,
+          "sku": "SLEEVE-1",
+          "requires_shipping": true,
+          "taxable": true,
+          "featured_image": null,
+          "available": true,
+          "price": "0.10",
+          "grams": 5,
+          "compare_at_price": "0.00",
+          "position": 1,
+          "product_id": 7612345678902,
+          "created_at": "2026-05-01T09:00:00-04:00",
+          "updated_at": "2026-05-01T09:00:00-04:00"
+        }
+      ],
+      "images": [],
+      "options": [
+        { "name": "Title", "position": 1, "values": ["Default Title"] }
+      ]
+    },
+    {
+      "id": 7612345678903,
+      "title": "Archived Sample",
+      "handle": "archived-sample",
+      "body_html": null,
+      "published_at": "2026-01-10T09:00:00-05:00",
+      "created_at": "2026-01-10T09:00:00-05:00",
+      "updated_at": "2026-01-10T09:00:00-05:00",
+      "vendor": "",
+      "product_type": "Samples",
+      "tags": [],
+      "variants": [],
+      "images": [],
+      "options": []
+    }
+  ]
+}

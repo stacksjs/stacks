@@ -77,6 +77,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   'dashboard:uninstall': { path: './commands/features.ts', exportName: 'features' },
   'commerce:install': { path: './commands/features.ts', exportName: 'features' },
   'commerce:uninstall': { path: './commands/features.ts', exportName: 'features' },
+  // Catalog import from Shopify / WooCommerce (stacksjs/stacks#1319, #1320).
+  'commerce:import': { path: './commands/commerce-import.ts', exportName: 'commerceImport' },
   'cms:install': { path: './commands/features.ts', exportName: 'features' },
   'cms:uninstall': { path: './commands/features.ts', exportName: 'features' },
   'marketing:install': { path: './commands/features.ts', exportName: 'features' },

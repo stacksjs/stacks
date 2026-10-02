@@ -660,6 +660,54 @@ const devices = await commerce.devices.fetch({
 })
 ```
 
+## Importing a Catalog
+
+Move an existing store's catalog into the commerce tables with one command. It reads the platform's public storefront API, so no credentials are needed:
+
+```bash
+# Shopify: reads https://<store>/products.json
+buddy commerce:import https://shop.example.com --from shopify --dry-run
+buddy commerce:import https://shop.example.com --from shopify
+
+# WooCommerce 6+: reads the Store API at /wp-json/wc/store/v1/products
+buddy commerce:import https://example.com/shop --from woocommerce --limit 50
+```
+
+| Flag | Meaning |
+|------|---------|
+| `--from <platform>` | `shopify` or `woocommerce` (required) |
+| `--dry-run` | Print what would be created or updated, write nothing |
+| `--limit <count>` | Stop after this many products |
+| `--currency <code>` | Shopify only: the shop currency, when `/meta.json` does not report it |
+
+What lands where:
+
+- **Products**: name, HTML description, the lowest variant price (integer minor units), availability, and the first image URL (images are not downloaded).
+- **Variants**: one `product_variants` row per real option combination. Option values go in `options`; SKU, price, compare-at price and stock (when the source exposes it) are written into the variant's `description`, because the table has no columns for them yet.
+- **Categories**: the Shopify product type, or the first WooCommerce category, matched by slug.
+- **Manufacturers**: the Shopify vendor, or the WooCommerce brand, matched by name.
+
+Re-running is safe. Each imported product and variant gets a `uuid` derived from the store host and the source id, so a second run updates the rows the first one wrote instead of duplicating them. Columns you own on the Stacks side (`preparation_time`, `allergens`, `nutritional_info`) are never overwritten.
+
+Prices are stored in the source store's currency. `products.price` has no currency column, so the command warns when that differs from `currency` in `config/commerce.ts`.
+
+**Scope: catalog only.** Customers, orders, reviews, exact stock levels, collections and redirects are not imported. They are only available through the Shopify Admin API or the WooCommerce REST API, which need an access token or consumer keys.
+
+To add another platform, implement a `CatalogAdapter` (a pure payload mapper plus a pager) and register it in `catalogAdapters`:
+
+```typescript
+import { catalogImport } from '@stacksjs/commerce'
+
+const result = await catalogImport.importCatalog({
+  adapter: catalogImport.catalogAdapter('shopify')!,
+  storeUrl: 'https://shop.example.com',
+  repository: catalogImport.createDatabaseRepository(),
+  limit: 10,
+})
+
+console.log(result.counts.products) // { created: 10, updated: 0 }
+```
+
 ## Edge Cases
 
 ### Handling Inventory Conflicts

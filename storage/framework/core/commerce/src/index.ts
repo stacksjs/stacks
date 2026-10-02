@@ -1,6 +1,7 @@
 // Main commerce module index file
 import * as auctions from './auctions'
 import * as carts from './carts'
+import * as catalogImport from './imports'
 import * as coupons from './coupons'
 import * as customers from './customers'
 import * as devices from './devices'
@@ -71,9 +72,12 @@ export const commerce: CommerceNamespace = {
 
 export default commerce
 
+// Catalog import (Shopify, WooCommerce) is a tool rather than a store module,
+// so it is exported beside the namespace rather than inside it.
 export {
   auctions,
   carts,
+  catalogImport,
   coupons,
   customers,
   devices,

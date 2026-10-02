@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **337 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **338 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -19,7 +19,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `comments` | 4 |
-| `commerce` | 2 |
+| `commerce` | 3 |
 | `config` | 1 |
 | `configure` | 1 |
 | `core` | 1 |
@@ -853,6 +853,29 @@ Examples:
 
 ```bash
 buddy comments:reject 12
+```
+
+### `commerce:import`
+
+Import a Shopify or WooCommerce catalog (products, variants, categories, brands, image URLs)
+
+- Usage: `$ buddy commerce:import <url>`
+- Namespace: `commerce`
+- Aliases: none
+- Arguments: `<url>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--from` | Where the catalog comes from: shopify or woocommerce | value, required | - |
+| `--limit` | Import at most this many products | value, required | - |
+| `--currency` | ISO 4217 currency, for a Shopify store whose /meta.json does not report one | value, required | - |
+| `--dry-run` | Show what would be created or updated without writing anything | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy commerce:import https://shop.example.com --from shopify --dry-run
+buddy commerce:import example.com/shop --from woocommerce --limit 50
 ```
 
 ### `commerce:install`

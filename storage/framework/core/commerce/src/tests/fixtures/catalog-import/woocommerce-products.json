@@ -1,0 +1,186 @@
+[
+  {
+    "id": 81,
+    "name": "Hoodie &amp; Logo &#8211; Navy",
+    "slug": "hoodie-with-logo-navy",
+    "parent": 0,
+    "type": "simple",
+    "variation": "",
+    "permalink": "https://shop.example.co.uk/product/hoodie-with-logo-navy/",
+    "sku": "woo-hoodie-logo",
+    "short_description": "<p>Short and warm.</p>",
+    "description": "<p>A heavyweight hoodie &amp; a stitched logo.</p>",
+    "on_sale": true,
+    "prices": {
+      "price": "3500",
+      "regular_price": "4500",
+      "sale_price": "3500",
+      "price_range": null,
+      "currency_code": "GBP",
+      "currency_symbol": "£",
+      "currency_minor_unit": 2,
+      "currency_decimal_separator": ".",
+      "currency_thousand_separator": ",",
+      "currency_prefix": "£",
+      "currency_suffix": ""
+    },
+    "price_html": "<del>£45.00</del> <ins>£35.00</ins>",
+    "average_rating": "4.50",
+    "review_count": 2,
+    "images": [
+      {
+        "id": 120,
+        "src": "https://shop.example.co.uk/wp-content/uploads/2026/02/hoodie-navy.jpg",
+        "thumbnail": "https://shop.example.co.uk/wp-content/uploads/2026/02/hoodie-navy-324x324.jpg",
+        "srcset": "",
+        "sizes": "(max-width: 800px) 100vw, 800px",
+        "name": "hoodie-navy.jpg",
+        "alt": "Navy hoodie, front"
+      }
+    ],
+    "categories": [
+      { "id": 17, "name": "Hoodies &amp; Sweatshirts", "slug": "hoodies-sweatshirts", "link": "https://shop.example.co.uk/product-category/hoodies-sweatshirts/" },
+      { "id": 15, "name": "Clothing", "slug": "clothing", "link": "https://shop.example.co.uk/product-category/clothing/" }
+    ],
+    "tags": [
+      { "id": 30, "name": "Winter", "slug": "winter", "link": "https://shop.example.co.uk/product-tag/winter/" }
+    ],
+    "brands": [
+      { "id": 40, "name": "Thread &amp; Needle", "slug": "thread-and-needle", "link": "https://shop.example.co.uk/brand/thread-and-needle/" }
+    ],
+    "attributes": [],
+    "variations": [],
+    "has_options": false,
+    "is_purchasable": true,
+    "is_in_stock": true,
+    "is_on_backorder": false,
+    "low_stock_remaining": 3,
+    "sold_individually": false,
+    "add_to_cart": { "text": "Add to basket", "description": "Add to basket", "url": "?add-to-cart=81", "minimum": 1, "maximum": 3, "multiple_of": 1 },
+    "extensions": {}
+  },
+  {
+    "id": 90,
+    "name": "V-Neck T-Shirt",
+    "slug": "v-neck-t-shirt",
+    "parent": 0,
+    "type": "variable",
+    "variation": "",
+    "permalink": "https://shop.example.co.uk/product/v-neck-t-shirt/",
+    "sku": "woo-vneck-tee",
+    "short_description": "<p>Pizza-free since 2014.</p>",
+    "description": "",
+    "on_sale": false,
+    "prices": {
+      "price": "1500",
+      "regular_price": "1500",
+      "sale_price": "1500",
+      "price_range": { "min_amount": "1500", "max_amount": "2000" },
+      "currency_code": "GBP",
+      "currency_symbol": "£",
+      "currency_minor_unit": 2,
+      "currency_decimal_separator": ".",
+      "currency_thousand_separator": ",",
+      "currency_prefix": "£",
+      "currency_suffix": ""
+    },
+    "price_html": "£15.00 &ndash; £20.00",
+    "average_rating": "0",
+    "review_count": 0,
+    "images": [
+      {
+        "id": 130,
+        "src": "https://shop.example.co.uk/wp-content/uploads/2026/02/vneck-tee.jpg",
+        "thumbnail": "https://shop.example.co.uk/wp-content/uploads/2026/02/vneck-tee-324x324.jpg",
+        "srcset": "",
+        "sizes": "(max-width: 800px) 100vw, 800px",
+        "name": "vneck-tee.jpg",
+        "alt": ""
+      }
+    ],
+    "categories": [
+      { "id": 16, "name": "Tshirts", "slug": "tshirts", "link": "https://shop.example.co.uk/product-category/clothing/tshirts/" }
+    ],
+    "tags": [],
+    "brands": [],
+    "attributes": [
+      {
+        "id": 1,
+        "name": "Color",
+        "taxonomy": "pa_color",
+        "has_variations": true,
+        "terms": [
+          { "id": 22, "name": "Blue", "slug": "blue", "default": false },
+          { "id": 23, "name": "Green", "slug": "green", "default": false }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Size",
+        "taxonomy": "pa_size",
+        "has_variations": true,
+        "terms": [
+          { "id": 25, "name": "Large", "slug": "large", "default": false },
+          { "id": 26, "name": "Medium", "slug": "medium", "default": false }
+        ]
+      }
+    ],
+    "variations": [
+      { "id": 91, "attributes": [{ "name": "Color", "value": "blue" }, { "name": "Size", "value": "large" }] },
+      { "id": 92, "attributes": [{ "name": "Color", "value": "green" }, { "name": "Size", "value": "" }] }
+    ],
+    "has_options": true,
+    "is_purchasable": true,
+    "is_in_stock": true,
+    "is_on_backorder": false,
+    "low_stock_remaining": null,
+    "sold_individually": false,
+    "add_to_cart": { "text": "Select options", "description": "Select options for &ldquo;V-Neck T-Shirt&rdquo;", "url": "https://shop.example.co.uk/product/v-neck-t-shirt/", "minimum": 1, "maximum": 9999, "multiple_of": 1 },
+    "extensions": {}
+  },
+  {
+    "id": 99,
+    "name": "Logo Collection",
+    "slug": "logo-collection",
+    "parent": 0,
+    "type": "grouped",
+    "variation": "",
+    "permalink": "https://shop.example.co.uk/product/logo-collection/",
+    "sku": "",
+    "short_description": "",
+    "description": "<p>Everything with the logo on it.</p>",
+    "on_sale": false,
+    "prices": {
+      "price": "",
+      "regular_price": "",
+      "sale_price": "",
+      "price_range": null,
+      "currency_code": "GBP",
+      "currency_symbol": "£",
+      "currency_minor_unit": 2,
+      "currency_decimal_separator": ".",
+      "currency_thousand_separator": ",",
+      "currency_prefix": "£",
+      "currency_suffix": ""
+    },
+    "price_html": "",
+    "average_rating": "0",
+    "review_count": 0,
+    "images": [],
+    "categories": [
+      { "id": 15, "name": "Clothing", "slug": "clothing", "link": "https://shop.example.co.uk/product-category/clothing/" }
+    ],
+    "tags": [],
+    "brands": [],
+    "attributes": [],
+    "variations": [],
+    "has_options": false,
+    "is_purchasable": false,
+    "is_in_stock": true,
+    "is_on_backorder": false,
+    "low_stock_remaining": null,
+    "sold_individually": false,
+    "add_to_cart": { "text": "View products", "description": "View products in the &ldquo;Logo Collection&rdquo; group", "url": "https://shop.example.co.uk/product/logo-collection/", "minimum": 1, "maximum": 9999, "multiple_of": 1 },
+    "extensions": {}
+  }
+]
