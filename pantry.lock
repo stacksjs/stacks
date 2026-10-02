@@ -9,7 +9,7 @@
         "stacks": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.31"
+        "better-dx": "^0.2.32"
       },
       "system": {
         "bun.sh": "1.4.2",
@@ -1876,14 +1876,14 @@
         "require-from-string": "^2.0.2"
       }
     },
-    "better-dx@0.2.31": {
+    "better-dx@0.2.32": {
       "name": "better-dx",
-      "version": "0.2.31",
+      "version": "0.2.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.31.tgz",
-      "integrity": "sha512-FRcWqH37Hil0QYA4f7D1TtSUhQySdWgqXBB4v31tR76DpQER/Rqj0SFvIiloIfuhr4nMxuPeAZsqg19cWnti2Q==",
+      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.32.tgz",
+      "integrity": "sha512-WoDDO6IkpeqJ9pfj6wyuUJnWo8rtZuL4P5HNMzlWX1ERyn+UVNRjNGQzMV5yE0tGphGuFCTqBb5ln+Vh8Kk3+w==",
       "dependencies": {
-        "@buddysh/buddy": "^0.11.8",
+        "@buddysh/buddy": "^0.11.9",
         "@stacksjs/bumpx": "^0.2.14",
         "@stacksjs/bunpress": "^0.2.8",
         "@stacksjs/clapp": "^0.2.12",
@@ -2229,12 +2229,12 @@
       "resolved": "https://registry.npmjs.org/ts-medium-editor/-/ts-medium-editor-0.2.0.tgz",
       "integrity": "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="
     },
-    "ts-pantry@0.11.64": {
+    "ts-pantry@0.11.65": {
       "name": "ts-pantry",
-      "version": "0.11.64",
+      "version": "0.11.65",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.64.tgz",
-      "integrity": "sha512-eEshD29GX8rgloOTsh0COhEEAeIKZ4yEvweeHHSteH+FsAOt47NhmXBhwxiP6CFg1BWa9Wz7uuIjyf58Y7tStQ==",
+      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.65.tgz",
+      "integrity": "sha512-D5W86B5dPGmLpJOBd6oaVKltZGb96m1utLiDoIJdO9LyB2iT2qpJ4TiF0cGPDfff6wjKlHaRRguxWQ9giSAj7Q==",
       "bin": {
         "ts-pantry": "./dist/bin/cli.js"
       }
