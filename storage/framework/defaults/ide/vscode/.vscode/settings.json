@@ -117,7 +117,7 @@
   // Stacks
   "typescript.preferGoToSourceDefinition": true,
   "files.associations": {
-    "buddy": "typescript",
+    "buddy": "shellscript",
     "*.stx": "html"
   },
   "editor.quickSuggestions": {

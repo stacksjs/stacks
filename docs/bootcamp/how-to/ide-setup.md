@@ -20,6 +20,16 @@ Generated declarations live under `storage/framework/types/`. Keep that director
 
 ## Visual Studio Code
 
+Install the [Stacks extension](https://marketplace.visualstudio.com/items?itemName=stacks.vscode-stacks) (`stacks.vscode-stacks`). New projects already recommend it in `.vscode/extensions.json`. It activates in any workspace that has a `buddy` file or a `config/app.ts`, and adds these commands to the Command Palette:
+
+- **Stacks: Start Dev Server** runs `./buddy dev` in a `Stacks Dev` terminal. When the server is ready, the app opens in VS Code's built-in Simple Browser.
+- **Stacks: Open Preview** opens the running dev server in the Simple Browser, beside your editor. The **Stacks** item in the status bar does the same.
+- **Stacks: Run Buddy Command...** lists every command from `./buddy list`, your own `app/Commands/` included, and runs the one you pick. You can also type a command with its arguments, such as `migrate --diff`.
+
+The preview URL is worked out the same way `buddy dev` picks it: `https://<APP_URL>` when the local HTTPS proxy is up, otherwise `http://localhost:<PORT>`. Set `stacks.preview.url` to use a fixed URL instead, or `stacks.preview.preferLocalhost` if the Simple Browser cannot load the local certificate. The [extension README](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ide/vscode) lists every setting.
+
+The extension also installs a small pack of extensions. Bun, Dotenvx, the spell checker and markdownlint are among them.
+
 The repository ships settings and snippets under `storage/framework/defaults/ide/vscode/`. The important local settings are:
 
 ```json
@@ -34,10 +44,9 @@ The repository ships settings and snippets under `storage/framework/defaults/ide
 
 Use the workspace TypeScript version so the editor and `buddy test:types` evaluate the same compiler configuration.
 
-Recommended extensions:
+These are optional and not in the pack, but they work well alongside it:
 
 - EditorConfig
-- Bun for Visual Studio Code
 - Error Lens
 - GitLens
 

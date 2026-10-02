@@ -1,0 +1,19 @@
+{
+  // The extension is its own little package: a Node (CommonJS) bundle loaded by
+  // VS Code, not part of the app or the framework, so no other tsconfig
+  // includes it. `bun run typecheck` here checks it.
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["bun"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
