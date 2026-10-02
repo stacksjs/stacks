@@ -9,7 +9,7 @@
         "stacks": "workspace:*"
       },
       "devDependencies": {
-        "better-dx": "^0.2.32"
+        "better-dx": "^0.2.33"
       },
       "system": {
         "bun.sh": "1.4.2",
@@ -1876,14 +1876,14 @@
         "require-from-string": "^2.0.2"
       }
     },
-    "better-dx@0.2.32": {
+    "better-dx@0.2.33": {
       "name": "better-dx",
-      "version": "0.2.32",
+      "version": "0.2.33",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.32.tgz",
-      "integrity": "sha512-WoDDO6IkpeqJ9pfj6wyuUJnWo8rtZuL4P5HNMzlWX1ERyn+UVNRjNGQzMV5yE0tGphGuFCTqBb5ln+Vh8Kk3+w==",
+      "resolved": "https://registry.npmjs.org/better-dx/-/better-dx-0.2.33.tgz",
+      "integrity": "sha512-F6cHZQjzGQeRpBQtvhj2CxKuE2HsVL4xjQ9eoTS5L27l+jZXaAU8mLjBhy+Q6B8R/JurlcG5UH72f4zLm4XSfA==",
       "dependencies": {
-        "@buddysh/buddy": "^0.11.9",
+        "@buddysh/buddy": "^0.11.10",
         "@stacksjs/bumpx": "^0.2.14",
         "@stacksjs/bunpress": "^0.2.8",
         "@stacksjs/clapp": "^0.2.12",
