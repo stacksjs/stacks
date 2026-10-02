@@ -71,9 +71,9 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
+        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
         with:
-          version: '0.11.64'
+          version: '0.11.65'
           install: 'false'
 
       - name: Install dependencies
@@ -100,9 +100,9 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
+        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
         with:
-          version: '0.11.64'
+          version: '0.11.65'
           install: 'false'
 
       - name: Install dependencies
@@ -136,9 +136,9 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
+        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
         with:
-          version: '0.11.64'
+          version: '0.11.65'
           install: 'false'
 
       - name: Install dependencies
@@ -172,9 +172,9 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
+        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
         with:
-          version: '0.11.64'
+          version: '0.11.65'
           install: 'false'
 
       - name: Install dependencies
@@ -242,9 +242,9 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@30802b80edc84e9592d25e676088c2853ace3a85 # v0.11.64
+        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
         with:
-          version: '0.11.64'
+          version: '0.11.65'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.release.outputs.tag }}
