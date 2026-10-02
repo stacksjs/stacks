@@ -30,6 +30,7 @@ The sections an agent reads once the skill loads.
 - Workspace Dependencies
 - Key Framework Dependencies
 - CLI Commands
+- Lockfiles
 - Dependency Update System
 - Gotchas
 
@@ -38,6 +39,7 @@ The sections an agent reads once the skill loads.
 - Root: `package.json`
 - Deps config: `config/deps.ts`
 - Bun lock: `bun.lock`
+- Pantry lock: `pantry.lock`
 - Bun config: `bunfig.toml`
 
 ## Using it

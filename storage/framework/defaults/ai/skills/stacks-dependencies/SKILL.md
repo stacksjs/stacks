@@ -95,11 +95,43 @@ bun run upgrade            # Upgrade dependencies
 bun run build:reset        # Full reset: rm deps → reinstall → generate → lint → build
 ```
 
+## Lockfiles
+
+A Stacks project commits two lockfiles, and they describe one tree:
+
+- `bun.lock` resolves `node_modules/`, which the app root reads.
+- `pantry.lock` records the system toolchain (Bun itself, SQLite, curl, git)
+  **and** every npm package, which `pantry/` holds and the framework source
+  resolves from.
+
+Since pantry 0.11.65 an npm range resolves to `bun.lock`'s pin whenever that
+pin satisfies it, so the two agree on every package they both name. Since
+0.11.60 the file is platform-independent: `pantry install` on macOS writes what
+CI writes on Linux, foreign-platform records included.
+
+**Regenerating.** Change the ranges, run `bun install`, then `pantry install`,
+on any platform, and commit `bun.lock` and `pantry.lock` with the manifests.
+Check `head -2 bun.lock` says `lockfileVersion: 2`; an older Bun on PATH
+downgrades it.
+
+**Who else writes them.**
+
+- `buddy release` regenerates both and refuses to commit a `pantry.lock` that
+  violates a range it records or drops the root `system` block.
+- The dependency bot (`@buddysh/buddy` 0.11.5+, via `better-dx`) runs
+  `pantry install` after the JS manager on its Linux runner, so dependency pull
+  requests arrive with both lockfiles current.
+
+**The guards.** CI's `compile` job installs and fails if either lockfile
+changed, and `lockfile-matches-manifests.test.ts` compares the ranges both
+lockfiles record against the manifests. Either failure means a lockfile was
+not regenerated with its manifest, not that the guard is wrong.
+
 ## Dependency Update System
 
-- **buddy-bot** handles dependency updates — NOT renovatebot
-- Automated PR creation for dependency updates
-- Configured via `config/buddy-bot.ts`
+- **buddy-bot** (`@buddysh/buddy`, shipped by `better-dx`) handles dependency updates, NOT renovatebot
+- Automated PR creation for dependency updates, run as `bunx @buddysh/buddy` in `.github/workflows/buddy-bot.yml`
+- Configured via `config/buddy-bot.ts` (read as the pre-rename fallback for `config/buddy.ts`, which in a Stacks app would read as the Stacks CLI's config)
 
 ## Gotchas
 - **buddy-bot, not renovatebot** — Stacks uses its own dependency update bot
