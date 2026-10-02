@@ -14,6 +14,7 @@
 import type { ErrorPageViewModel } from '../../../error-page-view-model'
 
 declare const statusTitle: ErrorPageViewModel['statusTitle']
+declare const enableCopyMarkdown: ErrorPageViewModel['enableCopyMarkdown']
 </script>
 <div class="flex items-center justify-between" data-copy-root>
   <div class="flex gap-2 items-center h-[56px]">

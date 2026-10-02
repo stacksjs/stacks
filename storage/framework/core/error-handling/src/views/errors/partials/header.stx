@@ -21,6 +21,7 @@ declare const frameworkVersion: ErrorPageViewModel['frameworkVersion']
 declare const runtimeLabel: ErrorPageViewModel['runtimeLabel']
 declare const runtimeVersion: ErrorPageViewModel['runtimeVersion']
 declare const errorCode: ErrorPageViewModel['errorCode']
+declare const hasRequest: ErrorPageViewModel['hasRequest']
 </script>
 <div class="flex overflow-x-auto flex-col pt-8 sm:pt-16">
   <div class="flex flex-col gap-5 mb-8">
