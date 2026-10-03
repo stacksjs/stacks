@@ -1,0 +1,58 @@
+{
+  "customers": [
+    {
+      "id": 207119551,
+      "email": " Bob.Norman@Mail.Example.com ",
+      "first_name": "Bob",
+      "last_name": "Norman",
+      "phone": "+16136120707",
+      "state": "enabled",
+      "total_spent": "199.65",
+      "currency": "USD",
+      "created_at": "2025-03-04T11:20:00-05:00",
+      "default_address": {
+        "first_name": "Bob",
+        "last_name": "Norman",
+        "address1": "Chestnut Street 92",
+        "city": "Louisville",
+        "province_code": "KY",
+        "zip": "40202",
+        "country_code": "US",
+        "phone": "555-625-1199"
+      }
+    },
+    {
+      "id": 207119552,
+      "email": null,
+      "first_name": "Phone",
+      "last_name": "Only",
+      "phone": "+15145550101",
+      "state": "disabled",
+      "total_spent": "0.00",
+      "currency": "USD",
+      "created_at": "2025-06-01T09:00:00-04:00",
+      "default_address": null
+    },
+    {
+      "id": 207119553,
+      "email": "jane.roe@example.com",
+      "first_name": null,
+      "last_name": null,
+      "phone": null,
+      "state": "disabled",
+      "total_spent": "0.00",
+      "currency": "USD",
+      "created_at": "2026-01-20T16:45:10Z",
+      "default_address": {
+        "first_name": "Jane",
+        "last_name": "Roe",
+        "address1": "1 Market St",
+        "city": "San Francisco",
+        "province_code": "CA",
+        "zip": "94105",
+        "country_code": "US",
+        "phone": "+14155550199"
+      }
+    }
+  ]
+}

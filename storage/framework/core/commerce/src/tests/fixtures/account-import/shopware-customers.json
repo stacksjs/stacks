@@ -1,0 +1,51 @@
+{
+  "total": 3,
+  "data": [
+    {
+      "id": "0190c0ffee0a4b5c8d9e0f1a2b3c4d01",
+      "customerNumber": "10001",
+      "email": "anna.schmidt@example.de",
+      "firstName": "Anna",
+      "lastName": "Schmidt",
+      "company": null,
+      "active": true,
+      "guest": false,
+      "orderTotalAmount": 119.95,
+      "lastOrderDate": "2026-09-20T14:03:11.000+00:00",
+      "createdAt": "2025-11-02T09:41:00.000+00:00",
+      "defaultBillingAddress": { "phoneNumber": "+49 30 1234567", "apiAlias": "customer_address" },
+      "apiAlias": "customer"
+    },
+    {
+      "id": "0190c0ffee0a4b5c8d9e0f1a2b3c4d02",
+      "customerNumber": "10002",
+      "email": "Anna.Schmidt@example.de",
+      "firstName": "Anna",
+      "lastName": "Schmidt",
+      "company": null,
+      "active": true,
+      "guest": true,
+      "orderTotalAmount": 0,
+      "lastOrderDate": null,
+      "createdAt": "2026-03-14T18:00:00.000+00:00",
+      "defaultBillingAddress": { "phoneNumber": null, "apiAlias": "customer_address" },
+      "apiAlias": "customer"
+    },
+    {
+      "id": "0190c0ffee0a4b5c8d9e0f1a2b3c4d03",
+      "customerNumber": "10003",
+      "email": "max.muster@example.de",
+      "firstName": "Max",
+      "lastName": "Mustermann",
+      "company": "Muster GmbH",
+      "active": false,
+      "guest": false,
+      "orderTotalAmount": 1999.5,
+      "lastOrderDate": "2026-01-05T08:00:00.000+00:00",
+      "createdAt": "2024-07-01T12:00:00.000+00:00",
+      "defaultBillingAddress": null,
+      "apiAlias": "customer"
+    }
+  ],
+  "aggregations": []
+}

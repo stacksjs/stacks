@@ -705,9 +705,68 @@ Re-running is safe. Each imported product and variant gets a `uuid` derived from
 
 Prices are stored in the source store's currency. `products.price` has no currency column, so the command warns when that differs from `currency` in `config/commerce.ts`.
 
-**Scope: catalog only.** Customers, orders, reviews, exact stock levels (Shopify and WooCommerce), collections and redirects are not imported. They are only available through the Shopify Admin API, the WooCommerce REST API or the Shopware Admin API, which need an access token, consumer keys or an integration's credentials.
+The catalog import reads public storefront APIs only, so it never sees customers or orders; import those with `--customers` and `--orders` (below). Reviews, exact stock levels (Shopify and WooCommerce), Shopify collections and redirects are not imported.
 
-To add another platform, implement a `CatalogAdapter` (a pure payload mapper plus a pager) and register it in `catalogAdapters`:
+### Customers and orders
+
+Customers and orders live behind each platform's admin API, so importing them needs credentials. They are read **from the environment only** (or `.env`, which `buddy` loads), never from a flag, where they would land in shell history and `ps` output:
+
+| Platform | Env vars | Where to create them |
+|----------|----------|----------------------|
+| Shopify | `SHOPIFY_ADMIN_TOKEN` | A custom app for the store (Shopify admin > Settings > Apps > Develop apps, or the Dev Dashboard) with the `read_customers` and `read_orders` scopes, plus `read_all_orders` for orders older than 60 days. The token starts with `shpat_` |
+| WooCommerce | `WOOCOMMERCE_CONSUMER_KEY`, `WOOCOMMERCE_CONSUMER_SECRET` | WordPress admin > WooCommerce > Settings > Advanced > REST API > Add key, with **Read** permission (`ck_...` / `cs_...`) |
+| Shopware 6 | `SHOPWARE_CLIENT_ID`, `SHOPWARE_CLIENT_SECRET` | Administration > Settings > System > Integrations, with a role that can read customers and orders. The access key id (`SWIA...`) is the client id |
+
+```bash
+# Customers and orders, without the catalog
+SHOPIFY_ADMIN_TOKEN=shpat_... buddy commerce:import https://shop.example.com --from shopify \
+  --customers --orders --admin-url northwind.myshopify.com --dry-run
+
+# Everything: catalog first, then customers, then orders (their lines link to the products)
+buddy commerce:import https://example.com/shop --from woocommerce --catalog --customers --orders
+
+# Shopware: the integration credentials for customers and orders, the access key for the catalog
+buddy commerce:import https://shop.example.de --from shopware --orders --limit 100
+```
+
+| Flag | Meaning |
+|------|---------|
+| `--customers` | Import customers from the admin API |
+| `--orders` | Import orders and their lines from the admin API |
+| `--catalog` | Import the catalog as well. It is the default when neither `--customers` nor `--orders` is given |
+| `--admin-url <url>` | The admin API address when it differs from `<url>`. Shopify's Admin API answers on `https://<store>.myshopify.com`, so pass it for a store on a custom domain. Identities always come from `<url>`, so pass the same `<url>` you imported the catalog with |
+| `--limit <count>` | At most this many products, customers and orders, each |
+| `--currency <code>` | The currency of an order that does not name one (all three platforms normally do) |
+
+A missing credential fails before any request, naming the variables and where to create them. A `401` or `403` names the URL, says whether the credential was rejected or lacks a permission, and never repeats a secret, even one a server echoes back. WooCommerce keys go over HTTP Basic auth, so a store URL that is not `https://` is refused (WooCommerce itself only accepts Basic auth over HTTPS); Shopify and Shopware are HTTPS only too, except a Shopware on `localhost`. A Shopify `429` is retried after the `Retry-After` it sends, up to five times.
+
+How each platform is read:
+
+- **Shopify**: Admin REST API `2026-10`, `/admin/api/2026-10/customers.json` and `/orders.json?status=any` (the default is open orders only), 250 per page, following the `page_info` cursor in each response's `Link` header. Shopify marked the REST Admin API legacy in 2024 but keeps serving it to custom apps.
+- **WooCommerce**: REST API v3, `/wp-json/wc/v3/customers` and `/orders`, 100 per page in id order, until `X-WP-TotalPages`. Order drafts (`checkout-draft`) are skipped.
+- **Shopware**: `POST /api/oauth/token` with the `client_credentials` grant, then `POST /api/search/customer` and `/api/search/order` with `page`/`limit` criteria, the order's `lineItems`, `addresses`, `deliveries`, `transactions` and `currency` as associations, and `includes` limiting every entity to the fields the import reads. A token that expires mid-import is renewed once.
+
+What lands where:
+
+- **Customers**: `customers.email` (trimmed and lowercased), `name` (first and last name, else the email), `phone`, and `total_spent` (integer minor units) and `last_order` when the source reports them (Shopify spend, Shopware spend and last order date). A disabled Shopware account is `Inactive`. A new customer gets the default avatar, or a WooCommerce Gravatar. No password hash and no payment data is ever requested or written: the importer has no field for either. Addresses are not imported as records, since there is no address model; an order's shipping address is kept on the order.
+- **Deduplication**: a customer is matched first by the `uuid` an earlier import gave it (derived from the source id, so a changed email follows the customer), then by email, case-insensitively. A customer who already exists in Stacks, from a checkout or another store, is updated, not duplicated, and keeps its own `uuid` and avatar. Shopware's per-checkout guest accounts that share an email become one customer.
+- **Orders**: `orders.uuid` derived from the source order id; `currency` per order, with `total_amount`, `tax_amount`, `discount_amount`, `delivery_fee` (shipping) and `tip_amount` in integer minor units of that currency, converted through decimal strings, never floats. `delivery_address` is the shipping address on one line, `special_instructions` the customer's note, `created_at` the date the order was placed. `order_type` is `DELIVERY` for an order with a shipping address and `TAKEOUT` otherwise. The order is linked to the customer with its email; a guest, or a customer not imported yet, is created from the order. Writes bypass the models, so importing history sends no order emails and fires no `order:*` events.
+- **Order lines**: one `order_items` row per line, with `quantity` and the unit `price` before order-level discounts (WooCommerce's line subtotal over its quantity, rounded half up to the minor unit when it does not divide). `product_id` is the product the catalog import wrote, found through the same deterministic identities (the variant's when the line names one). `order_items` has no name, SKU or variant column, so the line's label and SKU are kept in its `special_instructions` (`Organic Cotton Tee - S / Black (SKU TEE-S-BLK)`). Discount lines (Shopware promotions, negative WooCommerce fees) count toward `discount_amount` instead; positive WooCommerce fees become lines without a product.
+- **Products not imported yet**: the line is kept, with its label, SKU and price but no `product_id`, and the import warns with a count and examples. Import the catalog and re-run the order import: re-running replaces each imported order's lines, so they link.
+
+Statuses map onto the `OrderStatus` vocabulary (`PENDING`, `PROCESSING`, `SHIPPED`, `OUT_FOR_DELIVERY`, `DELIVERED`, `CANCELLED`, `REFUNDED`):
+
+| Source | Mapping |
+|--------|---------|
+| Shopify | refunded: `REFUNDED`; cancelled, voided or restocked: `CANCELLED`; fulfilled: `SHIPPED` (Shopify does not track delivery); partially fulfilled, paid, partially paid or authorized: `PROCESSING`; pending: `PENDING` |
+| WooCommerce | `pending`, `on-hold`: `PENDING`; `processing`: `PROCESSING`; `completed`: `DELIVERED`; `cancelled`, `failed`: `CANCELLED`; `refunded`: `REFUNDED` |
+| Shopware | latest payment refunded: `REFUNDED`; order cancelled: `CANCELLED`; completed: `DELIVERED`; open or in progress with the delivery shipped: `SHIPPED`; in progress, partially shipped, or paid or authorized: `PROCESSING`; otherwise `PENDING` |
+
+Any other status (a plugin's custom WooCommerce status, say) is imported as `PENDING`, with a warning naming it.
+
+Re-running is safe: customers and orders are matched as above, so a second run updates every row and creates none, and an order's lines are replaced rather than appended. `--dry-run` reads the database and reports what would be created or updated without writing; since it writes no products, a dry run that also imports the catalog matches order lines only against products already in Stacks. The order number (`#1001`) is shown in the output but not stored: `orders` has no column for it.
+
+To add another platform, implement a `CatalogAdapter` (a pure payload mapper plus a pager) and register it in `catalogAdapters`; for customers and orders, an `AccountAdapter` registered in `accountAdapters`:
 
 ```typescript
 import { catalogImport } from '@stacksjs/commerce'
@@ -720,6 +779,16 @@ const result = await catalogImport.importCatalog({
 })
 
 console.log(result.counts.products) // { created: 10, updated: 0 }
+
+const orders = await catalogImport.importOrders({
+  adapter: catalogImport.accountAdapter('shopify')!,
+  storeUrl: 'https://shop.example.com',
+  adminUrl: 'https://northwind.myshopify.com',
+  credentials: catalogImport.readAccountCredentials('shopify', process.env),
+  repository: catalogImport.createDatabaseAccountRepository(),
+})
+
+console.log(orders.counts.lines) // { linked: 41, unlinked: 0 }
 ```
 
 ## Edge Cases

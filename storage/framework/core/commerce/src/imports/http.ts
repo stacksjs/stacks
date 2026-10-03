@@ -15,6 +15,8 @@ export class CatalogFetchError extends Error {
     public readonly status?: number,
     /** The start of the response body, when the server sent one with an error status. */
     public readonly body?: string,
+    /** Seconds the server asked to wait (`Retry-After`), on a 429 or 503. */
+    public readonly retryAfter?: number,
   ) {
     super(message)
     this.name = 'CatalogFetchError'
@@ -73,6 +75,20 @@ export interface JsonRequest {
   json?: unknown
 }
 
+/**
+ * `Retry-After` as seconds. Shopify sends a decimal (`"2.0"`); the HTTP spec
+ * also allows an HTTP date. Anything unreadable is undefined, not zero.
+ */
+export function retryAfterSeconds(header: string | null | undefined, now: () => number = Date.now): number | undefined {
+  const raw = header?.trim()
+  if (!raw)
+    return undefined
+  if (/^\d+(?:\.\d+)?$/.test(raw))
+    return Number(raw)
+  const at = Date.parse(raw)
+  return Number.isNaN(at) ? undefined : Math.max(0, (at - now()) / 1000)
+}
+
 /** Fetch a URL and parse it as JSON (GET unless `request` says otherwise), or throw a `CatalogFetchError` naming it. */
 export async function fetchJson<T = unknown>(url: string, fetcher: FetchLike = fetch, hint = '', request: JsonRequest = {}): Promise<JsonResponse<T>> {
   const suffix = hint ? ` ${hint}` : ''
@@ -97,7 +113,7 @@ export async function fetchJson<T = unknown>(url: string, fetcher: FetchLike = f
   if (!response.ok) {
     const status = `${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
     const body = await response.text().catch(() => '')
-    throw new CatalogFetchError(url, `${url} responded ${status}.${suffix}`, response.status, body ? body.slice(0, ERROR_BODY_MAX) : undefined)
+    throw new CatalogFetchError(url, `${url} responded ${status}.${suffix}`, response.status, body ? body.slice(0, ERROR_BODY_MAX) : undefined, retryAfterSeconds(response.headers.get('retry-after')))
   }
 
   const body = await response.text()

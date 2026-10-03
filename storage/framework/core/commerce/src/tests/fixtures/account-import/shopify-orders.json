@@ -1,0 +1,165 @@
+{
+  "orders": [
+    {
+      "id": 450789469,
+      "name": "#1001",
+      "order_number": 1001,
+      "email": "bob.norman@mail.example.com",
+      "contact_email": "bob.norman@mail.example.com",
+      "created_at": "2026-09-10T11:00:00-04:00",
+      "processed_at": "2026-09-10T11:00:00-04:00",
+      "cancelled_at": null,
+      "currency": "USD",
+      "total_price": "54.49",
+      "total_tax": "3.89",
+      "total_discounts": "5.00",
+      "total_shipping_price_set": {
+        "shop_money": { "amount": "7.50", "currency_code": "USD" },
+        "presentment_money": { "amount": "10.25", "currency_code": "CAD" }
+      },
+      "shipping_lines": [{ "price": "7.50" }],
+      "total_tip_received": "0.00",
+      "financial_status": "paid",
+      "fulfillment_status": "fulfilled",
+      "customer": {
+        "id": 207119551,
+        "email": "bob.norman@mail.example.com",
+        "first_name": "Bob",
+        "last_name": "Norman",
+        "phone": "+16136120707"
+      },
+      "billing_address": { "first_name": "Bob", "last_name": "Norman", "phone": "555-625-1199" },
+      "shipping_address": {
+        "first_name": "Bob",
+        "last_name": "Norman",
+        "address1": "Chestnut Street 92",
+        "address2": "Apt 4",
+        "city": "Louisville",
+        "province_code": "KY",
+        "zip": "40202",
+        "country_code": "US"
+      },
+      "line_items": [
+        {
+          "id": 669751112,
+          "product_id": 7612345678901,
+          "variant_id": 42811111111101,
+          "sku": "TEE-S-BLK",
+          "title": "Organic Cotton Tee",
+          "variant_title": "S / Black",
+          "name": "Organic Cotton Tee - S / Black",
+          "quantity": 2,
+          "price": "24.00"
+        },
+        {
+          "id": 669751113,
+          "product_id": 7612345678902,
+          "variant_id": 42811111111201,
+          "sku": "SLEEVE-1",
+          "title": "Gift Card Sleeve",
+          "variant_title": null,
+          "name": "Gift Card Sleeve",
+          "quantity": 1,
+          "price": "0.10"
+        }
+      ],
+      "note": "Please leave at the side door."
+    },
+    {
+      "id": 450789470,
+      "name": "#1002",
+      "order_number": 1002,
+      "email": "Guest.Shopper@Example.org",
+      "contact_email": "Guest.Shopper@Example.org",
+      "created_at": "2026-09-11T08:30:00Z",
+      "processed_at": "2026-09-11T08:30:00Z",
+      "cancelled_at": "2026-09-11T09:00:00Z",
+      "currency": "USD",
+      "total_price": "12.00",
+      "total_tax": "0.00",
+      "total_discounts": "0.00",
+      "total_shipping_price_set": { "shop_money": { "amount": "0.00", "currency_code": "USD" } },
+      "shipping_lines": [],
+      "total_tip_received": "0.00",
+      "financial_status": "voided",
+      "fulfillment_status": null,
+      "customer": null,
+      "billing_address": { "first_name": "Guest", "last_name": "Shopper", "phone": null },
+      "shipping_address": null,
+      "line_items": [
+        {
+          "id": 669751200,
+          "product_id": 7612345679999,
+          "variant_id": 42811111119999,
+          "sku": "MUG-1",
+          "title": "Vintage Mug",
+          "variant_title": null,
+          "name": "Vintage Mug",
+          "quantity": 1,
+          "price": "12.00"
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": 450789471,
+      "name": "#1003",
+      "order_number": 1003,
+      "email": "bob.norman@mail.example.com",
+      "contact_email": "bob.norman@mail.example.com",
+      "created_at": "2026-09-12T15:00:00Z",
+      "processed_at": "2026-09-12T15:00:00Z",
+      "cancelled_at": null,
+      "currency": "USD",
+      "total_price": "29.50",
+      "total_tax": "0.00",
+      "total_discounts": "0.00",
+      "shipping_lines": [{ "price": "0.50" }],
+      "total_tip_received": "2.00",
+      "financial_status": "refunded",
+      "fulfillment_status": "fulfilled",
+      "customer": {
+        "id": 207119551,
+        "email": "bob.norman@mail.example.com",
+        "first_name": "Bob",
+        "last_name": "Norman",
+        "phone": "+16136120707"
+      },
+      "billing_address": { "first_name": "Bob", "last_name": "Norman" },
+      "shipping_address": {
+        "first_name": "Bob",
+        "last_name": "Norman",
+        "address1": "Chestnut Street 92",
+        "city": "Louisville",
+        "province_code": "KY",
+        "zip": "40202",
+        "country_code": "US"
+      },
+      "line_items": [
+        {
+          "id": 669751300,
+          "product_id": 7612345678901,
+          "variant_id": 42811111111103,
+          "sku": "",
+          "title": "Organic Cotton Tee",
+          "variant_title": "L / Natural",
+          "name": "Organic Cotton Tee - L / Natural",
+          "quantity": 1,
+          "price": "26.50"
+        },
+        {
+          "id": 669751301,
+          "product_id": null,
+          "variant_id": null,
+          "sku": null,
+          "title": "Gift wrapping",
+          "variant_title": null,
+          "name": "Gift wrapping",
+          "quantity": 1,
+          "price": "0.50"
+        }
+      ],
+      "note": ""
+    }
+  ]
+}

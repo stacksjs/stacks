@@ -38,7 +38,12 @@ export function uuidV5(name: string, namespace: string = CATALOG_IMPORT_NAMESPAC
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
 }
 
-export type CatalogRecordKind = 'product' | 'variant'
+/**
+ * What an identity names. `customer` and `order` come from the credentialed
+ * import (`accounts.ts`), and share the namespace so an order's line items
+ * resolve to the very `product` and `variant` uuids the catalog import wrote.
+ */
+export type CatalogRecordKind = 'product' | 'variant' | 'customer' | 'order'
 
 /** The deterministic `uuid` for one imported record. */
 export function catalogUuid(source: string, host: string, kind: CatalogRecordKind, externalId: string): string {

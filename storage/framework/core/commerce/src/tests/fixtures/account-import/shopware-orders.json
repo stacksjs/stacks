@@ -1,0 +1,159 @@
+{
+  "total": 2,
+  "data": [
+    {
+      "id": "0190d00d0a4b5c8d9e0f1a2b3c4d5e01",
+      "orderNumber": "10042",
+      "orderDateTime": "2026-09-20T14:03:11.000+00:00",
+      "amountTotal": 119.39,
+      "amountNet": 100.33,
+      "shippingTotal": 4.99,
+      "customerComment": "Bitte beim Nachbarn abgeben.",
+      "billingAddressId": "0190d00d0a4b5c8d9e0f1a2b3c4da001",
+      "currency": { "isoCode": "EUR", "apiAlias": "currency" },
+      "stateMachineState": { "technicalName": "completed", "apiAlias": "state_machine_state" },
+      "orderCustomer": {
+        "customerId": "0190c0ffee0a4b5c8d9e0f1a2b3c4d01",
+        "email": "Anna.Schmidt@example.de",
+        "firstName": "Anna",
+        "lastName": "Schmidt",
+        "apiAlias": "order_customer"
+      },
+      "lineItems": [
+        {
+          "id": "0190d00d0a4b5c8d9e0f1a2b3c4dl001",
+          "parentId": null,
+          "productId": "0190a1b2c3d47e8f9a0b1c2d3e4f5b01",
+          "referencedId": "0190a1b2c3d47e8f9a0b1c2d3e4f5b01",
+          "label": "Linen Shirt Classic",
+          "quantity": 2,
+          "unitPrice": 49.95,
+          "totalPrice": 99.9,
+          "type": "product",
+          "payload": { "productNumber": "SW10001.1", "parentId": "0190a1b2c3d47e8f9a0b1c2d3e4f5a61", "options": [] },
+          "apiAlias": "order_line_item"
+        },
+        {
+          "id": "0190d00d0a4b5c8d9e0f1a2b3c4dl002",
+          "parentId": null,
+          "productId": "0190a1b2c3d47e8f9a0b1c2d3e4f5a62",
+          "referencedId": "0190a1b2c3d47e8f9a0b1c2d3e4f5a62",
+          "label": "Espresso Cup Set",
+          "quantity": 1,
+          "unitPrice": 24.5,
+          "totalPrice": 24.5,
+          "type": "product",
+          "payload": { "productNumber": "SW10002", "parentId": null },
+          "apiAlias": "order_line_item"
+        },
+        {
+          "id": "0190d00d0a4b5c8d9e0f1a2b3c4dl003",
+          "parentId": null,
+          "productId": null,
+          "referencedId": "WELCOME10",
+          "label": "Welcome 10 EUR",
+          "quantity": 1,
+          "unitPrice": -10,
+          "totalPrice": -10,
+          "type": "promotion",
+          "payload": { "code": "WELCOME10" },
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "addresses": [
+        {
+          "id": "0190d00d0a4b5c8d9e0f1a2b3c4da001",
+          "firstName": "Anna",
+          "lastName": "Schmidt",
+          "company": null,
+          "street": "Hauptstraße 5",
+          "additionalAddressLine1": null,
+          "zipcode": "10115",
+          "city": "Berlin",
+          "phoneNumber": "+49 30 1234567",
+          "country": { "iso": "DE", "name": "Germany", "apiAlias": "country" },
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "stateMachineState": { "technicalName": "shipped", "apiAlias": "state_machine_state" },
+          "shippingOrderAddress": {
+            "id": "0190d00d0a4b5c8d9e0f1a2b3c4da002",
+            "firstName": "Anna",
+            "lastName": "Schmidt",
+            "company": null,
+            "street": "Gartenweg 12",
+            "additionalAddressLine1": "Hinterhaus",
+            "zipcode": "10117",
+            "city": "Berlin",
+            "phoneNumber": null,
+            "country": { "iso": "DE", "name": "Germany", "apiAlias": "country" },
+            "apiAlias": "order_address"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "transactions": [
+        { "createdAt": "2026-09-20T14:03:12.000+00:00", "stateMachineState": { "technicalName": "failed", "apiAlias": "state_machine_state" }, "apiAlias": "order_transaction" },
+        { "createdAt": "2026-09-20T14:05:40.000+00:00", "stateMachineState": { "technicalName": "paid", "apiAlias": "state_machine_state" }, "apiAlias": "order_transaction" }
+      ],
+      "apiAlias": "order"
+    },
+    {
+      "id": "0190d00d0a4b5c8d9e0f1a2b3c4d5e02",
+      "orderNumber": "10043",
+      "orderDateTime": "2026-09-22T07:30:00.000+00:00",
+      "amountTotal": 59.9,
+      "amountNet": 55.62,
+      "shippingTotal": 0,
+      "customerComment": null,
+      "billingAddressId": "0190d00d0a4b5c8d9e0f1a2b3c4db001",
+      "currency": { "isoCode": "CHF", "apiAlias": "currency" },
+      "stateMachineState": { "technicalName": "open", "apiAlias": "state_machine_state" },
+      "orderCustomer": {
+        "customerId": "0190c0ffee0a4b5c8d9e0f1a2b3c4d99",
+        "email": "new.buyer@example.ch",
+        "firstName": "Nina",
+        "lastName": "Buyer",
+        "apiAlias": "order_customer"
+      },
+      "lineItems": [
+        {
+          "id": "0190d00d0a4b5c8d9e0f1a2b3c4dl010",
+          "parentId": null,
+          "productId": "0190a1b2c3d47e8f9a0b1c2d3e4f5b02",
+          "referencedId": "0190a1b2c3d47e8f9a0b1c2d3e4f5b02",
+          "label": "Linen Shirt Classic",
+          "quantity": 1,
+          "unitPrice": 59.9,
+          "totalPrice": 59.9,
+          "type": "product",
+          "payload": { "productNumber": "SW10001.2" },
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "addresses": [
+        {
+          "id": "0190d00d0a4b5c8d9e0f1a2b3c4db001",
+          "firstName": "Nina",
+          "lastName": "Buyer",
+          "company": null,
+          "street": "Bahnhofstrasse 1",
+          "additionalAddressLine1": null,
+          "zipcode": "8001",
+          "city": "Zürich",
+          "phoneNumber": "+41 44 000 00 00",
+          "country": { "iso": "CH", "name": "Switzerland", "apiAlias": "country" },
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [],
+      "transactions": [
+        { "createdAt": "2026-09-22T07:30:01.000+00:00", "stateMachineState": { "technicalName": "open", "apiAlias": "state_machine_state" }, "apiAlias": "order_transaction" }
+      ],
+      "apiAlias": "order"
+    }
+  ],
+  "aggregations": []
+}

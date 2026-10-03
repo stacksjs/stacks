@@ -8,6 +8,13 @@ import { insertedId } from '../utils/inserted-id'
 import { fetchById } from './fetch'
 
 /**
+ * The avatar a customer gets when nothing supplies one. `customers.avatar` is
+ * NOT NULL and the dashboard requires an http(s) URL there, so a row without
+ * one would break the customer list. The customer importer uses it too.
+ */
+export const DEFAULT_CUSTOMER_AVATAR = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=60'
+
+/**
  * Create a new customer
  *
  * @param data The customer data to store
@@ -17,7 +24,7 @@ export async function store(data: NewCustomer): Promise<CustomerJsonResponse> {
   try {
     const customerData = {
       ...data,
-      avatar: data.avatar ?? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=60',
+      avatar: data.avatar ?? DEFAULT_CUSTOMER_AVATAR,
     }
 
     const result = await db

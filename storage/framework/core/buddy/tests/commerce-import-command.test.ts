@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import {
   currencyMismatch,
+  formatCustomerSummary,
+  formatImportedCustomer,
+  formatImportedOrder,
   formatImportedProduct,
   formatImportSummary,
+  formatOrderSummary,
   OUT_OF_SCOPE_NOTE,
   parseImportFlags,
 } from '../src/commands/commerce-import'
@@ -17,6 +21,7 @@ import { getCommandNames, getCommandsToLoad } from '../src/lazy-commands'
  */
 
 const format = (minor: number, currency: string | null) => `${(minor / 100).toFixed(2)}${currency ? ` ${currency}` : ''}`
+const CATALOG = { catalog: true, customers: false, orders: false }
 
 function result(overrides: Record<string, unknown> = {}): any {
   return {
@@ -40,9 +45,9 @@ function result(overrides: Record<string, unknown> = {}): any {
 
 describe('parseImportFlags', () => {
   it('accepts each supported platform, case-insensitively', () => {
-    expect(parseImportFlags({ from: 'Shopify' })).toEqual({ source: 'shopify', limit: undefined, currency: undefined, dryRun: false })
+    expect(parseImportFlags({ from: 'Shopify' })).toEqual({ source: 'shopify', limit: undefined, currency: undefined, include: CATALOG, dryRun: false })
     expect(parseImportFlags({ from: 'woocommerce', limit: '25', currency: 'gbp', dryRun: true }))
-      .toEqual({ source: 'woocommerce', limit: 25, currency: 'GBP', dryRun: true })
+      .toEqual({ source: 'woocommerce', limit: 25, currency: 'GBP', include: CATALOG, dryRun: true })
   })
 
   it('requires --from rather than guessing the platform', () => {
@@ -71,7 +76,7 @@ describe('parseImportFlags', () => {
 
     it('comes from the flag, or from SHOPWARE_ACCESS_KEY, the flag winning', () => {
       expect(parseImportFlags({ from: 'Shopware', accessKey: ' SWSCFLAGKEY ' }, noEnv))
-        .toEqual({ source: 'shopware', limit: undefined, currency: undefined, accessKey: 'SWSCFLAGKEY', dryRun: false })
+        .toEqual({ source: 'shopware', limit: undefined, currency: undefined, accessKey: 'SWSCFLAGKEY', include: CATALOG, dryRun: false })
       expect(parseImportFlags({ from: 'shopware' }, { SHOPWARE_ACCESS_KEY: 'SWSCENVKEY' }).accessKey).toBe('SWSCENVKEY')
       expect(parseImportFlags({ from: 'shopware', accessKey: 'SWSCFLAGKEY' }, { SHOPWARE_ACCESS_KEY: 'SWSCENVKEY' }).accessKey).toBe('SWSCFLAGKEY')
     })
@@ -84,6 +89,32 @@ describe('parseImportFlags', () => {
     it('is refused for the platforms that need no key, and the env var is ignored for them', () => {
       expect(() => parseImportFlags({ from: 'shopify', accessKey: 'SWSCKEY' }, noEnv)).toThrow('--access-key only applies to --from shopware; shopify needs no key.')
       expect(parseImportFlags({ from: 'woocommerce' }, { SHOPWARE_ACCESS_KEY: 'SWSCENVKEY' })).not.toHaveProperty('accessKey')
+    })
+  })
+
+  describe('--customers and --orders', () => {
+    it('select what is imported, the catalog staying the default', () => {
+      expect(parseImportFlags({ from: 'shopify', customers: true }).include).toEqual({ catalog: false, customers: true, orders: false })
+      expect(parseImportFlags({ from: 'shopify', orders: true, customers: true }).include).toEqual({ catalog: false, customers: true, orders: true })
+      expect(parseImportFlags({ from: 'shopify', orders: true, catalog: true }).include).toEqual({ catalog: true, customers: false, orders: true })
+      expect(parseImportFlags({ from: 'shopify', catalog: true }).include).toEqual(CATALOG)
+    })
+
+    it('need no Shopware access key unless the catalog is imported too', () => {
+      expect(parseImportFlags({ from: 'shopware', orders: true }, {})).not.toHaveProperty('accessKey')
+      expect(() => parseImportFlags({ from: 'shopware', orders: true, catalog: true }, {})).toThrow('SHOPWARE_ACCESS_KEY')
+      expect(() => parseImportFlags({ from: 'shopware', customers: true, accessKey: 'SWSCKEY' }, {})).toThrow('SHOPWARE_CLIENT_ID and SHOPWARE_CLIENT_SECRET from env')
+    })
+
+    it('take --admin-url, which means nothing to a catalog import', () => {
+      expect(parseImportFlags({ from: 'shopify', orders: true, adminUrl: ' northwind.myshopify.com ' }).adminUrl).toBe('northwind.myshopify.com')
+      expect(() => parseImportFlags({ from: 'shopify', adminUrl: 'northwind.myshopify.com' })).toThrow('--admin-url only applies to --customers and --orders')
+    })
+
+    it('never take a credential as a flag', () => {
+      // There is no flag to pass: unknown keys are simply not read.
+      const settings = parseImportFlags({ from: 'shopify', orders: true, token: 'shpat_x' } as any)
+      expect(JSON.stringify(settings)).not.toContain('shpat_x')
     })
   })
 
@@ -134,8 +165,30 @@ describe('import output', () => {
     expect(currencyMismatch(result(), undefined)).toBeNull()
   })
 
-  it('tells the operator customers and orders were not imported', () => {
-    expect(OUT_OF_SCOPE_NOTE).toContain('Customers and orders are not imported')
+  it('tells the operator how to import customers and orders too', () => {
+    expect(OUT_OF_SCOPE_NOTE).toContain('Customers and orders were not imported')
+    expect(OUT_OF_SCOPE_NOTE).toContain('--customers')
+    expect(OUT_OF_SCOPE_NOTE).toContain('SHOPIFY_ADMIN_TOKEN')
+  })
+
+  it('reports customers and orders, and words a dry run as a forecast', () => {
+    expect(formatImportedCustomer({ action: 'create', externalId: '1', email: 'bob@example.com', name: 'Bob Norman', matchedBy: null }))
+      .toBe('  created      Bob Norman <bob@example.com>')
+    expect(formatImportedCustomer({ action: 'update', externalId: '1', email: 'bob@example.com', name: 'Bob Norman', matchedBy: 'email' }, true))
+      .toBe('  would update Bob Norman <bob@example.com>  (matched an existing customer by email)')
+
+    const order = { action: 'create' as const, externalId: '450789469', number: '#1001', status: 'SHIPPED', sourceStatus: 'paid, fulfilled', totalMinor: 5449, currency: 'USD', lines: 2, unlinkedLines: 1, customerEmail: 'bob@example.com' }
+    expect(formatImportedOrder(order, format)).toBe('  created      #1001  54.49 USD, SHIPPED (paid, fulfilled), 2 lines, 1 without a product, for bob@example.com')
+    expect(formatImportedOrder({ ...order, number: null, unlinkedLines: 0, customerEmail: null, lines: 1 }, format)).toBe('  created      450789469  54.49 USD, SHIPPED (paid, fulfilled), 1 line, no customer')
+
+    expect(formatCustomerSummary({ dryRun: true, counts: { customers: { created: 2, updated: 1 }, merged: 1 } } as any))
+      .toEqual(['Customers: 2 would be created, 1 would be updated, 1 merged by email'])
+    expect(formatOrderSummary({ dryRun: false, currencies: ['EUR', 'USD'], counts: { orders: { created: 3, updated: 0 }, customers: { created: 1, updated: 0 }, lines: { linked: 3, unlinked: 2 }, duplicates: 0 } } as any)).toEqual([
+      'Orders: 3 created, 0 updated',
+      'Order lines: 3 linked to a product, 2 without one',
+      'Customers created from orders: 1',
+      'Order currencies: EUR, USD',
+    ])
   })
 })
 

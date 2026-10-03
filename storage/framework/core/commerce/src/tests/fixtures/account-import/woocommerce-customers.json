@@ -1,0 +1,61 @@
+[
+  {
+    "id": 25,
+    "date_created": "2026-01-15T10:00:00",
+    "date_created_gmt": "2026-01-15T10:00:00",
+    "email": "john.doe@example.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "customer",
+    "username": "john.doe",
+    "billing": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "company": "",
+      "address_1": "969 Market",
+      "address_2": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "postcode": "94103",
+      "country": "US",
+      "email": "john.doe@example.com",
+      "phone": "(555) 555-5555"
+    },
+    "shipping": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "company": "",
+      "address_1": "969 Market",
+      "address_2": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "postcode": "94103",
+      "country": "US"
+    },
+    "is_paying_customer": true,
+    "avatar_url": "https://secure.gravatar.com/avatar/8eb1b522f60d11fa897de1dc6351b7e8?s=96"
+  },
+  {
+    "id": 26,
+    "date_created": "2026-02-01T08:15:00",
+    "date_created_gmt": "2026-02-01T08:15:00",
+    "email": "Mixed.Case@Example.co.uk",
+    "first_name": "",
+    "last_name": "",
+    "role": "customer",
+    "username": "mixedcase",
+    "billing": {
+      "first_name": "Mia",
+      "last_name": "Case",
+      "email": "Mixed.Case@Example.co.uk",
+      "phone": ""
+    },
+    "shipping": {
+      "first_name": "",
+      "last_name": "",
+      "address_1": ""
+    },
+    "is_paying_customer": false,
+    "avatar_url": "http://0.gravatar.com/avatar/00000000000000000000000000000000?s=96"
+  }
+]
