@@ -22,15 +22,16 @@ that asks for a stable desktop artifact fails instead of shipping one.
 
 | Target | Status | Tested on | Package | Signing | Notarization | Install + launch | Blocked by |
 |---|---|---|---|---|---|---|---|
-| macOS arm64 | **experimental** | macOS 15 runner | DMG + PKG | pending | pending | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
+| macOS arm64 | **experimental** | macOS 27.0 (local run, Craft v0.0.107 published archive), macOS 15 runner (CI, Craft v0.0.48 from source) | DMG + PKG | pending | pending | [evidence](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/evidence/lifecycle-darwin-arm64.json) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
 | macOS x64 | **experimental** | macOS 15 Intel runner | DMG + PKG | pending | pending | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
 | Linux x64 | **experimental** | Ubuntu 24.04 runner | DEB | pending | not-applicable | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
 | Windows x64 | **experimental** | Windows Server 2025 runner | MSI + ZIP | pending | not-applicable | [run 29890804159](https://github.com/stacksjs/stacks/actions/runs/29890804159) | [stacksjs/stacks#2062](https://github.com/stacksjs/stacks/issues/2062) |
 
 ### Known limitations
 
-- **macOS arm64** - Lifecycle fixtures are unsigned while platform identities remain unprovisioned.
-- **macOS arm64** - Lifecycle evidence was produced against Craft v0.0.48 built from source (bf75807). Craft now publishes a prebuilt craft-darwin-arm64.zip with every release, and no Stacks lifecycle run has re-verified a prebuilt release yet.
+- **macOS arm64** - The Stacks-built app bundle, DMG and PKG are unsigned while platform identities remain unprovisioned. The Craft runtime inside them is Developer ID-signed by Craft's own release workflow, which does not make the app signed.
+- **macOS arm64** - Lifecycle evidence was re-run on 2026-10-03 against the published Craft v0.0.107 archive (craft-darwin-arm64.zip, sha256 98e1a7ae478a8900256add2884d05cc07aea2f3de7d550590d9458abd4fe7725) with `storage/framework/core/desktop/evidence/lifecycle.ts`: PKG and DMG install, a real Craft window launched from the installed bundle, update, a refused truncated update, rollback and uninstall all passed.
+- **macOS arm64** - That run was local on macOS 27.0, not CI, and installed into the user domain (~/Applications) rather than /Applications. Gatekeeper was not exercised, since nothing carried a quarantine flag. The last CI lifecycle run for this target (https://github.com/stacksjs/stacks/actions/runs/29890804159, macOS 15 runner) used Craft v0.0.48 built from source.
 - **macOS x64** - Lifecycle fixtures are unsigned while platform identities remain unprovisioned.
 - **macOS x64** - Lifecycle evidence was produced against Craft v0.0.48 built from source (bf75807). Craft now publishes a prebuilt craft-darwin-x64.zip with every release, and no Stacks lifecycle run has re-verified a prebuilt release yet.
 - **Linux x64** - The lifecycle fixture is unsigned and no package repository support policy is published.
@@ -52,8 +53,11 @@ One blocker, and it is not a code change here:
 Craft releases are no longer a blocker. Its release workflow was restored
 ([home-lang/craft#11](https://github.com/home-lang/craft/issues/11), closed), and every
 release now publishes prebuilt `craft-darwin-arm64`, `craft-darwin-x64`, `craft-linux-x64`
-and `craft-windows-x64` archives. The lifecycle evidence above still comes from Craft
-v0.0.48 built from source, so the next lifecycle run should move to a published release.
+and `craft-windows-x64` archives. The macOS arm64 lifecycle has been re-run against the
+published v0.0.107 archive, locally and unsigned, with
+`storage/framework/core/desktop/evidence/lifecycle.ts`. The other three targets' evidence
+still comes from Craft v0.0.48 built from source, and needs a runner of that platform to
+move to a published release.
 
 Once the identities exist and a signed artifact has passed install, update and rollback,
 that row's `signing` and `notarization` move to `enforced`, its `status` moves to `stable`,
@@ -61,8 +65,9 @@ and the guard stops refusing.
 
 ## Reading the matrix
 
-- **Tested on** is the CI runner image the install-and-launch fixture ran against, not a
-  claim about every version of that OS. A macOS 15 runner says nothing about macOS 13.
+- **Tested on** is the CI runner image, or for a local run the OS version, the
+  install-and-launch fixture ran against, not a claim about every version of that OS. A
+  macOS 15 runner says nothing about macOS 13.
 - **Install + launch** links the run that packaged the artifact, installed it and launched
   it. A row without one has no evidence and cannot be released on any channel.
 - **Signing** and **Notarization** are `pending` until the credentials exist. `not-applicable`

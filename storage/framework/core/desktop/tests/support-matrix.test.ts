@@ -59,6 +59,39 @@ describe('the support matrix is internally consistent', () => {
   })
 })
 
+describe('lifecycle evidence committed beside the matrix', () => {
+  // A row may point at a report in this repository instead of a CI run. Such a
+  // link only means something if the report it names exists, passed, and says
+  // what it was run against - a matrix claiming a published-archive run that
+  // the file contradicts is exactly the drift this issue is about.
+  const prefix = 'https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/'
+
+  for (const row of desktopSupportMatrix) {
+    for (const evidence of new Set([row.installLaunchEvidence, row.updateRollbackEvidence])) {
+      if (!evidence?.startsWith(prefix))
+        continue
+
+      test(`${row.platform}/${row.architecture}: ${evidence.slice(prefix.length)} backs the row`, () => {
+        const report = JSON.parse(readFileSync(join(import.meta.dir, '..', evidence.slice(prefix.length)), 'utf8'))
+        expect(report.status).toBe('passed')
+        expect(report.installLifecycleExercised).toBe(true)
+        expect(report.runner).toMatchObject({ os: row.platform, arch: row.architecture })
+        expect(report.craftSource).toBe('published-archive')
+        expect(report.signed).toBe(row.signing === 'enforced')
+
+        const passed = new Set(report.steps.filter((step: { status: string }) => step.status === 'passed').map((step: { name: string }) => step.name))
+        for (const name of ['install v1', 'launch v1', 'update to v2', 'launch v2', 'rollback to v1', 'launch rollback', 'uninstall', 'verify uninstall'])
+          expect(passed.has(name)).toBe(true)
+
+        // The row's prose names the release and archive digest; they must be the report's.
+        const prose = row.limitations.join(' ')
+        expect(prose).toContain(`Craft ${report.craftRelease} archive`)
+        expect(prose).toContain(report.provenance.archiveSha256)
+      })
+    }
+  }
+})
+
 describe('assertDesktopReleaseChannel', () => {
   test('refuses a target that is not in the matrix', () => {
     expect(() => assertDesktopReleaseChannel('experimental', 'sunos', 'sparc')).toThrow(/unsupported/)

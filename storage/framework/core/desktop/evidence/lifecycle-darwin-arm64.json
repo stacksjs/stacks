@@ -1,0 +1,537 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-03T17:36:30.169Z",
+  "revision": "fb2886317b0b0513359a47115cad9f4b7eb95e7e",
+  "craftSource": "published-archive",
+  "craftRelease": "v0.0.107",
+  "provenance": {
+    "release": "https://github.com/craft-native/craft/releases/tag/v0.0.107",
+    "archive": "craft-darwin-arm64.zip",
+    "archiveSha256": "98e1a7ae478a8900256add2884d05cc07aea2f3de7d550590d9458abd4fe7725",
+    "releaseCommit": "fb2886317b0b0513359a47115cad9f4b7eb95e7e",
+    "packager": "craft-native/craft packages/typescript/src @ fb2886317b0b0513359a47115cad9f4b7eb95e7e (git archive)",
+    "runtimeVersion": "craft version 0.0.107",
+    "runtimeBinarySha256": "5541b8fb45ebc0a0661c04e3ca0b3b9063ce1de6d7f2d62702fc9882644cc882",
+    "runtimeSigningAuthority": "Developer ID Application: Chris Breuer (3JJRNQW6B7)"
+  },
+  "orchestratorRevision": null,
+  "runner": {
+    "os": "darwin",
+    "arch": "arm64",
+    "bun": "1.4.2",
+    "macos": "27.0",
+    "host": "local"
+  },
+  "installLifecycleExercised": true,
+  "installDomain": "user (installer -target CurrentUserHomeDirectory; DMG copied into ~/Applications)",
+  "signed": false,
+  "status": "passed",
+  "artifacts": [
+    {
+      "platform": "macos",
+      "format": "app",
+      "path": "<work>/packages-1.0.0/craft-lifecycle.app",
+      "sha256": "64361065a5a98f4f04a6fd4b53b403c371940a7580ccdea9a9545a9595fb1045",
+      "sha256Kind": "tree"
+    },
+    {
+      "platform": "macos",
+      "format": "dmg",
+      "path": "<work>/packages-1.0.0/craft-lifecycle-1.0.0.dmg",
+      "sha256": "ecd9821d8ca6584a3671b8f131179a033f4d3b7992f71bd805e92e32ea9a5edb",
+      "sha256Kind": "file"
+    },
+    {
+      "platform": "macos",
+      "format": "pkg",
+      "path": "<work>/packages-1.0.0/craft-lifecycle-1.0.0.pkg",
+      "sha256": "dca114ac8d89008ebfd499035e862354bf5e2e4b68f1f864cd4b7910e1d83e2e",
+      "sha256Kind": "file"
+    },
+    {
+      "platform": "macos",
+      "format": "app",
+      "path": "<work>/packages-1.0.1/craft-lifecycle.app",
+      "sha256": "95f02ef89590882fff26ed94916592c9bdb3135ca6f9ab825762743af3ad7bd9",
+      "sha256Kind": "tree"
+    },
+    {
+      "platform": "macos",
+      "format": "dmg",
+      "path": "<work>/packages-1.0.1/craft-lifecycle-1.0.1.dmg",
+      "sha256": "2c904b6f7fdf30b3ff7a5fb53cf8078bb90ac145346b680200473e26169ac4e6",
+      "sha256Kind": "file"
+    },
+    {
+      "platform": "macos",
+      "format": "pkg",
+      "path": "<work>/packages-1.0.1/craft-lifecycle-1.0.1.pkg",
+      "sha256": "e42f525ec2e3e84121eea27cfc8b6c325f93495277fcb196ecfb539e6115f4d5",
+      "sha256Kind": "file"
+    }
+  ],
+  "steps": [
+    {
+      "name": "published archive matches release-manifest.json",
+      "status": "passed",
+      "output": "98e1a7ae478a8900256add2884d05cc07aea2f3de7d550590d9458abd4fe7725 (manifest: 98e1a7ae478a8900256add2884d05cc07aea2f3de7d550590d9458abd4fe7725)"
+    },
+    {
+      "name": "release commit is known to the craft clone",
+      "command": [
+        "git",
+        "-C",
+        "~/Code/Tools/craft",
+        "cat-file",
+        "-e",
+        "fb2886317b0b0513359a47115cad9f4b7eb95e7e^{commit}"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "export the packager at the release commit",
+      "status": "passed",
+      "output": "packages/typescript/src @ fb2886317b0b0513359a47115cad9f4b7eb95e7e"
+    },
+    {
+      "name": "unpack published archive",
+      "command": [
+        "ditto",
+        "-x",
+        "-k",
+        "<release>/craft-darwin-arm64.zip",
+        "<work>/archive"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "published runtime version",
+      "command": [
+        "<work>/archive/craft",
+        "--version"
+      ],
+      "status": "passed",
+      "output": "craft version 0.0.107\nBuilt with Zig 0.17.0-dev\nPlatform: macOS"
+    },
+    {
+      "name": "published runtime signature verifies",
+      "command": [
+        "codesign",
+        "--verify",
+        "--strict",
+        "<work>/archive/craft"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "compile fixture 1.0.0",
+      "command": [
+        "bun",
+        "build",
+        "--compile",
+        "<work>/fixture-1.0.0.ts",
+        "--outfile",
+        "<work>/craft-lifecycle-1.0.0"
+      ],
+      "status": "passed",
+      "output": "[3ms]  bundle  1 modules\n [246ms] compile  <work>/craft-lifecycle-1.0.0"
+    },
+    {
+      "name": "compile fixture 1.0.1",
+      "command": [
+        "bun",
+        "build",
+        "--compile",
+        "<work>/fixture-1.0.1.ts",
+        "--outfile",
+        "<work>/craft-lifecycle-1.0.1"
+      ],
+      "status": "passed",
+      "output": "[3ms]  bundle  1 modules\n [191ms] compile  <work>/craft-lifecycle-1.0.1"
+    },
+    {
+      "name": "package fixture 1.0.0",
+      "status": "passed",
+      "output": "<work>/packages-1.0.0/craft-lifecycle.app\n<work>/packages-1.0.0/craft-lifecycle-1.0.0.dmg\n<work>/packages-1.0.0/craft-lifecycle-1.0.0.pkg"
+    },
+    {
+      "name": "package fixture 1.0.1",
+      "status": "passed",
+      "output": "<work>/packages-1.0.1/craft-lifecycle.app\n<work>/packages-1.0.1/craft-lifecycle-1.0.1.dmg\n<work>/packages-1.0.1/craft-lifecycle-1.0.1.pkg"
+    },
+    {
+      "name": "fixture app bundle is unsigned",
+      "command": [
+        "codesign",
+        "--verify",
+        "<work>/packages-1.0.0/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": "exit 1 (expected non-zero)\n<work>/packages-1.0.0/craft-lifecycle.app: code has no resources but signature indicates they must be present"
+    },
+    {
+      "name": "fixture pkg is unsigned",
+      "command": [
+        "pkgutil",
+        "--check-signature",
+        "<work>/packages-1.0.0/craft-lifecycle-1.0.0.pkg"
+      ],
+      "status": "passed",
+      "output": "exit 1 (expected non-zero)\nPackage \"craft-lifecycle-1.0.0.pkg\":\n   Status: no signature"
+    },
+    {
+      "name": "install v1",
+      "command": [
+        "installer",
+        "-pkg",
+        "<work>/packages-1.0.0/craft-lifecycle-1.0.0.pkg",
+        "-target",
+        "CurrentUserHomeDirectory"
+      ],
+      "status": "passed",
+      "output": "installer: Package name is craft-lifecycle-1.0.0\ninstaller: Installing at base path ~\ninstaller: The install was successful."
+    },
+    {
+      "name": "receipt after install v1",
+      "command": [
+        "pkgutil",
+        "--volume",
+        "~",
+        "--pkg-info",
+        "dev.craft.lifecycle"
+      ],
+      "status": "passed",
+      "output": "package-id: dev.craft.lifecycle\nversion: 1.0.0\nvolume: ~\nlocation: \ninstall-time: 1791048969"
+    },
+    {
+      "name": "bundle present after install v1",
+      "status": "passed",
+      "output": "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+    },
+    {
+      "name": "installed runtime is the published binary (pkg v1)",
+      "status": "passed",
+      "output": "installed 5541b8fb45ebc0a0661c04e3ca0b3b9063ce1de6d7f2d62702fc9882644cc882, published 5541b8fb45ebc0a0661c04e3ca0b3b9063ce1de6d7f2d62702fc9882644cc882"
+    },
+    {
+      "name": "launch v1",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.0\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "update to v2",
+      "command": [
+        "installer",
+        "-pkg",
+        "<work>/packages-1.0.1/craft-lifecycle-1.0.1.pkg",
+        "-target",
+        "CurrentUserHomeDirectory"
+      ],
+      "status": "passed",
+      "output": "installer: Package name is craft-lifecycle-1.0.1\ninstaller: Upgrading at base path ~\ninstaller: The upgrade was successful."
+    },
+    {
+      "name": "receipt after update to v2",
+      "command": [
+        "pkgutil",
+        "--volume",
+        "~",
+        "--pkg-info",
+        "dev.craft.lifecycle"
+      ],
+      "status": "passed",
+      "output": "package-id: dev.craft.lifecycle\nversion: 1.0.1\nvolume: ~\nlocation: \ninstall-time: 1791048972"
+    },
+    {
+      "name": "bundle present after update to v2",
+      "status": "passed",
+      "output": "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+    },
+    {
+      "name": "launch v2",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.1\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "failed update (truncated package) is refused",
+      "command": [
+        "installer",
+        "-pkg",
+        "<work>/craft-lifecycle-1.0.1-truncated.pkg",
+        "-target",
+        "CurrentUserHomeDirectory"
+      ],
+      "status": "passed",
+      "output": "exit 1 (expected non-zero)\ninstaller: Error - the package path specified was invalid: '<work>/craft-lifecycle-1.0.1-truncated.pkg'."
+    },
+    {
+      "name": "launch after failed update",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.1\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "remove current application before rollback",
+      "command": [
+        "rm",
+        "-rf",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "forget current receipt before rollback",
+      "command": [
+        "pkgutil",
+        "--volume",
+        "~",
+        "--forget",
+        "dev.craft.lifecycle"
+      ],
+      "status": "passed",
+      "output": "Forgot package 'dev.craft.lifecycle' on '~'."
+    },
+    {
+      "name": "rollback to v1",
+      "command": [
+        "installer",
+        "-pkg",
+        "<work>/packages-1.0.0/craft-lifecycle-1.0.0.pkg",
+        "-target",
+        "CurrentUserHomeDirectory"
+      ],
+      "status": "passed",
+      "output": "installer: Package name is craft-lifecycle-1.0.0\ninstaller: Installing at base path ~\ninstaller: The install was successful."
+    },
+    {
+      "name": "receipt after rollback to v1",
+      "command": [
+        "pkgutil",
+        "--volume",
+        "~",
+        "--pkg-info",
+        "dev.craft.lifecycle"
+      ],
+      "status": "passed",
+      "output": "package-id: dev.craft.lifecycle\nversion: 1.0.0\nvolume: ~\nlocation: \ninstall-time: 1791048975"
+    },
+    {
+      "name": "bundle present after rollback to v1",
+      "status": "passed",
+      "output": "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+    },
+    {
+      "name": "launch rollback",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.0\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "uninstall",
+      "command": [
+        "rm",
+        "-rf",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "forget v1 receipt",
+      "command": [
+        "pkgutil",
+        "--volume",
+        "~",
+        "--forget",
+        "dev.craft.lifecycle"
+      ],
+      "status": "passed",
+      "output": "Forgot package 'dev.craft.lifecycle' on '~'."
+    },
+    {
+      "name": "verify uninstall",
+      "status": "passed",
+      "output": "~/Applications/craft-lifecycle.app removed and its receipt forgotten"
+    },
+    {
+      "name": "dmg: attach (install v1)",
+      "command": [
+        "hdiutil",
+        "attach",
+        "<work>/packages-1.0.0/craft-lifecycle-1.0.0.dmg",
+        "-readonly",
+        "-nobrowse",
+        "-mountpoint",
+        "<work>/mnt"
+      ],
+      "status": "passed",
+      "output": "Checksumming Protective Master Boot Record (MBR : 0)…\nProtective Master Boot Record (MBR :: verified   CRC32 $4E567D91\nChecksumming GPT Header (Primary GPT Header : 1)…\n GPT Header (Primary GPT Header : 1): verified   CRC32 $ED648532\nChecksumming GPT Partition Data (Primary GPT Table : 2)…\nGPT Partition Data (Primary GPT Tabl: verified   CRC32 $5D4ADEBD\nChecksumming  (Apple_Free : 3)…\n                    (Apple_Free : 3): verified   CRC32 $00000000\nChecksumming disk image (Apple_APFS : 4)…\n         disk image (Apple_APFS : 4): verified   CRC32 $59D4E5B8\nChecksumming  (Apple_Free : 5)…\n                    (Apple_Free : 5): verified   CRC32 $00000000\nChecksumming GPT Partition Data (Backup GPT Table : 6)…\nGPT Partition Data (Backup GPT Table: verified   CRC32 $5D4ADEBD\nChecksumming GPT Header (Backup GPT Header : 7)…\n  GPT Header (Backup GPT Header : 7): verified   CRC32 $0422D951\nverified   CRC32 $73AB342D\n/dev/disk6          \tGUID_partition_scheme          \t\n/dev/disk6s1        \tApple_APFS                     \t\n/dev/disk7          \tEF57347C-0000-11AA-AA11-0030654\t\n/dev/disk7s1        \t41504653-0000-11AA-AA11-0030654\t<work>/mnt\nhdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead."
+    },
+    {
+      "name": "dmg: install v1",
+      "command": [
+        "ditto",
+        "<work>/mnt/craft-lifecycle.app",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "dmg: detach (install v1)",
+      "command": [
+        "hdiutil",
+        "detach",
+        "<work>/mnt"
+      ],
+      "status": "passed",
+      "output": "\"disk6\" ejected.\nhdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead."
+    },
+    {
+      "name": "installed runtime is the published binary (dmg v1)",
+      "status": "passed",
+      "output": "installed 5541b8fb45ebc0a0661c04e3ca0b3b9063ce1de6d7f2d62702fc9882644cc882, published 5541b8fb45ebc0a0661c04e3ca0b3b9063ce1de6d7f2d62702fc9882644cc882"
+    },
+    {
+      "name": "dmg: launch v1",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.0\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "dmg: attach (update to v2)",
+      "command": [
+        "hdiutil",
+        "attach",
+        "<work>/packages-1.0.1/craft-lifecycle-1.0.1.dmg",
+        "-readonly",
+        "-nobrowse",
+        "-mountpoint",
+        "<work>/mnt"
+      ],
+      "status": "passed",
+      "output": "Checksumming Protective Master Boot Record (MBR : 0)…\nProtective Master Boot Record (MBR :: verified   CRC32 $4E567D91\nChecksumming GPT Header (Primary GPT Header : 1)…\n GPT Header (Primary GPT Header : 1): verified   CRC32 $DE2AED8F\nChecksumming GPT Partition Data (Primary GPT Table : 2)…\nGPT Partition Data (Primary GPT Tabl: verified   CRC32 $237633B5\nChecksumming  (Apple_Free : 3)…\n                    (Apple_Free : 3): verified   CRC32 $00000000\nChecksumming disk image (Apple_APFS : 4)…\n         disk image (Apple_APFS : 4): verified   CRC32 $DC9817D3\nChecksumming  (Apple_Free : 5)…\n                    (Apple_Free : 5): verified   CRC32 $00000000\nChecksumming GPT Partition Data (Backup GPT Table : 6)…\nGPT Partition Data (Backup GPT Table: verified   CRC32 $237633B5\nChecksumming GPT Header (Backup GPT Header : 7)…\n  GPT Header (Backup GPT Header : 7): verified   CRC32 $376CB1EC\nverified   CRC32 $B1FD16C1\n/dev/disk6          \tGUID_partition_scheme          \t\n/dev/disk6s1        \tApple_APFS                     \t\n/dev/disk7          \tEF57347C-0000-11AA-AA11-0030654\t\n/dev/disk7s1        \t41504653-0000-11AA-AA11-0030654\t<work>/mnt\nhdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead."
+    },
+    {
+      "name": "dmg: remove previous bundle (update to v2)",
+      "command": [
+        "rm",
+        "-rf",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "dmg: update to v2",
+      "command": [
+        "ditto",
+        "<work>/mnt/craft-lifecycle.app",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "dmg: detach (update to v2)",
+      "command": [
+        "hdiutil",
+        "detach",
+        "<work>/mnt"
+      ],
+      "status": "passed",
+      "output": "\"disk6\" ejected.\nhdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead."
+    },
+    {
+      "name": "dmg: launch v2",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.1\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "dmg: attach (rollback to v1)",
+      "command": [
+        "hdiutil",
+        "attach",
+        "<work>/packages-1.0.0/craft-lifecycle-1.0.0.dmg",
+        "-readonly",
+        "-nobrowse",
+        "-mountpoint",
+        "<work>/mnt"
+      ],
+      "status": "passed",
+      "output": "expected   CRC32 $73AB342D\n/dev/disk6          \tGUID_partition_scheme          \t\n/dev/disk6s1        \tApple_APFS                     \t\n/dev/disk7          \tEF57347C-0000-11AA-AA11-0030654\t\n/dev/disk7s1        \t41504653-0000-11AA-AA11-0030654\t<work>/mnt\nhdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead."
+    },
+    {
+      "name": "dmg: remove previous bundle (rollback to v1)",
+      "command": [
+        "rm",
+        "-rf",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "dmg: rollback to v1",
+      "command": [
+        "ditto",
+        "<work>/mnt/craft-lifecycle.app",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "dmg: detach (rollback to v1)",
+      "command": [
+        "hdiutil",
+        "detach",
+        "<work>/mnt"
+      ],
+      "status": "passed",
+      "output": "\"disk6\" ejected.\nhdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead."
+    },
+    {
+      "name": "dmg: launch rollback",
+      "command": [
+        "~/Applications/craft-lifecycle.app/Contents/MacOS/craft-lifecycle"
+      ],
+      "status": "passed",
+      "output": "craft-lifecycle 1.0.0\nruntime craft version 0.0.107\nwindow-ready webkit"
+    },
+    {
+      "name": "dmg: uninstall",
+      "command": [
+        "rm",
+        "-rf",
+        "~/Applications/craft-lifecycle.app"
+      ],
+      "status": "passed",
+      "output": ""
+    },
+    {
+      "name": "dmg: verify uninstall",
+      "status": "passed",
+      "output": "~/Applications/craft-lifecycle.app removed"
+    }
+  ]
+}

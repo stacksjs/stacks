@@ -213,11 +213,11 @@ on the same machine are measured alongside it for comparison.
 | WebGL2 | **available** | **available** |
 | WebGPU | **available** | **available** |
 | Frame pacing | **measured** - 60 Hz rAF on a 120 Hz display, p99 18 ms under load | **measured** - 60 Hz rAF on a 120 Hz display, p99 19.42 ms under load |
-| Input latency | **requires-interaction** | **requires-interaction** |
+| Input latency | **measured** - pointerdown p50 2.5 ms to next frame | **requires-interaction** |
 | Audio latency | **measured** - base 2.7 ms, output 15.8 ms | **requires-interaction** |
 | Gamepad API | **available** | **available** |
-| Fullscreen | **requires-interaction** | **requires-interaction** |
-| Pointer lock | **requires-interaction** | **requires-interaction** |
+| Fullscreen | **available** | **requires-interaction** |
+| Pointer lock | **denied** | **requires-interaction** |
 | Measured on | macOS 27.0 arm64, Apple M3 Pro (Mac15,6) | macOS 27.0 arm64, Apple M3 Pro (Mac15,6) |
 | Measured at | 2026-10-03 | 2026-10-02 |
 
@@ -231,11 +231,11 @@ on the same machine are measured alongside it for comparison.
 - **WebGL2** - WebGL2 context created (WebGL 2.0); renderer "Apple GPU", max texture 16384, MSAA up to 4x.
 - **WebGPU** - Adapter (apple) and device created; maxTextureDimension2D 16384.
 - **Frame pacing** - requestAnimationFrame ran at 60 Hz on a 120 Hz display, so a game cannot reach the panel's rate. Under load (480,000 triangles + 6 ms CPU per frame): p50 17 ms, p95 18 ms, p99 18 ms; 0 frames dropped at 60 Hz and 359 at the display's 120 Hz over 6 s. The page clock is clamped to 1 ms, so intervals read as whole milliseconds.
-- **Input latency** - The interactive window was skipped, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.
+- **Input latency** - Event timestamp to the next rAF callback: pointerdown p50 2.5 ms to next frame (2 samples); pointermove p50 2 ms to next frame (16 samples); keydown p50 4 ms to next frame (5 samples). Real input from the OS; no synthetic events.
 - **Audio latency** - The context started without a user gesture. baseLatency 2.7 ms, outputLatency 15.8 ms at 48000 Hz.
 - **Gamepad API** - navigator.getGamepads() is present; no controller was connected, so axis and button input was not exercised.
-- **Fullscreen** - The API exists (fullscreenEnabled true) but needs a real click to test. Without a gesture: rejected (TypeError: Cannot request fullscreen without transient activation.). Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).
-- **Pointer lock** - The API exists but needs a real click to test. Without a gesture: rejected (NotAllowedError: Pointer lock requires a user gesture.).
+- **Fullscreen** - requestFullscreen() from a real click entered fullscreen. Without a gesture: rejected (TypeError: Cannot request fullscreen without transient activation.). Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).
+- **Pointer lock** - requestPointerLock() from a real click: rejected (pointerlockerror). Without a gesture: rejected (NotAllowedError: Pointer lock requires a user gesture.).
 
 **Safari 27.0** - macOS 27.0 arm64, Apple M3 Pro (Mac15,6), 120 Hz display
 
@@ -253,6 +253,13 @@ an asset pipeline. This section establishes what a Craft window gives an engine 
 else wrote; it is not a plan to write one.
 
 <!-- interactive-capability:end -->
+
+How the Craft 0.0.107 column got its interactive rows: the clicks, pointer moves and key
+presses were OS-level events (CGEvent, posted at the HID event tap) from a small helper aimed
+at the probe panel, not typed by a person. The page counts only `isTrusted` events, and these
+are; nothing was dispatched into the DOM. Pointer lock was refused from a genuine click in both
+orders tried, before and after the fullscreen probe, so `denied` is the Craft window's answer
+and not a missing gesture.
 
 ## Related
 

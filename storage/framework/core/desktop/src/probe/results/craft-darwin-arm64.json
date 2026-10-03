@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "measuredAt": "2026-10-03T03:18:48.124Z",
+  "measuredAt": "2026-10-03T17:46:48.816Z",
   "host": {
     "kind": "craft",
     "name": "craft",
@@ -29,8 +29,8 @@
     "loadMs": 6000,
     "cpuLoadMsPerFrame": 6,
     "triangles": 480000,
-    "interactionWindowMs": 0,
-    "sawRealInput": false
+    "interactionWindowMs": 45000,
+    "sawRealInput": true
   },
   "probes": {
     "webgl2": {
@@ -75,11 +75,11 @@
         "hiddenDuringSampling": false,
         "idle": {
           "frames": 181,
-          "durationMs": 3001,
-          "fps": 59.98,
+          "durationMs": 3000,
+          "fps": 60,
           "p50Ms": 17,
           "p95Ms": 17,
-          "p99Ms": 17.21,
+          "p99Ms": 18,
           "maxMs": 18,
           "targetPeriodMs": 8.33,
           "targetHz": 120,
@@ -103,10 +103,10 @@
               0,
               0,
               0,
-              0,
-              61,
-              117,
               2,
+              61,
+              112,
+              5,
               0,
               0,
               0,
@@ -144,8 +144,8 @@
         },
         "load": {
           "frames": 360,
-          "durationMs": 5985,
-          "fps": 59.98,
+          "durationMs": 5983,
+          "fps": 60,
           "p50Ms": 17,
           "p95Ms": 18,
           "p99Ms": 18,
@@ -172,10 +172,10 @@
               0,
               0,
               0,
-              12,
-              137,
-              167,
-              43,
+              10,
+              133,
+              183,
+              33,
               0,
               0,
               0,
@@ -218,12 +218,60 @@
       }
     },
     "inputLatency": {
-      "status": "requires-interaction",
-      "note": "The interactive window was skipped, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.",
+      "status": "measured",
+      "note": "Event timestamp to the next rAF callback: pointerdown p50 2.5 ms to next frame (2 samples); pointermove p50 2 ms to next frame (16 samples); keydown p50 4 ms to next frame (5 samples). Real input from the OS; no synthetic events.",
       "data": {
         "eventTimeStampComparable": true,
         "eventTimingSupported": true,
-        "timerResolutionMs": 1
+        "timerResolutionMs": 1,
+        "pointerdown": {
+          "toFrame": {
+            "samples": 2,
+            "p50Ms": 2.5,
+            "p95Ms": 3.85,
+            "maxMs": 4
+          },
+          "toPostFrame": {
+            "samples": 2,
+            "p50Ms": 3.5,
+            "p95Ms": 4.85,
+            "maxMs": 5
+          }
+        },
+        "pointermove": {
+          "toFrame": {
+            "samples": 16,
+            "p50Ms": 2,
+            "p95Ms": 20,
+            "maxMs": 32
+          },
+          "toPostFrame": {
+            "samples": 16,
+            "p50Ms": 3,
+            "p95Ms": 21.75,
+            "maxMs": 33
+          }
+        },
+        "keydown": {
+          "toFrame": {
+            "samples": 5,
+            "p50Ms": 4,
+            "p95Ms": 18.4,
+            "maxMs": 21
+          },
+          "toPostFrame": {
+            "samples": 5,
+            "p50Ms": 5,
+            "p95Ms": 19.2,
+            "maxMs": 22
+          }
+        },
+        "eventTiming": {
+          "samples": 4,
+          "p50Ms": 24,
+          "p95Ms": 51.2,
+          "maxMs": 56
+        }
       }
     },
     "audioLatency": {
@@ -242,7 +290,12 @@
           "outputLatency": 0.015833333333333335,
           "sampleRate": 48000
         },
-        "afterGesturedResume": null
+        "afterGesturedResume": {
+          "state": "running",
+          "baseLatency": 0.0026666666666666666,
+          "outputLatency": 0.015833333333333335,
+          "sampleRate": 48000
+        }
       }
     },
     "gamepad": {
@@ -257,8 +310,8 @@
       }
     },
     "fullscreen": {
-      "status": "requires-interaction",
-      "note": "The API exists (fullscreenEnabled true) but needs a real click to test. Without a gesture: rejected (TypeError: Cannot request fullscreen without transient activation.). Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).",
+      "status": "available",
+      "note": "requestFullscreen() from a real click entered fullscreen. Without a gesture: rejected (TypeError: Cannot request fullscreen without transient activation.). Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).",
       "data": {
         "elementApi": true,
         "webkitElementApi": true,
@@ -268,19 +321,20 @@
           "detail": "TypeError: Cannot request fullscreen without transient activation."
         },
         "gestured": {
-          "outcome": "not-attempted"
+          "outcome": "entered",
+          "detail": "promise resolved"
         },
         "nativeBridge": {
           "outcome": "entered",
           "detail": "viewport grew to the screen",
           "sizeBefore": "1280x800",
-          "sizeAfter": "1512x949"
+          "sizeAfter": "1512x917"
         }
       }
     },
     "pointerLock": {
-      "status": "requires-interaction",
-      "note": "The API exists but needs a real click to test. Without a gesture: rejected (NotAllowedError: Pointer lock requires a user gesture.).",
+      "status": "denied",
+      "note": "requestPointerLock() from a real click: rejected (pointerlockerror). Without a gesture: rejected (NotAllowedError: Pointer lock requires a user gesture.).",
       "data": {
         "api": true,
         "ungestured": {
@@ -288,7 +342,8 @@
           "detail": "NotAllowedError: Pointer lock requires a user gesture."
         },
         "gestured": {
-          "outcome": "not-attempted"
+          "outcome": "rejected",
+          "detail": "pointerlockerror"
         }
       }
     }
