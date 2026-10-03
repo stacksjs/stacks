@@ -2,7 +2,7 @@
   "publisher": "Stacks",
   "name": "vscode-stacks",
   "displayName": "Stacks",
-  "version": "0.75.40",
+  "version": "0.75.41",
   "description": "Develop Stacks apps without leaving VS Code: preview the dev server in the Simple Browser, start it, and run any buddy command.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",

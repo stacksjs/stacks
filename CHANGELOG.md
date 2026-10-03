@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.40...v0.75.41)
+
+## ✨ Features
+
+- **payments**: stripe 23 and @stripe/stripe-js 10, in every package at once ([b33fa25](https://github.com/stacksjs/stacks/commit/b33fa25)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2845](https://github.com/stacksjs/stacks/issues/2845), [#332](https://github.com/stacksjs/stacks/issues/332), [#2845](https://github.com/stacksjs/stacks/issues/2845), [#2847](https://github.com/stacksjs/stacks/issues/2847))
+- **desktop**: measure what a Craft window offers interactive content ([0695b32](https://github.com/stacksjs/stacks/commit/0695b32)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#877](https://github.com/stacksjs/stacks/issues/877))
+- **vscode**: preview, dev server and buddy commands inside the editor ([5125baa](https://github.com/stacksjs/stacks/commit/5125baa)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#451](https://github.com/stacksjs/stacks/issues/451))
+
+## 🐛 Bug Fixes
+
+- **deps**: update vulnerable dependencies (rebased) (#2844) ([4f16ec6](https://github.com/stacksjs/stacks/commit/4f16ec6)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#2844](https://github.com/stacksjs/stacks/issues/2844), [#2844](https://github.com/stacksjs/stacks/issues/2844))
+
+## 📝 Documentation
+
+- **capabilities**: re-measure the desktop probe on Craft 0.0.107 ([212a061](https://github.com/stacksjs/stacks/commit/212a061)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#877](https://github.com/stacksjs/stacks/issues/877), [#332](https://github.com/stacksjs/stacks/issues/332))
+
+## 🔧 Chores
+
+- **deps**: update all non-major dependencies (#2817) ([b56e086](https://github.com/stacksjs/stacks/commit/b56e086)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#2817](https://github.com/stacksjs/stacks/issues/2817), [#2817](https://github.com/stacksjs/stacks/issues/2817))
+- **deps**: better-dx ^0.2.36, for @buddysh/buddy 0.11.13 ([0556cda](https://github.com/stacksjs/stacks/commit/0556cda)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+- **deps**: better-dx ^0.2.35, for @buddysh/buddy 0.11.12 ([50c6e39](https://github.com/stacksjs/stacks/commit/50c6e39)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+- **deps**: better-dx ^0.2.34, for @buddysh/buddy 0.11.11 ([0427fbd](https://github.com/stacksjs/stacks/commit/0427fbd)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+- **deps**: better-dx ^0.2.33, for @buddysh/buddy 0.11.10 ([5264c04](https://github.com/stacksjs/stacks/commit/5264c04)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: better-dx ^0.2.32, for @buddysh/buddy 0.11.9 ([c1bc050](https://github.com/stacksjs/stacks/commit/c1bc050)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2848](https://github.com/stacksjs/stacks/issues/2848))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.39...v0.75.40)
 
 ## 🐛 Bug Fixes
