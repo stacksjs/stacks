@@ -13,6 +13,7 @@ export default defineModel({
   ownership: customerOwnership(),
 
   traits: {
+    gdpr: { subject: { via: 'Customer' }, erasure: 'delete', basis: 'consent', purpose: 'Back-in-stock waitlist' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -37,6 +38,7 @@ export default defineModel({
 
   attributes: {
     name: {
+      personal: true,
       order: 1,
       fillable: true,
       validation: {
@@ -49,6 +51,7 @@ export default defineModel({
     },
 
     email: {
+      personal: true,
       order: 2,
       fillable: true,
       validation: {
@@ -61,6 +64,7 @@ export default defineModel({
     },
 
     phone: {
+      personal: true,
       order: 3,
       fillable: true,
       validation: {
@@ -106,6 +110,7 @@ export default defineModel({
     },
 
     notes: {
+      personal: true,
       order: 7,
       fillable: true,
       validation: {

@@ -28,6 +28,7 @@ export default defineModel({
   ownership: false,
 
   traits: {
+    gdpr: { basis: 'legitimate_interests', purpose: 'Request log for debugging and abuse prevention' },
     useTimestamps: true,
     useSoftDeletes: true,
     useSeeder: {
@@ -93,6 +94,7 @@ export default defineModel({
     },
 
     ip_address: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -117,6 +119,7 @@ export default defineModel({
     },
 
     user_agent: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.string(),

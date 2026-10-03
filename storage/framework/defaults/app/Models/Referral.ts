@@ -4,7 +4,10 @@ import { schema } from '@stacksjs/validation'
 export default defineModel({
   name: 'Referral',
   table: 'referrals',
-  traits: { useTimestamps: true },
+  traits: {
+    useTimestamps: true,
+    gdpr: { subject: ['referrer_id', 'referred_user_id'], erasure: 'keep', basis: 'contract', purpose: 'Referral rewards owed' },
+  },
   indexes: [{ name: 'referrals_referrer_status', columns: ['referrer_id', 'status'] }],
   attributes: {
     referrerId: { required: true, validation: { rule: schema.number().integer().min(1) } },

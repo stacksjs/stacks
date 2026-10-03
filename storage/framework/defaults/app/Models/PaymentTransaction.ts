@@ -10,6 +10,7 @@ export default defineModel({
   autoIncrement: true, // defaults to true
   belongsTo: ['User', 'PaymentMethod'],
   traits: {
+    gdpr: { erasure: 'keep', basis: 'legal_obligation', purpose: 'Billing records' },
     useUuid: true,
     useSeeder: {
       count: 5,

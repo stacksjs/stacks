@@ -13,6 +13,7 @@ export default defineModel({
   ownership: parentOwnership('Order', 'order_id'),
 
   traits: {
+    gdpr: { subject: { via: 'Order' }, erasure: 'anonymize', basis: 'legal_obligation', purpose: 'Payment transactions, kept for tax and accounting' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -66,6 +67,7 @@ export default defineModel({
     },
 
     paymentDetails: {
+      personal: true,
       order: 5,
       fillable: true,
       hidden: true,

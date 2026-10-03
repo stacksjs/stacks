@@ -22,6 +22,7 @@ export { default as EmailWebhookEvent } from '../defaults/app/Models/EmailWebhoo
 // Skipped 'Error' - would shadow a built-in global. Import directly if needed.
 // export { default as Error } from '../defaults/app/Models/Error'
 export { default as FailedJob } from '../defaults/app/Models/FailedJob'
+export { default as GdprRequest } from '../defaults/app/Models/GdprRequest'
 export { default as Job } from '../defaults/app/Models/Job'
 export { default as Label } from '../defaults/app/Models/Label'
 export { default as Log } from '../defaults/app/Models/Log'

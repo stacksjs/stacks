@@ -25,6 +25,7 @@ export default defineModel({
   ownership: selfOwnership(),
 
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'contract', purpose: 'User account and sign-in' },
     useAuth: {
       usePasskey: true,
     },
@@ -72,6 +73,7 @@ export default defineModel({
 
   attributes: {
     name: {
+      personal: true,
       order: 2,
       fillable: true,
       validation: {
@@ -86,6 +88,7 @@ export default defineModel({
     },
 
     email: {
+      personal: true,
       unique: true,
       order: 1,
       fillable: true,
@@ -100,6 +103,7 @@ export default defineModel({
       factory: faker => faker.internet.email(),
     },
     password: {
+      personal: { export: false },
       order: 3,
       hidden: true,
       fillable: true,
@@ -118,6 +122,7 @@ export default defineModel({
     },
 
     avatar: {
+      personal: true,
       order: 4,
       fillable: true,
       validation: {

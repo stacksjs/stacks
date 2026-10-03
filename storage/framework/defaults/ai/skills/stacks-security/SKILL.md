@@ -1,6 +1,6 @@
 ---
 name: stacks-security
-description: Use when implementing security in Stacks - password hashing (bcrypt/argon2), app key generation, AES encryption/decryption, hash verification, rehashing detection, or security configuration (firewall, rate limiting, IP allowlists). Covers @stacksjs/security and config/security.ts.
+description: Use when implementing security in Stacks - password hashing (bcrypt/argon2), app key generation, AES encryption/decryption, hash verification, rehashing detection, security configuration (firewall, rate limiting, IP allowlists), or GDPR data-subject requests (access export, erasure, retention, the processing register). Covers @stacksjs/security, config/security.ts and the GDPR layer in @stacksjs/orm.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -115,6 +115,33 @@ interface HashMakeOptions {
   }
 }
 ```
+
+## Personal data and GDPR
+
+Data-subject requests are driven by model declarations, not by code you write per
+request: `personal: true` on an attribute and `traits.gdpr` on the model (see
+`stacks-models`, "Personal data (GDPR)", and `docs/guide/gdpr.md`).
+
+```bash
+buddy gdpr:export <id|email> --out file.json   # access (Art. 15/20)
+buddy gdpr:erase <id|email> --dry-run          # then without --dry-run, or --yes
+buddy gdpr:prune --dry-run                     # retention; PruneRetainedDataJob runs daily
+buddy gdpr:register && buddy gdpr:register:check
+```
+
+```typescript
+import { eraseSubject, exportSubjectData, pruneRetainedData } from '@stacksjs/orm'
+```
+
+- `GET /me/data-export` (auth bundle, `auth` middleware, 3/hour) is the
+  self-service export; the subject is always the caller.
+- Erasure runs in one transaction with its `gdpr_requests` audit row, writes only
+  rows it matched to the subject, then revokes tokens and destroys sessions.
+- Erasure of the `User` row anonymizes rather than deletes: orders, payments and
+  memberships still point at it. Consent and suppression records are kept by
+  declaration, since honouring an opt-out needs the address.
+- The audit ledger stores counts, never values. Do not log export payloads with
+  `log`, which writes to disk in production.
 
 ## Gotchas
 - Default hashing is bcrypt with 12 rounds — sufficient for most applications

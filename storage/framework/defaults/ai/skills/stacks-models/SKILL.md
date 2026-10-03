@@ -1,6 +1,6 @@
 ---
 name: stacks-models
-description: Use when working with data models in Stacks - the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 103 built-in framework models. Covers model definitions and storage/framework/defaults/app/Models/.
+description: Use when working with data models in Stacks - the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 104 built-in framework models. Covers model definitions and storage/framework/defaults/app/Models/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -88,6 +88,7 @@ generated model types stay precise.
 | `guarded` | Block mass assignment |
 | `hidden` | Exclude from JSON serialization (passwords, tokens) |
 | `foreignKey` | Disable, infer, or configure the FK constraint |
+| `personal` | Personal data: exported by `gdpr:export`, anonymized by erasure and retention. `true`, or `{ anonymize?, export? }`. See "Personal data (GDPR)" below |
 | `factory` | `(faker, attributes) => value`, used by seeders and tests. `attributes` holds what this record's earlier-declared factories produced, so one value can depend on another: `(faker, { discountType }) => ...` |
 | `validation` | `{ rule, message? }` - `rule` from `schema`, `message` keyed by rule name |
 
@@ -107,6 +108,7 @@ generated model types stay precise.
 | `observe` | Emits `{model}:created` / `:updated` / `:deleted` events |
 | `billable` | Stripe methods (`checkout()`, `activeSubscription()`, ...) |
 | `taggable` / `categorizable` / `commentable` / `likeable` | Pivot tables and their relation methods |
+| `gdpr` | Whose data the rows are (`subject`), what erasure does (`erasure`), how long rows live (`retention`), and why (`basis`, `purpose`). See "Personal data (GDPR)" below |
 
 Also at the top level: `indexes: [{ name, columns, unique?, where? }]` for
 composite and partial-unique indexes, and `dashboard: { highlight: true }` to
@@ -212,6 +214,40 @@ scopes: {
 },
 ```
 
+## Personal data (GDPR)
+
+Declared on the model, read by access exports, erasure, retention and the
+processing register (stacksjs/stacks#365). Full guide: `docs/guide/gdpr.md`.
+
+```ts
+belongsTo: ['Customer'],
+traits: {
+  gdpr: {
+    subject: { via: 'Customer' },   // or 'user_id', ['a_id', 'b_id'], { column, where }, { email: 'col' }
+    erasure: 'anonymize',           // default; or 'delete' | 'keep'
+    retention: { days: 3650, action: 'anonymize' }, // optional; column defaults to created_at
+    basis: 'legal_obligation',
+    purpose: 'Order fulfilment, kept for tax and accounting',
+  },
+},
+attributes: {
+  deliveryAddress: { personal: true, validation: { rule: schema.string() } },
+},
+```
+
+- `subject` is derived when left out: `id` on `User`, the `belongsTo: ['User']`
+  foreign key elsewhere. A `via` parent must itself declare a subject.
+- Anonymization writes NULL to nullable columns and a typed placeholder to
+  `NOT NULL` ones (`erased-<id>` when unique). A `NOT NULL` enum or timestamp
+  needs `personal: { anonymize: <value> }`, or every request refuses to run.
+- A model that `belongsTo: ['User']` and declares nothing is **unclassified**:
+  erasure does not reach it and `buddy gdpr:register` lists it. Classify it, even
+  as `erasure: 'keep'`. `core/orm/tests/gdpr.test.ts` fails if a built-in one is.
+- Engine: `exportSubjectData`, `eraseSubject({ dryRun })`, `pruneRetainedData`,
+  `resolveGdprPlan`, `renderProcessingRegister`, all from `@stacksjs/orm`.
+  Commands: `buddy gdpr:export|erase|prune|register|register:check`. Every
+  request writes a `gdpr_requests` row (the `GdprRequest` model).
+
 ## Workflow
 
 ```sh
@@ -265,7 +301,7 @@ pass `--allow-protected` to override.
 ## Built-in models by category
 
 The ones below are worth knowing by name. They are a selection, not the set:
-`storage/framework/defaults/app/Models/` holds 103, and that directory is the
+`storage/framework/defaults/app/Models/` holds 104, and that directory is the
 authority. This section said "All 62 built-in models by category" while
 listing fewer than that against 102 on disk, so an agent reading to the end
 had no way to tell it was short.

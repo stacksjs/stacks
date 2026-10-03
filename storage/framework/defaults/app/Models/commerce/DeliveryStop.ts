@@ -24,6 +24,7 @@ export default defineModel({
   ownership: parentOwnership('Order', 'order_id'),
 
   traits: {
+    gdpr: { subject: { via: 'Order' }, erasure: 'anonymize', basis: 'contract', purpose: 'Delivering an order' },
     useUuid: true,
     useTimestamps: true,
 
@@ -78,6 +79,7 @@ export default defineModel({
     },
 
     address: {
+      personal: true,
       order: 3,
       required: true,
       fillable: true,
@@ -91,6 +93,7 @@ export default defineModel({
      * complete; it just cannot be drawn.
      */
     latitude: {
+      personal: true,
       order: 4,
       fillable: true,
       validation: { rule: schema.number().min(-90).max(90) },
@@ -98,6 +101,7 @@ export default defineModel({
     },
 
     longitude: {
+      personal: true,
       order: 5,
       fillable: true,
       validation: { rule: schema.number().min(-180).max(180) },
@@ -105,6 +109,7 @@ export default defineModel({
     },
 
     recipientName: {
+      personal: true,
       order: 6,
       fillable: true,
       validation: { rule: schema.string().max(255) },
@@ -112,6 +117,7 @@ export default defineModel({
     },
 
     recipientPhone: {
+      personal: true,
       order: 7,
       fillable: true,
       validation: { rule: schema.string().max(40) },
@@ -158,6 +164,7 @@ export default defineModel({
 
     /** Why a stop failed, or anything the courier needs to record. */
     notes: {
+      personal: true,
       order: 12,
       fillable: true,
       validation: { rule: schema.string().max(1000) },

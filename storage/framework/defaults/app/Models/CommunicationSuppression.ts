@@ -6,13 +6,14 @@ export default defineModel({
   table: 'communication_suppressions',
   belongsTo: ['Team'],
   traits: {
+    gdpr: { subject: { email: 'recipient' }, erasure: 'keep', basis: 'legal_obligation', purpose: 'Honouring opt-outs, which needs the address it suppresses' },
     useUuid: true,
     useTimestamps: true,
     useApi: { uri: 'communication-suppressions', routes: ['index', 'store', 'show', 'destroy'], middleware: ['auth', 'team'] },
   },
   indexes: [{ name: 'communication_suppressions_unique', columns: ['team_id', 'channel', 'recipient'], unique: true }],
   attributes: {
-    recipient: { required: true, fillable: true, validation: { rule: schema.string().max(255) }, factory: faker => faker.internet.email() },
+    recipient: { personal: true, required: true, fillable: true, validation: { rule: schema.string().max(255) }, factory: faker => faker.internet.email() },
     channel: { required: true, fillable: true, validation: { rule: schema.enum(['email', 'sms', 'push']) }, factory: () => 'email' },
     reason: { required: true, fillable: true, validation: { rule: schema.enum(['unsubscribe', 'bounce', 'complaint', 'carrier', 'manual', 'legal']) }, factory: () => 'unsubscribe' },
     source: { required: true, fillable: true, validation: { rule: schema.string().max(120) }, factory: () => 'preference_center' },

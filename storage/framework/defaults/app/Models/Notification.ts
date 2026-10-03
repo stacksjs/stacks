@@ -8,6 +8,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { erasure: 'delete', basis: 'contract', purpose: 'In-app notifications' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: {
@@ -38,6 +39,7 @@ export default defineModel({
     },
 
     data: {
+      personal: true,
       type: 'text',
       required: true,
       fillable: true,

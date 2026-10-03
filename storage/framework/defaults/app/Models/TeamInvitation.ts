@@ -34,6 +34,7 @@ export default defineModel({
   belongsTo: ['Team'],
 
   traits: {
+    gdpr: { subject: { email: 'email' }, erasure: 'delete', basis: 'contract', purpose: 'Team invitations' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: { count: 0 },
@@ -60,6 +61,7 @@ export default defineModel({
     },
 
     email: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {

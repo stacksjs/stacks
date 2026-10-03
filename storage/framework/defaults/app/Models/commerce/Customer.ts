@@ -9,6 +9,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'contract', purpose: 'Customer record behind orders and payments' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -35,6 +36,7 @@ export default defineModel({
 
   attributes: {
     name: {
+      personal: true,
       order: 1,
       fillable: true,
       validation: {
@@ -48,6 +50,7 @@ export default defineModel({
     },
 
     email: {
+      personal: true,
       unique: true,
       order: 2,
       fillable: true,
@@ -61,6 +64,7 @@ export default defineModel({
     },
 
     phone: {
+      personal: true,
       order: 3,
       fillable: true,
       validation: {
@@ -109,6 +113,7 @@ export default defineModel({
     },
 
     avatar: {
+      personal: true,
       order: 8,
       fillable: true,
       validation: {

@@ -18,10 +18,11 @@ allowlist configuration.
 - Hash verification
 - Rehashing detection
 - Security configuration (firewall, rate limiting, IP allowlists)
+- GDPR data-subject requests: access export, erasure, retention, the processing register
 
 ## Covers
 
-`@stacksjs/security`, `config/security.ts`.
+`@stacksjs/security`, `config/security.ts`, and the GDPR layer in `@stacksjs/orm` (see [Personal Data and GDPR](/guide/gdpr)).
 
 ## Inside the skill
 
@@ -35,6 +36,7 @@ The sections an agent reads once the skill loads.
 - HashMakeOptions
 - config/hashing.ts
 - config/security.ts
+- Personal data and GDPR
 - Gotchas
 
 ## Where the code lives

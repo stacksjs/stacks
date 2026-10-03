@@ -13,6 +13,7 @@ export default defineModel({
   ownership: customerOwnership(),
 
   traits: {
+    gdpr: { subject: { via: 'Customer' }, erasure: 'anonymize', basis: 'legal_obligation', purpose: 'Order fulfilment, kept for tax and accounting' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -128,6 +129,7 @@ export default defineModel({
     },
 
     deliveryAddress: {
+      personal: true,
       order: 10,
       fillable: true,
       validation: {
@@ -137,6 +139,7 @@ export default defineModel({
     },
 
     specialInstructions: {
+      personal: true,
       order: 11,
       fillable: true,
       validation: {
@@ -175,6 +178,7 @@ export default defineModel({
 
     /** Geocoded delivery destination, so the map has somewhere to point. */
     deliveryLatitude: {
+      personal: true,
       order: 14,
       fillable: true,
       validation: { rule: schema.number().min(-90).max(90) },
@@ -182,6 +186,7 @@ export default defineModel({
     },
 
     deliveryLongitude: {
+      personal: true,
       order: 15,
       fillable: true,
       validation: { rule: schema.number().min(-180).max(180) },

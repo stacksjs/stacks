@@ -8,6 +8,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'legitimate_interests', purpose: 'Activity feed' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: {
@@ -84,6 +85,7 @@ export default defineModel({
     },
 
     ipAddress: {
+      personal: true,
       required: false,
       fillable: true,
       validation: {

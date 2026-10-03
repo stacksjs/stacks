@@ -21,6 +21,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { erasure: 'keep', basis: 'legitimate_interests', purpose: 'Shared board discussion, attributed to the (anonymized) author' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {

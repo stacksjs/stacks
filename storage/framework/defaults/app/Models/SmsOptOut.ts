@@ -22,12 +22,14 @@ export default defineModel({
   ],
 
   traits: {
+    gdpr: { erasure: 'keep', basis: 'legal_obligation', purpose: 'Honouring SMS STOP replies, keyed by phone number' },
     useTimestamps: true,
   },
 
   attributes: {
     /** E.164 where derivable (`+13105550199`). */
     phone: {
+      personal: true,
       required: true,
       order: 1,
       fillable: true,

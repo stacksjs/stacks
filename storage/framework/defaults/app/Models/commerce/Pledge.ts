@@ -16,6 +16,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { subject: { via: 'Customer' }, erasure: 'anonymize', basis: 'legal_obligation', purpose: 'Donation pledges, kept for receipts' },
     useUuid: true,
     useTimestamps: true,
 
@@ -50,6 +51,7 @@ export default defineModel({
 
   attributes: {
     donorName: {
+      personal: true,
       order: 1,
       fillable: true,
       validation: {
@@ -62,6 +64,7 @@ export default defineModel({
     },
 
     donorEmail: {
+      personal: true,
       order: 2,
       fillable: true,
       validation: {

@@ -103,6 +103,12 @@ const commandRegistry: Record<string, CommandLoader> = {
   'storage:restore': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
   'fresh': { path: './commands/fresh.ts', exportName: 'fresh' },
   'generate': { path: './commands/generate.ts', exportName: 'generate' },
+  // Data-subject requests and the processing register (stacksjs/stacks#365).
+  'gdpr:export': { path: './commands/gdpr.ts', exportName: 'gdpr' },
+  'gdpr:erase': { path: './commands/gdpr.ts', exportName: 'gdpr' },
+  'gdpr:prune': { path: './commands/gdpr.ts', exportName: 'gdpr' },
+  'gdpr:register': { path: './commands/gdpr.ts', exportName: 'gdpr' },
+  'gdpr:register:check': { path: './commands/gdpr.ts', exportName: 'gdpr' },
   'http': { path: './commands/http.ts', exportName: 'http' },
   'install': { path: './commands/install.ts', exportName: 'install' },
   'key': { path: './commands/key.ts', exportName: 'key' },

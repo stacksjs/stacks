@@ -13,6 +13,7 @@ export default defineModel({
   ownership: customerOwnership(),
 
   traits: {
+    gdpr: { subject: { via: 'Customer' }, erasure: 'anonymize', basis: 'contract', purpose: 'Shopping cart' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -122,6 +123,7 @@ export default defineModel({
     },
 
     notes: {
+      personal: true,
       order: 9,
       fillable: true,
       validation: {

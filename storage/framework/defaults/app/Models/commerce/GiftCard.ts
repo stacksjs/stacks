@@ -13,6 +13,7 @@ export default defineModel({
   ownership: customerOwnership(),
 
   traits: {
+    gdpr: { subject: { via: 'Customer' }, erasure: 'anonymize', basis: 'contract', purpose: 'Gift cards bought by the customer' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -101,6 +102,7 @@ export default defineModel({
     },
 
     recipient_email: {
+      personal: true,
       order: 7,
       fillable: true,
       validation: {
@@ -110,6 +112,7 @@ export default defineModel({
     },
 
     recipientName: {
+      personal: true,
       order: 8,
       fillable: true,
       validation: {
@@ -119,6 +122,7 @@ export default defineModel({
     },
 
     personalMessage: {
+      personal: true,
       order: 9,
       fillable: true,
       validation: {

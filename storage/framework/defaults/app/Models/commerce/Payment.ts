@@ -13,6 +13,7 @@ export default defineModel({
   ownership: customerOwnership(),
 
   traits: {
+    gdpr: { subject: { via: 'Customer' }, erasure: 'anonymize', basis: 'legal_obligation', purpose: 'Payment records, kept for tax and accounting' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -116,6 +117,7 @@ export default defineModel({
     },
 
     cardLastFour: {
+      personal: true,
       order: 9,
       fillable: true,
       validation: {
@@ -125,6 +127,7 @@ export default defineModel({
     },
 
     cardBrand: {
+      personal: true,
       order: 10,
       fillable: true,
       validation: {
@@ -134,6 +137,7 @@ export default defineModel({
     },
 
     billingEmail: {
+      personal: true,
       order: 11,
       fillable: true,
       validation: {
@@ -172,6 +176,7 @@ export default defineModel({
     },
 
     notes: {
+      personal: true,
       order: 15,
       fillable: true,
       validation: {

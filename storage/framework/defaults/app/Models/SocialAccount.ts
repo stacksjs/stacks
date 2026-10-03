@@ -33,6 +33,7 @@ export default defineModel({
   ],
 
   traits: {
+    gdpr: { erasure: 'delete', basis: 'contract', purpose: 'Linked sign-in providers' },
     useTimestamps: true,
   },
 
@@ -49,6 +50,7 @@ export default defineModel({
     },
 
     providerUserId: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {
@@ -60,6 +62,7 @@ export default defineModel({
     // The address the provider reported at link time. Informational — sign-in
     // resolves through (provider, provider_user_id), never through this.
     providerEmail: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.string().max(255),

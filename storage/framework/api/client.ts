@@ -7814,6 +7814,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /me/data-export
+   */
+  getMeDataExport(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/me/data-export", {}, [], false, options)
+  },
+
+  /**
    * GET /models/
    */
   getModels(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

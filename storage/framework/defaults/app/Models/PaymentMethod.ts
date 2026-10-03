@@ -11,6 +11,7 @@ export default defineModel({
   belongsTo: ['User'],
   hasMany: ['PaymentTransaction'],
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'contract', purpose: 'Saved payment methods' },
     useSeeder: {
       count: 5,
     },
@@ -31,6 +32,7 @@ export default defineModel({
     },
 
     lastFour: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.number().required(),
@@ -43,6 +45,7 @@ export default defineModel({
     },
 
     brand: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.string().required().max(50),
@@ -55,6 +58,7 @@ export default defineModel({
     },
 
     expMonth: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.number().required(),
@@ -67,6 +71,7 @@ export default defineModel({
     },
 
     expYear: {
+      personal: true,
       fillable: true,
       validation: {
         rule: schema.number().required(),

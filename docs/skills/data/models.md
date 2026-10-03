@@ -31,9 +31,10 @@ The sections an agent reads once the skill loads.
 
 - Key Paths
 - Writing a model
+- Personal data (GDPR)
 - Workflow
 - Seeding
-- All 62 built-in models by category
+- Built-in models by category
 - CLI Commands
 - Gotchas
 

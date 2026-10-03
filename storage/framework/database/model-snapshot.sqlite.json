@@ -13125,7 +13125,8 @@
             "enumValues": [
               "optimize",
               "transcode",
-              "tag"
+              "tag",
+              "preview"
             ]
           },
           {
@@ -13140,7 +13141,8 @@
               "queued",
               "running",
               "done",
-              "failed"
+              "failed",
+              "skipped"
             ]
           },
           {
@@ -13319,10 +13321,125 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "gdpr_requests",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "type",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "access",
+              "erasure",
+              "retention"
+            ]
+          },
+          {
+            "name": "subject_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "actor",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 120
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "completed",
+            "enumValues": [
+              "completed",
+              "failed"
+            ]
+          },
+          {
+            "name": "summary",
+            "type": "json",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "occurred_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "gdpr_requests_subject_lookup",
+            "columns": [
+              "subject_id",
+              "type",
+              "occurred_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "gdpr_requests_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "5901fd3af76ccf6cfce628b528086a0e77bb93a649e7cf6d6bdf4e4f83599ec9",
+  "hash": "93ffcdc03b01f294277d055674ae91267adc0b149d7c83b2a989afbc82bf24f9",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-02T20:57:07.770Z"
+  "updatedAt": "2026-10-03T17:43:23.689Z"
 }

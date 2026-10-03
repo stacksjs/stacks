@@ -104,6 +104,10 @@ route.group({ middleware: 'auth' }, () => {
   route.get('/referrals', 'Actions/Auth/ReferralSummaryAction').rateLimit(60, 'minute')
   route.post('/referrals/code', 'Actions/Auth/CreateReferralCodeAction').rateLimit(10, 'minute')
   route.get('/me', 'Actions/Auth/AuthUserAction')
+  // The caller's own personal data as a JSON download (GDPR access and
+  // portability, stacksjs/stacks#365). Reads every table the user touches,
+  // so it is held to a few an hour; each one is recorded in gdpr_requests.
+  route.get('/me/data-export', 'Actions/Auth/DataExportAction').rateLimit(3, 'hour')
   route.post('/logout', 'Actions/Auth/LogoutAction')
   // Sign out everywhere: revoke every access/refresh token AND destroy
   // every session for the authenticated user (stacksjs/stacks#1957).

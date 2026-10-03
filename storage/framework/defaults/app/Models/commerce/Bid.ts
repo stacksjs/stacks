@@ -21,6 +21,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { subject: { email: 'bidder_email' }, erasure: 'anonymize', basis: 'contract', purpose: 'Auction bids' },
     useUuid: true,
     useTimestamps: true,
 
@@ -54,6 +55,7 @@ export default defineModel({
 
   attributes: {
     bidderName: {
+      personal: true,
       order: 1,
       fillable: true,
       validation: {
@@ -66,6 +68,7 @@ export default defineModel({
     },
 
     bidderEmail: {
+      personal: true,
       order: 2,
       fillable: true,
       validation: {

@@ -49,6 +49,10 @@ export * from './batch-loader'
 export * from './db'
 export * from './subquery'
 export * from './transaction'
+// Data-subject access, erasure and retention, plus the processing register,
+// read off each model's `personal` attributes and `gdpr` trait
+// (stacksjs/stacks#365).
+export * from './gdpr'
 export * from './model-types'
 /*
  * The endpoints a `useApi` model publishes, derived from the model definition
@@ -330,6 +334,8 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['SiteDomain', [''], 'auth'],
   ['MagicLinkToken', [''], 'auth'],
   ['SmsOptOut', [''], 'auth'],
+  // The ledger of GDPR access, erasure and retention runs (stacksjs/stacks#365).
+  ['GdprRequest', [''], 'auth'],
 
   // Form builder
   ['Form', ['Forms'], 'forms'],
@@ -511,6 +517,7 @@ export const Redirect = lazyModel<typeof import('../../../defaults/app/Models/Co
 export const Site = lazyModel<typeof import('../../../defaults/app/Models/Site').default>('Site')
 export const SiteDomain = lazyModel<typeof import('../../../defaults/app/Models/SiteDomain').default>('SiteDomain')
 export const SmsOptOut = lazyModel<typeof import('../../../defaults/app/Models/SmsOptOut').default>('SmsOptOut')
+export const GdprRequest = lazyModel<typeof import('../../../defaults/app/Models/GdprRequest').default>('GdprRequest')
 export const StorageItem = lazyModel<typeof import('../../../defaults/app/Models/StorageItem').default>('StorageItem')
 export const StorageItemTask = lazyModel<typeof import('../../../defaults/app/Models/StorageItemTask').default>('StorageItemTask')
 export const EmailIdempotency = lazyModel<typeof import('../../../defaults/app/Models/EmailIdempotency').default>('EmailIdempotency')
@@ -585,7 +592,7 @@ const _allExports: Record<string, any> = {
   DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Courier, CourierPing,
   EmailList,
   EmailListSubscriber, EmailIdempotency, EmailSuppression, EmailWebhookEvent,
-  ErrorModel, Form, FormField, FormSubmission, GiftCard, Label, LicenseKey,
+  ErrorModel, Form, FormField, FormSubmission, GdprRequest, GiftCard, Label, LicenseKey,
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   MagicLinkToken, Menu, MenuItem, NotificationDelivery, Order, OrderIdempotency,
   OrderItem, Page, PageRevision, Payment, PaymentMethod, PaymentProduct,

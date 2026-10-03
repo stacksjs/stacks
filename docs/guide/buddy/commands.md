@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **339 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **344 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -36,6 +36,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `extension` | 13 |
 | `format` | 1 |
 | `forms` | 2 |
+| `gdpr` | 5 |
 | `general` | 50 |
 | `generate` | 17 |
 | `inspire` | 1 |
@@ -857,7 +858,7 @@ buddy comments:reject 12
 
 ### `commerce:import`
 
-Import a Shopify, WooCommerce or Shopware 6 catalog (products, variants, categories, brands, image URLs)
+Import a Shopify, WooCommerce or Shopware 6 catalog, and optionally its customers and orders
 
 - Usage: `$ buddy commerce:import <url>`
 - Namespace: `commerce`
@@ -866,10 +867,14 @@ Import a Shopify, WooCommerce or Shopware 6 catalog (products, variants, categor
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--from` | Where the catalog comes from: shopify, woocommerce, shopware | value, required | - |
-| `--access-key` | Shopware only: the sales channel access key (public, from Sales Channels > API access), or set SHOPWARE_ACCESS_KEY | value, required | - |
-| `--limit` | Import at most this many products | value, required | - |
-| `--currency` | ISO 4217 currency, for a store that does not report one (Shopify /meta.json, Shopware /store-api/context) | value, required | - |
+| `--from` | Where the store lives: shopify, woocommerce, shopware | value, required | - |
+| `--customers` | Also import customers from the admin API (credentials from env: SHOPIFY_ADMIN_TOKEN, WOOCOMMERCE_CONSUMER_KEY/_SECRET or SHOPWARE_CLIENT_ID/_SECRET) | boolean, optional | `false` |
+| `--orders` | Also import orders and their lines from the admin API (same credentials as --customers) | boolean, optional | `false` |
+| `--catalog` | Import the catalog too when --customers or --orders is given (it is the default otherwise) | boolean, optional | `false` |
+| `--access-key` | Shopware catalog only: the sales channel access key (public, from Sales Channels > API access), or set SHOPWARE_ACCESS_KEY | value, required | - |
+| `--admin-url` | Customers and orders only: the admin API address when it differs from <url>, e.g. https://<store>.myshopify.com for a Shopify custom domain | value, required | - |
+| `--limit` | Import at most this many products, customers and orders (each) | value, required | - |
+| `--currency` | ISO 4217 currency, for a store or order that does not report one | value, required | - |
 | `--dry-run` | Show what would be created or updated without writing anything | boolean, optional | `false` |
 
 Examples:
@@ -878,6 +883,7 @@ Examples:
 buddy commerce:import https://shop.example.com --from shopify --dry-run
 buddy commerce:import example.com/shop --from woocommerce --limit 50
 buddy commerce:import https://shop.example.de --from shopware --access-key SWSC... --dry-run
+SHOPIFY_ADMIN_TOKEN=shpat_... buddy commerce:import https://shop.example.com --from shopify --customers --orders --admin-url northwind.myshopify.com
 ```
 
 ### `commerce:install`
@@ -2299,6 +2305,88 @@ Re-installs your npm dependencies
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-f`, `--force` | Skip the confirmation prompt (required in CI/non-interactive shells) | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `gdpr:erase`
+
+Erase a data subject: delete or anonymize their rows per each model's declaration
+
+- Usage: `$ buddy gdpr:erase <subject>`
+- Namespace: `gdpr`
+- Aliases: none
+- Arguments: `<subject>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Print exactly what would change, and change nothing | boolean, optional | `false` |
+| `-y`, `--yes` | Skip the confirmation prompt | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy gdpr:erase ada@example.com --dry-run
+buddy gdpr:erase 42 --yes
+```
+
+### `gdpr:export`
+
+Export a data subject's personal data as JSON (user id, email or uuid)
+
+- Usage: `$ buddy gdpr:export <subject>`
+- Namespace: `gdpr`
+- Aliases: none
+- Arguments: `<subject>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Write the export to this file instead of stdout | value, required | - |
+
+Examples:
+
+```bash
+buddy gdpr:export ada@example.com --out ada.json
+```
+
+### `gdpr:prune`
+
+Apply every model's retention policy (the daily PruneRetainedDataJob does the same)
+
+- Usage: `$ buddy gdpr:prune`
+- Namespace: `gdpr`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Print what would be pruned, and change nothing | boolean, optional | `false` |
+
+### `gdpr:register`
+
+Generate the processing register from the model declarations
+
+- Usage: `$ buddy gdpr:register`
+- Namespace: `gdpr`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--format` | markdown or json | value, required | `"markdown"` |
+| `--out` | Where to write it. Defaults to database/processing-register.md (or .json) | value, required | - |
+| `--stdout` | Print it instead of writing a file | boolean, optional | `false` |
+
+### `gdpr:register:check`
+
+Verify the committed processing register matches the model declarations
+
+- Usage: `$ buddy gdpr:register:check`
+- Namespace: `gdpr`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--format` | markdown or json | value, required | `"markdown"` |
+| `--out` | The register to check. Defaults to database/processing-register.md (or .json) | value, required | - |
 
 ### `generate`
 

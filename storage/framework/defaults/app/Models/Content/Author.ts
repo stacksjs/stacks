@@ -16,6 +16,7 @@ export default defineModel({
   ],
 
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'legitimate_interests', purpose: 'Byline on published content' },
     useAuth: {
       usePasskey: true,
     },
@@ -51,6 +52,7 @@ export default defineModel({
 
   attributes: {
     name: {
+      personal: true,
       order: 1,
       fillable: true,
       validation: {
@@ -65,6 +67,7 @@ export default defineModel({
     },
 
     email: {
+      personal: true,
       unique: true,
       order: 2,
       fillable: true,
@@ -79,6 +82,7 @@ export default defineModel({
     },
 
     bio: {
+      personal: true,
       required: false,
       order: 3,
       fillable: true,
@@ -92,6 +96,7 @@ export default defineModel({
     },
 
     avatar: {
+      personal: true,
       required: false,
       order: 4,
       fillable: true,

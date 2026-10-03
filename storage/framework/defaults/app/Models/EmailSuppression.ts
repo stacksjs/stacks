@@ -21,6 +21,7 @@ export default defineModel({
   ownership: false,
 
   traits: {
+    gdpr: { subject: { email: 'email' }, erasure: 'keep', basis: 'legal_obligation', purpose: 'Honouring bounces and complaints, which needs the address it suppresses' },
     useTimestamps: true,
     useApi: {
       uri: 'email-suppressions',
@@ -34,6 +35,7 @@ export default defineModel({
 
   attributes: {
     email: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {

@@ -10,6 +10,7 @@ export default defineModel({
   hasMany: ['SubscriberEmail', 'EmailListSubscriber', 'CampaignSend'],
 
   traits: {
+    gdpr: { subject: { email: 'email' }, erasure: 'anonymize', basis: 'consent', purpose: 'Newsletter subscription' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: {
@@ -31,6 +32,7 @@ export default defineModel({
 
   attributes: {
     email: {
+      personal: true,
       unique: true,
       required: true,
       fillable: true,

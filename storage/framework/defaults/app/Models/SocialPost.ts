@@ -8,6 +8,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { erasure: 'delete', basis: 'contract', purpose: 'Social posts the user scheduled' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: {
@@ -31,6 +32,7 @@ export default defineModel({
 
   attributes: {
     content: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {

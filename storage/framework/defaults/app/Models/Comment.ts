@@ -8,6 +8,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'legitimate_interests', purpose: 'Comments on posts' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: {
@@ -24,6 +25,7 @@ export default defineModel({
 
   attributes: {
     authorName: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {
@@ -33,6 +35,7 @@ export default defineModel({
     },
 
     authorEmail: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {
@@ -79,6 +82,7 @@ export default defineModel({
     },
 
     ipAddress: {
+      personal: true,
       required: false,
       fillable: true,
       validation: {
@@ -88,6 +92,7 @@ export default defineModel({
     },
 
     userAgent: {
+      personal: true,
       required: false,
       fillable: true,
       validation: {

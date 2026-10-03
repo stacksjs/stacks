@@ -10,6 +10,7 @@ import { toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pag
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
 import { hasWriteValidators, validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
+import type { GdprTraitOptions, PersonalAttribute } from './gdpr/types'
 
 // Cache only the loaded namespace; listener state stays in the live event bus.
 let modelEventsModule: typeof import('@stacksjs/events') | undefined
@@ -2168,6 +2169,12 @@ export type StacksModelAttribute = Omit<BQBModelAttribute, 'factory'> & {
    * value can depend on another: `(faker, { discountType }) => ...`.
    */
   factory?: (faker: Faker, attributes: Readonly<Record<string, unknown>>) => unknown
+  /**
+   * Personal data (stacksjs/stacks#365): exported by an access request,
+   * anonymized by erasure and retention. See `GdprTraitOptions` for the
+   * model-level half.
+   */
+  personal?: PersonalAttribute
 }
 
 export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits' | 'dashboard'> {
@@ -2237,6 +2244,12 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
      * from a column that is missing rather than from an error that says so.
      */
     commentable?: boolean | object
+    /**
+     * Whose data the rows are, what erasure does to them, and how long they
+     * are kept (stacksjs/stacks#365). Read by `exportSubjectData`,
+     * `eraseSubject`, `pruneRetainedData` and `buddy gdpr:register`.
+     */
+    gdpr?: GdprTraitOptions
     broadcastOn?: (model: any) => string[]
     broadcastWith?: (model: any) => Record<string, unknown>
   }
@@ -2435,6 +2448,7 @@ const KNOWN_TRAITS: ReadonlySet<string> = new Set([
   'commentables',
   'broadcastOn',
   'broadcastWith',
+  'gdpr',
 ])
 
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef): StacksModelStatic<TDef> {

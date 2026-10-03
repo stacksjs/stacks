@@ -727,6 +727,19 @@ declare module '@stacksjs/database' {
       settings: unknown
       site_id: number
     }
+    gdpr_requests: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      type: "access" | "erasure" | "retention"
+      subject_id: number
+      actor: string
+      status: "completed" | "failed"
+      summary: unknown
+      occurred_at: string
+    }
     gift_cards: {
       // columns
       id: number
@@ -1492,8 +1505,8 @@ declare module '@stacksjs/database' {
       updated_at: string | null
       disk: string
       path: string
-      kind: "optimize" | "transcode" | "tag"
-      state: "queued" | "running" | "done" | "failed"
+      kind: "optimize" | "transcode" | "tag" | "preview"
+      state: "queued" | "running" | "done" | "failed" | "skipped"
       attempts: number
       error: string
       started_at: string

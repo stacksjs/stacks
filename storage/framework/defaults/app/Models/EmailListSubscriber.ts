@@ -18,6 +18,7 @@ export default defineModel({
   belongsTo: ['EmailList', 'Subscriber'],
 
   traits: {
+    gdpr: { subject: { via: 'Subscriber' }, erasure: 'delete', basis: 'consent', purpose: 'Mailing list membership' },
     useUuid: true,
     useTimestamps: true,
     useApi: {

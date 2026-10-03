@@ -17,6 +17,7 @@ export default defineModel({
   ],
 
   traits: {
+    gdpr: { subject: { via: 'Subscriber' }, erasure: 'anonymize', basis: 'legitimate_interests', purpose: 'Campaign delivery statistics' },
     useUuid: true,
     useTimestamps: true,
     useApi: {
@@ -81,6 +82,7 @@ export default defineModel({
     },
 
     recipient: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {

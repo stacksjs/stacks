@@ -356,6 +356,9 @@ export interface ModelOptions extends Base {
 
     likeable?: boolean | LikeableOptions
 
+    /** Whose data the rows are, what erasure does to them, and how long they are kept. */
+    gdpr?: GdprTraitOptions
+
     /**
      * How this table is sharded, for engines that shard (Vitess).
      *
@@ -410,6 +413,93 @@ export interface ModelOptions extends Base {
   }
 }
 
+/*
+ * GDPR declarations (stacksjs/stacks#365): `personal` on an attribute and
+ * `traits.gdpr` on a model. Declared here, beside the rest of the model
+ * vocabulary; `@stacksjs/orm` reads them (`exportSubjectData`, `eraseSubject`,
+ * `pruneRetainedData`, `buddy gdpr:register`).
+ */
+
+/** What erasure does to a data subject's rows. */
+export type GdprErasureAction = 'anonymize' | 'delete' | 'keep'
+
+/** What retention does to rows older than the policy allows. */
+export type GdprRetentionAction = 'anonymize' | 'delete'
+
+/** The Article 6 lawful bases, spelled as the register prints them. */
+export type GdprLawfulBasis =
+  | 'consent'
+  | 'contract'
+  | 'legal_obligation'
+  | 'vital_interests'
+  | 'public_task'
+  | 'legitimate_interests'
+
+/**
+ * Whose data a row is.
+ *
+ * - a column name: the column holds the subject's user id (`'user_id'`; `'id'`
+ *   on the User model itself). Several columns match when ANY of them does.
+ * - `{ column, where }`: the same, narrowed by fixed values - for a polymorphic
+ *   owner such as `{ column: 'tokenable_id', where: { tokenable_type: 'users' } }`,
+ *   which would otherwise match another model's row with the same id.
+ * - `{ via }`: the row belongs to a `belongsTo` parent that is itself a
+ *   subject's (`{ via: 'Customer' }` on Order). Chains, so OrderItem can go via
+ *   Order via Customer.
+ * - `{ email }`: the column holds the subject's email address, for ledgers keyed
+ *   by address rather than account (consent, suppression, form submissions).
+ *
+ * Left out, it is derived: `id` on the `User` model, and the foreign key of a
+ * `belongsTo: ['User']` everywhere else. A model with neither has no subject -
+ * retention still applies to it, access and erasure cannot reach it, and the
+ * register says so.
+ */
+export type GdprSubject =
+  | string
+  | readonly string[]
+  | { readonly column: string | readonly string[], readonly where?: Readonly<Record<string, string | number | boolean>> }
+  | { readonly via: string }
+  | { readonly email: string }
+
+export interface GdprRetentionPolicy {
+  /** Rows older than this many days are pruned. */
+  readonly days: number
+  /** The timestamp the age is measured from. @default 'created_at' */
+  readonly column?: string
+  /** @default 'delete' */
+  readonly action?: GdprRetentionAction
+}
+
+export interface GdprTraitOptions {
+  readonly subject?: GdprSubject
+  /** @default 'anonymize' */
+  readonly erasure?: GdprErasureAction
+  readonly retention?: GdprRetentionPolicy
+  /** Why the data is processed. Printed in the processing register. */
+  readonly purpose?: string
+  /** The lawful basis for processing it. Printed in the processing register. */
+  readonly basis?: GdprLawfulBasis
+}
+
+export interface PersonalAttributeOptions {
+  /**
+   * The value anonymization writes. Defaults to NULL for a nullable column,
+   * and to a type-appropriate placeholder for a NOT NULL one (`'[erased]'`,
+   * `erased-<id>` when the column is also unique, `0`, `false`, `'{}'`). A NOT
+   * NULL enum or timestamp has no safe placeholder, so it must say.
+   */
+  readonly anonymize?: string | number | boolean | null
+  /**
+   * Leave the column out of an access export. For data the subject must not be
+   * handed back, such as a password hash, which erasure still clears.
+   * @default true
+   */
+  readonly export?: boolean
+}
+
+/** `personal: true`, or the options form. */
+export type PersonalAttribute = boolean | PersonalAttributeOptions
+
 export interface Attribute {
   /** Require a value and emit a NOT NULL database column. */
   required?: boolean
@@ -422,6 +512,8 @@ export interface Attribute {
   hidden?: boolean
   fillable?: boolean
   guarded?: boolean
+  /** Personal data: exported by an access request, anonymized by erasure and retention. */
+  personal?: PersonalAttribute
   /** Disable, infer, or explicitly configure a foreign-key constraint. */
   foreignKey?: boolean | ForeignKeyConfig
   /**

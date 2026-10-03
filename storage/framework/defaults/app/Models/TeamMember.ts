@@ -30,6 +30,7 @@ export default defineModel({
   belongsTo: ['Team', 'User'],
 
   traits: {
+    gdpr: { erasure: 'delete', basis: 'contract', purpose: 'Team membership' },
     useUuid: true,
     useTimestamps: true,
     useSeeder: { count: 0 },

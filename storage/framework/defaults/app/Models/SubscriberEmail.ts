@@ -9,6 +9,7 @@ export default defineModel({
   belongsTo: ['Subscriber'],
 
   traits: {
+    gdpr: { subject: { via: 'Subscriber' }, erasure: 'delete', basis: 'consent', purpose: 'Newsletter subscription addresses' },
     useUuid: true,
     useTimestamps: true,
     useApi: {
@@ -24,6 +25,7 @@ export default defineModel({
 
   attributes: {
     email: {
+      personal: true,
       required: true,
       fillable: true,
       validation: {

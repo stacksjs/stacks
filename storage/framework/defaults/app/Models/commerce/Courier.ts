@@ -11,6 +11,7 @@ export default defineModel({
   hasMany: ['DeliveryRoute', 'CourierPing'],
 
   traits: {
+    gdpr: { erasure: 'anonymize', basis: 'contract', purpose: 'Courier profile and live position for deliveries' },
     useUuid: true,
     useTimestamps: true,
     useSearch: {
@@ -34,6 +35,7 @@ export default defineModel({
 
   attributes: {
     name: {
+      personal: true,
       order: 1,
       fillable: true,
       validation: {
@@ -46,6 +48,7 @@ export default defineModel({
     },
 
     phone: {
+      personal: true,
       order: 2,
       fillable: true,
       validation: {
@@ -58,6 +61,7 @@ export default defineModel({
     },
 
     vehicleNumber: {
+      personal: true,
       order: 3,
       fillable: true,
       validation: {
@@ -70,6 +74,7 @@ export default defineModel({
     },
 
     license: {
+      personal: true,
       order: 4,
       fillable: true,
       validation: {
@@ -101,6 +106,7 @@ export default defineModel({
      * the history; these three columns are the present.
      */
     latitude: {
+      personal: true,
       order: 6,
       fillable: true,
       validation: {
@@ -114,6 +120,7 @@ export default defineModel({
     },
 
     longitude: {
+      personal: true,
       order: 7,
       fillable: true,
       validation: {
