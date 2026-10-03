@@ -5,7 +5,7 @@ import { image } from '@stacksjs/image'
 import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
 import { Storage } from '@stacksjs/storage'
-import { runTask } from '../Actions/Dashboard/Content/file-metadata'
+import { runTask, VARIANT_PREFIX } from '../Actions/Dashboard/Content/file-metadata'
 import { databaseMetadataStore } from '../Actions/Dashboard/Content/file-metadata-store'
 
 /**
@@ -30,8 +30,12 @@ interface OptimizeStorageImagePayload {
   path: string
 }
 
-/** Where derivatives live, relative to the disk root. Hidden, so listings skip it. */
-export const VARIANT_PREFIX = '.variants'
+/**
+ * Where derivatives live, relative to the disk root. Hidden, so listings skip
+ * it. Re-exported from the metadata layer, which owns it so the request path
+ * can reach it without loading an image encoder.
+ */
+export { VARIANT_PREFIX }
 
 export default new Job({
   name: 'OptimizeStorageImage',

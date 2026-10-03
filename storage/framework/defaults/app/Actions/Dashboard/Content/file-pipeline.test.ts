@@ -127,8 +127,9 @@ describe('dispatchDashboardFileTasks', () => {
       dispatch,
     )
 
-    expect(tasks.map(task => task.kind)).toEqual(['optimize', 'tag'])
-    expect(dispatched.map(entry => entry.job)).toEqual(['OptimizeStorageImageJob', 'TagStorageMediaJob'])
+    // Plus the preview, which `file-preview.test.ts` covers (stacksjs/stacks#308).
+    expect(tasks.map(task => task.kind)).toEqual(['optimize', 'tag', 'preview'])
+    expect(dispatched.map(entry => entry.job)).toEqual(['OptimizeStorageImageJob', 'TagStorageMediaJob', 'GenerateStoragePreviewJob'])
     expect(dispatched[0]?.payload).toEqual({ disk: 'public', path: 'photo.png' })
 
     const recorded = (await store.tasksUnder('public', '')).get('photo.png')
@@ -136,9 +137,11 @@ describe('dispatchDashboardFileTasks', () => {
   })
 
   test('dispatches nothing for a content type with no work', async () => {
-    await manager.disk('public').write('notes.pdf', 'x')
+    // An archive rather than a PDF since #308: a PDF now records a skipped
+    // preview, which is a row but still not a queue entry.
+    await manager.disk('public').write('bundle.zip', 'x')
 
-    expect(await dispatchDashboardFileTasks({ path: 'notes.pdf', contentType: 'application/pdf' }, manager, store, dispatch)).toEqual([])
+    expect(await dispatchDashboardFileTasks({ path: 'bundle.zip', contentType: 'application/zip' }, manager, store, dispatch)).toEqual([])
     expect(dispatched).toEqual([])
     expect(await store.tasksUnder('public', '')).toEqual(new Map())
   })
@@ -149,7 +152,8 @@ describe('dispatchDashboardFileTasks', () => {
     await manager.disk('public').write('clip.mp4', 'x')
 
     const withoutProfile = await dispatchDashboardFileTasks({ path: 'clip.mp4', contentType: 'video/mp4' }, manager, store, dispatch)
-    expect(withoutProfile.map(task => task.kind)).toEqual(['tag'])
+    // The preview is recorded skipped: nothing here decodes a video frame.
+    expect(withoutProfile.map(task => [task.kind, task.state])).toEqual([['tag', 'queued'], ['preview', 'skipped']])
 
     dispatched = []
     const withProfile = await dispatchDashboardFileTasks(
@@ -158,7 +162,7 @@ describe('dispatchDashboardFileTasks', () => {
       store,
       dispatch,
     )
-    expect(withProfile.map(task => task.kind)).toEqual(['transcode', 'tag'])
+    expect(withProfile.map(task => task.kind)).toEqual(['transcode', 'tag', 'preview'])
     expect(dispatched[0]?.payload.profile).toEqual({ width: 1920, height: 1080 })
   })
 
@@ -251,7 +255,7 @@ describe('the snapshot reports processing', () => {
     const node = nodeAt(snapshot.root, 'photo.png')
 
     expect(node?.processing).toBe('queued')
-    expect(node?.tasks.map(task => task.kind)).toEqual(['optimize', 'tag'])
+    expect(node?.tasks.map(task => task.kind)).toEqual(['optimize', 'tag', 'preview'])
   })
 
   test('a file nobody processed reports null, not done', async () => {
@@ -309,7 +313,7 @@ describe('reprocessDashboardFile', () => {
 
     const result = await reprocessDashboardFile({ path: 'photo.png' }, manager, store, dispatch)
 
-    expect(result.tasks.map(task => task.kind)).toEqual(['optimize', 'tag'])
+    expect(result.tasks.map(task => task.kind)).toEqual(['optimize', 'tag', 'preview'])
     // The failed task is reset to queued rather than left showing its old
     // error beside a job that is about to run.
     const optimize = (await store.tasksUnder('public', '')).get('photo.png')?.find(task => task.kind === 'optimize')
@@ -333,7 +337,7 @@ describe('reprocessDashboardFile', () => {
       .rejects.toThrow(/was not found/)
   })
 
-  test('rejects a kind that is not one of the three', async () => {
+  test('rejects a kind that is not one of the four', async () => {
     await manager.disk('public').write('photo.png', 'x')
 
     expect(reprocessDashboardFile({ path: 'photo.png', kinds: ['reticulate'] }, manager, store, dispatch))

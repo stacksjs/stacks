@@ -472,6 +472,67 @@ the derivatives back to the same disk under `.variants/<path>/`, hidden from the
 listing. Nothing runs inside the request: a transcode is minutes, and a vision
 call is a round trip to a third party.
 
+### File previews
+
+Every upload the file manager can show more than an icon for gets a `preview`
+task (stacksjs/stacks#308). `GenerateStoragePreviewJob` draws it once, on the
+`media` queue, and stores it as an ordinary file beside the other derivatives:
+
+```
+.variants/<path>/preview.png   # images, WAV waveforms, TrueType specimens
+.variants/<path>/preview.txt   # text: the first 12 lines, 80 columns each
+```
+
+Previews are generated once and served as stored files, not rendered on demand
+at the edge, so they reuse the task row, the queue and the reconciliation the
+rest of the pipeline already has. A rename through the dashboard moves the
+`.variants/` folder with the file, and a delete removes it.
+
+Only what the framework's own libraries can draw is drawn. Nothing shells out
+to ffmpeg, ImageMagick or a headless browser:
+
+| Kind | Preview | How |
+|---|---|---|
+| PNG, JPEG, GIF, BMP, WebP, AVIF | PNG, longest edge 320px, never upscaled | `ts-images` decode, resize, PNG encode, all in memory |
+| WAV (uncompressed PCM) | 320x120 waveform | peaks read straight off the samples, drawn with `ts-images` |
+| TrueType `.ttf` | 320x200 specimen | the font itself, through the `ts-images` glyph rasterizer |
+| Text, Markdown, CSV, JSON, YAML, code | plain-text snippet | first lines of the file, control characters stripped |
+
+Everything else with a preview kind is recorded as a `skipped` task, with the
+reason in `error`, and is never queued:
+
+| Kind | Why it is skipped |
+|---|---|
+| SVG | Never rasterized: it is markup, and drawing attacker-supplied SVG is script execution |
+| Video | Decoding a frame goes through WebCodecs, which Bun does not provide |
+| MP3, AAC, FLAC, Ogg | Same: `@ts-audio` decodes through WebCodecs |
+| PDF | There is no homegrown PDF renderer |
+| OTF (CFF), WOFF, WOFF2 | The rasterizer reads TrueType outlines only |
+| HEIC, TIFF | No decoder for either |
+
+Archives and unknown binaries get no preview row at all.
+
+The job checks the bytes before drawing. A file whose bytes disagree with its
+name - a PDF called `.png`, a WOFF called `.ttf`, NUL bytes in a `.txt` - is
+skipped rather than drawn as whatever it turned out to be. A file that is what
+it claims and is broken fails, counts the attempt, and is retried by the queue.
+`skipped` is terminal and does not count towards a file's `processing` state,
+so a photo whose preview was skipped and whose variants finished reads as
+`done`.
+
+The listing carries the result. `preview` is the URL of the stored image on a
+public disk, and `previewText` is the snippet on any disk, because the server
+reads it. A private disk has no URL for its originals, so it gets none for
+their previews either. Re-run one with:
+
+```
+POST /api/dashboard/files/reprocess  { disk, path, kinds: ['preview'] }
+```
+
+Outside the dashboard, `generateStoragePreview(adapter, store, disk, path)` in
+`app/Actions/Dashboard/Content/file-preview.ts` is what the job runs, and
+`previewPathFor(path)` is where it writes.
+
 ### S3 Visibility
 
 ```typescript

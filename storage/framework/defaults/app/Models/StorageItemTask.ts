@@ -5,7 +5,8 @@ import { schema } from '@stacksjs/validation'
  * One unit of background processing for one file (stacksjs/stacks#2578).
  *
  * The three things #245 asked for that could not happen inside a request -
- * image optimization, video transcode, AI tagging - share the same shape:
+ * image optimization, video transcode, AI tagging - and the preview #308 asked
+ * for share the same shape:
  * dispatch work and show what happened to it. Transcoding is minutes, not
  * milliseconds; a vision call is a round trip to a third party. An upload
  * handler that waits for either is an upload handler that times out.
@@ -81,10 +82,11 @@ export default defineModel({
     kind: {
       order: 3,
       fillable: true,
-      // `optimize` (images), `transcode` (video), `tag` (AI). An enum rather
-      // than free text so a typo in a dispatch is a validation error instead of
-      // a task nothing will ever run.
-      validation: { rule: schema.enum(['optimize', 'transcode', 'tag']) },
+      // `optimize` (images), `transcode` (video), `tag` (AI), `preview` (the
+      // file manager's thumbnail, stacksjs/stacks#308). An enum rather than
+      // free text so a typo in a dispatch is a validation error instead of a
+      // task nothing will ever run.
+      validation: { rule: schema.enum(['optimize', 'transcode', 'tag', 'preview']) },
       factory: () => 'optimize',
     },
 
@@ -92,7 +94,10 @@ export default defineModel({
       order: 4,
       fillable: true,
       default: 'queued',
-      validation: { rule: schema.enum(['queued', 'running', 'done', 'failed']) },
+      // `skipped` is terminal and not a failure: the work does not apply to
+      // this file here - a PDF with no renderer to draw it - and `error`
+      // carries the reason, so the dashboard can say why.
+      validation: { rule: schema.enum(['queued', 'running', 'done', 'failed', 'skipped']) },
       factory: () => 'queued',
     },
 
@@ -109,8 +114,9 @@ export default defineModel({
     error: {
       order: 6,
       fillable: true,
-      // The failure as the worker saw it. Truncated by the writer rather than
-      // by the column, so a stack trace does not silently lose its first line.
+      // The failure as the worker saw it, or why a skipped task did not apply.
+      // Truncated by the writer rather than by the column, so a stack trace
+      // does not silently lose its first line.
       validation: { rule: schema.string().max(2000) },
       factory: () => '',
     },

@@ -12,6 +12,8 @@ interface FileItem {
   mime_type?: string
   url?: string
   thumbnail?: string
+  preview?: string
+  previewText?: string
   starred: false
   shared: boolean
   items?: FileItem[]

@@ -7,6 +7,10 @@ interface FileItem {
   mime_type?: string
   url?: string
   thumbnail?: string
+  /** A generated preview image (stacksjs/stacks#308): a scaled photo, a waveform, a font specimen. */
+  preview?: string
+  /** The first lines of a text file, shown as text rather than an image. */
+  previewText?: string
 }
 
 const EMPTY_ITEM: FileItem = {
@@ -49,8 +53,14 @@ function kindOf(value: FileItem): string {
 
 const kind = derived(() => kindOf(currentItem()))
 const extension = derived(() => (currentItem().type || '').toUpperCase())
-const previewUrl = derived(() => currentItem().thumbnail || currentItem().url || '')
-const hasImage = derived(() => kind() === 'image' && Boolean(previewUrl()))
+// The generated preview wins over the original: it is a small PNG for any kind
+// that could be drawn, where the original may be a 40 MB photo or not an image
+// at all. Only an image falls back to the original, because only an image can
+// be shown by pointing an <img> at it.
+const previewUrl = derived(() => currentItem().preview || (kind() === 'image' ? currentItem().thumbnail || currentItem().url || '' : ''))
+const hasImage = derived(() => Boolean(previewUrl()))
+const hasText = derived(() => !hasImage() && Boolean(currentItem().previewText))
+const imageClass = derived(() => currentItem().preview && kind() !== 'image' ? 'object-contain h-full w-full' : 'object-cover h-full w-full')
 
 const backdropByKind: Record<string, string> = {
   image: 'bg-gradient-to-br from-sky-50 to-indigo-100 dark:from-neutral-800 dark:to-neutral-900',
@@ -79,7 +89,8 @@ const badgeClass = derived(() => kind() === 'video'
 
 <div class="flex flex-col">
   <div :class="previewClass()">
-    <img :if="hasImage()" :src="previewUrl()" :alt="currentItem().name" loading="lazy" class="object-cover h-full w-full" />
+    <img :if="hasImage()" :src="previewUrl()" :alt="currentItem().name" loading="lazy" :class="imageClass()" />
+    <pre :else-if="hasText()" class="absolute inset-0 overflow-hidden m-0 pb-2 pt-7 px-3 font-mono leading-[1.35] text-[9px] text-left text-stone-600 whitespace-pre dark:text-neutral-300 bg-white/80 dark:bg-neutral-900/60">{{ currentItem().previewText }}</pre>
     <div :else-if="kind() === 'video'" class="flex items-center justify-center h-12 w-12 bg-white/90 rounded-full shadow-md"><span class="ml-0.5 h-5 w-5 text-neutral-900 i-hugeicons-play"></span></div>
     <span :else :class="glyphClass()"></span>
     <span :if="currentItem().type !== 'folder' && extension()" :class="badgeClass()">{{ extension() }}</span>

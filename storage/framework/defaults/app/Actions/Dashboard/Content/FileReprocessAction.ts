@@ -5,7 +5,7 @@ import { DashboardFileError, reprocessDashboardFile } from './file-manager'
 
 export default new Action({
   name: 'FileReprocessAction',
-  description: 'Re-runs the background processing for a file: image variants, video renditions, AI tags.',
+  description: 'Re-runs the background processing for a file: image variants, video renditions, AI tags, previews.',
   method: 'POST',
   async handle(request: RequestInstance) {
     try {

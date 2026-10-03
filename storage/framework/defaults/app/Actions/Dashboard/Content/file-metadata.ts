@@ -42,28 +42,79 @@ export interface StorageItemMetadata {
 }
 
 /**
- * The three kinds of background work a file can carry (stacksjs/stacks#2578).
+ * The kinds of background work a file can carry (stacksjs/stacks#2578, #308).
  *
  * `optimize` builds the image variants, `transcode` the mp4 and HLS renditions,
- * `tag` asks a vision model what is in the file. Independent: a video whose
- * transcode finished and whose tagging failed is a normal state.
+ * `tag` asks a vision model what is in the file, `preview` renders the small
+ * image a file manager shows in place of a generic icon. Independent: a video
+ * whose transcode finished and whose tagging failed is a normal state.
  */
-export type StorageTaskKind = 'optimize' | 'transcode' | 'tag'
+export type StorageTaskKind = 'optimize' | 'transcode' | 'tag' | 'preview'
 
-export type StorageTaskState = 'queued' | 'running' | 'done' | 'failed'
+/**
+ * Where one task is.
+ *
+ * `skipped` is not a failure and not a success: the work does not apply to this
+ * file HERE - a PDF with no homegrown renderer to draw it, an SVG that is not
+ * rasterized because it is markup somebody else wrote. It is recorded rather
+ * than left absent so a file manager can say why a file has no preview, and it
+ * is terminal, so the queue does not retry something that cannot succeed.
+ */
+export type StorageTaskState = 'queued' | 'running' | 'done' | 'failed' | 'skipped'
 
 /** One unit of background work, as the dashboard sees it. */
 export interface StorageItemTask {
   kind: StorageTaskKind
   state: StorageTaskState
   attempts: number
+  /** Why a `failed` task failed, or why a `skipped` one did not apply. */
   error?: string
   startedAt?: string
   finishedAt?: string
 }
 
 /** Every task kind, in the order a file would run them. */
-export const STORAGE_TASK_KINDS: readonly StorageTaskKind[] = ['optimize', 'transcode', 'tag']
+export const STORAGE_TASK_KINDS: readonly StorageTaskKind[] = ['optimize', 'transcode', 'tag', 'preview']
+
+/**
+ * Thrown from a task's work to record it as `skipped` rather than `failed`.
+ *
+ * For the case only the bytes can reveal: a `.png` whose bytes are a PDF, a
+ * `.ttf` that turns out to be a compressed WOFF. That is not a fault to retry -
+ * a second attempt reads the same bytes - so {@link runTask} records the reason
+ * and returns instead of rethrowing.
+ */
+export class StorageTaskSkipped extends Error {
+  constructor(reason: string) {
+    super(reason)
+    this.name = 'StorageTaskSkipped'
+  }
+}
+
+/**
+ * Where derivatives live, relative to the disk root (stacksjs/stacks#2578).
+ *
+ * Hidden, so the file manager's listing skips it. Defined here rather than in
+ * a job, because the request path needs it too - a rename has to move a file's
+ * derivatives with it - and importing a job would load its encoder.
+ */
+export const VARIANT_PREFIX = '.variants'
+
+/** The folder holding one file's derivatives. */
+export function variantsPathFor(path: string): string {
+  return `${VARIANT_PREFIX}/${path}`
+}
+
+/**
+ * Where a file's preview is stored (stacksjs/stacks#308).
+ *
+ * Derived from the path rather than recorded in a column, so it cannot go
+ * stale: the task row says whether one was made, and this says where. A rename
+ * through the dashboard moves the folder it sits in along with the task row.
+ */
+export function previewPathFor(path: string): string {
+  return `${variantsPathFor(path)}/preview.png`
+}
 
 /** The `taggable_type` these rows use, which keeps them apart from the CMS's. */
 export const STORAGE_ITEM_TYPE = 'storage_items'
@@ -313,25 +364,40 @@ export async function sweepMetadata(
 export function aggregateTaskState(tasks: readonly StorageItemTask[]): StorageTaskState | null {
   if (tasks.length === 0)
     return null
-  if (tasks.some(task => task.state === 'failed'))
+  // A skipped task says nothing about the work that DID apply, so it does not
+  // count towards the word - a photo whose preview was skipped and whose
+  // variants finished is done. Only a file where nothing applied reads as
+  // skipped, which is still more than `null`: somebody looked.
+  const applied = tasks.filter(task => task.state !== 'skipped')
+  if (applied.length === 0)
+    return 'skipped'
+  if (applied.some(task => task.state === 'failed'))
     return 'failed'
-  if (tasks.some(task => task.state === 'running'))
+  if (applied.some(task => task.state === 'running'))
     return 'running'
-  if (tasks.some(task => task.state === 'queued'))
+  if (applied.some(task => task.state === 'queued'))
     return 'queued'
   return 'done'
 }
 
+/** The bare, lower-cased MIME type, without parameters. */
+export function bareMime(contentType: string | undefined): string {
+  return (contentType ?? '').toLowerCase().split(';')[0]?.trim() ?? ''
+}
+
 /**
- * Which kinds of work a file's content type calls for.
+ * Which kinds of media work a file's content type calls for.
  *
  * Decided from the MIME type rather than the extension, when one is known: a
  * `.mp4` that is actually a PDF should not be handed to a transcoder. Tagging
  * applies to images and video alike, because a vision model can describe a
  * frame as readily as a photograph.
+ *
+ * `preview` is not decided here: it applies to far more types than these, and
+ * `file-preview.ts` owns which (stacksjs/stacks#308).
  */
 export function tasksForContentType(contentType: string | undefined): StorageTaskKind[] {
-  const mime = (contentType ?? '').toLowerCase().split(';')[0]?.trim() ?? ''
+  const mime = bareMime(contentType)
 
   if (mime.startsWith('image/')) {
     // SVG is markup, not a raster: there is nothing to re-encode, and running
@@ -361,10 +427,24 @@ export async function dispatchTasks(
   path: string,
   kinds: readonly StorageTaskKind[],
   dispatch: (kind: StorageTaskKind) => Promise<void>,
+  /**
+   * The reason a kind does not apply, when that is already known from the
+   * content type. Such a kind is recorded `skipped` and never queued: a queue
+   * entry that can only find out what the dispatcher already knew is noise.
+   */
+  skip: (kind: StorageTaskKind) => string | undefined = () => undefined,
 ): Promise<StorageItemTask[]> {
   const queued: StorageItemTask[] = []
 
   for (const kind of kinds) {
+    const reason = skip(kind)
+    if (reason !== undefined) {
+      const skipped: StorageItemTask = { kind, state: 'skipped', attempts: 0, error: reason, finishedAt: new Date().toISOString() }
+      await store.writeTask(disk, path, skipped)
+      queued.push(skipped)
+      continue
+    }
+
     const task: StorageItemTask = { kind, state: 'queued', attempts: 0 }
     await store.writeTask(disk, path, task)
 
@@ -400,6 +480,10 @@ export async function dispatchTasks(
  * and applies its backoff. The row and the queue are answering different
  * questions: the queue decides whether to try again, the row is what somebody
  * looking at the file sees.
+ *
+ * The one exception is {@link StorageTaskSkipped}: recorded as `skipped` with
+ * its reason, and NOT rethrown, because a retry would read the same bytes and
+ * reach the same answer. The result is `undefined` in that case.
  */
 export async function runTask<T>(
   store: StorageMetadataStore,
@@ -407,7 +491,7 @@ export async function runTask<T>(
   path: string,
   kind: StorageTaskKind,
   work: () => Promise<T>,
-): Promise<T> {
+): Promise<T | undefined> {
   const previous = (await store.tasksUnder(disk, path)).get(path)?.find(task => task.kind === kind)
   const attempts = (previous?.attempts ?? 0) + 1
   const startedAt = new Date().toISOString()
@@ -428,6 +512,18 @@ export async function runTask<T>(
     return result
   }
   catch (error) {
+    if (error instanceof StorageTaskSkipped) {
+      await store.writeTask(disk, path, {
+        kind,
+        state: 'skipped',
+        attempts,
+        startedAt,
+        finishedAt: new Date().toISOString(),
+        error: describeError(error),
+      })
+      return undefined
+    }
+
     await store.writeTask(disk, path, {
       kind,
       state: 'failed',
