@@ -17,7 +17,7 @@ export default new Action({
       return response.error(BILLING_NOT_ENABLED, 503)
 
     const setupIntent = await user.createSetupIntent({
-      payment_method_types: ['card', 'link', 'us_bank_account'],
+      allowed_payment_method_types: ['card', 'link', 'us_bank_account'],
     })
 
     return response.json(setupIntent)

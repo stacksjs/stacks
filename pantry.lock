@@ -282,7 +282,7 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^10.0.0",
         "better-dx": "^0.2.24"
       }
     },
@@ -615,7 +615,7 @@
       "name": "@stacksjs/desktop-build",
       "version": "0.75.40",
       "dependencies": {
-        "craft-native": ">=0.0.55"
+        "craft-native": ">=0.0.107"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -864,7 +864,7 @@
       "name": "@stacksjs/mobile",
       "version": "0.75.40",
       "dependencies": {
-        "craft-native": ">=0.0.103"
+        "craft-native": ">=0.0.107"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -959,7 +959,7 @@
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.24",
-        "stripe": "22.3.2"
+        "stripe": "23.0.0"
       }
     },
     "storage/framework/core/pagination": {
@@ -986,9 +986,9 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^10.0.0",
         "better-dx": "^0.2.24",
-        "stripe": "22.3.2"
+        "stripe": "23.0.0"
       }
     },
     "storage/framework/core/push": {
@@ -1779,12 +1779,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/ts-xml/-/ts-xml-0.1.2.tgz",
       "integrity": "sha512-G20EuKCmpwWwnXfFlX0kxCXnJ6ocTgBl8lcHkOzmomC8L/Ld+UKeNLlvOQf9ArnS7/SHUQ2+fZpM0t6lhwoyPw=="
     },
-    "@stripe/stripe-js@9.17.0": {
+    "@stripe/stripe-js@10.0.0": {
       "name": "@stripe/stripe-js",
-      "version": "9.17.0",
+      "version": "10.0.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stripe/stripe-js/-/stripe-js-9.17.0.tgz",
-      "integrity": "sha512-uidL4OJum5kivsOAQnVfQmYLJ2zdgirtmT0zWgskASZ4TPXxpXQ0MNrzW4NsXB90uEqmPHpSEtciLFbF1QQvNA=="
+      "resolved": "https://registry.npmjs.org/@stripe/stripe-js/-/stripe-js-10.0.0.tgz",
+      "integrity": "sha512-y5LKFTtnz1ciM+IQfrDfHcpjGlsm5Ao4onaUn4scurI/B6rNhrmV+ScTPDo+3Ges5oF8ol4tBkBAIZyVXVBIXw=="
     },
     "@ts-audio/core@0.1.2": {
       "name": "@ts-audio/core",
@@ -1953,12 +1953,12 @@
       "source": "pantry",
       "resolved": "registry:bun.sh@1.4.2"
     },
-    "craft-native@0.0.105": {
+    "craft-native@0.0.107": {
       "name": "craft-native",
-      "version": "0.0.105",
+      "version": "0.0.107",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.105.tgz",
-      "integrity": "sha512-NQ+wra/eL4tGjAtSay8LJip+VeIS/yhc2dsIIGb7oc6sP7DGZrKqnLSN2c2l8ey175sqd6N7crG6ucz7psIlUg==",
+      "resolved": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.107.tgz",
+      "integrity": "sha512-AQNcrFtq5EPvfz4oSCpgjzZQoncGsMnEUh52C051UYyFFSq6iif0N8cc8IvNWCMAFR7O+sKDA15yxqJHqWFbjw==",
       "bin": {
         "craft-sdk": "./dist/cli.js"
       }
@@ -2166,14 +2166,14 @@
       "source": "pantry",
       "resolved": "registry:sqlite.org@3.53.4"
     },
-    "stripe@22.3.2": {
+    "stripe@23.0.0": {
       "name": "stripe",
-      "version": "22.3.2",
+      "version": "23.0.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/stripe/-/stripe-22.3.2.tgz",
-      "integrity": "sha512-O13QOvgEIQvDlTy6Ubb5kB980wpbhmoZNsgCXKILjCMZS67f+bW+6w99k3gnSi/N1lkryoj1WYdpGT5Wc5edjg==",
+      "resolved": "https://registry.npmjs.org/stripe/-/stripe-23.0.0.tgz",
+      "integrity": "sha512-MDE2A5ZVVluYURORaZEVghSmnLJc3w6aHAlZSxDQMsOjOb3V0O6ro/CiaeFlJS4N7uIVmsg98ocRsPmUK6YfyA==",
       "peerDependencies": {
-        "@types/node": ">=18"
+        "@types/node": ">=20"
       },
       "optionalPeers": ["@types/node"]
     },

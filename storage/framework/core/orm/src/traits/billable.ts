@@ -482,5 +482,6 @@ function getStripe(): Stripe {
       + 'It is an opt-in dependency - run `bun add stripe` to enable Stripe Connect.',
     )
   }
-  return new StripeCtor(secret, { apiVersion: '2026-06-24.dahlia' })
+  // The version the installed SDK's types describe, read from the SDK.
+  return new StripeCtor(secret, { apiVersion: StripeCtor.API_VERSION })
 }

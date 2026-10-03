@@ -174,7 +174,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.105",
+        "craft-native": ">=0.0.107",
         "pickier": "^0.1.65",
       },
       "optionalPeers": [
@@ -296,11 +296,11 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^10.0.0",
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^10.0.0",
       },
       "optionalPeers": [
         "@stripe/stripe-js",
@@ -646,7 +646,7 @@
       "name": "@stacksjs/desktop-build",
       "version": "0.75.40",
       "dependencies": {
-        "craft-native": ">=0.0.55",
+        "craft-native": ">=0.0.107",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -901,7 +901,7 @@
       "name": "@stacksjs/mobile",
       "version": "0.75.40",
       "dependencies": {
-        "craft-native": ">=0.0.103",
+        "craft-native": ">=0.0.107",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -996,14 +996,14 @@
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.24",
-        "stripe": "22.3.2",
+        "stripe": "23.0.0",
       },
       "peerDependencies": {
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/payments": "workspace:*",
         "@stacksjs/queue": "workspace:*",
         "@stacksjs/search-engine": "workspace:*",
-        "stripe": "22.3.2",
+        "stripe": "23.0.0",
       },
       "optionalPeers": [
         "@stacksjs/auth",
@@ -1037,13 +1037,13 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^10.0.0",
         "better-dx": "^0.2.24",
-        "stripe": "22.3.2",
+        "stripe": "23.0.0",
       },
       "peerDependencies": {
-        "@stripe/stripe-js": "^9.10.0",
-        "stripe": "22.3.2",
+        "@stripe/stripe-js": "^10.0.0",
+        "stripe": "23.0.0",
       },
       "optionalPeers": [
         "@stripe/stripe-js",
@@ -1783,7 +1783,7 @@
 
     "@stacksjs/whois": ["@stacksjs/whois@workspace:storage/framework/core/whois"],
 
-    "@stripe/stripe-js": ["@stripe/stripe-js@9.17.0", "", {}, "sha512-uidL4OJum5kivsOAQnVfQmYLJ2zdgirtmT0zWgskASZ4TPXxpXQ0MNrzW4NsXB90uEqmPHpSEtciLFbF1QQvNA=="],
+    "@stripe/stripe-js": ["@stripe/stripe-js@10.0.0", "", {}, "sha512-y5LKFTtnz1ciM+IQfrDfHcpjGlsm5Ao4onaUn4scurI/B6rNhrmV+ScTPDo+3Ges5oF8ol4tBkBAIZyVXVBIXw=="],
 
     "@ts-audio/aac": ["@ts-audio/aac@0.1.2", "", { "peerDependencies": { "@ts-audio/core": "0.1.2" } }, "sha512-9VD0vAuD22Qck6BSn0aX6c0gxqZVNP/ZZGRsAN+vRszBI6qRamfPt/QB/vPpwCLTKjdBZontzmtXSVJhIL0zXA=="],
 
@@ -1911,7 +1911,7 @@
 
     "cors": ["cors@2.8.6", "", { "dependencies": { "object-assign": "^4", "vary": "^1" } }, "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw=="],
 
-    "craft-native": ["craft-native@0.0.105", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-NQ+wra/eL4tGjAtSay8LJip+VeIS/yhc2dsIIGb7oc6sP7DGZrKqnLSN2c2l8ey175sqd6N7crG6ucz7psIlUg=="],
+    "craft-native": ["craft-native@0.0.107", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-AQNcrFtq5EPvfz4oSCpgjzZQoncGsMnEUh52C051UYyFFSq6iif0N8cc8IvNWCMAFR7O+sKDA15yxqJHqWFbjw=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 
@@ -2081,7 +2081,7 @@
 
     "statuses": ["statuses@2.0.2", "", {}, "sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw=="],
 
-    "stripe": ["stripe@22.3.2", "", { "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-O13QOvgEIQvDlTy6Ubb5kB980wpbhmoZNsgCXKILjCMZS67f+bW+6w99k3gnSi/N1lkryoj1WYdpGT5Wc5edjg=="],
+    "stripe": ["stripe@23.0.0", "", { "peerDependencies": { "@types/node": ">=20" }, "optionalPeers": ["@types/node"] }, "sha512-MDE2A5ZVVluYURORaZEVghSmnLJc3w6aHAlZSxDQMsOjOb3V0O6ro/CiaeFlJS4N7uIVmsg98ocRsPmUK6YfyA=="],
 
     "stx-router": ["stx-router@0.2.348", "", {}, "sha512-FpRLmqmgUpnzuBtXYp3Jiw1qY11e6JOcagUqjxdH0TCHkE4XU7G/9NNAtAfZ9mpp2bjLr8AES0nxKBwEmxWEww=="],
 

@@ -109,7 +109,7 @@
     "bun-plugin-stx": "^0.2.348"
   },
   "peerDependencies": {
-    "craft-native": ">=0.0.105",
+    "craft-native": ">=0.0.107",
     "pickier": "^0.1.65"
   },
   "peerDependenciesMeta": {

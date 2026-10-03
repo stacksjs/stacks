@@ -68,8 +68,8 @@
     "@stacksjs/types": "workspace:*"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^9.10.0",
-    "stripe": "22.3.2"
+    "@stripe/stripe-js": "^10.0.0",
+    "stripe": "23.0.0"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
@@ -81,8 +81,8 @@
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0",
+    "@stripe/stripe-js": "^10.0.0",
     "better-dx": "^0.2.24",
-    "stripe": "22.3.2"
+    "stripe": "23.0.0"
   }
 }

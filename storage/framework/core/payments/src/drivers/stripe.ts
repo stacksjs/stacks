@@ -41,16 +41,16 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
       if (!apiKey) {
         throw new Error('Stripe secret key is not configured. Set STRIPE_SECRET_KEY in your .env file.')
       }
-      // Pin the API version through config so deployments can roll
-      // forward without a code change. The fallback matches what the
-      // pantry-vendored Stripe SDK types are compiled against — bumping
-      // it here without bumping the SDK would mean responses include
-      // fields the SDK doesn't know about. Update both at once.
-      const apiVersion: Stripe.LatestApiVersion = '2026-06-24.dahlia'
+      // The API version is the one the installed SDK's types describe, read
+      // from the SDK itself: a hand-written copy here had to be edited in
+      // step with every major and was not (it pinned 22's version under 23).
+      // A configured version must match it, since responses in any other
+      // version carry fields the SDK's types do not know about.
+      const Stripe = StripeCtor()
+      const apiVersion = Stripe.API_VERSION
       const configuredVersion = services?.stripe?.apiVersion
       if (configuredVersion && configuredVersion !== apiVersion)
         throw new Error(`Stripe API version ${configuredVersion} does not match the installed SDK version ${apiVersion}`)
-      const Stripe = StripeCtor()
       _stripe = new Stripe(apiKey, { apiVersion })
     }
     return (_stripe as unknown as Record<string | symbol, unknown>)[prop]

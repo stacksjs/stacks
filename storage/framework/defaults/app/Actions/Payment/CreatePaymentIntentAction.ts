@@ -30,7 +30,7 @@ export default new Action({
     // method is `createPayment`: `user.paymentIntent()` never existed.
     const paymentIntent = await user.createPayment(Number(product.get('price')), {
       currency: 'usd',
-      payment_method_types: ['card'],
+      allowed_payment_method_types: ['card'],
     })
 
     return response.json(paymentIntent)
