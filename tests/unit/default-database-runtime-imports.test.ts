@@ -9,6 +9,9 @@ describe('default application database imports', () => {
     const rootImports: string[] = []
 
     for (const file of new Bun.Glob('{Actions,Controllers}/**/*.ts').scanSync({ cwd: sourceRoot })) {
+      // Colocated tests set up a database on purpose; only runtime code is guarded.
+      if (file.endsWith('.test.ts'))
+        continue
       const source = readFileSync(join(sourceRoot, file), 'utf8')
       if (transpiler.scanImports(source).some(dependency => dependency.path === '@stacksjs/database'))
         rootImports.push(file)
