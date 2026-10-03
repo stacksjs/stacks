@@ -117,6 +117,6 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "better-dx": "^0.2.35"
+    "better-dx": "^0.2.36"
   }
 }
