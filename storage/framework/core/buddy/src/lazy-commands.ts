@@ -54,6 +54,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'desktop:apple:package': { path: './commands/desktop-apple.ts', exportName: 'desktopApple' },
   'desktop:apple:provision': { path: './commands/desktop-apple.ts', exportName: 'desktopApple' },
   'desktop:apple:publish': { path: './commands/desktop-apple.ts', exportName: 'desktopApple' },
+  'desktop:probe': { path: './commands/desktop-probe.ts', exportName: 'desktopProbe' },
   'dns': { path: './commands/dns.ts', exportName: 'dns' },
   'dns:pull': { path: './commands/dns.ts', exportName: 'dns' },
   'dns:diff': { path: './commands/dns.ts', exportName: 'dns' },

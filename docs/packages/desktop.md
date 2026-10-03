@@ -143,6 +143,11 @@ assertDesktopReleaseChannel('experimental')
 
 ## Related
 
+- `buddy desktop:probe` - measures whether a Craft window can host interactive or game
+  content (WebGL2/WebGPU, frame pacing, input and audio latency, gamepad, fullscreen,
+  pointer lock); the recorded results are in the
+  [capability matrix](../features/capabilities.md#desktop-interactive-content)
+  ([#877](https://github.com/stacksjs/stacks/issues/877)).
 - `buddy desktop:apple:*` - Mac App Store packaging and delivery
   ([#2199](https://github.com/stacksjs/stacks/issues/2199)). `desktop:apple:package
   --universal` ships one arm64 + x86_64 app: Bun cross-compiles both launcher slices, the

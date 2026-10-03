@@ -12,6 +12,12 @@
  * this generates it and `--check` fails CI when the two disagree. The same
  * shape as `docs:desktop-matrix` next door (#2059).
  *
+ * The same page carries a second generated block: the desktop target's
+ * interactive-content measurements (stacksjs/stacks#877), rendered from the
+ * probe records in `@stacksjs/desktop-build`. One command and one CI check
+ * cover both, so a record that changes without the page fails the same way a
+ * registry entry does.
+ *
  * Usage: `bun storage/framework/core/buddy/src/commands/docs/capabilities.ts [--check|--write]`
  */
 
@@ -20,6 +26,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { capabilityRegistry } from '../../../../config/src/capabilities'
+import { INTERACTIVE_BEGIN, INTERACTIVE_END, loadProbeRecords, renderInteractiveCapabilities } from '../../../../desktop/src/probe'
 import { assertFrameworkRepo } from './framework-repo'
 
 const root = new URL('../../../../../../../', import.meta.url).pathname
@@ -123,7 +130,19 @@ export function render(): string {
   ].join('\n')
 }
 
-function current(): string | null {
+/** A generated block: its markers and how to render it. */
+interface Block {
+  begin: string
+  end: string
+  render: () => string
+}
+
+export const blocks: readonly Block[] = [
+  { begin: BEGIN, end: END, render },
+  { begin: INTERACTIVE_BEGIN, end: INTERACTIVE_END, render: () => renderInteractiveCapabilities(loadProbeRecords()) },
+]
+
+function current(block: Block): string | null {
   let contents: string
   try {
     contents = readFileSync(page, 'utf8')
@@ -132,27 +151,30 @@ function current(): string | null {
     return null
   }
 
-  const start = contents.indexOf(BEGIN)
-  const end = contents.indexOf(END)
+  const start = contents.indexOf(block.begin)
+  const end = contents.indexOf(block.end)
   if (start === -1 || end === -1)
     return null
 
-  return contents.slice(start, end + END.length)
+  return contents.slice(start, end + block.end.length)
 }
 
 function write(): boolean {
-  const contents = readFileSync(page, 'utf8')
-  const start = contents.indexOf(BEGIN)
-  const end = contents.indexOf(END)
+  const original = readFileSync(page, 'utf8')
+  let contents = original
 
-  if (start === -1 || end === -1)
-    throw new Error(`[docs:capabilities] ${page} is missing the ${BEGIN} / ${END} markers`)
+  for (const block of blocks) {
+    const start = contents.indexOf(block.begin)
+    const end = contents.indexOf(block.end)
+    if (start === -1 || end === -1)
+      throw new Error(`[docs:capabilities] ${page} is missing the ${block.begin} / ${block.end} markers`)
+    contents = contents.slice(0, start) + block.render() + contents.slice(end + block.end.length)
+  }
 
-  const next = contents.slice(0, start) + render() + contents.slice(end + END.length)
-  if (next === contents)
+  if (contents === original)
     return false
 
-  writeFileSync(page, next)
+  writeFileSync(page, contents)
   return true
 }
 
@@ -163,20 +185,24 @@ export async function run(): Promise<void> {
 
   if (process.argv.includes('--write')) {
     console.log(write()
-      ? '✓ rewrote the capability matrix in docs/features/capabilities.md'
+      ? '✓ rewrote the generated sections of docs/features/capabilities.md'
       : '✓ the capability matrix was already current')
     return
   }
 
-  if (current() === render()) {
-    console.log(`✓ the capability matrix is current (${capabilityRegistry.length} drivers)`)
+  const stale = blocks.filter(block => current(block) !== block.render())
+  if (stale.length === 0) {
+    console.log(`✓ the capability matrix is current (${capabilityRegistry.length} drivers, ${loadProbeRecords().length} desktop probe records)`)
     return
   }
 
-  console.error(current() === null
-    ? '✗ docs/features/capabilities.md is missing its generated matrix section'
-    : '✗ docs/features/capabilities.md no longer matches capabilityRegistry')
-  console.error('\nRun `buddy docs:capabilities` to rewrite it from the registry.')
+  for (const block of stale) {
+    const source = block.begin === BEGIN ? 'capabilityRegistry' : 'the desktop probe records'
+    console.error(current(block) === null
+      ? `✗ docs/features/capabilities.md is missing its ${block.begin} section`
+      : `✗ docs/features/capabilities.md no longer matches ${source}`)
+  }
+  console.error('\nRun `buddy docs:capabilities` to rewrite it from its sources.')
 
   if (process.argv.includes('--check'))
     process.exit(1)

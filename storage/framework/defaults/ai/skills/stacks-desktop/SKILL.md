@@ -214,7 +214,19 @@ buddy desktop:apple:init       # generate the reusable GitHub Actions caller
 buddy desktop:apple:doctor     # validate Apple tooling, identities, profile, and API key
 buddy desktop:apple:package    # build, sandbox, sign, and create a Store .pkg
 buddy desktop:apple:publish    # validate or upload the package to App Store Connect
+buddy desktop:probe            # measure what a Craft window offers interactive/game content
 ```
+
+`desktop:probe` opens a visible Craft window (not `--headless`, which stops
+requestAnimationFrame) and measures WebGL2/WebGPU, frame pacing under load,
+input and audio latency, the Gamepad API, fullscreen and pointer lock.
+`--browser[=Safari]` runs the same page in a browser for comparison, and
+`--record` writes the result into `storage/framework/core/desktop/src/probe/results/`,
+which `buddy docs:capabilities` publishes in `docs/features/capabilities.md`.
+Probes that need a real click or key press are recorded as
+`requires-interaction`, never as a number. Stacks ships no game engine,
+physics or asset pipeline; this only says what an engine someone else wrote
+would get.
 
 ## Mac App Store
 

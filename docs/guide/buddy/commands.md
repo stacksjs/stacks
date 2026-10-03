@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **338 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **339 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -26,7 +26,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `dashboard` | 2 |
 | `db` | 3 |
 | `deploy` | 1 |
-| `desktop` | 6 |
+| `desktop` | 7 |
 | `dev` | 8 |
 | `dns` | 3 |
 | `docs` | 14 |
@@ -1272,6 +1272,36 @@ Build and validate or upload a signed Mac App Store package
 | `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
 | `--validate-only` | Validate with App Store Connect without uploading | boolean, optional | - |
 | `--package-only` | Create the signed package without contacting App Store Connect | boolean, optional | - |
+
+### `desktop:probe`
+
+Measure WebGL2/WebGPU, frame pacing, input and audio latency, gamepad, fullscreen and pointer lock in a Craft window
+
+- Usage: `$ buddy desktop:probe`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--browser` | Run the same page in a browser instead (default browser, or a named one on macOS) | value, optional | - |
+| `--no-open` | With --browser, print the URL instead of opening it | boolean, optional, negated | `true` |
+| `--record` | Write the record into the framework repository's probe results (framework checkout only) | boolean, optional | - |
+| `--out` | Also write the record as JSON to this file | value, required | - |
+| `--craft-bin` | Craft binary to use (defaults to CRAFT_BIN, then craft on PATH) | value, required | - |
+| `--interaction-window` | How long to wait for real clicks and key presses; 0 skips them (default 20) | value, required | - |
+| `--idle` | Idle frame-pacing sample length (default 3) | value, required | - |
+| `--load` | Loaded frame-pacing sample length (default 6) | value, required | - |
+| `--cpu-load` | Busy-wait added to each loaded frame (default 6) | value, required | - |
+| `--instances` | Instanced cubes drawn per loaded frame, 12 triangles each (default 40000) | value, required | - |
+| `--timeout` | Give up after this long | value, required | - |
+
+Examples:
+
+```bash
+buddy desktop:probe --record
+buddy desktop:probe --browser=Safari --record
+```
 
 ### `dev`
 

@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "measuredAt": "2026-10-02T23:56:17.740Z",
+  "host": {
+    "kind": "craft",
+    "name": "craft",
+    "version": "0.0.105",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+  },
+  "os": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "name": "macOS",
+    "version": "27.0",
+    "build": "26A428"
+  },
+  "machine": {
+    "model": "Mac15,6",
+    "cpu": "Apple M3 Pro",
+    "display": {
+      "name": "Color LCD",
+      "resolution": "1512 x 982 @ 120.00Hz",
+      "refreshHz": 120,
+      "devicePixelRatio": 2
+    }
+  },
+  "run": {
+    "idleMs": 3000,
+    "loadMs": 6000,
+    "cpuLoadMsPerFrame": 6,
+    "triangles": 480000,
+    "interactionWindowMs": 20000,
+    "sawRealInput": false
+  },
+  "probes": {
+    "webgl2": {
+      "status": "available",
+      "note": "WebGL2 context created (WebGL 2.0); renderer \"Apple GPU\", max texture 16384, MSAA up to 4x.",
+      "data": {
+        "ok": true,
+        "version": "WebGL 2.0",
+        "shadingLanguageVersion": "WebGL GLSL ES 3.00",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Apple Inc.",
+        "unmaskedRenderer": "Apple GPU",
+        "maxTextureSize": 16384,
+        "maxSamples": 4,
+        "extensions": 36
+      }
+    },
+    "webgpu": {
+      "status": "available",
+      "note": "Adapter (apple) and device created; maxTextureDimension2D 16384.",
+      "data": {
+        "present": true,
+        "adapter": true,
+        "device": true,
+        "vendor": "apple",
+        "architecture": "apple",
+        "description": "apple",
+        "maxTextureDimension2D": 16384,
+        "features": 21
+      }
+    },
+    "framePacing": {
+      "status": "measured",
+      "note": "requestAnimationFrame ran at 60 Hz on a 120 Hz display, so a game cannot reach the panel's rate. Under load (480,000 triangles + 6 ms CPU per frame): p50 17 ms, p95 18 ms, p99 18 ms; 0 frames dropped at 60 Hz and 359 at the display's 120 Hz over 6 s. The page clock is clamped to 1 ms, so intervals read as whole milliseconds.",
+      "data": {
+        "rafHz": 60,
+        "displayHz": 120,
+        "timerResolutionMs": 1,
+        "triangles": 480000,
+        "cpuLoadMsPerFrame": 6,
+        "hiddenDuringSampling": false,
+        "idle": {
+          "frames": 181,
+          "durationMs": 2997,
+          "fps": 60.06,
+          "p50Ms": 17,
+          "p95Ms": 18,
+          "p99Ms": 18,
+          "maxMs": 18,
+          "targetPeriodMs": 8.33,
+          "targetHz": 120,
+          "droppedFrames": 180,
+          "longFrames": 180,
+          "histogram": {
+            "bucketMs": 1,
+            "counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              63,
+              99,
+              12,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "overflow": 0
+          }
+        },
+        "load": {
+          "frames": 360,
+          "durationMs": 5983,
+          "fps": 60,
+          "p50Ms": 17,
+          "p95Ms": 18,
+          "p99Ms": 18,
+          "maxMs": 18,
+          "targetPeriodMs": 8.33,
+          "targetHz": 120,
+          "droppedFrames": 359,
+          "longFrames": 359,
+          "histogram": {
+            "bucketMs": 1,
+            "counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              13,
+              125,
+              190,
+              31,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "overflow": 0
+          }
+        },
+        "loadAtRafRate": {
+          "droppedFrames": 0,
+          "longFrames": 0
+        }
+      }
+    },
+    "inputLatency": {
+      "status": "requires-interaction",
+      "note": "No trusted input reached the page in the 20 s window, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.",
+      "data": {
+        "eventTimeStampComparable": true,
+        "eventTimingSupported": true,
+        "timerResolutionMs": 1
+      }
+    },
+    "audioLatency": {
+      "status": "measured",
+      "note": "The context started without a user gesture. baseLatency 2.7 ms, outputLatency 15.8 ms at 48000 Hz.",
+      "data": {
+        "initial": {
+          "state": "suspended",
+          "baseLatency": 0.0026666666666666666,
+          "outputLatency": 0,
+          "sampleRate": 48000
+        },
+        "afterUngesturedResume": {
+          "state": "running",
+          "baseLatency": 0.0026666666666666666,
+          "outputLatency": 0.015833333333333335,
+          "sampleRate": 48000
+        },
+        "afterGesturedResume": null
+      }
+    },
+    "gamepad": {
+      "status": "available",
+      "note": "navigator.getGamepads() is present; no controller was connected, so axis and button input was not exercised.",
+      "data": {
+        "present": true,
+        "connected": 0,
+        "ids": [],
+        "connectedEventSeen": false,
+        "secureContext": true
+      }
+    },
+    "fullscreen": {
+      "status": "unavailable",
+      "note": "Element.requestFullscreen and webkitRequestFullscreen are both undefined, so the standard Fullscreen API engines call does nothing. Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).",
+      "data": {
+        "elementApi": false,
+        "webkitElementApi": false,
+        "enabled": null,
+        "ungestured": {
+          "outcome": "no-api"
+        },
+        "gestured": {
+          "outcome": "not-attempted"
+        },
+        "nativeBridge": {
+          "outcome": "entered",
+          "detail": "viewport grew to the screen",
+          "sizeBefore": "1280x800",
+          "sizeAfter": "1512x949"
+        }
+      }
+    },
+    "pointerLock": {
+      "status": "requires-interaction",
+      "note": "The API exists but needs a real click to test. Without a gesture: rejected (NotAllowedError: Pointer lock requires a user gesture.).",
+      "data": {
+        "api": true,
+        "ungestured": {
+          "outcome": "rejected",
+          "detail": "NotAllowedError: Pointer lock requires a user gesture."
+        },
+        "gestured": {
+          "outcome": "not-attempted"
+        }
+      }
+    }
+  }
+}

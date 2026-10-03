@@ -10,7 +10,10 @@ const result = await Bun.build({
   // into the native bundle, and a consumer app only has the published package
   // to compile from — without it here, desktop builds work in this monorepo and
   // nowhere else.
-  entrypoints: ['./src/index.ts', './src/launcher.ts'],
+  // The interactive-content probe (stacksjs/stacks#877) ships too: the runner
+  // bundles page.js for the browser at run time, so both must be in dist/.
+  entrypoints: ['./src/index.ts', './src/launcher.ts', './src/probe/index.ts', './src/probe/runner.ts', './src/probe/page.ts'],
+  root: './src',
   outdir: './dist',
   format: 'esm',
   target: 'bun',
