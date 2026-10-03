@@ -79,7 +79,7 @@
     }
   },
   "devDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.79",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.288",
     "better-dx": "^0.2.24"
   }
 }

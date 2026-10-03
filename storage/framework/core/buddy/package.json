@@ -106,7 +106,7 @@
     "@stacksjs/build": "^0.75.40",
     "@stacksjs/cache": "^0.75.40",
     "@stacksjs/chat": "^0.75.40",
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/clapp": "^0.2.16",
     "@stacksjs/cli": "^0.75.40",
     "@stacksjs/cloud": "^0.75.40",
     "@stacksjs/cms": "^0.75.40",

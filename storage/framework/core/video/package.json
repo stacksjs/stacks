@@ -31,8 +31,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@ts-videos/mp4": "^0.1.1",
-    "@ts-videos/webm": "^0.1.1",
+    "@ts-videos/mp4": "^0.1.2",
+    "@ts-videos/webm": "^0.1.2",
     "ts-video-player": "^0.1.3",
     "ts-videos": "^0.1.2"
   },
