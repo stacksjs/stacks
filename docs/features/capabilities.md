@@ -208,7 +208,7 @@ on the same machine are measured alongside it for comparison.
 > which host version, on which OS and hardware. If your Craft is newer than the column,
 > the numbers describe something you are not running: re-measure with `buddy desktop:probe --record`.
 
-| Probe | Craft 0.0.105 | Safari 27.0 |
+| Probe | Craft 0.0.107 | Safari 27.0 |
 |---|---|---|
 | WebGL2 | **available** | **available** |
 | WebGPU | **available** | **available** |
@@ -216,25 +216,25 @@ on the same machine are measured alongside it for comparison.
 | Input latency | **requires-interaction** | **requires-interaction** |
 | Audio latency | **measured** - base 2.7 ms, output 15.8 ms | **requires-interaction** |
 | Gamepad API | **available** | **available** |
-| Fullscreen | **unavailable** | **requires-interaction** |
+| Fullscreen | **requires-interaction** | **requires-interaction** |
 | Pointer lock | **requires-interaction** | **requires-interaction** |
 | Measured on | macOS 27.0 arm64, Apple M3 Pro (Mac15,6) | macOS 27.0 arm64, Apple M3 Pro (Mac15,6) |
-| Measured at | 2026-10-02 | 2026-10-02 |
+| Measured at | 2026-10-03 | 2026-10-02 |
 
 - **available** / **measured** - the API exists and the probe exercised it.
 - **unavailable** - the API is missing, or creating it failed.
 - **requires-interaction** - needs a real click, key press or controller that the run did not have. What was still observable is in the notes; no number is invented.
 - **denied** - requested from a real click and refused.
 
-**Craft 0.0.105** - macOS 27.0 arm64, Apple M3 Pro (Mac15,6), 120 Hz display
+**Craft 0.0.107** - macOS 27.0 arm64, Apple M3 Pro (Mac15,6), 120 Hz display
 
 - **WebGL2** - WebGL2 context created (WebGL 2.0); renderer "Apple GPU", max texture 16384, MSAA up to 4x.
 - **WebGPU** - Adapter (apple) and device created; maxTextureDimension2D 16384.
 - **Frame pacing** - requestAnimationFrame ran at 60 Hz on a 120 Hz display, so a game cannot reach the panel's rate. Under load (480,000 triangles + 6 ms CPU per frame): p50 17 ms, p95 18 ms, p99 18 ms; 0 frames dropped at 60 Hz and 359 at the display's 120 Hz over 6 s. The page clock is clamped to 1 ms, so intervals read as whole milliseconds.
-- **Input latency** - No trusted input reached the page in the 20 s window, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.
+- **Input latency** - The interactive window was skipped, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.
 - **Audio latency** - The context started without a user gesture. baseLatency 2.7 ms, outputLatency 15.8 ms at 48000 Hz.
 - **Gamepad API** - navigator.getGamepads() is present; no controller was connected, so axis and button input was not exercised.
-- **Fullscreen** - Element.requestFullscreen and webkitRequestFullscreen are both undefined, so the standard Fullscreen API engines call does nothing. Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).
+- **Fullscreen** - The API exists (fullscreenEnabled true) but needs a real click to test. Without a gesture: rejected (TypeError: Cannot request fullscreen without transient activation.). Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).
 - **Pointer lock** - The API exists but needs a real click to test. Without a gesture: rejected (NotAllowedError: Pointer lock requires a user gesture.).
 
 **Safari 27.0** - macOS 27.0 arm64, Apple M3 Pro (Mac15,6), 120 Hz display

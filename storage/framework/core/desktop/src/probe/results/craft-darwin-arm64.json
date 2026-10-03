@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "measuredAt": "2026-10-02T23:56:17.740Z",
+  "measuredAt": "2026-10-03T03:18:48.124Z",
   "host": {
     "kind": "craft",
     "name": "craft",
-    "version": "0.0.105",
+    "version": "0.0.107",
     "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)"
   },
   "os": {
@@ -29,7 +29,7 @@
     "loadMs": 6000,
     "cpuLoadMsPerFrame": 6,
     "triangles": 480000,
-    "interactionWindowMs": 20000,
+    "interactionWindowMs": 0,
     "sawRealInput": false
   },
   "probes": {
@@ -75,11 +75,11 @@
         "hiddenDuringSampling": false,
         "idle": {
           "frames": 181,
-          "durationMs": 2997,
-          "fps": 60.06,
+          "durationMs": 3001,
+          "fps": 59.98,
           "p50Ms": 17,
-          "p95Ms": 18,
-          "p99Ms": 18,
+          "p95Ms": 17,
+          "p99Ms": 17.21,
           "maxMs": 18,
           "targetPeriodMs": 8.33,
           "targetHz": 120,
@@ -103,10 +103,10 @@
               0,
               0,
               0,
-              6,
-              63,
-              99,
-              12,
+              0,
+              61,
+              117,
+              2,
               0,
               0,
               0,
@@ -144,8 +144,8 @@
         },
         "load": {
           "frames": 360,
-          "durationMs": 5983,
-          "fps": 60,
+          "durationMs": 5985,
+          "fps": 59.98,
           "p50Ms": 17,
           "p95Ms": 18,
           "p99Ms": 18,
@@ -172,10 +172,10 @@
               0,
               0,
               0,
-              13,
-              125,
-              190,
-              31,
+              12,
+              137,
+              167,
+              43,
               0,
               0,
               0,
@@ -219,7 +219,7 @@
     },
     "inputLatency": {
       "status": "requires-interaction",
-      "note": "No trusted input reached the page in the 20 s window, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.",
+      "note": "The interactive window was skipped, and synthetic events are not counted. Observable: event.timeStamp is on the performance.now() clock, timer resolution 1 ms, Event Timing API supported.",
       "data": {
         "eventTimeStampComparable": true,
         "eventTimingSupported": true,
@@ -257,14 +257,15 @@
       }
     },
     "fullscreen": {
-      "status": "unavailable",
-      "note": "Element.requestFullscreen and webkitRequestFullscreen are both undefined, so the standard Fullscreen API engines call does nothing. Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).",
+      "status": "requires-interaction",
+      "note": "The API exists (fullscreenEnabled true) but needs a real click to test. Without a gesture: rejected (TypeError: Cannot request fullscreen without transient activation.). Craft's own window.craft.window.setFullscreen(true), which needs no gesture: entered (viewport grew to the screen).",
       "data": {
-        "elementApi": false,
-        "webkitElementApi": false,
-        "enabled": null,
+        "elementApi": true,
+        "webkitElementApi": true,
+        "enabled": true,
         "ungestured": {
-          "outcome": "no-api"
+          "outcome": "rejected",
+          "detail": "TypeError: Cannot request fullscreen without transient activation."
         },
         "gestured": {
           "outcome": "not-attempted"
