@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
+        uses: pantry-pm/pantry/packages/action@00f7f8d0f4b166db35d2e1405fdcefd442acd775 # v0.11.68
         with:
           install: 'false'
 
