@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.52...v0.75.53)
+
+## ✨ Features
+
+- **chat**: profile pictures in every inbox driver ([326cdb5](https://github.com/stacksjs/stacks/commit/326cdb5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.51...v0.75.52)
 
 ## 🐛 Bug Fixes
