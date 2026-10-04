@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.46...v0.75.47)
+
+## ✨ Features
+
+- **vscode**: type-check .stx files with the Stacks extension alone ([ddcf22f](https://github.com/stacksjs/stacks/commit/ddcf22f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **dashboard**: run the layout's own sidebar role map through the bridge ([062c92e](https://github.com/stacksjs/stacks/commit/062c92e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.45...v0.75.46)
 
 ## 🐛 Bug Fixes
