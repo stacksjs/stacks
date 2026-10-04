@@ -1,0 +1,162 @@
+name: Resize the app server when cx53 is back
+
+# stacks-production-app (Falkenstein) runs about 30 apps and the mail server on
+# a cx43: 8 shared vCPU and 16 GB, with 7 GB of swap in use. The step up, a
+# cx53 (16 vCPU, 32 GB, 320 GB, about 35 EUR a month), was sold out in every
+# location on 2026-10-04, and the types that were in stock cost four to five
+# times as much. So this waits for it.
+#
+# Every half hour it asks Hetzner whether a cx53 can be had in fsn1. Until one
+# can, it does nothing. When one can, it shuts the box down cleanly, changes
+# the type with the disk grown to 320 GB, powers it back on, waits for the
+# sites to answer, and disables itself. The apps and mail are down for the few
+# minutes the resize takes.
+#
+# It runs here rather than on the box because the box is what gets powered
+# off. Whatever happens after the shutdown, the last step powers it back on.
+#
+# Growing the disk means the box can never be resized back down to a cx43.
+# That is the point of the upgrade (the 160 GB disk was 74% full), but it is
+# why upgrade_disk is a line of its own below.
+#
+# Run it by hand with dry_run to see what it would do now.
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only report whether a cx53 is available and what would happen
+        type: boolean
+        default: true
+
+concurrency:
+  group: resize-app-server
+  cancel-in-progress: false
+
+permissions:
+  actions: write
+  contents: read
+
+env:
+  SERVER_NAME: stacks-production-app
+  TARGET_TYPE: cx53
+  LOCATION: fsn1
+  UPGRADE_DISK: 'true'
+  HCLOUD: https://api.hetzner.cloud/v1
+
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Find the server and whether the target type is in stock
+        id: check
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+        run: |
+          set -euo pipefail
+          api() { curl -fsS -H "Authorization: Bearer $HCLOUD_TOKEN" "$@"; }
+
+          server=$(api "$HCLOUD/servers?name=$SERVER_NAME" | jq -c '.servers[0] // empty')
+          if [ -z "$server" ]; then
+            echo "::error::No server named $SERVER_NAME"
+            exit 1
+          fi
+          id=$(jq -r .id <<<"$server")
+          current=$(jq -r .server_type.name <<<"$server")
+          memory=$(jq -r .server_type.memory <<<"$server")
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "$SERVER_NAME (#$id) is a $current with ${memory} GB"
+
+          if [ "$current" = "$TARGET_TYPE" ] || awk "BEGIN { exit !($memory >= 32) }"; then
+            echo "Already resized; nothing to do."
+            echo "state=done" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          available=$(api "$HCLOUD/server_types?name=$TARGET_TYPE" \
+            | jq -r --arg loc "$LOCATION" '[.server_types[0].locations[] | select(.name == $loc) | .available] | first // false')
+          echo "$TARGET_TYPE available in $LOCATION: $available"
+          if [ "$available" != "true" ]; then
+            echo "state=waiting" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "state=ready" >> "$GITHUB_OUTPUT"
+
+      - name: Stop here on a dry run
+        if: steps.check.outputs.state == 'ready' && github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: echo "::notice::A $TARGET_TYPE is available. A real run would resize ${SERVER_NAME} now."
+
+      - name: Shut down, resize, power on
+        id: resize
+        if: steps.check.outputs.state == 'ready' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          ID: ${{ steps.check.outputs.id }}
+        run: |
+          set -euo pipefail
+          api() { curl -fsS -H "Authorization: Bearer $HCLOUD_TOKEN" -H 'Content-Type: application/json' "$@"; }
+          status() { api "$HCLOUD/servers/$ID" | jq -r .server.status; }
+          wait_action() {
+            local action=$1 limit=$2 state
+            for _ in $(seq 1 "$limit"); do
+              state=$(api "$HCLOUD/actions/$action" | jq -r .action.status)
+              [ "$state" = success ] && return 0
+              [ "$state" = error ] && { api "$HCLOUD/actions/$action" | jq -c .action.error; return 1; }
+              sleep 5
+            done
+            echo "Action $action did not finish in time"
+            return 1
+          }
+
+          # Whatever fails from here on, the box comes back up.
+          power_on() {
+            if [ "$(status)" != running ]; then
+              echo "Powering $SERVER_NAME back on"
+              action=$(api -X POST "$HCLOUD/servers/$ID/actions/poweron" | jq -r .action.id)
+              wait_action "$action" 60 || true
+            fi
+          }
+          trap power_on EXIT
+
+          echo "::notice::Resizing $SERVER_NAME to $TARGET_TYPE"
+          # A clean ACPI shutdown first, so databases and mail flush. A hard
+          # power-off only if it is still running three minutes later.
+          api -X POST "$HCLOUD/servers/$ID/actions/shutdown" > /dev/null
+          for _ in $(seq 1 36); do
+            [ "$(status)" = off ] && break
+            sleep 5
+          done
+          if [ "$(status)" != off ]; then
+            echo "Still running after 3 minutes; powering off"
+            action=$(api -X POST "$HCLOUD/servers/$ID/actions/poweroff" | jq -r .action.id)
+            wait_action "$action" 36
+          fi
+
+          action=$(api -X POST "$HCLOUD/servers/$ID/actions/change_type" \
+            -d "{\"server_type\":\"$TARGET_TYPE\",\"upgrade_disk\":$UPGRADE_DISK}" | jq -r .action.id)
+          wait_action "$action" 180
+
+          power_on
+          trap - EXIT
+          echo "Now a $(api "$HCLOUD/servers/$ID" | jq -r .server.server_type.name)"
+
+      - name: Wait for the sites to answer
+        if: steps.resize.outcome == 'success'
+        run: |
+          for url in https://wildloop.org/api/health https://stacksjs.com; do
+            for _ in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "$url" || true)
+              [ "$code" -ge 200 ] && [ "$code" -lt 400 ] && break
+              sleep 10
+            done
+            echo "$url $code"
+          done
+
+      - name: Turn this workflow off
+        if: steps.resize.outcome == 'success' || steps.check.outputs.state == 'done'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow disable resize-app-server.yml --repo "$GITHUB_REPOSITORY"
