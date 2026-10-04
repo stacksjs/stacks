@@ -6,6 +6,8 @@ import * as teams from './drivers/teams'
 export * as discord from './drivers/discord'
 export * as slack from './drivers/slack'
 export * as teams from './drivers/teams'
+/** Reading and archiving conversations in iMessage, Slack and Discord. */
+export * as inbox from './inbox'
 
 export type ChatDriver = 'slack' | 'discord' | 'teams'
 

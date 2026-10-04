@@ -1,6 +1,6 @@
 ---
 name: stacks-chat
-description: Use when implementing chat messaging in Stacks - sending messages to Slack (webhooks, bot tokens, block kit), Discord (webhooks, bot tokens, embeds), Microsoft Teams (adaptive cards, webhooks), the BaseChatDriver abstraction, retry logic, or multi-channel chat routing. Covers @stacksjs/chat.
+description: Use when implementing chat messaging in Stacks - sending messages to Slack (webhooks, bot tokens, block kit), Discord (webhooks, bot tokens, embeds), Microsoft Teams (adaptive cards, webhooks), the BaseChatDriver abstraction, retry logic, multi-channel chat routing, or READING a person's conversations from iMessage, Slack and Discord and archiving them there (the inbox drivers). Covers @stacksjs/chat.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -341,6 +341,48 @@ async function sendCard(webhookUrl: string, card: TeamsAdaptiveCard, summary?: s
 - `TeamsDriver` class (also as `Driver`)
 - `driver` -- pre-instantiated singleton
 - `send()`, `sendWebhook()`, `sendCard()`, `configure()` functions
+
+## Inbox drivers (reading and archiving)
+
+`send()` pushes messages out. The inbox drivers go the other way: they list a
+person's conversations, read messages, notice new ones (a per-conversation
+`cursor`), and archive a conversation *in the real app* as far as the provider
+allows. Source: `chat/src/inbox/`. One interface, `InboxDriver`:
+
+```typescript
+import { inbox } from '@stacksjs/chat'
+
+const drivers = [
+  inbox.createInboxDriver('imessage', {}),                                 // chat.db, needs Full Disk Access
+  inbox.createInboxDriver('slack', { token: env.SLACK_USER_TOKEN }),       // xoxp user token
+  inbox.createInboxDriver('discord', { token: env.DISCORD_BOT_TOKEN, userId }), // bot token
+]
+for (const driver of drivers) {
+  if (!(await driver.status()).connected) continue
+  for (const c of await driver.conversations()) {
+    const fresh = await driver.messages(c.id, { after: lastCursor[c.id] })  // oldest first
+    if (wantArchived) await driver.archive(c.id)
+  }
+}
+```
+
+What archiving does is part of every conversation (`conversation.archive`):
+
+| Provider | `mode` | Effect in the real app |
+|---|---|---|
+| iMessage | `confirm` | Opens the conversation in Messages at Delete Conversation; the person confirms. Apple has no API, and editing chat.db is ignored or synced everywhere. |
+| Slack DM / group DM | `native` | `conversations.close`; Slack reopens it when someone writes. `unarchive` reopens. |
+| Slack public channel | `native` | `conversations.leave`; `unarchive` rejoins. |
+| Slack private channel | `unsupported` | Untouched: leaving would need a re-invite. |
+| Discord thread | `native` | Archived in Discord (reopens on a new post). |
+| Discord channel | `unsupported` | Discord cannot hide a channel for one person. |
+
+Discord personal DMs are deliberately absent: only a user token reads them, and
+automating a user account breaks Discord's terms. Reactions are separate
+`kind: 'reaction'` messages with `targetId` and an emoji `reaction`; Slack and
+Discord attachments carry a remote `url` that `driver.attachment()` fetches with
+the right credentials. The HTTP drivers take an injectable `fetch`, which is how
+`tests/inbox.test.ts` exercises them against API-shaped fixtures.
 
 ## Retry Logic
 

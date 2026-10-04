@@ -44,6 +44,19 @@ SLACK*CLIENT*ID=SCID123
 SLACK*SECRET*KEY=SSK123
 ```
 
+### Inbox: read and archive conversations
+
+```ts
+import { inbox } from '@stacksjs/chat'
+
+const slack = inbox.createInboxDriver('slack', { token: process.env.SLACK_USER_TOKEN! })
+for (const conversation of await slack.conversations())
+  console.log(conversation.title, conversation.archive.mode) // 'native' | 'confirm' | 'unsupported'
+await slack.archive('D0123') // closes the DM in Slack
+```
+
+Drivers for iMessage (macOS chat.db), Slack (user token) and Discord (bot token).
+
 ## 🧪 Testing
 
 ```bash

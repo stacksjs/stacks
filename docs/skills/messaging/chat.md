@@ -7,7 +7,9 @@ description: "Use when implementing chat messaging in Stacks."
 `stacks-chat` · Messaging · model-invoked
 
 Messages into Slack, Discord and Microsoft Teams, through webhooks or bot tokens,
-behind a shared driver abstraction with retry logic and multi-channel routing.
+behind a shared driver abstraction with retry logic and multi-channel routing -
+and the other direction too: inbox drivers that read a person's iMessage, Slack
+and Discord conversations and archive them in the real app.
 
 ## When to reach for it
 
@@ -17,6 +19,7 @@ behind a shared driver abstraction with retry logic and multi-channel routing.
 - The BaseChatDriver abstraction
 - Retry logic
 - Multi-channel chat routing
+- Reading conversations from iMessage, Slack and Discord, and archiving them there
 
 ## Covers
 
@@ -35,6 +38,7 @@ The sections an agent reads once the skill loads.
 - Slack Driver
 - Discord Driver
 - Teams Driver
+- Inbox drivers (reading and archiving)
 - Retry Logic
 - Dependencies
 - Gotchas

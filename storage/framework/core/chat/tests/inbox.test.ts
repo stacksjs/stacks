@@ -1,0 +1,257 @@
+import type { Fetch } from '../src/inbox'
+import { describe, expect, it } from 'bun:test'
+import { createInboxDriver, DiscordInboxDriver, IMessageDriver, SlackInboxDriver, snowflakeTime } from '../src/inbox'
+import { ALICE, BOB, FakeChatDb } from './fixtures/chat-db'
+
+describe('iMessage inbox driver', () => {
+  function setup() {
+    const chat = new FakeChatDb()
+    const opened: string[] = []
+    const scripts: string[] = []
+    const driver = new IMessageDriver({
+      databasePath: chat.path,
+      addressBookDir: false,
+      openUrl: url => opened.push(url),
+      runAppleScript: async (script) => {
+        scripts.push(script)
+        return true
+      },
+    })
+    return { chat, driver, opened, scripts }
+  }
+
+  it('lists conversations merged across services, with a cursor that moves on new messages', async () => {
+    const { chat, driver } = setup()
+    const imessage = chat.direct(ALICE)
+    chat.add(imessage, { text: 'hi' })
+    chat.add(chat.direct(ALICE, 'SMS'), { text: 'over sms', read: false })
+
+    const [first] = await driver.conversations()
+    expect(first!.id).toBe(`direct:${ALICE}`)
+    expect(first!.provider).toBe('imessage')
+    expect(first!.preview).toBe('over sms')
+    expect(first!.unread).toBe(1)
+    expect(first!.archive.mode).toBe('confirm')
+    expect(first!.url).toBe(`sms:${ALICE}`)
+
+    const before = first!.cursor
+    chat.add(imessage, { text: 'again' })
+    expect((await driver.conversations())[0]!.cursor).not.toBe(before)
+  })
+
+  it('reads messages after a cursor, with reactions as their emoji', async () => {
+    const { chat, driver } = setup()
+    const alice = chat.direct(ALICE)
+    const first = chat.add(alice, { text: 'look' })
+    chat.add(alice, { text: 'Loved “look”', reaction: { type: 2000, target: first }, fromMe: true })
+    chat.add(alice, { text: 'Removed a heart', reaction: { type: 3000, target: first }, fromMe: true })
+
+    const all = await driver.messages(`direct:${ALICE}`)
+    expect(all.map(m => m.kind)).toEqual(['message', 'reaction', 'reaction'])
+    expect(all[1]).toMatchObject({ reaction: '❤️', targetId: first, reactionRemoved: false, fromMe: true })
+    expect(all[2]).toMatchObject({ reaction: '❤️', reactionRemoved: true })
+
+    const later = await driver.messages(`direct:${ALICE}`, { after: all[0]!.cursor })
+    expect(later).toHaveLength(2)
+  })
+
+  it('archives by taking Messages to its own delete, and notices it has gone', async () => {
+    const { chat, driver, opened, scripts } = setup()
+    const group = chat.group('chat9', [ALICE, BOB], { name: 'Trip', groupId: 'G-9' })
+    chat.add(group, { text: 'packing list?' })
+
+    const outcome = await driver.archive('group:G-9')
+    expect(outcome).toMatchObject({ mode: 'confirm', removed: false })
+    expect(opened).toEqual(['sms://open?groupid=G-9'])
+    expect(scripts[0]).toContain('Delete Conversation')
+
+    chat.deleteChat(group)
+    const [after] = await driver.conversations()
+    expect(after!.visible).toBe(false)
+    expect((await driver.archive('group:G-9')).removed).toBe(true)
+  })
+
+  it('says how to finish when it cannot drive Messages', async () => {
+    const chat = new FakeChatDb()
+    chat.add(chat.direct(ALICE), { text: 'hi' })
+    const driver = new IMessageDriver({ databasePath: chat.path, addressBookDir: false, openUrl: () => {}, runAppleScript: async () => false })
+    const outcome = await driver.archive(`direct:${ALICE}`)
+    expect(outcome.detail).toContain('Conversation > Delete Conversation')
+  })
+
+  it('reports a missing database as Messages not set up', async () => {
+    const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false })
+    expect(await driver.status()).toMatchObject({ connected: false, needs: 'messages-signed-out' })
+  })
+})
+
+/** A fake Slack Web API: answers by method name, records every call. */
+function slackApi(handlers: Record<string, (params: URLSearchParams) => unknown>) {
+  const calls: Array<{ method: string, params: URLSearchParams }> = []
+  const fetch: Fetch = async (input, init) => {
+    const url = new URL(input)
+    const method = url.pathname.split('/').pop()!
+    const params = init?.method === 'POST' ? new URLSearchParams(String(init.body)) : url.searchParams
+    calls.push({ method, params })
+    const handler = handlers[method]
+    return Response.json(handler ? { ok: true, ...handler(params) as object } : { ok: false, error: 'unknown_method' })
+  }
+  return { fetch, calls }
+}
+
+describe('Slack inbox driver', () => {
+  const base = {
+    'auth.test': () => ({ user_id: 'UME', team: 'Acme', team_id: 'T1' }),
+    'users.info': (p: URLSearchParams) => ({ user: { profile: { display_name: p.get('user') === 'UANN' ? 'Ann' : 'Ben' } } }),
+    'users.conversations': () => ({ channels: [
+      { id: 'D1', is_im: true, user: 'UANN' },
+      { id: 'C1', is_channel: true, name: 'general' },
+      { id: 'G1', is_group: true, is_private: true, name: 'leads' },
+    ] }),
+    'conversations.info': (p: URLSearchParams) => ({ channel: p.get('channel') === 'D1' ? { id: 'D1', is_im: true, is_open: true, user: 'UANN', unread_count_display: 2 } : { id: p.get('channel') } }),
+    'conversations.history': (p: URLSearchParams) => p.get('limit') === '1'
+      ? { messages: [{ ts: p.get('channel') === 'D1' ? '1700000300.000200' : '1700000100.000100', user: 'UANN', text: 'latest' }] }
+      : { messages: [
+          { ts: '1700000300.000200', user: 'UME', text: 'sure', reactions: [{ name: '+1', users: ['UANN'] }] },
+          { ts: '1700000200.000100', user: 'UANN', text: 'lunch?', files: [{ id: 'F1', name: 'menu.pdf', mimetype: 'application/pdf', size: 10, url_private: 'https://files.slack.com/menu.pdf' }] },
+        ] },
+  }
+
+  it('lists DMs and channels with what archiving does for each', async () => {
+    const { fetch } = slackApi(base)
+    const driver = new SlackInboxDriver({ token: 'xoxp-test', fetch })
+    const conversations = await driver.conversations()
+    const dm = conversations.find(c => c.id === 'D1')!
+    expect(dm).toMatchObject({ kind: 'direct', workspace: 'Acme', unread: 2, visible: true, url: 'slack://channel?team=T1&id=D1' })
+    expect(dm.participants).toEqual([{ id: 'UANN', name: 'Ann' }])
+    expect(dm.archive.mode).toBe('native')
+    expect(conversations.find(c => c.id === 'C1')!.archive.mode).toBe('native')
+    expect(conversations.find(c => c.id === 'G1')!.archive.mode).toBe('unsupported')
+    expect(conversations[0]!.id).toBe('D1')
+  })
+
+  it('reads history oldest first, with files and reactions', async () => {
+    const { fetch, calls } = slackApi(base)
+    const driver = new SlackInboxDriver({ token: 'xoxp-test', fetch })
+    const messages = await driver.messages('D1', { after: '1700000000.000000' })
+    expect(messages.map(m => m.text ?? m.reaction)).toEqual(['lunch?', 'sure', '👍'])
+    expect(messages[0]!.attachments[0]).toMatchObject({ name: 'menu.pdf', url: 'https://files.slack.com/menu.pdf' })
+    expect(messages[1]!.fromMe).toBe(true)
+    expect(messages[2]).toMatchObject({ kind: 'reaction', targetId: '1700000300.000200', sender: { id: 'UANN', name: 'Ann' } })
+    const history = calls.find(c => c.method === 'conversations.history')!
+    expect(history.params.get('oldest')).toBe('1700000000.000000')
+  })
+
+  it('closes a DM, leaves a public channel, and leaves a private one alone', async () => {
+    const { fetch, calls } = slackApi({
+      ...base,
+      'conversations.info': (p: URLSearchParams) => ({ channel: { D1: { id: 'D1', is_im: true }, C1: { id: 'C1', name: 'general' }, G1: { id: 'G1', is_private: true } }[p.get('channel')!] }),
+      'conversations.close': () => ({}),
+      'conversations.leave': () => ({}),
+      'conversations.open': () => ({}),
+      'conversations.join': () => ({}),
+    })
+    const driver = new SlackInboxDriver({ token: 'xoxp-test', fetch })
+    expect(await driver.archive('D1')).toMatchObject({ mode: 'native', removed: true })
+    expect(await driver.archive('C1')).toMatchObject({ mode: 'native', removed: true })
+    expect(await driver.archive('G1')).toMatchObject({ mode: 'unsupported', removed: false })
+    await driver.unarchive('D1')
+    await driver.unarchive('C1')
+    expect(calls.map(c => c.method).filter(m => /close|leave|open|join/.test(m))).toEqual(['conversations.close', 'conversations.leave', 'conversations.open', 'conversations.join'])
+  })
+
+  it('reports a bad token instead of throwing', async () => {
+    const fetch: Fetch = async () => Response.json({ ok: false, error: 'invalid_auth' })
+    const driver = new SlackInboxDriver({ token: 'xoxp-bad', fetch })
+    expect(await driver.status()).toMatchObject({ connected: false, needs: 'token' })
+  })
+
+  it('fetches private files with the token', async () => {
+    let auth = ''
+    const fetch: Fetch = async (_input, init) => {
+      auth = new Headers(init?.headers).get('authorization') ?? ''
+      return new Response('pdf')
+    }
+    const driver = new SlackInboxDriver({ token: 'xoxp-test', fetch })
+    await driver.attachment({ id: 'F1', name: 'menu.pdf', mimeType: null, bytes: 3, path: null, url: 'https://files.slack.com/menu.pdf' })
+    expect(auth).toBe('Bearer xoxp-test')
+  })
+})
+
+describe('Discord inbox driver', () => {
+  const now = Date.UTC(2026, 9, 1)
+  // A snowflake for a given time.
+  const flake = (ms: number) => String((BigInt(ms) - 1_420_070_400_000n) << 22n)
+
+  function discordApi() {
+    const calls: Array<{ method: string, path: string, body?: string }> = []
+    const fetch: Fetch = async (input, init) => {
+      const path = new URL(input).pathname.replace('/api/v10', '') + new URL(input).search
+      calls.push({ method: init?.method ?? 'GET', path, body: init?.body as string | undefined })
+      if (path === '/users/@me')
+        return Response.json({ username: 'attic-bot' })
+      if (path === '/users/@me/guilds')
+        return Response.json([{ id: 'G1', name: 'Climbers' }])
+      if (path === '/guilds/G1/channels')
+        return Response.json([{ id: 'C1', type: 0, name: 'general', last_message_id: flake(now) }, { id: 'V1', type: 2, name: 'voice' }])
+      if (path === '/guilds/G1/threads/active')
+        return Response.json({ threads: [{ id: 'T1', type: 11, name: 'Trip planning', parent_id: 'C1', last_message_id: flake(now - 1000), thread_metadata: { archived: false } }] })
+      if (path.startsWith('/channels/C1/messages?limit=1'))
+        return Response.json([{ id: flake(now), type: 0, content: 'hello', timestamp: new Date(now).toISOString(), edited_timestamp: null, author: { id: 'U2', username: 'ann' } }])
+      if (path.startsWith('/channels/T1/messages?limit=100'))
+        return Response.json([
+          { id: flake(now - 1000), type: 0, content: 'second', timestamp: new Date(now - 1000).toISOString(), edited_timestamp: null, author: { id: 'UME', username: 'me' }, reactions: [{ count: 2, emoji: { id: null, name: '🔥' } }] },
+          { id: flake(now - 2000), type: 0, content: 'first', timestamp: new Date(now - 2000).toISOString(), edited_timestamp: null, author: { id: 'U2', username: 'ann', global_name: 'Ann' }, attachments: [{ id: 'A1', filename: 'map.png', content_type: 'image/png', size: 5, url: 'https://cdn.discordapp.com/map.png' }] },
+        ])
+      if (path.startsWith('/channels/T1/messages'))
+        return Response.json([{ id: flake(now - 1000), type: 0, content: 'second', timestamp: new Date(now - 1000).toISOString(), edited_timestamp: null, author: { id: 'UME', username: 'me' } }])
+      if (path === '/channels/T1' && init?.method === 'PATCH')
+        return Response.json({ id: 'T1' })
+      return new Response('{}', { status: 404 })
+    }
+    return { fetch, calls }
+  }
+
+  it('lists text channels and active threads, not voice, without DMs', async () => {
+    const { fetch } = discordApi()
+    const driver = new DiscordInboxDriver({ token: 'bot', userId: 'UME', fetch })
+    const conversations = await driver.conversations()
+    expect(conversations.map(c => c.id)).toEqual(['C1', 'T1'])
+    expect(conversations[0]).toMatchObject({ kind: 'channel', title: '#general', workspace: 'Climbers', preview: 'hello', url: 'https://discord.com/channels/G1/C1' })
+    expect(conversations[0]!.archive.mode).toBe('unsupported')
+    expect(conversations[1]).toMatchObject({ kind: 'thread', title: 'Trip planning', visible: true })
+    expect(conversations[1]!.archive.mode).toBe('native')
+  })
+
+  it('reads messages oldest first, with attachments and reaction counts', async () => {
+    const { fetch } = discordApi()
+    const driver = new DiscordInboxDriver({ token: 'bot', userId: 'UME', fetch })
+    const messages = await driver.messages('T1')
+    expect(messages.map(m => m.text ?? m.reaction)).toEqual(['first', 'second', '2'])
+    expect(messages[0]!.sender).toEqual({ id: 'U2', name: 'Ann' })
+    expect(messages[1]!.fromMe).toBe(true)
+    expect(messages[2]).toMatchObject({ kind: 'reaction', reaction: '🔥' })
+  })
+
+  it('archives a thread in Discord and refuses a channel', async () => {
+    const { fetch, calls } = discordApi()
+    const driver = new DiscordInboxDriver({ token: 'bot', fetch })
+    await driver.conversations()
+    expect(await driver.archive('T1')).toMatchObject({ mode: 'native', removed: true })
+    expect(calls.find(c => c.method === 'PATCH')).toMatchObject({ path: '/channels/T1', body: '{"archived":true}' })
+    expect(await driver.archive('C1')).toMatchObject({ mode: 'unsupported', removed: false })
+  })
+
+  it('reads a snowflake as a time', () => {
+    expect(snowflakeTime(flake(now))).toBe(now)
+    expect(snowflakeTime(null)).toBeNull()
+  })
+})
+
+describe('createInboxDriver', () => {
+  it('builds each driver by name', () => {
+    expect(createInboxDriver('imessage', { addressBookDir: false }).label).toBe('iMessage')
+    expect(createInboxDriver('slack', { token: 'x' }).provider).toBe('slack')
+    expect(createInboxDriver('discord', { token: 'x' }).provider).toBe('discord')
+  })
+})
