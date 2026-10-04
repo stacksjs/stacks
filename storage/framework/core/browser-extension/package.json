@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "bun-plugin-stx": "^0.2.350",
-    "ts-pantry": "^0.11.66"
+    "ts-pantry": "^0.11.68"
   },
   "peerDependencies": {
     "web-ext": ">=10.7.0"

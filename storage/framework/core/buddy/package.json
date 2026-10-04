@@ -159,7 +159,7 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bun-plugin-stx": "^0.2.350",
-    "ts-pantry": "^0.11.35"
+    "ts-pantry": "^0.11.68"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

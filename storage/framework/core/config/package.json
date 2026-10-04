@@ -58,7 +58,7 @@
     "@stacksjs/events": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
-    "ts-pantry": "^0.11.35"
+    "ts-pantry": "^0.11.68"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

@@ -291,7 +291,7 @@
       "version": "0.75.41",
       "dependencies": {
         "bun-plugin-stx": "^0.2.350",
-        "ts-pantry": "^0.11.66"
+        "ts-pantry": "^0.11.68"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -365,7 +365,7 @@
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
         "bun-plugin-stx": "^0.2.350",
-        "ts-pantry": "^0.11.35"
+        "ts-pantry": "^0.11.68"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -543,7 +543,7 @@
         "@stacksjs/events": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/tunnel": "workspace:*",
-        "ts-pantry": "^0.11.35"
+        "ts-pantry": "^0.11.68"
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -2228,12 +2228,12 @@
       "resolved": "https://registry.npmjs.org/ts-medium-editor/-/ts-medium-editor-0.2.0.tgz",
       "integrity": "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="
     },
-    "ts-pantry@0.11.66": {
+    "ts-pantry@0.11.68": {
       "name": "ts-pantry",
-      "version": "0.11.66",
+      "version": "0.11.68",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.66.tgz",
-      "integrity": "sha512-PBcXW8LwBSin3ERXUgvq21h98XrB+9GoMNmdFWMTzCLu6MXHmUBm9LAVFPPvJyDPbbApEUKFcFlAdS2K6+QaCA==",
+      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.68.tgz",
+      "integrity": "sha512-NVDTx/vVUQK7SIiK3F6pS6imIsSLMHyTCEn3043RDSoaRRVOtWLe4o4+9IlCkAeOxxOkZzcTSTcYeoEtmuyVAQ==",
       "bin": {
         "ts-pantry": "./dist/bin/cli.js"
       }
