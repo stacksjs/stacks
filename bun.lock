@@ -311,7 +311,7 @@
       "version": "0.75.45",
       "dependencies": {
         "bun-plugin-stx": "^0.2.350",
-        "ts-pantry": "^0.11.68",
+        "ts-pantry": "^0.11.69",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -396,7 +396,7 @@
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
         "bun-plugin-stx": "^0.2.350",
-        "ts-pantry": "^0.11.68",
+        "ts-pantry": "^0.11.69",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -574,7 +574,7 @@
         "@stacksjs/events": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/tunnel": "workspace:*",
-        "ts-pantry": "^0.11.68",
+        "ts-pantry": "^0.11.69",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -2109,7 +2109,7 @@
 
     "ts-medium-editor": ["ts-medium-editor@0.2.0", "", {}, "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="],
 
-    "ts-pantry": ["ts-pantry@0.11.68", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-NVDTx/vVUQK7SIiK3F6pS6imIsSLMHyTCEn3043RDSoaRRVOtWLe4o4+9IlCkAeOxxOkZzcTSTcYeoEtmuyVAQ=="],
+    "ts-pantry": ["ts-pantry@0.11.69", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-Hen+6RSmB8/ds+yLN7KSB6fllN+DRiKmv0+LYOwFmFxoXCB8hb4vSqIoqoZsQbv0A0jxlAnL4iHW5zWBlXpkzQ=="],
 
     "ts-qr-codes": ["ts-qr-codes@0.1.8", "", { "bin": { "qrx": "./dist/cli.js" } }, "sha512-/gd6qvBusEwVo5zfuwreyAdqFEbMGWUzhc5sAJqarPdQ79kzh1iL7xn6xrw/X5mFDZbjIK9kWhbkwlrILZiIOA=="],
 
