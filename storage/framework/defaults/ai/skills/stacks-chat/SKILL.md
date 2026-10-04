@@ -377,6 +377,14 @@ What archiving does is part of every conversation (`conversation.archive`):
 | Discord thread | `native` | Archived in Discord (reopens on a new post). |
 | Discord channel | `unsupported` | Discord cannot hide a channel for one person. |
 
+For iMessage, pass a `controller` (`{ remove(names, url, confirm), recover(names) }`)
+whenever the app can drive Messages by accessibility: it receives every label
+Messages might give the row (contact name, formatted number, handle) and should
+act on the row found by name, never on the current selection - the driver's
+fallback menu script does the latter. With a controller, `unarchive` recovers
+from Recently Deleted, and `confirmDeletes: true` accepts Messages' alert too.
+Attic (`~/Code/Apps/attic`, `app/Desktop/messages-control.swift`) is the reference.
+
 Discord personal DMs are deliberately absent: only a user token reads them, and
 automating a user account breaks Discord's terms. Reactions are separate
 `kind: 'reaction'` messages with `targetId` and an emoji `reaction`; Slack and

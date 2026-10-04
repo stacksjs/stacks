@@ -79,6 +79,35 @@ describe('iMessage inbox driver', () => {
     expect(outcome.detail).toContain('Conversation > Delete Conversation')
   })
 
+  it('hands a controller the row names Messages shows, and recovers through it', async () => {
+    const chat = new FakeChatDb()
+    const alice = chat.direct(ALICE)
+    chat.add(alice, { text: 'hi' })
+    const calls: string[] = []
+    const driver = new IMessageDriver({
+      databasePath: chat.path,
+      addressBookDir: false,
+      confirmDeletes: true,
+      controller: {
+        remove: async (names, url, confirm) => {
+          calls.push(`remove ${names.join('|')} ${url} ${confirm}`)
+          return { ok: true, detail: '' }
+        },
+        recover: async (names) => {
+          calls.push(`recover ${names.join('|')}`)
+          return { ok: true, detail: '' }
+        },
+      },
+    })
+    expect((await driver.archive(`direct:${ALICE}`)).detail).toBe('Deleted in Messages.')
+    chat.deleteChat(alice)
+    await driver.unarchive(`direct:${ALICE}`)
+    expect(calls).toEqual([
+      `remove +1 (555) 000-2222|${ALICE} sms:${ALICE} true`,
+      `recover +1 (555) 000-2222|${ALICE}`,
+    ])
+  })
+
   it('reports a missing database as Messages not set up', async () => {
     const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false })
     expect(await driver.status()).toMatchObject({ connected: false, needs: 'messages-signed-out' })

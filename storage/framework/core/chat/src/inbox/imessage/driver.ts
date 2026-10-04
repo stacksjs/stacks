@@ -7,8 +7,28 @@ import process from 'node:process'
 import { DEFAULT_MESSAGES_DB, MessagesAccessError, MessagesDb } from './chat-db'
 import { Contacts, DEFAULT_ADDRESS_BOOK_DIR } from './contacts'
 import { groupChats, messagesUrl } from './conversations'
+import { formatHandle } from './handles'
+
+/**
+ * Something that can drive Messages' own Delete and Recover for one named
+ * conversation - in Attic, a small Swift helper bundled with the app that
+ * finds the row by name in Messages' accessibility tree and invokes that
+ * row's own actions. `names` are every label Messages might show (contact
+ * name, formatted number, raw handle); `confirm` also accepts Messages' alert.
+ */
+export interface MessagesController {
+  remove: (names: string[], url: string | null, confirm: boolean) => Promise<{ ok: boolean, detail: string }>
+  recover: (names: string[]) => Promise<{ ok: boolean, detail: string }>
+}
 
 export interface IMessageConfig {
+  /**
+   * Acts on the conversation by name instead of the menu's Delete
+   * Conversation, which applies to whatever is selected. Strongly preferred.
+   */
+  controller?: MessagesController
+  /** With a controller: accept Messages' delete alert too, rather than leave it to the person. */
+  confirmDeletes?: boolean
   /** chat.db; the signed-in user's by default. */
   databasePath?: string
   /** Where Contacts keeps its stores, for names. `false` shows handles only. */
@@ -72,6 +92,8 @@ export class IMessageDriver implements InboxDriver {
   private readonly addressBookDir: string | false
   private readonly openUrl: (url: string) => void
   private readonly runAppleScript: (script: string) => Promise<boolean>
+  private readonly controller: MessagesController | undefined
+  private readonly confirmDeletes: boolean
   private contacts: Contacts | null = null
   private contactsLoadedAt = 0
 
@@ -80,6 +102,18 @@ export class IMessageDriver implements InboxDriver {
     this.addressBookDir = config.addressBookDir ?? DEFAULT_ADDRESS_BOOK_DIR
     this.openUrl = config.openUrl ?? defaultOpen
     this.runAppleScript = config.runAppleScript ?? defaultAppleScript
+    this.controller = config.controller
+    this.confirmDeletes = config.confirmDeletes ?? false
+  }
+
+  /** Every label Messages might give the conversation's row. */
+  private rowNames(c: LiveConversation): string[] {
+    const names: Array<string | null> = []
+    if (c.kind === 'group')
+      names.push(c.displayName)
+    else if (c.participants[0])
+      names.push(this.names().nameFor(c.participants[0]), formatHandle(c.participants[0]), c.participants[0])
+    return [...new Set(names.filter((n): n is string => !!n))]
   }
 
   private open<T>(fn: (db: MessagesDb) => T): T {
@@ -197,6 +231,16 @@ export class IMessageDriver implements InboxDriver {
     if (conversation.messageCount === 0)
       return { mode: 'confirm', removed: true, detail: 'Already gone from Messages.' }
 
+    const names = this.rowNames(conversation)
+    if (this.controller && names.length > 0) {
+      const result = await this.controller.remove(names, url, this.confirmDeletes)
+      return {
+        mode: 'confirm',
+        removed: false,
+        detail: result.ok ? (this.confirmDeletes ? 'Deleted in Messages.' : 'Messages is asking you to confirm the delete.') : result.detail,
+      }
+    }
+
     this.openUrl(url)
     const prompted = await this.runAppleScript(DELETE_SCRIPT)
     return {
@@ -208,8 +252,21 @@ export class IMessageDriver implements InboxDriver {
     }
   }
 
-  /** Messages has no way to restore from outside: Recently Deleted holds it for 30 days. */
-  async unarchive(): Promise<void> {}
+  /**
+   * With a controller, recovers the conversation from Messages' Recently
+   * Deleted (it keeps deletions for 30 days). Without one there is no way in
+   * from outside, and this does nothing.
+   */
+  async unarchive(conversationId: string): Promise<void> {
+    if (!this.controller)
+      return
+    const conversation = this.open(db => this.find(db, conversationId))
+    if (!conversation || conversation.messageCount > 0)
+      return
+    const names = this.rowNames(conversation)
+    if (names.length > 0)
+      await this.controller.recover(names)
+  }
 
   async attachment(attachment: InboxAttachment): Promise<Response> {
     if (!attachment.path || !existsSync(attachment.path))
