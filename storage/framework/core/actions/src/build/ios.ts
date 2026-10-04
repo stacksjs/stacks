@@ -5,7 +5,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { resolveMobilePath, toCraftIosConfig, validateIosMobileConfig } from './ios-config'
+import { resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 
 // Action runners install a global exception reporter. Start pessimistically so
 // a reported exception can never look like a successful CI build.
@@ -48,7 +48,8 @@ if (!existsSync(configPath)) {
 }
 
 const configModule = await import(`${pathToFileURL(configPath).href}?t=${Date.now()}`) as { default: MobileConfig }
-const config = configModule.default.ios
+const mobile = configModule.default
+const config = mobile.ios
 validateIosMobileConfig(config)
 
 const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('framework/mobile/ios')
@@ -72,6 +73,12 @@ await builder.build({
   devServer: craftConfig.devServerURL as string | undefined,
   generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1',
 })
+
+// Declared after the builder, which rewrites Info.plist from its template on
+// every build, and safe before or after xcodegen, which only references it.
+const activityTypes = writeIosActivityTypes(output, mobile)
+if (activityTypes)
+  log.info(`Declared ${activityTypes.length} activity types, so a tapped Spotlight or Siri entry reaches the app`)
 
 const sourceRevision = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() }).stdout.toString().trim()
 const craftConfigPath = `${output}/craft.config.json`

@@ -1,5 +1,7 @@
-import type { IosMobileConfig } from '@stacksjs/types'
-import { isAbsolute, resolve } from 'node:path'
+import type { IosMobileConfig, MobileConfig } from '@stacksjs/types'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { isAbsolute, join, resolve } from 'node:path'
+import { spotlightActivityTypes } from '@stacksjs/mobile'
 
 export interface CraftIosConfig {
   [key: string]: unknown
@@ -150,4 +152,59 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
     const target = Number.parseFloat(config.watchDeploymentTarget ?? '9.0')
     if (!Number.isFinite(target) || target < 9) throw new Error('ios.watchDeploymentTarget must be watchOS 9.0 or newer')
   }
+}
+
+/**
+ * The `NSUserActivityTypes` entry in a generated `Info.plist`.
+ *
+ * iOS hands a tapped `NSUserActivity` back only to an app whose `Info.plist`
+ * lists that activity's type, and the list is fixed at build time. Undeclared,
+ * an app's donated Spotlight and Siri entries still appear and a tap on one
+ * merely opens the app on whatever screen it was last on — which looks like
+ * the feature working until somebody taps a result.
+ *
+ * Craft's template carries no such key, so the build writes it from
+ * `config/mobile.ts`.
+ */
+const ACTIVITY_TYPES_BLOCK = /[ \t]*<key>NSUserActivityTypes<\/key>\s*<array>[\s\S]*?<\/array>\n?/
+
+export function withActivityTypes(plist: string, types: readonly string[]): string {
+  const entries = types.map(type => `        <string>${escapeXml(type)}</string>`).join('\n')
+  const block = types.length === 0
+    ? ''
+    : `    <key>NSUserActivityTypes</key>\n    <array>\n${entries}\n    </array>\n`
+
+  if (ACTIVITY_TYPES_BLOCK.test(plist))
+    return plist.replace(ACTIVITY_TYPES_BLOCK, block)
+  if (block === '')
+    return plist
+
+  const close = plist.lastIndexOf('</dict>')
+  if (close < 0)
+    throw new Error('Info.plist has no root dictionary to declare activity types in')
+
+  return plist.slice(0, close) + block + plist.slice(close)
+}
+
+function escapeXml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/**
+ * Declare the app's donated activity types in the project just generated.
+ *
+ * Returns the types written, or null where there is no plist to write them
+ * into — a project generated somewhere else, or a build that stopped early.
+ * Run after the Craft builder, which writes `Info.plist` from its template on
+ * every build; xcodegen only references that file, so regenerating the project
+ * afterwards keeps what this wrote.
+ */
+export function writeIosActivityTypes(output: string, config: MobileConfig): string[] | null {
+  const types = spotlightActivityTypes(config.spotlight, config.ios.bundleId)
+  const path = join(output, 'Info.plist')
+  if (types.length === 0 || !existsSync(path))
+    return null
+
+  writeFileSync(path, withActivityTypes(readFileSync(path, 'utf8'), types))
+  return types
 }
