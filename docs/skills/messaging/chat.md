@@ -8,8 +8,8 @@ description: "Use when implementing chat messaging in Stacks."
 
 Messages into Slack, Discord and Microsoft Teams, through webhooks or bot tokens,
 behind a shared driver abstraction with retry logic and multi-channel routing -
-and the other direction too: inbox drivers that read a person's iMessage, Slack
-and Discord conversations and archive them in the real app.
+and the other direction too: inbox drivers that read a person's iMessage,
+WhatsApp, Slack and Discord conversations and archive them in the real app.
 
 ## When to reach for it
 
@@ -19,7 +19,7 @@ and Discord conversations and archive them in the real app.
 - The BaseChatDriver abstraction
 - Retry logic
 - Multi-channel chat routing
-- Reading conversations from iMessage, Slack and Discord, and archiving them there
+- Reading conversations from iMessage, WhatsApp, Slack and Discord, and archiving them there
 
 ## Covers
 

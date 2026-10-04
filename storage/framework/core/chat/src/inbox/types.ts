@@ -9,13 +9,14 @@
  * and a driver says so through {@link ArchiveSupport} rather than pretending.
  */
 
-export type InboxProvider = 'imessage' | 'slack' | 'discord'
+export type InboxProvider = 'imessage' | 'slack' | 'discord' | 'whatsapp'
 
 /**
  * How archiving a conversation takes it out of the real app.
  *
- * - `native`: the provider's API does it (Slack closes a DM; Discord archives
- *   a thread). Reversible through {@link InboxDriver.unarchive}.
+ * - `native`: the provider does it (Slack closes a DM; Discord archives a
+ *   thread; WhatsApp's own Archive). Reversible through
+ *   {@link InboxDriver.unarchive}.
  * - `confirm`: the app is driven to its own delete, which the person confirms
  *   there (iMessage: Apple offers no API, and Messages' own Delete is the only
  *   way that stays consistent with iCloud).
@@ -74,7 +75,7 @@ export interface InboxAttachment {
   name: string
   mimeType: string | null
   bytes: number
-  /** A file on this machine (iMessage). */
+  /** A file on this machine (iMessage, WhatsApp). */
   path: string | null
   /** A remote file (Slack, Discord); fetch it through the driver. */
   url: string | null
@@ -108,7 +109,7 @@ export interface InboxStatus {
   /** What is missing when not connected, phrased as the next step. */
   detail: string
   /** A machine-readable reason, for a UI that offers a fix. */
-  needs?: 'full-disk-access' | 'token' | 'messages-signed-out' | 'unsupported-platform'
+  needs?: 'full-disk-access' | 'token' | 'messages-signed-out' | 'signed-out' | 'unsupported-platform'
 }
 
 export interface ArchiveOutcome {

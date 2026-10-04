@@ -1,7 +1,8 @@
 import type { Fetch } from '../src/inbox'
 import { describe, expect, it } from 'bun:test'
-import { createInboxDriver, DiscordInboxDriver, IMessageDriver, SlackInboxDriver, snowflakeTime } from '../src/inbox'
+import { createInboxDriver, DiscordInboxDriver, formatJid, IMessageDriver, SlackInboxDriver, snowflakeTime, WhatsAppDriver } from '../src/inbox'
 import { ALICE, BOB, FakeChatDb } from './fixtures/chat-db'
+import { CLIMBERS, DANA, EMEKA, FakeChatStorage } from './fixtures/chat-storage'
 
 describe('iMessage inbox driver', () => {
   function setup() {
@@ -307,10 +308,143 @@ describe('Discord inbox driver', () => {
   })
 })
 
+describe('WhatsApp inbox driver', () => {
+  function setup(controller?: { archive?: boolean, unarchive?: boolean }) {
+    const store = new FakeChatStorage()
+    const opened: string[] = []
+    const asked: Array<{ verb: string, names: string[] }> = []
+    const driver = new WhatsAppDriver({
+      databasePath: store.path,
+      platform: 'darwin',
+      openUrl: url => opened.push(url),
+      settleMs: 500,
+      controller: controller && {
+        archive: async (names) => {
+          asked.push({ verb: 'archive', names })
+          if (controller.archive)
+            store.setArchived(DANA, true)
+          return { ok: true, detail: 'pressed' }
+        },
+        unarchive: async (names) => {
+          asked.push({ verb: 'unarchive', names })
+          if (controller.unarchive)
+            store.setArchived(DANA, false)
+          return { ok: true, detail: 'pressed' }
+        },
+      },
+    })
+    return { store, driver, opened, asked }
+  }
+
+  it('lists direct chats and groups, not status updates, archived ones as not visible', async () => {
+    const { store, driver } = setup()
+    const dana = store.chat(DANA, 'Dana Reyes')
+    store.add(dana, { text: 'see you at 6' })
+    const group = store.chat(CLIMBERS, 'Weekend Climbers', 1)
+    store.member(group, EMEKA, 'Emeka')
+    store.add(group, { text: 'rope check', member: EMEKA })
+    store.add(store.chat('status@broadcast', 'Status', 3), { text: 'story' })
+    store.setArchived(CLIMBERS, true)
+
+    const conversations = await driver.conversations()
+    expect(conversations.map(c => c.id).sort()).toEqual([CLIMBERS, DANA].sort())
+    const direct = conversations.find(c => c.id === DANA)!
+    expect(direct).toMatchObject({ provider: 'whatsapp', kind: 'direct', title: null, preview: 'see you at 6', visible: true, url: 'whatsapp://send?phone=15550004444' })
+    expect(direct.participants).toEqual([{ id: DANA, name: 'Dana Reyes' }])
+    expect(direct.archive.mode).toBe('confirm')
+    const climbers = conversations.find(c => c.id === CLIMBERS)!
+    expect(climbers).toMatchObject({ kind: 'group', title: 'Weekend Climbers', visible: false, url: null })
+    expect(climbers.archive.mode).toBe('unsupported')
+    expect(climbers.participants).toEqual([{ id: EMEKA, name: 'Emeka' }])
+  })
+
+  it('reads every kind of message the way WhatsApp shows it', async () => {
+    const { store, driver } = setup()
+    const group = store.chat(CLIMBERS, 'Weekend Climbers', 1)
+    store.member(group, EMEKA, null, 'emeka.o')
+    store.add(group, { text: 'hello\uFFFC', member: EMEKA })
+    store.add(group, { type: 1, fromMe: true, media: { path: 'Media/120363000000000001@g.us/a/b/photo.jpg', mime: 'image/jpeg', title: 'the crag', bytes: 4, file: 'jpeg' } })
+    store.add(group, { type: 3, member: EMEKA, media: { path: 'Media/120363000000000001@g.us/c/d/voice.opus', mime: 'audio/ogg; codecs=opus', bytes: 2 } })
+    store.add(group, { type: 8, member: EMEKA, text: 'topo.pdf', media: { path: 'Media/120363000000000001@g.us/e/f/x1.pdf', mime: 'application/pdf', title: 'Topo guide' } })
+    store.add(group, { type: 4, member: EMEKA, media: { vcard: 'BEGIN:VCARD\nVERSION:3.0\nFN:Lena Brandt\nEND:VCARD' } })
+    store.add(group, { type: 5, member: EMEKA, media: { lat: 37.75, lon: -119.59, title: 'Half Dome' } })
+    store.add(group, { type: 6, text: 'Emeka changed the group name' })
+    store.add(group, { type: 14, member: EMEKA })
+    store.add(group, { type: 66, member: EMEKA, media: {} })
+
+    const messages = await driver.messages(CLIMBERS)
+    expect(messages.map(m => [m.kind, m.text])).toEqual([
+      ['message', 'hello'],
+      ['message', 'the crag'],
+      ['message', null],
+      ['message', null],
+      ['message', 'Contact card: Lena Brandt'],
+      ['message', 'Half Dome https://maps.apple.com/?ll=37.75,-119.59'],
+      ['event', 'Emeka changed the group name'],
+      ['message', null],
+      ['event', null],
+    ])
+    expect(messages[0]!.sender).toEqual({ id: EMEKA, name: 'emeka.o' })
+    expect(messages[1]).toMatchObject({ fromMe: true, sender: null })
+    expect(messages[1]!.attachments[0]).toMatchObject({ name: 'photo.jpg', mimeType: 'image/jpeg', bytes: 4 })
+    expect(messages[1]!.attachments[0]!.path).toBe(`${store.dir}/Message/Media/120363000000000001@g.us/a/b/photo.jpg`)
+    expect(messages[2]!.attachments[0]).toMatchObject({ mimeType: 'audio/ogg', path: null })
+    expect(messages[3]!.attachments[0]!.name).toBe('Topo guide')
+    expect(messages[7]!.unsent).toBe(true)
+    expect(await (await driver.attachment(messages[1]!.attachments[0]!)).text()).toBe('jpeg')
+  })
+
+  it('reads forward from a cursor, and the newest for a bare limit, oldest first', async () => {
+    const { store, driver } = setup()
+    const dana = store.chat(DANA, 'Dana Reyes')
+    for (const text of ['one', 'two', 'three', 'four'])
+      store.add(dana, { text })
+    const all = await driver.messages(DANA)
+    expect((await driver.messages(DANA, { after: all[1]!.cursor })).map(m => m.text)).toEqual(['three', 'four'])
+    expect((await driver.messages(DANA, { limit: 2 })).map(m => m.text)).toEqual(['three', 'four'])
+    expect(all[0]!.sender).toEqual({ id: DANA, name: 'Dana Reyes' })
+  })
+
+  it('archives through WhatsApp and only reports it removed once WhatsApp has recorded it', async () => {
+    const { store, driver, asked } = setup({ archive: true, unarchive: true })
+    store.add(store.chat(DANA, 'Dana Reyes'), { text: 'hi' })
+
+    expect((await driver.conversations())[0]!.archive.mode).toBe('native')
+    expect(await driver.archive(DANA)).toMatchObject({ mode: 'native', removed: true })
+    expect(asked[0]).toEqual({ verb: 'archive', names: ['Dana Reyes', '+15550004444'] })
+    expect((await driver.conversations())[0]!.visible).toBe(false)
+
+    await driver.unarchive(DANA)
+    expect(asked[1]!.verb).toBe('unarchive')
+    expect((await driver.conversations())[0]!.visible).toBe(true)
+  })
+
+  it('does not claim an archive WhatsApp never recorded', async () => {
+    const { store, driver } = setup({ archive: false })
+    store.add(store.chat(DANA, 'Dana Reyes'), { text: 'hi' })
+    expect(await driver.archive(DANA)).toMatchObject({ mode: 'native', removed: false, detail: 'WhatsApp did not record the archive.' })
+  })
+
+  it('without a controller opens the chat for the person to archive', async () => {
+    const { store, driver, opened } = setup()
+    store.add(store.chat(DANA, 'Dana Reyes'), { text: 'hi' })
+    expect(await driver.archive(DANA)).toMatchObject({ mode: 'confirm', removed: false })
+    expect(opened).toEqual(['whatsapp://send?phone=15550004444'])
+  })
+
+  it('reports what is missing instead of throwing', async () => {
+    expect((await new WhatsAppDriver({ databasePath: '/nonexistent/ChatStorage.sqlite', platform: 'darwin' }).status()).needs).toBe('signed-out')
+    expect((await new WhatsAppDriver({ platform: 'linux' }).status()).needs).toBe('unsupported-platform')
+    expect(formatJid(DANA)).toBe('+15550004444')
+    expect(formatJid(CLIMBERS)).toBe('120363000000000001')
+  })
+})
+
 describe('createInboxDriver', () => {
   it('builds each driver by name', () => {
     expect(createInboxDriver('imessage', { addressBookDir: false }).label).toBe('iMessage')
     expect(createInboxDriver('slack', { token: 'x' }).provider).toBe('slack')
     expect(createInboxDriver('discord', { token: 'x' }).provider).toBe('discord')
+    expect(createInboxDriver('whatsapp', {}).label).toBe('WhatsApp')
   })
 })

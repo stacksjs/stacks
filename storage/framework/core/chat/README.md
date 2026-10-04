@@ -55,7 +55,7 @@ for (const conversation of await slack.conversations())
 await slack.archive('D0123') // closes the DM in Slack
 ```
 
-Drivers for iMessage (macOS chat.db), Slack (user token) and Discord (bot token).
+Drivers for iMessage (macOS chat.db), WhatsApp (WhatsApp for Mac's database), Slack (user token) and Discord (bot token).
 
 ## 🧪 Testing
 

@@ -1,6 +1,6 @@
 ---
 name: stacks-chat
-description: Use when implementing chat messaging in Stacks - sending messages to Slack (webhooks, bot tokens, block kit), Discord (webhooks, bot tokens, embeds), Microsoft Teams (adaptive cards, webhooks), the BaseChatDriver abstraction, retry logic, multi-channel chat routing, or READING a person's conversations from iMessage, Slack and Discord and archiving them there (the inbox drivers). Covers @stacksjs/chat.
+description: Use when implementing chat messaging in Stacks - sending messages to Slack (webhooks, bot tokens, block kit), Discord (webhooks, bot tokens, embeds), Microsoft Teams (adaptive cards, webhooks), the BaseChatDriver abstraction, retry logic, multi-channel chat routing, or READING a person's conversations from iMessage, WhatsApp, Slack and Discord and archiving them there (the inbox drivers). Covers @stacksjs/chat.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -354,6 +354,7 @@ import { inbox } from '@stacksjs/chat'
 
 const drivers = [
   inbox.createInboxDriver('imessage', {}),                                 // chat.db, needs Full Disk Access
+  inbox.createInboxDriver('whatsapp', {}),                                 // WhatsApp for Mac's ChatStorage.sqlite, same
   inbox.createInboxDriver('slack', { token: env.SLACK_USER_TOKEN }),       // xoxp user token
   inbox.createInboxDriver('discord', { token: env.DISCORD_BOT_TOKEN, userId }), // bot token
 ]
@@ -371,6 +372,7 @@ What archiving does is part of every conversation (`conversation.archive`):
 | Provider | `mode` | Effect in the real app |
 |---|---|---|
 | iMessage | `confirm` | With a `controller`, Messages' own Delete on the row found by name; without one, opens the conversation for the person to delete. Apple has no API, and editing chat.db is ignored or synced everywhere. |
+| WhatsApp | `native` | With a `controller`, WhatsApp's own Archive on the row found by name, reported `removed` only once WhatsApp records it (`ZARCHIVED`); `unarchive` unarchives. Without one, `confirm`: opens the chat (`whatsapp://send?phone=`) for the person, or `unsupported` for a group, which has no link. |
 | Slack DM / group DM | `native` | `conversations.close`; Slack reopens it when someone writes. `unarchive` reopens. |
 | Slack public channel | `native` | `conversations.leave`; `unarchive` rejoins. |
 | Slack private channel | `unsupported` | Untouched: leaving would need a re-invite. |
@@ -384,6 +386,15 @@ act on the row found by name, never on the current selection. Without a
 controller the driver only opens the conversation in Messages for the person to delete. With a controller, `unarchive` recovers
 from Recently Deleted, and `confirmDeletes: true` accepts Messages' alert too.
 Attic (`~/Code/Apps/attic`, `app/Desktop/messages-control.swift`) is the reference.
+
+WhatsApp is read from WhatsApp for Mac's `ChatStorage.sqlite` (a Core Data
+store in its group container, so Full Disk Access again), never written. Its
+`controller` is `{ archive(names), unarchive(names) }`, given the chat's name
+and formatted number. Message types map onto the inbox shape: captions come
+from the media item's title, contact cards and locations become text, deleted
+messages are `unsent`, group events and calls are `kind: 'event'`. Reactions and
+quoted replies sit in protobuf blobs the driver does not decode, so they are
+absent rather than guessed. Status updates and broadcast lists are not listed.
 
 A conversation deleted in Messages sits in Recently Deleted for 30 days:
 `conversation.visible` is false and `conversation.deleted` counts what is still
