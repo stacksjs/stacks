@@ -1,6 +1,6 @@
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
@@ -242,6 +242,35 @@ if (signingIdentity) {
   }
 }
 
+/**
+ * Submit to Apple's notary service, wait, and staple the ticket to `target`.
+ * A stapled ticket lets Gatekeeper accept the file offline; the app is
+ * notarized on its own as well as in the DMG, because once someone drags it
+ * out of the image only the app's own ticket travels with it.
+ */
+async function notarize(target: string, what: string): Promise<void> {
+  if (!signingIdentity)
+    throw new Error('DESKTOP_NOTARY_PROFILE needs DESKTOP_SIGNING_IDENTITY: Apple only notarizes signed code.')
+  // notarytool takes a zip, dmg or pkg, not a bare .app.
+  const upload = target.endsWith('.app') ? join(scratch, `${basename(target)}.zip`) : target
+  if (upload !== target)
+    await runBuildStep(['ditto', '-c', '-k', '--keepParent', target, upload], { cwd: scratch, describe: `Zipping ${basename(target)} for notarization` })
+  log.info(`Notarizing ${what} (Apple usually answers within a few minutes)...`)
+  // `--wait` exits 0 for "Invalid" too, so the status line is what decides.
+  const submitted = Bun.spawnSync(['xcrun', 'notarytool', 'submit', upload, '--keychain-profile', notaryProfile!, '--wait'], { stderr: 'pipe' })
+  const report = `${submitted.stdout.toString()}${submitted.stderr.toString()}`
+  const status = report.match(/status: (\w[\w ]*)/g)?.pop()?.replace('status: ', '')
+  if (submitted.exitCode !== 0 || status !== 'Accepted') {
+    console.error(report.trim())
+    const id = report.match(/id: ([0-9a-f-]{36})/)?.[1]
+    throw new Error(`Notarization of ${what} ${status ?? 'failed'}${id ? ` - see \`xcrun notarytool log ${id} --keychain-profile ${notaryProfile}\`` : ''}`)
+  }
+  await runBuildStep(['xcrun', 'stapler', 'staple', target], { cwd: dirname(target), describe: `Stapling the notarization ticket to ${what}` })
+}
+
+if (notaryProfile)
+  await notarize(appDir, basename(appDir))
+
 // The drag-to-install target every macOS DMG is expected to have.
 symlinkSync('/Applications', join(staging, 'Applications'))
 
@@ -270,19 +299,7 @@ if (signingIdentity) {
 }
 
 if (notaryProfile) {
-  if (!signingIdentity)
-    throw new Error('DESKTOP_NOTARY_PROFILE needs DESKTOP_SIGNING_IDENTITY: Apple only notarizes signed code.')
-  log.info('Notarizing (Apple usually answers within a few minutes)...')
-  // `--wait` exits 0 for "Invalid" too, so the status line is what decides.
-  const submitted = Bun.spawnSync(['xcrun', 'notarytool', 'submit', dmgPath, '--keychain-profile', notaryProfile, '--wait'], { stderr: 'pipe' })
-  const report = `${submitted.stdout.toString()}${submitted.stderr.toString()}`
-  const status = report.match(/status: (\w[\w ]*)/g)?.pop()?.replace('status: ', '')
-  if (submitted.exitCode !== 0 || status !== 'Accepted') {
-    console.error(report.trim())
-    const id = report.match(/id: ([0-9a-f-]{36})/)?.[1]
-    throw new Error(`Notarization ${status ?? 'failed'}${id ? ` - see \`xcrun notarytool log ${id} --keychain-profile ${notaryProfile}\`` : ''}`)
-  }
-  await runBuildStep(['xcrun', 'stapler', 'staple', dmgPath], { cwd: outputDir, describe: 'Stapling the notarization ticket' })
+  await notarize(dmgPath, 'the DMG')
   log.success('Notarized and stapled')
 }
 
