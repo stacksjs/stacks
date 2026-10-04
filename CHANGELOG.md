@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.42...v0.75.43)
+
+## ✨ Features
+
+- **chat**: iMessage inbox driver takes a controller that acts on the row by name ([0c3681e](https://github.com/stacksjs/stacks/commit/0c3681e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.41...v0.75.42)
 
 ## ✨ Features
