@@ -38,8 +38,16 @@ navigation otherwise appears as a blank native window.
 ## API
 
 ```typescript
-import { openDevWindow } from '@stacksjs/desktop'
-import type { Desktop, OpenDevWindowOptions } from '@stacksjs/desktop'
+Two packages carry "desktop" in their name. `@stacksjs/desktop-build` (this
+repo, `storage/framework/core/desktop`) holds the build and launch helpers
+below. `@stacksjs/desktop` (the stx repo) wraps the Craft bridge for code
+running inside the window; import it from `@stacksjs/desktop/browser` there,
+since its root entry also carries host-side modules that pull in Node builtins
+and fail a browser bundle. Attic (`~/Code/Apps/attic`) uses it for native
+menus, context menus and alerts.
+
+import { openDevWindow } from '@stacksjs/desktop-build'
+import type { Desktop, OpenDevWindowOptions } from '@stacksjs/desktop-build'
 
 interface OpenDevWindowOptions {
   title?: string

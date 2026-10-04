@@ -17,7 +17,7 @@ bun install -d @stacksjs/desktop
 Now, you can use it in your project:
 
 ```js
-import { openDevWindow } from '@stacksjs/desktop'
+import { openDevWindow } from '@stacksjs/desktop-build'
 
 await openDevWindow(3000, {
   title: 'My Stacks App',
@@ -46,7 +46,7 @@ a fully evidenced stable row.
 Invite delivery stays transport-neutral so applications can use their configured Stacks mail provider:
 
 ```ts
-import { sendDesktopInvites } from '@stacksjs/desktop'
+import { sendDesktopInvites } from '@stacksjs/desktop-build'
 
 await sendDesktopInvites(users, {
   baseUrl: 'https://app.example.com',
@@ -60,7 +60,7 @@ Ed25519 public key out of band, check the signed channel, then pass the same tru
 set when staging the checksum-verified artifact:
 
 ```ts
-import { checkForDesktopUpdate, stageDesktopUpdate } from '@stacksjs/desktop'
+import { checkForDesktopUpdate, stageDesktopUpdate } from '@stacksjs/desktop-build'
 
 const update = await checkForDesktopUpdate({
   currentVersion: '1.4.0',
