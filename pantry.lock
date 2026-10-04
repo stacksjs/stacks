@@ -53,7 +53,7 @@
         "@stacksjs/database": "^0.75.41",
         "@stacksjs/datetime": "^0.75.41",
         "@stacksjs/defaults": "^0.75.41",
-        "@stacksjs/desktop": "^0.2.348",
+        "@stacksjs/desktop": "^0.2.350",
         "@stacksjs/dns": "^0.75.41",
         "@stacksjs/docs": "^0.75.41",
         "@stacksjs/email": "^0.75.41",
@@ -138,7 +138,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/cloud": "workspace:*",
         "@stacksjs/cms": "workspace:*",
-        "@stacksjs/components": "^0.2.348",
+        "@stacksjs/components": "^0.2.350",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
         "@stacksjs/desktop-build": "workspace:*",
@@ -150,7 +150,7 @@
         "@stacksjs/i18n": "workspace:*",
         "@stacksjs/image": "workspace:*",
         "@stacksjs/logging": "workspace:*",
-        "@stacksjs/logsmith": "^0.2.11",
+        "@stacksjs/logsmith": "^0.2.12",
         "@stacksjs/orm": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/payments": "workspace:*",
@@ -165,15 +165,15 @@
         "@stacksjs/sites": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/stx": "^0.2.348",
+        "@stacksjs/stx": "^0.2.350",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.16",
+        "@stacksjs/ts-cloud": "^0.16.17",
         "@stacksjs/ts-md": "^0.1.1",
         "@stacksjs/tunnel": "workspace:*",
         "@stacksjs/types": "workspace:*",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/whois": "workspace:*",
-        "bun-plugin-stx": "^0.2.348"
+        "bun-plugin-stx": "^0.2.350"
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -190,7 +190,7 @@
         "@stacksjs/ts-cloud": "^0.16.15"
       },
       "devDependencies": {
-        "@anthropic-ai/claude-agent-sdk": "^0.3.288",
+        "@anthropic-ai/claude-agent-sdk": "^0.3.289",
         "better-dx": "^0.2.24"
       }
     },
@@ -291,7 +291,7 @@
       "version": "0.75.41",
       "dependencies": {
         "bun-plugin-stx": "^0.2.348",
-        "ts-pantry": "^0.11.66"
+        "ts-pantry": "^0.11.67"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -600,7 +600,7 @@
         "@iconify-json/f7": "^1.2.2",
         "@iconify-json/hugeicons": "^1.2.35",
         "@stacksjs/mobile": "^0.75.41",
-        "@stacksjs/sanitizer": "^0.2.348",
+        "@stacksjs/sanitizer": "^0.2.350",
         "ts-qr-codes": "^0.1.8"
       }
     },
@@ -1398,12 +1398,12 @@
     }
   },
   "packages": {
-    "@anthropic-ai/claude-agent-sdk@0.3.288": {
+    "@anthropic-ai/claude-agent-sdk@0.3.289": {
       "name": "@anthropic-ai/claude-agent-sdk",
-      "version": "0.3.288",
+      "version": "0.3.289",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.3.288.tgz",
-      "integrity": "sha512-W0axvKSBKC8E1rMvriV8NVMFfNv8uwN3HnJxUiFLJOQcJLp1MDp0SoAugkAKTn3WLx3JnqCxxME6bGvfNJzJoA==",
+      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.3.289.tgz",
+      "integrity": "sha512-fQRvZPhf6zxyzj7gwyItbhixmu5+Oy0HMQOyzYz3Phjhxuhj3TnpGPPy0VBnbSqWqYxT67TAFOiF5OzOFMYPLQ==",
       "peerDependencies": {
         "@anthropic-ai/sdk": ">=0.93.0",
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -1527,26 +1527,26 @@
         "clarity": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/components@0.2.348": {
+    "@stacksjs/components@0.2.350": {
       "name": "@stacksjs/components",
-      "version": "0.2.348",
+      "version": "0.2.350",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.348.tgz",
-      "integrity": "sha512-JlvgAztyI7Ze6ibxNrNklPf4YD1C0s2iigK09aSz432WiARyGGgzmwlViM2Uvuv2/DLxgGP012HJEQbXmb081g==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.350.tgz",
+      "integrity": "sha512-4fRFV7X8cpHHVtGdoDgHLLGRjpfiOhtGxbhJr8iZIICVpavczUamCYgJryEzl64eltMfZ9Use4j+Bz1G6ajlkA==",
       "dependencies": {
         "@iconify-json/f7": "^1.2.2",
-        "@stacksjs/stx": "0.2.348",
+        "@stacksjs/stx": "0.2.350",
         "@stacksjs/ts-css": "^0.3.2",
-        "bun-plugin-stx": "0.2.348",
+        "bun-plugin-stx": "0.2.350",
         "ts-syntax-highlighter": "^0.2.17"
       }
     },
-    "@stacksjs/desktop@0.2.348": {
+    "@stacksjs/desktop@0.2.350": {
       "name": "@stacksjs/desktop",
-      "version": "0.2.348",
+      "version": "0.2.350",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.348.tgz",
-      "integrity": "sha512-ofDLZ8zSJQJfGjEhDKcAOeIjvKW4l+O3lG5uVx7UwfgaCuiiQc5CiGyQb1ulI/B9Db4CFWM7Fh1TmdUwFn81aA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.350.tgz",
+      "integrity": "sha512-+QYZpw3sXkmegMae3eRI3i+/DSik8RqXU5HW1ungInpnWaYTQtgthAzOb/EO/q0yA1kkVgXlIlpKcDFsuRQGRg==",
       "dependencies": {
         "craft-native": ">=0.0.104"
       }
@@ -1586,12 +1586,12 @@
         "httx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/logsmith@0.2.11": {
+    "@stacksjs/logsmith@0.2.12": {
       "name": "@stacksjs/logsmith",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/logsmith/-/logsmith-0.2.11.tgz",
-      "integrity": "sha512-wqqAxewpsHVDzpC+IRy+yYyGXGlv1j5GCqYTh8fL7d3LLhnRPN72PEQywM357burtORvdkFHfOzk3Ih1SMvuiw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/logsmith/-/logsmith-0.2.12.tgz",
+      "integrity": "sha512-7q07Jbe8nQVJQd80W19WKMHQz91vSGPHkUjurv66DM+rqduk8tEEZlMEAhDFMXEoovwrvZxrNnM7oM8GXhJ+sw==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "bunfig": "^0.15.6",
@@ -1625,28 +1625,28 @@
         "rpx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/sanitizer@0.2.348": {
+    "@stacksjs/sanitizer@0.2.350": {
       "name": "@stacksjs/sanitizer",
-      "version": "0.2.348",
+      "version": "0.2.350",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.348.tgz",
-      "integrity": "sha512-mY0Ubee31VuMvM/QtbAVZPPJ1vkJlqtGbDizVd7XqK3cibM6QrKWkdOsGF65bW1YFvoFSYUGAXW/61lcBu1NSg=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.350.tgz",
+      "integrity": "sha512-PKtU+sXbiIqQG4YKacOAMXZ05zjc+W2v9LCR/bVNA9YsBLAm033fwEUcIfUCenPHLEr5MJl8Ww2YAq0+EALbgA=="
     },
-    "@stacksjs/stx@0.2.348": {
+    "@stacksjs/stx@0.2.350": {
       "name": "@stacksjs/stx",
-      "version": "0.2.348",
+      "version": "0.2.350",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.348.tgz",
-      "integrity": "sha512-Saktfratyer8b0sIrGpYGAgBr2tf6xSkbz8aKA6g5wMTwOh4LM+jzx6FD4ABhdMOxrGnZ6WXVVINpX0N5fHj+g==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.350.tgz",
+      "integrity": "sha512-ZBS2ccgnt//gMMYgsISOhePsQJ2s1SFBY62VipTch/RDSMRvIZtgyk7e5AcQ3R4x26KCV5UkXyy/9Md+Rbo1rQ==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.16",
-        "@stacksjs/desktop": "0.2.348",
-        "@stacksjs/sanitizer": "0.2.348",
+        "@stacksjs/desktop": "0.2.350",
+        "@stacksjs/sanitizer": "0.2.350",
         "@stacksjs/ts-css": "^0.3.2",
         "@stacksjs/ts-i18n": "^0.1.11",
-        "bun-plugin-stx": "0.2.348",
+        "bun-plugin-stx": "0.2.350",
         "bunfig": "^0.15.19",
-        "stx-router": "0.2.348",
+        "stx-router": "0.2.350",
         "ts-broadcasting": "^0.0.10",
         "ts-images": "^0.2.22",
         "ts-syntax-highlighter": "^0.2.1"
@@ -1694,16 +1694,16 @@
         "cache": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.16.16": {
+    "@stacksjs/ts-cloud@0.16.17": {
       "name": "@stacksjs/ts-cloud",
-      "version": "0.16.16",
+      "version": "0.16.17",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.16.tgz",
-      "integrity": "sha512-M//gakBE9n1Ucr07Nztunz1C7LZCU7IeMuCNGpS3ObL/Lxs/TzhpD7wU3IjaObRxnNN/YfNiWFBS/kJmnhvrWA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.17.tgz",
+      "integrity": "sha512-zVK68P7t6DoWQJKLCZqm0pJB/vmmEIBnuPsT/EKphKW+ZrYpb77Fzjqjdsc///2vSi8ldUMXPccq/nhpoUHTvQ==",
       "dependencies": {
         "@stacksjs/ts-xml": "^0.1.2",
-        "@ts-cloud/aws-types": "0.16.16",
-        "@ts-cloud/core": "0.16.16",
+        "@ts-cloud/aws-types": "0.16.17",
+        "@ts-cloud/core": "0.16.17",
         "hash-wasm": "^4.12.0"
       },
       "bin": {
@@ -1914,15 +1914,15 @@
         "@stacksjs/dtsx": "0.11.15"
       }
     },
-    "bun-plugin-stx@0.2.348": {
+    "bun-plugin-stx@0.2.350": {
       "name": "bun-plugin-stx",
-      "version": "0.2.348",
+      "version": "0.2.350",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.348.tgz",
-      "integrity": "sha512-3LIVAkedf0WOjV3WQOGb+eMOnoAJDlpMo3A5ME15Jst5HEGmUyHSHdRUIqWS9AXcZSIKwC1SZThT2n4rAOdTrg==",
+      "resolved": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.350.tgz",
+      "integrity": "sha512-Dc2fxYau6w91Opc+FFOcgW++uUheoYQ8GPj8IWctmxZ+kApWH/xABY1GQdVUQVXMV67Uf7Z4hJTTKC6I6gQJdw==",
       "dependencies": {
-        "@stacksjs/stx": "0.2.348",
-        "stx-router": "0.2.348"
+        "@stacksjs/stx": "0.2.350",
+        "stx-router": "0.2.350"
       },
       "bin": {
         "serve": "./dist/serve.js",
@@ -2227,12 +2227,12 @@
       "resolved": "https://registry.npmjs.org/ts-medium-editor/-/ts-medium-editor-0.2.0.tgz",
       "integrity": "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="
     },
-    "ts-pantry@0.11.66": {
+    "ts-pantry@0.11.67": {
       "name": "ts-pantry",
-      "version": "0.11.66",
+      "version": "0.11.67",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.66.tgz",
-      "integrity": "sha512-PBcXW8LwBSin3ERXUgvq21h98XrB+9GoMNmdFWMTzCLu6MXHmUBm9LAVFPPvJyDPbbApEUKFcFlAdS2K6+QaCA==",
+      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.11.67.tgz",
+      "integrity": "sha512-ZQqPfu8lrsYHus7KYYOMtB5vzYHGYr+/t95oVqZ7BLrRvukWtdHeA41hOjXsk1qFrqNOlOm49RSQV6iFkwqTdQ==",
       "bin": {
         "ts-pantry": "./dist/bin/cli.js"
       }
