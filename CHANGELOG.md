@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.50...v0.75.51)
+
+## ✨ Features
+
+- **chat**: a WhatsApp inbox driver ([d83c0aa](https://github.com/stacksjs/stacks/commit/d83c0aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.49...v0.75.50)
 
 ## 🔧 Chores
