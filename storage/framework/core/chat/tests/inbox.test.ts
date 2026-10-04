@@ -106,6 +106,19 @@ describe('iMessage inbox driver', () => {
 
   // The platform is pinned: CI runs on Linux, where the honest answer is
   // "not a Mac" before the database is ever looked for.
+  it('reads a conversation sitting in Recently Deleted when asked to', async () => {
+    const { chat, driver } = setup()
+    const alice = chat.direct(ALICE)
+    chat.add(alice, { text: 'one' })
+    chat.add(alice, { text: 'two', fromMe: true })
+    chat.deleteChat(alice)
+
+    const [conversation] = await driver.conversations()
+    expect(conversation).toMatchObject({ visible: false, deleted: 2 })
+    expect(await driver.messages(`direct:${ALICE}`)).toEqual([])
+    expect((await driver.messages(`direct:${ALICE}`, { includeDeleted: true })).map(m => m.text)).toEqual(['one', 'two'])
+  })
+
   it('reports a missing database as Messages not set up', async () => {
     const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false, platform: 'darwin' })
     expect(await driver.status()).toMatchObject({ connected: false, needs: 'messages-signed-out' })

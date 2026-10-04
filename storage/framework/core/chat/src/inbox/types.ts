@@ -58,6 +58,12 @@ export interface InboxConversation {
   cursor: string
   /** The real app currently lists it. False once removed there. */
   visible: boolean
+  /**
+   * Messages the app has deleted but can still bring back (iMessage's
+   * Recently Deleted). Read them with `includeDeleted`. 0 where the app has
+   * no such thing.
+   */
+  deleted?: number
   archive: ArchiveSupport
   /** Opens the conversation in the real app, when the provider has a link. */
   url: string | null
@@ -125,6 +131,11 @@ export interface MessageQuery {
    * Either way the result is oldest first.
    */
   limit?: number
+  /**
+   * Include messages the app has deleted but not yet purged (iMessage's
+   * Recently Deleted), so a deleted conversation can still be kept.
+   */
+  includeDeleted?: boolean
 }
 
 export interface InboxDriver {

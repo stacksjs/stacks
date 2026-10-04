@@ -161,6 +161,7 @@ export class IMessageDriver implements InboxDriver {
       unread: c.unreadCount,
       cursor: String(c.lastMessageRowId),
       visible: c.messageCount > 0,
+      deleted: c.recoverableCount,
       archive: url
         ? { mode: 'confirm', detail: 'Opens it in Messages at Delete Conversation for you to confirm. Messages keeps it in Recently Deleted for 30 days.' }
         : { mode: 'unsupported', detail: 'Messages cannot open this conversation by address, so delete it there yourself.' },
@@ -175,9 +176,10 @@ export class IMessageDriver implements InboxDriver {
         return []
       // Reading forward from a cursor walks ROWIDs up; a bare limit wants the
       // newest messages, fetched newest first and turned back around.
+      const includeDeleted = query.includeDeleted
       const rows = query.after || !query.limit
-        ? db.messages(conversation.chatGuids, { afterRowId: Number(query.after) || 0, byRowId: true, limit: query.limit })
-        : db.messages(conversation.chatGuids, { newestFirst: true, limit: query.limit }).reverse()
+        ? db.messages(conversation.chatGuids, { afterRowId: Number(query.after) || 0, byRowId: true, limit: query.limit, includeDeleted })
+        : db.messages(conversation.chatGuids, { newestFirst: true, limit: query.limit, includeDeleted }).reverse()
       return rows.map(row => this.toMessage(conversationId, row))
     })
   }

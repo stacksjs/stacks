@@ -47,6 +47,8 @@ export interface MessageQuery {
   newestFirst?: boolean
   /** ROWID order, for copying in pages. */
   byRowId?: boolean
+  /** Also the messages in Recently Deleted: deleted, but not yet purged. */
+  includeDeleted?: boolean
 }
 
 export class MessagesAccessError extends Error {
@@ -303,6 +305,12 @@ export class MessagesDb {
     // showing a transcript wants the newest messages by date.
     const order = options.newestFirst ? 'm.date DESC, m.ROWID DESC' : options.byRowId ? 'm.ROWID ASC' : 'm.date ASC, m.ROWID ASC'
     const before = options.beforeMs ? `AND m.date < ${unixMsToAppleDate(options.beforeMs)}` : ''
+    // Recently Deleted moves a message from chat_message_join to
+    // chat_recoverable_message_join; reading both is how a deleted
+    // conversation can still be copied before Messages purges it.
+    const joins = options.includeDeleted && this.hasRecoverable
+      ? '(SELECT chat_id, message_id FROM chat_message_join UNION SELECT chat_id, message_id FROM chat_recoverable_message_join)'
+      : 'chat_message_join'
     const rows = this.db.query(`
       SELECT
         m.ROWID AS rowid, m.guid, m.text, m.attributedBody, m.is_from_me, m.date, m.service,
@@ -314,7 +322,7 @@ export class MessagesDb {
         h.id AS sender,
         c.guid AS chat_guid
       FROM message m
-      JOIN chat_message_join cmj ON cmj.message_id = m.ROWID
+      JOIN ${joins} cmj ON cmj.message_id = m.ROWID
       JOIN chat c ON c.ROWID = cmj.chat_id
       LEFT JOIN handle h ON h.ROWID = m.handle_id
       WHERE c.guid IN (${placeholders}) AND m.ROWID > ? ${before}

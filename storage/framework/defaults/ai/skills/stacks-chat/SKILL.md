@@ -385,6 +385,11 @@ controller the driver only opens the conversation in Messages for the person to 
 from Recently Deleted, and `confirmDeletes: true` accepts Messages' alert too.
 Attic (`~/Code/Apps/attic`, `app/Desktop/messages-control.swift`) is the reference.
 
+A conversation deleted in Messages sits in Recently Deleted for 30 days:
+`conversation.visible` is false and `conversation.deleted` counts what is still
+recoverable. `messages(id, { includeDeleted: true })` reads those messages, so an
+app can keep a deleted conversation without recovering it in Messages.
+
 Discord personal DMs are deliberately absent: only a user token reads them, and
 automating a user account breaks Discord's terms. Reactions are separate
 `kind: 'reaction'` messages with `targetId` and an emoji `reaction`; Slack and
