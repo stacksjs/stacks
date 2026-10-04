@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.58...v0.75.59)
+
+## ✨ Features
+
+- **chat**: an inbox message says which service carried it ([182aca6](https://github.com/stacksjs/stacks/commit/182aca6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.57...v0.75.58)
 
 ## 🐛 Bug Fixes
