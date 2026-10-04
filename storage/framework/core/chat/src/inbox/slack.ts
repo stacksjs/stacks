@@ -1,4 +1,5 @@
 import type { ArchiveOutcome, ArchiveSupport, Fetch, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxPerson, InboxStatus, MessageQuery } from './types'
+import { onHost } from './image'
 
 export interface SlackInboxConfig {
   /**
@@ -99,6 +100,7 @@ export class SlackInboxDriver implements InboxDriver {
   private readonly concurrency: number
   private self: { userId: string, team: string, teamId: string } | null = null
   private users = new Map<string, string | null>()
+  private avatars = new Map<string, string | null>()
   private channels = new Map<string, SlackChannel>()
 
   constructor(config: SlackInboxConfig) {
@@ -139,8 +141,9 @@ export class SlackInboxDriver implements InboxDriver {
       return null
     if (!this.users.has(id)) {
       try {
-        const { user } = await this.api<{ user: { real_name?: string, name?: string, profile?: { display_name?: string, real_name?: string } } }>('users.info', { user: id })
+        const { user } = await this.api<{ user: { real_name?: string, name?: string, profile?: { display_name?: string, real_name?: string, image_72?: string, is_custom_image?: boolean } } }>('users.info', { user: id })
         this.users.set(id, user.profile?.display_name || user.profile?.real_name || user.real_name || user.name || null)
+        this.avatars.set(id, user.profile?.image_72 ?? null)
       }
       catch {
         this.users.set(id, null)
@@ -150,7 +153,17 @@ export class SlackInboxDriver implements InboxDriver {
   }
 
   private async person(id: string | undefined): Promise<InboxPerson | null> {
-    return id ? { id, name: await this.userName(id) } : null
+    if (!id)
+      return null
+    const name = await this.userName(id)
+    return { id, name, avatar: this.avatars.get(id) ?? null }
+  }
+
+  /** A profile picture: the reference is Slack's own image URL, fetched only from Slack's hosts. */
+  async avatar(ref: string): Promise<Response> {
+    if (!onHost(ref, ['slack-edge.com', 'slack.com', 'gravatar.com']))
+      return new Response('Not found', { status: 404 })
+    return this.fetch(ref)
   }
 
   async status(): Promise<InboxStatus> {

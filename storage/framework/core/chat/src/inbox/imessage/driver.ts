@@ -7,6 +7,7 @@ import process from 'node:process'
 import { DEFAULT_MESSAGES_DB, MessagesAccessError, MessagesDb } from './chat-db'
 import { Contacts, DEFAULT_ADDRESS_BOOK_DIR } from './contacts'
 import { groupChats, messagesUrl } from './conversations'
+import { imageResponse } from '../image'
 import { formatHandle } from './handles'
 
 /**
@@ -120,8 +121,16 @@ export class IMessageDriver implements InboxDriver {
     return this.contacts
   }
 
-  private person(handle: string | null): { id: string, name: string | null } | null {
-    return handle ? { id: handle, name: this.names().nameFor(handle) } : null
+  private person(handle: string | null): { id: string, name: string | null, avatar: string | null } | null {
+    if (!handle)
+      return null
+    const contacts = this.names()
+    return { id: handle, name: contacts.nameFor(handle), avatar: contacts.hasPhoto(handle) ? handle : null }
+  }
+
+  /** A contact's photo from Contacts; the reference is the handle. */
+  async avatar(ref: string): Promise<Response> {
+    return imageResponse(this.names().photo(ref))
   }
 
   private find(db: MessagesDb, id: string): LiveConversation | undefined {

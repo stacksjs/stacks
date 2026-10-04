@@ -61,6 +61,7 @@ export class FakeChatStorage {
         ZCONTACTNAME VARCHAR, ZFIRSTNAME VARCHAR, ZMEMBERJID VARCHAR
       );
       CREATE TABLE ZWAPROFILEPUSHNAME (Z_PK INTEGER PRIMARY KEY, Z_ENT INTEGER, Z_OPT INTEGER, ZJID VARCHAR, ZPUSHNAME VARCHAR);
+      CREATE TABLE ZWAPROFILEPICTUREITEM (Z_PK INTEGER PRIMARY KEY, Z_ENT INTEGER, Z_OPT INTEGER, ZREQUESTDATE TIMESTAMP, ZJID VARCHAR, ZPATH VARCHAR, ZPICTUREID VARCHAR);
     `)
   }
 
@@ -98,6 +99,19 @@ export class FakeChatStorage {
     }
     this.db.query('UPDATE ZWACHATSESSION SET ZLASTMESSAGE = ?, ZLASTMESSAGEDATE = ?, ZLASTMESSAGETEXT = ? WHERE Z_PK = ?').run(pk, date, message.text ?? '', chat)
     return pk
+  }
+
+  /**
+   * A profile picture row, and the file WhatsApp writes beside its path
+   * (`<path>.thumb`) when it has fetched it; no file for one it has not.
+   */
+  picture(jid: string, bytes: Uint8Array | null): void {
+    const path = `Media/Profile/${jid.split('@')[0]}-1700000000`
+    this.db.query('INSERT INTO ZWAPROFILEPICTUREITEM (Z_ENT, Z_OPT, ZJID, ZPATH, ZPICTUREID) VALUES (10, 1, ?, ?, ?)').run(jid, path, '1')
+    if (bytes) {
+      mkdirSync(join(this.dir, 'Media', 'Profile'), { recursive: true })
+      writeFileSync(join(this.dir, `${path}.thumb`), bytes)
+    }
   }
 
   /** What WhatsApp does when its Archive is pressed. */

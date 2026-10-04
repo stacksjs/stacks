@@ -1,4 +1,5 @@
 import type { ArchiveOutcome, ArchiveSupport, Fetch, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxStatus, MessageQuery } from './types'
+import { onHost } from './image'
 
 export interface DiscordInboxConfig {
   /**
@@ -29,7 +30,7 @@ interface DiscordMessage {
   content: string
   timestamp: string
   edited_timestamp: string | null
-  author: { id: string, username: string, global_name?: string | null, bot?: boolean }
+  author: { id: string, username: string, global_name?: string | null, bot?: boolean, avatar?: string | null }
   attachments?: Array<{ id: string, filename: string, content_type?: string, size: number, url: string }>
   reactions?: Array<{ count: number, me?: boolean, emoji: { id: string | null, name: string | null } }>
   message_reference?: { message_id?: string }
@@ -67,6 +68,7 @@ export class DiscordInboxDriver implements InboxDriver {
   private readonly apiBase: string
   private readonly concurrency: number
   private guilds = new Map<string, string>()
+  private icons = new Map<string, string | null>()
   private channels = new Map<string, DiscordChannel>()
 
   constructor(config: DiscordInboxConfig) {
@@ -115,10 +117,11 @@ export class DiscordInboxDriver implements InboxDriver {
   }
 
   async conversations(): Promise<InboxConversation[]> {
-    const guilds = await this.api<Array<{ id: string, name: string }>>('/users/@me/guilds')
+    const guilds = await this.api<Array<{ id: string, name: string, icon?: string | null }>>('/users/@me/guilds')
     const channels: DiscordChannel[] = []
     for (const guild of guilds) {
       this.guilds.set(guild.id, guild.name)
+      this.icons.set(guild.id, guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128` : null)
       const [all, active] = await Promise.all([
         this.api<DiscordChannel[]>(`/guilds/${guild.id}/channels`).catch(() => [] as DiscordChannel[]),
         this.api<{ threads: DiscordChannel[] }>(`/guilds/${guild.id}/threads/active`).catch(() => ({ threads: [] as DiscordChannel[] })),
@@ -148,6 +151,7 @@ export class DiscordInboxDriver implements InboxDriver {
       title: thread ? channel.name ?? 'Thread' : `#${channel.name}`,
       participants: [],
       workspace: channel.guild_id ? this.guilds.get(channel.guild_id) ?? null : null,
+      avatar: channel.guild_id ? this.icons.get(channel.guild_id) ?? null : null,
       lastMessageAt: latest ? Date.parse(latest.timestamp) : snowflakeTime(channel.last_message_id),
       preview: latest ? (latest.content || (latest.attachments?.length ? 'Attachment' : null)) : null,
       previewFromMe: !!latest && latest.author.id === this.userId,
@@ -203,7 +207,7 @@ export class DiscordInboxDriver implements InboxDriver {
         text: message.content || null,
         fromMe: mine,
         sentAt: Date.parse(message.timestamp),
-        sender: mine ? null : { id: message.author.id, name: message.author.global_name || message.author.username },
+        sender: mine ? null : { id: message.author.id, name: message.author.global_name || message.author.username, avatar: message.author.avatar ? `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=128` : null },
         targetId: null,
         reaction: null,
         reactionRemoved: false,
@@ -272,6 +276,13 @@ export class DiscordInboxDriver implements InboxDriver {
   }
 
   /** Discord's attachment URLs are signed CDN links and need no token. */
+  /** A user avatar or server icon: the reference is a Discord CDN URL, fetched only from there. */
+  async avatar(ref: string): Promise<Response> {
+    if (!onHost(ref, ['cdn.discordapp.com']))
+      return new Response('Not found', { status: 404 })
+    return this.fetch(ref)
+  }
+
   async attachment(attachment: InboxAttachment): Promise<Response> {
     return attachment.url ? this.fetch(attachment.url) : new Response('Not found', { status: 404 })
   }

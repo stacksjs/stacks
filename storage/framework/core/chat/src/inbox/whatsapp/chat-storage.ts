@@ -157,6 +157,22 @@ export class WhatsAppDb {
     return this.sessions().find(s => s.jid === jid)
   }
 
+  /**
+   * Where WhatsApp keeps each profile picture it has fetched, by JID: a path
+   * relative to the container, stored with a `.jpg` or `.thumb` suffix (or
+   * none). WhatsApp only keeps the ones it has shown recently.
+   */
+  profilePicturePaths(): Map<string, string> {
+    try {
+      const rows = this.db.query('SELECT ZJID AS jid, ZPATH AS path FROM ZWAPROFILEPICTUREITEM WHERE ZJID IS NOT NULL AND ZPATH IS NOT NULL').all() as Array<{ jid: string, path: string }>
+      return new Map(rows.map(r => [r.jid, r.path]))
+    }
+    catch {
+      // Pictures are a nicety: a store without the table just has none.
+      return new Map()
+    }
+  }
+
   /** A group's current members, named the way WhatsApp names them. */
   members(sessionPk: number): MemberRow[] {
     const rows = this.db.query(`

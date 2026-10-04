@@ -396,6 +396,14 @@ messages are `unsent`, group events and calls are `kind: 'event'`. Reactions and
 quoted replies sit in protobuf blobs the driver does not decode, so they are
 absent rather than guessed. Status updates and broadcast lists are not listed.
 
+Profile pictures: a person (and a group or server conversation) may carry an
+`avatar` reference; pass it to the optional `driver.avatar(ref)` for the image
+as a `Response`. iMessage reads the contact's photo from Contacts (inline, or
+the store's `_EXTERNAL_DATA` file for larger iCloud photos), WhatsApp the
+pictures it has cached on this Mac (only some - it keeps the ones it showed
+recently), Slack `profile.image_72`, Discord user avatars and server icons.
+The remote ones are fetched only from the provider's own image hosts.
+
 A conversation deleted in Messages sits in Recently Deleted for 30 days:
 `conversation.visible` is false and `conversation.deleted` counts what is still
 recoverable. `messages(id, { includeDeleted: true })` reads those messages, so an

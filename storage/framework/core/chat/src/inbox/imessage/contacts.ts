@@ -1,7 +1,7 @@
 import { Database } from 'bun:sqlite'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { normalizeHandle } from './handles'
 
 /**
@@ -22,6 +22,34 @@ export interface ContactCard {
   name: string
   /** Initials for the avatar, e.g. "JA". */
   initials: string
+  /** Where the contact's photo is, when it has one: read it with {@link Contacts.photo}. */
+  photo?: { file: string, record: number } | null
+}
+
+/**
+ * A contact photo column's bytes as the image they stand for. Contacts writes
+ * a one-byte tag first: 1 means the JPEG follows inline, 2 means the rest is
+ * the UUID of a file in the store's `.AddressBook-v22_SUPPORT/_EXTERNAL_DATA`
+ * (iCloud's larger photos), NUL-terminated.
+ */
+export function contactImage(store: string, data: Uint8Array | null): Uint8Array | null {
+  if (!data || data.length < 2)
+    return null
+  if (data[0] === 1)
+    return data.subarray(1)
+  if (data[0] === 2) {
+    const uuid = new TextDecoder().decode(data.subarray(1)).replace(/\0+$/, '').trim()
+    if (!/^[\w-]+$/.test(uuid))
+      return null
+    const file = join(dirname(store), '.AddressBook-v22_SUPPORT', '_EXTERNAL_DATA', uuid)
+    try {
+      return new Uint8Array(readFileSync(file))
+    }
+    catch {
+      return null
+    }
+  }
+  return null
 }
 
 function addressBookFiles(root: string): string[] {
@@ -74,16 +102,23 @@ export class Contacts {
   private read(file: string): void {
     const db = new Database(file, { readonly: true })
     try {
+      // Older and hand-made stores have no photo columns; read them when present.
+      const columns = new Set((db.query('PRAGMA table_info(ZABCDRECORD)').all() as Array<{ name: string }>).map(c => c.name))
+      const photoColumns = ['ZTHUMBNAILIMAGEDATA', 'ZIMAGEDATA'].filter(c => columns.has(c))
+      const hasPhoto = photoColumns.length > 0 ? `(${photoColumns.map(c => `${c} IS NOT NULL`).join(' OR ')})` : '0'
       const people = db.query(`
-        SELECT Z_PK AS id, ZFIRSTNAME AS first, ZLASTNAME AS last, ZNICKNAME AS nick, ZORGANIZATION AS org
+        SELECT Z_PK AS id, ZFIRSTNAME AS first, ZLASTNAME AS last, ZNICKNAME AS nick, ZORGANIZATION AS org, ${hasPhoto} AS hasPhoto
         FROM ZABCDRECORD
-      `).all() as Array<{ id: number, first: string | null, last: string | null, nick: string | null, org: string | null }>
+      `).all() as Array<{ id: number, first: string | null, last: string | null, nick: string | null, org: string | null, hasPhoto: number }>
       const names = new Map<number, string>()
+      const photos = new Set<number>()
       for (const person of people) {
         const full = [person.first, person.last].filter(Boolean).join(' ').trim()
         const name = full || person.nick?.trim() || person.org?.trim()
         if (name)
           names.set(person.id, name)
+        if (person.hasPhoto)
+          photos.add(person.id)
       }
 
       const phones = db.query('SELECT ZOWNER AS owner, ZFULLNUMBER AS value FROM ZABCDPHONENUMBER').all() as Array<{ owner: number, value: string | null }>
@@ -93,8 +128,13 @@ export class Contacts {
         if (!name || !row.value)
           continue
         const handle = normalizeHandle(row.value)
-        if (!this.byHandle.has(handle))
-          this.byHandle.set(handle, { name, initials: initialsOf(name) })
+        const photo = photos.has(row.owner) ? { file, record: row.owner } : null
+        const known = this.byHandle.get(handle)
+        if (!known)
+          this.byHandle.set(handle, { name, initials: initialsOf(name), photo })
+        // The same person in two accounts: keep the first name, take a photo from either.
+        else if (!known.photo && photo)
+          known.photo = photo
       }
     }
     finally {
@@ -113,5 +153,29 @@ export class Contacts {
 
   nameFor(handle: string): string | null {
     return this.lookup(handle)?.name ?? null
+  }
+
+  hasPhoto(handle: string): boolean {
+    return !!this.lookup(handle)?.photo
+  }
+
+  /** The contact's photo, the thumbnail when there is one; null when it has none or it cannot be read. */
+  photo(handle: string): Uint8Array | null {
+    const ref = this.lookup(handle)?.photo
+    if (!ref)
+      return null
+    try {
+      const db = new Database(ref.file, { readonly: true })
+      try {
+        const row = db.query('SELECT ZTHUMBNAILIMAGEDATA AS thumb, ZIMAGEDATA AS full FROM ZABCDRECORD WHERE Z_PK = ?').get(ref.record) as { thumb: Uint8Array | null, full: Uint8Array | null } | null
+        return contactImage(ref.file, row?.thumb ?? null) ?? contactImage(ref.file, row?.full ?? null)
+      }
+      finally {
+        db.close()
+      }
+    }
+    catch {
+      return null
+    }
   }
 }

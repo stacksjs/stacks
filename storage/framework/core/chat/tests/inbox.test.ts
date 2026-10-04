@@ -1,5 +1,9 @@
 import type { Fetch } from '../src/inbox'
+import { Database } from 'bun:sqlite'
 import { describe, expect, it } from 'bun:test'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { createInboxDriver, DiscordInboxDriver, formatJid, IMessageDriver, SlackInboxDriver, snowflakeTime, WhatsAppDriver } from '../src/inbox'
 import { ALICE, BOB, FakeChatDb } from './fixtures/chat-db'
 import { CLIMBERS, DANA, EMEKA, FakeChatStorage } from './fixtures/chat-storage'
@@ -132,6 +136,41 @@ describe('iMessage inbox driver', () => {
     expect((await driver.conversations())[0]!.preview).toBe('look')
   })
 
+  it('gives contacts their photo from Contacts, inline or kept as an external file', async () => {
+    const book = mkdtempSync(join(tmpdir(), 'attic-contacts-'))
+    const store = join(book, 'Sources', 'ICLOUD')
+    mkdirSync(join(store, '.AddressBook-v22_SUPPORT', '_EXTERNAL_DATA'), { recursive: true })
+    const db = new Database(join(store, 'AddressBook-v22.abcddb'))
+    db.exec(`
+      CREATE TABLE ZABCDRECORD (Z_PK INTEGER PRIMARY KEY, ZFIRSTNAME TEXT, ZLASTNAME TEXT, ZNICKNAME TEXT, ZORGANIZATION TEXT, ZTHUMBNAILIMAGEDATA BLOB, ZIMAGEDATA BLOB);
+      CREATE TABLE ZABCDPHONENUMBER (Z_PK INTEGER PRIMARY KEY, ZOWNER INTEGER, ZFULLNUMBER TEXT);
+      CREATE TABLE ZABCDEMAILADDRESS (Z_PK INTEGER PRIMARY KEY, ZOWNER INTEGER, ZADDRESS TEXT);
+    `)
+    const inline = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 9])
+    const external = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 7])
+    const uuid = '0A1B2C3D-0000-4000-8000-00000000ABCD'
+    writeFileSync(join(store, '.AddressBook-v22_SUPPORT', '_EXTERNAL_DATA', uuid), external)
+    db.query('INSERT INTO ZABCDRECORD (Z_PK, ZFIRSTNAME, ZLASTNAME, ZTHUMBNAILIMAGEDATA) VALUES (1, ?, ?, ?)').run('Alice', 'Ng', new Uint8Array([1, ...inline]))
+    db.query('INSERT INTO ZABCDRECORD (Z_PK, ZFIRSTNAME, ZIMAGEDATA) VALUES (2, ?, ?)').run('Bob', new Uint8Array([2, ...new TextEncoder().encode(uuid), 0]))
+    db.query('INSERT INTO ZABCDPHONENUMBER (ZOWNER, ZFULLNUMBER) VALUES (1, ?)').run('(555) 000-2222')
+    db.query('INSERT INTO ZABCDEMAILADDRESS (ZOWNER, ZADDRESS) VALUES (2, ?)').run(BOB)
+    db.close()
+
+    const chat = new FakeChatDb()
+    chat.add(chat.direct(ALICE), { text: 'hi' })
+    chat.add(chat.direct(BOB), { text: 'yo' })
+    const driver = new IMessageDriver({ databasePath: chat.path, addressBookDir: book, openUrl: () => {} })
+    const people = (await driver.conversations()).map(c => c.participants[0]!)
+    expect(people.find(p => p.id === ALICE)).toEqual({ id: ALICE, name: 'Alice Ng', avatar: ALICE })
+    expect(people.find(p => p.id === BOB)!.avatar).toBe(BOB)
+
+    const alice = await driver.avatar(ALICE)
+    expect(alice.headers.get('content-type')).toBe('image/jpeg')
+    expect(new Uint8Array(await alice.arrayBuffer())).toEqual(inline)
+    expect(new Uint8Array(await (await driver.avatar(BOB)).arrayBuffer())).toEqual(external)
+    expect((await driver.avatar('+15550009999')).status).toBe(404)
+  })
+
   it('reports a missing database as Messages not set up', async () => {
     const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false, platform: 'darwin' })
     expect(await driver.status()).toMatchObject({ connected: false, needs: 'messages-signed-out' })
@@ -162,7 +201,7 @@ function slackApi(handlers: Record<string, (params: URLSearchParams) => unknown>
 describe('Slack inbox driver', () => {
   const base = {
     'auth.test': () => ({ user_id: 'UME', team: 'Acme', team_id: 'T1' }),
-    'users.info': (p: URLSearchParams) => ({ user: { profile: { display_name: p.get('user') === 'UANN' ? 'Ann' : 'Ben' } } }),
+    'users.info': (p: URLSearchParams) => ({ user: { profile: p.get('user') === 'UANN' ? { display_name: 'Ann', image_72: 'https://avatars.slack-edge.com/ann_72.png' } : { display_name: 'Ben' } } }),
     'users.conversations': () => ({ channels: [
       { id: 'D1', is_im: true, user: 'UANN' },
       { id: 'C1', is_channel: true, name: 'general' },
@@ -183,7 +222,9 @@ describe('Slack inbox driver', () => {
     const conversations = await driver.conversations()
     const dm = conversations.find(c => c.id === 'D1')!
     expect(dm).toMatchObject({ kind: 'direct', workspace: 'Acme', unread: 2, visible: true, url: 'slack://channel?team=T1&id=D1' })
-    expect(dm.participants).toEqual([{ id: 'UANN', name: 'Ann' }])
+    expect(dm.participants).toEqual([{ id: 'UANN', name: 'Ann', avatar: 'https://avatars.slack-edge.com/ann_72.png' }])
+    // Pictures come only from Slack's image hosts, never an arbitrary URL.
+    expect((await driver.avatar('https://evil.example/ann.png')).status).toBe(404)
     expect(dm.archive.mode).toBe('native')
     expect(conversations.find(c => c.id === 'C1')!.archive.mode).toBe('native')
     expect(conversations.find(c => c.id === 'G1')!.archive.mode).toBe('unsupported')
@@ -251,7 +292,7 @@ describe('Discord inbox driver', () => {
       if (path === '/users/@me')
         return Response.json({ username: 'attic-bot' })
       if (path === '/users/@me/guilds')
-        return Response.json([{ id: 'G1', name: 'Climbers' }])
+        return Response.json([{ id: 'G1', name: 'Climbers', icon: 'gicon' }])
       if (path === '/guilds/G1/channels')
         return Response.json([{ id: 'C1', type: 0, name: 'general', last_message_id: flake(now) }, { id: 'V1', type: 2, name: 'voice' }])
       if (path === '/guilds/G1/threads/active')
@@ -261,7 +302,7 @@ describe('Discord inbox driver', () => {
       if (path.startsWith('/channels/T1/messages?limit=100'))
         return Response.json([
           { id: flake(now - 1000), type: 0, content: 'second', timestamp: new Date(now - 1000).toISOString(), edited_timestamp: null, author: { id: 'UME', username: 'me' }, reactions: [{ count: 2, emoji: { id: null, name: '🔥' } }] },
-          { id: flake(now - 2000), type: 0, content: 'first', timestamp: new Date(now - 2000).toISOString(), edited_timestamp: null, author: { id: 'U2', username: 'ann', global_name: 'Ann' }, attachments: [{ id: 'A1', filename: 'map.png', content_type: 'image/png', size: 5, url: 'https://cdn.discordapp.com/map.png' }] },
+          { id: flake(now - 2000), type: 0, content: 'first', timestamp: new Date(now - 2000).toISOString(), edited_timestamp: null, author: { id: 'U2', username: 'ann', global_name: 'Ann', avatar: 'h1' }, attachments: [{ id: 'A1', filename: 'map.png', content_type: 'image/png', size: 5, url: 'https://cdn.discordapp.com/map.png' }] },
         ])
       if (path.startsWith('/channels/T1/messages'))
         return Response.json([{ id: flake(now - 1000), type: 0, content: 'second', timestamp: new Date(now - 1000).toISOString(), edited_timestamp: null, author: { id: 'UME', username: 'me' } }])
@@ -281,6 +322,7 @@ describe('Discord inbox driver', () => {
     expect(conversations[0]!.archive.mode).toBe('unsupported')
     expect(conversations[1]).toMatchObject({ kind: 'thread', title: 'Trip planning', visible: true })
     expect(conversations[1]!.archive.mode).toBe('native')
+    expect((await driver.conversations()).every(c => c.avatar === 'https://cdn.discordapp.com/icons/G1/gicon.png?size=128')).toBe(true)
   })
 
   it('reads messages oldest first, with attachments and reaction counts', async () => {
@@ -288,7 +330,8 @@ describe('Discord inbox driver', () => {
     const driver = new DiscordInboxDriver({ token: 'bot', userId: 'UME', fetch })
     const messages = await driver.messages('T1')
     expect(messages.map(m => m.text ?? m.reaction)).toEqual(['first', 'second', '2'])
-    expect(messages[0]!.sender).toEqual({ id: 'U2', name: 'Ann' })
+    expect(messages[0]!.sender).toEqual({ id: 'U2', name: 'Ann', avatar: 'https://cdn.discordapp.com/avatars/U2/h1.png?size=128' })
+    expect((await driver.avatar('https://evil.example/a.png')).status).toBe(404)
     expect(messages[1]!.fromMe).toBe(true)
     expect(messages[2]).toMatchObject({ kind: 'reaction', reaction: '🔥' })
   })
@@ -350,12 +393,12 @@ describe('WhatsApp inbox driver', () => {
     expect(conversations.map(c => c.id).sort()).toEqual([CLIMBERS, DANA].sort())
     const direct = conversations.find(c => c.id === DANA)!
     expect(direct).toMatchObject({ provider: 'whatsapp', kind: 'direct', title: null, preview: 'see you at 6', visible: true, url: 'whatsapp://send?phone=15550004444' })
-    expect(direct.participants).toEqual([{ id: DANA, name: 'Dana Reyes' }])
+    expect(direct.participants).toEqual([{ id: DANA, name: 'Dana Reyes', avatar: null }])
     expect(direct.archive.mode).toBe('confirm')
     const climbers = conversations.find(c => c.id === CLIMBERS)!
     expect(climbers).toMatchObject({ kind: 'group', title: 'Weekend Climbers', visible: false, url: null })
     expect(climbers.archive.mode).toBe('unsupported')
-    expect(climbers.participants).toEqual([{ id: EMEKA, name: 'Emeka' }])
+    expect(climbers.participants).toEqual([{ id: EMEKA, name: 'Emeka', avatar: null }])
   })
 
   it('reads every kind of message the way WhatsApp shows it', async () => {
@@ -386,7 +429,7 @@ describe('WhatsApp inbox driver', () => {
       ['event', null],
       ['message', null],
     ])
-    expect(messages[0]!.sender).toEqual({ id: EMEKA, name: 'emeka.o' })
+    expect(messages[0]!.sender).toEqual({ id: EMEKA, name: 'emeka.o', avatar: null })
     expect(messages[1]).toMatchObject({ fromMe: true, sender: null })
     expect(messages[1]!.attachments[0]).toMatchObject({ name: 'photo.jpg', mimeType: 'image/jpeg', bytes: 4 })
     expect(messages[1]!.attachments[0]!.path).toBe(`${store.dir}/Message/Media/120363000000000001@g.us/a/b/photo.jpg`)
@@ -406,7 +449,7 @@ describe('WhatsApp inbox driver', () => {
     const all = await driver.messages(DANA)
     expect((await driver.messages(DANA, { after: all[1]!.cursor })).map(m => m.text)).toEqual(['three', 'four'])
     expect((await driver.messages(DANA, { limit: 2 })).map(m => m.text)).toEqual(['three', 'four'])
-    expect(all[0]!.sender).toEqual({ id: DANA, name: 'Dana Reyes' })
+    expect(all[0]!.sender).toEqual({ id: DANA, name: 'Dana Reyes', avatar: null })
   })
 
   it('archives through WhatsApp and only reports it removed once WhatsApp has recorded it', async () => {
@@ -421,6 +464,30 @@ describe('WhatsApp inbox driver', () => {
     await driver.unarchive(DANA)
     expect(asked[1]!.verb).toBe('unarchive')
     expect((await driver.conversations())[0]!.visible).toBe(true)
+  })
+
+  it('gives people the profile pictures WhatsApp has on this Mac, and none it never fetched', async () => {
+    const { store, driver } = setup()
+    const jpeg = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 1, 2, 3])
+    store.add(store.chat(DANA, 'Dana Reyes'), { text: 'hi' })
+    const group = store.chat(CLIMBERS, 'Weekend Climbers', 1)
+    store.member(group, EMEKA, 'Emeka')
+    store.add(group, { text: 'rope check', member: EMEKA })
+    store.picture(DANA, jpeg)
+    store.picture(EMEKA, null)
+    store.picture(CLIMBERS, jpeg)
+
+    const conversations = await driver.conversations()
+    expect(conversations.find(c => c.id === DANA)!.participants[0]!.avatar).toBe(DANA)
+    const climbers = conversations.find(c => c.id === CLIMBERS)!
+    expect(climbers.avatar).toBe(CLIMBERS)
+    expect(climbers.participants[0]!.avatar).toBeNull()
+    expect((await driver.messages(CLIMBERS))[0]!.sender!.avatar).toBeNull()
+
+    const response = await driver.avatar(DANA)
+    expect(response.headers.get('content-type')).toBe('image/jpeg')
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(jpeg)
+    expect((await driver.avatar(EMEKA)).status).toBe(404)
   })
 
   it('does not claim an archive WhatsApp never recorded', async () => {

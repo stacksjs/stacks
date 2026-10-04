@@ -35,6 +35,11 @@ export interface InboxPerson {
   /** Provider-scoped id: a handle, a Slack user id, a Discord user id. */
   id: string
   name: string | null
+  /**
+   * The person's profile picture, as a reference to pass to
+   * {@link InboxDriver.avatar}. Absent or null when the app has none for them.
+   */
+  avatar?: string | null
 }
 
 export interface InboxConversation {
@@ -68,6 +73,8 @@ export interface InboxConversation {
   archive: ArchiveSupport
   /** Opens the conversation in the real app, when the provider has a link. */
   url: string | null
+  /** A group's or server's own picture, for {@link InboxDriver.avatar}. */
+  avatar?: string | null
 }
 
 export interface InboxAttachment {
@@ -152,6 +159,12 @@ export interface InboxDriver {
   unarchive: (conversationId: string) => Promise<void>
   /** Download a remote attachment with the driver's credentials. */
   attachment: (attachment: InboxAttachment) => Promise<Response>
+  /**
+   * The picture behind an `avatar` reference from a person or conversation:
+   * read from this Mac (Contacts, WhatsApp) or fetched from the provider's
+   * image host. 404 when there is none.
+   */
+  avatar?: (ref: string) => Promise<Response>
 }
 
 /** A `fetch` the HTTP drivers call, so tests and proxies can stand in. */

@@ -1,8 +1,9 @@
 import type { ArchiveOutcome, ArchiveSupport, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxPerson, InboxStatus, MessageQuery } from '../types'
 import type { MessageRow, SessionRow } from './chat-storage'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 import process from 'node:process'
+import { imageResponse } from '../image'
 import { cleanText, DEFAULT_WHATSAPP_DB, DEFAULT_WHATSAPP_MEDIA_ROOT, MessageType, SESSION_DIRECT, WhatsAppAccessError, WhatsAppDb } from './chat-storage'
 
 /**
@@ -113,6 +114,31 @@ export class WhatsAppDriver implements InboxDriver {
     this.settleMs = config.settleMs ?? 6000
   }
 
+  /** The file behind a profile picture path, among the suffixes WhatsApp writes. */
+  private pictureFile(path: string | undefined): string | null {
+    if (!path || path.includes('..'))
+      return null
+    const base = join(dirname(this.databasePath), path)
+    return [`${base}.jpg`, `${base}.thumb`, base].find(file => existsSync(file)) ?? null
+  }
+
+  /** JIDs whose picture is on this Mac, so a person or chat can say it has one. */
+  private pictures(db: WhatsAppDb): (jid: string) => string | null {
+    const paths = db.profilePicturePaths()
+    const found = new Map<string, string | null>()
+    return (jid) => {
+      if (!found.has(jid))
+        found.set(jid, this.pictureFile(paths.get(jid)) ? jid : null)
+      return found.get(jid)!
+    }
+  }
+
+  /** A profile picture WhatsApp has on this Mac; the reference is the JID. */
+  async avatar(ref: string): Promise<Response> {
+    const file = this.open(db => this.pictureFile(db.profilePicturePaths().get(ref)))
+    return imageResponse(file ? new Uint8Array(readFileSync(file)) : null)
+  }
+
   private open<T>(fn: (db: WhatsAppDb) => T): T {
     const db = new WhatsAppDb(this.databasePath)
     try {
@@ -151,28 +177,32 @@ export class WhatsAppDriver implements InboxDriver {
   }
 
   async conversations(): Promise<InboxConversation[]> {
-    return this.open(db => db.sessions().map((s): InboxConversation => {
-      const direct = s.type === SESSION_DIRECT
-      const participants: InboxPerson[] = direct
-        ? [{ id: s.jid, name: s.name }]
-        : db.members(s.pk).map(m => ({ id: m.jid, name: m.name }))
-      return {
-        provider: 'whatsapp',
-        id: s.jid,
-        kind: direct ? 'direct' : 'group',
-        title: direct ? null : s.name,
-        participants,
-        workspace: null,
-        lastMessageAt: s.lastMessageAt,
-        preview: s.lastMessageText,
-        previewFromMe: s.lastMessageFromMe,
-        unread: s.unread,
-        cursor: String(s.lastMessagePk),
-        visible: !s.archived,
-        archive: this.archiveSupport(s),
-        url: this.url(s),
-      }
-    }))
+    return this.open((db) => {
+      const picture = this.pictures(db)
+      return db.sessions().map((s): InboxConversation => {
+        const direct = s.type === SESSION_DIRECT
+        const participants: InboxPerson[] = direct
+          ? [{ id: s.jid, name: s.name, avatar: picture(s.jid) }]
+          : db.members(s.pk).map(m => ({ id: m.jid, name: m.name, avatar: picture(m.jid) }))
+        return {
+          provider: 'whatsapp',
+          id: s.jid,
+          kind: direct ? 'direct' : 'group',
+          title: direct ? null : s.name,
+          participants,
+          workspace: null,
+          lastMessageAt: s.lastMessageAt,
+          preview: s.lastMessageText,
+          previewFromMe: s.lastMessageFromMe,
+          unread: s.unread,
+          cursor: String(s.lastMessagePk),
+          visible: !s.archived,
+          archive: this.archiveSupport(s),
+          url: this.url(s),
+          avatar: direct ? null : picture(s.jid),
+        }
+      })
+    })
   }
 
   async messages(conversationId: string, query: MessageQuery = {}): Promise<InboxMessage[]> {
@@ -185,16 +215,17 @@ export class WhatsAppDriver implements InboxDriver {
       const rows = query.after || !query.limit
         ? db.messages(session.pk, { afterPk: Number(query.after) || 0, limit: query.limit })
         : db.messages(session.pk, { newestFirst: true, limit: query.limit }).reverse()
-      return rows.map(row => this.toMessage(session, row))
+      const picture = this.pictures(db)
+      return rows.map(row => this.toMessage(session, row, picture))
     })
   }
 
-  private toMessage(session: SessionRow, row: MessageRow): InboxMessage {
+  private toMessage(session: SessionRow, row: MessageRow, picture: (jid: string) => string | null): InboxMessage {
     const sender: InboxPerson | null = row.isFromMe
       ? null
       : session.type === SESSION_DIRECT
-        ? { id: session.jid, name: session.name }
-        : row.senderJid ? { id: row.senderJid, name: row.senderName } : null
+        ? { id: session.jid, name: session.name, avatar: picture(session.jid) }
+        : row.senderJid ? { id: row.senderJid, name: row.senderName, avatar: picture(row.senderJid) } : null
     const { kind, text, unsent } = this.describe(row)
     return {
       id: row.stanzaId ?? `wa-${row.pk}`,
