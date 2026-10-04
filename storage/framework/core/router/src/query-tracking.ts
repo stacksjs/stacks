@@ -26,15 +26,18 @@ function newQueryTrack(): QueryTrack {
 const REQUEST_QUERY_TRACK_KEY = Symbol.for('stacks.queryTracking')
 let fallbackTrack: QueryTrack | undefined
 
-function getQueryTrack(): QueryTrack {
-  const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
-  if (!req) return fallbackTrack ??= newQueryTrack()
+function getRequestTrack(req: EnhancedRequest & { [k: symbol]: unknown }): QueryTrack {
   let track = req[REQUEST_QUERY_TRACK_KEY] as QueryTrack | undefined
   if (!track) {
     track = newQueryTrack()
     ;(req as Record<symbol, unknown>)[REQUEST_QUERY_TRACK_KEY] = track
   }
   return track
+}
+
+function getQueryTrack(): QueryTrack {
+  const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
+  return req ? getRequestTrack(req) : fallbackTrack ??= newQueryTrack()
 }
 
 export function isDebugAllowed(): boolean {
@@ -56,12 +59,18 @@ function normalizeQueryShape(query: string): string {
 }
 
 export function trackQuery(query: string, time?: number, connection?: string): void {
-  const track = getQueryTrack()
+  const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
+  const track = req ? getRequestTrack(req) : fallbackTrack ??= newQueryTrack()
   track.buffer[track.writeIndex] = { query, time, connection }
   track.writeIndex = (track.writeIndex + 1) % MAX_QUERIES
   if (track.count < MAX_QUERIES) track.count++
 
-  if (!isDebugAllowed()) return
+  // N+1 detection only runs inside a request. Outside one (CLI commands, queue
+  // workers) the fallback track lives for the whole process, so its shape counts
+  // never reset: an import's batch writes and a worker's unrelated jobs all add
+  // up to one "N+1" that says nothing about any single unit of work. The recent
+  // queries above are still recorded for the error page.
+  if (!req || !isDebugAllowed()) return
   const shape = normalizeQueryShape(query)
   if (shape.startsWith('INSERT INTO QUERY_LOGS') || shape.startsWith('EXPLAIN')) return
   const next = (track.shapeCounts.get(shape) ?? 0) + 1

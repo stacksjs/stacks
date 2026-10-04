@@ -11,6 +11,7 @@ import {
   setCurrentRequest,
 } from '../src/request-context'
 import { clearTrackedQueries, getQueryShapeCounts, trackQuery } from '../src/error-handler'
+import { getRecentQueries } from '../src/query-tracking'
 
 // setCurrentRequest uses AsyncLocalStorage.enterWith, which mutates this
 // scope's store and never restores it, so each test starts clean.
@@ -185,13 +186,15 @@ describe('Request Context - clearing', () => {
     process.env.APP_ENV = 'development'
     trackQuery('SELECT * FROM users WHERE id = 1')
     expect(getCurrentRequest()).toBeUndefined()
-    expect(getQueryShapeCounts().get('SELECT * FROM USERS WHERE ID = ?')).toBe(1)
+    expect(getRecentQueries().map(entry => entry.query)).toEqual(['SELECT * FROM users WHERE id = 1'])
+    // N+1 shape counting is request-only, so the fallback scope keeps none.
+    expect(getQueryShapeCounts().size).toBe(0)
 
     runWithRequest(makeFakeRequest(), () => {
       clearTrackedQueries()
     })
 
-    expect(getQueryShapeCounts().get('SELECT * FROM USERS WHERE ID = ?')).toBe(1)
+    expect(getRecentQueries().map(entry => entry.query)).toEqual(['SELECT * FROM users WHERE id = 1'])
     if (previousAppEnv === undefined)
       delete process.env.APP_ENV
     else
