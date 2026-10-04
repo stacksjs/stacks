@@ -6,7 +6,8 @@
  * - ./stacks.ts   preview, dev server and buddy commands
  * - ./pickier.ts  lint diagnostics, formatting and fix-all from the project's pickier
  * - ./env.ts      decrypted env values on hover, missing keys, `buddy env:*` commands
- * - stx           the stx extension's language support, built in from `@stacksjs/stx-vscode`
+ * - stx           the stx extension's language support, built in from `@stacksjs/stx-vscode`,
+ *                 and its TypeScript server plugin, which type-checks `.stx` files
  *
  * Nothing here depends on another extension being installed.
  */
@@ -18,7 +19,7 @@ import { connect } from 'node:net'
 import { join } from 'node:path'
 import process from 'node:process'
 import { createInterface } from 'node:readline'
-import { activateStxLanguage, deactivateStxLanguage, STX_EXTENSION_ID } from '@stacksjs/stx-vscode'
+import { activateStxLanguage, configureTypeScriptPlugin, deactivateStxLanguage, STX_EXTENSION_ID } from '@stacksjs/stx-vscode'
 import * as vscode from 'vscode'
 import { createEnvSupport, projectDecryptor } from './env'
 import { createPickierSupport } from './pickier'
@@ -136,6 +137,15 @@ async function startStx(context: vscode.ExtensionContext): Promise<boolean> {
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<StacksExtensionApi> {
+  // The manifest contributes the stx TypeScript server plugin. VS Code's
+  // TypeScript extension does not activate on `stx` by itself, so this starts
+  // it, and forwards `stxTypescriptPlugin.enabled` to the plugin. The stx
+  // extension, when installed, does the same; the plugin decorates a project
+  // once however many extensions contribute it.
+  configureTypeScriptPlugin(vscode, context.subscriptions).catch((error) => {
+    console.error('Stacks: could not configure the stx TypeScript plugin', error)
+  })
+
   stacks.activate(context)
   env.activate(context)
   pickier = createPickierSupport(vscode, { exists: existsSync, spawnBun }, {

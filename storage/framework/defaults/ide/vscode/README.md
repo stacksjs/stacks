@@ -8,7 +8,9 @@ The Stacks commands, pickier and the env features activate in workspaces that co
 
 `.stx` files get the full stx language support: highlighting, completions for directives, components and props, hovers, diagnostics, go to definition, folding, semantic highlighting, snippets, and previews of utility classes with their colors.
 
-It is the same code as the standalone [stx extension](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stx) (`Stacks.vscode-stx`), built in from `@stacksjs/stx-vscode`. You do not need that extension; if you have both, it stands down so nothing is registered twice.
+The TypeScript in `.stx` files, `<script>` blocks and `{{ }}` template expressions alike, is type-checked by the TypeScript server, with its hovers, completions and go to definition, against the same declarations `stx typecheck` uses: `import { state } from 'stx'` resolves to exactly what the runtime binds. Turn it off with `stxTypescriptPlugin.enabled`.
+
+It is the same code as the standalone [stx extension](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stx) (`Stacks.vscode-stx`), built in from `@stacksjs/stx-vscode`. You do not need that extension; if you have both, it stands down so nothing is registered twice, and the TypeScript plugin both contribute checks each file once.
 
 ## Pickier
 
@@ -97,7 +99,7 @@ bun run package    # build and create a .vsix
 code --install-extension vscode-stacks-<version>.vsix
 ```
 
-The extension has no runtime dependencies: `@stacksjs/stx-vscode` and the env decryption from `core/env` are bundled into `dist/extension.js`. It is published automatically by the Stacks release workflow, and `vscode:prepublish` builds `dist/` first.
+The extension has no runtime dependencies: `@stacksjs/stx-vscode` and the env decryption from `core/env` are bundled into `dist/extension.js`. The one exception is the stx TypeScript plugin, which tsserver loads by package name from the extension's `node_modules`: `bun run package` (and `bun run release`, which publishes that VSIX) adds it there after `vsce package --no-dependencies`, which leaves `node_modules` out. It is published automatically by the Stacks release workflow, and `vscode:prepublish` builds `dist/` first.
 
 ## Relevant links
 

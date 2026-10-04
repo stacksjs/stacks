@@ -5,13 +5,18 @@
  *   pickier-worker.js           the Bun process that runs the project's pickier (src/pickier-worker.ts)
  *   pickier-worker.bunfig.toml  an empty bunfig, so the worker skips the project's preloads
  *   stx/                        grammar, language configuration and snippets from @stacksjs/stx-vscode
+ *   stx-typescript-plugin/      the stx TypeScript server plugin from @stacksjs/stx-vscode
  *
  * `vsce package` runs this first (`vscode:prepublish`), and `files` in
- * package.json ships exactly these.
+ * package.json ships exactly these. tsserver loads the plugin from
+ * node_modules, so a forwarder to it is written there as well, which is what
+ * a development host (`--extensionDevelopmentPath`) loads; scripts/package.ts
+ * adds the same forwarder to the VSIX (see scripts/ts-plugin.ts).
  */
-import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
+import { copyTsPlugin, tsPluginName, writeTsPluginForwarder } from './scripts/ts-plugin'
 
 const here = import.meta.dir
 const dist = join(here, 'dist')
@@ -39,5 +44,9 @@ writeFileSync(join(dist, 'pickier-worker.bunfig.toml'), '# Intentionally empty: 
 
 const stxAssets = join(dirname(Bun.resolveSync('@stacksjs/stx-vscode/contributes.json', here)), 'assets')
 cpSync(stxAssets, join(dist, 'stx'), { recursive: true })
+
+copyTsPlugin(here)
+const { version } = JSON.parse(readFileSync(join(here, 'package.json'), 'utf8'))
+writeTsPluginForwarder(here, tsPluginName(here), version)
 
 console.log('Built dist/')

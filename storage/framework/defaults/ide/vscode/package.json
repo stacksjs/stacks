@@ -44,6 +44,7 @@
     "dist/pickier-worker.js",
     "dist/pickier-worker.bunfig.toml",
     "dist/stx/**",
+    "dist/stx-typescript-plugin/**",
     "LICENSE.md",
     "README.md",
     "logo.png"
@@ -72,8 +73,8 @@
     "test": "bun test ./tests",
     "typecheck": "bun x --bun tsc --noEmit -p tsconfig.json",
     "sync:stx": "bun scripts/stx-contributes.ts --write",
-    "package": "bunx --bun vsce package --no-dependencies",
-    "release": "bunx --bun vsce publish --no-dependencies"
+    "package": "bun scripts/package.ts",
+    "release": "bun scripts/package.ts --publish"
   },
   "galleryBanner": {
     "color": "#d7e4f5",
@@ -410,10 +411,19 @@
           "meta.component.parameters.stx": "typescript"
         }
       }
+    ],
+    "typescriptServerPlugins": [
+      {
+        "name": "@stacksjs/stx-typescript-plugin",
+        "enableForWorkspaceTypeScriptVersions": true,
+        "languages": [
+          "stx"
+        ]
+      }
     ]
   },
   "devDependencies": {
-    "@stacksjs/stx-vscode": "^0.2.357",
+    "@stacksjs/stx-vscode": "^0.2.358",
     "@types/vscode": "~1.109.0",
     "@vscode/vsce": "^4.0.0"
   }

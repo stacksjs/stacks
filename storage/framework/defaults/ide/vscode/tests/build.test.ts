@@ -8,6 +8,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import { join } from 'node:path'
 import process from 'node:process'
+import { TS_PLUGIN_DIST, tsPluginName } from '../scripts/ts-plugin'
+import { expectDeclarationsFound, loadLikeTsserver } from './ts-plugin-harness'
 
 const root = join(import.meta.dir, '..')
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
@@ -38,6 +40,28 @@ describe('dist/extension.js', () => {
       specifier !== 'vscode' && specifier !== 'bunfig' && !specifier.startsWith('node:') && !builtins.has(specifier))
 
     expect(unshipped).toEqual([])
+  })
+
+  it('starts the TypeScript extension and configures the stx plugin by the name the manifest contributes', () => {
+    const bundle = readFileSync(join(root, 'dist/extension.js'), 'utf8')
+    expect(bundle).toContain('vscode.typescript-language-features')
+    expect(bundle).toContain('configurePlugin')
+    for (const plugin of manifest.contributes.typescriptServerPlugins)
+      expect(bundle).toContain(plugin.name)
+  })
+})
+
+describe('the stx TypeScript plugin', () => {
+  it('is in dist/ as the package the manifest contributes', () => {
+    const plugin = JSON.parse(readFileSync(join(root, TS_PLUGIN_DIST, 'package.json'), 'utf8'))
+    expect(manifest.contributes.typescriptServerPlugins.map((entry: { name: string }) => entry.name)).toEqual([plugin.name])
+    expect(manifest.files).toContain(`${TS_PLUGIN_DIST}/**`)
+  })
+
+  it('loads from node_modules the way tsserver loads it, as in a development host', () => {
+    const name = tsPluginName(root)
+    expect(typeof loadLikeTsserver(root, name)).toBe('function')
+    expectDeclarationsFound(root, name, join(root, TS_PLUGIN_DIST, 'types'))
   })
 })
 

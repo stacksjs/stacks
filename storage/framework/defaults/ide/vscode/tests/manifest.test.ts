@@ -92,7 +92,47 @@ describe('stx language support', () => {
   })
 })
 
+// tsserver loads a plugin only by package name, from the extension's
+// node_modules, and VS Code only sends it documents of a language a plugin
+// claims (stacksjs/stx#2028).
+describe('stx type checking', () => {
+  const plugins = manifest.contributes.typescriptServerPlugins as Array<{ name: string, languages?: string[], enableForWorkspaceTypeScriptVersions?: boolean }>
+
+  it('contributes the stx TypeScript server plugin by package name', () => {
+    expect(plugins.map(plugin => plugin.name)).toEqual(['@stacksjs/stx-typescript-plugin'])
+    for (const plugin of plugins) {
+      // The rule tsserver applies before loading anything (requestEnablePlugin).
+      expect(plugin.name).not.toMatch(/^(?:\.\.?(?:\/|$)|\/|[a-z]:)/i)
+      expect(plugin.name).not.toMatch(/[\\/]\.\.?(?:$|[\\/])/)
+    }
+  })
+
+  it('claims the stx language, also with the workspace TypeScript the project settings select', () => {
+    for (const plugin of plugins) {
+      expect(plugin.languages).toEqual(['stx'])
+      expect(plugin.enableForWorkspaceTypeScriptVersions).toBeTrue()
+    }
+    expect(manifest.contributes.configurationDefaults['typescript.tsdk']).toBe('node_modules/typescript/lib')
+  })
+
+  it('declares the setting that switches it off', () => {
+    const settings = Object.assign({}, ...manifest.contributes.configuration.map((section: { properties: object }) => section.properties))
+    expect(settings['stxTypescriptPlugin.enabled'].default).toBeTrue()
+  })
+})
+
 describe('packaging', () => {
+  it('adds the plugin to the VSIX, which vsce --no-dependencies leaves without node_modules', () => {
+    expect(manifest.scripts.package).toBe('bun scripts/package.ts')
+    expect(manifest.scripts.release).toBe('bun scripts/package.ts --publish')
+    expect(readFileSync(join(root, 'scripts/package.ts'), 'utf8')).toContain(`'vsce', 'package', '--no-dependencies'`)
+    // The release workflow publishes through the script, not a bare `vsce publish`.
+    const workflow = readFileSync(join(root, '../../../../../.github/workflows/release.yml'), 'utf8')
+    const step = workflow.slice(workflow.indexOf('- name: Publish VS Code Extension'))
+    expect(step.slice(0, step.indexOf('- name:', 10))).toContain('bun run release')
+    expect(workflow).not.toContain('vsce publish')
+  })
+
   it('ships the files the extension loads at runtime', () => {
     for (const file of ['dist/extension.js', 'dist/pickier-worker.js', 'dist/pickier-worker.bunfig.toml'])
       expect(manifest.files).toContain(file)

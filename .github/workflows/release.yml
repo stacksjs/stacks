@@ -426,14 +426,16 @@ jobs:
 
       # The extension's tests include a build that must load as CommonJS on
       # Node, the way VS Code loads it, so a bundle VS Code would refuse is
-      # never published.
+      # never published. `bun run release` packages with --no-dependencies and
+      # then adds the stx TypeScript plugin's node_modules entry, which vsce
+      # leaves out, before publishing that VSIX (scripts/package.ts).
       - name: Publish VS Code Extension
         continue-on-error: true
         run: |
           cd storage/framework/defaults/ide/vscode
           bun install
           bun test ./tests
-          bunx --bun vsce publish --no-dependencies
+          bun run release
           cd ../../../../
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

@@ -6,7 +6,8 @@
  * manifest, so the built-in stx support needs them declared here, pointing at
  * dist/stx/ (copied there by build.ts). The library describes them in
  * `contributes.json`; this derives the manifest from it rather than keeping a
- * second copy by hand. Snippets are left out on purpose: the extension offers
+ * second copy by hand. That includes the TypeScript server plugin entry, which
+ * type-checks `.stx` files (see ts-plugin.ts). Snippets are left out on purpose: the extension offers
  * them as completions only when the stx extension is not installed, because
  * a manifest entry would show every snippet twice next to it.
  *
@@ -23,6 +24,7 @@ export interface StxContributes {
   grammars: Array<Record<string, unknown> & { language: string, path: string }>
   commands: Array<{ command: string, title: string, category?: string }>
   configuration: { title: string, properties: Record<string, unknown> }
+  typescriptServerPlugins: Array<Record<string, unknown> & { name: string, languages?: string[] }>
 }
 
 const STX_DIR = './dist/stx/'
@@ -54,6 +56,7 @@ export function withStxContributes(manifest: any, stx: StxContributes): any {
       grammars: stx.grammars.map(grammar => ({ ...grammar, path: fromStx(grammar.path) })),
       commands: [...contributes.commands.filter((command: { command: string }) => command.command.startsWith(OWN_COMMAND_PREFIX)), ...stx.commands],
       configuration: [...sections.filter(section => section.title !== stx.configuration.title), stx.configuration],
+      typescriptServerPlugins: stx.typescriptServerPlugins,
     },
   }
 }
