@@ -1695,16 +1695,16 @@
         "cache": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.16.30": {
+    "@stacksjs/ts-cloud@0.16.31": {
       "name": "@stacksjs/ts-cloud",
-      "version": "0.16.30",
+      "version": "0.16.31",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.30.tgz",
-      "integrity": "sha512-zKgWNZpNlrUDbT3Vk9kTuCTu3AR+LtnraWE55FHCFYJtZsjKodc2Acnu52nyWuxVhfU2LJE05zvzOdjIvZsp5A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.31.tgz",
+      "integrity": "sha512-S3m8oIwCrCwGZiBLCFlym4LpUvuySDnWomUMCOylpVEVYHl5FLJpXkyPK2i79a9P9Nl1PxnyuJDH25569FFb9g==",
       "dependencies": {
         "@stacksjs/ts-xml": "^0.1.2",
-        "@ts-cloud/aws-types": "0.16.30",
-        "@ts-cloud/core": "0.16.30",
+        "@ts-cloud/aws-types": "0.16.31",
+        "@ts-cloud/core": "0.16.31",
         "hash-wasm": "^4.12.0"
       },
       "bin": {
