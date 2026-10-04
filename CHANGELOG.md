@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.54...v0.75.55)
+
+## ✨ Features
+
+- **chat**: iMessage group photos, WhatsApp reactions and quoted replies ([e8de21e](https://github.com/stacksjs/stacks/commit/e8de21e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **build:dmg**: notarize and staple the app itself, not only the DMG ([058e4ef](https://github.com/stacksjs/stacks/commit/058e4ef)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.53...v0.75.54)
 
 ## ⚡ Performance Improvements
