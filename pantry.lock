@@ -616,7 +616,7 @@
       "name": "@stacksjs/desktop-build",
       "version": "0.75.56",
       "dependencies": {
-        "craft-native": ">=0.0.107"
+        "craft-native": ">=0.0.111"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -865,7 +865,7 @@
       "name": "@stacksjs/mobile",
       "version": "0.75.56",
       "dependencies": {
-        "craft-native": ">=0.0.107"
+        "craft-native": ">=0.0.111"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",

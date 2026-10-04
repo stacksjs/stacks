@@ -175,7 +175,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.107",
+        "craft-native": ">=0.0.111",
         "pickier": "^0.1.67",
       },
       "optionalPeers": [
@@ -647,7 +647,7 @@
       "name": "@stacksjs/desktop-build",
       "version": "0.75.56",
       "dependencies": {
-        "craft-native": ">=0.0.107",
+        "craft-native": ">=0.0.111",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -902,7 +902,7 @@
       "name": "@stacksjs/mobile",
       "version": "0.75.56",
       "dependencies": {
-        "craft-native": ">=0.0.107",
+        "craft-native": ">=0.0.111",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
