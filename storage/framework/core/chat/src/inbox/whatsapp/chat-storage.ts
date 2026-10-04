@@ -122,8 +122,8 @@ export class WhatsAppDb {
     this.db.close()
   }
 
-  /** Every chat a person would call a conversation: direct, group, community. */
-  sessions(): SessionRow[] {
+  /** Every chat a person would call a conversation (direct, group, community), or just the one with `jid`. */
+  sessions(jid?: string): SessionRow[] {
     const rows = this.db.query(`
       SELECT s.Z_PK AS pk, s.ZCONTACTJID AS jid, s.ZSESSIONTYPE AS type, s.ZPARTNERNAME AS name,
         s.ZARCHIVED AS archived, s.ZUNREADCOUNT AS unread, s.ZLASTMESSAGEDATE AS lastDate,
@@ -134,9 +134,9 @@ export class WhatsAppDb {
       LEFT JOIN ZWAMESSAGE last ON last.Z_PK = s.ZLASTMESSAGE
       WHERE s.ZSESSIONTYPE IN (${SESSION_DIRECT}, ${SESSION_GROUP}, ${SESSION_COMMUNITY})
         AND COALESCE(s.ZHIDDEN, 0) = 0 AND COALESCE(s.ZREMOVED, 0) = 0
-        AND s.ZCONTACTJID IS NOT NULL
+        AND s.ZCONTACTJID IS NOT NULL ${jid ? 'AND s.ZCONTACTJID = ?' : ''}
       ORDER BY s.ZLASTMESSAGEDATE DESC
-    `).all() as Array<{ pk: number, jid: string, type: number, name: string | null, archived: number | null, unread: number | null, lastDate: number | null, lastText: string | null, lastFromMe: number, lastPk: number, messageCount: number }>
+    `).all(...(jid ? [jid] : [])) as Array<{ pk: number, jid: string, type: number, name: string | null, archived: number | null, unread: number | null, lastDate: number | null, lastText: string | null, lastFromMe: number, lastPk: number, messageCount: number }>
     return rows.map(r => ({
       pk: r.pk,
       jid: r.jid,
@@ -154,7 +154,7 @@ export class WhatsAppDb {
   }
 
   session(jid: string): SessionRow | undefined {
-    return this.sessions().find(s => s.jid === jid)
+    return this.sessions(jid)[0]
   }
 
   /**

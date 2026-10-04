@@ -1,7 +1,7 @@
 import type { ArchiveOutcome, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxStatus, MessageQuery } from '../types'
 import type { LiveConversation } from './conversations'
 import type { MessageRow } from './chat-db'
-import { existsSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import { DEFAULT_MESSAGES_DB, MessagesAccessError, MessagesDb } from './chat-db'
@@ -133,8 +133,30 @@ export class IMessageDriver implements InboxDriver {
     return imageResponse(this.names().photo(ref))
   }
 
+  private grouped: { stamp: string, chats: LiveConversation[] } | null = null
+
+  /**
+   * Every conversation, grouped across services. Building it reads all of
+   * chat.db's chats with their counts - most of a second on a real history -
+   * so it is reused until Messages writes again (chat.db or its WAL changes).
+   */
+  private chats(db: MessagesDb): LiveConversation[] {
+    const stamp = [this.databasePath, `${this.databasePath}-wal`].map((file) => {
+      try {
+        const stat = statSync(file)
+        return `${stat.mtimeMs}:${stat.size}`
+      }
+      catch {
+        return '-'
+      }
+    }).join('|')
+    if (this.grouped?.stamp !== stamp)
+      this.grouped = { stamp, chats: groupChats(db.chats()) }
+    return this.grouped.chats
+  }
+
   private find(db: MessagesDb, id: string): LiveConversation | undefined {
-    return groupChats(db.chats()).find(c => c.key === id)
+    return this.chats(db).find(c => c.key === id)
   }
 
   async status(): Promise<InboxStatus> {
@@ -152,7 +174,7 @@ export class IMessageDriver implements InboxDriver {
   }
 
   async conversations(): Promise<InboxConversation[]> {
-    return this.open(db => groupChats(db.chats()).map(c => this.toConversation(c)))
+    return this.open(db => this.chats(db).map(c => this.toConversation(c)))
   }
 
   private toConversation(c: LiveConversation): InboxConversation {
