@@ -16,6 +16,7 @@ The sections an agent reads once the skill loads.
 - Key paths
 - Build
 - Configuration
+- Device search index
 - Runtime API
 - STX components
 - Health and watch surfaces
