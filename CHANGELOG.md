@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.43...v0.75.44)
+
+## 🐛 Bug Fixes
+
+- **chat**: without a controller, the iMessage driver only opens the conversation ([63650a1](https://github.com/stacksjs/stacks/commit/63650a1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **desktop**: move the package note out of the code block ([a2a3d68](https://github.com/stacksjs/stacks/commit/a2a3d68)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: openDevWindow and the updater live in @stacksjs/desktop-build ([9ae1bdd](https://github.com/stacksjs/stacks/commit/9ae1bdd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.16.25 ([9858f02](https://github.com/stacksjs/stacks/commit/9858f02)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.42...v0.75.43)
 
 ## ✨ Features
