@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.56...v0.75.57)
+
+## 🐛 Bug Fixes
+
+- **deps**: craft-native >=0.0.111, where localNetwork exists ([edf1c13](https://github.com/stacksjs/stacks/commit/edf1c13)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- resize the app server to a cx53 as soon as Hetzner has one ([e703913](https://github.com/stacksjs/stacks/commit/e703913)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.55...v0.75.56)
 
 ## ✨ Features
