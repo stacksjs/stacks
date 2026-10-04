@@ -7,7 +7,7 @@
     "lib": ["es2022"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "types": ["bun"],
+    "types": ["bun", "vscode"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noEmit": true,

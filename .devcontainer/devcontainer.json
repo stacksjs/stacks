@@ -41,7 +41,7 @@
   // would mean a Codespace disagreeing with a local checkout.
   "customizations": {
     "vscode": {
-      "extensions": ["stacks.vscode-stacks"]
+      "extensions": ["Stacks.vscode-stacks"]
     }
   },
 

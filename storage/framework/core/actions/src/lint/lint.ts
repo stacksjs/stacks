@@ -2,15 +2,13 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { execSync } from 'node:child_process'
 import { runFormat, runLint } from 'pickier'
+import { isLintablePath } from './files'
 
 // Code-style actions, exported as plain functions so commands (`buddy lint`)
 // and the release pipeline import and call them directly. They drive pickier
 // through its JS SDK (`runLint` / `runFormat`) — no `bunx pickier` subprocess.
 // The thin `./index.ts` / `./fix.ts` entrypoints wrap these for `runAction`,
 // which still spawns them by path.
-
-const lintableFile = /\.(?:ts|js|json|md|yaml|yml)$/i
-const ignoredPath = /(?:^|\/)(?:node_modules|dist|pantry|storage\/framework\/cache|\.git|\.stx|\.stx-serve)(?:\/|$)/
 
 /**
  * The project's lintable files: everything git tracks, plus everything git
@@ -30,7 +28,7 @@ export function lintableFiles(cwd: string): string[] {
     // only thing the message achieves is making a success look like a failure.
     return execSync('git ls-files -z --cached --others --exclude-standard', { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
       .split('\0')
-      .filter(file => lintableFile.test(file) && !ignoredPath.test(file))
+      .filter(isLintablePath)
   }
   catch {
     return []

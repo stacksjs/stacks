@@ -1,21 +1,22 @@
 /**
- * The extension manifest, and its split with the stx extension.
+ * The extension manifest.
  *
- * `.stx` language support (language, grammar, snippets, language server) is
- * the stx extension, `Stacks.vscode-stx`, published from stacksjs/stx. This
- * extension installs it through `extensionPack` and must not register any of
- * it again: two extensions contributing the `stx` language conflict, and a
- * `*.stx` file association here would take `.stx` files away from it
- * (stacksjs/stx#2020).
+ * The Stacks extension is self-contained: stx support, pickier and env files
+ * are built in, so it installs no extension pack and depends on no other
+ * extension. stx support comes from `@stacksjs/stx-vscode`, the library build
+ * of the stx extension (Stacks.vscode-stx); with both installed, the stx
+ * extension stands down (stacksjs/stx#2020).
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { bundledExtensions, missingFromMarketplace } from '../scripts/check-marketplace'
+import { libraryContributes, withStxContributes } from '../scripts/stx-contributes'
 
 const root = join(import.meta.dir, '..')
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 const STX_EXTENSION_ID = 'Stacks.vscode-stx'
+const projectSettings = Bun.JSONC.parse(readFileSync(join(root, '.vscode/settings.json'), 'utf8')) as Record<string, any>
+const recommendations = (Bun.JSONC.parse(readFileSync(join(root, '.vscode/extensions.json'), 'utf8')) as { recommendations: string[] }).recommendations
 
 describe('marketplace identity', () => {
   it('is Stacks.vscode-stacks, not the stx extension', () => {
@@ -25,48 +26,63 @@ describe('marketplace identity', () => {
   })
 })
 
+describe('self-contained', () => {
+  it('installs no extension pack and depends on no extension', () => {
+    expect(manifest.extensionPack).toBeUndefined()
+    expect(manifest.extensionDependencies).toBeUndefined()
+  })
+
+  it('has no runtime dependencies to ship', () => {
+    expect(manifest.dependencies).toBeUndefined()
+  })
+
+  it('recommends only itself to new projects', () => {
+    expect(recommendations.map(id => id.toLowerCase())).toEqual(['stacks.vscode-stacks'])
+  })
+
+  it('configures new projects for no other extension', () => {
+    // Settings that only mean something to an extension the project no longer
+    // asks for: ESLint, Prettier, Biome, markdownlint, shell-format, cSpell,
+    // Grammarly, vscode-icons, Todo Tree.
+    const foreign = Object.keys(projectSettings).filter(key =>
+      /^(?:eslint|prettier|biome|markdownlint|cSpell|grammarly|vsicons|todo-tree)\./.test(key))
+    expect(foreign).toEqual([])
+    expect(JSON.stringify(projectSettings)).not.toMatch(/dbaeumer|foxundermoon|DavidAnson|esbenp/i)
+  })
+
+  it('formats and fixes with pickier through this extension', () => {
+    expect(projectSettings['editor.defaultFormatter']).toBe('Stacks.vscode-stacks')
+    expect(projectSettings['editor.codeActionsOnSave']['source.fixAll.pickier']).toBe('explicit')
+  })
+})
+
 describe('stx language support', () => {
-  it('comes from the stx extension, through the pack', () => {
-    // extensionPack, not extensionDependencies: none of the Stacks commands
-    // need the stx language registered, so this extension must keep working
-    // when someone disables or uninstalls stx.
-    expect(manifest.extensionPack).toContain(STX_EXTENSION_ID)
-    expect(manifest.extensionDependencies ?? []).not.toContain(STX_EXTENSION_ID)
+  it('declares what @stacksjs/stx-vscode ships (run `bun run sync:stx` after updating it)', () => {
+    expect(withStxContributes(manifest, libraryContributes(root))).toEqual(manifest)
   })
 
-  it('is not contributed here as well', () => {
-    const contributes = manifest.contributes ?? {}
-    const forStx = (entries: Array<{ id?: string, language?: string }> = []) =>
-      entries.filter(entry => entry.id === 'stx' || entry.language === 'stx')
-
-    expect(forStx(contributes.languages)).toEqual([])
-    expect(forStx(contributes.grammars)).toEqual([])
-    expect(forStx(contributes.snippets)).toEqual([])
+  it('declares the stx language and its grammar from the bundled assets', () => {
+    expect(manifest.contributes.languages.map((language: { id: string }) => language.id)).toContain('stx')
+    expect(manifest.contributes.grammars[0].path).toStartWith('./dist/stx/')
+    expect(manifest.files).toContain('dist/stx/**')
+    expect(manifest.activationEvents).toContain('onLanguage:stx')
   })
 
-  it('does not reassociate .stx files with another language', () => {
+  it('leaves snippets to runtime, so they never show twice next to the stx extension', () => {
+    expect(manifest.contributes.snippets).toBeUndefined()
+  })
+
+  it('does not map .stx files to another language', () => {
     const extensionDefaults = manifest.contributes.configurationDefaults['files.associations'] ?? {}
-    const projectSettings = Bun.JSONC.parse(readFileSync(join(root, '.vscode/settings.json'), 'utf8')) as Record<string, any>
-
     for (const associations of [extensionDefaults, projectSettings['files.associations'] ?? {}])
       expect(Object.keys(associations).filter(pattern => pattern.endsWith('.stx'))).toEqual([])
   })
 })
 
-describe('check-marketplace', () => {
-  it('checks every pack member and dependency once', () => {
-    expect(bundledExtensions({ extensionPack: ['a.one', 'b.two'], extensionDependencies: ['b.two', 'c.three'] }))
-      .toEqual(['a.one', 'b.two', 'c.three'])
-    expect(bundledExtensions(manifest)).toContain(STX_EXTENSION_ID)
-  })
-
-  it('reports the extensions the marketplace does not have', async () => {
-    const published = new Set(['dotenv.dotenvx-vscode', 'oven.bun-vscode'])
-    const missing = await missingFromMarketplace(
-      ['dotenv.dotenvx-vscode', STX_EXTENSION_ID, 'oven.bun-vscode'],
-      async id => published.has(id),
-    )
-
-    expect(missing).toEqual([STX_EXTENSION_ID])
+describe('packaging', () => {
+  it('ships the files the extension loads at runtime', () => {
+    for (const file of ['dist/extension.js', 'dist/pickier-worker.js', 'dist/pickier-worker.bunfig.toml'])
+      expect(manifest.files).toContain(file)
+    expect(manifest.main).toBe('./dist/extension.js')
   })
 })

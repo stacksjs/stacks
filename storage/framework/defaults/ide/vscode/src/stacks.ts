@@ -24,6 +24,8 @@ type Vscode = typeof vscode
  */
 export interface Host {
   exists: (path: string) => boolean
+  /** Decrypt an env file's `encrypted:` value for the preview; ./env.ts builds it. */
+  decryptEnv?: (root: string) => (file: string, value: string) => string | undefined
   /** File contents, or `undefined` when the file does not exist. */
   read: (path: string) => string | undefined
   /** Run `file` with `args` in `cwd` and resolve its stdout. */
@@ -70,7 +72,7 @@ interface CommandItem extends vscode.QuickPickItem {
 }
 
 export function createStacksExtension(api: Vscode, host: Host, timingOverrides: Partial<Timing> = {}): {
-  activate: (context: vscode.ExtensionContext) => void
+  activate: (context: { subscriptions: Array<{ dispose: () => unknown }> }) => void
   deactivate: () => void
 } {
   const timing: Timing = { ...DEFAULT_TIMING, ...timingOverrides }
@@ -109,7 +111,7 @@ export function createStacksExtension(api: Vscode, host: Host, timingOverrides: 
 
   function previewPlan(root: string): PreviewPlan {
     return planPreview({
-      env: loadProjectEnv(file => host.read(join(root, file))),
+      env: loadProjectEnv(file => host.read(join(root, file)), undefined, host.decryptEnv?.(root)),
       appConfigSource: host.read(join(root, 'config', 'app.ts')),
       preferLocalhost: settings().get<boolean>('preview.preferLocalhost', false),
     })
@@ -432,14 +434,20 @@ export function createStacksExtension(api: Vscode, host: Host, timingOverrides: 
     statusItem.show()
   }
 
-  function activate(context: vscode.ExtensionContext): void {
-    // Commands are hidden from the palette until a Stacks project activated us.
-    void api.commands.executeCommand('setContext', 'stacks.isProject', true)
+  function activate(context: { subscriptions: Array<{ dispose: () => unknown }> }): void {
+    // The extension also activates for `.stx` files outside Stacks projects
+    // (it provides stx support everywhere), so the Stacks commands and the
+    // status item only appear when a workspace folder is a Stacks project.
+    const project = (api.workspace.workspaceFolders ?? []).some(folder => isProject(folder.uri.fsPath))
+    void api.commands.executeCommand('setContext', 'stacks.isProject', project)
 
-    statusItem = api.window.createStatusBarItem('stacks.preview', api.StatusBarAlignment.Left, 0)
-    statusItem.name = 'Stacks Preview'
-    statusItem.command = COMMANDS.openPreview
-    updateStatus()
+    if (project) {
+      statusItem = api.window.createStatusBarItem('stacks.preview', api.StatusBarAlignment.Left, 0)
+      statusItem.name = 'Stacks Preview'
+      statusItem.command = COMMANDS.openPreview
+      context.subscriptions.push(statusItem)
+      updateStatus()
+    }
 
     // Custom commands live in app/Commands and need no registration, so a new
     // file there is a new buddy command: forget the cached list.
@@ -447,7 +455,6 @@ export function createStacksExtension(api: Vscode, host: Host, timingOverrides: 
     const forgetCommands = () => commandLists.clear()
 
     context.subscriptions.push(
-      statusItem,
       commandFiles,
       commandFiles.onDidCreate(forgetCommands),
       commandFiles.onDidChange(forgetCommands),

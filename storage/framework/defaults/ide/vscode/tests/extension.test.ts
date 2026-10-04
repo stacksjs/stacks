@@ -216,6 +216,14 @@ describe('activation', () => {
     expect([...handlers.keys()].sort()).toEqual([COMMANDS.openPreview, COMMANDS.runBuddyCommand, COMMANDS.startDevServer].sort())
     expect(executed).toContainEqual({ command: 'setContext', args: ['stacks.isProject', true] })
   })
+
+  it('stays out of the way in a workspace that is not a Stacks project', () => {
+    // The extension also activates for .stx files anywhere, for its stx support.
+    const { handlers, executed, context } = setup({ noBuddy: true })
+    expect(executed).toContainEqual({ command: 'setContext', args: ['stacks.isProject', false] })
+    expect(handlers.size).toBe(3)
+    expect(context.subscriptions.some((item: any) => 'text' in item)).toBeFalse()
+  })
 })
 
 describe('Stacks: Open Preview', () => {

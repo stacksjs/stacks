@@ -67,13 +67,17 @@ export function parseEnvFile(source: string): Record<string, string> {
  * Merge the development env files of a project, later files winning.
  *
  * `read` returns a file's contents, or `undefined` when it does not exist.
- * dotenvx ciphertext (`encrypted:...`) is skipped rather than returned: the
- * extension has no business decrypting secrets, and a ciphertext `PORT` or
- * `APP_URL` would only produce a nonsense URL.
+ * Ciphertext (`encrypted:...`) goes through `decrypt`, which the extension
+ * builds from `@stacksjs/env`'s own decryption and the project's keys
+ * (./env.ts), so an encrypted `APP_URL` or `PORT` previews the same URL
+ * `buddy dev` serves. Without `decrypt`, or when it cannot decrypt a value
+ * (no key), the value is skipped: a ciphertext `PORT` would only produce a
+ * nonsense URL. Decrypted values stay in this object, in memory.
  */
 export function loadProjectEnv(
   read: (file: string) => string | undefined,
   files: readonly string[] = DEV_ENV_FILES,
+  decrypt?: (file: string, value: string) => string | undefined,
 ): Record<string, string> {
   const env: Record<string, string> = {}
 
@@ -83,8 +87,14 @@ export function loadProjectEnv(
       continue
 
     for (const [key, value] of Object.entries(parseEnvFile(source))) {
-      if (!value.startsWith('encrypted:'))
+      if (!value.startsWith('encrypted:')) {
         env[key] = value
+        continue
+      }
+
+      const plaintext = decrypt?.(file, value)
+      if (plaintext !== undefined)
+        env[key] = plaintext
     }
   }
 

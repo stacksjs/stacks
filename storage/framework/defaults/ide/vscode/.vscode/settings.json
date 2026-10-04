@@ -1,138 +1,23 @@
 {
-  // Disable the default formatter, use eslint instead
-  "prettier.enable": false,
-  "biome.enabled": false,
+  // Pickier lints and formats Stacks projects, built into the Stacks extension
+  // (Stacks.vscode-stacks) - the same pickier and config `./buddy lint` uses.
+  "editor.defaultFormatter": "Stacks.vscode-stacks",
   "editor.formatOnSave": false,
-  // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
+    "source.fixAll.pickier": "explicit",
     "source.organizeImports": "never"
-  },
-  // Silent the stylistic rules in you IDE, but still auto fix them
-  "eslint.rules.customizations": [
-    {
-      "rule": "style/*",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "format/*",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*-indent",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*-spacing",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*-spaces",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*-order",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*-dangle",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*-newline",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*quotes",
-      "severity": "off",
-      "fixable": true
-    },
-    {
-      "rule": "*semi",
-      "severity": "off",
-      "fixable": true
-    }
-  ],
-  // Enable eslint for all supported languages
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "html",
-    "html",
-    "markdown",
-    "json",
-    "jsonc",
-    "yaml",
-    "toml",
-    "xml",
-    "gql",
-    "graphql",
-    "css",
-    "less",
-    "scss",
-    "pcss",
-    "postcss"
-  ],
-  "[stx]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   // TypeScript
   "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
-  // Shell
-  "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  },
-  // Markdown
-  "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
-    "editor.formatOnSave": true
-  },
-  "[dockerfile]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  },
-  "markdownlint.config": {
-    "default": false,
-    // "MD033": {
-    //   "allowed_elements": [
-    //     "h3",
-    //     "div",
-    //     "details",
-    //     "summary",
-    //     "VPTeamPage",
-    //     "VPTeamPageTitle",
-    //     "VPTeamMembers",
-    //     "script"
-    //   ]
-    // },
-    "MD041": false
-  },
-  // Stacks
   "typescript.preferGoToSourceDefinition": true,
-  // `.stx` files keep the `stx` language from the stx extension
-  // (Stacks.vscode-stx). Mapping them to `html` here would override it.
+  // `.stx` files get the `stx` language from the Stacks extension. Mapping
+  // them to `html` here would override it.
   "files.associations": {
     "buddy": "shellscript"
   },
   "editor.quickSuggestions": {
     "strings": true
   },
-  "vsicons.associations.files": [
-    {
-      "icon": "${workspaceFolder}/public/favicon.svg",
-      "extensions": [
-        "stx"
-      ],
-      "format": "svg"
-    }
-  ],
   "git.enableSmartCommit": true,
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "bun",
@@ -146,32 +31,5 @@
     "CHANGELOG.md": true
   },
   "explorer.confirmDragAndDrop": false,
-  "todo-tree.highlights.enabled": true,
-  "cSpell.ignorePaths": [
-    "cdk.out",
-    "node_modules",
-    "lang/de.yml"
-  ],
-  "cSpell.dictionaries": [
-    "stacks-dictionary"
-  ],
-  "cSpell.diagnosticLevel": "Hint",
-  "cSpell.customDictionaries": {
-    "stacks": {
-      "name": "stacks-dictionary",
-      "path": "./storage/framework/defaults/ide/dictionary.txt",
-      "scope": "user",
-      "addWords": true
-    },
-    "custom": true // enable the `custom` dictionary
-  },
-  "terminal.integrated.scrollback": 10000,
-  "grammarly.files.include": [
-    "**/README.md",
-    "**/readme.md",
-    "**/*.txt"
-  ],
-  "grammarly.files.exclude": [
-    "**/dictionary.txt"
-  ],
+  "terminal.integrated.scrollback": 10000
 }

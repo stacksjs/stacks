@@ -20,33 +20,37 @@ Generated declarations live under `storage/framework/types/`. Keep that director
 
 ## Visual Studio Code
 
-Install the [Stacks extension](https://marketplace.visualstudio.com/items?itemName=stacks.vscode-stacks) (`stacks.vscode-stacks`). New projects already recommend it in `.vscode/extensions.json`. It activates in any workspace that has a `buddy` file or a `config/app.ts`, and adds these commands to the Command Palette:
+Install the [Stacks extension](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stacks) (`Stacks.vscode-stacks`). New projects already recommend it in `.vscode/extensions.json`. It is the only extension a Stacks project needs: it installs no others and depends on none.
 
+- **stx templates**: highlighting, completions, hovers, diagnostics, go to definition and utility-class previews for `.stx` files. This is the code of the standalone [stx extension](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stx) (`Stacks.vscode-stx`), built in. If you have both installed, the stx extension steps aside.
+- **Pickier**: lint diagnostics as you type, Format Document and a `source.fixAll.pickier` fix-all, all from the project's own pickier and `config/code-style.ts`, so the editor agrees with `buddy lint`.
+- **Env files**: hover an `encrypted:` value to see it decrypted with the project's keys (it is never written anywhere), keys missing from `.env` compared with `.env.example`, and `buddy env:get`, `env:set`, `env:encrypt`, `env:decrypt` and `env:rotate` from the Command Palette.
 - **Stacks: Start Dev Server** runs `./buddy dev` in a `Stacks Dev` terminal. When the server is ready, the app opens in VS Code's built-in Simple Browser.
 - **Stacks: Open Preview** opens the running dev server in the Simple Browser, beside your editor. The **Stacks** item in the status bar does the same.
 - **Stacks: Run Buddy Command...** lists every command from `./buddy list`, your own `app/Commands/` included, and runs the one you pick. You can also type a command with its arguments, such as `migrate --diff`.
 
 The preview URL is worked out the same way `buddy dev` picks it: `https://<APP_URL>` when the local HTTPS proxy is up, otherwise `http://localhost:<PORT>`. Set `stacks.preview.url` to use a fixed URL instead, or `stacks.preview.preferLocalhost` if the Simple Browser cannot load the local certificate. The [extension README](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ide/vscode) lists every setting.
 
-The extension also installs a small pack of extensions. Bun, Dotenvx, the spell checker and markdownlint are among them, and so is [stx Language Support](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stx) (`Stacks.vscode-stx`), which handles `.stx` files: highlighting, completions, hovers, diagnostics and utility-class previews. It is a separate extension, published from the stx repository, so you can also install it on its own in a project that uses stx without Stacks.
-
-The repository ships settings and snippets under `storage/framework/defaults/ide/vscode/`. The important local settings are:
+`buddy setup` copies the workspace settings from `storage/framework/defaults/ide/vscode/.vscode/` into new projects. The important ones are:
 
 ```json
 {
+  "editor.defaultFormatter": "Stacks.vscode-stacks",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.pickier": "explicit"
+  },
   "files.associations": {
     "buddy": "shellscript"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "editor.formatOnSave": true
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
 ```
 
-Do not map `*.stx` to `html` in VS Code. A `files.associations` entry wins over the language the stx extension registers, so `.stx` files would lose its features.
+Do not map `*.stx` to `html` in VS Code. A `files.associations` entry wins over the `stx` language the extension registers, so `.stx` files would lose its features.
 
 Use the workspace TypeScript version so the editor and `buddy test:types` evaluate the same compiler configuration.
 
-These are optional and not in the pack, but they work well alongside it:
+These are optional, but they work well alongside it:
 
 - EditorConfig
 - Error Lens
