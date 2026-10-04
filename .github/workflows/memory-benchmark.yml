@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
+        uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
           version: '0.11.65'
           install: 'false'

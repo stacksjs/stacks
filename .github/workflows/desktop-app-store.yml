@@ -167,7 +167,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
+        uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
           version: '0.11.65'
           install: 'false'
@@ -210,7 +210,7 @@ jobs:
       # `if: always()` cleanup step this replaced.
       - name: Import Apple signing identities
         id: signing
-        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
+        uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
           version: '0.11.65'
           install: 'false'
@@ -267,7 +267,7 @@ jobs:
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:publish --package-only
 
       - name: Publish GitHub release and deliver package
-        uses: pantry-pm/pantry/packages/action@bc2f37441f1a7ed160c201bbe6e0552b81ca931e # v0.11.65
+        uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
           version: '0.11.65'
           install: 'false'
