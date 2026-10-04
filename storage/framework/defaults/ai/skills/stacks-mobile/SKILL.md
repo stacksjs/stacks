@@ -96,6 +96,61 @@ Choose exactly one primary content source:
 Only enable capabilities the product uses. Craft turns enabled capabilities
 into native bridge availability and required iOS privacy descriptions.
 
+## Device search index
+
+`spotlight` says what of the application's own content a device may index, so
+somebody searching their home screen finds a record rather than only finding
+the app:
+
+```ts
+export default {
+  ios: { /* ... */ },
+  spotlight: {
+    kinds: {
+      trail: { slots: 24, route: '/trail/:id', noun: 'Trail' },
+      club: { slots: 8, route: '/club/:id', noun: 'Club' },
+    },
+    // Anything the app donates outside the registry: a Siri phrase, an App Intent.
+    activityTypes: ['favorites', 'trails-near-me'],
+  },
+} satisfies MobileConfig
+```
+
+`slots` is a budget, not a guess. iOS indexes donated `NSUserActivity` objects
+and hands a tapped one back only for an activity type the build declares in
+`Info.plist`, a list fixed at build time — so a type per record id cannot be
+declared at all. Each kind gets that many slots, each slot holds whichever
+record is currently in it, and the oldest donation makes room for the next.
+`buddy build:ios` writes the declarations; an entry the build did not declare
+still appears in Spotlight and merely opens the app wherever it was last, which
+looks like the feature working until somebody taps a result.
+
+Drive it with one index per application:
+
+```ts
+import mobileConfig from '../config/mobile'
+import { createSpotlightIndex, onSpotlightTap } from '@stacksjs/mobile'
+
+export const spotlight = createSpotlightIndex({ kinds: mobileConfig.spotlight.kinds })
+
+await spotlight.index('trail', { id: trail.id, name: trail.name }) // one record
+await spotlight.sync('club', myClubs) // a list that is theirs, most important first
+await spotlight.remove('club', club.id) // left, unsaved, withdrawn from, deleted
+await spotlight.clear() // sign-out: none of it is this person's
+onSpotlightTap(spotlight, route => location.assign(route))
+```
+
+Every call is a no-op that reports as much off a native host, on a build whose
+host predates the bridge, and where the index is turned off (`enabled: false`),
+so a page can donate unconditionally. `spotlight.routeFor(action)` answers a tap
+synchronously for an app that already routes Craft's shortcut events itself.
+
+Index what is the person's — saved, joined, entered — rather than what they
+looked at, wherever the page re-renders on that change: a page that donates on
+every render would put a record straight back the moment they left it. Donating
+the same record twice is free, so an effect over the record is the natural call
+site.
+
 ## Runtime API
 
 ```ts
@@ -201,3 +256,9 @@ physical-device archive. Compile the Android project with Gradle when Android is
 configured. Verify permission prompts, safe-area
 layout, deep links, offline/error states, background transitions, and native
 feedback on device.
+
+A device search index needs its own device check, because nothing about it is
+observable from the generated project: search a record's name from the home
+screen, confirm the entry appears and opens that record rather than the last
+screen, then make it stop being the person's (leave, unsave, withdraw, sign
+out) and confirm it stops being findable.

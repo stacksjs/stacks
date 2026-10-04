@@ -117,6 +117,36 @@ hasNativeMobileHost() // true inside the phone shell, even before the bridge
 const native = await whenNativeMobile() // resolves once it knows, false in a browser
 ```
 
+## Device search index
+
+What a device may index is configuration (`config/mobile.ts`, `spotlight`): one
+entry per kind of content, with the number of slots it may claim, the route a
+tapped entry opens, and the noun that names a record with no name of its own.
+
+```ts
+import mobileConfig from '../config/mobile'
+import { createSpotlightIndex, onSpotlightTap } from '@stacksjs/mobile'
+
+const spotlight = createSpotlightIndex({ kinds: mobileConfig.spotlight.kinds })
+
+await spotlight.index('trail', { id: 42, name: 'Eagle Peak Loop' })
+await spotlight.sync('club', myClubs)
+await spotlight.remove('club', 7)
+await spotlight.clear()
+onSpotlightTap(spotlight, route => location.assign(route))
+```
+
+iOS indexes donated `NSUserActivity` objects — Craft's `siri` bridge — and
+hands a tapped one back only for an activity type the build declares in
+`Info.plist`, a list fixed at build time. A type per record id cannot be
+declared, so each kind gets a fixed number of slots, each slot holds whichever
+record is in it, and the oldest donation makes room; `buddy build:ios` writes
+the declarations from the same config.
+
+Every call is a no-op that reports as much off a native host, on a build whose
+host predates the bridge, in a WebView with no `localStorage`, and where the
+index is turned off, so a page can donate unconditionally.
+
 ## Page gestures and navigation
 
 The phone-native behaviour a screen expects, kept out of STX templates:
