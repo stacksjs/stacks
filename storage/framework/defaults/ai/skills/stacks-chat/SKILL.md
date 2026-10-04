@@ -370,7 +370,7 @@ What archiving does is part of every conversation (`conversation.archive`):
 
 | Provider | `mode` | Effect in the real app |
 |---|---|---|
-| iMessage | `confirm` | Opens the conversation in Messages at Delete Conversation; the person confirms. Apple has no API, and editing chat.db is ignored or synced everywhere. |
+| iMessage | `confirm` | With a `controller`, Messages' own Delete on the row found by name; without one, opens the conversation for the person to delete. Apple has no API, and editing chat.db is ignored or synced everywhere. |
 | Slack DM / group DM | `native` | `conversations.close`; Slack reopens it when someone writes. `unarchive` reopens. |
 | Slack public channel | `native` | `conversations.leave`; `unarchive` rejoins. |
 | Slack private channel | `unsupported` | Untouched: leaving would need a re-invite. |
@@ -380,8 +380,8 @@ What archiving does is part of every conversation (`conversation.archive`):
 For iMessage, pass a `controller` (`{ remove(names, url, confirm), recover(names) }`)
 whenever the app can drive Messages by accessibility: it receives every label
 Messages might give the row (contact name, formatted number, handle) and should
-act on the row found by name, never on the current selection - the driver's
-fallback menu script does the latter. With a controller, `unarchive` recovers
+act on the row found by name, never on the current selection. Without a
+controller the driver only opens the conversation in Messages for the person to delete. With a controller, `unarchive` recovers
 from Recently Deleted, and `confirmDeletes: true` accepts Messages' alert too.
 Attic (`~/Code/Apps/attic`, `app/Desktop/messages-control.swift`) is the reference.
 

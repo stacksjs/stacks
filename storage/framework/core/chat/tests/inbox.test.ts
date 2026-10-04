@@ -7,17 +7,12 @@ describe('iMessage inbox driver', () => {
   function setup() {
     const chat = new FakeChatDb()
     const opened: string[] = []
-    const scripts: string[] = []
     const driver = new IMessageDriver({
       databasePath: chat.path,
       addressBookDir: false,
       openUrl: url => opened.push(url),
-      runAppleScript: async (script) => {
-        scripts.push(script)
-        return true
-      },
     })
-    return { chat, driver, opened, scripts }
+    return { chat, driver, opened }
   }
 
   it('lists conversations merged across services, with a cursor that moves on new messages', async () => {
@@ -64,28 +59,20 @@ describe('iMessage inbox driver', () => {
     expect((await driver.messages(`direct:${ALICE}`, { after: '0', limit: 2 })).map(m => m.text)).toEqual(['one', 'two'])
   })
 
-  it('archives by taking Messages to its own delete, and notices it has gone', async () => {
-    const { chat, driver, opened, scripts } = setup()
+  it('without a controller only opens Messages, and notices when it has gone', async () => {
+    const { chat, driver, opened } = setup()
     const group = chat.group('chat9', [ALICE, BOB], { name: 'Trip', groupId: 'G-9' })
     chat.add(group, { text: 'packing list?' })
 
     const outcome = await driver.archive('group:G-9')
     expect(outcome).toMatchObject({ mode: 'confirm', removed: false })
     expect(opened).toEqual(['sms://open?groupid=G-9'])
-    expect(scripts[0]).toContain('Delete Conversation')
+    expect(outcome.detail).toContain('Conversation > Delete Conversation')
 
     chat.deleteChat(group)
     const [after] = await driver.conversations()
     expect(after!.visible).toBe(false)
     expect((await driver.archive('group:G-9')).removed).toBe(true)
-  })
-
-  it('says how to finish when it cannot drive Messages', async () => {
-    const chat = new FakeChatDb()
-    chat.add(chat.direct(ALICE), { text: 'hi' })
-    const driver = new IMessageDriver({ databasePath: chat.path, addressBookDir: false, openUrl: () => {}, runAppleScript: async () => false })
-    const outcome = await driver.archive(`direct:${ALICE}`)
-    expect(outcome.detail).toContain('Conversation > Delete Conversation')
   })
 
   it('hands a controller the row names Messages shows, and recovers through it', async () => {

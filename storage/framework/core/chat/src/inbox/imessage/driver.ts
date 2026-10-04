@@ -35,8 +35,6 @@ export interface IMessageConfig {
   addressBookDir?: string | false
   /** Opens a URL (a conversation in Messages). Defaults to macOS `open`. */
   openUrl?: (url: string) => void
-  /** Runs AppleScript; resolves false when it could not (no permission). */
-  runAppleScript?: (script: string) => Promise<boolean>
 }
 
 /** Messages' reaction types and the emoji they stand for. 3000+ removes. */
@@ -51,27 +49,8 @@ const REACTIONS: Record<number, string> = {
   2007: '🔖',
 }
 
-/**
- * Takes Messages to its own Delete Conversation for the conversation just
- * opened. Messages asks the person to confirm, so nothing is deleted without
- * them seeing which conversation it is - the safety a script that clicked
- * through the confirmation as well would throw away.
- */
-const DELETE_SCRIPT = `
-tell application "Messages" to activate
-delay 0.8
-tell application "System Events" to tell process "Messages"
-  click menu item "Delete Conversation…" of menu "Conversation" of menu bar 1
-end tell
-`
-
 function defaultOpen(url: string): void {
   Bun.spawn(['/usr/bin/open', url], { stdio: ['ignore', 'ignore', 'ignore'] })
-}
-
-async function defaultAppleScript(script: string): Promise<boolean> {
-  const run = Bun.spawn(['/usr/bin/osascript', '-e', script], { stdio: ['ignore', 'ignore', 'ignore'] })
-  return (await run.exited) === 0
 }
 
 /**
@@ -84,6 +63,8 @@ async function defaultAppleScript(script: string): Promise<boolean> {
  * archiving opens the conversation in Messages and invokes its own Delete
  * Conversation, which the person confirms. Messages keeps it in Recently
  * Deleted for 30 days, and a new message brings the thread back on its own.
+ * Give it a `controller` to have that done by name; without one it only
+ * opens the conversation for the person to delete.
  */
 export class IMessageDriver implements InboxDriver {
   readonly provider = 'imessage' as const
@@ -91,7 +72,6 @@ export class IMessageDriver implements InboxDriver {
   private readonly databasePath: string
   private readonly addressBookDir: string | false
   private readonly openUrl: (url: string) => void
-  private readonly runAppleScript: (script: string) => Promise<boolean>
   private readonly controller: MessagesController | undefined
   private readonly confirmDeletes: boolean
   private contacts: Contacts | null = null
@@ -101,7 +81,6 @@ export class IMessageDriver implements InboxDriver {
     this.databasePath = config.databasePath ?? DEFAULT_MESSAGES_DB
     this.addressBookDir = config.addressBookDir ?? DEFAULT_ADDRESS_BOOK_DIR
     this.openUrl = config.openUrl ?? defaultOpen
-    this.runAppleScript = config.runAppleScript ?? defaultAppleScript
     this.controller = config.controller
     this.confirmDeletes = config.confirmDeletes ?? false
   }
@@ -245,14 +224,15 @@ export class IMessageDriver implements InboxDriver {
       }
     }
 
+    // Without a controller, only open it. Clicking Conversation > Delete
+    // Conversation would act on whatever Messages has selected, which is the
+    // conversation just opened only if the URL landed - not something to
+    // gamble a person's messages on.
     this.openUrl(url)
-    const prompted = await this.runAppleScript(DELETE_SCRIPT)
     return {
       mode: 'confirm',
       removed: false,
-      detail: prompted
-        ? 'Messages is asking you to confirm the delete.'
-        : 'Messages is open on the conversation: choose Conversation > Delete Conversation to finish. (Allow Accessibility access to have this done for you.)',
+      detail: 'Messages is open on the conversation: choose Conversation > Delete Conversation to finish.',
     }
   }
 
