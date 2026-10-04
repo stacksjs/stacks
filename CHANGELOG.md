@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.57...v0.75.58)
+
+## 🐛 Bug Fixes
+
+- **chat**: an iMessage reply is thread_originator_guid, not reply_to_guid ([1375083](https://github.com/stacksjs/stacks/commit/1375083)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.56...v0.75.57)
 
 ## 🐛 Bug Fixes
