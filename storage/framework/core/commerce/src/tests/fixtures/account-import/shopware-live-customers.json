@@ -1,0 +1,167 @@
+{
+  "total": 9,
+  "data": [
+    {
+      "createdAt": "2026-10-04T04:40:54.028+00:00",
+      "customerNumber": "10000",
+      "firstName": "Zoë",
+      "lastName": "Ångström",
+      "company": null,
+      "email": "Zoe.Angstrom@Example.com",
+      "active": true,
+      "guest": false,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": "+46 8 123 45 67",
+        "apiAlias": "customer_address"
+      },
+      "id": "01a1053700ec726997f867726950af27",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:40:56.394+00:00",
+      "customerNumber": "10001",
+      "firstName": "José",
+      "lastName": "Müller",
+      "company": null,
+      "email": "jose.muller@example.com",
+      "active": true,
+      "guest": false,
+      "lastOrderDate": "2026-10-04T04:40:57.345+00:00",
+      "orderTotalAmount": 14.5,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a105370a2d72c8b87887abc3e99975",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:40:58.987+00:00",
+      "customerNumber": "10002",
+      "firstName": "太郎",
+      "lastName": "田中",
+      "company": null,
+      "email": "tanaka@example.jp",
+      "active": true,
+      "guest": false,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a10537142e70649c6c5b2d38645dca",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:41:00.219+00:00",
+      "customerNumber": "10003",
+      "firstName": "Nora",
+      "lastName": "Nobuys",
+      "company": null,
+      "email": "no.orders@example.com",
+      "active": true,
+      "guest": false,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a105371917709198adde88d94e4e70",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:41:00.297+00:00",
+      "customerNumber": "10004",
+      "firstName": "Gary",
+      "lastName": "Guest",
+      "company": null,
+      "email": "Gary.Guest@Example.net",
+      "active": true,
+      "guest": true,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a105371c87732dac5b8c263b50d6d3",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:41:00.574+00:00",
+      "customerNumber": "10005",
+      "firstName": "Gary",
+      "lastName": "Guest",
+      "company": null,
+      "email": "GARY.guest@example.NET",
+      "active": true,
+      "guest": true,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a105371d9c7370b6581d2642efa174",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:41:00.844+00:00",
+      "customerNumber": "10006",
+      "firstName": "Zoe",
+      "lastName": "A.",
+      "company": null,
+      "email": "zoe.angstrom@example.com",
+      "active": true,
+      "guest": true,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a105371eaa7344be0cf22b063fbf89",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:41:01.919+00:00",
+      "customerNumber": "10007",
+      "firstName": "Namen",
+      "lastName": "Los",
+      "company": null,
+      "email": "nameless@example.com",
+      "active": true,
+      "guest": false,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a105371fac72479b7db9616de99342",
+      "apiAlias": "customer"
+    },
+    {
+      "createdAt": "2026-10-04T04:42:59.717+00:00",
+      "customerNumber": "10115",
+      "firstName": "Bulk",
+      "lastName": "Kunde 108",
+      "company": null,
+      "email": "bulk108@example.org",
+      "active": false,
+      "guest": false,
+      "lastOrderDate": null,
+      "orderTotalAmount": 0,
+      "defaultBillingAddress": {
+        "phoneNumber": null,
+        "apiAlias": "customer_address"
+      },
+      "id": "01a10538eb3f713b85bb34b46933e002",
+      "apiAlias": "customer"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  commerceDisabledReason,
   currencyMismatch,
   formatCustomerSummary,
   formatImportedCustomer,
@@ -177,18 +178,35 @@ describe('import output', () => {
     expect(formatImportedCustomer({ action: 'update', externalId: '1', email: 'bob@example.com', name: 'Bob Norman', matchedBy: 'email' }, true))
       .toBe('  would update Bob Norman <bob@example.com>  (matched an existing customer by email)')
 
-    const order = { action: 'create' as const, externalId: '450789469', number: '#1001', status: 'SHIPPED', sourceStatus: 'paid, fulfilled', totalMinor: 5449, currency: 'USD', lines: 2, unlinkedLines: 1, customerEmail: 'bob@example.com' }
+    const order = { action: 'create' as const, externalId: '450789469', number: '#1001', status: 'SHIPPED', sourceStatus: 'paid, fulfilled', totalMinor: 5449, currency: 'USD', lines: 2, unlinkedLines: 1, productlessLines: 0, refundedMinor: 0, customerEmail: 'bob@example.com' }
     expect(formatImportedOrder(order, format)).toBe('  created      #1001  54.49 USD, SHIPPED (paid, fulfilled), 2 lines, 1 without a product, for bob@example.com')
     expect(formatImportedOrder({ ...order, number: null, unlinkedLines: 0, customerEmail: null, lines: 1 }, format)).toBe('  created      450789469  54.49 USD, SHIPPED (paid, fulfilled), 1 line, no customer')
+    // A partial refund is said on the line; a full one is the status already.
+    expect(formatImportedOrder({ ...order, unlinkedLines: 0, refundedMinor: 999 }, format)).toBe('  created      #1001  54.49 USD, SHIPPED (paid, fulfilled), 2 lines, 9.99 USD refunded, for bob@example.com')
+    expect(formatImportedOrder({ ...order, unlinkedLines: 0, status: 'REFUNDED', refundedMinor: 5449 }, format)).toBe('  created      #1001  54.49 USD, REFUNDED (paid, fulfilled), 2 lines, for bob@example.com')
 
     expect(formatCustomerSummary({ dryRun: true, counts: { customers: { created: 2, updated: 1 }, merged: 1 } } as any))
       .toEqual(['Customers: 2 would be created, 1 would be updated, 1 merged by email'])
-    expect(formatOrderSummary({ dryRun: false, currencies: ['EUR', 'USD'], counts: { orders: { created: 3, updated: 0 }, customers: { created: 1, updated: 0 }, lines: { linked: 3, unlinked: 2 }, duplicates: 0 } } as any)).toEqual([
+    expect(formatOrderSummary({ dryRun: false, currencies: ['EUR', 'USD'], counts: { orders: { created: 3, updated: 0 }, customers: { created: 1, updated: 0 }, lines: { linked: 3, unlinked: 2, productless: 0 }, duplicates: 0 } } as any)).toEqual([
       'Orders: 3 created, 0 updated',
       'Order lines: 3 linked to a product, 2 without one',
       'Customers created from orders: 1',
       'Order currencies: EUR, USD',
     ])
+    // Fees and deleted products are counted apart: no catalog import will link them.
+    expect(formatOrderSummary({ dryRun: false, currencies: ['USD'], counts: { orders: { created: 2, updated: 0 }, customers: { created: 0, updated: 0 }, lines: { linked: 4, unlinked: 0, productless: 2 }, duplicates: 0 } } as any)[1])
+      .toBe('Order lines: 4 linked to a product, 0 without one, 2 with no product at the source (fees, custom or deleted items)')
+  })
+})
+
+describe('the commerce bundle', () => {
+  it('must be enabled for an import that writes, which used to stop on "no such table: products"', () => {
+    expect(commerceDisabledReason(true, false)).toBeNull()
+    expect(commerceDisabledReason(false, true)).toBeNull()
+    const reason = commerceDisabledReason(false, false)!
+    expect(reason).toContain('config/commerce.ts')
+    expect(reason).toContain('buddy migrate')
+    expect(reason).toContain('--dry-run')
   })
 })
 

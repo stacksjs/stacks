@@ -122,6 +122,23 @@ function terms(list: WooTermPayload[] | null | undefined): Array<{ name: string,
     .filter(term => term.name && term.slug)
 }
 
+/**
+ * A product slug as the shopper reads it. WordPress stores a non-ASCII slug
+ * percent-encoded (`sencha-%e7%b7%91%e8%8c%b6-100g`) and the Store API hands
+ * it over that way; a malformed escape is kept as sent.
+ */
+export function wooSlug(value: unknown): string | null {
+  const raw = optionalString(value)
+  if (!raw || !raw.includes('%'))
+    return raw
+  try {
+    return decodeURIComponent(raw)
+  }
+  catch {
+    return raw
+  }
+}
+
 function inventoryOf(payload: WooProductPayload): number | null {
   return typeof payload.low_stock_remaining === 'number' ? Math.max(0, Math.trunc(payload.low_stock_remaining)) : null
 }
@@ -220,7 +237,7 @@ export function mapWooProduct(raw: WooProductPayload, context: WooMapContext = {
       source: 'woocommerce',
       externalId,
       name,
-      handle: optionalString(raw.slug) ?? slug(name),
+      handle: wooSlug(raw.slug) ?? slug(name),
       descriptionHtml: optionalString(raw.description) ?? optionalString(raw.short_description),
       vendor: brand ? brand.name : null,
       categories: terms(raw.categories),

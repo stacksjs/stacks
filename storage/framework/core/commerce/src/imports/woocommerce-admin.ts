@@ -89,6 +89,8 @@ export interface WooOrderPayload {
   shipping?: WooAddressPayload | null
   line_items?: WooOrderLinePayload[] | null
   fee_lines?: Array<{ id?: number | string, name?: string | null, total?: string | null }> | null
+  /** Refunds so far, each with a negative `total` ("-9.99"). */
+  refunds?: Array<{ id?: number | string, reason?: string | null, total?: string | null }> | null
 }
 
 /** WooCommerce's order statuses, and the ones that are not orders at all. */
@@ -242,6 +244,19 @@ export function mapWooOrder(raw: WooOrderPayload, context: { currency?: string }
   const customerId = raw.customer_id ? String(raw.customer_id) : null
   const email = normalizeEmail(raw.billing?.email)
 
+  // A refund's total is negative; the order's own total stays what was charged.
+  let refundedMinor = 0
+  for (const refund of raw.refunds ?? []) {
+    try {
+      refundedMinor += Math.abs(signedMinor(refund?.total, exponent) ?? 0)
+    }
+    catch (error) {
+      if (!(error instanceof PriceFormatError))
+        throw error
+      warnings.push({ externalId, message: `refund ${refund?.id ?? ''}: ${error.message}; not counted` })
+    }
+  }
+
   return {
     record: {
       source: 'woocommerce',
@@ -267,6 +282,7 @@ export function mapWooOrder(raw: WooOrderPayload, context: { currency?: string }
       note: optionalString(raw.customer_note),
       placedAt: gmtTimestamp(raw.date_created_gmt),
       lines,
+      refundedMinor,
     },
     warnings,
   }

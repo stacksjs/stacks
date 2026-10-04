@@ -1,0 +1,932 @@
+{
+  "total": 8,
+  "data": [
+    {
+      "orderNumber": "10000",
+      "billingAddressId": "01a10537066e72c998906ca902b298f8",
+      "orderDateTime": "2026-10-04T04:40:54.635+00:00",
+      "amountTotal": 100.35,
+      "amountNet": 80.28,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "Zoe.Angstrom@Example.com",
+        "firstName": "Zoë",
+        "lastName": "Ångström",
+        "customerId": "01a1053700ec726997f867726950af27",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "EUR",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "Zoë",
+          "lastName": "Ångström",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Göteborg",
+          "company": null,
+          "phoneNumber": "+46 8 123 45 67",
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Schweden",
+            "iso": "SE",
+            "apiAlias": "country"
+          },
+          "id": "01a10537066e72c998906ca902b298f8",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "Zoë",
+            "lastName": "Ångström",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Göteborg",
+            "company": null,
+            "phoneNumber": "+46 8 123 45 67",
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Schweden",
+              "iso": "SE",
+              "apiAlias": "country"
+            },
+            "id": "01a10537066e72c998906ca902b298f8",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "shipped",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "6d6c7bab67f249a1a557b15fbf98bb35",
+          "productId": "6d6c7bab67f249a1a557b15fbf98bb35",
+          "quantity": 2,
+          "unitPrice": 23.5,
+          "totalPrice": 47,
+          "label": "Bio T-Shirt",
+          "payload": {
+            "options": [
+              {
+                "group": "Farbe",
+                "option": "Blau"
+              },
+              {
+                "group": "Größe",
+                "option": "M"
+              }
+            ],
+            "parentId": "65883ff5996f4a848f3b721556b09259",
+            "productNumber": "SW-TEE-Blau-M"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a10537066e72c998906ca9007b19af",
+          "apiAlias": "order_line_item"
+        },
+        {
+          "referencedId": "4ae846e62f8a4a77b534bc4bc9f9dc9c",
+          "productId": "4ae846e62f8a4a77b534bc4bc9f9dc9c",
+          "quantity": 1,
+          "unitPrice": 21,
+          "totalPrice": 21,
+          "label": "Bio T-Shirt",
+          "payload": {
+            "options": [
+              {
+                "group": "Farbe",
+                "option": "Grün"
+              },
+              {
+                "group": "Größe",
+                "option": "S"
+              }
+            ],
+            "parentId": "65883ff5996f4a848f3b721556b09259",
+            "productNumber": "SW-TEE-Grün-S"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a10537066e72c998906ca901154cab",
+          "apiAlias": "order_line_item"
+        },
+        {
+          "referencedId": "b4ac18ec18494b0d8fbf5c2f3674dd36",
+          "productId": "b4ac18ec18494b0d8fbf5c2f3674dd36",
+          "quantity": 3,
+          "unitPrice": 14.5,
+          "totalPrice": 43.5,
+          "label": "Café Crème Tasse",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-MUG"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a10537066e72c998906ca9015a6cd0",
+          "apiAlias": "order_line_item"
+        },
+        {
+          "referencedId": "WILLKOMMEN10",
+          "productId": null,
+          "quantity": 1,
+          "unitPrice": -11.15,
+          "totalPrice": -11.15,
+          "label": "Willkommen 10",
+          "payload": {
+            "code": "WILLKOMMEN10"
+          },
+          "parentId": null,
+          "type": "promotion",
+          "id": "01a10537066e72c998906ca902491c9a",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:40:54.669+00:00",
+          "stateMachineState": {
+            "technicalName": "paid",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "in_progress",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": "Bitte zweimal klingeln – danke!",
+      "id": "01a1053706707172ab6fd9d23fdbeafc",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10001",
+      "billingAddressId": "01a105370e1973b7b2a26ae2ff14fd9a",
+      "orderDateTime": "2026-10-04T04:40:56.600+00:00",
+      "amountTotal": 76.07,
+      "amountNet": 63.93,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "jose.muller@example.com",
+        "firstName": "José",
+        "lastName": "Müller",
+        "customerId": "01a105370a2d72c8b87887abc3e99975",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "USD",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "José",
+          "lastName": "Müller",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Berlin",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Deutschland",
+            "iso": "DE",
+            "apiAlias": "country"
+          },
+          "id": "01a105370e1973b7b2a26ae2ff14fd9a",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "José",
+            "lastName": "Müller",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Berlin",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Deutschland",
+              "iso": "DE",
+              "apiAlias": "country"
+            },
+            "id": "01a105370e1973b7b2a26ae2ff14fd9a",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "44999e722f5f4934bd56f23e4fdcd8c7",
+          "productId": "44999e722f5f4934bd56f23e4fdcd8c7",
+          "quantity": 4,
+          "unitPrice": 11.7,
+          "totalPrice": 46.8,
+          "label": "Sencha 緑茶 100g",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-TEA"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105370e1973b7b2a26ae2fe4e4ba2",
+          "apiAlias": "order_line_item"
+        },
+        {
+          "referencedId": "1c4cf778468642ed9636b312a3d3f3a5",
+          "productId": "1c4cf778468642ed9636b312a3d3f3a5",
+          "quantity": 1,
+          "unitPrice": 29.27,
+          "totalPrice": 29.27,
+          "label": "Poster „Nordwind\" 50×70",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-POSTER"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105370e1973b7b2a26ae2feb5910b",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:40:56.611+00:00",
+          "stateMachineState": {
+            "technicalName": "refunded",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "open",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a105370e1973b7b2a26ae3017ffdbc",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10002",
+      "billingAddressId": "01a10537110270b78cf5a2ce74957c92",
+      "orderDateTime": "2026-10-04T04:40:57.345+00:00",
+      "amountTotal": 14.5,
+      "amountNet": 12.18,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "jose.muller@example.com",
+        "firstName": "José",
+        "lastName": "Müller",
+        "customerId": "01a105370a2d72c8b87887abc3e99975",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "EUR",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "José",
+          "lastName": "Müller",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Berlin",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Deutschland",
+            "iso": "DE",
+            "apiAlias": "country"
+          },
+          "id": "01a10537110270b78cf5a2ce74957c92",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "José",
+            "lastName": "Müller",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Berlin",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Deutschland",
+              "iso": "DE",
+              "apiAlias": "country"
+            },
+            "id": "01a10537110270b78cf5a2ce74957c92",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "b4ac18ec18494b0d8fbf5c2f3674dd36",
+          "productId": "b4ac18ec18494b0d8fbf5c2f3674dd36",
+          "quantity": 1,
+          "unitPrice": 14.5,
+          "totalPrice": 14.5,
+          "label": "Café Crème Tasse",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-MUG"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a10537110270b78cf5a2ce7495649a",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:40:57.355+00:00",
+          "stateMachineState": {
+            "technicalName": "refunded_partially",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "completed",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a10537110270b78cf5a2ce762ae0a9",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10003",
+      "billingAddressId": "01a105371842712f99e7b6b5c963a6cf",
+      "orderDateTime": "2026-10-04T04:40:59.202+00:00",
+      "amountTotal": 5358,
+      "amountNet": 4503,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "tanaka@example.jp",
+        "firstName": "太郎",
+        "lastName": "田中",
+        "customerId": "01a10537142e70649c6c5b2d38645dca",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "JPY",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "太郎",
+          "lastName": "田中",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "東京",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Japan",
+            "iso": "JP",
+            "apiAlias": "country"
+          },
+          "id": "01a105371842712f99e7b6b5c963a6cf",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "太郎",
+            "lastName": "田中",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "東京",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Japan",
+              "iso": "JP",
+              "apiAlias": "country"
+            },
+            "id": "01a105371842712f99e7b6b5c963a6cf",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "44999e722f5f4934bd56f23e4fdcd8c7",
+          "productId": "44999e722f5f4934bd56f23e4fdcd8c7",
+          "quantity": 1,
+          "unitPrice": 1598,
+          "totalPrice": 1598,
+          "label": "Sencha 緑茶 100g",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-TEA"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105371842712f99e7b6b5c84ea391",
+          "apiAlias": "order_line_item"
+        },
+        {
+          "referencedId": "bf4effe8b1c748c0a33ed26f7175e64b",
+          "productId": "bf4effe8b1c748c0a33ed26f7175e64b",
+          "quantity": 1,
+          "unitPrice": 3760,
+          "totalPrice": 3760,
+          "label": "Bio T-Shirt",
+          "payload": {
+            "options": [
+              {
+                "group": "Farbe",
+                "option": "Grün"
+              },
+              {
+                "group": "Größe",
+                "option": "M"
+              }
+            ],
+            "parentId": "65883ff5996f4a848f3b721556b09259",
+            "productNumber": "SW-TEE-Grün-M"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105371842712f99e7b6b5c8af5075",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:40:59.212+00:00",
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "open",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a105371842712f99e7b6b5ca7981d6",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10004",
+      "billingAddressId": "01a105371d0573939041509512ed71e0",
+      "orderDateTime": "2026-10-04T04:41:00.421+00:00",
+      "amountTotal": 25,
+      "amountNet": 21.01,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "Gary.Guest@Example.net",
+        "firstName": "Gary",
+        "lastName": "Guest",
+        "customerId": "01a105371c87732dac5b8c263b50d6d3",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "EUR",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "Gary",
+          "lastName": "Guest",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Berlin",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Deutschland",
+            "iso": "DE",
+            "apiAlias": "country"
+          },
+          "id": "01a105371d0573939041509512ed71e0",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "Gary",
+            "lastName": "Guest",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Berlin",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Deutschland",
+              "iso": "DE",
+              "apiAlias": "country"
+            },
+            "id": "01a105371d0573939041509512ed71e0",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "1c4cf778468642ed9636b312a3d3f3a5",
+          "productId": "1c4cf778468642ed9636b312a3d3f3a5",
+          "quantity": 1,
+          "unitPrice": 25,
+          "totalPrice": 25,
+          "label": "Poster „Nordwind\" 50×70",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-POSTER"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105371d057393904150951217e7b3",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:41:00.430+00:00",
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "open",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a105371d0573939041509514b70222",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10005",
+      "billingAddressId": "01a105371e11726a8be5c95c92c76729",
+      "orderDateTime": "2026-10-04T04:41:00.689+00:00",
+      "amountTotal": 29,
+      "amountNet": 24.37,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "GARY.guest@example.NET",
+        "firstName": "Gary",
+        "lastName": "Guest",
+        "customerId": "01a105371d9c7370b6581d2642efa174",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "EUR",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "Gary",
+          "lastName": "Guest",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Berlin",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Deutschland",
+            "iso": "DE",
+            "apiAlias": "country"
+          },
+          "id": "01a105371e11726a8be5c95c92c76729",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "Gary",
+            "lastName": "Guest",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Berlin",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Deutschland",
+              "iso": "DE",
+              "apiAlias": "country"
+            },
+            "id": "01a105371e11726a8be5c95c92c76729",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "b4ac18ec18494b0d8fbf5c2f3674dd36",
+          "productId": "b4ac18ec18494b0d8fbf5c2f3674dd36",
+          "quantity": 2,
+          "unitPrice": 14.5,
+          "totalPrice": 29,
+          "label": "Café Crème Tasse",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-MUG"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105371e11726a8be5c95c9239e26d",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:41:00.698+00:00",
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "open",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a105371e12738099275189d1a96dc1",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10006",
+      "billingAddressId": "01a105371f1e7295a4b128e40f6693c7",
+      "orderDateTime": "2026-10-04T04:41:00.957+00:00",
+      "amountTotal": 50,
+      "amountNet": 40,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "zoe.angstrom@example.com",
+        "firstName": "Zoe",
+        "lastName": "A.",
+        "customerId": "01a105371eaa7344be0cf22b063fbf89",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "EUR",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "Zoe",
+          "lastName": "A.",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Berlin",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Schweden",
+            "iso": "SE",
+            "apiAlias": "country"
+          },
+          "id": "01a105371f1e7295a4b128e40f6693c7",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "Zoe",
+            "lastName": "A.",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Berlin",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Schweden",
+              "iso": "SE",
+              "apiAlias": "country"
+            },
+            "id": "01a105371f1e7295a4b128e40f6693c7",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "1c4cf778468642ed9636b312a3d3f3a5",
+          "productId": "1c4cf778468642ed9636b312a3d3f3a5",
+          "quantity": 2,
+          "unitPrice": 25,
+          "totalPrice": 50,
+          "label": "Poster „Nordwind\" 50×70",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-POSTER"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a105371f1e7295a4b128e40e67f63f",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:41:00.967+00:00",
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "open",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a105371f1e7295a4b128e410e4cef6",
+      "apiAlias": "order"
+    },
+    {
+      "orderNumber": "10007",
+      "billingAddressId": "01a10537238c7052bab50c4513c7c50f",
+      "orderDateTime": "2026-10-04T04:41:02.092+00:00",
+      "amountTotal": 58.98,
+      "amountNet": 49.56,
+      "shippingTotal": 0,
+      "orderCustomer": {
+        "email": "nameless@example.com",
+        "firstName": "Namen",
+        "lastName": "Los",
+        "customerId": "01a105371fac72479b7db9616de99342",
+        "apiAlias": "order_customer"
+      },
+      "currency": {
+        "isoCode": "EUR",
+        "apiAlias": "currency"
+      },
+      "addresses": [
+        {
+          "firstName": "Namen",
+          "lastName": "Los",
+          "street": "Hauptstraße 1",
+          "zipcode": "10115",
+          "city": "Berlin",
+          "company": null,
+          "phoneNumber": null,
+          "additionalAddressLine1": null,
+          "country": {
+            "name": "Deutschland",
+            "iso": "DE",
+            "apiAlias": "country"
+          },
+          "id": "01a10537238c7052bab50c4513c7c50f",
+          "apiAlias": "order_address"
+        }
+      ],
+      "deliveries": [
+        {
+          "shippingOrderAddress": {
+            "firstName": "Namen",
+            "lastName": "Los",
+            "street": "Hauptstraße 1",
+            "zipcode": "10115",
+            "city": "Berlin",
+            "company": null,
+            "phoneNumber": null,
+            "additionalAddressLine1": null,
+            "country": {
+              "name": "Deutschland",
+              "iso": "DE",
+              "apiAlias": "country"
+            },
+            "id": "01a10537238c7052bab50c4513c7c50f",
+            "apiAlias": "order_address"
+          },
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_delivery"
+        }
+      ],
+      "lineItems": [
+        {
+          "referencedId": "0b5d6ea16a404dff9b898ed9370c4a49",
+          "productId": null,
+          "quantity": 1,
+          "unitPrice": 39,
+          "totalPrice": 39,
+          "label": "Auslaufmodell Wasserkocher",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-KETTLE"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a10537238c7052bab50c45133433bd",
+          "apiAlias": "order_line_item"
+        },
+        {
+          "referencedId": "44999e722f5f4934bd56f23e4fdcd8c7",
+          "productId": "44999e722f5f4934bd56f23e4fdcd8c7",
+          "quantity": 2,
+          "unitPrice": 9.99,
+          "totalPrice": 19.98,
+          "label": "Sencha 緑茶 100g",
+          "payload": {
+            "options": [],
+            "parentId": null,
+            "productNumber": "SW-TEA"
+          },
+          "parentId": null,
+          "type": "product",
+          "id": "01a10537238c7052bab50c451378a7c7",
+          "apiAlias": "order_line_item"
+        }
+      ],
+      "transactions": [
+        {
+          "createdAt": "2026-10-04T04:41:02.102+00:00",
+          "stateMachineState": {
+            "technicalName": "open",
+            "apiAlias": "state_machine_state"
+          },
+          "apiAlias": "order_transaction"
+        }
+      ],
+      "stateMachineState": {
+        "technicalName": "open",
+        "apiAlias": "state_machine_state"
+      },
+      "customerComment": null,
+      "id": "01a10537238c7052bab50c4515e1f9d3",
+      "apiAlias": "order"
+    }
+  ]
+}

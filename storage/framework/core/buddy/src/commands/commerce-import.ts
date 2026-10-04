@@ -181,6 +181,7 @@ export function formatImportedOrder(order: ImportedOrder, format: (minor: number
     `${order.status} (${order.sourceStatus})`,
     `${order.lines} line${order.lines === 1 ? '' : 's'}`,
     order.unlinkedLines > 0 ? `${order.unlinkedLines} without a product` : null,
+    order.refundedMinor > 0 && order.status !== 'REFUNDED' ? `${format(order.refundedMinor, order.currency)} refunded` : null,
     order.customerEmail ? `for ${order.customerEmail}` : 'no customer',
   ].filter(Boolean).join(', ')
   return `  ${verbOf(order.action, dryRun).padEnd(12)} ${order.number ?? order.externalId}  ${details}`
@@ -214,7 +215,7 @@ export function formatOrderSummary(result: OrderImportResult): string[] {
   const { orders, customers, lines, duplicates } = result.counts
   return [
     `Orders: ${orders.created} ${would}created, ${orders.updated} ${would}updated${duplicates > 0 ? `, ${duplicates} duplicates skipped` : ''}`,
-    `Order lines: ${lines.linked} linked to a product, ${lines.unlinked} without one`,
+    `Order lines: ${lines.linked} linked to a product, ${lines.unlinked} without one${lines.productless > 0 ? `, ${lines.productless} with no product at the source (fees, custom or deleted items)` : ''}`,
     ...(customers.created > 0 ? [`Customers created from orders: ${customers.created}`] : []),
     `Order currencies: ${result.currencies.length > 0 ? result.currencies.join(', ') : 'none'}`,
   ]
@@ -228,6 +229,18 @@ export function currencyMismatch(result: ImportResult, configured: string | unde
   if (other.length === 0)
     return null
   return `Prices were imported in ${other.join(', ')} minor units, but config/commerce.ts sets currency to ${configured}. products.price has no currency column, so set commerce.currency to match.`
+}
+
+/**
+ * Why a writing import cannot start, or null. With the commerce bundle
+ * disabled (`enabled: false` in config/commerce.ts) its tables are never
+ * migrated, and the import used to get as far as the first insert and stop on
+ * "no such table: products". A dry run writes nothing, so it may still look.
+ */
+export function commerceDisabledReason(enabled: boolean, dryRun: boolean): string | null {
+  if (enabled || dryRun)
+    return null
+  return 'Commerce is disabled, so its tables (products, customers, orders) are not migrated. Set enabled: true in config/commerce.ts (or run buddy commerce:install), run buddy migrate, then import again. --dry-run works without it.'
 }
 
 export const OUT_OF_SCOPE_NOTE = 'Customers and orders were not imported. Add --customers and/or --orders, with the admin API credentials in env: SHOPIFY_ADMIN_TOKEN, WOOCOMMERCE_CONSUMER_KEY and WOOCOMMERCE_CONSUMER_SECRET, or SHOPWARE_CLIENT_ID and SHOPWARE_CLIENT_SECRET.'
@@ -266,6 +279,16 @@ export function commerceImport(buddy: CLI): void {
       }
       catch (error) {
         return fail((error as Error).message)
+      }
+
+      try {
+        const { feature } = await import('@stacksjs/config')
+        const disabled = commerceDisabledReason(feature('commerce'), settings.dryRun)
+        if (disabled)
+          return fail(disabled)
+      }
+      catch {
+        // No readable config: let the import say what it finds.
       }
 
       const { catalogImport } = await import('@stacksjs/commerce')

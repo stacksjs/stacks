@@ -52,7 +52,11 @@ export interface AccountOrderCustomer {
 /** One purchased line of an order. */
 export interface AccountOrderLine {
   externalId: string
-  /** The catalog product id the line references (the catalog import's `product` identity). */
+  /**
+   * The catalog product id the line references (the catalog import's
+   * `product` identity). Null for a line that names no product at the
+   * source: a fee, a custom item, or a product deleted since the sale.
+   */
   productExternalId: string | null
   /** The catalog variant id the line references (the catalog import's `variant` identity). */
   variantExternalId: string | null
@@ -87,6 +91,12 @@ export interface AccountOrder {
   /** ISO 8601 timestamp the order was placed. */
   placedAt: string | null
   lines: AccountOrderLine[]
+  /**
+   * What has been refunded so far, in minor units, when the source reports
+   * it. `orders` has no refund column, so `totalMinor` stays what was charged
+   * and the import reports a partial refund rather than dropping it unsaid.
+   */
+  refundedMinor?: number
 }
 
 /** A source payload mapped to a record (or skipped), with what the mapping noticed. */

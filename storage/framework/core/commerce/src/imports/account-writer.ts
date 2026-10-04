@@ -7,6 +7,7 @@ import { formatDate } from '@stacksjs/orm'
 import { DEFAULT_CUSTOMER_AVATAR } from '../customers/store'
 import { normalizeStoreUrl, storeHost } from './http'
 import { catalogUuid } from './identity'
+import { formatMinor } from './money'
 
 /**
  * Writing imported customers and orders into the built-in commerce tables.
@@ -20,7 +21,8 @@ import { catalogUuid } from './identity'
  * | first + last name               | `customers.name` (the email when there is none)     |
  * | phone                           | `customers.phone`                                   |
  * | lifetime spend, when reported   | `customers.total_spent`, integer minor units        |
- * | last order date, when reported  | `customers.last_order`                              |
+ * | last order date, when reported  | `customers.last_order`, and moved forward (never    |
+ * |   or placed by an imported order|   back) to the latest order the import links to it  |
  * | account disabled (Shopware)     | `customers.status` `Inactive`                       |
  * | order id + store host           | `orders.uuid` (UUIDv5)                              |
  * | mapped status                   | `orders.status` (the `OrderStatus` vocabulary)      |
@@ -36,8 +38,11 @@ import { catalogUuid } from './identity'
  * matched first by the uuid an earlier run derived from its source id (so a
  * changed email updates the row instead of adding one), then by email, so a
  * customer who already exists in Stacks (a checkout, another store) is updated
- * rather than duplicated. Nothing password- or card-shaped is ever written:
- * the normalized records have no field for either.
+ * rather than duplicated. A row an earlier run created for a guest (its uuid
+ * derived from the email) takes the account's uuid once the shopper has an
+ * account at the source, so a later change of address there still finds it.
+ * Nothing password- or card-shaped is ever written: the normalized records
+ * have no field for either.
  *
  * Orders are matched on their derived uuid. A re-run updates the order and
  * replaces its lines, since `order_items` has no identity column of its own;
@@ -45,7 +50,9 @@ import { catalogUuid } from './identity'
  * product the catalog import wrote, through the same deterministic identities
  * (`catalogUuid`). A line whose product is not in Stacks yet is kept, with no
  * `product_id`, its label and price intact, and reported: import the catalog,
- * re-run the order import, and the lines link.
+ * re-run the order import, and the lines link. A line that names no product
+ * at the source (a fee, a custom item, a product deleted since) is kept the
+ * same way and counted apart, since no catalog import will ever link it.
  *
  * Writes go through the query builder, not the models, so importing a store's
  * history fires no `order:created` events or emails to its customers.
@@ -92,6 +99,9 @@ export interface OrderItemRow {
   updated_at: string
 }
 
+/** The columns an update writes; anything left out keeps its value. */
+export type CustomerUpdate = Partial<CustomerRow> & { updated_at: string }
+
 export interface ExistingCustomer {
   id: number
   uuid: string | null
@@ -107,7 +117,12 @@ export interface AccountRepository {
   /** Customers whose uuid is among `uuids` or whose email matches one of `emails` case-insensitively. */
   findCustomers: (query: { uuids: string[], emails: string[] }) => Promise<ExistingCustomer[]>
   createCustomer: (row: CustomerRow) => Promise<number>
-  updateCustomer: (id: number, row: CustomerRow) => Promise<void>
+  updateCustomer: (id: number, row: CustomerUpdate) => Promise<void>
+  /**
+   * Move `customers.last_order` of `id` forward to `at` (a `formatDate`
+   * stamp), never back. Optional for repositories written before it existed.
+   */
+  advanceLastOrder?: (id: number, at: string) => Promise<void>
   findOrders: (uuids: string[]) => Promise<Map<string, number>>
   createOrder: (row: OrderRow) => Promise<number>
   updateOrder: (id: number, row: Omit<OrderRow, 'uuid'>) => Promise<void>
@@ -144,6 +159,10 @@ export interface ImportedOrder {
   lines: number
   /** Lines whose product is not in Stacks (yet). */
   unlinkedLines: number
+  /** Lines that name no product at the source: fees, custom items, deleted products. */
+  productlessLines: number
+  /** Refunded so far, in minor units of `currency`; 0 when nothing was. */
+  refundedMinor: number
   customerEmail: string | null
 }
 
@@ -171,8 +190,11 @@ export interface OrderImportResult {
     orders: ImportCounts
     /** Customers created from an order because no customer had its email. */
     customers: ImportCounts
-    lines: { linked: number, unlinked: number }
+    /** `unlinked` wait on a product not imported yet; `productless` name none at the source. */
+    lines: { linked: number, unlinked: number, productless: number }
     duplicates: number
+    /** Orders refunded in part: `total_amount` is what was charged, the refund is only reported. */
+    partlyRefunded: number
   }
   currencies: string[]
   warnings: CatalogWarning[]
@@ -199,6 +221,23 @@ export interface ImportOrdersOptions extends AccountImportOptions {
 /** The uuid a customer gets when an import creates it: from the source id, else from the email. */
 export function customerUuid(source: string, host: string, externalId: string | null, email: string): string {
   return catalogUuid(source, host, 'customer', externalId ?? `email:${email}`)
+}
+
+/**
+ * The account uuid a row found by email should take, or null to leave it.
+ *
+ * Only a uuid this importer derived from that same email (a guest, or a
+ * shopper first seen on an order) is replaced: it names no source record, so
+ * once the source has an account for the address, the account's id is the
+ * better key. A row created any other way (checkout, the dashboard, another
+ * store) keeps its uuid, which something else may already refer to.
+ */
+export function promotedCustomerUuid(source: string, host: string, existingUuid: string | null, externalId: string | null, email: string): string | null {
+  if (!externalId)
+    return null
+  if (existingUuid !== null && existingUuid !== customerUuid(source, host, null, email))
+    return null
+  return customerUuid(source, host, externalId, email)
 }
 
 function stamp(iso: string | null): string | null {
@@ -272,6 +311,7 @@ export function orderRow(order: AccountOrder, host: string, customerId: number |
 class CustomerIndex {
   private readonly byUuid = new Map<string, number>()
   private readonly byEmail = new Map<string, number>()
+  private readonly uuidById = new Map<number, string>()
 
   async load(repository: AccountRepository, keys: Array<{ uuid: string | null, email: string | null }>): Promise<void> {
     const uuids = [...new Set(keys.map(key => key.uuid).filter((uuid): uuid is string => uuid !== null && !this.byUuid.has(uuid)))]
@@ -283,8 +323,13 @@ class CustomerIndex {
   }
 
   remember(id: number, uuid: string | null, email: string | null): void {
-    if (uuid)
+    if (uuid) {
+      const previous = this.uuidById.get(id)
+      if (previous && previous !== uuid)
+        this.byUuid.delete(previous)
       this.byUuid.set(uuid, id)
+      this.uuidById.set(id, uuid)
+    }
     if (email)
       this.byEmail.set(email.trim().toLowerCase(), id)
   }
@@ -295,6 +340,11 @@ class CustomerIndex {
       return { id: byUuid, matchedBy: 'uuid' }
     const byEmail = email ? this.byEmail.get(email) : undefined
     return byEmail !== undefined ? { id: byEmail, matchedBy: 'email' } : null
+  }
+
+  /** The uuid the row `id` has, when the index has seen it. */
+  uuidOf(id: number): string | null {
+    return this.uuidById.get(id) ?? null
   }
 
   /** Whether `email` belongs to a customer other than `id`. */
@@ -353,7 +403,7 @@ export async function importCustomers(options: ImportCustomersOptions): Promise<
       return { action: 'create', externalId: customer.externalId, email: customer.email, name: customer.name, matchedBy: null }
     }
 
-    const row = customerRow(customer, uuid, now, 'update')
+    const row: CustomerUpdate = customerRow(customer, uuid, now, 'update')
     // Found by its uuid with a new email at the source: follow it, unless
     // another customer already holds that address.
     if (found.matchedBy === 'uuid') {
@@ -362,8 +412,12 @@ export async function importCustomers(options: ImportCustomersOptions): Promise<
       else
         row.email = customer.email
     }
+    // Found by email: a guest row this import made takes the account's uuid.
+    const promoted = found.matchedBy === 'email' ? promotedCustomerUuid(customer.source, host, index.uuidOf(found.id), customer.externalId, customer.email) : null
+    if (promoted)
+      row.uuid = promoted
     await repo.updateCustomer(found.id, row)
-    index.remember(found.id, null, customer.email)
+    index.remember(found.id, promoted, customer.email)
     return { action: 'update', externalId: customer.externalId, email: customer.email, name: customer.name, matchedBy: found.matchedBy }
   }
 
@@ -412,6 +466,7 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
   const seenOrders = new Set<string>()
   const currencies = new Set<string>()
   const unlinkedExamples = new Set<string>()
+  const refundExamples: string[] = []
 
   const result: OrderImportResult = {
     source: adapter.name,
@@ -422,8 +477,9 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
     counts: {
       orders: { created: 0, updated: 0 },
       customers: { created: 0, updated: 0 },
-      lines: { linked: 0, unlinked: 0 },
+      lines: { linked: 0, unlinked: 0, productless: 0 },
       duplicates: 0,
+      partlyRefunded: 0,
     },
     currencies: [],
     warnings: [],
@@ -445,8 +501,18 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
       return null
     const uuid = orderCustomerUuid(order)
     const found = index.find(uuid, customer.email)
-    if (found)
+    if (found) {
+      // The order names an account for an address a guest row holds: that row
+      // takes the account's uuid, as the customer import would give it.
+      const promoted = found.matchedBy === 'email' && customer.email
+        ? promotedCustomerUuid(order.source, host, index.uuidOf(found.id), customer.externalId, customer.email)
+        : null
+      if (promoted) {
+        await repo.updateCustomer(found.id, { uuid: promoted, updated_at: now })
+        index.remember(found.id, promoted, customer.email)
+      }
       return found.id
+    }
     if (!customer.email) {
       result.warnings.push({ externalId: order.externalId, message: `order ${order.number ?? order.externalId} has no customer email; imported without a customer` })
       return null
@@ -471,7 +537,7 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
     return id
   }
 
-  async function write(order: AccountOrder, repo: AccountRepository, known: { orders: Map<string, number>, products: Map<string, number>, variants: Map<string, number> }): Promise<ImportedOrder> {
+  async function write(order: AccountOrder, repo: AccountRepository, known: { orders: Map<string, number>, products: Map<string, number>, variants: Map<string, number> }): Promise<ImportedOrder & { customerId: number | null }> {
     const now = formatDate(clock())
     const customerId = await customerFor(order, repo, now)
     const row = orderRow(order, host, customerId, now)
@@ -489,14 +555,22 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
     }
 
     let unlinked = 0
+    let productless = 0
     const items: OrderItemRow[] = order.lines.map((line) => {
       const productId = (line.productExternalId ? known.products.get(productUuid(order, line.productExternalId)) : undefined)
         ?? (line.variantExternalId ? known.variants.get(variantUuid(order, line.variantExternalId)) : undefined)
         ?? null
       if (productId === null) {
-        unlinked++
-        if (unlinkedExamples.size < 5)
-          unlinkedExamples.add(lineLabel(line))
+        // A fee or a deleted product has nothing to wait for; only a line
+        // naming a product the catalog import has not written yet does.
+        if (!line.productExternalId && !line.variantExternalId) {
+          productless++
+        }
+        else {
+          unlinked++
+          if (unlinkedExamples.size < 5)
+            unlinkedExamples.add(lineLabel(line))
+        }
       }
       return {
         order_id: orderId,
@@ -520,7 +594,10 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
       currency: order.currency,
       lines: items.length,
       unlinkedLines: unlinked,
+      productlessLines: productless,
+      refundedMinor: order.refundedMinor ?? 0,
       customerEmail: order.customer?.email ?? null,
+      customerId,
     }
   }
 
@@ -548,24 +625,45 @@ export async function importOrders(options: ImportOrdersOptions): Promise<OrderI
     }
     await index.load(repository, fresh.map(order => ({ uuid: orderCustomerUuid(order), email: order.customer?.email ?? null })))
 
+    // The latest order each customer placed on this page, to move
+    // `last_order` forward once the page is written.
+    const latest = new Map<number, string>()
     for (const order of fresh) {
       currencies.add(order.currency)
-      const imported = repository.transaction
+      const { customerId, ...imported } = repository.transaction
         ? await repository.transaction(repo => write(order, repo, known))
         : await write(order, repository, known)
 
       result.counts.orders[imported.action === 'create' ? 'created' : 'updated']++
-      result.counts.lines.linked += imported.lines - imported.unlinkedLines
+      result.counts.lines.linked += imported.lines - imported.unlinkedLines - imported.productlessLines
       result.counts.lines.unlinked += imported.unlinkedLines
+      result.counts.lines.productless += imported.productlessLines
+      if (imported.refundedMinor > 0 && imported.status !== 'REFUNDED') {
+        result.counts.partlyRefunded++
+        if (refundExamples.length < 3)
+          refundExamples.push(`${imported.number ?? imported.externalId}: ${formatMinor(imported.refundedMinor, imported.currency)} of ${formatMinor(imported.totalMinor, imported.currency)}`)
+      }
+      const placed = stamp(order.placedAt)
+      if (customerId !== null && placed && placed > (latest.get(customerId) ?? ''))
+        latest.set(customerId, placed)
       result.orders.push(imported)
       options.onOrder?.(imported)
+    }
+    if (repository.advanceLastOrder) {
+      for (const [customerId, at] of latest)
+        await repository.advanceLastOrder(customerId, at)
     }
   }
 
   result.currencies = [...currencies].sort()
   if (result.counts.lines.unlinked > 0) {
     const examples = [...unlinkedExamples].map(label => `"${label}"`).join(', ')
-    result.warnings.push({ message: `${result.counts.lines.unlinked} order line${result.counts.lines.unlinked === 1 ? '' : 's'} reference products not in Stacks (e.g. ${examples}); kept with their label and price but no product link. Import the catalog (buddy commerce:import <url> --from ${adapter.name}), then re-run the order import to link them.` })
+    const one = result.counts.lines.unlinked === 1
+    result.warnings.push({ message: `${result.counts.lines.unlinked} order line${one ? ' references a product' : 's reference products'} not in Stacks (e.g. ${examples}); kept with ${one ? 'its' : 'their'} label and price but no product link. Import the catalog (buddy commerce:import <url> --from ${adapter.name}), then re-run the order import to link ${one ? 'it' : 'them'}.` })
+  }
+  if (result.counts.partlyRefunded > 0) {
+    const one = result.counts.partlyRefunded === 1
+    result.warnings.push({ message: `${result.counts.partlyRefunded} order${one ? ' was' : 's were'} partly refunded at the source (${refundExamples.join('; ')}${one ? '' : ', ...'}). Stacks orders have no refund column, so total_amount is what was charged.` })
   }
 
   return result
@@ -610,6 +708,11 @@ export function createDatabaseAccountRepository(connection: any = db): AccountRe
     },
     async updateCustomer(id, row) {
       await connection.updateTable('customers').set(row).where('id', '=', id).execute()
+    },
+    async advanceLastOrder(id, at) {
+      // `formatDate` stamps (YYYY-MM-DD HH:MM:SS) compare correctly as text.
+      const param = sqlHelpers(env.DB_CONNECTION || 'sqlite').param
+      await connection.unsafe(`UPDATE customers SET last_order = ${param(1)} WHERE id = ${param(2)} AND (last_order IS NULL OR last_order < ${param(3)})`, [at, id, at])
     },
     async findOrders(uuids) {
       const rows = await chunked(uuids, chunk => connection.selectFrom('orders').where('uuid', 'in', chunk).select(['id', 'uuid']).execute())
@@ -679,6 +782,11 @@ export function createMemoryAccountRepository(shared: { tables: Record<string, A
       return insert('customers', row)
     },
     updateCustomer: async (id, row) => update('customers', id, row),
+    advanceLastOrder: async (id, at) => {
+      const row = tables.customers!.find(entry => entry.id === id)
+      if (row && (row.last_order === null || row.last_order === undefined || String(row.last_order) < at))
+        row.last_order = at
+    },
     findOrders: async uuids => byUuid('orders', uuids),
     createOrder: async row => insert('orders', row),
     updateOrder: async (id, row) => update('orders', id, row),
@@ -719,6 +827,7 @@ export function createReadOnlyAccountRepository(inner: AccountRepository): Accou
     },
     createOrder: fake,
     updateCustomer: async () => {},
+    advanceLastOrder: async () => {},
     updateOrder: async () => {},
     replaceOrderItems: async () => {},
   }

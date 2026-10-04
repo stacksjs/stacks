@@ -102,11 +102,13 @@ describe('importOrders into memory', () => {
       orders: { created: 3, updated: 0 },
       // The guest on #1002 had no customer record anywhere.
       customers: { created: 1, updated: 0 },
-      lines: { linked: 3, unlinked: 2 },
+      // Gift wrapping is a custom line: no product at the source, nothing to wait for.
+      lines: { linked: 3, unlinked: 1, productless: 1 },
       duplicates: 0,
+      partlyRefunded: 0,
     })
     expect(first.warnings.map(warning => warning.message)).toEqual([
-      '2 order lines reference products not in Stacks (e.g. "Vintage Mug (SKU MUG-1)", "Gift wrapping"); kept with their label and price but no product link. Import the catalog (buddy commerce:import <url> --from shopify), then re-run the order import to link them.',
+      '1 order line references a product not in Stacks (e.g. "Vintage Mug (SKU MUG-1)"); kept with its label and price but no product link. Import the catalog (buddy commerce:import <url> --from shopify), then re-run the order import to link it.',
     ])
 
     const tee = repository.tables.products!.find(product => product.uuid === catalogUuid('shopify', 'shop.example.com', 'product', '7612345678901'))!
@@ -146,7 +148,7 @@ describe('importOrders into memory', () => {
     ])
 
     const orders = await importOrders({ adapter, storeUrl: SHOPWARE, repository, credentials, now: NOW })
-    expect(orders.counts.lines).toEqual({ linked: 3, unlinked: 0 })
+    expect(orders.counts.lines).toEqual({ linked: 3, unlinked: 0, productless: 0 })
     expect(orders.currencies).toEqual(['CHF', 'EUR'])
 
     const [eur, chf] = repository.tables.orders!
@@ -239,7 +241,7 @@ describe('importCustomers and importOrders into the database', () => {
     const repository = createDatabaseAccountRepository()
     // Orders first: nothing to link to yet.
     const before = await importOrders({ adapter: shopify(), storeUrl: SHOP, repository, credentials, now: NOW })
-    expect(before.counts.lines).toEqual({ linked: 0, unlinked: 5 })
+    expect(before.counts.lines).toEqual({ linked: 0, unlinked: 4, productless: 1 })
 
     await importCatalog({ adapter: catalogAdapter('shopify', shopifyCatalog()), storeUrl: SHOP, repository: createDatabaseRepository(), now: NOW })
 
@@ -248,7 +250,7 @@ describe('importCustomers and importOrders into the database', () => {
     changed[0] = { ...changed[0]!, status: 'REFUNDED', sourceStatus: 'refunded, fulfilled' }
     const after = await importOrders({ adapter: shopify([changed]), storeUrl: SHOP, repository, credentials, now: NOW })
 
-    expect(after.counts).toEqual({ orders: { created: 0, updated: 3 }, customers: { created: 0, updated: 0 }, lines: { linked: 3, unlinked: 2 }, duplicates: 0 })
+    expect(after.counts).toEqual({ orders: { created: 0, updated: 3 }, customers: { created: 0, updated: 0 }, lines: { linked: 3, unlinked: 1, productless: 1 }, duplicates: 0, partlyRefunded: 0 })
     expect(await rows('orders')).toHaveLength(3)
     expect((await rows('orders'))[0].status).toBe('REFUNDED')
     expect(await rows('order_items')).toHaveLength(5)

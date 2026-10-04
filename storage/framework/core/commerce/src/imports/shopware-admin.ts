@@ -70,7 +70,7 @@ export interface ShopwareLineItemPayload {
   unitPrice?: number | null
   totalPrice?: number | null
   type?: string | null
-  payload?: { productNumber?: string | null, parentId?: string | null } | unknown[] | null
+  payload?: { productNumber?: string | null, parentId?: string | null, options?: Array<{ group?: string | null, option?: string | null }> | null } | unknown[] | null
 }
 
 interface StatePayload {
@@ -187,8 +187,20 @@ function addressOf(address: ShopwareAddressPayload | null | undefined): string |
   )
 }
 
-function payloadOf(item: ShopwareLineItemPayload): { productNumber?: string | null, parentId?: string | null } {
+function payloadOf(item: ShopwareLineItemPayload): { productNumber?: string | null, parentId?: string | null, options?: Array<{ group?: string | null, option?: string | null }> | null } {
   return item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload) ? item.payload : {}
+}
+
+/**
+ * A variant line's label with its options, `Bio T-Shirt - Blau, M`. Shopware
+ * labels every variant with the parent's name and keeps the options in the
+ * payload, so two sizes of one shirt would otherwise read the same.
+ */
+export function shopwareLineLabel(label: string, options: unknown): string {
+  const values = Array.isArray(options)
+    ? options.map(option => cleanName((option as { option?: unknown } | null)?.option)).filter(Boolean)
+    : []
+  return values.length > 0 && !values.every(value => label.includes(value)) ? `${label} - ${values.join(', ')}` : label
 }
 
 /** One Admin API order as a normalized order, or null with the reason. Pure. */
@@ -241,15 +253,22 @@ export function mapShopwareOrder(raw: ShopwareOrderPayload, context: { currency?
       continue
     }
 
-    const productId = type === 'product' ? optionalString(item.productId) ?? optionalString(item.referencedId) : null
+    // `productId` is the live link: Shopware sets it to null when the product
+    // is deleted, while `referencedId` keeps the old id. A deleted product's
+    // line names nothing a catalog import could ever write, so it is not
+    // reported as waiting for one. A payload without the field at all says
+    // nothing either way, and `referencedId` is used.
+    const deleted = type === 'product' && item.productId === null
+    const productId = type === 'product' && !deleted ? optionalString(item.productId) ?? optionalString(item.referencedId) : null
     const payload = payloadOf(item)
     lines.push({
       externalId: lineId,
       // A variant's line names the variant (a child product); the catalog
-      // import wrote it as a product_variants row under its parent.
+      // import wrote it as a product_variants row under its parent, which may
+      // outlive a deleted variant.
       productExternalId: optionalString(payload.parentId) ?? productId,
       variantExternalId: productId,
-      name,
+      name: shopwareLineLabel(name, payload.options),
       sku: optionalString(payload.productNumber),
       quantity,
       unitPriceMinor: amount(item.unitPrice, `line "${name}" unit price`),
