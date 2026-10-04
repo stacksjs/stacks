@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.44...v0.75.45)
+
+## 🐛 Bug Fixes
+
+- **vscode**: take stx 0.2.355 - formatted CSS hovers, no hover hang, stx.* setting names ([9feac3e](https://github.com/stacksjs/stacks/commit/9feac3e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2024](https://github.com/stacksjs/stacks/issues/2024), [#2027](https://github.com/stacksjs/stacks/issues/2027), [#2025](https://github.com/stacksjs/stacks/issues/2025))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.43...v0.75.44)
 
 ## 🐛 Bug Fixes

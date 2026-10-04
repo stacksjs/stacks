@@ -2,7 +2,7 @@
   "name": "@stacksjs/composables",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.44",
+  "version": "0.75.45",
   "description": "Stacks composables powered by stx reactivity.",
   "author": "Chris Breuer",
   "contributors": [
