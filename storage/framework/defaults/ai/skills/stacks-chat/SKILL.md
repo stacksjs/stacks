@@ -392,14 +392,17 @@ store in its group container, so Full Disk Access again), never written. Its
 `controller` is `{ archive(names), unarchive(names) }`, given the chat's name
 and formatted number. Message types map onto the inbox shape: captions come
 from the media item's title, contact cards and locations become text, deleted
-messages are `unsent`, group events and calls are `kind: 'event'`. Reactions and
-quoted replies sit in protobuf blobs the driver does not decode, so they are
-absent rather than guessed. Status updates and broadcast lists are not listed.
+messages are `unsent`, group events and calls are `kind: 'event'`. Reactions
+come out of the receipts protobuf (field 7) as `kind: 'reaction'` messages, and
+a reply's `replyToId` is field 5 of the media item's metadata - both read with
+the schema-less `formats/protobuf` reader. Status updates and broadcast lists
+are not listed.
 
 Profile pictures: a person (and a group or server conversation) may carry an
 `avatar` reference; pass it to the optional `driver.avatar(ref)` for the image
 as a `Response`. iMessage reads the contact's photo from Contacts (inline, or
-the store's `_EXTERNAL_DATA` file for larger iCloud photos), WhatsApp the
+the store's `_EXTERNAL_DATA` file for larger iCloud photos) and a group's own
+photo from `chat.properties` (a binary plist, read by `formats/bplist`), WhatsApp the
 pictures it has cached on this Mac (only some - it keeps the ones it showed
 recently), Slack `profile.image_72`, Discord user avatars and server icons.
 The remote ones are fetched only from the provider's own image hosts.

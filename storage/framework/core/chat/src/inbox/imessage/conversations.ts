@@ -22,6 +22,8 @@ export interface LiveConversation {
   chatGuids: string[]
   displayName: string | null
   groupId: string | null
+  /** The attachment guid of the photo the group set, if any. */
+  groupPhotoGuid: string | null
   participants: string[]
   messageCount: number
   recoverableCount: number
@@ -47,6 +49,7 @@ export function groupChats(chats: ChatRow[]): LiveConversation[] {
         chatGuids: [chat.guid],
         displayName: chat.displayName,
         groupId: chat.groupId,
+        groupPhotoGuid: chat.style === CHAT_STYLE_GROUP ? chat.groupPhotoGuid : null,
         participants: chat.style === CHAT_STYLE_GROUP ? [...chat.participants] : [chat.identifier],
         messageCount: chat.messageCount,
         recoverableCount: chat.recoverableCount,
@@ -61,6 +64,8 @@ export function groupChats(chats: ChatRow[]): LiveConversation[] {
     }
 
     existing.chatGuids.push(chat.guid)
+    if (existing.kind === 'group' && !existing.groupPhotoGuid)
+      existing.groupPhotoGuid = chat.groupPhotoGuid
     existing.messageCount += chat.messageCount
     existing.recoverableCount += chat.recoverableCount
     existing.unreadCount += chat.unreadCount

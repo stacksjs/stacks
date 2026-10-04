@@ -1,7 +1,7 @@
 import type { ArchiveOutcome, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxStatus, MessageQuery } from '../types'
 import type { LiveConversation } from './conversations'
 import type { MessageRow } from './chat-db'
-import { existsSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import { DEFAULT_MESSAGES_DB, MessagesAccessError, MessagesDb } from './chat-db'
@@ -128,8 +128,16 @@ export class IMessageDriver implements InboxDriver {
     return { id: handle, name: contacts.nameFor(handle), avatar: contacts.hasPhoto(handle) ? handle : null }
   }
 
-  /** A contact's photo from Contacts; the reference is the handle. */
+  /**
+   * A contact's photo from Contacts (the reference is the handle), or the
+   * photo a group set for itself (`group:<attachment guid>`), read from
+   * Messages' attachments - often HEIC, as iPhones take them.
+   */
   async avatar(ref: string): Promise<Response> {
+    if (ref.startsWith('group:')) {
+      const file = this.open(db => db.attachmentFile(ref.slice('group:'.length)))
+      return imageResponse(file && existsSync(file) ? new Uint8Array(readFileSync(file)) : null)
+    }
     return imageResponse(this.names().photo(ref))
   }
 
@@ -197,6 +205,7 @@ export class IMessageDriver implements InboxDriver {
         ? { mode: 'confirm', detail: 'Opens it in Messages at Delete Conversation for you to confirm. Messages keeps it in Recently Deleted for 30 days.' }
         : { mode: 'unsupported', detail: 'Messages cannot open this conversation by address, so delete it there yourself.' },
       url,
+      avatar: c.kind === 'group' && c.groupPhotoGuid ? `group:${c.groupPhotoGuid}` : null,
     }
   }
 

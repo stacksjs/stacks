@@ -1,6 +1,7 @@
 import { Database } from 'bun:sqlite'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { parseBplist } from '../formats/bplist'
 import { normalizeHandle } from './handles'
 import { decodeAttributedBody } from './typedstream'
 
@@ -64,6 +65,22 @@ export function messageText(plain: string | null, attributedBody: Uint8Array | n
   return text ? text : null
 }
 
+/** A group's photo, which Messages records as an attachment guid in the chat's property list. */
+function groupPhotoGuid(properties: Uint8Array | null): string | null {
+  if (!properties || properties.length === 0)
+    return null
+  try {
+    const value = parseBplist(properties)
+    const guid = value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Uint8Array) && !(value instanceof Date)
+      ? (value as Record<string, unknown>).groupPhotoGuid
+      : null
+    return typeof guid === 'string' && guid ? guid : null
+  }
+  catch {
+    return null
+  }
+}
+
 export class MessagesAccessError extends Error {
   readonly needsFullDiskAccess: boolean
 
@@ -88,6 +105,8 @@ export interface ChatRow {
   /** Stable across a group's chat rows; what `sms://open?groupid=` takes. */
   groupId: string | null
   participants: string[]
+  /** The attachment guid of the photo a group set for itself, from `chat.properties`. */
+  groupPhotoGuid: string | null
   /** Messages still visible in Messages, i.e. not deleted. */
   messageCount: number
   /** Deleted, but still in Messages' Recently Deleted. */
@@ -214,6 +233,15 @@ export class MessagesDb {
     // rather than assume one version.
     this.messageColumns = new Set((this.db.query('PRAGMA table_info(message)').all() as Array<{ name: string }>).map(c => c.name))
     this.hasRecoverable = !!this.db.query(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'chat_recoverable_message_join'`).get()
+    this.hasChatProperties = (this.db.query('PRAGMA table_info(chat)').all() as Array<{ name: string }>).some(c => c.name === 'properties')
+  }
+
+  private readonly hasChatProperties: boolean
+
+  /** Where an attachment's file is on this Mac, by its guid; null when Messages has none. */
+  attachmentFile(guid: string): string | null {
+    const row = this.db.query('SELECT filename FROM attachment WHERE guid = ?').get(guid) as { filename: string | null } | null
+    return expandHome(row?.filename ?? null)
   }
 
   close(): void {
@@ -240,6 +268,7 @@ export class MessagesDb {
     const rows = this.db.query(`
       SELECT
         c.ROWID AS rowid, c.guid, c.chat_identifier, c.style, c.service_name, c.display_name, c.group_id,
+        ${this.hasChatProperties ? 'c.properties' : 'NULL'} AS properties,
         (SELECT COUNT(*) FROM chat_message_join j WHERE j.chat_id = c.ROWID) AS message_count,
         ${recoverable} AS recoverable_count,
         (SELECT COUNT(*) FROM chat_message_join j JOIN message m ON m.ROWID = j.message_id
@@ -255,6 +284,7 @@ export class MessagesDb {
       service_name: string | null
       display_name: string | null
       group_id: string | null
+      properties: Uint8Array | null
       message_count: number
       recoverable_count: number
       unread_count: number
@@ -276,6 +306,7 @@ export class MessagesDb {
         service: row.service_name ?? 'iMessage',
         displayName: row.display_name?.trim() || null,
         groupId: row.group_id || null,
+        groupPhotoGuid: groupPhotoGuid(row.properties),
         participants: participants.get(row.rowid) ?? [],
         messageCount: row.message_count,
         recoverableCount: row.recoverable_count,

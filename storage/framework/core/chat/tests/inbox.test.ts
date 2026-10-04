@@ -1,7 +1,8 @@
 import type { Fetch } from '../src/inbox'
 import { Database } from 'bun:sqlite'
 import { describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createInboxDriver, DiscordInboxDriver, formatJid, IMessageDriver, SlackInboxDriver, snowflakeTime, WhatsAppDriver } from '../src/inbox'
@@ -134,6 +135,29 @@ describe('iMessage inbox driver', () => {
     expect(photo!.attachments).toHaveLength(1)
     expect(captioned!.text).toBe('look')
     expect((await driver.conversations())[0]!.preview).toBe('look')
+  })
+
+  it.skipIf(process.platform !== 'darwin')('gives a group the photo it set, from chat.properties', async () => {
+    const { chat, driver } = setup()
+    const climbers = chat.group('chat900', [ALICE, BOB], { name: 'Climbers' })
+    chat.add(climbers, { text: 'rope?', sender: ALICE })
+    const quiet = chat.group('chat901', [ALICE], { name: 'No photo' })
+    chat.add(quiet, { text: 'hi', sender: ALICE })
+    // The property list Messages writes, made by Apple's own encoder.
+    const dir = mkdtempSync(join(tmpdir(), 'chat-props-'))
+    const plist = join(dir, 'p.plist')
+    writeFileSync(plist, '<?xml version="1.0"?><plist version="1.0"><dict><key>groupPhotoGuid</key><string>at_0_GROUPPHOTO</string><key>pv</key><integer>3</integer></dict></plist>')
+    execFileSync('/usr/bin/plutil', ['-convert', 'binary1', plist])
+    const jpeg = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 4, 2])
+    chat.groupPhoto(climbers, new Uint8Array(readFileSync(plist)), 'at_0_GROUPPHOTO', jpeg)
+
+    const conversations = await driver.conversations()
+    expect(conversations.find(c => c.title === 'Climbers')!.avatar).toBe('group:at_0_GROUPPHOTO')
+    expect(conversations.find(c => c.title === 'No photo')!.avatar).toBeNull()
+    const photo = await driver.avatar('group:at_0_GROUPPHOTO')
+    expect(photo.headers.get('content-type')).toBe('image/jpeg')
+    expect(new Uint8Array(await photo.arrayBuffer())).toEqual(jpeg)
+    expect((await driver.avatar('group:at_0_MISSING')).status).toBe(404)
   })
 
   it('gives contacts their photo from Contacts, inline or kept as an external file', async () => {
@@ -488,6 +512,27 @@ describe('WhatsApp inbox driver', () => {
     expect(response.headers.get('content-type')).toBe('image/jpeg')
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(jpeg)
     expect((await driver.avatar(EMEKA)).status).toBe(404)
+  })
+
+  it('reads reactions and quoted replies out of WhatsApp\'s protobuf blobs', async () => {
+    const { store, driver } = setup()
+    const group = store.chat(CLIMBERS, 'Weekend Climbers', 1)
+    store.member(group, EMEKA, 'Emeka')
+    const question = store.add(group, { text: 'rope check?', member: EMEKA })
+    const answer = store.add(group, { text: 'packed', fromMe: true })
+    store.quote(answer, question)
+    store.react(question, [{ emoji: '👍', fromMe: true, at: Date.UTC(2026, 0, 2) }, { emoji: '🔥', jid: EMEKA, at: Date.UTC(2026, 0, 3) }, { emoji: '', jid: EMEKA, at: Date.UTC(2026, 0, 4) }])
+
+    const messages = await driver.messages(CLIMBERS)
+    const reactions = messages.filter(m => m.kind === 'reaction')
+    expect(reactions.map(r => [r.reaction, r.fromMe, r.sender?.name ?? null, r.targetId])).toEqual([
+      ['👍', true, null, store.stanzaOf(question)],
+      ['🔥', false, 'Emeka', store.stanzaOf(question)],
+    ])
+    expect(reactions[1]!.sentAt).toBe(Date.UTC(2026, 0, 3))
+    const reply = messages.find(m => m.text === 'packed')!
+    expect(reply.replyToId).toBe(store.stanzaOf(question))
+    expect(messages.find(m => m.text === 'rope check?')!.replyToId).toBeNull()
   })
 
   it('does not claim an archive WhatsApp never recorded', async () => {

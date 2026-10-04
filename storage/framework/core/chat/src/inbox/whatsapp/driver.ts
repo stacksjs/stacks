@@ -3,6 +3,7 @@ import type { MessageRow, SessionRow } from './chat-storage'
 import { existsSync, readFileSync } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 import process from 'node:process'
+import { allBytesOf, numberOf, stringOf, tryFields } from '../formats/protobuf'
 import { imageResponse } from '../image'
 import { cleanText, DEFAULT_WHATSAPP_DB, DEFAULT_WHATSAPP_MEDIA_ROOT, MessageType, SESSION_DIRECT, WhatsAppAccessError, WhatsAppDb } from './chat-storage'
 
@@ -216,7 +217,8 @@ export class WhatsAppDriver implements InboxDriver {
         ? db.messages(session.pk, { afterPk: Number(query.after) || 0, limit: query.limit })
         : db.messages(session.pk, { newestFirst: true, limit: query.limit }).reverse()
       const picture = this.pictures(db)
-      return rows.map(row => this.toMessage(session, row, picture))
+      const names = new Map(session.type === SESSION_DIRECT ? [] : db.members(session.pk).map(m => [m.jid, m.name] as const))
+      return rows.flatMap(row => [this.toMessage(session, row, picture), ...this.reactions(session, row, names, picture)])
     })
   }
 
@@ -238,12 +240,55 @@ export class WhatsAppDriver implements InboxDriver {
       targetId: null,
       reaction: null,
       reactionRemoved: false,
-      replyToId: null,
+      // A reply quotes its original by id in the media item's metadata (field 5).
+      replyToId: stringOf(tryFields(row.metadata), 5),
       editedAt: null,
       unsent,
       attachments: this.attachments(row),
       cursor: String(row.pk),
     }
+  }
+
+  /**
+   * The reactions on a message, as their own inbox messages. WhatsApp keeps
+   * them in the message's receipts (field 7): one entry per reaction holding
+   * its id (1), the reactor's JID (2, absent for your own, which field 6
+   * marks), the emoji (3) and when, in Unix ms (4). An empty emoji is a
+   * reaction taken back, and is left out.
+   */
+  private reactions(session: SessionRow, row: MessageRow, names: Map<string, string | null>, picture: (jid: string) => string | null): InboxMessage[] {
+    const target = row.stanzaId ?? `wa-${row.pk}`
+    const out: InboxMessage[] = []
+    for (const block of allBytesOf(tryFields(row.receipts), 7)) {
+      allBytesOf(tryFields(block), 1).forEach((entry, index) => {
+        const reaction = tryFields(entry)
+        const emoji = stringOf(reaction, 3)
+        if (!emoji)
+          return
+        const jid = stringOf(reaction, 2)
+        const fromMe = !jid && numberOf(reaction, 6) === 1n
+        const reactor = jid ?? (fromMe ? null : session.jid)
+        const at = Number(numberOf(reaction, 4) ?? 0n)
+        out.push({
+          id: stringOf(reaction, 1) ?? `${target}:reaction:${index}`,
+          conversationId: session.jid,
+          kind: 'reaction',
+          text: null,
+          fromMe,
+          sentAt: at > 0 ? at : row.sentAt,
+          sender: reactor ? { id: reactor, name: names.get(reactor) ?? (reactor === session.jid ? session.name : null), avatar: picture(reactor) } : null,
+          targetId: target,
+          reaction: emoji,
+          reactionRemoved: false,
+          replyToId: null,
+          editedAt: null,
+          unsent: false,
+          attachments: [],
+          cursor: String(row.pk),
+        })
+      })
+    }
+    return out
   }
 
   /** What a message says, by WhatsApp's message type. */

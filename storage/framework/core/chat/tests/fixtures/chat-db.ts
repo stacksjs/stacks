@@ -52,7 +52,7 @@ export class FakeChatDb {
       CREATE TABLE chat (
         ROWID INTEGER PRIMARY KEY AUTOINCREMENT, guid TEXT UNIQUE NOT NULL, style INTEGER, state INTEGER,
         chat_identifier TEXT, service_name TEXT, room_name TEXT, display_name TEXT, group_id TEXT,
-        is_archived INTEGER DEFAULT 0, is_filtered INTEGER DEFAULT 0
+        is_archived INTEGER DEFAULT 0, is_filtered INTEGER DEFAULT 0, properties BLOB
       );
       CREATE TABLE message (
         ROWID INTEGER PRIMARY KEY AUTOINCREMENT, guid TEXT UNIQUE NOT NULL, text TEXT, attributedBody BLOB,
@@ -110,6 +110,22 @@ export class FakeChatDb {
     for (const member of members)
       this.db.query('INSERT INTO chat_handle_join (chat_id, handle_id) VALUES (?, ?)').run(id, this.handle(member))
     return id
+  }
+
+  /**
+   * Gives a group the photo Messages stores for it: an attachment row, its
+   * file, and the attachment's guid in the chat's binary property list.
+   */
+  groupPhoto(chatId: number, properties: Uint8Array, guid: string, bytes: Uint8Array | null): void {
+    let filename: string | null = null
+    if (bytes) {
+      const folder = join(this.dir, 'Attachments', 'group-photo')
+      mkdirSync(folder, { recursive: true })
+      filename = join(folder, `${guid}.jpeg`)
+      writeFileSync(filename, bytes)
+    }
+    this.db.query('INSERT INTO attachment (guid, filename, mime_type, transfer_name) VALUES (?, ?, ?, ?)').run(guid, filename, 'image/jpeg', 'GroupPhoto.jpeg')
+    this.db.query('UPDATE chat SET properties = ? WHERE ROWID = ?').run(properties, chatId)
   }
 
   /** Adds a message and returns its guid. */

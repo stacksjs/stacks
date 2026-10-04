@@ -97,6 +97,10 @@ export interface MessageRow {
     latitude: number | null
     longitude: number | null
   } | null
+  /** The media item's protobuf metadata; for a reply, the quoted message's id is field 5. */
+  metadata: Uint8Array | null
+  /** ZWAMESSAGEINFO's protobuf receipts; reactions are field 7. */
+  receipts: Uint8Array | null
 }
 
 /** A chat's readable text, without the U+FFFC WhatsApp, like Messages, can leave where media sat. */
@@ -120,6 +124,24 @@ export class WhatsAppDb {
 
   close(): void {
     this.db.close()
+  }
+
+  private columns(table: string): Set<string> {
+    try {
+      return new Set((this.db.query(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).map(c => c.name))
+    }
+    catch {
+      return new Set()
+    }
+  }
+
+  /** Reactions and quoted replies live in columns older stores lack; read them when present. */
+  private get hasMetadata(): boolean {
+    return this.columns('ZWAMEDIAITEM').has('ZMETADATA')
+  }
+
+  private get hasReceipts(): boolean {
+    return this.columns('ZWAMESSAGE').has('ZMESSAGEINFO') && this.columns('ZWAMESSAGEINFO').has('ZRECEIPTINFO')
   }
 
   /** Every chat a person would call a conversation (direct, group, community), or just the one with `jid`. */
@@ -197,11 +219,13 @@ export class WhatsAppDb {
         m.ZISFROMME AS isFromMe, m.ZMESSAGEDATE AS date,
         g.ZMEMBERJID AS senderJid, COALESCE(g.ZCONTACTNAME, g.ZFIRSTNAME, p.ZPUSHNAME, m.ZPUSHNAME) AS senderName,
         i.Z_PK AS mediaPk, i.ZMEDIALOCALPATH AS mediaPath, i.ZVCARDSTRING AS vcard, i.ZTITLE AS title,
-        i.ZFILESIZE AS bytes, i.ZLATITUDE AS latitude, i.ZLONGITUDE AS longitude
+        i.ZFILESIZE AS bytes, i.ZLATITUDE AS latitude, i.ZLONGITUDE AS longitude,
+        ${this.hasMetadata ? 'i.ZMETADATA' : 'NULL'} AS metadata, ${this.hasReceipts ? 'info.ZRECEIPTINFO' : 'NULL'} AS receipts
       FROM ZWAMESSAGE m
       LEFT JOIN ZWAGROUPMEMBER g ON g.Z_PK = m.ZGROUPMEMBER
       LEFT JOIN ZWAPROFILEPUSHNAME p ON p.ZJID = g.ZMEMBERJID
       LEFT JOIN ZWAMEDIAITEM i ON i.Z_PK = m.ZMEDIAITEM
+      ${this.hasReceipts ? 'LEFT JOIN ZWAMESSAGEINFO info ON info.Z_PK = m.ZMESSAGEINFO' : ''}
       WHERE m.ZCHATSESSION = ? AND m.Z_PK > ?
       ORDER BY m.Z_PK ${order}
       ${limit}
@@ -221,6 +245,8 @@ export class WhatsAppDb {
       bytes: number | null
       latitude: number | null
       longitude: number | null
+      metadata: Uint8Array | null
+      receipts: Uint8Array | null
     }>
     return rows.map(r => ({
       pk: r.pk,
@@ -241,6 +267,8 @@ export class WhatsAppDb {
             latitude: r.latitude,
             longitude: r.longitude,
           },
+      metadata: r.metadata,
+      receipts: r.receipts,
     }))
   }
 }

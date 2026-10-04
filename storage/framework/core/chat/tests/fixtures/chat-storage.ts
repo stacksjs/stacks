@@ -14,6 +14,33 @@ import { dirname, join } from 'node:path'
 
 const APPLE_EPOCH_S = 978_307_200
 
+type Field = [number, string | bigint | Uint8Array]
+
+/** A minimal protobuf encoder for the fixtures: varints and length-delimited fields. */
+function proto(list: Field[]): Uint8Array {
+  const out: number[] = []
+  const varint = (value: bigint): void => {
+    let v = value
+    while (v >= 0x80n) {
+      out.push(Number(v & 0x7Fn) | 0x80)
+      v >>= 7n
+    }
+    out.push(Number(v))
+  }
+  for (const [field, value] of list) {
+    if (typeof value === 'bigint') {
+      varint(BigInt(field) << 3n)
+      varint(value)
+      continue
+    }
+    const bytes = typeof value === 'string' ? new TextEncoder().encode(value) : value
+    varint((BigInt(field) << 3n) | 2n)
+    varint(BigInt(bytes.length))
+    out.push(...bytes)
+  }
+  return new Uint8Array(out)
+}
+
 export const DANA = '15550004444@s.whatsapp.net'
 export const EMEKA = '15550005555@s.whatsapp.net'
 export const CLIMBERS = '120363000000000001@g.us'
@@ -48,14 +75,15 @@ export class FakeChatStorage {
       );
       CREATE TABLE ZWAMESSAGE (
         Z_PK INTEGER PRIMARY KEY, Z_ENT INTEGER, Z_OPT INTEGER, ZISFROMME INTEGER, ZMESSAGETYPE INTEGER, ZFLAGS INTEGER,
-        ZCHATSESSION INTEGER, ZGROUPMEMBER INTEGER, ZMEDIAITEM INTEGER, ZMESSAGEDATE TIMESTAMP, ZSENTDATE TIMESTAMP,
+        ZCHATSESSION INTEGER, ZGROUPMEMBER INTEGER, ZMEDIAITEM INTEGER, ZMESSAGEINFO INTEGER, ZMESSAGEDATE TIMESTAMP, ZSENTDATE TIMESTAMP,
         ZFROMJID VARCHAR, ZTOJID VARCHAR, ZPUSHNAME VARCHAR, ZSTANZAID VARCHAR, ZTEXT VARCHAR
       );
       CREATE INDEX ZWAMESSAGE_ZCHATSESSION_INDEX ON ZWAMESSAGE (ZCHATSESSION);
       CREATE TABLE ZWAMEDIAITEM (
         Z_PK INTEGER PRIMARY KEY, Z_ENT INTEGER, Z_OPT INTEGER, ZFILESIZE INTEGER, ZMESSAGE INTEGER,
-        ZLATITUDE FLOAT, ZLONGITUDE FLOAT, ZMEDIALOCALPATH VARCHAR, ZTITLE VARCHAR, ZVCARDNAME VARCHAR, ZVCARDSTRING VARCHAR
+        ZLATITUDE FLOAT, ZLONGITUDE FLOAT, ZMEDIALOCALPATH VARCHAR, ZTITLE VARCHAR, ZVCARDNAME VARCHAR, ZVCARDSTRING VARCHAR, ZMETADATA BLOB
       );
+      CREATE TABLE ZWAMESSAGEINFO (Z_PK INTEGER PRIMARY KEY, Z_ENT INTEGER, Z_OPT INTEGER, ZMESSAGE INTEGER, ZRECEIPTINFO BLOB);
       CREATE TABLE ZWAGROUPMEMBER (
         Z_PK INTEGER PRIMARY KEY, Z_ENT INTEGER, Z_OPT INTEGER, ZISACTIVE INTEGER, ZCHATSESSION INTEGER,
         ZCONTACTNAME VARCHAR, ZFIRSTNAME VARCHAR, ZMEMBERJID VARCHAR
@@ -112,6 +140,38 @@ export class FakeChatStorage {
       mkdirSync(join(this.dir, 'Media', 'Profile'), { recursive: true })
       writeFileSync(join(this.dir, `${path}.thumb`), bytes)
     }
+  }
+
+  stanzaOf(pk: number): string {
+    return (this.db.query('SELECT ZSTANZAID AS s FROM ZWAMESSAGE WHERE Z_PK = ?').get(pk) as { s: string }).s
+  }
+
+  /** Marks message `pk` as a reply quoting `quoted`, the way WhatsApp's media metadata does (field 5). */
+  quote(pk: number, quoted: number): void {
+    const metadata = proto([[5, this.stanzaOf(quoted)], [68, new Uint8Array(32)]])
+    const row = this.db.query('SELECT ZMEDIAITEM AS m FROM ZWAMESSAGE WHERE Z_PK = ?').get(pk) as { m: number | null }
+    if (row.m)
+      this.db.query('UPDATE ZWAMEDIAITEM SET ZMETADATA = ? WHERE Z_PK = ?').run(metadata, row.m)
+    else {
+      const media = Number(this.db.query('INSERT INTO ZWAMEDIAITEM (Z_ENT, Z_OPT, ZMESSAGE, ZMETADATA) VALUES (7, 1, ?, ?)').run(pk, metadata).lastInsertRowid)
+      this.db.query('UPDATE ZWAMESSAGE SET ZMEDIAITEM = ? WHERE Z_PK = ?').run(media, pk)
+    }
+  }
+
+  /** Reactions on message `pk`, laid out as WhatsApp's receipts blob: field 7 of entries in field 1. */
+  react(pk: number, reactions: Array<{ emoji: string, jid?: string, fromMe?: boolean, at: number }>): void {
+    const entries = reactions.map((r, i) => [1, proto([
+      [1, `3A${String(pk).padStart(6, '0')}R${i}`],
+      ...(r.jid ? [[2, r.jid] as Field] : []),
+      [3, r.emoji],
+      [4, BigInt(r.at)],
+      [5, 1n],
+      ...(r.fromMe ? [[6, 1n] as Field] : []),
+      [7, 1n],
+    ])] as Field)
+    const receipts = proto([[2, proto([[1, new Uint8Array(9)], [4, 1n]])], [7, proto(entries)]])
+    const info = Number(this.db.query('INSERT INTO ZWAMESSAGEINFO (Z_ENT, Z_OPT, ZMESSAGE, ZRECEIPTINFO) VALUES (11, 1, ?, ?)').run(pk, receipts).lastInsertRowid)
+    this.db.query('UPDATE ZWAMESSAGE SET ZMESSAGEINFO = ? WHERE Z_PK = ?').run(info, pk)
   }
 
   /** What WhatsApp does when its Archive is pressed. */
