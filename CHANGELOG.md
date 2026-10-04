@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.53...v0.75.54)
+
+## ⚡ Performance Improvements
+
+- **chat**: open one conversation without re-reading them all ([370b64b](https://github.com/stacksjs/stacks/commit/370b64b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.52...v0.75.53)
 
 ## ✨ Features
