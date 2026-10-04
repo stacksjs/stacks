@@ -618,11 +618,18 @@ export class S3StorageAdapter implements StorageAdapter {
    * canonical "public" signal in S3. Anything else (private,
    * authenticated-read, custom user grants) collapses to `'private'`
    * because the facade only models the binary public/private split.
+   *
+   * ts-cloud returns the parsed `<AccessControlPolicy>` body, so grants live at
+   * `AccessControlList.Grant`: one object for a single grant, an array for
+   * several. This used to read the AWS SDK's `Grants` array, which that body
+   * never has, so every object reported `'private'`.
    */
   async visibility(path: string): Promise<Visibility> {
+    type Grant = { Grantee?: { URI?: string }, Permission?: string }
     const key = this.prefixPath(path)
     const acl = await (await this.getClient()).getObjectAcl(this.bucket, key)
-    const grants = (acl as { Grants?: Array<{ Grantee?: { URI?: string }; Permission?: string }> })?.Grants ?? []
+    const grant = (acl as { AccessControlList?: { Grant?: Grant | Grant[] } } | undefined)?.AccessControlList?.Grant
+    const grants = grant === undefined ? [] : Array.isArray(grant) ? grant : [grant]
     const isPublic = grants.some(g =>
       g.Grantee?.URI === 'http://acs.amazonaws.com/groups/global/AllUsers'
       && (g.Permission === 'READ' || g.Permission === 'FULL_CONTROL'),
