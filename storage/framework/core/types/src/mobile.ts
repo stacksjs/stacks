@@ -120,7 +120,62 @@ export interface AndroidMobileConfig {
   capabilities?: MobileCapabilities
 }
 
+/**
+ * One kind of application content a device may index for search.
+ *
+ * iOS indexes what an app donates as an `NSUserActivity`, and hands a tapped
+ * activity back only for an activity type the build declares in `Info.plist` —
+ * a list fixed at build time. A type per record id would be unbounded, so each
+ * kind gets a fixed number of slots and each slot holds whichever record is
+ * currently in it; the oldest donation makes room for the next.
+ *
+ * That is why `slots` is a budget rather than "index everything": every slot is
+ * one line in the generated `Info.plist` and one possible donation at launch.
+ */
+export interface SpotlightKindConfig {
+  /** How many records of this kind the device holds at once. 1 to 64. */
+  slots: number
+  /** Where a tapped entry opens, with `:id` standing for the record's id. */
+  route: string
+  /** Names an entry whose record arrived without a name of its own. */
+  noun?: string
+}
+
+/** What the app lets a device index, and under what identifiers. */
+export interface SpotlightConfig {
+  /**
+   * Index content at all. Defaults to true when any kind is configured.
+   *
+   * False declares no activity types and leaves every runtime call a no-op —
+   * the switch to throw when a device index has to be withdrawn without
+   * unpicking the call sites.
+   */
+  enabled?: boolean
+
+  /**
+   * The kinds, keyed by the name their slots are donated under: `trail` gives
+   * `trail-slot-0` and so on. The name is part of what the device has already
+   * indexed, so renaming one orphans whatever it donated until those slots are
+   * donated over.
+   */
+  kinds: Record<string, SpotlightKindConfig>
+
+  /**
+   * Activity types the app donates itself, by bare action name.
+   *
+   * For anything indexed outside the slot registry — a donated Siri phrase, an
+   * App Intent — which needs declaring in `Info.plist` just the same or iOS
+   * keeps the tap to itself.
+   */
+  activityTypes?: string[]
+}
+
 export interface MobileConfig {
   ios: IosMobileConfig
   android?: AndroidMobileConfig
+  /**
+   * Content a device may index for search: iOS Spotlight and Siri today,
+   * through the activity types the iOS build declares from this.
+   */
+  spotlight?: SpotlightConfig
 }
