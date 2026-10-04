@@ -100,7 +100,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.350",
     "@stacksjs/tlsx": "^0.13.19",
-    "@stacksjs/ts-cloud": "^0.16.21",
+    "@stacksjs/ts-cloud": "^0.16.23",
     "@stacksjs/ts-md": "^0.1.1",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
