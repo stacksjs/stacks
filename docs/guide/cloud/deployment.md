@@ -61,6 +61,10 @@ CloudFront, and S3. Select the mode in `config/cloud.ts`.
 CloudFormation deployments include IAM capabilities and roll back failed stack creation. Stacks
 tags resources with the environment, project, and framework ownership metadata.
 
+For a site that has to stay up through an S3 or regional outage, give its website bucket a replica
+in a second region and let CloudFront fail over to it. See
+[CloudFront origin failover](/guide/cloud/origin-failover).
+
 ### Operations
 
 ```bash

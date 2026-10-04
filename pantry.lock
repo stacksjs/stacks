@@ -101,7 +101,7 @@
         "@stacksjs/testing": "^0.75.41",
         "@stacksjs/tinker": "^0.75.41",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "@stacksjs/tunnel": "^0.75.41",
         "@stacksjs/types": "^0.75.41",
         "@stacksjs/ui": "^0.75.41",
@@ -167,7 +167,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.350",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "@stacksjs/ts-md": "^0.1.1",
         "@stacksjs/tunnel": "workspace:*",
         "@stacksjs/types": "workspace:*",
@@ -187,7 +187,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.17"
+        "@stacksjs/ts-cloud": "^0.16.18"
       },
       "devDependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.3.288",
@@ -356,7 +356,7 @@
         "@stacksjs/testing": "^0.75.41",
         "@stacksjs/tinker": "^0.75.41",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "@stacksjs/tunnel": "^0.75.41",
         "@stacksjs/types": "^0.75.41",
         "@stacksjs/ui": "^0.75.41",
@@ -460,7 +460,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "@stacksjs/ts-xml": "^0.1.2"
       },
       "devDependencies": {
@@ -608,7 +608,7 @@
       "name": "@stacksjs/deploy",
       "version": "0.75.41",
       "dependencies": {
-        "@stacksjs/ts-cloud": "^0.16.17"
+        "@stacksjs/ts-cloud": "^0.16.18"
       }
     },
     "storage/framework/core/desktop": {
@@ -639,7 +639,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.17"
+        "@stacksjs/ts-cloud": "^0.16.18"
       },
       "devDependencies": {
         "@stacksjs/strings": "workspace:*",
@@ -674,7 +674,7 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.350",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "@stacksjs/utils": "workspace:*"
       },
       "devDependencies": {
@@ -1247,7 +1247,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "@stacksjs/ts-xml": "^0.1.0",
         "ts-images": "^0.2.23"
       },
@@ -1279,7 +1279,7 @@
         "@stacksjs/router": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.17",
+        "@stacksjs/ts-cloud": "^0.16.18",
         "very-happy-dom": "^0.3.5"
       },
       "devDependencies": {
@@ -1541,12 +1541,12 @@
         "ts-syntax-highlighter": "^0.2.17"
       }
     },
-    "@stacksjs/desktop@0.2.348": {
+    "@stacksjs/desktop@0.2.350": {
       "name": "@stacksjs/desktop",
-      "version": "0.2.348",
+      "version": "0.2.350",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.348.tgz",
-      "integrity": "sha512-ofDLZ8zSJQJfGjEhDKcAOeIjvKW4l+O3lG5uVx7UwfgaCuiiQc5CiGyQb1ulI/B9Db4CFWM7Fh1TmdUwFn81aA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.350.tgz",
+      "integrity": "sha512-+QYZpw3sXkmegMae3eRI3i+/DSik8RqXU5HW1ungInpnWaYTQtgthAzOb/EO/q0yA1kkVgXlIlpKcDFsuRQGRg==",
       "dependencies": {
         "craft-native": ">=0.0.104"
       }
@@ -1694,16 +1694,16 @@
         "cache": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.16.17": {
+    "@stacksjs/ts-cloud@0.16.18": {
       "name": "@stacksjs/ts-cloud",
-      "version": "0.16.17",
+      "version": "0.16.18",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.17.tgz",
-      "integrity": "sha512-zVK68P7t6DoWQJKLCZqm0pJB/vmmEIBnuPsT/EKphKW+ZrYpb77Fzjqjdsc///2vSi8ldUMXPccq/nhpoUHTvQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.18.tgz",
+      "integrity": "sha512-SxBiC43aXrzsOz8TEFWuYPok3P2r4Z8f2cLiF93NME6J9/dEAvT3IoPzx/vGUeUNqsp/GGN22+u031rAEl6PAA==",
       "dependencies": {
         "@stacksjs/ts-xml": "^0.1.2",
-        "@ts-cloud/aws-types": "0.16.17",
-        "@ts-cloud/core": "0.16.17",
+        "@ts-cloud/aws-types": "0.16.18",
+        "@ts-cloud/core": "0.16.18",
         "hash-wasm": "^4.12.0"
       },
       "bin": {

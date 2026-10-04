@@ -474,6 +474,28 @@ export const tsCloud: TsCloudConfig = {
           indexDocument: 'index.html',
           errorDocument: 'index.html',
         },
+        /**
+         * CloudFront origin failover (off unless set, stacksjs/stacks#1159).
+         *
+         * Keeps a replica of this bucket in a second region and puts both behind
+         * one CloudFront origin group: a GET/HEAD/OPTIONS that the primary
+         * answers with one of `statusCodes`, or cannot answer at all, is retried
+         * against the replica. The deploy creates the replica (it lives outside
+         * the stack, so `buddy cloud:remove` leaves it behind), replicates every
+         * write into it, and copies across anything older. Needs CloudFront in
+         * front of the bucket: a website bucket plus `dns.domain` and SSL.
+         *
+         * @see https://stacksjs.com/docs/guide/cloud/origin-failover
+         */
+        // failover: {
+        //   region: 'us-west-2', // must differ from project.region
+        //   // bucket: 'stacks-production-public-dr', // default: `<bucket>-<region>`
+        //   // statusCodes: [403, 404, 500, 502, 503, 504], // the default; 400, 416 and 429 are allowed too
+        //   // Fail over sooner: CloudFront otherwise spends up to 3 x 10s on an unreachable primary.
+        //   // connectionAttempts: 1, // 1-3
+        //   // connectionTimeout: 3, // seconds, 1-10
+        //   // replicate: true, // false: keep the replica in sync yourself
+        // },
       },
       'private': {
         encryption: true,
@@ -579,6 +601,14 @@ export const tsCloud: TsCloudConfig = {
       // 'frontend': {
       //   origin: 'stacks-production-frontend.s3.us-east-1.amazonaws.com',
       //   customDomain: 'cdn.stacks-js.org',
+      //
+      //   // Origin failover (off unless set): a second origin CloudFront retries
+      //   // GET/HEAD/OPTIONS against when `origin` answers one of the status codes.
+      //   // A string is the domain; the object form also tunes the secondary.
+      //   // failoverOrigin: 'stacks-production-frontend-dr.s3.us-west-2.amazonaws.com',
+      //   // failoverStatusCodes: [500, 502, 503, 504], // default; add 403/404 for missing objects
+      //   // connectionAttempts: 1, // primary origin, 1-3 (default 3)
+      //   // connectionTimeout: 3, // primary origin, seconds 1-10 (default 10)
       // },
     },
 

@@ -6,7 +6,7 @@
  */
 
 import type { CloudConfig, EnvironmentType } from '@stacksjs/ts-cloud'
-import { AWSCloudFormationClient as CloudFormationClient, InfrastructureGenerator, Route53Client, SESClient } from '@stacksjs/ts-cloud'
+import { AWSCloudFormationClient as CloudFormationClient, ensureFailoverReplicaBuckets, grantFailoverReplicaAccess, InfrastructureGenerator, Route53Client, seedFailoverReplicas, SESClient, storageFailoverReplicasFromTemplate } from '@stacksjs/ts-cloud'
 import { getErrorMessage } from '@stacksjs/utils'
 
 // Import tsCloud config from Stacks config system
@@ -108,6 +108,15 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
 
   const template = generator.generate().toJSON()
   console.log(`   ✅ Template generated (${template.length} bytes)`)
+
+  // Cross-region failover replicas (stacksjs/stacks#1159) live outside the
+  // stack, which can only create buckets in its own region. Create them first:
+  // S3 rejects the stack's replication rule without a versioned destination.
+  const failoverReplicas = storageFailoverReplicasFromTemplate(template)
+  if (failoverReplicas.length > 0) {
+    console.log(`   Ensuring ${failoverReplicas.length} failover replica bucket(s)...`)
+    await ensureFailoverReplicaBuckets(failoverReplicas, message => console.log(`   ${message}`))
+  }
 
   // Initialize CloudFormation client
   const cfn = new CloudFormationClient(region)
@@ -243,6 +252,16 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
   if (waitForCompletion) {
     const outputsResult = await cfn.describeStacks({ stackName: finalStackName })
     const stack = outputsResult.Stacks?.[0]
+
+    if (failoverReplicas.length > 0) {
+      const outputs: Record<string, string> = {}
+      for (const output of stack?.Outputs || []) {
+        if (output.OutputKey && output.OutputValue)
+          outputs[output.OutputKey] = output.OutputValue
+      }
+      await grantFailoverReplicaAccess(failoverReplicas, outputs, message => console.log(`   ${message}`))
+      await seedFailoverReplicas(failoverReplicas, message => console.log(`   ${message}`))
+    }
 
     if (stack?.Outputs && stack.Outputs.length > 0) {
       console.log('\n📋 Stack Outputs:')

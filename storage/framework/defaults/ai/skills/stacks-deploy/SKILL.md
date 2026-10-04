@@ -75,10 +75,14 @@ a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for API and tool consumers.
 1. **Validation**: checks APP_KEY format, AWS region, app URL, team config
 2. **Build**: compiles application for production
 3. **Infrastructure**: generates CloudFormation template via ts-cloud
-4. **Deploy**: creates or updates the CloudFormation stack
+4. **Failover replicas** (only when a bucket sets `failover`): creates each replica bucket in its
+   region before the stack, since the stack cannot and its replication rule needs it
+5. **Deploy**: creates or updates the CloudFormation stack
    - Capabilities: CAPABILITY_IAM, CAPABILITY_NAMED_IAM
    - OnFailure: ROLLBACK
    - Tags: Environment, Project, ManagedBy
+6. **Failover access**: lets the new distribution read each replica, then copies across objects
+   that predate replication
 
 **Hetzner and SSH**
 
@@ -190,4 +194,6 @@ buddy cloud:cleanup           # clean retained resources
   fragment serves
 - `.env.<environment>` is decrypted at deploy time and shipped as every site's `.env`, so declare
   `tenants` in `config/cloud.ts` on a shared box to strip other tenants' keys
+- A failover replica bucket (`infrastructure.storage.<name>.failover`) lives outside the stack, so
+  `buddy cloud:remove` leaves it, and its data, behind on purpose
 - For infrastructure details, see the `stacks-cloud` skill

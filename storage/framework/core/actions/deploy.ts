@@ -1253,6 +1253,23 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       projectName,
     })
 
+    // Cross-region failover replicas (`infrastructure.storage.<name>.failover`,
+    // stacksjs/stacks#1159) live outside the stack: a stack can only create
+    // buckets in its own region. The template lists them; create each before
+    // the stack, whose replication rule S3 rejects without a versioned
+    // destination, and grant the distribution read access once it exists.
+    const {
+      ensureFailoverReplicaBuckets,
+      grantFailoverReplicaAccess,
+      seedFailoverReplicas,
+      storageFailoverReplicasFromTemplate,
+    } = await import('@stacksjs/ts-cloud')
+    const failoverReplicas = storageFailoverReplicasFromTemplate(templateBody)
+    if (failoverReplicas.length > 0) {
+      console.log(`Ensuring ${failoverReplicas.length} failover replica bucket(s)...`)
+      await ensureFailoverReplicaBuckets(failoverReplicas, message => console.log(`  ${message}`))
+    }
+
     // If template exceeds CloudFormation inline limit (51200 bytes), upload to S3
     const CF_INLINE_LIMIT = 51200
     let templateUrl: string | undefined
@@ -1533,6 +1550,17 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         await cf.waitForStack(stackName, 'stack-create-complete')
         console.log('')
       }
+    }
+
+    if (failoverReplicas.length > 0) {
+      const failoverOutputs: Record<string, string> = {}
+      for (const output of (await cf.describeStacks({ stackName })).Stacks?.[0]?.Outputs || []) {
+        if (output.OutputKey && output.OutputValue)
+          failoverOutputs[output.OutputKey] = output.OutputValue
+      }
+      await grantFailoverReplicaAccess(failoverReplicas, failoverOutputs, message => console.log(`  ${message}`))
+      // S3 replication only copies writes made after it was configured.
+      await seedFailoverReplicas(failoverReplicas, message => console.log(`  ${message}`))
     }
 
     // Get cloud config for domain info (reuse cloudConfig from above)

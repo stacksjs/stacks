@@ -106,6 +106,7 @@ const config: BunPressOptions = {
           items: [
             { text: 'Deploy', link: '/guide/cloud/deployment' },
             { text: 'Raspberry Pi', link: '/guide/cloud/raspberry-pi' },
+            { text: 'Origin Failover', link: '/guide/cloud/origin-failover' },
             { text: 'Extend Cloud', link: '/guide/cloud/extend' },
           ],
         },
