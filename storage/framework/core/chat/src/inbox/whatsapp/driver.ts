@@ -42,6 +42,16 @@ const DEFAULT_MIME: Record<number, string> = {
   [MessageType.Sticker]: 'image/webp',
 }
 
+/** What to call a media message's file when WhatsApp never downloaded it. */
+const MEDIA_LABEL: Record<number, string> = {
+  [MessageType.Image]: 'Photo',
+  [MessageType.Video]: 'Video',
+  [MessageType.Audio]: 'Voice message',
+  [MessageType.Document]: 'Document',
+  [MessageType.Gif]: 'GIF',
+  [MessageType.Sticker]: 'Sticker',
+}
+
 const EXTENSION_MIME: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -246,21 +256,29 @@ export class WhatsAppDriver implements InboxDriver {
     }
   }
 
+  /**
+   * A media message's file. WhatsApp only downloads media on demand, so the
+   * file is often not on this Mac (no local path): the attachment is still
+   * reported, with `path: null`, so the message reads as a photo that is not
+   * here rather than as an empty bubble.
+   */
   private attachments(row: MessageRow): InboxAttachment[] {
     const media = row.media
-    if (!media?.path || row.type === MessageType.Text || row.type === MessageType.Link)
+    const label = MEDIA_LABEL[row.type]
+    if (!media || (!media.path && !label) || row.type === MessageType.Text || row.type === MessageType.Link)
       return []
-    const path = join(this.mediaRoot, media.path)
+    const path = media.path ? join(this.mediaRoot, media.path) : null
     const recorded = media.vcard && /^[\w.+-]+\/[\w.+-]+/.test(media.vcard) ? media.vcard.split(';')[0]!.trim() : null
+    const file = media.path ? basename(media.path) : null
     const name = row.type === MessageType.Document
-      ? cleanText(media.title) ?? cleanText(row.text) ?? basename(media.path)
-      : basename(media.path)
+      ? cleanText(media.title) ?? cleanText(row.text) ?? file ?? label!
+      : file ?? label!
     return [{
       id: `${row.stanzaId ?? `wa-${row.pk}`}:media`,
       name,
-      mimeType: recorded ?? EXTENSION_MIME[extname(media.path).toLowerCase()] ?? DEFAULT_MIME[row.type] ?? null,
+      mimeType: recorded ?? (media.path ? EXTENSION_MIME[extname(media.path).toLowerCase()] : undefined) ?? DEFAULT_MIME[row.type] ?? null,
       bytes: media.bytes,
-      path: existsSync(path) ? path : null,
+      path: path && existsSync(path) ? path : null,
       url: null,
     }]
   }

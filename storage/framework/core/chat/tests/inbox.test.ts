@@ -371,6 +371,7 @@ describe('WhatsApp inbox driver', () => {
     store.add(group, { type: 6, text: 'Emeka changed the group name' })
     store.add(group, { type: 14, member: EMEKA })
     store.add(group, { type: 66, member: EMEKA, media: {} })
+    store.add(group, { type: 1, member: EMEKA, media: { mime: 'image/jpeg', bytes: 900 } })
 
     const messages = await driver.messages(CLIMBERS)
     expect(messages.map(m => [m.kind, m.text])).toEqual([
@@ -383,6 +384,7 @@ describe('WhatsApp inbox driver', () => {
       ['event', 'Emeka changed the group name'],
       ['message', null],
       ['event', null],
+      ['message', null],
     ])
     expect(messages[0]!.sender).toEqual({ id: EMEKA, name: 'emeka.o' })
     expect(messages[1]).toMatchObject({ fromMe: true, sender: null })
@@ -391,6 +393,8 @@ describe('WhatsApp inbox driver', () => {
     expect(messages[2]!.attachments[0]).toMatchObject({ mimeType: 'audio/ogg', path: null })
     expect(messages[3]!.attachments[0]!.name).toBe('Topo guide')
     expect(messages[7]!.unsent).toBe(true)
+    // A photo WhatsApp never downloaded is still a photo, not an empty bubble.
+    expect(messages[9]!.attachments).toEqual([{ id: expect.any(String), name: 'Photo', mimeType: 'image/jpeg', bytes: 900, path: null, url: null }])
     expect(await (await driver.attachment(messages[1]!.attachments[0]!)).text()).toBe('jpeg')
   })
 
