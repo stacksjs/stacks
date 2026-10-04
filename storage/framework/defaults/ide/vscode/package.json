@@ -258,7 +258,7 @@
           "stxTypescriptPlugin.enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Enable TypeScript language features in stx files"
+            "description": "Type-check the TypeScript in stx files (script blocks and template expressions) with the TypeScript server, and offer its hovers, completions and go to definition there"
           },
           "stx.diagnostics.enable": {
             "type": "boolean",
@@ -413,7 +413,7 @@
     ]
   },
   "devDependencies": {
-    "@stacksjs/stx-vscode": "^0.2.355",
+    "@stacksjs/stx-vscode": "^0.2.357",
     "@types/vscode": "~1.109.0",
     "@vscode/vsce": "^4.0.0"
   }

@@ -6,6 +6,15 @@
   // Framework internals are checked separately, by `tsconfig.framework.json`.
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    // The globals a `.stx` page is checked against beyond the stx runtime's
+    // own: `requestContext` is installed by the dev and production servers,
+    // not by stx, so neither checker can know it unless told. Both read this
+    // list - `stx typecheck` (and so `bun run typecheck:views`) and the stx
+    // extension's TypeScript plugin in the editor - so a page cannot pass one
+    // and fail the other (stacksjs/stx#2028). Paths are relative to this file.
+    "plugins": [
+      { "name": "@stacksjs/stx-typescript-plugin", "libs": ["./types/request-context.d.ts"] }
+    ],
     // App code runs on both the server and in the browser (stx templates,
     // stores, composables), so DOM types sit on top of the base `esnext` lib.
     "lib": ["esnext", "dom"],

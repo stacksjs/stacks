@@ -294,7 +294,10 @@ function clearFilters() {
   statusFilter.set('all')
 }
 
-async function openEditor(post: BlogPost) {
+// `null` opens the editor on a new post: the "New post" buttons pass it, and
+// the body below already handles it. Typed `BlogPost` alone, every one of those
+// calls was a type error that a parse failure elsewhere in this file hid.
+async function openEditor(post: BlogPost | null) {
   const requestId = ++editorRequestId
   formError.set('')
   editingPost.set(post)
