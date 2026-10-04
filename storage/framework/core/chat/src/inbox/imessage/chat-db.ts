@@ -170,7 +170,7 @@ interface RawMessage {
   item_type: number | null
   group_title: string | null
   cache_has_attachments: number | null
-  reply_to_guid: string | null
+  thread_originator_guid: string | null
   date_edited: number | null
   date_retracted: number | null
   sender: string | null
@@ -360,7 +360,7 @@ export class MessagesDb {
         m.ROWID AS rowid, m.guid, m.text, m.attributedBody, m.is_from_me, m.date, m.service,
         m.associated_message_guid, m.associated_message_type, m.item_type, m.group_title,
         m.cache_has_attachments,
-        ${this.column('reply_to_guid')} AS reply_to_guid,
+        ${this.column('thread_originator_guid')} AS thread_originator_guid,
         ${this.column('date_edited', '0')} AS date_edited,
         ${this.column('date_retracted', '0')} AS date_retracted,
         h.id AS sender,
@@ -392,7 +392,11 @@ export class MessagesDb {
         service: row.service ?? 'iMessage',
         targetGuid: kind === 'reaction' ? reactionTarget(row.associated_message_guid) : null,
         reactionType: kind === 'reaction' ? associated : 0,
-        replyToGuid: row.reply_to_guid || null,
+        // An inline reply names the message it answers in
+        // thread_originator_guid. reply_to_guid is not that: Messages fills
+        // it with the previous message in the chat for nearly every row, so
+        // reading it made every message a reply to the one before it.
+        replyToGuid: row.thread_originator_guid || null,
         editedAt: appleDateToUnixMs(row.date_edited),
         unsent: !!row.date_retracted,
         eventType: itemType,

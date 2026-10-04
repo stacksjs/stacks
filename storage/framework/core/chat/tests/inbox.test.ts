@@ -56,6 +56,17 @@ describe('iMessage inbox driver', () => {
     expect(later).toHaveLength(2)
   })
 
+  it('treats only an inline reply as a reply, not the message before it', async () => {
+    const { chat, driver } = setup()
+    const alice = chat.direct(ALICE)
+    const question = chat.add(alice, { text: 'dinner at 7?' })
+    chat.add(alice, { text: 'running late', fromMe: true })
+    chat.add(alice, { text: 'yes!', fromMe: true, replyTo: question })
+
+    const messages = await driver.messages(`direct:${ALICE}`)
+    expect(messages.map(m => m.replyToId)).toEqual([null, null, question])
+  })
+
   it('returns the most recent messages for a bare limit, oldest first', async () => {
     const { chat, driver } = setup()
     const alice = chat.direct(ALICE)

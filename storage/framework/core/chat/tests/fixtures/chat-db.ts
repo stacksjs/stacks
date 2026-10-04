@@ -28,6 +28,8 @@ export interface AddMessage {
   reaction?: { type: number, target: string }
   attachment?: { name: string, mime: string, bytes?: string | null }
   read?: boolean
+  /** The guid of the message this is an inline reply to. */
+  replyTo?: string
 }
 
 export class FakeChatDb {
@@ -36,6 +38,8 @@ export class FakeChatDb {
   readonly db: Database
   private handles = new Map<string, number>()
   private seq = 0
+  /** The last message added to each chat: Messages' `reply_to_guid`. */
+  private latest = new Map<number, string>()
   private clock = Date.UTC(2026, 0, 1, 12)
 
   /** A fresh chat.db in `dir`, or in a new temporary directory. */
@@ -59,7 +63,7 @@ export class FakeChatDb {
         handle_id INTEGER DEFAULT 0, service TEXT, date INTEGER, date_read INTEGER DEFAULT 0, is_read INTEGER DEFAULT 0,
         is_from_me INTEGER DEFAULT 0, associated_message_guid TEXT, associated_message_type INTEGER DEFAULT 0,
         item_type INTEGER DEFAULT 0, group_title TEXT, cache_has_attachments INTEGER DEFAULT 0,
-        reply_to_guid TEXT, date_edited INTEGER DEFAULT 0, date_retracted INTEGER DEFAULT 0,
+        reply_to_guid TEXT, thread_originator_guid TEXT, date_edited INTEGER DEFAULT 0, date_retracted INTEGER DEFAULT 0,
         destination_caller_id TEXT, account TEXT
       );
       CREATE TABLE chat_message_join (chat_id INTEGER, message_id INTEGER, message_date INTEGER DEFAULT 0, PRIMARY KEY (chat_id, message_id));
@@ -137,8 +141,8 @@ export class FakeChatDb {
     const guid = `MSG-${++this.seq}`
     this.db.query(`
       INSERT INTO message (guid, text, attributedBody, handle_id, service, date, is_read, is_from_me,
-        associated_message_guid, associated_message_type, cache_has_attachments)
-      VALUES (?, NULL, ?, ?, 'iMessage', ?, ?, ?, ?, ?, ?)
+        associated_message_guid, associated_message_type, cache_has_attachments, reply_to_guid, thread_originator_guid)
+      VALUES (?, NULL, ?, ?, 'iMessage', ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       guid,
       encodeAttributedBody(message.text),
@@ -149,7 +153,12 @@ export class FakeChatDb {
       message.reaction ? `p:0/${message.reaction.target}` : null,
       message.reaction?.type ?? 0,
       message.attachment ? 1 : 0,
+      // As Messages fills it: the message before this one in the chat,
+      // whether or not this one is a reply.
+      this.latest.get(chatId) ?? null,
+      message.replyTo ?? null,
     )
+    this.latest.set(chatId, guid)
     const rowid = this.lastId()
     this.db.query('INSERT INTO chat_message_join (chat_id, message_id, message_date) VALUES (?, ?, ?)').run(chatId, rowid, (at - APPLE_EPOCH_MS) * 1_000_000)
 
