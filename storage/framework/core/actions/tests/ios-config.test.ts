@@ -44,7 +44,7 @@ describe('iOS mobile build configuration', () => {
       associatedDomains: ['applinks:wildloop.org'],
       deviceFamilies: ['iphone'],
       watchDeploymentTarget: '9.0',
-      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false, liveActivities: true, watchApp: true },
+      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false, liveActivities: true, watchApp: true, localNetwork: true },
     })
 
     expect(config.devServerURL).toBe('https://wildloop.org')
@@ -54,6 +54,7 @@ describe('iOS mobile build configuration', () => {
     expect(config.enableBackgroundLocation).toBe(true)
     expect(config.enableLiveActivities).toBe(true)
     expect(config.enableWatchApp).toBe(true)
+    expect(config.enableLocalNetwork).toBe(true)
     expect(config.watchosVersion).toBe('9.0')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
     expect(config.associatedDomains).toEqual(['applinks:wildloop.org'])

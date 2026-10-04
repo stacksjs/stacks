@@ -20,6 +20,8 @@ export interface MobileCapabilities {
   orientationLock?: boolean
   deepLinks?: boolean
   qrScanner?: boolean
+  /** Reach the person's own devices on the same network (a Mac companion); iOS asks first. */
+  localNetwork?: boolean
   filePicker?: boolean
   fileDownload?: boolean
   socialAuth?: boolean

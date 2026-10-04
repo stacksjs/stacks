@@ -47,6 +47,7 @@ const CAPABILITY_KEYS = {
   orientationLock: 'enableOrientationLock',
   deepLinks: 'enableDeepLinks',
   qrScanner: 'enableQRScanner',
+  localNetwork: 'enableLocalNetwork',
   filePicker: 'enableFilePicker',
   fileDownload: 'enableFileDownload',
   socialAuth: 'enableSocialAuth',

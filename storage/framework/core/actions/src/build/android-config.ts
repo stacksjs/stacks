@@ -32,6 +32,7 @@ const CAPABILITY_KEYS = {
   keepAwake: 'enableKeepAwake',
   deepLinks: 'enableDeepLinks',
   healthConnect: 'enableHealthConnect',
+  localNetwork: 'enableLocalNetwork',
 } as const
 
 export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidConfig {

@@ -9,7 +9,7 @@ describe('Android mobile build configuration', () => {
       url: 'wildloop.org',
       urlSchemes: ['wildloop'],
       googleServicesFile: 'secrets/google-services.json',
-      capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true },
+      capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true, localNetwork: true },
     })
     expect(config.devServerURL).toBe('https://wildloop.org')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
@@ -19,6 +19,7 @@ describe('Android mobile build configuration', () => {
     expect(config.enableCamera).toBe(false)
     expect(config.googleServicesFile).toBe('secrets/google-services.json')
     expect(config.enableHealthConnect).toBe(true)
+    expect(config.enableLocalNetwork).toBe(true)
   })
 
   it('requires a valid package and exactly one web source', () => {
