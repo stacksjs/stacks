@@ -1,6 +1,6 @@
 ---
 name: stacks-database
-description: Use when working with databases in a Stacks application - configuring connections, running queries, migrations, seeding, SQL helpers, or using SQLite/MySQL/PostgreSQL/DynamoDB. Covers @stacksjs/database, bun-query-builder, config/database.ts, and the database/ migrations directory.
+description: Use when working with databases in a Stacks application - configuring connections, running queries, migrations, seeding, SQL helpers, or using SQLite/Turso/MySQL/PostgreSQL/DynamoDB. Covers @stacksjs/database, bun-query-builder, config/database.ts, and the database/ migrations directory.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -60,6 +60,7 @@ Database.fromEnv()                  // From env vars (DB_CONNECTION, DB_DATABASE
 ## Factory Functions (database.ts)
 - `createDatabase(options: DatabaseOptions): Database`
 - `createSqliteDatabase(database: string, options?): Database`
+- `createTursoDatabase(url: string, authToken?: string, options?): Database`
 - `createPostgresDatabase(connection: DatabaseConnectionConfig, options?): Database`
 - `createMysqlDatabase(connection: DatabaseConnectionConfig, options?): Database`
 
@@ -154,6 +155,7 @@ interface DatabaseOptions {
 
 ```typescript
 interface SqliteConfig { database: string, prefix?: string }
+interface TursoConfig { url: string, authToken?: string, prefix?: string }
 interface MysqlConfig { name: string, host?: string, port?: number, username?: string, password?: string, prefix?: string, charset?: string, collation?: string }
 interface PostgresConfig { name: string, host?: string, port?: number, username?: string, password?: string, prefix?: string, schema?: string, sslMode?: 'disable' | 'require' | 'verify-ca' | 'verify-full' }
 interface DynamoDbConfig { key: string, secret: string, region?: string, prefix?: string, endpoint?: string, tableName?: string, singleTable?: { enabled?, pkAttribute?, skAttribute?, entityTypeAttribute?, keyDelimiter?, gsiCount? } }
@@ -256,11 +258,30 @@ Entity-centric API for single-table design:
 - `buddy seed` -- seed database
 - `buddy generate:migrations` -- generate migration diffs from models
 
+## Turso / libSQL (`DB_CONNECTION=turso`, alias `libsql`)
+
+SQLite's SQL on a Turso or `sqld` server. Configure `TURSO_DATABASE_URL`
+(`libsql://<db>-<org>.turso.io`, or `http://127.0.0.1:8080` for `turso dev`) and
+`TURSO_AUTH_TOKEN` (a secret, never logged).
+
+- Everything that renders SQL or DDL treats it as `sqlite`: `dialectCapabilities('turso').wire === 'sqlite'`,
+  `getDatabaseDialect()` returns `'sqlite'`, and it shares the SQLite migration corpus and
+  `model-snapshot.sqlite.json`. Switching between `sqlite` and `turso` needs no regeneration.
+- The transport is bun-query-builder's: `setConfig({ dialect: 'sqlite', database: { url, authToken } })`
+  with a libSQL URL selects its dependency-free Hrana-over-HTTP connection (`createLibSQLSQL`).
+- Code that opens the database FILE must ask `isLibsqlDriver(driver)` first - there is none. The SQLite
+  migration preprocessor reads an in-memory replica of the server's schema instead
+  (`loadLibsqlSchemaMirror` in migrations.ts), and the migration lock is a row in
+  `stacks_migration_lock` (`acquireLibsqlMigrationLock`), since migrating hosts share no filesystem.
+- libSQL rejects SQLite's double-quoted-string fallback, so a statement naming a missing column fails
+  instead of storing the column name as text. `tests/corpus-rebuild-sources.test.ts` guards the corpus.
+- Inside `transaction()`, write through the `tx` handle; model writes use their own connection.
+
 ## config/database.ts Shape
 ```typescript
 {
   default: env.DB_CONNECTION || 'mysql',
-  connections: { sqlite, mysql, postgres, dynamodb },
+  connections: { sqlite, turso, mysql, singlestore, vitess, postgres, dynamodb },
   migrations: 'migrations',
   migrationLocks: 'migration_locks',
   queryLogging: {

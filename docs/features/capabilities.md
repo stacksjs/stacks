@@ -37,6 +37,7 @@ is a driver you cannot select.
 | `singlestore` | **experimental** | client-server | - | none retained |
 | `vitess` | **experimental** | mysql-behind-vtgate | - | `vitess-constraints.test.ts` |
 | `postgres` | **supported** | client-server | postgres 17.11 | `postgres-pivot-timestamptz.test.ts`<br>`postgres-transaction-scope.test.ts`<br>`affected-rows.test.ts`<br>`ensure-database-sessions.test.ts` |
+| `turso` | **experimental** | managed-service | - | `turso.test.ts` |
 | `dynamodb` | **unsupported** | managed-service | - | none retained |
 
 **Limitations**
@@ -48,6 +49,13 @@ is a driver you cannot select.
 - **`vitess`** - Schema changes on sharded keyspaces should go through Vitess online DDL.
 - **`vitess`** - A transaction spanning shards is best-effort or two-phase, not the single-node ACID the ORM assumes.
 - **`postgres`** - The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on PostgreSQL. Regenerate them against PostgreSQL (`buddy generate:migrations`) before migrating.
+- **`turso`** - Proven against a local sqld 0.24.32 (turso CLI 1.0.33 `turso dev`), not a hosted Turso database, and no libSQL service runs in CI yet, so the retained evidence skips its live half there.
+- **`turso`** - SQLite SQL over Hrana HTTP: each statement outside a transaction is one request, and a transaction holds one server stream for its duration.
+- **`turso`** - sqld refuses VACUUM, ATTACH, temporary tables and every PRAGMA except the read-only ones and foreign_keys.
+- **`turso`** - Embedded replicas are not supported; the connection is always remote.
+- **`turso`** - Inside transaction(), write through the tx handle: model writes use their own connection, as on PostgreSQL and MySQL, and wait while the transaction holds the write lock.
+- **`turso`** - Scheduler onOneServer() locks stay per-host, as they are on SQLite.
+- **`turso`** - `buddy db:backup` does not dump a Turso database; rely on Turso's own point-in-time restore.
 - **`dynamodb`** - DynamoDB helpers are not an ORM SQL driver and cannot be selected as database.default.
 
 ### Queue

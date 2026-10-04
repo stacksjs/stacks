@@ -23,8 +23,10 @@ export interface DatabaseConnectionConfig {
   username?: string
   /** Database password */
   password?: string
-  /** Full connection URL (overrides other options) */
+  /** Full connection URL (overrides other options). For Turso, the libSQL URL. */
   url?: string
+  /** Turso / libSQL database token. A secret: never logged. */
+  authToken?: string
   /** Whether a Vitess keyspace is split across shards. */
   sharded?: boolean
 }
@@ -153,7 +155,10 @@ export class Database {
       vitess: {
         sharded: isVitessSharded(this._options.connection.sharded),
       },
-      database: this._options.connection,
+      // `url`/`authToken` named even when absent: `setConfig` merges this
+      // section, and a libSQL URL left over from an earlier Turso
+      // connection would otherwise keep every query on the server.
+      database: { url: undefined, authToken: undefined, ...this._options.connection },
       verbose: this._options.verbose,
       timestamps: this._options.timestamps,
       softDeletes: this._options.softDeletes,
@@ -229,6 +234,7 @@ export class Database {
       mysql?: { name: string, host?: string, port?: number, username?: string, password?: string }
       singlestore?: { name: string, host?: string, port?: number, username?: string, password?: string }
       postgres?: { name: string, host?: string, port?: number, username?: string, password?: string }
+      turso?: { url?: string, authToken?: string }
     }
   }, env?: string): Database {
     const driver = config.default
@@ -284,6 +290,16 @@ export class Database {
         break
       }
 
+      // SQLite over a libSQL server. The URL is both where it is and what
+      // selects bun-query-builder's network transport.
+      case 'turso': {
+        const turso = config.connections.turso
+        if (!turso?.url)
+          throw new Error('[database] DB_CONNECTION=turso needs connections.turso.url (TURSO_DATABASE_URL).')
+        connection = { database: turso.url, url: turso.url, authToken: turso.authToken || undefined }
+        break
+      }
+
       case 'dynamodb' as StacksDialect:
         // DynamoDB has no SQL connection — it's accessed via the
         // dedicated entity-style `dynamo.entity(...)` API instead. Set
@@ -303,7 +319,7 @@ export class Database {
         // get an in-memory SQLite — a worst-case "it works on my machine"
         // surprise. Loud-fail instead.
         throw new Error(
-          `[database] Unknown DB_CONNECTION "${String(driver)}". Allowed values: sqlite, mysql, postgres.`,
+          `[database] Unknown DB_CONNECTION "${String(driver)}". Allowed values: sqlite, mysql, postgres, singlestore, vitess, turso.`,
         )
     }
 
@@ -319,7 +335,8 @@ export class Database {
    */
   static fromEnv(): Database {
     // Uses the typed env proxy from @stacksjs/env (imported at top of file as stacksEnv)
-    const driver = (stacksEnv.DB_CONNECTION as StacksDialect) || 'sqlite'
+    const configured = String(stacksEnv.DB_CONNECTION || 'sqlite')
+    const driver = (configured === 'libsql' ? 'turso' : configured) as StacksDialect
 
     let connection: DatabaseConnectionConfig
 
@@ -353,6 +370,14 @@ export class Database {
         }
         break
 
+      case 'turso': {
+        const url = stacksEnv.TURSO_DATABASE_URL || ''
+        if (!url)
+          throw new Error('[database] DB_CONNECTION=turso needs TURSO_DATABASE_URL.')
+        connection = { database: url, url, authToken: stacksEnv.TURSO_AUTH_TOKEN || undefined }
+        break
+      }
+
       default:
         connection = { database: ':memory:' }
     }
@@ -379,6 +404,20 @@ export function createSqliteDatabase(database: string, options?: Partial<Omit<Da
   return new Database({
     driver: 'sqlite',
     connection: { database },
+    ...options,
+  })
+}
+
+/**
+ * Create a Turso / libSQL database connection.
+ *
+ * SQLite's SQL over the network: `url` is `libsql://<db>-<org>.turso.io` (or
+ * `http://127.0.0.1:8080` for `turso dev`), and `authToken` the database token.
+ */
+export function createTursoDatabase(url: string, authToken?: string, options?: Partial<Omit<DatabaseOptions, 'driver' | 'connection'>>): Database {
+  return new Database({
+    driver: 'turso',
+    connection: { database: url, url, authToken },
     ...options,
   })
 }

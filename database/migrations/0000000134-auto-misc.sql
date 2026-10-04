@@ -13,7 +13,7 @@ CREATE TABLE "_qb_tmp_print_devices" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_print_devices" ("id", "name", "mac_address", "location", "terminal", "status", "last_ping", "print_count", "created_at", "updated_at", "uuid") SELECT "id", "name", "mac_address", "location", "terminal", "status", "last_ping", "print_count", "created_at", "updated_at", "uuid" FROM "print_devices";
+INSERT INTO "_qb_tmp_print_devices" ("id", "name", "mac_address", "location", "terminal", "status", "last_ping", "print_count", "created_at", "updated_at") SELECT "id", "name", "mac_address", "location", "terminal", "status", "last_ping", "print_count", "created_at", "updated_at" FROM "print_devices";
 DROP TABLE "print_devices";
 ALTER TABLE "_qb_tmp_print_devices" RENAME TO "print_devices";
 CREATE UNIQUE INDEX IF NOT EXISTS "print_devices_print_devices_uuid_unique" ON "print_devices" ("uuid");
@@ -74,7 +74,7 @@ CREATE TABLE "_qb_tmp_categories" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_categories" ("id", "name", "description", "slug", "image_url", "is_active", "parent_category_id", "display_order", "created_at", "updated_at", "uuid") SELECT "id", "name", "description", "slug", "image_url", "is_active", "parent_category_id", "display_order", "created_at", "updated_at", "uuid" FROM "categories";
+INSERT INTO "_qb_tmp_categories" ("id", "name", "description", "slug", "image_url", "is_active", "parent_category_id", "display_order", "created_at", "updated_at") SELECT "id", "name", "description", "slug", "image_url", "is_active", "parent_category_id", "display_order", "created_at", "updated_at" FROM "categories";
 DROP TABLE "categories";
 ALTER TABLE "_qb_tmp_categories" RENAME TO "categories";
 CREATE UNIQUE INDEX IF NOT EXISTS "categories_categories_uuid_unique" ON "categories" ("uuid");
@@ -103,7 +103,7 @@ CREATE TABLE "_qb_tmp_payments" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_payments" ("id", "amount", "method", "status", "currency", "reference_number", "card_last_four", "card_brand", "billing_email", "transaction_id", "payment_provider", "refund_amount", "notes", "order_id", "customer_id", "created_at", "updated_at", "uuid") SELECT "id", "amount", "method", "status", "currency", "reference_number", "card_last_four", "card_brand", "billing_email", "transaction_id", "payment_provider", "refund_amount", "notes", "order_id", "customer_id", "created_at", "updated_at", "uuid" FROM "payments";
+INSERT INTO "_qb_tmp_payments" ("id", "amount", "method", "status", "currency", "reference_number", "card_last_four", "card_brand", "billing_email", "transaction_id", "payment_provider", "refund_amount", "notes", "order_id", "customer_id", "created_at", "updated_at") SELECT "id", "amount", "method", "status", "currency", "reference_number", "card_last_four", "card_brand", "billing_email", "transaction_id", "payment_provider", "refund_amount", "notes", "order_id", "customer_id", "created_at", "updated_at" FROM "payments";
 DROP TABLE "payments";
 ALTER TABLE "_qb_tmp_payments" RENAME TO "payments";
 CREATE UNIQUE INDEX IF NOT EXISTS "payments_payments_transaction_id_unique" ON "payments" ("transaction_id");
@@ -125,7 +125,7 @@ CREATE TABLE "_qb_tmp_couriers" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_couriers" ("id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at", "uuid" FROM "couriers";
+INSERT INTO "_qb_tmp_couriers" ("id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at") SELECT "id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at" FROM "couriers";
 DROP TABLE "couriers";
 ALTER TABLE "_qb_tmp_couriers" RENAME TO "couriers";
 CREATE UNIQUE INDEX IF NOT EXISTS "couriers_couriers_uuid_unique" ON "couriers" ("uuid");
@@ -153,7 +153,7 @@ CREATE TABLE "_qb_tmp_waitlist_products" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_waitlist_products" ("id", "name", "email", "phone", "quantity", "notification_preference", "source", "notes", "status", "notified_at", "purchased_at", "cancelled_at", "product_id", "customer_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "email", "phone", "quantity", "notification_preference", "source", "notes", "status", "notified_at", "purchased_at", "cancelled_at", "product_id", "customer_id", "created_at", "updated_at", "uuid" FROM "waitlist_products";
+INSERT INTO "_qb_tmp_waitlist_products" ("id", "name", "email", "phone", "quantity", "notification_preference", "source", "notes", "status", "notified_at", "purchased_at", "cancelled_at", "product_id", "customer_id", "created_at", "updated_at") SELECT "id", "name", "email", "phone", "quantity", "notification_preference", "source", "notes", "status", "notified_at", "purchased_at", "cancelled_at", "product_id", "customer_id", "created_at", "updated_at" FROM "waitlist_products";
 DROP TABLE "waitlist_products";
 ALTER TABLE "_qb_tmp_waitlist_products" RENAME TO "waitlist_products";
 CREATE UNIQUE INDEX IF NOT EXISTS "waitlist_products_waitlist_products_uuid_unique" ON "waitlist_products" ("uuid");
@@ -175,7 +175,7 @@ CREATE TABLE "_qb_tmp_digital_deliveries" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_digital_deliveries" ("id", "name", "description", "download_limit", "expiry_days", "requires_login", "automatic_delivery", "status", "created_at", "updated_at", "uuid") SELECT "id", "name", "description", "download_limit", "expiry_days", "requires_login", "automatic_delivery", "status", "created_at", "updated_at", "uuid" FROM "digital_deliveries";
+INSERT INTO "_qb_tmp_digital_deliveries" ("id", "name", "description", "download_limit", "expiry_days", "requires_login", "automatic_delivery", "status", "created_at", "updated_at") SELECT "id", "name", "description", "download_limit", "expiry_days", "requires_login", "automatic_delivery", "status", "created_at", "updated_at" FROM "digital_deliveries";
 DROP TABLE "digital_deliveries";
 ALTER TABLE "_qb_tmp_digital_deliveries" RENAME TO "digital_deliveries";
 CREATE UNIQUE INDEX IF NOT EXISTS "digital_deliveries_digital_deliveries_uuid_unique" ON "digital_deliveries" ("uuid");
@@ -195,7 +195,7 @@ CREATE TABLE "_qb_tmp_payment_products" (
   "provider_id" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_payment_products" ("id", "name", "description", "key", "unit_price", "status", "image", "provider_id", "uuid") SELECT "id", "name", "description", "key", "unit_price", "status", "image", "provider_id", "uuid" FROM "payment_products";
+INSERT INTO "_qb_tmp_payment_products" ("id", "name", "description", "key", "unit_price", "status", "image", "provider_id") SELECT "id", "name", "description", "key", "unit_price", "status", "image", "provider_id" FROM "payment_products";
 DROP TABLE "payment_products";
 ALTER TABLE "_qb_tmp_payment_products" RENAME TO "payment_products";
 CREATE UNIQUE INDEX IF NOT EXISTS "payment_products_payment_products_uuid_unique" ON "payment_products" ("uuid");
@@ -214,7 +214,7 @@ CREATE TABLE "_qb_tmp_manufacturers" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_manufacturers" ("id", "manufacturer", "description", "country", "featured", "created_at", "updated_at", "uuid") SELECT "id", "manufacturer", "description", "country", "featured", "created_at", "updated_at", "uuid" FROM "manufacturers";
+INSERT INTO "_qb_tmp_manufacturers" ("id", "manufacturer", "description", "country", "featured", "created_at", "updated_at") SELECT "id", "manufacturer", "description", "country", "featured", "created_at", "updated_at" FROM "manufacturers";
 DROP TABLE "manufacturers";
 ALTER TABLE "_qb_tmp_manufacturers" RENAME TO "manufacturers";
 CREATE UNIQUE INDEX IF NOT EXISTS "manufacturers_manufacturers_manufacturer_unique" ON "manufacturers" ("manufacturer");
@@ -254,7 +254,7 @@ CREATE TABLE "_qb_tmp_shipping_zones" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_shipping_zones" ("id", "name", "countries", "regions", "postal_codes", "status", "shipping_method_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "countries", "regions", "postal_codes", "status", "shipping_method_id", "created_at", "updated_at", "uuid" FROM "shipping_zones";
+INSERT INTO "_qb_tmp_shipping_zones" ("id", "name", "countries", "regions", "postal_codes", "status", "shipping_method_id", "created_at", "updated_at") SELECT "id", "name", "countries", "regions", "postal_codes", "status", "shipping_method_id", "created_at", "updated_at" FROM "shipping_zones";
 DROP TABLE "shipping_zones";
 ALTER TABLE "_qb_tmp_shipping_zones" RENAME TO "shipping_zones";
 CREATE UNIQUE INDEX IF NOT EXISTS "shipping_zones_shipping_zones_uuid_unique" ON "shipping_zones" ("uuid");
@@ -295,7 +295,7 @@ CREATE TABLE "_qb_tmp_customers" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_customers" ("id", "name", "email", "phone", "total_spent", "last_order", "status", "avatar", "user_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "email", "phone", "total_spent", "last_order", "status", "avatar", "user_id", "created_at", "updated_at", "uuid" FROM "customers";
+INSERT INTO "_qb_tmp_customers" ("id", "name", "email", "phone", "total_spent", "last_order", "status", "avatar", "user_id", "created_at", "updated_at") SELECT "id", "name", "email", "phone", "total_spent", "last_order", "status", "avatar", "user_id", "created_at", "updated_at" FROM "customers";
 DROP TABLE "customers";
 ALTER TABLE "_qb_tmp_customers" RENAME TO "customers";
 CREATE UNIQUE INDEX IF NOT EXISTS "customers_customers_email_unique" ON "customers" ("email");
@@ -314,7 +314,7 @@ CREATE TABLE "_qb_tmp_subscriber_emails" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_subscriber_emails" ("id", "email", "source", "subscriber_id", "created_at", "updated_at", "uuid") SELECT "id", "email", "source", "subscriber_id", "created_at", "updated_at", "uuid" FROM "subscriber_emails";
+INSERT INTO "_qb_tmp_subscriber_emails" ("id", "email", "source", "subscriber_id", "created_at", "updated_at") SELECT "id", "email", "source", "subscriber_id", "created_at", "updated_at" FROM "subscriber_emails";
 DROP TABLE "subscriber_emails";
 ALTER TABLE "_qb_tmp_subscriber_emails" RENAME TO "subscriber_emails";
 CREATE UNIQUE INDEX IF NOT EXISTS "subscriber_emails_subscriber_emails_uuid_unique" ON "subscriber_emails" ("uuid");
@@ -340,7 +340,7 @@ CREATE TABLE "_qb_tmp_products" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_products" ("id", "name", "description", "price", "image_url", "is_available", "inventory_count", "preparation_time", "allergens", "nutritional_info", "category_id", "manufacturer_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "description", "price", "image_url", "is_available", "inventory_count", "preparation_time", "allergens", "nutritional_info", "category_id", "manufacturer_id", "created_at", "updated_at", "uuid" FROM "products";
+INSERT INTO "_qb_tmp_products" ("id", "name", "description", "price", "image_url", "is_available", "inventory_count", "preparation_time", "allergens", "nutritional_info", "category_id", "manufacturer_id", "created_at", "updated_at") SELECT "id", "name", "description", "price", "image_url", "is_available", "inventory_count", "preparation_time", "allergens", "nutritional_info", "category_id", "manufacturer_id", "created_at", "updated_at" FROM "products";
 DROP TABLE "products";
 ALTER TABLE "_qb_tmp_products" RENAME TO "products";
 CREATE UNIQUE INDEX IF NOT EXISTS "products_products_uuid_unique" ON "products" ("uuid");
@@ -364,7 +364,7 @@ CREATE TABLE "_qb_tmp_receipts" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_receipts" ("id", "printer", "document", "timestamp", "status", "size", "pages", "duration", "metadata", "print_device_id", "created_at", "updated_at", "uuid") SELECT "id", "printer", "document", "timestamp", "status", "size", "pages", "duration", "metadata", "print_device_id", "created_at", "updated_at", "uuid" FROM "receipts";
+INSERT INTO "_qb_tmp_receipts" ("id", "printer", "document", "timestamp", "status", "size", "pages", "duration", "metadata", "print_device_id", "created_at", "updated_at") SELECT "id", "printer", "document", "timestamp", "status", "size", "pages", "duration", "metadata", "print_device_id", "created_at", "updated_at" FROM "receipts";
 DROP TABLE "receipts";
 ALTER TABLE "_qb_tmp_receipts" RENAME TO "receipts";
 CREATE UNIQUE INDEX IF NOT EXISTS "receipts_receipts_uuid_unique" ON "receipts" ("uuid");
@@ -385,7 +385,7 @@ CREATE TABLE "_qb_tmp_product_variants" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_product_variants" ("id", "variant", "type", "description", "options", "status", "product_id", "created_at", "updated_at", "uuid") SELECT "id", "variant", "type", "description", "options", "status", "product_id", "created_at", "updated_at", "uuid" FROM "product_variants";
+INSERT INTO "_qb_tmp_product_variants" ("id", "variant", "type", "description", "options", "status", "product_id", "created_at", "updated_at") SELECT "id", "variant", "type", "description", "options", "status", "product_id", "created_at", "updated_at" FROM "product_variants";
 DROP TABLE "product_variants";
 ALTER TABLE "_qb_tmp_product_variants" RENAME TO "product_variants";
 CREATE UNIQUE INDEX IF NOT EXISTS "product_variants_product_variants_uuid_unique" ON "product_variants" ("uuid");
@@ -407,7 +407,7 @@ CREATE TABLE "_qb_tmp_license_keys" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_license_keys" ("id", "key", "template", "expiry_date", "status", "customer_id", "product_id", "order_id", "created_at", "updated_at", "uuid") SELECT "id", "key", "template", "expiry_date", "status", "customer_id", "product_id", "order_id", "created_at", "updated_at", "uuid" FROM "license_keys";
+INSERT INTO "_qb_tmp_license_keys" ("id", "key", "template", "expiry_date", "status", "customer_id", "product_id", "order_id", "created_at", "updated_at") SELECT "id", "key", "template", "expiry_date", "status", "customer_id", "product_id", "order_id", "created_at", "updated_at" FROM "license_keys";
 DROP TABLE "license_keys";
 ALTER TABLE "_qb_tmp_license_keys" RENAME TO "license_keys";
 CREATE UNIQUE INDEX IF NOT EXISTS "license_keys_license_keys_uuid_unique" ON "license_keys" ("uuid");
@@ -446,7 +446,7 @@ CREATE TABLE "_qb_tmp_payment_methods" (
   "user_id" INTEGER REFERENCES "users"("id"),
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_payment_methods" ("id", "type", "last_four", "brand", "exp_month", "exp_year", "is_default", "provider_id", "user_id", "uuid") SELECT "id", "type", "last_four", "brand", "exp_month", "exp_year", "is_default", "provider_id", "user_id", "uuid" FROM "payment_methods";
+INSERT INTO "_qb_tmp_payment_methods" ("id", "type", "last_four", "brand", "exp_month", "exp_year", "is_default", "provider_id", "user_id") SELECT "id", "type", "last_four", "brand", "exp_month", "exp_year", "is_default", "provider_id", "user_id" FROM "payment_methods";
 DROP TABLE "payment_methods";
 ALTER TABLE "_qb_tmp_payment_methods" RENAME TO "payment_methods";
 CREATE UNIQUE INDEX IF NOT EXISTS "payment_methods_payment_methods_uuid_unique" ON "payment_methods" ("uuid");
@@ -495,7 +495,7 @@ CREATE TABLE "_qb_tmp_waitlist_restaurants" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_waitlist_restaurants" ("id", "name", "email", "phone", "party_size", "check_in_time", "table_preference", "status", "quoted_wait_time", "actual_wait_time", "queue_position", "seated_at", "no_show_at", "cancelled_at", "customer_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "email", "phone", "party_size", "check_in_time", "table_preference", "status", "quoted_wait_time", "actual_wait_time", "queue_position", "seated_at", "no_show_at", "cancelled_at", "customer_id", "created_at", "updated_at", "uuid" FROM "waitlist_restaurants";
+INSERT INTO "_qb_tmp_waitlist_restaurants" ("id", "name", "email", "phone", "party_size", "check_in_time", "table_preference", "status", "quoted_wait_time", "actual_wait_time", "queue_position", "seated_at", "no_show_at", "cancelled_at", "customer_id", "created_at", "updated_at") SELECT "id", "name", "email", "phone", "party_size", "check_in_time", "table_preference", "status", "quoted_wait_time", "actual_wait_time", "queue_position", "seated_at", "no_show_at", "cancelled_at", "customer_id", "created_at", "updated_at" FROM "waitlist_restaurants";
 DROP TABLE "waitlist_restaurants";
 ALTER TABLE "_qb_tmp_waitlist_restaurants" RENAME TO "waitlist_restaurants";
 CREATE UNIQUE INDEX IF NOT EXISTS "waitlist_restaurants_waitlist_restaurants_uuid_unique" ON "waitlist_restaurants" ("uuid");
@@ -540,7 +540,7 @@ CREATE TABLE "_qb_tmp_payment_transactions" (
   "payment_method_id" INTEGER REFERENCES "payment_methods"("id"),
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_payment_transactions" ("id", "name", "description", "amount", "type", "provider_id", "user_id", "payment_method_id", "uuid") SELECT "id", "name", "description", "amount", "type", "provider_id", "user_id", "payment_method_id", "uuid" FROM "payment_transactions";
+INSERT INTO "_qb_tmp_payment_transactions" ("id", "name", "description", "amount", "type", "provider_id", "user_id", "payment_method_id") SELECT "id", "name", "description", "amount", "type", "provider_id", "user_id", "payment_method_id" FROM "payment_transactions";
 DROP TABLE "payment_transactions";
 ALTER TABLE "_qb_tmp_payment_transactions" RENAME TO "payment_transactions";
 CREATE UNIQUE INDEX IF NOT EXISTS "payment_transactions_payment_transactions_uuid_unique" ON "payment_transactions" ("uuid");
@@ -567,7 +567,7 @@ CREATE TABLE "_qb_tmp_reviews" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_reviews" ("id", "rating", "title", "content", "is_verified_purchase", "is_approved", "is_featured", "helpful_votes", "unhelpful_votes", "purchase_date", "images", "product_id", "customer_id", "created_at", "updated_at", "uuid") SELECT "id", "rating", "title", "content", "is_verified_purchase", "is_approved", "is_featured", "helpful_votes", "unhelpful_votes", "purchase_date", "images", "product_id", "customer_id", "created_at", "updated_at", "uuid" FROM "reviews";
+INSERT INTO "_qb_tmp_reviews" ("id", "rating", "title", "content", "is_verified_purchase", "is_approved", "is_featured", "helpful_votes", "unhelpful_votes", "purchase_date", "images", "product_id", "customer_id", "created_at", "updated_at") SELECT "id", "rating", "title", "content", "is_verified_purchase", "is_approved", "is_featured", "helpful_votes", "unhelpful_votes", "purchase_date", "images", "product_id", "customer_id", "created_at", "updated_at" FROM "reviews";
 DROP TABLE "reviews";
 ALTER TABLE "_qb_tmp_reviews" RENAME TO "reviews";
 CREATE UNIQUE INDEX IF NOT EXISTS "reviews_reviews_uuid_unique" ON "reviews" ("uuid");
@@ -608,7 +608,7 @@ CREATE TABLE "_qb_tmp_pages" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_pages" ("id", "title", "template", "views", "published_at", "conversions", "author_id", "created_at", "updated_at", "uuid") SELECT "id", "title", "template", "views", "published_at", "conversions", "author_id", "created_at", "updated_at", "uuid" FROM "pages";
+INSERT INTO "_qb_tmp_pages" ("id", "title", "template", "views", "published_at", "conversions", "author_id", "created_at", "updated_at") SELECT "id", "title", "template", "views", "published_at", "conversions", "author_id", "created_at", "updated_at" FROM "pages";
 DROP TABLE "pages";
 ALTER TABLE "_qb_tmp_pages" RENAME TO "pages";
 CREATE UNIQUE INDEX IF NOT EXISTS "pages_pages_uuid_unique" ON "pages" ("uuid");
@@ -651,7 +651,7 @@ CREATE TABLE "_qb_tmp_product_units" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_product_units" ("id", "name", "abbreviation", "type", "description", "is_default", "product_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "abbreviation", "type", "description", "is_default", "product_id", "created_at", "updated_at", "uuid" FROM "product_units";
+INSERT INTO "_qb_tmp_product_units" ("id", "name", "abbreviation", "type", "description", "is_default", "product_id", "created_at", "updated_at") SELECT "id", "name", "abbreviation", "type", "description", "is_default", "product_id", "created_at", "updated_at" FROM "product_units";
 DROP TABLE "product_units";
 ALTER TABLE "_qb_tmp_product_units" RENAME TO "product_units";
 CREATE UNIQUE INDEX IF NOT EXISTS "product_units_product_units_uuid_unique" ON "product_units" ("uuid");
@@ -693,7 +693,7 @@ CREATE TABLE "_qb_tmp_subscribers" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_subscribers" ("id", "email", "status", "source", "user_id", "created_at", "updated_at", "uuid") SELECT "id", "email", "status", "source", "user_id", "created_at", "updated_at", "uuid" FROM "subscribers";
+INSERT INTO "_qb_tmp_subscribers" ("id", "email", "status", "source", "user_id", "created_at", "updated_at") SELECT "id", "email", "status", "source", "user_id", "created_at", "updated_at" FROM "subscribers";
 DROP TABLE "subscribers";
 ALTER TABLE "_qb_tmp_subscribers" RENAME TO "subscribers";
 CREATE UNIQUE INDEX IF NOT EXISTS "subscribers_subscribers_email_unique" ON "subscribers" ("email");
@@ -725,7 +725,7 @@ CREATE TABLE "_qb_tmp_gift_cards" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_gift_cards" ("id", "code", "initial_balance", "current_balance", "currency", "status", "purchaser_id", "recipient_email", "recipient_name", "personal_message", "is_digital", "is_reloadable", "is_active", "expiry_date", "last_used_date", "template_id", "customer_id", "created_at", "updated_at", "uuid") SELECT "id", "code", "initial_balance", "current_balance", "currency", "status", "purchaser_id", "recipient_email", "recipient_name", "personal_message", "is_digital", "is_reloadable", "is_active", "expiry_date", "last_used_date", "template_id", "customer_id", "created_at", "updated_at", "uuid" FROM "gift_cards";
+INSERT INTO "_qb_tmp_gift_cards" ("id", "code", "initial_balance", "current_balance", "currency", "status", "purchaser_id", "recipient_email", "recipient_name", "personal_message", "is_digital", "is_reloadable", "is_active", "expiry_date", "last_used_date", "template_id", "customer_id", "created_at", "updated_at") SELECT "id", "code", "initial_balance", "current_balance", "currency", "status", "purchaser_id", "recipient_email", "recipient_name", "personal_message", "is_digital", "is_reloadable", "is_active", "expiry_date", "last_used_date", "template_id", "customer_id", "created_at", "updated_at" FROM "gift_cards";
 DROP TABLE "gift_cards";
 ALTER TABLE "_qb_tmp_gift_cards" RENAME TO "gift_cards";
 CREATE UNIQUE INDEX IF NOT EXISTS "gift_cards_gift_cards_code_unique" ON "gift_cards" ("code");
@@ -754,7 +754,7 @@ CREATE TABLE "_qb_tmp_orders" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_orders" ("id", "status", "total_amount", "tax_amount", "discount_amount", "delivery_fee", "tip_amount", "order_type", "delivery_address", "special_instructions", "estimated_delivery_time", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at", "uuid") SELECT "id", "status", "total_amount", "tax_amount", "discount_amount", "delivery_fee", "tip_amount", "order_type", "delivery_address", "special_instructions", "estimated_delivery_time", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at", "uuid" FROM "orders";
+INSERT INTO "_qb_tmp_orders" ("id", "status", "total_amount", "tax_amount", "discount_amount", "delivery_fee", "tip_amount", "order_type", "delivery_address", "special_instructions", "estimated_delivery_time", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at") SELECT "id", "status", "total_amount", "tax_amount", "discount_amount", "delivery_fee", "tip_amount", "order_type", "delivery_address", "special_instructions", "estimated_delivery_time", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at" FROM "orders";
 DROP TABLE "orders";
 ALTER TABLE "_qb_tmp_orders" RENAME TO "orders";
 CREATE UNIQUE INDEX IF NOT EXISTS "orders_orders_uuid_unique" ON "orders" ("uuid");
@@ -783,7 +783,7 @@ CREATE TABLE "_qb_tmp_coupons" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_coupons" ("id", "code", "description", "status", "is_active", "discount_type", "discount_value", "min_order_amount", "max_discount_amount", "free_product_id", "usage_limit", "usage_count", "start_date", "end_date", "product_id", "created_at", "updated_at", "uuid") SELECT "id", "code", "description", "status", "is_active", "discount_type", "discount_value", "min_order_amount", "max_discount_amount", "free_product_id", "usage_limit", "usage_count", "start_date", "end_date", "product_id", "created_at", "updated_at", "uuid" FROM "coupons";
+INSERT INTO "_qb_tmp_coupons" ("id", "code", "description", "status", "is_active", "discount_type", "discount_value", "min_order_amount", "max_discount_amount", "free_product_id", "usage_limit", "usage_count", "start_date", "end_date", "product_id", "created_at", "updated_at") SELECT "id", "code", "description", "status", "is_active", "discount_type", "discount_value", "min_order_amount", "max_discount_amount", "free_product_id", "usage_limit", "usage_count", "start_date", "end_date", "product_id", "created_at", "updated_at" FROM "coupons";
 DROP TABLE "coupons";
 ALTER TABLE "_qb_tmp_coupons" RENAME TO "coupons";
 CREATE UNIQUE INDEX IF NOT EXISTS "coupons_coupons_code_unique" ON "coupons" ("code");
@@ -806,7 +806,7 @@ CREATE TABLE "_qb_tmp_tax_rates" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_tax_rates" ("id", "name", "rate", "type", "country", "region", "status", "is_default", "created_at", "updated_at", "uuid") SELECT "id", "name", "rate", "type", "country", "region", "status", "is_default", "created_at", "updated_at", "uuid" FROM "tax_rates";
+INSERT INTO "_qb_tmp_tax_rates" ("id", "name", "rate", "type", "country", "region", "status", "is_default", "created_at", "updated_at") SELECT "id", "name", "rate", "type", "country", "region", "status", "is_default", "created_at", "updated_at" FROM "tax_rates";
 DROP TABLE "tax_rates";
 ALTER TABLE "_qb_tmp_tax_rates" RENAME TO "tax_rates";
 CREATE UNIQUE INDEX IF NOT EXISTS "tax_rates_tax_rates_uuid_unique" ON "tax_rates" ("uuid");
@@ -848,7 +848,7 @@ CREATE TABLE "_qb_tmp_transactions" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_transactions" ("id", "amount", "status", "payment_method", "payment_details", "transaction_reference", "loyalty_points_earned", "loyalty_points_redeemed", "order_id", "created_at", "updated_at", "uuid") SELECT "id", "amount", "status", "payment_method", "payment_details", "transaction_reference", "loyalty_points_earned", "loyalty_points_redeemed", "order_id", "created_at", "updated_at", "uuid" FROM "transactions";
+INSERT INTO "_qb_tmp_transactions" ("id", "amount", "status", "payment_method", "payment_details", "transaction_reference", "loyalty_points_earned", "loyalty_points_redeemed", "order_id", "created_at", "updated_at") SELECT "id", "amount", "status", "payment_method", "payment_details", "transaction_reference", "loyalty_points_earned", "loyalty_points_redeemed", "order_id", "created_at", "updated_at" FROM "transactions";
 DROP TABLE "transactions";
 ALTER TABLE "_qb_tmp_transactions" RENAME TO "transactions";
 CREATE UNIQUE INDEX IF NOT EXISTS "transactions_transactions_uuid_unique" ON "transactions" ("uuid");
@@ -870,7 +870,7 @@ CREATE TABLE "_qb_tmp_loyalty_points" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_loyalty_points" ("id", "wallet_id", "points", "source", "source_reference_id", "description", "expiry_date", "is_used", "created_at", "updated_at", "uuid") SELECT "id", "wallet_id", "points", "source", "source_reference_id", "description", "expiry_date", "is_used", "created_at", "updated_at", "uuid" FROM "loyalty_points";
+INSERT INTO "_qb_tmp_loyalty_points" ("id", "wallet_id", "points", "source", "source_reference_id", "description", "expiry_date", "is_used", "created_at", "updated_at") SELECT "id", "wallet_id", "points", "source", "source_reference_id", "description", "expiry_date", "is_used", "created_at", "updated_at" FROM "loyalty_points";
 DROP TABLE "loyalty_points";
 ALTER TABLE "_qb_tmp_loyalty_points" RENAME TO "loyalty_points";
 CREATE UNIQUE INDEX IF NOT EXISTS "loyalty_points_loyalty_points_uuid_unique" ON "loyalty_points" ("uuid");
@@ -955,7 +955,7 @@ CREATE TABLE "_qb_tmp_subscriptions" (
   "user_id" INTEGER REFERENCES "users"("id"),
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_subscriptions" ("id", "type", "plan", "provider_id", "provider_status", "unit_price", "provider_type", "provider_price_id", "quantity", "trial_ends_at", "ends_at", "last_used_at", "user_id", "uuid") SELECT "id", "type", "plan", "provider_id", "provider_status", "unit_price", "provider_type", "provider_price_id", "quantity", "trial_ends_at", "ends_at", "last_used_at", "user_id", "uuid" FROM "subscriptions";
+INSERT INTO "_qb_tmp_subscriptions" ("id", "type", "plan", "provider_id", "provider_status", "unit_price", "provider_type", "provider_price_id", "quantity", "trial_ends_at", "ends_at", "last_used_at", "user_id") SELECT "id", "type", "plan", "provider_id", "provider_status", "unit_price", "provider_type", "provider_price_id", "quantity", "trial_ends_at", "ends_at", "last_used_at", "user_id" FROM "subscriptions";
 DROP TABLE "subscriptions";
 ALTER TABLE "_qb_tmp_subscriptions" RENAME TO "subscriptions";
 CREATE UNIQUE INDEX IF NOT EXISTS "subscriptions_subscriptions_provider_id_unique" ON "subscriptions" ("provider_id");
@@ -981,7 +981,7 @@ CREATE TABLE "_qb_tmp_loyalty_rewards" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_loyalty_rewards" ("id", "name", "description", "points_required", "reward_type", "discount_percentage", "free_product_id", "is_active", "expiry_days", "image_url", "product_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "description", "points_required", "reward_type", "discount_percentage", "free_product_id", "is_active", "expiry_days", "image_url", "product_id", "created_at", "updated_at", "uuid" FROM "loyalty_rewards";
+INSERT INTO "_qb_tmp_loyalty_rewards" ("id", "name", "description", "points_required", "reward_type", "discount_percentage", "free_product_id", "is_active", "expiry_days", "image_url", "product_id", "created_at", "updated_at") SELECT "id", "name", "description", "points_required", "reward_type", "discount_percentage", "free_product_id", "is_active", "expiry_days", "image_url", "product_id", "created_at", "updated_at" FROM "loyalty_rewards";
 DROP TABLE "loyalty_rewards";
 ALTER TABLE "_qb_tmp_loyalty_rewards" RENAME TO "loyalty_rewards";
 CREATE UNIQUE INDEX IF NOT EXISTS "loyalty_rewards_loyalty_rewards_uuid_unique" ON "loyalty_rewards" ("uuid");
@@ -1019,7 +1019,7 @@ CREATE TABLE "_qb_tmp_shipping_methods" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_shipping_methods" ("id", "name", "description", "base_rate", "free_shipping", "status", "created_at", "updated_at", "uuid") SELECT "id", "name", "description", "base_rate", "free_shipping", "status", "created_at", "updated_at", "uuid" FROM "shipping_methods";
+INSERT INTO "_qb_tmp_shipping_methods" ("id", "name", "description", "base_rate", "free_shipping", "status", "created_at", "updated_at") SELECT "id", "name", "description", "base_rate", "free_shipping", "status", "created_at", "updated_at" FROM "shipping_methods";
 DROP TABLE "shipping_methods";
 ALTER TABLE "_qb_tmp_shipping_methods" RENAME TO "shipping_methods";
 CREATE UNIQUE INDEX IF NOT EXISTS "shipping_methods_shipping_methods_uuid_unique" ON "shipping_methods" ("uuid");
@@ -1039,7 +1039,7 @@ CREATE TABLE "_qb_tmp_shipping_rates" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_shipping_rates" ("id", "weight_from", "weight_to", "rate", "shipping_method_id", "shipping_zone_id", "created_at", "updated_at", "uuid") SELECT "id", "weight_from", "weight_to", "rate", "shipping_method_id", "shipping_zone_id", "created_at", "updated_at", "uuid" FROM "shipping_rates";
+INSERT INTO "_qb_tmp_shipping_rates" ("id", "weight_from", "weight_to", "rate", "shipping_method_id", "shipping_zone_id", "created_at", "updated_at") SELECT "id", "weight_from", "weight_to", "rate", "shipping_method_id", "shipping_zone_id", "created_at", "updated_at" FROM "shipping_rates";
 DROP TABLE "shipping_rates";
 ALTER TABLE "_qb_tmp_shipping_rates" RENAME TO "shipping_rates";
 CREATE UNIQUE INDEX IF NOT EXISTS "shipping_rates_shipping_rates_uuid_unique" ON "shipping_rates" ("uuid");
@@ -1092,7 +1092,7 @@ CREATE TABLE "_qb_tmp_carts" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_carts" ("id", "status", "total_items", "subtotal", "tax_amount", "discount_amount", "total", "expires_at", "currency", "notes", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at", "uuid") SELECT "id", "status", "total_items", "subtotal", "tax_amount", "discount_amount", "total", "expires_at", "currency", "notes", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at", "uuid" FROM "carts";
+INSERT INTO "_qb_tmp_carts" ("id", "status", "total_items", "subtotal", "tax_amount", "discount_amount", "total", "expires_at", "currency", "notes", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at") SELECT "id", "status", "total_items", "subtotal", "tax_amount", "discount_amount", "total", "expires_at", "currency", "notes", "applied_coupon_id", "customer_id", "coupon_id", "created_at", "updated_at" FROM "carts";
 DROP TABLE "carts";
 ALTER TABLE "_qb_tmp_carts" RENAME TO "carts";
 CREATE UNIQUE INDEX IF NOT EXISTS "carts_carts_uuid_unique" ON "carts" ("uuid");
@@ -1113,7 +1113,7 @@ CREATE TABLE "_qb_tmp_delivery_routes" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_delivery_routes" ("id", "courier", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at", "uuid") SELECT "id", "courier", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at", "uuid" FROM "delivery_routes";
+INSERT INTO "_qb_tmp_delivery_routes" ("id", "courier", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at") SELECT "id", "courier", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at" FROM "delivery_routes";
 DROP TABLE "delivery_routes";
 ALTER TABLE "_qb_tmp_delivery_routes" RENAME TO "delivery_routes";
 CREATE UNIQUE INDEX IF NOT EXISTS "delivery_routes_delivery_routes_uuid_unique" ON "delivery_routes" ("uuid");
@@ -1140,7 +1140,7 @@ CREATE TABLE "_qb_tmp_cart_items" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_cart_items" ("id", "quantity", "unit_price", "total_price", "tax_rate", "tax_amount", "discount_percentage", "discount_amount", "product_name", "product_sku", "product_image", "notes", "cart_id", "created_at", "updated_at", "uuid") SELECT "id", "quantity", "unit_price", "total_price", "tax_rate", "tax_amount", "discount_percentage", "discount_amount", "product_name", "product_sku", "product_image", "notes", "cart_id", "created_at", "updated_at", "uuid" FROM "cart_items";
+INSERT INTO "_qb_tmp_cart_items" ("id", "quantity", "unit_price", "total_price", "tax_rate", "tax_amount", "discount_percentage", "discount_amount", "product_name", "product_sku", "product_image", "notes", "cart_id", "created_at", "updated_at") SELECT "id", "quantity", "unit_price", "total_price", "tax_rate", "tax_amount", "discount_percentage", "discount_amount", "product_name", "product_sku", "product_image", "notes", "cart_id", "created_at", "updated_at" FROM "cart_items";
 DROP TABLE "cart_items";
 ALTER TABLE "_qb_tmp_cart_items" RENAME TO "cart_items";
 CREATE UNIQUE INDEX IF NOT EXISTS "cart_items_cart_items_uuid_unique" ON "cart_items" ("uuid");

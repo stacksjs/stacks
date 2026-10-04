@@ -25,13 +25,17 @@ import type { QueryBuilderDialect } from './dialect'
 import type { FrameworkSchema } from './framework-schema'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
-import { isMysqlWire, isPostgresWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
+import { isLibsqlDriver, isMysqlWire, isPostgresWire, isVitessSharded, normalizeDatabaseDriver, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
 import { configureDatabaseRoutingContext, contextInTransaction, markContextWrote, replicaConnectionKey, resolveReplicaConnection, runInDatabaseRoutingContext, selectReplica, shouldRouteToReplica, withDatabaseRoutingContext, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
   database?: string
+  /** A libSQL server (`turso`): `libsql://…`, `https://…`, or `http://…` for `turso dev`. */
+  url?: string
+  /** Turso database token. A secret: never logged. */
+  authToken?: string
   name?: string
   host?: string
   username?: string
@@ -52,6 +56,7 @@ interface DbConfig {
     singlestore: DbConnectionConfig
     vitess: DbConnectionConfig
     postgres: DbConnectionConfig
+    turso?: DbConnectionConfig
   }
   reads?: ReadPolicyConfig
 }
@@ -61,7 +66,7 @@ const mysqlDefaults = getConnectionDefaults('mysql', envVars)
 const postgresDefaults = getConnectionDefaults('postgres', envVars)
 
 let appEnv: string = envVars.APP_ENV || 'local'
-let dbDriver: string = envVars.DB_CONNECTION || 'sqlite'
+let dbDriver: string = normalizeDatabaseDriver(envVars.DB_CONNECTION || 'sqlite')
 let queryBuilderDialect: QueryBuilderDialect = toQueryBuilderDialect(dbDriver)
 let queryLoggingEnabled = envVars.DB_QUERY_LOGGING_ENABLED ?? !isProductionEnvironment(appEnv)
 let dbConfig: DbConfig = {
@@ -72,6 +77,7 @@ let dbConfig: DbConfig = {
     // vtgate's port, not mysqld's — see VitessConfig in ./driver-config.
     vitess: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: 15306, prefix: '', sharded: isVitessSharded() },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
+    turso: { url: envVars.TURSO_DATABASE_URL || '', authToken: envVars.TURSO_AUTH_TOKEN || '', prefix: '' },
   },
 }
 
@@ -173,7 +179,7 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
     appEnv = config.app.env
 
   if (config?.database?.default)
-    dbDriver = config.database.default
+    dbDriver = normalizeDatabaseDriver(config.database.default)
   queryBuilderDialect = toQueryBuilderDialect(dbDriver)
 
   // Cast rather than a merge: replacing the whole object is the behaviour this
@@ -244,10 +250,50 @@ export { getDialect as getDatabaseDialect }
 /**
  * Get database configuration for bun-query-builder
  */
-function getDbConfig(): { database: string, username?: string, password?: string, host?: string, port?: number } {
+interface QueryBuilderDatabaseConfig {
+  database: string
+  username?: string
+  password?: string
+  host?: string
+  port?: number
+  url?: string
+  authToken?: string
+}
+
+/**
+ * The connection settings handed to bun-query-builder.
+ *
+ * `url` and `authToken` are always present, `undefined` unless the driver is
+ * `turso`: `setConfig` MERGES the database section, so leaving the keys out
+ * when switching back to a file would keep the libSQL URL - and every query
+ * would keep going to the server.
+ */
+function getDbConfig(): QueryBuilderDatabaseConfig {
+  return { url: undefined, authToken: undefined, ...getDriverDbConfig() }
+}
+
+function getDriverDbConfig(): QueryBuilderDatabaseConfig {
   const driver = getDriver()
   const database = getDatabaseConfig()
   const env = getEnv()
+
+  // Turso / libSQL: SQLite's SQL over Hrana-over-HTTP. bun-query-builder keeps
+  // the sqlite dialect and selects its libSQL transport from the URL.
+  if (isLibsqlDriver(driver)) {
+    const turso = database.connections?.turso
+    const url = turso?.url || envVars.TURSO_DATABASE_URL || ''
+    if (!url) {
+      throw new Error(
+        '[database] DB_CONNECTION=turso needs the database URL: set TURSO_DATABASE_URL '
+        + '(libsql://<db>-<org>.turso.io, or http://127.0.0.1:8080 for `turso dev`) or connections.turso.url in config/database.ts.',
+      )
+    }
+    return {
+      database: url,
+      url,
+      authToken: turso?.authToken || envVars.TURSO_AUTH_TOKEN || undefined,
+    }
+  }
 
   if (driver === 'sqlite') {
     const defaultName = env !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
@@ -529,7 +575,8 @@ function replicaQueryHooks(pool: DatabasePoolIdentity): QueryHooks {
  */
 function getPoolConfig(): PoolConfig | undefined {
   const driver = getDriver()
-  if (driver === 'sqlite')
+  // libSQL requests are stateless HTTP calls Bun's fetch pools itself.
+  if (driver === 'sqlite' || isLibsqlDriver(driver))
     return undefined
   const connections = getDatabaseConfig().connections as Record<string, DbConnectionConfig | undefined>
   return connections?.[driver]?.pool
@@ -540,7 +587,8 @@ const EMPTY_REPLICAS: ReplicaConfig[] = []
 
 function getReplicas(): ReplicaConfig[] {
   const driver = getDriver()
-  if (driver === 'sqlite')
+  // Turso replicates behind one URL; there is no replica list to route to.
+  if (driver === 'sqlite' || isLibsqlDriver(driver))
     return EMPTY_REPLICAS
   const connections = getDatabaseConfig().connections as Record<string, DbConnectionConfig | undefined>
   return connections?.[driver]?.replicas ?? EMPTY_REPLICAS
@@ -2713,18 +2761,32 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   return proxy
 }
 
+/**
+ * Whether the synchronous SQLite select path may serve this query.
+ *
+ * It reads through `bun:sqlite` in the same tick, which only an embedded
+ * database can do. Turso keeps the sqlite dialect but answers over the
+ * network, so it always takes the ordinary async builder.
+ */
+function usesDeferredSqliteSelect(table: string): boolean {
+  return getDialect() === 'sqlite'
+    && !isLibsqlDriver(getDriver())
+    && !queryBuilderConfig.softDeletes?.enabled
+    && !hasActiveQueryBuilderHooks()
+    && isSimpleSqliteTable(table)
+}
+
 function selectFromDatabase(table: string): unknown {
   const dialect = getDialect()
   const instance = dialect === 'sqlite' ? getDb() : getReadDb()
-  if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && isSimpleSqliteTable(table))
+  if (usesDeferredSqliteSelect(table))
     return guardTransactionQuery(createDeferredSqliteSelect(instance, table))
   return guardTransactionQuery(instance.selectFrom(table))
 }
 
 function selectFromExplicitReadDatabase(table: string): unknown {
-  const dialect = getDialect()
   const instance = getExplicitReadDb()
-  if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && isSimpleSqliteTable(table))
+  if (usesDeferredSqliteSelect(table))
     return guardTransactionQuery(createDeferredSqliteSelect(instance, table))
   return guardTransactionQuery(instance.selectFrom(table))
 }

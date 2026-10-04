@@ -51,13 +51,13 @@ import type { DatabaseRenameResult, FrameworkRename, RenameSqlRunner } from './f
 import { applicableFrameworkRenames, applyFrameworkRenamesToDatabase, applyFrameworkRenamesToPlan } from './framework-renames'
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
-import { acquireMigrationLock } from './migration-lock'
+import { acquireLibsqlMigrationLock, acquireMigrationLock } from './migration-lock'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablesMissingCreateStatements } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
 import { sqlStatementsOf } from './sql-statements'
-import { corpusUniqueIndexes, hasIndex, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
+import { corpusUniqueIndexes, hasIndex, restorableMissingUniqueIndexes, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
 import { ensureUuidColumns } from './uuid-columns'
 import { sqlHelpers } from './sql-helpers'
 
@@ -66,7 +66,7 @@ export { sqlStatementsOf } from './sql-statements'
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
 import { getConnectionDefaults } from './defaults'
-import { isVitessSharded, toSqlIntrospectionDialect } from './dialect'
+import { isLibsqlDriver, isVitessSharded, normalizeDatabaseDriver, toSqlIntrospectionDialect } from './dialect'
 
 // Shell-provided values must win over the loaded .env file. The migration
 // executor already follows process.env, so resolving preprocessing against
@@ -81,10 +81,12 @@ const databaseEnv = {
   DB_USERNAME: process.env.DB_USERNAME || envVars.DB_USERNAME,
   DB_PASSWORD: process.env.DB_PASSWORD || envVars.DB_PASSWORD,
   DB_VITESS_SHARDED: process.env.DB_VITESS_SHARDED || envVars.DB_VITESS_SHARDED,
+  TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL || envVars.TURSO_DATABASE_URL,
+  TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN || envVars.TURSO_AUTH_TOKEN,
 }
 
 // Build database config from environment variables
-const dbDriver = databaseEnv.DB_CONNECTION || 'sqlite'
+const dbDriver = normalizeDatabaseDriver(databaseEnv.DB_CONNECTION || 'sqlite')
 const sqliteDefaults = getConnectionDefaults('sqlite', databaseEnv)
 const mysqlDefaults = getConnectionDefaults('mysql', databaseEnv)
 const singlestoreDefaults = getConnectionDefaults('singlestore', databaseEnv)
@@ -99,7 +101,13 @@ const dbConfig = {
     singlestore: { name: singlestoreDefaults.database, host: singlestoreDefaults.host, username: singlestoreDefaults.username, password: singlestoreDefaults.password, port: singlestoreDefaults.port, prefix: '' },
     vitess: { name: vitessDefaults.database, host: vitessDefaults.host, username: vitessDefaults.username, password: vitessDefaults.password, port: vitessDefaults.port, prefix: '', sharded: isVitessSharded(databaseEnv.DB_VITESS_SHARDED) },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
+    turso: { url: databaseEnv.TURSO_DATABASE_URL || '', authToken: databaseEnv.TURSO_AUTH_TOKEN || '' },
   },
+}
+
+/** Whether the configured database is SQLite on a libSQL server rather than a file. */
+function usesLibsql(): boolean {
+  return isLibsqlDriver(getDriver())
 }
 
 function sqliteDatabasePath(): string {
@@ -127,6 +135,10 @@ function getDriver(): string {
 function getDialect(): 'sqlite' | 'mysql' | 'vitess' | 'postgres' {
   const driver = getDriver()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'vitess' || driver === 'postgres') return driver
+  // Turso / libSQL is SQLite's SQL behind a server: the SQLite corpus, DDL
+  // and preprocessing all apply. What differs is that there is no file, which
+  // the few places that open one check through `usesLibsql()`.
+  if (driver === 'turso') return 'sqlite'
   // SingleStore is MySQL wire-compatible, so all of the internal migration
   // plumbing that needs a concrete engine (connection ports, admin database,
   // DROP TABLE) treats it as MySQL. DDL *generation* is different — it must
@@ -137,11 +149,11 @@ function getDialect(): 'sqlite' | 'mysql' | 'vitess' | 'postgres' {
     throw new Error(
       '[database] DB_CONNECTION=dynamodb is not compatible with the SQL migration runner. '
       + 'DynamoDB has no schema-migration concept - use the entity-style `dynamo.entity(...)` '
-      + 'API from @stacksjs/database directly. To run SQL migrations, set DB_CONNECTION to one of: sqlite, mysql, singlestore, vitess, postgres.',
+      + 'API from @stacksjs/database directly. To run SQL migrations, set DB_CONNECTION to one of: sqlite, turso, mysql, singlestore, vitess, postgres.',
     )
   }
   throw new Error(
-    `[database] Unknown DB_CONNECTION "${driver}". Allowed values: sqlite, mysql, singlestore, vitess, postgres, dynamodb.`,
+    `[database] Unknown DB_CONNECTION "${driver}". Allowed values: sqlite, turso, mysql, singlestore, vitess, postgres, dynamodb.`,
   )
 }
 
@@ -185,6 +197,14 @@ function configureQueryBuilder(
     sharded?: boolean
   } | undefined
 
+  // Turso: the sqlite dialect on a libSQL connection. Named on every call -
+  // with `undefined` when absent - because `setConfig` merges this section.
+  const libsql = targetDialect === 'sqlite' && usesLibsql()
+    ? { url: dbConfig.connections.turso.url || undefined, authToken: dbConfig.connections.turso.authToken || undefined }
+    : { url: undefined, authToken: undefined }
+  if (targetDialect === 'sqlite' && usesLibsql() && !libsql.url)
+    throw new Error('[database] DB_CONNECTION=turso needs TURSO_DATABASE_URL (libsql://<db>-<org>.turso.io, or http://127.0.0.1:8080 for `turso dev`).')
+
   setConfig({
     dialect: targetDialect,
     vitess: {
@@ -213,6 +233,7 @@ function configureQueryBuilder(
       port: connectionConfig?.port || (targetDialect === 'postgres' ? 5432 : targetDialect === 'vitess' ? 15306 : targetDialect === 'mysql' || targetDialect === 'singlestore' ? 3306 : 0),
       username: connectionConfig?.username || '',
       password: connectionConfig?.password || '',
+      ...libsql,
     },
   })
 
@@ -513,7 +534,23 @@ function enumMembers(list: string): string[] {
   return [...list.matchAll(/'(?:[^']|'')*'/g)].map(match => match[0])
 }
 
-export function preprocessSqliteMigrations(): Array<{ original: string, hidden: string, feature: string }> {
+export interface PreprocessSqliteOptions {
+  /**
+   * The schema to consult instead of opening the SQLite file.
+   *
+   * For Turso there is no file: the caller passes an in-memory replica of the
+   * server's schema and ledger (see `loadLibsqlSchemaMirror`). Left
+   * `undefined`, the configured file is opened as before.
+   */
+  schema?: import('bun:sqlite').Database | null
+  /**
+   * Receives the ledger changes instead of having them written to the file:
+   * files to record as executed, and files to un-record so they replay.
+   */
+  recordMigrations?: (record: string[], replay: string[]) => void
+}
+
+export function preprocessSqliteMigrations(options: PreprocessSqliteOptions = {}): Array<{ original: string, hidden: string, feature: string }> {
   const migrationsDir = migrationDirectory('sqlite')
   /*
    * Files moved aside because SQLite cannot execute part of them.
@@ -700,8 +737,9 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
 
   // Open SQLite DB to check column existence for DROP COLUMN migrations
   const sqliteDbPath = sqliteDatabasePath()
-  let sqliteDb: import('bun:sqlite').Database | null = null
-  if (existsSync(sqliteDbPath)) {
+  const borrowedSchema = options.schema !== undefined
+  let sqliteDb: import('bun:sqlite').Database | null = borrowedSchema ? options.schema ?? null : null
+  if (!borrowedSchema && existsSync(sqliteDbPath)) {
     try {
       const { Database } = require('bun:sqlite')
       sqliteDb = new Database(sqliteDbPath, { readonly: true })
@@ -966,9 +1004,15 @@ export function preprocessSqliteMigrations(): Array<{ original: string, hidden: 
     }
   }
 
-  if (sqliteDb) {
+  // A borrowed schema belongs to the caller, which closes it.
+  if (sqliteDb && !borrowedSchema) {
     try { (sqliteDb).close() }
     catch { /* ignore */ }
+  }
+
+  if (options.recordMigrations) {
+    options.recordMigrations(droppedMigrations, replayMigrations)
+    return quarantined
   }
 
   // Record dropped migrations as executed so they don't get regenerated on
@@ -1631,11 +1675,118 @@ function makeMigrationsIdempotent(): void {
   }
 }
 
+/** Rows the libSQL mirror is built from. */
+interface SqliteMasterRow { type: string, name: string, sql: string | null }
+
+/**
+ * An in-memory replica of a libSQL (Turso) database's schema and migration
+ * ledger, for the SQLite preprocessing that reads them synchronously.
+ *
+ * The preprocessor asks schema questions - does this table have that column,
+ * does this index exist, was this file recorded - through `bun:sqlite`'s
+ * synchronous API, which a network database cannot answer. The answers depend
+ * only on the schema and the ledger, so they are copied once into a private
+ * in-memory database whose `sqlite_master` matches the server's. No row data
+ * is copied besides the ledger's file names.
+ */
+async function loadLibsqlSchemaMirror(): Promise<import('bun:sqlite').Database> {
+  const { Database } = require('bun:sqlite') as typeof import('bun:sqlite')
+  const mirror = new Database(':memory:')
+  mirror.exec('PRAGMA foreign_keys = OFF')
+
+  const objects = await db.unsafe(`SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY CASE type WHEN 'table' THEN 0 WHEN 'index' THEN 1 WHEN 'view' THEN 2 ELSE 3 END, rowid`).execute() as unknown as SqliteMasterRow[]
+  for (const object of objects) {
+    try {
+      mirror.exec(object.sql as string)
+    }
+    catch (error) {
+      // libSQL-only objects (vector indexes, server extensions) have no
+      // bun:sqlite equivalent. They are not what preprocessing asks about.
+      log.debug(`[migration] libSQL schema mirror skipped ${object.type} ${object.name}: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  if (objects.some(object => object.type === 'table' && object.name === 'migrations')) {
+    const recorded = await db.unsafe('SELECT migration FROM migrations').execute() as unknown as Array<{ migration: string }>
+    const insert = mirror.prepare('INSERT OR IGNORE INTO migrations (migration) VALUES (?)')
+    for (const row of recorded) {
+      try {
+        insert.run(row.migration)
+      }
+      catch {
+        // A ledger whose shape differs still answers `migration = ?`
+        // lookups for every row that did copy.
+      }
+    }
+  }
+
+  return mirror
+}
+
+/** Apply the ledger changes preprocessing decided on, against the libSQL server. */
+async function recordLibsqlMigrations(record: string[], replay: string[]): Promise<void> {
+  if (record.length === 0 && replay.length === 0)
+    return
+  try {
+    await db.unsafe(`CREATE TABLE IF NOT EXISTS migrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      migration TEXT NOT NULL UNIQUE,
+      executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`).execute()
+    for (const migration of record)
+      await db.unsafe('INSERT OR IGNORE INTO migrations (migration) VALUES (?)', [migration]).execute()
+    for (const migration of replay)
+      await db.unsafe('DELETE FROM migrations WHERE migration = ?', [migration]).execute()
+  }
+  catch (e) {
+    log.debug(`[migration] Could not record dropped migrations as executed: ${e}`)
+  }
+}
+
+/** `preprocessSqliteMigrations` for a libSQL server: same rules, schema from the mirror. */
+async function preprocessLibsqlMigrations(): Promise<Array<{ original: string, hidden: string, feature: string }>> {
+  const mirror = await loadLibsqlSchemaMirror()
+  let ledger: { record: string[], replay: string[] } = { record: [], replay: [] }
+  try {
+    const quarantined = preprocessSqliteMigrations({
+      schema: mirror,
+      recordMigrations: (record, replay) => { ledger = { record, replay } },
+    })
+    await recordLibsqlMigrations(ledger.record, ledger.replay)
+    return quarantined
+  }
+  finally {
+    mirror.close()
+  }
+}
+
 /**
  * Re-create the declared unique indexes this batch's table rebuilds dropped.
  * See `declared-unique-indexes.ts`.
  */
-function restoreUniqueIndexesAfterBatch(corpusDir: string): void {
+async function restoreUniqueIndexesAfterBatch(corpusDir: string): Promise<void> {
+  if (usesLibsql()) {
+    const mirror = await loadLibsqlSchemaMirror()
+    let missing: ReturnType<typeof restorableMissingUniqueIndexes>
+    try {
+      missing = restorableMissingUniqueIndexes(mirror, corpusDir)
+    }
+    finally {
+      mirror.close()
+    }
+    for (const index of missing) {
+      try {
+        await db.unsafe(index.statement).execute()
+      }
+      catch (error) {
+        const detail = error instanceof Error ? error.message : String(error)
+        throw new Error(`Could not restore unique index "${index.name}" on "${index.table}" (declared in ${index.file}), which a later table rebuild dropped: ${detail}`)
+      }
+      log.info(`Restored unique index ${index.name} on ${index.table} (declared in ${index.file}, dropped by a later table rebuild)`)
+    }
+    return
+  }
+
   const dbPath = sqliteDatabasePath()
   if (!existsSync(dbPath))
     return
@@ -1688,8 +1839,15 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // (auto-released on disconnect) and file-based on SQLite (with a
     // 60s staleness fallback so a crashed holder doesn't block forever).
     const dialect = getDialect()
-    const lockDb = dialect === 'sqlite' ? null : createQueryBuilder()
-    lockHandle = await acquireMigrationLock(dialect, lockDb)
+    if (usesLibsql()) {
+      // A Turso database is shared by every host that migrates it, so the
+      // lock has to live in it rather than in a local file.
+      lockHandle = await acquireLibsqlMigrationLock(db)
+    }
+    else {
+      const lockDb = dialect === 'sqlite' ? null : createQueryBuilder()
+      lockHandle = await acquireMigrationLock(dialect, lockDb)
+    }
 
     /*
      * Publish each installed package's migrations into the corpus.
@@ -1728,7 +1886,7 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     if (dialect === 'sqlite') {
       // Anything quarantined joins the feature gate's own hidden list, so the
       // `finally` below restores it through one path.
-      quarantinedMigrations = preprocessSqliteMigrations()
+      quarantinedMigrations = usesLibsql() ? await preprocessLibsqlMigrations() : preprocessSqliteMigrations()
       hidden.push(...quarantinedMigrations)
     }
     else if (dialect === 'postgres') {
@@ -1810,7 +1968,7 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // took with it now, rather than on the next migrate - which is when the
     // re-queue in the preprocessor would have noticed, and CI never runs one.
     if (dialect === 'sqlite')
-      restoreUniqueIndexesAfterBatch(corpusDir)
+      await restoreUniqueIndexesAfterBatch(corpusDir)
 
     // Complete the guarantee after the model batch. This creates tables absent
     // from both the corpus and the preflight, and validates existing shapes.

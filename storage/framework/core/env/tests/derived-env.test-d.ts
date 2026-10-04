@@ -36,7 +36,7 @@ export const port: number | undefined = env.PORT
 export const debug: boolean | undefined = env.DEBUG
 
 // `schema.enum([...])` is the union of those literals, not `string`.
-export const connection: 'mysql' | 'sqlite' | 'postgres' | 'singlestore' | 'vitess' | undefined = env.DB_CONNECTION
+export const connection: 'mysql' | 'sqlite' | 'postgres' | 'singlestore' | 'vitess' | 'turso' | 'libsql' | undefined = env.DB_CONNECTION
 
 export function wrongTypes(): void {
   // @ts-expect-error PORT is a number

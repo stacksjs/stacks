@@ -28,8 +28,10 @@ export { saveMigrationSnapshot } from 'bun-query-builder'
  * wire protocol and identical DML, so it collapses onto the `mysql` renderer
  * (see `toQueryBuilderDialect` in @stacksjs/database) and diverges only in
  * DDL and transaction semantics, which the framework handles itself.
+ * `turso` is SQLite's SQL over a libSQL server: it renders as `sqlite`, and
+ * bun-query-builder picks the network transport from its libSQL URL.
  */
-export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore' | 'vitess'
+export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore' | 'vitess' | 'turso'
 
 type QueryHooks = import('bun-query-builder').QueryHooks
 type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0] & {
@@ -295,7 +297,10 @@ export function createQueryBuilder<DB extends DatabaseSchema<Record<string, unkn
   state?: Parameters<typeof createBunQueryBuilder>[0],
 ): ReturnType<typeof createBunQueryBuilder<DB>> {
   const qb = createBunQueryBuilder<DB>(state)
-  if (!state?.sql && bunQbConfig.dialect === 'sqlite') {
+  // A libSQL server (Turso) keeps the sqlite dialect but is not a local
+  // connection: it enforces foreign keys itself, refuses the WAL and
+  // busy-timeout pragmas, and each pragma here would be a network request.
+  if (!state?.sql && bunQbConfig.dialect === 'sqlite' && !bunQueryBuilder.resolveLibSQLTarget()) {
     applySqlitePragmas(qb as unknown as SqlitePragmaExecutor)
     bootstrapModelExecutorPragmas()
   }

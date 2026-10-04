@@ -1,10 +1,16 @@
 import type { QueryBuilderConfig, SupportedDialect } from 'bun-query-builder'
 import { env } from '@stacksjs/env'
 
-const dialect = (env.DB_CONNECTION as SupportedDialect) || 'sqlite'
+// Turso / libSQL speaks SQLite's SQL, so its dialect is `sqlite`; the libSQL
+// URL is what selects the network transport.
+const connection = env.DB_CONNECTION || 'sqlite'
+const libsql = connection === 'turso' || connection === 'libsql'
+const dialect = (libsql ? 'sqlite' : connection) as SupportedDialect
 
 // For SQLite, use file path; for other databases, use connection params
-const databaseConfig = dialect === 'sqlite'
+const databaseConfig = libsql
+  ? { database: env.TURSO_DATABASE_URL || '', url: env.TURSO_DATABASE_URL || '', authToken: env.TURSO_AUTH_TOKEN || '' }
+  : dialect === 'sqlite'
   ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
   : {
       database: env.DB_DATABASE || 'stacks',

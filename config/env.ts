@@ -155,7 +155,7 @@ const envSchema = defineEnv({
   },
 
   DB_CONNECTION: {
-    validation: schema.enum(['mysql', 'sqlite', 'postgres', 'singlestore', 'vitess']),
+    validation: schema.enum(['mysql', 'sqlite', 'postgres', 'singlestore', 'vitess', 'turso', 'libsql']),
     default: 'mysql',
   },
 
@@ -170,6 +170,18 @@ const envSchema = defineEnv({
   DB_VITESS_SHARDED: {
     validation: schema.boolean(),
     default: true,
+  },
+
+  // Turso / libSQL (DB_CONNECTION=turso). `libsql://` URLs use TLS; a local
+  // `turso dev` server is plain `http://127.0.0.1:8080`.
+  TURSO_DATABASE_URL: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  TURSO_AUTH_TOKEN: {
+    validation: schema.string(),
+    default: '',
   },
 
   DB_HOST: {

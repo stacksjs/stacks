@@ -91,7 +91,8 @@ export interface DatabaseBackupOptions {
 }
 
 export interface DatabaseOptions {
-  default: SupportedDialect
+  /** `turso` (alias `libsql`) is SQLite over the network: the `sqlite` dialect with a libSQL connection. */
+  default: SupportedDialect | 'turso' | 'libsql'
   logging?: boolean
   /** Where dumps go so they outlive the instance. Unset means local-only. */
   backups?: DatabaseBackupOptions
@@ -145,6 +146,19 @@ export interface DatabaseOptions {
     sqlite: {
       url?: string
       database?: string
+      prefix?: string
+    }
+
+    /**
+     * Turso / libSQL. SQLite's SQL over Hrana-over-HTTP, so it shares the
+     * SQLite migration corpus and every dialect rule; only the connection
+     * differs. Selected with `DB_CONNECTION=turso` (or `libsql`).
+     */
+    turso?: {
+      /** `libsql://<db>-<org>.turso.io`, or `http://127.0.0.1:8080` for `turso dev`. */
+      url?: string
+      /** Database token. A secret: never logged. */
+      authToken?: string
       prefix?: string
     }
 

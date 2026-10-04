@@ -6,7 +6,7 @@ interface EnumObject {
 
 export const envEnum: EnumObject = {
   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
-  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'singlestore', 'vitess', 'dynamodb'],
+  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'singlestore', 'vitess', 'turso', 'libsql', 'dynamodb'],
   DB_MIGRATE_FRESH: ['allow', 'confirm', 'disabled'],
   // MAIL_MAILER lists the drivers `@stacksjs/email` actually ships
   // (`registerDefaultDrivers()` in src/email.ts). `postmark`,
@@ -125,7 +125,7 @@ export interface FrameworkEnv {
   DOCS_PREFIX: string | undefined
 
   // Database
-  DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'singlestore' | 'vitess' | undefined
+  DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'singlestore' | 'vitess' | 'turso' | 'libsql' | undefined
   DB_HOST: string | undefined
   DB_PORT: number | undefined
   DB_DATABASE: string | undefined
@@ -136,6 +136,10 @@ export interface FrameworkEnv {
   DB_SCHEMA: string | undefined
   DB_POOL_MAX: number | undefined
   DB_VITESS_SHARDED: boolean | undefined
+  /** Turso / libSQL database URL: `libsql://<db>-<org>.turso.io`, or `http://127.0.0.1:8080` for `turso dev`. */
+  TURSO_DATABASE_URL: string | undefined
+  /** Turso database token. A secret. */
+  TURSO_AUTH_TOKEN: string | undefined
   DB_POOL_IDLE_TIMEOUT_MS: number | undefined
   DB_POOL_ACQUIRE_TIMEOUT_MS: number | undefined
   /** Comma-separated read replica hostnames. */

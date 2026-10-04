@@ -20,6 +20,9 @@
  *     lock file next to the DB. PID + start time written for forensic
  *     debugging. A lock older than 60s is reclaimed only when its owner
  *     process is no longer alive.
+ *   - **Turso / libSQL** — a row in the database itself, because the
+ *     processes migrating it need not share a filesystem
+ *     (`acquireLibsqlMigrationLock`).
  *
  * All three support a short polling loop with backoff: if another
  * process has the lock, we wait up to ~30s before giving up with a
@@ -29,8 +32,9 @@
  */
 
 import { Buffer } from 'node:buffer'
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { hostname } from 'node:os'
 import process from 'node:process'
 import { userDatabasePath } from '@stacksjs/path'
 
@@ -369,4 +373,77 @@ function pluckFirstRow(result: unknown): unknown {
   if (typeof result === 'object' && 'rows' in result && Array.isArray((result as { rows: unknown[] }).rows))
     return (result as { rows: unknown[] }).rows[0]
   return null
+}
+
+/** The table the libSQL lock lives in. */
+export const LIBSQL_LOCK_TABLE = 'stacks_migration_lock'
+
+/** How often a held libSQL lock proves its holder is alive. */
+const LIBSQL_HEARTBEAT_MS = 15_000
+
+interface LockStatementRunner {
+  unsafe: (sql: string, params?: unknown[]) => PromiseLike<unknown> | unknown
+}
+
+/**
+ * The migration lock for a libSQL (Turso) database.
+ *
+ * A lock FILE only serialises processes on one machine, and a Turso database
+ * is reached from many: two deploy hosts migrating at once would both get a
+ * local file and both run the batch. There is no advisory-lock primitive to
+ * borrow either, so the lock is a row in the database itself - the one thing
+ * every migrating process shares. Inserting it is atomic (the name is the
+ * primary key), the holder refreshes it while working, and a row nobody has
+ * refreshed for {@link STALE_LOCK_MS} belongs to a process that died and is
+ * cleared by the next one to try.
+ */
+export async function acquireLibsqlMigrationLock(
+  adminDb: LockStatementRunner,
+  opts: { timeoutMs?: number, staleMs?: number, heartbeatMs?: number } = {},
+): Promise<MigrationLockHandle> {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const staleMs = opts.staleMs ?? STALE_LOCK_MS
+  const heartbeatMs = opts.heartbeatMs ?? LIBSQL_HEARTBEAT_MS
+  const holder = `${hostname()}:${process.pid}:${randomUUID()}`
+  const run = async (sql: string, params: unknown[] = []): Promise<unknown> => await adminDb.unsafe(sql, params)
+
+  await run(`CREATE TABLE IF NOT EXISTS "${LIBSQL_LOCK_TABLE}" (name TEXT PRIMARY KEY, holder TEXT NOT NULL, heartbeat_at INTEGER NOT NULL)`)
+
+  const start = Date.now()
+  let backoff = INITIAL_BACKOFF_MS
+  while (true) {
+    await run(`DELETE FROM "${LIBSQL_LOCK_TABLE}" WHERE name = ? AND heartbeat_at < ?`, [LOCK_NAME, Date.now() - staleMs])
+    await run(`INSERT INTO "${LIBSQL_LOCK_TABLE}" (name, holder, heartbeat_at) VALUES (?, ?, ?) ON CONFLICT (name) DO NOTHING`, [LOCK_NAME, holder, Date.now()])
+    const rows = await run(`SELECT holder FROM "${LIBSQL_LOCK_TABLE}" WHERE name = ?`, [LOCK_NAME])
+    const current = Array.isArray(rows) ? (rows[0] as { holder?: unknown } | undefined)?.holder : undefined
+
+    if (current === holder) {
+      const heartbeat = setInterval(() => {
+        void Promise.resolve(run(`UPDATE "${LIBSQL_LOCK_TABLE}" SET heartbeat_at = ? WHERE name = ? AND holder = ?`, [Date.now(), LOCK_NAME, holder])).catch(() => {})
+      }, heartbeatMs)
+      ;(heartbeat as { unref?: () => void }).unref?.()
+
+      let released = false
+      return {
+        release: async () => {
+          if (released) return
+          released = true
+          clearInterval(heartbeat)
+          try {
+            await run(`DELETE FROM "${LIBSQL_LOCK_TABLE}" WHERE name = ? AND holder = ?`, [LOCK_NAME, holder])
+          }
+          catch {
+            // Best effort: an unreleased row goes stale and the next run
+            // clears it.
+          }
+        },
+      }
+    }
+
+    if (Date.now() - start >= timeoutMs)
+      throw new Error(`[migration-lock] another migration is in progress - the libSQL lock row in "${LIBSQL_LOCK_TABLE}" was held within timeout`)
+
+    await sleepWithJitter(backoff)
+    backoff = Math.min(backoff * 2, MAX_BACKOFF_MS)
+  }
 }

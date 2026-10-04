@@ -6,9 +6,10 @@ description: "Use when working with databases in a Stacks application."
 
 `stacks-database` · Data layer · model-invoked
 
-Connections, raw queries, SQL helpers and the four supported engines: SQLite,
-MySQL, PostgreSQL and DynamoDB. Covers what differs between them, which matters
-because local development is usually SQLite and production usually is not.
+Connections, raw queries, SQL helpers and the supported engines: SQLite, Turso
+(SQLite over the network), MySQL, PostgreSQL and DynamoDB. Covers what differs
+between them, which matters because local development is usually SQLite and
+production usually is not.
 
 ## When to reach for it
 
@@ -17,7 +18,7 @@ because local development is usually SQLite and production usually is not.
 - Migrations
 - Seeding
 - SQL helpers
-- Using SQLite/MySQL/PostgreSQL/DynamoDB
+- Using SQLite/Turso/MySQL/PostgreSQL/DynamoDB
 
 ## Covers
 
@@ -45,6 +46,7 @@ The sections an agent reads once the skill loads.
 - Re-exports from bun-query-builder
 - Compatibility Type Aliases (types.ts)
 - CLI Commands
+- Turso / libSQL (`DB_CONNECTION=turso`, alias `libsql`)
 - config/database.ts Shape
 - config/query-builder.ts (Query Builder Config)
 - Gotchas

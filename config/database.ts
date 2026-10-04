@@ -1,5 +1,4 @@
 import type { DatabaseConfig } from '@stacksjs/types'
-import type { SupportedDialect } from 'bun-query-builder'
 import { env } from '@stacksjs/env'
 /**
  * **Database Configuration**
@@ -9,7 +8,7 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  default: env.DB_CONNECTION as SupportedDialect || 'sqlite',
+  default: (env.DB_CONNECTION || 'sqlite') as DatabaseConfig['default'],
 
   /**
    * Where `buddy db:backup` copies each dump.
@@ -94,6 +93,17 @@ export default {
       password: env.DB_PASSWORD || '',
       prefix: '',
       sharded: !['0', 'false', 'no', 'off'].includes(String(env.DB_VITESS_SHARDED ?? 'true').toLowerCase()),
+    },
+
+    /**
+     * Turso / libSQL: SQLite over the network. Same SQL, same migrations as
+     * `sqlite`; only the transport differs. `libsql://` URLs use TLS. For a
+     * local server run `turso dev` and use `http://127.0.0.1:8080` (no token).
+     */
+    turso: {
+      url: env.TURSO_DATABASE_URL || '',
+      authToken: env.TURSO_AUTH_TOKEN || '',
+      prefix: '',
     },
 
     postgres: {

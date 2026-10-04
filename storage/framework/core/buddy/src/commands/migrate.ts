@@ -8,7 +8,7 @@ import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, frameworkRuntimePath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
-import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, relativeMigrationDirectory, resolveMigrationDirectory, stripSqlNoise } from '@stacksjs/database'
+import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, isLibsqlDriver, relativeMigrationDirectory, resolveMigrationDirectory, stripSqlNoise } from '@stacksjs/database'
 import { resultFailed } from '../result'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
@@ -190,7 +190,7 @@ export function validateMigrationDialect(
   if (process.env[DIALECT_OVERRIDE_ENV] !== '1') {
     const caps = dialectCapabilities(driver)
     const target = caps.wire === 'mysql' ? 'mysql' : caps.wire === 'postgres' ? 'postgres' : 'sqlite'
-    if (driver === 'sqlite' || driver === 'postgres' || caps.wire === 'mysql') {
+    if (driver === 'sqlite' || driver === 'postgres' || caps.wire === 'mysql' || isLibsqlDriver(driver)) {
       const audit = auditMigrationCorpus({ dir, target })
       if (!audit.empty && audit.incompatible.length > 0)
         return { valid: false, error: formatMigrationDialectError(audit, target, relativeDir) }
@@ -546,6 +546,9 @@ function currentDatabaseLabel(): string {
   const driver = (process.env.DB_CONNECTION || 'sqlite').toLowerCase()
   if (driver === 'sqlite')
     return process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
+  // The URL names the database; the token never leaves the env.
+  if (isLibsqlDriver(driver))
+    return process.env.TURSO_DATABASE_URL || 'the Turso database'
   return process.env.DB_DATABASE || 'stacks'
 }
 
@@ -1188,6 +1191,7 @@ export function migrate(buddy: CLI): void {
         mysql: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
         vitess: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
         postgres: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
+        turso: ['TURSO_DATABASE_URL'],
       }
       const missingEnv = (requiredEnv[target] ?? []).filter(k => !process.env[k])
 

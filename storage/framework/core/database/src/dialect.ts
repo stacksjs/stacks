@@ -177,6 +177,23 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
     requiresOnlineDdl: true,
     supportsCreateIndexIfNotExists: false,
   },
+  // Turso / libSQL: SQLite's SQL behind a network server. Everything that
+  // renders SQL or DDL treats it as SQLite - same grammar, same migration
+  // corpus, same capability row. Only the transport differs, and that lives
+  // in bun-query-builder (Hrana over HTTP), selected by the libSQL URL the
+  // connection carries. `libsql` is accepted as an alias (see
+  // `normalizeDatabaseDriver`).
+  turso: {
+    dialect: 'turso',
+    wire: 'sqlite',
+    queryBuilderDialect: 'sqlite',
+    identifierQuote: '"',
+    supportsForeignKeys: true,
+    supportsAutoIncrement: true,
+    supportsAtomicMultiTableTransactions: true,
+    requiresOnlineDdl: false,
+    supportsCreateIndexIfNotExists: true,
+  },
   postgres: {
     dialect: 'postgres',
     wire: 'postgres',
@@ -221,6 +238,7 @@ export function isVitessSharded(explicit?: boolean | string): boolean {
  * misconfigured.
  */
 export function dialectCapabilities(dialect: string, options: DialectCapabilityOptions = {}): DialectCapabilities {
+  dialect = normalizeDatabaseDriver(dialect)
   const caps = CAPABILITIES[dialect] ?? CAPABILITIES.sqlite as DialectCapabilities
   if (dialect !== 'vitess' || isVitessSharded(options.vitessSharded))
     return caps
@@ -238,7 +256,29 @@ export function dialectCapabilities(dialect: string, options: DialectCapabilityO
 
 /** Whether the framework has an explicit capability row for this dialect. */
 export function isKnownDialect(dialect: string): boolean {
-  return dialect in CAPABILITIES
+  return normalizeDatabaseDriver(dialect) in CAPABILITIES
+}
+
+/**
+ * The canonical name of a configured database driver.
+ *
+ * `libsql` is the protocol and `turso` the service most people know it by;
+ * both select the same driver, recorded as `turso`. Anything else is returned
+ * as written.
+ */
+export function normalizeDatabaseDriver(driver: string): string {
+  return driver === 'libsql' ? 'turso' : driver
+}
+
+/**
+ * Whether a driver is SQLite reached over the network (Turso / libSQL).
+ *
+ * Its SQL is SQLite's, so dialect checks treat it as `sqlite`. This is the
+ * question for the code that instead opens the database FILE - there is no
+ * file - or relies on SQLite being embedded and synchronous.
+ */
+export function isLibsqlDriver(driver: string | undefined | null): boolean {
+  return normalizeDatabaseDriver(String(driver ?? '')) === 'turso'
 }
 
 /**

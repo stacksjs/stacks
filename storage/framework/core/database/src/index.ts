@@ -36,6 +36,7 @@ export {
   createMysqlDatabase,
   createPostgresDatabase,
   createSqliteDatabase,
+  createTursoDatabase,
 } from './database'
 
 export type {
@@ -60,6 +61,7 @@ export type {
   MysqlConfig,
   PostgresConfig,
   SqliteConfig,
+  TursoConfig,
 } from './driver-config'
 
 // Core database utilities and default instance

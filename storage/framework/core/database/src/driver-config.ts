@@ -124,6 +124,22 @@ export interface VitessConfig extends NetworkedConnectionConfig {
 }
 
 /**
+ * Turso / libSQL configuration.
+ *
+ * SQLite's SQL behind a network server (Hrana over HTTP). It renders and
+ * migrates exactly as SQLite does; only the connection is different, so the
+ * shape is a URL and a token rather than a file path.
+ */
+export interface TursoConfig {
+  /** `libsql://<db>-<org>.turso.io`, or `http://127.0.0.1:8080` for `turso dev`. */
+  url: string
+  /** Database token. A secret: never logged. Not needed for a local `turso dev`. */
+  authToken?: string
+  /** Table prefix */
+  prefix?: string
+}
+
+/**
  * PostgreSQL specific configuration
  */
 export interface PostgresConfig extends NetworkedConnectionConfig {
@@ -186,6 +202,7 @@ export interface DatabaseConnections {
   mysql?: MysqlConfig
   singlestore?: SinglestoreConfig
   vitess?: VitessConfig
+  turso?: TursoConfig
   postgres?: PostgresConfig
   dynamodb?: DynamoDbConfig
 }
@@ -214,7 +231,7 @@ export interface FullDatabaseConfig {
 /**
  * Default configuration values for each driver
  */
-export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | VitessConfig | PostgresConfig | DynamoDbConfig>> = {
+export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | VitessConfig | TursoConfig | PostgresConfig | DynamoDbConfig>> = {
   sqlite: {
     database: 'database/stacks.sqlite',
     prefix: '',
@@ -249,6 +266,11 @@ export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlC
     prefix: '',
     ssl: false,
     sharded: true,
+  },
+  // A local `turso dev` server; a real database sets TURSO_DATABASE_URL.
+  turso: {
+    url: 'http://127.0.0.1:8080',
+    prefix: '',
   },
   postgres: {
     name: 'stacks',
@@ -305,6 +327,13 @@ export function getConnectionString(driver: StacksDialect, config: DatabaseConne
       return `postgres://${username}:${password}@${host}:${port}/${name}`
     }
 
+    // The URL alone: the token travels as a bearer header, never in a URL
+    // that could end up in a log.
+    case 'turso': {
+      const tursoConfig = config as TursoConfig
+      return tursoConfig.url
+    }
+
     default:
       throw new Error(`Unsupported driver: ${driver}`)
   }
@@ -353,6 +382,17 @@ export function validateDriverConfig(driver: StacksDialect, config: DatabaseConn
       const pgConfig = config as PostgresConfig
       if (!pgConfig.name) {
         errors.push('PostgreSQL requires a database name')
+      }
+      break
+    }
+
+    case 'turso': {
+      const tursoConfig = config as TursoConfig
+      if (!tursoConfig.url) {
+        errors.push('Turso requires a database URL (TURSO_DATABASE_URL)')
+      }
+      else if (!/^(?:libsql|https?|wss?):\/\//i.test(tursoConfig.url)) {
+        errors.push('Turso URLs start with libsql://, https://, http://, ws:// or wss://')
       }
       break
     }
@@ -423,6 +463,13 @@ export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[key
         sharded: !['0', 'false', 'no', 'off'].includes(String(env.DB_VITESS_SHARDED ?? 'true').toLowerCase()),
       } as VitessConfig
 
+    case 'turso':
+      return {
+        url: env.TURSO_DATABASE_URL || '',
+        authToken: env.TURSO_AUTH_TOKEN || undefined,
+        prefix: env.DB_PREFIX || '',
+      } as TursoConfig
+
     case 'postgres':
       return {
         name: env.DB_DATABASE || 'stacks',
@@ -443,9 +490,14 @@ export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[key
  * Detect the best available driver based on environment
  */
 export function detectDriver(): StacksDialect {
-  // Check for explicit configuration
+  // Check for explicit configuration. `libsql` is an alias for `turso`.
   if (env.DB_CONNECTION) {
-    return env.DB_CONNECTION as StacksDialect
+    return (env.DB_CONNECTION === 'libsql' ? 'turso' : env.DB_CONNECTION) as StacksDialect
+  }
+
+  // A Turso database URL with nothing else configured
+  if (env.TURSO_DATABASE_URL) {
+    return 'turso'
   }
 
   // Check for PostgreSQL connection info

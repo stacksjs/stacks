@@ -196,6 +196,27 @@ export function uniqueIndexIsRestorable(db: Database, index: DeclaredUniqueIndex
  * duplicate rows got in while the index was missing, and the migrate must say
  * so rather than finish green on a table that no longer enforces the rule.
  */
+/**
+ * The declared unique indexes a later rebuild dropped and that can still be
+ * put back, in corpus order. What {@link restoreDroppedUniqueIndexes}
+ * restores, for a caller that has to execute the statements elsewhere - a
+ * libSQL server, read through a schema replica.
+ */
+export function restorableMissingUniqueIndexes(db: Database, migrationsDir: string): DeclaredUniqueIndex[] {
+  const missing: DeclaredUniqueIndex[] = []
+  const seen = new Set<string>()
+  for (const indexes of corpusUniqueIndexes(readCorpus(migrationsDir)).values()) {
+    for (const index of indexes) {
+      const key = index.name.toLowerCase()
+      if (seen.has(key) || hasIndex(db, index.name) || !uniqueIndexIsRestorable(db, index))
+        continue
+      seen.add(key)
+      missing.push(index)
+    }
+  }
+  return missing
+}
+
 export function restoreDroppedUniqueIndexes(db: Database, migrationsDir: string): DeclaredUniqueIndex[] {
   const restored: DeclaredUniqueIndex[] = []
 

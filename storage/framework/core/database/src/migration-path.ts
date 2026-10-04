@@ -16,6 +16,10 @@ export function resolveMigrationDirectory(dialect: string, options: {
   configured?: string
   snapshotDir?: string
 } = {}): string {
+  // Turso / libSQL runs SQLite's SQL, so it shares SQLite's corpus rather
+  // than starting an empty one of its own.
+  if (dialect === 'turso' || dialect === 'libsql')
+    dialect = 'sqlite'
   const cwd = options.cwd ?? process.cwd()
   const configured = process.env.DB_MIGRATIONS_PATH || options.configured || DEFAULT_MIGRATION_DIR
   const absoluteConfigured = isAbsolute(configured) ? configured : join(cwd, configured)

@@ -106,11 +106,16 @@ try {
 }
 catch {
   log.debug(`[orm] No config/qb.ts override found - deriving config from DB_CONNECTION`)
-  const dialect = (env.DB_CONNECTION as 'sqlite' | 'mysql' | 'postgres' | undefined) || 'sqlite'
+  const connection = env.DB_CONNECTION || 'sqlite'
+  // Turso / libSQL renders SQLite SQL; its URL selects the network transport.
+  const libsql = connection === 'turso' || connection === 'libsql'
+  const dialect = (libsql ? 'sqlite' : connection) as 'sqlite' | 'mysql' | 'postgres'
   setConfig({
     ...defaultConfig,
     dialect,
-    database: dialect === 'sqlite'
+    database: libsql
+      ? { database: env.TURSO_DATABASE_URL || '', url: env.TURSO_DATABASE_URL || '', authToken: env.TURSO_AUTH_TOKEN || undefined }
+      : dialect === 'sqlite'
       ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
       : {
           database: env.DB_DATABASE || 'stacks',

@@ -1,10 +1,10 @@
 ---
 title: Database Package
-description: "A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, PostgreSQL, SingleStore, and Vitess, built on top of bun-query-builder."
+description: "A powerful database abstraction layer providing seamless driver switching between SQLite, Turso, MySQL, PostgreSQL, SingleStore, and Vitess, built on top of bun-query-builder."
 ---
 # Database Package
 
-A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, PostgreSQL, SingleStore, and Vitess, built on top of bun-query-builder.
+A powerful database abstraction layer providing seamless driver switching between SQLite, Turso, MySQL, PostgreSQL, SingleStore, and Vitess, built on top of bun-query-builder.
 
 For connection pooling, read replicas, and sharding, see [Scaling the Database](/guide/database-scaling).
 
@@ -66,6 +66,12 @@ DB_CONNECTION=singlestore
 DB_HOST=svc-xxxx.svc.singlestore.com
 DB_PORT=3306
 DB_SSL=true
+
+# For Turso / libSQL (SQLite over the network). `libsql://` uses TLS;
+# a local `turso dev` server is http://127.0.0.1:8080 with no token.
+DB_CONNECTION=turso
+TURSO_DATABASE_URL=libsql://app-org.turso.io
+TURSO_AUTH_TOKEN=
 
 # For Vitess. DB_DATABASE is a KEYSPACE, and 15306 is vtgate's port -
 # 3306 would reach one tablet's MySQL and bypass sharding entirely.
@@ -620,10 +626,13 @@ database.switchDriver('postgres', {
 | Driver | Wire protocol | Default port | Notes |
 | --- | --- | --- | --- |
 | `sqlite` | embedded | - | Single connection, no pooling. |
+| `turso` | libSQL (Hrana over HTTP) | - | SQLite's SQL on a Turso or `sqld` server. Same migrations as `sqlite`. Alias: `libsql`. |
 | `mysql` | MySQL | 3306 | |
 | `postgres` | PostgreSQL | 5432 | |
 | `singlestore` | MySQL | 3306 | Distributed. No foreign keys. TLS required on managed (Helios) endpoints. |
 | `vitess` | MySQL | 15306 | MySQL behind vtgate. Unsharded keyspaces retain MySQL relational features; sharded keyspaces require application-generated IDs and a [VSchema](/guide/database-scaling#generating-a-vschema). |
+
+`turso` is SQLite behind a network server, so it renders, migrates and introspects exactly as `sqlite` does and uses the same migration corpus - switching between the two needs no regeneration. Only the connection differs. Requests travel over libSQL's Hrana-over-HTTP protocol with no client library: a statement outside a transaction is one request, so concurrent queries run concurrently, and `db.transaction()` holds one server stream for its duration. Integers beyond JavaScript's safe range come back as `bigint`, and a refused token fails with `HTTP 401` and a message that never contains it. Inside `transaction()`, write through the `tx` handle: model writes use their own connection, as on PostgreSQL and MySQL, and wait while the transaction holds the write lock. Turso and `sqld` refuse `VACUUM`, `ATTACH`, temporary tables and most `PRAGMA`s.
 
 The MySQL-wire drivers all render identical SQL - placeholders, backtick quoting, upserts, `LAST_INSERT_ID()`. They differ only in what DDL the engine accepts, which Stacks checks before running a migration rather than discovering halfway through one.
 
@@ -775,6 +784,7 @@ Size the pool against your database's `max_connections`, remembering to multiply
 |----------|-------------|
 | `createDatabase(options)` | Create database with options |
 | `createSqliteDatabase(path)` | Create SQLite database |
+| `createTursoDatabase(url, authToken?)` | Create Turso / libSQL database |
 | `createPostgresDatabase(config)` | Create PostgreSQL database |
 | `createMysqlDatabase(config)` | Create MySQL database |
 | `Database.fromConfig(config)` | Create from Stacks config |

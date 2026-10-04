@@ -19,7 +19,7 @@ import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { indexSqlForDialect, isDuplicateIndexError } from './dialect'
+import { dialectCapabilities, indexSqlForDialect, isDuplicateIndexError } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
@@ -293,7 +293,7 @@ export async function ensureNotificationForeignKeys(options: { verbose?: boolean
   // SQLite cannot add a foreign key to an existing table at all - it needs a
   // twelve-step rebuild - and the corpus creates these tables with the key
   // inline there anyway. Nothing to repair.
-  if (dbDriver === 'sqlite')
+  if (dialectCapabilities(dbDriver).wire === 'sqlite')
     return
 
   for (const table of ['notifications', 'notification_deliveries'] as const) {

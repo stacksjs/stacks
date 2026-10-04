@@ -625,6 +625,8 @@ async function currentDialect(): Promise<LedgerDialect | 'other'> {
   const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
   if (driver === 'vitess' || driver === 'singlestore') return 'mysql'
+  // Turso / libSQL keeps its ledger in SQLite's shape.
+  if (driver === 'turso' || driver === 'libsql') return 'sqlite'
   return 'other'
 }
 

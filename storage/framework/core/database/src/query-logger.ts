@@ -8,6 +8,7 @@ import { log } from '@stacksjs/logging'
 import { parseCaptureBindings, parseSensitiveColumn, persistQueryLogValues, queryLogError } from './query-log-bindings'
 import { normalizeQuery, parseQuery } from './query-parser'
 import { db, getDatabaseDialect } from './utils'
+import { isLibsqlDriver } from './dialect'
 
 /**
  * Soft dependency on the router's query tracker. Importing it directly
@@ -525,7 +526,7 @@ interface ExplainResult {
 // path that lets `database.default` come from user-controllable input
 // (e.g. a multi-tenant DB picker) could let an attacker steer EXPLAIN's
 // keyword fragment, which is interpolated directly into the SQL we send.
-const EXPLAIN_DIALECTS = new Set(['sqlite', 'mysql', 'postgres'])
+const EXPLAIN_DIALECTS = new Set(['sqlite', 'turso', 'mysql', 'postgres'])
 
 async function getExplainPlan(query: string): Promise<ExplainResult | null> {
   // SQLite & MySQL/PostgreSQL all accept `EXPLAIN <select>` as a prefix.
@@ -534,7 +535,8 @@ async function getExplainPlan(query: string): Promise<ExplainResult | null> {
   // through the slow-query path forever).
   try {
     const rawDriver = (await import('@stacksjs/config')).config?.database?.default
-    const driver = typeof rawDriver === 'string' ? rawDriver : 'sqlite'
+    // Turso runs SQLite, so it explains like SQLite.
+    const driver = typeof rawDriver === 'string' ? (isLibsqlDriver(rawDriver) ? 'sqlite' : rawDriver) : 'sqlite'
     if (!EXPLAIN_DIALECTS.has(driver)) return null
     let sqlText: string
     if (driver === 'mysql') sqlText = `EXPLAIN FORMAT=JSON ${query}`
@@ -638,7 +640,20 @@ function generateOptimizationSuggestions(explainResult: any, logRecord: QueryLog
 async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true): Promise<boolean> {
   try {
     const values = logRecords as unknown as Record<string, unknown>[]
-    if (values.length > 1 && getDatabaseDialect() === 'sqlite') {
+    const libsql = isLibsqlDriver(config.database?.default)
+    const batch = libsql ? (db as unknown as { sql?: { batch?: (statements: Array<{ sql: string, args: unknown[] }>) => Promise<unknown> } }).sql?.batch : undefined
+    if (values.length > 1 && getDatabaseDialect() === 'sqlite' && batch) {
+      // Turso / libSQL: an atomic batch on its own server stream. Nothing
+      // else can join it, and a failure (including a partial RAISE(FAIL)
+      // insert) undoes all of it - what the savepoint below does for a file.
+      const columns = Object.keys(values[0]!)
+      const identifiers = columns.map(column => `"${column.replaceAll('"', '""')}"`).join(', ')
+      const row = `(${columns.map(() => '?').join(', ')})`
+      const statement = `INSERT INTO query_logs (${identifiers}) VALUES ${values.map(() => row).join(', ')}`
+      const bindings = values.flatMap(value => columns.map(column => value[column] ?? null))
+      await batch([{ sql: statement, args: bindings }])
+    }
+    else if (values.length > 1 && getDatabaseDialect() === 'sqlite' && !libsql) {
       // SQLite shares one connection. An awaited transaction lets unrelated
       // application writes join this batch and be undone by its rollback.
       // Keep the savepoint, INSERT and release synchronous as one operation.
