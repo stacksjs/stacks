@@ -101,4 +101,37 @@ describe('dashboard layout client architecture', () => {
     expect(appearance).toContain('const sections = {{ navSections }}')
     expect(appearance).not.toContain('const sections = navSections')
   })
+
+  // The server-to-client bridge serializes what the server block publishes.
+  // The map was published as JSON.stringify(...), so it arrived as the JSON
+  // TEXT; Object.entries over a string yields index/character pairs, and
+  // `required.some` threw for every signed-in viewer before the filter ran
+  // (stacksjs/campushq vendored that copy). This runs the layout's own
+  // initializer and the client's iteration over what the bridge delivers.
+  test('publishes the sidebar role map as a map the client can iterate', () => {
+    const server = layoutSource.match(/<script server>([\s\S]*?)<\/script>/)?.[1] ?? ''
+    // Up to the `)` that closes it, alone at the start of a line.
+    const initializer = server.match(/export const sidebarRoleMap\b[^=]*=\s*([\s\S]*?\n\))/)?.[1]
+    expect(initializer).toBeDefined()
+
+    const js = new Bun.Transpiler({ loader: 'ts' }).transformSync(`export default (sidebarSections) => (${initializer})`)
+    // eslint-disable-next-line no-new-func
+    const build = new Function(`${js.replace('export default', 'return')}`)() as (sections: unknown) => unknown
+    const sections = [
+      { items: [{ id: 'users', roles: ['admin'] }, { id: 'home' }, { id: 'logs', roles: [] }] },
+      { items: [{ id: 'deploys', roles: ['admin', 'dev'] }] },
+    ]
+
+    const received = JSON.parse(JSON.stringify(build(sections))) as unknown
+    expect(typeof received).toBe('object')
+    expect(received).toEqual({ users: ['admin'], deploys: ['admin', 'dev'] })
+
+    const roleList = ['dev']
+    const allowed = Object.entries(received as Record<string, string[]>)
+      .map(([itemId, required]) => [itemId, required.some(role => roleList.includes(role))])
+    expect(allowed).toEqual([['users', false], ['deploys', true]])
+
+    // Declared, so `typecheck:views` types the client's view of it.
+    expect(server).toContain('defineClientPayload({ sidebarRoleMap })')
+  })
 })
