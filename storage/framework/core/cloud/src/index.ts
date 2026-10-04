@@ -13,27 +13,43 @@ export * from './helpers'
 export type * from './types'
 
 /**
- * The hand-rolled AWS clients.
+ * The mail servers, and the AWS clients `@stacksjs/buddy`'s mail commands use.
  *
- * Exported because `@stacksjs/buddy`'s mail commands need them and this package
- * builds to one bundled `dist/index.js`: a `@stacksjs/cloud/imap/s3` subpath
- * resolves, per the `./*` export, to a `dist/imap/s3.js` that the build never
- * writes. Reaching them by relative path instead is what those commands used to
- * do, and it only ever worked inside this repository.
+ * Exported from here because this package builds to one bundled
+ * `dist/index.js`: a `@stacksjs/cloud/imap/s3` subpath resolves, per the `./*`
+ * export, to a `dist/imap/s3.js` that the build never writes.
+ *
+ * The clients are ts-cloud's own, under the names this package has always
+ * exported. They used to be vendored copies under `imap/` that drifted: the
+ * S3 bucket configuration getters and SES's `getSendQuota` and
+ * `getSendStatistics` read `result.<RootElement>` from a parser that strips
+ * the root, so each returned undefined, and `getBucketLocation` always said
+ * us-east-1. ts-cloud fixed those (0.16.19 and 0.16.20) and took the copies'
+ * one local fix, the Secrets Manager `ClientRequestToken` (0.16.21), so the
+ * copies are gone. The classes come from the package root, so they are the
+ * same classes every other ts-cloud caller gets; only types and the pure
+ * `buildQueryParams` helper come from the `./aws` subpath, which is the one
+ * place ts-cloud exports them.
  */
-export * from './imap/client'
-export * from './imap/secrets-manager'
 export * from './imap/smtp-server'
-
-/**
- * ts-cloud's S3 client, under the name this package has always exported.
- *
- * This used to be a vendored copy (`imap/s3.ts`) that drifted: its bucket
- * configuration getters read `result.<RootElement>` from a parser that strips
- * the root, so `getBucketVersioning`, `getBucketCors`, `getPublicAccessBlock`
- * and the rest returned undefined for configured buckets, and
- * `getBucketLocation` always said us-east-1. ts-cloud fixed that and is a
- * superset of the copy, so the copy is gone and the export points upstream.
- */
-export { S3Client } from '@stacksjs/ts-cloud'
-export type { S3CopyOptions, S3ListOptions, S3Object, S3SyncOptions } from '@stacksjs/ts-cloud'
+export { AWSClient, S3Client, SecretsManagerClient } from '@stacksjs/ts-cloud'
+export type {
+  AWSClientConfig,
+  AWSError,
+  AWSRequestOptions,
+  S3CopyOptions,
+  S3ListOptions,
+  S3Object,
+  S3SyncOptions,
+} from '@stacksjs/ts-cloud'
+export { buildQueryParams } from '@stacksjs/ts-cloud/aws'
+export type {
+  AWSCredentials,
+  CreateSecretOptions,
+  GetSecretValueOptions,
+  PutSecretValueOptions,
+  RotationRules,
+  Secret,
+  SecretValue,
+  UpdateSecretOptions,
+} from '@stacksjs/ts-cloud/aws'

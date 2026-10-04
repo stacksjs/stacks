@@ -14,8 +14,7 @@ import * as net from 'node:net'
 import * as tls from 'node:tls'
 import * as fs from 'node:fs'
 import * as crypto from 'node:crypto'
-import { SESClient } from './ses'
-import { S3Client } from '@stacksjs/ts-cloud'
+import { S3Client, SESClient } from '@stacksjs/ts-cloud'
 
 export interface SmtpServerConfig {
   port?: number

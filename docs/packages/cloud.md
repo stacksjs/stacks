@@ -279,8 +279,9 @@ const distributionId = await getCloudFrontDistributionId()
 
 The clients the mail commands need, re-exported because this package builds to
 a single bundled `dist/index.js` and a `@stacksjs/cloud/imap/s3` subpath would
-resolve to a file the build never writes. `S3Client` is ts-cloud's own client
-(the same class `@stacksjs/ts-cloud` exports), not a copy:
+resolve to a file the build never writes. `AWSClient`, `S3Client` and
+`SecretsManagerClient` are ts-cloud's own clients (the same classes
+`@stacksjs/ts-cloud` exports), not copies:
 
 ```typescript
 import { AWSClient, S3Client, SecretsManagerClient, SmtpServer, startSmtpServer } from '@stacksjs/cloud'
