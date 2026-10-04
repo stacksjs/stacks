@@ -119,6 +119,18 @@ describe('iMessage inbox driver', () => {
     expect((await driver.messages(`direct:${ALICE}`, { includeDeleted: true })).map(m => m.text)).toEqual(['one', 'two'])
   })
 
+  it('gives a photo sent on its own no text, not the invisible placeholder', async () => {
+    const { chat, driver } = setup()
+    const alice = chat.direct(ALICE)
+    chat.add(alice, { text: '\uFFFC', attachment: { name: 'IMG_1.HEIC', mime: 'image/heic' } })
+    chat.add(alice, { text: 'look \uFFFC', attachment: { name: 'IMG_2.HEIC', mime: 'image/heic' } })
+    const [photo, captioned] = await driver.messages(`direct:${ALICE}`)
+    expect(photo!.text).toBeNull()
+    expect(photo!.attachments).toHaveLength(1)
+    expect(captioned!.text).toBe('look')
+    expect((await driver.conversations())[0]!.preview).toBe('look')
+  })
+
   it('reports a missing database as Messages not set up', async () => {
     const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false, platform: 'darwin' })
     expect(await driver.status()).toMatchObject({ connected: false, needs: 'messages-signed-out' })

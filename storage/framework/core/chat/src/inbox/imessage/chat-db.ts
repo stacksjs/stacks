@@ -51,6 +51,19 @@ export interface MessageQuery {
   includeDeleted?: boolean
 }
 
+/**
+ * A message's readable text, or null when it has none.
+ *
+ * Messages writes U+FFFC (the object replacement character) into the text
+ * wherever an attachment sits, so a photo sent on its own has the text
+ * "\uFFFC": not empty, and invisible. Shown as text it is an empty bubble.
+ */
+export function messageText(plain: string | null, attributedBody: Uint8Array | null): string | null {
+  const raw = plain?.trim() ? plain : decodeAttributedBody(attributedBody)
+  const text = raw?.replace(/\uFFFC/g, '').trim()
+  return text ? text : null
+}
+
 export class MessagesAccessError extends Error {
   readonly needsFullDiskAccess: boolean
 
@@ -269,7 +282,7 @@ export class MessagesDb {
         unreadCount: row.unread_count,
         lastMessageAt: last ? appleDateToUnixMs(last.date) : null,
         lastMessageRowId: row.last_rowid ?? 0,
-        lastMessageText: last ? (last.text?.trim() ? last.text : decodeAttributedBody(last.attributedBody)) : null,
+        lastMessageText: last ? messageText(last.text, last.attributedBody) : null,
         lastMessageFromMe: last?.is_from_me === 1,
       }
     })
@@ -341,7 +354,7 @@ export class MessagesDb {
         guid: row.guid,
         chatGuid: row.chat_guid,
         kind,
-        text: row.text?.trim() ? row.text : decodeAttributedBody(row.attributedBody),
+        text: messageText(row.text, row.attributedBody),
         isFromMe: row.is_from_me === 1,
         sentAt: appleDateToUnixMs(row.date) ?? 0,
         sender: row.sender ? normalizeHandle(row.sender) : null,
