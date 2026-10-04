@@ -1541,12 +1541,12 @@
         "ts-syntax-highlighter": "^0.2.17"
       }
     },
-    "@stacksjs/desktop@0.2.357": {
+    "@stacksjs/desktop@0.2.358": {
       "name": "@stacksjs/desktop",
-      "version": "0.2.357",
+      "version": "0.2.358",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.357.tgz",
-      "integrity": "sha512-My06l1+e69y4Do6JlkQfkEkqHnRFrbWrbr/WbmQvLqBwFLFN7uAMUHOOFwxdIJtuF4iGWRFscYjNTFJFk6nWvA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.358.tgz",
+      "integrity": "sha512-CTl8hrI4eNpzZ02Clauhc1JWlHt1RSEKv3x9jGeyLFRd3Dd7QXswsUmEjOWqHrGZI+lTYe1QC32DL/1GVIBseQ==",
       "dependencies": {
         "craft-native": ">=0.0.104"
       }
@@ -1625,12 +1625,12 @@
         "rpx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/sanitizer@0.2.357": {
+    "@stacksjs/sanitizer@0.2.358": {
       "name": "@stacksjs/sanitizer",
-      "version": "0.2.357",
+      "version": "0.2.358",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.357.tgz",
-      "integrity": "sha512-PfwaEeiHgSzH1aPILRGz+s99E1E8IGuSvsvBxgeTXt7FObtxnoTYEt6MknXp3q2ETpDJwkTG5q+cNEVnujQBXQ=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.358.tgz",
+      "integrity": "sha512-KfDglEhFmB4ctVLJKlcMp7NgHPq1VGXYXiH0K2Zb3W1H++zFruNmWytN0q1RuDCKE6QR9QrLXZdJiLiKM9l1CQ=="
     },
     "@stacksjs/stx@0.2.358": {
       "name": "@stacksjs/stx",
