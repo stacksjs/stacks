@@ -1,5 +1,50 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.41...v0.75.42)
+
+## ✨ Features
+
+- **chat**: inbox drivers that read and archive iMessage, Slack and Discord ([26546ee](https://github.com/stacksjs/stacks/commit/26546ee)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **vscode**: one self-contained Stacks extension - stx, pickier and env built in, no extension pack ([8bb7499](https://github.com/stacksjs/stacks/commit/8bb7499)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2020](https://github.com/stacksjs/stacks/issues/2020))
+- **database**: Turso / libSQL driver ([a5a7a2f](https://github.com/stacksjs/stacks/commit/a5a7a2f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#977](https://github.com/stacksjs/stacks/issues/977))
+- **cloud**: CloudFront origin failover to a replica bucket in another region ([b1988c6](https://github.com/stacksjs/stacks/commit/b1988c6)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1159](https://github.com/stacksjs/stacks/issues/1159))
+- **desktop**: sign Mac App Store packages from a keychain file ([01d50df](https://github.com/stacksjs/stacks/commit/01d50df)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2199](https://github.com/stacksjs/stacks/issues/2199), [#2062](https://github.com/stacksjs/stacks/issues/2062))
+- **gdpr**: data-subject access, erasure, retention and a processing register ([78218a1](https://github.com/stacksjs/stacks/commit/78218a1)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#365](https://github.com/stacksjs/stacks/issues/365), [#365](https://github.com/stacksjs/stacks/issues/365))
+- **storage**: generate file previews once, as a storage item task ([ac5bab3](https://github.com/stacksjs/stacks/commit/ac5bab3)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#308](https://github.com/stacksjs/stacks/issues/308))
+- **commerce**: import customers and orders from Shopify, WooCommerce and Shopware ([6d13b43](https://github.com/stacksjs/stacks/commit/6d13b43)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2853](https://github.com/stacksjs/stacks/issues/2853))
+- **desktop**: lifecycle evidence on the published Craft archive, and attended probe results ([14854a2](https://github.com/stacksjs/stacks/commit/14854a2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2059](https://github.com/stacksjs/stacks/issues/2059), [#2062](https://github.com/stacksjs/stacks/issues/2062), [#877](https://github.com/stacksjs/stacks/issues/877))
+
+## 🐛 Bug Fixes
+
+- **router**: only report possible N+1 queries inside a request ([5de7797](https://github.com/stacksjs/stacks/commit/5de7797)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: what live WooCommerce and Shopware stores showed the account import ([d249a01](https://github.com/stacksjs/stacks/commit/d249a01)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2853](https://github.com/stacksjs/stacks/issues/2853))
+- **cloud**: replace the vendored AWS, SES and Secrets Manager clients with ts-cloud's ([9da4e33](https://github.com/stacksjs/stacks/commit/9da4e33)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: export ts-cloud's S3Client instead of a drifted copy ([cf7cb9d](https://github.com/stacksjs/stacks/commit/cf7cb9d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: read S3 object visibility from the grants ts-cloud returns ([82fe69f](https://github.com/stacksjs/stacks/commit/82fe69f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **vscode**: leave .stx to the stx extension and install it through the pack ([43adf99](https://github.com/stacksjs/stacks/commit/43adf99)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2020](https://github.com/stacksjs/stacks/issues/2020), [#2020](https://github.com/stacksjs/stacks/issues/2020))
+
+## ✅ Tests
+
+- guard only runtime action code against the database tooling barrel ([1d5c877](https://github.com/stacksjs/stacks/commit/1d5c877)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#365](https://github.com/stacksjs/stacks/issues/365))
+
+## 💚 Continuous Integration
+
+- pin the pantry action and CLI to v0.11.68 ([8b16fb7](https://github.com/stacksjs/stacks/commit/8b16fb7)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2199](https://github.com/stacksjs/stacks/issues/2199))
+- install the VS Code extension's dependencies before the defaults tests ([1e1b486](https://github.com/stacksjs/stacks/commit/1e1b486)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2020](https://github.com/stacksjs/stacks/issues/2020))
+
+## 🔧 Chores
+
+- **deps**: ts-pantry 0.11.68 ([9841c7d](https://github.com/stacksjs/stacks/commit/9841c7d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2199](https://github.com/stacksjs/stacks/issues/2199))
+- **deps**: ts-cloud 0.16.23 ([f042b5c](https://github.com/stacksjs/stacks/commit/f042b5c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: ts-cloud 0.16.21 ([f9c71a6](https://github.com/stacksjs/stacks/commit/f9c71a6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: pickier ^0.1.67 and better-dx ^0.2.37 ([e1cdf00](https://github.com/stacksjs/stacks/commit/e1cdf00)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1377](https://github.com/stacksjs/stacks/issues/1377))
+- **deps**: ts-cloud 0.16.19 ([f2f1877](https://github.com/stacksjs/stacks/commit/f2f1877)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: stx 0.2.350, dtsx 0.11.17, ts-cloud 0.16.17 and the pantry v0.11.67 action ([07a989c](https://github.com/stacksjs/stacks/commit/07a989c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2018](https://github.com/stacksjs/stacks/issues/2018), [#234](https://github.com/stacksjs/stacks/issues/234), [#202](https://github.com/stacksjs/stacks/issues/202))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.40...v0.75.41)
 
 ## ✨ Features
