@@ -34,7 +34,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -80,7 +80,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -222,7 +222,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -365,7 +365,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -456,7 +456,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -597,7 +597,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -623,7 +623,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -667,7 +667,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 
@@ -758,7 +758,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@728fc7b9bbaeb16958cd40d6272f3ca3f874df5d # v0.11.67
         with:
-          version: '0.11.65'
+          version: '0.11.67'
           install: 'false'
           packages: 'bun@${{ env.BUN_VERSION }}'
 

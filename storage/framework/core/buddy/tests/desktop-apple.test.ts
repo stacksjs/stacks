@@ -3,6 +3,7 @@ import { describe, expect, it, test } from 'bun:test'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import process from 'node:process'
 import {
   buildUniversalPayload,
   captureCommand,
@@ -15,6 +16,7 @@ import {
   renderHelperEntitlements,
   isAppleCategory,
   renderInfoPlist,
+  resolveAppleDesktopConfig,
   signingPlan,
   storeRejectionFindings,
   validateAppleDesktopConfig,
@@ -114,6 +116,39 @@ describe('Mac App Store desktop automation', () => {
       expect(args[0]).toBe('codesign')
       expect(args).toContain('--timestamp')
       expect(args[args.indexOf('--sign') + 1]).toBe('Apple Distribution: Example (TEAM123456)')
+    }
+  })
+
+  test('signs from a given keychain file without touching the search list', () => {
+    const input = {
+      identity: '3rd Party Mac Developer Application: Example (TEAM123456)',
+      appPath: '/build/apple/Example.app',
+      helperPath: '/build/apple/Example.app/Contents/MacOS/craft-runtime',
+      appEntitlements: '/build/apple/app.entitlements',
+      helperEntitlements: '/build/apple/helper.entitlements',
+    }
+
+    for (const args of signingPlan({ ...input, keychain: '/tmp/signing.keychain-db' })) {
+      expect(args[args.indexOf('--keychain') + 1]).toBe('/tmp/signing.keychain-db')
+      // codesign reads options before the target, so the order is part of the contract.
+      expect(args.indexOf('--keychain')).toBeLessThan(args.indexOf('--sign'))
+    }
+    for (const args of signingPlan(input))
+      expect(args).not.toContain('--keychain')
+  })
+
+  test('resolves the keychain from the option or APPLE_KEYCHAIN', () => {
+    const previous = process.env.APPLE_KEYCHAIN
+    try {
+      process.env.APPLE_KEYCHAIN = '/tmp/from-env.keychain-db'
+      expect(resolveAppleDesktopConfig().keychain).toBe('/tmp/from-env.keychain-db')
+      expect(resolveAppleDesktopConfig({ keychain: '/tmp/from-option.keychain-db' }).keychain).toBe('/tmp/from-option.keychain-db')
+      delete process.env.APPLE_KEYCHAIN
+      expect(resolveAppleDesktopConfig().keychain).toBeUndefined()
+    }
+    finally {
+      if (previous === undefined) delete process.env.APPLE_KEYCHAIN
+      else process.env.APPLE_KEYCHAIN = previous
     }
   })
 

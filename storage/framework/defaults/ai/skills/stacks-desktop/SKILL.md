@@ -240,6 +240,15 @@ uses App Store Connect API-key authentication for validation/upload.
 Start with `validate-only: true`. Upload only after the signed artifact passes
 local launch and UI QA.
 
+To package on a developer machine without importing distribution keys into the
+login keychain, generate keys and certificates with `buddy desktop:apple:csr`
+and `buddy desktop:apple:provision --apply`, import the two `.p12` files into a
+throwaway keychain file, and point `--keychain <path>` (or `APPLE_KEYCHAIN`) at
+it. `codesign` and `productbuild` then look for identities in that file only,
+so the search list never changes. The Mac App Distribution identity is named
+`3rd Party Mac Developer Application: ...` and the installer one
+`3rd Party Mac Developer Installer: ...`.
+
 Human-owned prerequisites that Buddy does not pretend to automate:
 
 - Apple Developer Program enrollment and agreement acceptance
@@ -257,6 +266,7 @@ Repository variables:
 - `DESKTOP_URL`
 - `APPLE_APP_SIGNING_IDENTITY`
 - `APPLE_INSTALLER_SIGNING_IDENTITY`
+- `APPLE_KEYCHAIN` (local only, optional): sign from this keychain file instead of the search list
 
 Repository secrets:
 

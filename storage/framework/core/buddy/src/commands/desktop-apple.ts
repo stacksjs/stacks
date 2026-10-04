@@ -45,6 +45,7 @@ interface AppleDesktopOptions {
   universal?: boolean
   craftArm64?: string
   craftX64?: string
+  keychain?: string
 }
 
 export interface AppleDesktopConfig {
@@ -70,6 +71,13 @@ export interface AppleDesktopConfig {
   universal?: boolean
   craftArm64?: string
   craftX64?: string
+  /**
+   * Find the signing identities in this keychain file only, instead of the
+   * user's search list. Signing then needs neither an import into the login
+   * keychain nor a change to the search list - which matters on a developer
+   * machine as much as on a runner (stacksjs/stacks#2199).
+   */
+  keychain?: string
 }
 
 const REQUIRED_TOOLS = ['codesign', 'security', 'productbuild', 'pkgutil', 'xcrun']
@@ -101,6 +109,7 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}): Ap
   const apiKeyPath = options.apiKeyPath || env('APP_STORE_CONNECT_API_KEY_PATH')
   const craftArm64 = options.craftArm64 || env('CRAFT_BIN_ARM64')
   const craftX64 = options.craftX64 || env('CRAFT_BIN_X64')
+  const keychain = options.keychain || env('APPLE_KEYCHAIN')
   return {
     appName: options.appName || env('APPLE_APP_NAME') || env('APP_NAME') || metadata.name,
     bundleId: options.bundleId || env('APPLE_BUNDLE_ID'),
@@ -119,6 +128,7 @@ export function resolveAppleDesktopConfig(options: AppleDesktopOptions = {}): Ap
     universal: Boolean(options.universal) || env('APPLE_UNIVERSAL') === 'true',
     craftArm64: craftArm64 ? resolve(craftArm64) : undefined,
     craftX64: craftX64 ? resolve(craftX64) : undefined,
+    keychain: keychain ? resolve(keychain) : undefined,
   }
 }
 
@@ -367,6 +377,8 @@ export interface SigningPlanInput {
   helperPath: string
   appEntitlements: string
   helperEntitlements: string
+  /** Restrict the identity lookup to this keychain file. */
+  keychain?: string
 }
 
 /**
@@ -393,6 +405,7 @@ export function signingPlan(input: SigningPlanInput): string[][] {
     'runtime',
     '--entitlements',
     entitlements,
+    ...(input.keychain ? ['--keychain', input.keychain] : []),
     '--sign',
     input.identity,
     target,
@@ -530,9 +543,9 @@ export function launcherSliceCompileArgs(base: string[], architecture: DarwinArc
   return ['bun', ...base, `--target=bun-darwin-${architecture}`]
 }
 
-function signingIdentityExists(identity: string): boolean {
+function signingIdentityExists(identity: string, keychain?: string): boolean {
   if (!identity) return false
-  const result = Bun.spawnSync(['security', 'find-identity', '-v'], {
+  const result = Bun.spawnSync(['security', 'find-identity', '-v', ...(keychain ? [keychain] : [])], {
     stdout: 'pipe',
     stderr: 'pipe',
   })
@@ -563,10 +576,13 @@ function sha256(path: string): string {
 
 async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false): Promise<string> {
   const errors = validateAppleDesktopConfig(config, false)
-  if (!signingIdentityExists(config.appSigningIdentity))
-    errors.push(`App signing identity is not installed: ${config.appSigningIdentity}`)
-  if (!signingIdentityExists(config.installerSigningIdentity))
-    errors.push(`Installer signing identity is not installed: ${config.installerSigningIdentity}`)
+  if (config.keychain && !existsSync(config.keychain))
+    errors.push(`APPLE_KEYCHAIN does not exist: ${config.keychain}`)
+  const where = config.keychain ? ` in ${config.keychain}` : ''
+  if (!signingIdentityExists(config.appSigningIdentity, config.keychain))
+    errors.push(`App signing identity is not installed${where}: ${config.appSigningIdentity}`)
+  if (!signingIdentityExists(config.installerSigningIdentity, config.keychain))
+    errors.push(`Installer signing identity is not installed${where}: ${config.installerSigningIdentity}`)
   if (!provisioningProfileMatches(config))
     errors.push(`Provisioning profile does not match ${config.teamId}.${config.bundleId}`)
   if (errors.length) throw new Error(errors.join('\n'))
@@ -645,9 +661,10 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     helperPath: join(macosDir, 'craft-runtime'),
     appEntitlements,
     helperEntitlements,
+    keychain: config.keychain,
   })) command(args)
   command(['codesign', '--verify', '--deep', '--strict', '--verbose=2', appPath])
-  command(['codesign', '-d', '--entitlements', ':-', appPath])
+  command(['codesign', '-d', '--entitlements', '-', '--xml', appPath])
 
   // Before the installer is built and long before an upload. App Review answers
   // hours or days later and names a rule rather than a file, so every one of
@@ -665,6 +682,7 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
     '--component',
     appPath,
     '/Applications',
+    ...(config.keychain ? ['--keychain', config.keychain] : []),
     '--sign',
     config.installerSigningIdentity,
     packagePath,
@@ -884,13 +902,14 @@ export function desktopApple(buddy: CLI): void {
     .option('--api-key-id <id>', 'App Store Connect API key ID')
     .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
     .option('--api-key-path <path>', 'App Store Connect AuthKey .p8 file')
+    .option('--keychain <path>', 'Look for the signing identities in this keychain file only (or APPLE_KEYCHAIN)')
     .action((options: AppleDesktopOptions) => {
       try {
         const config = resolveAppleDesktopConfig(options)
         const errors = validateAppleDesktopConfig(config, true)
-        if (!signingIdentityExists(config.appSigningIdentity))
+        if (!signingIdentityExists(config.appSigningIdentity, config.keychain))
           errors.push(`App signing identity is not installed: ${config.appSigningIdentity}`)
-        if (!signingIdentityExists(config.installerSigningIdentity))
+        if (!signingIdentityExists(config.installerSigningIdentity, config.keychain))
           errors.push(`Installer signing identity is not installed: ${config.installerSigningIdentity}`)
         if (!provisioningProfileMatches(config))
           errors.push(`Provisioning profile does not match ${config.teamId}.${config.bundleId}`)
@@ -935,6 +954,7 @@ export function desktopApple(buddy: CLI): void {
     .option('--universal', 'Ship one arm64 + x86_64 binary, merged with lipo')
     .option('--craft-arm64 <path>', 'Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64)')
     .option('--craft-x64 <path>', 'Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64)')
+    .option('--keychain <path>', 'Sign with identities from this keychain file only (or APPLE_KEYCHAIN)')
 
   addSharedOptions(buddy.command('desktop:apple:package', 'Build, sandbox, sign, and package a Mac App Store desktop app'))
     .action(async (options: AppleDesktopOptions) => {

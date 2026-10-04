@@ -1182,6 +1182,7 @@ Validate Mac App Store tooling, credentials, certificates, and project metadata
 | `--api-key-id` | App Store Connect API key ID | value, required | - |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
 | `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
+| `--keychain` | Look for the signing identities in this keychain file only (or APPLE_KEYCHAIN) | value, required | - |
 
 ### `desktop:apple:init`
 
@@ -1222,6 +1223,7 @@ Build, sandbox, sign, and package a Mac App Store desktop app
 | `--universal` | Ship one arm64 + x86_64 binary, merged with lipo | boolean, optional | - |
 | `--craft-arm64` | Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64) | value, required | - |
 | `--craft-x64` | Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64) | value, required | - |
+| `--keychain` | Sign with identities from this keychain file only (or APPLE_KEYCHAIN) | value, required | - |
 
 ### `desktop:apple:provision`
 
@@ -1273,6 +1275,7 @@ Build and validate or upload a signed Mac App Store package
 | `--universal` | Ship one arm64 + x86_64 binary, merged with lipo | boolean, optional | - |
 | `--craft-arm64` | Thin arm64 Craft runtime for --universal (or CRAFT_BIN_ARM64) | value, required | - |
 | `--craft-x64` | Thin x86_64 Craft runtime for --universal (or CRAFT_BIN_X64) | value, required | - |
+| `--keychain` | Sign with identities from this keychain file only (or APPLE_KEYCHAIN) | value, required | - |
 | `--api-key-id` | App Store Connect API key ID | value, required | - |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
 | `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
