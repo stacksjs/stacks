@@ -190,7 +190,11 @@ export class IMessageDriver implements InboxDriver {
       const conversation = this.find(db, conversationId)
       if (!conversation)
         return []
-      const rows = db.messages(conversation.chatGuids, { afterRowId: Number(query.after) || 0, byRowId: true, limit: query.limit })
+      // Reading forward from a cursor walks ROWIDs up; a bare limit wants the
+      // newest messages, fetched newest first and turned back around.
+      const rows = query.after || !query.limit
+        ? db.messages(conversation.chatGuids, { afterRowId: Number(query.after) || 0, byRowId: true, limit: query.limit })
+        : db.messages(conversation.chatGuids, { newestFirst: true, limit: query.limit }).reverse()
       return rows.map(row => this.toMessage(conversationId, row))
     })
   }

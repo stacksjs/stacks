@@ -55,6 +55,15 @@ describe('iMessage inbox driver', () => {
     expect(later).toHaveLength(2)
   })
 
+  it('returns the most recent messages for a bare limit, oldest first', async () => {
+    const { chat, driver } = setup()
+    const alice = chat.direct(ALICE)
+    for (const text of ['one', 'two', 'three', 'four'])
+      chat.add(alice, { text })
+    expect((await driver.messages(`direct:${ALICE}`, { limit: 2 })).map(m => m.text)).toEqual(['three', 'four'])
+    expect((await driver.messages(`direct:${ALICE}`, { after: '0', limit: 2 })).map(m => m.text)).toEqual(['one', 'two'])
+  })
+
   it('archives by taking Messages to its own delete, and notices it has gone', async () => {
     const { chat, driver, opened, scripts } = setup()
     const group = chat.group('chat9', [ALICE, BOB], { name: 'Trip', groupId: 'G-9' })

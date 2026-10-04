@@ -119,6 +119,11 @@ export interface ArchiveOutcome {
 export interface MessageQuery {
   /** Only messages after this cursor (from {@link InboxMessage.cursor}). */
   after?: string
+  /**
+   * At most this many. With `after`, the first ones after the cursor (reading
+   * forward); without it, the most recent ones - what a transcript shows.
+   * Either way the result is oldest first.
+   */
   limit?: number
 }
 

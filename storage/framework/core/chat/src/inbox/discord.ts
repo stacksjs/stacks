@@ -162,17 +162,34 @@ export class DiscordInboxDriver implements InboxDriver {
   async messages(conversationId: string, query: MessageQuery = {}): Promise<InboxMessage[]> {
     const limit = query.limit ?? 1000
     const collected: DiscordMessage[] = []
-    let after = query.after ?? '0'
-    // `after` pages forward from the oldest; each page is newest first.
-    while (collected.length < limit) {
-      const page = await this.api<DiscordMessage[]>(`/channels/${conversationId}/messages?limit=100&after=${after}`)
-      if (page.length === 0)
-        break
-      page.sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1))
-      collected.push(...page)
-      after = page[page.length - 1]!.id
-      if (page.length < 100)
-        break
+    const byId = (a: DiscordMessage, b: DiscordMessage) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1)
+    if (query.after) {
+      // Forward from the cursor: `after` pages from the oldest.
+      let after = query.after
+      while (collected.length < limit) {
+        const page = await this.api<DiscordMessage[]>(`/channels/${conversationId}/messages?limit=100&after=${after}`)
+        if (page.length === 0)
+          break
+        page.sort(byId)
+        collected.push(...page)
+        after = page[page.length - 1]!.id
+        if (page.length < 100)
+          break
+      }
+    }
+    else {
+      // The most recent: no cursor reads newest first, paging back with `before`.
+      let before = ''
+      while (collected.length < limit) {
+        const page = await this.api<DiscordMessage[]>(`/channels/${conversationId}/messages?limit=${Math.min(100, limit - collected.length)}${before ? `&before=${before}` : ''}`)
+        if (page.length === 0)
+          break
+        page.sort(byId)
+        collected.unshift(...page)
+        before = page[0]!.id
+        if (page.length < 100)
+          break
+      }
     }
 
     const out: InboxMessage[] = []
