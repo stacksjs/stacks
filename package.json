@@ -99,7 +99,7 @@
   },
   "dependencies": {
     "stacks": "workspace:*",
-    "pickier": "^0.1.65"
+    "pickier": "^0.1.67"
   },
   "workspaces": [
     "storage/framework",
@@ -117,6 +117,6 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "better-dx": "^0.2.36"
+    "better-dx": "^0.2.37"
   }
 }
