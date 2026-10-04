@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.51...v0.75.52)
+
+## 🐛 Bug Fixes
+
+- **chat**: a WhatsApp photo that was never downloaded is not an empty bubble ([4db56c4](https://github.com/stacksjs/stacks/commit/4db56c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.50...v0.75.51)
 
 ## ✨ Features
