@@ -35,6 +35,8 @@ export interface IMessageConfig {
   addressBookDir?: string | false
   /** Opens a URL (a conversation in Messages). Defaults to macOS `open`. */
   openUrl?: (url: string) => void
+  /** The host OS; `process.platform` by default. iMessage exists only on darwin. */
+  platform?: NodeJS.Platform
 }
 
 /** Messages' reaction types and the emoji they stand for. 3000+ removes. */
@@ -74,6 +76,7 @@ export class IMessageDriver implements InboxDriver {
   private readonly openUrl: (url: string) => void
   private readonly controller: MessagesController | undefined
   private readonly confirmDeletes: boolean
+  private readonly platform: NodeJS.Platform
   private contacts: Contacts | null = null
   private contactsLoadedAt = 0
 
@@ -83,6 +86,7 @@ export class IMessageDriver implements InboxDriver {
     this.openUrl = config.openUrl ?? defaultOpen
     this.controller = config.controller
     this.confirmDeletes = config.confirmDeletes ?? false
+    this.platform = config.platform ?? process.platform
   }
 
   /** Every label Messages might give the conversation's row. */
@@ -125,7 +129,7 @@ export class IMessageDriver implements InboxDriver {
   }
 
   async status(): Promise<InboxStatus> {
-    if (process.platform !== 'darwin')
+    if (this.platform !== 'darwin')
       return { connected: false, detail: 'iMessage is only available on a Mac.', needs: 'unsupported-platform' }
     try {
       this.open(() => undefined)

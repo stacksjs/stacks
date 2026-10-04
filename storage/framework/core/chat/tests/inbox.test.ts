@@ -104,9 +104,18 @@ describe('iMessage inbox driver', () => {
     ])
   })
 
+  // The platform is pinned: CI runs on Linux, where the honest answer is
+  // "not a Mac" before the database is ever looked for.
   it('reports a missing database as Messages not set up', async () => {
-    const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false })
+    const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false, platform: 'darwin' })
     expect(await driver.status()).toMatchObject({ connected: false, needs: 'messages-signed-out' })
+  })
+
+  it('reports any other OS as unsupported, whatever the database', async () => {
+    for (const platform of ['linux', 'win32'] as const) {
+      const driver = new IMessageDriver({ databasePath: '/nonexistent/chat.db', addressBookDir: false, platform })
+      expect(await driver.status()).toMatchObject({ connected: false, needs: 'unsupported-platform' })
+    }
   })
 })
 
