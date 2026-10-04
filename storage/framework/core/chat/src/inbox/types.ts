@@ -104,6 +104,12 @@ export interface InboxMessage {
   /** True when this reaction takes an earlier one back. */
   reactionRemoved: boolean
   replyToId: string | null
+  /**
+   * The service that carried it, where a provider has several: Messages'
+   * `iMessage`, `SMS` or `RCS`, which decide a bubble's colour. Null where a
+   * provider has only the one.
+   */
+  service?: string | null
   editedAt: number | null
   unsent: boolean
   attachments: InboxAttachment[]

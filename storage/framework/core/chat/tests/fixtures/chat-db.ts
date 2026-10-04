@@ -136,17 +136,19 @@ export class FakeChatDb {
   add(chatId: number, message: AddMessage): string {
     const at = message.at ?? (this.clock += 60_000)
     const fromMe = message.fromMe ?? false
-    const chat = this.db.query('SELECT chat_identifier, style FROM chat WHERE ROWID = ?').get(chatId) as { chat_identifier: string, style: number }
+    const chat = this.db.query('SELECT chat_identifier, style, service_name FROM chat WHERE ROWID = ?').get(chatId) as { chat_identifier: string, style: number, service_name: string | null }
     const sender = fromMe ? null : (message.sender ?? (chat.style === 45 ? chat.chat_identifier : null))
     const guid = `MSG-${++this.seq}`
     this.db.query(`
       INSERT INTO message (guid, text, attributedBody, handle_id, service, date, is_read, is_from_me,
         associated_message_guid, associated_message_type, cache_has_attachments, reply_to_guid, thread_originator_guid)
-      VALUES (?, NULL, ?, ?, 'iMessage', ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       guid,
       encodeAttributedBody(message.text),
       sender ? this.handle(sender) : 0,
+      // The chat's service, as Messages records it on each message.
+      chat.service_name === 'SMS' ? 'SMS' : 'iMessage',
       (at - APPLE_EPOCH_MS) * 1_000_000,
       message.read === false ? 0 : 1,
       fromMe ? 1 : 0,

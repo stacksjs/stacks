@@ -67,6 +67,15 @@ describe('iMessage inbox driver', () => {
     expect(messages.map(m => m.replyToId)).toEqual([null, null, question])
   })
 
+  it('says which service carried each message, for the bubble colour', async () => {
+    const { chat, driver } = setup()
+    chat.add(chat.direct(ALICE), { text: 'blue' })
+    chat.add(chat.direct(ALICE, 'SMS'), { text: 'green', fromMe: true })
+
+    const messages = await driver.messages(`direct:${ALICE}`)
+    expect(messages.map(m => [m.text, m.service])).toEqual([['blue', 'iMessage'], ['green', 'SMS']])
+  })
+
   it('returns the most recent messages for a bare limit, oldest first', async () => {
     const { chat, driver } = setup()
     const alice = chat.direct(ALICE)

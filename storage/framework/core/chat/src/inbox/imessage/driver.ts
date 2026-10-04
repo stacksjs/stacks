@@ -238,6 +238,7 @@ export class IMessageDriver implements InboxDriver {
       reaction: row.kind === 'reaction' ? (REACTIONS[removed ? row.reactionType - 1000 : row.reactionType] ?? '•') : null,
       reactionRemoved: removed,
       replyToId: row.replyToGuid,
+      service: row.service,
       editedAt: row.editedAt,
       unsent: row.unsent,
       attachments: row.attachments.map((a): InboxAttachment => ({
