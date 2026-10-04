@@ -351,6 +351,13 @@ jobs:
       # `test/`. Neither step above reaches them, and all 90 files were added
       # after f25e67af9d (2026-05-11) stopped this job running a bare
       # `bun test`, so none of them had run in CI.
+      # The VS Code extension is a package of its own, outside the workspaces,
+      # and its tests build it against @stacksjs/stx-vscode.
+      - name: Install VS Code extension dependencies
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        working-directory: storage/framework/defaults/ide/vscode
+        run: bun install
+
       - name: Defaults and server tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun test ./storage/framework/defaults ./storage/framework/server/test
