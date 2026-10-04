@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.55...v0.75.56)
+
+## ✨ Features
+
+- **mobile**: a localNetwork capability for apps that sync with a Mac ([fe5b95e](https://github.com/stacksjs/stacks/commit/fe5b95e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: declare the activity types an indexed entry is tapped under ([629fef0](https://github.com/stacksjs/stacks/commit/629fef0)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **mobile**: index an app's own content for device search ([1330202](https://github.com/stacksjs/stacks/commit/1330202)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **types**: a registry for the content a device may index ([723483e](https://github.com/stacksjs/stacks/commit/723483e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: record the new actions dependency in pantry.lock too ([de00aa3](https://github.com/stacksjs/stacks/commit/de00aa3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **mobile**: the device search index, and what it costs to add a kind ([e33811d](https://github.com/stacksjs/stacks/commit/e33811d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: pantry.lock takes ts-cloud 0.16.31, as a fresh install does ([83c15ff](https://github.com/stacksjs/stacks/commit/83c15ff)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.54...v0.75.55)
 
 ## ✨ Features
