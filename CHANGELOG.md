@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.44...v0.75.48)
+
+## ✨ Features
+
+- **chat**: read iMessage conversations sitting in Recently Deleted ([bec2e69](https://github.com/stacksjs/stacks/commit/bec2e69)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **vscode**: type-check .stx files with the Stacks extension alone ([ddcf22f](https://github.com/stacksjs/stacks/commit/ddcf22f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **chat**: the iMessage driver takes its platform, so status is testable off a Mac ([2622159](https://github.com/stacksjs/stacks/commit/2622159)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **vscode**: take stx 0.2.357 - .stx files type-checked in the editor, one list of app globals for both checkers ([289f0f2](https://github.com/stacksjs/stacks/commit/289f0f2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2028](https://github.com/stacksjs/stacks/issues/2028))
+- **vscode**: take stx 0.2.355 - formatted CSS hovers, no hover hang, stx.* setting names ([9feac3e](https://github.com/stacksjs/stacks/commit/9feac3e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2024](https://github.com/stacksjs/stacks/issues/2024), [#2027](https://github.com/stacksjs/stacks/issues/2027), [#2025](https://github.com/stacksjs/stacks/issues/2025))
+
+## ✅ Tests
+
+- **dashboard**: run the layout's own sidebar role map through the bridge ([062c92e](https://github.com/stacksjs/stacks/commit/062c92e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: pantry.lock takes @stacksjs/desktop and sanitizer 0.2.358, as a fresh install does ([f299880](https://github.com/stacksjs/stacks/commit/f299880)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.75.47 ([ec8eb70](https://github.com/stacksjs/stacks/commit/ec8eb70)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.75.46 ([165f423](https://github.com/stacksjs/stacks/commit/165f423)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: pantry v0.11.69 (action, CLI and ts-pantry) ([f1f103f](https://github.com/stacksjs/stacks/commit/f1f103f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.75.45 ([160f403](https://github.com/stacksjs/stacks/commit/160f403)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.46...v0.75.47)
 
 ## ✨ Features
