@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { libraryContributes, withStxContributes } from '../scripts/stx-contributes'
+import { libraryContributes, OWN_COMMAND_PREFIX, withStxContributes } from '../scripts/stx-contributes'
 
 const root = join(import.meta.dir, '..')
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
@@ -59,6 +59,19 @@ describe('self-contained', () => {
 describe('stx language support', () => {
   it('declares what @stacksjs/stx-vscode ships (run `bun run sync:stx` after updating it)', () => {
     expect(withStxContributes(manifest, libraryContributes(root))).toEqual(manifest)
+  })
+
+  it('declares no stx command the library no longer ships', () => {
+    const shipped = new Set(libraryContributes(root).commands.map(command => command.command))
+    const stale = manifest.contributes.commands
+      .map((command: { command: string }) => command.command)
+      .filter((id: string) => !id.startsWith(OWN_COMMAND_PREFIX) && !shipped.has(id))
+    expect(stale).toEqual([])
+  })
+
+  it('drops a command stx renamed when syncing', () => {
+    const stale = { ...manifest, contributes: { ...manifest.contributes, commands: [...manifest.contributes.commands, { command: 'css.reload', title: 'Css: Reload Configuration' }] } }
+    expect(withStxContributes(stale, libraryContributes(root))).toEqual(manifest)
   })
 
   it('declares the stx language and its grammar from the bundled assets', () => {

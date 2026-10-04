@@ -31,9 +31,18 @@ function fromStx(path: string): string {
   return STX_DIR + path.replace(/^\.\//, '')
 }
 
-/** `manifest` with its stx contributions replaced by the library's. */
+/** The namespace of the extension's own commands; every other one is stx's. */
+export const OWN_COMMAND_PREFIX = 'stacks.'
+
+/**
+ * `manifest` with its stx contributions replaced by the library's.
+ *
+ * Commands are told apart by namespace, not by the library's current list: a
+ * command stx renamed or dropped is no longer in that list, and filtering by
+ * it kept the old entry as if it were this extension's own (`css.reload`
+ * outlived its rename to `stx.reloadUtilityClasses` that way).
+ */
 export function withStxContributes(manifest: any, stx: StxContributes): any {
-  const stxCommands = new Set(stx.commands.map(command => command.command))
   const contributes = manifest.contributes
   const sections: Array<{ title: string }> = Array.isArray(contributes.configuration) ? contributes.configuration : [contributes.configuration]
 
@@ -43,7 +52,7 @@ export function withStxContributes(manifest: any, stx: StxContributes): any {
       ...contributes,
       languages: stx.languages.map(language => ({ ...language, configuration: fromStx(language.configuration) })),
       grammars: stx.grammars.map(grammar => ({ ...grammar, path: fromStx(grammar.path) })),
-      commands: [...contributes.commands.filter((command: { command: string }) => !stxCommands.has(command.command)), ...stx.commands],
+      commands: [...contributes.commands.filter((command: { command: string }) => command.command.startsWith(OWN_COMMAND_PREFIX)), ...stx.commands],
       configuration: [...sections.filter(section => section.title !== stx.configuration.title), stx.configuration],
     },
   }

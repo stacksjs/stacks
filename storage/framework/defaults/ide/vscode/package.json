@@ -140,8 +140,9 @@
         "category": "stx"
       },
       {
-        "command": "css.reload",
-        "title": "Css: Reload Configuration"
+        "command": "stx.reloadUtilityClasses",
+        "title": "Reload Utility Class Configuration",
+        "category": "stx"
       }
     ],
     "menus": {
@@ -364,10 +365,11 @@
             "default": true,
             "description": "Enable autocomplete for utility classes"
           },
-          "css.remToPxRatio": {
+          "stx.utilityClasses.remToPxRatio": {
             "type": "number",
             "default": 16,
-            "description": "Rem to px conversion ratio for hover previews"
+            "minimum": 0,
+            "markdownDescription": "Pixels per `rem` for the px values utility-class hovers show next to `rem` values. `0` hides them. Replaces `css.remToPxRatio`, which is still read when this is not set."
           }
         }
       }
@@ -411,7 +413,7 @@
     ]
   },
   "devDependencies": {
-    "@stacksjs/stx-vscode": "^0.2.352",
+    "@stacksjs/stx-vscode": "^0.2.355",
     "@types/vscode": "~1.109.0",
     "@vscode/vsce": "^4.0.0"
   }
