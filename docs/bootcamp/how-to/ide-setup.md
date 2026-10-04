@@ -28,19 +28,21 @@ Install the [Stacks extension](https://marketplace.visualstudio.com/items?itemNa
 
 The preview URL is worked out the same way `buddy dev` picks it: `https://<APP_URL>` when the local HTTPS proxy is up, otherwise `http://localhost:<PORT>`. Set `stacks.preview.url` to use a fixed URL instead, or `stacks.preview.preferLocalhost` if the Simple Browser cannot load the local certificate. The [extension README](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ide/vscode) lists every setting.
 
-The extension also installs a small pack of extensions. Bun, Dotenvx, the spell checker and markdownlint are among them.
+The extension also installs a small pack of extensions. Bun, Dotenvx, the spell checker and markdownlint are among them, and so is [stx Language Support](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stx) (`Stacks.vscode-stx`), which handles `.stx` files: highlighting, completions, hovers, diagnostics and utility-class previews. It is a separate extension, published from the stx repository, so you can also install it on its own in a project that uses stx without Stacks.
 
 The repository ships settings and snippets under `storage/framework/defaults/ide/vscode/`. The important local settings are:
 
 ```json
 {
   "files.associations": {
-    "*.stx": "html"
+    "buddy": "shellscript"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true
 }
 ```
+
+Do not map `*.stx` to `html` in VS Code. A `files.associations` entry wins over the language the stx extension registers, so `.stx` files would lose its features.
 
 Use the workspace TypeScript version so the editor and `buddy test:types` evaluate the same compiler configuration.
 

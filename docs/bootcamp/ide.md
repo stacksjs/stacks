@@ -4,7 +4,7 @@ description: Configure an editor for Bun, TypeScript, STX templates, and Pickier
 ---
 # How to set up your IDE
 
-Open the project root so the editor can discover `tsconfig.json`, the generated auto-import declarations, and repository settings. Use the workspace TypeScript version and associate `.stx` files with HTML language support.
+Open the project root so the editor can discover `tsconfig.json`, the generated auto-import declarations, and repository settings. Use the workspace TypeScript version. In VS Code, `.stx` files get their language support from the stx extension (`Stacks.vscode-stx`), which the Stacks extension installs; in editors without an stx extension, associate `.stx` files with HTML.
 
 The root `tsconfig.json` is the only one you own. It extends
 `storage/framework/tsconfig.app.json` and restates the tunable defaults, so you

@@ -143,8 +143,7 @@
     },
     "configurationDefaults": {
       "files.associations": {
-        "buddy": "shellscript",
-        "*.stx": "html"
+        "buddy": "shellscript"
       },
       "npm.packageManager": "bun",
       "typescript.preferGoToSourceDefinition": true,
@@ -152,6 +151,7 @@
     }
   },
   "extensionPack": [
+    "Stacks.vscode-stx",
     "dotenv.dotenvx-vscode",
     "amazonwebservices.aws-toolkit-vscode",
     "dbaeumer.vscode-eslint",

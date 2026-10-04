@@ -252,7 +252,7 @@ Default configurations provided at `storage/framework/defaults/ide/`:
 - `vscode/.vscode/extensions.json` -- Recommended extensions
 - `vscode/.vscode/settings.json` -- Editor settings
 - `vscode/.vscode/stacks.code-snippets` -- Code snippets
-- `vscode/package.json` -- VS Code extension manifest
+- `vscode/package.json` -- the Stacks extension (`Stacks.vscode-stacks`): preview, dev server and buddy commands. `.stx` language support is the separate stx extension (`Stacks.vscode-stx`, published from stacksjs/stx), which this one installs through `extensionPack`. Never contribute the `stx` language, grammar or snippets here, or map `*.stx` to `html` in `files.associations`: both take `.stx` files away from the stx extension.
 
 ### JetBrains
 - `.idea/` config (ESLint, modules, VCS, web resources)

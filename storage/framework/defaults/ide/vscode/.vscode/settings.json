@@ -116,9 +116,10 @@
   },
   // Stacks
   "typescript.preferGoToSourceDefinition": true,
+  // `.stx` files keep the `stx` language from the stx extension
+  // (Stacks.vscode-stx). Mapping them to `html` here would override it.
   "files.associations": {
-    "buddy": "shellscript",
-    "*.stx": "html"
+    "buddy": "shellscript"
   },
   "editor.quickSuggestions": {
     "strings": true

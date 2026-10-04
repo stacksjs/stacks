@@ -40,10 +40,11 @@ The extension checks that the frontend port is accepting connections before it o
 | `stacks.devServer.openPreview` | `true` | Open the Simple Browser once the dev server is up, instead of letting `buddy dev` open your system browser. |
 | `stacks.statusBar.enabled` | `true` | Show the Stacks status bar item. |
 
-The extension also sets a few editor defaults for Stacks projects: `.stx` files use HTML language support, the `buddy` script is highlighted as a shell script, `npm.packageManager` is `bun`, Go to Definition prefers source files over `.d.ts`, and TypeScript uses the workspace version.
+The extension also sets a few editor defaults for Stacks projects: the `buddy` script is highlighted as a shell script, `npm.packageManager` is `bun`, Go to Definition prefers source files over `.d.ts`, and TypeScript uses the workspace version.
 
 ## Included extensions
 
+- [stx Language Support](https://marketplace.visualstudio.com/items?itemName=Stacks.vscode-stx) - `.stx` templates: highlighting, completions, hovers, diagnostics and utility-class previews. It is a separate extension, published from [stacksjs/stx](https://github.com/stacksjs/stx/tree/main/packages/vscode); this one does not register the `stx` language itself, and it does not map `.stx` files to HTML.
 - [Bun for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=oven.bun-vscode) - Bun runtime and test integration
 - [Dotenvx](https://marketplace.visualstudio.com/items?itemName=dotenv.dotenvx-vscode) - encrypted environment file support
 - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - editor integration for the project's lint rules
@@ -72,7 +73,7 @@ bun run package    # build and create a .vsix
 code --install-extension vscode-stacks-<version>.vsix
 ```
 
-The extension has no runtime dependencies. It is published automatically by the Stacks release workflow, and `vscode:prepublish` builds `dist/` first.
+The extension has no runtime dependencies. It is published automatically by the Stacks release workflow, and `vscode:prepublish` builds `dist/` first. Before publishing, `bun scripts/check-marketplace.ts` confirms every extension in the pack is on the marketplace, since VS Code refuses to install a pack with a member it cannot find.
 
 ## Relevant links
 

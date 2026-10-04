@@ -424,11 +424,17 @@ jobs:
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # check-marketplace refuses to publish a pack naming an extension the
+      # marketplace does not have, which VS Code would refuse to install. The
+      # pack includes Stacks.vscode-stx, published by stacksjs/stx's own
+      # release (stacksjs/stx#2020).
       - name: Publish VS Code Extension
         continue-on-error: true
         run: |
           cd storage/framework/defaults/ide/vscode
           bun install
+          bun test ./tests
+          bun scripts/check-marketplace.ts
           bunx --bun vsce publish --no-dependencies
           cd ../../../../
         env:
