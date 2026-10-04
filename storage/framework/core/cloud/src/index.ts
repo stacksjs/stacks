@@ -22,6 +22,18 @@ export type * from './types'
  * do, and it only ever worked inside this repository.
  */
 export * from './imap/client'
-export * from './imap/s3'
 export * from './imap/secrets-manager'
 export * from './imap/smtp-server'
+
+/**
+ * ts-cloud's S3 client, under the name this package has always exported.
+ *
+ * This used to be a vendored copy (`imap/s3.ts`) that drifted: its bucket
+ * configuration getters read `result.<RootElement>` from a parser that strips
+ * the root, so `getBucketVersioning`, `getBucketCors`, `getPublicAccessBlock`
+ * and the rest returned undefined for configured buckets, and
+ * `getBucketLocation` always said us-east-1. ts-cloud fixed that and is a
+ * superset of the copy, so the copy is gone and the export points upstream.
+ */
+export { S3Client } from '@stacksjs/ts-cloud'
+export type { S3CopyOptions, S3ListOptions, S3Object, S3SyncOptions } from '@stacksjs/ts-cloud'

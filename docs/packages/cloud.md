@@ -277,9 +277,10 @@ const distributionId = await getCloudFrontDistributionId()
 
 ### AWS clients
 
-The hand-rolled clients the mail commands need, re-exported because this package
-builds to a single bundled `dist/index.js` and a `@stacksjs/cloud/imap/s3`
-subpath would resolve to a file the build never writes:
+The clients the mail commands need, re-exported because this package builds to
+a single bundled `dist/index.js` and a `@stacksjs/cloud/imap/s3` subpath would
+resolve to a file the build never writes. `S3Client` is ts-cloud's own client
+(the same class `@stacksjs/ts-cloud` exports), not a copy:
 
 ```typescript
 import { AWSClient, S3Client, SecretsManagerClient, SmtpServer, startSmtpServer } from '@stacksjs/cloud'

@@ -10,7 +10,7 @@ import * as net from 'node:net'
 import * as tls from 'node:tls'
 import * as fs from 'node:fs'
 import * as crypto from 'node:crypto'
-import { S3Client } from './s3'
+import { S3Client } from '@stacksjs/ts-cloud'
 
 /**
  * Pattern configuration for a single email category
