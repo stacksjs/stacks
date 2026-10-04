@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.45...v0.75.46)
+
+## 🐛 Bug Fixes
+
+- **vscode**: take stx 0.2.357 - .stx files type-checked in the editor, one list of app globals for both checkers ([289f0f2](https://github.com/stacksjs/stacks/commit/289f0f2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2028](https://github.com/stacksjs/stacks/issues/2028))
+
+## 🔧 Chores
+
+- **deps**: pantry v0.11.69 (action, CLI and ts-pantry) ([f1f103f](https://github.com/stacksjs/stacks/commit/f1f103f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.44...v0.75.45)
 
 ## 🐛 Bug Fixes
