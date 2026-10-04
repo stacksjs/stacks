@@ -145,6 +145,7 @@
         "@stacksjs/image": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/logsmith": "^0.2.11",
+        "@stacksjs/mobile": "workspace:*",
         "@stacksjs/orm": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/payments": "workspace:*",

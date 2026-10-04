@@ -249,7 +249,7 @@ export function placeSpotlightItem(
   entries: readonly SpotlightEntry[],
   kind: string,
   item: SpotlightItem,
-  now = Date.now(),
+  now: number = Date.now(),
 ): SpotlightPlacement | null {
   const configured = spotlightKind(kinds, kind)
   if (!configured || !Number.isInteger(item.id) || item.id <= 0)
