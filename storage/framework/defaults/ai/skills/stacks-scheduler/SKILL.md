@@ -89,11 +89,11 @@ Each sets an internal cron pattern. Once a timing method is called, the schedule
 setTimeZone(timezone: Timezone): this
 withErrorHandler(handler: CatchCallbackFn): this
 withMaxRuns(runs: number): this
-withProtection(callback?: (job: ScheduledJob) => void): this
+withProtection(callback?: (job: ScheduledJob) => void): this  // skip a tick while the last run is still going (this process); callback hears each skip
 withName(name: string): this
-withContext(context: any): this
-withInterval(seconds: number): this
-between(startAt: string | Date, stopAt: string | Date): this
+withContext(context: any): this          // passed to the task on each run: the callback's argument, or the job's `context`
+withInterval(seconds: number): this      // at least this many seconds between runs; sooner ticks are skipped
+between(startAt: string | Date, stopAt: string | Date): this  // only run inside the window; stops for good once it closes
 withoutOverlapping(expiresAfterMinutes?: number): this
 onOneServer(): this
 runInBackground(): this

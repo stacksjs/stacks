@@ -10,6 +10,13 @@ import { runJob } from '@stacksjs/queue'
 import type { SchedulerLockHandle } from './scheduler-lock'
 import { acquireSchedulerLock } from './scheduler-lock'
 
+function toWindowDate(value: string | Date, label: string): Date {
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value)
+  if (Number.isNaN(date.getTime()))
+    throw new Error(`between(): ${label} is not a valid date: ${String(value)}`)
+  return date
+}
+
 /**
  * Schedule class for creating and managing scheduled tasks.
  *
@@ -75,7 +82,7 @@ export class Schedule implements UntimedSchedule {
   private cronPattern = ''
   private intervalMs: number | null = null
   private timezone: Timezone = 'America/Los_Angeles'
-  private readonly task: () => void
+  private readonly task: (context?: any) => unknown
   private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
   private static stateFile = join(process.cwd(), 'storage', 'framework', 'runtime', 'scheduler-state.json')
   private static activeLocks = new Map<string, SchedulerLockHandle>()
@@ -95,11 +102,11 @@ export class Schedule implements UntimedSchedule {
     name?: string
     context?: any
     interval?: number
-    startAt?: string | Date
-    stopAt?: string | Date
+    startAt?: Date
+    stopAt?: Date
   } = {}
 
-  constructor(task: () => void) {
+  constructor(task: (context?: any) => unknown) {
     this.task = task
     // Defer `start()` until the synchronous chain settles. Users write
     // `schedule(task).daily().withName('x')` — `start()` can't run
@@ -254,6 +261,11 @@ export class Schedule implements UntimedSchedule {
     return this
   }
 
+  /**
+   * Skip a tick while the previous run of this task is still going, in this
+   * process. `callback`, when given, hears about each skipped tick.
+   * `withoutOverlapping()` is the cross-process form, through a lock.
+   */
   withProtection(callback?: (job: ScheduledJob) => void): this {
     this.options.protect = callback || true
     return this
@@ -264,19 +276,41 @@ export class Schedule implements UntimedSchedule {
     return this
   }
 
+  /**
+   * A value handed to the task on every run: as the callback's argument for
+   * `new Schedule(fn)`, and as the job's `context` for `schedule.job(...)`.
+   */
   withContext(context: any): this {
     this.options.context = context
     return this
   }
 
+  /**
+   * At least this many seconds between two runs. A tick that comes sooner
+   * after the last run started is skipped.
+   */
   withInterval(seconds: number): this {
+    if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds <= 0)
+      throw new Error(`withInterval() takes a positive number of seconds; got ${String(seconds)}`)
     this.options.interval = seconds
     return this
   }
 
+  /**
+   * Only run from `startAt` until `stopAt`. Ticks before the window are
+   * skipped, and the task stops for good once the window has passed.
+   *
+   * Both ends were stored and never read, so a campaign job scheduled
+   * `.between(launch, end)` ran from the moment it was registered and kept
+   * running after the end date.
+   */
   between(startAt: string | Date, stopAt: string | Date): this {
-    this.options.startAt = startAt
-    this.options.stopAt = stopAt
+    const start = toWindowDate(startAt, 'startAt')
+    const stop = toWindowDate(stopAt, 'stopAt')
+    if (stop.getTime() <= start.getTime())
+      throw new Error(`between(): stopAt (${stop.toISOString()}) must be after startAt (${start.toISOString()})`)
+    this.options.startAt = start
+    this.options.stopAt = stop
     return this
   }
 
@@ -401,7 +435,7 @@ export class Schedule implements UntimedSchedule {
     let fired = 0
     for (const slot of slots) {
       try {
-        const result = this.task() as unknown
+        const result = this.task(this.options.context)
         if (result && typeof (result as Promise<unknown>).then === 'function')
           await (result as Promise<unknown>)
         fired++
@@ -733,8 +767,20 @@ export class Schedule implements UntimedSchedule {
   private getNextRunTime(): Date | null {
     if (!this.cronPattern || this.intervalMs !== null) return null
 
+    // Not before the `between()` window opens, and nothing once it has closed.
+    const { startAt, stopAt } = this.options
+    // The base is always explicit: Bun's native parser reads its own clock when
+    // given none, which is not the `Date.now()` the delay is measured against.
+    const now = Date.now()
+    const base = startAt && startAt.getTime() > now ? startAt.getTime() - 1 : now
+    const next = this.nextCronTime(base)
+    if (next && stopAt && next.getTime() > stopAt.getTime()) return null
+    return next
+  }
+
+  private nextCronTime(base: number): Date | null {
     if (!this.timezone || this.timezone === 'UTC') {
-      return parse(this.cronPattern)
+      return parse(this.cronPattern, base)
     }
 
     // Timezone-aware scheduling via parseCron's `tz` option
@@ -757,7 +803,7 @@ export class Schedule implements UntimedSchedule {
     // exist). Fall-back: the target local time happens twice, and
     // the scheduler fires twice on the transition day — apps that
     // care need idempotency keys or exclusive locks on the task body.
-    return parse(this.cronPattern, undefined, { tz: this.timezone })
+    return parse(this.cronPattern, base, { tz: this.timezone })
   }
 
   private start(): ScheduledJob {
@@ -781,8 +827,11 @@ export class Schedule implements UntimedSchedule {
       }
     }
 
-    const task = this.wrapTask(this.task)
+    const context = this.options.context
+    const task = this.wrapTask(context === undefined ? this.task : () => this.task(context))
     let stopped = false
+    let running = false
+    let lastStartedAt: number | null = null
     let timer: ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> | null = null
     let runCount = 0
 
@@ -807,11 +856,33 @@ export class Schedule implements UntimedSchedule {
         log.debug(`[scheduler] task ${taskName} is paused`)
         return
       }
+      const { startAt, stopAt, interval, protect } = this.options
+      const now = Date.now()
+      if (stopAt && now > stopAt.getTime()) {
+        log.debug(`[scheduler] task ${taskName} is past its between() window; stopping`)
+        stop()
+        return
+      }
+      if (startAt && now < startAt.getTime()) {
+        log.debug(`[scheduler] task ${taskName} has not reached its between() window`)
+        return
+      }
       if (this.options.maxRuns && runCount >= this.options.maxRuns) {
         stop()
         return
       }
+      if (protect && running) {
+        log.debug(`[scheduler] task ${taskName} is still running; skipping this tick (withProtection)`)
+        if (typeof protect === 'function') protect(job)
+        return
+      }
+      if (interval && lastStartedAt !== null && now - lastStartedAt < interval * 1000) {
+        log.debug(`[scheduler] task ${taskName} ran less than ${interval}s ago; skipping this tick (withInterval)`)
+        return
+      }
       runCount++
+      running = true
+      lastStartedAt = now
       try {
         const result = task() as unknown
         // Handle promise-returning tasks: a rejection from an async task
@@ -838,6 +909,9 @@ export class Schedule implements UntimedSchedule {
           log.error(`[scheduler] task ${taskName} failed (no withErrorHandler() installed): ${error instanceof Error ? error.message : String(error)}`)
         }
         throw error
+      }
+      finally {
+        running = false
       }
     }
 
@@ -872,7 +946,10 @@ export class Schedule implements UntimedSchedule {
         if (this.options.maxRuns && runCount >= this.options.maxRuns) return
 
         const nextTime = this.getNextRunTime()
-        if (!nextTime) return
+        if (!nextTime) {
+          stop()
+          return
+        }
 
         const delay = Math.max(nextTime.getTime() - Date.now(), 0)
         if (delay > MAX_TIMEOUT) {
@@ -907,10 +984,10 @@ export class Schedule implements UntimedSchedule {
   // --- Static factory methods ---
 
   static job(name: SchedulableJobName): UntimedSchedule {
-    return new Schedule(async () => {
+    return new Schedule(async (context?: unknown) => {
       log.info(`Running job: ${name}`)
       try {
-        await runJob(name)
+        await runJob(name, context === undefined ? {} : { context })
       }
       catch (error) {
         log.error(`Job ${name} failed:`, error)
