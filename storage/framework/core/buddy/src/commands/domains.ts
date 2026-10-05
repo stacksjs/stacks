@@ -2,7 +2,7 @@ import type { CLI, DomainsOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bgCyan, bold, intro, italic, log, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
-import { config } from '@stacksjs/config'
+import { awaitConfig } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
@@ -18,120 +18,70 @@ export function domains(buddy: CLI): void {
     verbose: 'Enable verbose output',
   }
 
-  const c = config.dns.contactInfo
-
+  // No defaults from config/dns.ts here. They were read when the command was
+  // registered, before the app's config loads, so they were the framework's
+  // empty defaults - and `privacy` was `value || fallback || true`, which is
+  // always true. Passed on as flags, they then overrode what the action reads
+  // from config itself. The action owns the defaults; a flag given here
+  // overrides one field.
   buddy
     .command('domains:purchase <domain>', descriptions.purchase)
-    .option('--years <years>', 'Number of years to purchase the domain for', {
-      default: 1,
-    })
-    .option('--privacy', 'Enable privacy protection', { default: true })
-    .option('--auto-renew', 'Enable auto-renew', { default: true })
-    .option('--first-name <firstName>', 'Registrant first name', {
-      default: c?.firstName,
-    })
-    .option('--last-name <lastName>', 'Registrant last name', {
-      default: c?.lastName,
-    })
-    .option('--organization <organization>', 'Registrant organization name', {
-      default: c?.organizationName,
-    })
-    .option('--address-line1 <address>', 'Registrant address line 1', {
-      default: c?.addressLine1,
-    })
-    .option('--address-line2 <address>', 'Registrant address line 2', {
-      default: c?.addressLine2,
-    })
-    .option('--city <city>', 'Registrant city', { default: c?.city })
-    .option('--state <state>', 'Registrant state', { default: c?.state })
-    .option('--country <country>', 'Registrant country code', {
-      default: c?.countryCode,
-    })
-    .option('--zip <zip>', 'Registrant zip', { default: c?.zip })
-    .option('--phone <phone>', 'Registrant phone', { default: c?.phoneNumber })
-    .option('--email <email>', 'Registrant email', { default: c?.email })
-    .option('--admin-first-name <firstName>', 'Admin first name', {
-      default: c?.admin?.firstName || c?.firstName,
-    })
-    .option('--admin-last-name <lastName>', 'Admin last name', {
-      default: c?.admin?.lastName || c?.lastName,
-    })
-    .option('--admin-organization <organization>', 'Admin organization', {
-      default: c?.admin?.organizationName || c?.organizationName,
-    })
-    .option('--admin-address-line1 <address>', 'Admin address line 1', {
-      default: c?.admin?.addressLine1 || c?.addressLine1,
-    })
-    .option('--admin-address-line2 <address>', 'Admin address line 2', {
-      default: c?.admin?.addressLine2 || c?.addressLine2,
-    })
-    .option('--admin-city <city>', 'Admin city', {
-      default: c?.admin?.city || c?.city,
-    })
-    .option('--admin-state <state>', 'Admin state', {
-      default: c?.admin?.state || c?.state,
-    })
-    .option('--admin-country <country>', 'Admin country code', {
-      default: c?.admin?.countryCode || c?.countryCode,
-    })
-    .option('--admin-zip <zip>', 'Admin zip', {
-      default: c?.admin?.zip || c?.zip,
-    })
-    .option('--admin-phone <phone>', 'Admin phone number', {
-      default: c?.admin?.phoneNumber || c?.phoneNumber,
-    })
-    .option('--admin-email <email>', 'Admin email', {
-      default: c?.admin?.email || c?.email,
-    })
-    .option('--tech-first-name <firstName>', 'Tech first name', {
-      default: c?.tech?.firstName || c?.firstName,
-    })
-    .option('--tech-last-name <lastName>', 'Tech last name', {
-      default: c?.tech?.lastName || c?.lastName,
-    })
-    .option('--tech-organization <organization>', 'Tech organization name', {
-      default: c?.tech?.organizationName || c?.organizationName,
-    })
-    .option('--tech-address-line1 <address>', 'Tech address line 1', {
-      default: c?.tech?.addressLine1 || c?.addressLine1,
-    })
-    .option('--tech-address-line2 <address>', 'Tech address line 2', {
-      default: c?.tech?.addressLine2 || c?.addressLine2,
-    })
-    .option('--tech-city <city>', 'Tech city', {
-      default: c?.tech?.city || c?.city,
-    })
-    .option('--tech-state <state>', 'Tech state', {
-      default: c?.tech?.state || c?.state,
-    })
-    .option('--tech-country <country>', 'Tech country', {
-      default: c?.tech?.countryCode || c?.countryCode,
-    })
-    .option('--tech-zip <zip>', 'Tech zip', { default: c?.tech?.zip || c?.zip })
-    .option('--tech-phone <phone>', 'Tech phone', {
-      default: c?.tech?.phoneNumber || c?.phoneNumber,
-    })
-    .option('--tech-email <email>', 'Tech email', {
-      default: c?.tech?.email || c?.email,
-    })
-    .option('--privacy-admin', 'Enable privacy protection for admin', {
-      default: c?.privacyAdmin || c?.privacy || true,
-    })
-    .option('--privacy-tech', 'Enable privacy protection for tech', {
-      default: c?.privacyTech || c?.privacy || true,
-    })
-    .option('--privacy-registrant', 'Enable privacy protection for registrant', {
-      default: c?.privacyRegistrant || c?.privacy || true,
-    })
-    .option('--contact-type <type>', 'Contact type', { default: 'person' })
+    .option('--years <years>', 'Number of years to purchase the domain for')
+    // `--no-privacy` and `--no-auto-renew` work without being declared: the
+    // parser reads them as `false` for the declared option. Declaring them
+    // would give both a default of `true`, which overrides the config again.
+    .option('--privacy', 'Enable privacy protection; --no-privacy disables it (default: contactInfo.privacy, else on)')
+    .option('--auto-renew', 'Enable auto-renew; --no-auto-renew disables it (default: on)')
+    .option('--first-name <firstName>', 'Registrant first name')
+    .option('--last-name <lastName>', 'Registrant last name')
+    .option('--organization <organization>', 'Registrant organization name')
+    .option('--address-line1 <address>', 'Registrant address line 1')
+    .option('--address-line2 <address>', 'Registrant address line 2')
+    .option('--city <city>', 'Registrant city')
+    .option('--state <state>', 'Registrant state')
+    .option('--country <country>', 'Registrant country code')
+    .option('--zip <zip>', 'Registrant zip')
+    .option('--phone <phone>', 'Registrant phone')
+    .option('--email <email>', 'Registrant email')
+    .option('--admin-first-name <firstName>', 'Admin first name')
+    .option('--admin-last-name <lastName>', 'Admin last name')
+    .option('--admin-organization <organization>', 'Admin organization')
+    .option('--admin-address-line1 <address>', 'Admin address line 1')
+    .option('--admin-address-line2 <address>', 'Admin address line 2')
+    .option('--admin-city <city>', 'Admin city')
+    .option('--admin-state <state>', 'Admin state')
+    .option('--admin-country <country>', 'Admin country code')
+    .option('--admin-zip <zip>', 'Admin zip')
+    .option('--admin-phone <phone>', 'Admin phone number')
+    .option('--admin-email <email>', 'Admin email')
+    .option('--tech-first-name <firstName>', 'Tech first name')
+    .option('--tech-last-name <lastName>', 'Tech last name')
+    .option('--tech-organization <organization>', 'Tech organization name')
+    .option('--tech-address-line1 <address>', 'Tech address line 1')
+    .option('--tech-address-line2 <address>', 'Tech address line 2')
+    .option('--tech-city <city>', 'Tech city')
+    .option('--tech-state <state>', 'Tech state')
+    .option('--tech-country <country>', 'Tech country')
+    .option('--tech-zip <zip>', 'Tech zip')
+    .option('--tech-phone <phone>', 'Tech phone')
+    .option('--tech-email <email>', 'Tech email')
+    .option('--contact-type <type>', 'Contact type (default: contactInfo.contactType, else person)')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string, options: DomainsOptions) => {
       log.debug('Running `buddy domains:purchase <domain>` ...', options)
 
       options.domain = domain
+      // `false` is dropped on the way to an action (see buddyOptionArgs), so
+      // `--no-privacy` is sent as the string the action's parser reads back
+      // as false.
+      const forwarded: Record<string, unknown> = { ...options }
+      for (const key of ['privacy', 'autoRenew'] as const) {
+        if (forwarded[key] === false)
+          forwarded[key] = 'false'
+      }
       const startTime = await intro('buddy domains:purchase')
-      const result = await runAction(Action.DomainsPurchase, options)
+      const result = await runAction(Action.DomainsPurchase, forwarded as DomainsOptions)
 
       if (resultFailed(result)) {
         await outro(
@@ -154,9 +104,11 @@ export function domains(buddy: CLI): void {
           useSeconds: true,
           type: 'success',
         })
+        const { dns } = await awaitConfig()
+        const email = (options as Record<string, unknown>).email as string | undefined || dns?.contactInfo?.email
         log.info(
           `Please note, you may need to validate your email address. Check your ${italic(
-            options.registrantEmail as string,
+            email ?? 'registrant',
           )} inbox.`,
         )
         await log.flush()
@@ -182,12 +134,16 @@ export function domains(buddy: CLI): void {
   buddy
     .command('domains:add <domain>', descriptions.add)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DomainsOptions) => {
+    // cac passes the positional first. Taking only `options`, this received the
+    // domain string, spread its characters into the options, and `addDomain`
+    // never saw a domain at all.
+    .action(async (domain: string, options: DomainsOptions) => {
       log.debug('Running `buddy domains:add <domain>` ...', options)
 
       const startTime = await intro('buddy domains:add')
       const result = await addDomain({
         ...options,
+        domain,
         startTime,
       })
 
@@ -208,10 +164,13 @@ export function domains(buddy: CLI): void {
     .command('domains:remove <domain>', descriptions.remove)
     .option('--yes', descriptions.skip, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DomainsOptions) => {
+    // The positional first, as cac passes it. Taking only `options`, this
+    // received the domain string, found no `.domain` on it, and fell back to
+    // `config.app.url`: `buddy domains:remove other.com` deleted the DNS
+    // records of the app's own domain.
+    .action(async (domain: string, options: DomainsOptions) => {
       log.debug('Running `buddy domains:remove <domain>` ...', options)
 
-      const domain = options.domain || config.app.url
       const opts = { ...options, domain }
       const startTime = await intro('buddy domains:remove')
 

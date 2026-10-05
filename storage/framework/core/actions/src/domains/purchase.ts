@@ -1,7 +1,7 @@
 import type { PurchaseOptions } from '@stacksjs/cloud'
 import process from 'node:process'
 import { log, parseOptions } from '@stacksjs/cli'
-import { purchaseDomain, purchaseOptionsFromContactInfo } from '@stacksjs/cloud'
+import { applyPurchaseFlags, purchaseDomain, purchaseOptionsFromContactInfo } from '@stacksjs/cloud'
 import { awaitConfig } from '@stacksjs/config'
 import { handleError } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
@@ -17,7 +17,7 @@ if (!contactInfo || Object.keys(contactInfo).length === 0) {
   process.exit(ExitCode.FatalError)
 }
 
-const options: PurchaseOptions = { ...purchaseOptionsFromContactInfo(contactInfo), ...parseOptions() }
+const options: PurchaseOptions = applyPurchaseFlags(purchaseOptionsFromContactInfo(contactInfo), parseOptions())
 
 if (!options.domain) {
   handleError('You must provide a domain name to purchase.')

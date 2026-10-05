@@ -216,6 +216,62 @@ export function purchaseOptionsFromContactInfo(c: Partial<ContactInfo>): Purchas
   }
 }
 
+/** `buddy domains:purchase` flags that name a registrant field, by the option they set. */
+const REGISTRANT_FLAGS: Record<string, keyof PurchaseOptions> = {
+  firstName: 'registrantFirstName',
+  lastName: 'registrantLastName',
+  organization: 'registrantOrganization',
+  addressLine1: 'registrantAddressLine1',
+  addressLine2: 'registrantAddressLine2',
+  city: 'registrantCity',
+  state: 'registrantState',
+  country: 'registrantCountry',
+  zip: 'registrantZip',
+  phone: 'registrantPhone',
+  email: 'registrantEmail',
+}
+
+/**
+ * Lay the command line over the options config produced.
+ *
+ * The registrant flags are spelled for the person typing them -
+ * `--first-name`, `--email` - and arrive as `firstName`, `email`, which no
+ * purchase option is called, so every one of them was silently ignored. The
+ * parser also hands everything over as strings: `--years 2` was `'2'`, and
+ * `'false'` is the only way `--no-privacy` survives the trip to an action.
+ */
+export function applyPurchaseFlags(base: PurchaseOptions, flags: Record<string, unknown>): PurchaseOptions {
+  const options: Record<string, unknown> = { ...base }
+
+  for (const [flag, value] of Object.entries(flags)) {
+    if (value === undefined || value === null || value === '')
+      continue
+    options[REGISTRANT_FLAGS[flag] ?? flag] = value
+  }
+
+  for (const key of ['privacy', 'autoRenew', 'privacyAdmin', 'privacyTech', 'privacyRegistrant', 'verbose'] as const) {
+    if (options[key] === 'false')
+      options[key] = false
+    else if (options[key] === 'true')
+      options[key] = true
+  }
+
+  // A privacy flag applies to every contact unless one was set on its own.
+  if (flags.privacy !== undefined) {
+    for (const key of ['privacyAdmin', 'privacyTech', 'privacyRegistrant'] as const) {
+      if (flags[key] === undefined)
+        options[key] = options.privacy
+    }
+  }
+
+  const years = Number(options.years)
+  options.years = Number.isInteger(years) && years > 0 ? years : 1
+  if (typeof options.contactType === 'string')
+    options.contactType = options.contactType.toUpperCase()
+
+  return options as unknown as PurchaseOptions
+}
+
 /**
  * Register a domain through Route 53 Domains.
  *

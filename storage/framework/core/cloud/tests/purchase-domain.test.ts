@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { purchaseDomain, purchaseOptionsFromContactInfo } from '../src/helpers'
+import { applyPurchaseFlags, purchaseDomain, purchaseOptionsFromContactInfo } from '../src/helpers'
 
 /**
  * `buddy domains:purchase` printed "Domain purchased successfully." for every
@@ -102,5 +102,41 @@ describe('purchaseOptionsFromContactInfo', () => {
   it('uses the configured contact type instead of always PERSON', () => {
     expect(purchaseOptionsFromContactInfo({ ...contact, contactType: 'company' }).contactType).toBe('COMPANY')
     expect(purchaseOptionsFromContactInfo(contact).contactType).toBe('PERSON')
+  })
+})
+
+describe('applyPurchaseFlags', () => {
+  const base = () => purchaseOptionsFromContactInfo({ ...contact, privacy: false })
+
+  it('maps the registrant flags onto the options they name', () => {
+    const options = applyPurchaseFlags(base(), { domain: 'x.example', firstName: 'Grace', email: 'grace@example.com', country: 'US', addressLine1: '1 Main St' })
+
+    expect(options.registrantFirstName).toBe('Grace')
+    expect(options.registrantEmail).toBe('grace@example.com')
+    expect(options.registrantCountry).toBe('US')
+    expect(options.registrantAddressLine1).toBe('1 Main St')
+    // Untouched fields keep what config said.
+    expect(options.registrantLastName).toBe('Lovelace')
+  })
+
+  it('reads years as a number', () => {
+    expect(applyPurchaseFlags(base(), { years: '3' }).years).toBe(3)
+    expect(applyPurchaseFlags(base(), { years: 'nonsense' }).years).toBe(1)
+  })
+
+  it('keeps config privacy when no flag is given', () => {
+    const options = applyPurchaseFlags(base(), { domain: 'x.example' })
+
+    expect(options.privacy).toBe(false)
+    expect(options.privacyRegistrant).toBe(false)
+  })
+
+  it('applies a privacy flag to every contact, including the string false', () => {
+    const on = applyPurchaseFlags(base(), { privacy: true })
+    expect([on.privacyAdmin, on.privacyTech, on.privacyRegistrant]).toEqual([true, true, true])
+
+    const off = applyPurchaseFlags(purchaseOptionsFromContactInfo(contact), { privacy: 'false', autoRenew: 'false' })
+    expect([off.privacyAdmin, off.privacyTech, off.privacyRegistrant]).toEqual([false, false, false])
+    expect(off.autoRenew).toBe(false)
   })
 })

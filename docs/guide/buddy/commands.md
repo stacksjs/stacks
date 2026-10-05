@@ -1681,9 +1681,9 @@ Purchase a domain
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--years` | Number of years to purchase the domain for | value, required | `1` |
-| `--privacy` | Enable privacy protection | boolean, optional | `true` |
-| `--auto-renew` | Enable auto-renew | boolean, optional | `true` |
+| `--years` | Number of years to purchase the domain for | value, required | - |
+| `--privacy` | Enable privacy protection; --no-privacy disables it (default: contactInfo.privacy, else on) | boolean, optional | - |
+| `--auto-renew` | Enable auto-renew; --no-auto-renew disables it (default: on) | boolean, optional | - |
 | `--first-name` | Registrant first name | value, required | - |
 | `--last-name` | Registrant last name | value, required | - |
 | `--organization` | Registrant organization name | value, required | - |
@@ -1717,10 +1717,7 @@ Purchase a domain
 | `--tech-zip` | Tech zip | value, required | - |
 | `--tech-phone` | Tech phone | value, required | - |
 | `--tech-email` | Tech email | value, required | - |
-| `--privacy-admin` | Enable privacy protection for admin | boolean, optional | `true` |
-| `--privacy-tech` | Enable privacy protection for tech | boolean, optional | `true` |
-| `--privacy-registrant` | Enable privacy protection for registrant | boolean, optional | `true` |
-| `--contact-type` | Contact type | value, required | `"person"` |
+| `--contact-type` | Contact type (default: contactInfo.contactType, else person) | value, required | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

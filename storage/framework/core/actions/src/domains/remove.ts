@@ -1,6 +1,5 @@
 import process from 'node:process'
 import { parseOptions } from '@stacksjs/cli'
-import { app } from '@stacksjs/config'
 import { deleteHostedZoneRecords } from '@stacksjs/dns'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -16,14 +15,13 @@ const options: RemoveOptions = {
   verbose: parsedOptions.verbose as boolean,
 }
 
+// No fallback to the app's own domain. This deletes every record in a hosted
+// zone, and the fallback is how `buddy domains:remove other.com` - whose
+// domain never reached here - deleted the app's DNS instead. A removal names
+// its domain or does not happen.
 if (!options.domain) {
-  if (app.url) {
-    options.domain = app.url
-  }
-  else {
-    handleError('there was no domain provided when')
-    process.exit(1)
-  }
+  handleError('No domain was given to remove. Run `buddy domains:remove <domain>`.')
+  process.exit(1)
 }
 
 if (options.verbose)
