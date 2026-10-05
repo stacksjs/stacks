@@ -94,7 +94,7 @@ function readCookie(header: string | null, name: string): string | undefined {
  * server — this used to be a second copy of the reasoning, which is how the
  * two drift.
  */
-const { isApiBoundRequest, proxyToBackend, resolveApiBase, resolveApiProxyRules } = await import('@stacksjs/server')
+const { isApiBoundRequest, proxyToBackend, resolveApiBase, resolveApiProxyRules, viewClientAddress } = await import('@stacksjs/server')
 const apiBase = resolveApiBase(config.ports?.api)
 
 // The app's own `proxy` config, so a plain `GET /health` on the API process
@@ -131,6 +131,8 @@ await serve({
    * that renders a staff record are refused identically — an attacker learns
    * nothing from the difference.
    */
+  // A page's ambient `ip`: the address trusted proxies vouch for.
+  clientAddress: viewClientAddress,
   onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]): Promise<Response | null> => {
     // Lets `clientAddress()` read the socket peer: the API this proxies to
     // trusts the address appended here, so it must not come from a header.

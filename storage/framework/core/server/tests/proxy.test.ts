@@ -122,6 +122,26 @@ describe('proxyToBackend', () => {
     }
   })
 
+  test('viewClientAddress resolves a view\'s ip from the peer, not a client-written prefix', async () => {
+    const { viewClientAddress } = await import('../src/proxy')
+    const views = Bun.serve({
+      port: 0,
+      hostname: '127.0.0.1',
+      fetch: (req, server) => new Response(viewClientAddress(req, server) ?? ''),
+    })
+    try {
+      const ip = async (headers: Record<string, string> = {}) =>
+        (await fetch(`http://127.0.0.1:${views.port}/`, { headers })).text()
+
+      expect(await ip()).toBe('127.0.0.1')
+      // Loopback is the gateway, so the hop it appended counts and the prefix does not.
+      expect(await ip({ 'x-forwarded-for': '198.51.100.1, 203.0.113.7' })).toBe('203.0.113.7')
+    }
+    finally {
+      views.stop(true)
+    }
+  })
+
   test('leaves X-Forwarded-For alone when there is no socket peer', async () => {
     const { proxyToBackend } = await import('../src/proxy')
     const req = new Request('http://frontend.test/api/ping', { headers: { 'x-forwarded-for': '203.0.113.7' } })

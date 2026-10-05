@@ -193,7 +193,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
   await ensureDiscoveredPackages()
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -420,6 +420,9 @@ export async function startProductionServer(options?: { port?: string | number, 
           ...stxPageAuthMiddleware(),
         },
         prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
+        // A page's ambient `ip`: the address trusted proxies vouch for, not
+        // the proxy's own (stx >= 0.2.373).
+        clientAddress: viewClientAddress,
         // Maintenance / coming-soon gate runs first so it intercepts every
         // request. The gate allowlists `/coming-soon`, the secret bypass URL,
         // and static assets, so the holding page renders and visitors with a

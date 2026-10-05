@@ -59,7 +59,7 @@ catch {
 async function startDefaultServer() {
   await overridesReady
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -226,6 +226,8 @@ async function startDefaultServer() {
       ...stxPageAuthMiddleware({ cookieName: authCookie, redirectTo: '/login' }),
     },
     prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
+    // A page's ambient `ip`, resolved as `buddy serve` resolves it.
+    clientAddress: viewClientAddress,
     onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
       // First, before any `await`: this request's scope for its server
       // scripts (see `installRequestScope()` above).

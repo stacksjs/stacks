@@ -5,7 +5,7 @@
  * in both topologies (stacksjs/stacks#1950).
  */
 
-import { peerAddress } from '@stacksjs/bun-router'
+import { clientAddress, peerAddress, registerPeerSource } from '@stacksjs/bun-router'
 
 /** The prefix that is always API-bound, with or without configuration. */
 export const DEFAULT_API_PREFIX = '/api/'
@@ -201,6 +201,17 @@ export function describeUnforwardableRoutes(routes: readonly (RoutePathLike & { 
     ...lines,
     `Add them to \`proxy.paths\` in config/server.ts (or their prefix to \`proxy.prefixes\`) so the views server forwards them to the API.`,
   ].join('\n')
+}
+
+/**
+ * The client address an stx view sees as its ambient `ip` - stx-serve's
+ * `clientAddress` option. stx calls it before `onRequest`, so it registers the
+ * server that names the socket peer first; without one, `clientAddress()`
+ * believes every forwarding header.
+ */
+export function viewClientAddress(req: Request, server?: Parameters<typeof registerPeerSource>[0]): string | null {
+  registerPeerSource(server)
+  return clientAddress(req)
 }
 
 /**
