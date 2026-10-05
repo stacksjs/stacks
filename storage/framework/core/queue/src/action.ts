@@ -250,7 +250,7 @@ export class Job<T = unknown> {
      */
     assertEnvelopeSerializable(envelope)
 
-    const { RedisQueue } = await import('./drivers/redis')
+    const { sharedRedisQueue } = await import('./drivers/redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
     // Typed end-to-end via `StacksOptions['queue']` —
     // stacksjs/stacks#1875 T-6 dropped the `as any` cast that
@@ -261,7 +261,7 @@ export class Job<T = unknown> {
       throw new Error('Redis queue connection is not configured. Check config/queue.ts')
     }
 
-    const queue = new RedisQueue(this.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
+    const queue = sharedRedisQueue(this.queue || 'default', redisConfig as Parameters<typeof sharedRedisQueue>[1])
 
     await queue.add(
       envelope,

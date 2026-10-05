@@ -888,12 +888,12 @@ const REDIS_BATCH_INDEX = 'stacks:batches'
 // instead of crashing the redis path at runtime.
 
 async function getRedisClient(): Promise<any> {
-  const { RedisQueue } = await import('./drivers/redis')
+  const { sharedRedisQueue } = await import('./drivers/redis')
   const { queue: queueConfig } = await import('@stacksjs/config')
   const redisConfig = queueConfig?.connections?.redis
   if (!redisConfig) throw new Error('Redis queue connection is not configured')
-  // Use a dedicated queue for batch management
-  return new RedisQueue('__batches__', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
+  // A dedicated queue for batch management, opened once per process.
+  return sharedRedisQueue('__batches__', redisConfig as Parameters<typeof sharedRedisQueue>[1])
 }
 
 /**

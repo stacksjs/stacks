@@ -337,6 +337,35 @@ interface QueueEvents {
 }
 
 /**
+ * Queues opened for dispatching, one per queue name and connection.
+ *
+ * Every dispatch used to construct its own RedisQueue and never close it. Each
+ * one opened a Redis connection, loaded the driver's Lua scripts and started a
+ * stalled-job poller, so a web process leaked a connection and a timer per
+ * queued job until Redis refused connections. Dispatches now share one queue
+ * per name, as a worker does.
+ */
+const sharedQueues = new Map<string, RedisQueue<any>>()
+
+/** The RedisQueue for `name` on this connection, opened once and reused. */
+export function sharedRedisQueue<T = any>(name: string, config: RedisConnectionConfig): RedisQueue<T> {
+  const key = `${name}\u0000${JSON.stringify(config)}`
+  let queue = sharedQueues.get(key)
+  if (!queue) {
+    queue = new RedisQueue<T>(name, config)
+    sharedQueues.set(key, queue)
+  }
+  return queue as RedisQueue<T>
+}
+
+/** Close every shared queue: at shutdown, or in a test. */
+export async function closeSharedRedisQueues(): Promise<void> {
+  const queues = [...sharedQueues.values()]
+  sharedQueues.clear()
+  await Promise.all(queues.map(queue => queue.close()))
+}
+
+/**
  * Queue Manager for multiple queue connections
  */
 export class StacksQueueManager {

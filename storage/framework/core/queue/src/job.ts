@@ -443,7 +443,7 @@ class JobBuilder {
      */
     assertEnvelopeSerializable(envelope)
 
-    const { RedisQueue } = await import('./drivers/redis')
+    const { sharedRedisQueue } = await import('./drivers/redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
     // `queueConfig` is typed as `StacksOptions['queue']` already — the
     // previous `as any` cast (stacksjs/stacks#1875 T-6) escaped that
@@ -454,7 +454,7 @@ class JobBuilder {
       throw new Error('Redis queue connection is not configured. Check config/queue.ts')
     }
 
-    const queue = new RedisQueue(this.options.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
+    const queue = sharedRedisQueue(this.options.queue || 'default', redisConfig as Parameters<typeof sharedRedisQueue>[1])
 
     await queue.add(
       envelope,

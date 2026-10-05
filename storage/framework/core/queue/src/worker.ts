@@ -1086,6 +1086,13 @@ export async function stopProcessor(options: { graceMs?: number } = {}): Promise
     const { getWorkerTracker } = await import('./events')
     getWorkerTracker().unregister(workerId)
   }
+
+  // The queues opened for dispatching from this process (see
+  // sharedRedisQueue), so their connections and pollers do not outlive it.
+  if (getQueueDriver() === 'redis') {
+    const { closeSharedRedisQueues } = await import('./drivers/redis')
+    await closeSharedRedisQueues()
+  }
   log.info('Queue processor stopped')
 }
 
