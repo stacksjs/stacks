@@ -6,10 +6,11 @@ export abstract class BaseChatDriver implements ChatDriver {
   protected config: Required<ChatDriverConfig>
 
   constructor(config?: ChatDriverConfig) {
+    // `??`, not `||`: zero retries and a zero delay are settings, not gaps.
     this.config = {
-      maxRetries: config?.maxRetries || 3,
-      retryTimeout: config?.retryTimeout || 1000,
       ...config,
+      maxRetries: config?.maxRetries ?? 3,
+      retryTimeout: config?.retryTimeout ?? 1000,
     }
   }
 

@@ -43,7 +43,13 @@ await sendToDiscord(webhookUrl, content, options?)
 await sendToTeams(webhookUrl, text)
 ```
 
-Configure functions:
+Settings come from `config/services.ts` by default, read on each send after the
+app's config has loaded: `SLACK_WEBHOOK_URL` / `SLACK_BOT_TOKEN`,
+`DISCORD_WEBHOOK_URL` / `DISCORD_BOT_TOKEN`, `TEAMS_WEBHOOK_URL`, and each
+driver's `*_MAX_RETRIES` / `*_RETRY_TIMEOUT`. A webhook URL from config passes
+the same HTTPS and host checks as one given to `configure*()`.
+
+The configure functions override config, for an app that keeps these elsewhere:
 ```typescript
 import { configureSlack, configureDiscord, configureTeams } from '@stacksjs/chat'
 configureSlack({ webhookUrl: '...', botToken: '...' })

@@ -1,5 +1,6 @@
 import type { ChatMessage, ChatResult, RenderOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
+import { appServices, count, present } from '../app-config'
 import { BaseChatDriver } from './base'
 
 export interface DiscordConfig {
@@ -59,33 +60,71 @@ let config: DiscordConfig = {}
  * Discord's host. Same reasoning as the Slack driver — `http://` URLs
  * leak the webhook token; off-domain URLs are typo'd configuration.
  */
-export function configure(options: DiscordConfig): void {
-  if (options.webhookUrl) {
-    let parsed: URL
-    try {
-      parsed = new URL(options.webhookUrl)
-    }
-    catch {
-      throw new Error(`[chat/discord] webhookUrl is not a valid URL: ${options.webhookUrl}`)
-    }
-    if (parsed.protocol !== 'https:') {
-      throw new Error('[chat/discord] webhookUrl must use https://')
-    }
-    if (!/(?:^|\.)discord(?:app)?\.com$/i.test(parsed.hostname)) {
-      throw new Error(`[chat/discord] webhookUrl host "${parsed.hostname}" is not a Discord-owned domain.`)
-    }
+/** Refuse a webhook URL that would leak its token or send somewhere that is not Discord. */
+function assertWebhookUrl(webhookUrl: string): void {
+  let parsed: URL
+  try {
+    parsed = new URL(webhookUrl)
   }
+  catch {
+    throw new Error(`[chat/discord] webhookUrl is not a valid URL: ${webhookUrl}`)
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error('[chat/discord] webhookUrl must use https://')
+  }
+  if (!/(?:^|\.)discord(?:app)?\.com$/i.test(parsed.hostname)) {
+    throw new Error(`[chat/discord] webhookUrl host "${parsed.hostname}" is not a Discord-owned domain.`)
+  }
+}
+
+export function configure(options: DiscordConfig): void {
+  if (options.webhookUrl)
+    assertWebhookUrl(options.webhookUrl)
   config = { ...config, ...options }
+}
+
+/**
+ * The settings a send uses: what `configure()` set, then the app's
+ * `config/services.ts` (`services.discord`), read per send after the app's
+ * config has loaded. A URL from config passes the same checks `configure()`
+ * applies.
+ */
+export async function resolveConfig(): Promise<DiscordConfig> {
+  let fromApp: Record<string, unknown> = {}
+  try {
+    fromApp = ((await appServices()).discord ?? {}) as Record<string, unknown>
+  }
+  catch (error) {
+    log.debug(`[chat/discord] could not read config/services.ts: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const webhookUrl = config.webhookUrl ?? present(fromApp.webhookUrl)
+  if (webhookUrl && !config.webhookUrl)
+    assertWebhookUrl(webhookUrl)
+
+  return {
+    webhookUrl,
+    botToken: config.botToken ?? present(fromApp.botToken),
+    maxRetries: config.maxRetries ?? count(fromApp.maxRetries),
+    retryTimeout: config.retryTimeout ?? count(fromApp.retryTimeout),
+  }
 }
 
 export class DiscordDriver extends BaseChatDriver {
   public name = 'discord'
+
+  /** What this send uses; see {@link resolveConfig}. */
+  private settings: DiscordConfig = {}
+
+  /** Retry settings passed to the constructor win over config/services.ts. */
+  private readonly explicitRetries: { maxRetries?: number, retryTimeout?: number }
 
   constructor(options?: DiscordConfig) {
     super({
       maxRetries: options?.maxRetries ?? 3,
       retryTimeout: options?.retryTimeout ?? 1000,
     })
+    this.explicitRetries = { maxRetries: options?.maxRetries, retryTimeout: options?.retryTimeout }
     if (options) {
       configure(options)
     }
@@ -102,6 +141,12 @@ export class DiscordDriver extends BaseChatDriver {
 
     try {
       this.validateMessage(message)
+      this.settings = await resolveConfig()
+      this.config = {
+        ...this.config,
+        maxRetries: this.explicitRetries.maxRetries ?? this.settings.maxRetries ?? this.config.maxRetries,
+        retryTimeout: this.explicitRetries.retryTimeout ?? this.settings.retryTimeout ?? this.config.retryTimeout,
+      }
       return await this.sendWithRetry(message, options)
     }
     catch (error) {
@@ -125,11 +170,11 @@ export class DiscordDriver extends BaseChatDriver {
   }
 
   private async sendMessage(message: ChatMessage, _options?: RenderOptions): Promise<{ id?: string }> {
-    if (config.webhookUrl) {
+    if (this.settings.webhookUrl) {
       return this.sendViaWebhook(message)
     }
 
-    if (config.botToken) {
+    if (this.settings.botToken) {
       return this.sendViaBotToken(message)
     }
 
@@ -150,7 +195,7 @@ export class DiscordDriver extends BaseChatDriver {
       payload.embeds = [this.buildEmbed(message)]
     }
 
-    const response = await fetch(config.webhookUrl!, {
+    const response = await fetch(this.settings.webhookUrl!, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -184,7 +229,7 @@ export class DiscordDriver extends BaseChatDriver {
     const response = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bot ${config.botToken}`,
+        'Authorization': `Bot ${this.settings.botToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),

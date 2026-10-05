@@ -1,5 +1,6 @@
 import type { ChatMessage, ChatResult, RenderOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
+import { appServices, count, present } from '../app-config'
 import { BaseChatDriver } from './base'
 
 export interface SlackConfig {
@@ -65,33 +66,71 @@ let config: SlackConfig = {}
  * traffic; a typo'd domain would silently send messages to whatever
  * server happens to accept them.
  */
-export function configure(options: SlackConfig): void {
-  if (options.webhookUrl) {
-    let parsed: URL
-    try {
-      parsed = new URL(options.webhookUrl)
-    }
-    catch {
-      throw new Error(`[chat/slack] webhookUrl is not a valid URL: ${options.webhookUrl}`)
-    }
-    if (parsed.protocol !== 'https:') {
-      throw new Error('[chat/slack] webhookUrl must use https:// - Slack does not accept plain HTTP webhooks.')
-    }
-    if (!/(?:^|\.)slack\.com$/i.test(parsed.hostname)) {
-      throw new Error(`[chat/slack] webhookUrl host "${parsed.hostname}" is not a Slack-owned domain.`)
-    }
+/** Refuse a webhook URL that would leak its token or send somewhere that is not Slack. */
+function assertWebhookUrl(webhookUrl: string): void {
+  let parsed: URL
+  try {
+    parsed = new URL(webhookUrl)
   }
+  catch {
+    throw new Error(`[chat/slack] webhookUrl is not a valid URL: ${webhookUrl}`)
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error('[chat/slack] webhookUrl must use https:// - Slack does not accept plain HTTP webhooks.')
+  }
+  if (!/(?:^|\.)slack\.com$/i.test(parsed.hostname)) {
+    throw new Error(`[chat/slack] webhookUrl host "${parsed.hostname}" is not a Slack-owned domain.`)
+  }
+}
+
+export function configure(options: SlackConfig): void {
+  if (options.webhookUrl)
+    assertWebhookUrl(options.webhookUrl)
   config = { ...config, ...options }
+}
+
+/**
+ * The settings a send uses: what `configure()` set, then the app's
+ * `config/services.ts` (`services.slack`), read per send after the app's
+ * config has loaded. A URL from config passes the same checks `configure()`
+ * applies.
+ */
+export async function resolveConfig(): Promise<SlackConfig> {
+  let fromApp: Record<string, unknown> = {}
+  try {
+    fromApp = ((await appServices()).slack ?? {}) as Record<string, unknown>
+  }
+  catch (error) {
+    log.debug(`[chat/slack] could not read config/services.ts: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const webhookUrl = config.webhookUrl ?? present(fromApp.webhookUrl)
+  if (webhookUrl && !config.webhookUrl)
+    assertWebhookUrl(webhookUrl)
+
+  return {
+    webhookUrl,
+    botToken: config.botToken ?? present(fromApp.botToken),
+    maxRetries: config.maxRetries ?? count(fromApp.maxRetries),
+    retryTimeout: config.retryTimeout ?? count(fromApp.retryTimeout),
+  }
 }
 
 export class SlackDriver extends BaseChatDriver {
   public name = 'slack'
+
+  /** What this send uses; see {@link resolveConfig}. */
+  private settings: SlackConfig = {}
+
+  /** Retry settings passed to the constructor win over config/services.ts. */
+  private readonly explicitRetries: { maxRetries?: number, retryTimeout?: number }
 
   constructor(options?: SlackConfig) {
     super({
       maxRetries: options?.maxRetries ?? 3,
       retryTimeout: options?.retryTimeout ?? 1000,
     })
+    this.explicitRetries = { maxRetries: options?.maxRetries, retryTimeout: options?.retryTimeout }
     if (options) {
       configure(options)
     }
@@ -108,6 +147,12 @@ export class SlackDriver extends BaseChatDriver {
 
     try {
       this.validateMessage(message)
+      this.settings = await resolveConfig()
+      this.config = {
+        ...this.config,
+        maxRetries: this.explicitRetries.maxRetries ?? this.settings.maxRetries ?? this.config.maxRetries,
+        retryTimeout: this.explicitRetries.retryTimeout ?? this.settings.retryTimeout ?? this.config.retryTimeout,
+      }
       return await this.sendWithRetry(message, options)
     }
     catch (error) {
@@ -132,11 +177,11 @@ export class SlackDriver extends BaseChatDriver {
 
   private async sendMessage(message: ChatMessage, _options?: RenderOptions): Promise<{ ts?: string }> {
     // Use webhook if available, otherwise use bot token
-    if (config.webhookUrl) {
+    if (this.settings.webhookUrl) {
       return this.sendViaWebhook(message)
     }
 
-    if (config.botToken) {
+    if (this.settings.botToken) {
       return this.sendViaBotToken(message)
     }
 
@@ -168,7 +213,7 @@ export class SlackDriver extends BaseChatDriver {
       payload.blocks = this.buildBlocks(message)
     }
 
-    const response = await fetch(config.webhookUrl!, {
+    const response = await fetch(this.settings.webhookUrl!, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -196,7 +241,7 @@ export class SlackDriver extends BaseChatDriver {
     const response = await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${config.botToken}`,
+        'Authorization': `Bearer ${this.settings.botToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),

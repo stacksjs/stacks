@@ -58,11 +58,11 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "better-dx": "^0.2.24"

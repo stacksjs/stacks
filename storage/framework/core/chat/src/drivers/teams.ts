@@ -1,5 +1,6 @@
 import type { ChatMessage, ChatResult, RenderOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
+import { appServices, count, present } from '../app-config'
 import { BaseChatDriver } from './base'
 
 export interface TeamsConfig {
@@ -59,14 +60,45 @@ export function configure(options: TeamsConfig): void {
   config = { ...config, ...options }
 }
 
+/**
+ * The settings a send uses: what `configure()` set, then the app's
+ * `config/services.ts` (`services.teams`), read per send after the app's
+ * config has loaded. A URL from config passes the same checks `configure()`
+ * applies.
+ */
+export async function resolveConfig(): Promise<TeamsConfig> {
+  let fromApp: Record<string, unknown> = {}
+  try {
+    fromApp = ((await appServices()).teams ?? {}) as Record<string, unknown>
+  }
+  catch (error) {
+    log.debug(`[chat/teams] could not read config/services.ts: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const webhookUrl = config.webhookUrl ?? present(fromApp.webhookUrl)
+
+  return {
+    webhookUrl,
+    maxRetries: config.maxRetries ?? count(fromApp.maxRetries),
+    retryTimeout: config.retryTimeout ?? count(fromApp.retryTimeout),
+  }
+}
+
 export class TeamsDriver extends BaseChatDriver {
   public name = 'teams'
+
+  /** What this send uses; see {@link resolveConfig}. */
+  private settings: TeamsConfig = {}
+
+  /** Retry settings passed to the constructor win over config/services.ts. */
+  private readonly explicitRetries: { maxRetries?: number, retryTimeout?: number }
 
   constructor(options?: TeamsConfig) {
     super({
       maxRetries: options?.maxRetries ?? 3,
       retryTimeout: options?.retryTimeout ?? 1000,
     })
+    this.explicitRetries = { maxRetries: options?.maxRetries, retryTimeout: options?.retryTimeout }
     if (options) {
       configure(options)
     }
@@ -83,6 +115,12 @@ export class TeamsDriver extends BaseChatDriver {
 
     try {
       this.validateMessage(message)
+      this.settings = await resolveConfig()
+      this.config = {
+        ...this.config,
+        maxRetries: this.explicitRetries.maxRetries ?? this.settings.maxRetries ?? this.config.maxRetries,
+        retryTimeout: this.explicitRetries.retryTimeout ?? this.settings.retryTimeout ?? this.config.retryTimeout,
+      }
       return await this.sendWithRetry(message, options)
     }
     catch (error) {
@@ -111,7 +149,7 @@ export class TeamsDriver extends BaseChatDriver {
     // array - which asks whether an ELEMENT equals 'webhook.office.com', never
     // true - so a message addressed with a list failed as "not configured"
     // rather than being sent. The cast on `fetch` is what let that through.
-    const configured = config.webhookUrl
+    const configured = this.settings.webhookUrl
     const webhookUrl = configured || (Array.isArray(message.to) ? message.to[0] : message.to)
 
     if (!webhookUrl || !webhookUrl.includes('webhook.office.com')) {
