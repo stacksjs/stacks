@@ -97,23 +97,40 @@ export function deleteFile(path: string): Promise<Result<string, Error>> {
   })
 }
 
+/**
+ * Delete everything `path`, a glob, matches: files and directories alike.
+ *
+ * It asked for directories only, through a `glob()` option that was then
+ * ignored, so it got files back, handed each to `deleteFolder`, which declined
+ * them as "not a directory", and reported success: `del('dist/*')` and
+ * `del('logs/*.log')` both deleted nothing.
+ */
 export async function deleteGlob(path: string): Promise<Result<string, Error>> {
   if (!path.includes('*'))
     return err(handleError(`Path ${path} does not contain a glob`))
 
-  const directories = await glob([path], { onlyDirectories: true })
+  // Shallowest first, so a directory goes before anything inside it that
+  // also matched, which is then already gone.
+  const matches = (await glob([path], { onlyFiles: false, dot: true }))
+    .sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b))
 
-  for (const directory of directories) {
-    const result = await deleteFolder(directory)
-    if (result.isErr) {
-      log.error(result.error)
-      return result
+  let deleted = 0
+  for (const match of matches) {
+    if (!fs.existsSync(match))
+      continue
+    try {
+      fs.rmSync(match, { recursive: true, force: true })
     }
-
-    log.info(`Deleted ${italic(directory)}`)
+    catch (error) {
+      const failure = new Error(`Could not delete ${match}: ${error instanceof Error ? error.message : String(error)}`, { cause: error })
+      log.error(failure)
+      return err(failure)
+    }
+    deleted++
+    log.info(`Deleted ${italic(match)}`)
   }
 
-  return ok(`Deleted ${directories.length} directories`)
+  return ok(`Deleted ${deleted} ${deleted === 1 ? 'entry' : 'entries'} matching ${path}`)
 }
 
 export async function del(path: string): Promise<Result<string, Error>> {
