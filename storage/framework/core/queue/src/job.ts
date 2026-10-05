@@ -283,7 +283,7 @@ class JobBuilder {
           timeout: this.options.timeout,
           tries: this.options.tries,
           backoff: this.options.backoff,
-        })
+        }, await currentTraceId(), this.options.context)
         const moved = await moveToDeadLetter({
           queue: this.options.queue || 'default',
           payload: serializeEnvelope(envelope),
@@ -381,7 +381,7 @@ class JobBuilder {
       timeout: this.options.timeout,
       tries: this.options.tries,
       backoff: this.options.backoff,
-    }, await currentTraceId())
+    }, await currentTraceId(), this.options.context)
 
     // `serializeEnvelope` rather than a bare `JSON.stringify`
     // (stacksjs/stacks#2282 item 6): a BigInt anywhere in the payload throws
@@ -423,12 +423,15 @@ class JobBuilder {
     // separate opts arg AND inside the envelope so a worker reading
     // the envelope sees the same retry/timeout/backoff config the
     // bun-queue layer is already enforcing.
+    //
+    // The trace id too, as the database driver carries it: a job queued on
+    // Redis logged under an id of its own.
     const envelope = createEnvelope(this.name, this.payload, {
       queue: this.options.queue,
       timeout: this.options.timeout,
       tries: this.options.tries,
       backoff: this.options.backoff,
-    })
+    }, await currentTraceId(), this.options.context)
 
     /*
      * bun-queue stringifies `data` itself, several layers down, so an
@@ -860,7 +863,7 @@ export async function runJob(name: string, options: { payload?: any; context?: a
     }
 
     if (typeof jobConfig.handle === 'function') {
-      await jobConfig.handle(options.payload)
+      await jobConfig.handle(options.payload, options.context)
     }
     else if (typeof jobConfig.action === 'string') {
       await runNamedAction(jobConfig.action)

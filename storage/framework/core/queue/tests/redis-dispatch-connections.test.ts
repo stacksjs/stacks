@@ -48,3 +48,23 @@ test('twenty dispatches share one connection', async () => {
   const after = await connectedClients()
   expect(after - before).toBeLessThanOrEqual(2)
 })
+
+test('a builder dispatch carries its context and trace id onto Redis', async () => {
+  const { job } = await import('../src/job')
+  const { withTraceId } = await import('@stacksjs/router')
+  const { sharedRedisQueue } = await import('../src/drivers/redis')
+  // The queue the dispatch writes to: the connection it reads, from the
+  // config module's own \`queue\` export.
+  const { queue: queueConfig } = await import('@stacksjs/config')
+  const queue = sharedRedisQueue(`${queueName}-context`, (queueConfig as any).connections.redis)
+  await queue.empty()
+
+  await withTraceId('trace-redis-context', async () => {
+    await job('ContextProbe' as never, { orderId: 7 } as never).onQueue(`${queueName}-context`).withContext({ tenant: 'acme' }).dispatch()
+  })
+
+  const [queued] = await queue.getJobs('waiting')
+  expect((queued?.data as any)?.context).toEqual({ tenant: 'acme' })
+  expect((queued?.data as any)?.traceId).toBe('trace-redis-context')
+  await queue.empty()
+})

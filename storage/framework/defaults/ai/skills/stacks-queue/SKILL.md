@@ -101,7 +101,7 @@ The `job()` helper loads job modules from `app/Jobs/{name}.ts` via `runJob()`.
 
 ### runJob(name, options)
 Dynamically imports `app/Jobs/{name}.ts` and executes:
-1. `jobConfig.handle(payload)` if handle is a function
+1. `jobConfig.handle(payload, context)` if handle is a function (`context` is what `.withContext()` attached, on every driver)
 2. `runAction(jobConfig.action)` if action is a string
 3. `jobConfig.action()` if action is a function
 4. `jobConfig(payload, context)` if default export is a function

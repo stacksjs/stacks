@@ -81,6 +81,13 @@ export interface JobEnvelope {
    * Those get a minted id, which at least correlates the job to itself.
    */
   traceId?: string
+  /**
+   * What `.withContext(...)` attached at dispatch, handed to the job's
+   * `handle(payload, context)` beside the payload. It used to stop at the
+   * builder: only the sync driver passed it on, so the same dispatch saw its
+   * context in development and lost it on every real queue.
+   */
+  context?: unknown
 }
 
 /**
@@ -92,6 +99,7 @@ export function createEnvelope(
   payload: unknown,
   options?: JobEnvelopeOptions,
   traceId?: string,
+  context?: unknown,
 ): JobEnvelope {
   return {
     jobName,
@@ -100,6 +108,7 @@ export function createEnvelope(
     envelopeVersion: JOB_ENVELOPE_VERSION,
     dispatchedAt: new Date().toISOString(),
     ...(traceId ? { traceId } : {}),
+    ...(context !== undefined ? { context } : {}),
   }
 }
 
@@ -406,6 +415,7 @@ export function parseEnvelope(raw: unknown): ParsedEnvelope {
       // name is silently dropped - which is what happened to the trace id, and
       // the symptom was every job logging under an id of its own.
       ...(typeof obj.traceId === 'string' && obj.traceId ? { traceId: obj.traceId } : {}),
+      ...(obj.context !== undefined ? { context: obj.context } : {}),
     }
     return { ok: true, envelope, source: 'v1' }
   }

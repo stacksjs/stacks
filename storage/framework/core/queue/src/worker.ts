@@ -893,6 +893,7 @@ async function executeJobPayload(payload: unknown): Promise<void> {
    */
   await runJob(parsed.envelope.jobName, {
     payload: parsed.envelope.payload,
+    context: parsed.envelope.context,
     traceId: parsed.envelope.traceId,
   })
 }
@@ -964,7 +965,7 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
       const { runJob } = await import('./job')
       // Same as the database driver: the dispatcher's id, when the envelope
       // carried one.
-      await runJob(data.jobName, { payload: data.payload, traceId: (data).traceId })
+      await runJob(data.jobName, { payload: data.payload, context: data.context, traceId: data.traceId })
 
       tracker.recordCompletion(workerId)
       await emitQueueEvent('job:completed', {

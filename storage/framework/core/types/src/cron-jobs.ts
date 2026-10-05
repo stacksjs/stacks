@@ -36,7 +36,7 @@ export enum Every {
  * `dispatch('a bare string')` and even `dispatch()` all compiled against a
  * job that requires an address. The declared payload was decorative.
  */
-export type JobHandler<T = unknown> = (_data: T) => Promise<any> | any
+export type JobHandler<T = unknown> = (_data: T, _context?: any) => Promise<any> | any
 
 /**
  * Represents different backoff strategies for job retries
