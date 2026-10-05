@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.67...v0.75.68)
+
+## 🐛 Bug Fixes
+
+- **chat**: iMessage sends to older conversations too ([4e8f0e6](https://github.com/stacksjs/stacks/commit/4e8f0e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.66...v0.75.67)
 
 ## 🐛 Bug Fixes
