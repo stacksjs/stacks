@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.66...v0.75.67)
+
+## 🐛 Bug Fixes
+
+- **security**: the maintenance allow-list and session fingerprint read the trusted client address ([d22493a](https://github.com/stacksjs/stacks/commit/d22493a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.65...v0.75.66)
 
 ## 🐛 Bug Fixes
