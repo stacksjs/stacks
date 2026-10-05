@@ -496,7 +496,8 @@ export interface ScheduleOptions extends CliOptions {}
 export interface TinkerOptions extends CliOptions {
   eval?: string | boolean
   print?: string | boolean
-  noBanner?: boolean
+  /** `false` with `--no-banner`. cac names a negated flag by its positive key. */
+  banner?: boolean
   preload?: string
 }
 export interface TypesOptions extends CliOptions {}

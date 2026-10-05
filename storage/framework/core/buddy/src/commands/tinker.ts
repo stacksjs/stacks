@@ -18,7 +18,7 @@ export function tinker(buddy: CLI): void {
     .command('tinker', descriptions.tinker)
     .option('-e, --eval [expression]', descriptions.eval, { default: '' })
     .option('--print [expression]', descriptions.print, { default: '' })
-    .option('--no-banner', descriptions.noBanner, { default: false })
+    .option('--no-banner', descriptions.noBanner)
     .option('--preload [modules]', descriptions.preload, { default: '' })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -37,7 +37,8 @@ export function tinker(buddy: CLI): void {
         const result = await startTinker({
           eval: typeof options.eval === 'string' && options.eval ? options.eval : undefined,
           print: typeof options.print === 'string' && options.print ? options.print : undefined,
-          banner: options.noBanner !== true,
+          // cac reads `--no-banner` as `banner: false`; nothing sets `noBanner`.
+          banner: options.banner !== false,
           preload: preloadModules,
           verbose: options.verbose === true,
         })

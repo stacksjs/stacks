@@ -1352,7 +1352,7 @@ Start the local API development server
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--no-watch-types` | Skip the model/config type-regeneration watcher | boolean, optional, negated | `false` |
+| `--no-watch-types` | Skip the model/config type-regeneration watcher | boolean, optional, negated | `true` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `dev:components`
@@ -2884,7 +2884,7 @@ Run the local mail catcher: accepts every message, delivers none, shows them in 
 | --- | --- | --- | --- |
 | `--port` | SMTP port (default: 1025) | value, required | - |
 | `--ui-port` | Webmail UI port (default: 8025) | value, required | - |
-| `--no-open` | Do not open the webmail UI in a browser | boolean, optional, negated | `false` |
+| `--no-open` | Do not open the webmail UI in a browser | boolean, optional, negated | `true` |
 
 Examples:
 
@@ -2966,7 +2966,7 @@ Open the dev-only Mailable preview UI in your browser
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--no-open` | Print the URL but skip the browser-open step | boolean, optional, negated | `false` |
+| `--no-open` | Print the URL but skip the browser-open step | boolean, optional, negated | `true` |
 | `--port` | Override the API port (default: from config.ports.api / PORT_API) | value, required | - |
 
 Examples:
@@ -3641,7 +3641,7 @@ Create a new authorization policy
 | --- | --- | --- | --- |
 | `-n`, `--name` | The name of the action | value, optional | `false` |
 | `-m`, `--model` | The model this policy is for | value, optional | `false` |
-| `--no-register` | Do not register in Gates.ts | boolean, optional, negated | `false` |
+| `--no-register` | Do not register in Gates.ts | boolean, optional, negated | `true` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -5281,7 +5281,7 @@ Interactive REPL with Stacks framework preloaded
 | --- | --- | --- | --- |
 | `-e`, `--eval` | Evaluate a single expression and exit | value, optional | `""` |
 | `--print` | Evaluate, print, and exit | value, optional | `""` |
-| `--no-banner` | Skip the welcome banner | boolean, optional, negated | `false` |
+| `--no-banner` | Skip the welcome banner | boolean, optional, negated | `true` |
 | `--preload` | Additional modules to preload (comma-separated) | value, optional | `""` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |

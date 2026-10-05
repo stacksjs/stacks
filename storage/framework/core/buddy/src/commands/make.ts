@@ -524,7 +524,7 @@ export function make(buddy: CLI): void {
     .command('make:policy [name]', descriptions.policy)
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-m, --model [model]', 'The model this policy is for', { default: false })
-    .option('--no-register', 'Do not register in Gates.ts', { default: false })
+    .option('--no-register', 'Do not register in Gates.ts')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy make:policy PostPolicy')

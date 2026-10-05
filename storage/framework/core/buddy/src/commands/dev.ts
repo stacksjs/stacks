@@ -560,7 +560,7 @@ export function dev(buddy: CLI): void {
   buddy
     .command('dev:api', descriptions.api)
     .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--no-watch-types', 'Skip the model/config type-regeneration watcher', { default: false })
+    .option('--no-watch-types', 'Skip the model/config type-regeneration watcher')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions & { watchTypes?: boolean }) => {
       await checkFrameworkDefaults()

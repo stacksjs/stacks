@@ -1946,7 +1946,7 @@ export function mailCommands(buddy: CLI): void {
   // dev server uses.
   buddy
     .command('mail:preview', 'Open the dev-only Mailable preview UI in your browser')
-    .option('--no-open', 'Print the URL but skip the browser-open step', { default: false })
+    .option('--no-open', 'Print the URL but skip the browser-open step')
     .option('--port <port>', 'Override the API port (default: from config.ports.api / PORT_API)')
     .example('buddy mail:preview')
     .example('buddy mail:preview --no-open')
@@ -1978,7 +1978,7 @@ export function mailCommands(buddy: CLI): void {
     .command('mail:dev', 'Run the local mail catcher: accepts every message, delivers none, shows them in the webmail UI')
     .option('--port <port>', `SMTP port (default: ${LOCAL_MAIL_SMTP_PORT})`)
     .option('--ui-port <port>', `Webmail UI port (default: ${LOCAL_MAIL_UI_PORT})`)
-    .option('--no-open', 'Do not open the webmail UI in a browser', { default: false })
+    .option('--no-open', 'Do not open the webmail UI in a browser')
     .example('buddy mail:dev')
     .example('buddy mail:dev --port 2525 --ui-port 8080')
     .action(async (options: { port?: string, uiPort?: string, open?: boolean }) => {
