@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.60...v0.75.61)
+
+## 🐛 Bug Fixes
+
+- **csrf**: never seed the cookie on a response shared caches may keep ([14baea1](https://github.com/stacksjs/stacks/commit/14baea1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.59...v0.75.60)
 
 ## ✨ Features
