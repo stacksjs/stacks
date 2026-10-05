@@ -1,6 +1,6 @@
 import type { ConfiguredAIOptions } from '@stacksjs/ai'
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { buddyState, createAIClient } from '@stacksjs/ai'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'

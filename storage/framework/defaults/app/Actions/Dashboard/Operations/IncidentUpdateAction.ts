@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { dashboardOperator, operationsControlPlane, trackOperatorOperation } from './control-plane'
 import { stringValue } from './recovery-input'

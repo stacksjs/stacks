@@ -1,5 +1,5 @@
 import type { ConfiguredAIOptions } from '@stacksjs/ai'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { buddyState } from '@stacksjs/ai'
 import { config } from '@stacksjs/config'
 import { publicBuddyHistory, isBuddyProviderConfigured, resolveBuddyProvider } from './buddy-chat'

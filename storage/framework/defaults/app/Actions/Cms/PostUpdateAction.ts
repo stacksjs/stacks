@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { posts } from '@stacksjs/cms'
 import { formatDate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'

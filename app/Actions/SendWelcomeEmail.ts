@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { schema } from '@stacksjs/validation'

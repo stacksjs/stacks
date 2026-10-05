@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { isUniqueViolation, Subscriber, SubscriberEmail } from '@stacksjs/orm'
 import { rateLimit } from '@stacksjs/router'
 import { sendSubscriptionConfirmation } from '../Mail/SubscriptionConfirmation'

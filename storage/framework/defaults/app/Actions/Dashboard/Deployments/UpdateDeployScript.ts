@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { randomUUIDv7 } from 'bun'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import process from 'node:process'

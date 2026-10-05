@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Order, Post, Product, Request, User } from '@stacksjs/orm'
 import { checkApplicationHealth, type ApplicationHealthCheck } from '@stacksjs/router'
 import { formatRelative, safeGet } from '../../../resources/functions/dashboard/data'

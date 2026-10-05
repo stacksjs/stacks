@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { resolveCommands } from '@stacksjs/cli'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'

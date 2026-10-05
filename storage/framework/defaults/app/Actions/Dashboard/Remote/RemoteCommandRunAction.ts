@@ -1,6 +1,6 @@
 import type { UserModel } from '@stacksjs/orm'
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Gate } from '@stacksjs/auth'
 import { commands, hosts } from '~/config/remote'
 import { response } from '@stacksjs/router'

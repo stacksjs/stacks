@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import process from 'node:process'
 import { discoverActionSources } from '../Source/source-inventory'
 import { dashboardOperationalError } from '../dashboard-response'

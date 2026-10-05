@@ -1,5 +1,5 @@
 import type { AuthenticationCredential } from '@stacksjs/auth'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import {
   Auth,
   authCookieForBrowserSession,

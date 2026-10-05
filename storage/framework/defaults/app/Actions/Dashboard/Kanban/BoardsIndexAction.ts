@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
 import { modelBoolean } from './kanban-model'
 import { kanbanActionError } from './kanban-response'

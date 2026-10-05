@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Card } from '@stacksjs/orm'
 import { modelBoolean, modelNullableString, modelNumber, modelString, modelValue, refreshModel } from './kanban-model'
 import { kanbanActionError, kanbanError } from './kanban-response'

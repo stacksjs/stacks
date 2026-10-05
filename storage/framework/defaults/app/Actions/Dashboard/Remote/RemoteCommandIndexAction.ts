@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { commands, hosts } from '~/config/remote'
 import { response } from '@stacksjs/router'
 

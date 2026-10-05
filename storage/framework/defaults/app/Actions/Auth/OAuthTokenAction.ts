@@ -1,5 +1,5 @@
 import type { OAuthSubjectEligibility } from '@stacksjs/auth'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { handleOAuthTokenRequest, resolveOAuthProviderConfig } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'

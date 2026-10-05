@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import type { GitHubCredentials } from '@stacksjs/ai'
 import { buddyState } from '@stacksjs/ai'

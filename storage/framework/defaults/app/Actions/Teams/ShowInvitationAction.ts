@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { hashInvitationToken, invitationStatus } from '../Dashboard/Teams/team-records'

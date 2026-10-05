@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { getActiveJobCount, getWorkerTracker, isWorkerRunning } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
 

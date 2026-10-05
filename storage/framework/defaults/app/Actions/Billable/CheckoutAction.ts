@@ -1,5 +1,5 @@
 import type { UserModel } from '@stacksjs/orm'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { isBillable } from '@stacksjs/orm'
 import { BILLING_NOT_ENABLED, manageCheckout } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'

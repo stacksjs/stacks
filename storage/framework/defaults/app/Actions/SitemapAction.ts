@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { resolveDefaultsResources } from '@stacksjs/actions/dev/defaults-resources'
 import { config, feature, overridesReady, resolveViewPatterns } from '@stacksjs/config'
 import { db } from '@stacksjs/database/runtime'

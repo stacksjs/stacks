@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { deletePermission } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { rbacActionError } from './rbac-response'

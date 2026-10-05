@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { SocialPost } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { marketingModelError, marketingRecordId } from './marketing-response'

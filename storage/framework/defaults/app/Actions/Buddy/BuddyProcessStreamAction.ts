@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { apiKeys, applyChanges, buddyProcessStreaming, buddyState, buddyStreamSimple, openRepository } from '@stacksjs/ai'
 
 /**

@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { tsCloud } from '~/config/cloud'
 import { dashboardOperationalError } from '../dashboard-response'
 import { getDashboardCloudSnapshot } from './cloud-overview'

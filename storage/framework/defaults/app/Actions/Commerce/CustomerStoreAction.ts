@@ -1,6 +1,6 @@
 import { randomUUIDv7 } from 'bun'
 
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 
 import { customers } from '@stacksjs/commerce'
 import { toSnakeCaseKeys } from '@stacksjs/orm'

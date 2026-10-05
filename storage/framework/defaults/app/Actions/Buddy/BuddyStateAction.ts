@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { buddyState, getAvailableDrivers } from '@stacksjs/ai'
 import { response } from '@stacksjs/router'
 

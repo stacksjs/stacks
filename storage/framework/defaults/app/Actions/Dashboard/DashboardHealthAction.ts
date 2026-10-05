@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { checkApplicationHealth } from '@stacksjs/router'
 import { dashboardOperationalError, dashboardOperationalIssue } from './dashboard-response'
 

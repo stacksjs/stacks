@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { log } from '@stacksjs/logging'
 import { exportSubjectData } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'

@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response as routerResponse } from '@stacksjs/router'
 import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError } from '../dashboard-response'

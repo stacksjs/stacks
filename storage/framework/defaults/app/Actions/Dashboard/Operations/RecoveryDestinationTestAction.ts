@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { S3BackupDestinationAdapter } from '@stacksjs/ts-cloud'
 import { appendOperatorEvent } from './control-plane'

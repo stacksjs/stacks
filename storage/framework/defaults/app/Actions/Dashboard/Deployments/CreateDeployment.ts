@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { join } from 'node:path'
 import process from 'node:process'
 import { Deployment } from '@stacksjs/orm'

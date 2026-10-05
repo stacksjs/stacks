@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 import { applyChanges, buddyState, openRepository, processCommand } from '@stacksjs/ai'

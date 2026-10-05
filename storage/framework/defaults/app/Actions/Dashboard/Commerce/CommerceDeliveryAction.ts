@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
 import { DeliveryRoute, Courier, ShippingMethod, ShippingZone } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'

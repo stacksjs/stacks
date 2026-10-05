@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { fetchWorkflowRuns } from '@stacksjs/github'
 import { response } from '@stacksjs/router'

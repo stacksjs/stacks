@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import { isBillable } from '@stacksjs/orm'
 import { BILLING_NOT_ENABLED } from '@stacksjs/payments'

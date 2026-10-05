@@ -1,6 +1,6 @@
 import type { NotificationChannel } from '@stacksjs/notifications'
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { notify } from '@stacksjs/notifications'
 import { NotificationDelivery } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'

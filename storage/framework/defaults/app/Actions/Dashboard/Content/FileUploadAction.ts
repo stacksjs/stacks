@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import type { UploadedFileLike } from '@stacksjs/storage'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 import { DashboardFileError, uploadDashboardFiles } from './file-manager'
 

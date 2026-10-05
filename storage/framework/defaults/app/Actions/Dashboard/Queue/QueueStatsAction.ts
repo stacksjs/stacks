@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { FailedJob, Job } from '@stacksjs/orm'
 import { getGlobalMetrics, queuedJobState } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'

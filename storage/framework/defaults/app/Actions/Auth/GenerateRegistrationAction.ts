@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { generateRegistrationOptions, getUserPasskeys, passkeyDescriptors, storeWebAuthnChallenge } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 

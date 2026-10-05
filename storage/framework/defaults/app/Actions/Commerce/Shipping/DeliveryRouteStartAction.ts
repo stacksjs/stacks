@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { shippings } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 import { commerceIdentifier } from '../commerce-action'

@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { randomUUIDv7 } from 'bun'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { orders } from '@stacksjs/commerce'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'

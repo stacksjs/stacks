@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { summarize } from '@stacksjs/ai'
 import { log } from '@stacksjs/logging'
 import { response } from '@stacksjs/router'

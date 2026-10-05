@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Courier, User } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
 import { indexCourierUsers, normalizeCourierRecord } from './courier-records'

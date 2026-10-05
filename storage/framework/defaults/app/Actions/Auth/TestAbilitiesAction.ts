@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { currentAccessToken, tokenAbilities, tokenCan, tokenCanAll, tokenCanAny } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 

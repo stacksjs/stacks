@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Customer, Order, Post, User } from '@stacksjs/orm'
 import { dashboardOperationalIssue } from './dashboard-response'
 

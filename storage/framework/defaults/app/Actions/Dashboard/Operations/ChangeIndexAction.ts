@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { operationsControlPlane, operationsEnvironment, recentOperatorOperations } from './control-plane'
 import { migrationPlan } from './migration-operations'
 import { releaseStore } from './operations-runtime'

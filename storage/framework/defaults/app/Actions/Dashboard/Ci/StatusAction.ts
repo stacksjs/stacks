@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { getDashboardData } from '@stacksjs/github'
 import { response } from '@stacksjs/router'

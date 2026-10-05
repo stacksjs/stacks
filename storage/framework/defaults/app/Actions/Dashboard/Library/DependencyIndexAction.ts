@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { dashboardOperationalError } from '../dashboard-response'

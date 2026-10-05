@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { orders } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'

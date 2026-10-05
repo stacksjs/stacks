@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { env } from '@stacksjs/env'
 import { readdirSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'

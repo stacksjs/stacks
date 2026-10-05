@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { PrintDevice } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
 import { normalizePrintDeviceRecord, summarizePrintDevices } from './print-device-records'

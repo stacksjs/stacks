@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { dashboardOperationalError } from '../dashboard-response'
 import { recentOperatorOperations } from './control-plane'
 import { migrationPlan, reconcileMigrationLedgerPlan } from './migration-operations'

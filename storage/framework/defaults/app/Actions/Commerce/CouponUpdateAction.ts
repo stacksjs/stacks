@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 
 import { coupons } from '@stacksjs/commerce'
 import { toSnakeCaseKeys } from '@stacksjs/orm'

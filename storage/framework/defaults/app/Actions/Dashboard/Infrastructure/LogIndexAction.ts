@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import type { DashboardLogQuery, DashboardLogRange } from './log-provider'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { dashboardRequestValue } from '../dashboard-request'
 import { dashboardOperationalError } from '../dashboard-response'
 import { DASHBOARD_LOG_TYPES } from './log-dashboard'

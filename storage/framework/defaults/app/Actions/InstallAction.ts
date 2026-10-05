@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 
 /**
  * CLI Setup

@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Customer, Order, OrderItem, Product } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
 import {

@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { randomUUID } from 'node:crypto'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'

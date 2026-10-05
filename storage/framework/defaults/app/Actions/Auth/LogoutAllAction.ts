@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { clearAuthCookie, revokeAllTokens, sessionDestroyAll } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 

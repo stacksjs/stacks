@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Deployment } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
 import { averageRecordedDuration } from './deployment-input'

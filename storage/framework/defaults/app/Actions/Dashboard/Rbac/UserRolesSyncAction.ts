@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { getUserRoles, syncRoles } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'

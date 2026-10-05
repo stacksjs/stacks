@@ -1,5 +1,5 @@
 import type { PublicKeyCredentialRequestOptionsJSON } from '@stacksjs/auth'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import {
   findAuthUserByEmail,
   generateAuthenticationOptions,

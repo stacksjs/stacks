@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { getAllPermissions } from '@stacksjs/auth'
 import { rbacActionError } from './rbac-response'
 

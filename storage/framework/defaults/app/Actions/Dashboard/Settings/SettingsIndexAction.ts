@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
 import { buildDashboardSettings, type DashboardSettingsConfig } from './settings-summary'
 

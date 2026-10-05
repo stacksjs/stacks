@@ -1,7 +1,7 @@
 import type { OAuthAuthorizationConsentPageContext } from '@stacksjs/auth'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { resolveDefaultsResources } from '@stacksjs/actions/dev/defaults-resources'
 import {
   authenticatedUser,

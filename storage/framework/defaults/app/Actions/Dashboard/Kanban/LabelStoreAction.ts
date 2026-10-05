@@ -1,5 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Board, Label } from '@stacksjs/orm'
 import { kanbanActionError, kanbanError } from './kanban-response'
 

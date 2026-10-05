@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { executeFailedJobs } from '@stacksjs/queue'
 import { FailedJob } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'

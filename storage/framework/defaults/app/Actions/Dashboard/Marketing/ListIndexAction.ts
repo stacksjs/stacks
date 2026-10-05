@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { db } from '@stacksjs/database/runtime'
 import { EmailList } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'

@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { dashboardOperationalError } from '../dashboard-response'
 import { readMailSettings } from './mail-settings'
 

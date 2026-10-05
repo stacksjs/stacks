@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Customer, WaitlistRestaurant } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeRestaurantWaitlistCustomerOption, normalizeRestaurantWaitlistRecord, summarizeRestaurantWaitlist } from './restaurant-waitlist-records'

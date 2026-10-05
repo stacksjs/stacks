@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { RateLimiter } from '@stacksjs/auth'
 import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'

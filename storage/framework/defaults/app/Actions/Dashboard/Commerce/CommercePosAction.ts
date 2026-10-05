@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { config } from '@stacksjs/config'
 import { Category, Customer, Manufacturer, Product, TaxRate } from '@stacksjs/orm'
 import { dashboardOperationalError } from '../dashboard-response'

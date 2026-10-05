@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { User } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 import { rbacActionError } from './rbac-response'

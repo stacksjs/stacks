@@ -1,5 +1,5 @@
 import { existsSync, statSync } from 'node:fs'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { response } from '@stacksjs/router'
 
 /**

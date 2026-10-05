@@ -1,4 +1,4 @@
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { Auth, authCookieForBrowserSession, resolveBrowserSessionPolicy, resolveSocialSignIn, SocialSignInRefusedError } from '@stacksjs/auth'
 import { log } from '@stacksjs/logging'
 import { response } from '@stacksjs/router'

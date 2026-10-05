@@ -1,6 +1,6 @@
 import type { Model } from '@stacksjs/types'
 import { Glob } from 'bun'
-import { Action } from '@stacksjs/actions'
+import { Action } from '@stacksjs/actions/runtime'
 import { path } from '@stacksjs/path'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError } from '../dashboard-response'
