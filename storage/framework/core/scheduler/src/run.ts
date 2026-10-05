@@ -33,13 +33,20 @@ export async function runScheduler(): Promise<Result<string, string>> {
       // nobody was watching. Found in a dispensary's production journal:
       // `Job inspire not found. Looked in app/Jobs/inspire.ts`, beside
       // `app/Jobs/Inspire.ts`.
-      const jobName = getJobName(job, jobFile)
+      //
+      // And it is the FILE name. A job may declare a `name` of its own - the
+      // scaffold's ExampleJob says 'Example Job' - and scheduling under that
+      // left an app/Scheduler.ts entry for `schedule.job('ExampleJob')`
+      // unrecognised, so the job ran twice. The file name is what
+      // `schedule.job()` is typed against; the declared one is checked too.
+      const jobName = getJobName(jobFile)
 
       if (!job.rate)
         continue
 
-      if (schedule.isScheduled(jobName)) {
-        log.debug(`[scheduler] ${jobName} is declared in app/Scheduler.ts; ignoring its \`rate\` so it is not scheduled twice`)
+      const scheduledAs = [jobName, job.name].find(name => typeof name === 'string' && schedule.isScheduled(name))
+      if (scheduledAs) {
+        log.debug(`[scheduler] ${scheduledAs} is declared in app/Scheduler.ts; ignoring its \`rate\` so it is not scheduled twice`)
         continue
       }
 
@@ -89,10 +96,7 @@ function executeJobRate(jobName: SchedulableJobName, rate: string): void {
   schedule.job(jobName).cron(rate)
 }
 
-function getJobName(job: JobOptions, jobPath: string): string {
-  if (job.name)
-    return job.name
-
+function getJobName(jobPath: string): string {
   const baseName = path.basename(jobPath)
 
   return baseName.replace(/\.ts$/, '')

@@ -5,6 +5,7 @@
  * For class-based jobs, use bun-queue's JobBase directly.
  */
 
+import { basename } from 'node:path'
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database/runtime'
@@ -682,6 +683,14 @@ export function jobBatch(jobs: Array<import('./action').Job | import('./batch').
  * hand rather than importing `@stacksjs/defaults/app/Jobs/<name>`, for the
  * reason documented on `resolveActionFile`: the `./*` exports map rewrites the
  * subpath under the `bun` condition and does not land on the file.
+ *
+ * A job is also found by the `name` it declares, in the same three places,
+ * when no file is called that. The name is optional and defaults to the file
+ * name, but a job that sets one - the scaffold's `ExampleJob.ts` says
+ * `name: 'Example Job'` - is dispatched under it: `new Job({...}).dispatch()`
+ * writes it into the envelope, and the scheduler's `rate` runner scheduled it
+ * by it. The worker then looked for `app/Jobs/Example Job.ts` and failed every
+ * run of a job that was sitting right there.
  */
 export async function resolveJobFile(name: string): Promise<string | null> {
   // `SendEmail`, then `SendEmailJob`. The mailer dispatches `SendEmail`
@@ -714,7 +723,66 @@ export async function resolveJobFile(name: string): Promise<string | null> {
         return packageCandidate
     }
   }
+
+  const directories = [appPath('Jobs'), frameworkPath('defaults/app/Jobs'), ...(packageRoot ? [`${packageRoot}app/Jobs`] : [])]
+  for (const directory of directories) {
+    const declared = (await declaredJobNames(directory)).get(name)
+    if (declared)
+      return declared
+  }
   return null
+}
+
+/** Each job directory's declared names, read once per process. */
+const declaredNamesByDirectory = new Map<string, Promise<Map<string, string>>>()
+
+/**
+ * The jobs in `directory` that declare a `name` other than their file name,
+ * by that name. Two files declaring one name is an error, since a dispatch
+ * under it could mean either.
+ */
+function declaredJobNames(directory: string): Promise<Map<string, string>> {
+  let index = declaredNamesByDirectory.get(directory)
+  if (!index) {
+    index = (async () => {
+      const byName = new Map<string, string>()
+      const { existsSync } = await import('node:fs')
+      if (!existsSync(directory))
+        return byName
+
+      const glob = new Bun.Glob('*.ts')
+      for await (const file of glob.scan({ cwd: directory, absolute: true, onlyFiles: true })) {
+        if (file.endsWith('.d.ts') || file.includes('.test.'))
+          continue
+        const fileName = basename(file, '.ts')
+        let declared: unknown
+        try {
+          declared = ((await import(file)).default as { name?: unknown } | undefined)?.name
+        }
+        catch {
+          // A job that cannot load fails when it is run by its file name,
+          // with its own error; it has no declared name to offer here.
+          continue
+        }
+        if (typeof declared !== 'string' || declared === '' || declared === fileName)
+          continue
+        const existing = byName.get(declared)
+        if (existing)
+          throw new Error(`Jobs ${existing} and ${file} both declare the name "${declared}"; rename one so a dispatch under it has one job to run`)
+        byName.set(declared, file)
+      }
+      return byName
+    })()
+    // A failed scan is not remembered, so the next lookup reports it again.
+    index.catch(() => declaredNamesByDirectory.delete(directory))
+    declaredNamesByDirectory.set(directory, index)
+  }
+  return index
+}
+
+/** Forget the declared-name index, after job files change. */
+export function clearJobNameIndex(): void {
+  declaredNamesByDirectory.clear()
 }
 
 /**

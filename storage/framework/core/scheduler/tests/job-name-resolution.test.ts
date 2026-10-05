@@ -28,7 +28,7 @@ describe('the job name the runner schedules', () => {
   it('is not transformed on its way to the scheduler', () => {
     // The specific transform that broke it. Any case-folding here reintroduces
     // a bug that is invisible on the machine it is written on.
-    expect(runner).toContain('const jobName = getJobName(job, jobFile)')
+    expect(runner).toContain('const jobName = getJobName(jobFile)')
     expect(runner).not.toContain('snakeCase(getJobName')
   })
 
@@ -37,10 +37,12 @@ describe('the job name the runner schedules', () => {
       expect(runner).not.toContain(transform)
   })
 
-  it('falls back to the file name, which is what has to be found on disk', () => {
-    // `getJobName` prefers the config's `name`; without one the file name is
-    // both the name and the thing `runJob` opens.
+  it('is the file name, which is what has to be found on disk', () => {
+    // Not the config's `name`: that is a label, and scheduling under it left
+    // a Scheduler.ts entry for the file name unrecognised. `runJob` finds a
+    // job by either.
     expect(runner).toContain("baseName.replace(/\\.ts$/, '')")
+    expect(runner).not.toContain('if (job.name)\n    return job.name')
   })
 })
 
@@ -61,5 +63,25 @@ describe('resolving a job to a file', () => {
     const { resolveJobFile } = await import('../../queue/src/job')
 
     expect(await resolveJobFile('ExampleJob')).toContain('ExampleJob.ts')
+  })
+
+  it('finds a job by the name it declares, when no file is called that', async () => {
+    /*
+     * The scaffold's ExampleJob.ts declares `name: 'Example Job'`, and a
+     * `new Job({...}).dispatch()` writes that name into the envelope. The
+     * worker looked for `Example Job.ts` and failed every run.
+     */
+    const { jobDefaults, resolveJobFile } = await import('../../queue/src/job')
+
+    expect(await resolveJobFile('Example Job')).toEndWith('/app/Jobs/ExampleJob.ts')
+    expect(await jobDefaults('Example Job')).toMatchObject({ tries: 3, backoff: 3 })
+  })
+
+  it('still prefers a file of that name, and still finds nothing for a name nobody has', async () => {
+    const { resolveJobFile } = await import('../../queue/src/job')
+
+    expect(await resolveJobFile('ExampleJob')).toEndWith('/app/Jobs/ExampleJob.ts')
+    expect(await resolveJobFile('SendEmail')).toEndWith('/app/Jobs/SendEmailJob.ts')
+    expect(await resolveJobFile('No Such Job')).toBeNull()
   })
 })
