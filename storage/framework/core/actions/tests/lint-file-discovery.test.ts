@@ -98,13 +98,51 @@ describe('lintableFiles', () => {
     expect(files).not.toContain('src/styles.css')
   })
 
-  test('a directory that is not a git repository yields nothing rather than throwing', () => {
+  test('a directory that is not a git repository is walked under the same rules', () => {
+    // It used to yield nothing, which lint reported as a clean project.
     const bare = mkdtempSync(join(tmpdir(), 'lint-nogit-'))
     try {
-      expect(lintableFiles(bare)).toEqual([])
+      mkdirSync(join(bare, 'src'), { recursive: true })
+      mkdirSync(join(bare, 'node_modules/pkg'), { recursive: true })
+      writeFileSync(join(bare, 'src/real.ts'), 'export const x = 1\n')
+      writeFileSync(join(bare, 'node_modules/pkg/index.ts'), 'export const x = 1\n')
+      writeFileSync(join(bare, 'src/image.png'), 'not really a png')
+
+      expect(lintableFiles(bare)).toEqual(['src/real.ts'])
     }
     finally {
       rmSync(bare, { recursive: true, force: true })
     }
+  })
+
+  describe('when git itself is broken', () => {
+    // A toolchain shim for `git` pointing at a deleted directory: on the
+    // PATH, executable, and failing every call.
+    let shims: string
+    let savedPath: string | undefined
+
+    beforeEach(() => {
+      shims = mkdtempSync(join(tmpdir(), 'lint-broken-git-'))
+      writeFileSync(join(shims, 'git'), '#!/bin/sh\necho "exec: /gone/bin/git: cannot execute: No such file or directory" >&2\nexit 126\n', { mode: 0o755 })
+      savedPath = process.env.PATH
+      process.env.PATH = `${shims}:${savedPath}`
+    })
+
+    afterEach(() => {
+      process.env.PATH = savedPath
+      rmSync(shims, { recursive: true, force: true })
+    })
+
+    test('discovery throws, naming the failure, instead of returning nothing', () => {
+      write('src/real.ts')
+      expect(() => lintableFiles(repo)).toThrow(/git ls-files.*failed.*cannot execute/)
+    })
+
+    test('and the lint fails rather than reporting a clean project', async () => {
+      write('src/real.ts')
+      const { lintProject, formatProject } = await import('../src/lint/lint')
+      expect(await lintProject({ cwd: repo })).toEqual({ ok: false })
+      expect(await formatProject({ cwd: repo, check: true })).toEqual({ ok: false })
+    })
   })
 })

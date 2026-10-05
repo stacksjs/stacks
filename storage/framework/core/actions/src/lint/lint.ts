@@ -1,6 +1,8 @@
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { runFormat, runLint } from 'pickier'
 import { isLintablePath } from './files'
 
@@ -20,19 +22,40 @@ import { isLintablePath } from './files'
  * file, `buddy lint` says the project is clean because it never opened it, you
  * commit, and CI fails on the file you just linted. `--exclude-standard` keeps
  * .gitignore honoured, so build output and dependencies stay out.
+ *
+ * Outside a git repository there is no .gitignore to honour, so the directory
+ * is walked under the same {@link isLintablePath} rules.
+ *
+ * Any other git failure THROWS. It used to return an empty list, which
+ * `lintProject` reported as a clean project: a broken `git` on the PATH (a
+ * toolchain shim pointing at a deleted directory was enough) made `buddy lint`
+ * print "Linted" in 0.02s, having opened nothing, on a tree with problems.
  */
 export function lintableFiles(cwd: string): string[] {
-  try {
-    // stderr is discarded: outside a git repository this prints "fatal: not a
-    // git repository", and the caller goes on to report a clean lint, so the
-    // only thing the message achieves is making a success look like a failure.
-    return execSync('git ls-files -z --cached --others --exclude-standard', { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-      .split('\0')
-      .filter(isLintablePath)
-  }
-  catch {
-    return []
-  }
+  const listed = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
+    cwd,
+    encoding: 'utf8',
+    maxBuffer: 256 * 1024 * 1024,
+  })
+
+  if (listed.status === 0)
+    return listed.stdout.split('\0').filter(isLintablePath)
+
+  const notInstalled = (listed.error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT'
+  const stderr = (listed.stderr ?? '').trim()
+  if ((notInstalled && !existsSync(join(cwd, '.git'))) || /not a git repository/i.test(stderr))
+    return walkLintableFiles(cwd)
+
+  const reason = listed.error?.message || stderr || `exit code ${listed.status ?? listed.signal}`
+  throw new Error(`Could not list the files to lint: \`git ls-files\` failed in ${cwd} (${reason})`)
+}
+
+/** Every lintable file under `cwd`, for a directory git cannot list. */
+function walkLintableFiles(cwd: string): string[] {
+  return Array.from(new Bun.Glob('**/*').scanSync({ cwd, onlyFiles: true, dot: true }))
+    .map(file => file.split('\\').join('/'))
+    .filter(isLintablePath)
+    .sort()
 }
 
 /**
@@ -45,9 +68,16 @@ export async function lintProject(options: { cwd?: string, fix?: boolean } = {})
   const cwd = options.cwd ?? process.cwd()
   log.info(options.fix ? 'Ensuring Code Style...' : 'Checking Code Style...')
 
-  const files = lintableFiles(cwd)
+  let files: string[]
+  try {
+    files = lintableFiles(cwd)
+  }
+  catch (error) {
+    await log.error(error instanceof Error ? error.message : String(error))
+    return { ok: false }
+  }
   if (!files.length) {
-    log.success('Linted')
+    log.success('Linted: no lintable files')
     return { ok: true }
   }
 
@@ -72,7 +102,14 @@ export function lintFix(options: { cwd?: string } = {}): Promise<{ ok: boolean }
  */
 export async function formatProject(options: { cwd?: string, write?: boolean, check?: boolean } = {}): Promise<{ ok: boolean }> {
   const cwd = options.cwd ?? process.cwd()
-  const files = lintableFiles(cwd)
+  let files: string[]
+  try {
+    files = lintableFiles(cwd)
+  }
+  catch (error) {
+    await log.error(error instanceof Error ? error.message : String(error))
+    return { ok: false }
+  }
   if (!files.length)
     return { ok: true }
 
