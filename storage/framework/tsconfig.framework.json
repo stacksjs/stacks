@@ -83,13 +83,18 @@
     "./**/build.ts",
     "./auto-imports/**",
     "./core/deploy/**",
-    // `@stacksjs/defaults` copies `defaults/app` and `defaults/resources` into
-    // `core/defaults/` at build time. Those copies are generated duplicates that
-    // resolve their imports from the wrong directory, so checking them reports
-    // hundreds of phantom errors about code that is already checked where it
-    // actually lives.
-    "./core/defaults/app/**",
-    "./core/defaults/resources/**",
+    // `@stacksjs/defaults` copies the whole of `defaults/` into `core/defaults/`
+    // at build time, plus a `project/` tree of root support files. Those copies
+    // are generated, gitignored duplicates that resolve their imports from the
+    // wrong directory, so checking them reports phantom errors about code that
+    // is already checked where it actually lives. Worse than noise: the copied
+    // `project/.../model-events.d.ts` augments the real `@stacksjs/events`
+    // module from a place where its models barrel does not exist, so the event
+    // map widened to an index signature and every model event failed TS2411 -
+    // 816 errors after any local build, on a tree CI never builds. Excluded
+    // whole; the package's own tracked files are its build script (excluded
+    // above) and its tests (excluded above).
+    "./core/defaults/**",
     "./core/models/**",
     "./core/requests/**",
     // The source of the two directories above. Checked by
