@@ -182,9 +182,11 @@ try {
     setSystemTime(now)
     try {
       for (const days of [-1, 0, 30]) {
-        const expected = new Date(now)
-        expected.setDate(expected.getDate() + days)
-        if (dialect === 'mysql') expected.setMilliseconds(0)
+        // Elapsed days, as `refreshDeadline` counts them - not calendar days.
+        // `setDate()` keeps the local wall-clock time, so across a daylight
+        // saving change it lands an hour off and this failed for a month a year.
+        const expected = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
+        if (dialect === 'mysql') expected.setUTCMilliseconds(0)
         for (const method of ['create', 'refresh']) {
           const result = method === 'create'
             ? await createToken(42, 'explicit refresh deadline', ['read'], { refreshExpiresInDays: days })
