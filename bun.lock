@@ -5,7 +5,7 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "pickier": "^0.1.67",
+        "pickier": "^0.1.68",
         "stacks": "workspace:*",
       },
       "devDependencies": {
@@ -176,7 +176,7 @@
       },
       "peerDependencies": {
         "craft-native": ">=0.0.111",
-        "pickier": "^0.1.67",
+        "pickier": "^0.1.68",
       },
       "optionalPeers": [
         "craft-native",
@@ -874,7 +874,7 @@
       "name": "@stacksjs/lint",
       "version": "0.75.72",
       "dependencies": {
-        "pickier": "^0.1.67",
+        "pickier": "^0.1.68",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -2044,7 +2044,7 @@
 
     "path-to-regexp": ["path-to-regexp@8.4.2", "", {}, "sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA=="],
 
-    "pickier": ["pickier@0.1.67", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-fzO0Wy9ock/PJdLyABeyptrrYejw2SZEfKQiVmd3sSPQgAdsB0Nq0onBk3j0891HuPP80J9a1ozcY/hJi6trtA=="],
+    "pickier": ["pickier@0.1.68", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-YxxWEap9AorD0FZYtgNMpf0k38WPZPgGXOhznzW6tEt/9aCuSKw6rXPIweFFi0MHr7gB1kRTRxHK+4piv3+/NQ=="],
 
     "pkce-challenge": ["pkce-challenge@5.0.1", "", {}, "sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ=="],
 

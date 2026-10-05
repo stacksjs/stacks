@@ -117,7 +117,7 @@
   },
   "peerDependencies": {
     "craft-native": ">=0.0.111",
-    "pickier": "^0.1.67"
+    "pickier": "^0.1.68"
   },
   "peerDependenciesMeta": {
     "pickier": {
