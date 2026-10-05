@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.65...v0.75.66)
+
+## 🐛 Bug Fixes
+
+- **chat**: Discord previews come from the gateway, and muted servers stay quiet ([af666c7](https://github.com/stacksjs/stacks/commit/af666c7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.64...v0.75.65)
 
 ## ✨ Features
