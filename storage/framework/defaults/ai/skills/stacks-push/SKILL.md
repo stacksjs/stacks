@@ -21,7 +21,7 @@ no longer a way to configure this driver and there is no fallback to it.
 ## Source Files
 ```
 push/src/
-├── index.ts              # send(), configureFCM(), PushNotification type
+├── index.ts              # send(), configureFCM(), configureExpo(), PushNotification type
 └── drivers/
     ├── index.ts          # re-exports expo and fcm
     ├── expo.ts           # Expo Push Service driver
@@ -204,6 +204,8 @@ interface FCMMessage {
 function configure(options: FCMConfig): void
 ```
 Sets module-level config. Called by `configureFCM()` from the main index.
+Optional: anything it does not set is read from `config/services.ts` on each
+send (see Configuration), and anything it does set wins.
 
 #### send()
 ```typescript
@@ -273,10 +275,30 @@ unsubscribing; that asymmetry is the API's.
 
 ## Configuration
 
-```typescript
-import { configureFCM } from '@stacksjs/push'
+Set the env vars `config/services.ts` reads and both drivers pick them up on the
+next send. No code is needed:
 
-// FCM v1 API: the only FCM configuration there is
+```bash
+FCM_PROJECT_ID=my-firebase-project
+FCM_CLIENT_EMAIL=firebase@project.iam.gserviceaccount.com
+# Paste the key from the service account JSON as-is: its literal \n escapes
+# are turned back into newlines.
+FCM_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Only needed once "enhanced push security" is on for the Expo project:
+# Expo then rejects every send and receipt request without it.
+EXPO_ACCESS_TOKEN=...
+```
+
+The values are read lazily, after the app's config has loaded, never at
+import - a value captured at import would be the framework default.
+
+`configureFCM()` / `configureExpo()` override config, for an app that keeps
+credentials somewhere else:
+
+```typescript
+import { configureExpo, configureFCM } from '@stacksjs/push'
+
 configureFCM({
   projectId: 'my-firebase-project',
   serviceAccount: {
@@ -285,9 +307,12 @@ configureFCM({
   }
 })
 
-
-// Expo requires no configuration
+configureExpo({ accessToken: '...' })
 ```
+
+FCM access tokens are cached per service account until a minute before they
+expire, so a multicast exchanges one token, not one per device.
+`fcm.resetConfiguration()` drops both the configured credentials and the cache.
 
 ## Usage Examples
 

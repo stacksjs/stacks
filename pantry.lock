@@ -996,10 +996,10 @@
       "name": "@stacksjs/push",
       "version": "0.75.72",
       "dependencies": {
-        "@stacksjs/cli": "workspace:*"
+        "@stacksjs/cli": "workspace:*",
+        "@stacksjs/config": "workspace:*"
       },
       "devDependencies": {
-        "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "better-dx": "^0.2.24"
       }

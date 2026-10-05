@@ -1,5 +1,6 @@
 import type { PushResult } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
+import { appServices, present } from '../app-config'
 
 const FCM_V1_URL = 'https://fcm.googleapis.com/v1/projects'
 
@@ -35,9 +36,64 @@ let config: FCMConfig = {}
 
 /**
  * Configure FCM with a service account
+ *
+ * Optional: without it, the credentials come from `config/services.ts`
+ * (`FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`). Anything set here
+ * wins over config.
  */
 export function configure(options: FCMConfig): void {
   config = { ...config, ...options }
+}
+
+/** Forget what `configure()` set. For tests, and for a process that rotates keys. */
+export function resetConfiguration(): void {
+  config = {}
+  accessTokens.clear()
+}
+
+/**
+ * A private key as it comes out of an env file.
+ *
+ * A service account JSON stores the PEM with `\n` escapes, and pasting it
+ * into `.env` keeps them as two characters, so the base64 body arrives with
+ * literal backslash-n sequences in it and `atob` rejects the key. Real
+ * newlines pass through untouched.
+ */
+export function normalizePrivateKey(key: string): string {
+  return key.includes('\\n') ? key.replace(/\\n/g, '\n') : key
+}
+
+/**
+ * The credentials a request uses: what `configure()` set, then the app's
+ * `config/services.ts`.
+ *
+ * `config/services.ts` declared all three FCM values and nothing read them, so
+ * an app that set the documented env vars got "not configured" back
+ * (stacksjs/stacks#2857). Resolved per call, after the app's config has
+ * loaded, so a value set in `config/services.ts` is never shadowed by the
+ * framework default it replaced.
+ */
+export async function resolveConfig(): Promise<FCMConfig> {
+  if (config.projectId && config.serviceAccount)
+    return config
+
+  let services: Awaited<ReturnType<typeof appServices>> = {}
+  try {
+    services = await appServices()
+  }
+  catch (error) {
+    log.debug(`FCM: could not read config/services.ts: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const fromConfig = services.fcm ?? {}
+  const clientEmail = present(fromConfig.clientEmail)
+  const privateKey = present(fromConfig.privateKey)
+
+  return {
+    projectId: config.projectId ?? present(fromConfig.projectId),
+    serviceAccount: config.serviceAccount
+      ?? (clientEmail && privateKey ? { clientEmail, privateKey: normalizePrivateKey(privateKey) } : undefined),
+  }
 }
 
 /**
@@ -107,14 +163,36 @@ export async function buildServiceAccountAssertion(
 }
 
 /**
+ * Access tokens already exchanged, by service account.
+ *
+ * Google issues them for an hour. Exchanging one per message meant a
+ * multicast to five hundred devices signed five hundred JWTs and made five
+ * hundred round trips to the token endpoint before sending anything, and ran
+ * into its rate limit long before FCM's own.
+ */
+const accessTokens = new Map<string, { token: string, expiresAt: number }>()
+
+/** Renew this long before Google's expiry, so a token never lapses mid-request. */
+const TOKEN_EXPIRY_MARGIN_MS = 60_000
+
+/** Forget every cached access token. For tests, and after rotating a key. */
+export function clearAccessTokens(): void {
+  accessTokens.clear()
+}
+
+/**
  * Get OAuth2 access token for FCM v1 API
  */
-async function getAccessToken(): Promise<string> {
-  if (!config.serviceAccount) {
+async function getAccessToken(credentials: FCMConfig): Promise<string> {
+  if (!credentials.serviceAccount) {
     throw new Error('Service account not configured for FCM v1 API')
   }
 
-  const { clientEmail, privateKey } = config.serviceAccount
+  const { clientEmail, privateKey } = credentials.serviceAccount
+
+  const cached = accessTokens.get(clientEmail)
+  if (cached && cached.expiresAt - TOKEN_EXPIRY_MARGIN_MS > Date.now())
+    return cached.token
 
   const jwt = await buildServiceAccountAssertion(
     clientEmail,
@@ -133,7 +211,12 @@ async function getAccessToken(): Promise<string> {
     throw new Error(`Failed to get access token: ${tokenResponse.status}`)
   }
 
-  const tokenData = await tokenResponse.json() as { access_token: string }
+  const tokenData = await tokenResponse.json() as { access_token: string, expires_in?: number }
+  const lifetimeSeconds = Number(tokenData.expires_in)
+  accessTokens.set(clientEmail, {
+    token: tokenData.access_token,
+    expiresAt: Date.now() + (Number.isFinite(lifetimeSeconds) && lifetimeSeconds > 0 ? lifetimeSeconds : 3600) * 1000,
+  })
   return tokenData.access_token
 }
 
@@ -145,17 +228,18 @@ export async function send(message: FCMMessage): Promise<PushResult> {
   // decommissioned on 2024-06-20 and its endpoint now answers 404, so falling
   // back to it could only turn a missing credential into a confusing HTTP
   // error further away from the cause.
-  if (!config.serviceAccount || !config.projectId) {
+  const credentials = await resolveConfig()
+  if (!credentials.serviceAccount || !credentials.projectId) {
     return {
       success: false,
       provider: 'fcm',
-      message: 'FCM service account and projectId not configured',
+      message: 'FCM service account and projectId not configured - set FCM_PROJECT_ID, FCM_CLIENT_EMAIL and FCM_PRIVATE_KEY, or call configureFCM()',
     }
   }
 
   try {
-    const accessToken = await getAccessToken()
-    const url = `${FCM_V1_URL}/${config.projectId}/messages:send`
+    const accessToken = await getAccessToken(credentials)
+    const url = `${FCM_V1_URL}/${credentials.projectId}/messages:send`
 
     const fcmMessage: any = {
       message: {
@@ -256,9 +340,9 @@ export async function sendToTopic(
  * The v1 API acts on a single registration, so a batch becomes one request
  * per token (stacksjs/stacks#2856).
  */
-async function setTopicSubscription(token: string, topic: string, subscribe: boolean): Promise<boolean> {
-  const accessToken = await getAccessToken()
-  const base = `${FCM_V1_URL}/${config.projectId}/registrations/${encodeURIComponent(token)}/topicSubscriptions`
+async function setTopicSubscription(credentials: FCMConfig, token: string, topic: string, subscribe: boolean): Promise<boolean> {
+  const accessToken = await getAccessToken(credentials)
+  const base = `${FCM_V1_URL}/${credentials.projectId}/registrations/${encodeURIComponent(token)}/topicSubscriptions`
 
   // The topic is a query parameter when subscribing and a path segment when
   // unsubscribing. That asymmetry is the API's, not a transcription slip.
@@ -289,19 +373,21 @@ async function setTopicSubscription(token: string, topic: string, subscribe: boo
  * The v1 topic API authenticates with the same OAuth token `send()` uses, so a
  * legacy server key is no longer sufficient - nor is it accepted.
  */
-function requireServiceAccount(operation: string): void {
-  if (!config.serviceAccount || !config.projectId) {
+async function requireServiceAccount(operation: string): Promise<FCMConfig> {
+  const credentials = await resolveConfig()
+  if (!credentials.serviceAccount || !credentials.projectId) {
     throw new Error(`FCM service account and projectId required for ${operation}`)
   }
+  return credentials
 }
 
 /**
  * Subscribe tokens to a topic
  */
 export async function subscribeToTopic(tokens: string[], topic: string): Promise<boolean> {
-  requireServiceAccount('topic subscription')
+  const credentials = await requireServiceAccount('topic subscription')
 
-  const results = await Promise.all(tokens.map(token => setTopicSubscription(token, topic, true)))
+  const results = await Promise.all(tokens.map(token => setTopicSubscription(credentials, token, topic, true)))
   return results.every(Boolean)
 }
 
@@ -309,9 +395,9 @@ export async function subscribeToTopic(tokens: string[], topic: string): Promise
  * Unsubscribe tokens from a topic
  */
 export async function unsubscribeFromTopic(tokens: string[], topic: string): Promise<boolean> {
-  requireServiceAccount('topic unsubscription')
+  const credentials = await requireServiceAccount('topic unsubscription')
 
-  const results = await Promise.all(tokens.map(token => setTopicSubscription(token, topic, false)))
+  const results = await Promise.all(tokens.map(token => setTopicSubscription(credentials, token, topic, false)))
   return results.every(Boolean)
 }
 

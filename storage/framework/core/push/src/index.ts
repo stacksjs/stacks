@@ -103,9 +103,20 @@ export async function send(
 
 /**
  * Configure FCM with credentials
+ *
+ * Optional: `config/services.ts` is read when nothing is configured here.
  */
 export function configureFCM(config: fcm.FCMConfig): void {
   fcm.configure(config)
+}
+
+/**
+ * Configure Expo with an access token
+ *
+ * Optional: `config/services.ts` is read when nothing is configured here.
+ */
+export function configureExpo(config: expo.ExpoConfig): void {
+  expo.configure(config)
 }
 
 export { expo, fcm }

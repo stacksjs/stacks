@@ -1,7 +1,67 @@
 import type { PushResult } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
+import { appServices, present } from '../app-config'
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
+
+export interface ExpoConfig {
+  /**
+   * An Expo access token, required once "enhanced push security" is turned on
+   * for the project: Expo then rejects every send and receipt request that
+   * does not carry it.
+   */
+  accessToken?: string
+}
+
+let config: ExpoConfig = {}
+
+/**
+ * Configure the Expo driver. Optional: without it the token comes from
+ * `config/services.ts` (`EXPO_ACCESS_TOKEN`), and anything set here wins.
+ */
+export function configure(options: ExpoConfig): void {
+  config = { ...config, ...options }
+}
+
+/** Forget what `configure()` set. */
+export function resetConfiguration(): void {
+  config = {}
+}
+
+/**
+ * The access token a request carries, if any: `configure()`, then the app's
+ * `config/services.ts`.
+ *
+ * `services.expo.accessToken` was declared, typed and read by nothing, so a
+ * project with enhanced push security had every push rejected however it was
+ * configured (stacksjs/stacks#2857). Read per call, after the app's config
+ * has loaded.
+ */
+export async function resolveAccessToken(): Promise<string | undefined> {
+  if (present(config.accessToken))
+    return present(config.accessToken)
+
+  try {
+    return present((await appServices()).expo?.accessToken)
+  }
+  catch (error) {
+    log.debug(`Expo: could not read config/services.ts: ${error instanceof Error ? error.message : String(error)}`)
+    return undefined
+  }
+}
+
+/** The headers every Expo API request sends. */
+async function requestHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    ...extra,
+  }
+  const token = await resolveAccessToken()
+  if (token)
+    headers.Authorization = `Bearer ${token}`
+  return headers
+}
 
 export interface ExpoPushMessage {
   to: string | string[]
@@ -91,11 +151,7 @@ export async function send(message: ExpoPushMessage): Promise<PushResult> {
 
     const response = await fetch(EXPO_PUSH_URL, {
       method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
+      headers: await requestHeaders({ 'Accept-Encoding': 'gzip, deflate' }),
       body: JSON.stringify(payload),
     })
 
@@ -147,10 +203,7 @@ export async function send(message: ExpoPushMessage): Promise<PushResult> {
 export async function getReceipts(ticketIds: string[]): Promise<Record<string, ExpoPushReceipt>> {
   const response = await fetch('https://exp.host/--/api/v2/push/getReceipts', {
     method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
+    headers: await requestHeaders(),
     body: JSON.stringify({ ids: ticketIds }),
   })
 
@@ -178,4 +231,4 @@ export async function sendBatch(messages: ExpoPushMessage[], chunkSize = 100): P
 }
 
 export { send as Send }
-export default { send, sendBatch, getReceipts, isExpoPushToken }
+export default { send, sendBatch, getReceipts, isExpoPushToken, configure }
