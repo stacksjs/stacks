@@ -49,8 +49,9 @@ const FINGERPRINTED = /\.[a-f0-9]{8,}\./
  *   - Strong ETag (sha256, first 16 hex chars) computed once per
  *     `(path, mtime)` and cached in-process.
  *   - `Last-Modified` from the file's mtime.
- *   - 304 Not Modified when `If-None-Match` matches OR
- *     `If-Modified-Since` is at-or-after mtime (and ETag didn't mismatch).
+ *   - 304 Not Modified on GET/HEAD when `If-None-Match` names the ETag
+ *     (or is `*`), or, only when no `If-None-Match` was sent, when
+ *     `If-Modified-Since` is at or after the mtime's second.
  *   - `Cache-Control: public, max-age=31536000, immutable` for paths
  *     that look fingerprinted (e.g. `/_assets/foo.abc12345.js`).
  *   - `Cache-Control: public, max-age=300, must-revalidate` for
@@ -102,25 +103,32 @@ export async function serveFile(
     etag = await computeEtag(filePath, mtimeMs, file)
   }
 
-  // 304 short-circuit. Match ETag *first* — it's cheaper than the date
-  // comparison and the strong-validator semantics mean if it matches the
-  // body is identical regardless of mtime.
-  const ifNoneMatch = req.headers.get('if-none-match')
-  if (etag && ifNoneMatch && stripWeak(ifNoneMatch) === etag) {
-    return new Response(null, {
-      status: 304,
-      headers: buildHeaders({ etag, lastModified, contentType, filePath, options, omitContentType: true }),
-    })
-  }
-
-  const ifModifiedSince = req.headers.get('if-modified-since')
-  if (ifModifiedSince) {
-    const sinceMs = Date.parse(ifModifiedSince)
-    if (!Number.isNaN(sinceMs) && mtimeMs <= sinceMs) {
-      return new Response(null, {
-        status: 304,
-        headers: buildHeaders({ etag, lastModified, contentType, filePath, options, omitContentType: true }),
-      })
+  // 304 Not Modified, evaluated as RFC 9110 section 13.2.2 orders it, and
+  // only for GET and HEAD.
+  //
+  // `If-None-Match` decides alone whenever it is sent. It used to fall
+  // through to `If-Modified-Since` when it did not match, so a client holding
+  // an old copy - a file replaced within the same second, or restored with
+  // an older mtime by a deploy that preserves times - was told its stale
+  // copy was current. The header is a list (`"a", "b"`) or `*`, and was
+  // compared as one opaque string.
+  //
+  // `If-Modified-Since` compares whole seconds, because an HTTP date has no
+  // more. The file's millisecond mtime was compared with the second the
+  // client echoed back from our own `Last-Modified`, and was always later,
+  // so a client sending only that header never got a 304.
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    const headers = (): Headers => buildHeaders({ etag, lastModified, contentType, filePath, options, omitContentType: true })
+    const ifNoneMatch = req.headers.get('if-none-match')
+    if (ifNoneMatch !== null) {
+      if (noneMatchHits(ifNoneMatch, etag))
+        return new Response(null, { status: 304, headers: headers() })
+    }
+    else {
+      const ifModifiedSince = req.headers.get('if-modified-since')
+      const sinceMs = ifModifiedSince ? Date.parse(ifModifiedSince) : Number.NaN
+      if (!Number.isNaN(sinceMs) && Math.floor(mtimeMs / 1000) * 1000 <= sinceMs)
+        return new Response(null, { status: 304, headers: headers() })
     }
   }
 
@@ -177,12 +185,25 @@ async function computeEtag(filePath: string, mtimeMs: number, file: ReturnType<t
   return etag
 }
 
-/** Strip W/ weak-validator prefix and surrounding quotes from an If-None-Match value. */
-function stripWeak(v: string): string {
-  let s = v.trim()
-  if (s.startsWith('W/')) s = s.slice(2)
-  if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1)
-  return s
+/**
+ * Whether an `If-None-Match` value names the current representation: `*`, or
+ * any entry of the list by weak comparison, which is what the header uses.
+ * With ETags switched off there is nothing to match but `*`.
+ */
+function noneMatchHits(header: string, etag: string | undefined): boolean {
+  const value = header.trim()
+  if (value === '*')
+    return true
+  if (!etag)
+    return false
+  return value.split(',').some((entry) => {
+    let tag = entry.trim()
+    if (tag.startsWith('W/'))
+      tag = tag.slice(2)
+    if (tag.startsWith('"') && tag.endsWith('"'))
+      tag = tag.slice(1, -1)
+    return tag === etag
+  })
 }
 
 /** Tiny MIME fallback for a handful of common extensions Bun.file may not type. */
