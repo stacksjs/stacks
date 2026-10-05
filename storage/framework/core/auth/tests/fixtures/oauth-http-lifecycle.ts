@@ -69,6 +69,18 @@ const redirectUri = 'https://client.example.test/callback'
 const verifier = 'v'.repeat(43)
 const challenge = await createS256CodeChallenge(verifier)
 
+/** A TOTP code for the next 30-second step, which verification's one-step window accepts now. */
+async function nextStepTwoFactorToken(secret: string): Promise<string> {
+  const realNow = Date.now
+  Date.now = () => realNow() + 30_000
+  try {
+    return await generateTwoFactorToken(secret)
+  }
+  finally {
+    Date.now = realNow
+  }
+}
+
 function responseCookie(response: Response, name: string): string {
   const value = response.headers.getSetCookie().find(cookie => cookie.startsWith(`${name}=`))
   assert(value, `response did not set ${name}`)
@@ -423,7 +435,9 @@ try {
       },
       body: JSON.stringify({
         challenge_token: loginBody.challenge_token,
-        code: await generateTwoFactorToken(twoFactorSecret),
+        // The next step's code: enabling 2FA consumed the step of the code
+        // that enabled it, as a login does.
+        code: await nextStepTwoFactorToken(twoFactorSecret),
       }),
     })
     assert.equal(twoFactorLogin.status, 200, await twoFactorLogin.clone().text())

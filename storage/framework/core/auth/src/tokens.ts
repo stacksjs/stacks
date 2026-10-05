@@ -799,6 +799,12 @@ export async function createToken(
 // REFRESH TOKEN FUNCTIONS
 // ============================================================================
 
+/** A lifetime from config/auth.ts, in milliseconds, as whole minutes. */
+function configuredMinutes(milliseconds: unknown, fallback: number): number {
+  const value = Number(milliseconds)
+  return (Number.isFinite(value) && value > 0 ? value : fallback) / 60000
+}
+
 /**
  * Exchange a refresh token for a new access token
  *
@@ -821,9 +827,12 @@ export async function refreshToken(
   } = {}
 ): Promise<RefreshTokenResult> {
   const { isMysql, isPostgres, boolFalse, param } = tokenSql()
+  // The configured lifetimes, as the login that issued the pair used. These
+  // were fixed at 60 minutes and 30 days, so a refresh silently reset a
+  // session to them whatever config/auth.ts said.
   const {
-    expiresInMinutes = 60,
-    refreshExpiresInDays = 30,
+    expiresInMinutes = configuredMinutes(config.auth?.tokenExpiry, 60 * 60 * 1000),
+    refreshExpiresInDays = configuredMinutes(config.auth?.refreshTokenExpiry, 30 * 24 * 60 * 60 * 1000) / (24 * 60),
   } = options
 
   const hashedRefreshToken = hashToken(refreshTokenPlain)

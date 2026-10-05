@@ -38,7 +38,7 @@ async function seed(enabled: boolean) {
   ]).execute()
 }
 try {
-  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, two_factor_secret VARCHAR(255), two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE)').execute()
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, two_factor_secret VARCHAR(255), two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE, two_factor_last_used_step BIGINT)').execute()
   await check('missing owner cannot be reported enabled', async () => {
     assert.equal(await enableTwoFactor(99, secret, await generateTwoFactorToken(secret)), false)
     await disableTwoFactor(99)

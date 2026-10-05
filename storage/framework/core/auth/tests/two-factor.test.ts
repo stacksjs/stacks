@@ -14,7 +14,7 @@
  * no cross-package import of the defaults/app/Actions files.
  */
 
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, setSystemTime, test } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -105,6 +105,22 @@ afterAll(() => {
   releaseDbConfigLock?.()
 })
 
+
+/**
+ * A code for the next 30-second step. Enabling 2FA consumes the step its
+ * setup code was in, so a login straight afterwards needs the next one -
+ * which verification's one-step window accepts right away.
+ */
+async function nextStepCode(secret: string): Promise<string> {
+  setSystemTime(new Date(Date.now() + 30_000))
+  try {
+    return await generateTwoFactorToken(secret)
+  }
+  finally {
+    setSystemTime()
+  }
+}
+
 describe('TOTP setup + enable/disable', () => {
   test('generateTwoFactorSetup returns a secret and an otpauth:// URI, unpersisted', async () => {
     const userId = await seedUser('setup-unpersisted@example.com')
@@ -167,9 +183,19 @@ describe('TOTP setup + enable/disable', () => {
     const code = await generateTwoFactorToken(secret)
     await enableTwoFactor(userId, secret, code)
 
-    const freshCode = await generateTwoFactorToken(secret)
+    // The next step's code: the setup code itself is consumed by enabling.
+    const freshCode = await nextStepCode(secret)
     expect(await verifyTwoFactorLoginCode(userId, freshCode)).toBe(true)
     expect(await verifyTwoFactorLoginCode(userId, '000000')).toBe(false)
+  })
+
+  test('the code that enabled 2FA cannot be used again to log in', async () => {
+    const userId = await seedUser('setup-replay@example.com')
+    const { secret } = generateTwoFactorSetup('setup-replay@example.com', 'Status')
+    const code = await generateTwoFactorToken(secret)
+
+    expect(await enableTwoFactor(userId, secret, code)).toBe(true)
+    expect(await verifyTwoFactorLoginCode(userId, code)).toBe(false)
   })
 
   test('a valid TOTP code cannot be replayed within its step (#1985)', async () => {
@@ -177,7 +203,7 @@ describe('TOTP setup + enable/disable', () => {
     const { secret } = generateTwoFactorSetup('replay-guard@example.com', 'Status')
     await enableTwoFactor(userId, secret, await generateTwoFactorToken(secret))
 
-    const code = await generateTwoFactorToken(secret)
+    const code = await nextStepCode(secret)
     // first use accepted; the consumed step is recorded
     expect(await verifyTwoFactorLoginCode(userId, code)).toBe(true)
     // same code, same ~30s step -> replay rejected (not a wrong-code lockout)

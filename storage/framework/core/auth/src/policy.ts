@@ -285,7 +285,8 @@ export async function discoverPolicies(): Promise<void> {
   }
 
   for (const { policyName, policyPath } of discovered) {
-    const modelName = policyName.replace('Policy', '')
+    // The suffix only: `PolicyHolderPolicy` is the policy for `PolicyHolder`.
+    const modelName = policyName.replace(/Policy$/, '')
 
     // Skip if already registered via Gates.ts. The comment saying so was here
     // and the check was not, so convention silently overwrote every explicit

@@ -63,7 +63,7 @@ function changeOwner(change: string, password: string) {
   assert.equal(child.exitCode, 0, child.stderr.toString())
 }
 try {
-  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email VARCHAR(255) UNIQUE, password TEXT, two_factor_secret TEXT, two_factor_enabled BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email VARCHAR(255) UNIQUE, password TEXT, two_factor_secret TEXT, two_factor_enabled BOOLEAN NOT NULL DEFAULT TRUE, two_factor_last_used_step BIGINT, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
   const oldHash = await makeHash('synthetic-old-password', { algorithm: 'bcrypt' })
   const newHash = await makeHash('synthetic-new-password', { algorithm: 'bcrypt' })
   for (const change of ['password', 'deleted', 'unchanged', 'wrong-password', 'wrong-owner']) {

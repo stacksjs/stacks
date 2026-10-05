@@ -35,7 +35,7 @@
 import { randomBytes } from 'node:crypto'
 import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { verifyTOTPWithCounter } from '@stacksjs/ts-auth'
-import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyTwoFactorCode } from './authenticator'
+import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
@@ -196,20 +196,23 @@ export async function consumePendingTwoFactorSecret(userId: number): Promise<str
  * valid, persist it + flip `two_factor_enabled` on.
  */
 export async function enableTwoFactor(userId: number, secret: string, code: string): Promise<boolean> {
-  const valid = await verifyTwoFactorCode(code, secret)
-  if (!valid) return false
+  const { valid, counter: step } = await verifyTOTPWithCounter(code, { secret })
+  if (!valid || step === null) return false
 
-  return persistTwoFactorState(userId, secret, true)
+  // The setup code is consumed like any login code. Left unrecorded, the same
+  // six digits were accepted once more at login within their window: the
+  // replay guard compares against the last used step, and there was none.
+  return persistTwoFactorState(userId, secret, true, step)
 }
 
 export async function disableTwoFactor(userId: number): Promise<void> {
-  await persistTwoFactorState(userId, null, false)
+  await persistTwoFactorState(userId, null, false, null)
 }
 
-async function persistTwoFactorState(userId: number, secret: string | null, enabled: boolean): Promise<boolean> {
+async function persistTwoFactorState(userId: number, secret: string | null, enabled: boolean, lastUsedStep: number | null): Promise<boolean> {
   return db.transaction(async () => {
     await db.updateTable('users')
-      .set({ two_factor_secret: secret, two_factor_enabled: enabled })
+      .set({ two_factor_secret: secret, two_factor_enabled: enabled, two_factor_last_used_step: lastUsedStep })
       .where('id', '=', userId).execute()
 
     // A successful query is not proof that a trigger accepted the requested
