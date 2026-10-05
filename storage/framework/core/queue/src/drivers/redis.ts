@@ -53,6 +53,12 @@ interface BunJobOptions {
   deadLetter?: boolean
 }
 
+/** A backoff delay in seconds: the value when it is a usable number, 1 otherwise. */
+export function backoffSeconds(value: unknown): number {
+  const seconds = Number(value)
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : 1
+}
+
 /**
  * Redis Queue Driver class
  */
@@ -142,10 +148,13 @@ export class RedisQueue<T = any> {
       // whose backoff is Stacks' own `number | number[]` in seconds. The two
       // could not both be true, and an `@ts-ignore` on the interface is what
       // kept them from having to be.
+      // A delay of 0 seconds is a setting - retry at once - not a gap, so it
+      // stays 0 instead of becoming one second through `|| 1`. Only a value
+      // that is not a usable number falls back.
       backoff: Array.isArray(options?.backoff)
-        ? options.backoff.map(s => (Number(s) || 1) * 1000)
+        ? options.backoff.map(s => backoffSeconds(s) * 1000)
         : typeof options?.backoff === 'number'
-          ? { type: 'fixed' as const, delay: (options.backoff || 1) * 1000 }
+          ? { type: 'fixed' as const, delay: backoffSeconds(options.backoff) * 1000 }
           : undefined,
     }
 

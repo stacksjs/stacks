@@ -189,7 +189,7 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
         if (job.created_at) {
           const createdAt = typeof job.created_at === 'number'
             ? job.created_at
-            : Math.floor(new Date(job.created_at).getTime() / 1000)
+            : utcSeconds(job.created_at)
           const age = nowTimestamp - createdAt
 
           if (!stats.oldestAge || age > stats.oldestAge) {
@@ -426,4 +426,18 @@ export function createHealthCheckHandler(config: HealthCheckConfig = {}): (req: 
 export async function isQueueHealthy(config: HealthCheckConfig = {}): Promise<boolean> {
   const result = await checkQueueHealth(config)
   return result.status === 'healthy'
+}
+
+/**
+ * Seconds since the epoch for a stored `created_at`.
+ *
+ * Jobs are written with a UTC time and no zone - `2026-10-05 10:00:00` - and
+ * `new Date()` reads that as LOCAL time. East of UTC every job looked hours
+ * old and the health check reported a stalled queue; west of UTC ages went
+ * negative and it never alerted. A value with its own zone is read as is.
+ */
+export function utcSeconds(value: string): number {
+  const text = String(value).trim()
+  const zoned = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text)
+  return Math.floor(new Date(zoned ? text : `${text.replace(' ', 'T')}Z`).getTime() / 1000)
 }

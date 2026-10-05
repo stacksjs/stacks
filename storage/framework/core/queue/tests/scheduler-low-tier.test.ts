@@ -49,7 +49,7 @@ describe('scheduler tick + redis backoff wiring (#1984)', () => {
 
   it('redis driver passes the per-attempt backoff array through (no fixed collapse)', () => {
     const redis = src('../src/drivers/redis.ts')
-    expect(redis).toContain('options.backoff.map(s => (Number(s) || 1) * 1000)')
+    expect(redis).toContain('options.backoff.map(s => backoffSeconds(s) * 1000)')
     expect(redis).not.toContain(`{ type: 'fixed', delay: (options.backoff[0]`)
   })
 })
