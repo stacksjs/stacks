@@ -9,7 +9,7 @@ import type {
   TokenCreateOptions,
 } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { db, getDatabaseDialect, isInTransaction, parseSqlDateTime } from '@stacksjs/database/runtime'
+import { db, getDatabaseDialect, isInTransaction, parseSqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
@@ -112,6 +112,34 @@ async function revokeObservedIdleAccessToken(accessToken: AccessTokenActivity): 
   await revoke.execute()
 }
 import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTokens, deleteRevokedTokens, getPasswordChangedAt, getTokenOwnerCredentialState, isIssuedBeforePasswordChange, parseScopes } from './tokens'
+
+
+/**
+ * Whether the OAuth client and grant a token was issued under still stand.
+ *
+ * `findToken` applied these conditions; the two lookups the auth middleware
+ * actually uses did not, so a token from a revoked client - or a delegated
+ * token whose grant was revoked - went on authenticating its user until it
+ * expired. A token with no client row (none recorded, or since deleted) is
+ * not affected: only a client or grant that says no can say no.
+ */
+async function oauthAuthorizationIntact(tokenId: number): Promise<boolean> {
+  const sql = sqlHelpers(getDatabaseDialect())
+  const rows = await db.primary.unsafe(`
+    SELECT t.id FROM oauth_access_tokens t
+    LEFT JOIN oauth_clients c ON c.id = t.oauth_client_id
+    LEFT JOIN oauth_grants g ON g.id = t.oauth_grant_id
+    WHERE t.id = ${sql.param(1)}
+    AND (c.id IS NULL OR c.revoked = ${sql.boolFalse})
+    AND (t.oauth_grant_id IS NULL OR (
+      g.id IS NOT NULL
+      AND g.revoked_at IS NULL
+      AND g.client_id = t.oauth_client_id
+    ))
+    LIMIT 1
+  `, [tokenId]) as unknown as unknown[]
+  return rows.length > 0
+}
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -731,6 +759,9 @@ export class Auth {
     if (accessToken.revoked)
       return false
 
+    if (!(await oauthAuthorizationIntact(Number(accessToken.id))))
+      return false
+
     // Resolve the owner only after the credential's own cheap rejection
     // checks. Revoked and expired rows are already unusable and must not add an
     // avoidable users-table query to a common denial path.
@@ -793,6 +824,9 @@ export class Auth {
       return undefined
 
     if (accessToken.revoked)
+      return undefined
+
+    if (!(await oauthAuthorizationIntact(Number(accessToken.id))))
       return undefined
 
     /*

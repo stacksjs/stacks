@@ -1380,13 +1380,10 @@ export async function createClient(options: CreateClientOptions): Promise<Create
  * await revokeClient(1)
  */
 export async function revokeClient(clientId: number): Promise<void> {
-  const { boolTrue, param } = tokenSql()
-  await db.unsafe(`
-    UPDATE oauth_clients
-    SET revoked = ${boolTrue}, updated_at = ${appNow()}
-    WHERE id = ${param(1)}
-  `, [clientId])
-  markContextWrote()
+  // The whole cascade, not just the client's flag: see revokeOAuthClient.
+  // Imported lazily, as the registration module is the heavier of the two.
+  const { revokeOAuthClient } = await import('./oauth-client-registration')
+  await revokeOAuthClient(clientId)
 }
 
 // ============================================================================

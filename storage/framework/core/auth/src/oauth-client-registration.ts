@@ -568,6 +568,40 @@ export async function rotateOAuthClientSecret(ownerId: number, clientId: number)
   return plainTextSecret
 }
 
+/**
+ * Revoke a client and everything it was issued, whoever owns it.
+ *
+ * The administrative counterpart of {@link disableOAuthClient}, and the same
+ * cascade: grants, codes, pending requests, refresh and access tokens. The
+ * exported `revokeClient()` used to flip only `oauth_clients.revoked`, so the
+ * client's access tokens kept authenticating until they expired - a revoked
+ * third party went on acting as its users - while their refresh, which does
+ * check the client, failed. Returns whether a client by that id existed.
+ */
+export async function revokeOAuthClient(clientId: number): Promise<boolean> {
+  if (!Number.isSafeInteger(clientId) || clientId <= 0)
+    return false
+
+  const sql = sqlHelpers(getDatabaseDialect())
+  const found = await db.transaction(async (rawTrx) => {
+    const trx = rawTrx as unknown as { unsafe: (statement: string, params?: unknown[]) => Promise<unknown> }
+    const now = sqlDateTime(new Date())
+    const revoked = sql.isPostgres ? true : 1
+    const changed = await trx.unsafe(`
+      UPDATE oauth_clients
+      SET revoked = ${sql.param(1)}, updated_at = ${sql.param(2)}
+      WHERE id = ${sql.param(3)}
+    `, [revoked, now, clientId])
+    if (mutationCount(changed) !== 1)
+      return false
+
+    await revokeOAuthClientAuthorizationState(trx, sql, clientId, now)
+    return true
+  })
+  markContextWrote()
+  return found
+}
+
 /** Disable one owner-managed client and revoke every credential it issued. */
 export async function disableOAuthClient(ownerId: number, clientId: number): Promise<boolean> {
   if (!Number.isSafeInteger(ownerId) || ownerId <= 0 || !Number.isSafeInteger(clientId) || clientId <= 0)
