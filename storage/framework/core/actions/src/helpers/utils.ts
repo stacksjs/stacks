@@ -4,7 +4,7 @@ import type { ActionOptions, CliOptions, CommandError, Subprocess } from '@stack
 import { existsSync } from 'node:fs'
 import { delimiter, join } from 'node:path'
 import process from 'node:process'
-import { buddyOptions, runCommand } from '@stacksjs/cli'
+import { buddyOptionArgs, runCommand } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { Action as ActionEnum } from '@stacksjs/enums'
 import { err, handleError, ok } from '@stacksjs/error-handling'
@@ -286,8 +286,11 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // processes instead of silently dropping it at this spawn boundary.
   const developmentCondition = developmentConditionForProject(p.projectPath())
   // Dev actions manage their own config — don't pass CLI flags that trigger dep loading
-  const opts = isDevAction ? '' : (buddyOptions(options) || '')
-  const cmd = ['bun', developmentCondition, watchFlag, path, opts].filter(Boolean).join(' ')
+  // An argv array, not a joined string: `runCommand` splits a string on
+  // whitespace without a shell, so a value or a path containing a space was
+  // cut into several arguments (see `buddyOptionArgs`).
+  const opts = isDevAction || !options ? [] : buddyOptionArgs(options as Record<string, any>)
+  const cmd = ['bun', developmentCondition, watchFlag, path, ...opts].filter(Boolean)
 
   // Ensure pantry packages are resolvable via NODE_PATH
   // This allows compiled pantry packages (e.g., bun-plugin-stx/serve.js) to

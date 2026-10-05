@@ -160,6 +160,43 @@ export function parseOptions(options?: CliOptions): CliOptions {
 //   dryRun?: boolean
 //   verbose?: boolean
 // }
+/**
+ * Options as argv, one entry per token, for a child process spawned without a
+ * shell.
+ *
+ * `runAction` used to join these into one string, and `runCommand` splits a
+ * string on whitespace with no shell to honour quotes. So an option value
+ * with a space - `--address-line1 12 St James Sq` - reached the action as
+ * `--address-line1 12` plus three stray arguments, and an action path inside a
+ * directory with a space in its name was cut in two. As an array, every value
+ * stays one argument whatever it contains.
+ *
+ * `false`, `undefined` and `null` are omitted, as they always were: several
+ * actions test for a flag with `argv.includes('--fresh')`, which would read a
+ * passed `--fresh false` as set. Values that are not primitives - an `env`
+ * object, a stream - are runner settings, not flags, and are omitted too
+ * rather than sent as `[object Object]`.
+ */
+export function buddyOptionArgs(options: Record<string, any>): string[] {
+  const args: string[] = []
+  for (const [key, value] of Object.entries(options)) {
+    // cac reserves `--` for arguments after the option separator and some
+    // callers use `_` for positional arguments. Neither is a CLI option.
+    if (key === '--' || key === '_' || value === false || value === undefined || value === null)
+      continue
+    if (typeof value === 'object' && !Array.isArray(value))
+      continue
+    if (typeof value === 'function' || typeof value === 'symbol')
+      continue
+
+    if (value === true)
+      args.push(`--${key}`)
+    else
+      args.push(`--${key}`, String(value))
+  }
+  return args
+}
+
 export function buddyOptions(options?: string[] | Record<string, any>): string {
   if (Array.isArray(options)) {
     options = Array.from(new Set(options)) as string[]
@@ -168,20 +205,8 @@ export function buddyOptions(options?: string[] | Record<string, any>): string {
     return options.join(' ')
   }
 
-  if (typeof options === 'object' && options !== null) {
-    return Object.entries(options)
-      // cac reserves `--` for arguments after the option separator and some
-      // callers use `_` for positional arguments. Neither is a CLI option.
-      // Serializing `--` as a regular key produces a literal `----` argument
-      // and breaks chained actions such as `buddy release --bump patch`.
-      .filter(([key, value]) => key !== '--' && key !== '_' && value !== false && value !== undefined && value !== null)
-      .map(([key, value]) => {
-        if (value === true)
-          return `--${key}`
-        return `--${key} ${value}`
-      })
-      .join(' ')
-  }
+  if (typeof options === 'object' && options !== null)
+    return buddyOptionArgs(options).join(' ')
 
   return buddyOptions(process.argv.slice(2))
 }
