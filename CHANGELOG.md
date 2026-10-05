@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.59...v0.75.60)
+
+## ✨ Features
+
+- **deploy**: a failed deploy rolls back what it made live ([ba409b7](https://github.com/stacksjs/stacks/commit/ba409b7)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **buddy**: deploy:rollback --all and --only-if-live ([f1578dd](https://github.com/stacksjs/stacks/commit/f1578dd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.58...v0.75.59)
 
 ## ✨ Features
