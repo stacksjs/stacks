@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.69...v0.75.70)
+
+## 🐛 Bug Fixes
+
+- **views**: a page's ambient ip is the client address trusted proxies vouch for ([595d2ec](https://github.com/stacksjs/stacks/commit/595d2ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: lock stx 0.2.373 for actions and buddy ([d551d90](https://github.com/stacksjs/stacks/commit/d551d90)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.68...v0.75.69)
 
 ## 🐛 Bug Fixes
