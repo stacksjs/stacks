@@ -98,6 +98,37 @@ describe('package project file sync', () => {
   })
 })
 
+describe('the VS Code extension in the defaults', () => {
+  // wildloop, stacks 0.75.62: the extension's sources and tests reached the app
+  // through the sync, and its root `bun test` failed on imports that exist only
+  // in the framework repository, which stopped every deploy.
+  it('stay out of the defaults package, apart from the settings and manifest', () => {
+    const build = readFileSync(join(import.meta.dir, '../../defaults/build.ts'), 'utf8')
+    expect(build).toContain(`join(defaults, 'ide/vscode', path)`)
+    for (const path of ['\'src\'', '\'tests\'', '\'scripts\'', '\'build.ts\'', '\'tsconfig.json\''])
+      expect(build).toContain(path)
+    expect(build).toContain('filter: shipsToApps')
+  })
+
+  it('are removed from an app once the package stops shipping them', () => {
+    writeDefault('ide/vscode/package.json', '{"name":"stacks"}')
+    writeDefault('ide/vscode/.vscode/settings.json', '{}')
+    write('storage/framework/defaults/ide/vscode/package.json', '{"name":"stacks"}')
+    write('storage/framework/defaults/ide/vscode/.vscode/settings.json', '{}')
+    write('storage/framework/defaults/ide/vscode/src/extension.ts', 'import \'../../../../core/actions/src/lint/files\'\n')
+    write('storage/framework/defaults/ide/vscode/tests/manifest.test.ts', 'test\n')
+    write('storage/framework/defaults/ide/vscode/build.ts', 'build\n')
+
+    const changes = syncPackageProjectFiles(root, defaultsRoot)
+
+    expect(existsSync(join(root, 'storage/framework/defaults/ide/vscode/src'))).toBe(false)
+    expect(existsSync(join(root, 'storage/framework/defaults/ide/vscode/tests'))).toBe(false)
+    expect(existsSync(join(root, 'storage/framework/defaults/ide/vscode/build.ts'))).toBe(false)
+    expect(existsSync(join(root, 'storage/framework/defaults/ide/vscode/.vscode/settings.json'))).toBe(true)
+    expect(changes).toContainEqual({ path: 'storage/framework/defaults/ide/vscode/tests', action: 'remove' })
+  })
+})
+
 describe('framework type declarations', () => {
   // trifitla upgraded 0.72.57 -> 0.75.11 and its own app/Events.ts stopped
   // typechecking: `'user:created'` lives on AppEvents through

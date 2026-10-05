@@ -17,11 +17,29 @@ import { join } from 'node:path'
 const here = import.meta.dir
 const defaults = join(here, '../../defaults')
 
+/**
+ * The VS Code extension's development tree, which apps never need.
+ *
+ * `ide/vscode` is where the Stacks extension is built and tested; it ships to
+ * the Marketplace on its own. An app only uses its `.vscode` settings and
+ * manifest. The sources and tests import `core/*` and `@stacksjs/stx-vscode`,
+ * which exist only in this repository, so once `buddy upgrade` copied them
+ * into an app its root `bun test` failed nine tests and every deploy gated on
+ * it stopped (wildloop, stacks 0.75.62). The sync removes what the package no
+ * longer ships, so leaving them out here also cleans up apps that have them.
+ */
+const EXTENSION_DEVELOPMENT_PATHS = ['src', 'tests', 'scripts', 'dist', 'node_modules', 'build.ts', 'tsconfig.json']
+  .map(path => join(defaults, 'ide/vscode', path))
+
+function shipsToApps(source: string): boolean {
+  return !EXTENSION_DEVELOPMENT_PATHS.some(path => source === path || source.startsWith(`${path}/`))
+}
+
 for (const entry of await readdir(defaults)) {
   const source = join(defaults, entry)
   const dest = join(here, entry)
   await rm(dest, { recursive: true, force: true })
-  await cp(source, dest, { recursive: true })
+  await cp(source, dest, { recursive: true, filter: shipsToApps })
   // eslint-disable-next-line no-console
   console.log(`@stacksjs/defaults: copied ${entry} from ${source}`)
 }
