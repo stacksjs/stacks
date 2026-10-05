@@ -168,8 +168,34 @@ export function responseMayUseCsrfToken(response: Response): boolean {
     || type.endsWith('+json')
 }
 
+/**
+ * Whether a response told shared caches they may keep it: its `Cache-Control`
+ * says `public` or gives an `s-maxage`, and says neither `private` nor
+ * `no-store`.
+ *
+ * Such a response is, by its own account, the same for everyone, so it must
+ * not carry a per-visitor cookie. A CDN refuses to store a response that sets
+ * one (Cloudflare answers `cf-cache-status: BYPASS`), so seeding here kept
+ * every shareable API read out of the edge; and a cache that stored it anyway
+ * would hand one visitor's token to everybody behind it.
+ */
+export function responseDeclaresShared(response: Response): boolean {
+  const value = (response.headers.get('cache-control') || '').toLowerCase()
+  if (!value || /\b(?:private|no-store)\b/.test(value))
+    return false
+  return /\bpublic\b/.test(value) || /\bs-maxage\s*=/.test(value)
+}
+
 export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string, responseHasNoCookies = false): Response {
   if (!responseMayUseCsrfToken(response))
+    return response
+
+  // Nothing depends on a shareable response seeding the cookie: a page that
+  // carries forms is per-visitor and never says `public`, and a client about to
+  // submit without a cookie can ask for one from a response that is not shared.
+  // This holds for every layer that seeds - the API router, and the page server
+  // that proxies `/api` to it - because they all come through here.
+  if (responseDeclaresShared(response))
     return response
 
   // A token the router minted before rendering wins over "the header already

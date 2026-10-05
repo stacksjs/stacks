@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { CSRF_COOKIE_NAME, generateCsrfToken, responseMayUseCsrfToken, seedCsrfCookieIfMissing } from '../../../defaults/app/Middleware/Csrf'
+import { CSRF_COOKIE_NAME, generateCsrfToken, responseDeclaresShared, responseMayUseCsrfToken, seedCsrfCookieIfMissing } from '../../../defaults/app/Middleware/Csrf'
 
 /**
  * The token has to exist before the page that embeds it is rendered.
@@ -190,5 +190,44 @@ describe('which responses carry the CSRF cookie', () => {
 
   test('keeps seeding a response that declares no type, such as a redirect', () => {
     expect(cookieOn(seedCsrfCookieIfMissing(request(), typed()))).toContain(`${CSRF_COOKIE_NAME}=`)
+  })
+})
+
+describe('a response that says shared caches may keep it', () => {
+  const cached = (cacheControl: string, type = 'application/json'): Response =>
+    new Response('{}', { headers: { 'Content-Type': type, 'Cache-Control': cacheControl } })
+
+  // wildloop.org, 2026-10-04: the API marked anonymous trail reads
+  // `public, s-maxage=3600`, but the page server that proxies `/api` to it
+  // seeded the cookie on the way back, so Cloudflare answered BYPASS for all
+  // of them and the edge never hit.
+  test('gets no cookie, so a CDN can store it and nobody receives another visitor\'s token', () => {
+    for (const value of [
+      'public, max-age=300, s-maxage=3600, stale-while-revalidate=3600',
+      'public',
+      's-maxage=600',
+      'max-age=60, S-MaxAge=600',
+    ]) {
+      const res = cached(value)
+      expect(responseDeclaresShared(res)).toBe(true)
+      expect(seedCsrfCookieIfMissing(request(), res).headers.getSetCookie()).toEqual([])
+    }
+  })
+
+  test('gets no cookie even with a token the router minted', () => {
+    expect(cookieOn(seedCsrfCookieIfMissing(request(), cached('public, max-age=60', 'text/html'), generateCsrfToken()))).toBe('')
+  })
+
+  test('private or no-store outranks public, and those still seed', () => {
+    for (const value of ['private, no-store', 'public, no-store', 'private, s-maxage=60', 'no-store', 'max-age=60', 'no-cache']) {
+      const res = cached(value)
+      expect(responseDeclaresShared(res)).toBe(false)
+      expect(cookieOn(seedCsrfCookieIfMissing(request(), res))).toContain(`${CSRF_COOKIE_NAME}=`)
+    }
+  })
+
+  test('a page with no Cache-Control is still seeded, because it carries the forms', () => {
+    expect(responseDeclaresShared(response())).toBe(false)
+    expect(cookieOn(seedCsrfCookieIfMissing(request(), response()))).toContain(`${CSRF_COOKIE_NAME}=`)
   })
 })
