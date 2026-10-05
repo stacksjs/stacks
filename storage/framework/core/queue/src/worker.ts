@@ -517,9 +517,13 @@ async function processJob(job: any): Promise<void> {
   // The previous code accepted `timeout` on dispatch (`Job.timeout(s)`),
   // stored it in the payload, and then never used it — a runaway
   // handler held the worker forever. (stacksjs/stacks#1872 Q-5.)
+  // The job's own `tries`/`backoff`/`timeout`, for whatever the dispatch left
+  // unsaid (see `jobDefaults`).
+  const declared = parsedJobName ? await (await import('./job')).jobDefaults(parsedJobName) : {}
+
   try {
     const payload = JSON.parse(job.payload || '{}')
-    const timeoutSec = readJobTimeoutSec(payload)
+    const timeoutSec = readJobTimeoutSec(payload) ?? declared.timeout
     if (timeoutSec === undefined) {
       await executeJobPayload(payload)
     }
@@ -591,7 +595,7 @@ async function processJob(job: any): Promise<void> {
     let parsedPayload: Record<string, any> = {}
     try {
       parsedPayload = JSON.parse(job.payload || '{}') as Record<string, any>
-      maxAttempts = parsedPayload.options?.tries || 1
+      maxAttempts = parsedPayload.options?.tries || declared.tries || 1
     }
     catch {
       // Malformed payload — use default max attempts
@@ -684,7 +688,7 @@ async function processJob(job: any): Promise<void> {
     }
     else {
       // Release for retry with backoff
-      const backoffDelays = parsedPayload.options?.backoff
+      const backoffDelays = parsedPayload.options?.backoff ?? declared.backoff
       let retryDelay = 30 // default 30 seconds
       if (Array.isArray(backoffDelays) && backoffDelays.length > 0) {
         // Use the appropriate backoff delay for this attempt (0-indexed)

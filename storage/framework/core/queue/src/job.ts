@@ -718,6 +718,42 @@ export async function resolveJobFile(name: string): Promise<string | null> {
 }
 
 /**
+ * What a job's own definition says about retrying it, for a dispatch that
+ * did not.
+ *
+ * A job dispatched by name - `mail.queue()` sending `SendEmailJob`, a
+ * `Queue.dispatch('X')` - carried none of the `tries`, `backoff` or
+ * `timeout` the job declares, and the worker defaulted to one attempt. A
+ * transient SMTP failure sent the email straight to failed_jobs although the
+ * job asks for three tries with 10/30/60s backoff. The worker reads these
+ * when the envelope is silent; anything set on the dispatch still wins.
+ */
+export async function jobDefaults(name: string): Promise<{ tries?: number, backoff?: number | number[], timeout?: number }> {
+  try {
+    const jobPath = await resolveJobFile(name)
+    if (!jobPath)
+      return {}
+    const definition = (await import(jobPath)).default as { tries?: unknown, backoff?: unknown, timeout?: unknown } | undefined
+    if (!definition || typeof definition !== 'object')
+      return {}
+
+    const tries = Number(definition.tries)
+    const timeout = Number(definition.timeout)
+    const backoff = definition.backoff
+    return {
+      tries: Number.isInteger(tries) && tries > 0 ? tries : undefined,
+      timeout: Number.isFinite(timeout) && timeout > 0 ? timeout : undefined,
+      backoff: typeof backoff === 'number' || (Array.isArray(backoff) && backoff.every(delay => typeof delay === 'number'))
+        ? backoff as number | number[]
+        : undefined,
+    }
+  }
+  catch {
+    return {}
+  }
+}
+
+/**
  * Run a job immediately by name
  *
  * This loads the job from app/Jobs/{name}.ts, falling back to the framework

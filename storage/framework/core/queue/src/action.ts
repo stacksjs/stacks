@@ -193,7 +193,7 @@ export class Job<T = unknown> {
       queue: this.queue ?? 'default',
       tries: typeof this.tries === 'number' ? this.tries : undefined,
       timeout: this.timeout,
-      backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
+      backoff: (Array.isArray(this.backoff) || typeof this.backoff === 'number') ? this.backoff : undefined,
     })
 
     /*
@@ -237,7 +237,7 @@ export class Job<T = unknown> {
       queue: this.queue ?? 'default',
       tries: typeof this.tries === 'number' ? this.tries : undefined,
       timeout: this.timeout,
-      backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
+      backoff: (Array.isArray(this.backoff) || typeof this.backoff === 'number') ? this.backoff : undefined,
     })
 
     /*
@@ -269,7 +269,7 @@ export class Job<T = unknown> {
         delay: opts?.delay,
         maxTries: typeof this.tries === 'number' ? this.tries : undefined,
         timeout: this.timeout,
-        backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
+        backoff: (Array.isArray(this.backoff) || typeof this.backoff === 'number') ? this.backoff : undefined,
       },
     )
   }
