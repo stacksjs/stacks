@@ -362,26 +362,40 @@ export class Schedule implements UntimedSchedule {
     const now = Date.now()
     if (since >= now) return 0
 
-    const slots: Date[] = []
-    // parseCron's internal search starts from `relativeDate`'s next
-    // minute, so passing `since` as-is correctly finds the first
-    // matching slot AFTER `since`. Right-boundary is INCLUSIVE
-    // (`> now`, not `>= now`) so a slot whose minute matches "now"
-    // is treated as missed too — common case after a server boot
-    // where the scheduler's first tick lands a fraction of a second
-    // after a cron slot. We capture +1 over `max` so the cap-warn
-    // below knows whether we overflowed.
-    let cursor = since
-    while (slots.length < max + 1) {
-      const next = parse(this.cronPattern, cursor)
-      if (!next || next.getTime() > now) break
-      slots.push(next)
-      cursor = next.getTime()
+    // The newest `max` slots since `since`. The loop used to stop after max+1
+    // and drop one, so it kept the OLDEST slots - after ten minutes down with
+    // `max: 3` it fired 09:51-09:53 and called it "4 missed" - while the docs
+    // promise it "skips ahead to the most recent". Walking every slot from
+    // `since` instead costs ~50µs a slot, seconds for a long outage, so the
+    // window grows back from `now` until it holds more than `max` or reaches
+    // `since`. The right boundary is inclusive: a slot whose minute is "now"
+    // counts as missed, the common case after a boot that lands just past a
+    // slot. In the task's own zone, as its live schedule is.
+    const tz = this.timezone && this.timezone !== 'UTC' ? { tz: this.timezone } : {}
+    const slotsAfter = (from: number): Date[] => {
+      const found: Date[] = []
+      let cursor = from
+      while (true) {
+        const next = parse(this.cronPattern, cursor, tz)
+        if (!next || next.getTime() > now) return found
+        found.push(next)
+        cursor = next.getTime()
+      }
+    }
+
+    let span = 60_000 * (max + 1)
+    let from = Math.max(since, now - span)
+    let slots = slotsAfter(from)
+    while (slots.length <= max && from > since) {
+      span *= 2
+      from = Math.max(since, now - span)
+      slots = slotsAfter(from)
     }
 
     if (slots.length > max) {
-      log.warn(`[scheduler] runMissed: ${slots.length} missed slots since ${new Date(since).toISOString()}, capping at ${max} - older runs dropped`)
-      slots.splice(0, slots.length - max)
+      const missed = from === since ? `${slots.length}` : `more than ${max}`
+      log.warn(`[scheduler] runMissed: ${missed} missed slots since ${new Date(since).toISOString()}, running the ${max} most recent - older runs dropped`)
+      slots = slots.slice(-max)
     }
 
     let fired = 0
