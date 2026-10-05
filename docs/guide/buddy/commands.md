@@ -4632,6 +4632,10 @@ Run one registered scheduled task immediately
 - Aliases: none
 - Arguments: `<name>`
 
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--in-process` | Run a background task in this process instead of spawning it (how the scheduler starts one) | boolean, optional | - |
+
 ### `schedule:status`
 
 Show currently-held overlap locks (this-process only)

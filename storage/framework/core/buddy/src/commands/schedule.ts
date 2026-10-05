@@ -14,6 +14,7 @@ export function schedule(buddy: CLI): void {
     list: 'List all registered scheduled tasks with their next run time',
     status: 'Show currently-held overlap locks (this-process only)',
     runOne: 'Run one registered scheduled task immediately',
+    inProcess: 'Run a background task in this process instead of spawning it (how the scheduler starts one)',
     enable: 'Resume a paused scheduled task',
     disable: 'Pause a scheduled task without editing source',
   }
@@ -122,7 +123,8 @@ export function schedule(buddy: CLI): void {
 
   buddy
     .command('schedule:run-one <name>', descriptions.runOne)
-    .action(async (name: string) => {
+    .option('--in-process', descriptions.inProcess)
+    .action(async (name: string, options: { inProcess?: boolean } = {}) => {
       try {
         // Runs the job in this process, so it needs the same boot as the
         // scheduler entry (actions/src/schedule/run.ts): without it the
@@ -132,7 +134,7 @@ export function schedule(buddy: CLI): void {
         const { runScheduler, Schedule } = await import('@stacksjs/scheduler')
         await runScheduler()
         await Promise.resolve()
-        await Schedule.runNow(name)
+        await Schedule.runNow(name, { inProcess: options.inProcess === true })
         await Schedule.gracefulShutdown()
         log.success(`Scheduled task ${name} completed.`)
         await log.flush()

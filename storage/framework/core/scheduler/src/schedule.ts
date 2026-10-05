@@ -1,7 +1,7 @@
 import type { CatchCallbackFn } from '@stacksjs/cron'
 import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './types'
 import { spawn } from 'node:child_process'
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runNamedAction } from '@stacksjs/action-runner'
 import { log, runCommand } from '@stacksjs/cli'
@@ -86,6 +86,8 @@ export class Schedule implements UntimedSchedule {
   private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
   private static stateFile = join(process.cwd(), 'storage', 'framework', 'runtime', 'scheduler-state.json')
   private static activeLocks = new Map<string, SchedulerLockHandle>()
+  /** Each background task's run in this process, for `runNow(name, { inProcess: true })`. */
+  private static inProcessRuns = new Map<string, () => Promise<void>>()
   private shouldPreventOverlap = false
   private overlapExpiresAfterMinutes = 24 * 60
   private shouldRunOnOneServer = false
@@ -94,6 +96,8 @@ export class Schedule implements UntimedSchedule {
   private outputPath: string | null = null
   /** When true, append to outputPath; otherwise overwrite per run. */
   private outputAppend = false
+  /** A command task redirects its own output to `outputPath`. */
+  private handlesOwnOutput = false
   /** Set by `schedule.job(name)`: the job this schedule runs. */
   private jobName: string | null = null
   /** Set by `.onQueue(name)`: dispatch the job there instead of running it here. */
@@ -506,14 +510,20 @@ export class Schedule implements UntimedSchedule {
     return out
   }
 
-  /** Run one registered task through its normal overlap and error guards. */
-  static async runNow(name: string): Promise<void> {
+  /**
+   * Run one registered task through its normal overlap and error guards.
+   *
+   * `inProcess` runs a `runInBackground()` task here rather than spawning it
+   * again - it is how the background process itself runs the task.
+   */
+  static async runNow(name: string, options: { inProcess?: boolean } = {}): Promise<void> {
     const job = Schedule.jobs.get(name)
     if (!job)
       throw new Error(`Scheduled task "${name}" was not found.`)
     if (!Schedule.isEnabled(name))
       throw new Error(`Scheduled task "${name}" is paused.`)
-    await job.run()
+    const here = options.inProcess ? Schedule.inProcessRuns.get(name) : undefined
+    await (here ? here() : job.run())
   }
 
   /** Persist an operator pause independently from the scheduler process. */
@@ -633,7 +643,7 @@ export class Schedule implements UntimedSchedule {
 
   // --- Task wrapping ---
 
-  private wrapTask(originalTask: () => void): () => unknown {
+  private wrapTask(originalTask: () => unknown, inProcess = false): () => unknown {
     const taskName = this.options.name || 'unnamed-task'
     let wrappedTask: () => unknown = originalTask
 
@@ -686,109 +696,65 @@ export class Schedule implements UntimedSchedule {
       })()
     }
 
-    if (this.shouldRunInBackground) {
-      const innerTask = wrappedTask
-      const outputPath = this.outputPath
+    if (this.shouldRunInBackground && !inProcess) {
+      // A background run is this task, by name, in a process of its own:
+      // `buddy schedule:run-one <name> --in-process` registers the app's
+      // schedule the way `schedule:run` does and runs the one task there,
+      // overlap lock and all.
+      //
+      // It used to evaluate the task's SOURCE in `bun -e`, which only works for
+      // a function that refers to nothing outside itself. Every task the
+      // framework builds does: `schedule.job(name)` closes over `name` and
+      // `runJob`, `schedule.action` over `runNamedAction`, `schedule.command`
+      // over `cmd`. So every one of them died in the child on a ReferenceError,
+      // and only the exit code reached the log.
+      //
+      // The lock is the child's to take. Taking it here as well would hold it
+      // for the instant the spawn takes, then let a second child start while
+      // the first was still working.
+      const buddy = join(process.cwd(), 'buddy')
+      // A command task writes its output to the file itself; anything else
+      // has its process's output captured there.
+      const outputPath = this.handlesOwnOutput ? null : this.outputPath
       const outputAppend = this.outputAppend
       wrappedTask = () => {
-        // Capture stdout + stderr to a log file when one's configured
-        // (stacksjs/stacks#1877 S-2 + S-3). Previously `stdio: 'ignore'`
-        // dropped every byte from the child — a crashing background
-        // task produced no signal at all. Now: redirect to the user's
-        // `.sendOutputTo(path)` target when set, otherwise pipe to
-        // the parent process's stderr so at least the launching
-        // operator sees the failure.
-        let stdoutFd: number | 'inherit' = 'inherit'
-        let stderrFd: number | 'inherit' = 'inherit'
-        let closeFd: number | null = null
+        let output: number | 'inherit' = 'inherit'
         if (outputPath) {
           try {
-            // Lazy-import to keep the sync prelude small; spawn is
-            // already from node:child_process at module-load time.
-            // eslint-disable-next-line ts/no-require-imports
-            const { openSync } = require('node:fs') as typeof import('node:fs')
-            const fd = openSync(outputPath, outputAppend ? 'a' : 'w')
-            stdoutFd = fd
-            stderrFd = fd
-            closeFd = fd
+            output = openSync(outputPath, outputAppend ? 'a' : 'w')
           }
           catch (err) {
-            log.warn(`[scheduler] couldn't open ${outputPath} for background task ${taskName}: ${err instanceof Error ? err.message : String(err)}; falling back to inherit`)
+            log.warn(`[scheduler] couldn't open ${outputPath} for background task ${taskName}: ${err instanceof Error ? err.message : String(err)}; its output goes to this process instead`)
           }
         }
-
-        /*
-         * A background task runs by having its SOURCE evaluated in a fresh
-         * process, so a function with no source cannot run at all. A native or
-         * bound function stringifies to `function () { [native code] }`, which
-         * is not valid JavaScript: the child died on a parse error whose text
-         * arrived on the parent's stderr with no task name attached, and
-         * `bun test` reported it as an unexplained non-zero exit with no
-         * summary (stacksjs/stacks#2413).
-         *
-         * Refused here instead, where the task's name is still in hand.
-         */
-        const source = innerTask.toString()
-        if (source.includes('[native code]')) {
-          log.error(
-            `[scheduler] Background task ${taskName} cannot run: its function has no serializable source `
-            + `(it is native or bound), and a background task is evaluated from source in a new process. `
-            + `Wrap the call in a plain function - \`.run(() => nativeFn())\` - or drop \`.runInBackground()\`.`,
-          )
-          if (closeFd !== null) {
-            try {
-              // eslint-disable-next-line ts/no-require-imports
-              const { closeSync } = require('node:fs') as typeof import('node:fs')
-              closeSync(closeFd)
-            }
-            catch {
-              // Already closed, or never opened: nothing to recover.
-            }
+        const closeOutput = () => {
+          if (typeof output !== 'number') return
+          try {
+            closeSync(output)
           }
-
-          return
+          catch {
+            // Already closed: nothing to recover.
+          }
+          output = 'inherit'
         }
 
-        const child = spawn(process.execPath, ['-e', `(${source})()`], {
+        const child = spawn(buddy, ['schedule:run-one', taskName, '--in-process'], {
+          cwd: process.cwd(),
           detached: true,
-          stdio: ['ignore', stdoutFd, stderrFd],
+          stdio: ['ignore', output, output],
         })
+        // The child holds its own copy of the descriptor.
+        closeOutput()
         child.on('error', (error) => {
-          log.error(`Background task ${taskName} failed to spawn: ${error.message}`)
-          if (closeFd !== null) {
-            try {
-              // eslint-disable-next-line ts/no-require-imports
-              const { closeSync } = require('node:fs') as typeof import('node:fs')
-              closeSync(closeFd)
-            }
-            catch {
-              // Already closed — fine.
-            }
-          }
+          log.error(`[scheduler] background task ${taskName} failed to start (${buddy}): ${error.message}`)
         })
-        // Crash visibility (stacksjs/stacks#1877 S-2). Before this
-        // listener, a child that exited with a non-zero code was
-        // silently lost — `.unref()` releases the child to the OS
-        // and the scheduler moves on. Now: log the exit code so
-        // operators see the failure in logs and can match it to
-        // the task name.
+        // Crash visibility (stacksjs/stacks#1877 S-2): `.unref()` hands the
+        // child to the OS, so its exit is the only signal there is.
         child.on('exit', (code, signal) => {
-          if (code !== 0 && code !== null) {
+          if (code !== 0 && code !== null)
             log.error(`[scheduler] background task ${taskName} (pid: ${child.pid}) exited with code ${code}`)
-          }
-          else if (signal) {
+          else if (signal)
             log.warn(`[scheduler] background task ${taskName} (pid: ${child.pid}) terminated by signal ${signal}`)
-          }
-          if (closeFd !== null) {
-            try {
-              // eslint-disable-next-line ts/no-require-imports
-              const { closeSync } = require('node:fs') as typeof import('node:fs')
-              closeSync(closeFd)
-            }
-            catch {
-              // Already closed — fine.
-            }
-          }
         })
         child.unref()
         log.info(`Task ${taskName} spawned in background (pid: ${child.pid})`)
@@ -863,8 +829,16 @@ export class Schedule implements UntimedSchedule {
       }
     }
 
+    // A background task is run by name in a child process, which has nothing
+    // else to find it by.
+    if (this.shouldRunInBackground && !this.options.name)
+      throw new Error('runInBackground() needs a named task: add .withName(...) so the background process can find it')
+
     const context = this.options.context
-    const task = this.wrapTask(context === undefined ? this.task : () => this.task(context))
+    const base = context === undefined ? this.task : () => this.task(context)
+    const task = this.wrapTask(base)
+    // What the background process runs: the same task, in that process.
+    const taskHere = this.shouldRunInBackground ? this.wrapTask(base, true) : task
     let stopped = false
     let running = false
     let lastStartedAt: number | null = null
@@ -887,7 +861,7 @@ export class Schedule implements UntimedSchedule {
     }
 
     const taskName = this.options.name || 'unnamed-task'
-    const executeTask = async (): Promise<void> => {
+    const runTask = async (body: () => unknown): Promise<void> => {
       if (!Schedule.isEnabled(taskName)) {
         log.debug(`[scheduler] task ${taskName} is paused`)
         return
@@ -920,7 +894,7 @@ export class Schedule implements UntimedSchedule {
       running = true
       lastStartedAt = now
       try {
-        const result = task() as unknown
+        const result = body()
         // Handle promise-returning tasks: a rejection from an async task
         // would otherwise become an unhandled rejection (the synchronous
         // try/catch above can't see it). Now those route through the
@@ -950,6 +924,7 @@ export class Schedule implements UntimedSchedule {
         running = false
       }
     }
+    const executeTask = (): Promise<void> => runTask(task)
 
     const job: ScheduledJob = {
       stop,
@@ -1008,6 +983,7 @@ export class Schedule implements UntimedSchedule {
 
     if (this.options.name) {
       Schedule.jobs.set(this.options.name, job)
+      Schedule.inProcessRuns.set(this.options.name, () => runTask(taskHere))
     }
     if (dedupeKey) {
       Schedule.scheduledKeys.set(dedupeKey, job)
@@ -1106,6 +1082,7 @@ export class Schedule implements UntimedSchedule {
       }
     }
     instance = new Schedule(task)
+    instance.handlesOwnOutput = true
     return instance.withName(`command-${cmd}`) as UntimedSchedule
   }
 
@@ -1164,6 +1141,7 @@ export class Schedule implements UntimedSchedule {
     }
 
     Schedule.jobs.clear()
+    Schedule.inProcessRuns.clear()
     Schedule.scheduledKeys.clear()
     log.info('All jobs have been stopped')
   }

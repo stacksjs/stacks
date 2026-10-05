@@ -132,7 +132,7 @@ When `withoutOverlapping()` or `onOneServer()` is called:
 
 ### Background Execution
 
-When `runInBackground()` is called, the task is spawned as a detached child process via `node:child_process.spawn`. The child is `unref()`'d so it does not keep the parent alive.
+When `runInBackground()` is called, each run starts `buddy schedule:run-one <name> --in-process` as a detached child in the project directory. That process registers the app's schedule the way `schedule:run` does and runs the one task there, taking any `withoutOverlapping()` / `onOneServer()` lock itself. The child is `unref()`'d so it does not keep the parent alive, and a non-zero exit is logged under the task's name. The task needs a name (`schedule.job/action/command` have one; a callback needs `.withName()`), or registration fails.
 
 ## Helper Functions
 
@@ -351,7 +351,7 @@ export default {
 - The `Queue` class in `schedule.ts` is just an empty subclass of `Schedule` (`export class Queue extends Schedule {}`) -- it adds no functionality
 - `withoutOverlapping()` uses file-based locks in `storage/framework/locks/` -- this only prevents overlap within a single machine, not across a cluster
 - `onOneServer()` also uses file-based locks (same as `withoutOverlapping`), so it does not actually coordinate across multiple servers
-- `runInBackground()` spawns a detached child process with `spawn(process.execPath, ['-e', ...])` -- the task function is `.toString()`'d and eval'd, so closures over external variables will not work
+- `runInBackground()` runs the task by name in a `buddy schedule:run-one <name> --in-process` child, so the task must be registered under that name by the app's scheduler file, and an unnamed callback is refused
 - There are TWO scheduler systems: `@stacksjs/scheduler` (fluent API in `schedule.ts`) and the queue-level scheduler in `@stacksjs/queue` (`queue/src/scheduler.ts`). The former runs tasks in-process; the latter dispatches to the queue
 - `sendAt()` throws on invalid cron expressions (it delegates to `parse()` which throws)
 - `timeout()` returns `-1` (not `0` or `Infinity`) when there is no upcoming run
