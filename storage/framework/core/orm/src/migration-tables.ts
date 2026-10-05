@@ -130,9 +130,15 @@ function applyMigration(db: Database, sql: string): { ok: boolean, error?: strin
         db.exec(statement)
         applied++
       }
-      catch {
-        // Expected: the statement that depends on a model-owned table. The
-        // model derivation types that table anyway.
+      catch (statementError) {
+        // An ADD COLUMN for a column an earlier file already added leaves the
+        // table as this file wants it, which is how the migration runner
+        // treats it too. Counted as applied, a corpus that adds a column twice
+        // no longer reads as a file that failed.
+        if (/duplicate column name/i.test((statementError as Error).message))
+          applied++
+        // Otherwise expected: the statement that depends on a model-owned
+        // table. The model derivation types that table anyway.
       }
     }
 

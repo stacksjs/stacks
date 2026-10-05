@@ -103,6 +103,26 @@ describe('deriveMigrationTables', () => {
     }
   })
 
+  test('a column added a second time is not a failed file', () => {
+    // A generated file restating an ADD COLUMN an earlier hand-written one made
+    // leaves the table exactly as it asks. The runner applies it as a no-op,
+    // and `generate:db-types` reported it as a broken migration on every run.
+    const dir = corpus({
+      '001-create-clubs.sql': `CREATE TABLE clubs (id INTEGER PRIMARY KEY);`,
+      '002-add-join-policy.sql': `ALTER TABLE "clubs" ADD COLUMN "join_policy" TEXT NOT NULL DEFAULT 'open';`,
+      '003-alter-clubs-columns.sql': `-- qb:generated\nALTER TABLE "clubs" ADD COLUMN "join_policy" TEXT not null;`,
+    })
+
+    try {
+      const { tables, errors } = deriveMigrationTables(dir)
+      expect(errors).toEqual([])
+      expect(tables.find(t => t.table === 'clubs')?.columns.join_policy).toBe('string')
+    }
+    finally {
+      cleanup(dir)
+    }
+  })
+
   test('recovers the rest of a file when one statement fails', () => {
     // One bad statement must not cost the 553 valid ones behind it.
     const dir = corpus({
