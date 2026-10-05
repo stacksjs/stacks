@@ -7,36 +7,10 @@
  * so every runtime consumes these same helpers.
  */
 
-interface UniqueViolation { code?: string, errno?: number, message?: string }
-
-/**
- * True when the error is a unique-constraint violation, across SQLite,
- * MySQL, and Postgres:
- *
- * - SQLite: `SQLITE_CONSTRAINT_UNIQUE` / `SQLITE_CONSTRAINT`
- * - MySQL: `errno: 1062` (ER_DUP_ENTRY)
- * - Postgres: `code: '23505'` (unique_violation)
- * - Generic fallback: message text match — covers wrapped errors from drivers
- *   that lose the structured code.
- *
- * Lives here (cycle-free `@stacksjs/orm`) rather than in `@stacksjs/auth`
- * because every framework write path needs it: auto-CRUD routes, commerce/cms
- * write functions, and `@stacksjs/auth`'s `register()` (which re-exports this
- * via './rbac-store-bqb' for back-compat). `@stacksjs/database` is NOT a valid
- * home — its drivers statically import `@stacksjs/orm`, so orm routes importing
- * from database would create a package cycle.
- *
- * Exported for direct unit testing and for callers that map duplicates to
- * their own error (e.g. `register()`'s 409) instead of swallowing them.
- */
-export function isUniqueViolation(err: unknown): boolean {
-  const e = err as UniqueViolation
-  return e?.code === 'SQLITE_CONSTRAINT_UNIQUE'
-    || e?.code === 'SQLITE_CONSTRAINT'
-    || e?.code === '23505'
-    || e?.errno === 1062
-    || /unique|duplicate/i.test(e?.message ?? '')
-}
+// Lives in @stacksjs/error-handling, where the queue and other packages that
+// cannot depend on the ORM can use it too. Re-exported for existing callers.
+export { isUniqueViolation } from '@stacksjs/error-handling'
+import { isUniqueViolation } from '@stacksjs/error-handling'
 
 /**
  * Classify a write-path error into an HTTP status + JSON body for the

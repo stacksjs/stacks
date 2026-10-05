@@ -19,6 +19,7 @@
  */
 
 import { db } from '@stacksjs/database/runtime'
+import { isUniqueViolation } from '@stacksjs/error-handling'
 import { isMissingTableError } from './missing-table'
 
 export interface CircuitBreakerConfig {
@@ -85,8 +86,7 @@ async function getOrCreateRow(queue: string, nowStr: string): Promise<CircuitRow
       return null
     }
     // UNIQUE race (two workers seeded the same row) — re-fetch
-    const msg = (err as { message?: string } | null)?.message ?? ''
-    if (msg.includes('UNIQUE constraint') || msg.includes('Duplicate entry')) {
+    if (isUniqueViolation(err)) {
       return await db
         .selectFrom('queue_circuit_state')
         .where('queue_name', '=', queue)

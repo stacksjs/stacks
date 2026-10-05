@@ -25,7 +25,7 @@ describe('dispatch idempotency: claim-then-compensate (#1984)', () => {
     const fn = idem.slice(start, idem.indexOf('export async function releaseDispatchKey'))
     expect(fn).toContain('.insertInto(\'job_idempotency\')')
     expect(fn).toContain(`return 'claimed'`)
-    expect(fn).toMatch(/UNIQUE constraint[\s\S]*?return 'duplicate'/)
+    expect(fn).toMatch(/isUniqueViolation\(err\)[\s\S]*?return 'duplicate'/)
     expect(fn).toMatch(/isMissingTableError[\s\S]*?return 'unenforced'/)
   })
 

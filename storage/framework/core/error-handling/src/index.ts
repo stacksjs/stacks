@@ -4,6 +4,7 @@ export * from './http'
 export * from './model'
 export * from './reporters'
 export * from './utils'
+export * from './unique-violation'
 
 // Result type exports
 export type {

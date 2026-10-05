@@ -35,6 +35,7 @@
  * the one that should land.
  */
 
+import { isUniqueViolation } from '@stacksjs/error-handling'
 import { isMissingTableError } from './missing-table'
 
 let databaseModule: Promise<typeof import('@stacksjs/database/runtime')> | undefined
@@ -113,8 +114,10 @@ export async function recordDispatchedKey(
       warnOnceAboutMissingTable()
       return
     }
-    const msg = (err as { message?: string } | null)?.message ?? ''
-    if (msg.includes('UNIQUE constraint') || msg.includes('Duplicate entry')) return
+    // Every dialect's spelling of a duplicate, not just SQLite's and MySQL's:
+    // Postgres says "duplicate key value violates unique constraint", and the
+    // case-sensitive match this was threw on it instead of skipping.
+    if (isUniqueViolation(err)) return
     throw err
   }
 }
@@ -154,8 +157,7 @@ export async function claimDispatchKey(key: string, jobName: string, queue?: str
       warnOnceAboutMissingTable()
       return 'unenforced'
     }
-    const msg = (err as { message?: string } | null)?.message ?? ''
-    if (msg.includes('UNIQUE constraint') || msg.includes('Duplicate entry'))
+    if (isUniqueViolation(err))
       return 'duplicate'
     throw err
   }
