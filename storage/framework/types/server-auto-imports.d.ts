@@ -22,7 +22,7 @@ declare global {
   const mail: typeof import('@stacksjs/email')['mail']
   const template: typeof import('@stacksjs/email')['template']
   const schedule: typeof import('@stacksjs/scheduler')['schedule']
-  const Action: typeof import('@stacksjs/actions')['Action']
+  const Action: typeof import('@stacksjs/actions/runtime')['Action']
   const Auth: typeof import('@stacksjs/auth')['Auth']
   const register: typeof import('@stacksjs/auth')['register']
   const sessionCheck: typeof import('@stacksjs/auth')['sessionCheck']

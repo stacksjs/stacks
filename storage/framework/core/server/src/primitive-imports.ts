@@ -20,7 +20,7 @@ export const primitiveModules = [
   ['@stacksjs/email', ['mail', 'template']],
   ['@stacksjs/queue', ['Job']],
   ['@stacksjs/scheduler', ['schedule']],
-  ['@stacksjs/actions', ['Action']],
+  ['@stacksjs/actions/runtime', ['Action']],
   ['@stacksjs/auth', ['Auth', 'register', 'sessionCheck']],
   ['@stacksjs/events', ['dispatch', 'listen', 'emitter']],
   ['@stacksjs/feature-flags', ['Feature']],
