@@ -192,3 +192,68 @@ describe('FCM topic subscriptions', () => {
     await expect(fcm.subscribeToTopic([TOKEN], TOPIC)).rejects.toThrow(/service account/i)
   })
 })
+
+describe('FCM legacy send path', () => {
+  const realFetch = globalThis.fetch
+  let calls: string[] = []
+
+  function recordFetch(): void {
+    calls = []
+    globalThis.fetch = (async (input: any) => {
+      calls.push(String(input?.url ?? input))
+      return new Response('{}', { status: 200 })
+    }) as typeof fetch
+  }
+
+  afterEach(async () => {
+    globalThis.fetch = realFetch
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ projectId: undefined, serviceAccount: undefined })
+  })
+
+  /**
+   * https://fcm.googleapis.com/fcm/send was decommissioned on 2024-06-20 and
+   * now answers 404, so falling back to it could only ever produce a confusing
+   * failure. Probed directly: the legacy endpoint 404s where the v1 endpoint
+   * answers 401.
+   */
+  test('send() asks for a service account instead of falling back to a dead endpoint', async () => {
+    recordFetch()
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ projectId: undefined, serviceAccount: undefined })
+
+    const result = await fcm.send({ to: 'token', notification: { title: 'a', body: 'b' } })
+
+    expect(result.success).toBe(false)
+    expect(result.message).toMatch(/service account/i)
+    expect(result.message).not.toMatch(/server key/i)
+    expect(calls).toBeEmpty()
+  })
+
+  test('sendMulticast() does the same rather than batching to the legacy API', async () => {
+    recordFetch()
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ projectId: undefined, serviceAccount: undefined })
+
+    const results = await fcm.sendMulticast(['t1', 't2'], { notification: { title: 'a', body: 'b' } })
+
+    expect(results).toHaveLength(2)
+    expect(results.every(r => !r.success)).toBe(true)
+    expect(calls).toBeEmpty()
+  })
+
+  test('no longer exports a legacy sender', async () => {
+    const fcm = await import('../src/drivers/fcm')
+    expect('sendLegacy' in fcm).toBe(false)
+  })
+
+  test('the driver calls no decommissioned endpoint', async () => {
+    const source = await Bun.file(new URL('../src/drivers/fcm.ts', import.meta.url)).text()
+
+    // Quoted, so this pins call sites and still lets a comment name the dead
+    // endpoint and say when it died. Booleans rather than toContain, so a
+    // failure reports the match instead of printing the whole file.
+    expect(/['"`]https:\/\/fcm\.googleapis\.com\/fcm\/send/.test(source)).toBe(false)
+    expect(/['"`]https:\/\/iid\.googleapis\.com/.test(source)).toBe(false)
+  })
+})

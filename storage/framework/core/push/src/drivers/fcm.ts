@@ -1,12 +1,10 @@
 import type { PushResult } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 
-const FCM_URL = 'https://fcm.googleapis.com/fcm/send'
 const FCM_V1_URL = 'https://fcm.googleapis.com/v1/projects'
 
 export interface FCMMessage {
   to?: string
-  registrationIds?: string[]
   topic?: string
   condition?: string
   notification?: {
@@ -26,7 +24,6 @@ export interface FCMMessage {
 }
 
 export interface FCMConfig {
-  serverKey?: string
   projectId?: string
   serviceAccount?: {
     clientEmail: string
@@ -34,20 +31,10 @@ export interface FCMConfig {
   }
 }
 
-export interface FCMResponse {
-  multicastId?: number
-  success: number
-  failure: number
-  results?: Array<{
-    messageId?: string
-    error?: string
-  }>
-}
-
 let config: FCMConfig = {}
 
 /**
- * Configure FCM with server key or service account
+ * Configure FCM with a service account
  */
 export function configure(options: FCMConfig): void {
   config = { ...config, ...options }
@@ -151,81 +138,19 @@ async function getAccessToken(): Promise<string> {
 }
 
 /**
- * Send push notification via FCM Legacy API (using server key)
- */
-export async function sendLegacy(message: FCMMessage): Promise<PushResult> {
-  if (!config.serverKey) {
-    return {
-      success: false,
-      provider: 'fcm',
-      message: 'FCM server key not configured',
-    }
-  }
-
-  try {
-    const response = await fetch(FCM_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `key=${config.serverKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: message.to,
-        registration_ids: message.registrationIds,
-        topic: message.topic ? `/topics/${message.topic}` : undefined,
-        condition: message.condition,
-        notification: message.notification,
-        data: message.data,
-        priority: message.priority ?? 'high',
-        time_to_live: message.ttl,
-        collapse_key: message.collapseKey,
-      }),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      log.error(`FCM push failed: ${errorText}`)
-      return {
-        success: false,
-        provider: 'fcm',
-        message: `HTTP ${response.status}: ${errorText}`,
-      }
-    }
-
-    const result = await response.json() as FCMResponse
-
-    if (result.failure > 0) {
-      log.warn(`FCM: ${result.failure} notifications failed`)
-    }
-
-    log.info(`FCM push sent: ${result.success} successful, ${result.failure} failed`)
-
-    return {
-      success: result.failure === 0,
-      provider: 'fcm',
-      message: `Sent ${result.success} notifications`,
-      messageId: result.results?.[0]?.messageId,
-      data: result,
-    }
-  }
-  catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error))
-    log.error(`FCM push error: ${err.message}`)
-    return {
-      success: false,
-      provider: 'fcm',
-      message: err.message,
-    }
-  }
-}
-
-/**
  * Send push notification via FCM v1 API (using service account)
  */
 export async function send(message: FCMMessage): Promise<PushResult> {
-  // Fall back to legacy API if no service account configured
+  // There is deliberately no legacy fallback. The legacy HTTP protocol was
+  // decommissioned on 2024-06-20 and its endpoint now answers 404, so falling
+  // back to it could only turn a missing credential into a confusing HTTP
+  // error further away from the cause.
   if (!config.serviceAccount || !config.projectId) {
-    return sendLegacy(message)
+    return {
+      success: false,
+      provider: 'fcm',
+      message: 'FCM service account and projectId not configured',
+    }
   }
 
   try {
@@ -306,15 +231,10 @@ export async function send(message: FCMMessage): Promise<PushResult> {
  */
 export async function sendMulticast(
   tokens: string[],
-  message: Omit<FCMMessage, 'to' | 'registrationIds'>,
+  message: Omit<FCMMessage, 'to'>,
 ): Promise<PushResult[]> {
-  // FCM v1 doesn't support multicast, send individually
-  if (config.serviceAccount && config.projectId) {
-    return Promise.all(tokens.map(token => send({ ...message, to: token })))
-  }
-
-  // Legacy API supports multicast
-  return [await sendLegacy({ ...message, registrationIds: tokens })]
+  // The v1 API has no multicast, and the legacy API that did is decommissioned.
+  return Promise.all(tokens.map(token => send({ ...message, to: token })))
 }
 
 /**
@@ -322,7 +242,7 @@ export async function sendMulticast(
  */
 export async function sendToTopic(
   topic: string,
-  message: Omit<FCMMessage, 'to' | 'registrationIds' | 'topic'>,
+  message: Omit<FCMMessage, 'to' | 'topic'>,
 ): Promise<PushResult> {
   return send({ ...message, topic })
 }
@@ -398,7 +318,6 @@ export async function unsubscribeFromTopic(tokens: string[], topic: string): Pro
 export { send as Send }
 export default {
   send,
-  sendLegacy,
   sendMulticast,
   sendToTopic,
   subscribeToTopic,
