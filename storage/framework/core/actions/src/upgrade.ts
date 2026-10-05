@@ -48,8 +48,11 @@ export async function downloadFrameworkUpdate(options: UpgradeOptions): Promise<
   const tempFolderName = 'updates'
   const tempUpdatePath = projectPath(tempFolderName)
 
-  if (storage.doesFolderExist(tempUpdatePath))
-    await storage.deleteFolder(tempUpdatePath)
+  if (storage.doesFolderExist(tempUpdatePath)) {
+    const cleared = await storage.deleteFolder(tempUpdatePath)
+    if (cleared.isErr)
+      throw new Error(`Could not clear ${tempUpdatePath} before downloading the update: ${cleared.error.message}`)
+  }
 
   log.info('Downloading framework updates...')
   await runCommand(`giget stacks ${tempFolderName}`, options)

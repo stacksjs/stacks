@@ -344,7 +344,14 @@ export async function uninstallStack(options: StackUninstallOptions): Promise<bo
       }
     }
 
-    await deleteFile(filePath)
+    // A file that could not be deleted stays tracked, like a modified one,
+    // rather than being counted as removed.
+    const removed = await deleteFile(filePath)
+    if (removed.isErr) {
+      log.warn(`Could not remove ${relPath}: ${removed.error.message}`)
+      remainingFiles.push(relPath)
+      continue
+    }
     removedCount++
 
     if (verbose)
@@ -360,7 +367,7 @@ export async function uninstallStack(options: StackUninstallOptions): Promise<bo
     )
     lock.stacks[entryKey] = entry
     await writeStackLock(projectRoot, lock)
-    log.warn(`Stack "${entry.name}" is still tracked because ${remainingFiles.length} modified file(s) remain`)
+    log.warn(`Stack "${entry.name}" is still tracked because ${remainingFiles.length} modified or undeletable file(s) remain`)
     return false
   }
 

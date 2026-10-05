@@ -7,7 +7,7 @@ import { fs } from './fs'
 import { glob } from './glob'
 
 export function deleteFolder(path: string): Promise<Result<string, Error>> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       if (isFolder(path)) {
         fs.rmSync(path, { recursive: true, force: true })
@@ -17,13 +17,13 @@ export function deleteFolder(path: string): Promise<Result<string, Error>> {
       return resolve(ok(`Path ${path} was not a directory`))
     }
     catch (error) {
-      return reject(err(error))
+      return resolve(err(error instanceof Error ? error : new Error(String(error))))
     }
   })
 }
 
 export async function isDirectoryEmpty(path: string): Promise<Result<boolean, Error>> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       if (fs.statSync(path).isDirectory()) {
         if (fs.readdirSync(path).length === 0)
@@ -34,13 +34,13 @@ export async function isDirectoryEmpty(path: string): Promise<Result<boolean, Er
       return resolve(ok(false))
     }
     catch (error) {
-      return reject(err(error))
+      return resolve(err(error instanceof Error ? error : new Error(String(error))))
     }
   })
 }
 
 export async function deleteEmptyFolder(path: string): Promise<Result<string, Error>> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       if (fs.statSync(path).isDirectory()) {
         if (fs.readdirSync(path).length === 0) {
@@ -54,7 +54,7 @@ export async function deleteEmptyFolder(path: string): Promise<Result<string, Er
       return resolve(ok(`Path ${path} was not a directory`))
     }
     catch (error) {
-      return reject(err(error))
+      return resolve(err(error instanceof Error ? error : new Error(String(error))))
     }
   })
 }
@@ -82,7 +82,7 @@ export async function deleteEmptyFolders(dir: string): Promise<Result<string, Er
 }
 
 export function deleteFile(path: string): Promise<Result<string, Error>> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       if (fs.statSync(path).isFile()) {
         fs.rmSync(path, { recursive: true, force: true })
@@ -92,7 +92,7 @@ export function deleteFile(path: string): Promise<Result<string, Error>> {
       return resolve(ok(`Path ${path} was not a file`))
     }
     catch (error) {
-      return reject(err(error))
+      return resolve(err(error instanceof Error ? error : new Error(String(error))))
     }
   })
 }

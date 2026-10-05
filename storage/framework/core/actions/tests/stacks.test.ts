@@ -1,5 +1,5 @@
 import { afterAll, afterEach, describe, expect, it } from 'bun:test'
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 const { registry } = await import('@stacksjs/registry')
@@ -402,6 +402,30 @@ describe('Stack Extensions', () => {
 
       const lock = JSON.parse(readFileSync(p.stacksLockPath(), 'utf-8'))
       expect(lock.stacks['__test-modified-stack'].files).toEqual(['config/__test-modified.ts'])
+    })
+
+    it('keeps a file it could not delete tracked, rather than counting it removed', async () => {
+      // The delete helper used to reject on failure, which aborted the whole
+      // uninstall; now that it resolves to an Err, the result has to be read.
+      createTestStack('__test-locked-stack', 'testlocked', {
+        'config/__test-locked/settings.ts': 'export default {}',
+      })
+
+      await installStack({ name: '__test-locked-stack' })
+      trackProjectFile('config/__test-locked')
+      const lockedDir = p.projectPath('config/__test-locked')
+      chmodSync(lockedDir, 0o555)
+      try {
+        const result = await uninstallStack({ name: 'testlocked', force: true })
+        expect(result).toBe(false)
+        expect(existsSync(p.projectPath('config/__test-locked/settings.ts'))).toBe(true)
+
+        const lock = JSON.parse(readFileSync(p.stacksLockPath(), 'utf-8'))
+        expect(lock.stacks['__test-locked-stack'].files).toEqual(['config/__test-locked/settings.ts'])
+      }
+      finally {
+        chmodSync(lockedDir, 0o755)
+      }
     })
 
     it('should remove user-modified files with force', async () => {

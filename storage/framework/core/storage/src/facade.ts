@@ -17,7 +17,7 @@
  * ```
  */
 
-import { resolve } from 'node:path'
+import { posix, resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import type { GetStreamOptions, PresignedUploadPolicy, PresignedUploadPolicyOptions, PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, PutStreamOptions, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
@@ -107,6 +107,11 @@ function buildConfig(): FilesystemConfig {
 // =============================================================================
 // Storage Manager
 // =============================================================================
+
+/** Whether two storage-relative paths name the same object: `a/./b` and `a//b` are `a/b`. */
+function sameStoragePath(a: string, b: string): boolean {
+  return posix.normalize(a.replace(/\\/g, '/')) === posix.normalize(b.replace(/\\/g, '/'))
+}
 
 class StorageManager {
   private _config: FilesystemConfig | null = null
@@ -368,10 +373,12 @@ class StorageManager {
 
     // Same-disk shortcut — use the adapter's native copy so the disk
     // can pick the fastest path (S3 CopyObject, local fs.copyFile,
-    // etc.) without a read/write round-trip.
+    // etc.) without a read/write round-trip. A copy onto itself is
+    // already done.
     if (src.disk === dst.disk) {
       const adapter = this.disk(src.disk)
-      await adapter.copyFile(src.path, dst.path)
+      if (!sameStoragePath(src.path, dst.path))
+        await adapter.copyFile(src.path, dst.path)
       return adapter.stat(dst.path).then(entry => ({
         path: dst.path,
         size: entry.size,
@@ -403,6 +410,20 @@ class StorageManager {
    */
   async moveAcross(source: string, dest: string): Promise<PutResult> {
     const src = parseDiskPath(source)
+    const dst = parseDiskPath(dest)
+
+    // On one disk, a move is the adapter's own move: a rename where the disk
+    // has one, rather than a copy and a delete. And a move onto itself is
+    // nothing at all. It used to copy the file onto itself and then delete
+    // the source - which was the destination - so the file was gone.
+    if (src.disk === dst.disk) {
+      const adapter = this.disk(src.disk)
+      if (!sameStoragePath(src.path, dst.path))
+        await adapter.moveFile(src.path, dst.path)
+      const entry = await adapter.stat(dst.path)
+      return { path: dst.path, size: entry.size, contentType: entry.mimeType, lastModified: entry.lastModified }
+    }
+
     const result = await this.copyAcross(source, dest)
     await this.disk(src.disk).deleteFile(src.path)
     return result
