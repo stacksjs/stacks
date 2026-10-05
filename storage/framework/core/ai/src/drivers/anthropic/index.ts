@@ -9,6 +9,7 @@ import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptio
 import { fetchWithRetry } from '../../utils/retry'
 import { recordUsage } from '../../utils/usage'
 import { normalizeMessagesForProvider } from '../../utils/vision'
+import { DEFAULT_ANTHROPIC_MODEL } from '../../models'
 
 export interface AnthropicDriverConfig extends AIDriverConfig {
   apiKey: string
@@ -17,7 +18,7 @@ export interface AnthropicDriverConfig extends AIDriverConfig {
   anthropicVersion?: string
 }
 
-const DEFAULT_MODEL = 'claude-sonnet-4-20250514'
+const DEFAULT_MODEL = DEFAULT_ANTHROPIC_MODEL
 const DEFAULT_MAX_TOKENS = 4096
 const DEFAULT_VERSION = '2023-06-01'
 const BASE_URL = 'https://api.anthropic.com/v1'

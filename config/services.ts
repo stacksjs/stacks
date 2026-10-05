@@ -184,7 +184,7 @@ export default {
 
   anthropic: {
     apiKey: String(env.ANTHROPIC_API_KEY || ''),
-    model: String(env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'),
+    model: String(env.ANTHROPIC_MODEL || 'claude-sonnet-5-5'),
     maxTokens: Number(env.ANTHROPIC_MAX_TOKENS || 4096),
   },
 

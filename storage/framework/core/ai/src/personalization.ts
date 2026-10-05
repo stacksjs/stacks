@@ -6,6 +6,7 @@
  */
 
 import type { AIResult } from './types'
+import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
 // ============================================================================
 // Types
@@ -375,7 +376,7 @@ async function callProvider(
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: model || 'claude-sonnet-4-20250514',
+        model: model || DEFAULT_ANTHROPIC_MODEL,
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: userMessage }],

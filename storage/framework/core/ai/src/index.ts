@@ -34,6 +34,8 @@ export * from './personalization'
 // Model Context Protocol (MCP) client
 export * from './mcp'
 
+export * from './models'
+
 // AWS Bedrock utilities
 export * from './utils/client-bedrock'
 export * from './utils/client-bedrock-runtime'

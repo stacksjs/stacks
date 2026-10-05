@@ -22,6 +22,7 @@ import { dirname, join } from 'node:path'
 import { claudeAgent } from './agents'
 import { createAnthropicDriver, createClaudeAgentSDKDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
 import { buildProjectContext } from './context'
+import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
 // =============================================================================
 // Configuration
@@ -531,7 +532,7 @@ Be concise but thorough. If the user asks about coding or their project specific
             'anthropic-version': '2023-06-01',
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: DEFAULT_ANTHROPIC_MODEL,
             max_tokens: 4096,
             system: systemPrompt,
             stream: true,

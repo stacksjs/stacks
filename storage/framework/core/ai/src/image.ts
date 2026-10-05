@@ -6,6 +6,7 @@
  */
 
 import type { AIMessage, AIResult } from './types'
+import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
 // ============================================================================
 // Types
@@ -316,7 +317,7 @@ async function analyzeImageAnthropic(
   }
 
   const { data, mediaType } = await resolveImageToBase64(imageInput)
-  const model = options.model || 'claude-sonnet-4-20250514'
+  const model = options.model || DEFAULT_ANTHROPIC_MODEL
   const maxTokens = options.maxTokens || 4096
 
   const messages: AIMessage[] = [{
@@ -490,7 +491,7 @@ export async function analyzeImages(
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY required for multi-image analysis.')
 
-    const model = options.model || 'claude-sonnet-4-20250514'
+    const model = options.model || DEFAULT_ANTHROPIC_MODEL
     const contentBlocks: any[] = []
 
     for (const img of images) {

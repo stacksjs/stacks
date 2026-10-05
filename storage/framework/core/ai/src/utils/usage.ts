@@ -18,7 +18,7 @@
 export interface UsageRecord {
   /** Provider name (e.g. `'openai'`, `'anthropic'`). */
   provider: string
-  /** Model id from the response (e.g. `'gpt-4o'`, `'claude-sonnet-4'`). */
+  /** Model id as the response reports it, e.g. `'gpt-4o'`. */
   model: string
   /** Prompt-side token count. */
   promptTokens: number

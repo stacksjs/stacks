@@ -6,6 +6,7 @@
  */
 
 import type { AIResult } from './types'
+import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
 // ============================================================================
 // Types
@@ -348,7 +349,7 @@ async function ragWithAnthropic(
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY required for RAG with Anthropic.')
 
-  const model = options.model || 'claude-sonnet-4-20250514'
+  const model = options.model || DEFAULT_ANTHROPIC_MODEL
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
