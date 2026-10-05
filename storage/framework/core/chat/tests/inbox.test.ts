@@ -83,7 +83,8 @@ describe('iMessage inbox driver', () => {
 
     const outcome = await driver.send(`direct:${ALICE}`, { text: 'hello', files: [{ path: '/tmp/photo.jpg' }] })
     expect(outcome.sentAt).toBeGreaterThan(0)
-    expect(calls).toEqual([[`SMS;-;${ALICE}`, 'hello', '/tmp/photo.jpg']])
+    // The chat that last had a message, and the person and service to fall back on.
+    expect(calls).toEqual([[`SMS;-;${ALICE}`, ALICE, 'SMS', 'hello', '/tmp/photo.jpg']])
     expect(driver.capabilities()).toMatchObject({ send: true, attachments: true, reactions: false })
   })
 

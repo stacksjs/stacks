@@ -46,18 +46,31 @@ export interface IMessageConfig {
 }
 
 /**
- * Sends to a chat by the id Messages gives it, which is the chat's guid in
- * chat.db. Text and file paths arrive as arguments, never spliced into the
- * script, so nothing in a message can change what runs.
+ * Sends to a chat by the id Messages gives it (its guid in chat.db). Messages'
+ * scripting only knows its most recent couple of hundred chats, so for an
+ * older one-to-one conversation it falls back to the person's handle on the
+ * iMessage or SMS account. Text and file paths arrive as arguments, never
+ * spliced into the script, so nothing in a message can change what runs.
  */
 const SEND_SCRIPT = `on run argv
   set chatId to item 1 of argv
-  set theText to item 2 of argv
+  set theHandle to item 2 of argv
+  set serviceName to item 3 of argv
+  set theText to item 4 of argv
   tell application "Messages"
-    set targetChat to chat id chatId
-    if theText is not "" then send theText to targetChat
-    repeat with i from 3 to (count of argv)
-      send (POSIX file (item i of argv)) to targetChat
+    try
+      set target to chat id chatId
+    on error
+      if theHandle is "" then error "Messages has no chat " & chatId
+      if serviceName is "SMS" then
+        set target to participant theHandle of (1st account whose service type = SMS)
+      else
+        set target to participant theHandle of (1st account whose service type = iMessage)
+      end if
+    end try
+    if theText is not "" then send theText to target
+    repeat with i from 5 to (count of argv)
+      send (POSIX file (item i of argv)) to target
     end repeat
   end tell
 end run`
@@ -136,16 +149,21 @@ export class IMessageDriver implements InboxDriver {
     const files = message.files ?? []
     if (!text && files.length === 0)
       throw new Error('Nothing to send.')
-    const chatGuid = this.open((db) => {
+    const target = this.open((db) => {
       const conversation = this.find(db, conversationId)
       if (!conversation)
         return null
       const [latest] = db.messages(conversation.chatGuids, { newestFirst: true, limit: 1 })
-      return latest?.chatGuid ?? conversation.chatGuids[0] ?? null
+      return {
+        chatGuid: latest?.chatGuid ?? conversation.chatGuids[0] ?? '',
+        // The person, for a one-to-one chat Messages' scripting no longer lists.
+        handle: conversation.kind === 'direct' ? conversation.participants[0] ?? '' : '',
+        service: latest?.service === 'SMS' ? 'SMS' : 'iMessage',
+      }
     })
-    if (!chatGuid)
+    if (!target || (!target.chatGuid && !target.handle))
       throw new Error('Messages has no chat for this conversation.')
-    const result = await this.runScript(SEND_SCRIPT, [chatGuid, text, ...files.map(f => f.path)])
+    const result = await this.runScript(SEND_SCRIPT, [target.chatGuid, target.handle, target.service, text, ...files.map(f => f.path)])
     if (!result.ok)
       throw new Error(`Messages did not send it: ${result.output || 'no reason given'}`)
     return { id: null, sentAt: Date.now() }
