@@ -1,3 +1,4 @@
+import { registerNumericEnvKeys } from './numeric-keys'
 import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, Validator } from '@stacksjs/ts-validation'
 
 interface EnumObject {
@@ -432,6 +433,9 @@ export type InferEnv<TSchema> = {
  * {@link InferEnv} read each entry's validator.
  */
 export function defineEnv<const TSchema extends EnvConfig>(schema: TSchema): TSchema {
+  // The types already read `schema.number()` as a number; this makes the
+  // runtime `env` proxy agree (see numeric-keys.ts).
+  registerNumericEnvKeys(schema as Record<string, unknown>)
   return schema
 }
 

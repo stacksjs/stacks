@@ -2,6 +2,7 @@ import type { EnvKey, StacksEnv } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import fs from 'node:fs'
+import { isDeclaredNumericEnvKey, NUMERIC_ENV_SUFFIXES } from './numeric-keys'
 import { envEnum } from './types'
 
 type DecryptionRuntime = Pick<typeof import('./plugin'), 'activeEnvName' | 'decryptEnvValue'>
@@ -66,10 +67,16 @@ const handler: ProxyHandler<StacksEnv> = {
       value = decrypted
     }
 
-    // Only coerce to number for keys that are clearly numeric settings (PORT, etc.)
-    // Don't coerce IDs, codes, or values with leading zeros as they lose information
-    const NUMERIC_SUFFIXES = ['_PORT', '_TIMEOUT', '_TTL', '_SIZE', '_LIMIT', '_MAX', '_MIN', '_INTERVAL', '_RETRIES', '_CONCURRENCY', '_WORKERS', '_CONNECTIONS']
-    if (typeof value === 'string' && /^\d+$/.test(value) && !value.startsWith('0') && NUMERIC_SUFFIXES.some(s => key.endsWith(s)))
+    // A variable declared as a number - in the framework's types or with
+    // `schema.number()` in the app's config/env.ts - is one, zero and
+    // decimals included (see numeric-keys.ts).
+    if (typeof value === 'string' && isDeclaredNumericEnvKey(key) && /^-?\d+(?:\.\d+)?$/.test(value.trim()))
+      return Number(value)
+
+    // Otherwise only names that are clearly numeric settings. IDs and codes
+    // stay strings, and so does anything with a leading zero, which a number
+    // would lose - except a plain `0`, which is a setting, not a code.
+    if (typeof value === 'string' && /^\d+$/.test(value) && (value === '0' || !value.startsWith('0')) && NUMERIC_ENV_SUFFIXES.some(s => key.endsWith(s)))
       return Number(value)
 
     // If the string value looks like a boolean, coerce it. Use a case-

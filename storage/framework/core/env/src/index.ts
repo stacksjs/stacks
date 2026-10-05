@@ -1,4 +1,5 @@
 export * from './runtime'
+export * from './numeric-keys'
 export * from './deployment'
 export * from './integrations'
 export * from './types'
