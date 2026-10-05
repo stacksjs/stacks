@@ -2,7 +2,7 @@
   "publisher": "Stacks",
   "name": "vscode-stacks",
   "displayName": "Stacks",
-  "version": "0.75.62",
+  "version": "0.75.63",
   "description": "Stacks, built into VS Code: stx templates, pickier linting and formatting, encrypted env files, the dev server preview and every buddy command. No other extensions required.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",

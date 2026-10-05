@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.62...v0.75.63)
+
+## 🐛 Bug Fixes
+
+- **defaults**: stop shipping the VS Code extension's sources and tests to apps ([edf82e0](https://github.com/stacksjs/stacks/commit/edf82e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 ## v0.75.62
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.60...v0.75.61)
