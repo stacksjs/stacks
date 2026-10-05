@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer'
-import { createHmac } from 'node:crypto'
+import { createHmac, randomBytes } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, chmod, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
@@ -55,27 +55,52 @@ export class LocalStorageAdapter implements StorageAdapter {
     return resolved
   }
 
+  /**
+   * Write `fullPath` through a temporary file beside it, renamed into place
+   * once the write has finished.
+   *
+   * Writing in place truncated the existing file before the first byte of
+   * the new one arrived. A stream that failed or was aborted left the old
+   * contents gone and the new ones partial, and `putStream` then deleted the
+   * partial file to tidy up - so a failed re-upload of an avatar removed the
+   * avatar. A reader in the meantime saw a half-written file. Now the old file
+   * stays whole until the new one is complete, readers see one or the other,
+   * and a failure removes only the temporary file. The replaced file's mode
+   * carries over, so a private file stays private.
+   */
+  private async writeAtomically(fullPath: string, write: (temporary: string) => Promise<void>): Promise<void> {
+    await mkdir(dirname(fullPath), { recursive: true })
+    const temporary = join(dirname(fullPath), `.${basename(fullPath)}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`)
+    try {
+      await write(temporary)
+      const previous = await stat(fullPath).catch(() => null)
+      if (previous)
+        await chmod(temporary, previous.mode & 0o7777)
+      await rename(temporary, fullPath)
+    }
+    catch (error) {
+      await rm(temporary, { force: true }).catch(() => {})
+      throw error
+    }
+  }
+
   async write(path: string, contents: FileContents): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
-    const dir = dirname(fullPath)
 
-    // Ensure directory exists
-    await mkdir(dir, { recursive: true })
-
-    if (typeof contents === 'string') {
-      await writeFile(fullPath, contents, 'utf8')
-    }
-    else if (contents instanceof Buffer) {
-      await writeFile(fullPath, contents)
-    }
-    else if (contents instanceof Uint8Array) {
-      await writeFile(fullPath, contents)
-    }
-    else {
-      // ReadableStream
-      const writeStream = createWriteStream(fullPath)
-      await pipeline(contents, writeStream)
-    }
+    await this.writeAtomically(fullPath, async (temporary) => {
+      if (typeof contents === 'string') {
+        await writeFile(temporary, contents, 'utf8')
+      }
+      else if (contents instanceof Uint8Array) {
+        // A Buffer is a Uint8Array.
+        await writeFile(temporary, contents)
+      }
+      else {
+        // ReadableStream
+        const nodeReadable = Readable.fromWeb(contents as unknown as Parameters<typeof Readable.fromWeb>[0])
+        await pipeline(nodeReadable, createWriteStream(temporary))
+      }
+    })
 
     // Read back size + mtime in one syscall — cheaper than the
     // caller doing a separate `Storage.stat()` round-trip and lets
@@ -120,26 +145,17 @@ export class LocalStorageAdapter implements StorageAdapter {
    * correctly — the file write paces with the source.
    *
    * Cancels via `options.signal` propagate to both the read and
-   * write sides; the partial file gets removed on abort to avoid
-   * leaving truncated artifacts.
+   * write sides. The stream lands in a temporary file renamed into
+   * place on success (see `writeAtomically`), so an aborted upload
+   * leaves whatever was at `path` before untouched.
    */
   async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
-    const dir = dirname(fullPath)
-    await mkdir(dir, { recursive: true })
 
-    const nodeReadable = Readable.fromWeb(stream as unknown as Parameters<typeof Readable.fromWeb>[0])
-    const writeStream = createWriteStream(fullPath)
-    try {
-      await pipeline(nodeReadable, writeStream, { signal: options?.signal })
-    }
-    catch (err) {
-      // Clean up the partial file so subsequent reads don't see
-      // truncated content from a cancelled upload.
-      try { await unlink(fullPath) }
-      catch { /* best-effort cleanup */ }
-      throw err
-    }
+    await this.writeAtomically(fullPath, async (temporary) => {
+      const nodeReadable = Readable.fromWeb(stream as unknown as Parameters<typeof Readable.fromWeb>[0])
+      await pipeline(nodeReadable, createWriteStream(temporary), { signal: options?.signal })
+    })
 
     const st = await stat(fullPath)
     return {
