@@ -35,7 +35,13 @@ describe('very-happy-dom component testing', () => {
     if (result.exitCode !== 0)
       throw new Error(output)
 
-    expect(output).toContain('(pass) Checkout > submits the form with the entered details')
+    // The counts, not the `(pass) Checkout > ...` line: bun prints per-test
+    // lines only when it believes it is in CI, so asserting on one passed in
+    // CI and failed on every developer machine. One test, run and passed, is
+    // the same claim without depending on the reporter.
+    expect(output).toMatch(/\b1 pass\b/)
+    expect(output).toMatch(/\b0 fail\b/)
+    expect(output).toContain('Ran 1 test across 1 file')
     expect(result.exitCode).toBe(0)
   })
 })
