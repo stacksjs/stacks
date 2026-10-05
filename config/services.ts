@@ -169,7 +169,6 @@ export default {
   },
 
   fcm: {
-    serverKey: String(env.FCM_SERVER_KEY || ''),
     projectId: String(env.FCM_PROJECT_ID || ''),
     clientEmail: String(env.FCM_CLIENT_EMAIL || ''),
     privateKey: String(env.FCM_PRIVATE_KEY || ''),

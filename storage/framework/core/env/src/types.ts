@@ -296,7 +296,6 @@ export interface FrameworkEnv {
   FCM_CLIENT_EMAIL: string | undefined
   FCM_PRIVATE_KEY: string | undefined
   FCM_PROJECT_ID: string | undefined
-  FCM_SERVER_KEY: string | undefined
   GITHUB_CLIENT_ID: string | undefined
   GITHUB_CLIENT_SECRET: string | undefined
   GITHUB_REDIRECT_URL: string | undefined

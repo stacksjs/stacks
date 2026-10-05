@@ -157,7 +157,6 @@ export interface ServicesOptions {
   }
 
   fcm?: {
-    serverKey?: string
     projectId?: string
     clientEmail?: string
     privateKey?: string
