@@ -1,9 +1,9 @@
-import { log, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorMessage } from '@stacksjs/utils'
 import { CLI } from '@stacksjs/clapp'
 import { randomBytes, timingSafeEqual } from 'crypto'
-import { readFileSync, existsSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { execSync, spawnSync } from 'node:child_process'
 import { addMailUser, mailUserClient, resolveMailUserBackend } from '../mail-users'
 
@@ -2123,7 +2123,9 @@ async function runLocalMailCatcher(options: { smtpPort: number, uiPort: number, 
   const dir = `${process.cwd()}/${LOCAL_MAIL_DIR}`
   const configPath = `${dir}/catcher.toml`
 
-  await runCommand(`mkdir -p ${shellQuote(dir)}`, { silent: true })
+  // Not `mkdir -p '<dir>'` through runCommand: it runs no shell, so the quotes
+  // were part of the name and this created a directory called `'/...`.
+  mkdirSync(dir, { recursive: true })
   await Bun.write(configPath, buildLocalMailConfig({ smtpPort: options.smtpPort }))
 
   console.log('')

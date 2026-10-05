@@ -1,7 +1,6 @@
 import type { GeneratorOptions } from '@stacksjs/types'
 import * as fs from 'node:fs'
 import process from 'node:process'
-import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { frameworkPath, projectPath } from '@stacksjs/path'
@@ -491,10 +490,20 @@ export async function generateSeeder(): Promise<void> {
 export async function generateCoreSymlink(): Promise<void> {
   const link = projectPath('.framework')
 
-  if (fs.existsSync(link))
-    await runCommand(`rm -f ${link}`)
+  // Through fs, not `rm -f`/`ln -s` strings: runCommand splits those on
+  // whitespace, so a project path with a space in it linked the wrong path.
+  // lstat rather than existsSync, which follows the link and misses a
+  // dangling one; anything that is not a link is left alone.
+  try {
+    if (!fs.lstatSync(link).isSymbolicLink())
+      return
+    fs.unlinkSync(link)
+  }
+  catch {
+    // Nothing there yet.
+  }
 
-  await runCommand(`ln -s ${frameworkPath()} ${link}`)
+  fs.symlinkSync(frameworkPath(), link)
 }
 
 export async function generateOpenApiSpec(): Promise<void> {

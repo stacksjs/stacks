@@ -1,6 +1,6 @@
 import { $ } from 'bun'
 import process from 'node:process'
-import { italic, runCommand } from '@stacksjs/cli'
+import { italic } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { writeFile } from '@stacksjs/storage'
@@ -43,17 +43,18 @@ if (match) {
     // need to copy plugin to ~/.oh-my-zsh/custom/plugins
     log.info(`Copying buddy zsh plugin ${pluginPath} to ${customPath}...`)
 
-    // create customPath if it doesn't exist
-    await runCommand(`mkdir -p ${customPath}`)
-    await runCommand(`cp -rf ${pluginPath} ${customPath}`)
-    // await runCommand(`source ${customPath}/src/buddy.plugin.zsh`)
+    // Through Bun's shell, which escapes each interpolated path. runCommand
+    // splits a string on whitespace, so a home directory with a space in it
+    // turned these into operations on the wrong paths.
+    await $`mkdir -p ${customPath}`
+    await $`cp -rf ${pluginPath} ${customPath}`
 
     log.success('Copied buddy zsh plugin')
   }
   else {
     log.info('Buddy is already set up') // in other words, it is integrated in their shell
     log.info('Ensuring `buddy` is updated...')
-    await runCommand(`cp -rf ${pluginPath} ${customPath}`)
+    await $`cp -rf ${pluginPath} ${customPath}`
     log.success('Updated buddy zsh plugin to latest version')
   }
 }
