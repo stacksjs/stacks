@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { runNamedAction } from '@stacksjs/action-runner'
 import { log, runCommand } from '@stacksjs/cli'
 import { parse } from '@stacksjs/cron'
-import { runJob } from '@stacksjs/queue'
+import { job as queuedJob, runJob } from '@stacksjs/queue'
 import type { SchedulerLockHandle } from './scheduler-lock'
 import { acquireSchedulerLock } from './scheduler-lock'
 
@@ -94,6 +94,10 @@ export class Schedule implements UntimedSchedule {
   private outputPath: string | null = null
   /** When true, append to outputPath; otherwise overwrite per run. */
   private outputAppend = false
+  /** Set by `schedule.job(name)`: the job this schedule runs. */
+  private jobName: string | null = null
+  /** Set by `.onQueue(name)`: dispatch the job there instead of running it here. */
+  private dispatchQueue: string | null = null
   private options: {
     timezone?: string
     catch?: CatchCallbackFn
@@ -207,6 +211,24 @@ export class Schedule implements UntimedSchedule {
     return this as TimedSchedule
   }
 
+  /** Every day at "HH:MM" - `.daily().at(time)`. */
+  dailyAt(time: string): TimedSchedule {
+    this.cronPattern = '0 0 * * *'
+    return this.at(time)
+  }
+
+  /**
+   * Monday to Friday only. Keeps a time of day already set, and is midnight
+   * otherwise, so `.weekdays().at('09:00')` and `.at('09:00').weekdays()`
+   * agree.
+   */
+  weekdays(): TimedSchedule {
+    const fields = this.cronPattern.trim().split(/\s+/)
+    const [minute, hour] = fields.length === 5 ? fields : ['0', '0']
+    this.cronPattern = `${minute} ${hour} * * 1-5`
+    return this as TimedSchedule
+  }
+
   onDays(days: number[]): TimedSchedule {
     // Each day-of-week field in cron is 0-6 (Sun-Sat). A typo'd
     // `[32]` used to silently produce a pattern that never fires;
@@ -311,6 +333,20 @@ export class Schedule implements UntimedSchedule {
       throw new Error(`between(): stopAt (${stop.toISOString()}) must be after startAt (${start.toISOString()})`)
     this.options.startAt = start
     this.options.stopAt = stop
+    return this
+  }
+
+  /**
+   * Dispatch the scheduled job onto this queue for a worker to run, rather
+   * than running it in the scheduler process. Only `schedule.job(...)` has a
+   * job to dispatch.
+   */
+  onQueue(queue: string): this {
+    if (this.jobName === null)
+      throw new Error('onQueue() applies to schedule.job(...) only: an action, command or callback has no job to dispatch')
+    if (typeof queue !== 'string' || queue.trim() === '')
+      throw new Error(`onQueue() takes a queue name; got ${JSON.stringify(queue)}`)
+    this.dispatchQueue = queue
     return this
   }
 
@@ -984,16 +1020,27 @@ export class Schedule implements UntimedSchedule {
   // --- Static factory methods ---
 
   static job(name: SchedulableJobName): UntimedSchedule {
-    return new Schedule(async (context?: unknown) => {
-      log.info(`Running job: ${name}`)
+    // Read at run time, so an `.onQueue()` chained after this is seen.
+    let instance: Schedule | null = null
+    instance = new Schedule(async (context?: unknown) => {
+      const queue = instance?.dispatchQueue ?? null
       try {
+        if (queue !== null) {
+          log.info(`Dispatching job: ${name} to queue ${queue}`)
+          const pending = queuedJob(name).onQueue(queue)
+          await (context === undefined ? pending : pending.withContext(context)).dispatch()
+          return
+        }
+        log.info(`Running job: ${name}`)
         await runJob(name, context === undefined ? {} : { context })
       }
       catch (error) {
         log.error(`Job ${name} failed:`, error)
         throw error
       }
-    }).withName(name) as UntimedSchedule
+    })
+    instance.jobName = name
+    return instance.withName(name) as UntimedSchedule
   }
 
   static action(name: SchedulableActionName): UntimedSchedule {

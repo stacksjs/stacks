@@ -98,6 +98,8 @@ export interface BaseSchedule {
   withoutOverlapping: (expiresAfterMinutes?: number) => this
   onOneServer: () => this
   runInBackground: () => this
+  /** Dispatch a `schedule.job(...)` to this queue instead of running it in the scheduler. */
+  onQueue: (queue: string) => this
 }
 
 // Interface for schedule after timing is set
@@ -107,10 +109,16 @@ export interface TimedSchedule extends BaseSchedule {
    *
    * Declared here because `Schedule` has always implemented it and returns a
    * `TimedSchedule` from every timing method — leaving it off the interface
-   * made the one spelling the docs use (`.daily().at('05:30')`) a type error,
-   * with `dailyAt` suggested in its place, which does not exist at all.
+   * made the one spelling the docs use (`.daily().at('05:30')`) a type error.
    */
   at: (time: string) => TimedSchedule
+  /** Monday to Friday, keeping the time of day. */
+  weekdays: () => TimedSchedule
+  /**
+   * Fire the task once for each slot missed since `since`, keeping the most
+   * recent `max` (default 100). Resolves to the number of runs that succeeded.
+   */
+  runMissed: (opts: { since: Date | number, max?: number }) => Promise<number>
 }
 
 // Interface for schedule before timing is set
@@ -131,4 +139,8 @@ export interface UntimedSchedule extends BaseSchedule {
   annually: () => TimedSchedule
   onDays: (days: number[]) => TimedSchedule
   at: (time: string) => TimedSchedule
+  /** Every day at "HH:MM". */
+  dailyAt: (time: string) => TimedSchedule
+  /** Monday to Friday, at midnight unless `.at()` says otherwise. */
+  weekdays: () => TimedSchedule
 }

@@ -195,6 +195,10 @@ schedule.job('LimitedTask')
 
 ### Protection (Overlapping Prevention)
 
+`withProtection()` skips a tick while the previous run is still going in the same
+process. Use `withoutOverlapping()` when several processes or servers run the
+scheduler, since it takes a lock.
+
 ```typescript
 // Prevent overlapping runs
 schedule.job('LongRunningTask')
@@ -220,6 +224,9 @@ schedule.job('ProcessEmails')
 
 ### Context
 
+The context is handed to the task on every run: as the argument of a
+`new Schedule(fn)` callback, and as the `context` of a scheduled job.
+
 ```typescript
 // Pass context to scheduled task
 schedule.job('ProcessBatch')
@@ -232,14 +239,21 @@ schedule.job('ProcessBatch')
 
 ### Interval
 
+`withInterval(seconds)` sets the shortest gap between two runs. A tick that
+comes sooner after the last run started is skipped, so it thins out a schedule
+rather than adding runs to it.
+
 ```typescript
-// Custom interval in seconds
+// Every five minutes, but never twice within ten
 schedule.job('CustomInterval')
-  .everyMinute()
-  .withInterval(45) // Every 45 seconds
+  .everyFiveMinutes()
+  .withInterval(600)
 ```
 
 ### Date Range
+
+Ticks before `startAt` are skipped, and the task stops for good once `stopAt`
+has passed. An invalid date, or a `stopAt` that is not after `startAt`, throws.
 
 ```typescript
 // Run only between specific dates
@@ -392,18 +406,23 @@ schedule.job('ProcessLargeDataset')
 // and processed by queue workers
 ```
 
+Without `onQueue()`, a scheduled job runs inside the scheduler process. Only
+`schedule.job(...)` takes it: an action, command or callback has no job to
+dispatch, and calling it on one throws.
+
 ## Edge Cases
 
 ### Handling Missed Runs
 
-```typescript
-// If server was down during scheduled time,
-// the job runs immediately on startup if within catch-up window
-schedule.job('ImportantTask')
-  .daily()
-  .withCatchUp(true) // Default is false
+A scheduler that was down misses the slots that fell in the gap. `runMissed()`
+replays them: it fires the task once for each slot since `since`, keeping the
+most recent `max` (default 100) when there were more, in the task's timezone.
+Storing when the task last ran is up to you.
 
-// Note: Catch-up may cause multiple runs if server was down for days
+```typescript
+await schedule.job('ImportantTask')
+  .hourly()
+  .runMissed({ since: lastRunAt, max: 24 })
 ```
 
 ### Long-Running Tasks
@@ -412,8 +431,7 @@ schedule.job('ImportantTask')
 // For tasks that may exceed schedule interval
 schedule.job('SlowTask')
   .everyMinute()
-  .withProtection() // Prevents overlapping
-  .withTimeout(300000) // 5 minute timeout
+  .withProtection() // Skips a tick while the last run is still going
 ```
 
 ### Time Zone Edge Cases

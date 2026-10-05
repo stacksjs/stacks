@@ -14,6 +14,7 @@
 
 import type { ScheduledJob } from '../src/types'
 import { afterAll, afterEach, describe, expect, it, setSystemTime } from 'bun:test'
+import { fake, restore } from '@stacksjs/queue'
 import { Schedule } from '../src/schedule'
 
 let counter = 0
@@ -179,5 +180,44 @@ describe('withContext()', () => {
     await schedule.runMissed({ since: Date.now() - 2 * 60_000 })
 
     expect(seen).toEqual(['ctx', 'ctx'])
+  })
+})
+
+describe('dailyAt() and weekdays()', () => {
+  it('dailyAt() is a daily time', () => {
+    expect(new Schedule(() => {}).dailyAt('02:30').pattern).toBe('30 2 * * *')
+  })
+
+  it('weekdays() keeps the time of day, whichever side of at() it is on', () => {
+    expect(new Schedule(() => {}).weekdays().pattern).toBe('0 0 * * 1-5')
+    expect(new Schedule(() => {}).weekdays().at('09:00').pattern).toBe('0 9 * * 1-5')
+    expect(new Schedule(() => {}).dailyAt('09:00').weekdays().pattern).toBe('0 9 * * 1-5')
+    expect(new Schedule(() => {}).everyFiveMinutes().weekdays().pattern).toBe('*/5 * * * 1-5')
+  })
+})
+
+describe('onQueue()', () => {
+  it('dispatches the scheduled job to the queue, with its context, instead of running it', async () => {
+    const queue = fake()
+    try {
+      const scheduled = Schedule.job('SendDailyReport' as never)
+      scheduled.everyMinute().onQueue('reports').withContext({ tenant: 'acme' }).withName(`queued-${process.pid}`)
+      await Promise.resolve()
+      await Schedule.runNow(`queued-${process.pid}`)
+
+      const dispatched = queue.dispatched('SendDailyReport')
+      expect(dispatched).toHaveLength(1)
+      expect(dispatched[0]?.queue).toBe('reports')
+      expect(dispatched[0]?.options).toMatchObject({ queue: 'reports', context: { tenant: 'acme' } })
+    }
+    finally {
+      restore()
+    }
+  })
+
+  it('is refused on a schedule that has no job to dispatch', () => {
+    expect(() => new Schedule(() => {}).onQueue('reports')).toThrow('schedule.job(...) only')
+    expect(() => Schedule.action('Cleanup' as never).onQueue('reports')).toThrow('schedule.job(...) only')
+    expect(() => Schedule.job('SendDailyReport' as never).onQueue('  ')).toThrow('takes a queue name')
   })
 })
