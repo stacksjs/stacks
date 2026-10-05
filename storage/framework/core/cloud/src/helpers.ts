@@ -1,5 +1,6 @@
 import type { CountryCode } from '@stacksjs/ts-cloud'
 import type { Result } from '@stacksjs/error-handling'
+import type { ContactInfo } from '@stacksjs/types'
 import {
   AWSClient,
   AWSCloudFormationClient as CloudFormationClient,
@@ -133,70 +134,133 @@ export interface PurchaseOptions {
   verbose: boolean
 }
 
-export function purchaseDomain(
+/** The one Route 53 Domains call a purchase makes. Injectable, so a purchase can be tested without AWS. */
+export interface DomainRegistrar {
+  registerDomain: (input: Parameters<Route53DomainsClient['registerDomain']>[0]) => Promise<{ OperationId?: string }>
+}
+
+type ContactType = PurchaseOptions['contactType']
+
+/**
+ * The purchase options `config/dns.ts`'s `contactInfo` describes.
+ *
+ * Countries stay ts-cloud's ISO `CountryCode` union rather than a `string`
+ * alias, so a typo in the config fails the typecheck instead of reaching AWS.
+ *
+ * The admin and tech contacts default to the registrant, field by field.
+ * Privacy and auto-renew default to on, but only when unset: they were
+ * written `value || fallback || true`, which is `true` whatever the value, so
+ * `privacy: false` - which some TLDs require - could not be expressed.
+ */
+export function purchaseOptionsFromContactInfo(c: Partial<ContactInfo>): PurchaseOptions {
+  const admin = c.admin ?? {} as Partial<ContactInfo>
+  const tech = c.tech ?? {} as Partial<ContactInfo>
+  const privacy = c.privacy ?? true
+  const contactType = String(c.contactType || 'PERSON').toUpperCase() as ContactType
+
+  return {
+    domain: '',
+    years: 1,
+    privacy,
+    autoRenew: true,
+    registrantFirstName: c.firstName ?? '',
+    registrantLastName: c.lastName ?? '',
+    registrantOrganization: c.organizationName ?? '',
+    registrantAddressLine1: c.addressLine1 ?? '',
+    registrantAddressLine2: c.addressLine2 ?? '',
+    registrantCity: c.city ?? '',
+    registrantState: c.state ?? '',
+    registrantCountry: c.countryCode as CountryCode,
+    registrantZip: c.zip ?? '',
+    registrantPhone: c.phoneNumber ?? '',
+    registrantEmail: c.email ?? '',
+    adminFirstName: admin.firstName || c.firstName || '',
+    adminLastName: admin.lastName || c.lastName || '',
+    adminOrganization: admin.organizationName || c.organizationName || '',
+    adminAddressLine1: admin.addressLine1 || c.addressLine1 || '',
+    adminAddressLine2: admin.addressLine2 || c.addressLine2 || '',
+    adminCity: admin.city || c.city || '',
+    adminState: admin.state || c.state || '',
+    adminCountry: (admin.countryCode || c.countryCode) as CountryCode,
+    adminZip: admin.zip || c.zip || '',
+    adminPhone: admin.phoneNumber || c.phoneNumber || '',
+    adminEmail: admin.email || c.email || '',
+    techFirstName: tech.firstName || c.firstName || '',
+    techLastName: tech.lastName || c.lastName || '',
+    techOrganization: tech.organizationName || c.organizationName || '',
+    techAddressLine1: tech.addressLine1 || c.addressLine1 || '',
+    techAddressLine2: tech.addressLine2 || c.addressLine2 || '',
+    techCity: tech.city || c.city || '',
+    techState: tech.state || c.state || '',
+    techCountry: (tech.countryCode || c.countryCode) as CountryCode,
+    techZip: tech.zip || c.zip || '',
+    techPhone: tech.phoneNumber || c.phoneNumber || '',
+    techEmail: tech.email || c.email || '',
+    privacyAdmin: c.privacyAdmin ?? privacy,
+    privacyTech: c.privacyTech ?? privacy,
+    privacyRegistrant: c.privacyRegistrant ?? privacy,
+    contactType,
+    verbose: false,
+  }
+}
+
+/**
+ * Register a domain through Route 53 Domains.
+ *
+ * Awaited, and its outcome returned. This used to hand back `ok(<the pending
+ * request>)`, so a caller could only see that the request had been built: the
+ * domain action then printed "Domain purchased successfully." and exited the
+ * process while the request was still in flight, and an AWS rejection - a
+ * taken name, an unsupported TLD, a bad contact - surfaced nowhere.
+ *
+ * Registration itself completes asynchronously at AWS. The operation id is
+ * what Route 53 gives back to follow it.
+ */
+export async function purchaseDomain(
   domain: string,
   options: PurchaseOptions,
-): Result<Promise<{ OperationId: string }>, Error> {
-  const route53domains = new Route53DomainsClient()
-  const contactType = (options.contactType.toUpperCase() || 'PERSON') as 'PERSON' | 'COMPANY' | 'ASSOCIATION' | 'PUBLIC_BODY' | 'RESELLER'
+  registrar: DomainRegistrar = new Route53DomainsClient(),
+): Promise<Result<{ OperationId: string }, Error>> {
+  const contactType = (String(options.contactType || 'PERSON').toUpperCase()) as ContactType
 
   const formatPhone = (phone: string) =>
     phone.toString().includes('+') ? phone.toString() : `+${phone.toString()}`
 
+  const contact = (prefix: 'admin' | 'registrant' | 'tech') => ({
+    FirstName: options[`${prefix}FirstName`],
+    LastName: options[`${prefix}LastName`],
+    ContactType: contactType,
+    OrganizationName: options[`${prefix}Organization`],
+    AddressLine1: options[`${prefix}AddressLine1`],
+    AddressLine2: options[`${prefix}AddressLine2`],
+    City: options[`${prefix}City`],
+    State: options[`${prefix}State`],
+    CountryCode: options[`${prefix}Country`],
+    ZipCode: String(options[`${prefix}Zip`] ?? ''),
+    PhoneNumber: formatPhone(options[`${prefix}Phone`] ?? ''),
+    Email: options[`${prefix}Email`],
+  })
+
   try {
-    return ok(route53domains.registerDomain({
+    const response = await registrar.registerDomain({
       DomainName: domain,
       DurationInYears: options.years || 1,
-      AutoRenew: options.autoRenew || true,
-      AdminContact: {
-        FirstName: options.adminFirstName,
-        LastName: options.adminLastName,
-        ContactType: contactType,
-        OrganizationName: options.adminOrganization,
-        AddressLine1: options.adminAddressLine1,
-        AddressLine2: options.adminAddressLine2,
-        City: options.adminCity,
-        State: options.adminState,
-        CountryCode: options.adminCountry,
-        ZipCode: options.adminZip.toString(),
-        PhoneNumber: formatPhone(options.adminPhone),
-        Email: options.adminEmail,
-      },
-      RegistrantContact: {
-        FirstName: options.registrantFirstName,
-        LastName: options.registrantLastName,
-        ContactType: contactType,
-        OrganizationName: options.registrantOrganization,
-        AddressLine1: options.registrantAddressLine1,
-        AddressLine2: options.registrantAddressLine2,
-        City: options.registrantCity,
-        State: options.registrantState,
-        CountryCode: options.registrantCountry,
-        ZipCode: options.registrantZip.toString(),
-        PhoneNumber: formatPhone(options.registrantPhone),
-        Email: options.registrantEmail,
-      },
-      TechContact: {
-        FirstName: options.techFirstName,
-        LastName: options.techLastName,
-        ContactType: contactType,
-        OrganizationName: options.techOrganization,
-        AddressLine1: options.techAddressLine1,
-        AddressLine2: options.techAddressLine2,
-        City: options.techCity,
-        State: options.techState,
-        CountryCode: options.techCountry,
-        ZipCode: options.techZip.toString(),
-        PhoneNumber: formatPhone(options.techPhone),
-        Email: options.techEmail,
-      },
-      PrivacyProtectAdminContact: options.privacyAdmin || options.privacy || true,
-      PrivacyProtectRegistrantContact: options.privacyRegistrant || options.privacy || true,
-      PrivacyProtectTechContact: options.privacyTech || options.privacy || true,
-    }))
+      AutoRenew: options.autoRenew ?? true,
+      AdminContact: contact('admin'),
+      RegistrantContact: contact('registrant'),
+      TechContact: contact('tech'),
+      PrivacyProtectAdminContact: options.privacyAdmin ?? options.privacy ?? true,
+      PrivacyProtectRegistrantContact: options.privacyRegistrant ?? options.privacy ?? true,
+      PrivacyProtectTechContact: options.privacyTech ?? options.privacy ?? true,
+    })
+
+    if (!response?.OperationId)
+      return err(new Error(`Route 53 returned no operation id for ${domain}, so the registration cannot be confirmed.`))
+
+    return ok({ OperationId: response.OperationId })
   }
   catch (error: unknown) {
-    return err(error as Error)
+    return err(error instanceof Error ? error : new Error(String(error)))
   }
 }
 
