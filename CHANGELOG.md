@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.64...v0.75.65)
+
+## ✨ Features
+
+- **chat**: inbox drivers send, react, mark read and push new messages ([5cc470e](https://github.com/stacksjs/stacks/commit/5cc470e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **ai**: default to a current Claude model id, from one place ([c0dd4f8](https://github.com/stacksjs/stacks/commit/c0dd4f8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859), [#2857](https://github.com/stacksjs/stacks/issues/2857))
+- **socials**: stop pinning a Graph API version that expired in January ([69470f0](https://github.com/stacksjs/stacks/commit/69470f0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **push**: drop the FCM legacy send path, decommissioned in 2024 ([c87181c](https://github.com/stacksjs/stacks/commit/c87181c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **push**: manage FCM topic subscriptions through the v1 API ([3acd5d2](https://github.com/stacksjs/stacks/commit/3acd5d2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2856](https://github.com/stacksjs/stacks/issues/2856))
+- **push**: encode the FCM service-account JWT as base64url ([2e58035](https://github.com/stacksjs/stacks/commit/2e58035)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **validation**: a schema-declaration entry, so config/env.ts stops pulling storage ([267818a](https://github.com/stacksjs/stacks/commit/267818a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **actions**: import Action from the request-time entry, not the barrel ([214baf4](https://github.com/stacksjs/stacks/commit/214baf4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **actions**: add a request-time entry, so declaring an action is not 175ms ([47f7749](https://github.com/stacksjs/stacks/commit/47f7749)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **push**: stop declaring an FCM server key nothing can use ([8ec19fb](https://github.com/stacksjs/stacks/commit/8ec19fb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.63...v0.75.64)
 
 ## 🐛 Bug Fixes
