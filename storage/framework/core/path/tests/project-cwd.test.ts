@@ -20,7 +20,9 @@ it('resolves live working directories and suffixes through both path entrypoints
       const [first, second, nested, substring] = process.argv.slice(1).map(realpathSync)
       for (const source of ${JSON.stringify([new URL('../src/index.ts', import.meta.url).href, new URL('../src/project.ts', import.meta.url).href])}) {
         const { projectPath, appPath, storagePath, frameworkPath } = await import(source)
-        for (const [cwd, root] of [[first, first], [nested, first], [second, second], [substring, first], [nested, first], [first, first]]) {
+        // \`substring\` sits in \`storage-copy\`, which is not the storage
+        // directory, so it is its own root rather than \`first\`.
+        for (const [cwd, root] of [[first, first], [nested, first], [second, second], [substring, substring], [nested, first], [first, first]]) {
           process.chdir(cwd)
           assert.equal(projectPath(), root)
           assert.equal(projectPath('config/app.ts'), root + '/config/app.ts')
@@ -41,6 +43,44 @@ it('resolves live working directories and suffixes through both path entrypoints
     `, first, second, nested, substring], { stdout: 'pipe', stderr: 'pipe' })
     expect(result.exitCode, result.stderr.toString()).toBe(0)
     expect(result.stdout.toString()).toContain('live working directories passed')
+  }
+  finally {
+    rmSync(fixture, { recursive: true, force: true })
+  }
+})
+
+/**
+ * A project kept under a directory whose name contains, or is, "storage".
+ *
+ * The root used to be found by climbing while the path contained that text,
+ * so `/mnt/storage/app` resolved to `/mnt` and `~/Code/storagehq` to `~/Code`,
+ * and every config, model and migration path pointed outside the project.
+ */
+it('does not climb out of a project because an ancestor is named storage', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'stacks-project-storage-ancestor-'))
+  // /…/storage/app, a real project, and a run from deep inside its framework.
+  const underStorage = join(fixture, 'storage', 'app')
+  const underStorageFramework = join(underStorage, 'storage/framework/core/path')
+  // /…/storagehq, a project whose own name contains the word.
+  const named = join(fixture, 'storagehq')
+  const namedFramework = join(named, 'storage/framework/core/path')
+  for (const dir of [underStorageFramework, namedFramework])
+    mkdirSync(dir, { recursive: true })
+
+  try {
+    const result = Bun.spawnSync([process.execPath, '-e', `
+      import assert from 'node:assert/strict'
+      import { realpathSync } from 'node:fs'
+      const [underStorage, underStorageFramework, named, namedFramework] = process.argv.slice(1).map(realpathSync)
+      const { projectPath } = await import(${JSON.stringify(new URL('../src/project.ts', import.meta.url).href)})
+      for (const [cwd, root] of [[underStorage, underStorage], [underStorageFramework, underStorage], [named, named], [namedFramework, named]]) {
+        process.chdir(cwd)
+        assert.equal(projectPath(), root, cwd)
+      }
+      console.log('storage ancestors passed')
+    `, underStorage, underStorageFramework, named, namedFramework], { stdout: 'pipe', stderr: 'pipe' })
+    expect(result.exitCode, result.stderr.toString()).toBe(0)
+    expect(result.stdout.toString()).toContain('storage ancestors passed')
   }
   finally {
     rmSync(fixture, { recursive: true, force: true })
