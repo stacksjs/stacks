@@ -217,13 +217,10 @@ export class InMemoryStorageAdapter implements StorageAdapter {
   }
 
   async deleteFile(path: string): Promise<void> {
-    const normalized = this.normalizePath(path)
-
-    if (!this.files.has(normalized)) {
-      throw new Error(`File not found: ${path}`)
-    }
-
-    this.files.delete(normalized)
+    // A file already gone is deleted, as on S3, which this disk stands in
+    // for in tests: it threw here, so a test passed against an error the
+    // real disk never raises.
+    this.files.delete(this.normalizePath(path))
   }
 
   async deleteDirectory(path: string): Promise<void> {

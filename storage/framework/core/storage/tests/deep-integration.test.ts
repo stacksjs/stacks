@@ -369,14 +369,9 @@ describe('Storage Deep Integration Tests', () => {
 
   // ─── Edge Cases ──────────────────────────────────────────────────────────
 
-  test('deleteFile on non-existent path returns ok with message', async () => {
-    // deleteFile uses fs.statSync which throws for non-existent files
-    try {
-      await deleteFile(join(tmpDir, 'never-existed.txt'))
-    }
-    catch {
-      // expected - file does not exist so statSync throws
-    }
+  test('deleteFile on a non-existent path resolves to an Err', async () => {
+    const result = await deleteFile(join(tmpDir, 'never-existed.txt'))
+    expect(result.isErr).toBe(true)
   })
 
   test('isFolder returns false for non-existent path', () => {

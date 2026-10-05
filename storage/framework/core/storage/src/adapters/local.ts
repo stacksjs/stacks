@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer'
-import { createHmac, randomBytes } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, chmod, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
@@ -23,8 +22,9 @@ import type {
   TemporaryUrlOptions,
   Visibility,
 } from '../types'
-import { createDirectoryListing, normalizeExpiryToDate } from '../types'
+import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
+import { publicUrlFor, writeAtomically } from './filesystem-common'
 
 /**
  * Local filesystem storage adapter using Node.js fs APIs
@@ -35,7 +35,7 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   constructor(config: StorageAdapterConfig = {}) {
     this.root = config.root || process.cwd()
-    this.url = config.url?.replace(/\/$/, '')
+    this.url = config.url
   }
 
   private resolvePath(path: string): string {
@@ -55,39 +55,10 @@ export class LocalStorageAdapter implements StorageAdapter {
     return resolved
   }
 
-  /**
-   * Write `fullPath` through a temporary file beside it, renamed into place
-   * once the write has finished.
-   *
-   * Writing in place truncated the existing file before the first byte of
-   * the new one arrived. A stream that failed or was aborted left the old
-   * contents gone and the new ones partial, and `putStream` then deleted the
-   * partial file to tidy up - so a failed re-upload of an avatar removed the
-   * avatar. A reader in the meantime saw a half-written file. Now the old file
-   * stays whole until the new one is complete, readers see one or the other,
-   * and a failure removes only the temporary file. The replaced file's mode
-   * carries over, so a private file stays private.
-   */
-  private async writeAtomically(fullPath: string, write: (temporary: string) => Promise<void>): Promise<void> {
-    await mkdir(dirname(fullPath), { recursive: true })
-    const temporary = join(dirname(fullPath), `.${basename(fullPath)}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`)
-    try {
-      await write(temporary)
-      const previous = await stat(fullPath).catch(() => null)
-      if (previous)
-        await chmod(temporary, previous.mode & 0o7777)
-      await rename(temporary, fullPath)
-    }
-    catch (error) {
-      await rm(temporary, { force: true }).catch(() => {})
-      throw error
-    }
-  }
-
   async write(path: string, contents: FileContents): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
 
-    await this.writeAtomically(fullPath, async (temporary) => {
+    await writeAtomically(fullPath, async (temporary) => {
       if (typeof contents === 'string') {
         await writeFile(temporary, contents, 'utf8')
       }
@@ -152,7 +123,7 @@ export class LocalStorageAdapter implements StorageAdapter {
   async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
 
-    await this.writeAtomically(fullPath, async (temporary) => {
+    await writeAtomically(fullPath, async (temporary) => {
       const nodeReadable = Readable.fromWeb(stream as unknown as Parameters<typeof Readable.fromWeb>[0])
       await pipeline(nodeReadable, createWriteStream(temporary), { signal: options?.signal })
     })
@@ -184,7 +155,11 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   async deleteFile(path: string): Promise<void> {
     const fullPath = this.resolvePath(path)
-    await unlink(fullPath)
+    // A file already gone is deleted; any other failure is one.
+    await unlink(fullPath).catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== 'ENOENT')
+        throw error
+    })
   }
 
   async deleteDirectory(path: string): Promise<void> {
@@ -355,17 +330,17 @@ export class LocalStorageAdapter implements StorageAdapter {
     // for every other framework URL got localhost-prefixed public
     // links pointing at files on disk, which broke whenever the
     // generated URL was emailed or stored.
-    const base = (options.domain || this.url || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
-    return `${base}/${path}`
+    return publicUrlFor(path, { domain: options.domain, diskUrl: this.url })
   }
 
+  /**
+   * A time-limited URL: the signed `/__storage` URL, which the framework
+   * serves. It used to be `http://localhost/temp/<token>`, which nothing
+   * served on any host, signed with a hardcoded fallback key when `APP_KEY`
+   * was unset.
+   */
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {
-    const expiry = normalizeExpiryToDate(options.expiresIn)
-    const payload = `${path}:${expiry.getTime()}`
-    const appKey = process.env.APP_KEY || 'stacks-default-key'
-    const signature = createHmac('sha256', appKey).update(payload).digest('hex')
-    const token = Buffer.from(`${payload}:${signature}`).toString('base64url')
-    return `http://localhost/temp/${token}`
+    return await this.signedUrl(path, { expiresIn: options.expiresIn })
   }
 
   /**

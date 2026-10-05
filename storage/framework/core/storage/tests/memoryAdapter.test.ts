@@ -291,10 +291,9 @@ describe('InMemoryStorageAdapter', () => {
       }).toThrow()
     })
 
-    it('should throw when deleting non-existent file', async () => {
-      expect(async () => {
-        await adapter.deleteFile('missing.txt')
-      }).toThrow()
+    it('deletes a file that does not exist without complaint, as S3 does', async () => {
+      await adapter.deleteFile('missing.txt')
+      expect(await adapter.fileExists('missing.txt')).toBe(false)
     })
 
     it('should throw when getting stats for non-existent file', async () => {

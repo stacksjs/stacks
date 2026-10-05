@@ -393,7 +393,11 @@ export interface StorageAdapter {
   /** Read file as Uint8Array */
   readToUint8Array(path: string): Promise<Uint8Array>
 
-  /** Delete a file */
+  /**
+   * Delete a file. Deleting one that does not exist succeeds, on every disk:
+   * S3 cannot tell the difference, so no disk does. A delete that fails -
+   * permissions, a read-only mount - throws.
+   */
   deleteFile(path: string): Promise<void>
 
   /** Delete a directory */

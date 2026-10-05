@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { file, write as bunWrite } from 'bun'
-import { chmod, lstat } from 'node:fs/promises'
+import { chmod, copyFile, lstat, mkdir, rename, rm, unlink } from 'node:fs/promises'
 import { dirname, join, relative } from 'node:path'
 import type {
   ChecksumOptions,
@@ -20,14 +20,17 @@ import type {
   TemporaryUrlOptions,
   Visibility,
 } from '../types'
-import { createDirectoryListing, normalizeExpiryToDate } from '../types'
+import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
+import { publicUrlFor, writeAtomically } from './filesystem-common'
 
 export class BunStorageAdapter implements StorageAdapter {
   private root: string
+  private url?: string
 
   constructor(config: StorageAdapterConfig = {}) {
     this.root = config.root || process.cwd()
+    this.url = config.url
   }
 
   private resolvePath(path: string): string {
@@ -44,19 +47,8 @@ export class BunStorageAdapter implements StorageAdapter {
 
   async write(path: string, contents: FileContents): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
-    const dir = dirname(fullPath)
-    await this.createDirectory(relative(this.root, dir))
 
-    if (typeof contents === 'string') {
-      await bunWrite(fullPath, contents)
-    }
-    else if (contents instanceof Buffer) {
-      await bunWrite(fullPath, contents)
-    }
-    else if (contents instanceof Uint8Array) {
-      await bunWrite(fullPath, contents)
-    }
-    else {
+    if (!(typeof contents === 'string' || contents instanceof Uint8Array)) {
       // Web-standard ReadableStream only — see s3.ts:contentsToBuffer
       // (stacksjs/stacks#1873 S-15) for the same guard.
       const stream = contents as unknown as { getReader?: ReadableStream['getReader'] }
@@ -67,23 +59,17 @@ export class BunStorageAdapter implements StorageAdapter {
           + 'Convert via Readable.toWeb(nodeStream) before passing.',
         )
       }
-
-      const reader = (contents as ReadableStream<Uint8Array>).getReader()
-      const chunks: Uint8Array[] = []
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        if (value) chunks.push(value)
-      }
-      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-      const result = new Uint8Array(totalLength)
-      let offset = 0
-      for (const chunk of chunks) {
-        result.set(chunk, offset)
-        offset += chunk.length
-      }
-      await bunWrite(fullPath, result)
     }
+
+    // Through a temporary file renamed into place, as on the local disk: a
+    // stream that fails part-way leaves the previous file whole. A stream is
+    // written as it arrives rather than collected into memory first.
+    await writeAtomically(fullPath, async (temporary) => {
+      if (typeof contents === 'string' || contents instanceof Uint8Array)
+        await bunWrite(temporary, contents)
+      else
+        await bunWrite(temporary, new Response(contents as ReadableStream<Uint8Array>))
+    })
 
     // Read back size + mtime via Bun.file — same shape as the local
     // adapter (stacksjs/stacks#1888 S-8).
@@ -119,45 +105,26 @@ export class BunStorageAdapter implements StorageAdapter {
   }
 
   /**
-   * Pipe a web stream to disk via `Bun.write(path, stream)`
-   * (stacksjs/stacks#1886). Bun's `write()` accepts a
-   * ReadableStream natively and handles the backpressure.
+   * Pipe a web stream to disk via `Bun.write` (stacksjs/stacks#1886),
+   * through a temporary file renamed into place, so an upload that fails or
+   * is aborted leaves the previous file whole.
    *
-   * Abort handling: tee the stream so we can cancel one half on
-   * `signal` while bun consumes the other; on abort we
-   * unlink the partial file so callers don't see truncated
-   * artifacts.
+   * `options.signal` aborts the copy: the stream is piped through a
+   * pass-through with the signal, so the write sees the abort as a read
+   * error. The signal used to be handed to a listener that did nothing, so
+   * an aborted upload ran to completion.
    */
   async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
-    const dir = dirname(fullPath)
-    await this.createDirectory(relative(this.root, dir))
+    const signal = options?.signal
+    signal?.throwIfAborted()
 
-    // Wire AbortSignal to a Response wrapper — `Bun.write` accepts
-    // BodyInit (Response counts), and a Response with a signal
-    // aborts the underlying read on cancel.
-    try {
-      const body = new Response(stream)
-      const writePromise = bunWrite(fullPath, body)
-      if (options?.signal) {
-        const abortHandler = (): void => {
-          // Bun doesn't expose a write-cancel API today; the next
-          // read from the source stream rejects, and we clean up
-          // the partial file in the catch below.
-        }
-        options.signal.addEventListener('abort', abortHandler, { once: true })
-        try { await writePromise }
-        finally { options.signal.removeEventListener('abort', abortHandler) }
-      }
-      else {
-        await writePromise
-      }
-    }
-    catch (err) {
-      try { await Bun.$.throws(false)`rm -f ${fullPath}` }
-      catch { /* best-effort cleanup */ }
-      throw err
-    }
+    await writeAtomically(fullPath, async (temporary) => {
+      const source = signal
+        ? stream.pipeThrough(new TransformStream<Uint8Array, Uint8Array>(), { signal })
+        : stream
+      await bunWrite(temporary, new Response(source))
+    })
 
     const written = file(fullPath)
     return {
@@ -197,38 +164,41 @@ export class BunStorageAdapter implements StorageAdapter {
     return new Uint8Array(arrayBuffer)
   }
 
+  // The filesystem calls below throw. They were shell commands run with
+  // `.throws(false)`, so a delete that failed - a read-only mount, a file
+  // owned by another user - reported success with the file still there, and
+  // a directory that could not be created surfaced later as a confusing
+  // write error. A file that is already gone is still not an error.
   async deleteFile(path: string): Promise<void> {
     const fullPath = this.resolvePath(path)
-    const bunFile = file(fullPath)
-    if (await bunFile.exists()) {
-      await Bun.$.throws(false)`rm ${fullPath}`
-    }
+    await unlink(fullPath).catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== 'ENOENT')
+        throw error
+    })
   }
 
   async deleteDirectory(path: string): Promise<void> {
     const fullPath = this.resolvePath(path)
-    await Bun.$.throws(false)`rm -rf ${fullPath}`
+    await rm(fullPath, { recursive: true, force: true })
   }
 
   async createDirectory(path: string): Promise<void> {
     const fullPath = this.resolvePath(path)
-    await Bun.$.throws(false)`mkdir -p ${fullPath}`
+    await mkdir(fullPath, { recursive: true })
   }
 
   async moveFile(from: string, to: string): Promise<void> {
     const fromPath = this.resolvePath(from)
     const toPath = this.resolvePath(to)
-    const toDir = dirname(toPath)
-    await this.createDirectory(relative(this.root, toDir))
-    await Bun.$.throws(true)`mv ${fromPath} ${toPath}`
+    await mkdir(dirname(toPath), { recursive: true })
+    await rename(fromPath, toPath)
   }
 
   async copyFile(from: string, to: string): Promise<void> {
     const fromPath = this.resolvePath(from)
     const toPath = this.resolvePath(to)
-    const toDir = dirname(toPath)
-    await this.createDirectory(relative(this.root, toDir))
-    await Bun.$.throws(true)`cp ${fromPath} ${toPath}`
+    await mkdir(dirname(toPath), { recursive: true })
+    await copyFile(fromPath, toPath)
   }
 
   async stat(path: string): Promise<StatEntry> {
@@ -242,7 +212,9 @@ export class BunStorageAdapter implements StorageAdapter {
     return {
       path,
       type: isDir ? 'directory' : 'file',
-      visibility: 'private' as Visibility,
+      // Read from the mode bits, as visibility() does: this said 'private'
+      // for every file, public ones included.
+      visibility: await this.visibility(path),
       size: isDir ? 0 : stats.size,
       lastModified: stats.mtime?.getTime() || Date.now(),
       mimeType: isDir ? undefined : bunFile.type,
@@ -313,15 +285,23 @@ export class BunStorageAdapter implements StorageAdapter {
     catch { return false }
   }
 
+  /**
+   * Same resolution as the local disk: `options.domain`, the disk's `url`,
+   * `APP_URL`, then localhost. It went straight from `domain` to localhost,
+   * so a production app's public links pointed at localhost, and its paths
+   * went unencoded.
+   */
   async publicUrl(path: string, options: PublicUrlOptions = {}): Promise<string> {
-    const domain = options.domain || 'http://localhost'
-    return `${domain}/${path}`
+    return publicUrlFor(path, { domain: options.domain, diskUrl: this.url })
   }
 
+  /**
+   * The signed `/__storage` URL, which the framework serves. It was
+   * `http://localhost/temp/<token>`, which nothing served, and the token was
+   * an unsigned base64 of the path and expiry that anyone could mint.
+   */
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {
-    const expiry = normalizeExpiryToDate(options.expiresIn)
-    const token = Buffer.from(`${path}:${expiry.getTime()}`).toString('base64url')
-    return `http://localhost/temp/${token}`
+    return await this.signedUrl(path, { expiresIn: options.expiresIn })
   }
 
   /**
