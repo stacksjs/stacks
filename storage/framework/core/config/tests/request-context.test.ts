@@ -191,7 +191,11 @@ describe('both servers go through the factory (#2232 ask 1)', () => {
     for (const source of [dev, prod]) {
       // Comment lines out first: the one above each call says `await` too.
       const code = source.replace(/^\s*\/\/.*$/gm, '')
-      const hook = /onRequest: async \(req: Request\) => \{([\s\S]*?)\bawait\b/.exec(code)
+      // Whatever else the hook takes: both grew a `server` parameter for the
+      // socket peer (595d2ecd58), and a pin on the exact signature failed on
+      // code that still did the right thing.
+      const hook = /onRequest: async \(req: Request\b[^)]*\) => \{([\s\S]*?)\bawait\b/.exec(code)
+      expect(hook).not.toBeNull()
       expect(hook?.[1]).toContain('enterRequestScope(req)')
     }
   })
