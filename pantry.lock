@@ -1070,7 +1070,7 @@
       "name": "@stacksjs/router",
       "version": "0.75.63",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.20",
+        "@stacksjs/bun-router": "^0.1.21",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1467,12 +1467,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/bun-queue/-/bun-queue-0.1.8.tgz",
       "integrity": "sha512-4nrKGXksRW/57VJqpLQmnX5SI9yE4OsRKp60jE8MoZI4vzH45MJQrBzFgAiGITzmjnbmxHN1c5a9kG+kbp94rw=="
     },
-    "@stacksjs/bun-router@0.1.20": {
+    "@stacksjs/bun-router@0.1.21": {
       "name": "@stacksjs/bun-router",
-      "version": "0.1.20",
+      "version": "0.1.21",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/bun-router/-/bun-router-0.1.20.tgz",
-      "integrity": "sha512-d6FH2634u3h5ouwUGeci9Ai8zMoGuGOS1CjemfArugDQ6PJvoPsOV8l7oVXYrtf1KfBxYOWCsYZ+LN62EyKR1g==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/bun-router/-/bun-router-0.1.21.tgz",
+      "integrity": "sha512-26nF0D5xiP1DkLmRiYfzFq0VkXpMF2/wghhcLllRrdsYNzeBrzlwS8n3ee8ATEsbjHM08J+ZZxPr7YTo+ji/xA==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "ts-rate-limiter": "^0.4.2"
@@ -1603,12 +1603,12 @@
         "logsmith": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/mail@0.3.11": {
+    "@stacksjs/mail@0.3.12": {
       "name": "@stacksjs/mail",
-      "version": "0.3.11",
+      "version": "0.3.12",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/mail/-/mail-0.3.11.tgz",
-      "integrity": "sha512-dcFLo8oO7bLrbu3qbIgYfRF94J8azSdDjT7Flej2M0P50S2RKHQtWrmCajrO5zqsIQwc0J5+E7td5nxgfGOW6Q=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/mail/-/mail-0.3.12.tgz",
+      "integrity": "sha512-RLoGTaS4Hi8Jy5LRrtNsy5038mTOTqALvAUxm2hrqKOOZLWj091/wms0hnBoRQ1bfk0vuQMSYQNlmzoVUeIicA=="
     },
     "@stacksjs/rpx@0.11.54": {
       "name": "@stacksjs/rpx",
