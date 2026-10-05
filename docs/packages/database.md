@@ -541,6 +541,11 @@ Auth and OAuth models are skipped on a non-fresh database, so re-seeding cannot
 silently invalidate live sessions by re-rolling the Personal Access Client
 secret. Pass `--allow-protected` when you do want them re-seeded.
 
+A foreign key to `User`, `Team` or `Customer` is filled only from the accounts
+the same run seeded, never from one that was already there and may belong to a
+real person. `--attach-accounts` uses existing accounts too, for a scratch
+database whose accounts are fixtures from an earlier run.
+
 By default a table that already has rows is left alone. `--fresh` truncates
 first, which is the usual way to re-roll a development dataset.
 

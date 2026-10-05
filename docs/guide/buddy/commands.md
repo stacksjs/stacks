@@ -4727,6 +4727,7 @@ Seed your database
 | `--skip-application-seeders` | Skip application seeders | boolean, optional | `false` |
 | `--include-defaults` | Also seed the framework's built-in models | boolean, optional | `false` |
 | `--allow-protected` | Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens) | boolean, optional | `false` |
+| `--attach-accounts` | Point seeded rows at existing User/Team/Customer rows, not only ones this run seeded (scratch databases only) | boolean, optional | `false` |
 | `--fresh` | Truncate tables before seeding | boolean, optional | `false` |
 | `--append` | Add rows to tables that already have some, instead of skipping them | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |

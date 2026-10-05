@@ -296,7 +296,10 @@ buddy seed --include-defaults    # framework built-ins too
 
 A model with no `useSeeder` trait is never seeded. Auth and OAuth models are
 skipped on a non-fresh database so re-seeding cannot invalidate live sessions -
-pass `--allow-protected` to override.
+pass `--allow-protected` to override. A `belongsTo` to `User`, `Team` or `Customer` is
+filled only from accounts the same run seeded (never a pre-existing, possibly real one);
+`--attach-accounts` lifts that on a scratch database. Composite `unique: true` indexes are
+honoured: fewer rows are seeded rather than a duplicate combination.
 
 ## Built-in models by category
 

@@ -307,16 +307,22 @@ export const PROTECTED_MODELS: readonly string[] = Object.freeze([
  *
  * A seeded row is allowed to attach itself to a parent that already exists —
  * that is how a seeded flight finds a seeded field. It is not allowed to
- * attach itself to an *account*. These tables hold real sign-ins on any
+ * attach itself to a *real* account. These tables hold real sign-ins on any
  * database that is not a scratch copy, and pointing invented rows at them
  * hands one customer another customer's fabricated data: a farmer signs in
  * and finds fields they have never seen, on a holding they do not own.
  *
- * Foreign keys to these models are left null. Which account owns a seeded
- * row is a decision for the app that seeded it (a `demo:account` command, a
- * fixture, a migration), not something a factory should guess.
+ * So a foreign key to one of these models is filled only from the account
+ * rows the same seed run inserted. Those are fixtures like any other, which is
+ * what makes `buddy migrate:fresh --seed` produce issues with authors and
+ * reviews with reviewers. An account that was already in the table before the
+ * run started is never used unless the caller says the database is a scratch
+ * copy with `attachAccounts: true` (`./buddy seed --attach-accounts`).
  *
- * `allowProtected: true` (`./buddy seed --allow-protected`) opts back in.
+ * This used to sit behind `allowProtected`, whose job is something else
+ * entirely (re-seeding the OAuth tables, which invalidates live tokens), so the
+ * harmless half was only reachable by opting into the harmful one, and without
+ * either every account key was seeded null (stacksjs/stacks#2861).
  */
 export const ACCOUNT_MODELS: readonly string[] = Object.freeze([
   'User',
@@ -388,6 +394,17 @@ export interface SeederConfig {
    * `./buddy seed --allow-protected`. (stacksjs/stacks#1852)
    */
   allowProtected?: boolean
+
+  /**
+   * Point account foreign keys (see {@link ACCOUNT_MODELS}) at any existing
+   * account row, not only the ones this run seeded.
+   *
+   * For a database you know is a scratch copy whose accounts are themselves
+   * fixtures from an earlier run. On a database with real sign-ins it attaches
+   * invented rows to real people, which is why it is off by default. Surfaced
+   * as `./buddy seed --attach-accounts`. (stacksjs/stacks#2861)
+   */
+  attachAccounts?: boolean
 
   /**
    * Add rows to tables that already have some, instead of skipping them.
@@ -783,12 +800,12 @@ export function parentTable(parent: string): string {
  * adopted, and every later parent is drawn only from rows that agree with
  * them.
  */
-async function relationColumns(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
+async function relationPools(model: SeederModel, options: SeederConfig = {}): Promise<RelationPool[]> {
   const parents = parentRelations(model)
   if (parents.length === 0)
     return []
 
-  const pools: { column: string, rows: Record<string, unknown>[] }[] = []
+  const pools: RelationPool[] = []
   for (const relation of parents) {
     const parent = relation.model
     const column = relation.column
@@ -807,16 +824,83 @@ async function relationColumns(model: SeederModel, options: SeederConfig = {}): 
     if (model.attributes[parent])
       continue
 
-    // Never hand a seeded row to somebody's account (see ACCOUNT_MODELS).
-    if (isAccountModel(parent) && !options.allowProtected)
-      continue
+    // Accounts: only the ones this run created, unless told otherwise (see
+    // ACCOUNT_MODELS).
+    const rows = isAccountModel(parent) && !options.attachAccounts
+      ? seededAccountRows.get(parent) ?? []
+      : await existingRows(parentTable(parent))
 
-    const rows = await existingRows(parentTable(parent))
-    if (rows.length > 0)
+    if (rows.length > 0) {
       pools.push({ column, rows })
+      continue
+    }
+
+    if (isAccountModel(parent) && !options.attachAccounts) {
+      // Said every time, not only with --verbose: a key that comes out null
+      // across a whole table is otherwise indistinguishable from one nobody
+      // declared, and on a NOT NULL column it is the reason the insert failed.
+      const existing = (await existingRows(parentTable(parent))).length
+      log.info(existing > 0
+        ? `  ${model.name}.${column} left empty: no ${parent} rows were seeded in this run, and the ones already in ${parentTable(parent)} may be real accounts. Pass --attach-accounts if this database is a scratch copy.`
+        : `  ${model.name}.${column} left empty: there are no ${parent} rows to point it at.`)
+    }
   }
 
-  return chooseRelations(pools, model.count)
+  return pools
+}
+
+/** The rows a foreign key can point at, by the column that points. */
+export interface RelationPool {
+  column: string
+  rows: Record<string, unknown>[]
+}
+
+/**
+ * The account rows this seed run inserted, by model name.
+ *
+ * Reset at the start of every `seed()`. An account seeded in this run is a
+ * fixture, so seeded children may point at it; one that predates the run may
+ * be a person, so they may not (see ACCOUNT_MODELS).
+ */
+const seededAccountRows = new Map<string, Record<string, unknown>[]>()
+
+/**
+ * Remember the account rows an insert just created.
+ *
+ * Read back by id, since the insert does not return rows on every engine: the
+ * rows above the highest id the table held before the insert, in insert order.
+ * `highestIdBefore` is null for a table that was empty, and undefined when it
+ * could not be read, in which case nothing is remembered: guessing would risk
+ * handing out an account that predates the run.
+ */
+async function rememberSeededAccounts(model: SeederModel, highestIdBefore: number | null | undefined, inserted: number): Promise<void> {
+  if (inserted === 0)
+    return
+
+  if (highestIdBefore === undefined) {
+    log.info(`  Could not tell which ${model.name} rows this run seeded (no readable integer id), so no seeded row will point at them.`)
+    return
+  }
+
+  try {
+    let query = db.selectFrom(model.table).selectAll()
+    if (highestIdBefore !== null)
+      query = query.where('id', '>', highestIdBefore)
+    const rows = await query.orderBy('id', 'asc').limit(inserted).execute() as Record<string, unknown>[]
+    seededAccountRows.set(model.name, [...(seededAccountRows.get(model.name) ?? []), ...rows])
+  }
+  catch (error) {
+    // A table without an integer `id` cannot be read back this way. Its
+    // children then fall into the "no rows to point at" notice above.
+    log.info(`  Could not read back the ${model.name} rows just seeded: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/** The highest `id` in a table, or null when it is empty. */
+async function highestId(table: string): Promise<number | null> {
+  const row = await db.selectFrom(table).select(['id']).orderBy('id', 'desc').limit(1).executeTakeFirst() as { id?: unknown } | undefined
+  const id = Number(row?.id)
+  return row && Number.isFinite(id) ? id : null
 }
 
 /**
@@ -827,7 +911,7 @@ async function relationColumns(model: SeederModel, options: SeederConfig = {}): 
  * foreign keys agree with one another.
  */
 export function chooseRelations(
-  pools: { column: string, rows: Record<string, unknown>[] }[],
+  pools: RelationPool[],
   count: number,
 ): Record<string, unknown>[] {
   if (pools.length === 0)
@@ -838,7 +922,7 @@ export function chooseRelations(
   const wanted = new Set(pools.map(pool => pool.column))
 
   /** How many of the other foreign keys this parent's rows carry. */
-  const specificity = (pool: { column: string, rows: Record<string, unknown>[] }): number => {
+  const specificity = (pool: RelationPool): number => {
     const sample = pool.rows[0] ?? {}
     return [...wanted].filter(column => column !== pool.column && column in sample).length
   }
@@ -930,11 +1014,68 @@ function claimUniqueValues(
   return distinct
 }
 
+/**
+ * The column sets a model declares unique together, in their database spelling.
+ *
+ * `uniqueColumns` above handles a single unique column a factory fills, by
+ * regenerating and then disambiguating the value. A composite unique index is
+ * different in kind: it is usually made of foreign keys (`team_id` + `user_id`
+ * on a membership), which the factory does not fill at all, so nothing ever
+ * checked them and the random parent picks repeated a pair within a handful of
+ * rows. The insert died on the duplicate and the whole table stayed empty
+ * (stacksjs/stacks#2861).
+ *
+ * A single `unique: true` foreign key (a one-to-one) is included here too,
+ * since it is filled the same way and fails the same way.
+ */
+export function uniqueColumnSets(model: Pick<SeederModel, 'model' | 'attributes'>): string[][] {
+  const sets: string[][] = []
+
+  const indexes = (model.model as { indexes?: { columns?: string[], unique?: boolean }[] }).indexes ?? []
+  for (const index of indexes) {
+    if (index?.unique === true && Array.isArray(index.columns) && index.columns.length > 0)
+      sets.push(index.columns.map(column => snakeCase(column)))
+  }
+
+  const relationColumns = new Set(parentRelations(model as SeederModel).map(relation => relation.column))
+  for (const column of uniqueColumns(model.attributes)) {
+    if (relationColumns.has(column))
+      sets.push([column])
+  }
+
+  return sets
+}
+
+/**
+ * The key a record holds in a unique set, or null when it holds none.
+ *
+ * Null when any column is null, because every engine here treats nulls as
+ * distinct in a unique index: two rows with a null in the set never collide.
+ */
+function uniqueKey(record: Record<string, unknown>, columns: readonly string[]): string | null {
+  const values = columns.map(column => record[column])
+  return values.some(value => value == null) ? null : JSON.stringify(values)
+}
+
+/** How many times a row's parents are re-drawn before the row is given up. */
+const RELATION_ATTEMPTS = 25
+
 async function generateRecords(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
-  const relations = await relationColumns(model, options)
+  const pools = await relationPools(model, options)
+  const relations = chooseRelations(pools, model.count)
   const unique = uniqueColumns(model.attributes)
   const used = new Map<string, Set<unknown>>()
+  const sets = uniqueColumnSets(model)
+  const claimed = sets.map(() => new Set<string>())
+  let dropped = 0
+
+  /** Whether `row` repeats a combination an earlier row already holds. */
+  const collides = (row: Record<string, unknown>): boolean =>
+    sets.some((columns, i) => {
+      const key = uniqueKey(row, columns)
+      return key !== null && claimed[i]!.has(key)
+    })
 
   for (let i = 0; i < model.count; i++) {
     // A factory that throws is reported on the first record and then stays
@@ -951,15 +1092,45 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
       claimUniqueValues(record, unique, used, i + 1)
     }
     const fixture = model.fixtures[i]
+
     // Relations fill only what the record left empty, so an explicit factory
     // on a declared key keeps its value.
-    const relation = relations[i] ?? {}
-    const withRelations = { ...record }
-    for (const [column, value] of Object.entries(relation)) {
-      if (withRelations[column] == null)
-        withRelations[column] = value
+    const attach = (relation: Record<string, unknown>): Record<string, unknown> => {
+      const withRelations = { ...record }
+      for (const [column, value] of Object.entries(relation)) {
+        if (withRelations[column] == null)
+          withRelations[column] = value
+      }
+      return fixture ? { ...withRelations, ...fixtureToColumns(fixture) } : withRelations
     }
-    records.push(fixture ? { ...withRelations, ...fixtureToColumns(fixture) } : withRelations)
+
+    let row = attach(relations[i] ?? {})
+
+    // A fixture is the app saying exactly what the row is, so it is never
+    // re-drawn or dropped: a duplicate there is the fixture's to fix, and the
+    // database will say so.
+    if (!fixture && pools.length > 0) {
+      for (let attempt = 0; attempt < RELATION_ATTEMPTS && collides(row); attempt++)
+        row = attach(chooseRelations(pools, 1)[0] ?? {})
+
+      // Every combination the parents allow is taken. Fewer rows is the
+      // honest outcome: a duplicate fails the whole batch, not just this row.
+      if (collides(row)) {
+        dropped++
+        continue
+      }
+    }
+
+    sets.forEach((columns, s) => {
+      const key = uniqueKey(row, columns)
+      if (key !== null)
+        claimed[s]!.add(key)
+    })
+    records.push(row)
+  }
+
+  if (dropped > 0) {
+    log.info(`  ${model.name}: seeding ${records.length} of ${model.count} rows - the parent rows allow no more distinct ${sets.map(columns => `(${columns.join(', ')})`).join(' / ')} combinations.`)
   }
 
   return records
@@ -1025,6 +1196,11 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
       }
     }
 
+    // An account seeded here is a fixture its children may point at (see
+    // ACCOUNT_MODELS), so note where the table stood before the insert.
+    const account = isAccountModel(model.name)
+    const highestIdBefore = account ? await highestId(model.table).catch(() => undefined) : undefined
+
     // Insert records in batches for better performance
     const batchSize = 100
     let inserted = 0
@@ -1038,6 +1214,9 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
 
       inserted += batch.length
     }
+
+    if (account)
+      await rememberSeededAccounts(model, highestIdBefore, inserted)
 
     if (options.verbose) {
       log.success(`  Seeded ${model.name}: ${inserted} records`)
@@ -1215,6 +1394,9 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   // Registered before any filtering, so a parent excluded from this run is
   // still resolvable when a child needs its table to fill a foreign key.
   registerModelTables(models)
+
+  // Only accounts this run creates may be pointed at (see ACCOUNT_MODELS).
+  seededAccountRows.clear()
 
   if (models.length === 0) {
     log.warn('No seedable models found in defaults or user directories')
@@ -1394,6 +1576,10 @@ export async function seedModel$(
   if (options.count) {
     model.count = options.count
   }
+
+  // A single-model run seeds no accounts of its own (see ACCOUNT_MODELS), so
+  // nothing a previous run remembered may be pointed at.
+  seededAccountRows.clear()
 
   return seedModel(model, {
     fresh: options.fresh,

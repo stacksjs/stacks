@@ -32,10 +32,15 @@ export function seed(buddy: CLI): void {
     // silently invalidate every currently-logged-in user's session.
     // Pass --allow-protected to override.
     .option('--allow-protected', 'Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens)', { default: false })
+    // Account foreign keys (User, Team, Customer) point only at accounts the
+    // same run seeded, so invented rows never land on a real sign-in. A
+    // scratch database whose accounts are fixtures from an earlier run opts
+    // in to using them (stacksjs/stacks#2861).
+    .option('--attach-accounts', 'Point seeded rows at existing User/Team/Customer rows, not only ones this run seeded (scratch databases only)', { default: false })
     .option('--fresh', 'Truncate tables before seeding', { default: false })
     .option('--append', 'Add rows to tables that already have some, instead of skipping them', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SeedOptions & { only?: string, except?: string, onlySeeders?: string, exceptSeeders?: string, tag?: string, skipModels?: boolean, skipApplicationSeeders?: boolean, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
+    .action(async (options: SeedOptions & { only?: string, except?: string, onlySeeders?: string, exceptSeeders?: string, tag?: string, skipModels?: boolean, skipApplicationSeeders?: boolean, includeDefaults?: boolean, allowProtected?: boolean, attachAccounts?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
       log.debug('Running `buddy seed` ...', options)
 
       const perf = await intro('buddy seed')
@@ -61,6 +66,7 @@ export function seed(buddy: CLI): void {
             except: list(options.except),
             includeDefaults: options.includeDefaults,
             allowProtected: options.allowProtected,
+            attachAccounts: options.attachAccounts,
           })
       const applicationSummary = options.skipApplicationSeeders
         ? { total: 0, successful: 0, failed: 0, results: [], duration: 0 }

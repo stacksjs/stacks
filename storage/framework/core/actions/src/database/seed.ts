@@ -8,12 +8,13 @@ import { seed } from '@stacksjs/database'
 // can be opted out of without reaching for env vars.
 const argv = process.argv.slice(2)
 const allowProtected = argv.includes('--allow-protected') || argv.includes('--allowProtected')
+const attachAccounts = argv.includes('--attach-accounts') || argv.includes('--attachAccounts')
 const fresh = argv.includes('--fresh')
 
 const startTime = Date.now()
 
 try {
-  const result = await seed({ verbose: true, fresh, allowProtected })
+  const result = await seed({ verbose: true, fresh, allowProtected, attachAccounts })
   const duration = Date.now() - startTime
 
   if (result.failed > 0) {

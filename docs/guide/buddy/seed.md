@@ -78,6 +78,7 @@ model.
 | `--include-defaults` | Also seed the framework's built-in models |
 | `--fresh` | Truncate each table before seeding |
 | `--allow-protected` | Seed auth/oauth models on a non-fresh database |
+| `--attach-accounts` | Point seeded rows at existing `User`/`Team`/`Customer` rows, not only ones this run seeded |
 | `-p, --project [project]` | Target a specific project |
 | `--verbose` | Enable verbose output |
 
@@ -120,11 +121,26 @@ The first two rows are those two; the remaining 48 come from the factories. If
 default, so re-running it will not pile up duplicates. Pass `--fresh` to
 truncate and regenerate.
 
-**Auth and OAuth models are protected.** On a non-fresh database, `User`,
-`OauthAccessToken`, `OauthRefreshToken` and friends are skipped, because
+**Auth and OAuth models are protected.** On a non-fresh database,
+`OauthClient`, `OauthAccessToken`, `OauthRefreshToken` and
+`PersonalAccessToken` are skipped, because
 re-rolling the Personal Access Client secret would silently invalidate every
 live session. `--fresh` seeds them (you are wiping the database anyway), and
 `--allow-protected` is the explicit override.
+
+**Seeded rows only attach to seeded accounts.** A `belongsTo` to `User`, `Team`
+or `Customer` is filled from the account rows the same run inserted, so
+`buddy migrate:fresh --seed` gives every issue an author and every review a
+reviewer. An account that was in the table before the run may be a real person,
+so it is never used, and the key is left empty with a notice saying why. On a
+scratch database whose accounts are fixtures from an earlier run, pass
+`--attach-accounts` to use them.
+
+**Composite unique indexes are respected.** A model-level
+`indexes: [{ columns: ['team_id', 'user_id'], unique: true }]`, or a
+`unique: true` foreign key, never gets a repeated combination. When the parents
+allow fewer distinct combinations than `count` asks for, fewer rows are seeded
+and the seeder says so, instead of the whole insert failing on a duplicate.
 
 **Your models win over the defaults.** `app/Models/Post.ts` replaces the
 built-in `Post`; only one of them seeds. Framework models are excluded entirely
