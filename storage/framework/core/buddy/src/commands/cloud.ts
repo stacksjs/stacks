@@ -890,10 +890,14 @@ export function cloud(buddy: CLI): void {
 
       if (options.ssh || options.connect) {
         const jumpBoxId = await getJumpBoxInstanceId()
-        const result = await runCommand(`aws ssm start-session --target ${jumpBoxId}`, {
+        // An interactive session: the terminal's own stdin and stdout. It was
+        // given a piped stdin (and, through it, a piped stdout), so nothing
+        // typed reached the box and nothing it printed reached the screen.
+        const result = await runCommand(['aws', 'ssm', 'start-session', '--target', String(jumpBoxId)], {
           ...options,
           cwd: p.projectPath(),
-          stdin: 'pipe',
+          stdin: 'inherit',
+          stdout: 'inherit',
         })
 
         if (isResultError(result)) {
@@ -1374,6 +1378,9 @@ export function cloud(buddy: CLI): void {
           ...options,
           cwd: p.projectPath(),
           stdin: 'pipe',
+          // The invalidation JSON stays out of the terminal, as it did when
+          // stdout silently followed stdin; the outro reports the result.
+          stdout: 'pipe',
         },
       )
 

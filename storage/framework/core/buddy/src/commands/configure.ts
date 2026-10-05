@@ -78,6 +78,9 @@ async function configureAws(options?: ConfigureOptions) {
     cwd: p.projectPath(),
     stdin: 'pipe', // set stdin mode to 'pipe' to write to it
     input, // the actual input to write
+    // `aws configure` echoes a prompt per answer written above. Kept out of the
+    // terminal, as it always was when stdout silently followed stdin.
+    stdout: 'pipe',
   })
 
   if (resultFailed(result)) {

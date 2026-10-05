@@ -34,11 +34,18 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   const cwd = options?.cwd ?? process.cwd()
   const timeoutMs = options?.timeoutMs
 
+  // Each stream as the caller asked for it, from `stdin`/`stdout`/`stderr` or a
+  // `stdio` triple. stdout used to follow stdin whenever stdin was set - and
+  // `runCommand` always sets it - so `runCommand(cmd, { stdout: 'pipe' })`
+  // never piped, `runProcess` (which asks through `stdio`) never piped
+  // either, and callers that needed a command's output went around both.
+  const [stdioIn, stdioOut, stdioErr] = Array.isArray(options?.stdio) ? options.stdio : []
+  const quiet = options?.silent || options?.quiet
+
   const proc = Bun.spawn(cmd, {
-    // ...options,
-    stdin: options?.stdin ?? 'inherit',
-    stdout: (options?.silent || options?.quiet) ? 'ignore' : options?.stdin ? options.stdin : (options?.stdout || 'inherit'),
-    stderr: (options?.silent || options?.quiet) ? 'ignore' : (options?.stderr || 'inherit'),
+    stdin: options?.stdin ?? stdioIn ?? 'inherit',
+    stdout: (quiet ? 'ignore' : (options?.stdout ?? stdioOut ?? 'inherit')) as SpawnOptions.Readable,
+    stderr: (quiet ? 'ignore' : (options?.stderr ?? stdioErr ?? 'inherit')) as SpawnOptions.Readable,
 
     // detached: options?.background || false,
     cwd,
