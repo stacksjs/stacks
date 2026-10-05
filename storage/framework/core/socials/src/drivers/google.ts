@@ -26,6 +26,14 @@ interface GoogleUser {
 export class GoogleProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://accounts.google.com'
   protected apiUrl = 'https://www.googleapis.com'
+  /**
+   * The documented token endpoint. `accounts.google.com/oauth2/v4/token` still
+   * answers, but it has not been the documented one for years, and an
+   * undocumented endpoint is the kind that goes without notice
+   * (stacksjs/stacks#2859). One constant, so the exchange and
+   * `getTokenUrl()` cannot disagree.
+   */
+  protected tokenUrl = 'https://oauth2.googleapis.com/token'
 
   private getConfig() {
     // Instance values (constructor args or set*() calls) win over the
@@ -81,7 +89,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
     this.validateConfig()
 
     const response = await fetcher
-      .post<GoogleTokenResponse>(`${this.baseUrl}/oauth2/v4/token`, {
+      .post<GoogleTokenResponse>(this.tokenUrl, {
         client_id: clientId,
         client_secret: clientSecret,
         code,
@@ -136,6 +144,6 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
   }
 
   protected getTokenUrl(): string {
-    return `${this.baseUrl}/oauth2/v4/token`
+    return this.tokenUrl
   }
 }
