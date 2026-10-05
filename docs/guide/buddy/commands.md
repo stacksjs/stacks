@@ -1146,6 +1146,8 @@ Roll back a deployment to a preserved release
 | `--env` | Environment to roll back | value, required | `"production"` |
 | `--to` | Preserved release id to activate | value, required | - |
 | `--dry-run` | Preview the rollback without changing the active release | boolean, optional | `false` |
+| `--all` | Every configured site, instead of one | boolean, optional | `false` |
+| `--only-if-live` | Only roll back a site whose live release is this commit (what a failed deploy switched) | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `desktop:apple:csr`
