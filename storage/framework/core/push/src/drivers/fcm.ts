@@ -54,36 +54,50 @@ export function configure(options: FCMConfig): void {
 }
 
 /**
- * Get OAuth2 access token for FCM v1 API
+ * base64url, the only encoding a JWS segment may use (RFC 7515 section 2).
+ *
+ * Plain base64 is not interchangeable: `+`, `/` and the `=` padding all make
+ * Google's token endpoint reject the assertion, and roughly two thirds of
+ * service account addresses produce at least one of them.
  */
-async function getAccessToken(): Promise<string> {
-  if (!config.serviceAccount) {
-    throw new Error('Service account not configured for FCM v1 API')
-  }
+function base64Url(input: string): string {
+  return btoa(input)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+}
 
-  const { clientEmail, privateKey } = config.serviceAccount
-
-  // Create JWT for Google OAuth2
-  const now = Math.floor(Date.now() / 1000)
+/**
+ * Build the signed JWT that Google's OAuth2 endpoint accepts as a service
+ * account assertion.
+ *
+ * `nowSeconds` is a parameter rather than a `Date.now()` read so the encoding
+ * can be asserted against a fixed claim set.
+ */
+export async function buildServiceAccountAssertion(
+  clientEmail: string,
+  privateKey: string,
+  nowSeconds: number,
+): Promise<string> {
   const header = { alg: 'RS256', typ: 'JWT' }
   const payload = {
     iss: clientEmail,
     scope: 'https://www.googleapis.com/auth/firebase.messaging',
     aud: 'https://oauth2.googleapis.com/token',
-    iat: now,
-    exp: now + 3600,
+    iat: nowSeconds,
+    exp: nowSeconds + 3600,
   }
 
   const encoder = new TextEncoder()
-  const headerB64 = btoa(JSON.stringify(header))
-  const payloadB64 = btoa(JSON.stringify(payload))
+  const headerB64 = base64Url(JSON.stringify(header))
+  const payloadB64 = base64Url(JSON.stringify(payload))
   const signatureInput = `${headerB64}.${payloadB64}`
 
   // Import the private key and sign
   const keyData = privateKey
     .replace(/-----BEGIN PRIVATE KEY-----/, '')
     .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\n/g, '')
+    .replace(/\s/g, '')
 
   const binaryKey = Uint8Array.from(atob(keyData), c => c.charCodeAt(0))
   const cryptoKey = await crypto.subtle.importKey(
@@ -100,12 +114,26 @@ async function getAccessToken(): Promise<string> {
     encoder.encode(signatureInput),
   )
 
-  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '')
+  const signatureB64 = base64Url(String.fromCharCode(...new Uint8Array(signature)))
 
-  const jwt = `${headerB64}.${payloadB64}.${signatureB64}`
+  return `${headerB64}.${payloadB64}.${signatureB64}`
+}
+
+/**
+ * Get OAuth2 access token for FCM v1 API
+ */
+async function getAccessToken(): Promise<string> {
+  if (!config.serviceAccount) {
+    throw new Error('Service account not configured for FCM v1 API')
+  }
+
+  const { clientEmail, privateKey } = config.serviceAccount
+
+  const jwt = await buildServiceAccountAssertion(
+    clientEmail,
+    privateKey,
+    Math.floor(Date.now() / 1000),
+  )
 
   // Exchange JWT for access token
   const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
