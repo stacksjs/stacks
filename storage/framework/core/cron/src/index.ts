@@ -14,8 +14,10 @@ import { parseCron } from './parser'
 //   parse('@hourly')            → next hour
 //   parse('0,15,30,45 * * * *') → next 15-min mark
 export function parse(expression: string, relativeDate?: Date | number, options: import('./parser').ParseCronOptions = {}): Date | null {
-  // Use native Bun.cron.parse when available (ships with Bun.cron PR)
-  if (typeof Bun !== 'undefined' && Bun.cron?.parse) {
+  // Bun's native parser when it exists - but it takes no timezone, so a
+  // `tz` goes to our own. Handing it over regardless dropped the option, and
+  // every `setTimeZone()` schedule ran on the server's clock instead.
+  if (!options.tz && typeof Bun !== 'undefined' && Bun.cron?.parse) {
     return Bun.cron.parse(expression, relativeDate)
   }
 

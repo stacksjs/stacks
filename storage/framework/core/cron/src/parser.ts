@@ -209,6 +209,34 @@ export function parseCron(expression: string, relativeDate?: Date | number, opti
   while (d.getTime() < maxTime) {
     const parts = getParts(d)
 
+    // In a timezone, skip in local units. The skips below move in UTC ones -
+    // to 00:00 UTC on the next day or month, to the next UTC hour - and a
+    // zone's local boundaries are not there. West of UTC a day skip landed at
+    // 17:00 local, past the hour it was looking for, so `0 9 1 * *` in Los
+    // Angeles never fired; in a half-hour zone every hour skip landed on :30,
+    // so `0 9 * * *` in India never fired; east of UTC a month skip landed
+    // after local midnight, so `0 0 1 3 *` in Tokyo slipped a year. Stepping
+    // to the next local hour while the date or hour is wrong, then minute by
+    // minute, is exact in wall-clock terms and safe across DST.
+    if (tz) {
+      const dayMatches = domWild && dowWild
+        ? true
+        : domWild
+          ? daysOfWeek.has(parts.dow)
+          : dowWild
+            ? daysOfMonth.has(parts.day)
+            : daysOfMonth.has(parts.day) || daysOfWeek.has(parts.dow)
+      if (!months.has(parts.month) || !dayMatches || !hours.has(parts.hour)) {
+        d.setTime(d.getTime() + (60 - parts.minute) * 60_000)
+        continue
+      }
+      if (!minutes.has(parts.minute)) {
+        d.setTime(d.getTime() + 60_000)
+        continue
+      }
+      return new Date(d.getTime())
+    }
+
     // Month check
     if (!months.has(parts.month)) {
       d.setUTCMonth(d.getUTCMonth() + 1, 1)
