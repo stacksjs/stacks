@@ -18,7 +18,7 @@
  * than processing unauthenticated requests.
  */
 
-import { route } from '@stacksjs/router'
+import { clientAddress, route } from '@stacksjs/router'
 import {
   buildUnsubscribeUrl as _ignored, // import-side dep to ensure tree-shake doesn't drop the module
   handleMailgunWebhook,
@@ -104,10 +104,9 @@ route.post('/webhooks/email/postmark', async (req) => {
   }
   const rawBody = await req.text()
   const auth = req.headers.get('authorization')
-  // Bun's Request exposes the client IP via the server's `requestIP` API,
-  // not directly on the request. The framework's enhanced-request layer
-  // surfaces it via _clientIp when available; fall back gracefully.
-  const sourceIp = (req as unknown as { _clientIp?: string })._clientIp
+  // Postmark's address as trusted proxies report it. This read `_clientIp`,
+  // which nothing sets, so a configured `ipAllowlist` refused every delivery.
+  const sourceIp = clientAddress(req) ?? undefined
   const result = await handlePostmarkWebhook(rawBody, auth, sourceIp, {
     username,
     password,

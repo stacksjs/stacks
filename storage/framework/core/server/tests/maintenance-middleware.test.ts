@@ -3,6 +3,7 @@ import { expect, test } from 'bun:test'
 for (const [fixture, description] of [
   ['maintenance-middleware', 'a warmed maintenance middleware observes live mode changes'],
   ['maintenance-paths', 'maintenance paths follow working-directory changes and live files'],
+  ['maintenance-client-address', 'the maintenance allow-list matches the address trusted proxies report, not one a client wrote'],
 ]) {
   test(description, async () => {
     const child = Bun.spawn([process.execPath, `${import.meta.dir}/fixtures/${fixture}.ts`], { stdout: 'pipe', stderr: 'pipe' })

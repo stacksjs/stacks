@@ -5,6 +5,8 @@
  * in both topologies (stacksjs/stacks#1950).
  */
 
+import { peerAddress } from '@stacksjs/bun-router'
+
 /** The prefix that is always API-bound, with or without configuration. */
 export const DEFAULT_API_PREFIX = '/api/'
 
@@ -201,7 +203,12 @@ export function describeUnforwardableRoutes(routes: readonly (RoutePathLike & { 
   ].join('\n')
 }
 
-export async function proxyToBackend(req: Request, backendBase: string, stripPrefix?: string): Promise<Response> {
+/**
+ * Forward `req` to `backendBase`. `peerOf` is the request whose socket peer is
+ * appended to `X-Forwarded-For`: `req` itself, or - when `req` is a rewritten
+ * copy, which has no socket - the request that arrived.
+ */
+export async function proxyToBackend(req: Request, backendBase: string, stripPrefix?: string, peerOf: Request = req): Promise<Response> {
   const incoming = new URL(req.url)
   let pathname = incoming.pathname
   if (stripPrefix && (pathname === stripPrefix || pathname.startsWith(`${stripPrefix}/`))) {
@@ -212,6 +219,15 @@ export async function proxyToBackend(req: Request, backendBase: string, stripPre
   const fwd = new Headers(req.headers)
   fwd.delete('host')
   fwd.delete('content-length')
+  // Name the hop this process saw. The backend trusts this process (it
+  // connects over loopback), so the last X-Forwarded-For entry is the one it
+  // believes. Forwarding the header untouched let a client that reached this
+  // port directly write that entry itself.
+  const peer = peerAddress(peerOf)
+  if (peer) {
+    const forwardedFor = fwd.get('x-forwarded-for')
+    fwd.set('x-forwarded-for', forwardedFor ? `${forwardedFor}, ${peer}` : peer)
+  }
   fwd.set('x-forwarded-host', incoming.host)
   fwd.set('x-forwarded-proto', incoming.protocol.replace(':', ''))
 

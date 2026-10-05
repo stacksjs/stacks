@@ -24,6 +24,7 @@ beforeAll(() => {
         host: req.headers.get('host'),
         forwardedHost: req.headers.get('x-forwarded-host'),
         forwardedProto: req.headers.get('x-forwarded-proto'),
+        forwardedFor: req.headers.get('x-forwarded-for'),
       })
     },
   })
@@ -88,6 +89,44 @@ describe('proxyToBackend', () => {
     expect(echo.forwardedProto).toBe('http')
     // fetch re-derives host from the upstream target; the original must not leak.
     expect(echo.host).not.toContain('frontend.test')
+  })
+
+  test('appends the socket peer it saw to X-Forwarded-For', async () => {
+    // The backend trusts this hop (loopback), so the last entry is the one it
+    // believes. Forwarded untouched, a client reaching the views port directly
+    // wrote that entry itself.
+    const { registerPeerSource } = await import('@stacksjs/bun-router')
+    const { proxyToBackend } = await import('../src/proxy')
+    const front = Bun.serve({
+      port: 0,
+      hostname: '127.0.0.1',
+      fetch(req, server) {
+        registerPeerSource(server)
+        const url = new URL(req.url)
+        // A rewrite proxies a copy, which has no socket of its own.
+        if (url.pathname === '/rewritten')
+          return proxyToBackend(new Request(new URL('/api/target', url), req), base, undefined, req)
+        return proxyToBackend(req, base)
+      },
+    })
+    try {
+      const via = async (path: string, headers: Record<string, string> = {}) =>
+        (await (await fetch(`http://127.0.0.1:${front.port}${path}`, { headers })).json() as any).forwardedFor
+
+      expect(await via('/api/ping', { 'x-forwarded-for': '198.51.100.1' })).toBe('198.51.100.1, 127.0.0.1')
+      expect(await via('/api/ping')).toBe('127.0.0.1')
+      expect(await via('/rewritten', { 'x-forwarded-for': '198.51.100.1' })).toBe('198.51.100.1, 127.0.0.1')
+    }
+    finally {
+      front.stop(true)
+    }
+  })
+
+  test('leaves X-Forwarded-For alone when there is no socket peer', async () => {
+    const { proxyToBackend } = await import('../src/proxy')
+    const req = new Request('http://frontend.test/api/ping', { headers: { 'x-forwarded-for': '203.0.113.7' } })
+    const echo = await (await proxyToBackend(req, base)).json() as any
+    expect(echo.forwardedFor).toBe('203.0.113.7')
   })
 
   test('does not follow upstream redirects', async () => {

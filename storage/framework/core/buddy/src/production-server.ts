@@ -199,7 +199,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   // drift, and then this half kept its own.
   const { resolveDefaultsResources } = await import('@stacksjs/actions/dev/defaults-resources')
   const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
-  const { enhanceRequest, loadMiddlewareHandlers } = await import('@stacksjs/router')
+  const { enhanceRequest, loadMiddlewareHandlers, registerPeerSource } = await import('@stacksjs/router')
   const pageMiddleware = await loadMiddlewareHandlers()
   // Rebuild the barrels when the installed package set moved since they were
   // written (stacksjs/stacks#2445). Same guard as the API entry; see the
@@ -424,10 +424,16 @@ export async function startProductionServer(options?: { port?: string | number, 
         // request. The gate allowlists `/coming-soon`, the secret bypass URL,
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
-        onRequest: async (req: Request) => {
+        onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
           // First, before any `await`: this request's scope for its
           // server scripts (see `installRequestScope()` above).
           const snapshot = enterRequestScope(req)
+          // The server names each request's socket peer, which is what
+          // `clientAddress()` - the maintenance allow-list, the peer appended
+          // when proxying to the API - starts from. Without it every
+          // forwarding header is believed, and a client that reaches this port
+          // directly writes its own.
+          registerPeerSource(server)
 
           const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect, resolveRewrite } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)
@@ -457,7 +463,7 @@ export async function startProductionServer(options?: { port?: string | number, 
 
             try {
               const target = new URL(`${rewritten}${url.search}`, url.origin)
-              return await proxyToBackend(new Request(target, req), apiBase)
+              return await proxyToBackend(new Request(target, req), apiBase, undefined, req)
             }
             catch (error) {
               log.error(`Rewrite of ${url.pathname} to ${rewritten} failed: ${(error as Error).message}`)

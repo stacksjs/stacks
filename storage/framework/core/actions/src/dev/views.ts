@@ -171,7 +171,7 @@ async function startDefaultServer() {
   // Cookie name the SPA writes when a user logs in. Defaults to whatever
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
   const { authCookieName, stxPageAuthMiddleware } = await import('@stacksjs/auth')
-  const { enhanceRequest, loadMiddlewareHandlers } = await import('@stacksjs/router')
+  const { enhanceRequest, loadMiddlewareHandlers, registerPeerSource } = await import('@stacksjs/router')
   const authCookie = authCookieName()
   const pageMiddleware = await loadMiddlewareHandlers()
 
@@ -226,10 +226,12 @@ async function startDefaultServer() {
       ...stxPageAuthMiddleware({ cookieName: authCookie, redirectTo: '/login' }),
     },
     prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
-    onRequest: async (req: Request) => {
+    onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]) => {
       // First, before any `await`: this request's scope for its server
       // scripts (see `installRequestScope()` above).
       const snapshot = enterRequestScope(req)
+      // Lets `clientAddress()` read the socket peer, as `buddy serve` does.
+      registerPeerSource(server)
       const url = new URL(req.url)
 
       // Maintenance / coming-soon gate. Runs first so it can intercept
@@ -255,7 +257,7 @@ async function startDefaultServer() {
       const rewritten = resolveRewrite(url.pathname, rewriteRules)
       if (rewritten) {
         const target = new URL(`${rewritten}${url.search}`, url.origin)
-        return proxyToBackend(new Request(target, req), apiBase)
+        return proxyToBackend(new Request(target, req), apiBase, undefined, req)
       }
 
       // After rewrites, so an app that serves its own sitemap from the API

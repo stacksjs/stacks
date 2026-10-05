@@ -4,7 +4,8 @@ import { resolve } from 'node:path'
 import { Gate } from '../src/gate'
 import { BasePolicy } from '../src/policy'
 import { RateLimiter } from '../src/rate-limiter'
-import { fingerprintMismatch } from '../src/session-auth'
+import { runWithRequest } from '@stacksjs/router'
+import { fingerprintMismatch, readRequestFingerprint } from '../src/session-auth'
 import { selectActiveTeam } from '../src/team'
 
 // Auth correctness sweep (stacksjs/stacks#1985). One functional test for the
@@ -190,6 +191,22 @@ describe('fingerprintMismatch - session hijack detection logic (#1985)', () => {
   it('never a mismatch when either side of a field is absent (no spurious lockout)', () => {
     expect(fingerprintMismatch(true, { ip: null, userAgent: null }, otherIp)).toBe(false)
     expect(fingerprintMismatch(true, stored, { ip: null, userAgent: null })).toBe(false)
+  })
+})
+
+describe('readRequestFingerprint - the address a session is pinned to', () => {
+  const capture = (headers: Record<string, string>) =>
+    runWithRequest(new Request('http://localhost/', { headers }) as any, () => readRequestFingerprint())
+
+  it('is the hop a trusted proxy reported, not one the client prefixed', () => {
+    // A client holding a stolen session id could name its owner's address in
+    // X-Forwarded-For and pass the IP check that exists to stop it.
+    expect(capture({ 'x-forwarded-for': '203.0.113.7, 198.51.100.1' }).ip).toBe('198.51.100.1')
+    expect(capture({ 'x-forwarded-for': '203.0.113.7, 10.0.0.2' }).ip).toBe('203.0.113.7')
+  })
+
+  it('is null with nothing to go on', () => {
+    expect(capture({}).ip).toBeNull()
   })
 })
 

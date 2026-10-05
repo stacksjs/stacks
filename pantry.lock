@@ -251,7 +251,7 @@
       "name": "@stacksjs/auth",
       "version": "0.75.66",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.18",
+        "@stacksjs/bun-router": "^0.1.22",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -1070,7 +1070,7 @@
       "name": "@stacksjs/router",
       "version": "0.75.66",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.21",
+        "@stacksjs/bun-router": "^0.1.22",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1145,6 +1145,7 @@
       "version": "0.75.66",
       "dependencies": {
         "@stacksjs/auth": "workspace:*",
+        "@stacksjs/bun-router": "^0.1.22",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/i18n": "workspace:*",
@@ -1467,12 +1468,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/bun-queue/-/bun-queue-0.1.8.tgz",
       "integrity": "sha512-4nrKGXksRW/57VJqpLQmnX5SI9yE4OsRKp60jE8MoZI4vzH45MJQrBzFgAiGITzmjnbmxHN1c5a9kG+kbp94rw=="
     },
-    "@stacksjs/bun-router@0.1.21": {
+    "@stacksjs/bun-router@0.1.22": {
       "name": "@stacksjs/bun-router",
-      "version": "0.1.21",
+      "version": "0.1.22",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/bun-router/-/bun-router-0.1.21.tgz",
-      "integrity": "sha512-26nF0D5xiP1DkLmRiYfzFq0VkXpMF2/wghhcLllRrdsYNzeBrzlwS8n3ee8ATEsbjHM08J+ZZxPr7YTo+ji/xA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/bun-router/-/bun-router-0.1.22.tgz",
+      "integrity": "sha512-m2vhVjDEJEMkXmCWka0TrMsMeBNdYE9qwhomMuqaawTVg8pHc/oB0UM5p3Bwy5vMYUd+FAk8JeP+GVrSzo5QEw==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "ts-rate-limiter": "^0.4.2"

@@ -101,6 +101,7 @@ const apiBase = resolveApiBase(config.ports?.api)
 // stays reachable from here exactly as it is from the public site.
 const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
 const { Auth } = await import('@stacksjs/auth')
+const { registerPeerSource } = await import('@stacksjs/router')
 const { serve } = await import('bun-plugin-stx/serve')
 
 await serve({
@@ -130,7 +131,10 @@ await serve({
    * that renders a staff record are refused identically — an attacker learns
    * nothing from the difference.
    */
-  onRequest: async (req: Request): Promise<Response | null> => {
+  onRequest: async (req: Request, server?: Parameters<typeof registerPeerSource>[0]): Promise<Response | null> => {
+    // Lets `clientAddress()` read the socket peer: the API this proxies to
+    // trusts the address appended here, so it must not come from a header.
+    registerPeerSource(server)
     const url = new URL(req.url)
 
     const decision = await decideDashboardAccess(

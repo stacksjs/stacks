@@ -5,7 +5,7 @@ import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { config } from '@stacksjs/config'
 import { db, getDatabaseDialect, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
-import { getCurrentRequest } from '@stacksjs/router'
+import { clientAddress, getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { findAuthUserByEmail, normalizeAuthEmail } from './credential-user'
 import { RateLimiter } from './rate-limiter'
@@ -27,7 +27,7 @@ function generateSessionId(): string {
  * IP/UA fingerprints to compare against). See
  * stacksjs/stacks#1860 H-6.
  */
-function readRequestFingerprint(
+export function readRequestFingerprint(
   override?: { ip?: string | null, userAgent?: string | null },
 ): { ip: string | null, userAgent: string | null } {
   if (override) {
@@ -39,15 +39,12 @@ function readRequestFingerprint(
   const req = getCurrentRequest()
   if (!req) return { ip: null, userAgent: null }
 
-  // Prefer the request's own `ip()` macro when it's a function (some
-  // EnhancedRequest configs); fall back to `X-Forwarded-For` first
-  // entry, then `X-Real-IP`. We do NOT trust forwarding headers
-  // unconditionally — userland that needs a strict policy should set
-  // a trust-proxy layer before this code runs.
+  // The address trusted proxies vouch for (`clientAddress()`). This read the
+  // first `X-Forwarded-For` entry, which the client writes: whoever held a
+  // stolen session id could name the owner's address and pass the IP check
+  // that exists to stop them.
   const headers = req.headers
-  const fwd = headers?.get?.('x-forwarded-for') || headers?.get?.('X-Forwarded-For') || ''
-  const realIp = headers?.get?.('x-real-ip') || headers?.get?.('X-Real-IP') || ''
-  const ip = (fwd ? fwd.split(',')[0]!.trim() : '') || realIp || null
+  const ip = clientAddress(req as Request)
   const userAgent = headers?.get?.('user-agent') || headers?.get?.('User-Agent') || null
   return { ip, userAgent }
 }

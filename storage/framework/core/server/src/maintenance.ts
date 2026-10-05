@@ -15,6 +15,7 @@
  * if (await isDownForMaintenance()) { ... }
  */
 
+import { clientAddress } from '@stacksjs/bun-router'
 import { log } from '@stacksjs/logging/runtime'
 import * as p from '@stacksjs/path'
 import { existsSync } from 'node:fs'
@@ -609,16 +610,20 @@ function parseCookieHeader(header: string | null): Record<string, string> {
 }
 
 /**
- * Extract the most plausible client IP from a Request.
+ * The client's address, as `clientAddress()` resolves it: the socket peer, or
+ * - only when that peer is a trusted proxy - the forwarding headers it vouches
+ * for.
+ *
+ * This used to read the first `X-Forwarded-For` entry, which the client
+ * writes. Anyone who knew one allow-listed address could name it and walk
+ * past maintenance or coming-soon mode, including by connecting to the origin
+ * directly and skipping the CDN altogether.
+ *
+ * A request with neither a socket peer nor a forwarding header was built
+ * in-process, so it is local.
  */
 function clientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for')
-  if (fwd)
-    return fwd.split(',')[0]?.trim() ?? '127.0.0.1'
-  const real = req.headers.get('x-real-ip')
-  if (real)
-    return real
-  return '127.0.0.1'
+  return clientAddress(req) ?? '127.0.0.1'
 }
 
 /**

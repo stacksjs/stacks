@@ -265,7 +265,7 @@
       "name": "@stacksjs/auth",
       "version": "0.75.66",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.18",
+        "@stacksjs/bun-router": "^0.1.22",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -1137,7 +1137,7 @@
       "name": "@stacksjs/router",
       "version": "0.75.66",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.21",
+        "@stacksjs/bun-router": "^0.1.22",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1230,6 +1230,7 @@
       "version": "0.75.66",
       "dependencies": {
         "@stacksjs/auth": "workspace:*",
+        "@stacksjs/bun-router": "^0.1.22",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/i18n": "workspace:*",

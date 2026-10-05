@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@stacksjs/auth": "workspace:*",
+    "@stacksjs/bun-router": "^0.1.22",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/i18n": "workspace:*",
