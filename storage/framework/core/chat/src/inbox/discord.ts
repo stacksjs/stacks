@@ -126,6 +126,12 @@ export class DiscordInboxDriver implements InboxDriver {
   private muted = new Set<string>()
   /** Channels the inbox lists, so a server's other traffic is not reported. */
   private listed = new Set<string>()
+  /**
+   * The newest message seen in each channel, for its preview. Listing again
+   * after every event would otherwise fetch every recent DM's latest message
+   * each time - the kind of burst that gets a user account flagged.
+   */
+  private previews = new Map<string, { id: string, text: string | null, fromMe: boolean, at: number }>()
 
   constructor(config: DiscordInboxConfig) {
     this.token = config.token
@@ -281,11 +287,23 @@ export class DiscordInboxDriver implements InboxDriver {
           this.channels.set(data.channel_id, { ...channel, last_message_id: data.id })
         if (data.author)
           this.users.set(data.author.id, data.author)
+        this.previews.set(data.channel_id, {
+          id: data.id,
+          text: data.content || (data.attachments?.length ? 'Attachment' : null),
+          fromMe: data.author?.id === this.userId,
+          at: Date.parse(data.timestamp) || Date.now(),
+        })
         // Conversations the inbox lists, a DM (a new one has no server), and
         // anything that mentions the person - not every server's traffic.
         const mentionsMe = (data.mentions ?? []).some((user: DiscordUser) => user.id === this.userId)
-        if (this.listed.has(data.channel_id) || channel?.type === DM || channel?.type === GROUP_DM || (!channel && !data.guild_id) || mentionsMe)
-          this.emit({ type: 'message', conversationId: data.channel_id, message: this.toMessage(data.channel_id, data)[0]! })
+        const muted = this.muted.has(data.channel_id) || (!!data.guild_id && this.muted.has(data.guild_id))
+        if (this.listed.has(data.channel_id) || channel?.type === DM || channel?.type === GROUP_DM || (!channel && !data.guild_id) || mentionsMe) {
+          // A muted channel or server updates quietly unless the person is mentioned.
+          if (muted && !mentionsMe)
+            this.emit({ type: 'changed', conversationId: data.channel_id })
+          else
+            this.emit({ type: 'message', conversationId: data.channel_id, message: this.toMessage(data.channel_id, data)[0]! })
+        }
         break
       }
       case 'MESSAGE_ACK':
@@ -397,9 +415,17 @@ export class DiscordInboxDriver implements InboxDriver {
 
   private async describe(channel: DiscordChannel, withPreview: boolean): Promise<InboxConversation> {
     this.channels.set(channel.id, channel)
-    const latest = withPreview && channel.last_message_id
-      ? (await this.api<DiscordMessage[]>(`/channels/${channel.id}/messages?limit=1`).catch(() => [] as DiscordMessage[]))[0]
-      : undefined
+    let preview = this.previews.get(channel.id)
+    if (withPreview && channel.last_message_id && preview?.id !== channel.last_message_id) {
+      const latest = (await this.api<DiscordMessage[]>(`/channels/${channel.id}/messages?limit=1`).catch(() => [] as DiscordMessage[]))[0]
+      if (latest) {
+        preview = { id: latest.id, text: latest.content || (latest.attachments?.length ? 'Attachment' : null), fromMe: latest.author.id === this.userId, at: Date.parse(latest.timestamp) }
+        this.previews.set(channel.id, preview)
+      }
+    }
+    // A preview only counts while it is the channel's newest message.
+    if (preview && channel.last_message_id && preview.id !== channel.last_message_id)
+      preview = undefined
     const thread = THREAD_CHANNELS.has(channel.type)
     const isDm = channel.type === DM || channel.type === GROUP_DM
     const people = isDm ? this.recipients(channel) : []
@@ -425,9 +451,9 @@ export class DiscordInboxDriver implements InboxDriver {
       participants: people.map(p => ({ id: p.id, name: nameOf(p), avatar: avatarUrl(p) })),
       workspace: channel.guild_id ? this.guilds.get(channel.guild_id) ?? null : null,
       avatar,
-      lastMessageAt: latest ? Date.parse(latest.timestamp) : snowflakeTime(channel.last_message_id),
-      preview: latest ? (latest.content || (latest.attachments?.length ? 'Attachment' : null)) : null,
-      previewFromMe: !!latest && latest.author.id === this.userId,
+      lastMessageAt: preview ? preview.at : snowflakeTime(channel.last_message_id),
+      preview: preview?.text ?? null,
+      previewFromMe: !!preview?.fromMe,
       unread,
       cursor: channel.last_message_id ?? '0',
       visible: !channel.thread_metadata?.archived,

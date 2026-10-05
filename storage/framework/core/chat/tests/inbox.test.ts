@@ -759,6 +759,37 @@ describe('Discord inbox driver, signed in as the person', () => {
     driver.close()
   })
 
+  it('fetches a DM preview once, and takes newer ones from the gateway', async () => {
+    const { driver, calls } = setup()
+    const { socket } = await connect(driver)
+    await driver.conversations()
+    const previewReads = () => calls.filter(c => c.method === 'GET' && c.path === '/channels/300/messages').length
+    expect(previewReads()).toBe(1)
+    socket.deliver({ op: 0, t: 'MESSAGE_CREATE', s: 2, d: { id: '9300', channel_id: '300', type: 0, content: 'running late', timestamp: new Date().toISOString(), edited_timestamp: null, author: ANN } })
+    const listed = await driver.conversations()
+    expect(previewReads()).toBe(1)
+    expect(listed.find(c => c.id === '300')!.preview).toBe('running late')
+    driver.close()
+  })
+
+  it('keeps a muted server quiet unless the person is mentioned', async () => {
+    const { driver } = setup()
+    const events: InboxEvent[] = []
+    driver.watch(event => events.push(event))
+    const listing = driver.conversations()
+    await Bun.sleep(5)
+    const socket = FakeGatewaySocket.last!
+    socket.deliver({ op: 10, d: { heartbeat_interval: 60_000 } })
+    socket.deliver({ op: 0, t: 'READY', s: 1, d: { ...READY, user_guild_settings: [{ guild_id: '500', muted: true, channel_overrides: [] }] } })
+    await listing
+    events.length = 0
+    const post = (id: string, mentions: unknown[]) => socket.deliver({ op: 0, t: 'MESSAGE_CREATE', s: 2, d: { id, channel_id: '600', guild_id: '500', type: 0, content: 'hey', mentions, timestamp: new Date().toISOString(), edited_timestamp: null, author: ANN } })
+    post('7300', [])
+    post('7301', [ME])
+    expect(events.map(e => e.type)).toEqual(['changed', 'message'])
+    driver.close()
+  })
+
   it('sends with a reply reference, reacts, marks read and closes a DM', async () => {
     const { driver, calls } = setup()
     await connect(driver)
