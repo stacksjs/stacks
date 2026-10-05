@@ -12,14 +12,26 @@ import {
   S3Client,
   SSMClient,
 } from '@stacksjs/ts-cloud'
-import { config } from '@stacksjs/config'
+import { awaitConfig, config } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { slug } from '@stacksjs/strings'
 
-const appEnv = config.app.env === 'local' ? 'dev' : config.app.env
-const cloudName = `stacks-cloud-${appEnv}`
+/**
+ * The CloudFormation stack this app's AWS resources belong to.
+ *
+ * Read per call, after the app's config has loaded. It was computed once at
+ * import, when `config.app.env` is still the framework default `'local'`, so
+ * it was `stacks-cloud-dev` in every environment: with `APP_ENV=production`,
+ * every stack and jump-box lookup here - `cloud:remove` included - named the
+ * development stack.
+ */
+export async function stacksCloudName(): Promise<string> {
+  const { app } = await awaitConfig()
+  const env = !app?.env || app.env === 'local' ? 'dev' : app.env
+  return `stacks-cloud-${env}`
+}
 
 /**
  * Helper to make raw EC2 API calls for actions not available on EC2Client
@@ -266,7 +278,7 @@ export async function purchaseDomain(
 
 export async function getJumpBoxInstanceId(name?: string): Promise<string | undefined> {
   if (!name)
-    name = `${cloudName}/JumpBox`
+    name = `${await stacksCloudName()}/JumpBox`
 
   const ec2 = new EC2Client('us-east-1')
   const data = await ec2.describeInstances({
@@ -286,7 +298,7 @@ export async function getJumpBoxInstanceId(name?: string): Promise<string | unde
 
 export async function deleteEc2Instance(id: string, stackName?: string): Promise<Result<string, string>> {
   if (!stackName)
-    stackName = cloudName
+    stackName = await stacksCloudName()
 
   if (!id)
     return err(`Instance ${id} not found`)
@@ -299,7 +311,7 @@ export async function deleteEc2Instance(id: string, stackName?: string): Promise
 
 export async function deleteJumpBox(stackName?: string): Promise<Result<string, string>> {
   if (!stackName)
-    stackName = cloudName
+    stackName = await stacksCloudName()
 
   const jumpBoxId = await getJumpBoxInstanceId()
 
@@ -767,7 +779,7 @@ export async function getJumpBoxInstanceProfileName(): Promise<Result<string, st
 
 export async function addJumpBox(stackName?: string): Promise<Result<string, string>> {
   if (!stackName)
-    stackName = cloudName
+    stackName = await stacksCloudName()
 
   if (await getJumpBoxInstanceId()) {
     return err(
@@ -832,7 +844,7 @@ git clone https://github.com/stacksjs/stacks.git /mnt/efs
     'SubnetId': 'subnet-004c5f196358b00f0',
     'TagSpecification.1.ResourceType': 'instance',
     'TagSpecification.1.Tag.1.Key': 'Name',
-    'TagSpecification.1.Tag.1.Value': `${cloudName}-jump-box`,
+    'TagSpecification.1.Tag.1.Value': `${stackName}-jump-box`,
     'UserData': base64UserData,
     'IamInstanceProfile.Name': jumpBoxInstanceProfileName,
   })
@@ -882,7 +894,7 @@ export async function getSecurityGroupFromInstanceId(instanceId: string): Promis
 }
 
 export async function isFirstDeployment(): Promise<boolean> {
-  const stackName = cloudName
+  const stackName = await stacksCloudName()
   const cloudFormation = new CloudFormationClient('us-east-1')
   const data = await cloudFormation.listStacks(['CREATE_COMPLETE', 'UPDATE_COMPLETE'])
   const isStacksCloudPresent = data.StackSummaries?.some((stack: unknown) => {
@@ -893,15 +905,18 @@ export async function isFirstDeployment(): Promise<boolean> {
   return !isStacksCloudPresent
 }
 
+/**
+ * Whether the app's stack is in a failed state.
+ *
+ * True when it is listed among the failed statuses. This returned the
+ * negation - "not among the failed stacks" - so a failed stack read as
+ * healthy and a healthy one as failed.
+ */
 export async function isFailedState(): Promise<boolean> {
+  const stackName = await stacksCloudName()
   const cloudFormation = new CloudFormationClient('us-east-1')
   const data = await cloudFormation.listStacks(['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'])
-  const isStacksCloudPresent = data.StackSummaries?.some((stack: unknown) => {
-    const s = stack as Record<string, unknown>
-    return s.StackName === cloudName
-  })
-
-  return !isStacksCloudPresent
+  return Boolean(data.StackSummaries?.some((stack: unknown) => (stack as Record<string, unknown>).StackName === stackName))
 }
 
 export async function getOrCreateTimestamp(): Promise<string> {
