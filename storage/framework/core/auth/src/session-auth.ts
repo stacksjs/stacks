@@ -29,7 +29,7 @@ function generateSessionId(): string {
  */
 export function readRequestFingerprint(
   override?: { ip?: string | null, userAgent?: string | null },
-): { ip: string | null, userAgent: string | null } {
+): { ip: string | null, userAgent: string | null, inRequest?: boolean } {
   if (override) {
     return {
       ip: override.ip ?? null,
@@ -37,7 +37,7 @@ export function readRequestFingerprint(
     }
   }
   const req = getCurrentRequest()
-  if (!req) return { ip: null, userAgent: null }
+  if (!req) return { ip: null, userAgent: null, inRequest: false }
 
   // The address trusted proxies vouch for (`clientAddress()`). This read the
   // first `X-Forwarded-For` entry, which the client writes: whoever held a
@@ -46,7 +46,7 @@ export function readRequestFingerprint(
   const headers = req.headers
   const ip = clientAddress(req as Request)
   const userAgent = headers?.get?.('user-agent') || headers?.get?.('User-Agent') || null
-  return { ip, userAgent }
+  return { ip, userAgent, inRequest: true }
 }
 
 /**
@@ -60,16 +60,20 @@ export function readRequestFingerprint(
  * `{ ip, userAgent }` enforces each independently (userAgent-only is the
  * safest, since it rarely changes for a real user).
  *
- * A field is compared ONLY when both the stored value and a current-request
- * value are present, so a check outside request scope, or a session logged in
- * without headers, is never a false "mismatch". On mismatch we reject THIS
- * request but leave the session row intact — the real owner (original
+ * A session logged in without a value is never compared on that field, and a
+ * check outside any request compares nothing. Inside a request, a User-Agent
+ * the session stored but the request lacks IS a mismatch: the header is the
+ * client's to send or omit, so treating its absence as "nothing to compare"
+ * let anyone holding a stolen session id pass the check by leaving it out.
+ * A missing address is not, since the client cannot remove its own socket
+ * peer - it is missing for every request or none. On mismatch we reject THIS
+ * request but leave the session row intact - the real owner (original
  * fingerprint) keeps working; we don't punish them for an attacker's attempt.
  */
 export function fingerprintMismatch(
   enforce: boolean | { ip?: boolean, userAgent?: boolean } | undefined | null,
   stored: { ip?: unknown, userAgent?: unknown },
-  current: { ip: string | null, userAgent: string | null },
+  current: { ip: string | null, userAgent: string | null, inRequest?: boolean },
 ): boolean {
   if (!enforce)
     return false
@@ -79,12 +83,14 @@ export function fingerprintMismatch(
   if (!enforceIp && !enforceUa)
     return false
 
-  // Compare a field ONLY when both sides are present — a missing stored value
-  // (login without headers) or missing current value (out-of-request check) is
-  // never treated as a mismatch, so it can't lock anyone out spuriously.
+  // A missing stored value (login without headers) is never compared, and
+  // neither is anything outside a request. See the doc comment for the one
+  // absence that does count: a User-Agent omitted inside a request.
   if (enforceIp && current.ip != null && stored.ip != null && String(stored.ip) !== current.ip)
     return true
-  if (enforceUa && current.userAgent != null && stored.userAgent != null && String(stored.userAgent) !== current.userAgent)
+  if (enforceUa && stored.userAgent != null && current.userAgent != null && String(stored.userAgent) !== current.userAgent)
+    return true
+  if (enforceUa && stored.userAgent != null && current.userAgent == null && current.inRequest === true)
     return true
 
   return false

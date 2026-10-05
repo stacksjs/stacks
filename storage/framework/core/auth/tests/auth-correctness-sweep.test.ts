@@ -188,9 +188,26 @@ describe('fingerprintMismatch - session hijack detection logic (#1985)', () => {
     expect(fingerprintMismatch({ ip: true }, stored, otherUa)).toBe(false)
   })
 
-  it('never a mismatch when either side of a field is absent (no spurious lockout)', () => {
+  it('never a mismatch when the session stored nothing, or outside a request', () => {
     expect(fingerprintMismatch(true, { ip: null, userAgent: null }, otherIp)).toBe(false)
     expect(fingerprintMismatch(true, stored, { ip: null, userAgent: null })).toBe(false)
+    expect(fingerprintMismatch(true, stored, { ip: null, userAgent: null, inRequest: false })).toBe(false)
+  })
+
+  it('a request that omits the User-Agent the session stored is a mismatch', () => {
+    // The header is the client's to leave out. Skipping the comparison when it
+    // was missing let a stolen session id pass `userAgent` enforcement by
+    // sending no header at all.
+    const noUa = runWithRequest(new Request('http://localhost/') as any, () => readRequestFingerprint())
+    expect(noUa.userAgent).toBeNull()
+    expect(fingerprintMismatch({ userAgent: true }, stored, noUa)).toBe(true)
+
+    const sameUa = runWithRequest(new Request('http://localhost/', { headers: { 'user-agent': 'Mozilla/5.0' } }) as any, () => readRequestFingerprint())
+    expect(fingerprintMismatch({ userAgent: true }, stored, sameUa)).toBe(false)
+  })
+
+  it('a missing address is not, since the client cannot remove its own peer', () => {
+    expect(fingerprintMismatch({ ip: true }, stored, { ip: null, userAgent: 'Mozilla/5.0', inRequest: true })).toBe(false)
   })
 })
 
