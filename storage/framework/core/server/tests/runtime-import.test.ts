@@ -57,7 +57,7 @@ function runProbe(mode?: 'call-config' | 'await-config' | 'identity', options?: 
     },
   })
 
-  expect(child.exitCode).toBe(0)
+  expect(child.exitCode, `${child.stdout}\n${child.stderr}`).toBe(0)
   const lines = child.stdout.toString().trim().split('\n')
   return JSON.parse(lines.at(-1)!) as ProbeResult
 }
@@ -77,7 +77,7 @@ function runControllerProbe(): ControllerProbeResult {
     },
   })
 
-  expect(child.exitCode).toBe(0)
+  expect(child.exitCode, `${child.stdout}\n${child.stderr}`).toBe(0)
   const lines = child.stdout.toString().trim().split('\n')
   return JSON.parse(lines.at(-1)!) as ControllerProbeResult
 }

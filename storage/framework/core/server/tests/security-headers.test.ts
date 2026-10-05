@@ -114,13 +114,23 @@ describe('applyViewSecurityHeaders', () => {
     // a laptop, where HSTS would pin localhost to HTTPS for a year.
     const previous = process.env.APP_ENV
     process.env.APP_ENV = 'production'
-    __resetViewSecurityHeadersCache()
-    const res = page()
+    try {
+      __resetViewSecurityHeadersCache()
+      const res = page()
 
-    applyViewSecurityHeaders(request('/login'), res, resolveEmbeddableRules())
+      applyViewSecurityHeaders(request('/login'), res, resolveEmbeddableRules())
 
-    expect(res.headers.get('Strict-Transport-Security')).toBeNull()
-    process.env.APP_ENV = previous
+      expect(res.headers.get('Strict-Transport-Security')).toBeNull()
+    }
+    finally {
+      // Assigning undefined stores the string "undefined", which every later
+      // test - and every child process spawned with `...process.env` - reads
+      // as an APP_ENV that fails config validation.
+      if (previous === undefined)
+        delete process.env.APP_ENV
+      else
+        process.env.APP_ENV = previous
+    }
   })
 
   test('an embeddable path loses X-Frame-Options and keeps the rest', () => {
