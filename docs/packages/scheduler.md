@@ -145,6 +145,23 @@ schedule.job('AnnualCleanup').annually()
 schedule.job('WeekdayTask').onDays([1, 2, 3, 4, 5]) // Monday to Friday
 ```
 
+### Any Cron Expression
+
+```typescript
+// Five fields
+schedule.job('QuarterHourly').cron('*/15 * * * *')
+
+// Or a job's rate, which is what a `rate` on a job file runs through
+schedule.job('WeekdayDigest').cron(Every.Weekday)
+
+// Six fields, with leading seconds: every N seconds
+schedule.job('Heartbeat').cron('*/10 * * * * *')
+```
+
+The expression is checked when it is set. One that does not parse, never
+matches (`0 0 31 2 *`), or names particular seconds (`15 * * * * *`, which the
+scheduler cannot honour) throws instead of never running.
+
 ## Scheduling Options
 
 ### Timezone

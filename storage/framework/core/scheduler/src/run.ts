@@ -6,7 +6,6 @@ import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { schedule } from '@stacksjs/scheduler'
 import { globSync } from '@stacksjs/storage'
-import { Every } from '@stacksjs/types'
 
 export async function runScheduler(): Promise<Result<string, string>> {
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
@@ -52,7 +51,7 @@ export async function runScheduler(): Promise<Result<string, string>> {
       executeJobRate(jobName as SchedulableJobName, job.rate)
     }
     catch (error) {
-      console.error(error)
+      log.error(`[scheduler] could not schedule ${jobFile}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -77,44 +76,17 @@ async function runSchedulerInstance(): Promise<void> {
   }
 }
 
+/**
+ * Schedule a job on its declared `rate`.
+ *
+ * This used to be a switch over eleven of the eighteen `Every` values, which
+ * threw for the rest: `Every.FifteenMinutes`, `Weekday`, `Weekend`, the four
+ * seconds rates, and any cron string written out by hand - `rate` is typed as
+ * a string. The throw was caught per job and printed, so the job simply never
+ * ran. `cron()` takes all of them, and refuses only what cannot be scheduled.
+ */
 function executeJobRate(jobName: SchedulableJobName, rate: string): void {
-  switch (rate) {
-    case Every.Minute:
-      schedule.job(jobName).everyMinute()
-      break
-    case Every.TwoMinutes:
-      schedule.job(jobName).everyTwoMinutes()
-      break
-    case Every.FiveMinutes:
-      schedule.job(jobName).everyFiveMinutes()
-      break
-    case Every.TenMinutes:
-      schedule.job(jobName).everyTenMinutes()
-      break
-    case Every.ThirtyMinutes:
-      schedule.job(jobName).everyThirtyMinutes()
-      break
-    case Every.HalfHour:
-      schedule.job(jobName).everyThirtyMinutes()
-      break
-    case Every.Hour:
-      schedule.job(jobName).everyHour()
-      break
-    case Every.Day:
-      schedule.job(jobName).everyDay()
-      break
-    case Every.Week:
-      schedule.job(jobName).weekly()
-      break
-    case Every.Month:
-      schedule.job(jobName).monthly()
-      break
-    case Every.Year:
-      schedule.job(jobName).yearly()
-      break
-    default:
-      throw new Error(`Unsupported rate: ${rate}`)
-  }
+  schedule.job(jobName).cron(rate)
 }
 
 function getJobName(job: JobOptions, jobPath: string): string {

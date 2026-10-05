@@ -141,6 +141,8 @@ export interface UntimedSchedule extends BaseSchedule {
   at: (time: string) => TimedSchedule
   /** Every day at "HH:MM". */
   dailyAt: (time: string) => TimedSchedule
+  /** Any cron expression, five fields or six with leading seconds; validated here. */
+  cron: (expression: string) => TimedSchedule
   /** Monday to Friday, at midnight unless `.at()` says otherwise. */
   weekdays: () => TimedSchedule
 }

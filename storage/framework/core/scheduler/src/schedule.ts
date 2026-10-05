@@ -234,6 +234,51 @@ export class Schedule implements UntimedSchedule {
     return this as TimedSchedule
   }
 
+  /**
+   * Any cron expression: five fields, or six with a leading seconds field.
+   *
+   * Six fields run on seconds only as `* * * * * *` or `*\/N * * * * *` (N
+   * dividing 60), which is every N seconds; a seconds field of `0` is the
+   * five-field expression after it. Anything else in the seconds field is
+   * refused - the cron parser drops seconds, so `15 * * * * *` would quietly
+   * have run at second 0 of every minute. An expression that cannot be parsed,
+   * or that never matches, throws here rather than never firing.
+   */
+  cron(expression: string): TimedSchedule {
+    const fields = String(expression).trim().split(/\s+/).filter(Boolean)
+    if (fields.length === 6) {
+      const [seconds, ...rest] = fields as [string, ...string[]]
+      if (rest.every(field => field === '*')) {
+        const step = seconds === '*' ? 1 : Number(/^\*\/(\d+)$/.exec(seconds)?.[1])
+        if (Number.isInteger(step) && step >= 1 && step < 60 && 60 % step === 0) {
+          this.intervalMs = step * 1000
+          this.cronPattern = step === 1 ? '@every_second' : `@every_${step}_seconds`
+          return this as TimedSchedule
+        }
+      }
+      if (seconds !== '0')
+        throw new Error(`cron(): '${expression}' runs on particular seconds, which the scheduler cannot do. Use '*' or '*/N' (N dividing 60) with every other field '*', or a seconds field of 0`)
+      fields.shift()
+    }
+    if (fields.length !== 5)
+      throw new Error(`cron(): '${expression}' is not a cron expression; expected 5 fields, or 6 with leading seconds`)
+
+    const pattern = fields.join(' ')
+    let next: Date | null
+    try {
+      next = parse(pattern, Date.now(), { tz: 'UTC' })
+    }
+    catch (error) {
+      throw new Error(`cron(): '${expression}' is not a valid cron expression: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    if (!next)
+      throw new Error(`cron(): '${expression}' never matches a date`)
+
+    this.intervalMs = null
+    this.cronPattern = pattern
+    return this as TimedSchedule
+  }
+
   /** Every day at "HH:MM" - `.daily().at(time)`. */
   dailyAt(time: string): TimedSchedule {
     this.cronPattern = '0 0 * * *'
@@ -446,7 +491,7 @@ export class Schedule implements UntimedSchedule {
    * ```
    */
   async runMissed(opts: { since: Date | number, max?: number }): Promise<number> {
-    if (!this.cronPattern) {
+    if (!this.cronPattern || this.intervalMs !== null) {
       log.warn('[scheduler] runMissed() requires a cron-based schedule; interval-based tasks (everySecond) have no concept of missed slots')
       return 0
     }
