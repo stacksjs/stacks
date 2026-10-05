@@ -64,7 +64,7 @@ export function buildScheduledJobRow(name: string, options: QueueOption): Schedu
     // which the envelope has no field for and no worker reads. Narrowed the
     // same way both other drivers narrow it, rather than writing a shape the
     // far side would silently ignore.
-    backoff: Array.isArray(options.backoff) ? options.backoff : undefined,
+    backoff: Array.isArray(options.backoff) || typeof options.backoff === 'number' ? options.backoff : undefined,
   })
 
   return {

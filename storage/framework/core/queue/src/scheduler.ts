@@ -8,6 +8,7 @@
  * - Job dispatching
  */
 
+import { parseCron } from '@stacksjs/cron'
 import { log } from '@stacksjs/logging'
 import { discoverJobs, getScheduledJobs, type DiscoveredJob } from './discovery'
 import { emitQueueEvent } from './events'
@@ -60,28 +61,6 @@ const schedulerState: SchedulerState = {
   config: { ...DEFAULT_CONFIG },
 }
 
-/**
- * Once-per-expression warn that a 6-field cron's seconds component is
- * being dropped — the scheduler ticks at minute granularity, so any
- * seconds value other than `0` / `*` is silently lost. Tracking each
- * expression separately means a config that registers many 6-field
- * crons gets one warn per expression, not one per tick.
- * (stacksjs/stacks#1872 Q-12.)
- */
-const _warnedSecondsExprs = new Set<string>()
-function warnSecondsIgnored(expression: string, seconds: string): void {
-  if (_warnedSecondsExprs.has(expression)) return
-  _warnedSecondsExprs.add(expression)
-  log.warn(
-    `[scheduler] Cron expression "${expression}" specifies seconds="${seconds}" but the scheduler `
-    + `ticks at minute granularity - the seconds field is being ignored. Use a 5-field expression `
-    + `to avoid this warning, or wait for sub-minute scheduling support.`,
-  )
-}
-
-/**
- * Parse a cron expression and check if it should run now
- */
 interface CronParts { minute: number, hour: number, day: number, month: number, dayOfWeek: number }
 
 let warnedBadTimezone = false
@@ -148,98 +127,65 @@ export function getCronParts(date: Date, timeZone?: string): CronParts {
   }
 }
 
-function shouldRunNow(cronExpression: string, lastRun: Date | null, timeZone?: string): boolean {
-  const now = getCronParts(new Date(), timeZone)
-  const currentMinute = now.minute
-  const currentHour = now.hour
-  const currentDay = now.day
-  const currentMonth = now.month
-  const currentDayOfWeek = now.dayOfWeek
-
-  // Skip if already run this minute (compared in the same timezone)
-  if (lastRun) {
-    const last = getCronParts(lastRun, timeZone)
-
-    if (
-      last.minute === currentMinute
-      && last.hour === currentHour
-      && last.day === currentDay
-    ) {
-      return false
+/**
+ * The zone a cron expression is read in: the configured one, or this
+ * machine's, which is what an unconfigured scheduler has always used.
+ * An invalid zone warns once and falls back the same way.
+ */
+function cronTimeZone(timeZone?: string): string {
+  const system = Intl.DateTimeFormat().resolvedOptions().timeZone
+  if (!timeZone || timeZone === 'local' || timeZone === 'system')
+    return system
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone })
+    return timeZone
+  }
+  catch {
+    if (!warnedBadTimezone) {
+      warnedBadTimezone = true
+      log.warn(`[scheduler] Invalid timezone "${timeZone}"; falling back to system local time.`)
     }
+    return system
   }
-
-  // Parse cron expression (minute hour day month dayOfWeek).
-  // Also supports 6-part format (second minute hour day month dayOfWeek)
-  // by stripping seconds — the scheduler's tick interval is 60s so
-  // sub-minute scheduling isn't supported. Warn (once per expression)
-  // when a 6-field caller asks for non-zero seconds, so they don't
-  // silently lose the precision they wrote. See stacksjs/stacks#1872 Q-12.
-  let parts = cronExpression.trim().split(/\s+/)
-
-  if (parts.length === 6) {
-    const seconds = parts[0]
-    if (seconds && seconds !== '0' && seconds !== '*') {
-      warnSecondsIgnored(cronExpression, seconds)
-    }
-    parts = parts.slice(1)
-  }
-
-  if (parts.length < 5) {
-    log.warn(`Invalid cron expression: ${cronExpression}`)
-    return false
-  }
-
-  const [minute, hour, day, month, dayOfWeek] = parts as [string, string, string, string, string]
-
-  return (
-    matchesCronPart(minute, currentMinute, 0, 59)
-    && matchesCronPart(hour, currentHour, 0, 23)
-    && matchesCronPart(day, currentDay, 1, 31)
-    && matchesCronPart(month, currentMonth, 1, 12)
-    && matchesCronPart(dayOfWeek, currentDayOfWeek, 0, 6)
-  )
 }
 
+const warnedInvalidCron = new Set<string>()
+
 /**
- * Match a single cron part against the current value
+ * The first minute at or after `from` that `cronExpression` matches.
+ *
+ * Through @stacksjs/cron, which implements cron rather than approximating it.
+ * The matcher that used to be here checked `-` before `/`, so `0-30/10` read
+ * as "0 to 30" and fired every minute of it; parsed each list item as a bare
+ * integer, so `1-5,30` meant `1,30`; and ANDed day-of-month with day-of-week,
+ * where cron ORs them when both are restricted.
  */
-function matchesCronPart(part: string, current: number, _min: number, _max: number): boolean {
-  // Wildcard
-  if (part === '*') {
-    return true
+function nextCronMinute(cronExpression: string, from: Date, timeZone?: string): Date | null {
+  try {
+    // parseCron searches from the minute AFTER its base.
+    return parseCron(cronExpression, from.getTime() - 60_000, { tz: cronTimeZone(timeZone) })
   }
-
-  // List (e.g., "1,2,3")
-  if (part.includes(',')) {
-    const values = part.split(',').map(v => Number.parseInt(v.trim(), 10))
-    return values.includes(current)
-  }
-
-  // Range (e.g., "1-5")
-  if (part.includes('-')) {
-    const [start, end] = part.split('-').map(v => Number.parseInt(v.trim(), 10)) as [number, number]
-    return current >= start && current <= end
-  }
-
-  // Step (e.g., "*/5")
-  if (part.includes('/')) {
-    const [range, step] = part.split('/') as [string, string]
-    const stepNum = Number.parseInt(step, 10)
-
-    if (range === '*') {
-      return current % stepNum === 0
+  catch (error) {
+    if (!warnedInvalidCron.has(cronExpression)) {
+      warnedInvalidCron.add(cronExpression)
+      log.warn(`Invalid cron expression: ${cronExpression} (${error instanceof Error ? error.message : String(error)})`)
     }
-
-    if (range.includes('-')) {
-      const [start, end] = range.split('-').map(v => Number.parseInt(v.trim(), 10)) as [number, number]
-      return current >= start && current <= end && (current - start) % stepNum === 0
-    }
+    return null
   }
+}
 
-  // Exact value
-  const exact = Number.parseInt(part, 10)
-  return !Number.isNaN(exact) && current === exact
+export function shouldRunNow(cronExpression: string, lastRun: Date | null, timeZone?: string): boolean {
+  const minute = new Date()
+  minute.setSeconds(0, 0)
+
+  // Already run this minute. The whole instant, not its wall-clock fields:
+  // comparing minute, hour and day only made a monthly job's run on the 1st
+  // at 00:00 look like "already ran" a month later, on the next 1st at 00:00,
+  // so it ran once and never again - and the marker survives restarts.
+  if (lastRun && Math.floor(lastRun.getTime() / 60_000) === Math.floor(minute.getTime() / 60_000))
+    return false
+
+  return nextCronMinute(cronExpression, minute, timeZone)?.getTime() === minute.getTime()
 }
 
 /**
@@ -300,38 +246,10 @@ function parseScheduleString(schedule: string): string | null {
  * Calculate next run time for a cron expression
  */
 export function calculateNextRun(cronExpression: string, timeZone?: string): Date | null {
-  const parts = cronExpression.trim().split(/\s+/)
-  // Support the optional 6-field (seconds-prefixed) form by dropping seconds —
-  // the scheduler ticks per minute, same as shouldRunNow.
-  const fields = parts.length === 6 ? parts.slice(1) : parts
-  if (fields.length < 5)
-    return null
-  const [minute, hour, day, month, dayOfWeek] = fields as [string, string, string, string, string]
-
-  // Walk forward minute-by-minute from the next minute boundary until every
-  // cron field matches, in the configured timezone (so `nextRun` lines up with
-  // when the job actually fires). Bounded to ~366 days so an expression with no
-  // upcoming match (e.g. a far-future Feb-29) returns null instead of looping
-  // forever. Was previously a stub that always returned now+60s regardless of
-  // the expression (stacksjs/stacks#1984). The tz formatter is cached, so the
-  // common case (a match within a day) is a few hundred cheap iterations.
-  const start = new Date()
-  start.setSeconds(0, 0)
-  const MAX_MINUTES = 366 * 24 * 60
-  for (let i = 1; i <= MAX_MINUTES; i++) {
-    const candidate = new Date(start.getTime() + i * 60_000)
-    const p = getCronParts(candidate, timeZone)
-    if (
-      matchesCronPart(minute, p.minute, 0, 59)
-      && matchesCronPart(hour, p.hour, 0, 23)
-      && matchesCronPart(day, p.day, 1, 31)
-      && matchesCronPart(month, p.month, 1, 12)
-      && matchesCronPart(dayOfWeek, p.dayOfWeek, 0, 6)
-    ) {
-      return candidate
-    }
-  }
-  return null
+  const next = new Date()
+  next.setSeconds(0, 0)
+  next.setTime(next.getTime() + 60_000)
+  return nextCronMinute(cronExpression, next, timeZone)
 }
 
 /**
@@ -480,12 +398,7 @@ async function checkScheduledJobs(): Promise<void> {
         })
 
         // Store job in queue
-        await storeJob(name, {
-          queue: state.job.config.queue || 'default',
-          payload: {},
-          maxTries: state.job.config.tries || 3,
-          timeout: state.job.config.timeout || 60,
-        })
+        await storeJob(name, scheduledDispatchOptions(state.job.config))
 
         // Mark as not running after dispatch (the queue worker will handle execution)
         state.isRunning = false
@@ -577,10 +490,24 @@ export async function triggerJob(name: string): Promise<void> {
 
   log.info(`Manually triggering scheduled job: ${name}`)
 
-  await storeJob(name, {
-    queue: state.job.config.queue || 'default',
+  await storeJob(name, scheduledDispatchOptions(state.job.config))
+}
+
+/**
+ * What a scheduled run is queued with: the job's own settings.
+ *
+ * `timeout: config.timeout || 60` gave every scheduled job that declared no
+ * timeout a 60-second one - a nightly export that takes five minutes was
+ * failed at one and retried while the first run was still going. And the
+ * job's `backoff` was never passed at all.
+ */
+export function scheduledDispatchOptions(config: { queue?: string, tries?: number, timeout?: number, backoff?: number | number[] | unknown }): Parameters<typeof storeJob>[1] {
+  const backoff = config.backoff
+  return {
+    queue: config.queue || 'default',
     payload: {},
-    maxTries: state.job.config.tries || 3,
-    timeout: state.job.config.timeout || 60,
-  })
+    maxTries: config.tries ?? 3,
+    timeout: config.timeout,
+    backoff: typeof backoff === 'number' || Array.isArray(backoff) ? backoff as number | number[] : undefined,
+  }
 }

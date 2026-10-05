@@ -1083,6 +1083,7 @@
         "@stacksjs/bun-queue": "^0.1.8",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
+        "@stacksjs/cron": "workspace:*",
         "@stacksjs/database": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
