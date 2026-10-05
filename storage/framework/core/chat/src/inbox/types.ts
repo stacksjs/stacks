@@ -171,6 +171,60 @@ export interface InboxDriver {
    * image host. 404 when there is none.
    */
   avatar?: (ref: string) => Promise<Response>
+  /** What this driver can do beyond reading. Absent means read and archive only. */
+  capabilities?: () => InboxCapabilities
+  /** Send a message into a conversation, as the person. */
+  send?: (conversationId: string, message: OutgoingMessage) => Promise<SendOutcome>
+  /** Add a reaction to a message, or take one back. */
+  react?: (conversationId: string, messageId: string, reaction: string, remove?: boolean) => Promise<void>
+  /** Tell the app the conversation has been read. */
+  markRead?: (conversationId: string) => Promise<void>
+  /**
+   * Hear new messages and changes as they happen. Returns a function that
+   * stops listening. Drivers without it are read again when their source
+   * changes (a database on this Mac) or on a timer.
+   */
+  watch?: (onEvent: (event: InboxEvent) => void) => () => void
+}
+
+/** A message to send into a conversation. */
+export interface OutgoingMessage {
+  text?: string
+  /** The message this answers, as an inline reply where the provider has them. */
+  replyToId?: string | null
+  /** Files on this machine to attach. */
+  files?: Array<{ path: string, name?: string, mimeType?: string | null }>
+}
+
+/** What became of a sent message. */
+export interface SendOutcome {
+  /** The provider's id for the new message, when it says. */
+  id: string | null
+  sentAt: number
+}
+
+/**
+ * Something that happened in the real app, as it happens: a new message, or a
+ * change the inbox should read again (an edit, a reaction, a conversation
+ * read elsewhere).
+ */
+export type InboxEvent =
+  | { type: 'message', conversationId: string, message: InboxMessage }
+  | { type: 'changed', conversationId: string | null }
+
+/** What a driver can do beyond reading, so a client offers only what works. */
+export interface InboxCapabilities {
+  send: boolean
+  /** Send files as well as text. */
+  attachments: boolean
+  /** Answer one message inline. */
+  replies: boolean
+  /** Add and remove reactions. */
+  reactions: boolean
+  /** Tell the app a conversation has been read. */
+  markRead: boolean
+  /** Push new messages as they arrive, rather than being polled. */
+  live: boolean
 }
 
 /** A `fetch` the HTTP drivers call, so tests and proxies can stand in. */

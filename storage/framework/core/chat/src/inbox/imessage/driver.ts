@@ -1,4 +1,4 @@
-import type { ArchiveOutcome, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxStatus, MessageQuery } from '../types'
+import type { ArchiveOutcome, InboxAttachment, InboxCapabilities, InboxConversation, InboxDriver, InboxMessage, InboxStatus, MessageQuery, OutgoingMessage, SendOutcome } from '../types'
 import type { LiveConversation } from './conversations'
 import type { MessageRow } from './chat-db'
 import { existsSync, readFileSync, statSync } from 'node:fs'
@@ -38,6 +38,34 @@ export interface IMessageConfig {
   openUrl?: (url: string) => void
   /** The host OS; `process.platform` by default. iMessage exists only on darwin. */
   platform?: NodeJS.Platform
+  /**
+   * Runs an AppleScript with arguments, for sending through Messages.
+   * `osascript` by default; tests stand in.
+   */
+  runScript?: (script: string, args: string[]) => Promise<{ ok: boolean, output: string }>
+}
+
+/**
+ * Sends to a chat by the id Messages gives it, which is the chat's guid in
+ * chat.db. Text and file paths arrive as arguments, never spliced into the
+ * script, so nothing in a message can change what runs.
+ */
+const SEND_SCRIPT = `on run argv
+  set chatId to item 1 of argv
+  set theText to item 2 of argv
+  tell application "Messages"
+    set targetChat to chat id chatId
+    if theText is not "" then send theText to targetChat
+    repeat with i from 3 to (count of argv)
+      send (POSIX file (item i of argv)) to targetChat
+    end repeat
+  end tell
+end run`
+
+async function osascript(script: string, args: string[]): Promise<{ ok: boolean, output: string }> {
+  const child = Bun.spawn(['/usr/bin/osascript', '-e', script, ...args], { stdout: 'pipe', stderr: 'pipe' })
+  const [stdout, stderr, code] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
+  return { ok: code === 0, output: (code === 0 ? stdout : stderr).trim() }
 }
 
 /** Messages' reaction types and the emoji they stand for. 3000+ removes. */
@@ -78,6 +106,7 @@ export class IMessageDriver implements InboxDriver {
   private readonly controller: MessagesController | undefined
   private readonly confirmDeletes: boolean
   private readonly platform: NodeJS.Platform
+  private readonly runScript: (script: string, args: string[]) => Promise<{ ok: boolean, output: string }>
   private contacts: Contacts | null = null
   private contactsLoadedAt = 0
 
@@ -88,6 +117,38 @@ export class IMessageDriver implements InboxDriver {
     this.controller = config.controller
     this.confirmDeletes = config.confirmDeletes ?? false
     this.platform = config.platform ?? process.platform
+    this.runScript = config.runScript ?? osascript
+  }
+
+  capabilities(): InboxCapabilities {
+    // Messages' scripting can send text and files. It has no reply,
+    // tapback or read receipt, and chat.db changes are watched by the caller.
+    return { send: true, attachments: true, replies: false, reactions: false, markRead: false, live: false }
+  }
+
+  /**
+   * Sends through Messages, as the person, to the conversation's chat that
+   * last had a message - the one Messages itself would reply in (iMessage,
+   * or SMS when that is how the thread has been going).
+   */
+  async send(conversationId: string, message: OutgoingMessage): Promise<SendOutcome> {
+    const text = message.text?.trim() ?? ''
+    const files = message.files ?? []
+    if (!text && files.length === 0)
+      throw new Error('Nothing to send.')
+    const chatGuid = this.open((db) => {
+      const conversation = this.find(db, conversationId)
+      if (!conversation)
+        return null
+      const [latest] = db.messages(conversation.chatGuids, { newestFirst: true, limit: 1 })
+      return latest?.chatGuid ?? conversation.chatGuids[0] ?? null
+    })
+    if (!chatGuid)
+      throw new Error('Messages has no chat for this conversation.')
+    const result = await this.runScript(SEND_SCRIPT, [chatGuid, text, ...files.map(f => f.path)])
+    if (!result.ok)
+      throw new Error(`Messages did not send it: ${result.output || 'no reason given'}`)
+    return { id: null, sentAt: Date.now() }
   }
 
   /** Every label Messages might give the conversation's row. */

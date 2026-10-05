@@ -1,4 +1,4 @@
-import type { Fetch } from '../src/inbox'
+import type { Fetch, InboxEvent } from '../src/inbox'
 import { Database } from 'bun:sqlite'
 import { describe, expect, it } from 'bun:test'
 import { execFileSync } from 'node:child_process'
@@ -65,6 +65,38 @@ describe('iMessage inbox driver', () => {
 
     const messages = await driver.messages(`direct:${ALICE}`)
     expect(messages.map(m => m.replyToId)).toEqual([null, null, question])
+  })
+
+  it('sends through Messages to the chat that last had a message', async () => {
+    const chat = new FakeChatDb()
+    const calls: string[][] = []
+    const driver = new IMessageDriver({
+      databasePath: chat.path,
+      addressBookDir: false,
+      runScript: async (_script, args) => {
+        calls.push(args)
+        return { ok: true, output: '' }
+      },
+    })
+    chat.add(chat.direct(ALICE), { text: 'over imessage' })
+    chat.add(chat.direct(ALICE, 'SMS'), { text: 'then sms' })
+
+    const outcome = await driver.send(`direct:${ALICE}`, { text: 'hello', files: [{ path: '/tmp/photo.jpg' }] })
+    expect(outcome.sentAt).toBeGreaterThan(0)
+    expect(calls).toEqual([[`SMS;-;${ALICE}`, 'hello', '/tmp/photo.jpg']])
+    expect(driver.capabilities()).toMatchObject({ send: true, attachments: true, reactions: false })
+  })
+
+  it('reports what Messages said when a send fails', async () => {
+    const chat = new FakeChatDb()
+    const driver = new IMessageDriver({
+      databasePath: chat.path,
+      addressBookDir: false,
+      runScript: async () => ({ ok: false, output: 'Not authorized to send Apple events to Messages.' }),
+    })
+    chat.add(chat.direct(ALICE), { text: 'hi' })
+    await expect(driver.send(`direct:${ALICE}`, { text: 'x' })).rejects.toThrow('Not authorized to send Apple events to Messages.')
+    await expect(driver.send(`direct:${ALICE}`, { text: '  ' })).rejects.toThrow('Nothing to send.')
   })
 
   it('says which service carried each message, for the bubble colour', async () => {
@@ -285,6 +317,54 @@ describe('Slack inbox driver', () => {
     expect(messages[2]).toMatchObject({ kind: 'reaction', targetId: '1700000300.000200', sender: { id: 'UANN', name: 'Ann' } })
     const history = calls.find(c => c.method === 'conversations.history')!
     expect(history.params.get('oldest')).toBe('1700000000.000000')
+  })
+
+  it('sends as the person, replies in the thread, reacts and marks read', async () => {
+    const { fetch, calls } = slackApi({
+      ...base,
+      'chat.postMessage': () => ({ ts: '1700000400.000100' }),
+      'reactions.add': () => ({}),
+      'conversations.mark': () => ({}),
+    })
+    const driver = new SlackInboxDriver({ token: 'xoxp-test', fetch })
+    expect((await driver.send('D1', { text: 'on my way' })).id).toBe('1700000400.000100')
+    await driver.send('D1', { text: 'yes', replyToId: '1700000300.000200' })
+    await driver.react('D1', '1700000300.000200', '👍')
+    await driver.markRead('D1')
+
+    const posts = calls.filter(c => c.method === 'chat.postMessage').map(c => [c.params.get('text'), c.params.get('thread_ts')])
+    expect(posts).toEqual([['on my way', null], ['yes', '1700000300.000200']])
+    const reaction = calls.find(c => c.method === 'reactions.add')!.params
+    expect([reaction.get('name'), reaction.get('timestamp')]).toEqual(['+1', '1700000300.000200'])
+    expect(calls.find(c => c.method === 'conversations.mark')!.params.get('ts')).toBe('1700000300.000200')
+    await expect(driver.react('D1', '1700000300.000200', '🦖')).rejects.toThrow('no name')
+  })
+
+  it('hears new messages over Socket Mode and acknowledges each envelope', async () => {
+    const { fetch } = slackApi({ ...base, 'apps.connections.open': () => ({ url: 'wss://wss.slack.test/link' }) })
+    const sockets: FakeSocket[] = []
+    class FakeSocket {
+      sent: string[] = []
+      onmessage: ((event: { data: string }) => void) | null = null
+      onclose: (() => void) | null = null
+      constructor(public url: string) { sockets.push(this) }
+      send(data: string) { this.sent.push(data) }
+      close() { this.onclose?.() }
+    }
+    const driver = new SlackInboxDriver({ token: 'xoxp-test', appToken: 'xapp-test', fetch, WebSocket: FakeSocket as never })
+    expect(driver.capabilities().live).toBe(true)
+    const events: InboxEvent[] = []
+    const stop = driver.watch(event => events.push(event))
+    await Bun.sleep(10)
+    expect(sockets[0]!.url).toBe('wss://wss.slack.test/link')
+
+    sockets[0]!.onmessage!({ data: JSON.stringify({ type: 'events_api', envelope_id: 'E1', payload: { event: { type: 'message', channel: 'D1', user: 'UANN', text: 'you there?', ts: '1700000500.000100' } } }) })
+    sockets[0]!.onmessage!({ data: JSON.stringify({ type: 'events_api', envelope_id: 'E2', payload: { event: { type: 'reaction_added', item: { channel: 'D1', ts: '1700000500.000100' } } } }) })
+    await Bun.sleep(10)
+    expect(sockets[0]!.sent).toEqual([JSON.stringify({ envelope_id: 'E1' }), JSON.stringify({ envelope_id: 'E2' })])
+    expect(events[0]).toMatchObject({ type: 'message', conversationId: 'D1', message: { text: 'you there?', fromMe: false, sender: { name: 'Ann' } } })
+    expect(events[1]).toEqual({ type: 'changed', conversationId: 'D1' })
+    stop()
   })
 
   it('closes a DM, leaves a public channel, and leaves a private one alone', async () => {
@@ -582,5 +662,118 @@ describe('createInboxDriver', () => {
     expect(createInboxDriver('slack', { token: 'x' }).provider).toBe('slack')
     expect(createInboxDriver('discord', { token: 'x' }).provider).toBe('discord')
     expect(createInboxDriver('whatsapp', {}).label).toBe('WhatsApp')
+  })
+})
+
+describe('Discord inbox driver, signed in as the person', () => {
+  class FakeGatewaySocket {
+    static last: FakeGatewaySocket | null = null
+    sent: any[] = []
+    onmessage: ((event: { data: string }) => void) | null = null
+    onclose: ((event: { code: number, reason: string }) => void) | null = null
+    constructor(public url: string) { FakeGatewaySocket.last = this }
+    send(data: string) { this.sent.push(JSON.parse(data)) }
+    close() { this.onclose?.({ code: 1000, reason: '' }) }
+    deliver(packet: unknown) { this.onmessage?.({ data: JSON.stringify(packet) }) }
+  }
+
+  const ME = { id: '100', username: 'chris', global_name: 'Chris', avatar: null }
+  const ANN = { id: '200', username: 'ann', global_name: 'Ann', avatar: 'a1' }
+  const READY = {
+    session_id: 's1',
+    resume_gateway_url: 'wss://resume.discord.test',
+    user: ME,
+    private_channels: [
+      { id: '300', type: 1, last_message_id: '9000', recipients: [ANN] },
+      { id: '301', type: 3, name: 'climbers', last_message_id: '8000', recipients: [ANN] },
+    ],
+    guilds: [{
+      id: '500',
+      name: 'Gym',
+      roles: [{ id: '500', permissions: String((1n << 10n) | (1n << 16n)) }, { id: '501', permissions: '0' }],
+      members: [{ user: ME, roles: [] }],
+      channels: [
+        { id: '600', type: 0, name: 'general', last_message_id: '7000', permission_overwrites: [] },
+        { id: '601', type: 0, name: 'staff', last_message_id: '7100', permission_overwrites: [{ id: '500', type: 0, allow: '0', deny: String(1n << 10n) }] },
+        { id: '602', type: 2, name: 'voice' },
+      ],
+    }],
+    read_state: [{ id: '300', last_message_id: '8999', mention_count: 0 }, { id: '600', last_message_id: '7000', mention_count: 0 }],
+    user_guild_settings: [],
+  }
+
+  function setup() {
+    const calls: Array<{ method: string, path: string, body: any, headers: any }> = []
+    const fetch: Fetch = async (input, init) => {
+      const path = new URL(input).pathname.replace('/api/v9', '')
+      calls.push({ method: init?.method ?? 'GET', path, body: typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body, headers: init?.headers })
+      if (path.endsWith('/messages') && init?.method === 'POST')
+        return Response.json({ id: '9100', type: 0, content: 'x', timestamp: new Date(1_700_000_000_000).toISOString(), edited_timestamp: null, author: ME })
+      if (path.startsWith('/channels/300/messages'))
+        return Response.json([{ id: '9000', type: 0, content: 'climb tonight?', timestamp: new Date(1_700_000_000_000).toISOString(), edited_timestamp: null, author: ANN }])
+      if (path.includes('/messages'))
+        return Response.json([])
+      return new Response(null, { status: 204 })
+    }
+    const driver = new DiscordInboxDriver({ token: 'user-token', account: 'user', fetch, WebSocket: FakeGatewaySocket as never })
+    return { driver, calls }
+  }
+
+  async function connect(driver: DiscordInboxDriver) {
+    const listing = driver.conversations()
+    await Bun.sleep(5)
+    const socket = FakeGatewaySocket.last!
+    socket.deliver({ op: 10, d: { heartbeat_interval: 60_000 } })
+    socket.deliver({ op: 0, t: 'READY', s: 1, d: READY })
+    return { socket, conversations: await listing }
+  }
+
+  it('identifies as the client and lists DMs, group DMs and the channels the person can read', async () => {
+    const { driver, calls } = setup()
+    const { socket, conversations } = await connect(driver)
+    expect(socket.sent[0]).toMatchObject({ op: 2, d: { token: 'user-token', properties: { browser: 'Discord Client' } } })
+    expect(conversations.map(c => [c.id, c.kind, c.title])).toEqual([
+      ['300', 'direct', 'Ann'],
+      ['301', 'group', 'climbers'],
+      ['600', 'channel', '#general'],
+    ])
+    // The DM has a newer message than the person has read; the channel does not.
+    expect(conversations.find(c => c.id === '300')).toMatchObject({ unread: 1, preview: 'climb tonight?', archive: { mode: 'native' } })
+    expect(conversations.find(c => c.id === '600')).toMatchObject({ unread: 0, workspace: 'Gym', archive: { mode: 'unsupported' } })
+    expect(conversations.find(c => c.id === '301')!.archive.mode).toBe('unsupported')
+    // The user token goes as-is, never as a bot's.
+    expect(calls[0]!.headers.authorization).toBe('user-token')
+    driver.close()
+  })
+
+  it('hears new DMs over the gateway, but not traffic in channels it does not list', async () => {
+    const { driver } = setup()
+    const events: InboxEvent[] = []
+    driver.watch(event => events.push(event))
+    const { socket } = await connect(driver)
+    events.length = 0
+    socket.deliver({ op: 0, t: 'MESSAGE_CREATE', s: 2, d: { id: '9200', channel_id: '300', type: 0, content: 'you up?', timestamp: new Date().toISOString(), edited_timestamp: null, author: ANN } })
+    socket.deliver({ op: 0, t: 'MESSAGE_CREATE', s: 3, d: { id: '7200', channel_id: '601', guild_id: '500', type: 0, content: 'staff only', timestamp: new Date().toISOString(), edited_timestamp: null, author: ANN } })
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ type: 'message', conversationId: '300', message: { text: 'you up?', sender: { name: 'Ann' } } })
+    driver.close()
+  })
+
+  it('sends with a reply reference, reacts, marks read and closes a DM', async () => {
+    const { driver, calls } = setup()
+    await connect(driver)
+    await driver.send('300', { text: 'yes!', replyToId: '9000' })
+    await driver.react('300', '9000', '👍')
+    await driver.markRead('300')
+    await driver.archive('300')
+    const writes = calls.filter(c => c.method !== 'GET').map(c => [c.method, c.path])
+    expect(writes).toEqual([
+      ['POST', '/channels/300/messages'],
+      ['PUT', `/channels/300/messages/9000/reactions/${encodeURIComponent('👍')}/@me`],
+      ['POST', '/channels/300/messages/9100/ack'],
+      ['DELETE', '/channels/300'],
+    ])
+    expect(calls.find(c => c.method === 'POST')!.body).toMatchObject({ content: 'yes!', message_reference: { message_id: '9000' } })
+    driver.close()
   })
 })

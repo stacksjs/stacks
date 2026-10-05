@@ -1,4 +1,4 @@
-import type { ArchiveOutcome, ArchiveSupport, Fetch, InboxAttachment, InboxConversation, InboxDriver, InboxMessage, InboxPerson, InboxStatus, MessageQuery } from './types'
+import type { ArchiveOutcome, ArchiveSupport, Fetch, InboxAttachment, InboxCapabilities, InboxConversation, InboxDriver, InboxEvent, InboxMessage, InboxPerson, InboxStatus, MessageQuery, OutgoingMessage, SendOutcome } from './types'
 import { onHost } from './image'
 
 export interface SlackInboxConfig {
@@ -6,9 +6,21 @@ export interface SlackInboxConfig {
    * A user token (`xoxp-…`), so the inbox sees what the person sees. Scopes:
    * `channels:read groups:read im:read mpim:read channels:history
    * groups:history im:history mpim:history users:read im:write mpim:write
-   * channels:write` (the last three for archiving).
+   * channels:write` (the last three for archiving), and to write as the
+   * person: `chat:write reactions:read reactions:write files:read files:write
+   * im:write mpim:write channels:write groups:write`.
    */
   token: string
+  /**
+   * An app-level token (`xapp-…`, scope `connections:write`) for Socket
+   * Mode, so new messages arrive as they are sent. The app subscribes to
+   * events on behalf of users: message.im, message.mpim, message.channels,
+   * message.groups, reaction_added, reaction_removed. Without it the inbox
+   * is read on a timer instead.
+   */
+  appToken?: string
+  /** The WebSocket constructor for Socket Mode; the global one by default. */
+  WebSocket?: new (url: string) => WebSocket
   fetch?: Fetch
   /** Overridable for tests and proxies. */
   apiBase?: string
@@ -75,6 +87,36 @@ const EMOJI: Record<string, string> = {
 
 const tsToMs = (ts: string): number => Math.round(Number(ts) * 1000)
 
+/** What Socket Mode sends down the socket. */
+interface SocketEnvelope {
+  type?: string
+  envelope_id?: string
+  payload?: { event?: SlackEvent }
+}
+
+/** An event Socket Mode delivers. */
+interface SlackEvent {
+  type: string
+  subtype?: string
+  channel?: string
+  user?: string
+  ts?: string
+  text?: string
+  thread_ts?: string
+  item?: { channel?: string, ts?: string }
+}
+
+/** The Slack name for a reaction: the shortcode for a known emoji, or `:name:` as given. */
+function shortcodeFor(reaction: string): string {
+  const known = Object.entries(EMOJI).find(([, emoji]) => emoji === reaction)
+  if (known)
+    return known[0]
+  const code = reaction.match(/^:([\w+-]+):$/)
+  if (code)
+    return code[1]!
+  throw new Error(`Slack has no name for the reaction ${reaction}.`)
+}
+
 export class SlackApiError extends Error {
   constructor(public readonly method: string, public readonly code: string) {
     super(`Slack ${method} failed: ${code}`)
@@ -98,6 +140,8 @@ export class SlackInboxDriver implements InboxDriver {
   private readonly fetch: Fetch
   private readonly apiBase: string
   private readonly concurrency: number
+  private readonly appToken: string | undefined
+  private readonly Socket: (new (url: string) => WebSocket) | undefined
   private self: { userId: string, team: string, teamId: string } | null = null
   private users = new Map<string, string | null>()
   private avatars = new Map<string, string | null>()
@@ -108,6 +152,146 @@ export class SlackInboxDriver implements InboxDriver {
     this.fetch = config.fetch ?? ((input, init) => fetch(input, init))
     this.apiBase = (config.apiBase ?? 'https://slack.com/api').replace(/\/$/, '')
     this.concurrency = config.concurrency ?? 4
+    this.appToken = config.appToken
+    this.Socket = config.WebSocket ?? (globalThis as { WebSocket?: new (url: string) => WebSocket }).WebSocket
+  }
+
+  capabilities(): InboxCapabilities {
+    return { send: true, attachments: true, replies: true, reactions: true, markRead: true, live: !!this.appToken }
+  }
+
+  /**
+   * Posts as the person (a user token writes as its user). A reply goes into
+   * the thread of the message it answers; files go up through Slack's
+   * external upload, with the text as their comment.
+   */
+  async send(conversationId: string, message: OutgoingMessage): Promise<SendOutcome> {
+    const text = message.text?.trim() ?? ''
+    const files = message.files ?? []
+    if (!text && files.length === 0)
+      throw new Error('Nothing to send.')
+    const threadTs = message.replyToId ? await this.threadOf(conversationId, message.replyToId) : null
+    if (files.length === 0) {
+      const sent = await this.api<{ ts: string }>('chat.postMessage', { channel: conversationId, text, ...(threadTs ? { thread_ts: threadTs } : {}) }, true)
+      return { id: sent.ts, sentAt: tsToMs(sent.ts) }
+    }
+    const uploaded: Array<{ id: string, title: string }> = []
+    for (const file of files) {
+      const bytes = await Bun.file(file.path).arrayBuffer()
+      const name = file.name ?? file.path.split('/').pop() ?? 'file'
+      const target = await this.api<{ upload_url: string, file_id: string }>('files.getUploadURLExternal', { filename: name, length: bytes.byteLength }, true)
+      const put = await this.fetch(target.upload_url, { method: 'POST', body: new Blob([bytes], { type: file.mimeType ?? 'application/octet-stream' }) })
+      if (!put.ok)
+        throw new Error(`Slack did not take the upload of ${name}: ${put.status}`)
+      uploaded.push({ id: target.file_id, title: name })
+    }
+    await this.api('files.completeUploadExternal', {
+      files: JSON.stringify(uploaded),
+      channel_id: conversationId,
+      ...(text ? { initial_comment: text } : {}),
+      ...(threadTs ? { thread_ts: threadTs } : {}),
+    }, true)
+    return { id: null, sentAt: Date.now() }
+  }
+
+  /** The thread a reply joins: the answered message's own thread, or that message. */
+  private async threadOf(conversationId: string, ts: string): Promise<string> {
+    try {
+      const page = await this.api<{ messages: SlackMessage[] }>('conversations.history', { channel: conversationId, latest: ts, inclusive: true, limit: 1 })
+      return page.messages[0]?.thread_ts ?? ts
+    }
+    catch {
+      return ts
+    }
+  }
+
+  async react(conversationId: string, messageId: string, reaction: string, remove = false): Promise<void> {
+    const name = shortcodeFor(reaction)
+    // Reactions arrive as `<ts>:<name>:<user>`; the message is the first part.
+    const timestamp = messageId.split(':')[0]!
+    await this.api(remove ? 'reactions.remove' : 'reactions.add', { channel: conversationId, timestamp, name }, true)
+  }
+
+  async markRead(conversationId: string): Promise<void> {
+    const page = await this.api<{ messages: SlackMessage[] }>('conversations.history', { channel: conversationId, limit: 1 })
+    const latest = page.messages[0]
+    if (latest)
+      await this.api('conversations.mark', { channel: conversationId, ts: latest.ts }, true)
+  }
+
+  /**
+   * Socket Mode: Slack pushes each event down a WebSocket, which is
+   * acknowledged by its envelope id. Slack closes the socket from time to
+   * time and says so; it is reopened, backing off when it keeps failing.
+   */
+  watch(onEvent: (event: InboxEvent) => void): () => void {
+    const Socket = this.Socket
+    if (!this.appToken || !Socket)
+      return () => {}
+    let stopped = false
+    let socket: WebSocket | null = null
+    let failures = 0
+    const connect = async (): Promise<void> => {
+      if (stopped)
+        return
+      try {
+        const response = await this.fetch(`${this.apiBase}/apps.connections.open`, { method: 'POST', headers: { authorization: `Bearer ${this.appToken}` } })
+        const opened = await response.json() as { ok?: boolean, url?: string, error?: string }
+        if (!opened.ok || !opened.url)
+          throw new SlackApiError('apps.connections.open', opened.error ?? `http_${response.status}`)
+        const current = new Socket(opened.url)
+        socket = current
+        // In order: a message waits on a user lookup, and the reaction to it
+        // must not overtake it.
+        let queue = Promise.resolve()
+        current.onmessage = (raw) => {
+          failures = 0
+          let envelope: SocketEnvelope
+          try {
+            envelope = JSON.parse(String(raw.data))
+          }
+          catch {
+            return
+          }
+          // At once, not behind the queue: Slack retries an envelope that is
+          // not acknowledged within three seconds.
+          if (envelope.envelope_id)
+            current.send(JSON.stringify({ envelope_id: envelope.envelope_id }))
+          if (envelope.type === 'disconnect') {
+            current.close()
+            return
+          }
+          queue = queue.then(() => this.onEnvelope(envelope, onEvent)).catch(() => {})
+        }
+        current.onclose = () => {
+          socket = null
+          if (!stopped)
+            setTimeout(connect, Math.min(60_000, 1000 * 2 ** Math.min(failures++, 6)))
+        }
+      }
+      catch {
+        if (!stopped)
+          setTimeout(connect, Math.min(60_000, 1000 * 2 ** Math.min(failures++, 6)))
+      }
+    }
+    void connect()
+    return () => {
+      stopped = true
+      socket?.close()
+    }
+  }
+
+  private async onEnvelope(envelope: SocketEnvelope, onEvent: (event: InboxEvent) => void): Promise<void> {
+    const event = envelope.payload?.event
+    if (envelope.type !== 'events_api' || !event)
+      return
+    if (event.type === 'message' && event.channel && !event.subtype && event.ts) {
+      const message = await this.toMessage(event.channel, event as SlackMessage)
+      onEvent({ type: 'message', conversationId: event.channel, message })
+      return
+    }
+    const channel = event.channel ?? event.item?.channel ?? null
+    onEvent({ type: 'changed', conversationId: channel })
   }
 
   private async api<T extends Record<string, unknown>>(method: string, params: Record<string, string | number | boolean> = {}, post = false): Promise<T> {
@@ -265,32 +449,7 @@ export class SlackInboxDriver implements InboxDriver {
     collected.sort((a, b) => Number(a.ts) - Number(b.ts))
     const out: InboxMessage[] = []
     for (const message of collected.slice(-limit)) {
-      const sender = await this.person(message.user)
-      const event = !!message.subtype && !['file_share', 'thread_broadcast', 'me_message'].includes(message.subtype)
-      out.push({
-        id: message.ts,
-        conversationId,
-        kind: event ? 'event' : 'message',
-        text: message.text ?? null,
-        fromMe: message.user === me.userId,
-        sentAt: tsToMs(message.ts),
-        sender: message.user === me.userId ? null : (sender ?? (message.username ? { id: message.bot_id ?? message.username, name: message.username } : null)),
-        targetId: null,
-        reaction: null,
-        reactionRemoved: false,
-        replyToId: message.thread_ts && message.thread_ts !== message.ts ? message.thread_ts : null,
-        editedAt: message.edited ? tsToMs(message.edited.ts) : null,
-        unsent: false,
-        attachments: (message.files ?? []).map((file): InboxAttachment => ({
-          id: file.id,
-          name: file.name ?? file.title ?? file.id,
-          mimeType: file.mimetype ?? null,
-          bytes: file.size ?? 0,
-          path: null,
-          url: file.url_private ?? null,
-        })),
-        cursor: message.ts,
-      })
+      out.push(await this.toMessage(conversationId, message))
       // Slack keeps reactions on the message; give each its own entry.
       for (const reaction of message.reactions ?? []) {
         for (const user of reaction.users ?? []) {
@@ -315,6 +474,36 @@ export class SlackInboxDriver implements InboxDriver {
       }
     }
     return out
+  }
+
+  private async toMessage(conversationId: string, message: SlackMessage): Promise<InboxMessage> {
+    const me = await this.whoami()
+    const sender = await this.person(message.user)
+    const event = !!message.subtype && !['file_share', 'thread_broadcast', 'me_message'].includes(message.subtype)
+    return {
+      id: message.ts,
+      conversationId,
+      kind: event ? 'event' : 'message',
+      text: message.text ?? null,
+      fromMe: message.user === me.userId,
+      sentAt: tsToMs(message.ts),
+      sender: message.user === me.userId ? null : (sender ?? (message.username ? { id: message.bot_id ?? message.username, name: message.username } : null)),
+      targetId: null,
+      reaction: null,
+      reactionRemoved: false,
+      replyToId: message.thread_ts && message.thread_ts !== message.ts ? message.thread_ts : null,
+      editedAt: message.edited ? tsToMs(message.edited.ts) : null,
+      unsent: false,
+      attachments: (message.files ?? []).map((file): InboxAttachment => ({
+        id: file.id,
+        name: file.name ?? file.title ?? file.id,
+        mimeType: file.mimetype ?? null,
+        bytes: file.size ?? 0,
+        path: null,
+        url: file.url_private ?? null,
+      })),
+      cursor: message.ts,
+    }
   }
 
   private async channel(id: string): Promise<SlackChannel> {
