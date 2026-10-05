@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.70...v0.75.71)
+
+## 🐛 Bug Fixes
+
+- **database**: stop generation rewriting indexes and tables the corpus already has ([eaff2b6](https://github.com/stacksjs/stacks/commit/eaff2b6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.69...v0.75.70)
 
 ## 🐛 Bug Fixes
