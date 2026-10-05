@@ -90,4 +90,40 @@ describe('StacksCache.getOrSet - inflight timeout (#1876 C-2)', () => {
     expect(results).toEqual([1, 1, 1, 1, 1])
     expect(invocations).toBe(1)
   })
+
+  test('a caller that joined a hung fetch is released at the same deadline', async () => {
+    // Joiners awaited the bare fetch, so only the first caller was timed out:
+    // everyone who joined it waited on the hung fetcher for as long as it hung.
+    const cache = freshCache({ inflightTimeoutMs: 150 })
+    const hang = () => new Promise<string>((resolve) => {
+      timers.push(setTimeout(() => resolve('late'), 5_000))
+    })
+
+    const started = Date.now()
+    const first = cache.getOrSet('joined', hang)
+    await new Promise(resolve => setTimeout(resolve, 50))
+    const joined = cache.getOrSet('joined', hang)
+
+    const outcomes = await Promise.allSettled([first, joined])
+    expect(outcomes.map(outcome => outcome.status)).toEqual(['rejected', 'rejected'])
+    expect(String((outcomes[1] as PromiseRejectedResult).reason)).toMatch(/timed out after 150ms/)
+    // Both by the first caller's deadline, not the fetcher's five seconds.
+    expect(Date.now() - started).toBeLessThan(1_000)
+  })
+
+  test('a failing fetch fails its joiners with the same error, and frees the slot', async () => {
+    const cache = freshCache({ inflightTimeoutMs: 5_000 })
+    let calls = 0
+    const failing = async (): Promise<string> => {
+      calls++
+      await new Promise(resolve => setTimeout(resolve, 30))
+      throw new Error('upstream down')
+    }
+
+    const outcomes = await Promise.allSettled([cache.getOrSet('failing', failing), cache.getOrSet('failing', failing)])
+    expect(outcomes.map(outcome => outcome.status)).toEqual(['rejected', 'rejected'])
+    expect(calls).toBe(1)
+
+    expect(await cache.getOrSet('failing', async () => 'recovered')).toBe('recovered')
+  })
 })

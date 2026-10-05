@@ -185,38 +185,41 @@ export class StacksCache implements CacheDriver {
     // a rejected Promise rather than throwing before `computePromise` exists.
     const computePromise = compute()
 
-    // Release the slot only while it is still OURS. A compute that settles
-    // after its own timeout must not evict the newer caller that replaced it —
-    // the previous unconditional `finally { delete }` did exactly that.
-    const release = (): void => {
-      if (this.inflight.get(key) === computePromise)
-        this.inflight.delete(key)
-    }
-    computePromise.then(release, release)
-
     // Hard cap on how long a fetcher can hold an in-flight entry
     // (stacksjs/stacks#1876 C-2). Without this, a fetcher that hangs
     // (DB timeout, deadlock, infinite loop) keeps its entry in the
     // inflight map forever — every future caller for the same key
     // hangs on the same dead Promise. Race against a timeout so the
     // entry is reclaimed and the next caller gets to try fresh.
+    //
+    // What goes in the map is the RACE, not the bare compute. Callers that
+    // joined while the fetcher was running used to await `computePromise`
+    // itself, so the cap released the slot and failed the first caller on
+    // time while everyone who had joined it waited on the hung fetcher for as
+    // long as it hung. They share the deadline now.
     const timeoutMs = this.inflightTimeoutMs
+    let timer: ReturnType<typeof setTimeout> | undefined
     const timeoutPromise = new Promise<never>((_, reject) => {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         // The hung compute itself keeps running until it naturally settles —
         // JS Promises can't be cancelled, only ignored.
-        release()
         reject(new Error(`[cache] getOrSet('${key}') timed out after ${timeoutMs}ms`))
       }, timeoutMs)
-      // Avoid leaking the timer when computePromise wins the race.
-      computePromise.then(
-        () => clearTimeout(timer),
-        () => clearTimeout(timer),
-      )
     })
+    const guarded = Promise.race([computePromise, timeoutPromise])
 
-    this.inflight.set(key, computePromise)
-    return await Promise.race([computePromise as Promise<T>, timeoutPromise])
+    // Release the slot only while it is still OURS. A compute that settles
+    // after its own timeout must not evict the newer caller that replaced it —
+    // the previous unconditional `finally { delete }` did exactly that.
+    const settle = (): void => {
+      clearTimeout(timer)
+      if (this.inflight.get(key) === guarded)
+        this.inflight.delete(key)
+    }
+    guarded.then(settle, settle)
+
+    this.inflight.set(key, guarded)
+    return await guarded
   }
 
   /**
