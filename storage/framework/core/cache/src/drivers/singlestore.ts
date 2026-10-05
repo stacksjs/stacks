@@ -19,11 +19,12 @@
  * (matching the Stacks cache contract); `0`/omitted means "no expiration".
  *
  * The class implements the subset of `ts-cache`'s `CacheManager` surface that
- * `StacksCache` consumes (get/mget/set/mset/fetch/del/has/flush/keys/getTtl/
- * ttl/take/getStats/close), so it can be dropped into `new StacksCache(store)`
+ * `StacksCache` consumes (`CacheBackend`: get/mget/set/mset/del/has/flush/keys/
+ * getTtl/ttl/take/getStats/close/emit), so it can be dropped into `new StacksCache(store)`
  * and inherit all of the stampede-protection + tag logic for free.
  */
 
+import { EventEmitter } from 'node:events'
 import { SQL } from 'bun'
 
 export interface SingleStoreCacheOptions {
@@ -60,7 +61,12 @@ function quoteIdent(id: string): string {
   return `\`${id.replace(/`/g, '``')}\``
 }
 
-export class SingleStoreCacheStore {
+/**
+ * An `EventEmitter`, as ts-cache's `CacheManager` is: `StacksCache` emits a
+ * `fetch` event through its store when it computes a value, and listeners can
+ * subscribe to it the same way on every driver.
+ */
+export class SingleStoreCacheStore extends EventEmitter {
   private readonly sql: SQL
   private readonly table: string
   private readonly qualified: string
@@ -72,6 +78,7 @@ export class SingleStoreCacheStore {
   private misses = 0
 
   constructor(options: SingleStoreCacheOptions = {}) {
+    super()
     const {
       host = '127.0.0.1',
       port = 3306,

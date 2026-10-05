@@ -96,8 +96,21 @@ export interface RedisOptions {
  * Wraps ts-cache's CacheManager to provide a consistent API
  * that matches the Stacks CacheDriver interface.
  */
+/**
+ * What `StacksCache` needs from the store beneath it: ts-cache's
+ * `CacheManager` (memory, Redis) or the SingleStore store.
+ *
+ * Named so the compiler holds every store to it. The SingleStore store was
+ * passed in through `as unknown as CacheManager` and had no `emit`, which
+ * `getOrSet` calls after storing a computed value - so every `remember()` on
+ * SingleStore wrote its value and then threw a TypeError, and nothing could
+ * see it until it ran.
+ */
+export type CacheBackend = Pick<CacheManager,
+  'get' | 'mget' | 'set' | 'mset' | 'del' | 'has' | 'flush' | 'keys' | 'getTtl' | 'ttl' | 'take' | 'getStats' | 'close' | 'emit'>
+
 export class StacksCache implements CacheDriver {
-  private manager: CacheManager
+  private manager: CacheBackend
   /**
    * In-flight fetcher map for cache stampede prevention. When N concurrent
    * callers all `remember()` the same missing key, we run the fetcher
@@ -116,7 +129,7 @@ export class StacksCache implements CacheDriver {
    */
   private readonly inflightTimeoutMs: number
 
-  constructor(manager: CacheManager, opts: { inflightTimeoutMs?: number } = {}) {
+  constructor(manager: CacheBackend, opts: { inflightTimeoutMs?: number } = {}) {
     this.manager = manager
     this.inflightTimeoutMs = opts.inflightTimeoutMs ?? 30_000
   }
@@ -308,9 +321,11 @@ export class StacksCache implements CacheDriver {
   }
 
   /**
-   * Get the underlying CacheManager for advanced usage
+   * The store underneath, for advanced usage: a ts-cache `CacheManager` for
+   * the memory and Redis drivers, the SingleStore store for that one. Typed as
+   * the surface they share, which is all a SingleStore cache has.
    */
-  get cacheManager(): CacheManager {
+  get cacheManager(): CacheBackend {
     return this.manager
   }
 
@@ -520,12 +535,11 @@ export function createRedisCache(options: RedisOptions = {}): CacheDriver {
  *
  * Wraps a SingleStore-backed store in the same `StacksCache` façade the memory
  * and Redis drivers use, so it inherits the stampede-protection + tag logic.
- * The store implements the `CacheManager` surface `StacksCache` consumes; the
- * cast bridges the structural gap (it is not a literal `CacheManager` subclass).
+ * The store implements {@link CacheBackend}, the surface `StacksCache` consumes.
  */
 export function createSingleStoreCache(options: SingleStoreCacheOptions = {}): CacheDriver {
   const store = new SingleStoreCacheStore(options)
-  return new StacksCache(store as unknown as CacheManager)
+  return new StacksCache(store)
 }
 
 /**
