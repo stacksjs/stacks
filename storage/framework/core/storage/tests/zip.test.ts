@@ -86,4 +86,33 @@ describe('zip / unzip', () => {
     const result = await zip(['does-not-exist'], join(dir, 'out.zip'), { cwd: dir })
     expect(result.isErr).toBeTrue()
   })
+
+  it('extracts every archive it is given, not just the first', async () => {
+    // `unzip -o a.zip b.zip` reads b.zip as a member to extract from a.zip.
+    const first = fixture('multi-first')
+    const second = join(root, 'multi-second')
+    mkdirSync(join(second, 'more'), { recursive: true })
+    writeFileSync(join(second, 'more', 'c.txt'), 'second archive')
+    expect((await zip(['src'], join(first, 'one.zip'), { cwd: first })).isErr).toBeFalse()
+    expect((await zip(['more'], join(second, 'two.zip'), { cwd: second })).isErr).toBeFalse()
+
+    const restored = join(root, 'multi-restored')
+    mkdirSync(restored, { recursive: true })
+    expect((await unzip([join(first, 'one.zip'), join(second, 'two.zip')], { cwd: restored })).isErr).toBeFalse()
+
+    expect(await Bun.file(join(restored, 'src', 'a.txt')).text()).toBe('hello')
+    expect(await Bun.file(join(restored, 'more', 'c.txt')).text()).toBe('second archive')
+  })
+
+  it('stops at an archive that fails, and says so', async () => {
+    const dir = fixture('multi-failing')
+    expect((await zip(['src'], join(dir, 'good.zip'), { cwd: dir })).isErr).toBeFalse()
+
+    const restored = join(dir, 'restored')
+    mkdirSync(restored, { recursive: true })
+    const result = await unzip([join(dir, 'missing.zip'), join(dir, 'good.zip')], { cwd: restored })
+
+    expect(result.isErr).toBeTrue()
+    expect(existsSync(join(restored, 'src'))).toBeFalse()
+  })
 })

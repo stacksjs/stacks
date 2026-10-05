@@ -34,13 +34,30 @@ export async function zip(
   return runCommand(['zip', '-r', toPath, ...sources], options)
 }
 
+/**
+ * Extract each archive in `paths`, in order, stopping at the first failure.
+ *
+ * One `unzip` run per archive: `unzip -o a.zip b.zip` does not extract two
+ * archives, it extracts the member named `b.zip` from `a.zip`, so with more
+ * than one path nothing was extracted from any archive but the first, and
+ * from that one only a member that happened to share the second's name.
+ */
 export async function unzip(
   paths: string | string[],
   options?: ZipOptions,
 ): Promise<Result<Subprocess, CommandError>> {
-  const sources = Array.isArray(paths) ? paths : [paths]
+  const [first, ...rest] = Array.isArray(paths) ? paths : [paths]
+  if (first === undefined)
+    throw new Error('unzip() needs at least one archive')
 
-  return runCommand(['unzip', '-o', ...sources], options)
+  let result = await runCommand(['unzip', '-o', first], options)
+  for (const source of rest) {
+    if (result.isErr)
+      break
+    result = await runCommand(['unzip', '-o', source], options)
+  }
+
+  return result
 }
 
 export function archive(paths: string | string[], to?: string, options?: ZipOptions): Promise<Result<Subprocess, CommandError>> {
