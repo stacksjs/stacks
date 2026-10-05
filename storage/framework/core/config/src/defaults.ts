@@ -1,4 +1,5 @@
 import type { StacksOptions } from '@stacksjs/types'
+import process from 'node:process'
 import { commandsPath, projectPath, userDatabasePath } from '@stacksjs/path'
 
 /**
@@ -238,7 +239,11 @@ export const defaults: StacksOptions = {
     logging: false,
     connections: {
       sqlite: {
-        database: userDatabasePath('stacks.sqlite'),
+        // `DB_DATABASE_PATH` first, as every app's own config/database.ts
+        // reads it. The default is what a project without one gets, and it
+        // ignored the variable outright, so `DB_DATABASE_PATH=... buddy migrate`
+        // migrated the file it named while the app's queries went to this one.
+        database: process.env.DB_DATABASE_PATH || userDatabasePath('stacks.sqlite'),
         prefix: '',
       },
     },

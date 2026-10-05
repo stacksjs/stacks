@@ -69,7 +69,14 @@ let appEnv: string = envVars.APP_ENV || 'local'
 let dbDriver: string = normalizeDatabaseDriver(envVars.DB_CONNECTION || 'sqlite')
 let queryBuilderDialect: QueryBuilderDialect = toQueryBuilderDialect(dbDriver)
 let queryLoggingEnabled = envVars.DB_QUERY_LOGGING_ENABLED ?? !isProductionEnvironment(appEnv)
-let dbConfig: DbConfig = {
+/**
+ * Every connection as the environment alone describes it.
+ *
+ * The baseline an application's `config/database.ts` is merged over, per
+ * connection and per field, so a connection the app does not define - or a
+ * field it leaves out - still comes from `DB_*` rather than vanishing.
+ */
+const envDbConfig = (): DbConfig => ({
   connections: {
     sqlite: { database: sqliteDefaults.database, prefix: '' },
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
@@ -79,7 +86,9 @@ let dbConfig: DbConfig = {
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
     turso: { url: envVars.TURSO_DATABASE_URL || '', authToken: envVars.TURSO_AUTH_TOKEN || '', prefix: '' },
   },
-}
+})
+
+let dbConfig: DbConfig = envDbConfig()
 
 // Test-only config mutex (stacksjs/stacks#1862 follow-up) ------------------
 //
@@ -182,11 +191,22 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
     dbDriver = normalizeDatabaseDriver(config.database.default)
   queryBuilderDialect = toQueryBuilderDialect(dbDriver)
 
-  // Cast rather than a merge: replacing the whole object is the behaviour this
-  // has always had, and an app that reaches here has supplied its connections.
-  // Narrowing the shapes above is what makes the difference visible at all.
-  if (config?.database?.connections)
-    dbConfig = config.database as DbConfig
+  // Merged over the environment's baseline, per connection and per field,
+  // rather than replacing it. Replacing it dropped every connection the
+  // config did not name, so their `DB_*` values were ignored, and left the
+  // migration runner - which read the environment directly - pointed at a
+  // different database from the app whenever the two disagreed
+  // (`database: 'database/myapp.sqlite'` in config, nothing in `.env`).
+  if (config?.database?.connections) {
+    const baseline = envDbConfig()
+    const supplied = config.database.connections as Partial<Record<string, DbConnectionConfig>>
+    const connections: Record<string, DbConnectionConfig> = { ...baseline.connections }
+    for (const [name, connection] of Object.entries(supplied)) {
+      if (connection && typeof connection === 'object')
+        connections[name] = { ...(connections[name] ?? {}), ...connection }
+    }
+    dbConfig = { ...(config.database as DbConfig), connections: connections as DbConfig['connections'] }
+  }
 
   configureDatabaseRoutingContext(getReplicas().length > 0)
 
@@ -229,6 +249,20 @@ function getDriver(): string {
 
 function getDatabaseConfig(): DbConfig {
   return dbConfig
+}
+
+/**
+ * The database this process talks to: the driver and every connection, as
+ * resolved from `config/database.ts` over the environment.
+ *
+ * One answer for everything that opens a connection. The migration runner
+ * used to build its own from `DB_*` alone, so an app whose config named a
+ * different SQLite file was migrated in one file and served from another.
+ * Await `ensureDatabaseConfigLoaded()` first: until the app's config has
+ * loaded, this is the environment's baseline.
+ */
+export function resolvedDatabaseConfig(): { driver: string, connections: DbConfig['connections'] } {
+  return { driver: dbDriver, connections: dbConfig.connections }
 }
 
 /**

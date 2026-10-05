@@ -37,7 +37,7 @@ import {
   saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
-import { db, qbSnapshotDir, resetDatabaseConnection } from './utils'
+import { db, ensureDatabaseConfigLoaded, qbSnapshotDir, resetDatabaseConnection, resolvedDatabaseConfig } from './utils'
 import {
   classifyConnectionError,
   createDatabase,
@@ -65,45 +65,28 @@ import { sqlHelpers } from './sql-helpers'
 
 export { sqlStatementsOf } from './sql-statements'
 
-// Use environment variables via @stacksjs/env for proper type coercion
-import { env as envVars } from '@stacksjs/env'
-import { getConnectionDefaults } from './defaults'
-import { isLibsqlDriver, isVitessSharded, normalizeDatabaseDriver, toSqlIntrospectionDialect } from './dialect'
+import { isLibsqlDriver, isVitessSharded, toSqlIntrospectionDialect } from './dialect'
 
-// Shell-provided values must win over the loaded .env file. The migration
-// executor already follows process.env, so resolving preprocessing against
-// only the typed proxy can point the two phases at different SQLite files
-// when a command uses `DB_DATABASE_PATH=/tmp/audit.sqlite buddy migrate`.
-const databaseEnv = {
-  DB_CONNECTION: process.env.DB_CONNECTION || envVars.DB_CONNECTION,
-  DB_DATABASE_PATH: process.env.DB_DATABASE_PATH || envVars.DB_DATABASE_PATH,
-  DB_DATABASE: process.env.DB_DATABASE || envVars.DB_DATABASE,
-  DB_HOST: process.env.DB_HOST || envVars.DB_HOST,
-  DB_PORT: process.env.DB_PORT ? Number(process.env.DB_PORT) : envVars.DB_PORT,
-  DB_USERNAME: process.env.DB_USERNAME || envVars.DB_USERNAME,
-  DB_PASSWORD: process.env.DB_PASSWORD || envVars.DB_PASSWORD,
-  DB_VITESS_SHARDED: process.env.DB_VITESS_SHARDED || envVars.DB_VITESS_SHARDED,
-  TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL || envVars.TURSO_DATABASE_URL,
-  TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN || envVars.TURSO_AUTH_TOKEN,
-}
-
-// Build database config from environment variables
-const dbDriver = normalizeDatabaseDriver(databaseEnv.DB_CONNECTION || 'sqlite')
-const sqliteDefaults = getConnectionDefaults('sqlite', databaseEnv)
-const mysqlDefaults = getConnectionDefaults('mysql', databaseEnv)
-const singlestoreDefaults = getConnectionDefaults('singlestore', databaseEnv)
-const vitessDefaults = getConnectionDefaults('vitess', databaseEnv)
-const postgresDefaults = getConnectionDefaults('postgres', databaseEnv)
-
+/**
+ * The database the runner migrates: exactly the one the app serves from.
+ *
+ * This used to be built here from `DB_*` alone, while the app's connection
+ * comes from `config/database.ts`. Whenever the two disagreed the runner
+ * migrated one database and the app read another: `database:
+ * 'database/myapp.sqlite'` in config with nothing in `.env` was migrated into
+ * `database/stacks.sqlite` and served from an empty file, and the only way out
+ * was setting `DB_DATABASE_PATH` by hand to match. Now both read
+ * `resolvedDatabaseConfig()`, which is the config merged over the environment.
+ * Every async entry point below awaits `ensureDatabaseConfigLoaded()` first,
+ * so the app's config has landed before anything reads this.
+ */
 const dbConfig = {
-  default: dbDriver,
-  connections: {
-    sqlite: { database: sqliteDefaults.database, prefix: '' },
-    mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
-    singlestore: { name: singlestoreDefaults.database, host: singlestoreDefaults.host, username: singlestoreDefaults.username, password: singlestoreDefaults.password, port: singlestoreDefaults.port, prefix: '' },
-    vitess: { name: vitessDefaults.database, host: vitessDefaults.host, username: vitessDefaults.username, password: vitessDefaults.password, port: vitessDefaults.port, prefix: '', sharded: isVitessSharded(databaseEnv.DB_VITESS_SHARDED) },
-    postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
-    turso: { url: databaseEnv.TURSO_DATABASE_URL || '', authToken: databaseEnv.TURSO_AUTH_TOKEN || '' },
+  get default(): string {
+    return resolvedDatabaseConfig().driver
+  },
+  get connections(): ReturnType<typeof resolvedDatabaseConfig>['connections'] & { turso: { url?: string, authToken?: string } } {
+    const { connections } = resolvedDatabaseConfig()
+    return { ...connections, turso: connections.turso ?? { url: '', authToken: '' } }
   },
 }
 
@@ -1186,6 +1169,9 @@ let databaseBootstrapped = false
  * transient failure can be retried in the same process.
  */
 export async function ensureDatabaseReady(): Promise<void> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   if (databaseBootstrapped)
     return
 
@@ -1846,6 +1832,9 @@ async function restoreUniqueIndexesAfterBatch(corpusDir: string): Promise<void> 
 }
 
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   const startedAt = Date.now()
   const hidden = await hideDisabledFeatureMigrations()
   /*
@@ -2177,6 +2166,9 @@ function listCorpusFiles(dir: string): string[] {
  * means every file is pending.
  */
 export async function pendingMigrationFiles(): Promise<string[]> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   configureQueryBuilder()
   // The directory the runner executes, resolved the way runDatabaseMigration does.
   const dir = migrationDirectory(getDialect())
@@ -2206,6 +2198,9 @@ export async function pendingMigrationFiles(): Promise<string[]> {
  * its new name.
  */
 export async function missingRecordedTables(): Promise<string[]> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   configureQueryBuilder()
   const dialect = getDialect()
   const dir = migrationDirectory(dialect)
@@ -2261,6 +2256,9 @@ const FRAMEWORK_TABLES = [
  * Reset the database (drop all tables)
  */
 export async function resetDatabase(): Promise<Result<string, Error>> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   try {
     // Bootstrap BEFORE dropping anything. `migrate:fresh` calls this function
     // first and only reached ensureDatabaseExists() later, from inside
@@ -2512,6 +2510,9 @@ export function catchUpSnapshotFrameworkRenames(options: { persist: boolean }): 
  * migrating on regardless would leave the app reading the wrong one.
  */
 export async function catchUpFrameworkRenames(options: { runner?: RenameSqlRunner } = {}): Promise<DatabaseRenameResult> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   const dialect = toSqlIntrospectionDialect(getDialect())
   if (dialect === 'other')
     return { applied: [], skipped: [] }
@@ -2597,6 +2598,9 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
  * never "the differ failed".
  */
 export async function pendingMigrationOperations(options: GenerateMigrationsOptions = {}): Promise<MigrationOperation[]> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   configureQueryBuilder()
   const dialect = getDialect()
   const { modelsDir, skip, protectedTables } = prepareMigrationModelsDir()
@@ -2779,6 +2783,9 @@ function detectSnapshotDialectMismatch(dialect: string): string | null {
 }
 
 export async function generateMigrations(options: GenerateMigrationsOptions = {}): Promise<Result<string, Error>> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   try {
     // Step-progress at debug — buddy's intro/outro carries the user-
     // visible signal. On a no-op generate we want zero lines between
@@ -3658,6 +3665,8 @@ export async function regenerateMigrationCorpus(options: {
    */
   onlyExistingTables?: boolean
 } = {}): Promise<Result<RegeneratedCorpus, Error>> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
   try {
     const dialect = options.dialect ?? getQbDialect()
     let requestedVitessSharded: boolean | undefined
@@ -4455,6 +4464,9 @@ function nextMigrationNumber(migrationsDir: string): number {
  * Generate fresh migrations (full regeneration, ignoring previous state)
  */
 export async function generateMigrations2(): Promise<Result<string, Error>> {
+  // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
+  await ensureDatabaseConfigLoaded()
+
   try {
     log.info('Generating fresh migrations...')
 
