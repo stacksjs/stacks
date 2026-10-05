@@ -161,7 +161,9 @@ export async function readMailSettings(options: EnvironmentFileOptions = {}): Pr
       apiKeyConfigured: configured(entries.MAILGUN_API_KEY),
     },
     mailtrap: {
-      host: entries.MAILTRAP_HOST ?? 'https://sandbox.api.mailtrap.io/api/send',
+      // Empty means the driver decides: the sandbox inbox when MAILTRAP_INBOX_ID
+      // is set, real delivery through the Sending API when it is not.
+      host: entries.MAILTRAP_HOST ?? '',
       inboxId: entries.MAILTRAP_INBOX_ID ?? '',
       tokenConfigured: configured(entries.MAILTRAP_TOKEN),
     },
@@ -353,16 +355,23 @@ export async function updateMailSettings(
       fields,
     )
 
-    try {
-      const url = new URL(host)
-      if (url.protocol !== 'https:')
-        fields['mailtrap.host'] = 'Mailtrap API requests must use HTTPS.'
+    // Both optional, as in the driver: an inbox id captures mail in that
+    // sandbox inbox, no inbox id delivers it through the Sending API, and a
+    // blank host means Mailtrap's own host for whichever of the two it is.
+    if (host) {
+      try {
+        const url = new URL(host)
+        if (url.protocol !== 'https:')
+          fields['mailtrap.host'] = 'Mailtrap API requests must use HTTPS.'
+        else if (/sandbox\.api\.mailtrap\.io$/i.test(url.hostname) && !inboxId)
+          fields['mailtrap.inboxId'] = 'The Mailtrap sandbox needs the inbox ID to capture into. Leave the host blank to deliver mail instead.'
+      }
+      catch {
+        fields['mailtrap.host'] = 'Enter a valid Mailtrap API URL.'
+      }
     }
-    catch {
-      fields['mailtrap.host'] = 'Enter a valid Mailtrap API URL.'
-    }
-    if (!/^\d+$/.test(inboxId) || Number(inboxId) < 1)
-      fields['mailtrap.inboxId'] = 'Enter a positive Mailtrap inbox ID.'
+    if (inboxId && (!/^\d+$/.test(inboxId) || Number(inboxId) < 1))
+      fields['mailtrap.inboxId'] = 'Enter a positive Mailtrap inbox ID, or leave it blank to deliver mail.'
     if (!token && input.mailtrap?.clearToken !== true && !configured(currentEntries.MAILTRAP_TOKEN))
       fields['mailtrap.token'] = 'Enter a Mailtrap API token.'
     if (input.mailtrap?.clearToken === true && !token)

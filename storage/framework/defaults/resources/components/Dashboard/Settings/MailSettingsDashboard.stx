@@ -83,7 +83,7 @@ const mailgunApiKey = state('')
 const mailgunApiKeyConfigured = state(false)
 const clearMailgunApiKey = state(false)
 
-const mailtrapHost = state('https://sandbox.api.mailtrap.io/api/send')
+const mailtrapHost = state('')
 const mailtrapInboxId = state('')
 const mailtrapToken = state('')
 const mailtrapTokenConfigured = state(false)
@@ -152,9 +152,11 @@ const driverReady = derived(() => {
       && (mailgunApiKeyConfigured() || mailgunApiKey()),
     )
   if (driver() === 'mailtrap') {
+    // Host and inbox are optional: no inbox delivers through the Sending API.
+    // Only a sandbox host needs one, since the sandbox captures into an inbox.
+    const sandbox = /sandbox\.api\.mailtrap\.io/i.test(mailtrapHost())
     return Boolean(
-      mailtrapHost()
-      && mailtrapInboxId()
+      (!sandbox || mailtrapInboxId())
       && (mailtrapTokenConfigured() || mailtrapToken()),
     )
   }
@@ -464,13 +466,13 @@ onMount(() => void loadSettings())
     <section :if="driver() === 'mailtrap'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <div class="mb-5">
         <h2 class="font-semibold text-stone-900 dark:text-white">Mailtrap</h2>
-        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Use the HTTPS API endpoint, inbox ID, and write-only bearer token.</p>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">With an inbox ID, mail is captured in that testing inbox. Without one, it is delivered through the Sending API.</p>
       </div>
       <div class="grid gap-4 md:grid-cols-2">
         <div class="md:col-span-2">
-          <Input v-model:value="mailtrapHost" type="url" label="API base URL" placeholder="https://sandbox.api.mailtrap.io/api/send" required :error="fieldError('mailtrap.host')" />
+          <Input v-model:value="mailtrapHost" type="url" label="API base URL (optional)" placeholder="Mailtrap's own host" :error="fieldError('mailtrap.host')" />
         </div>
-        <Input v-model:value="mailtrapInboxId" label="Inbox ID" placeholder="123456" required :error="fieldError('mailtrap.inboxId')" />
+        <Input v-model:value="mailtrapInboxId" label="Testing inbox ID (optional)" placeholder="123456" :error="fieldError('mailtrap.inboxId')" />
         <Input
           v-model:value="mailtrapToken"
           type="password"

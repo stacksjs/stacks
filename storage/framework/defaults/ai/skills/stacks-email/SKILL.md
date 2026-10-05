@@ -164,9 +164,11 @@ await deleteEmail('chris', messageId)
 - Configurable domain and endpoint
 
 ### Mailtrap Driver
-- Inbox-aware sending
-- Sandbox and production modes
-- Host default: `sandbox.api.mailtrap.io`
+- `MAILTRAP_INBOX_ID` picks the API: set, mail is captured in that sandbox
+  inbox (`sandbox.api.mailtrap.io/api/send/<inbox>`); unset, it is delivered
+  through the Sending API (`send.api.mailtrap.io/api/send`)
+- `MAILTRAP_HOST` overrides the host for either; blank means Mailtrap's own
+- A 4xx other than 429 is not retried
 
 ### SMTP Driver
 - Raw TCP/TLS socket connection

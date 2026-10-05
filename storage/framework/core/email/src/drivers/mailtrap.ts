@@ -7,28 +7,65 @@ import { templateByName } from '../template'
 import { filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
 
+/** Mailtrap's Email Sending API: real delivery, no inbox in the path. */
+export const MAILTRAP_SENDING_URL = 'https://send.api.mailtrap.io/api/send'
+
+/** Mailtrap's Email Testing (sandbox) API: captures into an inbox, delivers nothing. */
+export const MAILTRAP_SANDBOX_URL = 'https://sandbox.api.mailtrap.io/api/send'
+
+/** A config value, with blank meaning unset: `config/services.ts` writes `''` for a missing env var. */
+function present(value: unknown): string | undefined {
+  const text = value == null ? '' : String(value).trim()
+  return text ? text : undefined
+}
+
+/**
+ * Where a send goes.
+ *
+ * Mailtrap has two APIs that differ in exactly this: the sandbox captures
+ * mail into a testing inbox and needs that inbox's id in the path, the
+ * Sending API delivers it and takes no inbox at all. The driver used to
+ * default to the sandbox and require an inbox id, so an app that configured
+ * Mailtrap for production could not send through it, and one that left
+ * `MAILTRAP_HOST` unset did not get the default either: `config/services.ts`
+ * sets it to `''`, which `??` keeps, and the request went to `/<inbox id>`.
+ *
+ * So the inbox id decides: with one, the sandbox inbox; without one, real
+ * delivery. `MAILTRAP_HOST` still overrides the host either way (a bulk
+ * stream, a proxy).
+ */
+export function mailtrapEndpoint(options: { host?: unknown, inboxId?: unknown }): string {
+  const host = present(options.host)?.replace(/\/+$/, '')
+  const inboxId = present(options.inboxId)
+
+  if (inboxId)
+    return `${host ?? MAILTRAP_SANDBOX_URL}/${encodeURIComponent(inboxId)}`
+
+  if (host && /sandbox\.api\.mailtrap\.io/i.test(host))
+    throw new Error('MAILTRAP_HOST points at the Mailtrap sandbox, which needs MAILTRAP_INBOX_ID. Set the inbox id to capture mail for testing, or unset MAILTRAP_HOST to deliver it.')
+
+  return host ?? MAILTRAP_SENDING_URL
+}
+
 export class MailtrapDriver extends BaseEmailDriver {
   public name = 'mailtrap'
-  private host: string | null = null
-  private token: string | null = null
-  private inboxId?: number | null = null
 
-  private getConfig() {
-    if (this.host === null || this.token === null || this.inboxId === null) {
-      this.host = config.services.mailtrap?.host ?? 'https://sandbox.api.mailtrap.io/api/send'
-      this.token = config.services.mailtrap?.token ?? ''
-      this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
-    }
+  /** Read per send, so a value from the app's config/services.ts is never shadowed by a default read earlier. */
+  private getConfig(): { endpoint: string, token: string, inboxId?: string } {
+    const mailtrap = config.services.mailtrap
+    const token = present(mailtrap?.token)
+    if (!token)
+      throw new Error('Mailtrap API token is required but not provided. Please set MAILTRAP_TOKEN in your environment variables.')
 
     return {
-      host: this.host,
-      token: this.token,
-      inboxId: this.inboxId,
+      endpoint: mailtrapEndpoint({ host: mailtrap?.host, inboxId: mailtrap?.inboxId }),
+      token,
+      inboxId: present(mailtrap?.inboxId),
     }
   }
 
   public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
-    const { inboxId } = this.getConfig()
+    const inboxId = present(config.services.mailtrap?.inboxId)
     const logContext = {
       provider: this.name,
       to: message.to,
@@ -133,13 +170,7 @@ export class MailtrapDriver extends BaseEmailDriver {
   }
 
   private async sendWithRetry(payload: Record<string, unknown>, attempt = 1): Promise<MailtrapResponse> {
-    const { host, token, inboxId } = this.getConfig()
-
-    if (!inboxId) {
-      throw new Error('Mailtrap inbox ID is required but not provided. Please set MAILTRAP_INBOX_ID in your environment variables.')
-    }
-
-    const endpoint = `${host}/${inboxId}`
+    const { endpoint, token } = this.getConfig()
 
     try {
       const response = await fetch(endpoint, {
@@ -152,8 +183,10 @@ export class MailtrapDriver extends BaseEmailDriver {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(`Mailtrap API error: ${response.status} - ${JSON.stringify(errorData)}`)
+        const errorData = await response.json().catch(() => ({}))
+        const err = new Error(`Mailtrap API error: ${response.status} - ${JSON.stringify(errorData)}`) as Error & { status?: number }
+        err.status = response.status
+        throw err
       }
 
       const data: MailtrapResponse = await (response.json() as Promise<MailtrapResponse>)
@@ -162,9 +195,15 @@ export class MailtrapDriver extends BaseEmailDriver {
       return data
     }
     catch (error: unknown) {
-      if (attempt < (config.services.mailtrap?.maxRetries ?? 3)) {
+      // The same rule as the SendGrid driver: a 4xx other than 429 is the
+      // request or the token being wrong, and resending it only spends the
+      // retry budget on an answer that will not change.
+      const status = (error as { status?: number })?.status
+      const nonRetryable = typeof status === 'number' && status >= 400 && status < 500 && status !== 429
+      const maxRetries = config.services.mailtrap?.maxRetries ?? 3
+      if (!nonRetryable && attempt < maxRetries) {
         const retryTimeout = config.services.mailtrap?.retryTimeout ?? 1000
-        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.mailtrap?.maxRetries ?? 3})`)
+        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${maxRetries})`)
         await new Promise(resolve => setTimeout(resolve, retryTimeout))
 
         return this.sendWithRetry(payload, attempt + 1)
