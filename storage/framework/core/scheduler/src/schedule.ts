@@ -1,6 +1,8 @@
 import type { CatchCallbackFn } from '@stacksjs/cron'
 import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './types'
+import type { NotificationChannel, NotificationPayload, NotificationRecipient, NotifyOptions } from '@stacksjs/notifications'
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runNamedAction } from '@stacksjs/action-runner'
@@ -9,6 +11,23 @@ import { parse } from '@stacksjs/cron'
 import { job as queuedJob, runJob } from '@stacksjs/queue'
 import type { SchedulerLockHandle } from './scheduler-lock'
 import { acquireSchedulerLock } from './scheduler-lock'
+
+/**
+ * A stable name for a scheduled notification: the same notification gets the
+ * same name in every process, which is what `schedule:run-one` and the
+ * pause list look it up by, and two different ones never share it.
+ */
+function notificationTaskName(...parts: unknown[]): string {
+  const canonical = JSON.stringify(parts, (_key, value: unknown) => {
+    if (typeof value === 'bigint') return `${value}n`
+    if (typeof value === 'function') return `[function ${value.name}]`
+    // Key order is not part of the notification.
+    if (value && typeof value === 'object' && !Array.isArray(value))
+      return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+    return value
+  })
+  return `notification-${createHash('sha256').update(canonical).digest('hex').slice(0, 12)}`
+}
 
 function toWindowDate(value: string | Date, label: string): Date {
   const date = value instanceof Date ? new Date(value.getTime()) : new Date(value)
@@ -1097,36 +1116,46 @@ export class Schedule implements UntimedSchedule {
    * narrow dep graph at boot; only schedules that actually use this
    * factory pull in the notifications module.
    *
+   * Each notification is named after what it sends, so two of them are two
+   * tasks. They were all named `notification`, and the scheduler drops a
+   * second task with the same name and cadence as a duplicate: of a team
+   * digest and a billing digest both sent `.daily()`, only the first went
+   * out. Name one yourself with `.withName(...)` to run or pause it by name.
+   *
+   * A run fails when any channel fails to deliver. `notify()` reports a
+   * failed channel in its result rather than throwing, so a digest nobody
+   * received used to count as a successful run.
+   *
    * @example
    * ```ts
    * schedule.notification(
    *   { email: 'team@example.com' },
-   *   { subject: 'Daily report', text: '...' },
+   *   { subject: 'Daily report', body: '...' },
    *   ['email'],
    * ).dailyAt('08:00')
    * ```
    */
   static notification(
-    recipient: unknown,
-    payload: unknown,
-    channels?: unknown,
-    options?: unknown,
+    recipient: NotificationRecipient,
+    payload: NotificationPayload,
+    channels?: NotificationChannel[],
+    options?: NotifyOptions,
   ): UntimedSchedule {
     return new Schedule(async () => {
       try {
-        const mod = await import('@stacksjs/notifications').catch(() => null)
-        const notify = (mod as { notify?: (...args: unknown[]) => Promise<unknown> } | null)?.notify
-        if (!notify) {
-          log.error('schedule.notification: @stacksjs/notifications.notify is not available - install / wire the notifications package.')
-          return
+        const { notify } = await import('@stacksjs/notifications')
+        const results = await notify(recipient, payload, channels, options)
+        const failed = results.filter(result => !result.success)
+        if (failed.length > 0) {
+          const reasons = failed.map(result => `${result.channel}: ${result.error?.message ?? 'not delivered'}`).join('; ')
+          throw new Error(`Scheduled notification was not delivered on ${failed.length} of ${results.length} channel(s) - ${reasons}`)
         }
-        await notify(recipient, payload, channels, options)
       }
       catch (error) {
         log.error('Scheduled notification failed:', error)
         throw error
       }
-    }).withName('notification') as UntimedSchedule
+    }).withName(notificationTaskName(recipient, payload, channels, options)) as UntimedSchedule
   }
 
   /**
