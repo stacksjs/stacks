@@ -57,6 +57,26 @@ export function encodeStoragePath(path: string): string {
  * was where the files were served.
  */
 export function publicUrlFor(path: string, options: { domain?: string, diskUrl?: string }): string {
-  const base = options.domain ?? options.diskUrl ?? process.env.APP_URL ?? 'http://localhost'
+  const base = withScheme(options.domain ?? options.diskUrl ?? process.env.APP_URL ?? 'http://localhost')
   return `${base.replace(/\/+$/, '')}/${encodeStoragePath(path.replace(/^\/+/, ''))}`
+}
+
+/**
+ * The origin a signed URL is served from: `baseUrl`, else `APP_URL`, else
+ * localhost.
+ */
+export function signedUrlBase(baseUrl?: string): string {
+  return withScheme(baseUrl || process.env.APP_URL || 'http://localhost').replace(/\/+$/, '')
+}
+
+/**
+ * A host given without a scheme, as `APP_URL` usually is (`stacks.localhost`),
+ * gets `https://` - the same reading the router's `url()` gives it. Used raw,
+ * it produced `stacks.localhost/avatar.png`, which a browser resolves as a
+ * path on the current page. A path from the site root stays as it is.
+ */
+function withScheme(base: string): string {
+  if (base === '' || base.startsWith('/') || /^[a-z][a-z0-9+.-]*:\/\//i.test(base))
+    return base
+  return `https://${base}`
 }

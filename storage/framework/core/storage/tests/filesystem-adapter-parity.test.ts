@@ -67,6 +67,18 @@ for (const [name, make] of Object.entries(adapters)) {
       expect(await make('/storage').publicUrl('avatar.png', { domain: 'https://other.example.com/' })).toBe('https://other.example.com/avatar.png')
     })
 
+    test('an APP_URL without a scheme is read as https, as the router reads it', async () => {
+      process.env.APP_URL = 'stacks.localhost'
+      expect(await make().publicUrl('avatar.png')).toBe('https://stacks.localhost/avatar.png')
+      expect(await make().signedUrl('avatar.png', { expiresIn: 60 })).toStartWith('https://stacks.localhost/__storage/avatar.png?token=')
+      expect(await make().publicUrl('avatar.png', { domain: 'cdn.example.com' })).toBe('https://cdn.example.com/avatar.png')
+    })
+
+    test('a signed URL names the disk it was signed on', async () => {
+      const url = new URL(await new (name === 'local' ? LocalStorageAdapter : BunStorageAdapter)({ root, disk: 'uploads' }).signedUrl('a.txt', { expiresIn: 60 }))
+      expect(verifySignedStorageToken(url.searchParams.get('token')!, 'a.txt').claims?.disk).toBe('uploads')
+    })
+
     test('publicUrl() encodes each segment and keeps the slashes', async () => {
       expect(await make('/storage').publicUrl('albums/my photo #1.jpg')).toBe('/storage/albums/my%20photo%20%231.jpg')
     })

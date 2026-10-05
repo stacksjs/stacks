@@ -5082,7 +5082,21 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         }
 
         try {
-          const adapter = Storage.disk()
+          // The disk the token names, else the default disk: tokens minted
+          // before they carried one, or by createSignedStorageToken() directly.
+          // A disk that no longer exists is a 404, not a fall back to another.
+          let adapter: ReturnType<typeof Storage.disk>
+          if (v.claims?.disk) {
+            try {
+              adapter = Storage.disk(v.claims.disk)
+            }
+            catch {
+              return new Response('Not Found', { status: 404 })
+            }
+          }
+          else {
+            adapter = Storage.disk()
+          }
           const exists = await adapter.fileExists(rawPath)
           if (!exists) return new Response('Not Found', { status: 404 })
           // Read as a Buffer (Node-style) which Response accepts as

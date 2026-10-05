@@ -190,7 +190,7 @@ class StorageManager {
   private createAdapter(name: string, config: DiskConfig): StorageAdapter {
     switch (config.driver) {
       case 'local':
-        return this.createLocalAdapter(config)
+        return this.createLocalAdapter(name, config)
       case 's3':
         return this.createS3Adapter(name, config)
       case 'azure':
@@ -200,8 +200,8 @@ class StorageManager {
     }
   }
 
-  private createLocalAdapter(config: LocalDiskConfig): StorageAdapter {
-    return createLocalStorage({ root: config.root, url: config.url })
+  private createLocalAdapter(name: string, config: LocalDiskConfig): StorageAdapter {
+    return createLocalStorage({ root: config.root, url: config.url, disk: name })
   }
 
   private createS3Adapter(_name: string, config: S3DiskConfig): StorageAdapter {

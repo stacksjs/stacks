@@ -176,6 +176,11 @@ export interface SignedUrlOptions {
    * `process.env.APP_URL` when omitted.
    */
   baseUrl?: string
+  /**
+   * The disk the file is on, signed into the token so `/__storage` reads it
+   * from there. A disk's own `signedUrl()` fills this in.
+   */
+  disk?: string
 }
 
 /**
@@ -328,6 +333,11 @@ export interface MimeTypeOptions {
 export interface StorageAdapterConfig {
   /** Root directory for local storage */
   root?: string
+  /**
+   * The name of the disk this adapter serves, as `config/filesystems.ts`
+   * calls it. A signed URL carries it, so the file is read from this disk.
+   */
+  disk?: string
   /**
    * Public base URL for `publicUrl()`.
    *

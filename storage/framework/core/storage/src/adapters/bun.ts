@@ -22,15 +22,17 @@ import type {
 } from '../types'
 import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
-import { publicUrlFor, writeAtomically } from './filesystem-common'
+import { publicUrlFor, signedUrlBase, writeAtomically } from './filesystem-common'
 
 export class BunStorageAdapter implements StorageAdapter {
   private root: string
   private url?: string
+  private disk?: string
 
   constructor(config: StorageAdapterConfig = {}) {
     this.root = config.root || process.cwd()
     this.url = config.url
+    this.disk = config.disk
   }
 
   private resolvePath(path: string): string {
@@ -315,9 +317,11 @@ export class BunStorageAdapter implements StorageAdapter {
    * ```
    */
   async signedUrl(path: string, options: SignedUrlOptions): Promise<string> {
-    const token = createSignedStorageToken(path, options)
-    const baseUrl = (options.baseUrl || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
-    return `${baseUrl}/__storage/${encodeURIComponent(path)}?token=${token}`
+    // The disk goes into the token: `/__storage` read every signed URL from
+    // the default disk, so a URL signed on any other disk served whatever the
+    // default disk held at that path - another file, or a 404.
+    const token = createSignedStorageToken(path, { ...options, disk: options.disk ?? this.disk })
+    return `${signedUrlBase(options.baseUrl)}/__storage/${encodeURIComponent(path)}?token=${token}`
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {

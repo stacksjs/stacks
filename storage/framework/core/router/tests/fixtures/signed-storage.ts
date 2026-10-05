@@ -64,7 +64,21 @@ for (const nativeRoutes of [false, true]) {
     await request(file, token, 200, 'second disk')
     revokeSignedStorageToken(token)
     await request(file, token, 403, 'Forbidden')
-    console.log(`PASS signed storage: live access, files and disk, nativeRoutes=${nativeRoutes}`)
+
+    // A disk's own signed URL names the disk, and is read from it whatever
+    // the default is. It used to be read from the default disk, so a URL
+    // signed on 'second' served 'first''s file at the same path.
+    await Storage.disk('first').write(file, 'first file')
+    Storage.setDefaultDisk('first')
+    const secondUrl = new URL(await Storage.disk('second').signedUrl(file, { expiresIn: 3600, baseUrl: 'http://127.0.0.1' }))
+    await request(file, secondUrl.searchParams.get('token')!, 200, 'second disk')
+    const firstUrl = new URL(await Storage.disk('first').signedUrl(file, { expiresIn: 3600, baseUrl: 'http://127.0.0.1' }))
+    Storage.setDefaultDisk('second')
+    await request(file, firstUrl.searchParams.get('token')!, 200, 'first file')
+    // A token naming a disk that is not configured is a 404, not a read from
+    // some other disk.
+    await request(file, createSignedStorageToken(file, { expiresIn: 3600, disk: 'gone' }), 404, 'Not Found')
+    console.log(`PASS signed storage: live access, files and disk, signing disk, nativeRoutes=${nativeRoutes}`)
   }
   finally {
     process.env.APP_KEY = originalKey

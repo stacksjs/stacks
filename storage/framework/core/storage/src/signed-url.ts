@@ -30,6 +30,11 @@ interface SignedTokenClaims {
   iat: number
   exp: number
   path: string
+  /**
+   * The disk the path is on. Signed with the rest, so it cannot be swapped.
+   * A token without one is read from the default disk, as before.
+   */
+  disk?: string
 }
 
 const ALG = 'HS256'
@@ -77,6 +82,7 @@ export function createSignedStorageToken(path: string, options: SignedUrlOptions
     iat,
     exp,
     path,
+    ...(options.disk ? { disk: options.disk } : {}),
   }
   const headerPart = base64UrlEncode(Buffer.from(JSON.stringify(header)))
   const payloadPart = base64UrlEncode(Buffer.from(JSON.stringify(payload)))
