@@ -1,5 +1,5 @@
 import { defineEnv } from '@stacksjs/env'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * **Env Configuration & Validations**

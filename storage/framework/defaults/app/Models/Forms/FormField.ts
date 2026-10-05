@@ -1,5 +1,5 @@
 import { defineModel, parentOwnership } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * One field of a Form. `name` is the machine key submissions store values

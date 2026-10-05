@@ -7,6 +7,7 @@ describe('server primitive auto-imports', () => {
 
     expect(entries).toContainEqual({ from: '@stacksjs/database/runtime', name: 'db', as: 'db' })
     expect(entries).toContainEqual({ from: '@stacksjs/actions/runtime', name: 'Action', as: 'Action' })
+    expect(entries).toContainEqual({ from: '@stacksjs/validation/runtime', name: 'schema', as: 'schema' })
     expect(entries).toContainEqual({ from: '@stacksjs/router', name: 'response', as: 'response' })
   })
 
@@ -21,7 +22,7 @@ describe('server primitive auto-imports', () => {
    * barrel fails here rather than quietly costing every boot.
    */
   it('injects packages that have a narrow runtime entry through it', () => {
-    const NARROW = ['@stacksjs/actions', '@stacksjs/database']
+    const NARROW = ['@stacksjs/actions', '@stacksjs/database', '@stacksjs/validation']
 
     for (const pkg of NARROW) {
       const sources = primitiveModules.map(([from]) => from)

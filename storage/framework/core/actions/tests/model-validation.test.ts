@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { Action } from '../src/action'
 
 describe('Action model validation metadata', () => {

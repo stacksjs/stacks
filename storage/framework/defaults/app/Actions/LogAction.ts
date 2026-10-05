@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { log } from '@stacksjs/logging'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 type LogLevel = 'info' | 'warn' | 'error'
 

@@ -1,5 +1,5 @@
 import { defineModel, parentOwnership } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * Card label / tag (stacksjs/stacks#1846).

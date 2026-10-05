@@ -1,5 +1,5 @@
 import { defineModel, selfOwnership } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * A named API token belonging to a user - the Sanctum shape.

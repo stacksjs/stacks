@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { categorizable } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default new Action({
   name: 'Category Store',

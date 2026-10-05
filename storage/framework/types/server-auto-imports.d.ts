@@ -7,7 +7,7 @@ declare global {
   const handleError: typeof import('@stacksjs/error-handling')['handleError']
   const log: typeof import('@stacksjs/logging')['log']
   const config: typeof import('@stacksjs/config')['config']
-  const schema: typeof import('@stacksjs/validation')['schema']
+  const schema: typeof import('@stacksjs/validation/runtime')['schema']
   const response: typeof import('@stacksjs/router')['response']
   const request: typeof import('@stacksjs/router')['request']
   const route: typeof import('@stacksjs/router')['route']

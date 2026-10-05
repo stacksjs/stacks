@@ -1,11 +1,18 @@
-// Force `@stacksjs/validation` to evaluate fully before any user model file
-// runs `import { schema } from '@stacksjs/validation'`. Without this priming
-// import, the auto-imports barrel triggers user models concurrently, and
-// later models in the barrel see `schema` in TDZ (the validator hasn't
+// Force the module that binds `schema` to evaluate before any user model file
+// runs `import { schema } from '@stacksjs/validation/runtime'`. Without this
+// priming import, the auto-imports barrel triggers user models concurrently,
+// and later models in the barrel see `schema` in TDZ (the validator hasn't
 // reached its `export const schema = v` line yet because evaluation jumped
 // into the user model graph first). Pulling it in here at the top of every
 // `@stacksjs/orm` consumer's evaluation guarantees schema is bound first.
-import '@stacksjs/validation'
+//
+// The narrow entry primes the identical binding - it re-exports `schema` from
+// the same `./schema` module the barrel does - without also evaluating
+// `./validator`, which reaches path, strings, utils and error-handling for
+// ~130 ms this import does not need. Every `@stacksjs/orm` consumer paid that,
+// which made it the reason narrowing the server's injection alone saved
+// nothing.
+import '@stacksjs/validation/runtime'
 
 export * from './utils/prunable'
 export type { PrunableOptions } from './utils/prunable'

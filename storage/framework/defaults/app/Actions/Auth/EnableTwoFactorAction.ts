@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { consumePendingTwoFactorSecret, enableTwoFactor } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default new Action({
   name: 'EnableTwoFactorAction',

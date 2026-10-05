@@ -12,7 +12,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { validateWriteBody } from '../src/auto-crud'
 import { defineModel } from '../src/define-model'
 

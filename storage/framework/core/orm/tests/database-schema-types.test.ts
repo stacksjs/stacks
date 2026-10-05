@@ -28,7 +28,7 @@ beforeAll(() => {
 
   writeFileSync(join(models, 'Widget.ts'), `
 import { defineModel } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default defineModel({
   name: 'Widget',
@@ -149,7 +149,7 @@ describe('the columns the framework adds to `users` itself', () => {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, 'User.ts'), `
 import { defineModel } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default defineModel({
   name: 'User',

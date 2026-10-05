@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { createToken } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { normalizeTokenExpiry, normalizeTokenScopes, wantsRefreshToken } from './token-request'
 
 export default new Action({

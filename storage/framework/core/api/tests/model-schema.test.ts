@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { modelDefinitionToSchema } from '../src/generate-openapi'
 
 describe('model OpenAPI schemas', () => {

@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { summarize } from '@stacksjs/ai'
 import { log } from '@stacksjs/logging'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default new Action({
   name: 'AiSummaryAction',

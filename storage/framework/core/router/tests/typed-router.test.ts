@@ -12,7 +12,7 @@
  */
 
 import { Action } from '@stacksjs/actions'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { createStacksRouter } from '../src/stacks-router'
 import { createTypedRouter } from '../src/typed-router'

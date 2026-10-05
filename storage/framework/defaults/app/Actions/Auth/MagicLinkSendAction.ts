@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { sendMagicLink } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default new Action({
   name: 'MagicLinkSendAction',

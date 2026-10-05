@@ -8,7 +8,7 @@
  */
 
 import { Action } from '@stacksjs/actions'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { createTypedClient, TypedClientError } from '@stacksjs/bun-router'
 import { createStacksRouter } from '../src/stacks-router'

@@ -8,7 +8,7 @@
  * only in the schema (never in any `.env`) is typed all the same.
  */
 import type { InferEnv } from '../src/types'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { defineEnv } from '../src/types'
 
 type Expect<T extends true> = T

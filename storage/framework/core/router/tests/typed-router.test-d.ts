@@ -13,7 +13,7 @@
 
 import { Action } from '@stacksjs/actions'
 import { createTypedClient, createTypedRouter } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 type Equal<TLeft, TRight>
   = (<T>() => T extends TLeft ? 1 : 2) extends (<T>() => T extends TRight ? 1 : 2) ? true : false

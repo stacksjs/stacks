@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { configureOrm, getDatabase } from 'bun-query-builder'
 import { acquireDbConfigLock } from '@stacksjs/database'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { defineModel } from '../src/define-model'
 
 describe('createMany goes through the create pipeline', () => {

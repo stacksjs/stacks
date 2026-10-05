@@ -1,5 +1,5 @@
 import type { BlockDefinition } from './types'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { defineBlock, registerBlocks } from './registry'
 
 const string = (max = 1000): { validate: (value: unknown) => Promise<boolean> } => ({

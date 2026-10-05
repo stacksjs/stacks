@@ -16,7 +16,7 @@
 // hook runs for a probe, even when the action has no validation rules.
 
 import { describe, expect, it } from 'bun:test'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { createStacksRouter, precognitionRequest, precognitionSuccess, validateActionInput } from '../src/stacks-router'
 
 /** Minimal stand-in for the shape `precognitionRequest` reads. */

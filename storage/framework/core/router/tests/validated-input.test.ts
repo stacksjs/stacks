@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { Action } from '@stacksjs/actions'
 import { createStacksRouter } from '../src/stacks-router'
 

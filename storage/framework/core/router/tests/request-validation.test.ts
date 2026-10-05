@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { HttpError } from '@stacksjs/error-handling'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { enhanceRequest } from '../src/stacks-router'
 
 function requestWith(body: Record<string, unknown>): EnhancedRequest {

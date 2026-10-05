@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { Auth, authCookieForBrowserSession, register, resolveBrowserSessionPolicy } from '@stacksjs/auth'
 import { dispatch } from '@stacksjs/events'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_MESSAGE } from '../../password-policy'
 
 export default new Action({

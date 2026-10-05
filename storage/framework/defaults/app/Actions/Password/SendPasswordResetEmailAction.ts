@@ -4,7 +4,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { job } from '@stacksjs/queue'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * The one thing this endpoint ever says.

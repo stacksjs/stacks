@@ -1,5 +1,5 @@
 import { defineModel, siteOwnership } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * A user-defined form: inquiry, permission slip, event registration,

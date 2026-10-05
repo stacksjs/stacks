@@ -12,7 +12,7 @@ export const primitiveModules = [
   ['@stacksjs/error-handling', ['HttpError', 'handleError']],
   ['@stacksjs/logging', ['log']],
   ['@stacksjs/config', ['config']],
-  ['@stacksjs/validation', ['schema']],
+  ['@stacksjs/validation/runtime', ['schema']],
   ['@stacksjs/router', ['response', 'request', 'route', 'Middleware', 'url']],
   ['@stacksjs/storage', ['storage', 'fs']],
   ['@stacksjs/orm', ['defineModel', 'toAttrs']],

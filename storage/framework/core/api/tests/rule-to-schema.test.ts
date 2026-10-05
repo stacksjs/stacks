@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { ruleIsRequired, ruleToSchema } from '../src/generate-openapi'
 
 describe('types', () => {

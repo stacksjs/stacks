@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * Dispatched to, not requested.

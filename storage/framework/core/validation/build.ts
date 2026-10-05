@@ -20,6 +20,27 @@ const result = await Bun.build({
   ],
 })
 
+// The narrow schema-declaration entry (and the request validator below) are
+// separate entrypoints rather than code-split chunks, so importing one never
+// pulls the other's graph - which is the whole point of having it.
+const runtimeResult = await Bun.build({
+  entrypoints: ['./src/runtime.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  minify: true,
+  external: frameworkExternal(),
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
+})
+
+if (!runtimeResult.success)
+  throw new AggregateError(runtimeResult.logs, 'Failed to build the schema-declaration entry')
+
 const requestValidatorResult = await Bun.build({
   entrypoints: ['./src/request-validator.ts'],
   outdir: './dist',

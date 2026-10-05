@@ -16,7 +16,7 @@
  */
 
 import { Action } from '@stacksjs/actions'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * Imagined route: POST /api/judges/{id}/follow with a body carrying

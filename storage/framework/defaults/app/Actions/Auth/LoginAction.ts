@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { Auth, authCookieForBrowserSession, createTwoFactorChallenge, getTwoFactorState, resolveBrowserSessionPolicy } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 import { PASSWORD_MAX_LENGTH, PASSWORD_PRESENCE_MESSAGE } from '../../password-policy'
 
 export default new Action({

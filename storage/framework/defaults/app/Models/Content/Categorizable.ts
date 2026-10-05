@@ -1,5 +1,5 @@
 import { defineModel } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 // The CMS catalogue already exists in categorizables. Commerce's Category
 // model owns a different table and its IDs cannot be used by this pivot.

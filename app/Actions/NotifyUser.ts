@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
 import { log } from '@stacksjs/logging'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 /**
  * Dispatched to, not requested.

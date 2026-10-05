@@ -130,7 +130,7 @@ function emitStacksModel(args: EmitArgs): string {
     : `\n  // Relationships translated from Eloquent - refine targets / foreign keys to match your schema.\n  relations: {\n${args.relationships.map(r => `    ${r.name}: { type: '${r.kind}', target: '${r.target}' },`).join('\n')}\n  },\n`
 
   return `import { defineModel } from '@stacksjs/orm'
-import { schema } from '@stacksjs/validation'
+import { schema } from '@stacksjs/validation/runtime'
 
 export default defineModel({
   name: '${args.className}',
