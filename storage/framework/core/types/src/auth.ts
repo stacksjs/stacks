@@ -237,6 +237,16 @@ export interface AuthOptions {
    */
   idleTimeout?: number
 
+  /**
+   * How long a user's roles and permissions are cached, in milliseconds.
+   * Defaults to 30 seconds; zero turns the cache off.
+   *
+   * The cache is per process, so this is how long a revoke made in one
+   * worker can take to reach another. Within a process a change applies at
+   * once.
+   */
+  rbacCacheTtl?: number
+
   /** First-party browser-session expiry and refresh policy. */
   browserSession?: BrowserSessionConfig
 

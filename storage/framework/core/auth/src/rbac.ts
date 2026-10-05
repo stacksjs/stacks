@@ -11,6 +11,7 @@
  * await assignRole(userId, 'editor')
  */
 import type { UserModel as OrmUserModel } from '@stacksjs/orm'
+import { config } from '@stacksjs/config'
 
 // Use the row/instance shape from orm so role helpers operate on the
 // authenticated user object, not the User class constructor.
@@ -76,21 +77,30 @@ export interface UserPermissionPivot {
  * `@stacksjs/router/stacks-router.ts`.
  */
 class BoundedMap<K, V> {
-  private map = new Map<K, V>()
+  private map = new Map<K, { value: V, expiresAt: number }>()
 
   constructor(private readonly max: number) {}
 
   get(key: K): V | undefined {
-    return this.map.get(key)
+    const entry = this.map.get(key)
+    if (!entry) return undefined
+    if (entry.expiresAt <= Date.now()) {
+      this.map.delete(key)
+      return undefined
+    }
+    return entry.value
   }
 
   has(key: K): boolean {
-    return this.map.has(key)
+    return this.get(key) !== undefined
   }
 
   set(key: K, value: V): this {
+    const ttl = rbacCacheTtl()
+    // A TTL of zero turns caching off: nothing is kept to go stale.
+    if (ttl <= 0) return this
     if (this.map.has(key)) this.map.delete(key)
-    this.map.set(key, value)
+    this.map.set(key, { value, expiresAt: Date.now() + ttl })
     if (this.map.size > this.max) {
       const oldest = this.map.keys().next().value
       if (oldest !== undefined) this.map.delete(oldest)
@@ -98,14 +108,40 @@ class BoundedMap<K, V> {
     return this
   }
 
+  /** An invalidation: also tells every read in flight not to cache what it read. */
   delete(key: K): boolean {
+    generation++
     return this.map.delete(key)
   }
 
   clear(): void {
+    generation++
     this.map.clear()
   }
 }
+
+/**
+ * Bumped by every invalidation.
+ *
+ * A read snapshots it before going to the store and caches what it got only
+ * if it has not moved. Without this, a revoke that landed while a read was in
+ * flight deleted an entry that was not there yet, and the read then cached
+ * the permission the revoke had just removed - with no expiry, so
+ * `hasPermission` said yes until something else touched that user.
+ */
+let generation = 0
+
+/** How long a cached role or permission set is trusted, in milliseconds. */
+function rbacCacheTtl(): number {
+  const configured = Number(config.auth?.rbacCacheTtl)
+  return Number.isFinite(configured) && configured >= 0 ? configured : DEFAULT_RBAC_CACHE_TTL_MS
+}
+
+/**
+ * The cache is per process, so a revoke made by one worker is invisible to
+ * the others until their entries expire. They never did; this bounds it.
+ */
+const DEFAULT_RBAC_CACHE_TTL_MS = 30_000
 
 /**
  * Soft cap on per-user role/permission caches. 10k active users with
@@ -123,8 +159,8 @@ const cache = {
   userRoles: new BoundedMap<number, RoleRecord[]>(RBAC_USER_CACHE_MAX),
   userPermissions: new BoundedMap<number, PermissionRecord[]>(RBAC_USER_CACHE_MAX),
   rolePermissions: new BoundedMap<number, PermissionRecord[]>(RBAC_USER_CACHE_MAX),
-  roles: new Map<string, RoleRecord>(),
-  permissions: new Map<string, PermissionRecord>(),
+  roles: new BoundedMap<string, RoleRecord>(RBAC_USER_CACHE_MAX),
+  permissions: new BoundedMap<string, PermissionRecord>(RBAC_USER_CACHE_MAX),
 }
 
 /**
@@ -275,10 +311,12 @@ export async function createRole(name: string, guardName: string = 'web', descri
  */
 export async function findRole(name: string, guardName: string = 'web'): Promise<RoleRecord | null> {
   const cacheKey = `${name}:${guardName}`
-  if (cache.roles.has(cacheKey)) return cache.roles.get(cacheKey)!
+  const cachedRole = cache.roles.get(cacheKey)
+  if (cachedRole) return cachedRole
+  const observed = generation
 
   const role = await getStore().findRoleByName(name, guardName)
-  if (role) cache.roles.set(cacheKey, role)
+  if (role && observed === generation) cache.roles.set(cacheKey, role)
   return role
 }
 
@@ -317,10 +355,12 @@ export async function createPermission(name: string, guardName: string = 'web', 
  */
 export async function findPermission(name: string, guardName: string = 'web'): Promise<PermissionRecord | null> {
   const cacheKey = `${name}:${guardName}`
-  if (cache.permissions.has(cacheKey)) return cache.permissions.get(cacheKey)!
+  const cachedPermission = cache.permissions.get(cacheKey)
+  if (cachedPermission) return cachedPermission
+  const observed = generation
 
   const permission = await getStore().findPermissionByName(name, guardName)
-  if (permission) cache.permissions.set(cacheKey, permission)
+  if (permission && observed === generation) cache.permissions.set(cacheKey, permission)
   return permission
 }
 
@@ -351,10 +391,12 @@ export async function getAllPermissions(guardName?: string): Promise<PermissionR
 export async function getUserRoles(user: UserModel | { id: number } | number): Promise<RoleRecord[]> {
   const userId = getUserId(user)
 
-  if (cache.userRoles.has(userId)) return cache.userRoles.get(userId)!
+  const cached = cache.userRoles.get(userId)
+  if (cached) return cached
 
+  const observed = generation
   const roles = await getStore().getUserRoles(userId)
-  cache.userRoles.set(userId, roles)
+  if (observed === generation) cache.userRoles.set(userId, roles)
   return roles
 }
 
@@ -452,12 +494,14 @@ export async function hasAllRoles(user: UserModel | { id: number } | number, rol
 export async function getUserPermissions(user: UserModel | { id: number } | number): Promise<PermissionRecord[]> {
   const userId = getUserId(user)
 
-  if (cache.userPermissions.has(userId)) return cache.userPermissions.get(userId)!
+  const cached = cache.userPermissions.get(userId)
+  if (cached) return cached
 
+  const observed = generation
   const rbacStore = getStore()
   if ('getUserPermissions' in rbacStore && rbacStore.getUserPermissions) {
     const permissions = await rbacStore.getUserPermissions(userId)
-    cache.userPermissions.set(userId, permissions)
+    if (observed === generation) cache.userPermissions.set(userId, permissions)
     return permissions
   }
 
@@ -481,7 +525,7 @@ export async function getUserPermissions(user: UserModel | { id: number } | numb
     }
   }
 
-  cache.userPermissions.set(userId, allPermissions)
+  if (observed === generation) cache.userPermissions.set(userId, allPermissions)
   return allPermissions
 }
 
@@ -571,10 +615,12 @@ export async function hasAllPermissions(user: UserModel | { id: number } | numbe
  * Get all permissions for a role
  */
 export async function getRolePermissions(roleId: number): Promise<PermissionRecord[]> {
-  if (cache.rolePermissions.has(roleId)) return cache.rolePermissions.get(roleId)!
+  const cached = cache.rolePermissions.get(roleId)
+  if (cached) return cached
 
+  const observed = generation
   const permissions = await getStore().getRolePermissions(roleId)
-  cache.rolePermissions.set(roleId, permissions)
+  if (observed === generation) cache.rolePermissions.set(roleId, permissions)
   return permissions
 }
 
