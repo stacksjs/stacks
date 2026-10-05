@@ -250,6 +250,44 @@ async function reportSchemaDrift(): Promise<boolean> {
 }
 
 /**
+ * Tables the recorded migrations created that the database no longer has.
+ *
+ * The model probe above only knows `app/Models`; this asks the ledger, so a
+ * framework table, or any table in an app without models of its own, cannot
+ * go missing unreported (stacksjs/stacks#2860). Returns whether none are.
+ */
+async function reportMissingRecordedTables(): Promise<boolean> {
+  try {
+    const { missingRecordedTables } = await import('@stacksjs/database')
+    const missing = await missingRecordedTables()
+    if (missing.length === 0)
+      return true
+
+    log.warn(
+      `${missing.length} table${missing.length === 1 ? '' : 's'} the migrations table says ${missing.length === 1 ? 'was' : 'were'} created ${missing.length === 1 ? 'is' : 'are'} missing from the database: `
+      + `${missing.slice(0, 10).join(', ')}${missing.length > 10 ? `, +${missing.length - 10} more` : ''}.`,
+    )
+    return false
+  }
+  catch (err) {
+    log.debug(`[migrate] recorded-table check skipped: ${err instanceof Error ? err.message : String(err)}`)
+    return true
+  }
+}
+
+/**
+ * What to do about drift that a plain `buddy migrate` will not repair.
+ *
+ * Said wherever drift is reported, so neither the preview nor the run ends on
+ * a line that reads as "all good" (stacksjs/stacks#2860).
+ */
+function logDriftRemedy(): void {
+  log.info('`buddy migrate` only runs files the migrations table does not list, so it will not repair this on its own.')
+  log.info('  A table that is missing although its migration is recorded: `./buddy migrate:status --reconcile --requeue-reverted`, then `./buddy migrate`.')
+  log.info('  Anything else: `./buddy migrate:status` compares the corpus, the ledger and the live schema. Pass --strict to fail on drift in CI.')
+}
+
+/**
  * Migration files git ignores, and so will never reach CI or the deploy —
  * typically through a global `*.sql` ignore. See ignored-migrations.ts.
  * Returns whether none are.
@@ -623,24 +661,68 @@ export function migrate(buddy: CLI): void {
       // without writing files or applying anything. `--dry-run` and
       // `--pretend` mean the same (see isMigratePreview).
       if (isMigratePreview(options)) {
+        // Three sources, because each one alone has said "nothing to do" about
+        // a database that was missing tables (stacksjs/stacks#2860): committed
+        // files the ledger has not recorded, the model diff, and the live
+        // schema. The real run checks all three, so the preview does too.
+        const { auditSchemaDrift, formatSchemaDrift, pendingMigrationFiles, pendingMigrationOperations } = await import('@stacksjs/database')
+        let failed = false
+
+        let files: string[] = []
         try {
-          const { previewPendingMigrations } = await import('@stacksjs/database')
-          const ops = await previewPendingMigrations({ fromDb: options.fromDb, applyRenames })
-          if (ops.length === 0) {
-            log.info('No pending schema changes - your models match the database.')
-          }
-          else {
-            log.info(`${ops.length} pending change${ops.length === 1 ? '' : 's'}:`)
-            for (const op of ops as MigrationOpLike[])
-              log.info(`  • ${describeOp(op)}${op.destructive ? '  [destructive]' : ''}`)
-          }
+          files = await pendingMigrationFiles()
         }
         catch (error) {
-          // await: guarantee the error flushes before the outro + exit below.
-          await log.error('Failed to preview migrations:', error)
+          failed = true
+          await log.error('Could not read the migrations table:', error)
         }
-        await outro('Diff complete - no changes applied.', { startTime: perf, useSeconds: true })
-        process.exit(ExitCode.Success)
+        if (files.length > 0) {
+          log.info(`${files.length} committed migration file${files.length === 1 ? '' : 's'} not applied yet - \`buddy migrate\` will run ${files.length === 1 ? 'it' : 'them'}:`)
+          for (const file of files.slice(0, 10))
+            log.info(`  • ${file}`)
+          if (files.length > 10)
+            log.info(`  • … +${files.length - 10} more`)
+        }
+
+        let ops: MigrationOpLike[] = []
+        try {
+          ops = await pendingMigrationOperations({ fromDb: options.fromDb, applyRenames }) as MigrationOpLike[]
+        }
+        catch (error) {
+          // A preview that failed is not a preview that found nothing.
+          failed = true
+          await log.error('Failed to diff the models against the migration snapshot:', error)
+        }
+        if (ops.length > 0) {
+          log.info(`${ops.length} model change${ops.length === 1 ? '' : 's'} not in a migration file yet:`)
+          for (const op of ops)
+            log.info(`  • ${describeOp(op)}${op.destructive ? '  [destructive]' : ''}`)
+        }
+
+        const drift = await auditSchemaDrift()
+        const modelsDrifted = !drift.skipped && !drift.clean
+        if (modelsDrifted)
+          log.warn(await formatSchemaDrift(drift))
+        const drifted = modelsDrifted || !(await reportMissingRecordedTables())
+
+        if (failed) {
+          await outro('Diff incomplete - see the errors above. No changes applied.', { startTime: perf, useSeconds: true, type: 'error' })
+          process.exit(ExitCode.FatalError)
+        }
+
+        if (files.length === 0 && ops.length === 0 && !drifted) {
+          log.info('No pending schema changes - your models match the database.')
+          await outro('Diff complete - no changes applied.', { startTime: perf, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+
+        // Drift with something pending may be what the pending files fix; drift
+        // with nothing pending is what `migrate` will report and leave alone.
+        if (drifted && files.length === 0 && ops.length === 0)
+          logDriftRemedy()
+
+        await outro('Diff complete - no changes applied.', { startTime: perf, useSeconds: true, type: drifted ? 'warning' : 'success' })
+        process.exit(drifted && strictMode(options) ? ExitCode.FatalError : ExitCode.Success)
       }
 
       // Ask about a missing database FIRST, while we still have the terminal.
@@ -866,7 +948,9 @@ export function migrate(buddy: CLI): void {
       // Post-migrate schema drift probe. Catches a database whose columns no
       // longer match the models — which `migrate` cannot see, because it only
       // tracks which files have run.
-      const schemaMatches = await reportSchemaDrift()
+      const modelsMatch = await reportSchemaDrift()
+      const tablesPresent = await reportMissingRecordedTables()
+      const schemaMatches = modelsMatch && tablesPresent
 
       // Migrations git ignores run here and nowhere else.
       const allCommittable = await reportIgnoredMigrations()
@@ -893,15 +977,27 @@ export function migrate(buddy: CLI): void {
       // here.
       const marker = readMigrateMarker()
       const authSuffix = options.auth !== false ? ' (including auth tables)' : ''
-      const outroMessage = marker == null
+      // "Up to date" is only said about a database that is. A run that applied
+      // nothing while the drift probe above found missing tables used to end on
+      // that line, two lines under the warning, with exit 0 (stacksjs/stacks#2860).
+      const applied = marker == null
         ? `Migrated your ${APP_ENV} database.${authSuffix}`
         : marker.appliedCount === 0
-          ? `Nothing to migrate - your ${APP_ENV} database is already up to date.${authSuffix}`
+          ? (schemaMatches
+              ? `Nothing to migrate - your ${APP_ENV} database is already up to date.${authSuffix}`
+              : `Nothing to migrate${authSuffix}.`)
           : `Applied ${marker.appliedCount} migration${marker.appliedCount === 1 ? '' : 's'} to your ${APP_ENV} database.${authSuffix}`
+      const outroMessage = schemaMatches
+        ? applied
+        : `${applied} The database is still not in the state its migrations and models describe - see above.`
+
+      if (!schemaMatches)
+        logDriftRemedy()
 
       await outro(outroMessage, {
         startTime: perf,
         useSeconds: true,
+        type: schemaMatches ? 'success' : 'warning',
       })
       process.exit(ExitCode.Success)
     })
@@ -1461,8 +1557,9 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
     .command('migrate:status', 'Compare database/migrations, the migrations ledger, and the live schema')
     .option('--reconcile', 'Repair the ledger where the schema proves what happened', { default: false })
     .option('--include-partial', 'With --reconcile, also record half-applied migrations', { default: false })
+    .option('--requeue-reverted', 'With --reconcile, un-record the migrations of a table that is missing so the next migrate rebuilds it', { default: false })
     .option('--json', 'Emit the audit as JSON', { default: false })
-    .action(async (options: { reconcile?: boolean, includePartial?: boolean, json?: boolean }) => {
+    .action(async (options: { reconcile?: boolean, includePartial?: boolean, requeueReverted?: boolean, json?: boolean }) => {
       const perf = options.json ? undefined : await intro('buddy migrate:status')
 
       const { auditMigrationLedger, reconcileMigrationLedger } = await import('@stacksjs/database')
@@ -1497,13 +1594,15 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       report.push('')
       report.push(`  Migration status: ${audit.dialect}`)
       report.push('  ─────────────────────────────────────────────')
-      report.push(`  ${entries.length} file(s) on disk · ${audit.recordedCount} recorded in the ledger`)
+      report.push(`  ${entries.length + audit.gated.length} file(s) on disk · ${audit.recordedCount} recorded in the ledger`)
       report.push('')
 
       if (counts.applied > 0)
         report.push(`  ${counts.applied} applied - recorded, and present in the schema.`, '')
       if (counts.unverifiable > 0)
         report.push(`  ${counts.unverifiable} unverifiable - data migrations with no schema trace to check.`, '')
+      if (audit.gated.length > 0)
+        report.push(`  ${audit.gated.length} skipped - owned by a disabled feature, so \`buddy migrate\` does not run them until it is enabled.`, '')
 
       section(`${counts.pending} pending - not applied yet, will run on the next \`buddy migrate\`:`, list('pending'))
       if (counts.stranded > 0) {
@@ -1544,28 +1643,44 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
   Repair with:  ./buddy migrate:status --reconcile
   That repoints renumbered ledger rows and records migrations the schema
   already proves. It never runs SQL from a migration file.
+
+  A table the ledger says exists but the database lacks:
+                ./buddy migrate:status --reconcile --requeue-reverted
+  That un-records the migrations that built it, only when none of them
+  touches a table that is still there, so the next migrate rebuilds it.
 `)
         await outro('Drift detected.', { startTime: perf!, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 
-      const fixed = await reconcileMigrationLedger({ includePartial: options.includePartial })
+      const fixed = await reconcileMigrationLedger({ includePartial: options.includePartial, requeueReverted: options.requeueReverted })
       if (fixed.remapped.length > 0)
         log.success(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
+      if (fixed.requeued.length > 0) {
+        log.success(`Un-recorded ${fixed.requeued.length} migration(s) so the next \`./buddy migrate\` rebuilds the missing table(s):`)
+        for (const file of fixed.requeued.slice(0, 8))
+          log.info(`      ${file}`)
+        if (fixed.requeued.length > 8)
+          log.info(`      … +${fixed.requeued.length - 8} more`)
+      }
       if (fixed.recorded.length > 0)
         log.success(`Recorded ${fixed.recorded.length} migration(s) the schema already reflects.`)
         if (fixed.pruned.length)
           log.success(`Pruned ${fixed.pruned.length} duplicate ledger row(s) left by a renumbering.`)
       if (fixed.skipped.length > 0) {
+        // Through the logger, like the header: `log.*` is async and
+        // `console.log` is not, so mixing them printed this list above the
+        // line that introduces it.
         log.warn(`Left ${fixed.skipped.length} entr(ies) alone:`)
-        // eslint-disable-next-line no-console
-        console.log(fixed.skipped.slice(0, 8).map(s => `      ${s.file} - ${s.reason}`).join('\n')
-          + (fixed.skipped.length > 8 ? `\n      … +${fixed.skipped.length - 8} more` : ''))
+        for (const entry of fixed.skipped.slice(0, 8))
+          log.info(`      ${entry.file} - ${entry.reason}`)
+        if (fixed.skipped.length > 8)
+          log.info(`      … +${fixed.skipped.length - 8} more`)
       }
       // Pruning counts as a repair. Without it here, a run that deleted four
       // duplicate rows reported "Pruned 4 duplicate ledger row(s)" and then
       // "Nothing could be repaired automatically" two lines later.
-      if (fixed.remapped.length === 0 && fixed.recorded.length === 0 && fixed.pruned.length === 0)
+      if (fixed.remapped.length === 0 && fixed.recorded.length === 0 && fixed.pruned.length === 0 && fixed.requeued.length === 0)
         log.info('Nothing could be repaired automatically.')
 
       // A ledger row whose file is gone is left alone on purpose - pruning it

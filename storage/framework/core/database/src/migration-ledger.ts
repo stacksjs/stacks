@@ -94,6 +94,8 @@ export interface MigrationLedgerAudit {
   dir: string
   entries: MigrationLedgerEntry[]
   orphans: LedgerOrphan[]
+  /** Files the runner skips because their feature is disabled; not classified. */
+  gated: string[]
   counts: Record<MigrationStatus, number>
   /** Ledger rows read, for reporting "N files on disk, M recorded". */
   recordedCount: number
@@ -739,6 +741,13 @@ export async function auditMigrationLedger(options: {
   dialect?: LedgerDialect
   /** Audit a database other than the process-wide one. */
   run?: SqlRunner
+  /**
+   * The runner's feature gate. A file it hides is not pending, since it will
+   * not run, and a statement it strips from a file it keeps is not an effect
+   * that file was meant to have - without this, every catch-all `auto-misc`
+   * migration on an app with a disabled feature read as REVERTED.
+   */
+  gate?: CorpusGate
 } = {}): Promise<MigrationLedgerAudit> {
   const dir = migrationsDir(options.dir)
   const dialect = options.dialect ?? await currentDialect()
@@ -755,20 +764,25 @@ export async function auditMigrationLedger(options: {
 
   const emptyPlan: LedgerRemapPlan = { remap: [], ambiguous: [], dropped: [], superseded: [] }
   if (dialect === 'other') {
-    return { supported: false, dialect, dir, entries: [], orphans: [], counts, recordedCount: 0, remapPlan: emptyPlan, drift: false }
+    return { supported: false, dialect, dir, entries: [], orphans: [], gated: [], counts, recordedCount: 0, remapPlan: emptyPlan, drift: false }
   }
 
   const run = options.run ?? await defaultRunner()
   const ledger = await readLedger(run)
   const recorded = new Set(ledger)
   const schema = await readLiveSchema(dialect, run)
+  const gate = await resolveGate(options, dir)
 
   // Read once: the classification below needs every file's REMOVALS, not just
   // its own, to tell a deliberate later drop from a lost effect.
   const sources = new Map<string, string>()
+  const gated = files.filter(file => gate?.exclude.has(file))
   for (const file of files) {
+    if (gate?.exclude.has(file))
+      continue
     try {
-      sources.set(file, readFileSync(join(dir, file), 'utf8'))
+      const sql = readFileSync(join(dir, file), 'utf8')
+      sources.set(file, gate ? gate.rewrite(sql) : sql)
     }
     catch {
       continue
@@ -845,7 +859,9 @@ export async function auditMigrationLedger(options: {
   // classification above used. Planning against the raw directory listing
   // instead would let an unreadable file produce a remap target that has no
   // entry, so the audit's report and the reconciler's actions could disagree.
-  const readable = entries.map(entry => entry.file)
+  // Gated files are still the corpus: a ledger row naming one is not an
+  // orphan, and a renumbered one still has a counterpart.
+  const readable = [...entries.map(entry => entry.file), ...gated].sort()
   const remapPlan = planLedgerRemap(ledger, readable)
   const renamedTo = new Map(remapPlan.remap.map(r => [r.from, r.to]))
   const orphans: LedgerOrphan[] = ledger
@@ -854,7 +870,7 @@ export async function auditMigrationLedger(options: {
 
   const drift = counts.stranded > 0 || counts.partial > 0 || counts.reverted > 0 || orphans.length > 0
 
-  return { supported: true, dialect, dir, entries, orphans, counts, recordedCount: ledger.length, remapPlan, drift }
+  return { supported: true, dialect, dir, entries, orphans, gated, counts, recordedCount: ledger.length, remapPlan, drift }
 }
 
 /**
@@ -914,8 +930,318 @@ export interface ReconcileResult {
   recorded: string[]
   /** Duplicate ledger rows deleted — the migration stays recorded under its current name. */
   pruned: string[]
+  /**
+   * Ledger rows deleted so the next `buddy migrate` runs the file again, to
+   * rebuild a table the database is missing (only with `requeueReverted`).
+   */
+  requeued: string[]
   /** Things the reconciler refused to touch, with why. */
   skipped: Array<{ file: string, reason: string }>
+}
+
+/** What one statement does to which tables, as far as a requeue cares. */
+interface StatementShape {
+  /** Data or schema changes, by table (lower-case). */
+  modifies: string[]
+  creates?: string
+  drops?: string
+  rename?: { from: string, to: string }
+  index?: { name: string, table: string }
+  /** Not something the requeue planner can reason about. */
+  unknown?: boolean
+}
+
+const Q = (pattern: string): RegExp => new RegExp(pattern.replaceAll('{id}', IDENT), 'i')
+
+const CREATE_TABLE = Q(String.raw`^CREATE\s+(?:TEMP(?:ORARY)?\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?{id}`)
+const DROP_TABLE = Q(String.raw`^DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?{id}`)
+const RENAME_TABLE = Q(String.raw`^ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:ONLY\s+)?{id}\s+RENAME\s+TO\s+{id}`)
+const ALTER_TABLE = Q(String.raw`^ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:ONLY\s+)?{id}`)
+const CREATE_INDEX = Q(String.raw`^CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+NOT\s+EXISTS\s+)?{id}\s+ON\s+(?:ONLY\s+)?{id}`)
+const DROP_INDEX = Q(String.raw`^DROP\s+INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+EXISTS\s+)?{id}(?:\s+ON\s+{id})?`)
+const DML = Q(String.raw`^(?:INSERT\s+(?:OR\s+\w+\s+)?INTO|REPLACE\s+INTO|UPDATE|DELETE\s+FROM)\s+{id}`)
+
+/**
+ * Statements that change nothing a second run could get wrong: transaction
+ * brackets, connection pragmas, an integrity probe, and Postgres enum work,
+ * which `buddy migrate` guards before running (`guardPostgresEnumTypes`) - an
+ * enum type also survives the drop of the table that used it, so re-creating
+ * it has to be a no-op anyway.
+ */
+const NEUTRAL = /^(?:BEGIN|COMMIT|END|PRAGMA|SET|SELECT\s+1|COMMENT\s+ON|CREATE\s+TYPE\s+\S+\s+AS\s+ENUM|ALTER\s+TYPE\s+\S+\s+ADD\s+VALUE|STACKS_ENUM_GUARD)\b/i
+
+function statementShape(statement: string, indexTables: ReadonlyMap<string, string>): StatementShape {
+  const lower = (name: string | undefined): string => (name ?? '').toLowerCase()
+
+  if (NEUTRAL.test(statement))
+    return { modifies: [] }
+
+  let m = RENAME_TABLE.exec(statement)
+  if (m)
+    return { modifies: [lower(m[1]), lower(m[2])], rename: { from: lower(m[1]), to: lower(m[2]) } }
+
+  m = CREATE_TABLE.exec(statement)
+  if (m)
+    return { modifies: [lower(m[1])], creates: lower(m[1]) }
+
+  m = DROP_TABLE.exec(statement)
+  if (m)
+    return { modifies: [lower(m[1])], drops: lower(m[1]) }
+
+  m = ALTER_TABLE.exec(statement)
+  if (m)
+    return { modifies: [lower(m[1])] }
+
+  m = CREATE_INDEX.exec(statement)
+  if (m)
+    return { modifies: [lower(m[2])], index: { name: lower(m[1]), table: lower(m[2]) } }
+
+  m = DROP_INDEX.exec(statement)
+  if (m) {
+    const table = m[2] ? lower(m[2]) : indexTables.get(lower(m[1]))
+    return table ? { modifies: [table] } : { modifies: [], unknown: true }
+  }
+
+  m = DML.exec(statement)
+  if (m)
+    return { modifies: [lower(m[1])] }
+
+  return { modifies: [], unknown: true }
+}
+
+/**
+ * The statements of a migration file, with Postgres's guarded `DO` blocks
+ * folded into one opaque statement first: they contain semicolons of their
+ * own, which a plain split would cut into fragments nothing recognises.
+ */
+function requeueStatements(sql: string): string[] {
+  const folded = stripForEffects(sql).replace(
+    /\bDO\s+\$(\w*)\$([\s\S]*?)\$\1\$/gi,
+    (block, _tag: string, body: string) =>
+      /^\s*BEGIN\s+CREATE\s+TYPE\b[\s\S]*\bEXCEPTION\s+WHEN\s+duplicate_object\s+THEN\s+null\s*;\s*END\s*$/i.test(body)
+        ? 'STACKS_ENUM_GUARD'
+        : block,
+  )
+  return folded.split(';').map(statement => statement.trim()).filter(Boolean)
+}
+
+/**
+ * What the runner hides for disabled features: whole files, and statements
+ * against their tables inside files it keeps (the catch-all `auto-misc`
+ * migration holds alters for every table). Anything that replays the corpus on
+ * paper has to apply the same gate, or it expects tables no run will create.
+ * Built by `featureGateForLedger()` in `migrations.ts`, which owns the gate.
+ */
+export interface CorpusGate {
+  exclude: ReadonlySet<string>
+  rewrite: (sql: string) => string
+}
+
+/**
+ * The gate to audit with: the caller's, or - when auditing the configured
+ * corpus rather than a directory the caller named - the runner's own, so
+ * `migrate:status`, `doctor` and the dashboard all see what `migrate` sees.
+ * Imported lazily: `migrations.ts` imports this module.
+ */
+async function resolveGate(options: { gate?: CorpusGate, dir?: string }, dir: string): Promise<CorpusGate | undefined> {
+  if (options.gate || options.dir)
+    return options.gate
+  try {
+    const { featureGateForLedger } = await import('./migrations')
+    return await featureGateForLedger(dir)
+  }
+  catch {
+    return undefined
+  }
+}
+
+export interface RequeuePlan {
+  /** Tables the corpus creates and leaves in place, but the database lacks. */
+  missing: string[]
+  /** Recorded files to un-record, in the order the next migrate runs them. */
+  requeue: string[]
+  /** Missing tables that cannot be rebuilt this way, with why. */
+  refused: Array<{ table: string, reason: string }>
+}
+
+/**
+ * Which recorded migrations to un-record so `buddy migrate` rebuilds the
+ * tables the database is missing (stacksjs/stacks#2860).
+ *
+ * The ledger says the table was created and it is not there - dropped by
+ * hand, lost in a restore, or never created by a runner that recorded it
+ * anyway. `migrate` skips the file because it is recorded, and the only way
+ * back used to be `migrate:fresh`, which drops every other table to recreate
+ * one.
+ *
+ * Re-running is safe exactly when it can only rebuild what is missing, so a
+ * table is requeued as its WHOLE history or not at all:
+ *
+ *   - every file that ever touched it, in order, because a later file may
+ *     rebuild or alter what an earlier one created, and replaying only the
+ *     last one fails on a table that does not exist yet;
+ *   - and only when each of those files changes nothing but missing tables
+ *     and the scaffolding it creates and removes itself. A file that also
+ *     alters a table that is still there, or writes data to one, has already
+ *     run once against it, and a second run is not ours to decide.
+ *
+ * Pure: works from the corpus and the set of live tables, so it can be
+ * exercised without a database.
+ */
+export function planRequeue(
+  files: ReadonlyArray<{ file: string, sql: string, recorded: boolean }>,
+  liveTables: ReadonlySet<string>,
+): RequeuePlan {
+  const ordered = [...files].sort((a, b) => a.file.localeCompare(b.file))
+  const indexTables = new Map<string, string>()
+  const expected = new Set<string>()
+
+  // Names joined by a rename are one table's history: `a` renamed to `b` is
+  // rebuilt by replaying the file that created `a`, too.
+  const lineageOf = new Map<string, Set<string>>()
+  const lineage = (table: string): Set<string> => {
+    let group = lineageOf.get(table)
+    if (!group) {
+      group = new Set([table])
+      lineageOf.set(table, group)
+    }
+    return group
+  }
+  const link = (a: string, b: string): void => {
+    const merged = new Set([...lineage(a), ...lineage(b)])
+    for (const name of merged)
+      lineageOf.set(name, merged)
+  }
+
+  // Replay the corpus on paper: which tables does it leave in place, and
+  // what does each file touch?
+  const shapes = ordered.map(({ file, sql, recorded }) => {
+    const statements = requeueStatements(sql).map(statement => statementShape(statement, indexTables))
+    for (const shape of statements) {
+      if (shape.index)
+        indexTables.set(shape.index.name, shape.index.table)
+      if (shape.creates)
+        expected.add(shape.creates)
+      if (shape.drops)
+        expected.delete(shape.drops)
+      if (shape.rename) {
+        expected.delete(shape.rename.from)
+        expected.add(shape.rename.to)
+        link(shape.rename.from, shape.rename.to)
+      }
+    }
+
+    // Scaffolding: a table this file creates and also drops or renames away.
+    const created = new Set(statements.flatMap(shape => shape.creates ? [shape.creates] : []))
+    const removed = new Set(statements.flatMap(shape => [shape.drops, shape.rename?.from].filter((t): t is string => Boolean(t))))
+    const scaffold = new Set([...created].filter(table => removed.has(table) || statements.some(shape => shape.rename?.from === table)))
+
+    return {
+      file,
+      recorded,
+      unknown: statements.some(shape => shape.unknown),
+      modifies: new Set(statements.flatMap(shape => shape.modifies)),
+      scaffold,
+    }
+  })
+
+  const missing = [...expected].filter(table => !liveTables.has(table)).sort()
+
+  // What a requeued file may touch: a missing table under any of the names it
+  // has had, provided none of those names is a table the database has now.
+  const rebuildable = new Set(missing.flatMap(table => [...lineage(table)]).filter(table => !liveTables.has(table)))
+  const chains = new Map(missing.map((table) => {
+    const names = lineage(table)
+    return [table, shapes.filter(shape => [...shape.modifies].some(name => names.has(name)))]
+  }))
+
+  const why = new Map<string, string>()
+  for (const [table, chain] of chains) {
+    for (const shape of chain) {
+      if (shape.unknown) {
+        why.set(table, `${shape.file} contains a statement the planner cannot classify`)
+        break
+      }
+      const elsewhere = [...shape.modifies].filter(t => !rebuildable.has(t) && !shape.scaffold.has(t))
+      if (elsewhere.length > 0) {
+        why.set(table, `${shape.file} also changes ${elsewhere.join(', ')}, which ${elsewhere.length === 1 ? 'is' : 'are'} not missing`)
+        break
+      }
+    }
+  }
+
+  // A file shared between two missing tables can only be requeued if both
+  // can, so one refusal can refuse the other. Repeat until nothing changes.
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const [table, chain] of chains) {
+      if (why.has(table))
+        continue
+      const blocker = chain.flatMap(shape => [...shape.modifies]).find(other => other !== table && missing.some(t => why.has(t) && lineage(t).has(other)))
+      if (blocker) {
+        why.set(table, `shares a migration with ${blocker}, which cannot be rebuilt`)
+        changed = true
+      }
+    }
+  }
+
+  const requeue = new Set<string>()
+  for (const [table, chain] of chains) {
+    if (why.has(table))
+      continue
+    for (const shape of chain) {
+      if (shape.recorded)
+        requeue.add(shape.file)
+    }
+  }
+
+  return {
+    missing,
+    requeue: ordered.map(({ file }) => file).filter(file => requeue.has(file)),
+    refused: [...why].map(([table, reason]) => ({ table, reason })),
+  }
+}
+
+/**
+ * Tables the RECORDED migrations create and leave in place, which the
+ * database does not have (stacksjs/stacks#2860).
+ *
+ * The model drift probe only knows the app's own models, so a framework table
+ * - or any table in an app with no `app/Models` - could vanish without a word,
+ * while `buddy migrate` skipped its recorded file and reported the database up
+ * to date. This asks the ledger instead: everything it says ran, replayed on
+ * paper, against what is actually there, through the same feature gate the
+ * runner applies (see {@link CorpusGate}).
+ */
+export async function auditMissingTables(options: {
+  dir?: string
+  dialect?: LedgerDialect
+  run?: SqlRunner
+  gate?: CorpusGate
+} = {}): Promise<{ supported: boolean, missing: string[], live: Set<string> }> {
+  const dialect = options.dialect ?? await currentDialect()
+  if (dialect === 'other')
+    return { supported: false, missing: [], live: new Set() }
+
+  const dir = migrationsDir(options.dir)
+  const run = options.run ?? await defaultRunner()
+  const recorded = new Set(await readLedger(run))
+  const gate = await resolveGate(options, dir)
+  const files = listMigrationFiles(dir)
+    .filter(file => recorded.has(file) && !gate?.exclude.has(file))
+    .flatMap((file) => {
+      try {
+        const sql = readFileSync(join(dir, file), 'utf8')
+        return [{ file, sql: gate ? gate.rewrite(sql) : sql, recorded: true }]
+      }
+      catch {
+        return []
+      }
+    })
+
+  const live = await readLiveSchema(dialect, run)
+  return { supported: true, missing: planRequeue(files, live.tables).missing, live: live.tables }
 }
 
 /**
@@ -948,14 +1274,24 @@ export async function reconcileMigrationLedger(options: {
   dryRun?: boolean
   /** Also record `partial` files. Off by default, and rarely right. */
   includePartial?: boolean
+  /**
+   * Un-record the migrations that built a table the database is missing (see
+   * {@link planRequeue}), so the next `buddy migrate` rebuilds it. The one
+   * repair for "the ledger says this table was created, and it is not there"
+   * short of `migrate:fresh`, which drops everything else with it.
+   */
+  requeueReverted?: boolean
+  /** The runner's feature gate, so requeueing never plans around a hidden file. */
+  gate?: CorpusGate
   /** Reconcile a specific dialect instead of the configured one. */
   dialect?: LedgerDialect
   /** Reconcile a database other than the process-wide one. */
   run?: SqlRunner
 } = {}): Promise<ReconcileResult> {
   const run = options.run ?? await defaultRunner()
-  const audit = await auditMigrationLedger({ dir: options.dir, dialect: options.dialect, run })
-  const result: ReconcileResult = { remapped: [], recorded: [], pruned: [], skipped: [] }
+  const gate = await resolveGate(options, migrationsDir(options.dir))
+  const audit = await auditMigrationLedger({ dir: options.dir, dialect: options.dialect, run, gate })
+  const result: ReconcileResult = { remapped: [], recorded: [], pruned: [], requeued: [], skipped: [] }
   if (!audit.supported) {
     result.skipped.push({ file: '*', reason: `dialect "${audit.dialect}" is not audited` })
     return result
@@ -975,6 +1311,7 @@ export async function reconcileMigrationLedger(options: {
     result.skipped.push({ file: row, reason: 'ledger row is not safe to write to the ledger' })
 
   const toRecord: string[] = []
+  const revertedEntries: MigrationLedgerEntry[] = []
   for (const entry of audit.entries) {
     if (entry.status === 'stranded') {
       toRecord.push(entry.file)
@@ -991,12 +1328,39 @@ export async function reconcileMigrationLedger(options: {
       })
       continue
     }
-    if (entry.status === 'reverted') {
-      result.skipped.push({
-        file: entry.file,
-        reason: `recorded, but ${entry.absent.length} effect(s) are missing from the schema`,
-      })
-    }
+    if (entry.status === 'reverted')
+      revertedEntries.push(entry)
+  }
+
+  const toRequeue: string[] = []
+  if (options.requeueReverted) {
+    const live = await readLiveSchema(audit.dialect as LedgerDialect, run)
+    const recordedFiles = new Set(audit.entries.filter(entry => entry.recorded).map(entry => entry.file))
+    // Entries already exclude gated files (see auditMigrationLedger).
+    const corpus = audit.entries.flatMap((entry) => {
+      try {
+        const sql = readFileSync(join(audit.dir, entry.file), 'utf8')
+        return [{ file: entry.file, sql: gate ? gate.rewrite(sql) : sql, recorded: recordedFiles.has(entry.file) }]
+      }
+      catch {
+        return []
+      }
+    })
+    const plan = planRequeue(corpus, live.tables)
+    toRequeue.push(...plan.requeue)
+    for (const { table, reason } of plan.refused)
+      result.skipped.push({ file: table, reason: `missing table not rebuilt: ${reason}` })
+  }
+
+  // Reported after the requeue plan, so a file it is about to re-run is not
+  // also listed as left alone.
+  for (const entry of revertedEntries.filter(entry => !toRequeue.includes(entry.file))) {
+    result.skipped.push({
+      file: entry.file,
+      reason: options.requeueReverted
+        ? `recorded, but ${entry.absent.length} effect(s) are missing from the schema`
+        : `recorded, but ${entry.absent.length} effect(s) are missing from the schema - --requeue-reverted rebuilds a table that is gone entirely`,
+    })
   }
 
   // Anything the ledger writers would refuse is dropped HERE, before any write
@@ -1016,10 +1380,15 @@ export async function reconcileMigrationLedger(options: {
   const remapped = plan.remap.filter(r => !unsafe(r.from) && !unsafe(r.to))
   const recordable = toRecord.filter(file => !unsafe(file) && !remapped.some(r => r.to === file))
 
+  const requeueable = toRequeue.filter(file => !unsafe(file))
+  for (const file of toRequeue.filter(unsafe))
+    result.skipped.push({ file, reason: 'migration filename is not safe to write to the ledger' })
+
   if (options.dryRun) {
     result.remapped = remapped
     result.recorded = recordable
     result.pruned = prunable
+    result.requeued = requeueable
     return result
   }
 
@@ -1059,6 +1428,13 @@ export async function reconcileMigrationLedger(options: {
     }
     await run(`DELETE FROM migrations WHERE migration = '${row}'`)
     result.pruned.push(row)
+  }
+
+  // Last, and only rows the audit classified a moment ago: deleting one is
+  // what makes the next `buddy migrate` run that file again.
+  for (const file of requeueable) {
+    await run(`DELETE FROM migrations WHERE migration = '${file}'`)
+    result.requeued.push(file)
   }
 
   return result

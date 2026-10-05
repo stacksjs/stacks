@@ -30,6 +30,7 @@ buddy migrate:fresh [options]
 | `-d, --diff` | Show the SQL that would be run without executing |
 | `-p, --project [project]` | Target a specific project |
 | `-a, --auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, etc.) |
+| `--strict` | Exit non-zero when the database has drifted from its migrations or models (for CI) |
 | `--verbose` | Enable verbose output |
 
 ### Options for `migrate:fresh`
@@ -102,7 +103,12 @@ This drops all tables, runs migrations, and seeds the database with test data.
 buddy migrate --diff
 ```
 
-Shows the SQL statements that would be executed without running them.
+Shows what the next `buddy migrate` would do, without doing it: the committed
+migration files the `migrations` table has not recorded yet, the model changes
+that are not in a migration file yet, and any drift between the live database
+and what its recorded migrations and models describe. It only says "your models
+match the database" when all three are empty, and it exits non-zero if any of
+them could not be read.
 
 ### Migrate with Auth Tables
 
@@ -306,16 +312,29 @@ Verify your database user has the necessary permissions.
 
 ### Schema Out of Sync
 
-If your database schema is out of sync:
+`buddy migrate` runs the files the `migrations` table does not list. A table
+whose migration *is* listed but which is not in the database - dropped by hand,
+lost in a restore - is therefore never recreated by a plain migrate. Both
+`migrate` and `migrate --diff` report it, and neither calls the database up to
+date while it is missing.
 
 ```bash
-# Option 1: Fresh migration (drops all data)
-buddy migrate:fresh
+# Compare the migration files, the migrations table and the live schema
+buddy migrate:status
 
-# Option 2: Manually fix the schema
-# Then run migrations
+# Rebuild a missing table without touching anything else
+buddy migrate:status --reconcile --requeue-reverted
 buddy migrate
 ```
+
+`--requeue-reverted` un-records every migration that built the missing table,
+so the next `migrate` replays its whole history in order. It only does so when
+none of those files also changes a table that is still there, or writes data to
+one; those tables are listed with the reason and left for you. A migration that
+fails to apply is never silently skipped either: if any file the runner could
+see is still unrecorded after a run, `migrate` fails and names it.
+
+As a last resort, `buddy migrate:fresh` rebuilds everything and drops all data.
 
 ## Best Practices
 

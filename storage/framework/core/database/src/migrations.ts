@@ -52,6 +52,8 @@ import { applicableFrameworkRenames, applyFrameworkRenamesToDatabase, applyFrame
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireLibsqlMigrationLock, acquireMigrationLock } from './migration-lock'
+import type { CorpusGate } from './migration-ledger'
+import { auditMissingTables } from './migration-ledger'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablesMissingCreateStatements } from './notification-tables'
 import { traitTableNames } from './trait-tables'
@@ -1197,6 +1199,41 @@ export function resetDatabaseBootstrapCache(): void {
 }
 
 /**
+ * The migration files `buddy migrate` will skip because the feature that owns
+ * them is disabled, with the owning feature and the table each one builds.
+ *
+ * Shared by the run (which hides them) and the preview (which must not report
+ * them as pending, since they will not run). Empty when the feature manifest
+ * or config cannot be resolved, the same best-effort the gate has always had.
+ */
+export async function featureGatedMigrationFiles(dir: string = migrationDirectory()): Promise<Array<{ file: string, feature: string, table: string | null }>> {
+  const gated: Array<{ file: string, feature: string, table: string | null }> = []
+  try {
+    const { appModelClaimsTable, FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/features')
+    const { feature: isFeatureEnabled } = await import('@stacksjs/config')
+
+    if (!existsSync(dir)) return gated
+
+    const disabledFeatures = new Set(
+      (FEATURE_NAMES as readonly string[]).filter((f: string) => !(isFeatureEnabled as (name: string) => boolean)(f)),
+    )
+    if (disabledFeatures.size === 0) return gated
+
+    for (const file of readdirSync(dir).filter(f => f.endsWith('.sql'))) {
+      const owner = (migrationFeature as (filename: string) => string | null)(file)
+      if (!owner || !disabledFeatures.has(owner)) continue
+      const table = (migrationTable as (filename: string) => string | null)(file)
+      if (table && (appModelClaimsTable as (table: string) => boolean)(table)) continue
+      gated.push({ file, feature: owner, table })
+    }
+  }
+  catch {
+    // See hideDisabledFeatureMigrations: the gate is best-effort.
+  }
+  return gated
+}
+
+/**
  * Skip migrations owned by features whose `config.<feature>.enabled` is
  * false (stacksjs/stacks#1854). Pre-flight pass that hides
  * `database/migrations/<owned>.sql` → `<owned>.sql.disabled` for the
@@ -1212,34 +1249,39 @@ export function resetDatabaseBootstrapCache(): void {
  * runner is also called from non-CLI contexts (tests, programmatic
  * migrations) where one or the other might not be initialised.
  */
+/**
+ * The feature gate as the ledger tools need it: the files the runner hides,
+ * and the statement filter it applies to the files it keeps.
+ */
+export async function featureGateForLedger(dir: string = migrationDirectory(getDialect())): Promise<CorpusGate> {
+  const gated = await featureGatedMigrationFiles(dir)
+  const tables = new Set(gated.flatMap(entry => entry.table ? [entry.table.toLowerCase()] : []))
+  return {
+    exclude: new Set(gated.map(entry => entry.file)),
+    rewrite: sql => tables.size > 0 ? withoutGatedStatements(sql, tables) : sql,
+  }
+}
+
 async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string, hidden: string, feature: string }>> {
   const hidden: Array<{ original: string, hidden: string, feature: string }> = []
   try {
-    const { appModelClaimsTable, FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/features')
-    const { feature: isFeatureEnabled } = await import('@stacksjs/config')
     const fs = await import('node:fs/promises')
 
     const migrationsDir = migrationDirectory()
     if (!existsSync(migrationsDir)) return hidden
 
-    const disabledFeatures = new Set(
-      (FEATURE_NAMES as readonly string[]).filter((f: string) => !(isFeatureEnabled as (name: string) => boolean)(f)),
-    )
-    if (disabledFeatures.size === 0) return hidden
+    const gated = await featureGatedMigrationFiles(migrationsDir)
+    if (gated.length === 0) return hidden
 
     const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
     const gatedTables = new Set<string>()
-    for (const file of files) {
-      const owner = (migrationFeature as (filename: string) => string | null)(file)
-      if (!owner || !disabledFeatures.has(owner)) continue
-      const table = (migrationTable as (filename: string) => string | null)(file)
-      if (table && (appModelClaimsTable as (table: string) => boolean)(table)) continue
+    for (const { file, feature, table } of gated) {
       if (table)
         gatedTables.add(table.toLowerCase())
       const original = join(migrationsDir, file)
       const hiddenPath = `${original}.disabled`
       await fs.rename(original, hiddenPath)
-      hidden.push({ original, hidden: hiddenPath, feature: owner })
+      hidden.push({ original, hidden: hiddenPath, feature })
     }
 
     // A file the gate could not classify may still contain statements against
@@ -1993,6 +2035,44 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     const appliedCount = Math.max(0, appliedAfter - appliedBefore)
     await writeMigrateMarker(appliedCount)
 
+    /*
+     * Every file the run could see must now be in the ledger.
+     *
+     * The runner applies whatever the ledger does not list, so after a
+     * successful run nothing should be left - and when something is, "nothing
+     * to migrate" is a lie the operator acts on. That is how a database came to
+     * be 49 tables short while `buddy migrate` reported it up to date
+     * (stacksjs/stacks#2860): whatever kept those files from running, nothing
+     * compared the ledger with the corpus afterwards. Feature-gated and
+     * quarantined files are hidden at this point, so they are not counted.
+     */
+    // Read without a fallback: an unreadable ledger proves nothing either way,
+    // and treating it as empty would fail a migrate that worked.
+    let ledgerRows: string[] | null = null
+    try {
+      const rows = await db.unsafe('SELECT migration FROM migrations').execute() as unknown
+      ledgerRows = (Array.isArray(rows) ? rows : []).map(row => String((row as { migration?: unknown }).migration ?? ''))
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      // No ledger at all after a run means nothing was recorded, which is
+      // the strongest form of the failure this checks for, not an exemption.
+      if (/no such table|does not exist|doesn't exist/i.test(message))
+        ledgerRows = []
+      else
+        log.warn(`[migration] Could not read the migrations table to confirm every file was applied: ${message}`)
+    }
+    const stillPending = ledgerRows ? unrecordedMigrationFiles(listCorpusFiles(corpusDir), ledgerRows) : []
+    if (stillPending.length > 0 && process.env.STACKS_ALLOW_PENDING_MIGRATIONS !== '1') {
+      return err(new Error(
+        `Applied ${appliedCount} migration${appliedCount === 1 ? '' : 's'}, but ${stillPending.length} migration file${stillPending.length === 1 ? ' is' : 's are'} `
+        + `still not recorded in the migrations table after the run: ${stillPending.slice(0, 5).join(', ')}${stillPending.length > 5 ? `, +${stillPending.length - 5} more` : ''}. `
+        + `The runner did not apply ${stillPending.length === 1 ? 'it' : 'them'}, so the schema is behind the corpus. `
+        + `Run \`./buddy migrate:status\` to see what the database actually has. `
+        + `Set STACKS_ALLOW_PENDING_MIGRATIONS=1 to proceed anyway.`,
+      ))
+    }
+
     log.debug(`Database migration completed in ${Date.now() - startedAt}ms (applied ${appliedCount}).`)
 
     /*
@@ -2073,6 +2153,93 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     }
     await restoreHiddenMigrations(hidden)
   }
+}
+
+/** The `.sql` files directly in a corpus directory, the set the runner reads. */
+function listCorpusFiles(dir: string): string[] {
+  try {
+    return readdirSync(dir).filter(file => file.endsWith('.sql'))
+  }
+  catch {
+    return []
+  }
+}
+
+/**
+ * The committed migration files the next `buddy migrate` will run: in the
+ * corpus, not in the ledger, and not owned by a disabled feature.
+ *
+ * What `buddy migrate --diff` has to show beside the model diff. The model diff
+ * compares models with the snapshot, so a database whose ledger is far behind
+ * the corpus - 222 files in stacksjs/stacks#2860 - previewed as "your models
+ * match the database" while every one of those files was waiting to run.
+ * Reads the ledger the way the runner does, so a missing `migrations` table
+ * means every file is pending.
+ */
+export async function pendingMigrationFiles(): Promise<string[]> {
+  configureQueryBuilder()
+  // The directory the runner executes, resolved the way runDatabaseMigration does.
+  const dir = migrationDirectory(getDialect())
+  const gated = new Set((await featureGatedMigrationFiles(dir)).map(entry => entry.file))
+
+  let ledger: string[] = []
+  try {
+    const rows = await db.unsafe('SELECT migration FROM migrations').execute() as unknown
+    ledger = (Array.isArray(rows) ? rows : []).map(row => String((row as { migration?: unknown }).migration ?? ''))
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (!/no such table|does not exist|doesn't exist/i.test(message))
+      throw error
+  }
+
+  return unrecordedMigrationFiles(listCorpusFiles(dir).filter(file => !gated.has(file)), ledger)
+}
+
+/**
+ * Tables the recorded migrations create that the database does not have.
+ *
+ * The ledger-side half of `buddy migrate`'s drift report (stacksjs/stacks#2860):
+ * the model probe only knows `app/Models`, this knows every table a recorded
+ * file built. Feature-gated files are left out, since the runner never runs
+ * them, and a table the framework has since renamed counts as present under
+ * its new name.
+ */
+export async function missingRecordedTables(): Promise<string[]> {
+  configureQueryBuilder()
+  const dialect = getDialect()
+  const dir = migrationDirectory(dialect)
+  const ledgerDialect = dialect === 'vitess' ? 'mysql' : dialect
+
+  const { supported, missing, live } = await auditMissingTables({ dir, dialect: ledgerDialect })
+  if (!supported || missing.length === 0)
+    return []
+
+  const renamed = new Map<string, string>()
+  for (const rename of frameworkRenamesForThisApp()) {
+    for (const table of rename.tables)
+      renamed.set(table.from.toLowerCase(), table.to.toLowerCase())
+  }
+  return missing.filter((table) => {
+    // Follow the chain: a table renamed twice is present under its last name.
+    const seen = new Set<string>([table])
+    for (let current = renamed.get(table); current && !seen.has(current); current = renamed.get(current)) {
+      if (live.has(current))
+        return false
+      seen.add(current)
+    }
+    return true
+  })
+}
+
+/**
+ * Corpus files the ledger does not record, in run order.
+ *
+ * Exported for the post-run check in `runDatabaseMigration` and its test.
+ */
+export function unrecordedMigrationFiles(diskFiles: readonly string[], ledger: readonly string[]): string[] {
+  const recorded = new Set(ledger)
+  return diskFiles.filter(file => !recorded.has(file)).sort()
 }
 
 /**

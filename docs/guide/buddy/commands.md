@@ -3841,6 +3841,7 @@ Compare database/migrations, the migrations ledger, and the live schema
 | --- | --- | --- | --- |
 | `--reconcile` | Repair the ledger where the schema proves what happened | boolean, optional | `false` |
 | `--include-partial` | With --reconcile, also record half-applied migrations | boolean, optional | `false` |
+| `--requeue-reverted` | With --reconcile, un-record the migrations of a table that is missing so the next migrate rebuilds it | boolean, optional | `false` |
 | `--json` | Emit the audit as JSON | boolean, optional | `false` |
 
 ### `migrate:switch`
