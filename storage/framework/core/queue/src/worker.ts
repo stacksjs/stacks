@@ -250,9 +250,10 @@ export async function startProcessor(
     }
 
     // Database driver (default)
+    const named = namedWorkerQueues(queueName)
     let queues: string[]
-    if (queueName) {
-      queues = [queueName]
+    if (named.length > 0) {
+      queues = named
     }
     else {
       queues = await getAllQueues()
@@ -262,7 +263,7 @@ export async function startProcessor(
     }
 
     log.info(`Processing queues: ${queues.join(', ')}`)
-    await processJobsFromDatabase(queues, concurrency)
+    await processJobsFromDatabase(queues, concurrency, { followNewQueues: named.length === 0 })
 
     return ok(undefined)
   }
@@ -298,10 +299,23 @@ async function getAllQueues(): Promise<string[]> {
 }
 
 /**
+ * The queues a worker was told to take, in priority order, or none.
+ *
+ * `--queue=high,default` is a list. It was taken as one queue literally named
+ * "high,default", which never holds a job. A worker given a list keeps to it;
+ * one given nothing follows every queue, picking up new ones as they appear.
+ */
+export function namedWorkerQueues(queueName?: string | boolean | null): string[] {
+  if (typeof queueName !== 'string')
+    return []
+  return [...new Set(queueName.split(',').map(name => name.trim()).filter(Boolean))]
+}
+
+/**
  * Process jobs from the database (jobs table)
  * This is the main processing loop for database-backed queues
  */
-async function processJobsFromDatabase(initialQueues: string[], concurrency: number): Promise<void> {
+async function processJobsFromDatabase(initialQueues: string[], concurrency: number, options: { followNewQueues: boolean } = { followNewQueues: true }): Promise<void> {
   log.info(`Listening for jobs...`)
 
   let queues = initialQueues
@@ -317,9 +331,12 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
 
   while (workerRunning) {
     try {
-      // Periodically refresh the list of queues to pick up new ones
+      // Periodically refresh the list of queues to pick up new ones - only for
+      // a worker that was not told which queues to take. A worker started with
+      // `--queue=emails` used to adopt every queue in the table on its first
+      // refresh, ten seconds in, and start running jobs meant for other workers.
       const now = Date.now()
-      if (now - lastQueueRefresh > queueRefreshInterval) {
+      if (options.followNewQueues && now - lastQueueRefresh > queueRefreshInterval) {
         try {
           const refreshedQueues = await getAllQueues()
           if (refreshedQueues.length > 0) {
