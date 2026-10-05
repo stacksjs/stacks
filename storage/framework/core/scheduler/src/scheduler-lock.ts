@@ -62,6 +62,22 @@ function safeLockAgeMs(body: LockFileBody): number {
 }
 
 /**
+ * The file a task's lock lives in.
+ *
+ * The task name went into the path as is, and a command task is named after
+ * its command: `command-./backup.sh` pointed into a `command-.` directory that
+ * did not exist, every write failed, the lock was never acquired, and the task
+ * was skipped as "overlapping" on every tick - it never ran. Anything outside
+ * a plain file-name alphabet is replaced, and a short hash of the full name
+ * keeps two names that sanitize alike from sharing a lock.
+ */
+export function lockFileName(taskName: string): string {
+  const readable = taskName.replace(/[^\w.-]+/g, '_').replace(/^\.+/, '_').slice(0, 80)
+  const digest = createHash('sha256').update(taskName).digest('hex').slice(0, 12)
+  return `${readable}-${digest}.lock`
+}
+
+/**
  * Try to acquire a distributed scheduler lock for `taskName`. The
  * lock is two-layered:
  *   1. **DB advisory lock** (PG/MySQL) — serializes across the cluster.
@@ -90,7 +106,7 @@ export async function acquireSchedulerLock(
   lockDir?: string,
 ): Promise<SchedulerLockHandle | null> {
   const resolvedDir = lockDir ?? join(process.cwd(), 'storage', 'framework', 'locks')
-  const lockFile = join(resolvedDir, `${taskName}.lock`)
+  const lockFile = join(resolvedDir, lockFileName(taskName))
 
   if (!existsSync(resolvedDir)) {
     mkdirSync(resolvedDir, { recursive: true })

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { acquireSchedulerLock } from '../src/scheduler-lock'
+import { acquireSchedulerLock, lockFileName } from '../src/scheduler-lock'
 
 // Mirrors @stacksjs/database's migration-lock test layout — file-lock
 // behavior is the easiest to verify deterministically. PG/MySQL paths
@@ -10,7 +10,7 @@ import { acquireSchedulerLock } from '../src/scheduler-lock'
 
 describe('acquireSchedulerLock (file-only) - stacksjs/stacks#1877 Cr-3', () => {
   const testRoot = join(tmpdir(), `stacks-sched-lock-${Date.now()}`)
-  const lockFile = join(testRoot, 'task.lock')
+  const lockFile = join(testRoot, lockFileName('task'))
 
   beforeEach(() => {
     mkdirSync(testRoot, { recursive: true })
@@ -160,7 +160,7 @@ describe('acquireSchedulerLock (postgres mocked db)', () => {
 
   test('releases DB lock when file lock fails', async () => {
     // Pre-write a fresh file lock so our acquire fails at the file step.
-    const lockFile = join(testRoot, 'clustered-task.lock')
+    const lockFile = join(testRoot, lockFileName('clustered-task'))
     writeFileSync(lockFile, JSON.stringify({ acquiredAt: Date.now(), monotonicStart: 0, holder: 1 }))
 
     let unlockCalls = 0
@@ -224,5 +224,30 @@ describe('acquireSchedulerLock (mysql mocked db)', () => {
 
     await handle!.release()
     expect(unlockCalls).toBe(1)
+  })
+})
+
+describe('lockFileName', () => {
+  // A command task is named after its command, and the name went into the
+  // path as is: `command-./backup.sh` pointed into a directory that did not
+  // exist, the lock was never acquired, and the task never ran.
+  test('a task named after a command with slashes can be locked', async () => {
+    const dir = join(tmpdir(), `stacks-lock-names-${process.pid}-${Date.now()}`)
+    mkdirSync(dir, { recursive: true })
+    try {
+      for (const name of ['command-./backup.sh', 'command-bun run scripts/prune.ts', '../escape']) {
+        const handle = await acquireSchedulerLock(name, 60_000, null, null, dir)
+        expect(handle).not.toBeNull()
+        await handle!.release()
+      }
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('stays inside the lock directory and distinct per task', () => {
+    expect(lockFileName('../escape')).not.toContain('/')
+    expect(lockFileName('a/b')).not.toBe(lockFileName('a_b'))
   })
 })
