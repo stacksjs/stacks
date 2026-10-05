@@ -732,7 +732,7 @@ describe('Discord inbox driver, signed in as the person', () => {
   it('identifies as the client and lists DMs, group DMs and the channels the person can read', async () => {
     const { driver, calls } = setup()
     const { socket, conversations } = await connect(driver)
-    expect(socket.sent[0]).toMatchObject({ op: 2, d: { token: 'user-token', properties: { browser: 'Discord Client' } } })
+    expect(socket.sent[0]).toMatchObject({ op: 2, d: { token: 'user-token', properties: { browser: 'Attic' } } })
     expect(conversations.map(c => [c.id, c.kind, c.title])).toEqual([
       ['300', 'direct', 'Ann'],
       ['301', 'group', 'climbers'],

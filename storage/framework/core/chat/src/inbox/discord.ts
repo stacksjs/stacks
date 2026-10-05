@@ -63,21 +63,14 @@ const THREAD_CHANNELS = new Set([10, 11, 12])
 const DM = 1
 const GROUP_DM = 3
 
-/** How the desktop client describes itself; a user session sends the same. */
+/**
+ * How Attic describes itself to Discord's gateway: as itself. It does not
+ * present as the official client.
+ */
 const CLIENT_PROPERTIES = {
   os: 'Mac OS X',
-  browser: 'Discord Client',
-  release_channel: 'stable',
-  client_version: '0.0.360',
-  os_version: '25.0.0',
-  os_arch: 'arm64',
-  app_arch: 'arm64',
-  system_locale: 'en-US',
-  browser_user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.360 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36',
-  browser_version: '35.3.0',
-  client_build_number: 420_000,
-  native_build_number: null,
-  client_event_source: null,
+  browser: 'Attic',
+  device: 'Attic',
 }
 
 /** Discord ids are snowflakes: milliseconds since 2015 in the high bits. */
@@ -129,7 +122,7 @@ export class DiscordInboxDriver implements InboxDriver {
   /**
    * The newest message seen in each channel, for its preview. Listing again
    * after every event would otherwise fetch every recent DM's latest message
-   * each time - the kind of burst that gets a user account flagged.
+   * each time: needless load on Discord's API and on its rate limits.
    */
   private previews = new Map<string, { id: string, text: string | null, fromMe: boolean, at: number }>()
 
@@ -151,12 +144,7 @@ export class DiscordInboxDriver implements InboxDriver {
   private headers(): Record<string, string> {
     if (!this.isUser)
       return { authorization: `Bot ${this.token}` }
-    return {
-      'authorization': this.token,
-      'user-agent': CLIENT_PROPERTIES.browser_user_agent,
-      'x-super-properties': btoa(JSON.stringify(CLIENT_PROPERTIES)),
-      'x-discord-locale': 'en-US',
-    }
+    return { authorization: this.token }
   }
 
   private async api<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -389,7 +377,7 @@ export class DiscordInboxDriver implements InboxDriver {
   /**
    * DMs and group DMs, and the server channels the person has opened or can
    * read: from READY, newest first. Previews are fetched for the most recent
-   * DMs only, to stay within the pace a person's client keeps.
+   * DMs only, to keep requests to Discord few.
    */
   private async userConversations(): Promise<InboxConversation[]> {
     if (!this.session?.ready)
