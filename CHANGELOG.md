@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.63...v0.75.64)
+
+## 🐛 Bug Fixes
+
+- **throttle**: spend a signed-in user's budget, not their address's ([c3dd99c](https://github.com/stacksjs/stacks/commit/c3dd99c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.62...v0.75.63)
 
 ## 🐛 Bug Fixes
