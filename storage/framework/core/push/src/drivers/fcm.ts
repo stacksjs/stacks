@@ -328,49 +328,71 @@ export async function sendToTopic(
 }
 
 /**
+ * Set one registration's membership of a topic through the FCM v1 API.
+ *
+ * This replaced the Instance ID endpoints `iid/v1:batchAdd` and
+ * `iid/v1:batchRemove`, which stop serving requests on 2027-09-29 and are
+ * closed to projects that have not already onboarded them from 2027-01-01.
+ * The v1 API acts on a single registration, so a batch becomes one request
+ * per token (stacksjs/stacks#2856).
+ */
+async function setTopicSubscription(token: string, topic: string, subscribe: boolean): Promise<boolean> {
+  const accessToken = await getAccessToken()
+  const base = `${FCM_V1_URL}/${config.projectId}/registrations/${encodeURIComponent(token)}/topicSubscriptions`
+
+  // The topic is a query parameter when subscribing and a path segment when
+  // unsubscribing. That asymmetry is the API's, not a transcription slip.
+  const url = subscribe
+    ? `${base}?topic_name=${encodeURIComponent(topic)}`
+    : `${base}/${encodeURIComponent(topic)}`
+
+  const response = await fetch(url, {
+    method: subscribe ? 'POST' : 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
+  })
+
+  // 409 on subscribe means the subscription already exists, which is the state
+  // the caller asked for.
+  if (response.ok || (subscribe && response.status === 409))
+    return true
+
+  // Deliberately without the token: it identifies a device.
+  log.error(`FCM topic ${subscribe ? 'subscribe' : 'unsubscribe'} failed for topic ${topic}: HTTP ${response.status}`)
+  return false
+}
+
+/**
+ * The v1 topic API authenticates with the same OAuth token `send()` uses, so a
+ * legacy server key is no longer sufficient - nor is it accepted.
+ */
+function requireServiceAccount(operation: string): void {
+  if (!config.serviceAccount || !config.projectId) {
+    throw new Error(`FCM service account and projectId required for ${operation}`)
+  }
+}
+
+/**
  * Subscribe tokens to a topic
  */
 export async function subscribeToTopic(tokens: string[], topic: string): Promise<boolean> {
-  if (!config.serverKey) {
-    throw new Error('FCM server key required for topic subscription')
-  }
+  requireServiceAccount('topic subscription')
 
-  const response = await fetch(`https://iid.googleapis.com/iid/v1:batchAdd`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `key=${config.serverKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      to: `/topics/${topic}`,
-      registration_tokens: tokens,
-    }),
-  })
-
-  return response.ok
+  const results = await Promise.all(tokens.map(token => setTopicSubscription(token, topic, true)))
+  return results.every(Boolean)
 }
 
 /**
  * Unsubscribe tokens from a topic
  */
 export async function unsubscribeFromTopic(tokens: string[], topic: string): Promise<boolean> {
-  if (!config.serverKey) {
-    throw new Error('FCM server key required for topic unsubscription')
-  }
+  requireServiceAccount('topic unsubscription')
 
-  const response = await fetch(`https://iid.googleapis.com/iid/v1:batchRemove`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `key=${config.serverKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      to: `/topics/${topic}`,
-      registration_tokens: tokens,
-    }),
-  })
-
-  return response.ok
+  const results = await Promise.all(tokens.map(token => setTopicSubscription(token, topic, false)))
+  return results.every(Boolean)
 }
 
 export { send as Send }

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 
 /**
  * A JWS segment is base64url with the padding stripped: RFC 7515 section 2,
@@ -75,5 +75,120 @@ describe('FCM service account assertion', () => {
     const pem = await generateServiceAccountKey()
     expect(pem).toContain('\n')
     await expect(buildServiceAccountAssertion(CLEAN, pem, NOW)).resolves.toBeString()
+  })
+})
+
+describe('FCM topic subscriptions', () => {
+  const PROJECT_ID = 'stacks-demo-471203'
+  const TOPIC = 'weekly-digest'
+  const TOKEN = 'eXampleToken/with+chars=='
+
+  const realFetch = globalThis.fetch
+  let requests: Array<{ url: string, method: string, authorization?: string, body?: unknown }> = []
+
+  /**
+   * Swapping globalThis.fetch rather than mock.module: a top-level module mock
+   * poisons the shared src/ instance for every other test file in the process.
+   */
+  function stubFetch(topicStatus: number): void {
+    requests = []
+    globalThis.fetch = (async (input: any, init: any = {}) => {
+      const url = String(input?.url ?? input)
+      const headers = (init.headers ?? {}) as Record<string, string>
+      requests.push({ url, method: init.method ?? 'GET', authorization: headers.Authorization, body: init.body })
+
+      if (url.startsWith('https://oauth2.googleapis.com/token'))
+        return new Response(JSON.stringify({ access_token: 'test-access-token' }), { status: 200 })
+
+      return new Response('{}', { status: topicStatus })
+    }) as typeof fetch
+  }
+
+  async function configureServiceAccount(): Promise<typeof import('../src/drivers/fcm')> {
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({
+      projectId: PROJECT_ID,
+      serviceAccount: { clientEmail: 'push@acme-prod.iam.gserviceaccount.com', privateKey: await generateServiceAccountKey() },
+    })
+    return fcm
+  }
+
+  afterEach(async () => {
+    globalThis.fetch = realFetch
+    // Module-level driver config is shared with every other test file in this
+    // process, so hand it back the way it was found.
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ projectId: undefined, serverKey: undefined, serviceAccount: undefined })
+  })
+
+  const topicRequests = () => requests.filter(r => !r.url.startsWith('https://oauth2.googleapis.com/token'))
+
+  test('subscribing posts to the v1 API with the topic as a query parameter', async () => {
+    stubFetch(200)
+    const fcm = await configureServiceAccount()
+
+    expect(await fcm.subscribeToTopic([TOKEN], TOPIC)).toBe(true)
+
+    const [req] = topicRequests()
+    expect(req.method).toBe('POST')
+    expect(req.url).toBe(
+      `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/registrations/${encodeURIComponent(TOKEN)}/topicSubscriptions?topic_name=${TOPIC}`,
+    )
+    expect(req.authorization).toBe('Bearer test-access-token')
+  })
+
+  test('unsubscribing deletes with the topic as a path segment', async () => {
+    stubFetch(200)
+    const fcm = await configureServiceAccount()
+
+    expect(await fcm.unsubscribeFromTopic([TOKEN], TOPIC)).toBe(true)
+
+    const [req] = topicRequests()
+    expect(req.method).toBe('DELETE')
+    expect(req.url).toBe(
+      `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/registrations/${encodeURIComponent(TOKEN)}/topicSubscriptions/${TOPIC}`,
+    )
+  })
+
+  /** The point of stacksjs/stacks#2856: these endpoints stop serving 2027-09-29. */
+  test('never contacts the decommissioned Instance ID endpoints', async () => {
+    stubFetch(200)
+    const fcm = await configureServiceAccount()
+
+    await fcm.subscribeToTopic([TOKEN], TOPIC)
+    await fcm.unsubscribeFromTopic([TOKEN], TOPIC)
+
+    expect(requests.map(r => r.url).join(' ')).not.toContain('iid.googleapis.com')
+  })
+
+  test('treats 409 on subscribe as the subscription already existing', async () => {
+    stubFetch(409)
+    const fcm = await configureServiceAccount()
+
+    expect(await fcm.subscribeToTopic([TOKEN], TOPIC)).toBe(true)
+  })
+
+  test('reports failure when the API rejects the request', async () => {
+    stubFetch(403)
+    const fcm = await configureServiceAccount()
+
+    expect(await fcm.subscribeToTopic([TOKEN], TOPIC)).toBe(false)
+  })
+
+  test('sends one request per token', async () => {
+    stubFetch(200)
+    const fcm = await configureServiceAccount()
+
+    await fcm.subscribeToTopic(['t1', 't2', 't3'], TOPIC)
+
+    expect(topicRequests()).toHaveLength(3)
+  })
+
+  test('requires a service account rather than a legacy server key', async () => {
+    stubFetch(200)
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ serverKey: 'legacy-server-key', projectId: undefined, serviceAccount: undefined })
+
+    await expect(fcm.subscribeToTopic([TOKEN], TOPIC)).rejects.toThrow(/service account/i)
   })
 })

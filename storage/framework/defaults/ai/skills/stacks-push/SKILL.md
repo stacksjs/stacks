@@ -268,13 +268,23 @@ Convenience wrapper that sets the `topic` field and calls `send()`.
 ```typescript
 async function subscribeToTopic(tokens: string[], topic: string): Promise<boolean>
 ```
-Uses `https://iid.googleapis.com/iid/v1:batchAdd` with legacy server key auth. Subscribes device tokens to a topic.
+`POST {FCM_V1_URL}/{projectId}/registrations/{token}/topicSubscriptions?topic_name={topic}`,
+authenticated with the same OAuth token `send()` uses. Needs `serviceAccount` and
+`projectId`; a legacy `serverKey` is not accepted. The v1 API acts on one
+registration, so the batch is one request per token, and a 409 counts as success
+because it means the subscription already exists.
+
+It used to call `https://iid.googleapis.com/iid/v1:batchAdd`. Those Instance ID
+endpoints stop serving on 2027-09-29 and admit no new projects from 2027-01-01
+(stacksjs/stacks#2856).
 
 #### unsubscribeFromTopic()
 ```typescript
 async function unsubscribeFromTopic(tokens: string[], topic: string): Promise<boolean>
 ```
-Uses `https://iid.googleapis.com/iid/v1:batchRemove` with legacy server key auth.
+`DELETE {FCM_V1_URL}/{projectId}/registrations/{token}/topicSubscriptions/{topic}`.
+The topic is a query parameter when subscribing and a path segment when
+unsubscribing; that asymmetry is the API's.
 
 ### Exports
 - `send`, `sendLegacy`, `sendMulticast`, `sendToTopic`, `subscribeToTopic`, `unsubscribeFromTopic`, `configure` functions
@@ -367,7 +377,8 @@ await fcm.unsubscribeFromTopic(['token1'], 'news')
 - FCM v1 API does not support native multicast -- `sendMulticast()` sends individually via `Promise.all`
 - FCM legacy API supports multicast via `registrationIds` in a single request
 - FCM topic names are auto-prefixed with `/topics/` in the legacy API
-- `subscribeToTopic()` and `unsubscribeFromTopic()` require the legacy `serverKey` (not service account)
+- `subscribeToTopic()` and `unsubscribeFromTopic()` require `serviceAccount` + `projectId`, and throw on a `serverKey`-only config. They return a single boolean for the whole batch, so a partial failure reads as `false`; the per-token status is logged
+- The v1 topic API takes the topic as a **query parameter** on subscribe and a **path segment** on unsubscribe
 - The main `send()` converts `priority: 'default'` to `'normal'` for FCM
 - Expo `sendBatch()` processes chunks sequentially but messages within each chunk in parallel
 - FCM v1 JWT tokens expire after 1 hour -- a new token is generated for each `send()` call (no caching)
