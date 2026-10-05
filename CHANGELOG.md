@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.68...v0.75.69)
+
+## 🐛 Bug Fixes
+
+- **chat**: the Discord driver identifies itself as Attic ([9f7f4bd](https://github.com/stacksjs/stacks/commit/9f7f4bd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.67...v0.75.68)
 
 ## 🐛 Bug Fixes
