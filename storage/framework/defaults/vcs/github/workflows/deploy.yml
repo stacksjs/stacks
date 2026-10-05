@@ -148,6 +148,7 @@ jobs:
           chmod 644 ~/.ssh/id_ed25519.pub
 
       - name: Deploy
+        id: deploy
         if: steps.check.outputs.configured == 'true'
         run: ./buddy deploy --${{ github.event.inputs.environment == 'staging' && 'staging' || github.event.inputs.environment == 'development' && 'dev' || 'prod' }} --yes
         env:
@@ -165,3 +166,23 @@ jobs:
           # macOS resource forks in a tarball built on a developer machine make
           # the extraction on the server noisy and occasionally fatal.
           COPYFILE_DISABLE: '1'
+
+      # A deploy that failed half way must not leave the half it finished live.
+      #
+      # Each site's own cutover already refuses a release that crashes, never
+      # takes its port or fails its health path, and puts the previous release
+      # back. What it cannot undo is the site deployed before the one that
+      # failed, left on a different commit from the rest. This rolls back every
+      # site whose live release is this commit, and only those, then fails the
+      # job. Add a smoke check after Deploy (give it `id: smoke`) and include it
+      # in the condition to roll back releases that are up but wrong as well.
+      #
+      # Needs @stacksjs/ts-cloud 0.16.34 or newer for --all and --only-if-live.
+      - name: Roll back what this deploy made live
+        if: failure() && steps.deploy.outcome == 'failure'
+        run: |
+          ./buddy deploy:rollback --env ${{ github.event.inputs.environment || 'production' }} --all --only-if-live "$GITHUB_SHA" || echo "::error::The rollback did not complete; check which release each site serves."
+          echo "::error::Deploy of ${GITHUB_SHA::7} failed; sites it had switched were rolled back."
+          exit 1
+        env:
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}

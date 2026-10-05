@@ -47,6 +47,40 @@ export interface DeployRollbackOptions {
   to?: string
   dryRun?: boolean
   verbose?: boolean
+  /** Every configured site, instead of one. */
+  all?: boolean
+  /** Only roll back a site whose live release is this commit. */
+  onlyIfLive?: string
+}
+
+/**
+ * The ts-cloud that first understood `--dry-run`, `--all` and `--only-if-live`.
+ *
+ * Older ones ignore options they do not know, which for `--dry-run` meant a
+ * "preview" that rolled production back. It did, on wildloop, twice.
+ */
+export const ROLLBACK_FLAGS_SINCE = '0.16.34'
+
+/** The installed @stacksjs/ts-cloud version, or null when it cannot be read. */
+export function installedTsCloudVersion(cliPath: string = resolveTsCloudCliPath()): string | null {
+  try {
+    const pkg = JSON.parse(readFileSync(resolve(dirname(cliPath), '..', '..', 'package.json'), 'utf8'))
+    return typeof pkg.version === 'string' ? pkg.version : null
+  }
+  catch {
+    return null
+  }
+}
+
+/** a >= b, for plain x.y.z versions. */
+export function versionAtLeast(a: string, b: string): boolean {
+  const pa = a.split('.').map(n => Number.parseInt(n, 10) || 0)
+  const pb = b.split('.').map(n => Number.parseInt(n, 10) || 0)
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] ?? 0) !== (pb[i] ?? 0))
+      return (pa[i] ?? 0) > (pb[i] ?? 0)
+  }
+  return true
 }
 
 export function resolveTsCloudCliPath(tsCloudEntry = import.meta.resolve('@stacksjs/ts-cloud')): string {
@@ -67,14 +101,26 @@ export async function runDeployRollback(
 
     return await child.exited
   },
+  tsCloudVersion: string | null = installedTsCloudVersion(),
 ): Promise<number> {
   const environment = resolveDeploymentEnvironment({ option: options.env })
   const command = [process.execPath, resolveTsCloudCliPath(), 'deploy:rollback']
+
+  // A flag the installed ts-cloud does not know is ignored by it, not refused,
+  // and an ignored --dry-run is a real rollback. Refuse here instead.
+  const newFlags = [options.dryRun && '--dry-run', options.all && '--all', options.onlyIfLive && '--only-if-live'].filter(Boolean)
+  if (newFlags.length > 0 && !(tsCloudVersion && versionAtLeast(tsCloudVersion, ROLLBACK_FLAGS_SINCE))) {
+    log.error(`${newFlags.join(', ')} needs @stacksjs/ts-cloud ${ROLLBACK_FLAGS_SINCE} or newer (installed: ${tsCloudVersion ?? 'unknown'}). An older one ignores it and rolls back for real.`)
+    log.info(`   ➡️  bun add @stacksjs/ts-cloud@^${ROLLBACK_FLAGS_SINCE}`)
+    return ExitCode.InvalidArgument
+  }
 
   if (site) command.push(site)
   command.push('--env', environment)
   if (options.to) command.push('--to', options.to)
   if (options.dryRun) command.push('--dry-run')
+  if (options.all) command.push('--all')
+  if (options.onlyIfLive) command.push('--only-if-live', options.onlyIfLive)
   if (options.verbose) command.push('--verbose')
 
   return await execute(command)
@@ -5314,6 +5360,8 @@ export function deploy(buddy: CLI): void {
     .option('--env <environment>', 'Environment to roll back', { default: 'production' })
     .option('--to <release>', 'Preserved release id to activate', { default: undefined })
     .option('--dry-run', 'Preview the rollback without changing the active release', { default: false })
+    .option('--all', 'Every configured site, instead of one', { default: false })
+    .option('--only-if-live <release>', 'Only roll back a site whose live release is this commit (what a failed deploy switched)', { default: undefined })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (site: string | undefined, options: DeployRollbackOptions) => {
       const exitCode = await runDeployRollback(site, options)
