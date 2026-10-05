@@ -3,6 +3,7 @@ import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
+import { META_GRAPH_VERSION } from '../meta-graph'
 
 interface FacebookTokenResponse {
   access_token: string
@@ -30,6 +31,11 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
   protected baseUrl = 'https://www.facebook.com'
   protected apiUrl = 'https://graph.facebook.com'
 
+  /** The login dialog is versioned too, so both hosts use this. */
+  protected get graphVersion(): string {
+    return config.services.facebook?.graphVersion ?? META_GRAPH_VERSION
+  }
+
   private getConfig() {
     const providerConfig = {
       clientId: config.services.facebook?.clientId ?? '',
@@ -49,7 +55,7 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
     const { clientId, redirectUrl, scopes } = this.getConfig()
     this.validateConfig()
 
-    return `${this.baseUrl}/v18.0/dialog/oauth?${new URLSearchParams({
+    return `${this.baseUrl}/${this.graphVersion}/dialog/oauth?${new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUrl,
       scope: scopes.join(','),
@@ -66,7 +72,7 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
     this.validateConfig()
 
     const response = await fetcher
-      .get<FacebookTokenResponse>(`${this.apiUrl}/v18.0/oauth/access_token?${new URLSearchParams({
+      .get<FacebookTokenResponse>(`${this.apiUrl}/${this.graphVersion}/oauth/access_token?${new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUrl,
@@ -86,7 +92,7 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
    */
   public async getUserByToken(token: string): Promise<SocialUser> {
     const response = await fetcher
-      .get<FacebookUser>(`${this.apiUrl}/v18.0/me?${new URLSearchParams({
+      .get<FacebookUser>(`${this.apiUrl}/${this.graphVersion}/me?${new URLSearchParams({
         access_token: token,
         fields: 'id,name,email,picture',
       }).toString()}`)
@@ -119,6 +125,6 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
   }
 
   protected getTokenUrl(): string {
-    return `${this.apiUrl}/v18.0/oauth/access_token`
+    return `${this.apiUrl}/${this.graphVersion}/oauth/access_token`
   }
 }

@@ -48,6 +48,8 @@ export interface ServicesOptions {
     clientSecret: string
     redirectUrl: string
     scopes?: string[]
+    /** Meta Graph API version, e.g. `v24.0`. Defaults to META_GRAPH_VERSION. */
+    graphVersion?: string
   }
 
   twitter?: {

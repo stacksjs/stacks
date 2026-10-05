@@ -6,6 +6,7 @@ import type {
   TimelineQuery,
   TimelineResult,
 } from '../types'
+import { META_GRAPH_VERSION } from '../meta-graph'
 
 export class InstagramApiError extends Error {
   constructor(
@@ -69,7 +70,7 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
   protected graphBase: string
 
   constructor(options: InstagramDriverOptions = {}) {
-    this.graphVersion = options.graphVersion || 'v21.0'
+    this.graphVersion = options.graphVersion || META_GRAPH_VERSION
     this.authBase = options.authBase || 'https://www.facebook.com'
     this.graphBase = options.graphBase || 'https://graph.facebook.com'
   }
