@@ -164,13 +164,16 @@ async function watchFolders() {
       return
 
     log.info(`Detected ${event} in user models/${filename}`)
-    log.info('Generating ORM model files...')
+    log.info('Regenerating model types...')
 
-    runCommandSync('./buddy generate:model-files', {
+    // There is no `generate:model-files`: this ran a command that does not
+    // exist on every model save. `generate:types` is what regenerates the
+    // model types, database/types.d.ts included.
+    runCommandSync('./buddy generate:types', {
       cwd: process.cwd(), // Run at root directory
     })
 
-    log.success(`Generated ORM model files for: ${filename}`)
+    log.success(`Regenerated model types for: ${filename}`)
   })
 }
 

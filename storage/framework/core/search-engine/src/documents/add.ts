@@ -43,7 +43,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Result
         }
 
         if (typeof ModelClass.all !== 'function') {
-          log.warn(`[search] ${modelName}: model has no .all() - run generate:model-files or use defineModel`)
+          log.warn(`[search] ${modelName}: model has no .all() - define it with defineModel`)
           continue
         }
 

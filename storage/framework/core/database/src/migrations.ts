@@ -3789,23 +3789,99 @@ export function createdTableName(statement: string): string | undefined {
   return match?.[1]?.toLowerCase()
 }
 
+/**
+ * What a `CREATE INDEX` builds, apart from what it calls it.
+ *
+ * `key` is the table, whether the index is unique, its column list (with any
+ * sort order) and its `WHERE` clause, normalized - everything that decides what
+ * the index does, and nothing that only names it. Two statements with the same
+ * key build the same index.
+ */
+export interface IndexShape {
+  name: string
+  table: string
+  key: string
+}
+
+const unquoteIdentifiers = (sql: string): string => sql.replace(/["'`[\]]/g, '')
+
+export function indexShape(statement: string): IndexShape | undefined {
+  const head = /^\s*CREATE\s+(UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`[]?([\w$]+)["'`\]]?\s+ON\s+["'`[]?([\w$]+)["'`\]]?\s*\(/i.exec(statement)
+  if (!head?.[2] || !head[3])
+    return undefined
+
+  // The column list ends at the bracket that closes the one `head` opened, not
+  // at the first `)`: an expression column like `lower(email)` has its own.
+  let depth = 1
+  let end = head[0].length
+  for (; end < statement.length && depth > 0; end++) {
+    if (statement[end] === '(')
+      depth++
+    else if (statement[end] === ')')
+      depth--
+  }
+  if (depth > 0)
+    return undefined
+
+  const columns = statement.slice(head[0].length, end - 1).split(',')
+    .map(column => normalizeSqlForComparison(unquoteIdentifiers(column)).toLowerCase().replace(/\s+asc$/, ''))
+  const where = normalizeSqlForComparison(unquoteIdentifiers(statement.slice(end)).replace(/;\s*$/, '')).toLowerCase()
+  const table = head[3].toLowerCase()
+
+  return {
+    name: head[2].toLowerCase(),
+    table,
+    key: `${head[1] ? 'unique' : 'index'} ${table} (${columns.join(', ')})${where ? ` ${where}` : ''}`,
+  }
+}
+
+/** The index a `DROP INDEX` removes, lowercased, or undefined. */
+export function droppedIndexName(statement: string): string | undefined {
+  return /^\s*DROP\s+INDEX\s+(?:IF\s+EXISTS\s+)?(?:["'`[]?[\w$]+["'`\]]?\.)?["'`[]?([\w$]+)["'`\]]?/i.exec(statement)?.[1]?.toLowerCase()
+}
+
 export interface CommittedMigrationIndex {
   /** Every committed statement, whitespace-normalized, for exact matching. */
   sql: string
   /** Tables the committed corpus already creates. */
   createdTables: Set<string>
+  /** The `IndexShape` keys of the indexes the corpus leaves in place, whatever it named them. */
+  indexShapes: Set<string>
 }
 
+/**
+ * Index the committed corpus. Files are read in the order the runner applies
+ * them, so an index a later file drops is no longer counted as present.
+ *
+ * Statements come from `sqlStatementsOf`, not a bare split on `;`: that glued a
+ * file's comment header to its first statement, and a chunk opening with
+ * `-- @generated ...` is not a CREATE TABLE to an anchored match. Every table a
+ * generated or commented file created was missing here, and the generator's
+ * CREATE for it was written again whenever its text had drifted at all.
+ */
 export function indexCommittedMigrations(fileContents: readonly string[]): CommittedMigrationIndex {
   const createdTables = new Set<string>()
+  const indexes = new Map<string, string>()
   for (const contents of fileContents) {
-    for (const statement of contents.split(';')) {
+    for (const statement of sqlStatementsOf(contents)) {
       const table = createdTableName(statement)
-      if (table)
+      if (table) {
         createdTables.add(table)
+        continue
+      }
+      const shape = indexShape(statement)
+      // `IF NOT EXISTS` on a name already taken builds nothing.
+      if (shape) {
+        if (!indexes.has(shape.name))
+          indexes.set(shape.name, shape.key)
+        continue
+      }
+      const dropped = droppedIndexName(statement)
+      if (dropped)
+        indexes.delete(dropped)
     }
   }
-  return { sql: normalizeSqlForComparison(fileContents.join('\n')), createdTables }
+  return { sql: normalizeSqlForComparison(fileContents.join('\n')), createdTables, indexShapes: new Set(indexes.values()) }
 }
 
 function normalizeSqlForComparison(sql: string): string {
@@ -3827,13 +3903,44 @@ function normalizeSqlForComparison(sql: string): string {
  * So a `CREATE TABLE` is matched on the table it creates rather than on how it
  * is written. Everything else still compares text, because an `ALTER` or an
  * `UPDATE` is only redundant if it is genuinely the same statement.
+ *
+ * A `CREATE INDEX` is matched on what it builds, not on its name. Generators
+ * have not always agreed on names: an older one prefixed the table to a name
+ * that already carried it, so a corpus holds `trails_trails_bbox_index` where
+ * the model now says `trails_bbox_index`. Without a model snapshot - any fresh
+ * checkout, since the snapshot is not committed - every model index then read
+ * as new, and `migrate` wrote and applied a second, identical index beside each
+ * committed one. An index the corpus never builds still comes through.
  */
 export function generatedStatementIsRedundant(statement: string, index: CommittedMigrationIndex): boolean {
   const table = createdTableName(statement)
   if (table)
     return index.createdTables.has(table)
 
+  const shape = indexShape(statement)
+  if (shape && index.indexShapes.has(shape.key))
+    return true
+
   return index.sql.includes(normalizeSqlForComparison(statement))
+}
+
+/**
+ * The file label for what is left of a group once the committed corpus has had
+ * its say.
+ *
+ * A new table's indexes travel in its `create-<table>-table` group. When the
+ * corpus already creates the table, the CREATE is skipped and only indexes can
+ * remain - and a file named for creating a table that creates none reads as a
+ * second create to anyone looking, and to `preprocessSqliteMigrations`, which
+ * treats a later `create-<table>-table.sql` as a duplicate of the first.
+ */
+export function persistedGroupLabel(label: string, statements: readonly string[]): string {
+  const table = /^create-(\w+)-table$/.exec(label)?.[1]
+  if (!table || statements.some(statement => createdTableName(statement)))
+    return label
+
+  const only = statements.length === 1 ? indexShape(statements[0]!) : undefined
+  return only ? `create-${only.name}-index-in-${table}` : `create-${table}-indexes`
 }
 
 function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: MigrationPlan): number {
@@ -3849,7 +3956,8 @@ function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: Migr
   // and we'd rather no-op than create a duplicate file.
   const committed: string[] = []
   try {
-    for (const f of readdirSync(migrationsDir).filter(f => f.endsWith('.sql')))
+    // In the order the runner applies them, so a later DROP INDEX counts.
+    for (const f of readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort())
       committed.push(readFileSync(join(migrationsDir, f), 'utf8'))
   }
   catch { /* nothing committed yet */ }
@@ -3869,12 +3977,15 @@ function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: Migr
       const table = createdTableName(stmt)
       if (table)
         log.debug(`[migration] Skipping generated CREATE for "${table}" - the committed corpus already creates it.`)
+      const shape = indexShape(stmt)
+      if (shape)
+        log.debug(`[migration] Skipping generated index "${shape.name}" - the committed corpus already builds the same index on "${shape.table}".`)
       return false
     })
     if (fresh.length === 0)
       continue
 
-    const filename = `${String(cursor).padStart(10, '0')}-${group.label}.sql`
+    const filename = `${String(cursor).padStart(10, '0')}-${persistedGroupLabel(group.label, fresh)}.sql`
     const filePath = join(migrationsDir, filename)
     const body = `${fresh.map(s => s.trim().replace(/;\s*$/, '')).join(';\n')};\n`
     // Stamped for the same reason regeneration stamps: this file came from the
