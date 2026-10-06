@@ -6036,7 +6036,7 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
-   * /api/queries/:id
+   * GET /api/queries/{id}
    */
   getQueriesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/api/queries/{id}", input ?? {}, [], false, options)

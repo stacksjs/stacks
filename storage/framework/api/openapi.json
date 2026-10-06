@@ -45494,7 +45494,7 @@
     },
     "/api/queries/{id}": {
       "get": {
-        "summary": "/api/queries/:id",
+        "summary": "/api/queries/{id}",
         "operationId": "get__api_queries__id_",
         "parameters": [
           {
