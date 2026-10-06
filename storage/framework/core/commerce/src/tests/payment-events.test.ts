@@ -65,6 +65,30 @@ describe('handleCommercePaymentEvent', () => {
     expect(await state(orderId, 'pi_3')).toMatchObject({ order: 'REFUNDED', payment: 'refunded', refunded: 2500 })
   })
 
+  it('applies a stated refunded total as the difference from what is recorded', async () => {
+    // Lemon Squeezy states the order's refunded total, not the one refund.
+    const total = (id: string, amount: number) =>
+      event({ provider: 'lemonsqueezy', id, type: 'refund.succeeded', reference: 'ls_1', amount: null, refundedTotal: { amount, currency: 'usd' } })
+    const { orderId } = await seed('ls_1', true)
+
+    await handleCommercePaymentEvent(total('order_refunded:a', 1000))
+    expect(await state(orderId, 'ls_1')).toMatchObject({ payment: 'partiallyRefunded', refunded: 1000 })
+
+    await handleCommercePaymentEvent(total('order_refunded:b', 2500))
+    expect(await state(orderId, 'ls_1')).toMatchObject({ order: 'REFUNDED', payment: 'refunded', refunded: 2500 })
+
+    // The first delivery again, retried late with another id: the total is
+    // already past it, so it adds nothing.
+    await handleCommercePaymentEvent(total('order_refunded:c', 1000))
+    expect(await state(orderId, 'ls_1')).toMatchObject({ payment: 'refunded', refunded: 2500 })
+  })
+
+  it('records no stated total beyond the payment', async () => {
+    const { orderId } = await seed('ls_2', true)
+    await handleCommercePaymentEvent(event({ provider: 'lemonsqueezy', id: 'order_refunded:x', type: 'refund.succeeded', reference: 'ls_2', refundedTotal: { amount: 9000, currency: 'usd' } }))
+    expect(await state(orderId, 'ls_2')).toMatchObject({ payment: 'succeeded' })
+  })
+
   it('records no refund larger than what is left', async () => {
     const { orderId } = await seed('pi_5', true)
     await handleCommercePaymentEvent(refund('evt_e1', 'pi_5', 2000))

@@ -217,6 +217,11 @@ export interface FrameworkEnv {
   PADDLE_WEBHOOK_SECRET: string | undefined
   PADDLE_CLIENT_TOKEN: string | undefined
   PADDLE_TAX_CATEGORY: string | undefined
+  LEMONSQUEEZY_API_KEY: string | undefined
+  LEMONSQUEEZY_STORE_ID: string | undefined
+  LEMONSQUEEZY_WEBHOOK_SECRET: string | undefined
+  LEMONSQUEEZY_VARIANT_ID: string | undefined
+  LEMONSQUEEZY_TEST_MODE: boolean | undefined
 
   // Frontend
   FRONTEND_APP_ENV: 'development' | 'staging' | 'production' | undefined

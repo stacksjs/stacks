@@ -1,5 +1,6 @@
 import type { UserModel } from '@stacksjs/orm'
 import type { AdyenConfig } from './adyen'
+import type { LemonSqueezyConfig } from './lemonsqueezy'
 import type { PaddleConfig } from './paddle'
 import type { StripeOperations } from './stripe'
 import type { PaymentDriver } from './types'
@@ -14,11 +15,13 @@ import { constructEvent } from '../billable/webhook'
 import { stripe } from '../drivers/stripe'
 import { freshIdempotencyKey } from '../idempotency'
 import { AdyenDriver } from './adyen'
+import { LemonSqueezyDriver } from './lemonsqueezy'
 import { PaddleDriver } from './paddle'
 import { PaymentUnsupportedError } from './types'
 import { StripeDriver } from './stripe'
 
 export * from './adyen'
+export * from './lemonsqueezy'
 export * from './paddle'
 export * from './paddle-checkout'
 export * from './stripe'
@@ -44,6 +47,8 @@ export const defaultStripeOperations: StripeOperations = {
 
 type DriverFactory = () => PaymentDriver
 
+const BUILT_IN_DRIVERS = ['stripe', 'adyen', 'paddle', 'lemonsqueezy']
+
 const custom = new Map<string, DriverFactory>()
 
 /**
@@ -51,7 +56,7 @@ const custom = new Map<string, DriverFactory>()
  * name cannot be replaced, so `stripe` always means Stacks' Stripe driver.
  */
 export function registerPaymentDriver(name: string, factory: DriverFactory): void {
-  if (name === 'stripe' || name === 'adyen' || name === 'paddle')
+  if (BUILT_IN_DRIVERS.includes(name))
     throw new Error(`"${name}" is a built-in payment driver and cannot be replaced.`)
   custom.set(name, factory)
 }
@@ -61,6 +66,7 @@ interface PaymentSettings {
   stripe?: { webhookSecret?: string }
   adyen?: Partial<AdyenConfig>
   paddle?: Partial<PaddleConfig>
+  lemonsqueezy?: Partial<LemonSqueezyConfig>
 }
 
 /** Adyen's settings: config/payment.ts, then the ADYEN_* environment. */
@@ -86,6 +92,17 @@ export function paddleConfig(settings: Partial<PaddleConfig> = {}, env: Record<s
     clientToken: settings.clientToken || env.PADDLE_CLIENT_TOKEN || undefined,
     taxCategory: settings.taxCategory || env.PADDLE_TAX_CATEGORY || undefined,
     webhookTolerance: settings.webhookTolerance,
+  }
+}
+
+/** Lemon Squeezy's settings: config/payment.ts, then the LEMONSQUEEZY_* environment. */
+export function lemonSqueezyConfig(settings: Partial<LemonSqueezyConfig> = {}, env: Record<string, string | undefined> = process.env): LemonSqueezyConfig {
+  return {
+    apiKey: settings.apiKey || env.LEMONSQUEEZY_API_KEY || '',
+    storeId: settings.storeId || env.LEMONSQUEEZY_STORE_ID || '',
+    webhookSecret: settings.webhookSecret || env.LEMONSQUEEZY_WEBHOOK_SECRET || undefined,
+    customPriceVariantId: settings.customPriceVariantId || env.LEMONSQUEEZY_VARIANT_ID || undefined,
+    testMode: settings.testMode ?? env.LEMONSQUEEZY_TEST_MODE === 'true',
   }
 }
 
@@ -129,8 +146,13 @@ export function paymentDriver(name?: string): PaymentDriver {
     return new PaddleDriver({ ...paddleConfig(settings.paddle), ...(appUrl ? { appUrl } : {}) })
   }
 
+  if (chosen === 'lemonsqueezy') {
+    const appUrl = (config as { app?: { url?: string } }).app?.url
+    return new LemonSqueezyDriver({ ...lemonSqueezyConfig(settings.lemonsqueezy), ...(appUrl ? { appUrl } : {}) })
+  }
+
   const factory = custom.get(chosen)
   if (!factory)
-    throw new Error(`No payment driver named "${chosen}". Built in: stripe, adyen, paddle${custom.size ? `; registered: ${[...custom.keys()].join(', ')}` : ''}.`)
+    throw new Error(`No payment driver named "${chosen}". Built in: ${BUILT_IN_DRIVERS.join(', ')}${custom.size ? `; registered: ${[...custom.keys()].join(', ')}` : ''}.`)
   return factory()
 }

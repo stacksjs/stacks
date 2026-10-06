@@ -244,16 +244,22 @@ async function handlePaymentFailed(event: PaymentEvent): Promise<void> {
  * provider has refunded more than this database thinks was taken, which a
  * person needs to look at - most likely the same refund recorded by hand in
  * the dashboard as well.
+ *
+ * A provider that states the refunded total instead (`refundedTotal`) has
+ * the difference from what is recorded applied, so a total already reached -
+ * a retry, or an older delivery arriving late - changes nothing.
  */
 async function handleRefundSucceeded(event: PaymentEvent): Promise<void> {
   const paymentIntentId = event.reference
   if (!paymentIntentId) return
 
-  const refundAmount = event.amount?.amount ?? 0
-  if (!Number.isSafeInteger(refundAmount) || refundAmount <= 0) return
+  const statedTotal = event.refundedTotal?.amount
+  const given = statedTotal ?? event.amount?.amount ?? 0
+  if (!Number.isSafeInteger(given) || given <= 0) return
 
   let fullyRefunded = false
   let applied = false
+  let refundAmount = 0
 
   await db.transaction(async (trx: any) => {
     const isNew = await recordEventOrSkip(event, trx)
@@ -267,6 +273,8 @@ async function handleRefundSucceeded(event: PaymentEvent): Promise<void> {
     if (!payment) return
 
     const already = Number(payment.refund_amount ?? 0)
+    refundAmount = statedTotal === undefined ? given : statedTotal - already
+    if (refundAmount <= 0) return
     const total = already + refundAmount
     if (total > Number(payment.amount)) {
       // eslint-disable-next-line no-console

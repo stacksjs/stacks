@@ -48,6 +48,20 @@ export default {
   },
 
   /**
+   * Lemon Squeezy, for `driver: 'lemonsqueezy'`. A merchant of record with a
+   * hosted checkout: each checkout sells one variant, and a line priced in
+   * the request is sold as the custom-price variant below.
+   */
+  lemonsqueezy: {
+    apiKey: env.LEMONSQUEEZY_API_KEY || '',
+    storeId: env.LEMONSQUEEZY_STORE_ID || '',
+    // The signing secret of your store's webhook, which verifies its deliveries.
+    webhookSecret: env.LEMONSQUEEZY_WEBHOOK_SECRET || '',
+    customPriceVariantId: env.LEMONSQUEEZY_VARIANT_ID || '',
+    testMode: env.LEMONSQUEEZY_TEST_MODE === true,
+  },
+
+  /**
    * Marketplace payments. Off unless your app charges a customer on behalf of
    * a merchant. The Connect webhook endpoint has its own signing secret - the
    * account webhook secret above will not verify its deliveries.

@@ -365,6 +365,31 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  LEMONSQUEEZY_API_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LEMONSQUEEZY_STORE_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LEMONSQUEEZY_WEBHOOK_SECRET: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LEMONSQUEEZY_VARIANT_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  LEMONSQUEEZY_TEST_MODE: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
   MEILISEARCH_HOST: {
     validation: schema.string(),
     default: '',

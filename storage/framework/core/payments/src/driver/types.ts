@@ -204,6 +204,13 @@ export interface PaymentEvent {
    * second partial refund adds to the first. Otherwise the payment's amount.
    */
   amount: Money | null
+  /**
+   * For a refund, when the provider states the payment's refunded total after
+   * it rather than the one refund - Lemon Squeezy does. A consumer records the
+   * difference from what it already has, so a retry or a late delivery adds
+   * nothing. `amount` is null then: one refund's size is not in the event.
+   */
+  refundedTotal?: Money
   /** Why a payment or refund failed, in the provider's words. */
   reason: string | null
   raw: unknown

@@ -13,10 +13,10 @@ import type Stripe from 'stripe'
 export interface PaymentOptions {
   /**
    * Payment provider: the driver `paymentDriver()` returns. `stripe`,
-   * `adyen` or `paddle`, or the name of one registered with
+   * `adyen`, `paddle` or `lemonsqueezy`, or the name of one registered with
    * `registerPaymentDriver()`.
    */
-  driver: 'stripe' | 'adyen' | 'paddle' | (string & {})
+  driver: 'stripe' | 'adyen' | 'paddle' | 'lemonsqueezy' | (string & {})
 
   /**
    * Stripe configuration
@@ -34,6 +34,12 @@ export interface PaymentOptions {
    * back to its PADDLE_* environment variable.
    */
   paddle?: PaddleConfig
+
+  /**
+   * Lemon Squeezy configuration, for `driver: 'lemonsqueezy'`. Each value
+   * falls back to its LEMONSQUEEZY_* environment variable.
+   */
+  lemonsqueezy?: LemonSqueezyConfig
 
   /**
    * Default currency (ISO 4217 code)
@@ -125,6 +131,19 @@ export interface PaddleConfig {
   taxCategory?: string
   /** How old a webhook's signature may be, in seconds. Defaults to 5, as Paddle's SDKs do. */
   webhookTolerance?: number
+}
+
+export interface LemonSqueezyConfig {
+  /** API key (LEMONSQUEEZY_API_KEY). */
+  apiKey?: string
+  /** The store checkouts, customers and subscriptions belong to (LEMONSQUEEZY_STORE_ID). */
+  storeId?: string
+  /** The store webhook's signing secret (LEMONSQUEEZY_WEBHOOK_SECRET). Required to verify webhooks. */
+  webhookSecret?: string
+  /** The variant a line priced in a request is sold as, at a custom price (LEMONSQUEEZY_VARIANT_ID). */
+  customPriceVariantId?: string
+  /** Create checkouts in test mode (LEMONSQUEEZY_TEST_MODE). */
+  testMode?: boolean
 }
 
 export interface WebhookConfig {

@@ -41,17 +41,17 @@ for (const event of events) {
 return payments.acknowledgeWebhook()
 ```
 
-| Operation | Stripe | Adyen | Paddle |
-| --- | --- | --- | --- |
-| `customer` | Stripe customer, created on first use | Shopper reference (`user-<id>`); Adyen has no customer object | Paddle customer, found or created by email |
-| `charge` (stored method) | Yes | Yes, as an unscheduled card-on-file payment | No: every Paddle payment goes through its checkout |
-| `createPayment` (browser completes) | Client secret for Stripe.js | Session for Drop-in; needs `returnUrl` | Transaction for Paddle.js |
-| `refund` | Yes | Partial by amount, full as a reversal; the outcome arrives by webhook | A refund request Paddle reviews; `pending` until the webhook |
-| `checkout` (hosted page) | Yes, catalog prices or lines priced here | Lines priced here only, one return URL, no `subscription` mode | Your payment-link page; one return URL; `subscription` mode with catalog prices |
-| `paymentMethods`, `removePaymentMethod` | Yes, default marked | Yes, by shopper reference | Yes; Paddle keeps no default |
-| `subscribe` | Yes | No: charge a stored card on your own schedule | No: a subscription starts at checkout |
-| `cancelSubscription`, `subscriptions` | Yes | No | Yes |
-| `verifyWebhook` | `Stripe-Signature` | HMAC per notification item | `Paddle-Signature` |
+| Operation | Stripe | Adyen | Paddle | Lemon Squeezy |
+| --- | --- | --- | --- | --- |
+| `customer` | Stripe customer, created on first use | Shopper reference (`user-<id>`); Adyen has no customer object | Paddle customer, found or created by email | Store customer, found or created by email |
+| `charge` (stored method) | Yes | Yes, as an unscheduled card-on-file payment | No: every Paddle payment goes through its checkout | No: every payment goes through the hosted checkout |
+| `createPayment` (browser completes) | Client secret for Stripe.js | Session for Drop-in; needs `returnUrl` | Transaction for Paddle.js | No |
+| `refund` | Yes | Partial by amount, full as a reversal; the outcome arrives by webhook | A refund request Paddle reviews; `pending` until the webhook | Issued at once, whole or partial, against the order |
+| `checkout` (hosted page) | Yes, catalog prices or lines priced here | Lines priced here only, one return URL, no `subscription` mode | Your payment-link page; one return URL; `subscription` mode with catalog prices | Hosted page selling one variant; a line priced here sells as the custom-price variant |
+| `paymentMethods`, `removePaymentMethod` | Yes, default marked | Yes, by shopper reference | Yes; Paddle keeps no default | No: the card lives on the subscription |
+| `subscribe` | Yes | No: charge a stored card on your own schedule | No: a subscription starts at checkout | No: a subscription starts at checkout |
+| `cancelSubscription`, `subscriptions` | Yes | No | Yes | Yes, at period end only; listed by email |
+| `verifyWebhook` | `Stripe-Signature` | HMAC per notification item | `Paddle-Signature` | `X-Signature` |
 
 An operation a driver cannot do throws `PaymentUnsupportedError`, naming the driver and the operation; a provider's rejection throws `PaymentProviderError` with its status and code. `driver.capabilities` lists what a driver supports.
 
@@ -70,6 +70,18 @@ Paddle Billing is a merchant of record: it is the seller, charges and remits the
 - **Refunds:** each refund is a request Paddle reviews. It returns `pending`, and an `adjustment.updated` webhook settles it as `refund.succeeded` or `refund.failed`. A partial amount is taken from the transaction's line items in order, tax included.
 - **Webhooks:** Paddle wants a 200 within five seconds, and signatures older than five seconds are refused, as Paddle's SDKs do.
 - **Verification:** the driver is checked against Paddle's API reference and its webhook signatures against Paddle's official Node SDK. It has not yet run against a live Paddle account.
+
+### Lemon Squeezy
+
+Lemon Squeezy is a merchant of record with a hosted checkout, and its API is narrower than a processor's.
+
+- **Setup:** set `driver: 'lemonsqueezy'` in `config/payment.ts`, plus `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID` and `LEMONSQUEEZY_WEBHOOK_SECRET` (the signing secret of your store's webhook). `LEMONSQUEEZY_TEST_MODE=true` creates checkouts in test mode.
+- **Checkout:** a checkout sells one variant, so `checkout()` takes exactly one line. A line naming `price` is a variant id, and `quantity` above 1 is sent as that variant's quantity. A line priced here (`name` and `unitAmount`) is sold as the variant in `LEMONSQUEEZY_VARIANT_ID` at a custom price of `unitAmount x quantity`, in the store's currency; a checkout in another currency is refused. `successUrl` is the redirect after paying, and `allowPromotionCodes` shows the discount field. There is no cancel page and no per-checkout trial: a trial is set on the subscription variant.
+- **No server-side payments:** `charge`, `createPayment`, `subscribe` and the payment-method calls are unsupported. Everything starts at the hosted checkout.
+- **Refunds:** issued at once against the order, whole or by amount. A full refund comes back with `amount: null`, since Lemon Squeezy does not restate it.
+- **Subscriptions:** listed by the payer's email in your store. Cancelling always runs to the end of the period paid for, so `cancelSubscription` needs `{ atPeriodEnd: true }`. Until then a cancelled subscription reports `active` with `cancelAtPeriodEnd: true`; it is `canceled` once it expires.
+- **Webhooks:** `X-Signature` is HMAC-SHA256 hex of the raw body under the signing secret. A delivery carries no event id, so a digest of its bytes is the id, which a retry repeats. `order_refunded` states the order's refunded total rather than the one refund, so it arrives as `refundedTotal` and commerce records the difference from what it already has.
+- **Verification:** checked against Lemon Squeezy's API reference. It has not yet run against a live store.
 
 The Payment facade's Stripe-only functions (below), the raw `stripe` client and the `manage*` modules remain Stripe's API.
 
@@ -96,7 +108,7 @@ A subscription checkout can start with a trial: `trialDays: 14`. A checkout's `r
 
 ### Orders from payment webhooks
 
-With commerce on, the framework mounts this for you at `POST /webhooks/payments` (the `payments` route bundle): point Stripe's endpoint there with `STRIPE_WEBHOOK_SECRET` set, Adyen's standard webhook with `ADYEN_HMAC_KEY`, or a Paddle notification destination with `PADDLE_WEBHOOK_SECRET`. Until the secret is set it answers 401 and applies nothing; a signature that does not verify gets 400. To mount it yourself, `orders.receivePaymentWebhook(request)` is the whole handler. Underneath, `orders.handleCommercePaymentEvent` applies one verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
+With commerce on, the framework mounts this for you at `POST /webhooks/payments` (the `payments` route bundle): point Stripe's endpoint there with `STRIPE_WEBHOOK_SECRET` set, Adyen's standard webhook with `ADYEN_HMAC_KEY`, a Paddle notification destination with `PADDLE_WEBHOOK_SECRET`, or a Lemon Squeezy store webhook with `LEMONSQUEEZY_WEBHOOK_SECRET`. Until the secret is set it answers 401 and applies nothing; a signature that does not verify gets 400. To mount it yourself, `orders.receivePaymentWebhook(request)` is the whole handler. Underneath, `orders.handleCommercePaymentEvent` applies one verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
 
 ```ts
 import { orders } from '@stacksjs/commerce'
