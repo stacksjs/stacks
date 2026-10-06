@@ -1360,9 +1360,10 @@ export function mailCommands(buddy: CLI): void {
 
         if (!apiUrl) {
           const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
-          const cfn = new AWSCloudFormationClient(process.env.AWS_REGION || 'us-east-1')
-          const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-          const stackName = `${appName}-cloud`
+          // The stack `buddy deploy` creates, not `<APP_NAME>-cloud` in us-east-1.
+          const { stacksCloudName, stacksCloudRegion } = await import('@stacksjs/cloud')
+          const cfn = new AWSCloudFormationClient(await stacksCloudRegion())
+          const stackName = await stacksCloudName()
 
           try {
             const result = await cfn.describeStacks({ stackName })
@@ -1434,9 +1435,10 @@ export function mailCommands(buddy: CLI): void {
     .action(async () => {
       try {
         const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
-        const cfn = new AWSCloudFormationClient(process.env.AWS_REGION || 'us-east-1')
-        const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-        const stackName = `${appName}-cloud`
+        // The stack `buddy deploy` creates, not `<APP_NAME>-cloud` in us-east-1.
+        const { stacksCloudName, stacksCloudRegion } = await import('@stacksjs/cloud')
+        const cfn = new AWSCloudFormationClient(await stacksCloudRegion())
+        const stackName = await stacksCloudName()
 
         const result = await cfn.describeStacks({ stackName })
         const outputs = result.Stacks?.[0]?.Outputs || []

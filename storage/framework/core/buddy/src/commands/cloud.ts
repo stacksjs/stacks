@@ -16,6 +16,8 @@ import {
   deleteStacksFunctions,
   deleteSubnets,
   deleteVpcs,
+  cloudEnvironment,
+  diffStackTemplate,
   getCloudFrontDistributionId,
   stacksCloudRegion,
 } from '@stacksjs/cloud'
@@ -835,6 +837,43 @@ function describeAttachEdits(slug: string, owner: string, edit: AttachEditOutcom
   return lines
 }
 
+/**
+ * `buddy cloud --diff` and `buddy cloud:diff`: the template `buddy deploy`
+ * would generate, against the one its stack has. Returns the failure, if any.
+ *
+ * Both commands had their own copy, and both looked for the stack under a
+ * name and in a region `buddy deploy` does not use; and `--diff` reported a
+ * failure as success. The comparison is `diffStackTemplate()`'s now.
+ */
+async function runCloudDiff(): Promise<string | undefined> {
+  try {
+    const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
+    const { tsCloud: cloudConfig } = await import('~/config/cloud')
+
+    const environment = cloudEnvironment() as 'production' | 'staging' | 'development'
+    const template = new InfrastructureGenerator({ config: cloudConfig, environment }).generate().toJSON()
+    const result = await diffStackTemplate(template, { config: cloudConfig })
+
+    if (result.isErr)
+      return result.error.message
+
+    const diff = result.value
+    if (!diff.deployed)
+      log.info(`${diff.stack} is not deployed in ${diff.region}. The whole template (${diff.localBytes} bytes) is new.`)
+    else if (!diff.changed)
+      log.info(`No changes detected against ${diff.stack} (${diff.region}).`)
+    else {
+      log.info(`Changes detected between ${diff.stack} (${diff.region}) and the local template:`)
+      log.info(`Deployed template: ${diff.deployedBytes} bytes`)
+      log.info(`Local template: ${diff.localBytes} bytes`)
+    }
+    return undefined
+  }
+  catch (error: unknown) {
+    return error instanceof Error ? error.message : String(error)
+  }
+}
+
 export function cloud(buddy: CLI): void {
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
@@ -961,41 +1000,10 @@ export function cloud(buddy: CLI): void {
       }
 
       if (options.diff) {
-        try {
-          const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
-          const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
-          const { tsCloud: cloudConfig } = await import('~/config/cloud')
-
-          const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
-          const generator = new InfrastructureGenerator({
-            config: cloudConfig,
-            environment,
-          })
-
-          const newTemplate = generator.generate().toJSON()
-          const stackName = `${cloudConfig.project?.slug || 'stacks'}-${environment}`
-          const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
-
-          let currentTemplate = '{}'
-          try {
-            const result = await cfn.getTemplate(stackName)
-            currentTemplate = result.TemplateBody
-          }
-          catch {
-            log.info('No deployed stack found. Showing full template as diff.')
-          }
-
-          if (currentTemplate === newTemplate) {
-            log.info('No changes detected.')
-          }
-          else {
-            log.info('Changes detected between deployed and local template:')
-            log.info(`Current template: ${currentTemplate.length} bytes`)
-            log.info(`New template: ${newTemplate.length} bytes`)
-          }
-        }
-        catch (error: any) {
-          log.error(`Failed to compute diff: ${error.message}`)
+        const failure = await runCloudDiff()
+        if (failure) {
+          await outro('While running the cloud diff command, there was an issue', { startTime, useSeconds: true }, failure)
+          process.exit(ExitCode.FatalError)
         }
 
         await outro('Cloud diff complete', { startTime, useSeconds: true })
@@ -1403,45 +1411,9 @@ export function cloud(buddy: CLI): void {
 
       const startTime = await intro('buddy cloud:diff')
 
-      try {
-        const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
-        const { CloudFormationClient } = await import('@stacksjs/ts-cloud/aws')
-        const { tsCloud: cloudConfig } = await import('~/config/cloud')
-
-        const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
-        const generator = new InfrastructureGenerator({
-          config: cloudConfig,
-          environment,
-        })
-
-        const newTemplate = generator.generate().toJSON()
-        const stackName = `${cloudConfig.project?.slug || 'stacks'}-${environment}`
-        const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
-
-        let currentTemplate = '{}'
-        try {
-          const result = await cfn.getTemplate(stackName)
-          currentTemplate = result.TemplateBody
-        }
-        catch {
-          log.info('No deployed stack found. Showing full template as diff.')
-        }
-
-        if (currentTemplate === newTemplate) {
-          log.info('No changes detected.')
-        }
-        else {
-          log.info('Changes detected between deployed and local template:')
-          log.info(`Current template: ${currentTemplate.length} bytes`)
-          log.info(`New template: ${newTemplate.length} bytes`)
-        }
-      }
-      catch (error: any) {
-        await outro(
-          'While running the cloud diff command, there was an issue',
-          { startTime, useSeconds: true },
-          error.message,
-        )
+      const failure = await runCloudDiff()
+      if (failure) {
+        await outro('While running the cloud diff command, there was an issue', { startTime, useSeconds: true }, failure)
         process.exit(ExitCode.FatalError)
       }
 

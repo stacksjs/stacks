@@ -489,8 +489,12 @@ try {
   const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
   // AWS_REGION, else the region config/cloud.ts declares - the one ts-cloud
   // puts the stack's subnets in - rather than a literal us-east-1.
-  const { stacksCloudRegion } = await import('@stacksjs/cloud')
+  const { stacksCloudName, stacksCloudRegion } = await import('@stacksjs/cloud')
   const region = await stacksCloudRegion(undefined, environment)
+  // The stack deployStack() creates. Its outputs were read from
+  // `<project.name || project.slug>-cloud`, which is another stack whenever
+  // only the slug is set.
+  const cloudStackName = await stacksCloudName()
 
   // Check deployment mode - use relative import from project root
   const cloudConfigModule = await import(p.projectPath('config/cloud'))
@@ -708,7 +712,7 @@ try {
     if (typeof deployScript.afterDeploy === 'function') {
       const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
       const cf = new CloudFormationClient(region)
-      const stackName = `${projectName}-cloud`
+      const stackName = cloudStackName
       let stackOutputs: Record<string, string> = {}
       try {
         stackOutputs = await cf.getStackOutputs(stackName)
@@ -797,7 +801,7 @@ try {
     try {
       const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
       const cf = new CloudFormationClient(region)
-      const stackName = `${projectName}-cloud`
+      const stackName = cloudStackName
       const outputs = await cf.getStackOutputs(stackName)
 
       serverOutputSpinner.succeed('Server instances deployed')
@@ -831,7 +835,7 @@ try {
       const cf = new CloudFormationClient(region)
       const awsClient = new AWSClient()
 
-      const stackName = `${projectName}-cloud`
+      const stackName = cloudStackName
       const outputs = await cf.getStackOutputs(stackName)
       const bucketName = outputs.FrontendBucketName
       const apiServerPort = Number(config.ports?.api || 3008)
@@ -1142,7 +1146,7 @@ systemctl enable stacks-api`,
         const awsClient = new AWSClient()
         const ec2 = new EC2Client(region)
 
-        const stackName = `${projectName}-cloud`
+        const stackName = cloudStackName
 
         // Find the EC2 instance, bucket, and security group
         let smtpInstanceId: string | undefined
@@ -1497,7 +1501,7 @@ SERVICEFILE`,
     const cf = new CloudFormationClient(region)
 
     // Get bucket name from stack outputs
-    const stackName = `${projectName}-cloud`
+    const stackName = cloudStackName
     const stackOutputs = await cf.getStackOutputs(stackName)
     const bucketName = stackOutputs.FrontendBucketName
 
@@ -1589,7 +1593,7 @@ SERVICEFILE`,
       const cf = new CloudFormationClient(region)
 
       // Get docs bucket name from stack outputs
-      const stackName = `${projectName}-cloud`
+      const stackName = cloudStackName
       const docsOutputs = await cf.getStackOutputs(stackName)
       const docsBucketName = docsOutputs.DocsBucketName
 
@@ -1667,7 +1671,7 @@ SERVICEFILE`,
       const blogS3 = new BlogS3Client(region)
       const blogCf = new BlogCFClient(region)
 
-      const stackName = `${projectName}-cloud`
+      const stackName = cloudStackName
       const outputs = await blogCf.getStackOutputs(stackName)
       const blogBucketName = outputs.BlogBucketName
 
@@ -1738,7 +1742,7 @@ SERVICEFILE`,
     const awsClient = new AWSClient()
 
     // Get bucket names and distribution ID from stack outputs
-    const stackName = `${projectName}-cloud`
+    const stackName = cloudStackName
     const outputs = await cf.getStackOutputs(stackName)
     const frontendBucket = outputs.FrontendBucketName
     const docsBucket = outputs.DocsBucketName
@@ -1979,7 +1983,7 @@ SERVICEFILE`,
     const { Route53Client, CloudFormationClient: DnsCfClient } = await import('@stacksjs/ts-cloud')
 
     const dnsCf = new DnsCfClient(region)
-    const dnsStackName = `${projectName}-cloud`
+    const dnsStackName = cloudStackName
     const dnsOutputs = await dnsCf.getStackOutputs(dnsStackName)
 
     // Load cloud config for DNS settings

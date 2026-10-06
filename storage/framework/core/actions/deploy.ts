@@ -1641,9 +1641,6 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
 export async function deployFrontend(options: DeployFrontendOptions): Promise<void> {
   const { environment, region, buildDir } = options
 
-  const projectConfig = await getProjectConfig()
-  const projectName = projectConfig.name
-
   log.info(`Deploying frontend from ${buildDir} to ${environment} in ${region}...`)
 
   try {
@@ -1653,7 +1650,8 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
     const cf = new AWSCloudFormationClient(region)
 
     // Get bucket name from stack outputs
-    const stackName = `${projectName}-cloud`
+    const { stacksCloudName } = await import('@stacksjs/cloud')
+    const stackName = await stacksCloudName()
     const stack = (await cf.describeStacks({ stackName })).Stacks?.[0]
     const bucketName = stack?.Outputs?.find((o: { OutputKey: string }) => o.OutputKey === 'AssetsBucketName')?.OutputValue
 
@@ -1686,9 +1684,8 @@ export async function getDeploymentStatus(_options: { environment: string, regio
   outputs: Record<string, string>
 }> {
   const { environment, region } = _options
-  const projectConfig = await getProjectConfig()
-  const projectName = projectConfig.name
-  const stackName = `${projectName}-cloud`
+  const { stacksCloudName } = await import('@stacksjs/cloud')
+  const stackName = await stacksCloudName()
 
   const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
   const cf = new AWSCloudFormationClient(region)

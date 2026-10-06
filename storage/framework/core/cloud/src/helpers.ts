@@ -86,9 +86,29 @@ export async function stacksCloudRegion(cloud?: CloudStackConfig, environment: s
 }
 
 /**
- * Helper to make raw EC2 API calls for actions not available on EC2Client
+ * Where a cleanup helper looks, and what it looks with. Both default to the
+ * app's: the region its stack is in, and ts-cloud's client. Tests pass both.
  */
-async function ec2Request(action: string, params: Record<string, string> = {}): Promise<Record<string, unknown>> {
+export interface RegionalOptions<Client> {
+  /** The `tsCloud` config the region comes from. Defaults to config/cloud.ts's. */
+  config?: CloudStackConfig
+  /** Builds the AWS client for a region. */
+  client?: (region: string) => Client
+}
+
+/** A raw EC2 Query API call, for actions EC2Client does not expose. */
+export type Ec2Request = (region: string, action: string, params?: Record<string, string>) => Promise<Record<string, unknown>>
+
+export interface Ec2CleanupOptions extends RegionalOptions<Pick<EC2Client, 'describeVpcs' | 'describeSubnets' | 'terminateInstances'>> {
+  request?: Ec2Request
+}
+
+/**
+ * Helper to make raw EC2 API calls for actions not available on EC2Client.
+ * In the region given: it was always us-east-1, so `deleteVpcs()` and
+ * `deleteSubnets()` listed the stack's region and deleted in another.
+ */
+async function ec2Request(region: string, action: string, params: Record<string, string> = {}): Promise<Record<string, unknown>> {
   const client = new AWSClient()
   const queryParams: Record<string, string> = {
     Action: action,
@@ -97,7 +117,7 @@ async function ec2Request(action: string, params: Record<string, string> = {}): 
   }
   const result = await client.request({
     service: 'ec2',
-    region: 'us-east-1',
+    region,
     method: 'POST',
     path: '/',
     queryParams,
@@ -539,6 +559,7 @@ export async function deleteJumpBox(options: JumpBoxOptions = {}): Promise<Resul
 }
 
 export async function deleteIamUsers(): Promise<Result<string, string>> {
+  // IAM is global; its endpoint is us-east-1 whatever region the stack is in.
   const iam = new IAMClient('us-east-1')
   const data = await iam.listUsers()
   const teamName = slug(config.team.name)
@@ -605,9 +626,9 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
   return ok(`Stacks IAM users deleted for team ${teamName}`)
 }
 
-export async function deleteStacksBuckets(): Promise<Result<string, string | Error>> {
+export async function deleteStacksBuckets(options: RegionalOptions<S3Client> = {}): Promise<Result<string, string | Error>> {
   try {
-    const s3 = new S3Client('us-east-1')
+    const s3 = (options.client ?? (r => new S3Client(r)))(await stacksCloudRegion(options.config))
     const data = await s3.listBuckets()
     const stacksBuckets = data.Buckets?.filter(bucket => bucket.Name?.includes('stacks'))
 
@@ -735,24 +756,32 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
   }
 }
 
-export async function deleteStacksFunctions(): Promise<Result<string, string>> {
-  const lambda = new LambdaClient('us-east-1')
-  const data = await lambda.listFunctions()
-  const stacksFunctions = data.Functions?.filter((func: unknown) => {
-    const f = func as Record<string, unknown>
-    return (f.FunctionName as string | undefined)?.includes('stacks')
-  }) || []
+/**
+ * Deletes the app's retained Lambda functions: in the stack's region, and in
+ * us-east-1, where Lambda@Edge functions have to live and where CloudFront
+ * leaves its replicas behind after the stack is gone. It looked only in
+ * us-east-1, so an app deployed anywhere else kept its regional functions.
+ */
+export async function deleteStacksFunctions(options: RegionalOptions<Pick<LambdaClient, 'listFunctions' | 'deleteFunction'>> = {}): Promise<Result<string, string>> {
+  const client = options.client ?? (r => new LambdaClient(r))
+  const regions = [...new Set([await stacksCloudRegion(options.config), 'us-east-1'])]
 
-  if (!stacksFunctions || stacksFunctions.length === 0)
+  const targets: Array<{ lambda: ReturnType<typeof client>, name: string }> = []
+  for (const region of regions) {
+    const lambda = client(region)
+    const data = await lambda.listFunctions()
+    for (const func of data.Functions ?? []) {
+      const name = (func as Record<string, unknown>).FunctionName as string | undefined
+      if (name?.includes('stacks'))
+        targets.push({ lambda, name })
+    }
+  }
+
+  if (targets.length === 0)
     return ok('No stacks functions found')
 
-  const promises = stacksFunctions.map((func: unknown) => {
-    const f = func as Record<string, unknown>
-    return lambda.deleteFunction((f.FunctionName as string) || '')
-  })
-
   try {
-    await Promise.all(promises)
+    await Promise.all(targets.map(({ lambda, name }) => lambda.deleteFunction(name)))
   }
   catch (error) {
     const e = error as Error
@@ -769,7 +798,7 @@ export async function deleteStacksFunctions(): Promise<Result<string, string>> {
 export async function deleteLogGroups(): Promise<Result<string, Error>> {
   try {
     // Use raw EC2 API call for describeRegions since EC2Client doesn't expose it
-    const regionsResult = await ec2Request('DescribeRegions')
+    const regionsResult = await ec2Request(await stacksCloudRegion(), 'DescribeRegions')
     const regionSet = regionsResult.regionInfo as unknown as Record<string, unknown>
     const regionItems = (regionSet?.item ?? regionsResult.Regions ?? regionsResult.regionSet ?? []) as unknown as Array<Record<string, unknown>>
     // Extract region names - the XML response structure may vary
@@ -804,8 +833,8 @@ export async function deleteLogGroups(): Promise<Result<string, Error>> {
   }
 }
 
-export async function deleteParameterStore(): Promise<Result<string, string>> {
-  const ssm = new SSMClient('us-east-1')
+export async function deleteParameterStore(options: RegionalOptions<Pick<SSMClient, 'describeParameters' | 'deleteParameter'>> = {}): Promise<Result<string, string>> {
+  const ssm = (options.client ?? (r => new SSMClient(r)))(await stacksCloudRegion(options.config))
   const data = await ssm.describeParameters()
 
   if (!data.Parameters)
@@ -835,8 +864,10 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
   return ok('Parameter store deleted')
 }
 
-export async function deleteVpcs(): Promise<Result<string, Error>> {
-  const ec2 = new EC2Client('us-east-1')
+export async function deleteVpcs(options: Ec2CleanupOptions = {}): Promise<Result<string, Error>> {
+  const region = await stacksCloudRegion(options.config)
+  const ec2 = (options.client ?? (r => new EC2Client(r)))(region)
+  const request = options.request ?? ec2Request
   const vpcNamePattern = config.app.name ? `${config.app.name.toLowerCase()}-` : 'stacks-'
 
   try {
@@ -860,7 +891,7 @@ export async function deleteVpcs(): Promise<Result<string, Error>> {
     // Delete each matching VPC using raw EC2 API call
     for (const vpc of vpcsToDel) {
       if (vpc.VpcId) {
-        await ec2Request('DeleteVpc', { VpcId: vpc.VpcId })
+        await request(region, 'DeleteVpc', { VpcId: vpc.VpcId })
         log.info(`Deleted VPC: ${vpc.VpcId} (${vpcNamePattern})`)
       }
     }
@@ -882,8 +913,10 @@ export async function deleteCdkRemnants(): Promise<Result<string, Error>> {
   }
 }
 
-export async function deleteSubnets(): Promise<Result<string, Error>> {
-  const ec2 = new EC2Client('us-east-1')
+export async function deleteSubnets(options: Ec2CleanupOptions = {}): Promise<Result<string, Error>> {
+  const region = await stacksCloudRegion(options.config)
+  const ec2 = (options.client ?? (r => new EC2Client(r)))(region)
+  const request = options.request ?? ec2Request
   const subnetNamePattern = config.app.name ? `${config.app.name.toLowerCase()}-` : 'stacks-'
 
   try {
@@ -908,7 +941,7 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
     for (const subnet of subnetsToDel) {
       if (subnet.SubnetId) {
         // Describe network interfaces in the subnet using raw EC2 API call
-        const niResult = await ec2Request('DescribeNetworkInterfaces', {
+        const niResult = await request(region, 'DescribeNetworkInterfaces', {
           'Filter.1.Name': 'subnet-id',
           'Filter.1.Value.1': subnet.SubnetId,
         })
@@ -931,7 +964,7 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
 
             // Detach the network interface if it's attached
             if (attachment?.attachmentId) {
-              await ec2Request('DetachNetworkInterface', {
+              await request(region, 'DetachNetworkInterface', {
                 AttachmentId: attachment.attachmentId as string,
                 Force: 'true',
               })
@@ -942,13 +975,13 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
             }
 
             // Delete the network interface
-            await ec2Request('DeleteNetworkInterface', { NetworkInterfaceId: niId })
+            await request(region, 'DeleteNetworkInterface', { NetworkInterfaceId: niId })
             log.info(`Deleted network interface: ${niId}`)
           }
         }
 
         // Delete the subnet using raw EC2 API call
-        await ec2Request('DeleteSubnet', { SubnetId: subnet.SubnetId })
+        await request(region, 'DeleteSubnet', { SubnetId: subnet.SubnetId })
         log.info(`Deleted subnet: ${subnet.SubnetId} (${subnet.Tags?.find((tag: unknown) => (tag as Record<string, unknown>).Key === 'Name')?.Value})`)
       }
     }
@@ -960,8 +993,8 @@ export async function deleteSubnets(): Promise<Result<string, Error>> {
   }
 }
 
-export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
-  const s3 = new S3Client('us-east-1')
+export async function hasBeenDeployed(options: RegionalOptions<Pick<S3Client, 'listBuckets'>> = {}): Promise<Result<boolean, Error>> {
+  const s3 = (options.client ?? (r => new S3Client(r)))(await stacksCloudRegion(options.config))
 
   try {
     const response = await s3.listBuckets()
@@ -1005,9 +1038,74 @@ export async function isFailedState(): Promise<boolean> {
   return Boolean(data.StackSummaries?.some((stack: unknown) => (stack as Record<string, unknown>).StackName === stackName))
 }
 
-export async function getOrCreateTimestamp(): Promise<string> {
+/** The CloudFormation call `buddy cloud --diff` makes. */
+export interface TemplateReader {
+  getTemplate: (stackName: string) => Promise<{ TemplateBody?: string }>
+}
+
+/** How the generated template compares with the deployed stack's. */
+export interface StackTemplateDiff {
+  stack: string
+  region: string
+  /** Whether the stack exists in that region. */
+  deployed: boolean
+  /** Whether the two templates differ, as data rather than as text. */
+  changed: boolean
+  deployedBytes: number
+  localBytes: number
+}
+
+/**
+ * Compares a freshly generated template with the one deployed.
+ *
+ * `buddy cloud --diff` and `cloud:diff` asked for the stack
+ * `<project.slug>-<env>` in AWS_REGION or us-east-1; `buddy deploy` creates
+ * `<project.name>-cloud` in the configured region, so the diff never found it
+ * and reported the whole template as new. Any error read as "not deployed",
+ * credentials included. And it compared text, so the deploy's compact JSON
+ * never equalled the generator's indented JSON even when nothing had changed.
+ */
+export async function diffStackTemplate(localTemplate: string, options: RegionalOptions<TemplateReader> = {}): Promise<Result<StackTemplateDiff, Error>> {
+  const cloud = options.config ?? await loadCloudStackConfig()
+  const stack = await stacksCloudName(cloud)
+  const region = await stacksCloudRegion(cloud)
+  const cloudFormation = (options.client ?? (r => new CloudFormationClient(r)))(region)
+
+  let deployedTemplate: string | undefined
+  try {
+    deployedTemplate = (await cloudFormation.getTemplate(stack)).TemplateBody
+  }
+  catch (error: unknown) {
+    const e = error instanceof Error ? error : new Error(String(error))
+    if (!/does not exist/i.test(e.message))
+      return err(e)
+  }
+
+  const deployed = typeof deployedTemplate === 'string'
+  let changed = true
+  if (deployed) {
+    try {
+      changed = !Bun.deepEquals(JSON.parse(deployedTemplate as string), JSON.parse(localTemplate))
+    }
+    catch {
+      // A YAML template, or one that is not JSON at all: compare the text.
+      changed = deployedTemplate !== localTemplate
+    }
+  }
+
+  return ok({
+    stack,
+    region,
+    deployed,
+    changed,
+    deployedBytes: deployed ? Buffer.byteLength(deployedTemplate as string) : 0,
+    localBytes: Buffer.byteLength(localTemplate),
+  })
+}
+
+export async function getOrCreateTimestamp(options: RegionalOptions<Pick<SSMClient, 'getParameter' | 'putParameter'>> = {}): Promise<string> {
   const parameterName = `/stacks/timestamp`
-  const ssm = new SSMClient('us-east-1')
+  const ssm = (options.client ?? (r => new SSMClient(r)))(await stacksCloudRegion(options.config))
 
   try {
     const response = await ssm.getParameter({ Name: parameterName })

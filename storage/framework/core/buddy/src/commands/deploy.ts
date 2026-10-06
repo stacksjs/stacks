@@ -5651,17 +5651,19 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
       log.success('AWS credentials found')
     }
 
-    // Generate stack name from app name and environment
     const appName = (process.env.APP_NAME || app.name || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-    const stackName = `${appName}-cloud`
+
+    // The stack deployStack() creates, where it creates it. This named it
+    // `<APP_NAME>-cloud` in us-east-1, another stack unless APP_NAME happened
+    // to equal config/cloud.ts's project.name.
+    const { stacksCloudName, stacksCloudRegion } = await import('@stacksjs/cloud')
+    const stackName = await stacksCloudName()
 
     // Use ts-cloud's CloudFormation client
     const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
-    const cfnClient = new AWSCloudFormationClient(
-      process.env.AWS_REGION || 'us-east-1'
-    )
+    const cfnClient = new AWSCloudFormationClient(await stacksCloudRegion())
 
     // Check if stack exists and if it needs updating
     let stackExists = false
