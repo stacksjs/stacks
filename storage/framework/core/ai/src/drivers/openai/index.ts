@@ -94,7 +94,7 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
         throw new Error('OpenAI API key not set. Configure your API key in settings.')
       }
 
-      const response = await fetch(`${baseUrl}/chat/completions`, {
+      const response = await fetchWithRetry(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
         throw new Error('OpenAI API key not set. Configure your API key in settings.')
       }
 
-      const response = await fetch(`${baseUrl}/embeddings`, {
+      const response = await fetchWithRetry(`${baseUrl}/embeddings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ export async function* streamChat(
     stop,
   } = options
 
-  const response = await fetch(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
+  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ export async function embed(
 ): Promise<number[] | number[][]> {
   const config = getConfig()
 
-  const response = await fetch(`${config.baseUrl || DEFAULT_BASE_URL}/embeddings`, {
+  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/embeddings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -429,7 +429,7 @@ export async function generateImage(
     responseFormat = 'url',
   } = options
 
-  const response = await fetch(`${config.baseUrl || DEFAULT_BASE_URL}/images/generations`, {
+  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/images/generations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -477,7 +477,7 @@ export async function transcribe(
   if (options.responseFormat) formData.append('response_format', options.responseFormat)
   if (options.temperature !== undefined) formData.append('temperature', String(options.temperature))
 
-  const response = await fetch(`${config.baseUrl || DEFAULT_BASE_URL}/audio/transcriptions`, {
+  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/audio/transcriptions`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${config.apiKey}`,
@@ -513,7 +513,7 @@ export async function textToSpeech(
     speed = 1.0,
   } = options
 
-  const response = await fetch(`${config.baseUrl || DEFAULT_BASE_URL}/audio/speech`, {
+  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/audio/speech`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

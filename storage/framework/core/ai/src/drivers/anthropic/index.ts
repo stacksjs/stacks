@@ -91,7 +91,7 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
         throw new Error('Anthropic API key not set. Configure your API key in settings.')
       }
 
-      const response = await fetch(`${BASE_URL}/messages`, {
+      const response = await fetchWithRetry(`${BASE_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -233,7 +233,7 @@ export async function chat(
     }
   }
 
-  const response = await fetch(`${BASE_URL}/messages`, {
+  const response = await fetchWithRetry(`${BASE_URL}/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -338,7 +338,7 @@ export async function* streamChat(
     system,
   } = options
 
-  const response = await fetch(`${BASE_URL}/messages`, {
+  const response = await fetchWithRetry(`${BASE_URL}/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
