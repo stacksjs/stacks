@@ -24,13 +24,13 @@ describe('BroadcastNotificationDriver', () => {
     expect(typeof result.reason).toBe('string')
   })
 
-  test('derives private-user-{id} channel when only userId is provided', async () => {
+  test('derives the private-user.{id} channel emitToUser() uses when only userId is provided', async () => {
     const result = await BroadcastNotificationDriver.send({
       userId: 42,
       event: 'new-message',
       data: { body: 'hi' },
     })
-    expect(result.channel).toBe('private-user-42')
+    expect(result.channel).toBe('private-user.42')
     expect(result.event).toBe('new-message')
   })
 

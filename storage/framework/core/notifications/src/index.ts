@@ -57,7 +57,7 @@ export interface NotificationRecipient {
   /**
    * WebSocket channel name for the `broadcast` notification channel
    * (stacksjs/stacks#669). When omitted, the driver derives a default:
-   * `private-user-{userId}` if `userId` is set, otherwise the public
+   * `private-user.{userId}` if `userId` is set, otherwise the public
    * `notifications` channel.
    */
   broadcastChannel?: string

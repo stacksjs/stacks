@@ -17,14 +17,14 @@ import { log } from '@stacksjs/cli'
 /** Options accepted by the broadcast driver. */
 export interface BroadcastNotificationOptions {
   /**
-   * WebSocket channel name. Defaults to `private-user-{userId}` when
+   * WebSocket channel name. Defaults to `private-user.{userId}` when
    * `userId` is provided, otherwise the public `notifications` channel.
    * Pass an explicit `channel` to scope the broadcast (e.g.,
    * `private-orders-42`, `presence-chat-1`).
    */
   channel?: string
   /**
-   * Optional `userId` — used to derive the default `private-user-{id}`
+   * Optional `userId` — used to derive the default `private-user.{id}`
    * channel name when no explicit channel is supplied.
    */
   userId?: number
@@ -57,8 +57,11 @@ export const BroadcastNotificationDriver = {
     const event = options.event ?? 'notification'
     let channel = options.channel
     if (!channel) {
+      // The user channel ts-broadcasting and `emitToUser()` use. This was
+      // `private-user-{id}`, a channel no client subscribes to, so a user
+      // listening on their own channel never received a notification.
       channel = options.userId !== undefined
-        ? `private-user-${options.userId}`
+        ? `private-user.${options.userId}`
         : 'notifications'
     }
 

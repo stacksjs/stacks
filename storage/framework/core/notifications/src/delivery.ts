@@ -30,7 +30,7 @@ export function resolveDeliveryRecipient(recipient: NotificationRecipient, chann
     case 'push':
       return Array.isArray(recipient.pushTokens) ? recipient.pushTokens.join(', ') : recipient.pushTokens || ''
     case 'broadcast':
-      return recipient.broadcastChannel || (recipient.userId ? `private-user-${recipient.userId}` : 'notifications')
+      return recipient.broadcastChannel || (recipient.userId ? `private-user.${recipient.userId}` : 'notifications')
     case 'database':
       return recipient.userId ? `User #${recipient.userId}` : ''
     case 'chat':
