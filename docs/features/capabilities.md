@@ -137,7 +137,7 @@ is a driver you cannot select.
 
 | Driver | Status | Topology | Live service | Evidence |
 |---|---|---|---|---|
-| `websocket` | **supported** | single-process-websocket | - | `ws-auth.test.ts`<br>`backpressure.test.ts` |
+| `websocket` | **supported** | single-process-websocket | - | `ws-auth.test.ts`<br>`websocket-options.test.ts` |
 
 **Limitations**
 
