@@ -31,6 +31,7 @@ export async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
 const commandRegistry: Record<string, CommandLoader> = {
   'about': { path: './commands/about.ts', exportName: 'about' },
   'add': { path: './commands/add.ts', exportName: 'add' },
+  'ai:access': { path: './commands/ai-access.ts', exportName: 'aiAccess' },
   'ai:context': { path: './commands/ai-context.ts', exportName: 'aiContext' },
   'auth': { path: './commands/auth.ts', exportName: 'auth' },
   'build': { path: './commands/build.ts', exportName: 'build' },

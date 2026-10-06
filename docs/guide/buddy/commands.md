@@ -6,13 +6,13 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **344 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **345 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
 | Group | Commands |
 | --- | ---: |
-| `ai` | 1 |
+| `ai` | 2 |
 | `auth` | 4 |
 | `build` | 16 |
 | `cloud` | 12 |
@@ -111,6 +111,27 @@ Examples:
 buddy add calendar
 buddy add table --dry-run
 buddy add calendar --conflict backup
+```
+
+### `ai:access`
+
+Make the Amazon Bedrock models in config/ai.ts invocable in this AWS account
+
+- Usage: `$ buddy ai:access [...models]`
+- Namespace: `ai`
+- Aliases: none
+- Arguments: `[models...]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--region` | The AWS region (defaults to AWS_REGION, then AWS_DEFAULT_REGION, then us-east-1) | value, optional | - |
+| `-J`, `--json` | Print the result per model as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy ai:access
+buddy ai:access global.anthropic.claude-sonnet-5-5
 ```
 
 ### `ai:context`
