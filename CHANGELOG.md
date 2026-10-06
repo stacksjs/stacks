@@ -1,5 +1,32 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.86...v0.75.87)
+
+## ✨ Features
+
+- **ai**: tool calls reach a streaming caller, and Bedrock streams ([4745d85](https://github.com/stacksjs/stacks/commit/4745d85)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2863](https://github.com/stacksjs/stacks/issues/2863))
+- **config**: a mistyped feature name is a compile error ([a68b27e](https://github.com/stacksjs/stacks/commit/a68b27e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2867](https://github.com/stacksjs/stacks/issues/2867))
+- **orm**: choose which models publish a REST API ([9977c52](https://github.com/stacksjs/stacks/commit/9977c52)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2866](https://github.com/stacksjs/stacks/issues/2866))
+
+## 🐛 Bug Fixes
+
+- **ai**: AIDriver.stream() no longer drops a malformed payload or an Ollama error ([d0f28d2](https://github.com/stacksjs/stacks/commit/d0f28d2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: refuse an update built for another target, and leave nothing behind when one fails ([0196a1d](https://github.com/stacksjs/stacks/commit/0196a1d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2059](https://github.com/stacksjs/stacks/issues/2059))
+- **buddy**: --force is per-command, and every confirming command takes -y, --yes ([c1b6f89](https://github.com/stacksjs/stacks/commit/c1b6f89)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2869](https://github.com/stacksjs/stacks/issues/2869), [#2865](https://github.com/stacksjs/stacks/issues/2865))
+
+## 📝 Documentation
+
+- **desktop**: say what a failed or mismatched update does ([a73b325](https://github.com/stacksjs/stacks/commit/a73b325)) _(by Chris <chrisbreuer93@gmail.com>)_
+- start a project with panx buddy new ([de2ad0a](https://github.com/stacksjs/stacks/commit/de2ad0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: require ts-cloud 0.16.44 ([7362f79](https://github.com/stacksjs/stacks/commit/7362f79)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.85...v0.75.86)
 
 ## ✨ Features
