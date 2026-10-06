@@ -1,3 +1,4 @@
+import type { StacksFeature } from '@stacksjs/config'
 import type { FeatureName } from '@stacksjs/features'
 import type { CLI } from '@stacksjs/types'
 import { existsSync, readdirSync, readFileSync, rmdirSync, statSync } from 'node:fs'
@@ -282,6 +283,19 @@ const FEATURE_DESCRIPTIONS: Record<FeatureName, string> = {
 }
 
 /**
+ * The names `feature()` answers for that are not installable bundles: a
+ * config section switches each one, and there is nothing to install.
+ *
+ * Keyed on what `StacksFeature` has beyond `FeatureName`, so a gate added to
+ * `@stacksjs/config` without a line here does not compile, and `buddy
+ * features` cannot fall behind `listFeatures()` again (stacksjs/stacks#2867).
+ */
+export const CONFIG_GATES: Record<Exclude<StacksFeature, FeatureName>, string> = {
+  auth: 'Loads the account models (Team, Referral, SocialAccount, Subscriber, Subscription, Site, ...). Auth routes are STACKS_DEFAULT_ROUTES, not this.',
+  email: 'Mounts the email provider webhook routes, when STACKS_DEFAULT_ROUTES does not name the bundles.',
+}
+
+/**
  * Starter templates written when `config/<feature>.ts` is missing on install.
  * Each ships a top-level `enabled: true` plus the minimum config a user
  * would expect for that feature; they're intentionally light because
@@ -520,7 +534,7 @@ function findTopLevelEnabled(src: string): TopLevelEnabled | null {
  * whether the feature is actually on, because it also applies the optional
  * `env: [...]` narrowing and any runtime override.
  */
-export function readFeatureFlag(feature: FeatureName, root: string = projectPath()): true | false | 'absent' | 'unset' {
+export function readFeatureFlag(feature: StacksFeature, root: string = projectPath()): true | false | 'absent' | 'unset' {
   const path = join(root, `config/${feature}.ts`)
   if (!existsSync(path)) return 'absent'
 
@@ -889,6 +903,17 @@ function registerStatus(buddy: CLI): void {
 
         console.log('')
         console.log('  ./buddy <feature>:install activates one, <feature>:uninstall turns it off.')
+        console.log('')
+
+        // Names feature() also answers for. Listed apart because they install
+        // nothing, so the install hint above does not apply to them.
+        console.log('Config gates  (switched by `enabled` in their config file)')
+        console.log('')
+        for (const [name, description] of Object.entries(CONFIG_GATES) as Array<[keyof typeof CONFIG_GATES, string]>) {
+          const declared = readFeatureFlag(name)
+          const label = declared === 'absent' ? 'no config' : declared === 'unset' ? 'flag unset' : `enabled: ${declared}`
+          console.log(`  ${feature(name) ? '✓' : '·'} ${name.padEnd(11)}  ${label.padEnd(14)}  ${description}`)
+        }
         console.log('')
         process.exit(ExitCode.Success)
       }

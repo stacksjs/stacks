@@ -11,6 +11,11 @@ const tokenExpiry = env.AUTH_TOKEN_EXPIRY || 60 * 60 * 1000
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  /**
+   * Whether the framework's account models load (Team, Referral, Subscriber,
+   * Subscription, Site, ...). The auth routes are chosen separately, by
+   * `STACKS_DEFAULT_ROUTES` - `false` here does not take `/login` down.
+   */
   enabled: true,
 
   /**

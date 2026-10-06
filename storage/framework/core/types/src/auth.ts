@@ -154,9 +154,16 @@ export interface OAuthProviderConfig {
 
 export interface AuthOptions {
   /**
-   * Top-level feature gate. When `false`, the auth feature is inert at boot
-   * (no token/password-reset/email-verification flows wired up). Missing or
-   * `true` means auth is on.
+   * The `auth` gate that `feature('auth')` reads. When `false`, `@stacksjs/orm`
+   * does not load the framework's account-family models - `Team`,
+   * `TeamMember`, `Referral`, `SocialAccount`, `Subscriber`, `Subscription`,
+   * `Site`, `MagicLinkToken`, `GdprRequest` and the rest of its `'auth'`
+   * manifest rows. Missing means on.
+   *
+   * It does not mount or unmount the auth routes (`/login`, `/register`,
+   * 2FA, tokens). Those are the `auth` bundle of `STACKS_DEFAULT_ROUTES`,
+   * because this ships `true` in every app and gating routes on it would mount
+   * them into every app running with `dashboard` off (stacksjs/stacks#2867).
    */
   enabled?: boolean
   /** Optional deploy-target gate, e.g. `['production']`. */

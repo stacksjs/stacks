@@ -1,9 +1,9 @@
 /**
  * Feature flag helpers.
  *
- * Each framework feature bundle (auth, commerce, cms, marketing, monitoring,
- * realtime, queue, dashboard) is gated by an `enabled` field on its own
- * `config/<feature>.ts` file — Laravel-style — rather than a central
+ * Each framework feature (commerce, cms, forms, marketing, monitoring,
+ * realtime, queue, dashboard, plus the auth and email gates) is switched by an
+ * `enabled` field on its own `config/<feature>.ts` file — Laravel-style — rather than a central
  * `config/features.ts` manifest. If a feature's config file is missing, the
  * feature resolves to its framework default (only `dashboard` defaults on).
  *
@@ -16,7 +16,8 @@ import { FEATURE_NAMES as INSTALLABLE_FEATURES, type FeatureName } from '@stacks
 import { config } from './runtime'
 
 /**
- * Every name `feature()` answers for: the installable bundles, plus `auth`.
+ * Every name `feature()` answers for: the installable bundles, plus two gates
+ * that are config sections rather than bundles.
  *
  * Derived rather than restated. The bundles were spelled out here as well as in
  * `@stacksjs/features`, and nothing related the two lists, so a feature added
@@ -30,18 +31,43 @@ import { config } from './runtime'
  * `@stacksjs/path` for them, which costs about a millisecond on a path every
  * process walks before anything else. The names module imports nothing.
  *
- * `auth` is added here and is not an installable bundle, which looks backwards
- * until you read why: `config/auth.ts` ships in every app with `enabled: true`,
- * so gating the auth routes on `feature('auth')` would mount `/login`,
- * `/register`, `/generate-two-factor-secret`, `/logout-all` and `/auth/tokens`
- * into every app currently running with `dashboard` off. Route selection is
- * explicit instead, through `STACKS_DEFAULT_ROUTES` - see the rationale in
- * `router/src/route-loader.ts` and `defaults/bootstrap.ts`. It is a name
- * `feature()` knows, and nothing gates on it.
+ * The two gates have no install command, because there is nothing to install:
+ *
+ * - `auth` (`config/auth.ts`) decides whether `@stacksjs/orm` loads the
+ *   framework's account-family models - `Team`, `TeamMember`, `Referral`,
+ *   `SocialAccount`, `Subscriber`, `Subscription`, `Site`, `MagicLinkToken`,
+ *   `GdprRequest` and the rest of its manifest's `'auth'` rows. It does NOT
+ *   mount the auth routes. `config/auth.ts` ships enabled in every app, so
+ *   gating `/login`, `/register` and `/auth/tokens` on it would mount them
+ *   into every app running with `dashboard` off; route selection is explicit,
+ *   through `STACKS_DEFAULT_ROUTES` (see `router/src/route-loader.ts`).
+ * - `email` (`config/email.ts`) gates the `email` route bundle - the provider
+ *   webhooks - when an app has not named its bundles. It was a name only the
+ *   router knew, so canonical mode did not force it on.
  */
-export type StacksFeature = FeatureName | 'auth'
+export type StacksFeature = FeatureName | 'auth' | 'email'
 
-const FEATURE_NAMES: readonly StacksFeature[] = [...INSTALLABLE_FEATURES, 'auth'] as const
+/**
+ * Flags an app defines for itself - a ramp switched with `enableFeature`, or
+ * a `config/<name>.ts` with an `enabled` field. Declare them here so
+ * `feature()` accepts them; anything else is a compile error, which is what
+ * keeps `feature('commrce')` from being a silent `false`:
+ *
+ * ```ts
+ * declare module '@stacksjs/config' {
+ *   interface AppFeatureFlags {
+ *     'new-checkout': true
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line ts/no-empty-object-type
+export interface AppFeatureFlags {}
+
+/** A name `feature()` accepts: the framework's, or one the app declared. */
+export type FeatureFlag = StacksFeature | Extract<keyof AppFeatureFlags, string>
+
+const FEATURE_NAMES: readonly StacksFeature[] = [...INSTALLABLE_FEATURES, 'auth', 'email'] as const
 
 // Only `dashboard` defaults on when its config file is absent — every Stacks
 // app wants the admin SPA even at minimum scope. Everything else stays off
@@ -50,7 +76,7 @@ const FEATURE_DEFAULTS: Record<string, boolean> = {
   dashboard: true,
 }
 
-const overrides = new Map<string, boolean>()
+const overrides = new Map<FeatureFlag, boolean>()
 
 function configFor(name: string): Record<string, unknown> | undefined {
   const raw = (config as unknown as Record<string, unknown>)[name]
@@ -98,12 +124,12 @@ function canonicalFeatures(): boolean {
   return process.env.STACKS_CANONICAL_FEATURES === '1'
 }
 
-export function feature(name: string): boolean {
+export function feature(name: FeatureFlag): boolean {
   // An explicit runtime override still wins - tests that disable a feature
   // mean it, canonical mode or not.
   if (overrides.has(name)) return overrides.get(name)!
 
-  if (canonicalFeatures() && FEATURE_NAMES.includes(name as StacksFeature))
+  if (canonicalFeatures() && (FEATURE_NAMES as readonly string[]).includes(name))
     return true
 
   const cfg = configFor(name)
@@ -132,21 +158,21 @@ export function feature(name: string): boolean {
  * Force-enable a feature in the running process. Intended for tests and
  * staged rollouts; production code should prefer config-file overrides.
  */
-export function enableFeature(name: string): void {
+export function enableFeature(name: FeatureFlag): void {
   overrides.set(name, true)
 }
 
 /**
  * Force-disable a feature in the running process.
  */
-export function disableFeature(name: string): void {
+export function disableFeature(name: FeatureFlag): void {
   overrides.set(name, false)
 }
 
 /**
  * Drop a runtime override and fall back to the config-driven value.
  */
-export function resetFeature(name: string): void {
+export function resetFeature(name: FeatureFlag): void {
   overrides.delete(name)
 }
 

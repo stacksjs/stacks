@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { basename } from 'node:path'
 import process from 'node:process'
 import { dim, italic, log } from '@stacksjs/cli'
-import { feature } from '@stacksjs/config'
+import { feature, type StacksFeature } from '@stacksjs/config'
 import { corePath } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
@@ -19,7 +19,7 @@ log.info('Building core packages')
 // Dashboard / marketing / monitoring don't ship as their own core packages
 // (they're framework default routes + actions), so they don't appear here
 // even though they're feature flags.
-const FEATURE_GATED_PACKAGES: Record<string, string> = {
+const FEATURE_GATED_PACKAGES: Record<string, StacksFeature> = {
   cms: 'cms',
   commerce: 'commerce',
   queue: 'queue',

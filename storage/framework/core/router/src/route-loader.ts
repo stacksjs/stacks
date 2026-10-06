@@ -299,6 +299,18 @@ export const DEFAULT_ROUTE_BUNDLE_FEATURES = {
   payments: 'commerce',
 } as const satisfies Record<typeof DEFAULT_ROUTE_BUNDLES[number], string>
 
+/**
+ * The feature names the router asks about, and nothing wider.
+ *
+ * Spelled as literals rather than as `@stacksjs/config`'s `StacksFeature`, so
+ * the router stays free of config. The check still happens: `feature` only
+ * fits a `(name: DefaultRouteBundleFeature) => boolean` slot if it accepts
+ * every name here, so a gate the router invents that `feature()` does not
+ * know fails to compile at each caller. `email` was exactly that, a name only
+ * the router knew (stacksjs/stacks#2867).
+ */
+export type DefaultRouteBundleFeature = typeof DEFAULT_ROUTE_BUNDLE_FEATURES[keyof typeof DEFAULT_ROUTE_BUNDLE_FEATURES]
+
 /** What {@link loadFrameworkRoutes} publishes for bootstrap.ts. */
 export interface DefaultRouteBundleSelection {
   bundles: ReadonlySet<string>
@@ -341,7 +353,7 @@ export function bundleMounts(
  * and no default page depends on it alone.
  */
 export function mountedDefaultRouteBundles(
-  featureEnabled: (name: string) => boolean,
+  featureEnabled: (name: DefaultRouteBundleFeature) => boolean,
   env: NodeJS.ProcessEnv = process.env,
 ): Set<typeof DEFAULT_ROUTE_BUNDLES[number]> {
   const selection = resolveDefaultRouteBundlesWithDiagnostics(env)

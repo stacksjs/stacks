@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   appModelClaimsTable,
+  CONFIG_GATES,
   copyFeatureFiles,
   deleteFeatureFiles,
   FEATURE_FILES,
@@ -763,22 +764,23 @@ describe('the two FEATURE_NAMES lists', () => {
   })
 
   /**
-   * `auth` is the one intentional difference, and it is intentional in the
-   * direction that looks wrong: it is a name `feature()` knows that cannot be
-   * an installable bundle. `config/auth.ts` ships in every app with
-   * `enabled: true`, so gating the auth routes on `feature('auth')` would mount
-   * `/login`, `/register`, `/generate-two-factor-secret`, `/logout-all` and
-   * `/auth/tokens` into every app currently running with `dashboard` off.
-   * Route selection is explicit instead, via `STACKS_DEFAULT_ROUTES` - see the
-   * rationale in `router/src/route-loader.ts` and `defaults/bootstrap.ts`.
+   * `auth` and `email` are the intentional differences: names `feature()` knows
+   * that are config gates rather than installable bundles. `auth` decides
+   * whether the ORM loads the account models; it does not mount the auth
+   * routes, because `config/auth.ts` ships enabled in every app and gating
+   * `/login` and `/register` on it would mount them into every app running
+   * with `dashboard` off. `email` gates the email webhook bundle, and was a
+   * name only the router knew until stacksjs/stacks#2867.
    *
-   * Exact rather than a subset check: a tenth name appearing here means someone
-   * taught `feature()` about a bundle without giving it an install command.
+   * Exact rather than a subset check: another name appearing here means
+   * someone taught `feature()` about a bundle without giving it an install
+   * command. `buddy features` lists exactly these as its config gates.
    */
-  it('names auth as the only non-installable feature', () => {
+  it('names auth and email as the only non-installable features, and buddy features lists them', () => {
     const known = featureNamesConfigKnows()
     const notInstallable = known.filter(name => !(FEATURE_NAMES as readonly string[]).includes(name))
 
-    expect(notInstallable).toEqual(['auth'])
+    expect(notInstallable.sort()).toEqual(['auth', 'email'])
+    expect(Object.keys(CONFIG_GATES).sort()).toEqual(notInstallable.sort())
   })
 })

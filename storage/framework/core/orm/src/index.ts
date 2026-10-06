@@ -97,6 +97,7 @@ export type { ResolvedPageArgs } from './paginator-request'
 
 // Auto-configure the ORM database connection from project config.
 // This ensures model queries work without manual configureOrm() calls.
+import type { StacksFeature } from '@stacksjs/config'
 import { configureOrm } from '@stacksjs/query-builder'
 
 function autoConfigureOrm(): void {
@@ -311,7 +312,7 @@ export const FailedJob = lazyModel<typeof import('../../../defaults/app/Models/F
 // schema-TDZ cycle the original `User`-only export was guarding against
 // stays neutralised.
 // ---------------------------------------------------------------------------
-const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature: string]> = [
+const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature: StacksFeature]> = [
   // Auth
   ['Referral', [''], 'auth'],
   ['ReferralCode', [''], 'auth'],

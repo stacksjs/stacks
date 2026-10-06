@@ -60,6 +60,23 @@ they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
 - `determineAppEnv(): 'dev' | 'stage' | 'prod' | string`
 - `localUrl(): string` — local development URL
 
+## Feature Flags
+`feature(name)` from `@stacksjs/config` reads `enabled` on `config/<name>.ts`.
+It accepts the installable bundles (`dashboard`, `commerce`, `cms`, `forms`,
+`marketing`, `monitoring`, `realtime`, `queue`) plus two config gates: `auth`
+(whether the ORM loads Team, Referral, Subscriber, Site and the other account
+models; it does not mount the auth routes, `STACKS_DEFAULT_ROUTES` does) and
+`email` (the email webhook route bundle). `./buddy features` lists both groups.
+
+Any other name is a compile error, so a typo cannot silently read `false`. An
+app's own flags are declared first:
+
+```ts
+declare module '@stacksjs/config' {
+  interface AppFeatureFlags { 'new-checkout': true }
+}
+```
+
 ## All 44 Config Files
 
 ### Core App
@@ -104,7 +121,7 @@ they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
 ### Security
 | File | Type | Key Settings |
 |------|------|-------------|
-| `security.ts` | SecurityConfig | firewall (enabled, countryCodes, rateLimitPerMinute:500) |
+| `security.ts` | SecurityConfig | api.rowScoping('deny'), api.models('all' / 'own' / 'none' / names; `STACKS_MODEL_APIS` overrides), firewall (enabled, countryCodes, rateLimitPerMinute) |
 | `hashing.ts` | HashingConfig | driver('bcrypt'), bcrypt.rounds(12), argon2 config |
 
 ### Features
