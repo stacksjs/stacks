@@ -124,6 +124,49 @@ describe('action rate limiting', () => {
 })
 
 /**
+ * A route limit counts per client, and a header the client writes cannot reset it.
+ *
+ * The bucket key was ts-rate-limiter's `defaultIdentity`: the first 32
+ * characters of any bearer value, then a client-written forwarding header,
+ * then `'anon'`, never the socket. A fresh junk `Authorization` header on each
+ * request was a fresh budget, so `.rateLimit(5, 'minute')` on `/login` limited
+ * nobody who tried; and every client sending neither header shared one bucket.
+ */
+describe('the route limit key', () => {
+  it.each([false, true])('ignores a rotating bearer value (nativeRoutes=%s)', async (nativeRoutes) => {
+    const router = createStacksRouter({ autoDiscoverRoutes: false, csrf: false })
+    const path = `/route-limit-identity-${nativeRoutes}`
+    router.post(path, () => ({ ok: true })).rateLimit(2, 'minute')
+    const server = await router.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes })
+
+    try {
+      const statuses: number[] = []
+      for (let i = 0; i < 4; i++) {
+        const response = await fetch(`http://127.0.0.1:${server.port}${path}`, {
+          method: 'POST',
+          headers: { authorization: `Bearer junk-${i}-${'x'.repeat(40)}` },
+        })
+        statuses.push(response.status)
+      }
+      expect(statuses).toEqual([200, 200, 429, 429])
+    }
+    finally {
+      server.stop()
+    }
+  })
+
+  it('keys on the signed-in user when there is one, else the client address', async () => {
+    const options = { identity: undefined }
+    const asUser = Object.assign(new Request('https://example.com', { headers: { 'x-real-ip': '192.0.2.9' } }), { _authenticatedUser: { id: 42 } }) as unknown as EnhancedRequest
+    const anonymous = new Request('https://example.com', { headers: { 'x-real-ip': '192.0.2.9' } }) as EnhancedRequest
+    await runWithRequest(asUser, () => rateLimit('identity-kinds', 1, options).over(1009))
+    // The same address, but not the same user: its own bucket.
+    await runWithRequest(anonymous, () => rateLimit('identity-kinds', 1, options).over(1009))
+    await expect(runWithRequest(anonymous, () => rateLimit('identity-kinds', 1, options).over(1009))).rejects.toMatchObject({ status: 429 })
+  })
+})
+
+/**
  * A burst against a fresh quota admits exactly `max` of them.
  *
  * ts-rate-limiter's fixed-window strategy returned its own mutable increment

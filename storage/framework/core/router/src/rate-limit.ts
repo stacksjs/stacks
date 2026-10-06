@@ -16,6 +16,7 @@
  */
 
 import type { RateLimiter } from 'ts-rate-limiter'
+import { clientAddress } from '@stacksjs/bun-router'
 import { getCurrentRequest } from './request-context'
 
 type Period = 'second' | 'minute' | 'hour' | 'day'
@@ -64,16 +65,26 @@ function getLimiter(max: number, windowMs: number): RateLimiter | Promise<RateLi
 }
 
 /**
- * Resolve the bucket identity for the current scope. Defaults to
- * `defaultIdentity(req)` from `ts-rate-limiter` (auth user → token →
- * IP → 'anon'); callers can override via `options.identity`.
+ * Resolve the bucket identity for the current scope: `options.identity` when
+ * given, else the signed-in user, else the client's address as
+ * `clientAddress()` resolves it - the socket peer, or forwarding headers only
+ * when that peer is a trusted proxy. The same key the Throttle middleware uses.
+ *
+ * It was ts-rate-limiter's `defaultIdentity`, which keys on the first 32
+ * characters of any bearer value, then a client-written `X-Forwarded-For` /
+ * `X-Real-IP`, then `'anon'` - and never on the socket. So a new junk
+ * `Authorization` or forwarding header bought a fresh budget on every
+ * request, while every client sending neither shared one `anon` bucket: one
+ * client could exhaust `/login` for everybody.
  */
-function resolveIdentity(explicit?: string): string | Promise<string> {
+function resolveIdentity(explicit?: string): string {
   if (explicit !== undefined) return explicit
-  const req = getCurrentRequest() as Request | undefined
+  const req = getCurrentRequest() as (Request & { _authenticatedUser?: { id?: unknown } | null }) | undefined
   if (!req) return 'anon'
-  if (limiterModule) return limiterModule.defaultIdentity(req)
-  return loadLimiterModule().then(module => module.defaultIdentity(req))
+  const id = req._authenticatedUser?.id
+  if ((typeof id === 'number' && Number.isFinite(id)) || (typeof id === 'string' && id !== ''))
+    return `user:${id}`
+  return `ip:${clientAddress(req) ?? 'unknown'}`
 }
 
 /**
@@ -97,11 +108,9 @@ export function rateLimit(
     over: (ttlSeconds: number) => Promise<void>
   } {
   const run = async (windowMs: number): Promise<void> => {
-    const identity = resolveIdentity(options.identity)
+    const id = resolveIdentity(options.identity)
     const pendingLimiter = getLimiter(max, windowMs)
-    const [id, limiter] = typeof identity === 'string' && !(pendingLimiter instanceof Promise)
-      ? [identity, pendingLimiter] as const
-      : await Promise.all([identity, pendingLimiter])
+    const limiter = pendingLimiter instanceof Promise ? await pendingLimiter : pendingLimiter
     const bucketKey = `${key}:${id}`
     try {
       await limiter.enforce(bucketKey)
