@@ -138,40 +138,44 @@ const deployLines = [
 ]
 
 /*
- * The long tail. Each is a package under storage/framework/core, first-party
- * and on the same config and types as the twelve above; none of them has a
- * page of its own yet, which is why they are a list rather than cells.
+ * The long tail. Each is real, first-party, and on the same config and types
+ * as the twelve features above, but has no page of its own yet, which is why
+ * they are a list rather than cells. Nothing here repeats a bento feature,
+ * and nothing is a stub: every entry was checked against its package or its
+ * buddy command (October 2026), so add to it the same way.
  */
 const longTail = [
+  { icon: 'i-hugeicons-credit-card', label: 'Stripe billing and Connect' },
+  { icon: 'i-hugeicons-key-01', label: 'OAuth 2 server' },
+  { icon: 'i-hugeicons-shield-01', label: 'GDPR export and erasure' },
   { icon: 'i-hugeicons-flash', label: 'Cache' },
   { icon: 'i-hugeicons-checkmark-badge-01', label: 'Validation' },
   { icon: 'i-hugeicons-translate', label: 'i18n' },
-  { icon: 'i-hugeicons-notification-03', label: 'Notifications' },
-  { icon: 'i-hugeicons-message-01', label: 'SMS' },
-  { icon: 'i-hugeicons-smart-phone-01', label: 'Push' },
-  { icon: 'i-hugeicons-bubble-chat', label: 'Slack and Discord' },
-  { icon: 'i-hugeicons-calendar-03', label: 'Scheduler' },
   { icon: 'i-hugeicons-flag-02', label: 'Feature flags' },
   { icon: 'i-hugeicons-chart-line-data-01', label: 'Analytics' },
   { icon: 'i-hugeicons-news', label: 'Newsletters' },
-  { icon: 'i-hugeicons-credit-card', label: 'Payments' },
-  { icon: 'i-hugeicons-search-01', label: 'Search engines' },
-  { icon: 'i-hugeicons-wifi-01', label: 'WebSockets' },
-  { icon: 'i-hugeicons-image-01', label: 'Image processing' },
-  { icon: 'i-hugeicons-globe-02', label: 'DNS and domains' },
-  { icon: 'i-hugeicons-mail-01', label: 'Mail server' },
+  { icon: 'i-hugeicons-message-01', label: 'SMS' },
+  { icon: 'i-hugeicons-smart-phone-01', label: 'Push' },
+  { icon: 'i-hugeicons-call', label: 'Phone numbers' },
+  { icon: 'i-hugeicons-bubble-chat', label: 'Slack, Discord, Teams' },
+  { icon: 'i-hugeicons-share-01', label: 'Social posting' },
+  { icon: 'i-hugeicons-calendar-03', label: 'Scheduler' },
+  { icon: 'i-hugeicons-database-02', label: 'Database backups' },
+  { icon: 'i-hugeicons-undo-02', label: 'Deploy rollback' },
+  { icon: 'i-hugeicons-wrench-01', label: 'Maintenance mode' },
+  { icon: 'i-hugeicons-link-square-01', label: 'Public share tunnels' },
+  { icon: 'i-hugeicons-globe-02', label: 'Domains and DNS' },
   { icon: 'i-hugeicons-lock-password', label: 'Encrypted env' },
-  { icon: 'i-hugeicons-shield-01', label: 'Security headers' },
+  { icon: 'i-hugeicons-lock-key', label: 'Encryption and hashing' },
   { icon: 'i-hugeicons-file-01', label: 'Logging' },
   { icon: 'i-hugeicons-alert-02', label: 'Error pages' },
-  { icon: 'i-hugeicons-chart-bar-line', label: 'Charts' },
+  { icon: 'i-hugeicons-kanban', label: 'Kanban boards' },
   { icon: 'i-hugeicons-task-01', label: 'Forms' },
-  { icon: 'i-hugeicons-share-01', label: 'Social posting' },
+  { icon: 'i-hugeicons-chart-bar-line', label: 'Charts' },
   { icon: 'i-hugeicons-layers-02', label: 'Multisite' },
-  { icon: 'i-hugeicons-book-open-01', label: 'Docs site' },
-  { icon: 'i-hugeicons-rss', label: 'Blog and RSS' },
+  { icon: 'i-hugeicons-image-01', label: 'OG images and app icons' },
   { icon: 'i-hugeicons-puzzle', label: 'Browser extensions' },
-  { icon: 'i-hugeicons-git-branch', label: 'Git hooks' },
+  { icon: 'i-hugeicons-code', label: '150+ composables' },
   { icon: 'i-hugeicons-computer-terminal-01', label: 'Tinker REPL' },
 ]
 
@@ -198,12 +202,20 @@ const agentTree = [
   { depth: 0, icon: 'i-hugeicons-folder-01', name: '.cursor/rules/', note: 'generated', source: false },
 ]
 
+const deployTargets = [
+  { icon: 'i-hugeicons-server-stack-01', label: 'Hetzner' },
+  { icon: 'i-hugeicons-cloud', label: 'AWS' },
+  { icon: 'i-hugeicons-computer-terminal-01', label: 'Any box over SSH' },
+  { icon: 'i-hugeicons-hard-drive', label: 'A Raspberry Pi' },
+]
+
 const deploySurfaces = [
   { name: 'Web app', detail: 'stacksjs.com' },
   { name: 'Docs', detail: 'stacksjs.com/docs' },
   { name: 'Blog, RSS, sitemap', detail: 'stacksjs.com/blog' },
   { name: 'API', detail: 'stacksjs.com/api' },
-  { name: 'Infrastructure', detail: 'DNS, CDN, TLS, storage, mail' },
+  { name: 'Infrastructure', detail: 'DNS, TLS, storage, mail' },
+  { name: 'Rollback', detail: 'buddy deploy:rollback' },
 ]
 
 /*
@@ -418,7 +430,8 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
           <div class="rise tail">
             <div>
               <h2 id="tail-heading" class="home-h2">And the long tail, already in the box.</h2>
-              <p class="home-sub">The packages most apps end up hunting for one at a time, on the same config and types as everything above.</p>
+              <p class="home-sub">The packages most apps end up hunting for one at a time, on the same config and types as everything above. Whole bundles install or uninstall with one command, so what you do not use is not loaded.</p>
+              <div class="tail-command"><span class="home-prompt">$</span> buddy commerce:uninstall</div>
             </div>
             <ul class="tail-list">
               @foreach (longTail as item)
@@ -451,7 +464,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
             <div class="dx-copy">
               <span class="kicker">Developer and agent experience</span>
               <h2 id="dx-heading" class="home-h2">Written for you. Legible to the agent next to you.</h2>
-              <p class="home-sub">buddy setup:ai turns one checked-in AGENTS.md into the files Claude Code, Codex, and Cursor each read, so every agent works from the same source.</p>
+              <p class="home-sub">buddy setup:ai turns one checked-in AGENTS.md into the files Claude Code, Codex, Cursor, Copilot, and Gemini each read, so every agent works from the same source.</p>
 
               <ul class="dx-list">
                 @foreach (dxCapabilities as capability)
@@ -488,8 +501,13 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
           <div class="rise ship">
             <div class="ship-copy">
               <h2 id="deploy-heading" class="home-h2">One command to production.</h2>
-              <p class="home-sub">buddy deploy builds the site, docs, blog, and API, then publishes DNS, CDN, storage, and mail from config/cloud.ts. Infrastructure you review in a pull request.</p>
+              <p class="home-sub">buddy deploy builds the site, docs, blog, and API, then publishes DNS, TLS, storage, and mail from config/cloud.ts, to servers you own. A bad release rolls back with one command.</p>
               <div class="ship-command"><span class="home-prompt">$</span> buddy deploy</div>
+              <ul class="ship-targets" aria-label="Deploy targets">
+                @foreach (deployTargets as target)
+                  <li><i class="{{ target.icon }}" aria-hidden="true"></i>{{ target.label }}</li>
+                @endforeach
+              </ul>
             </div>
             <ol class="ship-steps">
               @foreach (deploySurfaces as surface)

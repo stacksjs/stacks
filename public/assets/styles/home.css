@@ -823,6 +823,18 @@
   font-size: 1rem;
 }
 
+.tail-command {
+  display: inline-flex;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  color: var(--term-fg);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: var(--term-bg);
+}
+
 /* ── Get started ────────────────────────────────────────────────── */
 
 /* Four verb-led steps joined by one rule through their icons: a sequence,
@@ -1083,6 +1095,27 @@
   font-size: 0.95rem;
   background: rgba(0, 20, 60, 0.35);
   user-select: all;
+}
+
+.ship-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ship-targets li {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 550;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .ship-command .home-prompt {
