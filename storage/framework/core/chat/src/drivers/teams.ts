@@ -54,9 +54,48 @@ export interface TeamsMessage {
 let config: TeamsConfig = {}
 
 /**
+ * Hosts a Teams Workflows webhook is served from: Power Automate's
+ * `*.environment.api.powerplatform.com` and `*.api.powerautomate.com`, and
+ * the older Logic Apps `prod-NN.<region>.logic.azure.com`, in the public,
+ * US Government and China clouds.
+ */
+const WORKFLOW_HOSTS = /(?:^|\.)(?:api\.powerplatform\.com|api\.powerautomate\.com|flow\.microsoft\.com|logic\.azure\.(?:com|us|cn))$/i
+
+/**
+ * A Teams webhook URL is a Workflows URL, on https, matched by host.
+ *
+ * The check was `url.includes('webhook.office.com')`, the Office 365
+ * connector host - and Microsoft retired those connectors in May 2026, so the
+ * one URL the driver accepted no longer delivers, and every URL that does was
+ * refused as "not configured or invalid". A substring test also let through
+ * any URL that merely mentioned the host, in a path or a query.
+ */
+export function assertWebhookUrl(webhookUrl: string): void {
+  let parsed: URL
+  try {
+    parsed = new URL(webhookUrl)
+  }
+  catch {
+    throw new Error(`[chat/teams] webhookUrl is not a valid URL: ${webhookUrl}`)
+  }
+  if (parsed.protocol !== 'https:')
+    throw new Error('[chat/teams] webhookUrl must use https://')
+  if (/(?:^|\.)webhook\.office\.com$/i.test(parsed.hostname)) {
+    throw new Error(
+      '[chat/teams] webhookUrl is an Office 365 connector webhook, which Microsoft retired in May 2026 and no longer delivers. '
+      + 'Create one with the Workflows app in Teams ("Post to a channel when a webhook request is received") and use its URL.',
+    )
+  }
+  if (!WORKFLOW_HOSTS.test(parsed.hostname))
+    throw new Error(`[chat/teams] webhookUrl host "${parsed.hostname}" is not a Teams Workflows (Power Automate) host.`)
+}
+
+/**
  * Configure Teams with webhook URL
  */
 export function configure(options: TeamsConfig): void {
+  if (options.webhookUrl)
+    assertWebhookUrl(options.webhookUrl)
   config = { ...config, ...options }
 }
 
@@ -76,6 +115,8 @@ export async function resolveConfig(): Promise<TeamsConfig> {
   }
 
   const webhookUrl = config.webhookUrl ?? present(fromApp.webhookUrl)
+  if (webhookUrl && !config.webhookUrl)
+    assertWebhookUrl(webhookUrl)
 
   return {
     webhookUrl,
@@ -152,9 +193,9 @@ export class TeamsDriver extends BaseChatDriver {
     const configured = this.settings.webhookUrl
     const webhookUrl = configured || (Array.isArray(message.to) ? message.to[0] : message.to)
 
-    if (!webhookUrl || !webhookUrl.includes('webhook.office.com')) {
-      throw new Error('Teams webhook URL not configured or invalid')
-    }
+    if (!webhookUrl)
+      throw new Error('Teams webhook URL not configured')
+    assertWebhookUrl(webhookUrl)
 
     const payload = this.buildPayload(message)
 
@@ -170,28 +211,13 @@ export class TeamsDriver extends BaseChatDriver {
     }
   }
 
+  /**
+   * Always an Adaptive Card. The Workflows webhook template reads the card
+   * from `attachments`, and a bare `{ text }` body - what a plain message used
+   * to send - has none, so the flow failed with nothing posted.
+   */
   private buildPayload(message: ChatMessage): TeamsMessage {
-    // If simple text message, use basic format
-    if (!message.subject && !message.template) {
-      return {
-        type: 'message',
-        text: message.content || '',
-      }
-    }
-
-    // Build Adaptive Card for rich messages
-    const card = this.buildAdaptiveCard(message)
-
-    return {
-      type: 'message',
-      summary: message.subject || message.content?.substring(0, 50) || 'Notification',
-      attachments: [
-        {
-          contentType: 'application/vnd.microsoft.card.adaptive',
-          content: card,
-        },
-      ],
-    }
+    return cardMessage(this.buildAdaptiveCard(message), message.subject || message.content?.substring(0, 50) || 'Notification')
   }
 
   private buildAdaptiveCard(message: ChatMessage): TeamsAdaptiveCard {
@@ -217,6 +243,9 @@ export class TeamsDriver extends BaseChatDriver {
       })
     }
 
+    if (!message.subject && !message.template)
+      return adaptiveCard(body)
+
     // Timestamp
     body.push({
       type: 'TextBlock',
@@ -226,12 +255,29 @@ export class TeamsDriver extends BaseChatDriver {
       wrap: true,
     })
 
-    return {
-      type: 'AdaptiveCard',
-      version: '1.4',
-      $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-      body,
-    }
+    return adaptiveCard(body)
+  }
+}
+
+function adaptiveCard(body: TeamsCardElement[]): TeamsAdaptiveCard {
+  return {
+    type: 'AdaptiveCard',
+    version: '1.4',
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    body,
+  }
+}
+
+function cardMessage(card: TeamsAdaptiveCard, summary: string): TeamsMessage {
+  return {
+    type: 'message',
+    summary,
+    attachments: [
+      {
+        contentType: 'application/vnd.microsoft.card.adaptive',
+        content: card,
+      },
+    ],
   }
 }
 
@@ -251,10 +297,9 @@ export async function sendWebhook(
   text: string,
 ): Promise<ChatResult> {
   try {
-    const payload: TeamsMessage = {
-      type: 'message',
-      text,
-    }
+    assertWebhookUrl(webhookUrl)
+    // A card with the text, for the same reason the driver sends one.
+    const payload = cardMessage(adaptiveCard([{ type: 'TextBlock', text, wrap: true }]), text.substring(0, 50) || 'Notification')
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -296,16 +341,8 @@ export async function sendCard(
   summary?: string,
 ): Promise<ChatResult> {
   try {
-    const payload: TeamsMessage = {
-      type: 'message',
-      summary: summary || 'Notification',
-      attachments: [
-        {
-          contentType: 'application/vnd.microsoft.card.adaptive',
-          content: card,
-        },
-      ],
-    }
+    assertWebhookUrl(webhookUrl)
+    const payload = cardMessage(card, summary || 'Notification')
 
     const response = await fetch(webhookUrl, {
       method: 'POST',

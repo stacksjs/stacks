@@ -12,7 +12,8 @@ import { join } from 'node:path'
  */
 const SLACK = 'https://hooks.slack.com/services/T000/B000/xyz'
 const DISCORD = 'https://discord.com/api/webhooks/1/abc'
-const TEAMS = 'https://acme.webhook.office.com/webhookb2/abc'
+// A Teams Workflows URL: Office 365 connector webhooks were retired in May 2026.
+const TEAMS = 'https://default0a1b2c.2d.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/abc/triggers/manual/paths/invoke?api-version=1'
 
 async function run(env: Record<string, string>): Promise<Record<string, any>> {
   const root = await mkdtemp(join(tmpdir(), 'stacks-chat-config-'))

@@ -330,9 +330,9 @@ interface TeamsMessage {
 ### Teams Sending
 
 - Uses `config.webhookUrl` or falls back to `message.to` as the webhook URL
-- Validates URL contains `webhook.office.com`
-- Simple messages (no subject/template): sends `{ type: 'message', text: content }`
-- Rich messages (with subject or template): builds an Adaptive Card v1.4 with:
+- Validates the URL as a Teams Workflows (Power Automate) webhook on https: `*.environment.api.powerplatform.com`, `*.api.powerautomate.com`, `flow.microsoft.com` or `*.logic.azure.com` (`.us` / `.cn` too). An Office 365 connector URL (`*.webhook.office.com`) is refused with a migration message - Microsoft retired those connectors in May 2026
+- Every message is an Adaptive Card in `attachments`, which the Workflows webhook template requires; a plain message is a card holding its text
+- Rich messages (with subject or template): the Adaptive Card v1.4 has:
   - Title as `TextBlock` (size: Large, weight: Bolder)
   - Content as `TextBlock` (wrap: true)
   - Timestamp as `TextBlock` (size: Small, color: Dark)
@@ -442,7 +442,7 @@ All three drivers implement `sendWithRetry()`:
 - Slack bot token mode uses `https://slack.com/api/chat.postMessage`, not a webhook
 - Discord webhook returns `204` on success with no body -- this is handled as success
 - Discord bot token mode uses `message.to` as the channel ID
-- Teams validates that the webhook URL contains `webhook.office.com`
+- Teams accepts only Workflows webhook URLs; the retired `webhook.office.com` connectors are refused
 - Teams uses `message.to` as fallback webhook URL if `config.webhookUrl` is not set
 - All drivers set `mrkdwn: true` or equivalent by default
 - Block Kit blocks are only built when `message.template` is set (Slack) or when `message.subject`/`message.template` is set (Discord/Teams)
