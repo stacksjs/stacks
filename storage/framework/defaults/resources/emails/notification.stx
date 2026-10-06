@@ -1,0 +1,44 @@
+<script server>
+// What notify() sends by email: the notification's subject as the heading,
+// its plain-text body as paragraphs (blank lines between them, single line
+// breaks kept, addresses as links) and, when the notification names one, a
+// button to where it happened. Same <EmailLayout> as the other prebaked
+// mailers (stacksjs/stacks#1901); an app's own resources/emails/notification
+// wins over this one.
+const appName = props.appName || 'Stacks'
+const primaryColor = props.primaryColor || '#3451b2'
+const subject = props.subject || appName
+const paragraphs = Array.isArray(props.paragraphs) ? props.paragraphs : []
+const actionUrl = props.actionUrl || ''
+const actionLabel = props.actionLabel || 'Open'
+const preheader = props.preheader || ''
+const year = props.year || new Date().getFullYear()
+</script>
+
+<EmailLayout title="{{ subject }}" preheader="{{ preheader }}">
+  <template #header>
+    <tr>
+      <td style="background-color:{{ primaryColor }};padding:30px 40px;text-align:center;">
+        <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:600;">{{ appName }}</h1>
+      </td>
+    </tr>
+  </template>
+
+  <EmailText size="heading">{{ subject }}</EmailText>
+  @foreach(paragraphs as parts)
+    <EmailText>@foreach(parts as part)@if(part.br)<br>@elseif(part.url)<a href="{{ part.url }}" style="color:{{ primaryColor }};text-decoration:underline;word-break:break-all;">{{ part.url }}</a>@else{{ part.text }}@endif@endforeach</EmailText>
+  @endforeach
+
+  @if(actionUrl)
+    <EmailButton href="{{ actionUrl }}" bg="{{ primaryColor }}">{{ actionLabel }}</EmailButton>
+  @endif
+
+  <template #footer>
+    <tr>
+      <td style="padding:20px 40px;background-color:#f9fafb;border-top:1px solid #e5e7eb;">
+        <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">This is an automated message from {{ appName }}. Please do not reply to this email.</p>
+        <p style="margin:10px 0 0 0;color:#9ca3af;font-size:11px;text-align:center;">&copy; {{ year }} {{ appName }}. All rights reserved.</p>
+      </td>
+    </tr>
+  </template>
+</EmailLayout>

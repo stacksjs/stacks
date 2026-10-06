@@ -6,6 +6,7 @@ import { chat, email, push, sms } from './drivers'
 import { BroadcastNotificationDriver } from './drivers/broadcast'
 import { DatabaseNotificationDriver } from './drivers/database'
 import { makeDeliveryRecord, recordNotificationDelivery } from './delivery'
+import { type NotificationAction, notificationEmailHtml, notificationEmailText } from './email-body'
 import { filterChannelsByPreferences } from './preferences'
 
 const config = _notification as NotificationOptions | undefined
@@ -39,6 +40,8 @@ export interface NotificationPayload {
   subject?: string
   body: string
   data?: Record<string, unknown>
+  /** Where the notification leads. Emailed as a button under the body. */
+  action?: NotificationAction
 }
 
 export interface NotificationRecipient {
@@ -236,15 +239,15 @@ export async function notify(
             throw new Error('[notify] email channel requires recipient.email')
           }
           const driver = useEmail()
-          // payload.body is plain text — wrap as text and a minimal HTML
-          // body so SES/SendGrid drivers (which only render `html`/`text`)
-          // actually carry the message. Previously `body` was dropped on
-          // the floor by every driver.
+          // payload.body is plain text. It goes out as text and as HTML in
+          // the framework's email layout (notificationEmailHtml), since the
+          // SES/SendGrid drivers only render `html`/`text` and a body in a
+          // bare <p> reached people as unstyled text.
           const result = await driver.send({
             to: recipient.email,
             subject: payload.subject ?? '',
-            text: payload.body,
-            html: `<p>${escapeBodyHtml(payload.body)}</p>`,
+            text: notificationEmailText(payload),
+            html: await notificationEmailHtml(payload),
           })
           ensureSuccessfulEmailResult(result)
           break
@@ -372,7 +375,6 @@ export {
   wherePreferenceCategory,
 } from './preferences'
 export type { NotificationPreferenceRow, PreferenceChannel } from './preferences'
+export { emailParagraphs, notificationEmailHtml, notificationEmailText } from './email-body'
+export type { EmailBodyPart, NotificationAction } from './email-body'
 
-function escapeBodyHtml(s: string): string {
-  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[c] as string))
-}
