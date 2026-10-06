@@ -4704,7 +4704,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
     else if (mediaType.includes('application/x-www-form-urlencoded')) {
       const text = await req.clone().text()
       const params = new URLSearchParams(text)
-      const formBody: Record<string, unknown> = Object.create(null)
+      const formBody = Object.create(null) as NonNullable<EnhancedRequest['formBody']>
       params.forEach((value, key) => {
         addFormValue(formBody, key, value)
       })
@@ -4776,11 +4776,36 @@ function attachmentDisposition(path: string): string {
 }
 
 /**
+ * Answer a CORS preflight for a path with no OPTIONS route of its own with the
+ * app's `config/cors.ts` policy - the Cors middleware's own preflight.
+ *
+ * bun-router answered these itself, reflecting any Origin with
+ * `Access-Control-Allow-Credentials: true` whatever the app configured, and
+ * the Cors middleware never ran because there was no route: a browser would
+ * send credentialed requests from any site. A policy that cannot be loaded
+ * answers with no CORS headers, which the browser treats as a refusal.
+ */
+async function answerPreflight(req: Request): Promise<Response> {
+  try {
+    const cors = await import(resolveDefaultsPath('app/Middleware/Cors.ts')) as {
+      buildPreflightResponse: (request: Request, cfg: unknown) => Response
+      getResolvedCorsConfig: () => unknown
+    }
+    return cors.buildPreflightResponse(req, cors.getResolvedCorsConfig())
+  }
+  catch (error) {
+    log.warn('[router] CORS preflight could not load the CORS policy; answering without CORS headers', { error })
+    return new Response(null, { status: 204 })
+  }
+}
+
+/**
  * Create a Stacks-enhanced router
  */
 export function createStacksRouter(config: StacksRouterConfig = {}): StacksRouterInstance {
   const bunRouter = new Router({
     verbose: config.verbose ?? false,
+    preflight: answerPreflight,
   })
   if (config.autoDiscoverRoutes === false) {
     // bun-router performs route-directory discovery inside `serve()`. Marking

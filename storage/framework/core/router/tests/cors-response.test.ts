@@ -85,13 +85,15 @@ describe('CORS response finalization', () => {
   })
 
   test('preflight still short-circuits and advertises all varying request dimensions', async () => {
-    config.cors = { origin: ['https://caller.test'], credentials: true, methods: ['GET', 'PUT'], maxAge: 60 }
+    config.cors = { origin: ['https://caller.test'], credentials: true, methods: ['GET', 'PUT'], allowedHeaders: ['Content-Type', 'X-Custom'], maxAge: 60 }
     let calls = 0
     const router = createStacksRouter({ autoDiscoverRoutes: false })
     router.options('/cors-options', () => { calls++; return { ok: true } }).middleware('cors')
+    // A header the policy does not list is left out of the answer: every
+    // requested header used to be echoed, so allowedHeaders allowed anything.
     const response = await router.handleRequest(new Request('https://example.test/cors-options', {
       method: 'OPTIONS',
-      headers: { origin: 'https://caller.test', 'access-control-request-method': 'PUT', 'access-control-request-headers': 'X-Custom' },
+      headers: { origin: 'https://caller.test', 'access-control-request-method': 'PUT', 'access-control-request-headers': 'X-Custom, X-Not-Listed' },
     }))
     expect(response.status).toBe(204)
     expect(await response.text()).toBe('')

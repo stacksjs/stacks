@@ -204,6 +204,21 @@ function appendVary(existing: string | null, token: string): string {
  *   throw buildPreflightResponse(request, resolveCorsConfig())
  * ```
  */
+/**
+ * Which of the headers a preflight asks for the policy allows: those named in
+ * `allowedHeaders` (case-insensitively), or all of them when it holds `*`.
+ * With nothing requested, the configured list.
+ */
+function allowedRequestHeaders(requested: string | null, cfg: ResolvedCorsConfig): string[] {
+  const wanted = (requested ?? '').split(',').map(header => header.trim()).filter(Boolean)
+  if (wanted.length === 0)
+    return cfg.allowedHeaders.filter(header => header !== '*')
+  if (cfg.allowedHeaders.includes('*'))
+    return wanted
+  const allowed = new Set(cfg.allowedHeaders.map(header => header.toLowerCase()))
+  return wanted.filter(header => allowed.has(header.toLowerCase()))
+}
+
 export function buildPreflightResponse(request: Request, cfg: ResolvedCorsConfig): Response {
   const headers = new Headers()
   const requestOrigin = request.headers.get('origin')
@@ -216,7 +231,8 @@ export function buildPreflightResponse(request: Request, cfg: ResolvedCorsConfig
   // shared caches don't blend two clients' answers.
   headers.set('Vary', 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers')
 
-  if (cfg.credentials)
+  // Credentials are offered only to an origin that is allowed.
+  if (cfg.credentials && allowOrigin !== null)
     headers.set('Access-Control-Allow-Credentials', 'true')
 
   // Echo the requested method if it's in our allow-list; otherwise advertise
@@ -229,13 +245,13 @@ export function buildPreflightResponse(request: Request, cfg: ResolvedCorsConfig
       : cfg.methods
   headers.set('Access-Control-Allow-Methods', methods.join(', '))
 
-  // Echo the requested headers (typically lowercase) — the browser sends
-  // them and the spec allows us to reflect rather than enumerate.
-  const requestedHeaders = request.headers.get('access-control-request-headers')
-  if (requestedHeaders)
-    headers.set('Access-Control-Allow-Headers', requestedHeaders)
-  else if (cfg.allowedHeaders.length > 0)
-    headers.set('Access-Control-Allow-Headers', cfg.allowedHeaders.join(', '))
+  // The requested headers the policy allows. Every requested header used to
+  // be echoed back, so `allowedHeaders` allowed everything: a page could send
+  // any custom header it liked. A `*` entry still allows any header, which
+  // the spec honours only without credentials.
+  const allowedHeaders = allowedRequestHeaders(request.headers.get('access-control-request-headers'), cfg)
+  if (allowedHeaders.length > 0)
+    headers.set('Access-Control-Allow-Headers', allowedHeaders.join(', '))
 
   if (cfg.maxAge > 0)
     headers.set('Access-Control-Max-Age', String(cfg.maxAge))
@@ -268,7 +284,7 @@ export function applyCorsHeaders(request: Request, response: Response, cfg?: Res
     if (allowOrigin !== null)
       response.headers.set('Access-Control-Allow-Origin', allowOrigin)
     response.headers.set('Vary', appendVary(response.headers.get('Vary'), 'Origin'))
-    if (config.credentials)
+    if (config.credentials && allowOrigin !== null)
       response.headers.set('Access-Control-Allow-Credentials', 'true')
     if (config.exposedHeaders.length > 0)
       response.headers.set('Access-Control-Expose-Headers', config.exposedHeaders.join(', '))
@@ -282,7 +298,7 @@ export function applyCorsHeaders(request: Request, response: Response, cfg?: Res
   if (allowOrigin !== null)
     newHeaders.set('Access-Control-Allow-Origin', allowOrigin)
   newHeaders.set('Vary', appendVary(newHeaders.get('Vary'), 'Origin'))
-  if (config.credentials)
+  if (config.credentials && allowOrigin !== null)
     newHeaders.set('Access-Control-Allow-Credentials', 'true')
   if (config.exposedHeaders.length > 0)
     newHeaders.set('Access-Control-Expose-Headers', config.exposedHeaders.join(', '))

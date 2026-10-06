@@ -68,7 +68,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.16.36"
+    "@stacksjs/ts-cloud": "^0.16.37"
   },
   "peerDependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.79"
