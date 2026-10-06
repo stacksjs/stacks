@@ -171,7 +171,10 @@ function tapBack(event: MouseEvent): void {
   .native-nav-back:active { opacity: 0.55; }
   .native-nav-back-icon { flex-shrink: 0; width: 1.6rem; height: 1.6rem; }
   .native-nav-back-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  @container (max-width: 4.5rem) {
+  /* Where the centred title leaves too little room for a word, the chevron
+     alone, as on iOS: at 4.5rem a long title still left "Wo…" for "Workout"
+     on a 402pt phone. 6.5rem fits a one-word name beside the chevron. */
+  @container (max-width: 6.5rem) {
     .native-nav-back-label { display: none; }
   }
 
