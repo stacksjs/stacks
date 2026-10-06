@@ -10,7 +10,24 @@ interface GlobalOptionRegistration {
   version?: boolean
 }
 
-/** Register Buddy's process-wide controls before any command modules load. */
+/**
+ * Register Buddy's process-wide controls before any command modules load.
+ *
+ * `--dry-run` is deliberately NOT here. A global flag appears in every
+ * command's `--help`, so Buddy advertised "Preview actions without making
+ * changes" on all 346 commands while 30 implemented it. The rest accepted the
+ * flag and did the live thing: `buddy setup --dry-run` migrated the database
+ * (stacksjs/stacks#853), `buddy stripe:setup --dry-run` wrote real billing
+ * objects (stacksjs/stacks#2359), and `buddy mail:provision --dry-run`
+ * restarted a shared production mail server, minted DKIM keys and called ACME
+ * (stacksjs/stacks#2865). Three commands had each grown their own guard
+ * against the same root cause.
+ *
+ * Declared per command instead, so clapp's own unknown-option path refuses it
+ * with a non-zero exit everywhere it is not implemented. A flag that silently
+ * does nothing is worse than one that does not exist, because it is exactly
+ * what a careful operator reaches for first.
+ */
 export function registerGlobalOptions(buddy: CLI, options: GlobalOptionRegistration = {}): void {
   const command = options.version === false
     ? buddy
@@ -22,7 +39,6 @@ export function registerGlobalOptions(buddy: CLI, options: GlobalOptionRegistrat
     .option('--debug', 'Enable debug output and stack traces')
     .option('--no-interaction', 'Do not ask interactive questions')
     .option('--env <environment>', 'Target an environment')
-    .option('--dry-run', 'Preview actions without making changes')
     .option('--force', 'Skip confirmation prompts')
     .option('--no-emoji', 'Disable emoji in output')
     .option('--no-cache', 'Disable command metadata caching')

@@ -645,6 +645,7 @@ export function mailCommands(buddy: CLI): void {
   buddy
     .command('mail:provision', 'Provision this app\'s mail from config/email.ts onto the shared mail server (domain + DKIM + mailboxes + MX/SPF/DKIM/DMARC DNS). Reusable + idempotent; the same reconcile buddy deploy runs.')
     .option('--ip <ip>', 'Mail server IP (defaults to the A record of config.email.domain)')
+    .option('--dry-run', 'Report the mailbox, DKIM, certificate and DNS actions, and make no server, ACME or DNS calls', { default: false })
     .action(async (options: { ip?: string, env?: string, dryRun?: boolean }) => {
       // Mailbox passwords come from `MAIL_PASSWORD_<LOCALPART>`, which belong in
       // the target environment's encrypted env file — but nothing here loaded

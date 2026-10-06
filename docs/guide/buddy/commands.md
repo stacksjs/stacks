@@ -532,6 +532,7 @@ Removes all node_modules & lock files
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-f`, `--force` | Skip the confirmation prompt (required in CI/non-interactive shells) | boolean, optional | `false` |
+| `--dry-run` | Say what would be removed, and remove nothing | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud`
@@ -757,6 +758,7 @@ Activate the cms feature bundle. Post/Page/Author/Comment/Tag models + content e
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing cms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what cms:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `cms:uninstall`
 
@@ -771,6 +773,7 @@ Deactivate the cms feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the cms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the cms scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what cms:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `coming-soon`
 
@@ -919,6 +922,7 @@ Activate the commerce feature bundle. Order/Cart/Product/Customer/Coupon/GiftCar
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing commerce files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what commerce:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `commerce:uninstall`
 
@@ -933,6 +937,7 @@ Deactivate the commerce feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the commerce scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the commerce scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what commerce:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `commit`
 
@@ -1050,6 +1055,7 @@ Activate the dashboard feature bundle. Admin SPA shell + Activity/Log/Request/De
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing dashboard files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what dashboard:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `dashboard:uninstall`
 
@@ -1064,6 +1070,7 @@ Deactivate the dashboard feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the dashboard scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the dashboard scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what dashboard:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `db:backup`
 
@@ -1149,6 +1156,7 @@ Deploy your project
 | `--yes` | Confirm all prompts by default | boolean, optional | `false` |
 | `--site` | Deploy only this one site to the existing server (multi-tenant surgical add) | value, required | - |
 | `--staging` | Deploy to staging | boolean, optional | `false` |
+| `--dry-run` | Preview the deployment and change nothing | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
 | `-J`, `--json` | Emit a machine-readable deployment preview | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -2308,6 +2316,7 @@ Activate the forms feature bundle. User-defined forms: builder models, condition
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing forms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what forms:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `forms:uninstall`
 
@@ -2322,6 +2331,7 @@ Deactivate the forms feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the forms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the forms scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what forms:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `fresh`
 
@@ -3019,6 +3029,7 @@ Provision this app's mail from config/email.ts onto the shared mail server (doma
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--ip` | Mail server IP (defaults to the A record of config.email.domain) | value, required | - |
+| `--dry-run` | Report the mailbox, DKIM, certificate and DNS actions, and make no server, ACME or DNS calls | boolean, optional | `false` |
 
 ### `mail:proxy`
 
@@ -3763,6 +3774,7 @@ Activate the marketing feature bundle. /api/email/subscribe, /api/contact, Campa
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing marketing files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what marketing:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `marketing:uninstall`
 
@@ -3777,6 +3789,7 @@ Deactivate the marketing feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the marketing scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the marketing scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what marketing:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `migrate`
 
@@ -3791,6 +3804,7 @@ Migrates your database
 | --- | --- | --- | --- |
 | `-d`, `--diff` | Show the SQL that would be run | boolean, optional | `false` |
 | `--pretend` | Same as --diff (and --dry-run): preview, change nothing | boolean, optional | `false` |
+| `--dry-run` | Same as --diff: preview, change nothing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
 | `--no-auth` | Skip auth/oauth table migrations | boolean, optional, negated | `true` |
@@ -3815,6 +3829,7 @@ Drop all tables and re-run every migration (destroys all data)
 | --- | --- | --- | --- |
 | `-d`, `--diff` | Show what would be dropped and replayed, and change nothing | boolean, optional | `false` |
 | `--pretend` | Same as --diff (and --dry-run): preview, change nothing | boolean, optional | `false` |
+| `--dry-run` | Same as --diff: preview, change nothing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-s`, `--seed` | Run database seeders after migration | boolean, optional | `false` |
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
@@ -3892,6 +3907,7 @@ Activate the monitoring feature bundle. Error model + error-tracking views and a
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing monitoring files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what monitoring:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `monitoring:uninstall`
 
@@ -3906,6 +3922,7 @@ Deactivate the monitoring feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the monitoring scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the monitoring scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what monitoring:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `new`
 
@@ -4335,6 +4352,7 @@ Activate the queue feature bundle. Job + FailedJob models + queue dashboard page
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing queue files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what queue:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `queue:list`
 
@@ -4498,6 +4516,7 @@ Deactivate the queue feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the queue scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the queue scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what queue:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `queue:unquarantine`
 
@@ -4542,6 +4561,7 @@ Activate the realtime feature bundle. WebSocket broadcaster + Websocket model + 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Overwrite any existing realtime files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--dry-run` | Say what realtime:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `realtime:uninstall`
 
@@ -4556,6 +4576,7 @@ Deactivate the realtime feature bundle.
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the realtime scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 | `--force` | Delete the realtime scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
+| `--dry-run` | Say what realtime:uninstall would change, and change nothing. | boolean, optional | `false` |
 
 ### `release`
 
@@ -5209,6 +5230,7 @@ Sets up stripe products in the dashboard
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--dry-run` | Report the products that would be created or updated, and write nothing to Stripe | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `telemetry`

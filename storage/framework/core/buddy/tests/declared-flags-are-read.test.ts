@@ -21,7 +21,7 @@ import { join } from 'node:path'
 const dir = join(import.meta.dir, '..', 'src', 'commands')
 
 /** Handled by the CLI framework itself rather than by any one command. */
-const framework = new Set(['verbose', 'quiet', 'debug', 'help', 'version', 'noInteraction', 'env', 'dryRun', 'project'])
+const framework = new Set(['verbose', 'quiet', 'debug', 'help', 'version', 'noInteraction', 'env', 'project'])
 
 const camel = (flag: string) => flag.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
 

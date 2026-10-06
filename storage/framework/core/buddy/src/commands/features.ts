@@ -712,6 +712,7 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
   buddy
     .command(`${feature}:install`, `Activate the ${feature} feature bundle. ${desc}`)
     .option('--force', `Overwrite any existing ${feature} files in the project (default skips existing paths so the install is idempotent).`)
+    .option('--dry-run', `Say what ${feature}:install would change, and change nothing.`, { default: false })
     .action(async (options: { force?: boolean, dryRun?: boolean }) => {
       try {
         const dryRun = isDryRun(options)
@@ -760,6 +761,7 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
     .command(`${feature}:uninstall`, `Deactivate the ${feature} feature bundle.`)
     .option('--keep-files', `Don't delete the ${feature} scaffolding (action/model/view files). Flip the flag only.`)
     .option('--force', `Delete the ${feature} scaffolding even where you have edited it. Without this, changed files are kept.`)
+    .option('--dry-run', `Say what ${feature}:uninstall would change, and change nothing.`, { default: false })
     .action(async (options: { keepFiles?: boolean, force?: boolean, dryRun?: boolean }) => {
       try {
         const dryRun = isDryRun(options)

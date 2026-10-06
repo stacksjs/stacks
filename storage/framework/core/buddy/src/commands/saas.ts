@@ -16,6 +16,7 @@ export function saas(buddy: CLI): void {
   buddy
     .command('stripe:setup', descriptions.stripe)
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--dry-run', 'Report the products that would be created or updated, and write nothing to Stripe', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: SaasOptions) => {
       log.debug('Running `buddy stripe:setup` ...', options)

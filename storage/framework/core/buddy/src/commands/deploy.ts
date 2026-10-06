@@ -5227,6 +5227,7 @@ export function deploy(buddy: CLI): void {
     .option('--yes', descriptions.yes, { default: false })
     .option('--site <name>', 'Deploy only this one site to the existing server (multi-tenant surgical add)', { default: undefined })
     .option('--staging', descriptions.staging, { default: false })
+    .option('--dry-run', 'Preview the deployment and change nothing', { default: false })
     .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
     .option('-J, --json', 'Emit a machine-readable deployment preview', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
