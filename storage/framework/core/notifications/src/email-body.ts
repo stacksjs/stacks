@@ -1,7 +1,12 @@
 import { templateByName } from '@stacksjs/email'
 
-/** One run of a notification email paragraph: text, a link, or a line break. */
-export interface EmailBodyPart {
+/**
+ * One run of a notification email paragraph: text, a link, or a line break.
+ * A type, not an interface: template variables take index-signature types,
+ * which an interface does not satisfy.
+ */
+// eslint-disable-next-line ts/consistent-type-definitions
+export type EmailBodyPart = {
   text?: string
   url?: string
   br?: boolean
