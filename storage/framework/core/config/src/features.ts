@@ -12,16 +12,36 @@
  * `enableFeature` / `disableFeature` for tests and feature ramps.
  */
 
+import { FEATURE_NAMES as INSTALLABLE_FEATURES, type FeatureName } from '@stacksjs/features/names'
 import { config } from './runtime'
 
-export type StacksFeature =
-  | 'auth' | 'marketing' | 'cms' | 'commerce' | 'forms'
-  | 'dashboard' | 'monitoring' | 'realtime' | 'queue'
+/**
+ * Every name `feature()` answers for: the installable bundles, plus `auth`.
+ *
+ * Derived rather than restated. The bundles were spelled out here as well as in
+ * `@stacksjs/features`, and nothing related the two lists, so a feature added
+ * to one and not the other shipped silently - config-only meant no install
+ * command and no migration gating, features-only meant `canonicalFeatures()`
+ * no longer forced it on and generated artifacts stopped being a function of
+ * the source alone (stacksjs/stacks#2867, #2408).
+ *
+ * Imported from `@stacksjs/features/names`, not the package root: the root also
+ * carries the file and table manifests and reaches `node:fs` and
+ * `@stacksjs/path` for them, which costs about a millisecond on a path every
+ * process walks before anything else. The names module imports nothing.
+ *
+ * `auth` is added here and is not an installable bundle, which looks backwards
+ * until you read why: `config/auth.ts` ships in every app with `enabled: true`,
+ * so gating the auth routes on `feature('auth')` would mount `/login`,
+ * `/register`, `/generate-two-factor-secret`, `/logout-all` and `/auth/tokens`
+ * into every app currently running with `dashboard` off. Route selection is
+ * explicit instead, through `STACKS_DEFAULT_ROUTES` - see the rationale in
+ * `router/src/route-loader.ts` and `defaults/bootstrap.ts`. It is a name
+ * `feature()` knows, and nothing gates on it.
+ */
+export type StacksFeature = FeatureName | 'auth'
 
-const FEATURE_NAMES: readonly StacksFeature[] = [
-  'auth', 'marketing', 'cms', 'commerce', 'forms',
-  'dashboard', 'monitoring', 'realtime', 'queue',
-] as const
+const FEATURE_NAMES: readonly StacksFeature[] = [...INSTALLABLE_FEATURES, 'auth'] as const
 
 // Only `dashboard` defaults on when its config file is absent — every Stacks
 // app wants the admin SPA even at minimum scope. Everything else stays off

@@ -16,19 +16,13 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { projectPath } from '@stacksjs/path'
+import { FEATURE_NAMES, type FeatureName } from './names'
 
-export const FEATURE_NAMES = [
-  'dashboard',
-  'commerce',
-  'cms',
-  'forms',
-  'marketing',
-  'monitoring',
-  'realtime',
-  'queue',
-] as const
-
-export type FeatureName = (typeof FEATURE_NAMES)[number]
+// Re-exported, so the package's surface is unchanged. They live in their own
+// import-free module because `@stacksjs/config` needs only the names and is
+// imported far too early to pay for this file's `node:fs` and path graph.
+export { FEATURE_NAMES } from './names'
+export type { FeatureName } from './names'
 
 /**
  * Per-feature stamped file/directory manifest. Paths are relative to the

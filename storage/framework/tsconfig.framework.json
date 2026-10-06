@@ -24,6 +24,7 @@
       "@stacksjs/auth/*": ["./core/auth/src/*"],
       "@stacksjs/config/*": ["./core/config/src/*"],
       "@stacksjs/env/*": ["./core/env/src/*"],
+      "@stacksjs/features/*": ["./core/features/src/*"],
       "@stacksjs/server/*": ["./core/server/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/router/*": ["./core/router/src/*"],

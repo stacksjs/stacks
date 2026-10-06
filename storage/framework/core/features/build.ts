@@ -6,7 +6,9 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
+  // `./names` is its own entrypoint rather than a split chunk, so importing
+  // it never pulls the manifest half's `node:fs` graph.
+  entrypoints: ['./src/index.ts', './src/names.ts'],
   outdir: './dist',
   target: 'bun',
   format: 'esm',

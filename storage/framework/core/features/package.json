@@ -30,6 +30,11 @@
       "bun": "./dist/index.js",
       "import": "./dist/index.js"
     },
+    "./names": {
+      "types": "./dist/names.d.ts",
+      "bun": "./dist/names.js",
+      "import": "./dist/names.js"
+    },
     "./*": {
       "import": "./dist/*"
     }
