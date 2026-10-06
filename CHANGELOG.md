@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.79...v0.75.80)
+
+## ✨ Features
+
+- **commerce**: mount the payment webhook, so payments reach orders without app code ([4427e93](https://github.com/stacksjs/stacks/commit/4427e93)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1879](https://github.com/stacksjs/stacks/issues/1879))
+
+## 🐛 Bug Fixes
+
+- **payments**: drop forBrowser where nothing returned carries raw ([0ff15a4](https://github.com/stacksjs/stacks/commit/0ff15a4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.78...v0.75.79)
 
 ## 🔧 Chores
