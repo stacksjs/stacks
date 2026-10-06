@@ -5,7 +5,7 @@ import { buddyState, createAIClient } from '@stacksjs/ai'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import { buddySystemPrompt, isBuddyProviderConfigured, publicBuddyHistory, resolveBuddyProvider } from './buddy-chat'
+import { buddyProviderStatus, buddySystemPrompt, publicBuddyHistory } from './buddy-chat'
 
 export default new Action({
   name: 'BuddyChatAction',
@@ -21,12 +21,9 @@ export default new Action({
       return response.json({ message: 'Question must be 4,000 characters or fewer.' }, 422)
 
     const aiConfig = (config.ai || {}) as ConfiguredAIOptions
-    const provider = resolveBuddyProvider(aiConfig)
-    if (!isBuddyProviderConfigured(provider, aiConfig, process.env)) {
-      return response.json({
-        message: `${provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'} is not configured.`,
-      }, 503)
-    }
+    const { provider, configured, problem } = buddyProviderStatus(aiConfig)
+    if (!provider || !configured)
+      return response.json({ message: problem }, 503)
 
     try {
       const history = publicBuddyHistory(buddyState.getState().conversationHistory, 20)

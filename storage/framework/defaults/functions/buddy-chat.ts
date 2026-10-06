@@ -6,8 +6,13 @@ export interface BuddyChatMessage {
 }
 
 export interface BuddyChatState {
-  provider: 'anthropic' | 'openai' | 'ollama'
+  /** `null` when config/ai.ts names a provider Stacks has no driver for. */
+  provider: 'anthropic' | 'openai' | 'ollama' | 'bedrock' | null
   configured: boolean
+  /** Why Buddy cannot answer yet. */
+  problem: string | null
+  /** The environment key that would configure the provider, when one would. */
+  missingKey: string | null
   history: BuddyChatMessage[]
   repository: {
     name: string
@@ -18,7 +23,7 @@ export interface BuddyChatState {
 
 export interface BuddyChatResponse {
   content: string
-  provider: BuddyChatState['provider']
+  provider: NonNullable<BuddyChatState['provider']>
   model: string
   usage: {
     promptTokens: number

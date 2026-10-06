@@ -2,7 +2,7 @@ import type { ConfiguredAIOptions } from '@stacksjs/ai'
 import { Action } from '@stacksjs/actions/runtime'
 import { buddyState } from '@stacksjs/ai'
 import { config } from '@stacksjs/config'
-import { publicBuddyHistory, isBuddyProviderConfigured, resolveBuddyProvider } from './buddy-chat'
+import { buddyProviderStatus, publicBuddyHistory } from './buddy-chat'
 
 export default new Action({
   name: 'BuddyChatStateAction',
@@ -12,12 +12,10 @@ export default new Action({
 
   async handle() {
     const aiConfig = (config.ai || {}) as ConfiguredAIOptions
-    const provider = resolveBuddyProvider(aiConfig)
     const state = buddyState.getState()
 
     return {
-      provider,
-      configured: isBuddyProviderConfigured(provider, aiConfig, process.env),
+      ...buddyProviderStatus(aiConfig),
       history: publicBuddyHistory(state.conversationHistory),
       repository: state.repo
         ? {

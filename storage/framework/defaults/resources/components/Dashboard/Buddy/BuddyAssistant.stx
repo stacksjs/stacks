@@ -18,6 +18,8 @@ function providerName(): string {
     return 'Anthropic'
   if (provider === 'ollama')
     return 'Ollama'
+  if (provider === 'bedrock')
+    return 'Amazon Bedrock'
   return 'AI provider'
 }
 
@@ -108,10 +110,10 @@ onMount(() => {
       <div>
         <h2 class="font-semibold text-amber-900 dark:text-amber-200">Configure {{ providerName() }}</h2>
         <p class="mt-1 text-amber-800 text-sm dark:text-amber-300">
-          Add the provider key to your environment, then restart the dashboard. Secrets remain server-side and are never returned to this page.
+          {{ chatState()?.problem }} Secrets remain server-side and are never returned to this page.
         </p>
-        <code class="inline-block mt-3 px-2 py-1 font-mono text-amber-900 text-xs dark:text-amber-200 bg-amber-100 dark:bg-amber-950 rounded">
-          {{ chatState()?.provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY' }}
+        <code :if="chatState()?.missingKey" class="inline-block mt-3 px-2 py-1 font-mono text-amber-900 text-xs dark:text-amber-200 bg-amber-100 dark:bg-amber-950 rounded">
+          {{ chatState()?.missingKey }}
         </code>
         <StxLink to="/environment" class="inline-flex items-center ml-3 font-medium text-amber-800 text-sm dark:text-amber-300">
           Open environment
