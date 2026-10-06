@@ -4359,12 +4359,39 @@ function requestMayRenderHtml(req: Request): boolean {
     || req.headers.get('sec-fetch-dest') === 'document'
 }
 
-/** Recognize the cookie shape Stacks emits before scanning a mixed jar. */
+/**
+ * Whether the jar holds a cookie called exactly `name`.
+ *
+ * Found by its name at the start of the header or after a `;` (and any
+ * spaces), never anywhere inside another cookie's name.
+ */
+function cookieHeaderHasName(cookieHeader: string, name: string): boolean {
+  const needle = `${name}=`
+  let at = cookieHeader.indexOf(needle)
+  while (at !== -1) {
+    let before = at - 1
+    while (before >= 0 && cookieHeader.charCodeAt(before) === 32)
+      before--
+    if (before < 0 || cookieHeader.charCodeAt(before) === 59)
+      return true
+    at = cookieHeader.indexOf(needle, at + 1)
+  }
+  return false
+}
+
+/**
+ * Whether the request already carries the CSRF cookie, by its exact name.
+ *
+ * This was a substring test, so any cookie whose name ENDED in `csrf-token`
+ * counted - NextAuth's `next-auth.csrf-token`, which a developer running both
+ * on localhost carries everywhere, since cookies are not port-scoped. The
+ * router then never set the real cookie, the token read back empty, and every
+ * form post failed with 403.
+ */
 function hasCsrfCookie(cookieHeader: string): boolean {
   return cookieHeader.length !== 0 && (
-    cookieHeader.startsWith('X-CSRF-Token=')
-    || cookieHeader.includes('X-CSRF-Token=')
-    || cookieHeader.includes('csrf-token=')
+    cookieHeaderHasName(cookieHeader, 'X-CSRF-Token')
+    || cookieHeaderHasName(cookieHeader, 'csrf-token')
   )
 }
 

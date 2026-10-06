@@ -203,11 +203,11 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
   // has already embedded it in every form it drew. Generating a second token
   // here would store one string in the browser while the page carries another,
   // which fails in a way indistinguishable from having no token at all.
-  if (!minted) {
-    const cookieHeader = req.headers.get('cookie') || ''
-    if (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token='))
-      return response
-  }
+  // By the cookie's exact name (`csrfCookieToken` parses the jar): a
+  // substring test counted NextAuth's `next-auth.csrf-token` as ours, so the
+  // real cookie was never set and every form post failed.
+  if (!minted && csrfCookieToken(req) !== '')
+    return response
 
   // A token already on its way to the browser counts as present, exactly like
   // one in the request. Something upstream can mint before the render - the

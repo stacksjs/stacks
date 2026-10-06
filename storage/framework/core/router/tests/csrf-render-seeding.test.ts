@@ -47,6 +47,19 @@ describe('seedCsrfCookieIfMissing', () => {
     expect(seeded).toContain('Path=/')
   })
 
+  test('a cookie whose name only ends in csrf-token is not ours, so ours is still set', () => {
+    // NextAuth's cookie, which a developer running both on localhost carries
+    // everywhere: a substring test counted it, the real cookie was never set,
+    // and every form post failed with 403.
+    for (const jar of ['next-auth.csrf-token=abc%7Cdef', 'my-csrf-token=abc', `session=1; other-X-CSRF-Token=x`])
+      expect(cookieOn(seedCsrfCookieIfMissing(request(jar), response()))).toContain(`${CSRF_COOKIE_NAME}=`)
+  })
+
+  test('the real cookie anywhere in the jar counts', () => {
+    const existing = generateCsrfToken()
+    expect(cookieOn(seedCsrfCookieIfMissing(request(`next-auth.csrf-token=abc; ${CSRF_COOKIE_NAME}=${existing}`), response()))).toBe('')
+  })
+
   test('leaves an existing token alone, because it is somebody live session', () => {
     const existing = generateCsrfToken()
 
