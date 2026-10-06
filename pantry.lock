@@ -101,7 +101,7 @@
         "@stacksjs/testing": "^0.75.72",
         "@stacksjs/tinker": "^0.75.72",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "@stacksjs/tunnel": "^0.75.72",
         "@stacksjs/types": "^0.75.72",
         "@stacksjs/ui": "^0.75.72",
@@ -168,7 +168,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.374",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "@stacksjs/ts-md": "^0.1.1",
         "@stacksjs/tunnel": "workspace:*",
         "@stacksjs/types": "workspace:*",
@@ -188,7 +188,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.37"
+        "@stacksjs/ts-cloud": "^0.16.39"
       },
       "devDependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.3.288",
@@ -357,7 +357,7 @@
         "@stacksjs/testing": "^0.75.72",
         "@stacksjs/tinker": "^0.75.72",
         "@stacksjs/tlsx": "^0.13.19",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "@stacksjs/tunnel": "^0.75.72",
         "@stacksjs/types": "^0.75.72",
         "@stacksjs/ui": "^0.75.72",
@@ -461,7 +461,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "@stacksjs/ts-xml": "^0.1.2"
       },
       "devDependencies": {
@@ -609,7 +609,7 @@
       "name": "@stacksjs/deploy",
       "version": "0.75.72",
       "dependencies": {
-        "@stacksjs/ts-cloud": "^0.16.37"
+        "@stacksjs/ts-cloud": "^0.16.39"
       }
     },
     "storage/framework/core/desktop": {
@@ -640,7 +640,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.37"
+        "@stacksjs/ts-cloud": "^0.16.39"
       },
       "devDependencies": {
         "@stacksjs/strings": "workspace:*",
@@ -675,7 +675,7 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.374",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "@stacksjs/utils": "workspace:*"
       },
       "devDependencies": {
@@ -1250,7 +1250,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "@stacksjs/ts-xml": "^0.1.0",
         "ts-images": "^0.2.23"
       },
@@ -1282,7 +1282,7 @@
         "@stacksjs/router": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/ts-cloud": "^0.16.37",
+        "@stacksjs/ts-cloud": "^0.16.39",
         "very-happy-dom": "^0.3.5"
       },
       "devDependencies": {
@@ -1697,16 +1697,16 @@
         "cache": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.16.37": {
+    "@stacksjs/ts-cloud@0.16.39": {
       "name": "@stacksjs/ts-cloud",
-      "version": "0.16.37",
+      "version": "0.16.39",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.37.tgz",
-      "integrity": "sha512-JWKagGyLxYI/H1E8BicQP2EbICHikeIHz7KPdTCkv+o4c8ej4bbjklC+vmHX3mRFINIT/zU+E+JD0e6jUoPMsA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.39.tgz",
+      "integrity": "sha512-O3ZLMrt9mfvQnCFbpiBDKtQx1YNyys+cxiVPrPBYftqkCn6oVrn1HgflWbWIm1CdDQmym0SsqqC0hD97ypm5qQ==",
       "dependencies": {
         "@stacksjs/ts-xml": "^0.1.2",
-        "@ts-cloud/aws-types": "0.16.37",
-        "@ts-cloud/core": "0.16.37",
+        "@ts-cloud/aws-types": "0.16.39",
+        "@ts-cloud/core": "0.16.39",
         "hash-wasm": "^4.12.0"
       },
       "bin": {
