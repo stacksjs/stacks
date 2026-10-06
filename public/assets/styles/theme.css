@@ -12,124 +12,92 @@
  */
 
 /*
- * Stacks marketing design system, 2026 refresh.
+ * Stacks marketing design system, October 2026.
  *
- * Direction: minimal modern developer-framework page with a nature
- * motif. ONE accent across every theme and section: the golden-hour
- * ember #C14A15, a California-sunset red-orange. The nature reads come
- * from the line-art (topography + park ridge) and the tinted surfaces,
- * never from a second hue.
+ * The brand is the logo: an off-white S on a cobalt-to-navy plate
+ * (public/images/logos/logo.svg, #0A47B0 to #00296B). Everything here is
+ * derived from that plate rather than picked beside it, so the favicon, the
+ * nav mark, the buttons and the gradient panels read as one object.
  *
- * The ramp is a sunset at the coast: ember #C14A15 through burnt
- * sienna #9C3510 on light grounds, cooling to the last-light coral
- * glow #FF8A4C on dark ones, over creams (#FFF4E4, #FBE2CF) and warm
- * umbers rather than plums.
+ *   accent  #1747C9   the plate's cobalt, lifted a step so white text on a
+ *                     button clears 7:1 and the colour still reads as blue
+ *   navy    #00296B   the plate's foot, used for the deep end of gradients
+ *   glow    #7EA3FF   the accent on a dark ground, where cobalt would sink
  *
- * Three themes, switched by `data-theme` on <html>, matching the blog
- * (content/blog/.theme.css) so / and /blog stay one product:
+ * Neutrals are cool slate, never warm paper, so the blue is the only hue on
+ * the page. Two themes switch on `data-theme` on <html>, matching the blog
+ * (content/blog/.theme.css): light, the default, and dark. The third
+ * "colored" mode belonged to the sunset brand and is gone; a visitor who
+ * saved it is read as having made no choice, and gets their OS preference.
  *
- *   colored - dusk: warm cream paper, the default.
- *   light   - clean paper-white with the same ember accent.
- *   dark    - after sundown: burnt-umber ground, coral-glow accent.
- *             Coral only carries contrast on a dark ground, so it
- *             never labels anything in a light theme.
- *
- * Shape rule (one radius system): panels and cards 16px, code windows
- * and chips 10px, buttons and the theme toggle full pill. Nothing else.
+ * Shape rule (one radius system): panels and cards 16px, code windows 14px,
+ * buttons and fields 10px, chips and the theme toggle full pill.
  */
 
-:root[data-theme='colored'] {
-  color-scheme: light;
-  --bg: #fff4e4;
-  --surface: #fffbf5;
-  --badge-bg: #fbe2cf;
-  --field-bg: #ffffff;
-  --text: #2b180e;
-  --muted: #75503c;
-  --accent: #c14a15;
-  --accent-strong: #9c3510;
-  --button-bg: #c14a15;
-  --on-accent: #ffffff;
-  --on-field: #2b180e;
-  --ink-rgb: 43, 24, 14;
-  --accent-rgb: 193, 74, 21;
-  --line: rgba(43, 24, 14, 0.12);
-  --line-strong: rgba(43, 24, 14, 0.22);
-  --shadow: 0 24px 60px rgba(158, 62, 16, 0.14);
-  --page-a: #fff4e4;
-  --page-b: #fce8d2;
-  --page-c: #fff4e4;
-  --panel-a: rgba(193, 74, 21, 0.07);
-  --panel-b: rgba(251, 226, 207, 0.55);
-  --nav-bg: rgba(255, 244, 228, 0.82);
-  --grad-a: #a83a10;
-  --grad-b: #e06a28;
-  --ridge-opacity: 0.28;
-  --topo-opacity: 0.05;
-}
-
 /*
- * Light (white + the ember accent) is the no-JS default: the bare :root
- * carries these values so a first paint is already on-brand.
+ * Light is the no-JS default: the bare :root carries these values so a first
+ * paint is already on-brand.
  */
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #fffaf2;
-  --surface: #fdf3ea;
-  --badge-bg: #fae5d6;
+  --bg: #fafbfc;
+  --surface: #ffffff;
+  --surface-2: #f3f6fa;
+  --badge-bg: #e9effc;
   --field-bg: #ffffff;
-  --text: #271710;
-  --muted: #75503c;
-  --accent: #c14a15;
-  --accent-strong: #9c3510;
-  --button-bg: #c14a15;
+  --text: #0b1220;
+  --muted: #4a5468;
+  --accent: #1747c9;
+  --accent-strong: #0f359d;
+  --button-bg: #1747c9;
   --on-accent: #ffffff;
-  --on-field: #271710;
-  --ink-rgb: 39, 23, 16;
-  --accent-rgb: 193, 74, 21;
-  --line: rgba(39, 23, 16, 0.10);
-  --line-strong: rgba(39, 23, 16, 0.20);
-  --shadow: 0 24px 60px rgba(158, 62, 16, 0.10);
-  --page-a: #fffaf2;
-  --page-b: #fdf0e4;
-  --page-c: #fffaf2;
-  --panel-a: rgba(193, 74, 21, 0.05);
-  --panel-b: rgba(250, 229, 214, 0.50);
-  --nav-bg: rgba(255, 250, 242, 0.80);
-  --grad-a: #a83a10;
-  --grad-b: #c14a15;
-  --ridge-opacity: 0.20;
+  --on-field: #0b1220;
+  --ink-rgb: 11, 18, 32;
+  --accent-rgb: 23, 71, 201;
+  --line: rgba(11, 18, 32, 0.08);
+  --line-strong: rgba(11, 18, 32, 0.15);
+  --shadow: 0 1px 2px rgba(11, 18, 32, 0.04), 0 18px 40px -18px rgba(15, 53, 157, 0.22);
+  --page-a: #fafbfc;
+  --page-b: #f1f5fb;
+  --page-c: #fafbfc;
+  --panel-a: rgba(23, 71, 201, 0.05);
+  --panel-b: rgba(233, 239, 252, 0.6);
+  --nav-bg: rgba(250, 251, 252, 0.82);
+  --grad-a: #00296b;
+  --grad-b: #1747c9;
+  --ridge-opacity: 0.18;
   --topo-opacity: 0.035;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #1d110b;
-  --surface: #291910;
-  --badge-bg: #3d2415;
-  --field-bg: #20130c;
-  --text: #f9ecdf;
-  --muted: #cba78e;
-  --accent: #ff8a4c;
-  --accent-strong: #ffb37e;
-  --button-bg: #ff8a4c;
-  --on-accent: #2b180e;
-  --on-field: #f9ecdf;
-  --ink-rgb: 249, 236, 223;
-  --accent-rgb: 255, 138, 76;
-  --line: rgba(249, 236, 223, 0.10);
-  --line-strong: rgba(249, 236, 223, 0.22);
-  --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  --page-a: #1d110b;
-  --page-b: #26160d;
-  --page-c: #170d08;
-  --panel-a: rgba(61, 36, 21, 0.85);
-  --panel-b: rgba(23, 13, 8, 0.92);
-  --nav-bg: rgba(29, 17, 11, 0.78);
-  --grad-a: #a83a10;
-  --grad-b: #ff8a4c;
-  --ridge-opacity: 0.22;
+  --bg: #070b14;
+  --surface: #0d1322;
+  --surface-2: #111a2d;
+  --badge-bg: #16213a;
+  --field-bg: #0a101d;
+  --text: #e8edf7;
+  --muted: #9ba7be;
+  --accent: #7ea3ff;
+  --accent-strong: #a9c1ff;
+  --button-bg: #2f5fe6;
+  --on-accent: #ffffff;
+  --on-field: #e8edf7;
+  --ink-rgb: 232, 237, 247;
+  --accent-rgb: 126, 163, 255;
+  --line: rgba(232, 237, 247, 0.08);
+  --line-strong: rgba(232, 237, 247, 0.16);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+  --page-a: #070b14;
+  --page-b: #0a1120;
+  --page-c: #060910;
+  --panel-a: rgba(47, 95, 230, 0.10);
+  --panel-b: rgba(13, 19, 34, 0.9);
+  --nav-bg: rgba(7, 11, 20, 0.78);
+  --grad-a: #00296b;
+  --grad-b: #2f5fe6;
+  --ridge-opacity: 0.2;
   --topo-opacity: 0.05;
 }
 
@@ -143,12 +111,16 @@
 }
 
 /* The code window and terminal stay dark in every theme, the way an
-   editor and a shell are. Dark, but on the page's own burnt umber
-   rather than the usual editor navy: a cool code block on a warm page
-   is the one place the palette used to break. */
+   editor and a shell are: deep navy from the logo's plate, so a code
+   block is the brand's own colour rather than a generic editor grey. */
 :root {
-  --term-bg: #190d07;
-  --term-fg: #f0a07e;
+  --term-bg: #0a1224;
+  --term-fg: #c9d6f2;
+  --term-line: rgba(201, 214, 242, 0.1);
+}
+
+:root[data-theme='dark'] {
+  --term-bg: #0a1122;
 }
 
 /* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
@@ -169,21 +141,22 @@
 .theme-toggle button {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  color: inherit;
-  font-size: 0.85rem;
+  color: var(--muted);
+  font-size: 1rem;
   line-height: 1;
   background: transparent;
   cursor: pointer;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .theme-toggle button:hover {
-  background: rgba(var(--ink-rgb), 0.1);
+  color: var(--text);
+  background: rgba(var(--ink-rgb), 0.07);
 }
 
 .theme-toggle button:active {
@@ -192,7 +165,8 @@
 
 /* The active mode reads as pressed, not just hovered. */
 .theme-toggle button[aria-pressed='true'] {
-  background: rgba(var(--ink-rgb), 0.16);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
 }
 
 .theme-toggle button:focus-visible {
@@ -211,7 +185,7 @@ html {
 }
 
 .site-shell {
-  width: min(1180px, calc(100% - 48px));
+  width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
 }
 
@@ -219,18 +193,19 @@ html {
   display: inline-flex;
   gap: 0.55rem;
   align-items: center;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1rem;
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 0.74rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .kicker::before {
-  width: 34px;
+  width: 22px;
   height: 2px;
+  border-radius: 2px;
   content: "";
   background: var(--accent);
 }
@@ -240,37 +215,43 @@ html {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 46px;
-  padding: 0 1.35rem;
+  min-height: 44px;
+  padding: 0 1.15rem;
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  border-radius: 10px;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 620;
+  font-size: 0.92rem;
+  font-weight: 600;
   white-space: nowrap;
-  background: transparent;
+  text-decoration: none;
+  background: var(--surface);
   cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
 .button.primary {
-  border-color: var(--button-bg);
+  border-color: transparent;
   color: var(--on-accent);
   background: var(--button-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 41, 107, 0.3);
 }
 
-.button:hover {
+.button.primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 28px -10px rgba(var(--accent-rgb), 0.6);
 }
 
 .button:not(.primary):hover {
-  border-color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.45);
   color: var(--accent);
-  box-shadow: none;
 }
 
 .button:active {
   transform: translateY(0) scale(0.98);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

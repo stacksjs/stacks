@@ -62,7 +62,7 @@ const config: BlogConfig = {
     { text: 'Docs', link: '/docs' },
     { text: 'GitHub', link: 'https://github.com/stacksjs/stacks' },
   ],
-  themes: ['colored', 'light', 'dark'],
+  themes: ['light', 'dark'],
   defaultTheme: 'light',
   colophon: 'Built with Stacks · TypeScript &amp; Bun · <a href="/blog/feed.xml">RSS</a>',
   social: {
@@ -70,7 +70,7 @@ const config: BlogConfig = {
     github: 'stacksjs/stacks',
   },
   theme: {
-    primaryColor: '#c14a15',
+    primaryColor: '#1747c9',
     logo: '/images/logos/logo-transparent.svg',
   },
 }

@@ -1,12 +1,8 @@
 /*
- * Stacks Blog - custom BunPress theme, matching the 2026 marketing design
- * system: minimal modern developer-framework look. Same palette + Geist type
- * as the marketing site, one accent across all three themes, and an editorial
- * layout (lead story + hairline index) carried by type, rules, and whitespace
- * alone. No illustration chrome. Three themes via `data-theme`:
- *   - colored - dusk: warm cream paper.
- *   - light   - clean paper-white with the same ember accent.
- *   - dark    - after sundown: burnt-umber ground, coral-glow accent.
+ * Stacks Blog - custom BunPress theme, matching the marketing design system:
+ * the cobalt of the logo's plate on cool slate neutrals, Geist type, and an
+ * editorial layout (lead story + hairline index) carried by type, rules, and
+ * whitespace alone. Two themes via `data-theme`, light (the default) and dark.
  *
  * The values below mirror public/assets/styles/theme.css token for token.
  * BunPress owns this file and names things `--vp-*`, so the blog cannot link
@@ -15,73 +11,56 @@
  * / arrives on /blog in dark - which is exactly when a different palette shows
  * up as leaving the brand mid-click. That is what this is here to prevent, and
  * it means a colour change on the site is a colour change here too.
+ *
+ * `colored` was the sunset brand's cream third theme. config/blog.ts no longer
+ * offers it, but a reader may still have it saved, so it resolves to light
+ * rather than to an unstyled page.
  */
 
 /* ── Brand type: Geist + Geist Mono (matches the marketing site) ────────── */
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
 
 /* ── Themes ─────────────────────────────────────────────────────────────── */
-:root[data-theme='colored'] {
-  --vp-c-bg: #fff4e4;
-  --vp-c-bg-alt: #fffbf5;
-  --vp-c-bg-soft: #fce8d2;
-  --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #2b180e;
-  --vp-c-text-2: #75503c;
-  --vp-c-text-3: #96684f;
-  --vp-c-brand-1: #c14a15;
-  --vp-c-brand-2: #9c3510;
-  --vp-c-brand-3: #7f2b0d;
-  --vp-c-brand-soft: rgba(193, 74, 21, 0.12);
-  --vp-c-divider: #f2ddc8;
-  --vp-c-gutter: #fbe6d1;
-  --vp-code-color: #9c3510;
-  --vp-code-bg: #fbe2cf;
-  --vp-code-block-bg: #1f1109;
-  --shadow-rgb: 43, 24, 14;
-}
-
-/* Light (white + the ember accent) is the default brand look for the blog too,
-   so / and /blog match. The bare :root carries it. */
 :root,
-:root[data-theme='light'] {
-  --vp-c-bg: #fffaf2;
-  --vp-c-bg-alt: #fdf3ea;
-  --vp-c-bg-soft: #fae5d6;
+:root[data-theme='light'],
+:root[data-theme='colored'] {
+  --vp-c-bg: #fafbfc;
+  --vp-c-bg-alt: #ffffff;
+  --vp-c-bg-soft: #f3f6fa;
   --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #271710;
-  --vp-c-text-2: #75503c;
-  --vp-c-text-3: #96684f;
-  --vp-c-brand-1: #c14a15;
-  --vp-c-brand-2: #9c3510;
-  --vp-c-brand-3: #7f2b0d;
-  --vp-c-brand-soft: rgba(193, 74, 21, 0.10);
-  --vp-c-divider: #f4e4d5;
-  --vp-c-gutter: #fdf1e6;
-  --vp-code-color: #9c3510;
-  --vp-code-bg: #fae5d6;
-  --vp-code-block-bg: #1f1109;
-  --shadow-rgb: 39, 23, 16;
+  --vp-c-text-1: #0b1220;
+  --vp-c-text-2: #4a5468;
+  --vp-c-text-3: #6b7489;
+  --vp-c-brand-1: #1747c9;
+  --vp-c-brand-2: #0f359d;
+  --vp-c-brand-3: #00296b;
+  --vp-c-brand-soft: rgba(23, 71, 201, 0.10);
+  --vp-c-divider: #e3e8f0;
+  --vp-c-gutter: #f1f5fb;
+  --vp-code-color: #0f359d;
+  --vp-code-bg: #e9effc;
+  --vp-code-block-bg: #0a1224;
+  --shadow-rgb: 11, 18, 32;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --vp-c-bg: #1d110b;
-  --vp-c-bg-alt: #291910;
-  --vp-c-bg-soft: #3d2415;
-  --vp-c-bg-elv: #291910;
-  --vp-c-text-1: #f9ecdf;
-  --vp-c-text-2: #cba78e;
-  --vp-c-text-3: #a58267;
-  --vp-c-brand-1: #ff8a4c;
-  --vp-c-brand-2: #ffb37e;
-  --vp-c-brand-3: #f0a07e;
-  --vp-c-brand-soft: rgba(255, 138, 76, 0.14);
-  --vp-c-divider: #3d2415;
-  --vp-c-gutter: #26160d;
-  --vp-code-color: #f0a07e;
-  --vp-code-bg: #3d2415;
-  --vp-code-block-bg: #170d08;
+  --vp-c-bg: #070b14;
+  --vp-c-bg-alt: #0d1322;
+  --vp-c-bg-soft: #111a2d;
+  --vp-c-bg-elv: #0d1322;
+  --vp-c-text-1: #e8edf7;
+  --vp-c-text-2: #9ba7be;
+  --vp-c-text-3: #7b879e;
+  --vp-c-brand-1: #7ea3ff;
+  --vp-c-brand-2: #a9c1ff;
+  --vp-c-brand-3: #c9d6f2;
+  --vp-c-brand-soft: rgba(126, 163, 255, 0.14);
+  --vp-c-divider: #16213a;
+  --vp-c-gutter: #0a1120;
+  --vp-code-color: #a9c1ff;
+  --vp-code-bg: #16213a;
+  --vp-code-block-bg: #0a1122;
   --shadow-rgb: 0, 0, 0;
 }
 
@@ -166,7 +145,6 @@ body {
 }
 .blog-theme-toggle button:hover { color: var(--vp-c-text-1); }
 :root[data-theme='light'] .blog-theme-toggle button[data-t='light'],
-:root[data-theme='colored'] .blog-theme-toggle button[data-t='colored'],
 :root[data-theme='dark'] .blog-theme-toggle button[data-t='dark'] {
   background: var(--vp-c-brand-soft);
   color: var(--vp-c-brand-1);

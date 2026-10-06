@@ -12,8 +12,8 @@
 
 <link rel="canonical" href="https://stacksjs.com{{ canonicalPath }}">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#fff7ec" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1c1016" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fafbfc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#070b14" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/images/logos/logo.png">
 
@@ -67,7 +67,7 @@
   }
 
   ;(function () {
-    var modes = ['colored', 'light', 'dark']
+    var modes = ['light', 'dark']
     var ok = function (t: string) { return modes.indexOf(t) !== -1 }
 
     var queryTheme = ''
