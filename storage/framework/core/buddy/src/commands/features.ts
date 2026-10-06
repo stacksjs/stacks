@@ -4,8 +4,10 @@ import { existsSync, readdirSync, readFileSync, rmdirSync, statSync } from 'node
 import { cp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
+import { confirmOrNull, runCommand } from '@stacksjs/cli'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { resultError, resultFailed } from '../result'
 
 /**
  * Feature install / uninstall commands.
@@ -54,7 +56,7 @@ export {
 
 // Imported as well as re-exported: `export … from` forwards the names without
 // binding them here, and the commands below read the manifest directly.
-import { FEATURE_FILES, FEATURE_NAMES } from '@stacksjs/features'
+import { FEATURE_FILES, FEATURE_NAMES, migrationFeature } from '@stacksjs/features'
 
 /**
  * Returns the subset of a feature's manifest paths that currently exist
@@ -448,6 +450,118 @@ export type SetFeatureEnabledOutcome = 'created' | 'flipped' | 'unchanged' | 'mi
  * features in the freshly-cloned project path before the user has cd'd
  * into it.
  */
+/** Where the feature's own `enabled` flag sits, and what it says. */
+interface TopLevelEnabled {
+  index: number
+  length: number
+  value: boolean
+}
+
+/** Blank out comments so a flag mentioned in prose is never matched as code. */
+function withoutComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, m => ' '.repeat(m.length))
+    .replace(/\/\/[^\n]*/g, m => ' '.repeat(m.length))
+}
+
+/**
+ * Locate the feature's own `enabled: <bool>`, at depth 1 of `export default {`.
+ *
+ * A regex cannot do this. `config/dashboard.ts` carries per-section flags
+ * (`library: { enabled: true }`) beside its own, and the previous pattern
+ * anchored on newline-or-`{`, so it matched whichever came first in the file.
+ * Today the top-level flag happens to be written above the sections, so it
+ * worked by position; reorder that file, or ship a feature config whose
+ * sections come first, and `<feature>:install` would have flipped a section's
+ * flag and left the feature off, silently.
+ *
+ * Scans brace depth instead, over a comment-stripped copy so the commentary in
+ * `config/dashboard.ts` - which names `commerce.enabled: false` in prose - is
+ * not a candidate. Indexes refer to the original string, so the caller can
+ * splice into it directly.
+ */
+function findTopLevelEnabled(src: string): TopLevelEnabled | null {
+  const scan = withoutComments(src)
+  const start = scan.search(/export default\s*\{/)
+  if (start === -1) return null
+
+  const open = scan.indexOf('{', start)
+  let depth = 0
+
+  for (let i = open; i < scan.length; i++) {
+    const char = scan[i]
+    if (char === '{') {
+      depth++
+      continue
+    }
+    if (char === '}') {
+      depth--
+      if (depth === 0) return null
+      continue
+    }
+    if (depth !== 1 || char !== 'e') continue
+
+    const match = /^enabled\s*:\s*(true|false)/.exec(scan.slice(i))
+    if (!match) continue
+    // Only a property name, never the tail of another identifier.
+    if (i > 0 && /[\w$]/.test(scan[i - 1]!)) continue
+
+    return { index: i, length: match[0].length, value: match[1] === 'true' }
+  }
+
+  return null
+}
+
+/**
+ * What `config/<feature>.ts` declares, without resolving config.
+ *
+ * `'absent'` when the file is missing, `'unset'` when it exists with no
+ * top-level flag. Reports the declaration only: `feature()` is the authority on
+ * whether the feature is actually on, because it also applies the optional
+ * `env: [...]` narrowing and any runtime override.
+ */
+export function readFeatureFlag(feature: FeatureName, root: string = projectPath()): true | false | 'absent' | 'unset' {
+  const path = join(root, `config/${feature}.ts`)
+  if (!existsSync(path)) return 'absent'
+
+  const found = findTopLevelEnabled(readFileSync(path, 'utf8'))
+  if (!found) return 'unset'
+  return found.value
+}
+
+/**
+ * Migrations the feature owns, split by whether the runner has hidden them.
+ *
+ * The runner renames a disabled feature's files to `<name>.sql.disabled` at
+ * migrate time rather than deleting them, so both spellings are counted and
+ * reported separately. Scans the dialect subdirectories too, since Postgres
+ * gets its own corpus under `database/migrations/postgres`.
+ */
+export function featureMigrationCounts(feature: FeatureName, root: string = projectPath()): { active: number, hidden: number } {
+  const counts = { active: 0, hidden: 0 }
+  const base = join(root, 'database/migrations')
+  if (!existsSync(base)) return counts
+
+  const dirs = [base]
+  for (const entry of readdirSync(base, { withFileTypes: true })) {
+    if (entry.isDirectory())
+      dirs.push(join(base, entry.name))
+  }
+
+  for (const dir of dirs) {
+    for (const file of readdirSync(dir)) {
+      const hidden = file.endsWith('.sql.disabled')
+      if (!hidden && !file.endsWith('.sql')) continue
+      const sqlName = hidden ? file.slice(0, -'.disabled'.length) : file
+      if (migrationFeature(sqlName) !== feature) continue
+      if (hidden) counts.hidden++
+      else counts.active++
+    }
+  }
+
+  return counts
+}
+
 export async function setFeatureEnabled(
   feature: FeatureName,
   enabled: boolean,
@@ -472,17 +586,11 @@ export async function setFeatureEnabled(
 
   const src = await file.text()
 
-  // Match a top-level `enabled: <bool>` declaration. The leading
-  // newline-or-`{` anchor keeps us from accidentally rewriting a nested
-  // `enabled` inside, e.g., dashboard sections.
-  const enabledRegex = /(^|\{)(\s*)enabled\s*:\s*(true|false)(\s*,?)/m
+  const found = findTopLevelEnabled(src)
 
-  if (enabledRegex.test(src)) {
-    const replaced = src.replace(enabledRegex, (_full, anchor, ws, current, trailing) => {
-      if (current === String(enabled)) return `${anchor}${ws}enabled: ${current}${trailing}`
-      return `${anchor}${ws}enabled: ${enabled}${trailing}`
-    })
-    if (replaced === src) return 'unchanged'
+  if (found) {
+    if (found.value === enabled) return 'unchanged'
+    const replaced = src.slice(0, found.index) + `enabled: ${enabled}` + src.slice(found.index + found.length)
     await write(path, replaced)
     return 'flipped'
   }
@@ -554,6 +662,49 @@ function isDryRun(options: { dryRun?: boolean }): boolean {
   return options.dryRun === true || process.argv.includes('--dry-run')
 }
 
+/**
+ * Offer to run the migrations the feature just activated.
+ *
+ * Installing flips the flag and stamps the files; it does not create tables.
+ * Until `./buddy migrate` runs, the models load and every query fails on a
+ * missing table, which reads like a broken install rather than a pending step.
+ *
+ * `confirmOrNull` rather than `confirm`, deliberately: running migrations
+ * writes to a database, and `confirm` maps end-of-input to its default, so a
+ * piped or CI invocation would answer yes on the user's behalf. `null` means
+ * nobody answered - print the command and let them run it.
+ */
+async function offerMigrate(feature: FeatureName): Promise<void> {
+  const { active, hidden } = featureMigrationCounts(feature)
+  const total = active + hidden
+  if (total === 0)
+    return
+
+  const plural = total === 1 ? 'migration' : 'migrations'
+  console.log(`  → ${feature} owns ${total} ${plural}; its tables do not exist until they run.`)
+
+  const answer = await confirmOrNull({ message: `Run ./buddy migrate now?`, initial: false })
+  if (answer !== true) {
+    console.log(answer === null
+      ? `  → Not asking (non-interactive). Run ./buddy migrate when ready.`
+      : `  → Skipped. Run ./buddy migrate when ready.`)
+    return
+  }
+
+  const result = await runCommand('./buddy migrate', { cwd: projectPath() })
+  if (resultFailed(result)) {
+    // Not fatal to the install: the flag and the files are already in place,
+    // and the failure is usually a database that is not reachable yet.
+    // `resultError` rather than the raw error, so migrate's own message - the
+    // dialect mismatch, the column it would drop - is what gets printed.
+    console.error(`✗ ./buddy migrate failed: ${resultError(result)}`)
+    console.error(`  → ${feature} is installed; re-run ./buddy migrate once that is resolved.`)
+    return
+  }
+
+  console.log(`✓ Migrated.`)
+}
+
 function registerInstallPair(buddy: CLI, feature: FeatureName): void {
   const desc = FEATURE_DESCRIPTIONS[feature]
   const configRel = `config/${feature}.ts`
@@ -589,9 +740,14 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
           console.log(`  → ${feature} scaffolding already in place - use --force to overwrite.`)
         }
 
-        console.log(dryRun
-          ? `  → Dry run: nothing was written. Run it without --dry-run to install ${feature}.`
-          : `  → next ./buddy dev will boot with ${feature} loaded.`)
+        if (dryRun) {
+          console.log(`  → Dry run: nothing was written. Run it without --dry-run to install ${feature}.`)
+          process.exit(ExitCode.Success)
+        }
+
+        await offerMigrate(feature)
+
+        console.log(`  → next ./buddy dev will boot with ${feature} loaded.`)
         process.exit(ExitCode.Success)
       }
       catch (err) {
@@ -659,7 +815,90 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
     })
 }
 
+/**
+ * `./buddy features` - what is on, and why.
+ *
+ * Named `features` rather than `<feature>:status` because `queue:status`
+ * already exists and reports worker health; a second meaning for the same verb
+ * on one feature and not the others would be worse than one overview.
+ *
+ * The two columns exist because they disagree in ways that are hard to see
+ * otherwise. `declares` is the literal top-level flag in `config/<feature>.ts`;
+ * `feature()` is what the running app gets, which also applies the optional
+ * `env: [...]` narrowing and any runtime override. A feature declared `true`
+ * that reads off here is almost always an env gate, and that is the single
+ * most confusing state this subsystem has.
+ */
+function registerStatus(buddy: CLI): void {
+  buddy
+    .command('features', 'Show which framework feature bundles are active.')
+    .action(async () => {
+      try {
+        const { feature, overridesReady } = await import('@stacksjs/config')
+        // Without this the flags read as framework defaults rather than the
+        // app's config, because overrides land asynchronously.
+        await overridesReady
+
+        const rows = FEATURE_NAMES.map((name) => {
+          const declared = readFeatureFlag(name)
+          const active = feature(name)
+          const migrations = featureMigrationCounts(name)
+          return { name, declared, active, migrations, scaffolded: featurePathsPresent(name).length }
+        })
+
+        const enabled = rows.filter(r => r.active).length
+        console.log('')
+        console.log(`Feature bundles  (${enabled} of ${rows.length} active)`)
+        console.log('')
+
+        for (const row of rows) {
+          const mark = row.active ? '✓' : '·'
+          const declared = row.declared === 'absent'
+            ? 'no config'
+            : row.declared === 'unset'
+              ? 'flag unset'
+              : `enabled: ${row.declared}`
+
+          const parts = [`${mark} ${row.name.padEnd(11)}`, declared.padEnd(14)]
+
+          const total = row.migrations.active + row.migrations.hidden
+          const plural = total === 1 ? 'migration' : 'migrations'
+          if (total > 0) {
+            parts.push(row.migrations.hidden > 0
+              ? `${total} ${plural} (${row.migrations.hidden} hidden)`
+              : `${total} ${plural}`)
+          }
+          else {
+            parts.push('')
+          }
+
+          console.log(`  ${parts.join('  ')}`)
+
+          // Only the states a reader would otherwise have to work out.
+          if (row.declared === true && !row.active)
+            console.log(`      declared on but reading off - check \`env\` in config/${row.name}.ts against config.app.env`)
+          if (row.declared === false && row.active)
+            console.log(`      declared off but reading on - a runtime override is in play`)
+          if (!row.active && row.scaffolded > 0)
+            console.log(`      ${row.scaffolded} scaffolded path(s) still present - \`./buddy ${row.name}:uninstall\` removes them`)
+          if (row.active && row.migrations.hidden > 0)
+            console.log(`      ${row.migrations.hidden} migration(s) still hidden from a previous run - \`./buddy migrate\` restores them`)
+        }
+
+        console.log('')
+        console.log('  ./buddy <feature>:install activates one, <feature>:uninstall turns it off.')
+        console.log('')
+        process.exit(ExitCode.Success)
+      }
+      catch (err) {
+        console.error('✗ Failed to read feature status:', err)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+}
+
 export function features(buddy: CLI): void {
+  registerStatus(buddy)
   for (const feature of FEATURE_NAMES)
     registerInstallPair(buddy, feature)
 }

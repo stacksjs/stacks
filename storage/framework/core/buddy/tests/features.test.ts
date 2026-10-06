@@ -10,8 +10,10 @@ import {
   FEATURE_FILES,
   FEATURE_NAMES,
   FEATURE_TABLES,
+  featureMigrationCounts,
   featurePathsPresent,
   migrationFeature,
+  readFeatureFlag,
   migrationTable,
   setFeatureEnabled,
   uninstallAllFeatures,
@@ -621,5 +623,100 @@ describe('--dry-run', () => {
     expect(existsSync(join(root, 'app/Models/PaymentMethod.ts'))).toBe(true)
     expect(await setFeatureEnabled('commerce', true, { createIfMissing: true, root })).toBe('created')
     expect(existsSync(join(root, 'config/commerce.ts'))).toBe(true)
+  })
+})
+
+async function writeConfig(feature: string, contents: string): Promise<void> {
+  await mkdir(join(root, 'config'), { recursive: true })
+  await writeFile(join(root, `config/${feature}.ts`), contents)
+}
+
+describe('readFeatureFlag', () => {
+  it('reads a top-level flag', async () => {
+    await writeConfig('commerce', 'export default {\n  enabled: true,\n}\n')
+
+    expect(readFeatureFlag('commerce', root)).toBe(true)
+  })
+
+  it('reports an absent config rather than guessing', () => {
+    expect(readFeatureFlag('commerce', root)).toBe('absent')
+  })
+
+  it('reports a config with no flag yet', async () => {
+    await writeConfig('commerce', 'export default {\n  currency: \'usd\',\n}\n')
+
+    expect(readFeatureFlag('commerce', root)).toBe('unset')
+  })
+
+  /**
+   * `config/dashboard.ts` carries per-section flags (`library: { enabled: true }`)
+   * as well as its own. A reader that takes the first `enabled` it sees reports
+   * the section's value as the feature's - which is the mistake that made a
+   * first pass at `./buddy features` call an enabled dashboard disabled.
+   */
+  it('ignores a nested section flag that follows the real one', async () => {
+    await writeConfig(
+      'dashboard',
+      'export default {\n  enabled: false,\n  sections: {\n    library: { enabled: true },\n  },\n}\n',
+    )
+
+    expect(readFeatureFlag('dashboard', root)).toBe(false)
+  })
+
+  it('ignores a nested section flag that precedes the real one', async () => {
+    await writeConfig(
+      'dashboard',
+      'export default {\n  sections: {\n    library: { enabled: true },\n  },\n  enabled: false,\n}\n',
+    )
+
+    expect(readFeatureFlag('dashboard', root)).toBe(false)
+  })
+
+  it('agrees with what setFeatureEnabled wrote', async () => {
+    expect(await setFeatureEnabled('cms', true, { createIfMissing: true, root })).toBe('created')
+    expect(readFeatureFlag('cms', root)).toBe(true)
+
+    expect(await setFeatureEnabled('cms', false, { createIfMissing: false, root })).toBe('flipped')
+    expect(readFeatureFlag('cms', root)).toBe(false)
+  })
+})
+
+describe('featureMigrationCounts', () => {
+  async function migration(name: string): Promise<void> {
+    await mkdir(join(root, 'database/migrations'), { recursive: true })
+    await writeFile(join(root, 'database/migrations', name), '')
+  }
+
+  it('counts nothing when there are no migrations', () => {
+    expect(featureMigrationCounts('commerce', root)).toEqual({ active: 0, hidden: 0 })
+  })
+
+  it('attributes a migration to the feature that owns its table', async () => {
+    await migration('1-create-products-table.sql')
+    await migration('2-create-orders-table.sql')
+    await migration('3-create-posts-table.sql')
+
+    expect(featureMigrationCounts('commerce', root)).toEqual({ active: 2, hidden: 0 })
+    expect(featureMigrationCounts('cms', root)).toEqual({ active: 1, hidden: 0 })
+  })
+
+  /**
+   * The runner renames a disabled feature's files rather than deleting them, so
+   * a count taken after a migrate with the feature off has to see them or it
+   * reports zero and the install prompt says there is nothing to run.
+   */
+  it('counts files the runner has hidden, separately', async () => {
+    await migration('1-create-products-table.sql')
+    await migration('2-create-orders-table.sql.disabled')
+
+    expect(featureMigrationCounts('commerce', root)).toEqual({ active: 1, hidden: 1 })
+  })
+
+  it('ignores files that are not migrations', async () => {
+    await migration('1-create-products-table.sql')
+    await migration('notes.md')
+    await migration('1-create-products-table.sql.bak')
+
+    expect(featureMigrationCounts('commerce', root)).toEqual({ active: 1, hidden: 0 })
   })
 })
