@@ -3768,6 +3768,29 @@ export interface StreamOptions {
   status?: number
 }
 
+function iterableToStream(source: AsyncIterable<string | Uint8Array>): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder()
+  let iterator: AsyncIterator<string | Uint8Array> | undefined
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      iterator ??= source[Symbol.asyncIterator]()
+      try {
+        const { value, done } = await iterator.next()
+        if (done)
+          controller.close()
+        else
+          controller.enqueue(typeof value === 'string' ? encoder.encode(value) : value)
+      }
+      catch (err) {
+        controller.error(err)
+      }
+    },
+    async cancel(reason) {
+      await iterator?.return?.(reason)
+    },
+  }, { highWaterMark: 1 })
+}
+
 export function stream(
   source: ReadableStream | AsyncIterable<string | Uint8Array>,
   options: StreamOptions = {},
@@ -3785,25 +3808,15 @@ export function stream(
     baseHeaders['Content-Type'] = options.contentType ?? 'application/octet-stream'
   }
 
-  // Async-iterable (incl. generator) → ReadableStream. Generators don't
-  // expose backpressure natively, so chunks are pulled one at a time —
-  // good for low-throughput SSE; for high-throughput byte streams the
-  // caller should hand us a real ReadableStream.
+  // Async-iterable (incl. generator) → ReadableStream, pulled: the next
+  // chunk is asked for only when the consumer wants one, so a slow or paused
+  // client paces the generator. It used to drain the whole iterable into the
+  // stream's queue from `start()`, so a generator producing faster than the
+  // client read grew the queue without bound - 130,000 chunks and 2.3 GB in
+  // 300ms with nobody reading. A cancelled response ends the generator.
   const body: ReadableStream = source instanceof ReadableStream
     ? source
-    : new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of source) {
-              controller.enqueue(typeof chunk === 'string' ? new TextEncoder().encode(chunk) : chunk)
-            }
-            controller.close()
-          }
-          catch (err) {
-            controller.error(err)
-          }
-        },
-      })
+    : iterableToStream(source)
 
   const merged = new Headers(baseHeaders)
   if (options.headers) {
