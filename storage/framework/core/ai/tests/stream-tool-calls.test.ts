@@ -1,9 +1,9 @@
 import type { AIMessage, AIResult, AIStreamEvent, AITool } from '../src/types'
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { anthropic } from '../src/drivers/anthropic'
+import { anthropic, createAnthropicDriver } from '../src/drivers/anthropic'
 import { bedrock } from '../src/drivers/bedrock'
-import { ollama } from '../src/drivers/ollama'
-import { openai } from '../src/drivers/openai'
+import { createOllamaDriver, ollama } from '../src/drivers/ollama'
+import { createOpenAIDriver, openai } from '../src/drivers/openai'
 
 /**
  * Tool calls made while streaming (stacksjs/stacks#2863).
@@ -287,5 +287,49 @@ describe('Bedrock', () => {
       tools: [{ toolSpec: { name: 'get_weather', description: weather.description, inputSchema: { json: weather.parameters } } }],
       toolChoice: { any: {} },
     })
+  })
+})
+
+/**
+ * The `AIDriver.stream()` buddy uses parses the same wire formats. Its copies
+ * of the parsing skipped a payload that was not JSON, silently dropping the
+ * text in it, and Ollama's ignored an `error` line altogether.
+ */
+describe('AIDriver.stream()', () => {
+  async function collect(stream: AsyncGenerator<string>): Promise<string[]> {
+    const out: string[] = []
+    for await (const text of stream)
+      out.push(text)
+    return out
+  }
+
+  test('streams the text of each driver, across chunk boundaries', async () => {
+    streams(sse(
+      { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'Hé' } },
+      { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'llo' } },
+    ))
+    expect(await collect(createAnthropicDriver({ apiKey: 'k' }).stream!('hi', 'sys', []))).toEqual(['Hé', 'llo'])
+
+    streams(sse({ choices: [{ delta: { content: 'Hé' } }] }, { choices: [{ delta: { content: 'llo' } }] }, '[DONE]'))
+    expect(await collect(createOpenAIDriver({ apiKey: 'k' }).stream!('hi', 'sys', []))).toEqual(['Hé', 'llo'])
+
+    streams(ndjson({ message: { content: 'Hé' } }, { message: { content: 'llo' }, done: true }))
+    expect(await collect(createOllamaDriver({ host: 'http://ollama.test' }).stream!('hi', 'sys', []))).toEqual(['Hé', 'llo'])
+  })
+
+  test('throws on a payload that is not JSON instead of dropping its text', async () => {
+    streams('data: {"type":"content_block_delta","index":0,"delta":{"text":"a"}}\n\ndata: {"type":"content_bl\n\n')
+    await expect(collect(createAnthropicDriver({ apiKey: 'k' }).stream!('hi', 'sys', []))).rejects.toThrow('Claude API sent a stream event that is not JSON')
+
+    streams('data: {"choices":[{"delta":{"content":"a"}}]}\n\ndata: {"choi\n\n')
+    await expect(collect(createOpenAIDriver({ apiKey: 'k' }).stream!('hi', 'sys', []))).rejects.toThrow('OpenAI API sent a stream event that is not JSON')
+
+    streams('{"message":{"content":"a"}}\n{"mess\n')
+    await expect(collect(createOllamaDriver({ host: 'http://ollama.test' }).stream!('hi', 'sys', []))).rejects.toThrow('Ollama API sent a stream event that is not JSON')
+  })
+
+  test('throws an Ollama error line rather than ending as if the model had finished', async () => {
+    streams(ndjson({ message: { content: 'par' } }, { error: 'out of memory' }))
+    await expect(collect(createOllamaDriver({ host: 'http://ollama.test' }).stream!('hi', 'sys', []))).rejects.toThrow('Ollama API error: out of memory')
   })
 })

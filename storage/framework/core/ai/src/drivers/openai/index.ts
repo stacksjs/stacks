@@ -118,57 +118,19 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
         throw new Error(`OpenAI API error: ${error}`)
       }
 
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('No response body')
+      if (!response.body) throw new Error('No response body')
 
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      // Inner helper: parse a single SSE data payload and either
-      // yield content or throw on a server-side error event
-      // (stacksjs/stacks#1878 A-2). Returns a one-shot generator
-      // so the outer loop's yield semantics are preserved.
-      const handlePayload = function* (data: string) {
-        if (data === '[DONE]') return
-        let parsed: any
-        try {
-          parsed = JSON.parse(data)
-        }
-        catch {
-          // Genuinely invalid JSON — skip rather than abort the stream.
-          return
-        }
-        // OpenAI surfaces mid-stream errors as `{ error: { message, type, ... } }`.
-        // Pre-fix this was dropped on the floor (the `choices[0]?.delta`
-        // lookup returned undefined), so the consumer saw a clean
-        // end-of-stream and assumed success. Now: throw so the caller
-        // knows the response was truncated.
+      // OpenAI reports a mid-stream failure as `{ error: { message, type } }`,
+      // which the `choices[0].delta` lookup used to read past as a clean end
+      // of stream (stacksjs/stacks#1878 A-2). A payload that is not JSON
+      // throws in `sseJson` rather than dropping what it carried.
+      for await (const parsed of sseJson(response.body, 'OpenAI API')) {
         if (parsed?.error) {
           const msg = parsed.error.message || JSON.stringify(parsed.error)
           throw new Error(`[openai/stream] mid-stream error: ${msg}`)
         }
         const content = parsed.choices?.[0]?.delta?.content
         if (content) yield content
-      }
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            yield * handlePayload(line.slice(6))
-          }
-        }
-      }
-
-      // Process any remaining data in the buffer.
-      if (buffer.startsWith('data: ')) {
-        yield * handlePayload(buffer.slice(6))
       }
     },
 

@@ -114,54 +114,19 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
         throw new Error(`Claude API error: ${error}`)
       }
 
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('No response body')
+      if (!response.body) throw new Error('No response body')
 
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      // Mid-stream error visibility (stacksjs/stacks#1878 A-2).
-      // Anthropic surfaces stream errors as `event: error` /
-      // `data: { type: 'error', error: { type, message } }`.
-      // The pre-fix code dropped these silently — the consumer
-      // saw a truncated response and assumed success. Now: throw
-      // so the caller knows the stream was cut short.
-      const handlePayload = function* (data: string) {
-        if (data === '[DONE]') return
-        let event: ClaudeStreamEvent & { type: string, error?: { type?: string, message?: string } }
-        try {
-          event = JSON.parse(data)
-        }
-        catch {
-          return
-        }
+      // Mid-stream error visibility (stacksjs/stacks#1878 A-2): Anthropic
+      // reports a stream failure as `{ type: 'error', error }`, which used to
+      // end the stream silently as a truncated success. A payload that is not
+      // JSON throws in `sseJson` rather than dropping what it carried.
+      for await (const event of sseJson(response.body, 'Claude API') as AsyncGenerator<ClaudeStreamEvent & { error?: { type?: string, message?: string } }>) {
         if (event.type === 'error') {
           const msg = event.error?.message ?? JSON.stringify(event.error ?? event)
           throw new Error(`[anthropic/stream] mid-stream error: ${msg}`)
         }
-        if (event.type === 'content_block_delta' && event.delta?.text) {
+        if (event.type === 'content_block_delta' && event.delta?.text)
           yield event.delta.text
-        }
-      }
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            yield * handlePayload(line.slice(6))
-          }
-        }
-      }
-
-      // Process any remaining data in the buffer
-      if (buffer.startsWith('data: ')) {
-        yield * handlePayload(buffer.slice(6))
       }
     },
   }

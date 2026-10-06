@@ -90,33 +90,16 @@ export function createOllamaDriver(config: OllamaDriverConfig = {}): AIDriver {
         throw new Error(`Ollama API error: ${error}`)
       }
 
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('No response body')
+      if (!response.body) throw new Error('No response body')
 
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (!line.trim()) continue
-
-          try {
-            const data = JSON.parse(line) as OllamaAPIResponse
-            if (data.message?.content) {
-              yield data.message.content
-            }
-          }
-          catch {
-            // Skip invalid JSON
-          }
-        }
+      // An `error` line ends the stream as a failure, not as a truncated
+      // success, and a line that is not JSON throws in `ndjson` rather than
+      // dropping what it carried.
+      for await (const data of ndjson(response.body, 'Ollama API') as AsyncGenerator<OllamaChatChunk>) {
+        if (data.error)
+          throw new Error(`Ollama API error: ${data.error}`)
+        if (data.message?.content)
+          yield data.message.content
       }
     },
 
