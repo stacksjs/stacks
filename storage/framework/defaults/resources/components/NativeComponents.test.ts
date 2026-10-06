@@ -20,6 +20,12 @@ describe('Native components', () => {
     expect(item).toContain('draggable="false"')
   })
 
+  it('switches tabs instantly: prefetched, and without the cross-fade', () => {
+    const item = read('NativeTabItem')
+    expect(item).toContain('data-stx-prefetch="eager"')
+    expect(item).toContain('data-stx-transition="none"')
+  })
+
   it('centres each tab in the bar rather than against its top border', () => {
     // stx wraps each NativeTabItem in a scope box; the box stretched while
     // the link inside kept its own height, so icons sat on the border.

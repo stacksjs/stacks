@@ -22,7 +22,9 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
      long press, and a draggable link starts a native drag instead of
      navigating. `data-stx-prefetch="eager"`: every tab's page is fetched once
      the current one is idle, so switching tabs is served from the router's
-     cache, as instant as a native tab bar. -->
+     cache, as instant as a native tab bar. `data-stx-transition="none"`: and
+     swapped without the router's cross-fade, which iOS never draws between
+     tabs (it read as a quarter-second lag on every tap). -->
 <StxLink
   to="{{ href }}"
   aria-label="{{ label }}"
@@ -31,6 +33,7 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
   class="native-tab-item"
   draggable="false"
   data-stx-prefetch="eager"
+  data-stx-transition="none"
 >
   <span class="native-tab-glyph">
     <i aria-hidden="true" class="{{ icon }} native-tab-icon"></i>
