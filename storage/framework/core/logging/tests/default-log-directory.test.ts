@@ -24,4 +24,15 @@ describe('defaultLogDirectory', () => {
     const exists = () => false
     expect(defaultLogDirectory('/home/ana/Code', exists, '/home/ana')).toBe('/home/ana/.cache/stacks/logs')
   })
+  test('a relative logsPath directory resolves inside the project', () => {
+    const exists = (path: string) => path === '/apps/shop/package.json'
+    expect(defaultLogDirectory('/apps/shop', exists, '/home/ana', 'var/log')).toBe('/apps/shop/var/log')
+  })
+
+  test('a relative logsPath outside a project still goes to the user cache', () => {
+    // The framework default logsPath is relative ('storage/logs/stacks.log'),
+    // which is how `buddy new` kept writing storage/logs into the cwd after
+    // the fallback alone was fixed.
+    expect(defaultLogDirectory('/home/ana/Code', () => false, '/home/ana', 'storage/logs')).toBe('/home/ana/.cache/stacks/logs')
+  })
 })

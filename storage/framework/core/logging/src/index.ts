@@ -529,29 +529,24 @@ async function resolveSettings(logging: LoggingConfigSection | null, fallbackDir
   let logDirectory: string | undefined
   if (logging?.logsPath) {
     const np = await import('node:path')
-    logDirectory = np.dirname(logging.logsPath)
+    const dir = np.dirname(logging.logsPath)
+    // A relative logsPath - the framework default is 'storage/logs/stacks.log'
+    // - means "inside the project", so it gets the same outside-a-project
+    // rule as the fallback below rather than landing in the cwd.
+    logDirectory = np.isAbsolute(dir) ? dir : await projectLogDirectory(dir)
   }
   if (!logDirectory)
     logDirectory = fallbackDirectory
-  if (!logDirectory) {
-    try {
-      // Lazy import path to avoid a circular dependency (path imports logging).
-      const p = await import('@stacksjs/path')
-      const { existsSync } = await import('node:fs')
-      const { homedir } = await import('node:os')
-      logDirectory = defaultLogDirectory(p.projectPath(), existsSync, homedir())
-    }
-    catch {
-      logDirectory = 'storage/logs'
-    }
-  }
+  if (!logDirectory)
+    logDirectory = await projectLogDirectory('storage/logs')
 
   return { level, format, writeToFile, logDirectory }
 }
 
 /**
- * Where logs go when config names no `logsPath`: the project's storage/logs,
- * or, when the working directory is not a project at all, a per-user cache.
+ * Where logs go when config names no absolute `logsPath`: the project's
+ * storage/logs (or the relative directory config named), or, when the working
+ * directory is not a project at all, a per-user cache.
  *
  * Commands run outside a project are real: `buddy new my-app` (often through
  * `panx buddy new`) runs from wherever the user happens to be. Resolving
@@ -559,9 +554,22 @@ async function resolveSettings(logging: LoggingConfigSection | null, fallbackDir
  * the new app, in ~/Code or wherever it was started. A directory counts as a
  * project if it has a package.json or a storage/ of its own.
  */
-export function defaultLogDirectory(projectRoot: string, exists: (path: string) => boolean, home: string): string {
+export function defaultLogDirectory(projectRoot: string, exists: (path: string) => boolean, home: string, relativeDir = 'storage/logs'): string {
   const isProject = exists(`${projectRoot}/package.json`) || exists(`${projectRoot}/storage`)
-  return isProject ? `${projectRoot}/storage/logs` : `${home}/.cache/stacks/logs`
+  return isProject ? `${projectRoot}/${relativeDir}` : `${home}/.cache/stacks/logs`
+}
+
+async function projectLogDirectory(relativeDir: string): Promise<string> {
+  try {
+    // Lazy import path to avoid a circular dependency (path imports logging).
+    const p = await import('@stacksjs/path')
+    const { existsSync } = await import('node:fs')
+    const { homedir } = await import('node:os')
+    return defaultLogDirectory(p.projectPath(), existsSync, homedir(), relativeDir)
+  }
+  catch {
+    return relativeDir
+  }
 }
 
 /** Attach transports a config section declares, skipping any already attached. */
