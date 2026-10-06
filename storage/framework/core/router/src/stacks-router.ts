@@ -3408,6 +3408,27 @@ function modelValidationRules(model: any): ActionValidations | undefined {
  * parser already gave them their proper JS types
  * (see stacksjs/stacks#1865).
  */
+/**
+ * A merged-input object with no prototype.
+ *
+ * Input was built on `{}` with `Object.assign`, and `JSON.parse` keeps a
+ * `"__proto__"` key as an own property - which `Object.assign` then writes
+ * through the `__proto__` setter. A body of `{"__proto__":{"isAdmin":true}}`
+ * made `req.get('isAdmin')` true while `all()` and `keys()` showed nothing,
+ * and `has('constructor')` was true for every request. With no prototype,
+ * every key is just a key.
+ */
+function newInput(): Record<string, unknown> {
+  return Object.create(null) as Record<string, unknown>
+}
+
+/** Copy `source`'s own keys onto a {@link newInput} object. */
+function assignInput(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+  for (const key of Object.keys(source))
+    target[key] = source[key]
+  return target
+}
+
 function getRequestInput(
   req: EnhancedRequest,
   validationEntries?: ActionValidationEntry[],
@@ -3417,50 +3438,51 @@ function getRequestInput(
   let input: Record<string, unknown> | undefined
   let mayNeedCoercion = false
 
-  // Get query parameters (always strings on the wire). Leave bun-router's
-  // lazy query accessor untouched when the URL has no query string. When one
-  // is present, reuse the parsed `req.query`; only fall back to `new URL()` if
-  // this runs before enhancement (the action path always enhances first).
+  // Query, then body, then route params, later sources winning - the order
+  // `getAllInputFor()` uses, so validation checks the values the handler
+  // reads. The body used to win over route params here and lose to them
+  // there: `PATCH /items/abc` with `{ "id": 5 }` validated `id` as 5 while
+  // `req.get('id')` returned 'abc'. Built on a null-prototype object (see
+  // `newInput`).
+  //
+  // Leave bun-router's lazy query accessor untouched when the URL has no query
+  // string. When one is present, reuse the parsed `req.query`; only fall back
+  // to `new URL()` if this runs before enhancement.
   if (requestHasQuery) {
     const q = req.query
     if (q) {
       for (const key in q) {
-        ;(input ??= {})[key] = q[key]
+        ;(input ??= newInput())[key] = q[key]
         mayNeedCoercion = true
       }
     }
     else {
       const url = new URL(req.url)
       url.searchParams.forEach((value, key) => {
-        ;(input ??= {})[key] = value
+        ;(input ??= newInput())[key] = value
         mayNeedCoercion = true
       })
     }
   }
 
-  // Get route params if available (also strings — bun-router doesn't
-  // know the route-pattern type)
+  // Use already-parsed body (from parseRequestBody) if available
+  if (req.jsonBody && typeof req.jsonBody === 'object' && !Array.isArray(req.jsonBody)) {
+    input = assignInput(input ?? newInput(), req.jsonBody as Record<string, unknown>)
+  }
+  else if (req.formBody && typeof req.formBody === 'object') {
+    input = assignInput(input ?? newInput(), req.formBody as Record<string, unknown>)
+    mayNeedCoercion = true
+  }
+
+  // Route params (strings too - bun-router doesn't know the pattern's types).
   let hasRouteParams = false
   if (mayHaveRouteParams && req.params) {
     for (const key in req.params) {
       if (!Object.hasOwn(req.params, key)) continue
-      ;(input ??= {})[key] = req.params[key]
+      ;(input ??= newInput())[key] = req.params[key]
       hasRouteParams = true
       mayNeedCoercion = true
     }
-  }
-
-  // Use already-parsed body (from parseRequestBody) if available
-  if (req.jsonBody && typeof req.jsonBody === 'object') {
-    input = mayNeedCoercion
-      ? Object.assign(input ?? {}, req.jsonBody)
-      : req.jsonBody as Record<string, unknown>
-  }
-  else if (req.formBody && typeof req.formBody === 'object') {
-    input = mayNeedCoercion
-      ? Object.assign(input ?? {}, req.formBody)
-      : { ...req.formBody }
-    mayNeedCoercion = true
   }
 
   // A static JSON action has already produced the exact merged input object
@@ -3489,7 +3511,7 @@ function getRequestInput(
     try {
       const files = req.allFiles() as Record<string, unknown>
       for (const key of Object.keys(files ?? {})) {
-        const values = input ??= {}
+        const values = input ??= newInput()
         if (!(key in values)) values[key] = files[key]
       }
     }
@@ -3802,17 +3824,17 @@ function getAllInputFor(req: EnhancedRequest): Record<string, unknown> {
   if (cached)
     return cached
 
-  const input: Record<string, unknown> = {}
+  const input = newInput()
   const query = req.query as Record<string, unknown> | undefined
   if (query) {
     for (const key in query) input[key] = query[key]
   }
-  if (req.jsonBody && typeof req.jsonBody === 'object')
-    Object.assign(input, req.jsonBody)
+  if (req.jsonBody && typeof req.jsonBody === 'object' && !Array.isArray(req.jsonBody))
+    assignInput(input, req.jsonBody as Record<string, unknown>)
   if (req.formBody && typeof req.formBody === 'object')
-    Object.assign(input, req.formBody)
+    assignInput(input, req.formBody as Record<string, unknown>)
   if (req.params && typeof req.params === 'object')
-    Object.assign(input, req.params)
+    assignInput(input, req.params as Record<string, unknown>)
 
   ;req._allInputCache = input
   return input
