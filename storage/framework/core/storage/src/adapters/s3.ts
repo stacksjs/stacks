@@ -568,19 +568,35 @@ export class S3StorageAdapter implements StorageAdapter {
       }
     }
     else {
+      // One level: the objects directly under the prefix, and each folder
+      // below it once, as S3's common prefixes. Without the delimiter this
+      // listed every object in the subtree as if it sat at the top, and no
+      // folder at all - unlike the local and memory disks, whose shallow list
+      // is one directory.
       let continuationToken: string | undefined
 
       do {
         const result = await (await this.getClient()).listObjects({
           bucket: this.bucket,
           prefix: normalizedPrefix,
+          delimiter: '/',
           continuationToken,
         })
 
         for (const obj of result.objects || []) {
+          // The zero-byte marker some tools write for the folder itself.
+          if (obj.Key === normalizedPrefix)
+            continue
           yield {
             path: this.stripPrefix(obj.Key),
             type: 'file',
+          }
+        }
+
+        for (const folder of result.commonPrefixes || []) {
+          yield {
+            path: this.stripPrefix(folder.replace(/\/$/, '')),
+            type: 'directory',
           }
         }
 
