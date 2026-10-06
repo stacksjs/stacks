@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { listFeatures, resetFeature } from '@stacksjs/config'
 import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -718,5 +719,66 @@ describe('featureMigrationCounts', () => {
     await migration('1-create-products-table.sql.bak')
 
     expect(featureMigrationCounts('commerce', root)).toEqual({ active: 1, hidden: 0 })
+  })
+})
+
+/**
+ * Two lists name the framework's features and nothing relates them
+ * (stacksjs/stacks#2867):
+ *
+ *   - `@stacksjs/features`.FEATURE_NAMES - the *installable* bundles. Backs the
+ *     `<feature>:install` / `:uninstall` pair, FEATURE_FILES, FEATURE_TABLES,
+ *     `migrationFeature()`, the migration runner's gating pass, and
+ *     `uninstallAllFeatures()`.
+ *   - `core/config/src/features.ts`'s own list - the names `feature()` knows.
+ *     Backs canonical mode and `listFeatures()`. Not exported, so it is read
+ *     here through `listFeatures()`.
+ *
+ * A name added to one and not the other ships silently. Features-only loses
+ * `canonicalFeatures()`, so `STACKS_CANONICAL_FEATURES=1` stops making
+ * generated artifacts a function of the source alone - the failure #2408 added
+ * canonical mode to prevent. Config-only gets no install pair and no migration
+ * gating, so its tables migrate into every app whether the feature is on or not.
+ */
+describe('the two FEATURE_NAMES lists', () => {
+  /**
+   * `listFeatures()` reports ad-hoc runtime overrides alongside the framework
+   * names, and another test file in the same bun process may have left one
+   * behind. Resetting the unrecognised ones first drops those keys while
+   * leaving every real name, so this does not depend on file order.
+   */
+  function featureNamesConfigKnows(): string[] {
+    for (const name of Object.keys(listFeatures())) {
+      if (!(FEATURE_NAMES as readonly string[]).includes(name))
+        resetFeature(name)
+    }
+    return Object.keys(listFeatures())
+  }
+
+  it('every installable bundle is a name feature() knows', () => {
+    const known = featureNamesConfigKnows()
+
+    for (const name of FEATURE_NAMES)
+      expect(known).toContain(name)
+  })
+
+  /**
+   * `auth` is the one intentional difference, and it is intentional in the
+   * direction that looks wrong: it is a name `feature()` knows that cannot be
+   * an installable bundle. `config/auth.ts` ships in every app with
+   * `enabled: true`, so gating the auth routes on `feature('auth')` would mount
+   * `/login`, `/register`, `/generate-two-factor-secret`, `/logout-all` and
+   * `/auth/tokens` into every app currently running with `dashboard` off.
+   * Route selection is explicit instead, via `STACKS_DEFAULT_ROUTES` - see the
+   * rationale in `router/src/route-loader.ts` and `defaults/bootstrap.ts`.
+   *
+   * Exact rather than a subset check: a tenth name appearing here means someone
+   * taught `feature()` about a bundle without giving it an install command.
+   */
+  it('names auth as the only non-installable feature', () => {
+    const known = featureNamesConfigKnows()
+    const notInstallable = known.filter(name => !(FEATURE_NAMES as readonly string[]).includes(name))
+
+    expect(notInstallable).toEqual(['auth'])
   })
 })
