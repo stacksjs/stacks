@@ -75,6 +75,24 @@ for (const nativeRoutes of [false, true]) {
     const firstUrl = new URL(await Storage.disk('first').signedUrl(file, { expiresIn: 3600, baseUrl: 'http://127.0.0.1' }))
     Storage.setDefaultDisk('second')
     await request(file, firstUrl.searchParams.get('token')!, 200, 'first file')
+    // A file that can run script is downloaded and sandboxed, never rendered
+    // inline on the app's origin; an image is still served inline.
+    for (const [name, body, active] of [['avatar.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', true], ['page.html', '<script>alert(1)</script>', true], ['photo.png', 'png', false]] as const) {
+      const path = `uploads/${nativeRoutes}-${name}`
+      await Storage.disk('first').write(path, body)
+      const response = await fetch(`http://127.0.0.1:${server.port}/__storage/${encodeURIComponent(path)}?token=${encodeURIComponent(createSignedStorageToken(path, { expiresIn: 3600, disk: 'first' }))}`)
+      assert.equal(response.status, 200, path)
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff')
+      if (active) {
+        assert.match(response.headers.get('content-disposition') ?? '', /^attachment; filename="/, path)
+        assert.equal(response.headers.get('content-security-policy'), 'sandbox', path)
+      }
+      else {
+        assert.equal(response.headers.get('content-disposition'), null, path)
+        assert.equal(response.headers.get('content-security-policy'), null, path)
+      }
+    }
+
     // A token naming a disk that is not configured is a 404, not a read from
     // some other disk.
     await request(file, createSignedStorageToken(file, { expiresIn: 3600, disk: 'gone' }), 404, 'Not Found')

@@ -4754,6 +4754,27 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
 
 let signedStorageModule: typeof import('@stacksjs/storage') | undefined
 
+/** Whether a response of this type can run script when a browser renders it. */
+function isActiveContentType(contentType: string): boolean {
+  const type = contentType.split(';')[0]!.trim().toLowerCase()
+  return type === 'text/html'
+    || type === 'application/xhtml+xml'
+    || type === 'image/svg+xml'
+    || type === 'text/xml'
+    || type === 'application/xml'
+    || type.endsWith('+xml')
+    || type === 'text/javascript'
+    || type === 'application/javascript'
+    || type === 'application/ecmascript'
+}
+
+/** `attachment`, naming the file as stored (RFC 6266, with a UTF-8 form). */
+function attachmentDisposition(path: string): string {
+  const name = path.split('/').pop() || 'download'
+  const ascii = name.replace(/[^\x20-\x7E]|["\\]/g, '_')
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(name)}`
+}
+
 /**
  * Create a Stacks-enhanced router
  */
@@ -5184,19 +5205,26 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           // sometimes doesn't widen to `BodyInit`.
           const buf = await adapter.readToBuffer(rawPath)
           const mime = await adapter.mimeType(rawPath).catch(() => 'application/octet-stream')
-          return new Response(buf as unknown as Blob, {
-            status: 200,
-            headers: {
-              'Content-Type': mime,
-              // Files behind a signed URL are intentionally short-lived;
-              // tell intermediate caches not to keep a copy past the
-              // token's lifetime. `private, max-age=60` is a compromise
-              // between request rate to the storage backend and the risk
-              // of stale responses if a file is updated mid-window.
-              'Cache-Control': 'private, max-age=60',
-              'X-Content-Type-Options': 'nosniff',
-            },
-          })
+          const headers: Record<string, string> = {
+            'Content-Type': mime,
+            // Files behind a signed URL are intentionally short-lived;
+            // tell intermediate caches not to keep a copy past the
+            // token's lifetime. `private, max-age=60` is a compromise
+            // between request rate to the storage backend and the risk
+            // of stale responses if a file is updated mid-window.
+            'Cache-Control': 'private, max-age=60',
+            'X-Content-Type-Options': 'nosniff',
+          }
+          // A document that can run script - HTML, SVG, XML, JavaScript - is
+          // downloaded, never rendered, and sandboxed if it is. Served inline
+          // from the app's own origin, an uploaded `.svg` or `.html` ran its
+          // script with the app's cookies and storage: stored XSS for anyone
+          // handed the link.
+          if (isActiveContentType(mime)) {
+            headers['Content-Disposition'] = attachmentDisposition(rawPath)
+            headers['Content-Security-Policy'] = 'sandbox'
+          }
+          return new Response(buf as unknown as Blob, { status: 200, headers })
         }
         catch (err) {
           log.error('[storage] signed-url fetch failed:', err)
