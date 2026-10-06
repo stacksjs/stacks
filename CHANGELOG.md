@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.75...v0.75.76)
+
+## ✨ Features
+
+- **deploy**: provision the R2 buckets an app declares ([43d9850](https://github.com/stacksjs/stacks/commit/43d9850)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.74...v0.75.75)
 
 ## ✨ Features
