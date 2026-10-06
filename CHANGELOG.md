@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.76...v0.75.77)
+
+## ✨ Features
+
+- **payments**: billable models and commerce webhooks through the payment driver (#665, #450) ([3569e9b](https://github.com/stacksjs/stacks/commit/3569e9b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#665](https://github.com/stacksjs/stacks/issues/665), [#450](https://github.com/stacksjs/stacks/issues/450))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: reference the xterm stylesheet declaration from the module that needs it ([b8e829b](https://github.com/stacksjs/stacks/commit/b8e829b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.75...v0.75.76)
 
 ## ✨ Features
