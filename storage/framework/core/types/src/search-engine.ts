@@ -104,11 +104,69 @@ export interface CreateIndexOptions extends IndexOptions {
   sampleDocument?: Record<string, unknown>
 }
 
+/**
+ * A search filter, in one of three shapes.
+ *
+ * - A **string** is already written in the engine's own filter syntax
+ *   (Meilisearch `status = 'published'`, Typesense `status:=published`,
+ *   Algolia `status:published`, OpenSearch query-string) and is passed through
+ *   untouched.
+ * - An **array of strings** is several such clauses, all of which must match.
+ *   Meilisearch additionally reads a nested array as an OR group, as its own
+ *   API does.
+ * - An **object** maps field names to the value each must equal (an array
+ *   value means "any of these"). This is the only portable form: every driver
+ *   translates it into its own syntax, validating the field names and escaping
+ *   the values, so it is the one to build from user input.
+ */
+export type SearchFilter = string | Array<string | string[]> | Record<string, unknown>
+
+/**
+ * A sort order: engine syntax (`'price:asc'`), a list of those, or a
+ * `{ field: 'asc' | 'desc' }` map.
+ */
+export type SearchSort = string | string[] | Record<string, string>
+
+/**
+ * The parameters every driver's `search()` reads.
+ *
+ * The ORM's `Model.search()` builder sends `{ q, limit, offset, filter }`, and
+ * the drivers used to each read their own subset of names - Meilisearch only
+ * `query` / `page` / `perPage` and an object filter - so a model search
+ * returned the first page of the whole index whatever was asked. These are the
+ * names all of them honour.
+ *
+ * Paging is `limit` + `offset`, or `perPage` + `page` (1-based). When both are
+ * given, `limit` / `offset` win. Unlisted keys are driver-specific extras
+ * (Typesense's `query_by`, Meilisearch's `attributesToRetrieve`, ...).
+ */
+export interface SearchEngineSearchParams {
+  /** The search text. An empty or missing query matches everything. */
+  q?: string
+  /** Alias of `q`. */
+  query?: string
+  /** How many hits to return. Defaults to the config's `perPage`, else 20. */
+  limit?: number
+  /** How many hits to skip. */
+  offset?: number
+  /** 1-based page number, used when `offset` is not given. */
+  page?: number
+  /** Alias of `limit`, used when `limit` is not given. */
+  perPage?: number
+  filter?: SearchFilter
+  sort?: SearchSort
+  /** Typesense: the fields to search (required by Typesense). */
+  query_by?: string | string[]
+  /** Alias of `query_by`. */
+  queryBy?: string | string[]
+  [key: string]: unknown
+}
+
 export interface SearchEngineDriver {
   client: () => Meilisearch
   resetClient?: () => void
 
-  search: (index: string, params: any) => Promise<SearchResponse<Record<string, any>>>
+  search: (index: string, params?: SearchEngineSearchParams) => Promise<SearchResponse<Record<string, any>>>
 
   // Indexes
   createIndex: (name: string, options?: CreateIndexOptions) => MaybePromise<EnqueuedTask>
@@ -119,7 +177,13 @@ export interface SearchEngineDriver {
   addDocuments: (indexName: string, params: any[]) => Promise<EnqueuedTask>
   getDocument: (indexName: string, id: number, fields: any) => Promise<EnqueuedTask>
   deleteDocument: (indexName: string, id: number) => Promise<EnqueuedTask>
+  /** Delete the documents matching a filter, written in the engine's own syntax. */
   deleteDocuments: (indexName: string, filters: string | string[]) => Promise<EnqueuedTask>
+  /**
+   * Delete every document in the index and keep the index itself, with its
+   * settings. A missing index is already empty, so that is not an error.
+   */
+  deleteAllDocuments: (indexName: string) => Promise<EnqueuedTask>
   updateIndex: (name: string, options: IndexOptions) => MaybePromise<EnqueuedTask>
   deleteIndex: (name: string) => MaybePromise<EnqueuedTask>
   listAllIndexes: () => MaybePromise<IndexesResults<Index[]>>

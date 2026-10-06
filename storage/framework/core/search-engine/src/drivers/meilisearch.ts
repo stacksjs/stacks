@@ -1,6 +1,7 @@
-import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, Meilisearch, PaginationSettings, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
-import type { SearchEngineDriver } from '@stacksjs/types'
+import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, Meilisearch, PaginationSettings, SearchParams, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
+import type { SearchEngineDriver, SearchEngineSearchParams, SearchFilter } from '@stacksjs/types'
 import { searchEngine } from '@stacksjs/config'
+import { assertSafeField, DEFAULT_SEARCH_LIMIT, isObjectFilter, resolveSearchParams, sortToList } from '../params'
 
 // `meilisearch` is an opt-in dependency: it is only installed when the
 // `meilisearch` search driver is selected in `config/search-engine.ts`.
@@ -45,16 +46,46 @@ function resetClient(): void {
   _client = null
 }
 
-async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
-  const page = Number(params.page) || 1
-  const perPage = Number(params.perPage) || 20
-  const offsetVal = (page - 1) * perPage
-  const filter = convertToFilter(params.filter)
-  const sort = convertToMeilisearchSorting(params.sort)
+/**
+ * Meilisearch's own search options a caller may pass straight through.
+ *
+ * Meilisearch rejects a search carrying a key it does not know, and the
+ * contract's params also carry other engines' names (Typesense's `query_by`,
+ * which the ORM always sends), so only these reach the engine.
+ */
+const PASSTHROUGH_SEARCH_OPTIONS = [
+  'attributesToRetrieve',
+  'attributesToHighlight',
+  'attributesToCrop',
+  'attributesToSearchOn',
+  'cropLength',
+  'cropMarker',
+  'distinct',
+  'facets',
+  'highlightPreTag',
+  'highlightPostTag',
+  'matchingStrategy',
+  'showMatchesPosition',
+  'showRankingScore',
+] as const
 
-  return await client()
-    .index(index)
-    .search(params.query, { limit: perPage, filter, sort, offset: offsetVal })
+async function search(index: string, params: SearchEngineSearchParams = {}): Promise<SearchResponse<Record<string, any>>> {
+  const { query, limit, offset, filter, sort } = resolveSearchParams(params, searchEngine.perPage ?? DEFAULT_SEARCH_LIMIT)
+
+  const options: SearchParams = { limit, offset }
+  const meiliFilter = convertToFilter(filter)
+  if (meiliFilter !== undefined)
+    options.filter = meiliFilter
+  const sortRules = sortToList('meilisearch', sort)
+  if (sortRules.length > 0)
+    options.sort = sortRules
+
+  for (const key of PASSTHROUGH_SEARCH_OPTIONS) {
+    if (params[key] !== undefined)
+      (options as Record<string, unknown>)[key] = params[key]
+  }
+
+  return await client().index(index).search(query, options)
 }
 
 async function addDocument(indexName: string, params: any): Promise<EnqueuedTask> {
@@ -114,6 +145,17 @@ async function deleteDocument(indexName: string, id: number): Promise<EnqueuedTa
 
 async function deleteDocuments(indexName: string, filters: string | string[]): Promise<EnqueuedTask> {
   return await client().index(indexName).deleteDocuments({ filter: filters })
+}
+
+/**
+ * Empty the index and keep it, with its settings.
+ *
+ * `Model.removeAllFromSearch()` looked for this, found no driver with it, and
+ * fell back to deleting the ids of rows still in the database - so every
+ * document whose row was already gone stayed searchable.
+ */
+async function deleteAllDocuments(indexName: string): Promise<EnqueuedTask> {
+  return await client().index(indexName).deleteAllDocuments()
 }
 
 async function getDocument(indexName: string, id: number, fields: any): Promise<EnqueuedTask> {
@@ -276,49 +318,46 @@ async function resetDictionary(index: string): Promise<EnqueuedTask> {
   return client().index(index).resetDictionary()
 }
 
-/**
- * Convert a `{ field: value }` map into Meilisearch filter expressions.
- *
- * Field names go straight into the filter DSL — Meilisearch parses them
- * as identifiers, so we restrict to safe identifier characters
- * (`[a-z0-9_]` plus dot for nested paths). Without the check, a key
- * like `"category';TRUNCATE INDEX;'"` would close the filter and inject
- * arbitrary DSL fragments. Values are still single-quote-escaped.
- */
-const SAFE_FILTER_FIELD = /^[a-z_][\w]*(?:\.[a-z_][\w]*)*$/i
-
-function convertToFilter(jsonData: any): string[] {
-  if (!jsonData) return []
-
-  const filters: string[] = []
-
-  for (const key in jsonData) {
-    if (!Object.prototype.hasOwnProperty.call(jsonData, key)) continue
-    if (!SAFE_FILTER_FIELD.test(key)) {
-      throw new Error(`[search/meilisearch] Refusing to build filter with unsafe field name: ${key}`)
-    }
-    const value = jsonData[key]
-    const escaped = String(value).replace(/'/g, "\\'")
-    filters.push(`${key}='${escaped}'`)
-  }
-
-  return filters
+function quote(value: unknown): string {
+  // Backslashes first: escaping only the quote let a value ending in a
+  // backslash turn the closing quote into a literal and run on into the next clause.
+  return `'${String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 }
 
-function convertToMeilisearchSorting(jsonData: any): string[] {
-  if (!jsonData) return []
+/**
+ * The contract's filter as a Meilisearch `filter`.
+ *
+ * A string or an array is already Meilisearch syntax and goes through as it
+ * is. It used to be fed to the object converter regardless, which walks a
+ * string's indices - so `.where("status = 'published'")` threw "Refusing to
+ * build filter with unsafe field name: 0".
+ *
+ * An object is `{ field: value }`: field names are checked against
+ * {@link SAFE_FILTER_FIELD} and values are quoted, so it is safe to build from
+ * input. An array value means any of them (`IN`), and null means `IS NULL`.
+ */
+function convertToFilter(filter: SearchFilter | undefined): string | Array<string | string[]> | undefined {
+  if (filter == null || filter === '')
+    return undefined
+  if (typeof filter === 'string' || Array.isArray(filter))
+    return filter
+  if (!isObjectFilter(filter))
+    throw new TypeError(`[search/meilisearch] Unsupported filter: ${JSON.stringify(filter)}`)
 
-  const sortRules: string[] = []
-
-  for (const key in jsonData) {
-    if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
-      const value = String(jsonData[key]).toLowerCase()
-      const direction = value === 'desc' ? 'desc' : 'asc'
-      sortRules.push(`${key}:${direction}`)
-    }
+  const clauses: string[] = []
+  for (const [field, value] of Object.entries(filter)) {
+    assertSafeField('meilisearch', field)
+    if (value === undefined)
+      continue
+    if (value === null)
+      clauses.push(`${field} IS NULL`)
+    else if (Array.isArray(value))
+      clauses.push(`${field} IN [${value.map(quote).join(', ')}]`)
+    else
+      clauses.push(`${field} = ${quote(value)}`)
   }
 
-  return sortRules
+  return clauses.length > 0 ? clauses : undefined
 }
 
 const meilisearch: SearchEngineDriver = {
@@ -339,6 +378,7 @@ const meilisearch: SearchEngineDriver = {
   updateDocuments,
   deleteDocument,
   deleteDocuments,
+  deleteAllDocuments,
   getDocument,
 
   getFilterableAttributes,

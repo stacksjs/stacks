@@ -1,5 +1,6 @@
-import type { SearchEngineDriver } from '@stacksjs/types'
+import type { SearchEngineDriver, SearchEngineSearchParams, SearchFilter } from '@stacksjs/types'
 import { searchEngine } from '@stacksjs/config'
+import { assertSafeField, DEFAULT_SEARCH_LIMIT, isObjectFilter, resolveSearchParams } from '../params'
 
 interface OpenSearchMeta {
   filterableAttributes?: string[]
@@ -124,33 +125,63 @@ async function updateMeta(index: string, patch: Partial<OpenSearchMeta>): Promis
   return task(index, 'settingsUpdate')
 }
 
-async function search(index: string, params: any = {}): Promise<any> {
-  if (typeof params === 'string')
-    params = { q: params }
-  const queryText = String(params.q ?? params.query ?? '')
-  const limit = Math.max(1, Number(params.limit ?? params.perPage ?? 20))
-  const offset = Math.max(0, Number(params.offset ?? ((Number(params.page || 1) - 1) * limit)))
-  const filters = Array.isArray(params.filter) ? params.filter : params.filter ? [params.filter] : []
+/**
+ * The contract's filter as OpenSearch filter clauses.
+ *
+ * A string is query-string syntax and an array is several of them, all
+ * required. An object is `{ field: value }`; it used to be JSON-stringified
+ * into a query string, which matched nothing, and is now a `match_phrase` per
+ * field (any of the values, for an array). Field names are JSON keys here, not
+ * DSL, but are still held to the same rule as the other drivers.
+ */
+function filterClauses(filter: SearchFilter | undefined): Record<string, unknown>[] {
+  if (filter == null || filter === '')
+    return []
+  if (typeof filter === 'string')
+    return [{ query_string: { query: filter } }]
+  if (Array.isArray(filter)) {
+    return filter.filter(Boolean).map(clause => ({
+      query_string: { query: Array.isArray(clause) ? clause.map(c => `(${c})`).join(' OR ') : clause },
+    }))
+  }
+  if (!isObjectFilter(filter))
+    throw new TypeError(`[search/opensearch] Unsupported filter: ${JSON.stringify(filter)}`)
+
+  const clauses: Record<string, unknown>[] = []
+  for (const [field, value] of Object.entries(filter)) {
+    assertSafeField('opensearch', field)
+    if (value === undefined)
+      continue
+    if (value === null) {
+      clauses.push({ bool: { must_not: { exists: { field } } } })
+    }
+    else if (Array.isArray(value)) {
+      clauses.push({ bool: { should: value.map(v => ({ match_phrase: { [field]: v } })), minimum_should_match: 1 } })
+    }
+    else {
+      clauses.push({ match_phrase: { [field]: value } })
+    }
+  }
+  return clauses
+}
+
+async function search(index: string, params: SearchEngineSearchParams | string = {}): Promise<any> {
+  const { query: queryText, limit, offset, filter, sort } = resolveSearchParams(params, searchEngine.perPage ?? DEFAULT_SEARCH_LIMIT)
+  const extra: SearchEngineSearchParams = typeof params === 'string' ? {} : params
+  const filters = filterClauses(filter)
   const textQuery = queryText
-    ? { multi_match: { query: queryText, fields: params.attributesToSearchOn || ['*'] } }
+    ? { multi_match: { query: queryText, fields: extra.attributesToSearchOn || ['*'] } }
     : { match_all: {} }
   const query = filters.length > 0
-    ? {
-        bool: {
-          must: [textQuery],
-          filter: filters.map((filter: unknown) => ({
-            query_string: { query: typeof filter === 'string' ? filter : JSON.stringify(filter) },
-          })),
-        },
-      }
+    ? { bool: { must: [textQuery], filter: filters } }
     : textQuery
 
   const result = await request<OpenSearchResponse>('POST', `${indexPath(index)}/_search`, {
     query,
     from: offset,
     size: limit,
-    ...(params.sort ? { sort: params.sort } : {}),
-    ...(params.attributesToRetrieve ? { _source: params.attributesToRetrieve } : {}),
+    ...(sort ? { sort: isObjectFilter(sort) ? Object.entries(sort).map(([field, dir]) => ({ [field]: { order: String(dir).toLowerCase() === 'desc' ? 'desc' : 'asc' } })) : sort } : {}),
+    ...(extra.attributesToRetrieve ? { _source: extra.attributesToRetrieve } : {}),
   })
   const total = typeof result.hits?.total === 'number'
     ? result.hits.total
@@ -254,11 +285,28 @@ async function deleteDocument(index: string, id: number): Promise<any> {
 
 async function deleteDocuments(index: string, filters: string | string[]): Promise<any> {
   const clauses = (Array.isArray(filters) ? filters : [filters]).filter(Boolean)
+  // An empty filter used to become match_all, so a filter that happened to be
+  // blank emptied the index. Emptying it is its own, explicit, call.
+  if (clauses.length === 0)
+    throw new Error(`[search/opensearch] deleteDocuments on "${index}" needs a filter. Use deleteAllDocuments to empty the index.`)
   await request('POST', `${indexPath(index)}/_delete_by_query?refresh=true`, {
-    query: clauses.length > 0
-      ? { bool: { filter: clauses.map(query => ({ query_string: { query } })) } }
-      : { match_all: {} },
+    query: { bool: { filter: clauses.map(query => ({ query_string: { query } })) } },
   })
+  return task(index, 'documentDeletion')
+}
+
+/**
+ * Empty the index and keep its mappings and settings. A missing index is
+ * already empty.
+ */
+async function deleteAllDocuments(index: string): Promise<any> {
+  try {
+    await request('POST', `${indexPath(index)}/_delete_by_query?refresh=true`, { query: { match_all: {} } })
+  }
+  catch (error) {
+    if (!(error instanceof OpenSearchRequestError) || error.status !== 404)
+      throw error
+  }
   return task(index, 'documentDeletion')
 }
 
@@ -349,6 +397,7 @@ const opensearch: SearchEngineDriver = {
   getDocument,
   deleteDocument,
   deleteDocuments,
+  deleteAllDocuments,
   getFilterableAttributes: filterable.get,
   updateFilterableAttributes: filterable.update,
   resetFilterableAttributes: filterable.reset,

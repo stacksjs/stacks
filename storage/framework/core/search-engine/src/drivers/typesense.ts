@@ -1,7 +1,6 @@
-import type { CreateIndexOptions, SearchEngineDriver } from '@stacksjs/types'
+import type { CreateIndexOptions, SearchEngineDriver, SearchEngineSearchParams, SearchFilter } from '@stacksjs/types'
 import type {
   Dictionary,
-  DocumentOptions,
   EnqueuedTask,
   Faceting,
   Index,
@@ -14,6 +13,7 @@ import type {
 } from 'meilisearch'
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import { assertSafeField, DEFAULT_SEARCH_LIMIT, isObjectFilter, resolveSearchParams, sortToList } from '../params'
 
 type TypesenseConfig = {
   host: string
@@ -59,6 +59,21 @@ function fakeTask(indexUid: string): EnqueuedTask {
   } as unknown as EnqueuedTask
 }
 
+class TypesenseRequestError extends Error {
+  constructor(
+    public status: number,
+    method: string,
+    path: string,
+    detail: string,
+  ) {
+    super(`[search/typesense] ${method} ${path} failed (${status}): ${detail}`)
+  }
+}
+
+function isNotFound(error: unknown): boolean {
+  return error instanceof TypesenseRequestError && error.status === 404
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${baseUrl()}${path}`, {
     method,
@@ -68,46 +83,45 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(`[search/typesense] ${method} ${path} failed (${res.status}): ${text}`)
+    throw new TypesenseRequestError(res.status, method, path, text)
   }
 
   if (res.status === 204) return undefined as T
   return await res.json() as T
 }
 
-const SAFE_FILTER_FIELD = /^[a-z_][\w]*(?:\.[a-z_][\w]*)*$/i
+function collectionPath(name: string): string {
+  return `/collections/${encodeURIComponent(name)}`
+}
 
-function convertToFilterBy(jsonData: Record<string, unknown> | undefined): string | undefined {
-  if (!jsonData) return undefined
+/**
+ * The contract's filter as a Typesense `filter_by`.
+ *
+ * A string is already Typesense syntax and an array is several clauses that
+ * must all hold; both pass through. An object is `{ field: value }`, with the
+ * field names checked and the values backtick-quoted; an array value means any
+ * of them. Empty values are skipped, as they always were here.
+ */
+function convertToFilterBy(filter: SearchFilter | undefined): string | undefined {
+  if (filter == null || filter === '')
+    return undefined
+  if (typeof filter === 'string')
+    return filter
+  if (Array.isArray(filter))
+    return filter.map(clause => Array.isArray(clause) ? `(${clause.join(' || ')})` : clause).filter(Boolean).join(' && ') || undefined
+  if (!isObjectFilter(filter))
+    throw new TypeError(`[search/typesense] Unsupported filter: ${JSON.stringify(filter)}`)
 
+  const quote = (value: unknown) => `\`${String(value).replace(/`/g, '\\`')}\``
   const parts: string[] = []
 
-  for (const key in jsonData) {
-    if (!Object.prototype.hasOwnProperty.call(jsonData, key)) continue
-    if (!SAFE_FILTER_FIELD.test(key)) {
-      throw new Error(`[search/typesense] Refusing to build filter with unsafe field name: ${key}`)
-    }
-    const value = jsonData[key]
+  for (const [key, value] of Object.entries(filter)) {
+    assertSafeField('typesense', key)
     if (value == null || value === '') continue
-    const escaped = String(value).replace(/`/g, '\\`')
-    parts.push(`${key}:=\`${escaped}\``)
+    parts.push(Array.isArray(value) ? `${key}:=[${value.map(quote).join(',')}]` : `${key}:=${quote(value)}`)
   }
 
   return parts.length ? parts.join(' && ') : undefined
-}
-
-function convertToSortBy(jsonData: Record<string, string> | undefined): string | undefined {
-  if (!jsonData) return undefined
-
-  const parts: string[] = []
-  for (const key in jsonData) {
-    if (!Object.prototype.hasOwnProperty.call(jsonData, key)) continue
-    if (!SAFE_FILTER_FIELD.test(key)) continue
-    const dir = String(jsonData[key]).toLowerCase() === 'desc' ? 'desc' : 'asc'
-    parts.push(`${key}:${dir}`)
-  }
-
-  return parts.length ? parts.join(',') : undefined
 }
 
 /**
@@ -136,85 +150,189 @@ function inferFieldType(value: unknown): string {
   return 'string'
 }
 
-async function ensureCollection(indexName: string, sampleDoc?: Record<string, unknown>, settings?: Settings): Promise<void> {
-  try {
-    await request('GET', `/collections/${indexName}`)
-    return
+interface TypesenseField {
+  name: string
+  type: string
+  facet?: boolean
+  sort?: boolean
+  optional?: boolean
+  [key: string]: unknown
+}
+
+interface TypesenseCollection {
+  name: string
+  fields?: TypesenseField[]
+}
+
+/**
+ * The settings each index has been given, merged across calls.
+ *
+ * A Typesense collection can only be created from a document, because only a
+ * document knows each field's type. Settings synced before the first write -
+ * which is what `search-engine:update` and the import command both do - used
+ * to be applied to a collection that did not exist yet and then forgotten, so
+ * the collection the first write created had no facets and filtering on any
+ * declared `filterable` field failed. They are kept here until the collection
+ * exists, and reconciled against its schema once it does.
+ */
+const indexSettings = new Map<string, Settings>()
+
+function rememberSettings(index: string, settings?: Settings): Settings {
+  const merged: Settings = { ...indexSettings.get(index) }
+  for (const [key, value] of Object.entries(settings ?? {})) {
+    if (value !== undefined)
+      (merged as Record<string, unknown>)[key] = value
   }
-  catch {
-    // collection missing — create below
+  indexSettings.set(index, merged)
+  return merged
+}
+
+function attributeNames(list: Settings['searchableAttributes'] | Settings['filterableAttributes'] | undefined | null): string[] {
+  const names: string[] = []
+  for (const entry of list ?? []) {
+    if (typeof entry === 'string') names.push(entry)
+    else names.push(...entry.attributePatterns)
+  }
+  return names
+}
+
+/**
+ * One value per field, taken from the first document that has one.
+ *
+ * The schema used to be inferred from the first row alone. A column that was
+ * null there - an optional rating, an image not uploaded yet - was dropped by
+ * `normalizeDocument`, defaulted to '' and typed `string`, and every later row
+ * carrying a number for it was refused. An empty array is used only when no
+ * document has a non-empty one, since it says nothing about the element type.
+ */
+function mergeSample(docs: Record<string, unknown>[]): Record<string, unknown> {
+  const sample: Record<string, unknown> = {}
+  for (const doc of docs) {
+    for (const [key, value] of Object.entries(doc)) {
+      if (value == null) continue
+      const current = sample[key]
+      if (current === undefined || (Array.isArray(current) && current.length === 0 && Array.isArray(value) && value.length > 0))
+        sample[key] = value
+    }
+  }
+  return sample
+}
+
+/**
+ * A field declaration.
+ *
+ * `sort` is set only when the field was declared sortable. It used to be
+ * written out as `sort: false` for every other field, and Typesense's default
+ * is `true` for numbers - so declaring one sortable field switched sorting off
+ * on every other numeric column, including the default sorting field.
+ */
+function fieldFor(name: string, value: unknown, settings: Settings): TypesenseField {
+  const field: TypesenseField = {
+    name,
+    type: name === 'id' ? 'string' : inferFieldType(value ?? ''),
+    facet: attributeNames(settings.filterableAttributes).includes(name),
+    optional: name !== 'id',
+  }
+  if (attributeNames(settings.sortableAttributes).includes(name))
+    field.sort = true
+  return field
+}
+
+async function fetchCollection(indexName: string): Promise<TypesenseCollection | undefined> {
+  try {
+    return await request<TypesenseCollection>('GET', collectionPath(indexName))
+  }
+  catch (error) {
+    // Only "not there" means create it. Any other failure - a bad key, the
+    // node down - used to be read the same way, and the create that followed
+    // failed with a message about the collection already existing.
+    if (isNotFound(error)) return undefined
+    throw error
+  }
+}
+
+/**
+ * The PATCH that brings an existing collection in line with the settings and
+ * with the documents about to be written.
+ *
+ * A field whose facet or sort flag has to change is dropped and re-added in the
+ * same request, which is how Typesense alters a field. A document field the
+ * schema lacks is added, typed from the documents. A declared attribute no
+ * document has carried yet is left out, because nothing yet says its type.
+ */
+type FieldChange = TypesenseField | { name: string, drop: true }
+
+/**
+ * A field re-declared with new flags. Only the properties that shape indexing
+ * are carried over; the rest of what `GET /collections` reports is read-only
+ * or engine bookkeeping.
+ */
+function redeclare(field: TypesenseField, facet: boolean, sort: boolean | undefined): TypesenseField {
+  const next: TypesenseField = { name: field.name, type: field.type, facet, optional: field.optional ?? true }
+  if (sort !== undefined) next.sort = sort
+  if (field.index === false) next.index = false
+  if (field.infix === true) next.infix = true
+  if (typeof field.locale === 'string' && field.locale !== '') next.locale = field.locale
+  return next
+}
+
+function schemaPatch(existing: TypesenseField[], sample: Record<string, unknown>, settings: Settings): FieldChange[] {
+  const patch: FieldChange[] = []
+  const known = new Set(existing.map(f => f.name))
+  const filterableDeclared = settings.filterableAttributes != null
+  const filterable = attributeNames(settings.filterableAttributes)
+  const sortable = attributeNames(settings.sortableAttributes)
+
+  for (const field of existing) {
+    if (field.name === 'id' || field.name.includes('*')) continue
+    const facet = filterableDeclared ? filterable.includes(field.name) : Boolean(field.facet)
+    const sort = sortable.includes(field.name) ? true : field.sort
+    if (facet !== Boolean(field.facet) || sort !== field.sort)
+      patch.push({ name: field.name, drop: true }, redeclare(field, facet, sort))
   }
 
-  /*
-   * No sample, no collection.
-   *
-   * A schema has to come from data. `inferFieldType(undefined)` answers
-   * 'string', so creating a collection from a settings list alone - which is
-   * what the settings sync does, before anything has been indexed - typed
-   * every field as text. Typesense then *refuses* every document carrying an
-   * array or a number ("Field `topics` must be a string"), so the index could
-   * never be written to while the importer reported the rows it believed it
-   * wrote. Sorting broke in the same stroke, ordering numeric fields
-   * lexicographically.
-   *
-   * Typing those fields `auto` instead is not enough either: Typesense
-   * materialises an auto field only when a document gives it a type, so a
-   * field that is empty across the whole corpus - `topics: []` where nobody
-   * has set any - never appears, and `query_by` on it fails with "Could not
-   * find a field named".
-   *
-   * So creation waits for the first document, which is the only thing that
-   * knows the shape. `addDocument` and `addDocuments` both pass one; settings
-   * applied before then are applied when the collection is really created.
-   */
-  if (!sampleDoc)
+  for (const [name, value] of Object.entries(sample)) {
+    if (name === 'id' || known.has(name)) continue
+    patch.push(fieldFor(name, value, settings))
+  }
+
+  return patch
+}
+
+/**
+ * Make sure the collection exists and its schema matches what is declared.
+ *
+ * With no document there is nothing to type the fields from, so a missing
+ * collection is left missing and created by the first write, using the
+ * settings remembered for it. An existing one is patched in place.
+ */
+async function ensureCollection(indexName: string, docs?: Record<string, unknown>[], settings?: Settings): Promise<void> {
+  const effective = rememberSettings(indexName, settings)
+  const sample = mergeSample(docs ?? [])
+  const existing = await fetchCollection(indexName)
+
+  if (existing) {
+    const patch = schemaPatch(existing.fields ?? [], sample, effective)
+    if (patch.length > 0)
+      await request('PATCH', collectionPath(indexName), { fields: patch })
+    return
+  }
+
+  if (!docs || docs.length === 0)
     return
 
   const fieldNames = new Set<string>(['id'])
-  const searchable = settings?.searchableAttributes ?? []
-  const filterable = settings?.filterableAttributes ?? []
-  const sortable = settings?.sortableAttributes ?? []
-  const displayed = settings?.displayedAttributes ?? []
-
-  for (const f of [...searchable, ...filterable, ...sortable, ...displayed]) {
-    if (typeof f === 'string') fieldNames.add(f)
-    else for (const pattern of f.attributePatterns) fieldNames.add(pattern)
-  }
-
-  if (sampleDoc) {
-    for (const key of Object.keys(sampleDoc)) fieldNames.add(key)
-    for (const key of fieldNames) {
-      if (sampleDoc[key] === undefined) sampleDoc[key] = ''
-    }
-  }
-
-  /*
-   * With no document to look at, let Typesense infer types per field.
-   *
-   * `inferFieldType(undefined)` answers 'string', so creating a collection
-   * from settings alone - which is what the settings sync does, before
-   * anything has been indexed - typed every field as text. That is not a
-   * cosmetic mistake: Typesense then *rejects* every document that carries an
-   * array or a number ("Field `topics` must be a string"), so the index stays
-   * empty while the importer cheerfully reports the rows it thinks it wrote.
-   * Sorting was broken in the same stroke, lexicographically ordering the
-   * numeric fields the sort was declared on.
-   *
-   * The auto field defers the decision to the first document, which is the
-   * only thing that actually knows. An explicit sample still wins, because a
-   * known shape beats an inferred one.
-   */
-  const fields = [...fieldNames].map(name => ({
-    name,
-    type: name === 'id' ? 'string' : inferFieldType(sampleDoc[name]),
-    facet: filterable.includes(name),
-    sort: sortable.includes(name),
-    optional: name !== 'id',
-  }))
+  for (const name of [
+    ...attributeNames(effective.searchableAttributes),
+    ...attributeNames(effective.filterableAttributes),
+    ...attributeNames(effective.sortableAttributes),
+    ...attributeNames(effective.displayedAttributes),
+    ...Object.keys(sample),
+  ]) fieldNames.add(name)
 
   await request('POST', '/collections', {
     name: indexName,
-    fields,
+    fields: [...fieldNames].map(name => fieldFor(name, sample[name], effective)),
   })
 }
 
@@ -242,12 +360,16 @@ function normalizeDocument(doc: Record<string, unknown>): Record<string, unknown
   return out
 }
 
-async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
-  const page = Number(params.page) || 1
-  const perPage = Number(params.perPage) || 20
-  const offsetVal = (page - 1) * perPage
-  const filterBy = params.filter_by || convertToFilterBy(params.filter)
-  const sortBy = convertToSortBy(params.sort)
+function queryByFrom(params: SearchEngineSearchParams): string | undefined {
+  const raw = params.queryBy ?? params.query_by
+  if (raw == null) return undefined
+  return (Array.isArray(raw) ? raw.join(',') : String(raw)) || undefined
+}
+
+async function search(index: string, params: SearchEngineSearchParams = {}): Promise<SearchResponse<Record<string, any>>> {
+  const { query, limit, offset, filter, sort } = resolveSearchParams(params, searchEngine.perPage ?? DEFAULT_SEARCH_LIMIT)
+  const filterBy = (params.filter_by as string | undefined) || convertToFilterBy(filter)
+  const sortBy = (params.sort_by as string | undefined) || sortToList('typesense', sort).join(',')
 
   /*
    * No `id` fallback. Typesense refuses `id` as a query field outright, so
@@ -256,8 +378,7 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
    * whoever reads it looking at the document rather than at the missing
    * parameter. Saying so here costs one line and names the actual problem.
    */
-  const queryBy = (params.queryBy as string[] | undefined)?.join(',')
-    || (params.query_by as string | undefined)
+  const queryBy = queryByFrom(params)
 
   if (!queryBy) {
     throw new Error(
@@ -266,26 +387,26 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
     )
   }
 
-  /*
-   * `query` or `q`, because both spellings arrive here.
-   *
-   * The ORM's search builder sets `q` (it is the name Typesense itself uses on
-   * the wire); this read only `params.query`, found nothing, and fell back to
-   * `*`. So every `Model.search('anything')` matched every document in the
-   * collection and returned a full page of results - which looks like working
-   * search right up until somebody notices the same twenty rows come back for
-   * a term that appears nowhere. Silent, and worse than an error: a 400 gets
-   * fixed, a wrong answer gets shipped.
-   */
-  const rawQuery = params.query ?? params.q
-  const q = rawQuery == null || rawQuery === '' ? '*' : String(rawQuery)
+  // An empty query matches everything, which Typesense spells `*`.
+  const q = query === '' ? '*' : query
 
-  const searchParams = new URLSearchParams({
-    q,
-    query_by: queryBy,
-    per_page: String(perPage),
-    page: String(page),
-  })
+  const searchParams = new URLSearchParams({ q, query_by: queryBy })
+
+  /*
+   * `page` / `per_page` when the offset falls on a page boundary - which is
+   * every `paginate()` call, and works on any Typesense version - and the
+   * `offset` / `limit` pair otherwise. Only `page` and `per_page` used to be
+   * read, so the builder's `limit` / `offset` were ignored and `.paginate(10,
+   * 3)` returned the first twenty hits.
+   */
+  if (limit > 0 && offset % limit === 0) {
+    searchParams.set('per_page', String(limit))
+    searchParams.set('page', String(offset / limit + 1))
+  }
+  else {
+    searchParams.set('offset', String(offset))
+    searchParams.set('limit', String(limit))
+  }
 
   if (filterBy) searchParams.set('filter_by', filterBy)
   if (sortBy) searchParams.set('sort_by', sortBy)
@@ -294,7 +415,7 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
     found: number
     hits: Array<{ document: Record<string, unknown> }>
     search_time_ms: number
-  }>('GET', `/collections/${index}/documents/search?${searchParams}`)
+  }>('GET', `${collectionPath(index)}/documents/search?${searchParams}`)
 
   const hits = (result.hits ?? []).map(h => h.document)
 
@@ -302,26 +423,49 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
     hits,
     query: q,
     processingTimeMs: result.search_time_ms ?? 0,
-    limit: perPage,
-    offset: offsetVal,
+    limit,
+    offset,
     estimatedTotalHits: result.found ?? hits.length,
   } as SearchResponse<Record<string, any>>
 }
 
-async function addDocument(indexName: string, params: any): Promise<EnqueuedTask> {
+async function addDocument(indexName: string, params: Record<string, unknown>): Promise<EnqueuedTask> {
   const doc = normalizeDocument(params)
-  await ensureCollection(indexName, doc)
-  await request('POST', `/collections/${indexName}/documents?action=upsert`, doc)
+  await ensureCollection(indexName, [doc])
+  await request('POST', `${collectionPath(indexName)}/documents?action=upsert`, doc)
   return fakeTask(indexName)
 }
 
-async function addDocuments(indexName: string, params: any[]): Promise<EnqueuedTask> {
-  if (!Array.isArray(params) || params.length === 0) return fakeTask(indexName)
+/** A bulk import Typesense accepted with HTTP 200 and then refused, line by line. */
+export class TypesenseImportError extends Error {
+  constructor(
+    public indexName: string,
+    public failures: Array<{ id: unknown, error: string }>,
+    public total: number,
+  ) {
+    const shown = failures.slice(0, 5).map(f => `#${String(f.id ?? '?')}: ${f.error}`).join('; ')
+    const more = failures.length > 5 ? `; and ${failures.length - 5} more` : ''
+    super(`[search/typesense] import into "${indexName}" rejected ${failures.length} of ${total} document(s): ${shown}${more}`)
+  }
+}
+
+/**
+ * Upsert a batch through `/documents/import`.
+ *
+ * That endpoint answers HTTP 200 whatever happens to the documents, with one
+ * JSON line per document saying whether it was written. Only the status used to
+ * be checked, so a batch Typesense refused in full - a field typed `string`
+ * meeting a number - was reported as indexed. Every line is read now, and any
+ * refusal is thrown with the ids and reasons.
+ */
+async function addDocuments(indexName: string, params: Record<string, unknown>[]): Promise<EnqueuedTask> {
+  if (!Array.isArray(params)) throw new TypeError('[search/typesense] addDocuments requires an array of documents')
+  if (params.length === 0) return fakeTask(indexName)
 
   const docs = params.map(normalizeDocument)
-  await ensureCollection(indexName, docs[0])
+  await ensureCollection(indexName, docs)
   const importBody = docs.map(d => JSON.stringify(d)).join('\n')
-  const res = await fetch(`${baseUrl()}/collections/${indexName}/documents/import?action=upsert`, {
+  const res = await fetch(`${baseUrl()}${collectionPath(indexName)}/documents/import?action=upsert`, {
     method: 'POST',
     headers: {
       ...headers(),
@@ -329,25 +473,74 @@ async function addDocuments(indexName: string, params: any[]): Promise<EnqueuedT
     },
     body: importBody,
   })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
+  const text = await res.text().catch(() => '')
+  if (!res.ok)
     throw new Error(`[search/typesense] bulk import failed (${res.status}): ${text}`)
-  }
+
+  const failures: Array<{ id: unknown, error: string }> = []
+  text.split('\n').filter(line => line.trim() !== '').forEach((line, i) => {
+    let result: { success?: boolean, error?: string }
+    try {
+      result = JSON.parse(line)
+    }
+    catch {
+      result = { success: false, error: line }
+    }
+    if (result.success !== true)
+      failures.push({ id: docs[i]?.id, error: result.error ?? 'not written' })
+  })
+
+  if (failures.length > 0)
+    throw new TypesenseImportError(indexName, failures, docs.length)
+
   return fakeTask(indexName)
 }
 
 async function deleteDocument(indexName: string, id: number): Promise<EnqueuedTask> {
-  await request('DELETE', `/collections/${indexName}/documents/${String(id)}`)
+  await request('DELETE', `${collectionPath(indexName)}/documents/${encodeURIComponent(String(id))}`)
   return fakeTask(indexName)
 }
 
+/**
+ * Delete the documents matching a filter.
+ *
+ * This used to call `deleteIndex`, so asking to delete the drafts dropped the
+ * whole collection - every document and the schema with it.
+ */
+async function deleteDocuments(indexName: string, filters: string | string[]): Promise<EnqueuedTask> {
+  const filterBy = convertToFilterBy(filters)
+  if (!filterBy)
+    throw new Error(`[search/typesense] deleteDocuments on "${indexName}" needs a filter. Use deleteAllDocuments to empty the collection.`)
+
+  await request('DELETE', `${collectionPath(indexName)}/documents?${new URLSearchParams({ filter_by: filterBy })}`)
+  return fakeTask(indexName)
+}
+
+/** Empty the collection and keep its schema. `truncate` needs Typesense 28 or later. */
+async function deleteAllDocuments(indexName: string): Promise<EnqueuedTask> {
+  try {
+    await request('DELETE', `${collectionPath(indexName)}/documents?truncate=true`)
+  }
+  catch (error) {
+    if (!isNotFound(error)) throw error
+  }
+  return fakeTask(indexName)
+}
+
+/**
+ * Drop the collection. One that is already gone is fine; anything else - an
+ * auth failure, the node down - used to be logged at debug level and reported
+ * as success.
+ */
 async function deleteIndex(indexName: string): Promise<EnqueuedTask> {
   try {
-    await request('DELETE', `/collections/${indexName}`)
+    await request('DELETE', collectionPath(indexName))
   }
-  catch (err) {
-    log.debug(`[search/typesense] deleteIndex ${indexName}: ${(err as Error).message}`)
+  catch (error) {
+    if (!isNotFound(error)) throw error
+    log.debug(`[search/typesense] deleteIndex ${indexName}: already absent`)
   }
+  indexSettings.delete(indexName)
   return fakeTask(indexName)
 }
 
@@ -364,33 +557,42 @@ async function deleteIndex(indexName: string): Promise<EnqueuedTask> {
  */
 async function createIndex(name: string, options?: CreateIndexOptions): Promise<EnqueuedTask> {
   const sample = options?.sampleDocument
-  await ensureCollection(name, sample ? normalizeDocument(sample) : undefined, options?.settings)
+  await ensureCollection(name, sample ? [normalizeDocument(sample)] : undefined, options?.settings)
   return fakeTask(name)
 }
 
 async function getIndex(name: string): Promise<Index<Record<string, any>>> {
-  const collection = await request<Record<string, unknown>>('GET', `/collections/${name}`)
+  const collection = await request<Record<string, unknown>>('GET', collectionPath(name))
   return collection as unknown as Index<Record<string, any>>
 }
 
+/**
+ * Remember the settings, and apply them to the collection if it exists. If it
+ * does not, the first write creates it with them.
+ */
 async function updateSettings(index: string, settings: Settings): Promise<EnqueuedTask> {
   await ensureCollection(index, undefined, settings)
   return fakeTask(index)
 }
 
+function settingUpdater(key: 'filterableAttributes' | 'searchableAttributes' | 'sortableAttributes' | 'displayedAttributes') {
+  return (index: string, attributes: string[] | null): Promise<EnqueuedTask> =>
+    updateSettings(index, { [key]: attributes ?? [] })
+}
+
 async function getSearchableAttributes(index: string): Promise<string[]> {
-  const col = await request<{ fields?: Array<{ name: string }> }>('GET', `/collections/${index}`)
+  const col = await request<TypesenseCollection>('GET', collectionPath(index))
   return (col.fields ?? []).map(f => f.name).filter(n => n !== 'id')
 }
 
 async function getFilterableAttributes(index: string): Promise<string[]> {
-  const col = await request<{ fields?: Array<{ name: string, facet?: boolean }> }>('GET', `/collections/${index}`)
+  const col = await request<TypesenseCollection>('GET', collectionPath(index))
   return (col.fields ?? []).filter(f => f.facet).map(f => f.name)
 }
 
 async function getSortableAttributes(index: string): Promise<string[]> {
-  const col = await request<{ fields?: Array<{ name: string, sort?: boolean }> }>('GET', `/collections/${index}`)
-  return (col.fields ?? []).map(f => f.name)
+  const col = await request<TypesenseCollection>('GET', collectionPath(index))
+  return (col.fields ?? []).filter(f => f.sort).map(f => f.name)
 }
 
 async function getDisplayedAttributes(index: string): Promise<string[]> {
@@ -412,7 +614,10 @@ function notImplemented(_index: string, _arg?: unknown): Promise<EnqueuedTask> {
 
 const typesense: SearchEngineDriver = {
   client: () => ({}) as ReturnType<SearchEngineDriver['client']>,
-  resetClient: () => { _config = null },
+  resetClient: () => {
+    _config = null
+    indexSettings.clear()
+  },
   search,
 
   getIndex,
@@ -424,25 +629,26 @@ const typesense: SearchEngineDriver = {
 
   addDocument,
   addDocuments,
-  updateDocument: (indexName, doc) => addDocument(indexName, doc),
-  updateDocuments: (indexName, docs) => addDocuments(indexName, docs as DocumentOptions[]),
+  updateDocument: (indexName, doc) => addDocument(indexName, doc as Record<string, unknown>),
+  updateDocuments: (indexName, docs) => addDocuments(indexName, docs as Record<string, unknown>[]),
   deleteDocument,
-  deleteDocuments: async (indexName) => deleteIndex(indexName),
+  deleteDocuments,
+  deleteAllDocuments,
   getDocument: async () => fakeTask('typesense'),
 
   getFilterableAttributes,
-  updateFilterableAttributes: notImplemented,
-  resetFilterableAttributes: notImplemented,
+  updateFilterableAttributes: settingUpdater('filterableAttributes'),
+  resetFilterableAttributes: index => updateSettings(index, { filterableAttributes: [] }),
 
-  updateDisplayedAttributes: notImplemented,
+  updateDisplayedAttributes: settingUpdater('displayedAttributes'),
   resetDisplayedAttributes: notImplemented,
   getDisplayedAttributes,
 
-  updateSearchableAttributes: notImplemented,
+  updateSearchableAttributes: settingUpdater('searchableAttributes'),
   resetSearchableAttributes: notImplemented,
   getSearchableAttributes,
 
-  updateSortableAttributes: notImplemented,
+  updateSortableAttributes: settingUpdater('sortableAttributes'),
   resetSortableAttributes: notImplemented,
   getSortableAttributes,
 

@@ -1,7 +1,7 @@
 import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
 import type { Faker } from '@stacksjs/faker'
-import type { ApiMiddleware, DashboardModelOptions, SearchOptions } from '@stacksjs/types'
+import type { ApiMiddleware, DashboardModelOptions, SearchEngineSearchParams, SearchFilter, SearchOptions } from '@stacksjs/types'
 import type { Validator } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging/runtime'
 import { snakeCase } from '@stacksjs/strings'
@@ -1532,7 +1532,7 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
     // `.hydrate()` (returns model instances) or pass through to the
     // raw driver response via `.raw()`.
     if (typeof baseModel.search !== 'function') {
-      baseModel.search = function (query: string, params?: Record<string, unknown>) {
+      baseModel.search = function (query: string, params?: SearchEngineSearchParams) {
         /*
          * The fields the model declared searchable, handed to the builder.
          *
@@ -1590,26 +1590,20 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
     }
 
     // Model.removeAllFromSearch() — drop every document from the
-    // model's index. Useful before a driver swap or schema-shape
-    // change. Idempotent: calling against an empty index is a no-op.
+    // model's index, keeping the index and its settings. Useful before a
+    // driver swap or schema-shape change. Idempotent: an empty or missing
+    // index is not an error.
+    //
+    // This used to look for `deleteAllDocuments`, which no driver had, and
+    // fall back to deleting the id of every row still in the database - so
+    // every document whose row was already gone, the ones most worth
+    // removing, stayed searchable. Every driver implements it now, and the
+    // contract requires it, so there is nothing to guess.
     if (typeof baseModel.removeAllFromSearch !== 'function') {
       baseModel.removeAllFromSearch = async function (): Promise<void> {
-        const { useSearchEngine } = await import('@stacksjs/search-engine')
-        const engine = useSearchEngine() as { deleteAllDocuments?: (index: string) => Promise<unknown> }
-        if (typeof engine.deleteAllDocuments === 'function') {
-          await engine.deleteAllDocuments(indexName)
-          return
-        }
-        // Fallback: iterate + delete-by-id when the driver doesn't
-        // expose a bulk-flush primitive. Rare — most engines do.
-        const all = baseModel.all as Function | undefined
-        const rows = typeof all === 'function' ? ((await all.call(baseModel)) || []) : []
-        const e2 = useSearchEngine()
-        // A row, or a model instance holding its columns in `_attributes`.
-        for (const r of rows as Array<{ id?: unknown, _attributes?: { id?: unknown } }>) {
-          const id = r?.id ?? r?._attributes?.id
-          if (id != null) await e2.deleteDocument(indexName, Number(id))
-        }
+        const { searchEngineReady } = await import('@stacksjs/search-engine')
+        const engine = await searchEngineReady()
+        await engine.deleteAllDocuments(indexName)
       }
     }
   }
@@ -1727,14 +1721,14 @@ function createSearchQueryBuilder(
   _baseModel: Record<string, unknown>,
   indexName: string,
   query: string,
-  initialParams?: Record<string, unknown>,
+  initialParams?: SearchEngineSearchParams,
   searchableFields?: readonly string[],
 ): {
   get: () => Promise<unknown[]>
   paginate: (perPage: number, page?: number) => Promise<{ hits: unknown[], total: number, page: number, perPage: number }>
   raw: () => Promise<unknown>
-  with: (params: Record<string, unknown>) => ReturnType<typeof createSearchQueryBuilder>
-  where: (filter: string | string[]) => ReturnType<typeof createSearchQueryBuilder>
+  with: (params: SearchEngineSearchParams) => ReturnType<typeof createSearchQueryBuilder>
+  where: (filter: SearchFilter) => ReturnType<typeof createSearchQueryBuilder>
 } {
   // `query_by` from the model's `searchable` unless the caller named their own.
   // Explicit params win: a caller narrowing the search to one field is making a
@@ -1743,16 +1737,23 @@ function createSearchQueryBuilder(
     ? { query_by: [...searchableFields].join(',') }
     : {}
 
-  let params: Record<string, unknown> = { q: query, ...defaultQueryBy, ...(initialParams ?? {}) }
+  // The shared search contract (`SearchEngineSearchParams`): `q`, `limit` /
+  // `offset`, and a filter that is engine syntax (string or array) or a
+  // portable `{ field: value }` object. Every driver reads these names.
+  let params: SearchEngineSearchParams = { q: query, ...defaultQueryBy, ...(initialParams ?? {}) }
 
   const builder = {
     /** Merge extra search params (filters, facets, attributesToRetrieve, etc.). */
-    with(extra: Record<string, unknown>) {
+    with(extra: SearchEngineSearchParams) {
       params = { ...params, ...extra }
       return builder
     },
-    /** Set a Meilisearch-style `filter` clause; driver-specific syntax. */
-    where(filter: string | string[]) {
+    /**
+     * Set the filter: a string or array in the engine's own syntax, passed
+     * through as written, or a `{ field: value }` object every driver
+     * translates and escapes - the form to use for anything from user input.
+     */
+    where(filter: SearchFilter) {
       params = { ...params, filter }
       return builder
     },
@@ -1765,6 +1766,10 @@ function createSearchQueryBuilder(
     },
     /** Execute with pagination. */
     async paginate(perPage: number, page: number = 1) {
+      if (!Number.isInteger(perPage) || perPage < 1)
+        throw new TypeError(`[orm/search] paginate() needs a positive integer page size, got ${perPage}`)
+      if (!Number.isInteger(page) || page < 1)
+        throw new TypeError(`[orm/search] paginate() pages are 1-based, got ${page}`)
       const { useSearchEngine } = await import('@stacksjs/search-engine')
       const engine = useSearchEngine()
       const result = await engine.search(indexName, {
