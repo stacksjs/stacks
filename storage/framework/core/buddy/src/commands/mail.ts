@@ -641,6 +641,24 @@ function addMailStorageOptions(command: any): any {
     .option('--profile <profile>', 'AWS credential profile', { default: 'default' })
 }
 
+/**
+ * Which environment `mail:provision` acts on, or null when nobody said.
+ *
+ * It used to fall back to `production`. The command reconciles a shared mail
+ * server and restarts it, mints DKIM keys, calls ACME and rewrites a zone's
+ * MX, SPF, DKIM and DMARC records, so a bare `buddy mail:provision` typed on a
+ * laptop reached the live server and the records of a production domain
+ * (stacksjs/stacks#2865). Rewriting MX and SPF is not a reversible local
+ * action: it redirects or drops inbound mail until the records propagate back.
+ *
+ * Guessing is the part that has to go. Name the environment or the command
+ * does nothing.
+ */
+export function resolveProvisionEnvironment(option?: string, appEnv?: string): string | null {
+  const named = (option ?? appEnv ?? '').trim()
+  return named === '' ? null : named
+}
+
 export function mailCommands(buddy: CLI): void {
   buddy
     .command('mail:provision', 'Provision this app\'s mail from config/email.ts onto the shared mail server (domain + DKIM + mailboxes + MX/SPF/DKIM/DMARC DNS). Reusable + idempotent; the same reconcile buddy deploy runs.')
@@ -654,7 +672,15 @@ export function mailCommands(buddy: CLI): void {
       // reporting success and advising you to set the very variables it had
       // just ignored. Load the target environment's decrypted secrets first,
       // exactly as `buddy deploy` does, so the two paths provision alike.
-      const environment = options.env || process.env.APP_ENV || 'production'
+      const environment = resolveProvisionEnvironment(options.env, process.env.APP_ENV)
+      if (!environment) {
+        await log.error(
+          'mail:provision will not guess an environment. It provisions onto a shared mail server, '
+          + 'so pass the target explicitly: `--env production`, `--env staging`, and so on (or set APP_ENV). '
+          + 'Add --dry-run to see what it would do first.',
+        )
+        process.exit(ExitCode.InvalidArgument)
+      }
       process.env.APP_ENV = environment
       const envFile = `.env.${environment}`
       if (existsSync(envFile)) {
