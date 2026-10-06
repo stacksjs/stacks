@@ -148,6 +148,20 @@ const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${cla
     padding-bottom: var(--native-safe-area-bottom);
   }
 
+  /* While the keyboard is up, the tab bar steps aside, as iOS does: left in
+     place it rode up on top of the keyboard and took a fifth of the screen
+     from whatever was being typed. Hidden rather than removed, so the
+     content's clearance below stays and nothing jumps when it comes back. */
+  .native-app-shell.native-mobile:has(:is(input:not([type=checkbox], [type=radio], [type=range], [type=button], [type=submit], [type=file]), textarea, select, [contenteditable=true]):focus) .native-app-tab-slot {
+    visibility: hidden;
+  }
+
+  @media (max-width: 767.98px) and (pointer: coarse) {
+    .native-app-shell:has(:is(input:not([type=checkbox], [type=radio], [type=range], [type=button], [type=submit], [type=file]), textarea, select, [contenteditable=true]):focus) .native-app-tab-slot {
+      visibility: hidden;
+    }
+  }
+
   /* A phone app does not select its chrome on a long press, or flash it grey
      on a tap. Text inside the content is left selectable. */
   .native-app-shell.native-mobile .native-app-tab-slot,

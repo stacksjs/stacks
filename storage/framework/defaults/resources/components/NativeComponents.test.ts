@@ -40,6 +40,12 @@ describe('Native components', () => {
     expect(bar).toContain("useReactiveProp<string>('title', '')")
   })
 
+  it('steps the tab bar aside while the keyboard is up', () => {
+    const shell = read('NativeAppShell')
+    expect(shell).toContain('textarea, select, [contenteditable=true]):focus) .native-app-tab-slot')
+    expect(shell).toContain('visibility: hidden;')
+  })
+
   it('keeps every text field big enough that iOS does not zoom into it', () => {
     expect(read('NativeAppShell')).toContain('.native-app-shell :is(input, textarea, select) { font-size: max(16px, 1em); }')
   })
