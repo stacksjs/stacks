@@ -33,6 +33,21 @@ export default {
   },
 
   /**
+   * Paddle Billing, for `driver: 'paddle'`. Paddle is the merchant of record:
+   * it charges and remits the tax, and reviews refunds. Set its default
+   * payment link to this app's /payments/checkout page.
+   */
+  paddle: {
+    apiKey: env.PADDLE_API_KEY || '',
+    environment: env.PADDLE_ENVIRONMENT === 'live' ? 'live' : 'sandbox',
+    // The secret key of your notification destination, which verifies its deliveries.
+    webhookSecret: env.PADDLE_WEBHOOK_SECRET || '',
+    // A client-side token, for Paddle.js on the checkout page.
+    clientToken: env.PADDLE_CLIENT_TOKEN || '',
+    taxCategory: env.PADDLE_TAX_CATEGORY || '',
+  },
+
+  /**
    * Marketplace payments. Off unless your app charges a customer on behalf of
    * a merchant. The Connect webhook endpoint has its own signing secret - the
    * account webhook secret above will not verify its deliveries.

@@ -42,7 +42,7 @@ export type PaymentOperation =
   | 'webhooks'
 
 export interface Customer {
-  /** The provider's id for this payer: a Stripe customer, an Adyen shopper reference. */
+  /** The provider's id for this payer: a Stripe customer, an Adyen shopper reference, a Paddle customer. */
   id: string
   email: string | null
   name: string | null
@@ -65,6 +65,12 @@ export type PaymentStatus = 'succeeded' | 'processing' | 'requires_action' | 're
 export type ClientConfirmation =
   | { provider: 'stripe', clientSecret: string }
   | { provider: 'adyen', sessionId: string, sessionData: string }
+  /**
+   * Open Paddle.js on the transaction: `Paddle.Checkout.open({ transactionId,
+   * settings: { successUrl } })`. Paddle takes the success page in the
+   * browser, so it travels with the confirmation.
+   */
+  | { provider: 'paddle', transactionId: string, successUrl?: string }
 
 export interface PaymentResult {
   /** The provider's reference: a Stripe PaymentIntent id, an Adyen pspReference or session id. */

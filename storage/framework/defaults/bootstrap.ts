@@ -21,7 +21,7 @@
  * @see storage/framework/core/router/src/route-loader.ts:loadFrameworkRoutes
  */
 
-import { feature } from '@stacksjs/config'
+import { config, feature } from '@stacksjs/config'
 import { frameworkPath } from '@stacksjs/path'
 import { bundleMounts, DEFAULT_ROUTE_BUNDLE_FEATURES, route } from '@stacksjs/router'
 import MaintenanceMiddleware from './app/Middleware/Maintenance'
@@ -158,6 +158,15 @@ if (mounts('delivery')) {
 // webhook secret is configured.
 if (mounts('payments')) {
   await route.register(frameworkPath('defaults/routes/payments.ts'))
+}
+
+// The page a Paddle payment link opens: Paddle has no hosted checkout, so
+// its default payment link has to point at a page of the app's that loads
+// Paddle.js. Mounted while the app pays through Paddle, as part of the
+// `payments` bundle when the app names its bundles.
+const paymentDriverName = (config as { payment?: { driver?: string } }).payment?.driver
+if (paymentDriverName === 'paddle' && (selection?.explicit ? selection.bundles.has('payments') : true)) {
+  await route.register(frameworkPath('defaults/routes/paddle.ts'))
 }
 
 // Social sign-in: `/auth/{provider}` + `/auth/{provider}/callback`

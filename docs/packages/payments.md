@@ -41,22 +41,35 @@ for (const event of events) {
 return payments.acknowledgeWebhook()
 ```
 
-| Operation | Stripe | Adyen |
-| --- | --- | --- |
-| `customer` | Stripe customer, created on first use | Shopper reference (`user-<id>`); Adyen has no customer object |
-| `charge` (stored method) | Yes | Yes, as an unscheduled card-on-file payment |
-| `createPayment` (browser completes) | Client secret for Stripe.js | Session for Drop-in; needs `returnUrl` |
-| `refund` | Yes | Partial by amount, full as a reversal; the outcome arrives by webhook |
-| `checkout` (hosted page) | Yes, catalog prices or lines priced here | Lines priced here only, one return URL, no `subscription` mode |
-| `paymentMethods`, `removePaymentMethod` | Yes, default marked | Yes, by shopper reference |
-| `subscribe`, `cancelSubscription`, `subscriptions` | Yes | No: charge a stored card on your own schedule |
-| `verifyWebhook` | `Stripe-Signature` | HMAC per notification item |
+| Operation | Stripe | Adyen | Paddle |
+| --- | --- | --- | --- |
+| `customer` | Stripe customer, created on first use | Shopper reference (`user-<id>`); Adyen has no customer object | Paddle customer, found or created by email |
+| `charge` (stored method) | Yes | Yes, as an unscheduled card-on-file payment | No: every Paddle payment goes through its checkout |
+| `createPayment` (browser completes) | Client secret for Stripe.js | Session for Drop-in; needs `returnUrl` | Transaction for Paddle.js |
+| `refund` | Yes | Partial by amount, full as a reversal; the outcome arrives by webhook | A refund request Paddle reviews; `pending` until the webhook |
+| `checkout` (hosted page) | Yes, catalog prices or lines priced here | Lines priced here only, one return URL, no `subscription` mode | Your payment-link page; one return URL; `subscription` mode with catalog prices |
+| `paymentMethods`, `removePaymentMethod` | Yes, default marked | Yes, by shopper reference | Yes; Paddle keeps no default |
+| `subscribe` | Yes | No: charge a stored card on your own schedule | No: a subscription starts at checkout |
+| `cancelSubscription`, `subscriptions` | Yes | No | Yes |
+| `verifyWebhook` | `Stripe-Signature` | HMAC per notification item | `Paddle-Signature` |
 
 An operation a driver cannot do throws `PaymentUnsupportedError`, naming the driver and the operation; a provider's rejection throws `PaymentProviderError` with its status and code. `driver.capabilities` lists what a driver supports.
 
 ### Adyen
 
 Set `driver: 'adyen'` in `config/payment.ts` and `ADYEN_API_KEY`, `ADYEN_MERCHANT_ACCOUNT` and `ADYEN_HMAC_KEY` (the hex key of your standard webhook). `ADYEN_ENVIRONMENT=live` also needs `ADYEN_LIVE_URL_PREFIX`, your account's endpoint prefix from the Customer Area. The driver uses Checkout API v72.
+
+### Paddle
+
+Paddle Billing is a merchant of record: it is the seller, charges and remits the tax, and reviews refunds. The driver says so rather than hiding it.
+
+- **Setup:** set `driver: 'paddle'` in `config/payment.ts`, plus `PADDLE_API_KEY`, `PADDLE_CLIENT_TOKEN` (a client-side token, for Paddle.js) and `PADDLE_WEBHOOK_SECRET` (your notification destination's secret key). `PADDLE_ENVIRONMENT` is `sandbox` unless set to `live`, and the API key must belong to that environment.
+- **Checkout:** Paddle has no hosted checkout page. A transaction's payment link is your own page, which loads Paddle.js. Stacks serves that page at `GET /payments/checkout`; set it as the default payment link in Paddle (Checkout > Checkout settings). `checkout()` stores its `successUrl` on the transaction, and the page hands it to Paddle.js. The page needs no inline script, so an app Content-Security-Policy that allows `self` and `https://cdn.paddle.com` keeps working.
+- **Payments:** every payment is a transaction the payer completes in Paddle.js. `createPayment` returns `{ provider: 'paddle', transactionId, successUrl? }` for `Paddle.Checkout.open()`. Amounts priced in a request are tax-inclusive, so the payer pays exactly that. Lines priced here use `PADDLE_TAX_CATEGORY` (default `standard`), which must be enabled on your Paddle account.
+- **Subscriptions:** they start at checkout, in `subscription` mode with catalog prices that carry a billing cycle. A trial belongs to the Paddle price, not the checkout.
+- **Refunds:** each refund is a request Paddle reviews. It returns `pending`, and an `adjustment.updated` webhook settles it as `refund.succeeded` or `refund.failed`. A partial amount is taken from the transaction's line items in order, tax included.
+- **Webhooks:** Paddle wants a 200 within five seconds, and signatures older than five seconds are refused, as Paddle's SDKs do.
+- **Verification:** the driver is checked against Paddle's API reference and its webhook signatures against Paddle's official Node SDK. It has not yet run against a live Paddle account.
 
 The Payment facade's Stripe-only functions (below), the raw `stripe` client and the `manage*` modules remain Stripe's API.
 
@@ -83,7 +96,7 @@ A subscription checkout can start with a trial: `trialDays: 14`. A checkout's `r
 
 ### Orders from payment webhooks
 
-With commerce on, the framework mounts this for you at `POST /webhooks/payments` (the `payments` route bundle): point Stripe's endpoint there with `STRIPE_WEBHOOK_SECRET` set, or Adyen's standard webhook with `ADYEN_HMAC_KEY`. Until the secret is set it answers 401 and applies nothing; a signature that does not verify gets 400. To mount it yourself, `orders.receivePaymentWebhook(request)` is the whole handler. Underneath, `orders.handleCommercePaymentEvent` applies one verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
+With commerce on, the framework mounts this for you at `POST /webhooks/payments` (the `payments` route bundle): point Stripe's endpoint there with `STRIPE_WEBHOOK_SECRET` set, Adyen's standard webhook with `ADYEN_HMAC_KEY`, or a Paddle notification destination with `PADDLE_WEBHOOK_SECRET`. Until the secret is set it answers 401 and applies nothing; a signature that does not verify gets 400. To mount it yourself, `orders.receivePaymentWebhook(request)` is the whole handler. Underneath, `orders.handleCommercePaymentEvent` applies one verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
 
 ```ts
 import { orders } from '@stacksjs/commerce'

@@ -212,6 +212,11 @@ export interface FrameworkEnv {
   ADYEN_ENVIRONMENT: 'test' | 'live' | undefined
   ADYEN_LIVE_URL_PREFIX: string | undefined
   ADYEN_HMAC_KEY: string | undefined
+  PADDLE_API_KEY: string | undefined
+  PADDLE_ENVIRONMENT: 'sandbox' | 'live' | undefined
+  PADDLE_WEBHOOK_SECRET: string | undefined
+  PADDLE_CLIENT_TOKEN: string | undefined
+  PADDLE_TAX_CATEGORY: string | undefined
 
   // Frontend
   FRONTEND_APP_ENV: 'development' | 'staging' | 'production' | undefined

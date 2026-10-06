@@ -6,7 +6,9 @@ import { route } from '@stacksjs/router'
  *
  * Point the provider at `POST /webhooks/payments`: Stripe's endpoint with its
  * signing secret in `STRIPE_WEBHOOK_SECRET`, or Adyen's standard webhook with
- * its HMAC key in `ADYEN_HMAC_KEY`, whichever `config.payment.driver` names.
+ * its HMAC key in `ADYEN_HMAC_KEY`, or a Paddle notification destination with
+ * its secret key in `PADDLE_WEBHOOK_SECRET`, whichever `config.payment.driver`
+ * names.
  * Payments and refunds then reach their orders without app code; orders used
  * to sit at PENDING whenever the webhook was the only news of a payment.
  *

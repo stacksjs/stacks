@@ -12,10 +12,11 @@ import type Stripe from 'stripe'
 
 export interface PaymentOptions {
   /**
-   * Payment provider: the driver `paymentDriver()` returns. `stripe` or
-   * `adyen`, or the name of one registered with `registerPaymentDriver()`.
+   * Payment provider: the driver `paymentDriver()` returns. `stripe`,
+   * `adyen` or `paddle`, or the name of one registered with
+   * `registerPaymentDriver()`.
    */
-  driver: 'stripe' | 'adyen' | (string & {})
+  driver: 'stripe' | 'adyen' | 'paddle' | (string & {})
 
   /**
    * Stripe configuration
@@ -27,6 +28,12 @@ export interface PaymentOptions {
    * ADYEN_* environment variable.
    */
   adyen?: AdyenConfig
+
+  /**
+   * Paddle Billing configuration, for `driver: 'paddle'`. Each value falls
+   * back to its PADDLE_* environment variable.
+   */
+  paddle?: PaddleConfig
 
   /**
    * Default currency (ISO 4217 code)
@@ -103,6 +110,21 @@ export interface AdyenConfig {
   hmacKey?: string
   /** Prefix for the shopper reference made from a user id. Defaults to `user-`. */
   shopperReferencePrefix?: string
+}
+
+export interface PaddleConfig {
+  /** API key (PADDLE_API_KEY): `pdl_sdbx_apikey_...` or `pdl_live_apikey_...`. */
+  apiKey?: string
+  /** `sandbox` or `live` (PADDLE_ENVIRONMENT). Defaults to `sandbox`. */
+  environment?: 'sandbox' | 'live'
+  /** The notification destination's secret key (PADDLE_WEBHOOK_SECRET). Required to verify webhooks. */
+  webhookSecret?: string
+  /** Client-side token for Paddle.js on the checkout page (PADDLE_CLIENT_TOKEN). */
+  clientToken?: string
+  /** Tax category for lines priced in a request (PADDLE_TAX_CATEGORY). Defaults to `standard`. */
+  taxCategory?: string
+  /** How old a webhook's signature may be, in seconds. Defaults to 5, as Paddle's SDKs do. */
+  webhookTolerance?: number
 }
 
 export interface WebhookConfig {

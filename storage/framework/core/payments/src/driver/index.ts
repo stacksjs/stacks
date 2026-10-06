@@ -1,5 +1,6 @@
 import type { UserModel } from '@stacksjs/orm'
 import type { AdyenConfig } from './adyen'
+import type { PaddleConfig } from './paddle'
 import type { StripeOperations } from './stripe'
 import type { PaymentDriver } from './types'
 import process from 'node:process'
@@ -13,10 +14,13 @@ import { constructEvent } from '../billable/webhook'
 import { stripe } from '../drivers/stripe'
 import { freshIdempotencyKey } from '../idempotency'
 import { AdyenDriver } from './adyen'
+import { PaddleDriver } from './paddle'
 import { PaymentUnsupportedError } from './types'
 import { StripeDriver } from './stripe'
 
 export * from './adyen'
+export * from './paddle'
+export * from './paddle-checkout'
 export * from './stripe'
 export * from './types'
 
@@ -47,7 +51,7 @@ const custom = new Map<string, DriverFactory>()
  * name cannot be replaced, so `stripe` always means Stacks' Stripe driver.
  */
 export function registerPaymentDriver(name: string, factory: DriverFactory): void {
-  if (name === 'stripe' || name === 'adyen')
+  if (name === 'stripe' || name === 'adyen' || name === 'paddle')
     throw new Error(`"${name}" is a built-in payment driver and cannot be replaced.`)
   custom.set(name, factory)
 }
@@ -56,6 +60,7 @@ interface PaymentSettings {
   driver?: string
   stripe?: { webhookSecret?: string }
   adyen?: Partial<AdyenConfig>
+  paddle?: Partial<PaddleConfig>
 }
 
 /** Adyen's settings: config/payment.ts, then the ADYEN_* environment. */
@@ -68,6 +73,19 @@ export function adyenConfig(settings: Partial<AdyenConfig> = {}, env: Record<str
     liveUrlPrefix: settings.liveUrlPrefix || env.ADYEN_LIVE_URL_PREFIX || undefined,
     hmacKey: settings.hmacKey || env.ADYEN_HMAC_KEY || undefined,
     shopperReferencePrefix: settings.shopperReferencePrefix,
+  }
+}
+
+/** Paddle's settings: config/payment.ts, then the PADDLE_* environment. */
+export function paddleConfig(settings: Partial<PaddleConfig> = {}, env: Record<string, string | undefined> = process.env): PaddleConfig {
+  const environment = settings.environment ?? (env.PADDLE_ENVIRONMENT === 'live' ? 'live' : 'sandbox')
+  return {
+    apiKey: settings.apiKey || env.PADDLE_API_KEY || '',
+    environment,
+    webhookSecret: settings.webhookSecret || env.PADDLE_WEBHOOK_SECRET || undefined,
+    clientToken: settings.clientToken || env.PADDLE_CLIENT_TOKEN || undefined,
+    taxCategory: settings.taxCategory || env.PADDLE_TAX_CATEGORY || undefined,
+    webhookTolerance: settings.webhookTolerance,
   }
 }
 
@@ -106,9 +124,13 @@ export function paymentDriver(name?: string): PaymentDriver {
     const appUrl = (config as { app?: { url?: string } }).app?.url
     return new AdyenDriver({ ...adyenConfig(settings.adyen), ...(appUrl ? { appUrl } : {}) })
   }
+  if (chosen === 'paddle') {
+    const appUrl = (config as { app?: { url?: string } }).app?.url
+    return new PaddleDriver({ ...paddleConfig(settings.paddle), ...(appUrl ? { appUrl } : {}) })
+  }
 
   const factory = custom.get(chosen)
   if (!factory)
-    throw new Error(`No payment driver named "${chosen}". Built in: stripe, adyen${custom.size ? `; registered: ${[...custom.keys()].join(', ')}` : ''}.`)
+    throw new Error(`No payment driver named "${chosen}". Built in: stripe, adyen, paddle${custom.size ? `; registered: ${[...custom.keys()].join(', ')}` : ''}.`)
   return factory()
 }

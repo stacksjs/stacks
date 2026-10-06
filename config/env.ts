@@ -340,6 +340,31 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  PADDLE_API_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  PADDLE_ENVIRONMENT: {
+    validation: schema.enum(['sandbox', 'live']),
+    default: 'sandbox',
+  },
+
+  PADDLE_WEBHOOK_SECRET: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  PADDLE_CLIENT_TOKEN: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  PADDLE_TAX_CATEGORY: {
+    validation: schema.string(),
+    default: '',
+  },
+
   MEILISEARCH_HOST: {
     validation: schema.string(),
     default: '',
