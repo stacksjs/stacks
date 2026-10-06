@@ -1,5 +1,98 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.72...v0.75.73)
+
+## 💥 Breaking Changes
+
+- fix(realtime)!: gate the real WebSocket endpoint, record every broadcast for replay, and drop the inert heartbeat ([911a13a](https://github.com/stacksjs/stacks/commit/911a13a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✨ Features
+
+- **buddy**: ai:access makes the Bedrock models in config/ai.ts invocable ([d06618b](https://github.com/stacksjs/stacks/commit/d06618b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: a Bedrock driver on the Converse API, and Bedrock model ids Bedrock serves ([26c6db5](https://github.com/stacksjs/stacks/commit/26c6db5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859))
+- **scheduler**: add dailyAt(), weekdays() and a working onQueue(), and stop documenting what does not exist ([8b55a5b](https://github.com/stacksjs/stacks/commit/8b55a5b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: resolve Buddy's provider the way createAIClient() does ([cfa1083](https://github.com/stacksjs/stacks/commit/cfa1083)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: retry rate limits in the Anthropic and OpenAI drivers' chat and stream calls ([7cabc3e](https://github.com/stacksjs/stacks/commit/7cabc3e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: the back button names where it goes, and nothing zooms ([7336893](https://github.com/stacksjs/stacks/commit/7336893)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: cite the realtime endpoint and tests that exist ([0fd15f6](https://github.com/stacksjs/stacks/commit/0fd15f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search-engine**: implement Typesense's listing, documents and synonyms, and refuse what it lacks instead of faking success ([103a6fc](https://github.com/stacksjs/stacks/commit/103a6fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: match :param routes, fill optional params in url(), and drop the dead apiPrefix option ([f275b0b](https://github.com/stacksjs/stacks/commit/f275b0b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: verify signed links behind a TLS-terminating proxy, and sign with a scheme-less APP_URL ([8fdc04d](https://github.com/stacksjs/stacks/commit/8fdc04d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: read the Bearer scheme case-insensitively everywhere, so CSRF and auth agree ([38d3f2e](https://github.com/stacksjs/stacks/commit/38d3f2e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cors**: answer every preflight with config/cors.ts, and enforce allowedHeaders ([47b4689](https://github.com/stacksjs/stacks/commit/47b4689)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: download and sandbox signed files that can run script, instead of rendering them on the app's origin ([6370c7d](https://github.com/stacksjs/stacks/commit/6370c7d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: stream() pulls from its source only as fast as the client reads ([d07e5ed](https://github.com/stacksjs/stacks/commit/d07e5ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: keep every value of a repeated form field, and read media types case-insensitively ([f740190](https://github.com/stacksjs/stacks/commit/f740190)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: validate the input the handler reads, and keep __proto__ a plain key ([9f34bf9](https://github.com/stacksjs/stacks/commit/9f34bf9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **csrf**: recognise the CSRF cookie by its exact name ([5427f19](https://github.com/stacksjs/stacks/commit/5427f19)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: name and find the stack where buddy deploy puts it, on every path that reads it ([13ddc8d](https://github.com/stacksjs/stacks/commit/13ddc8d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2862](https://github.com/stacksjs/stacks/issues/2862))
+- **cors**: a wildcard origin policy with credentials allows no origin, instead of every one ([625d6fc](https://github.com/stacksjs/stacks/commit/625d6fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search-engine**: only sync the index settings a model declares ([e7c5eb3](https://github.com/stacksjs/stacks/commit/e7c5eb3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search-engine**: implement the driver contract for Algolia, and stop casting past it ([16b3ab5](https://github.com/stacksjs/stacks/commit/16b3ab5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search-engine**: one search contract every driver honours, and a real bulk delete ([d56083e](https://github.com/stacksjs/stacks/commit/d56083e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: key rate limits on the user or the client address, never on a header the client writes ([e87c572](https://github.com/stacksjs/stacks/commit/e87c572)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: make the jump box the stack's, found by its output, instead of a RunInstances call that could never run ([ad8371c](https://github.com/stacksjs/stacks/commit/ad8371c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2862](https://github.com/stacksjs/stacks/issues/2862))
+- **notifications**: broadcast a user's notifications on the channel they listen to ([b80bf8e](https://github.com/stacksjs/stacks/commit/b80bf8e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **realtime**: run the broadcast a name names, not the first one ending in it ([67ab177](https://github.com/stacksjs/stacks/commit/67ab177)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search-engine**: the early driver proxy is not a promise, and errors come back as Errs ([b4ee383](https://github.com/stacksjs/stacks/commit/b4ee383)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **realtime**: point ts-broadcasting's facade at the server Stacks starts, so model broadcasts arrive ([67f29b0](https://github.com/stacksjs/stacks/commit/67f29b0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: list one directory on an S3 disk, as on every other disk ([d47e5e8](https://github.com/stacksjs/stacks/commit/d47e5e8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **chat**: post to Teams Workflows webhooks, now that Office 365 connectors are retired ([6da68e1](https://github.com/stacksjs/stacks/commit/6da68e1)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859))
+- **storage**: serve a signed URL from the disk that signed it, and give scheme-less APP_URLs https ([1ae194f](https://github.com/stacksjs/stacks/commit/1ae194f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: hash a tree's names and shape, in a fixed order, not just its bytes ([6ff929b](https://github.com/stacksjs/stacks/commit/6ff929b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: extract every archive unzip() is given ([09c4b99](https://github.com/stacksjs/stacks/commit/09c4b99)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: answer serveFile() conditional requests the way RFC 9110 orders them ([da13703](https://github.com/stacksjs/stacks/commit/da13703)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: give the bun disk the local disk's writes and URLs, and hand out only URLs that are served ([25c8243](https://github.com/stacksjs/stacks/commit/25c8243)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1](https://github.com/stacksjs/stacks/issues/1))
+- **storage**: write local files through a temporary file, so a failed upload keeps the old one ([265c9c8](https://github.com/stacksjs/stacks/commit/265c9c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: keep a file moved onto itself, and resolve Result helpers instead of rejecting ([18b3b4b](https://github.com/stacksjs/stacks/commit/18b3b4b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: honour glob()'s ignore, deep, onlyDirectories and expandDirectories, so del() with a glob deletes ([f19b031](https://github.com/stacksjs/stacks/commit/f19b031)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cache**: make remember() work on the SingleStore cache ([146204b](https://github.com/stacksjs/stacks/commit/146204b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cache**: time out callers that joined a hung getOrSet, not just the first ([8dd757b](https://github.com/stacksjs/stacks/commit/8dd757b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **lint**: fail when git cannot list the files, instead of reporting a clean project ([8953518](https://github.com/stacksjs/stacks/commit/8953518)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: carry .withContext() to the job on the database and Redis drivers ([9342686](https://github.com/stacksjs/stacks/commit/9342686)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: find a job by the name it declares, and schedule rates by file name ([1862824](https://github.com/stacksjs/stacks/commit/1862824)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: schedule every job rate, through a validated cron() method ([76c5e2f](https://github.com/stacksjs/stacks/commit/76c5e2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: give each scheduled notification its own name, and fail a run nobody received ([56f98e2](https://github.com/stacksjs/stacks/commit/56f98e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: run a background task by name instead of evaluating its source ([6886cac](https://github.com/stacksjs/stacks/commit/6886cac)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: make between(), withInterval(), withProtection() and withContext() do something ([b3c1e2f](https://github.com/stacksjs/stacks/commit/b3c1e2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: runMissed runs the most recent slots, in the task's timezone ([a13a90f](https://github.com/stacksjs/stacks/commit/a13a90f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: lock a task whose name contains a slash ([19a85c0](https://github.com/stacksjs/stacks/commit/19a85c0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: read job ages as UTC, and keep a Redis backoff of zero ([bdaec59](https://github.com/stacksjs/stacks/commit/bdaec59)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: share one Redis queue per name across dispatches instead of leaking one per job ([d5e9786](https://github.com/stacksjs/stacks/commit/d5e9786)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: recognise a duplicate key on Postgres, so dispatchOnce() skips instead of throwing ([f502032](https://github.com/stacksjs/stacks/commit/f502032)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: match scheduled jobs with @stacksjs/cron, run monthly jobs every month, and stop forcing a 60s timeout ([76503b0](https://github.com/stacksjs/stacks/commit/76503b0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **storage**: move the shared filesystem helpers out of adapters/ ([3181406](https://github.com/stacksjs/stacks/commit/3181406)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **testing**: assert the component-dom run by its counts, not a per-test line bun prints only in CI ([acb2f23](https://github.com/stacksjs/stacks/commit/acb2f23)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: match the onRequest hook whatever else it takes, so the request-scope pin survives the socket-peer parameter ([8f3406e](https://github.com/stacksjs/stacks/commit/8f3406e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: expect refresh deadlines in elapsed days, so the atomicity check holds across DST ([c56efb9](https://github.com/stacksjs/stacks/commit/c56efb9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: restore APP_ENV by deleting it, so the port-override probe stops failing in the suite ([e79190f](https://github.com/stacksjs/stacks/commit/e79190f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- run pantry 0.11.71, which repairs the links an older install left in pantry/ ([c59b774](https://github.com/stacksjs/stacks/commit/c59b774)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: require ts-cloud 0.16.39 ([0027206](https://github.com/stacksjs/stacks/commit/0027206)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: regenerate the API artifacts for brace-normalised :param routes ([793b37f](https://github.com/stacksjs/stacks/commit/793b37f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: move the stx family to 0.2.374 ([3e16e62](https://github.com/stacksjs/stacks/commit/3e16e62)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: restore better-dx's own pickier range in pantry.lock, and take libexpat 2.9.0 ([460921f](https://github.com/stacksjs/stacks/commit/460921f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require pickier ^0.1.68 ([170ade3](https://github.com/stacksjs/stacks/commit/170ade3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: remove the pantry-file action, which nothing runs and which could only throw ([b3f6a58](https://github.com/stacksjs/stacks/commit/b3f6a58)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.71...v0.75.72)
 
 ## 🐛 Bug Fixes
