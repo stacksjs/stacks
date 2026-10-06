@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.78...v0.75.79)
+
+## 🔧 Chores
+
+- **deps**: require ts-cloud 0.16.40 ([aa9b269](https://github.com/stacksjs/stacks/commit/aa9b269)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.77...v0.75.78)
 
 ## ✨ Features
