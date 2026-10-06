@@ -478,7 +478,7 @@ export default defineModel({
         { title: 'Signed URLs', text: 'Time-limited URLs for private objects, so a download link can expire without a proxy route in front of it.' },
         { title: 'Visibility', text: 'Public and private per file, enforced by the driver rather than by whichever route happened to serve it.' },
         { title: 'File utilities', text: 'Path helpers, mime detection, streaming reads, and directory listings that behave the same on every driver.' },
-        { title: 'CDN', text: 'Production buckets sit behind the CDN that buddy deploy provisions, from the same TypeScript config.' },
+        { title: 'CDN', text: 'On AWS, production buckets sit behind the CloudFront distribution buddy deploy provisions; elsewhere, Cloudflare caches what the server serves.' },
       ],
       code: {
         file: 'app/Actions/UploadAvatarAction.ts',
@@ -688,7 +688,7 @@ export default defineEvents({
       capabilities: [
         { title: 'One command', text: 'buddy deploy checks prerequisites, resolves the environment, builds the web, docs, blog, and API, then publishes the infrastructure.' },
         { title: 'DNS and TLS', text: 'Records and certificates are declared next to the site they belong to, so a new hostname is a config line rather than a console visit.' },
-        { title: 'CDN and storage', text: 'Buckets, distributions, and cache invalidation come from the same config the application reads.' },
+        { title: 'CDN and storage', text: 'Cloudflare in front of a Hetzner or SSH box, or CloudFront on AWS, with cache rules, buckets, and invalidation from the same config the application reads.' },
         { title: 'Mail records', text: 'SES identities plus the SPF, DKIM, and DMARC records that make them deliver, published with everything else.' },
         { title: 'Your own hardware', text: 'provider: ssh adopts a box you already run instead of provisioning one. buddy server:flash writes a Raspberry Pi OS or Ubuntu image to a disk, and on a LAN the box signs its own HTTPS certificate, which server:trust installs where your devices trust it.' },
         { title: 'Server or serverless', text: 'A long-running server by default; on AWS the same app can deploy serverless instead, chosen in config.' },
