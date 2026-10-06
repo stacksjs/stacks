@@ -28,7 +28,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
 import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import type { RegisteredRouteLike } from './auto-crud'
-import { loadModelRegistry } from './model-registry'
+import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
 
 /**
@@ -127,13 +127,16 @@ catch {
   } as Parameters<typeof setConfig>[0])
 }
 
-// Framework defaults receive the same auto-route behavior as userland models.
 // Load defaults first, recursively, then let app/Models override by model name.
-const models = await loadModelRegistry({
+// `models` is every model, because `?include=` resolves relations through it
+// whether or not the related model publishes an API of its own; which models
+// get routes is `apiModels`, below.
+const registry = await loadModelRegistryWithOrigins({
   defaultsRoot: storagePath('framework/defaults/app/Models'),
   userRoot: projectPath('app/Models'),
   onImportError: (file, error) => log.warn(`[orm] Could not load model ${file}: ${(error as Error).message}`),
 })
+const models = registry.models
 
 // Create a query builder instance (uses the config set above)
 const db = createQueryBuilder()
@@ -501,36 +504,51 @@ async function resolveAuthedFill(
 }
 
 /**
- * The row-scoping policy, read from `config/security.ts`.
+ * The `api` section of `config/security.ts`: row scoping and model selection.
  *
  * Read by path rather than through `@stacksjs/config`, matching how this file
  * already reads `config/qb.ts`: route registration runs inside the ORM's own
  * import graph, and the config package is the one import orm defers to a
  * microtask precisely to keep that graph acyclic. A missing or malformed file
- * resolves to the default, so an app without the setting behaves exactly as
- * it did. stacksjs/stacks#2375.
+ * resolves to the defaults, so an app without the settings behaves exactly as
+ * it did. stacksjs/stacks#2375, stacksjs/stacks#2866.
  */
-const rowScopingPolicy = await (async () => {
-  // `process.env`, not the typed `env` proxy: this is an override knob for a
-  // framework default, not a variable an app declares in `config/env.ts`, and
-  // putting it there would make every app's env schema carry a setting it did
-  // not choose.
-  const override = process.env.STACKS_API_ROW_SCOPING
-
+const securityApiConfig: { rowScoping?: unknown, models?: unknown } | undefined = await (async () => {
   try {
-    const securityConfig = (await import(projectPath('config/security.ts'))).default
-    return resolveRowScopingPolicy(securityConfig?.api?.rowScoping, override)
+    return (await import(projectPath('config/security.ts'))).default?.api
   }
   catch {
-    return resolveRowScopingPolicy(undefined, override)
+    return undefined
   }
+})()
+
+// `process.env`, not the typed `env` proxy: these are override knobs for
+// framework defaults, not variables an app declares in `config/env.ts`, and
+// putting them there would make every app's env schema carry settings it did
+// not choose.
+const rowScopingPolicy = resolveRowScopingPolicy(securityApiConfig?.rowScoping, process.env.STACKS_API_ROW_SCOPING)
+
+/**
+ * The `useApi` models this app publishes: `security.api.models`, overridden by
+ * `STACKS_MODEL_APIS`. Unset is every one, as before. stacksjs/stacks#2866.
+ */
+const apiModels = (() => {
+  const selection = resolveModelApiSelection(securityApiConfig?.models, process.env.STACKS_MODEL_APIS)
+  const { models: selected, unmatched } = selectApiModels(registry, selection)
+
+  if (unmatched.length > 0) {
+    const setting = selection.source === 'env' ? 'STACKS_MODEL_APIS' : 'security.api.models'
+    log.warn(`[orm] ${setting} names ${unmatched.length === 1 ? 'a model' : 'models'} with no \`useApi\` trait, so no API was generated for ${unmatched.join(', ')}.`)
+  }
+
+  return selected
 })()
 
 /** Models registering mutating routes that no row-level check applies to. */
 const unscopedMutatingModels: string[] = []
 
-// Register CRUD routes for each model with useApi trait
-for (const [modelName, model] of Object.entries(models)) {
+// Register CRUD routes for each selected model with a useApi trait
+for (const [modelName, model] of Object.entries(apiModels)) {
   const useApi = model.traits?.useApi
   if (!useApi) continue
 

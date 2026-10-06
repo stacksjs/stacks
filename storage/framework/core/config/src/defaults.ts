@@ -711,6 +711,11 @@ export const defaults: StacksOptions = {
   },
 
   security: {
+    api: {
+      rowScoping: 'deny',
+      models: 'all',
+    },
+
     firewall: {
       enabled: true,
       countryCodes: [],

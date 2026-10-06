@@ -74,6 +74,45 @@ export default defineModel({
 } as const)
 ```
 
+### Choosing Which Models Publish an API
+
+Every model with a `useApi` trait gets these routes, and that includes the
+framework's own models (`Product`, `Order`, `Review`, `Comment`, `Tag`, and
+around 80 more). An app that only uses its own models can turn the rest off
+in `config/security.ts`:
+
+```typescript
+// config/security.ts
+export default {
+  api: {
+    // 'all' (the default): every useApi model, the framework's included
+    // 'own': only the models in app/Models (an override of a framework model counts as yours)
+    // 'none': no generated model APIs
+    models: 'own',
+  },
+} satisfies SecurityConfig
+```
+
+A list of model names picks exactly those, and `'own'` can be one of them:
+`models: ['own', 'Product']` serves your models plus the framework's
+`Product`. Names match case-insensitively. A listed model still needs its own
+`useApi` trait, because this setting narrows the set and never adds an API.
+A name that matches no `useApi` model is reported at boot.
+
+`STACKS_MODEL_APIS` overrides the config, in the same spellings
+`STACKS_DEFAULT_ROUTES` uses:
+
+```bash
+STACKS_MODEL_APIS=own
+STACKS_MODEL_APIS=own,Product
+STACKS_MODEL_APIS=none
+```
+
+The OpenAPI document follows the selection, so `buddy generate:openapi`
+documents neither the paths nor the schemas of a model you switched off.
+Turning a model's API off does not unload the model: `?include=` on a model
+you still serve can load its relations through it.
+
 ### Framework Default Routes
 
 Stacks ships default routes of its own - auth, the admin dashboard's REST

@@ -370,20 +370,32 @@ export async function generateOpenApi(options: {
     }
   }
 
+  // The models whose APIs were generated, chosen exactly as `orm/routes` chose
+  // them (`security.api.models`, `STACKS_MODEL_APIS`), so the spec documents no
+  // schema for a model whose routes the app switched off. stacksjs/stacks#2866.
   let modelRegistry: Record<string, any> = {}
   try {
     const registryPackage = '@stacksjs/orm/model-registry'
-    let registryModule: { loadModelRegistry: (options: { defaultsRoot: string, userRoot: string }) => Promise<Record<string, any>> }
+    let registryModule: typeof import('../../orm/src/model-registry')
     try {
       registryModule = await import(registryPackage) as typeof registryModule
     }
     catch {
-      registryModule = await import('../../orm/src/model-registry') as typeof registryModule
+      registryModule = await import('../../orm/src/model-registry')
     }
-    modelRegistry = await registryModule.loadModelRegistry({
+    const registry = await registryModule.loadModelRegistryWithOrigins({
       defaultsRoot: path.storagePath('framework/defaults/app/Models'),
       userRoot: path.projectPath('app/Models'),
     })
+    let securityApi: { models?: unknown } | undefined
+    try {
+      securityApi = (await import(path.projectPath('config/security.ts'))).default?.api
+    }
+    catch {
+      // No config/security.ts: the default selection, as orm/routes does.
+    }
+    const selection = registryModule.resolveModelApiSelection(securityApi?.models, process.env.STACKS_MODEL_APIS)
+    modelRegistry = registryModule.selectApiModels(registry, selection).models
   }
   catch (error) {
     const message = error instanceof Error ? error.message : String(error)

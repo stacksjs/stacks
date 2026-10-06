@@ -799,6 +799,12 @@ Models with `traits.useApi` automatically get CRUD routes via ORM actions:
 | PUT/PATCH | `/api/{model}/{id}` | Generated update | 200 |
 | DELETE | `/api/{model}/{id}` | Generated destroy | 204 |
 
+Which `useApi` models get these routes is `security.api.models` in
+`config/security.ts` (`'all'` by default, `'own'`, `'none'`, or a list of model
+names that may include `'own'`), overridden by `STACKS_MODEL_APIS`. `'all'`
+includes the ~80 framework models, so an app that does not use commerce or
+CMS should set `'own'`. The OpenAPI schemas follow the same selection.
+
 Generated store and update handlers accept declared `fillable` attributes and
 the foreign-key attributes derived from `belongsTo`. For example,
 `belongsTo: ['Product', 'Customer']` accepts `productId` / `product_id` and

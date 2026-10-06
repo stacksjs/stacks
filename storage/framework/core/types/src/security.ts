@@ -41,9 +41,27 @@ export type FirewallConfig = Partial<FirewallOptions>
  */
 export type ApiRowScopingPolicy = 'warn' | 'deny'
 
+/**
+ * Which models publish the REST API their `useApi` trait describes.
+ *
+ * - `'all'` (the default) - every `useApi` model, the framework's own included.
+ * - `'own'` - only the app's models in `app/Models`, overrides included.
+ * - `'none'` - no generated model APIs.
+ * - a list of model names - exactly those; `'own'` may be one of them, to mean
+ *   the app's models plus the named framework ones.
+ *
+ * `STACKS_MODEL_APIS` overrides it (`own`, `none`, `all`, or `own,Product`).
+ * It narrows the set and never adds one: a listed model still needs its own
+ * `useApi` trait. stacksjs/stacks#2866.
+ */
+export type ModelApiSelection = 'all' | 'own' | 'none' | readonly string[]
+
 export interface ApiSecurityOptions {
   /** @default 'deny' */
   rowScoping: ApiRowScopingPolicy
+
+  /** @default 'all' */
+  models: ModelApiSelection
 }
 
 export interface SecurityOptions {

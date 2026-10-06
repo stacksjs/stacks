@@ -18,6 +18,13 @@ export default {
     // model restores its writes by saying who owns a row, or by declaring
     // `ownership: false` to say that nothing does. See #2375.
     rowScoping: 'deny',
+
+    // Which models publish the REST API their `useApi` trait describes:
+    // 'all' (the default) includes the framework's own models, 'own' only the
+    // ones in app/Models, 'none' turns generated model APIs off, and a list
+    // of model names picks exactly those (['own', 'Product'] adds one framework
+    // model to yours). STACKS_MODEL_APIS overrides it. See #2866.
+    models: 'all',
   },
 
   firewall: {
