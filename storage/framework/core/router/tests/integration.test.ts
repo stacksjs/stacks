@@ -41,7 +41,7 @@ describe('Route registration', () => {
     const router = createStacksRouter()
     const handler = () => new Response('updated')
     router.put('/users/:id', handler)
-    const found = router.routes.some(r => r.path === '/users/:id' && r.method === 'PUT')
+    const found = router.routes.some(r => r.path === '/users/{id}' && r.method === 'PUT')
     expect(found).toBe(true)
   })
 
@@ -49,7 +49,7 @@ describe('Route registration', () => {
     const router = createStacksRouter()
     const handler = () => new Response('deleted')
     router.delete('/users/:id', handler)
-    const found = router.routes.some(r => r.path === '/users/:id' && r.method === 'DELETE')
+    const found = router.routes.some(r => r.path === '/users/{id}' && r.method === 'DELETE')
     expect(found).toBe(true)
   })
 
@@ -57,7 +57,7 @@ describe('Route registration', () => {
     const router = createStacksRouter()
     const handler = () => new Response('patched')
     router.patch('/items/:id', handler)
-    const found = router.routes.some(r => r.path === '/items/:id' && r.method === 'PATCH')
+    const found = router.routes.some(r => r.path === '/items/{id}' && r.method === 'PATCH')
     expect(found).toBe(true)
   })
 })
@@ -115,9 +115,9 @@ describe('Resource routes', () => {
 
     expect(paths).toContain('GET:/posts')
     expect(paths).toContain('POST:/posts')
-    expect(paths).toContain('GET:/posts/:id')
-    expect(paths).toContain('PUT:/posts/:id')
-    expect(paths).toContain('DELETE:/posts/:id')
+    expect(paths).toContain('GET:/posts/{id}')
+    expect(paths).toContain('PUT:/posts/{id}')
+    expect(paths).toContain('DELETE:/posts/{id}')
   })
 
   test('resource with only option limits routes', () => {
@@ -128,10 +128,10 @@ describe('Resource routes', () => {
     const paths = routes.map(r => `${r.method}:${r.path}`)
 
     expect(paths).toContain('GET:/comments')
-    expect(paths).toContain('GET:/comments/:id')
+    expect(paths).toContain('GET:/comments/{id}')
     expect(paths).not.toContain('POST:/comments')
-    expect(paths).not.toContain('PUT:/comments/:id')
-    expect(paths).not.toContain('DELETE:/comments/:id')
+    expect(paths).not.toContain('PUT:/comments/{id}')
+    expect(paths).not.toContain('DELETE:/comments/{id}')
   })
 
   test('resource with except option excludes routes', () => {
@@ -143,9 +143,9 @@ describe('Resource routes', () => {
 
     expect(paths).toContain('GET:/tags')
     expect(paths).toContain('POST:/tags')
-    expect(paths).toContain('GET:/tags/:id')
-    expect(paths).toContain('PUT:/tags/:id')
-    expect(paths).not.toContain('DELETE:/tags/:id')
+    expect(paths).toContain('GET:/tags/{id}')
+    expect(paths).toContain('PUT:/tags/{id}')
+    expect(paths).not.toContain('DELETE:/tags/{id}')
   })
 })
 

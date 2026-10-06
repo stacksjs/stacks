@@ -363,7 +363,6 @@ const STATIC_RESPONSE_METHODS = new Set<StaticResponseMethod>(['GET', 'POST', 'P
 
 export interface StacksRouterConfig {
   verbose?: boolean
-  apiPrefix?: string
   /**
    * Discover route modules under the project's `routes/` directory when the
    * server starts. Disable this for programmatic routers whose complete route
@@ -825,6 +824,8 @@ let resolvedCsrfOnlyMiddleware: ResolvedMiddleware[] | undefined
 interface NamedRoute {
   path: string
   paramNames: string[]
+  /** `{name?}` placeholders: filled when given, their segment dropped when not. */
+  optionalNames: string[]
   /** Pre-compiled `:name(?=$|/)` regex per param, anchored to a slash boundary. */
   colonRegex: Map<string, RegExp>
 }
@@ -839,7 +840,8 @@ function compileNamedRoute(path: string): NamedRoute {
     // of `:userId`. Replaces all occurrences globally.
     colonRegex.set(name, new RegExp(`(^|/):${name}(?=$|/)`, 'g'))
   }
-  return { path, paramNames, colonRegex }
+  const optionalNames = [...new Set([...path.matchAll(/\{(\w+)\?\}/g)].map(m => m[1]!))]
+  return { path, paramNames, optionalNames, colonRegex }
 }
 
 /**
@@ -859,6 +861,17 @@ function extractRouteParamNames(routePath: string): string[] {
     if (m[1]) names.add(m[1])
   }
   return [...names]
+}
+
+/**
+ * `:id` segments written as `{id}`. bun-router matches only the braced form,
+ * so a route registered as `/posts/:id` answered 404 for `/posts/5` - while
+ * `url()` and the route-param helpers, which read both forms, generated
+ * links to it. Each `:name` that is a whole segment is converted; a colon
+ * elsewhere in a segment (`/time/12:30`) is left as written.
+ */
+function braceParams(path: string): string {
+  return path.includes(':') ? path.replace(/(^|\/):(\w+)(?=$|\/)/g, '$1{$2}') : path
 }
 
 /**
@@ -957,9 +970,15 @@ export function url(routeName: string, params: Record<string, string | number> =
   const queryParams: Record<string, string> = {}
 
   for (const [key, value] of Object.entries(params)) {
+    if (value === undefined)
+      continue
     const curly = `{${key}}`
+    const optional = `{${key}?}`
     if (resolvedPath.includes(curly)) {
       resolvedPath = resolvedPath.replaceAll(curly, encodeURIComponent(String(value)))
+    }
+    else if (resolvedPath.includes(optional)) {
+      resolvedPath = resolvedPath.replaceAll(optional, encodeURIComponent(String(value)))
     }
     else {
       const re = named.colonRegex.get(key)
@@ -972,6 +991,15 @@ export function url(routeName: string, params: Record<string, string | number> =
       }
     }
   }
+
+  // An optional placeholder nobody filled drops out with its segment:
+  // `/posts/{slug?}` is `/posts`. It used to stay in the URL literally -
+  // `/posts/{slug?}?slug=hello` when the value WAS given, since only the
+  // required `{name}` form was ever substituted.
+  for (const name of named.optionalNames)
+    resolvedPath = resolvedPath.replaceAll(`/{${name}?}`, '').replaceAll(`{${name}?}`, '')
+  if (resolvedPath === '')
+    resolvedPath = '/'
 
   const queryString = Object.keys(queryParams).length > 0
     ? `?${new URLSearchParams(queryParams).toString()}`
@@ -4834,7 +4862,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
   // Helper to register a route with group middleware applied
   function registerRoute(method: string, path: string, _handler: StacksHandler | Response) {
-    const fullPath = currentPrefix + path
+    const fullPath = currentPrefix + braceParams(path)
     const routeKey = `${method}:${fullPath}`
     const handlerKind = _handler instanceof Response
       ? 'static response'
@@ -4987,7 +5015,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
       // Apply prefix
       if (options.prefix) {
-        currentPrefix = previousPrefix + options.prefix
+        currentPrefix = previousPrefix + braceParams(options.prefix)
       }
 
       // Apply middleware (can be string or array)

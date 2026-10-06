@@ -205,9 +205,11 @@ describe('createStacksRouter - resource()', () => {
     const methods = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(methods).toContain('GET:/posts')       // index
     expect(methods).toContain('POST:/posts')      // store
-    expect(methods).toContain('GET:/posts/:id')   // show
-    expect(methods).toContain('PUT:/posts/:id')   // update
-    expect(methods).toContain('DELETE:/posts/:id') // destroy
+    // Braced: bun-router matches only `{id}`, and `/posts/:id` - what
+    // resource() used to register - answered 404 for show/update/destroy.
+    expect(methods).toContain('GET:/posts/{id}')   // show
+    expect(methods).toContain('PUT:/posts/{id}')   // update
+    expect(methods).toContain('DELETE:/posts/{id}') // destroy
   })
 
   test('resource() with only option limits routes', () => {
@@ -216,10 +218,10 @@ describe('createStacksRouter - resource()', () => {
     const routes = router.bunRouter.routes
     const paths = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(paths).toContain('GET:/tags')
-    expect(paths).toContain('GET:/tags/:id')
+    expect(paths).toContain('GET:/tags/{id}')
     expect(paths).not.toContain('POST:/tags')
-    expect(paths).not.toContain('PUT:/tags/:id')
-    expect(paths).not.toContain('DELETE:/tags/:id')
+    expect(paths).not.toContain('PUT:/tags/{id}')
+    expect(paths).not.toContain('DELETE:/tags/{id}')
   })
 
   test('resource() with except option excludes routes', () => {
@@ -229,9 +231,9 @@ describe('createStacksRouter - resource()', () => {
     const paths = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(paths).toContain('GET:/comments')
     expect(paths).toContain('POST:/comments')
-    expect(paths).toContain('GET:/comments/:id')
-    expect(paths).toContain('PUT:/comments/:id')
-    expect(paths).not.toContain('DELETE:/comments/:id')
+    expect(paths).toContain('GET:/comments/{id}')
+    expect(paths).toContain('PUT:/comments/{id}')
+    expect(paths).not.toContain('DELETE:/comments/{id}')
   })
 
   /*
@@ -469,9 +471,6 @@ describe('createStacksRouter - config', () => {
     expect(() => createStacksRouter({ verbose: true })).not.toThrow()
   })
 
-  test('accepts apiPrefix option', () => {
-    expect(() => createStacksRouter({ apiPrefix: '/api/v2' })).not.toThrow()
-  })
 })
 
 describe('production native route default', () => {
