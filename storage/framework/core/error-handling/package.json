@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/error-handling",
   "type": "module",
-  "version": "0.75.85",
+  "version": "0.75.86",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
   "contributors": [
@@ -59,7 +59,7 @@
   "dependencies": {
     "@bughq/sdk": "^0.2.2",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/stx": "^0.2.378",
+    "@stacksjs/stx": "^0.2.384",
     "@stacksjs/types": "workspace:*",
     "ts-error-handling": "^0.1.3",
     "ts-syntax-highlighter": "^0.2.17"

@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.85...v0.75.86)
+
+## ✨ Features
+
+- **payments**: a Paddle Billing driver (#665) ([241ae44](https://github.com/stacksjs/stacks/commit/241ae44)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#665](https://github.com/stacksjs/stacks/issues/665))
+
+## 🐛 Bug Fixes
+
+- **logging**: a relative logsPath outside a project goes to the user cache too ([48f2fd5](https://github.com/stacksjs/stacks/commit/48f2fd5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: tabs switch instantly, without the router's cross-fade ([9d5af54](https://github.com/stacksjs/stacks/commit/9d5af54)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **generate**: list the notification email template in the emails barrel ([8fcdc82](https://github.com/stacksjs/stacks/commit/8fcdc82)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.84...v0.75.85)
 
 ## ✨ Features
