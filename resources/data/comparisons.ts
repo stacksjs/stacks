@@ -124,7 +124,7 @@ export const comparisons: Comparison[] = [
       theirStrengths: [
         { title: 'The React ecosystem', text: 'Every component library, every hiring pool, every Stack Overflow answer. If your interface is React and your team is React, that gravity is real and it is worth something.' },
         { title: 'Server components and streaming', text: 'The RSC model is genuinely ahead on partial rendering and client bundle size, and Stacks does not have an equivalent.' },
-        { title: 'Vercel', text: 'Preview deploys per pull request, edge rendering, and analytics with no infrastructure work at all. Stacks deploys to your own AWS account, which is more control and more responsibility.' },
+        { title: 'Vercel', text: 'Preview deploys per pull request, edge rendering, and analytics with no infrastructure work at all. Stacks deploys to infrastructure you own, a Hetzner box, AWS, or any Linux server over SSH, which is more control and more responsibility.' },
         { title: 'Asset pipelines', text: 'next/image and next/font solve real problems well, and a Stacks project handles images and fonts more manually.' },
       ],
       ourStrengths: [
@@ -140,7 +140,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Background work', stacks: 'Queues, jobs, batches, schedules, workers included', other: 'Inngest, Trigger.dev, QStash, or your own worker' },
         { dimension: 'Admin surface', stacks: 'Dashboard generated from your models', other: 'Build it, or buy Retool or similar' },
         { dimension: 'Runtime', stacks: 'Bun', other: 'Node.js, with edge and Bun support varying by feature' },
-        { dimension: 'Hosting', stacks: 'Your AWS account, server or serverless, from config', other: 'Vercel first, self-hosting possible and less travelled' },
+        { dimension: 'Hosting', stacks: 'Your own Hetzner, AWS, or SSH box, from config', other: 'Vercel first, self-hosting possible and less travelled' },
         { dimension: 'Language surface', stacks: 'TypeScript everywhere, including infrastructure', other: 'TypeScript, plus whatever your backend services use' },
       ],
       migration: [
@@ -170,7 +170,7 @@ export const comparisons: Comparison[] = [
       lede: 'Nuxt covers more of the stack than most meta-frameworks: Nitro gives it a real server, and there is a module for nearly everything. The difference is that a Nuxt application is assembled out of modules you selected, and a Stacks application is one thing that already fits together.',
       summary: 'Nuxt is the Vue answer to the meta-framework question, and it is a good one. File-based routing, auto-imports, layers, and a huge module registry cover auth, content, images, SEO, and testing. Nitro deploys the same application to Node, Deno, Bun, Cloudflare, and Lambda from one build, which is a genuinely useful property that Stacks does not match.',
       theirStrengths: [
-        { title: 'Deployment portability', text: 'Nitro presets target a dozen platforms from the same codebase. Stacks targets your own AWS account, server or serverless, and that is the path it is good at.' },
+        { title: 'Deployment portability', text: 'Nitro presets target a dozen platforms from the same codebase. Stacks targets infrastructure you own (Hetzner, AWS, or any box over SSH) and that is the path it is good at.' },
         { title: 'The module registry', text: 'Hundreds of maintained modules, and layers let a team share configuration across projects. Nothing in Stacks matches that breadth of community add-ons.' },
         { title: 'Vue', text: 'If your team writes Vue, single-file components, the composition API, and the devtools are a real productivity story, and STX is not Vue.' },
         { title: 'Content and SEO tooling', text: 'Nuxt Content and the SEO modules are mature and well travelled for documentation and marketing sites.' },
@@ -188,7 +188,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Auth', stacks: 'Included, with RBAC, passkeys and 2FA', other: 'nuxt-auth-utils, Sidebase, or a service' },
         { dimension: 'Background work', stacks: 'Queues, jobs, schedules, workers included', other: 'Scheduled tasks in Nitro, otherwise your own' },
         { dimension: 'Admin surface', stacks: 'Generated from your models', other: 'Build it yourself' },
-        { dimension: 'Deploy targets', stacks: 'AWS server or serverless from config', other: 'Many platforms through Nitro presets' },
+        { dimension: 'Deploy targets', stacks: 'Hetzner, AWS, or any SSH box, from config', other: 'Many platforms through Nitro presets' },
         { dimension: 'Auto-imports', stacks: 'Models and jobs on the server, composables in views', other: 'Components, composables, and utilities' },
       ],
       migration: [
@@ -236,7 +236,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Auth', stacks: 'Included', other: 'Lucia-style libraries or a service' },
         { dimension: 'Background work', stacks: 'Included', other: 'Bring your own worker' },
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Build it yourself' },
-        { dimension: 'Hosting', stacks: 'Your AWS account from config', other: 'Adapter per platform' },
+        { dimension: 'Hosting', stacks: 'Your own Hetzner, AWS, or SSH box, from config', other: 'Adapter per platform' },
         { dimension: 'Bundle weight', stacks: 'Small, but not compiled away', other: 'Smallest of the meta-frameworks' },
       ],
       migration: [
@@ -285,7 +285,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Background work', stacks: 'Included', other: 'Bring your own' },
         { dimension: 'Views', stacks: 'STX, server-rendered', other: 'React, server-rendered and hydrated' },
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Build it yourself' },
-        { dimension: 'Deploy', stacks: 'buddy deploy to your AWS account', other: 'Any fetch-handler host' },
+        { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or an SSH box', other: 'Any fetch-handler host' },
       ],
       migration: [
         { title: 'The shapes line up', text: 'Loaders become read actions, route actions become write actions, and the validation moves onto the model.' },
@@ -702,12 +702,12 @@ export const comparisons: Comparison[] = [
         { title: 'Distributed systems', text: 'Service-to-service calls, tracing, and a service catalogue are built for estates of services, which is not what Stacks optimises for.' },
         { title: 'Preview environments', text: 'An ephemeral environment per pull request, provisioned automatically, is a strong workflow.' },
         { title: 'Observability', text: 'Tracing and metrics are wired in from the start rather than added.' },
-        { title: 'Cloud-agnostic provisioning', text: 'AWS and GCP from the same declarations, where Stacks targets AWS.' },
+        { title: 'Cloud-agnostic provisioning', text: 'AWS and GCP from the same declarations, where Stacks targets Hetzner, AWS, and plain SSH boxes, and not GCP.' },
       ],
       ourStrengths: [
         { title: 'The application, not just the backend', text: 'Views, CMS, commerce, admin, and mail are part of the framework rather than services you would write.' },
         { title: 'A data layer with opinions', text: 'Models generate migrations and validation; Encore gives you a database and leaves the ORM to you.' },
-        { title: 'No platform account required', text: 'Stacks deploys into your AWS account with no intermediary, which some organisations require.' },
+        { title: 'No platform account required', text: 'Stacks deploys straight into your own Hetzner, AWS, or SSH-reachable servers with no intermediary, which some organisations require.' },
         { title: 'Single-application simplicity', text: 'One deployable, one database, one repository, which is the right shape for most products.' },
       ],
       rows: [
@@ -717,7 +717,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Front end', stacks: 'Included', other: 'Separate application' },
         { dimension: 'Background work', stacks: 'Queues, jobs, schedules', other: 'Pub/sub and cron primitives' },
         { dimension: 'Observability', stacks: 'Logs, dashboard, queue history', other: 'Distributed tracing and metrics' },
-        { dimension: 'Cloud targets', stacks: 'AWS', other: 'AWS and GCP' },
+        { dimension: 'Cloud targets', stacks: 'Hetzner, AWS, any SSH box', other: 'AWS and GCP' },
         { dimension: 'Admin surface', stacks: 'Generated from models', other: 'Developer dashboard, not an app admin' },
       ],
       migration: [
@@ -758,7 +758,7 @@ export const comparisons: Comparison[] = [
         { title: 'Front end in the box', text: 'STX components and signals are part of the framework, so there is no Livewire or Inertia decision to make.' },
         { title: 'Infrastructure in the repository', text: 'DNS, TLS, CDN, and mail records are declared in config and applied by buddy deploy, without a paid platform.' },
         { title: 'One runtime for everything', text: 'The server, the CLI, the tests, and the build all run on Bun, so there is no separate Node toolchain beside the PHP one.' },
-        { title: 'No deploy platform subscription', text: 'Forge runs $12 to $39 a month and Vapor $39 a month, both before the AWS bill. buddy deploy ships in the framework itself, so the only recurring cost is the same AWS bill either way.' },
+        { title: 'No deploy platform subscription', text: 'Forge runs $12 to $39 a month and Vapor $39 a month, both before the AWS bill. buddy deploy ships in the framework itself, so the only recurring cost is the server, whether that is AWS or a small Hetzner box.' },
         { title: 'A mail server, not just a mail sender', text: 'Laravel pairs with SES or Postmark for sending and Google Workspace or Fastmail for real mailboxes. Stacks can run its own self-hostable SMTP and IMAP server, so a custom mailbox on your domain is infrastructure you already have rather than another subscription.' },
         { title: 'Real products, not a demo', text: 'BugHQ (bughq.org), StatusHQ (statushq.org), AnalyticsHQ (analyticshq.org), and LogHQ (loghq.org) are Stacks applications running in production today, and all four are open source you can self-host rather than a SaaS you rent. CommsHQ, a marketing and communications platform built the same way, goes further either direction: self-host it for free or take one of its own hosted subscription plans.' },
       ],
@@ -769,7 +769,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Queues', stacks: 'Included, dashboard for failures', other: 'Included, Horizon for monitoring' },
         { dimension: 'Realtime', stacks: 'Included', other: 'Echo with Reverb or Pusher' },
         { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Filament (free) or Nova (paid, per project)' },
-        { dimension: 'Deploy', stacks: 'buddy deploy into your AWS account, no platform fee', other: 'Forge $12-39/mo, Vapor $39/mo+, or Cloud from $5/mo+usage' },
+        { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or SSH, no platform fee', other: 'Forge $12-39/mo, Vapor $39/mo+, or Cloud from $5/mo+usage' },
         { dimension: 'Mailboxes', stacks: 'Optional self-hosted SMTP and IMAP server', other: 'A hosted inbox provider, billed separately' },
         { dimension: 'Ecosystem age', stacks: 'Young', other: 'Mature' },
       ],
@@ -819,7 +819,7 @@ export const comparisons: Comparison[] = [
         { dimension: 'Background work', stacks: 'Queues with drivers', other: 'Active Job with Solid Queue' },
         { dimension: 'Realtime', stacks: 'Channels and model broadcasts', other: 'Action Cable and Turbo Streams' },
         { dimension: 'Auth', stacks: 'Full auth package with RBAC', other: 'Generator plus Devise or Pundit' },
-        { dimension: 'Deploy', stacks: 'buddy deploy to AWS from config', other: 'Kamal to any servers' },
+        { dimension: 'Deploy', stacks: 'buddy deploy to Hetzner, AWS, or any SSH box', other: 'Kamal to any servers' },
         { dimension: 'Admin', stacks: 'Generated dashboard', other: 'ActiveAdmin or Avo' },
       ],
       migration: [
@@ -906,7 +906,7 @@ export const comparisons: Comparison[] = [
         { title: 'Business logic has a home', text: 'Anything beyond CRUD ends up in database functions, triggers, or edge functions in a BaaS. Here it is actions, jobs, and events in one typed codebase.' },
         { title: 'Auth and authorisation you can read', text: 'Social login, magic links, and two-factor come from the same auth package as password login, just as code rather than a dashboard toggle. Row level security policies are powerful and easy to get subtly wrong; gates and policies are ordinary reviewable TypeScript instead.' },
         { title: 'Background work and mail', text: 'Queues, schedules, retries, transactional mail, and notifications, rather than cron extensions and a mail provider.' },
-        { title: 'You own the deployment', text: 'Your AWS account, your database, your bill, and no platform between you and it.' },
+        { title: 'You own the deployment', text: 'Your servers, your database, your bill, and no platform between you and it.' },
       ],
       rows: [
         { dimension: 'What it is', stacks: 'A framework you run', other: 'A hosted platform you consume' },

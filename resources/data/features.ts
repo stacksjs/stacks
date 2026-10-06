@@ -81,6 +81,9 @@ export const features: Feature[] = [
         { title: 'STX views', text: 'Single-file components with a server/client script split, Blade-style directives, and signals for reactivity. No build config to own.' },
         { title: 'Middleware', text: 'Request middleware in app/Middleware/, registered in app/Middleware.ts, applied per route or per group.' },
         { title: 'Validation', text: 'Attribute rules live on the model, so the same schema validates the request, the factory, and the generated API.' },
+        { title: 'Typed API client', text: 'Register routes with createTypedRouter() and createTypedClient() infers every path, body, and response from the actions themselves. No generation step, nothing committed to go stale.' },
+        { title: 'OpenAPI', text: 'buddy generate:openapi-spec writes the spec for consumers outside TypeScript, from the same routes and validations.' },
+        { title: 'Privacy by model', text: 'Mark an attribute personal and buddy gdpr:export, gdpr:erase, and gdpr:prune answer data-subject requests and retention rules, with a processing register beside them.' },
       ],
       code: {
         file: 'app/Models/Post.ts',
@@ -131,20 +134,23 @@ export default defineModel({
       headline: 'Work that outlives the request that started it.',
       lede: 'Queues, schedules, events, and mail are one subsystem here rather than four packages with four config formats. A job dispatched in a request and a job fired by the scheduler are the same class, run by the same worker, against the same driver. Mail can mean sending through SES or Mailgun, or it can mean running the mailbox itself: a self-hostable SMTP and IMAP server for real inboxes on your own domain.',
       capabilities: [
-        { title: 'Jobs and queues', text: 'Classes in app/Jobs/ dispatched from anywhere, run by a worker, with retries, backoff, and batches. Drivers cover memory, database, and SQS.' },
+        { title: 'Jobs and queues', text: 'Classes in app/Jobs/ dispatched from anywhere, run by a worker, with retries, backoff, and batches. Drivers cover sync, database, and Redis.' },
         { title: 'Scheduling', text: 'app/Scheduler.ts declares recurring work in TypeScript instead of a crontab, so it ships and reviews with the code.' },
         { title: 'Events and listeners', text: 'app/Events.ts maps events to listeners in app/Listeners/. Models with the observe trait emit created, updated, and deleted for free.' },
         { title: 'Mail', text: 'Mail classes in app/Mail/ render STX templates and send through SES, SendGrid, Mailgun, or plain SMTP behind one interface.' },
         { title: 'Your own mail server', text: 'A self-hostable SMTP and IMAP mail server for real mailboxes on your own domain, opt-in and deployed alongside the app, for teams that would rather not pay for Google Workspace or Fastmail just to receive mail.' },
         { title: 'Notifications', text: 'One notification, several channels: email, SMS, push, chat, or a database row the dashboard can read.' },
         { title: 'Batches', text: 'Group jobs, track progress as a unit, and hang a completion callback off the batch rather than off the last job.' },
+        { title: 'When jobs fail', text: 'A dead-letter queue, poison-job quarantine, a circuit breaker per dependency, and idempotency keys, all driven from buddy queue:dlq, queue:quarantine, and queue:pause.' },
+        { title: 'Deliverability', text: 'Suppression lists, one-click unsubscribe, signed provider webhooks for bounces and complaints, inbound parsing, and a captured-mail inbox in development.' },
       ],
       code: {
         file: 'app/Jobs/SendWelcomeEmail.ts',
-        code: `import { Job } from '@stacksjs/queue'
-import { mail } from '@stacksjs/email'
+        code: `import { mail, template } from '@stacksjs/email'
+import { Job } from '@stacksjs/queue'
 
 export default new Job({
+  name: 'SendWelcomeEmail',
   tries: 3,
   backoff: 30,
 
@@ -153,11 +159,15 @@ export default new Job({
     if (!user)
       return
 
+    const { html, text } = await template('welcome', {
+      variables: { name: user.name },
+    })
+
     await mail.send({
       to: user.email,
       subject: 'Welcome to the stack',
-      view: 'emails/welcome',
-      data: { name: user.name },
+      html,
+      text,
     })
   },
 })`,
@@ -255,6 +265,7 @@ export default defineModel({
   },
 
   attributes: {
+    title: { fillable: true, required: true },
     status: {
       fillable: true,
       default: 'draft',
@@ -267,7 +278,7 @@ export default defineModel({
       },
       commands: [
         'buddy make:model Article',
-        'buddy migrate --diff',
+        'buddy generate:migrations',
         'buddy dev docs',
       ],
       docs: '/docs',
@@ -288,33 +299,44 @@ export default defineModel({
       lede: 'Authentication and authorization are one subsystem, not an auth package next to a permissions package that disagree about what a user is. Turn on the useAuth trait and the columns, the passkey tables, the social providers, and the guards arrive together, whether a user signs in with a password, a passkey, a social account, or a magic link.',
       capabilities: [
         { title: 'Sessions and tokens', text: 'Cookie sessions for the browser and API tokens for everything else, both resolving to the same authenticated user.' },
-        { title: 'Social login', text: 'GitHub, Google, Facebook, and X sign-in over OAuth2 with PKCE, with account linking so a social login and a password resolve to the same user.' },
+        { title: 'Social login', text: 'Apple, GitHub, Google, Facebook, and X sign-in over OAuth2, with PKCE where the provider requires it and account linking so a social login and a password resolve to the same user.' },
         { title: 'Magic links', text: 'Passwordless email sign-in with single-use, rate-limited tokens, for the products that would rather not ask for a password at all.' },
         { title: 'Passkeys', text: 'WebAuthn registration and assertion, with the credential tables added by the useAuth trait rather than by hand.' },
         { title: 'Two-factor', text: 'TOTP enrolment, verification, and recovery codes, on the same model as the password.' },
         { title: 'Gates and policies', text: 'app/Gates.ts holds the checks; policies put per-model rules next to the model they guard.' },
         { title: 'Roles and permissions', text: 'RBAC with roles, permissions, and the relations already migrated.' },
         { title: 'Request protection', text: 'CSRF tokens on every state-mutating route by default, plus per-route and per-identity rate limits and account lockout after repeated failed logins.' },
+        { title: 'OAuth 2 server', text: 'Be the identity provider, not just a client: authorization codes with PKCE, consent, client registration, token exchange, introspection, and revocation, for "Sign in with" your app or for guarding an MCP server.' },
       ],
       code: {
         file: 'app/Gates.ts',
-        code: `import { Auth } from '@stacksjs/auth'
+        code: `import type { UserModel } from '@stacksjs/orm'
+import { defineGates, Rbac } from '@stacksjs/auth'
+
+type User = UserModel | null
+type PostRow = { author_id: number }
 
 // A gate answers one question and is callable from
 // routes, actions, and views, so the rule lives in
 // one place rather than three.
-Auth.define('update-post', (user, post) => {
-  return user.id === post.author_id || user.hasRole('editor')
-})
+export default defineGates({
+  gates: {
+    'update-post': async (user: User, post: PostRow) => {
+      if (!user)
+        return false
+      return user.id === post.author_id
+        || await Rbac.hasRole(user, 'editor')
+    },
 
-Auth.define('access-dashboard', (user) => {
-  return user.hasPermission('dashboard:view')
+    'access-dashboard': async (user: User) => user !== null
+      && await Rbac.hasPermission(user, 'dashboard:view'),
+  },
 })`,
       },
       commands: [
-        'buddy migrate --auth',
+        'buddy auth:setup',
         'buddy make:policy PostPolicy',
-        'buddy make middleware EnsureVerified',
+        'buddy make:middleware EnsureVerified',
       ],
       docs: '/docs',
       related: ['application-core', 'testing', 'cms'],
@@ -335,39 +357,47 @@ Auth.define('access-dashboard', (user) => {
       capabilities: [
         { title: 'Catalog', text: 'Products, variants, units, manufacturers, categories, and reviews, related the way a catalog actually nests.' },
         { title: 'Orders and customers', text: 'Order line items, order export, and customer profiles and history, queryable with the same builder as any other model.' },
-        { title: 'Payments', text: 'A payment driver behind checkout, with receipts and refund state tracked alongside the order.' },
+        { title: 'Payments', text: 'Stripe and Adyen drivers behind checkout, with receipts and refund state tracked alongside the order.' },
+        { title: 'Subscriptions and billing', text: 'Make any model billable for Stripe subscriptions, invoices, checkout sessions, and the customer portal; buddy stripe:setup creates the products and prices.' },
+        { title: 'Marketplaces', text: 'Stripe Connect accounts, transfers, and payouts, so the platform takes its fee and sellers get paid.' },
         { title: 'Coupons and gift cards', text: 'Discount rules and stored-value cards as first-class models, not a string parsed at checkout.' },
         { title: 'Shipping and tax', text: 'Shipping methods and tax rates configured per region, applied the same way in the API and the dashboard.' },
         { title: 'Waitlists and POS', text: 'Product and restaurant waitlists, plus a point-of-sale view in the dashboard for in-person orders.' },
+        { title: 'Auctions', text: 'Lots, proxy bidding, anti-sniping that extends a lot while bids keep coming, pledges, settlement, and bids pushed to every viewer in realtime.' },
+        { title: 'Import your store', text: 'buddy commerce:import moves a Shopify, WooCommerce, or Shopware catalog across, and its customers and orders with --customers and --orders. Re-running updates rather than duplicates.' },
       ],
       code: {
         file: 'app/Actions/Commerce/CreateOrderAction.ts',
         code: `import { Action } from '@stacksjs/actions'
-import { commerce } from '@stacksjs/commerce'
+import { orders } from '@stacksjs/commerce'
+import { paymentDriver } from '@stacksjs/payments'
 
 export default new Action({
   name: 'CreateOrder',
-  description: 'Create an order from a cart and charge it',
+  description: 'Charge a saved card, then record the order',
 
   async handle(request) {
-    const cart = request.input('cart')
+    const user = await request.user()
+    if (!user)
+      return { error: 'Sign in to check out' }
 
-    const order = await commerce.orders.store({
-      customerId: request.user.id,
-      items: cart.items,
+    const amount = Number(request.input('total')) // cents
+    const charge = await paymentDriver().charge(
+      { id: user.id, email: user.email },
+      { amount, currency: 'usd' },
+      request.input('paymentMethod'),
+    )
+
+    return orders.placeOrder({
+      order: { status: 'PENDING', total_amount: amount },
+      payment: { transaction_id: charge.id, amount },
     })
-
-    await commerce.payments.charge(order.id, {
-      method: request.input('paymentMethod'),
-    })
-
-    return order
   },
 })`,
       },
       commands: [
         'buddy make:model Product',
-        'buddy migrate --diff',
+        'buddy generate:migrations',
         'buddy dev dashboard',
       ],
       docs: '/docs',
@@ -378,14 +408,14 @@ export default new Action({
   {
     slug: 'dashboard',
     title: 'Dashboard',
-    blurb: 'A generated admin panel for every model, plus analytics, jobs, and settings, in 250-plus components.',
+    blurb: 'A generated admin panel for every model, plus analytics, operations, kanban, and marketing, in 300-plus components.',
     icon: 'i-hugeicons-dashboard-square-01',
     group: 'build',
     bento: { cols: 4 },
     page: {
       kicker: 'Build',
       headline: 'An admin panel that already knows your models.',
-      lede: 'A model with the useApi trait is a CRUD screen in the dashboard, not a second implementation of the same list, form, and filters. Analytics, job monitoring, and commerce and content management ship as part of the same install.',
+      lede: 'Every model is already a CRUD screen in the dashboard, not a second implementation of the same list, form, and filters. Analytics, job monitoring, and commerce and content management ship as part of the same install.',
       capabilities: [
         { title: 'Model views', text: 'List, create, edit, and delete screens generated from a model’s attributes, so a new field shows up without a hand-built form.' },
         { title: 'Analytics', text: 'Web, page, referrer, device, and browser breakdowns, plus event and blog analytics, from first-party tracking.' },
@@ -393,17 +423,27 @@ export default new Action({
         { title: 'Commerce and content panels', text: 'Orders, products, customers, posts, and pages get their own dashboard sections without extra setup.' },
         { title: 'Settings', text: 'App, team, and environment settings editable from the UI instead of a config file only a deploy can change.' },
         { title: 'Its own server', text: 'The dashboard runs on its own dev server, so buddy dev dashboard iterates on it without rebuilding the main app.' },
+        { title: 'Operations', text: 'Servers, deployments, releases, DNS, logs, errors, slow queries, incidents, recovery, and an audit trail, beside the data they concern.' },
+        { title: 'Kanban and marketing', text: 'Boards with cards, labels, and comments, plus campaigns, email lists, social posts, reviews, and abandoned carts.' },
+        { title: 'Mail, in and out', text: 'Real mailboxes on your own mail server, and every message the app sent in development, captured and readable.' },
       ],
       code: {
         file: 'app/Models/Product.ts',
         code: `import { defineModel } from '@stacksjs/orm'
 
+// Every model gets a dashboard screen; this sets how
+// it shows in the sidebar. useApi adds a REST API.
 export default defineModel({
   name: 'Product',
   table: 'products',
 
   traits: {
-    useApi: { uri: 'products' }, // CRUD screen, free
+    useApi: { uri: 'products' },
+  },
+
+  dashboard: {
+    icon: 'i-hugeicons-package',
+    label: 'Products',
   },
 
   attributes: {
@@ -433,7 +473,7 @@ export default defineModel({
       headline: 'The same file API in development and in production.',
       lede: 'A local disk in development and S3 in production are the same interface, so the upload path you tested is the upload path that ships. Swapping the driver is a config change, not a rewrite of every call site.',
       capabilities: [
-        { title: 'Drivers', text: 'Local disk and S3 behind one API, chosen per disk in config so an app can use both at once.' },
+        { title: 'Drivers', text: 'Local disk, S3 and S3-compatible stores (R2, Backblaze, Filebase, Hetzner, MinIO), and Azure Blob behind one API, chosen per disk in config so an app can use several at once.' },
         { title: 'Uploads', text: 'Validated multipart handling that hands back a stored path, not a temp file you have to remember to move.' },
         { title: 'Signed URLs', text: 'Time-limited URLs for private objects, so a download link can expire without a proxy route in front of it.' },
         { title: 'Visibility', text: 'Public and private per file, enforced by the driver rather than by whichever route happened to serve it.' },
@@ -443,24 +483,27 @@ export default defineModel({
       code: {
         file: 'app/Actions/UploadAvatarAction.ts',
         code: `import { Action } from '@stacksjs/actions'
-import { storage } from '@stacksjs/storage'
+import { Storage } from '@stacksjs/storage'
 
 export default new Action({
   name: 'UploadAvatar',
   description: 'Store an avatar and hand back a signed URL',
+  method: 'POST',
 
   async handle(request) {
     const file = request.file('avatar')
+    if (!file)
+      return { error: 'No avatar uploaded' }
 
-    const disk = storage.disk('s3')
-
-    const key = \`avatars/\${request.user.id}\`
-
-    const path = await disk.put(key, file, {
-      visibility: 'private',
+    const { path } = await Storage.put(file, {
+      disk: 's3',
+      dir: 'avatars',
     })
 
-    return { url: await disk.temporaryUrl(path, 3600) }
+    const url = await Storage.disk('s3')
+      .temporaryUrl(path, { expiresIn: 3600 })
+
+    return { url }
   },
 })`,
       },
@@ -488,25 +531,29 @@ export default new Action({
         { title: 'Chat and streaming', text: 'anthropic.chat(), openai.chat(), ollama.chat(), and their streaming counterparts share a message shape, so a prompt written for one driver runs on the others, including a local model for development or for data that should not leave the box.' },
         { title: 'Vision', text: 'Analyze an uploaded image through the Claude or GPT drivers, using the same message shape as chat.' },
         { title: 'Image generation', text: 'Generate an image from a prompt through the OpenAI driver, using DALL-E.' },
-        { title: 'Bedrock', text: 'A separate driver for Amazon Titan and other AWS-hosted models, with fine-tuning and model management for teams standardised on Bedrock.' },
+        { title: 'Bedrock', text: 'A separate driver over the Bedrock Converse API (Amazon Nova by default), with fine-tuning jobs and model listing for teams standardised on AWS-hosted models.' },
         { title: 'RAG and embeddings', text: 'Embed content with OpenAI or Ollama, then query an in-memory vector index for retrieval, without a separate vector database to run.' },
         { title: 'MCP client', text: 'Call tools on a Model Context Protocol server from an action or a job, the same way the buddy assistant does.' },
         { title: 'Personalization', text: 'Sentiment, classification, and recommendation helpers over content and event data already in the app.' },
+        { title: 'Speech', text: 'Text to speech and speech to text through the OpenAI driver, with the same request shape as chat.' },
+        { title: 'Agents', text: 'Run Claude as an agent with tools through the Claude Agent SDK driver, from an action, a job, or the CLI.' },
       ],
       code: {
-        file: 'app/Actions/SummarizeArticleAction.ts',
+        file: 'app/Actions/SummarizePostAction.ts',
         code: `import { Action } from '@stacksjs/actions'
 import { anthropic } from '@stacksjs/ai'
 
 export default new Action({
-  name: 'SummarizeArticle',
-  description: 'Summarize an article with Claude',
+  name: 'SummarizePost',
+  description: 'Summarize a post with Claude',
 
   async handle(request) {
-    const article = await Article.find(request.input('id'))
+    const post = await Post.find(Number(request.input('id')))
+    if (!post)
+      return { error: 'Post not found' }
 
     const summary = await anthropic.prompt(
-      \`Summarize in two sentences:\\n\\n\${article.body}\`,
+      \`Summarize in two sentences:\\n\\n\${post.content}\`,
     )
 
     return { summary }
@@ -515,7 +562,7 @@ export default new Action({
       },
       commands: [
         'buddy env:set ANTHROPIC_API_KEY sk-ant-...',
-        'buddy make:action SummarizeArticle',
+        'buddy make:action SummarizePost',
       ],
       docs: '/docs',
       related: ['application-core', 'realtime-and-search', 'queues-and-mail'],
@@ -543,22 +590,26 @@ export default new Action({
       ],
       code: {
         file: 'tests/feature/posts.test.ts',
-        code: `import { describe, expect, it } from 'bun:test'
-import { refreshDatabase, request } from '@stacksjs/testing'
+        code: `import { beforeEach, describe, expect, it } from 'bun:test'
+import { actingAs } from '@stacksjs/testing'
+import {
+  factory,
+  refreshDatabase,
+} from '@stacksjs/testing/database'
 
 describe('posts API', () => {
-  refreshDatabase()
+  beforeEach(refreshDatabase)
 
-  it('lists only published posts', async () => {
-    const live = { status: 'published' }
+  it('lists posts for a signed-in user', async () => {
+    const user = await factory('User').create()
+    await factory('Post').createMany(3)
 
-    await Post.factory().count(3).create(live)
-    await Post.factory().create({ status: 'draft' })
+    const response = await actingAs(user as { id: number })
+      .get('/api/posts')
 
-    const response = await request().get('/api/posts')
-
-    expect(response.status).toBe(200)
-    expect(await response.json()).toHaveLength(3)
+    response.assertStatus(200)
+    const body = await response.json<{ data: unknown[] }>()
+    expect(body.data).toHaveLength(3)
   })
 })`,
       },
@@ -584,30 +635,33 @@ describe('posts API', () => {
       headline: 'Push it out, and let people find it.',
       lede: 'Broadcasting and search both start from a model you already defined. An event becomes a channel message, and a searchable trait becomes an index, without a second definition of what the record is.',
       capabilities: [
-        { title: 'Channels', text: 'Public, private, and presence channels with authorization that reuses the app gates rather than its own rules.' },
+        { title: 'Channels', text: 'Public, private, and presence channels, authorized per channel, with an optional handshake check deciding who may connect at all.' },
         { title: 'Broadcasts', text: 'An event dispatched server-side arrives on the channel, so the same event can queue a job and update a screen.' },
         { title: 'WebSocket drivers', text: 'A first-party driver for development and pluggable transports for production.' },
-        { title: 'Search engines', text: 'The useSearch trait indexes into Meilisearch, Algolia, or Typesense, with searchable and filterable declared on the model.' },
+        { title: 'Search engines', text: 'The useSearch trait indexes into OpenSearch, Meilisearch, Algolia, or Typesense, with searchable and filterable declared on the model.' },
         { title: 'Index sync', text: 'Model writes update the index through observers, so a record and its index entry do not disagree after an edit.' },
         { title: 'Client composables', text: 'STX composables subscribe in a script client block, leaving the server render untouched.' },
       ],
       code: {
         file: 'app/Events.ts',
-        code: `// Server side: broadcast on a private channel when
-// an order moves.
-export default {
-  'order:shipped': [
-    'Listeners/NotifyCustomer',
-    'Listeners/BroadcastToOrderChannel',
+        code: `import { defineEvents } from '@stacksjs/events'
+
+// Listener names resolve from app/Listeners/, then
+// app/Actions/. The key must be a declared event.
+export default defineEvents({
+  'order:updated': [
+    'NotifyCustomer',
+    'BroadcastToOrderChannel',
   ],
-}
+})
 
 // resources/views/orders.stx, inside <script client>
 //
+//   import { useChannel } from '@stacksjs/stx/composables'
 //   const channel = useChannel(\`orders.\${orderId}\`)
 //   const status = state('processing')
 //
-//   channel.on('order:shipped', (payload) => {
+//   channel.on('order:updated', (payload) => {
 //     status.set(payload.status)
 //   })`,
       },
@@ -623,39 +677,47 @@ export default {
   {
     slug: 'cloud-deploys',
     title: 'Cloud deploys',
-    blurb: 'AWS, DNS, CDN, TLS, and mail, described in TypeScript config and shipped by Buddy.',
+    blurb: 'Hetzner, AWS, or any box over SSH, with DNS, TLS, and mail, described in TypeScript config and shipped by Buddy.',
     icon: 'i-hugeicons-cloud-server',
     group: 'ship',
     bento: { cols: 6, visual: 'deploy', tone: 'gradient' },
     page: {
       kicker: 'Ship',
       headline: 'The infrastructure is part of the repo.',
-      lede: 'config/cloud.ts describes the site, the DNS, the certificates, the CDN, and the mail records in TypeScript. buddy deploy builds every surface and publishes that infrastructure, so the thing that runs in production is described by a file you can review in a pull request.',
+      lede: 'config/cloud.ts describes the server, DNS, certificates, storage, and mail records in TypeScript. buddy deploy provisions Hetzner or AWS, or adopts a box you already own over SSH, then ships every surface, so production is a file you review in a pull request.',
       capabilities: [
         { title: 'One command', text: 'buddy deploy checks prerequisites, resolves the environment, builds the web, docs, blog, and API, then publishes the infrastructure.' },
         { title: 'DNS and TLS', text: 'Records and certificates are declared next to the site they belong to, so a new hostname is a config line rather than a console visit.' },
         { title: 'CDN and storage', text: 'Buckets, distributions, and cache invalidation come from the same config the application reads.' },
         { title: 'Mail records', text: 'SES identities plus the SPF, DKIM, and DMARC records that make them deliver, published with everything else.' },
-        { title: 'Server or serverless', text: 'The same application deploys to a long-running server or to Lambda, chosen in config.' },
+        { title: 'Your own hardware', text: 'provider: ssh adopts a box you already run instead of provisioning one. buddy server:flash writes a Raspberry Pi OS or Ubuntu image to a disk, and on a LAN the box signs its own HTTPS certificate, which server:trust installs where your devices trust it.' },
+        { title: 'Server or serverless', text: 'A long-running server by default; on AWS the same app can deploy serverless instead, chosen in config.' },
+        { title: 'Many projects, one box', text: 'Several apps share a server behind one gateway, each with its own domains, certificates, and ports.' },
+        { title: 'Rollback and backups', text: 'buddy deploy:rollback returns a site to its previous release, and db:backup, db:restore, storage:backup, and storage:restore cover the data.' },
         { title: 'Push to deploy', text: 'The shipped CI workflow runs buddy deploy on every green push to main, and finishes green with a notice when a repo has no deploy secrets yet.' },
       ],
       code: {
         file: 'config/cloud.ts',
-        code: `export default {
-  driver: 'aws',
+        code: `import type { CloudConfig } from '@stacksjs/ts-cloud'
 
-  sites: {
-    main: {
-      domain: 'example.com',
-      subdomains: ['docs', 'blog', 'api'],
-      cdn: true,
-      tls: true,
-    },
+export const tsCloud: CloudConfig = {
+  project: { name: 'app', slug: 'app', region: 'us-east-1' },
+  cloud: { provider: 'hetzner' }, // or 'aws', 'ssh'
+  mode: 'server',
+  environments: {
+    production: { type: 'production', deployBranch: 'main' },
   },
 
-  mail: {
-    identity: 'example.com',
-    records: ['spf', 'dkim', 'dmarc'],
+  infrastructure: {
+    dns: { domain: 'example.com' },
+    ssl: { enabled: true, provider: 'letsencrypt' },
+    email: { domain: 'example.com', enableDkim: true },
+  },
+
+  sites: {
+    main: { domain: 'example.com', port: 3000 },
+    docs: { domain: 'example.com', path: '/docs' },
+    api: { domain: 'api.example.com', port: 3008 },
   },
 }`,
       },

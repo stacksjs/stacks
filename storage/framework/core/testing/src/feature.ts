@@ -15,7 +15,8 @@ export function setupTestEnvironment(): void {
  *
  * @example
  * ```ts
- * import { featureTest, refreshDatabase } from '@stacksjs/testing'
+ * import { featureTest } from '@stacksjs/testing'
+ * import { refreshDatabase } from '@stacksjs/testing/database'
  *
  * test('create post', async () => {
  *   await refreshDatabase()
