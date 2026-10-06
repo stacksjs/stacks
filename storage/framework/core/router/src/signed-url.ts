@@ -129,7 +129,7 @@ export function signUrl(input: string, options: SignedUrlOptions = {}): string {
   const secret = getSigningSecret()
   const url = input.startsWith('http')
     ? new URL(input)
-    : new URL(input.startsWith('/') ? input : `/${input}`, process.env.APP_URL || 'https://localhost')
+    : new URL(input.startsWith('/') ? input : `/${input}`, configuredAppOrigin() ?? 'https://localhost')
 
   if (options.ttl !== undefined && options.expiresAt !== undefined) {
     // ttl wins — documented above, but warn-once so the caller can fix
@@ -180,6 +180,19 @@ export function signedUrl<TName extends KnownRouteName>(
   return signUrl((buildUrl as (name: string, params: Record<string, string | number>) => string)(routeName, params), options)
 }
 
+/** `APP_URL`'s origin, read as `url()` reads it (`https://` when it has no scheme). */
+function configuredAppOrigin(): string | null {
+  const appUrl = process.env.APP_URL
+  if (!appUrl)
+    return null
+  try {
+    return new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(appUrl) ? appUrl : `https://${appUrl}`).origin
+  }
+  catch {
+    return null
+  }
+}
+
 /**
  * Result of {@link verifySignedUrl}. The `reason` only fires when `valid`
  * is `false` — gives callers (and middleware) enough to decide whether
@@ -195,7 +208,7 @@ export type SignedUrlVerifyResult =
  * code per failure mode.
  */
 export function verifySignedUrl(input: string | URL): SignedUrlVerifyResult {
-  const url = typeof input === 'string' ? new URL(input, process.env.APP_URL || 'https://localhost') : input
+  const url = typeof input === 'string' ? new URL(input, configuredAppOrigin() ?? 'https://localhost') : input
   const presented = url.searchParams.get(SIGNATURE_PARAM)
   if (!presented) return { valid: false, reason: 'missing-signature' }
 
@@ -208,10 +221,25 @@ export function verifySignedUrl(input: string | URL): SignedUrlVerifyResult {
   }
 
   try {
-    const expected = hmacHex(buildSignaturePayload(url), getSigningSecret())
-    return safeEqualHex(presented, expected)
-      ? { valid: true }
-      : { valid: false, reason: 'invalid-signature' }
+    const secret = getSigningSecret()
+    if (safeEqualHex(presented, hmacHex(buildSignaturePayload(url), secret)))
+      return { valid: true }
+
+    // The same path and query at the app's own origin. A link is signed for
+    // the URL the world uses - `APP_URL`, `https://app.example.com` - but
+    // behind a proxy that terminates TLS the request reaches Bun as
+    // `http://<internal host>/...`, so the signature of every link checked
+    // against the request's own URL failed, whatever headers the proxy sent:
+    // signed links never worked in production. The origin is the app's
+    // configured one, never anything the request supplies.
+    const appOrigin = configuredAppOrigin()
+    if (appOrigin && appOrigin !== url.origin) {
+      const asServed = new URL(`${url.pathname}${url.search}`, appOrigin)
+      if (safeEqualHex(presented, hmacHex(buildSignaturePayload(asServed), secret)))
+        return { valid: true }
+    }
+
+    return { valid: false, reason: 'invalid-signature' }
   }
   catch {
     // Missing secret — treat as invalid rather than crash the request.

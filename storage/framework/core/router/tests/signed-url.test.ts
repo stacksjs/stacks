@@ -84,3 +84,45 @@ describe('signUrl + verifySignedUrl (stacksjs/stacks#1870 R-7)', () => {
     expect(() => signUrl('/x')).toThrow(/APP_KEY/)
   })
 })
+
+/**
+ * A signed link verifies behind a proxy that terminates TLS.
+ *
+ * The signature covers the whole URL, origin included, and the middleware
+ * checked it against the request's own URL - which behind a TLS-terminating
+ * proxy is `http://<internal host>/...`, not the `https://app.example.com/...`
+ * the link was signed for. Every signed link failed in production whatever
+ * forwarding headers the proxy sent. The path and query are now also checked
+ * at the app's configured origin.
+ */
+describe('signed links behind a proxy', () => {
+  test('verify when the request arrives at an internal origin', () => {
+    const signed = new URL(signUrl('/api/email/verify?user=42', { ttl: 600 }))
+    const asProxied = `http://10.0.0.5:3000${signed.pathname}${signed.search}`
+
+    expect(verifySignedUrl(asProxied)).toEqual({ valid: true })
+  })
+
+  test('are still refused when tampered with, at any origin', () => {
+    const signed = new URL(signUrl('/api/email/verify?user=42'))
+    signed.searchParams.set('user', '99')
+
+    expect(verifySignedUrl(`http://10.0.0.5:3000${signed.pathname}${signed.search}`)).toEqual({ valid: false, reason: 'invalid-signature' })
+  })
+
+  test('signed for another origin outright are not accepted at the app\'s', () => {
+    const elsewhere = signUrl('https://other-site.test/api/email/verify?user=42')
+    const u = new URL(elsewhere)
+    // The same path and signature presented at the app's own origin.
+    expect(verifySignedUrl(`https://example.test${u.pathname}${u.search}`).valid).toBe(false)
+  })
+
+  test('sign and verify with an APP_URL written without a scheme', () => {
+    process.env.APP_URL = 'stacks.localhost'
+    const signed = signUrl('/api/email/verify?user=42')
+
+    expect(signed.startsWith('https://stacks.localhost/api/email/verify?')).toBe(true)
+    expect(verifySignedUrl(signed)).toEqual({ valid: true })
+    expect(verifySignedUrl(`http://127.0.0.1:3000${new URL(signed).pathname}${new URL(signed).search}`)).toEqual({ valid: true })
+  })
+})
