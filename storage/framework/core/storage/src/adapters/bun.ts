@@ -22,7 +22,7 @@ import type {
 } from '../types'
 import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
-import { publicUrlFor, signedUrlBase, writeAtomically } from './filesystem-common'
+import { publicUrlFor, signedUrlBase, writeAtomically } from '../filesystem-common'
 
 export class BunStorageAdapter implements StorageAdapter {
   private root: string

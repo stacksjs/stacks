@@ -24,7 +24,7 @@ import type {
 } from '../types'
 import { createDirectoryListing } from '../types'
 import { createSignedStorageToken } from '../signed-url'
-import { publicUrlFor, signedUrlBase, writeAtomically } from './filesystem-common'
+import { publicUrlFor, signedUrlBase, writeAtomically } from '../filesystem-common'
 
 /**
  * Local filesystem storage adapter using Node.js fs APIs
