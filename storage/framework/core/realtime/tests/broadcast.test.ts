@@ -1,12 +1,13 @@
 import { describe, expect, test } from 'bun:test'
+import { recordingServer } from './fixtures/realtime'
 
 // eslint-disable-next-line antfu/no-import-dist
 const { Broadcast } = await import('../src/broadcast')
 
 // ---------------------------------------------------------------------------
-// Tests use the real Broadcast class directly — no mocks.
+// Tests use the real Broadcast class directly, against a real (unstarted)
+// BroadcastServer whose broadcast() calls are recorded.
 // When no server is set, broadcast() logs a warning instead of throwing.
-// We test structure and behavior with a manually set server.
 // ---------------------------------------------------------------------------
 
 describe('Broadcast', () => {
@@ -47,12 +48,8 @@ describe('Broadcast', () => {
 describe('Broadcast with server', () => {
   test('broadcast() with public channel sends to channel name as-is', () => {
     const { setServer } = require('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    })
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const bc = new Broadcast()
@@ -66,12 +63,8 @@ describe('Broadcast with server', () => {
 
   test('broadcast() with private type adds private- prefix', () => {
     const { setServer } = require('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    })
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const bc = new Broadcast()
@@ -85,12 +78,8 @@ describe('Broadcast with server', () => {
 
   test('broadcast() with private type does not double-prefix', () => {
     const { setServer } = require('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    })
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const bc = new Broadcast()
@@ -104,12 +93,8 @@ describe('Broadcast with server', () => {
 
   test('broadcast() with presence type adds presence- prefix', () => {
     const { setServer } = require('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    })
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const bc = new Broadcast()
@@ -123,12 +108,8 @@ describe('Broadcast with server', () => {
 
   test('broadcast() with presence type does not double-prefix', () => {
     const { setServer } = require('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    })
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const bc = new Broadcast()
@@ -142,12 +123,8 @@ describe('Broadcast with server', () => {
 
   test('broadcast() defaults to public type', () => {
     const { setServer } = require('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    })
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const bc = new Broadcast()
@@ -161,7 +138,7 @@ describe('Broadcast with server', () => {
 
   test('isConnected() returns true when server is initialized', () => {
     const { setServer } = require('../src/server-instance')
-    setServer({ broadcast() {} })
+    setServer(recordingServer().server)
 
     try {
       const bc = new Broadcast()

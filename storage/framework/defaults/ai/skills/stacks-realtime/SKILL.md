@@ -22,7 +22,8 @@ realtime/src/
   emit.ts             # emit(), emitToUser(), emitToUsers()
   channel.ts          # Channel class + channel() factory
   broadcast.ts        # Broadcast class + runBroadcast() + broadcast()
-  ws.ts               # WebSocket request handler (legacy, kept for backward compat)
+  ws.ts               # setWsAuthenticator() - gates upgrades on the broadcast server
+  replay-buffer.ts    # setReplayBuffer() / replaySince() - per-channel replay with seq numbers
   server-instance.ts  # server lifecycle (createServer/getServer/setServer/stopServer)
 ```
 
@@ -43,7 +44,9 @@ export type { EmitOptions } from './emit'
 export { channel as createChannel, Channel as StacksChannel } from './channel'
 export { broadcast as dispatchBroadcast, runBroadcast, Broadcast as LegacyBroadcast } from './broadcast'
 export type { BroadcastInstance } from './broadcast'
-export { setBunSocket, handleWebSocketRequest, storeWebSocketEvent } from './ws'
+export { debugSnapshot, getReplayBuffer, pruneExpired, recordBroadcast, replaySince, setReplayBuffer } from './replay-buffer'
+export { storeWebSocketEvent, setWsAuthenticator, getWsAuthenticator } from './ws'
+export type { WsAuthenticator, WsAuthResult } from './ws'
 ```
 
 Note the renamed exports:
@@ -72,9 +75,9 @@ emit('orders', 'updated', { status: 'shipped' }, { private: true })
 // Broadcast to a presence channel (auto-prefixes 'presence-')
 emit('room-1', 'user-joined', { userId: 42 }, { presence: true })
 
-// Exclude specific socket(s) from receiving
-// NOTE: BroadcastServer only supports single socket exclusion;
-//       if array is passed, only the first element is used
+// Exclude specific socket(s) from receiving - socket IDs (the `socket_id`
+// a client gets in `connection_established`), not user IDs. Every ID in an
+// array is excluded.
 emit('chat', 'typing', data, { exclude: 'socket-id-1' })
 emit('chat', 'typing', data, { exclude: ['socket-id-1', 'socket-id-2'] })
 ```
@@ -85,7 +88,7 @@ emit('chat', 'typing', data, { exclude: ['socket-id-1', 'socket-id-2'] })
 interface EmitOptions {
   private?: boolean     // prefix channel with 'private-'
   presence?: boolean    // prefix channel with 'presence-'
-  exclude?: string | string[]  // socket IDs to exclude (only first used)
+  exclude?: string | string[]  // socket IDs to exclude (all of them)
   driver?: string       // broadcast driver override
 }
 ```
@@ -185,7 +188,53 @@ setServer(server)
 await stopServer()
 ```
 
-`createServer()` dynamically imports `ts-broadcasting`, instantiates `BroadcastServer`, calls `start()`, stores the instance via `setServer()`, and returns it.
+`createServer()` dynamically imports `ts-broadcasting`, instantiates `BroadcastServer`, calls `start()`, stores the instance via `setServer()`, and returns it. That server is the WebSocket endpoint (`/app` and `/ws` on its own host/port); there is no upgrade handler for the app's HTTP server.
+
+### Connection auth
+
+```typescript
+import { setWsAuthenticator } from '@stacksjs/realtime'
+
+// Read on every upgrade, so it applies whether installed before or after createServer().
+setWsAuthenticator(async (req) => {
+  const token = new URL(req.url).searchParams.get('token')
+  const user = token ? await verify(token) : null
+  if (!user) return { ok: false, status: 401, message: 'Unauthorized' }
+  // user -> socket.data.user, data -> socket.data.data (what channel authorizers read)
+  return { ok: true, user: { id: user.id }, data: { team: user.team } }
+})
+```
+
+A refusal answers the upgrade with its status; a throw refuses with a 500 and is logged, not sent. An `authorizeConnection` in the `createServer()` config still runs after it. Per-channel access is still `Broadcast.channel('private-orders.{id}', (socket, params) => ...)`.
+
+`/stats` and `/metrics` are off unless `createServer({ endpoints: { stats: true, metrics: true, token } })`.
+
+### Dead sockets and slow consumers
+
+Bun's own WebSocket options, passed through `createServer()`:
+
+```typescript
+await createServer({
+  host: '0.0.0.0',
+  port: 6001,
+  websocket: {
+    idleTimeout: 60,                 // Bun pings idle sockets; no pong within this -> closed (rounded up to 4s steps)
+    sendPings: true,
+    backpressureLimit: 1024 * 1024,
+    closeOnBackpressureLimit: true,  // drop a consumer that falls 1 MB behind
+  },
+})
+```
+
+### Replay buffer
+
+```typescript
+import { replaySince, setReplayBuffer } from '@stacksjs/realtime'
+
+setReplayBuffer({ channels: ['orders.*'], maxPerChannel: 100, ttlMs: 5 * 60_000 })
+```
+
+Every broadcast on a matching channel, from any API, is recorded and reaches clients as `{ event, channel, data, seq }`. Patterns match with or without the `private-`/`presence-` prefix (`orders.*` covers `private-orders.1`); `replaySince()` takes the full name. The client keeps the last `seq` per channel and sends it back after reconnecting (through a route of the app's), which answers with `replaySince('private-orders.1', seq)`. The buffer and its numbering are per process.
 
 ---
 
@@ -270,13 +319,10 @@ class Broadcast {
 }
 ```
 
-### WebSocket handler (ws.ts)
+### ws.ts
 
 ```typescript
-// Deprecated - handled by ts-broadcasting internally
-setBunSocket(server: BroadcastServer | null): void      // calls setServer()
-storeWebSocketEvent(type, socket, details): Promise<void> // no-op
-handleWebSocketRequest(req, server): Promise<Response | undefined>  // delegates to server.upgrade()
+storeWebSocketEvent(type, socket, details): Promise<void> // no-op, kept for compatibility
 ```
 
 ---
@@ -430,11 +476,11 @@ export default {
 - Private channels auto-prefix `private-` -- don't add it yourself (the code checks `channel.startsWith('private-')`)
 - Presence channels auto-prefix `presence-` -- same logic applies
 - `emitToUser()` sends to `private-user.{userId}` -- users must subscribe to this channel pattern
-- When using `emit()` with `exclude`, only the first socket ID in an array is used (BroadcastServer limitation)
+- `emit()`'s `exclude` takes socket IDs, not user IDs; every ID in an array is excluded
 - Broadcast files are dynamically imported from `app/Broadcasts/` using `bun.globSync`
 - The `Broadcast` class is legacy -- new code should use `emit()` and `channel()` directly
-- `handleWebSocketRequest()` and `storeWebSocketEvent()` are deprecated -- ws events are tracked internally by ts-broadcasting
-- `setBunSocket()` is deprecated -- use `setServer()` instead
+- There is no `handleWebSocketRequest()`: sockets upgraded on the app's own server were never part of the broadcast server, so they could not join channels. Clients connect to the broadcast server's `/ws`
+- There is no Stacks heartbeat or backpressure guard; use `createServer({ websocket: { idleTimeout, sendPings, backpressureLimit, closeOnBackpressureLimit } })`
 - Serverless mode uses API Gateway WebSocket for AWS Lambda with DynamoDB for connection management
 - Rate limiting defaults: 100 connections per IP, 50 messages/second, 64KB max payload, 300s ban duration
 - Redis adapter enables horizontal scaling across multiple server instances

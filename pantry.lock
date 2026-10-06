@@ -1041,7 +1041,7 @@
       "dependencies": {
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
-        "ts-broadcasting": "^0.0.10"
+        "ts-broadcasting": "^0.0.11"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -2181,12 +2181,12 @@
       },
       "optionalPeers": ["@types/node"]
     },
-    "ts-broadcasting@0.0.10": {
+    "ts-broadcasting@0.0.11": {
       "name": "ts-broadcasting",
-      "version": "0.0.10",
+      "version": "0.0.11",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-broadcasting/-/ts-broadcasting-0.0.10.tgz",
-      "integrity": "sha512-RpqP09Cp1Tgd4RhYUZ+dt+sYR8H6l0HK5zS2N8tucQ5+aXpkGc16e6lntWgqomktlxIpMbX0ytJEe5iuCYJjNQ==",
+      "resolved": "https://registry.npmjs.org/ts-broadcasting/-/ts-broadcasting-0.0.11.tgz",
+      "integrity": "sha512-lqn/VGfW/JiXY8TMtzq4RLu2QlK6Q8oLQg/G9zLBtp5gFoO4dfxihyXPSr/elmGCvV9keC7RbLva6cMSBkhnQg==",
       "bin": {
         "broadcast": "./dist/bin/cli.js"
       }

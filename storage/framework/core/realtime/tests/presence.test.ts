@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { channel } from '../src/channel'
 import { setServer } from '../src/server-instance'
+import { recordingServer } from './fixtures/realtime'
 
 // stacksjs/stacks#1877 R-4 — presence channel contract.
 // The Stacks `channel().presence()` wrapper composes the
@@ -13,14 +14,9 @@ describe('Channel.presence() composition (stacksjs/stacks#1877 R-4)', () => {
   let broadcasts: Array<{ channel: string, event: string, data: unknown }> = []
 
   beforeEach(() => {
-    broadcasts = []
-    setServer({
-      start: async () => {},
-      stop: async () => {},
-      broadcast: (ch: string, event: string, data: unknown) => {
-        broadcasts.push({ channel: ch, event, data })
-      },
-    } as any)
+    const recording = recordingServer()
+    broadcasts = recording.broadcasts
+    setServer(recording.server)
   })
 
   afterEach(() => {

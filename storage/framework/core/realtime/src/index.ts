@@ -20,24 +20,19 @@ export type { EmitOptions } from './emit'
 export { channel, channel as createChannel, Channel as StacksChannel } from './channel'
 export { broadcast as dispatchBroadcast, runBroadcast, Broadcast as LegacyBroadcast } from './broadcast'
 export type { BroadcastInstance } from './broadcast'
-// Backpressure guard for slow consumers (stacksjs/stacks#1877 R-2).
-// Opt-in via setBackpressureGuard; default is no-op.
-export { setBackpressureGuard, getBackpressureGuard } from './broadcast'
-export type { BackpressureGuardConfig } from './broadcast'
-
-// Heartbeat ping/pong for detecting half-closed sockets
-// (stacksjs/stacks#1877 R-5). Opt-in via setHeartbeatConfig.
-export { getHeartbeatConfig, markPong, runOneTick, setHeartbeatConfig } from './heartbeat'
-export type { HeartbeatConfig } from './heartbeat'
+// Dead-socket detection and slow-consumer handling are the broadcast
+// server's own: pass `websocket: { idleTimeout, sendPings,
+// backpressureLimit, closeOnBackpressureLimit }` to `createServer()`.
 
 // At-least-once replay buffer for reconnect (stacksjs/stacks#1877 R-3).
-// Opt-in via setReplayBuffer. Apps wire `replaySince(channel, seq)`
-// into their reconnect handler to re-send missed messages.
+// Opt-in via setReplayBuffer. Every broadcast on a buffered channel is
+// recorded and carries a top-level `seq`; apps wire `replaySince(channel,
+// seq)` into their reconnect handling to re-send missed messages.
 export { debugSnapshot, getReplayBuffer, pruneExpired, recordBroadcast, replaySince, setReplayBuffer } from './replay-buffer'
 export type { BufferedMessage, ReplayBufferConfig } from './replay-buffer'
-export { handleWebSocketRequest, storeWebSocketEvent } from './ws'
-// WebSocket authenticator wiring (stacksjs/stacks#1877 R-1). Install
-// once at server boot to require a valid token / cookie at the
-// handshake boundary — without it, the upgrade proceeds unauthed.
+export { storeWebSocketEvent } from './ws'
+// WebSocket authenticator (stacksjs/stacks#1877 R-1). Gates every upgrade
+// on the server `createServer()` starts; without one, upgrades proceed
+// unauthed.
 export { setWsAuthenticator, getWsAuthenticator } from './ws'
 export type { WsAuthenticator, WsAuthResult } from './ws'

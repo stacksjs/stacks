@@ -3,6 +3,13 @@ import { getServer } from './server-instance'
 export interface EmitOptions {
   private?: boolean
   presence?: boolean
+  /**
+   * Socket ID(s) to leave out - the `socket_id` each client receives in
+   * `connection_established` (`client.socketId()` in the client SDK),
+   * typically sent along with the request that caused the event so its
+   * sender does not get its own echo. Not user IDs: a user with two tabs
+   * has two sockets. Every ID in an array is excluded.
+   */
   exclude?: string | string[]
   driver?: string
 }
@@ -20,8 +27,8 @@ export interface EmitOptions {
  * // Emit to presence channel
  * emit('chat.room.1', 'message', { text: 'Hello' }, { presence: true })
  *
- * // Exclude specific users
- * emit('chat.room.1', 'message', { text: 'Hello' }, { exclude: 'user-123' })
+ * // Leave out the sender's socket (its socket ID, from the request)
+ * emit('chat.room.1', 'message', { text: 'Hello' }, { exclude: request.header('X-Socket-ID') })
  */
 export function emit<T = unknown>(
   channel: string,
@@ -50,15 +57,9 @@ export function emit<T = unknown>(
     }
   }
 
-  // Get exclude socket ID
-  const excludeSocketId = options?.exclude
-    ? Array.isArray(options.exclude)
-      ? options.exclude[0] // BroadcastServer only supports single socket exclusion
-      : options.exclude
-    : undefined
-
-  // Broadcast the event
-  server.broadcast(channelName, event, data, excludeSocketId)
+  // Broadcast the event, leaving out every excluded socket. This used to
+  // pass only the first ID of an array on.
+  server.broadcast(channelName, event, data, options?.exclude)
 }
 
 /**

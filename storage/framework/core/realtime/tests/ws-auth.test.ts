@@ -1,95 +1,96 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { getWsAuthenticator, handleWebSocketRequest, setWsAuthenticator } from '../src/ws'
-import { setServer } from '../src/server-instance'
+import type { WsAuthenticator } from '../src/ws'
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'bun:test'
+import { Broadcast } from 'ts-broadcasting'
+import { createServer, stopServer } from '../src/server-instance'
+import { getWsAuthenticator, setWsAuthenticator } from '../src/ws'
+import { randomPort, settle, subscriber } from './fixtures/realtime'
 
-// stacksjs/stacks#1877 R-1 — pins the contract that WebSocket
-// handshakes can be gated by an app-installed authenticator BEFORE
-// the upgrade goes through. Without an authenticator, the legacy
-// "unauthed upgrade" behavior is preserved.
+// stacksjs/stacks#1877 R-1 - the authenticator installed with
+// `setWsAuthenticator()` gates the WebSocket endpoint Stacks actually
+// serves: the broadcast server `createServer()` starts.
+//
+// It used to be consulted only by `handleWebSocketRequest()`, which nothing
+// called, while that server upgraded every request it got. These tests run
+// against the started server.
 
-// Minimal Bun.Server mock for upgrade testing.
-function mockServer(): { upgrade: (req: Request, opts?: { data?: unknown }) => boolean, lastUpgradeOpts: { data?: unknown } | undefined } {
-  let lastUpgradeOpts: { data?: unknown } | undefined
-  return {
-    upgrade(_req: Request, opts?: { data?: unknown }) {
-      lastUpgradeOpts = opts
-      return true // pretend the upgrade succeeded
-    },
-    get lastUpgradeOpts() {
-      return lastUpgradeOpts
-    },
-  } as any
+const port = randomPort()
+let appHook: ((req: Request, user: unknown) => unknown) | null = null
+
+beforeAll(async () => {
+  await createServer({
+    host: '127.0.0.1',
+    port,
+    // An app's own authorizer runs after Stacks' authenticator.
+    authorizeConnection: (req, user) => (appHook ? appHook(req, user) : true) as never,
+  })
+})
+
+afterAll(async () => {
+  await stopServer()
+})
+
+afterEach(() => {
+  setWsAuthenticator(null)
+  appHook = null
+})
+
+/**
+ * A plain GET on the upgrade path: a refusal answers with its own status;
+ * an accepted request reaches `server.upgrade()`, which a non-WebSocket
+ * request fails with a 400.
+ */
+async function upgrade(query = '', path = '/ws'): Promise<{ status: number, body: string }> {
+  const response = await fetch(`http://127.0.0.1:${port}${path}${query}`)
+  return { status: response.status, body: await response.text() }
 }
 
-describe('WebSocket handshake auth (stacksjs/stacks#1877 R-1)', () => {
-  beforeEach(() => {
-    setWsAuthenticator(null)
-    // Stub a "broadcast server" so handleWebSocketRequest doesn't 500.
-    setServer({ start: async () => {}, stop: async () => {} } as any)
+describe('setWsAuthenticator() on the broadcast server', () => {
+  test('without an authenticator, upgrades proceed', async () => {
+    expect((await upgrade()).status).toBe(400)
+    const sub = await subscriber(port, 'news')
+    sub.socket.close()
   })
 
-  afterEach(() => {
-    setWsAuthenticator(null)
-    setServer(null)
-  })
-
-  test('unauthed upgrade proceeds when no authenticator is installed', async () => {
-    const req = new Request('http://example.com/ws')
-    const server = mockServer()
-    const result = await handleWebSocketRequest(req, server as any)
-    expect(result).toBeUndefined() // undefined = upgrade succeeded
-  })
-
-  test('installed authenticator gates the upgrade', async () => {
+  test('an authenticator installed after the server started refuses the upgrade', async () => {
     setWsAuthenticator(() => ({ ok: false, status: 401, message: 'no token' }))
 
-    const req = new Request('http://example.com/ws')
-    const server = mockServer()
-    const result = await handleWebSocketRequest(req, server as any)
-    expect(result).toBeInstanceOf(Response)
-    expect(result!.status).toBe(401)
-    expect(await result!.text()).toBe('no token')
+    expect(await upgrade()).toEqual({ status: 401, body: 'no token' })
+    expect(await upgrade('', '/app')).toEqual({ status: 401, body: 'no token' })
+    await expect(subscriber(port, 'news')).rejects.toThrow()
   })
 
-  test('default status is 401 when authenticator denies without explicit status', async () => {
+  test('a refusal defaults to 401 Unauthorized, and honors a custom status', async () => {
     setWsAuthenticator(() => ({ ok: false }))
-    const result = await handleWebSocketRequest(new Request('http://example.com/ws'), mockServer() as any)
-    expect((result as Response).status).toBe(401)
-    expect(await (result as Response).text()).toBe('Unauthorized')
+    expect(await upgrade()).toEqual({ status: 401, body: 'Unauthorized' })
+
+    setWsAuthenticator(() => ({ ok: false, status: 403, message: 'Forbidden' }))
+    expect(await upgrade()).toEqual({ status: 403, body: 'Forbidden' })
   })
 
-  test('auth-pass attaches data to the upgrade', async () => {
-    setWsAuthenticator(() => ({ ok: true, data: { userId: 42, role: 'admin' } }))
-    const server = mockServer()
-    const result = await handleWebSocketRequest(new Request('http://example.com/ws'), server as any)
-    expect(result).toBeUndefined()
-    expect(server.lastUpgradeOpts).toEqual({ data: { userId: 42, role: 'admin' } })
-  })
-
-  test('async authenticator is awaited', async () => {
-    setWsAuthenticator(async () => {
-      await new Promise(r => setTimeout(r, 10))
-      return { ok: true, data: { delayed: true } }
+  test('an async authenticator is awaited, per request', async () => {
+    setWsAuthenticator(async (req) => {
+      await settle(10)
+      return new URL(req.url).searchParams.get('token') === 'ok' ? { ok: true } : { ok: false }
     })
-    const server = mockServer()
-    const result = await handleWebSocketRequest(new Request('http://example.com/ws'), server as any)
-    expect(result).toBeUndefined()
-    expect(server.lastUpgradeOpts).toEqual({ data: { delayed: true } })
+
+    expect((await upgrade('?token=ok')).status).toBe(400)
+    expect((await upgrade('?token=bad')).status).toBe(401)
   })
 
-  test('authenticator throw → 500 (don\'t leak internals)', async () => {
+  test('an authenticator that throws refuses with a 500 and does not leak the error', async () => {
     setWsAuthenticator(() => {
       throw new Error('internal db hiccup')
     })
 
     const orig = console.error
     const errors: string[] = []
-    console.error = (...args: unknown[]) => { errors.push(args.join(' ')) }
+    console.error = (...args: unknown[]) => {
+      errors.push(args.map(String).join(' '))
+    }
     try {
-      const result = await handleWebSocketRequest(new Request('http://example.com/ws'), mockServer() as any)
-      expect((result as Response).status).toBe(500)
-      expect(await (result as Response).text()).toBe('WebSocket auth error')
-      // Error logged but message not in response body
+      const refused = await upgrade()
+      expect(refused.status).toBe(500)
+      expect(refused.body).not.toContain('hiccup')
       expect(errors.some(e => e.includes('internal db hiccup'))).toBe(true)
     }
     finally {
@@ -97,9 +98,35 @@ describe('WebSocket handshake auth (stacksjs/stacks#1877 R-1)', () => {
     }
   })
 
+  test('the user and data it returns are what channel authorization sees', async () => {
+    setWsAuthenticator((req) => {
+      const token = new URL(req.url).searchParams.get('token')
+      return token === 'alice' ? { ok: true, user: { id: 7, name: 'Alice' }, data: { team: 'red' } } : { ok: false }
+    })
+    Broadcast.channel('private-team.{team}', (socket, params) => {
+      return socket.data.user?.id === 7 && socket.data.data?.team === params?.team
+    })
+
+    const sub = await subscriber(port, 'private-team.red', '/ws?token=alice')
+    expect(sub.socketId).toBeString()
+    sub.socket.close()
+  })
+
+  test('the app\'s own authorizeConnection still runs, and receives the authenticated user', async () => {
+    const seen: unknown[] = []
+    setWsAuthenticator(() => ({ ok: true, user: { id: 9 } }))
+    appHook = (_req, user) => {
+      seen.push(user)
+      return { ok: false, status: 429, message: 'Slow down' }
+    }
+
+    expect(await upgrade()).toEqual({ status: 429, body: 'Slow down' })
+    expect(seen).toEqual([{ id: 9 }])
+  })
+
   test('getWsAuthenticator round-trips with setWsAuthenticator', () => {
     expect(getWsAuthenticator()).toBeNull()
-    const fn = () => ({ ok: true as const })
+    const fn: WsAuthenticator = () => ({ ok: true })
     setWsAuthenticator(fn)
     expect(getWsAuthenticator()).toBe(fn)
   })

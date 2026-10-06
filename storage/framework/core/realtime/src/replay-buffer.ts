@@ -7,11 +7,17 @@
  * updates), reconnect-after-network-blip becomes a silent data loss.
  *
  * Fix: opt-in per-channel ring buffer that retains the most-recent N
- * messages with monotonic sequence IDs. On reconnect, the client sends
- * its last-seen seq; the server replays everything stored after that
- * point. Apps install via `setReplayBuffer({ channels, maxPerChannel,
- * ttlMs })`. Buffer is in-process — for cross-instance replay, route
- * through a shared store (Redis Streams, Postgres LISTEN/NOTIFY, etc.).
+ * messages with monotonic sequence IDs. Every broadcast on a buffered
+ * channel - whichever API sent it - is recorded through the hook
+ * `setServer()` installs on the server, and reaches clients with its
+ * sequence number as a top-level field: `{ event, channel, data, seq }`.
+ * A client keeps the last `seq` it saw per channel; on reconnect it
+ * sends that back (through a route or action of the app's), and the app
+ * re-sends `replaySince(channel, seq)`. Apps install via
+ * `setReplayBuffer({ channels, maxPerChannel, ttlMs })`. Buffer is
+ * in-process, and so are the sequence numbers - with several instances
+ * behind Redis each numbers its own copy, so route replay through a
+ * shared store (Redis Streams, Postgres LISTEN/NOTIFY, etc.) there.
  *
  * Memory shape: `Map<channel, RingBuffer<BufferedMessage>>`. Bounded by
  * `maxPerChannel` (default 100) so a chatty channel can't OOM the
@@ -22,8 +28,12 @@
 export interface ReplayBufferConfig {
   /**
    * Glob-ish channel-name patterns to buffer. `'*'` buffers every
-   * channel; `'orders.*'` buffers channels matching that prefix. The
-   * empty array (default) disables buffering for all channels.
+   * channel; `'orders.*'` buffers channels matching that prefix. A
+   * pattern matches the name with or without its `private-` /
+   * `presence-` prefix, so `'orders.*'` covers `private-orders.1` -
+   * the name `emit(..., { private: true })` and `channel().private()`
+   * send on. The empty array (default) disables buffering for all
+   * channels.
    */
   channels?: string[]
   /**
@@ -87,28 +97,31 @@ export function getReplayBuffer(): Readonly<BufferRegistry> | null {
   return registry
 }
 
+function matches(pattern: string, channel: string): boolean {
+  if (pattern === '*' || pattern === channel) return true
+  return pattern.endsWith('.*') && channel.startsWith(pattern.slice(0, -1))
+}
+
 /**
  * Returns true if the configured patterns cover `channel`. Pattern
  * matching is glob-ish: `*` matches any channel; otherwise a literal
  * prefix ending in `.*` (e.g. `orders.*`) matches any channel
- * starting with that prefix.
+ * starting with that prefix. Each pattern is tried against the full
+ * name and against it without a `private-` / `presence-` prefix:
+ * matching only the full name, `orders.*` missed `private-orders.1`.
  */
 function shouldBuffer(channel: string): boolean {
   if (!registry || registry.channels.length === 0) return false
-  for (const pattern of registry.channels) {
-    if (pattern === '*') return true
-    if (pattern === channel) return true
-    if (pattern.endsWith('.*') && channel.startsWith(pattern.slice(0, -1))) return true
-  }
-  return false
+  const bare = channel.replace(/^(?:private|presence)-/, '')
+  return registry.channels.some(pattern => matches(pattern, channel) || matches(pattern, bare))
 }
 
 /**
- * Called by the broadcast wrapper for every outbound message on a
- * matched channel. Records the message and assigns a monotonic seq.
- * Returns the seq for the caller to optionally include in the
- * outbound payload — clients store the latest seq locally and send
- * it back on reconnect via `replaySince`.
+ * Called for every outbound broadcast by the hook `setServer()`
+ * installs. Records the message under its full channel name (the one
+ * clients subscribe to) and assigns a monotonic seq, which the hook
+ * stamps onto the outbound frame as `seq`. Returns null for a channel
+ * no pattern covers.
  */
 export function recordBroadcast(channel: string, event: string, data: unknown): number | null {
   if (!registry || !shouldBuffer(channel)) return null
@@ -136,18 +149,18 @@ export function recordBroadcast(channel: string, event: string, data: unknown): 
 }
 
 /**
- * Replay every buffered message on `channel` with `seq > sinceSeq`.
- * Stale entries (older than `ttlMs`) are evicted on the way through
- * so callers don't see them. Returns the array of messages the
- * caller should re-send to the reconnecting client.
+ * Replay every buffered message on `channel` (the full name, e.g.
+ * `private-orders.1`) with `seq > sinceSeq`. Stale entries (older than
+ * `ttlMs`) are evicted on the way through so callers don't see them.
+ * Returns the array of messages the caller should re-send to the
+ * reconnecting client.
  *
  * @example
  * ```ts
- * // Inside the reconnect handler:
- * const missed = replaySince('orders', lastSeenSeq)
- * for (const msg of missed) {
- *   socket.send(JSON.stringify({ event: msg.event, data: msg.data, seq: msg.seq }))
- * }
+ * // The client kept `message.seq` from the last frame it received on
+ * // the channel and sends it back after reconnecting, e.g. to a route:
+ * const missed = replaySince('private-orders.1', lastSeenSeq)
+ * return missed.map(msg => ({ event: msg.event, channel: 'private-orders.1', data: msg.data, seq: msg.seq }))
  * ```
  */
 export function replaySince(channel: string, sinceSeq: number): BufferedMessage[] {

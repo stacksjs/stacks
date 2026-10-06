@@ -58,15 +58,12 @@ describe('Channel', () => {
 describe('Channel with setServer', () => {
   test('Channel works with a manually set server', async () => {
     // Import setServer to inject a fake server for this test
-    const { setServer, getServer } = await import('../src/server-instance')
-    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
+    const { setServer } = await import('../src/server-instance')
+    const { recordingServer } = await import('./fixtures/realtime')
 
-    // Set a real-shaped server object (not a mock.module, just a plain object)
-    setServer({
-      broadcast(channelName: string, event: string, data: any) {
-        broadcasted.push({ channel: channelName, event, data })
-      },
-    } as any)
+    // A real, unstarted BroadcastServer whose broadcast() calls are recorded
+    const { server, broadcasts: broadcasted } = recordingServer()
+    setServer(server)
 
     try {
       const ch = new Channel('orders')
