@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.82...v0.75.83)
+
+## 💥 Breaking Changes
+
+- feat(payments)!: a provider-neutral Payment facade (#665) ([b4702d1](https://github.com/stacksjs/stacks/commit/b4702d1)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#665](https://github.com/stacksjs/stacks/issues/665))
+
+## ✨ Features
+
+- **marketing**: environment setup and automated upgrades are features too ([ece647e](https://github.com/stacksjs/stacks/commit/ece647e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **payments**: subscription checkouts can start with a trial ([509e2d2](https://github.com/stacksjs/stacks/commit/509e2d2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: put the Laravel comparison in front of everyone ([b4ffa19](https://github.com/stacksjs/stacks/commit/b4ffa19)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: say what commerce ships beyond rates and zones ([8f6303b](https://github.com/stacksjs/stacks/commit/8f6303b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **marketing**: version stylesheet URLs so a deploy cannot pair new markup with old CSS ([86ac06f](https://github.com/stacksjs/stacks/commit/86ac06f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **logging**: drain once on exit, instead of re-arming beforeExit forever ([230e007](https://github.com/stacksjs/stacks/commit/230e007)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2868](https://github.com/stacksjs/stacks/issues/2868), [#2792](https://github.com/stacksjs/stacks/issues/2792))
+- **marketing**: bring all eighteen comparisons up to date, on both sides ([42958b7](https://github.com/stacksjs/stacks/commit/42958b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: refresh pantry.lock for stx 0.2.382 and ts-cloud 0.16.41 ([237cb42](https://github.com/stacksjs/stacks/commit/237cb42)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.81...v0.75.82)
 
 ## ✨ Features
