@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **345 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **346 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -37,7 +37,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `format` | 1 |
 | `forms` | 2 |
 | `gdpr` | 5 |
-| `general` | 50 |
+| `general` | 51 |
 | `generate` | 17 |
 | `inspire` | 1 |
 | `key` | 1 |
@@ -2258,6 +2258,15 @@ Synchronize metadata and submit an existing Safari version to App Review
 | `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | - |
 | `--platform` | Submit macos, ios, or all (defaults to config safariPlatforms) | value, required | - |
 | `--prepare-only` | Synchronize the listing without submitting it for review | boolean, optional | - |
+
+### `features`
+
+Show which framework feature bundles are active.
+
+- Usage: `$ buddy features`
+- Namespace: none
+- Aliases: none
+- Arguments: none
 
 ### `format`
 
