@@ -29,10 +29,19 @@ export interface Feature {
   blurb: string
   icon: string
   group: 'build' | 'run' | 'ship'
-  /** Bento treatment on the home page. Only three cells carry one. */
-  tone?: 'tint' | 'gradient'
-  span?: 'wide' | 'tall'
-  image?: string
+  /**
+   * Placement in the home-page bento. `cols` is the cell's width out of 12 at
+   * desktop, and the list order is the grid order, so every run of cells has
+   * to sum to 12 or the row leaves a hole (a test checks it). `visual` swaps
+   * the cell's plain body for a richer one built from real data: the
+   * feature's own code sample, its capability titles, its build targets, its
+   * AI providers, its content types, or its deploy steps.
+   */
+  bento: {
+    cols: 3 | 4 | 5 | 6 | 7 | 8
+    visual?: 'code' | 'capabilities' | 'targets' | 'providers' | 'deploy' | 'content'
+    tone?: 'tint' | 'gradient'
+  }
   page: {
     kicker: string
     headline: string
@@ -60,8 +69,7 @@ export const features: Feature[] = [
     blurb: 'Routing, STX views, models, actions, middleware, and validation in one typed application.',
     icon: 'i-hugeicons-layers-01',
     group: 'build',
-    image: '/assets/images/marketing-park-trail.svg',
-    span: 'wide',
+    bento: { cols: 7, visual: 'code' },
     page: {
       kicker: 'Build',
       headline: 'One typed application, not six libraries you glued together.',
@@ -117,8 +125,7 @@ export default defineModel({
     blurb: 'Jobs, batches, schedules, events, notifications, and worker-ready background workflows.',
     icon: 'i-hugeicons-mail-send-01',
     group: 'run',
-    image: '/assets/images/marketing-park-geyser.svg',
-    span: 'tall',
+    bento: { cols: 5, visual: 'capabilities' },
     page: {
       kicker: 'Run',
       headline: 'Work that outlives the request that started it.',
@@ -171,8 +178,7 @@ export default new Job({
     blurb: 'The same STX UI ships as a web app, an iOS or Android app, and a desktop app with a system tray, from one codebase.',
     icon: 'i-hugeicons-smart-phone-01',
     group: 'ship',
-    image: '/assets/images/marketing-park-summit.svg',
-    span: 'wide',
+    bento: { cols: 8, visual: 'targets' },
     page: {
       kicker: 'Ship',
       headline: 'One UI. Web, desktop, and mobile.',
@@ -216,7 +222,7 @@ export default {
     blurb: 'Posts, pages, taxonomy, media, a real dashboard, and generated content APIs.',
     icon: 'i-hugeicons-note-edit',
     group: 'build',
-    tone: 'tint',
+    bento: { cols: 4, visual: 'content', tone: 'tint' },
     page: {
       kicker: 'Build',
       headline: 'Content your editors will actually use, in the same repo.',
@@ -275,6 +281,7 @@ export default defineModel({
     blurb: 'Sessions, tokens, passkeys, social login, magic links, policies, guards, and rate limiting.',
     icon: 'i-hugeicons-shield-key',
     group: 'build',
+    bento: { cols: 4 },
     page: {
       kicker: 'Build',
       headline: 'Who is asking, and may they.',
@@ -320,6 +327,7 @@ Auth.define('access-dashboard', (user) => {
     blurb: 'Products, orders, customers, coupons, payments, shipping, tax, and gift cards, as models you already know how to query.',
     icon: 'i-hugeicons-shopping-bag-02',
     group: 'build',
+    bento: { cols: 4 },
     page: {
       kicker: 'Build',
       headline: 'A store is not a second application.',
@@ -373,6 +381,7 @@ export default new Action({
     blurb: 'A generated admin panel for every model, plus analytics, jobs, and settings, in 250-plus components.',
     icon: 'i-hugeicons-dashboard-square-01',
     group: 'build',
+    bento: { cols: 4 },
     page: {
       kicker: 'Build',
       headline: 'An admin panel that already knows your models.',
@@ -418,6 +427,7 @@ export default defineModel({
     blurb: 'Local, S3, signed URLs, uploads, visibility, and file utilities.',
     icon: 'i-hugeicons-folder-cloud',
     group: 'run',
+    bento: { cols: 4 },
     page: {
       kicker: 'Run',
       headline: 'The same file API in development and in production.',
@@ -469,6 +479,7 @@ export default new Action({
     blurb: 'Anthropic, OpenAI, and Ollama behind one chat driver, Bedrock alongside for AWS-hosted models, plus RAG, embeddings, and MCP.',
     icon: 'i-hugeicons-ai-chat-02',
     group: 'run',
+    bento: { cols: 8, visual: 'providers' },
     page: {
       kicker: 'Run',
       headline: 'One driver for chat. The right tool for the rest.',
@@ -495,7 +506,7 @@ export default new Action({
     const article = await Article.find(request.input('id'))
 
     const summary = await anthropic.prompt(
-      \`Summarize in two sentences:\n\n\${article.body}\`,
+      \`Summarize in two sentences:\\n\\n\${article.body}\`,
     )
 
     return { summary }
@@ -517,6 +528,7 @@ export default new Action({
     blurb: 'Unit, feature, HTTP, browser, and database tests with factories and helpers.',
     icon: 'i-hugeicons-test-tube-01',
     group: 'ship',
+    bento: { cols: 3 },
     page: {
       kicker: 'Ship',
       headline: 'Tests that talk to the real database, and finish anyway.',
@@ -566,6 +578,7 @@ describe('posts API', () => {
     blurb: 'Channels, broadcasts, websocket drivers, and app-level search workflows.',
     icon: 'i-hugeicons-satellite-02',
     group: 'run',
+    bento: { cols: 3 },
     page: {
       kicker: 'Run',
       headline: 'Push it out, and let people find it.',
@@ -613,7 +626,7 @@ export default {
     blurb: 'AWS, DNS, CDN, TLS, and mail, described in TypeScript config and shipped by Buddy.',
     icon: 'i-hugeicons-cloud-server',
     group: 'ship',
-    tone: 'gradient',
+    bento: { cols: 6, visual: 'deploy', tone: 'gradient' },
     page: {
       kicker: 'Ship',
       headline: 'The infrastructure is part of the repo.',

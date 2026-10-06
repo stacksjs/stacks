@@ -141,9 +141,10 @@ export const navMenus: NavMenu[] = [
 /**
  * Flat links, shown after the menus. Absolute rather than bare anchors: the
  * nav is on every page now, and `#start` on /compare scrolls to nothing.
+ * "Get started" is not here: it is the nav's call to action, a button at the
+ * far end, and listing it twice would be two controls with one intent.
  */
 export const navLinks: MegaAction[] = [
-  { label: 'Get started', url: '/#start' },
   { label: 'Docs', url: '/docs', native: true },
   { label: 'Blog', url: '/blog', native: true },
 ]

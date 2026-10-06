@@ -33,6 +33,7 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'resources/data/features.ts',
   'resources/data/highlight.ts',
   'resources/data/nav.ts',
+  'resources/data/stats.ts',
   'resources/data/use-cases.ts',
   'resources/partials/marketing-footer.stx',
   'resources/partials/marketing-head.stx',
@@ -40,6 +41,7 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'resources/partials/marketing-theme-toggle.stx',
   'resources/emails/subscription-confirmation.stx',
   'resources/assets/scripts/site-mode.js',
+  'public/assets/styles/home.css',
   'public/assets/styles/marketing.css',
   'public/assets/styles/theme.css',
 

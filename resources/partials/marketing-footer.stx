@@ -15,7 +15,7 @@ const footerYear = 2026
     <div class="footer-top">
       <div class="footer-brand">
         <a class="brand" href="/" aria-label="Stacks home">
-          <span class="brand-mark">S</span>
+          <img class="brand-mark" src="/images/logos/favicon.svg" alt="" width="30" height="30">
           <span class="brand-name">Stacks</span>
         </a>
         <p class="footer-blurb">

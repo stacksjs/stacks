@@ -18,7 +18,7 @@ const brandName = 'Stacks'
 <nav class="site-nav">
   <div class="nav-inner site-shell">
     <a class="brand" href="/" aria-label="Stacks home">
-      <span class="brand-mark">S</span>
+      <img class="brand-mark" src="/images/logos/favicon.svg" alt="" width="30" height="30">
       <span class="brand-name">{{ brandName }}</span>
     </a>
 
@@ -27,7 +27,7 @@ const brandName = 'Stacks'
         <div class="nav-item">
           <a class="nav-trigger" href="{{ menu.url }}" aria-haspopup="true">
             {{ menu.label }}
-            <i class="nav-caret i-hugeicons-arrow-down-01" aria-hidden="true"></i>
+            <i class="i-hugeicons-arrow-down-01 nav-caret" aria-hidden="true"></i>
           </a>
 
           <div class="mega {{ menu.variant === 'compact' ? 'mega--compact' : '' }}">
@@ -73,6 +73,9 @@ const brandName = 'Stacks'
       @endforeach
     </div>
 
-    <a class="nav-cta" href="https://github.com/stacksjs/stacks">GitHub</a>
+    <div class="nav-end">
+      <a class="nav-github" href="https://github.com/stacksjs/stacks" aria-label="Stacks on GitHub"><i class="i-hugeicons-github" aria-hidden="true"></i></a>
+      <a class="nav-cta" href="/#start">Get started</a>
+    </div>
   </div>
 </nav>
