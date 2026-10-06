@@ -13,6 +13,7 @@ import {
   registerPaymentDriver,
   StripeDriver,
   stripePaymentStatus,
+  WebhookNotConfiguredError,
   WebhookSignatureError,
 } from '../src/driver'
 
@@ -83,6 +84,11 @@ describe('Adyen webhook signing', () => {
 
     const [refused] = await driver.verifyWebhook({ payload: signedNotification({ ...base, eventCode: 'AUTHORISATION', success: 'false', reason: 'Not enough balance' }), headers: {} })
     expect(refused!.reason).toBe('Not enough balance')
+  })
+
+  it('says it is not configured, rather than that a delivery is forged, without its HMAC key', async () => {
+    const driver = new AdyenDriver({ apiKey: 'k', merchantAccount: 'm', environment: 'test' })
+    await expect(driver.verifyWebhook({ payload: '{}', headers: {} })).rejects.toBeInstanceOf(WebhookNotConfiguredError)
   })
 
   it('refuses a delivery signed with another key, or not signed at all', async () => {
@@ -407,6 +413,8 @@ describe('the Stripe driver', () => {
   it('refuses a webhook it cannot verify', async () => {
     await expect(stripeDriver().driver.verifyWebhook({ payload: '{}', headers: {} })).rejects.toThrow('no Stripe-Signature header')
     await expect(stripeDriver({}, '').driver.verifyWebhook({ payload: '{}', headers: { 'stripe-signature': 'x' } })).rejects.toThrow('STRIPE_WEBHOOK_SECRET')
+    // Its own class: a route answers "not configured", not "forged".
+    await expect(stripeDriver({}, '').driver.verifyWebhook({ payload: '{}', headers: { 'stripe-signature': 'x' } })).rejects.toBeInstanceOf(WebhookNotConfiguredError)
     const forged = stripeDriver({ constructEvent: async () => { throw new Error('No signatures found matching the expected signature') } })
     await expect(forged.driver.verifyWebhook({ payload: '{}', headers: { 'stripe-signature': 'x' } })).rejects.toThrow(WebhookSignatureError)
   })

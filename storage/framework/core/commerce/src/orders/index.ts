@@ -61,6 +61,7 @@ export {
   handlePaymentFailed,
   handlePaymentSucceeded,
   handleRefundSucceeded,
+  receivePaymentWebhook,
 } from './webhook'
 
 // Server-side cart-to-order total recompute (stacksjs/stacks#1879 Co-13).

@@ -42,7 +42,7 @@
  * ```
  */
 
-import type { PaymentEvent } from '@stacksjs/payments'
+import type { PaymentDriver, PaymentEvent } from '@stacksjs/payments'
 import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
 import type { OrderStatus } from './events'
@@ -321,6 +321,41 @@ export async function handleCommercePaymentEvent(event: PaymentEvent): Promise<b
     default:
       return false
   }
+}
+
+/**
+ * A provider's webhook delivery, start to finish: verified by the payment
+ * driver, applied to orders, answered the way the provider expects. This is
+ * what the framework mounts at `POST /webhooks/payments`.
+ *
+ * - No webhook secret configured: 401 `missing-config`, so nothing
+ *   unauthenticated is ever applied.
+ * - A signature that does not verify: 400 `invalid-signature`.
+ * - Anything failing while applying an event throws, which answers 500 and
+ *   makes the provider retry. The event's dedup row rolled back with it, so
+ *   the retry is applied, not skipped.
+ *
+ * `driver` defaults to the configured one; tests pass their own.
+ */
+export async function receivePaymentWebhook(request: Request, driver?: PaymentDriver): Promise<Response> {
+  const { paymentDriver, WebhookNotConfiguredError, WebhookSignatureError } = await import('@stacksjs/payments')
+  const payments = driver ?? paymentDriver()
+
+  let events: PaymentEvent[]
+  try {
+    events = await payments.verifyWebhook({ payload: await request.text(), headers: request.headers })
+  }
+  catch (error) {
+    if (error instanceof WebhookNotConfiguredError)
+      return Response.json({ ok: false, reason: 'missing-config' }, { status: 401 })
+    if (error instanceof WebhookSignatureError)
+      return Response.json({ ok: false, reason: 'invalid-signature' }, { status: 400 })
+    throw error
+  }
+
+  for (const event of events)
+    await handleCommercePaymentEvent(event)
+  return payments.acknowledgeWebhook()
 }
 
 // Export the individual handlers for direct testing.

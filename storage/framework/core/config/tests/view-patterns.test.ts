@@ -124,7 +124,7 @@ describe('both servers go through it (#2237)', () => {
 // `defaultViews: false` by hand. The route bundles already say what an app
 // mounts; the pages now follow them.
 
-const ALL_BUNDLES = new Set(['auth', 'dashboard', 'delivery', 'email', 'forms'])
+const ALL_BUNDLES = new Set(['auth', 'dashboard', 'delivery', 'email', 'forms', 'payments'])
 const NO_BUNDLES = new Set<string>()
 
 const AUTH_PAGES = ['login.stx', 'register.stx', 'forgot-password.stx', 'password', 'auth']

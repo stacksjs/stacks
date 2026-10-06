@@ -96,7 +96,7 @@ STACKS_DEFAULT_ROUTES=all
 STACKS_DEFAULT_ROUTES=none
 ```
 
-Available bundles are `auth`, `dashboard`, `delivery`, `email` and `forms`.
+Available bundles are `auth`, `dashboard`, `delivery`, `email`, `forms` and `payments`. `payments` mounts `POST /webhooks/payments`, which verifies a delivery with the configured payment driver and applies its payments and refunds to orders; like `delivery`, it mounts with the `commerce` feature when no bundles are named.
 Unset means all of them, so an app that says nothing keeps the behaviour it
 already had. Each is still gated on its own feature, so naming a bundle in an
 app that has the feature switched off mounts nothing.

@@ -22,7 +22,7 @@ import type {
   SubscriptionSummary,
   WebhookRequest,
 } from './types'
-import { assertMoney, headerOf, WebhookSignatureError } from './types'
+import { assertMoney, headerOf, WebhookNotConfiguredError, WebhookSignatureError } from './types'
 
 /**
  * The Stripe calls the driver needs, separated from the mapping so the mapping
@@ -311,7 +311,7 @@ export class StripeDriver implements PaymentDriver {
 
   async verifyWebhook(request: WebhookRequest): Promise<PaymentEvent[]> {
     if (!this.webhookSecret)
-      throw new Error('Stripe webhooks cannot be verified without the signing secret: set STRIPE_WEBHOOK_SECRET or payment.stripe.webhookSecret.')
+      throw new WebhookNotConfiguredError('stripe', 'Stripe webhooks cannot be verified without the signing secret: set STRIPE_WEBHOOK_SECRET or payment.stripe.webhookSecret.')
     const signature = headerOf(request.headers, 'stripe-signature')
     if (!signature)
       throw new WebhookSignatureError('stripe', 'there is no Stripe-Signature header')

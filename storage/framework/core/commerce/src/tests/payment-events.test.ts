@@ -1,8 +1,9 @@
-import type { PaymentEvent } from '@stacksjs/payments'
+import type { PaymentDriver, PaymentEvent } from '@stacksjs/payments'
+import { WebhookNotConfiguredError, WebhookSignatureError } from '@stacksjs/payments'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-import { handleCommercePaymentEvent } from '../orders/webhook'
+import { handleCommercePaymentEvent, receivePaymentWebhook } from '../orders/webhook'
 import { refreshDatabase } from './setup'
 
 /**
@@ -109,5 +110,49 @@ describe('handleCommercePaymentEvent', () => {
 
   it('leaves events it has no use for', async () => {
     expect(await handleCommercePaymentEvent(event({ type: 'subscription.updated' }))).toBe(false)
+  })
+})
+
+describe('receivePaymentWebhook', () => {
+  /** A driver whose verification is scripted, answering as Adyen does. */
+  function driverThat(verify: (payload: string) => PaymentEvent[]): PaymentDriver {
+    return {
+      verifyWebhook: async ({ payload }: { payload: string }) => verify(payload),
+      acknowledgeWebhook: () => new Response('[accepted]', { status: 202 }),
+    } as unknown as PaymentDriver
+  }
+  const delivery = (body = '{}') => new Request('https://app.test/webhooks/payments', { method: 'POST', body })
+
+  it('applies what the driver verified, and answers with the driver\'s acknowledgement', async () => {
+    const { orderId } = await seed('pi_8')
+    const response = await receivePaymentWebhook(delivery('signed'), driverThat((payload) => {
+      expect(payload).toBe('signed') // the body exactly as received
+      return [event({ id: 'evt_g', reference: 'pi_8' })]
+    }))
+    expect(response.status).toBe(202)
+    expect(await response.text()).toBe('[accepted]')
+    expect(await state(orderId, 'pi_8')).toMatchObject({ order: 'PROCESSING', payment: 'succeeded' })
+  })
+
+  it('applies nothing, and says so, while the webhook secret is not configured', async () => {
+    const response = await receivePaymentWebhook(delivery(), driverThat(() => {
+      throw new WebhookNotConfiguredError('stripe', 'set STRIPE_WEBHOOK_SECRET')
+    }))
+    expect(response.status).toBe(401)
+    expect(await response.json()).toEqual({ ok: false, reason: 'missing-config' })
+  })
+
+  it('refuses a delivery whose signature does not verify', async () => {
+    const response = await receivePaymentWebhook(delivery(), driverThat(() => {
+      throw new WebhookSignatureError('adyen', 'item PSP1 is signed with another key')
+    }))
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ ok: false, reason: 'invalid-signature' })
+  })
+
+  it('lets any other failure through, so the provider retries', async () => {
+    await expect(receivePaymentWebhook(delivery(), driverThat(() => {
+      throw new Error('database is locked')
+    }))).rejects.toThrow('database is locked')
   })
 })

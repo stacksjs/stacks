@@ -18,7 +18,7 @@ import type {
   WebhookRequest,
 } from './types'
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
-import { assertMoney, PaymentProviderError, PaymentUnsupportedError, WebhookSignatureError } from './types'
+import { assertMoney, PaymentProviderError, PaymentUnsupportedError, WebhookNotConfiguredError, WebhookSignatureError } from './types'
 
 /**
  * The Adyen driver (stacksjs/stacks#450), on Checkout API v72.
@@ -390,7 +390,7 @@ export class AdyenDriver implements PaymentDriver {
    */
   async verifyWebhook(request: WebhookRequest): Promise<PaymentEvent[]> {
     if (!this.config.hmacKey)
-      throw new Error('Adyen webhooks cannot be verified without the HMAC key: set ADYEN_HMAC_KEY or payment.adyen.hmacKey.')
+      throw new WebhookNotConfiguredError('adyen', 'Adyen webhooks cannot be verified without the HMAC key: set ADYEN_HMAC_KEY or payment.adyen.hmacKey.')
 
     let body: { notificationItems?: Array<{ NotificationRequestItem?: NotificationItem }> }
     try {

@@ -236,6 +236,15 @@ describe('mounted routes per bundle (#2229)', () => {
     expect(auth).not.toContain('POST /webhooks/email/ses')
   }, 120_000)
 
+  test('payments mounts the provider webhook, and only payments does', async () => {
+    const [payments, auth] = await Promise.all([
+      routesFor({ STACKS_DEFAULT_ROUTES: 'payments' }),
+      routesFor({ STACKS_DEFAULT_ROUTES: 'auth' }),
+    ])
+    expect(payments).toContain('POST /webhooks/payments')
+    expect(auth).not.toContain('POST /webhooks/payments')
+  }, 120_000)
+
   /**
    * Every bundle bootstrap mounts has to be a name the resolver knows.
    *

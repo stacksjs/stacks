@@ -153,6 +153,13 @@ if (mounts('delivery')) {
   await route.register(frameworkPath('defaults/routes/delivery.ts'))
 }
 
+// The payment provider's webhook, which applies payments and refunds to
+// orders. Gated with the commerce surface; it answers 401 until the driver's
+// webhook secret is configured.
+if (mounts('payments')) {
+  await route.register(frameworkPath('defaults/routes/payments.ts'))
+}
+
 // Social sign-in: `/auth/{provider}` + `/auth/{provider}/callback`
 // (stacksjs/stacks#2276). An opt-in bundle, NOT part of the implicit default
 // set or `all` — OAuth callback URLs in an app that configured no provider

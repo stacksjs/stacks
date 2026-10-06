@@ -281,6 +281,20 @@ export class PaymentProviderError extends Error {
 }
 
 /** A webhook delivery whose signature does not verify. */
+/**
+ * A driver asked to verify a webhook without the secret that verifies it. Not
+ * a bad delivery: the app has not been given the key, so every delivery
+ * would fail the same way until it is.
+ */
+export class WebhookNotConfiguredError extends Error {
+  readonly driver: string
+  constructor(driver: string, detail: string) {
+    super(detail)
+    this.name = 'WebhookNotConfiguredError'
+    this.driver = driver
+  }
+}
+
 export class WebhookSignatureError extends Error {
   constructor(driver: string, detail: string) {
     super(`The ${driver} webhook signature does not verify: ${detail}`)

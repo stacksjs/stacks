@@ -83,7 +83,7 @@ A checkout's `reference` and `metadata` are copied onto the payment or subscript
 
 ### Orders from payment webhooks
 
-`orders.handleCommercePaymentEvent` from `@stacksjs/commerce` applies a verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
+With commerce on, the framework mounts this for you at `POST /webhooks/payments` (the `payments` route bundle): point Stripe's endpoint there with `STRIPE_WEBHOOK_SECRET` set, or Adyen's standard webhook with `ADYEN_HMAC_KEY`. Until the secret is set it answers 401 and applies nothing; a signature that does not verify gets 400. To mount it yourself, `orders.receivePaymentWebhook(request)` is the whole handler. Underneath, `orders.handleCommercePaymentEvent` applies one verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
 
 ```ts
 import { orders } from '@stacksjs/commerce'
