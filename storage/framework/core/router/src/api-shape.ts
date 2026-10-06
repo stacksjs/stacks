@@ -14,10 +14,12 @@
 /**
  * Matches `application/json` plus any RFC-6838 structured-suffix subtype:
  * `application/vnd.api+json`, `application/ld+json`, `application/hal+json`,
- * `application/problem+json`, etc. Case-insensitive; tolerates a trailing
- * `;` (for `;charset=utf-8`) or end-of-string.
+ * `application/problem+json`, etc. Case-insensitive; tolerates whitespace
+ * around the type and before a `;` (`application/json ; charset=utf-8` is
+ * a valid header), and the subtype stops at the parameters - `.+` used to run
+ * on into them, so `application/x; a=b+json` counted as JSON.
  */
-export const JSON_CONTENT_TYPE = /^application\/(?:json|.+\+json)(?:;|$)/i
+export const JSON_CONTENT_TYPE = /^\s*application\/(?:json|[^\s;]+\+json)\s*(?:;|$)/i
 
 /**
  * Returns true when responses to this request should default to JSON.

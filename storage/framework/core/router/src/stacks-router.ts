@@ -4628,6 +4628,21 @@ function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = '
 }
 
 /**
+ * Add one form field to the parsed body. A key sent more than once - a
+ * multi-select, a set of checkboxes, `tags=a&tags=b` - becomes an array of
+ * every value, as the same keys in a query string do. It was assigned, so
+ * only the last value survived and the rest were dropped without a word.
+ */
+function addFormValue(body: Record<string, unknown>, key: string, value: unknown): void {
+  if (!Object.hasOwn(body, key))
+    body[key] = value
+  else if (Array.isArray(body[key]))
+    (body[key] as unknown[]).push(value)
+  else
+    body[key] = [body[key], value]
+}
+
+/**
  * Parse request body and attach to request object
  */
 async function parseRequestBody(req: EnhancedRequest): Promise<void> {
@@ -4636,6 +4651,9 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
   ;req._bodyParsed = true
 
   const contentType = req.headers.get('content-type') || ''
+  // Media types are case-insensitive: `Application/X-WWW-Form-Urlencoded` is
+  // a form. Compared as written, it left the body silently unparsed.
+  const mediaType = contentType.toLowerCase()
 
   try {
     if (contentType === 'application/json' || JSON_CONTENT_TYPE.test(contentType)) {
@@ -4670,18 +4688,18 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
         }
       }
     }
-    else if (contentType.includes('application/x-www-form-urlencoded')) {
+    else if (mediaType.includes('application/x-www-form-urlencoded')) {
       const text = await req.clone().text()
       const params = new URLSearchParams(text)
-      const formBody: Record<string, string> = {}
+      const formBody: Record<string, unknown> = Object.create(null)
       params.forEach((value, key) => {
-        formBody[key] = value
+        addFormValue(formBody, key, value)
       })
       ;req.formBody = formBody
     }
-    else if (contentType.includes('multipart/form-data')) {
+    else if (mediaType.includes('multipart/form-data')) {
       const formData = await req.clone().formData()
-      const formBody: Record<string, unknown> = {}
+      const formBody: Record<string, unknown> = Object.create(null)
       const files: Record<string, File | File[]> = {}
 
       formData.forEach((value, key) => {
@@ -4699,7 +4717,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
           }
         }
         else {
-          formBody[key] = value
+          addFormValue(formBody, key, value)
         }
       })
 
