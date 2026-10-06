@@ -61,7 +61,7 @@ export default {
 
 Every driver has the same shape: `configure(config)` once, then
 `chat(messages, options)` resolving to an `AIResult` -
-`{ content, model, usage, finishReason }` - and `streamChat(messages, options)`
+`{ content, toolCalls?, model, usage, finishReason }` - and `streamChat(messages, options)`
 yielding text. A system prompt is `options.system` (Anthropic, Bedrock) or a
 `system` message (all of them).
 
@@ -127,6 +127,45 @@ if (await ollama.isRunning()) {
   const installed = await ollama.listModels()
 }
 ```
+
+### Tool calls
+
+Offer tools with `tools`, run what the model asks for, and send the results
+back. `AIResult.toolCalls` is the same shape from every driver -
+`{ id, name, arguments }`, with `arguments` already parsed - and
+`assistantTurn()` / `toolResultsTurn()` build the next request's messages,
+which each driver translates to its provider's format.
+
+```typescript
+import type { AIMessage, AITool } from '@stacksjs/ai'
+import { assistantTurn, createAIClient, toolResultsTurn } from '@stacksjs/ai'
+
+const tools: AITool[] = [{
+  name: 'get_weather',
+  description: 'Current weather for a city',
+  parameters: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] },
+}]
+
+const client = createAIClient({ default: 'anthropic' })
+const messages: AIMessage[] = [{ role: 'user', content: 'Is it raining in Paris?' }]
+
+let result = await client.generate(messages, { tools })
+while (result.toolCalls) {
+  const outputs = await Promise.all(result.toolCalls.map(async call => ({
+    toolCallId: call.id,
+    name: call.name, // Ollama matches results by name
+    content: JSON.stringify(await getWeather(call.arguments.city as string)),
+  })))
+  messages.push(assistantTurn(result), toolResultsTurn(outputs))
+  result = await client.generate(messages, { tools })
+}
+console.log(result.content)
+```
+
+`toolChoice` is `'auto'`, `'required'`, `'none'` or `{ name }`. Ollama has no
+way to force a call, so `'required'` and `{ name }` are refused there rather
+than ignored. `streamChat()` streams text only; use `chat()` when the model
+may call a tool.
 
 ### Structured output
 
@@ -416,6 +455,7 @@ Each of `anthropic`, `openai`, `ollama` and `bedrock`:
 | `streamChat(messages, options)` | Text as it is generated (not `bedrock`) |
 | `openai.embed(input, model?)` / `ollama.embed(input, model?)` | Embedding vectors |
 | `ollama.listModels()` / `ollama.pullModel(name, onProgress?)` | Local models |
+| `assistantTurn(result)` / `toolResultsTurn(results)` | The messages that answer `result.toolCalls` |
 
 ### Speech Functions
 

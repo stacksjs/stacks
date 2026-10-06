@@ -10,10 +10,35 @@ export interface AIMessage {
 }
 
 export interface AIMessageContent {
-  type: 'text' | 'image_url' | 'image'
+  type: 'text' | 'image_url' | 'image' | 'tool_call' | 'tool_result'
   text?: string
   image_url?: { url: string, detail?: 'auto' | 'low' | 'high' }
   source?: { type: 'base64', media_type: string, data: string }
+  /** For `tool_call`: a call the assistant made, as `AIResult.toolCalls` reported it. */
+  toolCall?: AIToolCall
+  /** For `tool_result`: what the application's tool returned, sent back in a user turn. */
+  toolResult?: AIToolResult
+}
+
+/**
+ * A tool the model asked to call. The same shape from every driver: OpenAI's
+ * `tool_calls`, Anthropic's `tool_use`, Bedrock's `toolUse`, Ollama's
+ * `tool_calls`.
+ */
+export interface AIToolCall {
+  /** The provider's id for the call; a `tool_result` answers it by this id. */
+  id: string
+  name: string
+  arguments: Record<string, unknown>
+}
+
+export interface AIToolResult {
+  /** The `AIToolCall.id` this answers. */
+  toolCallId: string
+  /** Needed by Ollama, which matches results to calls by name. */
+  name?: string
+  content: string
+  isError?: boolean
 }
 
 export interface AIDriver {
@@ -109,7 +134,14 @@ export interface ChatCompletionOptions {
 }
 
 export interface AIResult {
+  /** The text the model wrote; `''` when it only called tools. */
   content: string
+  /**
+   * The tools the model asked to call, in order. Absent when it called none.
+   * The structured-output tool `responseFormat` uses is internal: its JSON is
+   * `content`, and it never appears here.
+   */
+  toolCalls?: AIToolCall[]
   model: string
   usage?: {
     promptTokens: number

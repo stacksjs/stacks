@@ -80,6 +80,24 @@ const result = await bedrock.chat([{ role: 'user', content: 'Hello' }], { system
 - `buddy ai:access` (or `requestModelAccess()`) makes the models in
   `config/ai.ts` invocable and reports each one.
 
+## Tool Calls
+
+```typescript
+import { assistantTurn, toolResultsTurn } from '@stacksjs/ai'
+
+const result = await client.generate(messages, { tools })
+// result.toolCalls: [{ id, name, arguments }] - same shape from every driver
+messages.push(assistantTurn(result), toolResultsTurn(
+  result.toolCalls!.map(call => ({ toolCallId: call.id, name: call.name, content: run(call) })),
+))
+```
+
+- `content` is the model's text, `''` when it only called tools.
+- The `responseFormat` structured-output tool is internal: its JSON is
+  `content`, never a tool call.
+- Ollama refuses `toolChoice: 'required'` / `{ name }`; it cannot force a call.
+- `streamChat()` streams text only.
+
 ## Provider-Neutral Client
 
 Use the config-driven client for application features that can run against

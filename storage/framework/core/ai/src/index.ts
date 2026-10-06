@@ -47,6 +47,10 @@ export * from './utils/client-bedrock-runtime'
 // source formats so apps can switch providers without rewriting.
 export { buildMessageWithImages, normalizeMessagesForProvider } from './utils/vision'
 
+// Tool round trips across drivers: `AIResult.toolCalls` in, then the
+// assistant's turn and the results back out.
+export { assistantTurn, toolResultsTurn } from './utils/tools'
+
 // HTTP retry helper for 429/5xx (stacksjs/stacks#1878 A-5).
 export { fetchWithRetry } from './utils/retry'
 export type { RetryConfig } from './utils/retry'

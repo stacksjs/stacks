@@ -44,6 +44,16 @@ function toOpenAIContent(block: AIMessageContent): unknown {
  */
 function toAnthropicContent(block: AIMessageContent): unknown {
   if (block.type === 'text') return { type: 'text', text: block.text ?? '' }
+  if (block.type === 'tool_call' && block.toolCall)
+    return { type: 'tool_use', id: block.toolCall.id, name: block.toolCall.name, input: block.toolCall.arguments }
+  if (block.type === 'tool_result' && block.toolResult) {
+    return {
+      type: 'tool_result',
+      tool_use_id: block.toolResult.toolCallId,
+      content: block.toolResult.content,
+      ...(block.toolResult.isError ? { is_error: true } : {}),
+    }
+  }
   if (block.type === 'image' && block.source)
     return { type: 'image', source: block.source }
   if (block.type === 'image_url' && block.image_url) {

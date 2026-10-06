@@ -5,10 +5,10 @@
  * Supports chat completions, streaming, and embeddings.
  */
 
-import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
+import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIToolCall, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { parseToolArguments, toChatCompletionMessages } from '../../utils/tools'
 import { recordUsage } from '../../utils/usage'
-import { normalizeMessagesForProvider } from '../../utils/vision'
 
 export interface OpenAIDriverConfig extends AIDriverConfig {
   apiKey: string
@@ -226,7 +226,7 @@ export async function chat(
   // (stacksjs/stacks#1878 A-3). Apps that authored messages with
   // Anthropic-style `{ type: 'image', source: {...} }` blocks
   // (or use cross-driver helpers) get the right shape.
-  const normalizedMessages = normalizeMessagesForProvider(messages, 'openai')
+  const normalizedMessages = toChatCompletionMessages(messages, { argumentsAsString: true })
 
   // Track wall-clock duration for usage reporters (#1878 A-6).
   const startedAt = Date.now()
@@ -280,8 +280,21 @@ export async function chat(
     throw new Error('OpenAI API returned empty choices')
   }
 
+  // With a tool call, OpenAI sends `content: null` and the calls in
+  // `tool_calls`. This returned the null as `content` and dropped the calls.
+  const message = data.choices[0].message as {
+    content: string | null
+    tool_calls?: Array<{ id: string, function: { name: string, arguments: string } }>
+  }
+  const toolCalls: AIToolCall[] = (message.tool_calls ?? []).map(call => ({
+    id: call.id,
+    name: call.function.name,
+    arguments: parseToolArguments(call.function.arguments, call.function.name),
+  }))
+
   const result: AIResult = {
-    content: data.choices[0].message.content,
+    content: message.content ?? '',
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
     model: data.model,
     usage: {
       promptTokens: data.usage?.prompt_tokens || 0,
@@ -335,7 +348,7 @@ export async function* streamChat(
       top_p: topP,
       stop,
       stream: true,
-      messages: normalizeMessagesForProvider(messages, 'openai'),
+      messages: toChatCompletionMessages(messages, { argumentsAsString: true }),
     }),
   })
 

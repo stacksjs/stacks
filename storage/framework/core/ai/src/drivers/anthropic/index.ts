@@ -5,7 +5,7 @@
  * Supports chat completions and streaming.
  */
 
-import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
+import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIToolCall, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
 import { recordUsage } from '../../utils/usage'
 import { normalizeMessagesForProvider } from '../../utils/vision'
@@ -254,19 +254,24 @@ export async function chat(
     throw new Error('Claude API returned empty content')
   }
 
-  // Extract the content. For tool-use-as-json, the response is a
-  // tool_use block whose `input` field holds the structured object;
-  // we JSON.stringify it for the `content` string field so callers
-  // can JSON.parse back out. For freeform, the first text block.
-  const block = data.content.find((b: { type: string }) => b.type === 'tool_use')
-    ?? data.content.find((b: { type: string }) => b.type === 'text')
-    ?? data.content[0]
-  const content = block?.type === 'tool_use'
-    ? JSON.stringify(block.input)
-    : (block?.text ?? '')
+  // The structured-output tool is internal: its input is the answer, so it
+  // becomes `content`. Every other tool_use block is a call the application
+  // has to run, reported in `toolCalls` - this used to stringify the first
+  // tool_use's input into `content`, dropping its name and id and any other
+  // call, so a tool could not be answered.
+  const outputTool = responseFormat && responseFormat.type !== 'text' ? buildAnthropicJsonTool(responseFormat).name : undefined
+  const blocks = data.content as Array<{ type: string, text?: string, id?: string, name?: string, input?: Record<string, unknown> }>
+  const structured = outputTool ? blocks.find(b => b.type === 'tool_use' && b.name === outputTool) : undefined
+  const toolCalls: AIToolCall[] = blocks
+    .filter(b => b.type === 'tool_use' && b !== structured)
+    .map(b => ({ id: b.id ?? '', name: b.name ?? '', arguments: b.input ?? {} }))
+  const content = structured
+    ? JSON.stringify(structured.input)
+    : blocks.filter(b => b.type === 'text').map(b => b.text ?? '').join('')
 
   const result: AIResult = {
     content,
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
     model: data.model,
     usage: {
       promptTokens: data.usage?.input_tokens || 0,
@@ -297,7 +302,8 @@ export async function chat(
 function mapAnthropicToolChoice(choice: NonNullable<ChatCompletionOptions['toolChoice']>): Record<string, unknown> {
   if (choice === 'auto') return { type: 'auto' }
   if (choice === 'required') return { type: 'any' }
-  if (choice === 'none') return { type: 'auto', disable_parallel_tool_use: true }
+  // `none` forbids a call. This mapped to `auto`, which still allowed one.
+  if (choice === 'none') return { type: 'none' }
   return { type: 'tool', name: choice.name }
 }
 

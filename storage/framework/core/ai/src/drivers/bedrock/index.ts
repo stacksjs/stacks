@@ -8,7 +8,7 @@
  */
 
 import type { ConverseCommandInput, ConverseCommandOutput } from '@stacksjs/ts-cloud/aws'
-import type { AIMessage, AIMessageContent, AIResult, ChatCompletionOptions } from '../../types'
+import type { AIMessage, AIMessageContent, AIResult, AIToolCall, ChatCompletionOptions } from '../../types'
 import { converse } from '../../utils/client-bedrock-runtime'
 import { recordUsage } from '../../utils/usage'
 
@@ -55,6 +55,17 @@ function imageBlock(mediaType: string, data: string): ConverseBlock {
 function contentBlock(part: AIMessageContent): ConverseBlock {
   if (part.type === 'text')
     return { text: part.text ?? '' }
+  if (part.type === 'tool_call' && part.toolCall)
+    return { toolUse: { toolUseId: part.toolCall.id, name: part.toolCall.name, input: part.toolCall.arguments } }
+  if (part.type === 'tool_result' && part.toolResult) {
+    return {
+      toolResult: {
+        toolUseId: part.toolResult.toolCallId,
+        content: [{ text: part.toolResult.content }],
+        ...(part.toolResult.isError ? { status: 'error' as const } : {}),
+      },
+    }
+  }
   if (part.type === 'image' && part.source)
     return imageBlock(part.source.media_type, part.source.data)
   if (part.type === 'image_url' && part.image_url) {
@@ -142,15 +153,21 @@ function toolConfig(options: ChatCompletionOptions): ConverseCommandInput['toolC
   return { tools: specs.map(toolSpec => ({ toolSpec })), ...(choice ? { toolChoice: choice } : {}) }
 }
 
-function resultContent(output: ConverseCommandOutput): string {
+/**
+ * The text and tool calls of a Converse answer. The structured-output tool is
+ * internal: its input is the answer, so it is the content, not a call.
+ */
+function readOutput(output: ConverseCommandOutput, outputTool: string | undefined): Pick<AIResult, 'content' | 'toolCalls'> {
   const blocks = output.output.message?.content ?? []
-  const toolUse = blocks.find((block): block is Extract<ConverseBlock, { toolUse: unknown }> => 'toolUse' in block)
-  if (toolUse)
-    return JSON.stringify(toolUse.toolUse.input)
-  return blocks
-    .filter((block): block is { text: string } => 'text' in block)
-    .map(block => block.text)
-    .join('')
+  const uses = blocks.filter((block): block is Extract<ConverseBlock, { toolUse: unknown }> => 'toolUse' in block)
+  const structured = outputTool ? uses.find(block => block.toolUse.name === outputTool) : undefined
+  const toolCalls: AIToolCall[] = uses
+    .filter(block => block !== structured)
+    .map(block => ({ id: block.toolUse.toolUseId, name: block.toolUse.name, arguments: block.toolUse.input ?? {} }))
+  const content = structured
+    ? JSON.stringify(structured.toolUse.input)
+    : blocks.filter((block): block is { text: string } => 'text' in block).map(block => block.text).join('')
+  return { content, ...(toolCalls.length > 0 ? { toolCalls } : {}) }
 }
 
 /**
@@ -176,8 +193,11 @@ export async function chat(messages: AIMessage[], options: ChatCompletionOptions
     ...(tools ? { toolConfig: tools } : {}),
   }, config.region)
 
+  const outputTool = options.responseFormat && options.responseFormat.type !== 'text'
+    ? structuredOutputTool(options.responseFormat).name
+    : undefined
   const result: AIResult = {
-    content: resultContent(response),
+    ...readOutput(response, outputTool),
     model,
     usage: {
       promptTokens: response.usage?.inputTokens ?? 0,

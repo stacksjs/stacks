@@ -5,7 +5,8 @@
  * Supports chat completions, streaming, and embeddings.
  */
 
-import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, OllamaAPIResponse } from '../../types'
+import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIToolCall, ChatCompletionOptions, OllamaAPIResponse } from '../../types'
+import { parseToolArguments, toOllamaMessages } from '../../utils/tools'
 
 export interface OllamaDriverConfig extends AIDriverConfig {
   host?: string
@@ -160,7 +161,14 @@ export async function chat(
     topP,
     stop,
     responseFormat,
+    tools,
+    toolChoice,
   } = options
+
+  // Ollama has no tool_choice: it can be offered tools, never made to call one.
+  if (toolChoice === 'required' || (toolChoice && typeof toolChoice === 'object'))
+    throw new Error('Ollama cannot be made to call a tool: offer the tools with toolChoice \'auto\', or use another driver')
+  const offered = toolChoice === 'none' ? [] : (tools ?? [])
 
   const format = responseFormat?.type === 'json_schema'
     ? responseFormat.json_schema.schema
@@ -173,9 +181,17 @@ export async function chat(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
-      messages,
+      messages: toOllamaMessages(messages),
       stream: false,
       format,
+      ...(offered.length > 0
+        ? {
+            tools: offered.map(tool => ({
+              type: 'function',
+              function: { name: tool.name, description: tool.description, parameters: tool.parameters ?? { type: 'object', properties: {} } },
+            })),
+          }
+        : {}),
       options: {
         temperature,
         top_p: topP,
@@ -190,9 +206,18 @@ export async function chat(
   }
 
   const data = (await response.json())
+  const calls = (data.message?.tool_calls ?? []) as Array<{ id?: string, function: { name: string, arguments: unknown } }>
+  const toolCalls: AIToolCall[] = calls.map((call, index) => ({
+    // Ollama matches a result to its call by tool name, and older servers
+    // send no id; one is made up so the cross-driver shape always has one.
+    id: call.id ?? `call_${index}`,
+    name: call.function.name,
+    arguments: parseToolArguments(call.function.arguments, call.function.name),
+  }))
 
   return {
-    content: data.message.content,
+    content: data.message?.content ?? '',
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
     model: data.model,
     usage: {
       promptTokens: data.prompt_eval_count || 0,
@@ -223,7 +248,7 @@ export async function* streamChat(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
-      messages,
+      messages: toOllamaMessages(messages),
       stream: true,
       options: {
         temperature,
