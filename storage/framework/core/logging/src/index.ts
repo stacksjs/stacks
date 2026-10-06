@@ -36,7 +36,17 @@ function registerFlushOnExit(): void {
   // The explicit-`process.exit` race is intentionally NOT covered here
   // — that's what the sync escape hatches (`log.syncError`/`log.fatal`)
   // are for; see their docs.
-  process.on('beforeExit', () => {
+  //
+  // `once`, not `on`. A `beforeExit` listener that schedules real
+  // event-loop work gets `beforeExit` emitted AGAIN when the loop next
+  // empties, and `flush()` schedules exactly that the moment a transport
+  // or an error reporter does I/O: a file write, or the POST that LogHQ
+  // and BugHQ make. With `on` the two never settle, so every process
+  // that reaches a natural exit spins on the handler instead of exiting,
+  // and `buddy typecheck` stayed alive indefinitely with its work long
+  // since done (stacksjs/stacks#2868). Draining once is the entire
+  // intent; re-arming was never part of it.
+  process.once('beforeExit', () => {
     void log.flush()
   })
 }
