@@ -1,5 +1,40 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.81...v0.75.82)
+
+## ✨ Features
+
+- **marketing**: a long tail of real packages, and where a deploy can go ([8b59586](https://github.com/stacksjs/stacks/commit/8b59586)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: rebuild the home page around every feature, in the new brand ([37ca106](https://github.com/stacksjs/stacks/commit/37ca106)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **branding**: return to the Stacks blue, taken from the logo's own plate ([d1e978b](https://github.com/stacksjs/stacks/commit/d1e978b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#0](https://github.com/stacksjs/stacks/issues/0), [#00296](https://github.com/stacksjs/stacks/issues/00296), [#1747](https://github.com/stacksjs/stacks/issues/1747), [#7](https://github.com/stacksjs/stacks/issues/7))
+- **upgrade**: raise an app's CI and container Bun to the framework's ([6c39f0f](https://github.com/stacksjs/stacks/commit/6c39f0f)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: a features status command, and offer to migrate after install ([0879a83](https://github.com/stacksjs/stacks/commit/0879a83)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **marketing**: make every feature sample match the real API, and show what was missing ([618b9cf](https://github.com/stacksjs/stacks/commit/618b9cf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mail**: mail:provision will not guess production ([1aa2bf3](https://github.com/stacksjs/stacks/commit/1aa2bf3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2865](https://github.com/stacksjs/stacks/issues/2865))
+- **buddy**: --dry-run belongs to the commands that implement it ([50f8d71](https://github.com/stacksjs/stacks/commit/50f8d71)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2865](https://github.com/stacksjs/stacks/issues/2865), [#853](https://github.com/stacksjs/stacks/issues/853), [#2359](https://github.com/stacksjs/stacks/issues/2359))
+- **mobile**: a back label with no room shows the chevron alone ([894ff0b](https://github.com/stacksjs/stacks/commit/894ff0b)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **config**: derive the feature list instead of restating it ([34f67e0](https://github.com/stacksjs/stacks/commit/34f67e0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2867](https://github.com/stacksjs/stacks/issues/2867), [#2848](https://github.com/stacksjs/stacks/issues/2848))
+
+## 📝 Documentation
+
+- **buddy**: list the features command in the command reference ([bad8cbd](https://github.com/stacksjs/stacks/commit/bad8cbd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **mobile**: the nav bar's back label gives way below 6.5rem ([01f45e2](https://github.com/stacksjs/stacks/commit/01f45e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: pin the relationship between the two FEATURE_NAMES lists ([75feaee](https://github.com/stacksjs/stacks/commit/75feaee)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2867](https://github.com/stacksjs/stacks/issues/2867), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.80...v0.75.81)
 
 ## 🐛 Bug Fixes
