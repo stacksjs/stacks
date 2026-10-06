@@ -1491,12 +1491,12 @@
       },
       "optionalPeers": ["@stacksjs/stx"]
     },
-    "@stacksjs/bunpress@0.2.16": {
+    "@stacksjs/bunpress@0.2.17": {
       "name": "@stacksjs/bunpress",
-      "version": "0.2.16",
+      "version": "0.2.17",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/bunpress/-/bunpress-0.2.16.tgz",
-      "integrity": "sha512-aHXXkoYvbTirOFqGqUcQOmlv07mAds4bR/oDKbLB1GqvR8tmjdopHugyir6IWzz9JX+3PpGzCG41HNM7l1UZFw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/bunpress/-/bunpress-0.2.17.tgz",
+      "integrity": "sha512-eDOrU35Saj9TGfZXxtTyk8pWsOZwOZMtY0vKQ66PQziO3WQyBtkerYqVywMHgR8S+7BirbrkQcu+ZCi2WYGFvA==",
       "dependencies": {
         "@cwcss/crosswind": "^0.2.16",
         "@stacksjs/clapp": "^0.2.0",
@@ -1533,26 +1533,26 @@
         "clarity": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/components@0.2.378": {
+    "@stacksjs/components@0.2.382": {
       "name": "@stacksjs/components",
-      "version": "0.2.378",
+      "version": "0.2.382",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.378.tgz",
-      "integrity": "sha512-RJ5KQ0Nd9LfFkhcHylPnYr2Tx5o+GCrdM1hPLZ177RP/bO6LV25hnQvDOAzzAATRQSJZ8s/gls8GJWjY99V+Eg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/components/-/components-0.2.382.tgz",
+      "integrity": "sha512-TymDfY1aqnQsLAA5DEvyAs0jIe2dmRl41oZBjodCTOZrD+IG2pvn9KTsPq51QEgrJ7SlBYpEIjn+uPBomiAKDA==",
       "dependencies": {
         "@iconify-json/f7": "^1.2.2",
-        "@stacksjs/stx": "0.2.378",
+        "@stacksjs/stx": "0.2.382",
         "@stacksjs/ts-css": "^0.3.2",
-        "bun-plugin-stx": "0.2.378",
+        "bun-plugin-stx": "0.2.382",
         "ts-syntax-highlighter": "^0.2.17"
       }
     },
-    "@stacksjs/desktop@0.2.378": {
+    "@stacksjs/desktop@0.2.382": {
       "name": "@stacksjs/desktop",
-      "version": "0.2.378",
+      "version": "0.2.382",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.378.tgz",
-      "integrity": "sha512-3POGmmAQeRcGNgKuN1Jn2CUIWb5/4dzMpFNO7qLXjkR/zF5E1/9WunrSQNvjhn1XOdIJNWXcKloPSSI4a2cGxg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/desktop/-/desktop-0.2.382.tgz",
+      "integrity": "sha512-HldXN9LwBAz+9iujhhSq8M645bIGTDu9wj4zsC36SSyhvO5B2+ca063i9q8LbCjoq1IQXaKKIwF3cfnR5jk4Tg==",
       "dependencies": {
         "craft-native": ">=0.0.111"
       }
@@ -1631,28 +1631,28 @@
         "rpx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/sanitizer@0.2.378": {
+    "@stacksjs/sanitizer@0.2.382": {
       "name": "@stacksjs/sanitizer",
-      "version": "0.2.378",
+      "version": "0.2.382",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.378.tgz",
-      "integrity": "sha512-m37GSsOHacH0vpPNBP1bVarzRgEdn40Ll5wS06g1EjEInppzA0KJQL3TIWMpZzI1RSUEQ4dnUaqN+f9saI5QQA=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.382.tgz",
+      "integrity": "sha512-CIdaayMSuY2oDWdOdu/eQknLjb8zVZ2JnXVmAzUE/Ey2lEB99ewPQpz5ZmMSNREyau7K0K+KbcsDtqIzFzQBlQ=="
     },
-    "@stacksjs/stx@0.2.378": {
+    "@stacksjs/stx@0.2.382": {
       "name": "@stacksjs/stx",
-      "version": "0.2.378",
+      "version": "0.2.382",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.378.tgz",
-      "integrity": "sha512-ddKaC5gRFtaLaohea/KZxkOrSU+lBILIXRvQ20I1IKjP0J0OaPfm9Z8TpAsUa+4nMiYI/ZwWBwQ5w3aIHLTDlg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.382.tgz",
+      "integrity": "sha512-Zubrn6LdC0jHt3YhkUjFKq23JjgoIx7YiTHOwwDZqZa6p7DLKyVVaAstNVhXo8GwPMT0QFK0bwSa2smnw49AWQ==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.16",
-        "@stacksjs/desktop": "0.2.378",
-        "@stacksjs/sanitizer": "0.2.378",
+        "@stacksjs/desktop": "0.2.382",
+        "@stacksjs/sanitizer": "0.2.382",
         "@stacksjs/ts-css": "^0.3.2",
         "@stacksjs/ts-i18n": "^0.1.11",
-        "bun-plugin-stx": "0.2.378",
+        "bun-plugin-stx": "0.2.382",
         "bunfig": "^0.15.19",
-        "stx-router": "0.2.378",
+        "stx-router": "0.2.382",
         "ts-broadcasting": "^0.0.11",
         "ts-images": "^0.2.22",
         "ts-syntax-highlighter": "^0.2.1"
@@ -1700,16 +1700,16 @@
         "cache": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.16.40": {
+    "@stacksjs/ts-cloud@0.16.41": {
       "name": "@stacksjs/ts-cloud",
-      "version": "0.16.40",
+      "version": "0.16.41",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.40.tgz",
-      "integrity": "sha512-q2km71gzbBUO6aSvJci2BMkNVXjzv0uiUl1K65QautSov9cULz+nV0Mpy4meHYkRqSpq9SUTjU28t9zJiqDesA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.16.41.tgz",
+      "integrity": "sha512-cWJlHvR3BymKEltqmdzh0PJa224z+ODjMuCXWougYZaJR7kvHBGeWrPq9VLaTEZRZK4lsMczKFhnZXT9Uv0bsQ==",
       "dependencies": {
         "@stacksjs/ts-xml": "^0.1.2",
-        "@ts-cloud/aws-types": "0.16.40",
-        "@ts-cloud/core": "0.16.40",
+        "@ts-cloud/aws-types": "0.16.41",
+        "@ts-cloud/core": "0.16.41",
         "hash-wasm": "^4.12.0"
       },
       "bin": {
@@ -1934,15 +1934,15 @@
         "@stacksjs/dtsx": "0.11.19"
       }
     },
-    "bun-plugin-stx@0.2.378": {
+    "bun-plugin-stx@0.2.382": {
       "name": "bun-plugin-stx",
-      "version": "0.2.378",
+      "version": "0.2.382",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.378.tgz",
-      "integrity": "sha512-3sldSzS82fQAVkKnwyc1HSWyhk8rCwU1I1YNydt487/ucKmrPOufBudtrFO6U66Be988aPZlhzDmeH573U/38A==",
+      "resolved": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.382.tgz",
+      "integrity": "sha512-MZVJUMaDt8vj5Erntc6UpOeJkDNH+J9lyrIFRCwdSdbQgMr9OO/B8DcTI6FIMqimPaq4IXFHToUW81pDHID/5Q==",
       "dependencies": {
-        "@stacksjs/stx": "0.2.378",
-        "stx-router": "0.2.378"
+        "@stacksjs/stx": "0.2.382",
+        "stx-router": "0.2.382"
       },
       "bin": {
         "serve": "./dist/serve.js",
