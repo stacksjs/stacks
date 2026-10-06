@@ -1,3 +1,6 @@
+// The stylesheet's text-import declaration travels with this module, so an app
+// typechecking it gets the declaration whatever its tsconfig includes.
+/// <reference path="./xterm-styles.d.ts" />
 import type { FitAddon } from '@xterm/addon-fit'
 import type { Terminal } from '@xterm/xterm'
 import { DashboardApiError } from './dashboard-api'
