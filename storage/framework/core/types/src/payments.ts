@@ -12,14 +12,21 @@ import type Stripe from 'stripe'
 
 export interface PaymentOptions {
   /**
-   * Payment provider
+   * Payment provider: the driver `paymentDriver()` returns. `stripe` or
+   * `adyen`, or the name of one registered with `registerPaymentDriver()`.
    */
-  driver: 'stripe'
+  driver: 'stripe' | 'adyen' | (string & {})
 
   /**
    * Stripe configuration
    */
   stripe: StripeConfig
+
+  /**
+   * Adyen configuration, for `driver: 'adyen'`. Each value falls back to its
+   * ADYEN_* environment variable.
+   */
+  adyen?: AdyenConfig
 
   /**
    * Default currency (ISO 4217 code)
@@ -81,6 +88,21 @@ export interface StripeConfig {
    * Webhook signing secret
    */
   webhookSecret?: string
+}
+
+export interface AdyenConfig {
+  /** Checkout API key (ADYEN_API_KEY). */
+  apiKey?: string
+  /** Merchant account the payments belong to (ADYEN_MERCHANT_ACCOUNT). */
+  merchantAccount?: string
+  /** `test` or `live` (ADYEN_ENVIRONMENT). Defaults to `test`. */
+  environment?: 'test' | 'live'
+  /** Your live endpoint prefix from the Customer Area (ADYEN_LIVE_URL_PREFIX). Required in `live`. */
+  liveUrlPrefix?: string
+  /** Hex HMAC key of your standard webhook (ADYEN_HMAC_KEY). Required to verify webhooks. */
+  hmacKey?: string
+  /** Prefix for the shopper reference made from a user id. Defaults to `user-`. */
+  shopperReferencePrefix?: string
 }
 
 export interface WebhookConfig {

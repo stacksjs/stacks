@@ -9,6 +9,11 @@ import type StripeSdk from 'stripe'
 export * from './payment'
 export { default as Payment } from './payment'
 
+// The provider-neutral driver contract, and the Stripe and Adyen drivers
+// (stacksjs/stacks#665, #450). `paymentDriver()` is the one config.payment.driver
+// selects.
+export * from './driver'
+
 // Billable modules
 export * from './billable'
 

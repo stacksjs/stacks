@@ -206,6 +206,13 @@ export interface FrameworkEnv {
   STRIPE_CONNECT_FEE_PERCENT: number | undefined
   STRIPE_CONNECT_WEBHOOK_SECRET: string | undefined
 
+  // Adyen
+  ADYEN_API_KEY: string | undefined
+  ADYEN_MERCHANT_ACCOUNT: string | undefined
+  ADYEN_ENVIRONMENT: 'test' | 'live' | undefined
+  ADYEN_LIVE_URL_PREFIX: string | undefined
+  ADYEN_HMAC_KEY: string | undefined
+
   // Frontend
   FRONTEND_APP_ENV: 'development' | 'staging' | 'production' | undefined
   FRONTEND_APP_URL: string | undefined

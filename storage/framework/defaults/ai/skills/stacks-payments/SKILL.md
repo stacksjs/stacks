@@ -10,6 +10,17 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 Full Stripe integration via the Payment facade. Uses Stripe API version `2026-01-28.clover`. The Stripe SDK is initialized from `services.stripe.secretKey` (sourced from `config/payment.ts`).
 
+## Payment Drivers (provider-neutral)
+
+`paymentDriver()` (also `Payment.driver()`) returns the driver `config.payment.driver` selects: `stripe` (default) or `adyen`, or one added with `registerPaymentDriver(name, factory)`. Source: `storage/framework/core/payments/src/driver/`.
+
+- Money is `{ amount, currency }` in minor units; `assertMoney` refuses floats before a request leaves.
+- Methods: `customer`, `charge(payer, money, paymentMethodId)`, `createPayment` (browser completes: `clientConfirmation` is a Stripe client secret or an Adyen session), `refund`, `checkout(payer, { mode, lines, successUrl, ... })`, `paymentMethods`, `removePaymentMethod`, `subscribe`, `cancelSubscription`, `subscriptions`, `verifyWebhook({ payload, headers })` -> `PaymentEvent[]`, `acknowledgeWebhook()`.
+- Unsupported operations throw `PaymentUnsupportedError` (driver + operation). Adyen has no catalog, subscriptions, invoices, coupons or portal.
+- Adyen: Checkout API v72, `X-API-Key`; shopper reference `user-<id>` (no PII); full refunds go to `/reversals`; webhooks verified per item with HMAC-SHA256 over 8 colon-joined fields under the hex key, acknowledged with 202.
+- The Stripe driver delegates to the existing billable modules, so idempotency keys and `stripe_id` handling are unchanged.
+- Everything below this section is Stripe's own API and returns Stripe objects.
+
 ## Key Paths
 - Core package: `storage/framework/core/payments/src/`
 - Payment facade: `storage/framework/core/payments/src/payment.ts`

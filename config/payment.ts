@@ -20,6 +20,19 @@ export default {
   },
 
   /**
+   * Adyen, for `driver: 'adyen'`. Adyen has no product catalog, subscriptions,
+   * invoices or billing portal; those calls throw naming the driver.
+   */
+  adyen: {
+    apiKey: env.ADYEN_API_KEY || '',
+    merchantAccount: env.ADYEN_MERCHANT_ACCOUNT || '',
+    environment: env.ADYEN_ENVIRONMENT === 'live' ? 'live' : 'test',
+    liveUrlPrefix: env.ADYEN_LIVE_URL_PREFIX || '',
+    // The HMAC key of your standard webhook, which verifies its deliveries.
+    hmacKey: env.ADYEN_HMAC_KEY || '',
+  },
+
+  /**
    * Marketplace payments. Off unless your app charges a customer on behalf of
    * a merchant. The Connect webhook endpoint has its own signing secret - the
    * account webhook secret above will not verify its deliveries.

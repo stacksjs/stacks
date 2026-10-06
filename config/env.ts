@@ -315,6 +315,31 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  ADYEN_API_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  ADYEN_MERCHANT_ACCOUNT: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  ADYEN_ENVIRONMENT: {
+    validation: schema.enum(['test', 'live']),
+    default: 'test',
+  },
+
+  ADYEN_LIVE_URL_PREFIX: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  ADYEN_HMAC_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
   MEILISEARCH_HOST: {
     validation: schema.string(),
     default: '',

@@ -29,6 +29,7 @@ import {
   processWebhook,
 } from './billable/webhook'
 import { connect } from './connect'
+import { paymentDriver } from './driver'
 
 // =============================================================================
 // Simple Payment Functions
@@ -430,6 +431,13 @@ export async function billingPortal(
 // =============================================================================
 
 export const Payment = {
+  /**
+   * The provider-neutral driver `config.payment.driver` selects - Stripe or
+   * Adyen - with money in minor units and statuses of our own. The functions
+   * below are Stripe's and return Stripe objects.
+   */
+  driver: paymentDriver,
+
   // Core payment operations
   charge,
   createPayment,

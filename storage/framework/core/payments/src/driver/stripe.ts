@@ -1,0 +1,304 @@
+import type Stripe from 'stripe'
+import type {
+  ChargeOptions,
+  CheckoutRequest,
+  CheckoutSession,
+  CreatePaymentOptions,
+  Customer,
+  Money,
+  Payer,
+  PaymentDriver,
+  PaymentEvent,
+  PaymentEventType,
+  PaymentOperation,
+  PaymentResult,
+  PaymentStatus,
+  RefundOptions,
+  RefundResult,
+  RefundStatus,
+  StoredPaymentMethod,
+  SubscriptionStatus,
+  SubscriptionSummary,
+  WebhookRequest,
+} from './types'
+import { assertMoney, headerOf, WebhookSignatureError } from './types'
+
+/**
+ * The Stripe calls the driver needs, separated from the mapping so the mapping
+ * is testable without Stripe. The defaults delegate to the billable modules
+ * Stacks already had, so a Stripe app keeps their idempotency keys,
+ * same-origin redirect checks and `stripe_id` bookkeeping unchanged.
+ */
+export interface StripeOperations {
+  customer: (payer: Payer) => Promise<Stripe.Customer>
+  createIntent: (payer: Payer, params: Stripe.PaymentIntentCreateParams, idempotencyKey?: string) => Promise<Stripe.PaymentIntent>
+  refund: (paymentIntentId: string, params: Stripe.RefundCreateParams & { idempotencyKey?: string }) => Promise<Stripe.Refund>
+  createCheckout: (payer: Payer, params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Checkout.Session>
+  listPaymentMethods: (customerId: string) => Promise<Stripe.PaymentMethod[]>
+  deletePaymentMethod: (payer: Payer, paymentMethodId: string) => Promise<unknown>
+  subscribe: (payer: Payer, type: string, lookupKey: string) => Promise<Stripe.Subscription>
+  cancelSubscription: (subscriptionId: string, atPeriodEnd: boolean) => Promise<Stripe.Subscription>
+  listSubscriptions: (customerId: string) => Promise<Stripe.Subscription[]>
+  constructEvent: (payload: string, signature: string, secret: string) => Promise<Stripe.Event>
+}
+
+const CAPABILITIES: ReadonlySet<PaymentOperation> = new Set<PaymentOperation>([
+  'customers',
+  'charge',
+  'createPayment',
+  'refund',
+  'checkout',
+  'paymentMethods',
+  'subscriptions',
+  'webhooks',
+])
+
+/**
+ * A PaymentIntent's status in our terms. `requires_capture` is authorised but
+ * not yet captured - no money has moved - so it is still `processing`.
+ */
+export function stripePaymentStatus(intent: Pick<Stripe.PaymentIntent, 'status' | 'last_payment_error'>): PaymentStatus {
+  switch (intent.status) {
+    case 'succeeded':
+      return 'succeeded'
+    case 'canceled':
+      return 'canceled'
+    case 'requires_action':
+      return 'requires_action'
+    case 'processing':
+    case 'requires_capture':
+      return 'processing'
+    default:
+      // requires_payment_method after a decline carries the decline.
+      return intent.last_payment_error ? 'failed' : 'requires_payment_method'
+  }
+}
+
+function refundStatus(status: string | null): RefundStatus {
+  if (status === 'succeeded' || status === 'failed' || status === 'canceled')
+    return status
+  return 'pending'
+}
+
+const SUBSCRIPTION_STATUSES = new Set<string>(['active', 'trialing', 'past_due', 'canceled', 'incomplete', 'unpaid', 'paused'])
+
+function subscriptionStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
+  if (status === 'incomplete_expired')
+    return 'canceled'
+  return SUBSCRIPTION_STATUSES.has(status) ? status as SubscriptionStatus : 'unknown'
+}
+
+function summarizeSubscription(subscription: Stripe.Subscription): SubscriptionSummary {
+  const item = subscription.items?.data?.[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined
+  // Newer API versions moved the period onto the item.
+  const periodEnd = item?.current_period_end ?? (subscription as { current_period_end?: number }).current_period_end
+  return {
+    id: subscription.id,
+    status: subscriptionStatus(subscription.status),
+    price: item?.price?.id ?? null,
+    currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
+    cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
+    raw: subscription,
+  }
+}
+
+const EVENT_TYPES: Record<string, PaymentEventType> = {
+  'payment_intent.succeeded': 'payment.succeeded',
+  'payment_intent.payment_failed': 'payment.failed',
+  'payment_intent.canceled': 'payment.canceled',
+  'charge.refunded': 'refund.succeeded',
+  'refund.failed': 'refund.failed',
+  'checkout.session.completed': 'checkout.completed',
+  'customer.subscription.created': 'subscription.created',
+  'customer.subscription.updated': 'subscription.updated',
+  'customer.subscription.deleted': 'subscription.canceled',
+  'invoice.paid': 'invoice.paid',
+  'invoice.payment_failed': 'invoice.payment_failed',
+}
+
+function toPayment(intent: Stripe.PaymentIntent): PaymentResult {
+  const status = stripePaymentStatus(intent)
+  return {
+    id: intent.id,
+    status,
+    amount: { amount: intent.amount, currency: intent.currency },
+    ...(intent.client_secret && (status === 'requires_payment_method' || status === 'requires_action')
+      ? { clientConfirmation: { provider: 'stripe' as const, clientSecret: intent.client_secret } }
+      : {}),
+    ...(intent.next_action?.redirect_to_url?.url ? { redirectUrl: intent.next_action.redirect_to_url.url } : {}),
+    ...(intent.last_payment_error?.message ? { failureReason: intent.last_payment_error.message } : {}),
+    raw: intent,
+  }
+}
+
+export interface StripeDriverOptions {
+  operations: StripeOperations
+  /** The account webhook's signing secret. */
+  webhookSecret?: string
+}
+
+export class StripeDriver implements PaymentDriver {
+  readonly name = 'stripe'
+  readonly capabilities = CAPABILITIES
+  private readonly ops: StripeOperations
+  private readonly webhookSecret?: string
+
+  constructor(options: StripeDriverOptions) {
+    this.ops = options.operations
+    this.webhookSecret = options.webhookSecret
+  }
+
+  async customer(payer: Payer): Promise<Customer> {
+    const customer = await this.ops.customer(payer)
+    return { id: customer.id, email: customer.email ?? null, name: customer.name ?? null }
+  }
+
+  async charge(payer: Payer, amount: Money, paymentMethod: string, options: ChargeOptions = {}): Promise<PaymentResult> {
+    assertMoney(amount)
+    const customer = await this.ops.customer(payer)
+    const intent = await this.ops.createIntent(payer, {
+      amount: amount.amount,
+      currency: amount.currency.toLowerCase(),
+      customer: customer.id,
+      payment_method: paymentMethod,
+      confirm: true,
+      // A server-side charge has no page to redirect back to.
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+      off_session: true,
+      ...(options.description ? { description: options.description } : {}),
+      metadata: { ...options.metadata, ...(options.reference ? { reference: options.reference } : {}) },
+    }, options.idempotencyKey)
+    return toPayment(intent)
+  }
+
+  async createPayment(payer: Payer, amount: Money, options: CreatePaymentOptions = {}): Promise<PaymentResult> {
+    assertMoney(amount)
+    const customer = await this.ops.customer(payer)
+    const intent = await this.ops.createIntent(payer, {
+      amount: amount.amount,
+      currency: amount.currency.toLowerCase(),
+      customer: customer.id,
+      automatic_payment_methods: { enabled: true },
+      ...(options.description ? { description: options.description } : {}),
+      metadata: { ...options.metadata, ...(options.reference ? { reference: options.reference } : {}) },
+    }, options.idempotencyKey)
+    return toPayment(intent)
+  }
+
+  async refund(paymentId: string, options: RefundOptions = {}): Promise<RefundResult> {
+    if (options.amount)
+      assertMoney(options.amount, 'refund amount')
+    const refund = await this.ops.refund(paymentId, {
+      ...(options.amount ? { amount: options.amount.amount } : {}),
+      ...(options.reason ? { reason: options.reason } : {}),
+      ...(options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : {}),
+    })
+    return {
+      id: refund.id,
+      paymentId,
+      status: refundStatus(refund.status),
+      amount: { amount: refund.amount, currency: refund.currency },
+      raw: refund,
+    }
+  }
+
+  async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
+    const customer = await this.ops.customer(payer)
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = request.lines.map((line) => {
+      if ('price' in line)
+        return { price: line.price, quantity: line.quantity }
+      if (!request.currency)
+        throw new TypeError('A checkout line priced with unitAmount needs the checkout\'s currency.')
+      return {
+        quantity: line.quantity,
+        price_data: { currency: request.currency.toLowerCase(), unit_amount: line.unitAmount, product_data: { name: line.name } },
+      }
+    })
+
+    const session = await this.ops.createCheckout(payer, {
+      customer: customer.id,
+      mode: request.mode,
+      success_url: request.successUrl,
+      ...(request.cancelUrl ? { cancel_url: request.cancelUrl } : {}),
+      ...(request.mode === 'setup' ? { currency: request.currency?.toLowerCase() } : { line_items: lineItems }),
+      ...(request.reference ? { client_reference_id: request.reference } : {}),
+      ...(request.metadata ? { metadata: request.metadata } : {}),
+    })
+
+    if (!session.url)
+      throw new Error('Stripe returned a checkout session without a url.')
+    return { id: session.id, url: session.url, expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : null, raw: session }
+  }
+
+  async paymentMethods(payer: Payer): Promise<StoredPaymentMethod[]> {
+    const customer = await this.ops.customer(payer)
+    const defaultId = typeof customer.invoice_settings?.default_payment_method === 'string'
+      ? customer.invoice_settings.default_payment_method
+      : customer.invoice_settings?.default_payment_method?.id ?? null
+    const methods = await this.ops.listPaymentMethods(customer.id)
+    return methods.map(method => ({
+      id: method.id,
+      type: method.type,
+      brand: method.card?.brand ?? null,
+      last4: method.card?.last4 ?? null,
+      expMonth: method.card?.exp_month ?? null,
+      expYear: method.card?.exp_year ?? null,
+      isDefault: method.id === defaultId,
+      raw: method,
+    }))
+  }
+
+  async removePaymentMethod(payer: Payer, paymentMethodId: string): Promise<void> {
+    await this.ops.deletePaymentMethod(payer, paymentMethodId)
+  }
+
+  async subscribe(payer: Payer, price: string, options: { type?: string } = {}): Promise<SubscriptionSummary> {
+    return summarizeSubscription(await this.ops.subscribe(payer, options.type ?? 'default', price))
+  }
+
+  async cancelSubscription(subscriptionId: string, options: { atPeriodEnd?: boolean } = {}): Promise<SubscriptionSummary> {
+    return summarizeSubscription(await this.ops.cancelSubscription(subscriptionId, options.atPeriodEnd ?? false))
+  }
+
+  async subscriptions(payer: Payer): Promise<SubscriptionSummary[]> {
+    const customer = await this.ops.customer(payer)
+    return (await this.ops.listSubscriptions(customer.id)).map(summarizeSubscription)
+  }
+
+  async verifyWebhook(request: WebhookRequest): Promise<PaymentEvent[]> {
+    if (!this.webhookSecret)
+      throw new Error('Stripe webhooks cannot be verified without the signing secret: set STRIPE_WEBHOOK_SECRET or payment.stripe.webhookSecret.')
+    const signature = headerOf(request.headers, 'stripe-signature')
+    if (!signature)
+      throw new WebhookSignatureError('stripe', 'there is no Stripe-Signature header')
+
+    let event: Stripe.Event
+    try {
+      event = await this.ops.constructEvent(request.payload, signature, this.webhookSecret)
+    }
+    catch (error) {
+      throw new WebhookSignatureError('stripe', (error as Error).message)
+    }
+
+    const object = event.data.object as unknown as Record<string, any>
+    const reference = event.type === 'charge.refunded' ? object.payment_intent ?? object.id : object.id
+    const amount = typeof object.amount === 'number' && object.currency
+      ? { amount: object.amount, currency: String(object.currency) }
+      : typeof object.amount_total === 'number' && object.currency
+        ? { amount: object.amount_total, currency: String(object.currency) }
+        : null
+    return [{
+      id: event.id,
+      type: EVENT_TYPES[event.type] ?? 'unknown',
+      providerType: event.type,
+      reference: typeof reference === 'string' ? reference : null,
+      merchantReference: object.client_reference_id ?? object.metadata?.reference ?? null,
+      amount,
+      raw: event,
+    }]
+  }
+
+  acknowledgeWebhook(): Response {
+    return Response.json({ received: true })
+  }
+}
