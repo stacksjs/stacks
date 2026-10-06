@@ -1,6 +1,20 @@
 import { createRequire } from 'node:module'
 import { db as _db } from '@stacksjs/database/runtime'
-import type { ManageTransaction, StoreTransactionOptions } from '@stacksjs/payments'
+import type {
+  ChargeOptions,
+  CheckoutRequest,
+  CheckoutSession,
+  ClientConfirmation,
+  CreatePaymentOptions,
+  Customer,
+  ManageTransaction,
+  Money,
+  PaymentDriver,
+  PaymentResult,
+  StoredPaymentMethod,
+  StoreTransactionOptions,
+  SubscriptionSummary,
+} from '@stacksjs/payments'
 import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
 
@@ -42,107 +56,82 @@ export interface StoredSubscriptionRow {
   last_used_at?: string
 }
 
-/**
- * Return shape for `newSubscription` / `updateSubscription` — pairs
- * the Stripe-side subscription with the most-recent payment intent so
- * callers can immediately handle 3DS / SCA flows without a second
- * round-trip to Stripe.
- */
-export interface NewSubscriptionResult {
-  subscription: Stripe.Response<Stripe.Subscription>
-  paymentIntent?: Stripe.PaymentIntent
-}
-
 export interface ActiveSubscriptionResult {
   subscription: StoredSubscriptionRow
-  providerSubscription: Stripe.Response<Stripe.Subscription>
+  providerSubscription: SubscriptionSummary
+}
+
+/** The configured payment driver - Stripe unless `config.payment.driver` says otherwise. */
+async function driver(): Promise<PaymentDriver> {
+  const { paymentDriver } = await import('@stacksjs/payments')
+  return paymentDriver()
+}
+
+/**
+ * Refuse a Stripe-only method when the app is configured for another
+ * provider, naming it - rather than reaching Stripe with keys the app does
+ * not have, or quietly mixing two providers' customers.
+ */
+async function requireStripe(operation: string): Promise<void> {
+  const { config } = await import('@stacksjs/config')
+  const configured = (config as { payment?: { driver?: string } }).payment?.driver ?? 'stripe'
+  if (configured !== 'stripe') {
+    const { PaymentUnsupportedError } = await import('@stacksjs/payments')
+    throw new PaymentUnsupportedError(configured, operation, 'it is a Stripe-only method')
+  }
 }
 
 export function createBillableMethods(_tableName: string) {
   const db = _db
   return {
-    async syncStripeCustomerDetails(model: any, options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
-      const { manageCustomer } = await import('@stacksjs/payments')
-      return await manageCustomer.syncStripeCustomerDetails(model, options)
+    // ─── Provider-neutral: the configured payment driver ─────────────────
+    // Money in minor units, results of our own (see `PaymentDriver`). These
+    // used to return Stripe objects whatever `config.payment.driver` said.
+
+    /** The provider's customer for this record, created on first use. */
+    async paymentCustomer(model: any): Promise<Customer> {
+      return (await driver()).customer(model)
     },
 
-    async createStripeUser(model: any, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
-      const { manageCustomer } = await import('@stacksjs/payments')
-      return await manageCustomer.createStripeCustomer(model, options)
-    },
-
-    async updateStripeUser(model: any, options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
-      const { manageCustomer } = await import('@stacksjs/payments')
-      return await manageCustomer.updateStripeCustomer(model, options)
-    },
-
-    async deleteStripeUser(model: any): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
-      const { manageCustomer } = await import('@stacksjs/payments')
-      return await manageCustomer.deleteStripeUser(model)
-    },
-
-    async createOrGetStripeUser(model: any, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
-      const { manageCustomer } = await import('@stacksjs/payments')
-      return await manageCustomer.createOrGetStripeUser(model, options)
-    },
-
-    async retrieveStripeUser(model: any): Promise<Stripe.Response<Stripe.Customer> | undefined> {
-      const { manageCustomer } = await import('@stacksjs/payments')
-      return await manageCustomer.retrieveStripeUser(model)
-    },
-
-    async defaultPaymentMethod(model: any) {
-      const { managePaymentMethod } = await import('@stacksjs/payments')
-      return await managePaymentMethod.retrieveDefaultPaymentMethod(model)
+    /** Charge a stored payment method, server side. */
+    async charge(model: any, amount: Money, paymentMethod: string, options: ChargeOptions = {}): Promise<PaymentResult> {
+      return (await driver()).charge(model, amount, paymentMethod, options)
     },
 
     /**
-     * A number is the local `payment_methods` row; a string is Stripe's own
-     * `pm_...` id, which is what a setup-intent callback hands back. Same rule
-     * as `deletePaymentMethod` below, so one method covers both callers.
+     * Start a payment the browser completes on the provider's SDK: the result
+     * carries a `clientConfirmation` (a Stripe client secret, an Adyen session).
      */
-    async setDefaultPaymentMethod(model: any, paymentMethod: number | string): Promise<Stripe.Response<Stripe.Customer>> {
-      const { managePaymentMethod } = await import('@stacksjs/payments')
-      return typeof paymentMethod === 'string'
-        ? await managePaymentMethod.setUserDefaultPayment(model, paymentMethod)
-        : await managePaymentMethod.setDefaultPaymentMethod(model, paymentMethod)
+    async createPayment(model: any, amount: Money, options: CreatePaymentOptions = {}): Promise<PaymentResult> {
+      return (await driver()).createPayment(model, amount, options)
     },
 
-    async deletePaymentMethod(model: any, paymentMethod: number | string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
-      const { managePaymentMethod } = await import('@stacksjs/payments')
-      return await managePaymentMethod.deletePaymentMethod(model, paymentMethod)
+    /** A hosted checkout page; send the payer to `url`. */
+    async checkout(model: any, request: CheckoutRequest): Promise<CheckoutSession> {
+      return (await driver()).checkout(model, request)
     },
 
-    async addPaymentMethod(model: any, paymentMethodId: string): Promise<Stripe.PaymentMethod> {
-      const { managePaymentMethod } = await import('@stacksjs/payments')
-      return await managePaymentMethod.addPaymentMethod(model, paymentMethodId)
+    /** The payment methods the provider holds for this record. */
+    async paymentMethods(model: any): Promise<StoredPaymentMethod[]> {
+      return (await driver()).paymentMethods(model)
     },
 
-    async paymentMethods(model: any, cardType?: string) {
-      const { managePaymentMethod } = await import('@stacksjs/payments')
-      return await managePaymentMethod.listPaymentMethods(model, cardType)
+    async removePaymentMethod(model: any, paymentMethodId: string): Promise<void> {
+      return (await driver()).removePaymentMethod(model, paymentMethodId)
     },
 
-    async newSubscription(model: any, type: string, lookupKey: string, options: Partial<Stripe.SubscriptionCreateParams> = {}): Promise<NewSubscriptionResult> {
-      const { manageSubscription } = await import('@stacksjs/payments')
-      const subscription = await manageSubscription.create(model, type, lookupKey, options)
-      const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-      const paymentIntent = (latestInvoice as Stripe.Invoice & { payment_intent?: Stripe.PaymentIntent })?.payment_intent
-      return { subscription, paymentIntent }
+    /**
+     * Subscribe to `price` (a Stripe lookup key). An incomplete subscription
+     * comes back with a `clientConfirmation` for its first payment.
+     */
+    async newSubscription(model: any, type: string, price: string): Promise<SubscriptionSummary> {
+      return (await driver()).subscribe(model, price, { type })
     },
 
-    async updateSubscription(model: any, type: string, lookupKey: string, options: Partial<Stripe.SubscriptionUpdateParams> = {}): Promise<NewSubscriptionResult> {
-      const { manageSubscription } = await import('@stacksjs/payments')
-      const subscription = await manageSubscription.update(model, type, lookupKey, options)
-      const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
-      const paymentIntent = (latestInvoice as Stripe.Invoice & { payment_intent?: Stripe.PaymentIntent })?.payment_intent
-      return { subscription, paymentIntent }
-    },
-
-    async cancelSubscription(model: any, providerId: string, options: Partial<Stripe.SubscriptionCancelParams> = {}): Promise<{ subscription: Stripe.Response<Stripe.Subscription> }> {
+    async cancelSubscription(model: any, providerId: string, options: { atPeriodEnd?: boolean } = {}): Promise<SubscriptionSummary> {
       // Only a subscription this record owns. `providerId` arrives from the
       // request body, and without this check any signed-in user could cancel
-      // anyone's subscription by naming its Stripe id.
+      // anyone's subscription by naming its id.
       const owned = await db.selectFrom('subscriptions')
         .where('provider_id', '=', providerId)
         .where('user_id', '=', model.id)
@@ -151,68 +140,103 @@ export function createBillableMethods(_tableName: string) {
       if (!owned)
         throw new SubscriptionNotOwnedError(providerId)
 
-      const { manageSubscription } = await import('@stacksjs/payments')
-      const subscription = await manageSubscription.cancel(providerId, options)
-      return { subscription }
+      return (await driver()).cancelSubscription(providerId, options)
     },
 
     async activeSubscription(model: any): Promise<ActiveSubscriptionResult | undefined> {
-      const { manageSubscription } = await import('@stacksjs/payments')
       const subscription = await db.selectFrom('subscriptions')
         .where('user_id', '=', model.id)
         .where('provider_status', '=', 'active')
         .selectAll()
         .executeTakeFirst() as StoredSubscriptionRow | undefined
+      if (!subscription)
+        return undefined
 
-      if (subscription) {
-        const providerSubscription = await manageSubscription.retrieve(model, subscription.provider_id || '')
-        return { subscription, providerSubscription }
-      }
-
-      return undefined
+      const providerSubscription = (await (await driver()).subscriptions(model)).find(entry => entry.id === subscription.provider_id)
+      return providerSubscription ? { subscription, providerSubscription } : undefined
     },
 
-    async checkout(model: any, priceIds: Array<{ priceId: string, quantity?: number }>, options: Partial<Stripe.Checkout.SessionCreateParams> & { enableTax?: boolean, allowPromotions?: boolean } = {}): Promise<Stripe.Response<Stripe.Checkout.Session>> {
-      const { manageCheckout, manageCustomer } = await import('@stacksjs/payments')
+    // ─── Stripe only ─────────────────────────────────────────────────────
+    // Stripe concepts with no counterpart elsewhere. Each refuses, naming the
+    // provider, when `config.payment.driver` is not `stripe`.
 
-      const newOptions: any = {}
-      if (options.enableTax) {
-        newOptions.automatic_tax = { enabled: true }
-        delete options.enableTax
-      }
-      if (options.allowPromotions) {
-        newOptions.allow_promotion_codes = true
-        delete options.allowPromotions
-      }
-
-      const customer = await manageCustomer.createOrGetStripeUser(model, {})
-      const defaultOptions = {
-        mode: 'payment',
-        customer: customer.id,
-        line_items: priceIds.map((item: any) => ({
-          price: item.priceId,
-          quantity: item.quantity || 1,
-        })),
-      }
-
-      const mergedOptions = { ...defaultOptions, ...newOptions, ...options }
-      return await manageCheckout.create(model, mergedOptions)
+    async syncStripeCustomerDetails(model: any, options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
+      await requireStripe('syncStripeCustomerDetails')
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.syncStripeCustomerDetails(model, options)
     },
 
-    async createSetupIntent(model: any, options: Stripe.SetupIntentCreateParams = {}): Promise<Stripe.Response<Stripe.SetupIntent>> {
-      const { manageSetupIntent } = await import('@stacksjs/payments')
-      return await manageSetupIntent.create(model, options)
+    async createStripeUser(model: any, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+      await requireStripe('createStripeUser')
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.createStripeCustomer(model, options)
+    },
+
+    async updateStripeUser(model: any, options: Stripe.CustomerUpdateParams): Promise<Stripe.Response<Stripe.Customer>> {
+      await requireStripe('updateStripeUser')
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.updateStripeCustomer(model, options)
+    },
+
+    async deleteStripeUser(model: any): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
+      await requireStripe('deleteStripeUser')
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.deleteStripeUser(model)
+    },
+
+    async createOrGetStripeUser(model: any, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+      await requireStripe('createOrGetStripeUser')
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.createOrGetStripeUser(model, options)
+    },
+
+    async retrieveStripeUser(model: any): Promise<Stripe.Response<Stripe.Customer> | undefined> {
+      await requireStripe('retrieveStripeUser')
+      const { manageCustomer } = await import('@stacksjs/payments')
+      return await manageCustomer.retrieveStripeUser(model)
+    },
+
+    /** The local `payment_methods` row marked default, which Stripe card setup maintains. */
+    async defaultPaymentMethod(model: any) {
+      const { managePaymentMethod } = await import('@stacksjs/payments')
+      return await managePaymentMethod.retrieveDefaultPaymentMethod(model)
     },
 
     /**
-     * A one-off payment intent for `amount` (in the currency's smallest unit),
-     * attached to the model's Stripe customer when it has one.
+     * A number is the local `payment_methods` row; a string is Stripe's own
+     * `pm_...` id, which is what a setup-intent callback hands back.
      */
-    async createPayment(model: any, amount: number, options: Partial<Stripe.PaymentIntentCreateParams> = {}): Promise<Stripe.Response<Stripe.PaymentIntent>> {
-      const { manageCharge } = await import('@stacksjs/payments')
-      // `createPayment` fills `amount` and a default `currency` in itself, so
-      // the partial it is handed here is complete by the time Stripe sees it.
-      return await manageCharge.createPayment(model, amount, options as Stripe.PaymentIntentCreateParams)
+    async setDefaultPaymentMethod(model: any, paymentMethod: number | string): Promise<void> {
+      await requireStripe('setDefaultPaymentMethod')
+      const { managePaymentMethod } = await import('@stacksjs/payments')
+      if (typeof paymentMethod === 'string')
+        await managePaymentMethod.setUserDefaultPayment(model, paymentMethod)
+      else
+        await managePaymentMethod.setDefaultPaymentMethod(model, paymentMethod)
+    },
+
+    /** Attach a card the browser collected with a Stripe SetupIntent, and record it locally. */
+    async addPaymentMethod(model: any, paymentMethodId: string): Promise<StoredPaymentMethod> {
+      await requireStripe('addPaymentMethod')
+      const { managePaymentMethod, toStoredPaymentMethod } = await import('@stacksjs/payments')
+      return toStoredPaymentMethod(await managePaymentMethod.addPaymentMethod(model, paymentMethodId))
+    },
+
+    /** Switch the active subscription to another price, prorated. */
+    async updateSubscription(model: any, type: string, price: string): Promise<SubscriptionSummary> {
+      await requireStripe('updateSubscription')
+      const { manageSubscription, summarizeSubscription } = await import('@stacksjs/payments')
+      return summarizeSubscription(await manageSubscription.update(model, type, price, {}))
+    },
+
+    /** A Stripe SetupIntent, for collecting a card in the browser without charging it. */
+    async createSetupIntent(model: any, options: Stripe.SetupIntentCreateParams = {}): Promise<{ id: string, clientConfirmation: ClientConfirmation }> {
+      await requireStripe('createSetupIntent')
+      const { manageSetupIntent } = await import('@stacksjs/payments')
+      const intent = await manageSetupIntent.create(model, options)
+      if (!intent.client_secret)
+        throw new Error('Stripe returned a SetupIntent without a client secret.')
+      return { id: intent.id, clientConfirmation: { provider: 'stripe', clientSecret: intent.client_secret } }
     },
 
     async storeTransaction(model: any, productId: number, options: StoreTransactionOptions): ReturnType<ManageTransaction['store']> {
@@ -221,6 +245,7 @@ export function createBillableMethods(_tableName: string) {
     },
 
     async subscriptionHistory(model: any): Promise<Stripe.ApiList<Stripe.Invoice>> {
+      await requireStripe('subscriptionHistory')
       const { manageInvoice } = await import('@stacksjs/payments')
       return await manageInvoice.list(model)
     },
@@ -241,6 +266,7 @@ export function createBillableMethods(_tableName: string) {
     // on a HostProfile rather than the User row).
 
     async connectAccount(model: any, options: { accountColumn?: string } = {}): Promise<Stripe.Account | null> {
+      await requireStripe('Stripe Connect (connectAccount)')
       const col = options.accountColumn || 'stripe_account_id'
       const accountId = (model._attributes ?? model)[col] as string | undefined
       if (!accountId) return null
@@ -259,6 +285,7 @@ export function createBillableMethods(_tableName: string) {
         modelTable?: string
       } = {},
     ): Promise<Stripe.Account> {
+      await requireStripe('Stripe Connect (createConnectAccount)')
       const col = options.accountColumn || 'stripe_account_id'
       const attrs = model._attributes ?? model
       let accountId = attrs[col] as string | undefined
@@ -304,6 +331,7 @@ export function createBillableMethods(_tableName: string) {
         accountColumn?: string
       },
     ): Promise<{ url: string, accountId: string }> {
+      await requireStripe('Stripe Connect (connectOnboardLink)')
       const col = options.accountColumn || 'stripe_account_id'
       const attrs = model._attributes ?? model
       const accountId = attrs[col] as string | undefined
@@ -328,6 +356,7 @@ export function createBillableMethods(_tableName: string) {
         modelTable?: string
       } = {},
     ): Promise<{ chargesEnabled: boolean, payoutsEnabled: boolean }> {
+      await requireStripe('Stripe Connect (syncConnectStatus)')
       const accCol = options.accountColumn || 'stripe_account_id'
       const chargesCol = options.chargesColumn || 'charges_enabled'
       const payoutsCol = options.payoutsColumn || 'payouts_enabled'
@@ -357,6 +386,7 @@ export function createBillableMethods(_tableName: string) {
         accountColumn?: string
       },
     ): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+      await requireStripe('Stripe Connect (chargeWithSplit)')
       const stripe = await getStripe()
       const accCol = options.accountColumn || 'stripe_account_id'
       const attrs = model._attributes ?? model
@@ -428,9 +458,11 @@ const BILLABLE_METHOD_NAMES: { readonly [TName in keyof BillableMethodBag]: true
   retrieveStripeUser: true,
   defaultPaymentMethod: true,
   setDefaultPaymentMethod: true,
-  deletePaymentMethod: true,
+  removePaymentMethod: true,
   addPaymentMethod: true,
   paymentMethods: true,
+  paymentCustomer: true,
+  charge: true,
   newSubscription: true,
   updateSubscription: true,
   cancelSubscription: true,

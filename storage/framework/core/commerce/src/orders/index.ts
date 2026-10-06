@@ -54,14 +54,13 @@ export {
   updateStatus,
 } from './update'
 
-// Stripe webhook handlers (stacksjs/stacks#1879 Co-17). Call
-// registerCommerceWebhookHandlers() once at boot; the payments
-// package's processWebhook() verifies signatures + dispatches.
+// Payment webhook handling (stacksjs/stacks#1879 Co-17, #665): pass each event
+// the payment driver's verifyWebhook() returns to handleCommercePaymentEvent().
 export {
-  handleChargeRefunded,
-  handlePaymentIntentFailed,
-  handlePaymentIntentSucceeded,
-  registerCommerceWebhookHandlers,
+  handleCommercePaymentEvent,
+  handlePaymentFailed,
+  handlePaymentSucceeded,
+  handleRefundSucceeded,
 } from './webhook'
 
 // Server-side cart-to-order total recompute (stacksjs/stacks#1879 Co-13).

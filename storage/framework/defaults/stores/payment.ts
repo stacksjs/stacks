@@ -28,6 +28,21 @@ function requestHeaders(write = false): Record<string, string> {
   return write ? withCsrfHeader(headers) : headers
 }
 
+/**
+ * The Stripe client secret in a payment endpoint's answer. The endpoints
+ * answer in the payment driver's terms - `clientConfirmation` - and this
+ * store confirms with Stripe.js, so a session for another provider (Adyen's
+ * Drop-in) is refused by name rather than handed to Stripe.
+ */
+function stripeClientSecret(result: { clientConfirmation?: { provider: string, clientSecret?: string } }): string {
+  const confirmation = result.clientConfirmation
+  if (!confirmation)
+    throw new Error('The payment needs nothing confirmed in the browser.')
+  if (confirmation.provider !== 'stripe' || !confirmation.clientSecret)
+    throw new Error(`This store confirms Stripe payments; the configured provider is ${confirmation.provider}.`)
+  return confirmation.clientSecret
+}
+
 const paymentStore = defineStore('payment', () => {
   // TODO: update the any types
   const loadingStates = ref<Record<string, boolean>>({})
@@ -69,10 +84,7 @@ const paymentStore = defineStore('payment', () => {
       throw new Error(`Failed to fetch setup intent: ${response.status}`)
     }
 
-    const client: any = await response.json()
-    const clientSecret = client.client_secret
-
-    return clientSecret
+    return stripeClientSecret(await response.json())
   }
 
   async function fetchPaymentIntent(id: number, productId: number): Promise<string> {
@@ -90,13 +102,10 @@ const paymentStore = defineStore('payment', () => {
       throw new Error(`Failed to create payment intent: ${response.status}`)
     }
 
-    const client: any = await response.json()
-    const clientSecret = client.client_secret
-
-    return clientSecret
+    return stripeClientSecret(await response.json())
   }
 
-  async function storeTransaction(id: number, productId: number): Promise<string> {
+  async function storeTransaction(id: number, productId: number): Promise<TransactionHistory> {
     const body = { productId }
 
     const url = `${apiUrl}/payments/store-transaction/${id}`
@@ -111,10 +120,9 @@ const paymentStore = defineStore('payment', () => {
       throw new Error(`Failed to store transaction: ${response.status}`)
     }
 
-    const client: any = await response.json()
-    const clientSecret = client.client_secret
-
-    return clientSecret
+    // The stored transaction. This read `client_secret` off it, which a
+    // transaction never has, so callers always got undefined.
+    return await response.json()
   }
 
   async function subscribeToPlan(body: { type: string, plan: string, description: string }): Promise<string> {
@@ -264,13 +272,15 @@ const paymentStore = defineStore('payment', () => {
     if (response.status !== 204) {
       const res = await response.json()
 
-      transactionHistory.value = res.data
+      // The endpoint answers the rows themselves; `.data` was always undefined.
+      transactionHistory.value = Array.isArray(res) ? res : (res?.data ?? [])
     }
 
     removeLoadingState('fetchTransactionHistory')
   }
 
-  async function deletePaymentMethod(paymentMethod: number): Promise<void> {
+  /** `paymentMethod` is the provider's id, as `paymentMethods` lists it. */
+  async function deletePaymentMethod(paymentMethod: string): Promise<void> {
     setLoadingState('deletePaymentMethod')
     const url = `${apiUrl}/payments/delete-payment-method/${authenticatedUserId()}`
 

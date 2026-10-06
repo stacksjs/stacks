@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { PaymentTransaction, User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { forBrowser } from '../../Payment/payment-response'
 
 interface SettledBillingRead {
   label: string
@@ -82,9 +83,12 @@ export default new Action({
       { label: 'Default payment method', result: defaultPaymentMethod },
     ]
 
+    // The provider's own objects stay on the server; the page reads the
+    // provider-neutral fields beside them.
+    const active = subscription.status === 'fulfilled' ? subscription.value as { subscription?: unknown, providerSubscription?: unknown } | undefined : undefined
     return {
-      subscription: subscription.status === 'fulfilled' ? subscription.value : null,
-      paymentMethods: paymentMethods.status === 'fulfilled' ? paymentMethods.value : [],
+      subscription: active ? { subscription: active.subscription, providerSubscription: forBrowser(active.providerSubscription) } : null,
+      paymentMethods: paymentMethods.status === 'fulfilled' ? forBrowser(paymentMethods.value as unknown[]) : [],
       defaultPaymentMethod: defaultPaymentMethod.status === 'fulfilled' ? defaultPaymentMethod.value : null,
       transactions: transactions.map(serializeBillingTransaction),
       unavailable: billingReadFailures(providerReads),

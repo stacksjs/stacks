@@ -184,6 +184,16 @@ export default defineModel({
       },
       factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.3 }),
     },
+
+    // Why the provider declined it, in the provider's words. Written by the
+    // payment webhook (`handleCommercePaymentEvent`) for ops triage.
+    failureReason: {
+      order: 16,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(1000),
+      },
+    },
   },
 
   dashboard: {

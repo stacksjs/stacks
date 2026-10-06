@@ -1,6 +1,6 @@
 ---
 name: stacks-orm
-description: Use when working with the Stacks ORM - defining models with defineModel(), model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough), attributes, traits, factories, computed properties, query building, transactions, or the 104 built-in models. Covers @stacksjs/orm, storage/framework/orm/, and storage/framework/defaults/app/Models/.
+description: Use when working with the Stacks ORM - defining models with defineModel(), model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough), attributes, traits, factories, computed properties, query building, transactions, or the 105 built-in models. Covers @stacksjs/orm, storage/framework/orm/, and storage/framework/defaults/app/Models/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Key Paths
 - Core ORM package: `storage/framework/core/orm/src/`
 - ORM implementation: `storage/framework/orm/`
-- Model definitions: `storage/framework/defaults/app/Models/` (104 models)
+- Model definitions: `storage/framework/defaults/app/Models/` (105 models)
 - Application models: `app/Models/`
 - Default model templates: `storage/framework/defaults/app/Models/`
 - ORM type globals: `storage/framework/types/orm-globals.d.ts`
@@ -239,16 +239,11 @@ Table defaults to `{tableName}_likes`, FK defaults to `{singular}_id`.
 - `Model._likeable.unlike(id, userId): Promise<void>`
 - `Model._likeable.isLiked(id, userId): Promise<boolean>`
 
-### Billable (when `traits.billable: true`) -- Stripe integration
-All methods lazy-import `@stacksjs/payments`.
-- `createStripeUser(model, options)`, `updateStripeUser(model, options)`, `deleteStripeUser(model)`
-- `createOrGetStripeUser(model, options)`, `retrieveStripeUser(model)`
-- `defaultPaymentMethod(model)`, `setDefaultPaymentMethod(model, pmId)`, `addPaymentMethod(model, paymentMethodId)`, `paymentMethods(model, cardType?)`
-- `newSubscription(model, type, lookupKey, options)` -- returns `{ subscription, paymentIntent }`
-- `updateSubscription(model, type, lookupKey, options)`, `cancelSubscription(model, providerId, options)`
-- `activeSubscription(model)` -- queries `subscriptions` table for `provider_status = 'active'`, then retrieves from Stripe
-- `checkout(model, priceIds[], options)` -- supports `enableTax`, `allowPromotions` options
-- `createSetupIntent(model, options)`, `subscriptionHistory(model)`, `transactionHistory(model)`
+### Billable (when `traits.billable: true`) -- the configured payment driver
+All methods lazy-import `@stacksjs/payments`. Full reference: `stacks-payments`.
+- Provider-neutral (`config.payment.driver`): `paymentCustomer(model)`, `charge(model, money, paymentMethodId, options)`, `createPayment(model, money, options)`, `checkout(model, { mode, lines, successUrl, cancelUrl })`, `paymentMethods(model)`, `removePaymentMethod(model, providerId)`, `newSubscription(model, type, price)` -> `SubscriptionSummary`, `cancelSubscription(model, providerId, { atPeriodEnd })` (ownership-checked), `activeSubscription(model)` -> `{ subscription, providerSubscription }`
+- Stripe only (throw `PaymentUnsupportedError` under another driver): `createStripeUser`, `updateStripeUser`, `deleteStripeUser`, `createOrGetStripeUser`, `retrieveStripeUser`, `syncStripeCustomerDetails`, `setDefaultPaymentMethod`, `addPaymentMethod`, `updateSubscription`, `createSetupIntent`, `subscriptionHistory`, Connect methods
+- Local: `defaultPaymentMethod(model)`, `storeTransaction(model, productId, options)`, `transactionHistory(model)`
 
 ### Two-Factor Auth (when `traits.useAuth.useTwoFactor: true`)
 - `Model._twoFactor.generateTwoFactorForModel(model)` -- generates secret, calls `model.update()`

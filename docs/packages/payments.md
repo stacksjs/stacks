@@ -60,6 +60,48 @@ Set `driver: 'adyen'` in `config/payment.ts` and `ADYEN_API_KEY`, `ADYEN_MERCHAN
 
 The Stripe-specific functions below, the raw `stripe` client and the `manage*` modules remain Stripe's API.
 
+### Billable models
+
+A model with `traits: { billable: true }` gets the driver's operations as instance methods, so they follow `config.payment.driver` too:
+
+```ts
+const customer = await user.paymentCustomer()
+const result = await user.charge({ amount: 2999, currency: 'eur' }, storedCardId, { reference: `order-${order.id}` })
+const session = await user.checkout({
+  mode: 'subscription',
+  lines: [{ price: 'price_pro_monthly', quantity: 1 }],
+  successUrl: 'https://example.com/billing/done',
+  cancelUrl: 'https://example.com/billing',
+})
+const subscription = await user.newSubscription('default', 'pro_monthly')
+await user.cancelSubscription(subscription.id, { atPeriodEnd: true })
+```
+
+`paymentCustomer`, `charge`, `createPayment`, `checkout`, `paymentMethods`, `removePaymentMethod`, `newSubscription`, `cancelSubscription` and `activeSubscription` return the driver's own shapes (`CheckoutSession`, `SubscriptionSummary`, ...). `cancelSubscription` refuses a subscription the record does not own. The Stripe-only methods (`createStripeUser` and the other `*StripeUser` methods, `setDefaultPaymentMethod`, `addPaymentMethod`, `updateSubscription`, `createSetupIntent`, `subscriptionHistory` and the Connect methods) throw `PaymentUnsupportedError` when another driver is configured.
+
+### Orders from payment webhooks
+
+`orders.handleCommercePaymentEvent` from `@stacksjs/commerce` applies a verified event to the order it concerns, from any driver. A payment's `reference` is what the order's `payments.transaction_id` holds.
+
+```ts
+import { orders } from '@stacksjs/commerce'
+import { paymentDriver } from '@stacksjs/payments'
+
+route.post('/webhooks/payments', async (request) => {
+  const payments = paymentDriver()
+  const events = await payments.verifyWebhook({ payload: await request.text(), headers: request.headers })
+  for (const event of events)
+    await orders.handleCommercePaymentEvent(event)
+  return payments.acknowledgeWebhook()
+})
+```
+
+- `payment.succeeded` marks the payment succeeded and moves a pending order to PROCESSING.
+- `payment.failed` marks the payment failed, records the provider's reason in `failure_reason` and cancels a pending order.
+- `refund.succeeded` adds the refund to `refund_amount`. A payment refunded in full becomes `refunded` and its order REFUNDED; a partial refund leaves it `partiallyRefunded` and the order where it was.
+
+A refund event's `amount` is that one refund, never a running total. Each `(provider, id)` is recorded in `payment_webhook_events` in the same transaction as the update, so a provider's retry does nothing.
+
 ## Configure Stripe
 
 Set `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` in the environment. `config/payment.ts` selects the Stripe driver and reads those values.

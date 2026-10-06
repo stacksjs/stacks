@@ -38941,6 +38941,10 @@
                           "notes": {
                             "type": "string"
                           },
+                          "failure_reason": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
                           "order_id": {
                             "type": "integer"
                           },
@@ -39059,6 +39063,10 @@
                         },
                         "notes": {
                           "type": "string"
+                        },
+                        "failure_reason": {
+                          "type": "string",
+                          "maxLength": 1000
                         },
                         "order_id": {
                           "type": "integer"
@@ -39214,6 +39222,10 @@
                         "notes": {
                           "type": "string"
                         },
+                        "failure_reason": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
                         "order_id": {
                           "type": "integer"
                         },
@@ -39340,6 +39352,10 @@
                         },
                         "notes": {
                           "type": "string"
+                        },
+                        "failure_reason": {
+                          "type": "string",
+                          "maxLength": 1000
                         },
                         "order_id": {
                           "type": "integer"
@@ -39468,6 +39484,10 @@
                         "notes": {
                           "type": "string"
                         },
+                        "failure_reason": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
                         "order_id": {
                           "type": "integer"
                         },
@@ -39594,6 +39614,10 @@
                         },
                         "notes": {
                           "type": "string"
+                        },
+                        "failure_reason": {
+                          "type": "string",
+                          "maxLength": 1000
                         },
                         "order_id": {
                           "type": "integer"
@@ -65367,6 +65391,10 @@
           },
           "notes": {
             "type": "string"
+          },
+          "failure_reason": {
+            "type": "string",
+            "maxLength": 1000
           },
           "order_id": {
             "type": "integer"

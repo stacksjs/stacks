@@ -133,13 +133,23 @@ export interface StoredPaymentMethod {
 /** `unknown`: a status the provider added after this driver was written; `raw` has it. */
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete' | 'unpaid' | 'paused' | 'unknown'
 
+export interface SubscriptionPrice {
+  /** The provider's price id. */
+  id: string
+  /** What the price is called: its nickname, or its lookup key. */
+  name: string | null
+  amount: Money | null
+  interval: 'day' | 'week' | 'month' | 'year' | null
+}
+
 export interface SubscriptionSummary {
   id: string
   status: SubscriptionStatus
-  /** The provider's price: a Stripe price id. */
-  price: string | null
+  price: SubscriptionPrice | null
   currentPeriodEnd: Date | null
   cancelAtPeriodEnd: boolean
+  /** Present while the first payment needs the payer: confirm it in the browser. */
+  clientConfirmation?: ClientConfirmation
   raw: unknown
 }
 
@@ -159,16 +169,27 @@ export type PaymentEventType =
 
 /** A verified webhook notification, in our terms. */
 export interface PaymentEvent {
-  /** Unique per delivery, for deduplicating retries. */
+  /** The driver that verified it (`stripe`, `adyen`); with `id`, the key for deduplicating retries. */
+  provider: string
+  /** The same on every retry of one notification, so a retry can be recognised. */
   id: string
   type: PaymentEventType
   /** The provider's own name for the event (`payment_intent.succeeded`, `AUTHORISATION`). */
   providerType: string
-  /** The payment or refund this is about, when there is one. */
+  /**
+   * The payment this event is about - for a refund, the payment refunded, so
+   * a refund finds the same order its payment did.
+   */
   reference: string | null
   /** Your reference, when the event carries it. */
   merchantReference: string | null
+  /**
+   * For a refund, the amount of this one refund - never a running total, so a
+   * second partial refund adds to the first. Otherwise the payment's amount.
+   */
   amount: Money | null
+  /** Why a payment or refund failed, in the provider's words. */
+  reason: string | null
   raw: unknown
 }
 

@@ -79,17 +79,21 @@ function normalizeSubscription(value: unknown): BillingSubscription | null {
   if (Object.keys(stored).length === 0)
     return null
 
-  const price = record(records(record(provider.items).data)[0]?.price)
+  // The provider subscription in the payment driver's terms: `price` carries
+  // its name and amount, the period end is a date. It used to be Stripe's own
+  // object, read through `items.data[0].price`.
+  const price = record(provider.price)
+  const priceAmount = record(price.amount)
 
   return {
     id: text(stored.id, stored.uuid, stored.provider_id, stored.providerId),
-    plan: text(stored.plan, stored.type, price.nickname, price.lookup_key),
+    plan: text(stored.plan, stored.type, price.name),
     type: text(stored.type, stored.plan),
     status: text(stored.provider_status, stored.providerStatus, provider.status),
-    amount: number(stored.unit_price ?? stored.unitPrice ?? price.unit_amount),
-    currency: text(price.currency, provider.currency),
-    periodEnd: timestamp(provider.current_period_end ?? stored.ends_at ?? stored.endsAt),
-    cancelAtPeriodEnd: Boolean(provider.cancel_at_period_end),
+    amount: number(stored.unit_price ?? stored.unitPrice ?? priceAmount.amount),
+    currency: text(priceAmount.currency),
+    periodEnd: timestamp(provider.currentPeriodEnd ?? stored.ends_at ?? stored.endsAt),
+    cancelAtPeriodEnd: Boolean(provider.cancelAtPeriodEnd),
   }
 }
 
@@ -101,7 +105,7 @@ function normalizePaymentMethod(value: unknown, defaultId: string): BillingPayme
   return {
     id,
     brand: text(card.brand, method.brand, method.type),
-    lastFour: text(card.last4, method.last_four, method.lastFour),
+    lastFour: text(method.last4, card.last4, method.last_four, method.lastFour),
     expMonth: number(card.exp_month ?? method.exp_month ?? method.expMonth),
     expYear: number(card.exp_year ?? method.exp_year ?? method.expYear),
     isDefault: Boolean(method.is_default ?? method.isDefault) || Boolean(id && id === defaultId),

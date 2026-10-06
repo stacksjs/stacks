@@ -1112,6 +1112,15 @@ declare module '@stacksjs/database' {
       user_id: number
       payment_method_id: number
     }
+    payment_webhook_events: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      provider: string
+      event_id: string
+      processed_at: string
+    }
     payments: {
       // columns
       id: number
@@ -1130,6 +1139,7 @@ declare module '@stacksjs/database' {
       payment_provider: string
       refund_amount: number
       notes: string
+      failure_reason: string
       order_id: number
       customer_id: number
     }

@@ -5485,14 +5485,14 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/payments
    */
-  getPayments(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+  getPayments(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "failure_reason"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
     return request(config, "GET", "/api/payments", {}, [], false, options)
   },
 
   /**
    * POST /api/payments
    */
-  postPayments(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  postPayments(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "failure_reason"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "POST", "/api/payments", {}, [], false, options)
   },
 
@@ -5506,28 +5506,28 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/payments/{id}
    */
-  getPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  getPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "failure_reason"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "GET", "/api/payments/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PUT /api/payments/{id}
    */
-  putPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  putPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "failure_reason"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PUT", "/api/payments/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * DELETE /api/payments/{id}
    */
-  deletePaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  deletePaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "failure_reason"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "DELETE", "/api/payments/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PATCH /api/payments/{id}
    */
-  patchPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  patchPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "failure_reason"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PATCH", "/api/payments/{id}", input ?? {}, [], false, options)
   },
 

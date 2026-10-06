@@ -125,15 +125,17 @@ describe('trait modules', () => {
       expect(typeof methods.syncConnectStatus).toBe('function')
       expect(typeof methods.chargeWithSplit).toBe('function')
       // What the default payment actions call, which the bag once lacked.
-      expect(typeof methods.deletePaymentMethod).toBe('function')
+      expect(typeof methods.removePaymentMethod).toBe('function')
+      expect(typeof methods.paymentCustomer).toBe('function')
+      expect(typeof methods.charge).toBe('function')
       expect(typeof methods.syncStripeCustomerDetails).toBe('function')
       expect(typeof methods.createPayment).toBe('function')
       expect(typeof methods.storeTransaction).toBe('function')
     })
 
-    it('should return exactly 26 methods', () => {
+    it('should return exactly 28 methods', () => {
       const methods = createBillableMethods('users')
-      expect(Object.keys(methods)).toHaveLength(26)
+      expect(Object.keys(methods)).toHaveLength(28)
     })
   })
 

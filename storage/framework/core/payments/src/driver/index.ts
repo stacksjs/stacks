@@ -85,8 +85,10 @@ export function paymentDriver(name?: string): PaymentDriver {
       webhookSecret: settings.stripe?.webhookSecret || (services as { stripe?: { webhookSecret?: string } })?.stripe?.webhookSecret || process.env.STRIPE_WEBHOOK_SECRET || undefined,
     })
   }
-  if (chosen === 'adyen')
-    return new AdyenDriver(adyenConfig(settings.adyen))
+  if (chosen === 'adyen') {
+    const appUrl = (config as { app?: { url?: string } }).app?.url
+    return new AdyenDriver({ ...adyenConfig(settings.adyen), ...(appUrl ? { appUrl } : {}) })
+  }
 
   const factory = custom.get(chosen)
   if (!factory)

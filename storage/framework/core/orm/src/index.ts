@@ -437,6 +437,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['LoyaltyPoint', ['commerce'], 'commerce'],
   ['LoyaltyReward', ['commerce'], 'commerce'],
   ['Payment', ['commerce'], 'commerce'],
+  ['PaymentWebhookEvent', ['commerce'], 'commerce'],
   ['Transaction', ['commerce'], 'commerce'],
 ]
 
@@ -547,6 +548,7 @@ export const PersonalAccessToken = lazyModel<typeof import('../../../defaults/ap
 export const OrderItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/OrderItem').default>('OrderItem')
 export const Page = lazyModel<typeof import('../../../defaults/app/Models/Content/Page').default>('Page')
 export const Payment = lazyModel<typeof import('../../../defaults/app/Models/commerce/Payment').default>('Payment')
+export const PaymentWebhookEvent = lazyModel<typeof import('../../../defaults/app/Models/commerce/PaymentWebhookEvent').default>('PaymentWebhookEvent')
 export const PaymentMethod = lazyModel<typeof import('../../../defaults/app/Models/PaymentMethod').default>('PaymentMethod')
 export const PaymentProduct = lazyModel<typeof import('../../../defaults/app/Models/PaymentProduct').default>('PaymentProduct')
 export const PaymentTransaction = lazyModel<typeof import('../../../defaults/app/Models/PaymentTransaction').default>('PaymentTransaction')
@@ -603,7 +605,7 @@ const _allExports: Record<string, any> = {
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   MagicLinkToken, Menu, MenuItem, NotificationDelivery, Order, OrderIdempotency,
   OrderItem, Page, PageRevision, Payment, PaymentMethod, PaymentProduct,
-  PaymentTransaction, Pledge, Post, PrintDevice, Product, ProductUnit,
+  PaymentTransaction, PaymentWebhookEvent, Pledge, Post, PrintDevice, Product, ProductUnit,
   ProductVariant, QueryLog, Receipt, Release, Request, Review, ShippingMethod,
   Redirect, SenderDomain, ShippingRate, ShippingZone, Site, SiteDomain,
   SmsOptOut, SocialAccount, SocialPost, Subscriber,

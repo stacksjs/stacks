@@ -38,6 +38,18 @@ export const ENTITLING_STATUSES = ['active', 'trialing'] as const
 /** Statuses meaning payment was started but never completed. */
 export const INCOMPLETE_STATUSES = ['incomplete'] as const
 
+/**
+ * What a new subscription is created with expanded: the first invoice's
+ * confirmation secret, which the browser confirms an incomplete subscription's
+ * first payment with.
+ *
+ * It expanded `latest_invoice.payment_intent`, which Stripe removed from the
+ * Invoice in API 2025-03-31.basil. On the API version the installed SDK pins,
+ * Stripe refuses to expand a field that does not exist, so creating any
+ * subscription failed.
+ */
+export const SUBSCRIPTION_CREATE_EXPAND = ['latest_invoice.confirmation_secret'] as const
+
 export const manageSubscription: SubscriptionManager = (() => {
   async function create(
     user: UserModel,
@@ -68,7 +80,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     const defaultParams: Stripe.SubscriptionCreateParams = {
       customer: customerId,
       payment_behavior: 'allow_incomplete', // or omit this line entirely
-      expand: ['latest_invoice.payment_intent'],
+      expand: [...SUBSCRIPTION_CREATE_EXPAND],
       items: subscriptionItems,
     }
 

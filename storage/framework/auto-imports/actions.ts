@@ -643,6 +643,7 @@ export const actions = {
   'Actions/Payment/UpdateCustomerAction': '../defaults/app/Actions/Payment/UpdateCustomerAction.ts',
   'Actions/Payment/UpdateDefaultPaymentMethodAction': '../defaults/app/Actions/Payment/UpdateDefaultPaymentMethodAction.ts',
   'Actions/Payment/UpdateSubscriptionAction': '../defaults/app/Actions/Payment/UpdateSubscriptionAction.ts',
+  'Actions/Payment/payment-response': '../defaults/app/Actions/Payment/payment-response.ts',
   'Actions/Queue/FetchQueuesAction': '../defaults/app/Actions/Queue/FetchQueuesAction.ts',
   'Actions/Realtime/FetchWebsocketsAction': '../defaults/app/Actions/Realtime/FetchWebsocketsAction.ts',
   'Actions/RobotsAction': '../defaults/app/Actions/RobotsAction.ts',

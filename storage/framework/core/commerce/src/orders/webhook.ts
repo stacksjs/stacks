@@ -1,58 +1,52 @@
 /**
- * Commerce-side Stripe webhook handler (stacksjs/stacks#1879 Co-17).
+ * Commerce's payment webhook handling (stacksjs/stacks#1879 Co-17, #665).
  *
- * Background: `@stacksjs/payments` ships the signature-verification +
- * event-routing primitives (`processWebhook`, `onPaymentIntent`,
- * `onCharge` etc.) but nothing in commerce subscribes to them.
- * Orders sat at PENDING forever when Stripe's webhook delivery
- * hiccupped — customer re-checked out, double-charge risk.
+ * Orders sat at PENDING forever when a provider's webhook was the only news of
+ * a payment. These handlers apply the three events commerce cares about, from
+ * whichever provider `config.payment.driver` names:
  *
- * This module registers handlers for the four payment-related
- * Stripe events commerce cares about:
+ *   - `payment.succeeded` -> payment succeeded, order PROCESSING
+ *   - `payment.failed` -> payment failed with its reason, order CANCELLED
+ *   - `refund.succeeded` -> the refund added to the payment's refunded amount;
+ *     payment `refunded` and order REFUNDED once it covers the whole payment,
+ *     `partiallyRefunded` (order untouched) until then
  *
- *   - `payment_intent.succeeded` → mark payment + order paid
- *   - `payment_intent.payment_failed` → mark order cancelled + record reason
- *   - `charge.refunded` → mark order refunded + emit event
- *   - `charge.dispute.created` → log + emit dispute event for ops
+ * They take the payment driver's `PaymentEvent`. They used to take Stripe
+ * events through `registerCommerceWebhookHandlers()`, which nothing called and
+ * which only Stripe could feed. An event's `reference` is the provider's id
+ * for the payment - a Stripe PaymentIntent, an Adyen pspReference - which is
+ * what an order's `payments.transaction_id` holds.
  *
- * Idempotency: every Stripe event has a unique `id` (e.g.
- * `evt_1NxxXxxxxxxx`). We persist processed event IDs in a small
- * `stripe_webhook_events` table; receiving the same event twice
- * (which happens when Stripe retries) is a no-op. The atomic
- * write happens inside a transaction so duplicate-detection and
- * the payment/order update can't race.
+ * Idempotency: every event's `(provider, id)` is recorded in
+ * `payment_webhook_events` (the `PaymentWebhookEvent` model) in the same
+ * transaction as the update, so a provider's retry is a no-op. The handlers
+ * used to write a `stripe_webhook_events` table no migration created, so every
+ * retry was applied again, and a `failure_reason` column the payments table did
+ * not have, so every failed payment rolled back instead of cancelling its order.
  *
- * Signature verification happens before this module is reached —
- * callers route the raw request through `payments.processWebhook`,
- * which returns a verified `Stripe.Event`. Skipping that step is
- * the obvious attack path (forge the body); see the wiring example
- * at the bottom of this file.
+ * Verify before reaching this: the driver's `verifyWebhook` checks the
+ * signature, and an unverified body is the obvious way to forge a payment.
  *
  * @example
  * ```ts
- * // routes/webhooks.ts
- * import { processWebhook } from '@stacksjs/payments'
- * import { registerCommerceWebhookHandlers } from '@stacksjs/commerce'
+ * import { paymentDriver } from '@stacksjs/payments'
+ * import { orders } from '@stacksjs/commerce'
  *
- * // Once at boot:
- * registerCommerceWebhookHandlers()
- *
- * // Per-request:
- * route.post('/webhooks/stripe', async (req) => {
- *   const payload = await req.text()
- *   const signature = req.headers.get('stripe-signature') ?? ''
- *   const result = await processWebhook(payload, signature, {
- *     secret: process.env.STRIPE_WEBHOOK_SECRET!,
- *     tolerance: 300,
- *   })
- *   return Response.json(result, { status: result.success ? 200 : 400 })
+ * route.post('/webhooks/payments', async (request) => {
+ *   const payments = paymentDriver()
+ *   const events = await payments.verifyWebhook({ payload: await request.text(), headers: request.headers })
+ *   for (const event of events)
+ *     await orders.handleCommercePaymentEvent(event)
+ *   return payments.acknowledgeWebhook()
  * })
  * ```
  */
 
+import type { PaymentEvent } from '@stacksjs/payments'
 import { db } from '@stacksjs/database/runtime'
 import { formatDate } from '@stacksjs/orm'
-import { emitOrderCancelled, emitOrderPaid, emitOrderRefunded } from './events'
+import type { OrderStatus } from './events'
+import { canTransition, emitOrderCancelled, emitOrderPaid, emitOrderRefunded } from './events'
 
 /**
  * Look up an order by its associated payment's `transaction_id`
@@ -77,17 +71,44 @@ async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Record
 }
 
 /**
- * Process-or-skip helper: returns true when this Stripe event id
- * is new (and inserts the dedup row), false when we've seen it
- * before. The insert happens inside the caller's transaction so
- * a concurrent retry can't slip past.
+ * Record the event, answering whether it is new. The insert runs in the
+ * caller's transaction, so a concurrent retry cannot slip past.
  *
- * Falls back to a "best-effort, may double-process" path when the
- * `stripe_webhook_events` table doesn't exist yet — the dedup
- * surface is opt-in via migration. Apps that haven't created the
- * table get a warn-once at startup.
+ * Without the table - an app that has not migrated since it was added - the
+ * event is applied anyway, with a warning once: double-applying a retry is
+ * recoverable, dropping a payment is not.
  */
 let warnedAboutMissingDedupTable = false
+
+async function recordEventOrSkip(event: PaymentEvent, trx: any): Promise<boolean> {
+  try {
+    const now = formatDate(new Date())
+    await trx
+      .insertInto('payment_webhook_events')
+      .values({
+        provider: event.provider,
+        event_id: event.id,
+        processed_at: now,
+        created_at: now,
+      })
+      .execute()
+    return true
+  }
+  catch (err: any) {
+    // Unique constraint hit = already processed = skip.
+    if (isUniqueViolation(err))
+      return false
+    if (isMissingTableError(err)) {
+      if (!warnedAboutMissingDedupTable) {
+        warnedAboutMissingDedupTable = true
+        // eslint-disable-next-line no-console
+        console.warn('[commerce/webhook] payment_webhook_events table missing - provider retries will be applied again. Run `buddy migrate` to enable dedup.')
+      }
+      return true
+    }
+    throw err
+  }
+}
 
 /**
  * True when the error is just "table not migrated yet". Each dialect phrases
@@ -105,47 +126,25 @@ function isMissingTableError(err: unknown): boolean {
     || /relation "[^"]*" does not exist/i.test(msg) // postgres wording
 }
 
-async function recordEventOrSkip(eventId: string, trx: any): Promise<boolean> {
-  try {
-    await trx
-      .insertInto('stripe_webhook_events')
-      .values({
-        event_id: eventId,
-        processed_at: formatDate(new Date()),
-      })
-      .execute()
-    return true
-  }
-  catch (err: any) {
-    // Unique constraint hit = already processed = skip.
-    if (err?.message?.includes('UNIQUE constraint') || err?.message?.includes('Duplicate entry'))
-      return false
-    // Missing table → degrade to "process every time" with a warn
-    // on first occurrence so ops can spot the missing migration.
-    if (isMissingTableError(err)) {
-      if (!warnedAboutMissingDedupTable) {
-        warnedAboutMissingDedupTable = true
-        // eslint-disable-next-line no-console
-        console.warn('[commerce/webhook] stripe_webhook_events table missing - Stripe retries may be processed multiple times. Run migrations to enable dedup.')
-      }
-      return true
-    }
-    throw err
-  }
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as { message?: string, code?: string } | null
+  const msg = e?.message ?? ''
+  return e?.code === '23505' // postgres SQLSTATE: unique_violation
+    || msg.includes('UNIQUE constraint') // sqlite
+    || msg.includes('Duplicate entry') // mysql
+    || /duplicate key value/i.test(msg) // postgres wording
 }
 
 /**
- * Handler for `payment_intent.succeeded`. Marks the linked payment
- * row + order row as paid in a single transaction. Idempotent via
- * `recordEventOrSkip`.
+ * A payment succeeded. Marks the linked payment row and order row in a single
+ * transaction. Idempotent via `recordEventOrSkip`.
  */
-async function handlePaymentIntentSucceeded(event: { id: string, data: { object: any } }): Promise<void> {
-  const paymentIntent = event.data.object
-  const paymentIntentId = paymentIntent?.id as string | undefined
+async function handlePaymentSucceeded(event: PaymentEvent): Promise<void> {
+  const paymentIntentId = event.reference
   if (!paymentIntentId) return
 
   await db.transaction(async (trx: any) => {
-    const isNew = await recordEventOrSkip(event.id, trx)
+    const isNew = await recordEventOrSkip(event, trx)
     if (!isNew) return // already processed
 
     const payment = await trx
@@ -189,20 +188,17 @@ async function handlePaymentIntentSucceeded(event: { id: string, data: { object:
 }
 
 /**
- * Handler for `payment_intent.payment_failed`. Marks the payment
- * as failed and cancels the linked order. Records the failure
- * reason on the payment row for ops triage.
+ * A payment failed. Marks the payment failed and cancels the linked order,
+ * recording the provider's reason on the payment row for ops triage.
  */
-async function handlePaymentIntentFailed(event: { id: string, data: { object: any } }): Promise<void> {
-  const paymentIntent = event.data.object
-  const paymentIntentId = paymentIntent?.id as string | undefined
+async function handlePaymentFailed(event: PaymentEvent): Promise<void> {
+  const paymentIntentId = event.reference
   if (!paymentIntentId) return
 
-  const lastError = paymentIntent?.last_payment_error
-  const reason = (lastError?.message as string | undefined) ?? 'payment failed'
+  const reason = event.reason ?? 'payment failed'
 
   await db.transaction(async (trx: any) => {
-    const isNew = await recordEventOrSkip(event.id, trx)
+    const isNew = await recordEventOrSkip(event, trx)
     if (!isNew) return
 
     const payment = await trx
@@ -215,7 +211,7 @@ async function handlePaymentIntentFailed(event: { id: string, data: { object: an
     const now = formatDate(new Date())
     await trx
       .updateTable('payments')
-      .set({ status: 'failed', failure_reason: reason, updated_at: now })
+      .set({ status: 'failed', failure_reason: reason.slice(0, 1000), updated_at: now })
       .where('id', '=', payment.id)
       .execute()
 
@@ -238,18 +234,29 @@ async function handlePaymentIntentFailed(event: { id: string, data: { object: an
 }
 
 /**
- * Handler for `charge.refunded`. Marks the order REFUNDED and
- * records the refund amount on the linked payment.
+ * A refund succeeded. Adds it to the payment's refunded amount; a refund that
+ * covers what is left marks the payment `refunded` and the order REFUNDED,
+ * and a smaller one marks the payment `partiallyRefunded` and leaves the order
+ * where it is, since REFUNDED is terminal. It used to mark both refunded on any
+ * refund at all, and to overwrite the refunded amount rather than add to it.
+ *
+ * A refund larger than what is left is not recorded and is logged: the
+ * provider has refunded more than this database thinks was taken, which a
+ * person needs to look at - most likely the same refund recorded by hand in
+ * the dashboard as well.
  */
-async function handleChargeRefunded(event: { id: string, data: { object: any } }): Promise<void> {
-  const charge = event.data.object
-  const paymentIntentId = charge?.payment_intent as string | undefined
+async function handleRefundSucceeded(event: PaymentEvent): Promise<void> {
+  const paymentIntentId = event.reference
   if (!paymentIntentId) return
 
-  const refundAmount = (charge?.amount_refunded as number | undefined) ?? 0
+  const refundAmount = event.amount?.amount ?? 0
+  if (!Number.isSafeInteger(refundAmount) || refundAmount <= 0) return
+
+  let fullyRefunded = false
+  let applied = false
 
   await db.transaction(async (trx: any) => {
-    const isNew = await recordEventOrSkip(event.id, trx)
+    const isNew = await recordEventOrSkip(event, trx)
     if (!isNew) return
 
     const payment = await trx
@@ -259,19 +266,30 @@ async function handleChargeRefunded(event: { id: string, data: { object: any } }
       .executeTakeFirst()
     if (!payment) return
 
+    const already = Number(payment.refund_amount ?? 0)
+    const total = already + refundAmount
+    if (total > Number(payment.amount)) {
+      // eslint-disable-next-line no-console
+      console.warn(`[commerce/webhook] ${event.provider} refunded ${refundAmount} of payment ${payment.id}, which has ${Number(payment.amount) - already} left to refund; not recorded.`)
+      return
+    }
+
+    fullyRefunded = total === Number(payment.amount)
     const now = formatDate(new Date())
     await trx
       .updateTable('payments')
-      .set({ status: 'refunded', refund_amount: refundAmount, updated_at: now })
+      .set({ status: fullyRefunded ? 'refunded' : 'partiallyRefunded', refund_amount: total, updated_at: now })
       .where('id', '=', payment.id)
       .execute()
+    applied = true
 
+    if (!fullyRefunded) return
     const order = await trx
       .selectFrom('orders')
       .where('id', '=', payment.order_id)
       .selectAll()
       .executeTakeFirst()
-    if (order && order.status !== 'REFUNDED') {
+    if (order && canTransition(order.status as OrderStatus, 'REFUNDED')) {
       await trx
         .updateTable('orders')
         .set({ status: 'REFUNDED', updated_at: now })
@@ -280,50 +298,34 @@ async function handleChargeRefunded(event: { id: string, data: { object: any } }
     }
   })
 
+  if (!applied) return
   const order = await findOrderByPaymentIntent(paymentIntentId)
-  if (order) await emitOrderRefunded(order, refundAmount)
+  if (order && fullyRefunded) await emitOrderRefunded(order, refundAmount)
 }
 
 /**
- * Wire commerce's Stripe webhook handlers into the payments
- * package's event router. Call once at boot.
- *
- * Returns an unregister callback for tests that want to swap the
- * handler set between cases.
+ * Apply a verified payment event to the order it concerns. Answers whether
+ * commerce acted on it; events it has no use for are left alone.
  */
-export async function registerCommerceWebhookHandlers(): Promise<() => void> {
-  const payments = await import('@stacksjs/payments').catch(() => null)
-  if (!payments) {
-    // eslint-disable-next-line no-console
-    console.warn('[commerce/webhook] @stacksjs/payments not installed - Stripe webhook handlers NOT registered')
-    return () => {}
+export async function handleCommercePaymentEvent(event: PaymentEvent): Promise<boolean> {
+  switch (event.type) {
+    case 'payment.succeeded':
+      await handlePaymentSucceeded(event)
+      return true
+    case 'payment.failed':
+      await handlePaymentFailed(event)
+      return true
+    case 'refund.succeeded':
+      await handleRefundSucceeded(event)
+      return true
+    default:
+      return false
   }
-
-  const onPaymentIntent = (payments as { onPaymentIntent?: (h: Record<string, unknown>) => void }).onPaymentIntent
-  const onCharge = (payments as { onCharge?: (h: Record<string, unknown>) => void }).onCharge
-  if (typeof onPaymentIntent !== 'function' || typeof onCharge !== 'function') {
-    // eslint-disable-next-line no-console
-    console.warn('[commerce/webhook] @stacksjs/payments shape changed - handlers NOT registered')
-    return () => {}
-  }
-
-  onPaymentIntent({
-    succeeded: handlePaymentIntentSucceeded,
-    failed: handlePaymentIntentFailed,
-  })
-  onCharge({
-    refunded: handleChargeRefunded,
-  })
-
-  // No first-class unregister in payments today — return a no-op
-  // so callers can plan for the future without baking the absence
-  // of unregister into their code.
-  return () => {}
 }
 
 // Export the individual handlers for direct testing.
 export {
-  handleChargeRefunded,
-  handlePaymentIntentFailed,
-  handlePaymentIntentSucceeded,
+  handlePaymentFailed,
+  handlePaymentSucceeded,
+  handleRefundSucceeded,
 }

@@ -43,6 +43,12 @@ export interface AdyenConfig {
   /** Hex HMAC key of your standard webhook. Required to verify webhooks. */
   hmacKey?: string
   /**
+   * The application's own URL. When set, every return URL must be on its
+   * origin, as Stripe's checkout requires: a forged request cannot send the
+   * payer to a look-alike page after paying.
+   */
+  appUrl?: string
+  /**
    * Prefix for the shopper reference made from a user id. Adyen requires it
    * to identify the shopper without personal data, so it is never the email.
    */
@@ -102,6 +108,7 @@ interface NotificationItem {
   amount?: { value?: number, currency?: string }
   eventCode?: string
   success?: string | boolean
+  reason?: string
   additionalData?: Record<string, string>
 }
 
@@ -188,6 +195,22 @@ export class AdyenDriver implements PaymentDriver {
     return body as T
   }
 
+  /** Refuse a return URL off the application's origin. */
+  private assertReturnUrl(url: string, label: string): void {
+    let target: URL
+    try {
+      target = new URL(url)
+    }
+    catch {
+      throw new TypeError(`${label} is not a valid URL: ${url}`)
+    }
+    if (!this.config.appUrl)
+      return
+    const app = new URL(/^https?:\/\//.test(this.config.appUrl) ? this.config.appUrl : `https://${this.config.appUrl}`)
+    if (target.origin !== app.origin)
+      throw new TypeError(`${label} (${target.origin}) is not on the application's origin (${app.origin})`)
+  }
+
   private amount(money: Money): { value: number, currency: string } {
     assertMoney(money)
     return { value: money.amount, currency: money.currency.toUpperCase() }
@@ -227,6 +250,7 @@ export class AdyenDriver implements PaymentDriver {
   async createPayment(payer: Payer, amount: Money, options: CreatePaymentOptions = {}): Promise<PaymentResult> {
     if (!options.returnUrl)
       throw new TypeError('An Adyen payment session needs a returnUrl: where the payer comes back after authenticating.')
+    this.assertReturnUrl(options.returnUrl, 'returnUrl')
     const session = await this.request<{ id: string, sessionData: string }>('POST', '/sessions', {
       body: {
         merchantAccount: this.config.merchantAccount,
@@ -280,6 +304,7 @@ export class AdyenDriver implements PaymentDriver {
       throw new PaymentUnsupportedError('adyen', 'a separate cancelUrl', 'Adyen\'s hosted checkout returns to one URL, with the outcome in its query string')
     if (!request.currency)
       throw new TypeError('An Adyen checkout needs a currency.')
+    this.assertReturnUrl(request.successUrl, 'successUrl')
 
     const lines = request.lines.map((line) => {
       if ('price' in line)
@@ -387,11 +412,17 @@ export class AdyenDriver implements PaymentDriver {
       const success = String(item.success) === 'true'
       const pair = EVENT_TYPES[item.eventCode ?? '']
       return {
-        // An event code and reference identify a notification; Adyen resends the same pair on retry.
-        id: `${item.eventCode}:${item.pspReference}`,
+        provider: this.name,
+        // An event code and reference identify a notification, and Adyen resends
+        // the pair on retry. It can also resend the pair with the outcome changed,
+        // which is a new fact rather than a retry, so the outcome is part of it.
+        id: `${item.eventCode}:${item.pspReference}:${success}`,
         type: pair ? pair[success ? 0 : 1] : 'unknown',
         providerType: item.eventCode ?? '',
-        reference: item.pspReference ?? null,
+        // A modification (refund, cancellation) names its own reference and the
+        // payment's as `originalReference`; the event is about the payment.
+        reference: item.originalReference || item.pspReference || null,
+        reason: item.reason || null,
         merchantReference: item.merchantReference ?? null,
         amount: item.amount?.value !== undefined && item.amount.currency
           ? { amount: Number(item.amount.value), currency: item.amount.currency.toLowerCase() }

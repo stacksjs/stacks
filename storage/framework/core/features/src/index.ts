@@ -192,7 +192,7 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     'categories',
     'products', 'product_variants', 'product_units', 'manufacturers',
     'orders', 'order_items', 'order_idempotency', 'carts', 'cart_items',
-    'payments', 'payment_methods', 'payment_products', 'payment_transactions',
+    'payments', 'payment_methods', 'payment_products', 'payment_transactions', 'payment_webhook_events',
     'customers', 'subscribers', 'subscriber_emails', 'subscriptions',
     'gift_cards', 'coupons', 'transactions', 'reviews',
     // `delivery_stops` keys to `delivery_routes` and `courier_pings` to

@@ -17,6 +17,7 @@ import type {
   RefundResult,
   RefundStatus,
   StoredPaymentMethod,
+  SubscriptionPrice,
   SubscriptionStatus,
   SubscriptionSummary,
   WebhookRequest,
@@ -74,6 +75,18 @@ export function stripePaymentStatus(intent: Pick<Stripe.PaymentIntent, 'status' 
   }
 }
 
+/**
+ * What one `charge.refunded` refunded. The charge carries the running total,
+ * so a second partial refund would otherwise be counted as the first plus
+ * itself; the event's `previous_attributes` holds the total before it.
+ */
+export function refundedThisTime(charge: Record<string, any>, previous?: Record<string, any> | null): number | undefined {
+  if (typeof charge.amount_refunded !== 'number')
+    return undefined
+  const before = typeof previous?.amount_refunded === 'number' ? previous.amount_refunded : 0
+  return charge.amount_refunded - before
+}
+
 function refundStatus(status: string | null): RefundStatus {
   if (status === 'succeeded' || status === 'failed' || status === 'canceled')
     return status
@@ -88,16 +101,31 @@ function subscriptionStatus(status: Stripe.Subscription.Status): SubscriptionSta
   return SUBSCRIPTION_STATUSES.has(status) ? status as SubscriptionStatus : 'unknown'
 }
 
-function summarizeSubscription(subscription: Stripe.Subscription): SubscriptionSummary {
+const INTERVALS = new Set<string>(['day', 'week', 'month', 'year'])
+
+export function summarizeSubscription(subscription: Stripe.Subscription): SubscriptionSummary {
   const item = subscription.items?.data?.[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined
   // Newer API versions moved the period onto the item.
   const periodEnd = item?.current_period_end ?? (subscription as { current_period_end?: number }).current_period_end
+  const price = item?.price
+  // The first invoice's confirmation secret, when it was expanded and the
+  // subscription is still waiting on the payer (3-D Secure, a declined card).
+  const invoice = subscription.latest_invoice
+  const secret = invoice && typeof invoice === 'object' ? invoice.confirmation_secret?.client_secret : undefined
   return {
     id: subscription.id,
     status: subscriptionStatus(subscription.status),
-    price: item?.price?.id ?? null,
+    price: price
+      ? {
+          id: price.id,
+          name: price.nickname ?? price.lookup_key ?? null,
+          amount: typeof price.unit_amount === 'number' ? { amount: price.unit_amount, currency: price.currency } : null,
+          interval: INTERVALS.has(price.recurring?.interval ?? '') ? price.recurring!.interval as SubscriptionPrice['interval'] : null,
+        }
+      : null,
     currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
     cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
+    ...(secret && subscription.status === 'incomplete' ? { clientConfirmation: { provider: 'stripe' as const, clientSecret: secret } } : {}),
     raw: subscription,
   }
 }
@@ -114,6 +142,20 @@ const EVENT_TYPES: Record<string, PaymentEventType> = {
   'customer.subscription.deleted': 'subscription.canceled',
   'invoice.paid': 'invoice.paid',
   'invoice.payment_failed': 'invoice.payment_failed',
+}
+
+/** A Stripe PaymentMethod in our terms. */
+export function toStoredPaymentMethod(method: Stripe.PaymentMethod, defaultId: string | null = null): StoredPaymentMethod {
+  return {
+    id: method.id,
+    type: method.type,
+    brand: method.card?.brand ?? null,
+    last4: method.card?.last4 ?? null,
+    expMonth: method.card?.exp_month ?? null,
+    expYear: method.card?.exp_year ?? null,
+    isDefault: method.id === defaultId,
+    raw: method,
+  }
 }
 
 function toPayment(intent: Stripe.PaymentIntent): PaymentResult {
@@ -236,16 +278,7 @@ export class StripeDriver implements PaymentDriver {
       ? customer.invoice_settings.default_payment_method
       : customer.invoice_settings?.default_payment_method?.id ?? null
     const methods = await this.ops.listPaymentMethods(customer.id)
-    return methods.map(method => ({
-      id: method.id,
-      type: method.type,
-      brand: method.card?.brand ?? null,
-      last4: method.card?.last4 ?? null,
-      expMonth: method.card?.exp_month ?? null,
-      expYear: method.card?.exp_year ?? null,
-      isDefault: method.id === defaultId,
-      raw: method,
-    }))
+    return methods.map(method => toStoredPaymentMethod(method, defaultId))
   }
 
   async removePaymentMethod(payer: Payer, paymentMethodId: string): Promise<void> {
@@ -281,19 +314,21 @@ export class StripeDriver implements PaymentDriver {
     }
 
     const object = event.data.object as unknown as Record<string, any>
-    const reference = event.type === 'charge.refunded' ? object.payment_intent ?? object.id : object.id
-    const amount = typeof object.amount === 'number' && object.currency
-      ? { amount: object.amount, currency: String(object.currency) }
-      : typeof object.amount_total === 'number' && object.currency
-        ? { amount: object.amount_total, currency: String(object.currency) }
-        : null
+    // A charge or refund names the payment it belongs to; the event is about that payment.
+    const isRefund = event.type === 'charge.refunded' || event.type === 'refund.failed'
+    const reference = isRefund ? object.payment_intent ?? object.id : object.id
+    const minor = event.type === 'charge.refunded' ? refundedThisTime(object, event.data.previous_attributes) : object.amount ?? object.amount_total
+    const amount = typeof minor === 'number' && object.currency ? { amount: minor, currency: String(object.currency) } : null
+    const reason = object.last_payment_error?.message ?? object.failure_reason ?? null
     return [{
+      provider: this.name,
       id: event.id,
       type: EVENT_TYPES[event.type] ?? 'unknown',
       providerType: event.type,
       reference: typeof reference === 'string' ? reference : null,
       merchantReference: object.client_reference_id ?? object.metadata?.reference ?? null,
       amount,
+      reason,
       raw: event,
     }]
   }

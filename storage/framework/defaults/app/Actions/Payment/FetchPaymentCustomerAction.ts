@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { isBillable } from '@stacksjs/orm'
 import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
+import { forBrowser, paymentFailure } from './payment-response'
 
 export default new Action({
   name: 'FetchPaymentCustomerAction',
@@ -16,10 +17,13 @@ export default new Action({
     if (!isBillable(user))
       return response.error(BILLING_NOT_ENABLED, 503)
 
-    // `asStripeUser()` does not exist; `retrieveStripeUser()` is the lookup,
-    // and answers undefined for a user with no Stripe customer yet.
-    const customer = await user.retrieveStripeUser()
-
-    return response.json(customer)
+    // The provider's customer for this user - created on first use - in our
+    // terms, whichever provider is configured.
+    try {
+      return response.json(await user.paymentCustomer())
+    }
+    catch (error) {
+      return paymentFailure(error)
+    }
   },
 })

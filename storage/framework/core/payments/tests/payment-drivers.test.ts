@@ -9,6 +9,7 @@ import {
   adyenStatus,
   PaymentProviderError,
   PaymentUnsupportedError,
+  refundedThisTime,
   registerPaymentDriver,
   StripeDriver,
   stripePaymentStatus,
@@ -68,13 +69,20 @@ describe('Adyen webhook signing', () => {
     const base = { pspReference: 'PSP1', merchantAccountCode: 'StacksECOM', merchantReference: 'order-7', amount: { value: 2500, currency: 'EUR' } }
 
     const [paid] = await driver.verifyWebhook({ payload: signedNotification({ ...base, eventCode: 'AUTHORISATION', success: 'true' }), headers: {} })
-    expect(paid).toMatchObject({ id: 'AUTHORISATION:PSP1', type: 'payment.succeeded', reference: 'PSP1', merchantReference: 'order-7', amount: { amount: 2500, currency: 'eur' } })
+    expect(paid).toMatchObject({ provider: 'adyen', id: 'AUTHORISATION:PSP1:true', type: 'payment.succeeded', reference: 'PSP1', merchantReference: 'order-7', amount: { amount: 2500, currency: 'eur' } })
 
     const [declined] = await driver.verifyWebhook({ payload: signedNotification({ ...base, eventCode: 'AUTHORISATION', success: 'false' }), headers: {} })
     expect(declined!.type).toBe('payment.failed')
+    // Adyen can resend a code and reference with the outcome changed. That is
+    // news, not a retry, so it must not deduplicate against the first.
+    expect(declined!.id).not.toBe(paid!.id)
 
+    // A refund is about the payment it refunds, so it finds the same order.
     const [refunded] = await driver.verifyWebhook({ payload: signedNotification({ ...base, originalReference: 'PSP0', eventCode: 'REFUND', success: 'true' }), headers: {} })
-    expect(refunded!.type).toBe('refund.succeeded')
+    expect(refunded).toMatchObject({ type: 'refund.succeeded', reference: 'PSP0' })
+
+    const [refused] = await driver.verifyWebhook({ payload: signedNotification({ ...base, eventCode: 'AUTHORISATION', success: 'false', reason: 'Not enough balance' }), headers: {} })
+    expect(refused!.reason).toBe('Not enough balance')
   })
 
   it('refuses a delivery signed with another key, or not signed at all', async () => {
@@ -180,6 +188,19 @@ describe('Adyen payments', () => {
     expect(driver.capabilities.has('subscriptions')).toBe(false)
   })
 
+  it('refuses a return URL off the application\'s origin, as Stripe\'s checkout does', async () => {
+    const sent: unknown[] = []
+    const driver = new AdyenDriver(
+      { apiKey: 'k', merchantAccount: 'm', environment: 'test', appUrl: 'https://app.test' },
+      { fetch: (async () => { sent.push(1); return Response.json({ id: 'x', url: 'https://checkout-test.adyen.com/x', sessionData: 's' }) }) as never },
+    )
+    await expect(driver.checkout(payer, { mode: 'payment', currency: 'eur', lines: [], successUrl: 'https://evil.example/done' })).rejects.toThrow('not on the application\'s origin')
+    await expect(driver.createPayment(payer, { amount: 1, currency: 'eur' }, { returnUrl: 'https://evil.example/r' })).rejects.toThrow('not on the application\'s origin')
+    expect(sent).toHaveLength(0)
+    await driver.checkout(payer, { mode: 'payment', currency: 'eur', lines: [], successUrl: 'https://app.test/done' })
+    expect(sent).toHaveLength(1)
+  })
+
   it('lists and removes stored cards by shopper reference', async () => {
     const { driver, sent } = adyen(
       { body: { storedPaymentMethods: [{ id: 'S1', type: 'scheme', brand: 'visa', lastFour: '1111', expiryMonth: '03', expiryYear: '30' }] } },
@@ -238,7 +259,7 @@ function stripeDriver(overrides: Partial<StripeOperations> = {}, webhookSecret: 
       { id: 'pm_2', type: 'card', card: { brand: 'amex', last4: '0005', exp_month: 2, exp_year: 2032 } },
     ] as Stripe.PaymentMethod[]),
     deletePaymentMethod: record('deletePaymentMethod', undefined),
-    subscribe: record('subscribe', { id: 'sub_1', status: 'active', cancel_at_period_end: false, items: { data: [{ price: { id: 'price_pro' }, current_period_end: 1_800_000_000 }] } } as unknown as Stripe.Subscription),
+    subscribe: record('subscribe', { id: 'sub_1', status: 'incomplete', cancel_at_period_end: false, latest_invoice: { confirmation_secret: { client_secret: 'pi_9_secret', type: 'payment_intent' } }, items: { data: [{ price: { id: 'price_pro', nickname: null, lookup_key: 'pro_monthly', unit_amount: 1900, currency: 'usd', recurring: { interval: 'month' } }, current_period_end: 1_800_000_000 }] } } as unknown as Stripe.Subscription),
     cancelSubscription: record('cancelSubscription', { id: 'sub_1', status: 'incomplete_expired', cancel_at_period_end: false, items: { data: [] } } as unknown as Stripe.Subscription),
     listSubscriptions: record('listSubscriptions', [{ id: 'sub_2', status: 'something_new', cancel_at_period_end: true, items: { data: [] } }] as unknown as Stripe.Subscription[]),
     constructEvent: record('constructEvent', { id: 'evt_1', type: 'payment_intent.succeeded', data: { object: { id: 'pi_1', amount: 1999, currency: 'eur', metadata: { reference: 'order-1' } } } } as unknown as Stripe.Event),
@@ -311,7 +332,14 @@ describe('the Stripe driver', () => {
 
   it('summarises subscriptions, period from the item, unknown statuses as unknown', async () => {
     const { driver } = stripeDriver()
-    expect(await driver.subscribe(payer, 'pro_monthly')).toMatchObject({ id: 'sub_1', status: 'active', price: 'price_pro', currentPeriodEnd: new Date(1_800_000_000_000) })
+    expect(await driver.subscribe(payer, 'pro_monthly')).toMatchObject({
+      id: 'sub_1',
+      status: 'incomplete',
+      price: { id: 'price_pro', name: 'pro_monthly', amount: { amount: 1900, currency: 'usd' }, interval: 'month' },
+      currentPeriodEnd: new Date(1_800_000_000_000),
+      // The first payment waits on the payer; the browser confirms it.
+      clientConfirmation: { provider: 'stripe', clientSecret: 'pi_9_secret' },
+    })
     expect((await driver.cancelSubscription('sub_1')).status).toBe('canceled')
     expect((await driver.subscriptions(payer))[0]).toMatchObject({ status: 'unknown', cancelAtPeriodEnd: true })
   })
@@ -319,8 +347,31 @@ describe('the Stripe driver', () => {
   it('verifies a webhook and names the event in our terms', async () => {
     const { driver, calls } = stripeDriver()
     const [event] = await driver.verifyWebhook({ payload: '{"id":"evt_1"}', headers: new Headers({ 'Stripe-Signature': 't=1,v1=abc' }) })
-    expect(event).toMatchObject({ id: 'evt_1', type: 'payment.succeeded', providerType: 'payment_intent.succeeded', reference: 'pi_1', merchantReference: 'order-1', amount: { amount: 1999, currency: 'eur' } })
+    expect(event).toMatchObject({ provider: 'stripe', id: 'evt_1', type: 'payment.succeeded', providerType: 'payment_intent.succeeded', reference: 'pi_1', merchantReference: 'order-1', amount: { amount: 1999, currency: 'eur' } })
     expect(calls.find(([name]) => name === 'constructEvent')![1]).toEqual(['{"id":"evt_1"}', 't=1,v1=abc', 'whsec_test'])
+  })
+
+  it('names a refund by the payment it refunds, with the amount refunded', async () => {
+    const { driver } = stripeDriver({
+      constructEvent: async () => ({ id: 'evt_2', type: 'charge.refunded', data: { object: { id: 'ch_1', payment_intent: 'pi_1', amount: 1999, amount_refunded: 500, currency: 'eur' }, previous_attributes: { amount_refunded: 0 } } }) as unknown as Stripe.Event,
+    })
+    const [event] = await driver.verifyWebhook({ payload: '{}', headers: { 'stripe-signature': 'x' } })
+    expect(event).toMatchObject({ type: 'refund.succeeded', reference: 'pi_1', amount: { amount: 500, currency: 'eur' } })
+  })
+
+  it('gives a second partial refund its own amount, not the charge\'s running total', async () => {
+    // The charge says 1200 refunded in all; 500 of that was the first refund.
+    const { driver } = stripeDriver({
+      constructEvent: async () => ({ id: 'evt_3', type: 'charge.refunded', data: { object: { id: 'ch_1', payment_intent: 'pi_1', amount: 1999, amount_refunded: 1200, currency: 'eur' }, previous_attributes: { amount_refunded: 500 } } }) as unknown as Stripe.Event,
+    })
+    const [event] = await driver.verifyWebhook({ payload: '{}', headers: { 'stripe-signature': 'x' } })
+    expect(event!.amount).toEqual({ amount: 700, currency: 'eur' })
+  })
+
+  it('reads a refund with no previous total as the first', () => {
+    expect(refundedThisTime({ amount_refunded: 300 })).toBe(300)
+    expect(refundedThisTime({ amount_refunded: 300 }, null)).toBe(300)
+    expect(refundedThisTime({})).toBeUndefined()
   })
 
   it('refuses a webhook it cannot verify', async () => {

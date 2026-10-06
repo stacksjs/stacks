@@ -134,6 +134,7 @@ declare global {
   const OrderIdempotency: typeof import('../defaults/app/Models/commerce/OrderIdempotency')['default']
   const OrderItem: typeof import('../defaults/app/Models/commerce/OrderItem')['default']
   const Payment: typeof import('../defaults/app/Models/commerce/Payment')['default']
+  const PaymentWebhookEvent: typeof import('../defaults/app/Models/commerce/PaymentWebhookEvent')['default']
   const Pledge: typeof import('../defaults/app/Models/commerce/Pledge')['default']
   const PrintDevice: typeof import('../defaults/app/Models/commerce/PrintDevice')['default']
   const Product: typeof import('../defaults/app/Models/commerce/Product')['default']

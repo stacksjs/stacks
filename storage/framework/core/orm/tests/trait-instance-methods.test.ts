@@ -70,6 +70,20 @@ const { BILLABLE_INSTANCE_METHODS, createBillableMethods, isBillable, Subscripti
 // second `mock.module` call for the same package is not reliably picked up
 // once the first has been imported, so the tests share this one.
 type PaymentsStub = Record<string, (...args: any[]) => unknown>
+const { PaymentUnsupportedError } = await import('../../payments/src/driver/types')
+// The configured driver the provider-neutral methods reach. Each test fills in
+// what it needs; every call lands in `driverCalls`.
+const driverCalls: Array<[string, unknown[]]> = []
+const driverStub: PaymentsStub = {}
+const recordingDriver = new Proxy({ name: 'test' } as Record<string, unknown>, {
+  // Not `then`: an awaited driver with one would be taken for a promise.
+  get: (target, key: string) => key in target || key === 'then'
+    ? target[key]
+    : async (...args: unknown[]) => {
+      driverCalls.push([key, args])
+      return driverStub[key] ? driverStub[key]!(...args) : undefined
+    },
+})
 const payments = {
   manageCheckout: {} as PaymentsStub,
   manageCharge: {} as PaymentsStub,
@@ -77,6 +91,8 @@ const payments = {
   managePaymentMethod: {} as PaymentsStub,
   manageTransaction: {} as PaymentsStub,
   manageSubscription: {} as PaymentsStub,
+  paymentDriver: () => recordingDriver,
+  PaymentUnsupportedError,
 }
 mock.module('@stacksjs/payments', () => payments)
 
@@ -357,23 +373,22 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       expect(typeof user.checkout).toBe('function')
       expect(typeof user.createOrGetStripeUser).toBe('function')
 
-      let capturedModel: any
-      payments.manageCustomer.createOrGetStripeUser = async (model: any) => {
-        capturedModel = model
-        return { id: 'cus_test123' }
-      }
-      payments.manageCheckout.create = async () => ({ id: 'cs_test123', url: 'https://checkout.stripe.com/test' })
+      driverCalls.length = 0
+      driverStub.checkout = async () => ({ id: 'cs_test123', url: 'https://checkout.stripe.com/test', raw: {} })
 
-      const session = await user.checkout([{ priceId: 'price_123' }])
-      expect(session.id).toBe('cs_test123')
+      const request = { mode: 'payment', lines: [{ price: 'price_123', quantity: 1 }], successUrl: 'https://app.test/ok', cancelUrl: 'https://app.test/back' }
+      const session = await user.checkout(request)
+      expect(session).toMatchObject({ id: 'cs_test123', url: 'https://checkout.stripe.com/test' })
 
-      // Proves the real hydrated (proxied) instance was passed through —
-      // not `undefined` — so `model.id` / `model.email` / `model.update()`
-      // all resolve correctly from inside the trait function.
-      expect(capturedModel).toBeDefined()
-      expect(capturedModel.id).toBe(user.id)
-      expect(capturedModel.email).toBe('buyer@example.com')
-      expect(typeof capturedModel.update).toBe('function')
+      // The configured driver got the real hydrated (proxied) instance, not
+      // `undefined`, so `model.id` / `model.email` / `model.update()` resolve
+      // inside it - and the request exactly as given.
+      const [name, [model, given]] = driverCalls[0]! as [string, [any, unknown]]
+      expect(name).toBe('checkout')
+      expect(model.id).toBe(user.id)
+      expect(model.email).toBe('buyer@example.com')
+      expect(typeof model.update).toBe('function')
+      expect(given).toEqual(request)
     })
   })
 
@@ -404,23 +419,40 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       const other = await freshUser('other@example.com')
       await (appDb as any).unsafe(`INSERT INTO subscriptions (user_id, provider_id, type, provider_status) VALUES (${Number(owner.id)}, 'sub_owned', 'default', 'active')`).execute()
 
-      const canceled: string[] = []
-      payments.manageSubscription.cancel = async (providerId: string) => {
-        canceled.push(providerId)
-        return { id: providerId, status: 'canceled' }
-      }
+      driverCalls.length = 0
+      driverStub.cancelSubscription = async (providerId: string) => ({ id: providerId, status: 'canceled' })
 
-      // Another user naming the owner's Stripe id: refused before Stripe is called.
+      // Another user naming the owner's id: refused before the provider is called.
       await expect(other.cancelSubscription('sub_owned')).rejects.toThrow(SubscriptionNotOwnedError)
       await expect(owner.cancelSubscription('sub_unknown')).rejects.toThrow(SubscriptionNotOwnedError)
-      expect(canceled).toEqual([])
+      expect(driverCalls).toEqual([])
 
-      const { subscription } = await owner.cancelSubscription('sub_owned')
-      expect(subscription).toEqual({ id: 'sub_owned', status: 'canceled' })
-      expect(canceled).toEqual(['sub_owned'])
+      expect(await owner.cancelSubscription('sub_owned', { atPeriodEnd: true })).toEqual({ id: 'sub_owned', status: 'canceled' })
+      expect(driverCalls).toEqual([['cancelSubscription', ['sub_owned', { atPeriodEnd: true }]]])
     })
 
-    it('routes the methods the payment actions call to the functions that exist', async () => {
+    it('sends the provider-neutral methods to the configured driver', async () => {
+      const user = await freshUser('neutral@example.com')
+      driverCalls.length = 0
+
+      await user.paymentCustomer()
+      await user.charge({ amount: 1500, currency: 'usd' }, 'pm_1', { reference: 'order-1' })
+      await user.createPayment({ amount: 900, currency: 'eur' }, { returnUrl: 'https://app.test/done' })
+      await user.paymentMethods()
+      await user.removePaymentMethod('pm_123')
+      await user.newSubscription('default', 'pro_monthly')
+
+      expect(driverCalls.map(([name]) => name)).toEqual(['customer', 'charge', 'createPayment', 'paymentMethods', 'removePaymentMethod', 'subscribe'])
+      for (const [, args] of driverCalls)
+        expect((args[0] as { id: unknown }).id).toBe(user.id)
+      expect(driverCalls[1]![1].slice(1)).toEqual([{ amount: 1500, currency: 'usd' }, 'pm_1', { reference: 'order-1' }])
+      expect(driverCalls[2]![1].slice(1)).toEqual([{ amount: 900, currency: 'eur' }, { returnUrl: 'https://app.test/done' }])
+      expect(driverCalls[4]![1].slice(1)).toEqual(['pm_123'])
+      // A subscription's price, then its local `type`.
+      expect(driverCalls[5]![1].slice(1)).toEqual(['pro_monthly', { type: 'default' }])
+    })
+
+    it('routes the Stripe-only methods to the Stripe modules', async () => {
       const user = await freshUser('routes@example.com')
       const calls: Array<[string, unknown[]]> = []
       const record = (name: string) => async (...args: unknown[]) => {
@@ -435,27 +467,21 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       Object.assign(payments.managePaymentMethod, {
         setDefaultPaymentMethod: record('setDefaultPaymentMethod'),
         setUserDefaultPayment: record('setUserDefaultPayment'),
-        deletePaymentMethod: record('deletePaymentMethod'),
       })
-      payments.manageCharge.createPayment = record('createPayment')
       payments.manageTransaction.store = record('store')
 
       await user.retrieveStripeUser()
       // A number is the local payment_methods row, a string Stripe's own id.
       await user.setDefaultPaymentMethod(7)
       await user.setDefaultPaymentMethod('pm_123')
-      await user.deletePaymentMethod('pm_123')
       await user.syncStripeCustomerDetails({ address: { city: 'Austin' } })
-      await user.createPayment(1500, { currency: 'usd' })
       await user.storeTransaction(3, { brand: 'visa', provider_id: 'pi_123' })
 
       expect(calls.map(([name]) => name)).toEqual([
         'retrieveStripeUser',
         'setDefaultPaymentMethod',
         'setUserDefaultPayment',
-        'deletePaymentMethod',
         'syncStripeCustomerDetails',
-        'createPayment',
         'store',
       ])
 
@@ -464,8 +490,28 @@ describe('trait methods are wired onto hydrated instances (not just the static m
         expect((args[0] as { id: unknown }).id).toBe(user.id)
       expect(calls[1]![1].slice(1)).toEqual([7])
       expect(calls[2]![1].slice(1)).toEqual(['pm_123'])
-      expect(calls[5]![1].slice(1)).toEqual([1500, { currency: 'usd' }])
-      expect(calls[6]![1].slice(1)).toEqual([3, { brand: 'visa', provider_id: 'pi_123' }])
+      expect(calls[4]![1].slice(1)).toEqual([3, { brand: 'visa', provider_id: 'pi_123' }])
+    })
+
+    it('refuses a Stripe-only method, naming it, when the app pays through another provider', async () => {
+      const user = await freshUser('adyen@example.com')
+      const { config } = await import('@stacksjs/config')
+      const settings = (config as { payment: { driver?: string } }).payment
+      const before = settings.driver
+      const called: string[] = []
+      payments.manageCustomer.retrieveStripeUser = async () => {
+        called.push('retrieveStripeUser')
+      }
+      settings.driver = 'adyen'
+      try {
+        await expect(user.retrieveStripeUser()).rejects.toThrow(PaymentUnsupportedError)
+        await expect(user.createSetupIntent()).rejects.toThrow('createSetupIntent')
+        await expect(user.connectAccount()).rejects.toThrow('Stripe Connect')
+        expect(called).toEqual([])
+      }
+      finally {
+        settings.driver = before
+      }
     })
   })
 
