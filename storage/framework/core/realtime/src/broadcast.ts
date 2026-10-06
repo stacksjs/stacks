@@ -248,8 +248,20 @@ export async function runBroadcast(name: string, payload?: any): Promise<void> {
     throw new Error(`Failed to scan broadcast files: ${error instanceof Error ? error.message : String(error)}`)
   }
 
-  const broadcastFile = broadcastFiles.find((file: string) => file.endsWith(`${name}.ts`))
+  // By name, exactly: `Broadcasts/<name>.ts`, or the one file of that name in
+  // a subdirectory. This was `file.endsWith(`${name}.ts`)`, so 'Shipped' ran
+  // OrderShipped.ts, and 'Created' ran whichever of OrderCreated.ts and
+  // UserCreated.ts the scan listed first.
+  const root = appPath('Broadcasts')
+  const nameOf = (file: string): string => file.slice(root.length + 1, -'.ts'.length).split('\\').join('/')
+  const exact = broadcastFiles.filter(file => nameOf(file) === name)
+  const byBasename = name.includes('/') ? [] : broadcastFiles.filter(file => nameOf(file).split('/').pop() === name)
+  const candidates = exact.length > 0 ? exact : byBasename
 
+  if (candidates.length > 1)
+    throw new Error(`Broadcast ${name} is ambiguous: ${candidates.map(nameOf).join(', ')}. Name it by its path under app/Broadcasts.`)
+
+  const broadcastFile = candidates[0]
   if (!broadcastFile)
     throw new Error(`Broadcast ${name} not found`)
 
