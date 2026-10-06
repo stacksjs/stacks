@@ -8,8 +8,10 @@
  */
 
 import type { ConverseCommandInput, ConverseCommandOutput } from '@stacksjs/ts-cloud/aws'
-import type { AIMessage, AIMessageContent, AIResult, AIToolCall, ChatCompletionOptions } from '../../types'
-import { converse } from '../../utils/client-bedrock-runtime'
+import type { AIMessage, AIMessageContent, AIResult, AIStreamEvent, AIToolCall, ChatCompletionOptions } from '../../types'
+import { converse, converseStream } from '../../utils/client-bedrock-runtime'
+import { streamText } from '../../utils/stream'
+import { parseToolArguments } from '../../utils/tools'
 import { recordUsage } from '../../utils/usage'
 
 type ConverseMessage = ConverseCommandInput['messages'][number]
@@ -171,12 +173,12 @@ function readOutput(output: ConverseCommandOutput, outputTool: string | undefine
 }
 
 /**
- * One chat completion. `options.model` overrides the configured model.
+ * The Converse request for a chat completion, streamed or not, and the name
+ * of the internal structured-output tool when `responseFormat` asks for one.
  */
-export async function chat(messages: AIMessage[], options: ChatCompletionOptions & { system?: string } = {}): Promise<AIResult> {
+function converseRequest(messages: AIMessage[], options: ChatCompletionOptions & { system?: string }): { input: ConverseCommandInput, outputTool?: string, region?: string } {
   const config = resolveConfig()
   const model = options.model || config.model
-  const startedAt = Date.now()
 
   const inferenceConfig: NonNullable<ConverseCommandInput['inferenceConfig']> = {}
   const maxTokens = options.maxTokens ?? config.maxTokens
@@ -186,19 +188,45 @@ export async function chat(messages: AIMessage[], options: ChatCompletionOptions
   if (options.stop !== undefined) inferenceConfig.stopSequences = Array.isArray(options.stop) ? options.stop : [options.stop]
 
   const tools = toolConfig(options)
-  const response = await converse({
-    modelId: model,
-    ...toConverseMessages(messages, options.system),
-    ...(Object.keys(inferenceConfig).length > 0 ? { inferenceConfig } : {}),
-    ...(tools ? { toolConfig: tools } : {}),
-  }, config.region)
-
   const outputTool = options.responseFormat && options.responseFormat.type !== 'text'
     ? structuredOutputTool(options.responseFormat).name
     : undefined
+
+  return {
+    input: {
+      modelId: model,
+      ...toConverseMessages(messages, options.system),
+      ...(Object.keys(inferenceConfig).length > 0 ? { inferenceConfig } : {}),
+      ...(tools ? { toolConfig: tools } : {}),
+    },
+    ...(outputTool ? { outputTool } : {}),
+    region: config.region,
+  }
+}
+
+function report(model: string, usage: NonNullable<AIResult['usage']>, startedAt: number): void {
+  recordUsage({
+    provider: 'bedrock',
+    model,
+    promptTokens: usage.promptTokens,
+    completionTokens: usage.completionTokens,
+    totalTokens: usage.totalTokens,
+    durationMs: Date.now() - startedAt,
+    timestamp: Date.now(),
+  })
+}
+
+/**
+ * One chat completion. `options.model` overrides the configured model.
+ */
+export async function chat(messages: AIMessage[], options: ChatCompletionOptions & { system?: string } = {}): Promise<AIResult> {
+  const startedAt = Date.now()
+  const { input, outputTool, region } = converseRequest(messages, options)
+  const response = await converse(input, region)
+
   const result: AIResult = {
     ...readOutput(response, outputTool),
-    model,
+    model: input.modelId,
     usage: {
       promptTokens: response.usage?.inputTokens ?? 0,
       completionTokens: response.usage?.outputTokens ?? 0,
@@ -207,17 +235,96 @@ export async function chat(messages: AIMessage[], options: ChatCompletionOptions
     finishReason: response.stopReason,
   }
 
-  recordUsage({
-    provider: 'bedrock',
-    model,
-    promptTokens: result.usage!.promptTokens,
-    completionTokens: result.usage!.completionTokens,
-    totalTokens: result.usage!.totalTokens,
-    durationMs: Date.now() - startedAt,
-    timestamp: Date.now(),
-  })
-
+  report(input.modelId, result.usage!, startedAt)
   return result
 }
 
-export const bedrock = { configure, chat }
+/**
+ * A streamed chat completion, as events: text as it is written, each tool
+ * call once its arguments have streamed, then the whole result.
+ *
+ * Converse streams a tool call as a `contentBlockStart` carrying its id and
+ * name, then `toolUse.input` fragments of one JSON string, so a call is
+ * reported at its `contentBlockStop`, whole. The structured-output tool is
+ * internal, as in `chat()`: its JSON streams as text. Usage arrives last, in
+ * `metadata`.
+ */
+export async function* streamChatEvents(messages: AIMessage[], options: ChatCompletionOptions & { system?: string } = {}): AsyncGenerator<AIStreamEvent> {
+  const startedAt = Date.now()
+  const { input, outputTool, region } = converseRequest(messages, options)
+  const { stream } = await converseStream(input, region)
+
+  const toolBlocks = new Map<number, { id: string, name: string, json: string, structured: boolean }>()
+  const toolCalls: AIToolCall[] = []
+  let content = ''
+  let usage: AIResult['usage']
+  let finishReason: string | undefined
+
+  for await (const event of stream) {
+    if ('contentBlockStart' in event) {
+      const use = event.contentBlockStart.start.toolUse
+      if (use)
+        toolBlocks.set(event.contentBlockStart.contentBlockIndex, { id: use.toolUseId, name: use.name, json: '', structured: use.name === outputTool })
+    }
+    else if ('contentBlockDelta' in event) {
+      const { contentBlockIndex, delta } = event.contentBlockDelta
+      if (delta.text) {
+        content += delta.text
+        yield { type: 'text', text: delta.text }
+      }
+      else if (delta.toolUse) {
+        const block = toolBlocks.get(contentBlockIndex)
+        if (!block)
+          continue
+        block.json += delta.toolUse.input
+        if (block.structured && delta.toolUse.input) {
+          content += delta.toolUse.input
+          yield { type: 'text', text: delta.toolUse.input }
+        }
+      }
+    }
+    else if ('contentBlockStop' in event) {
+      const block = toolBlocks.get(event.contentBlockStop.contentBlockIndex)
+      if (block && !block.structured) {
+        const call: AIToolCall = { id: block.id, name: block.name, arguments: parseToolArguments(block.json, block.name) }
+        toolCalls.push(call)
+        yield { type: 'tool_call', call }
+      }
+    }
+    else if ('messageStop' in event) {
+      finishReason = event.messageStop.stopReason
+    }
+    else if ('metadata' in event) {
+      usage = {
+        promptTokens: event.metadata.usage.inputTokens,
+        completionTokens: event.metadata.usage.outputTokens,
+        totalTokens: event.metadata.usage.totalTokens,
+      }
+    }
+  }
+
+  if (usage)
+    report(input.modelId, usage, startedAt)
+
+  yield {
+    type: 'done',
+    result: {
+      content,
+      ...(toolCalls.length > 0 ? { toolCalls } : {}),
+      model: input.modelId,
+      ...(usage ? { usage } : {}),
+      ...(finishReason ? { finishReason } : {}),
+    },
+  }
+}
+
+/**
+ * Stream chat completion: the text as it is written. Tool calls, usage and
+ * the stop reason are in the result the generator returns; iterate
+ * {@link streamChatEvents} to act on a tool call as soon as it arrives.
+ */
+export function streamChat(messages: AIMessage[], options: ChatCompletionOptions & { system?: string } = {}): AsyncGenerator<string, AIResult, undefined> {
+  return streamText(streamChatEvents(messages, options))
+}
+
+export const bedrock = { configure, chat, streamChat, streamChatEvents }

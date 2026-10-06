@@ -5,8 +5,10 @@
  * Supports chat completions and streaming.
  */
 
-import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIToolCall, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
+import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIStreamEvent, AIToolCall, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { sseJson, streamText } from '../../utils/stream'
+import { parseToolArguments } from '../../utils/tools'
 import { recordUsage } from '../../utils/usage'
 import { normalizeMessagesForProvider } from '../../utils/vision'
 import { DEFAULT_ANTHROPIC_MODEL } from '../../models'
@@ -166,14 +168,15 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
 }
 
 /**
- * Chat completion with full options. Supports tools + structured
- * output via `responseFormat` (stacksjs/stacks#1878 A-1).
+ * The Messages API request for a chat completion, streamed or not, and the
+ * name of the internal structured-output tool when `responseFormat` asks for
+ * one. Shared so a stream offers the model exactly what `chat()` would: the
+ * stream used to send no tools at all, so it could never see a tool call.
  */
-export async function chat(
+function messagesRequest(
   messages: AIMessage[],
-  options: ChatCompletionOptions & { system?: string } = {},
-): Promise<AIResult> {
-  const config = getConfig()
+  options: ChatCompletionOptions & { system?: string },
+): { body: Record<string, unknown>, outputTool?: string } {
   const {
     model = DEFAULT_MODEL,
     maxTokens = DEFAULT_MAX_TOKENS,
@@ -186,20 +189,10 @@ export async function chat(
     responseFormat,
   } = options
 
-  // Build the request body. Tools and tool_choice map directly to
-  // Claude's Messages API. responseFormat is mapped to the
-  // tools-as-json pattern (Claude 3.5+ doesn't have a first-class
-  // JSON-mode parameter; the standard idiom is "define a tool whose
-  // input is the JSON shape and force the model to call it").
   // Normalize content arrays into Anthropic's wire format
   // (stacksjs/stacks#1878 A-3). Apps that authored their messages
   // with OpenAI-style `image_url` blocks (or use cross-driver
   // helpers) get the right shape on the wire.
-  const normalizedMessages = normalizeMessagesForProvider(messages, 'anthropic')
-
-  // Track wall-clock duration for usage reporters (#1878 A-6).
-  const startedAt = Date.now()
-
   const body: Record<string, unknown> = {
     model,
     max_tokens: maxTokens,
@@ -207,7 +200,7 @@ export async function chat(
     top_p: topP,
     stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
     system,
-    messages: normalizedMessages,
+    messages: normalizeMessagesForProvider(messages, 'anthropic'),
   }
 
   if (tools && tools.length > 0) {
@@ -220,10 +213,11 @@ export async function chat(
       body.tool_choice = mapAnthropicToolChoice(toolChoice)
   }
 
-  // responseFormat → tools-as-json shape. If callers provide both
-  // explicit tools AND responseFormat, the structured-output tool
-  // is appended and forced via tool_choice. Caller's explicit
-  // tool_choice wins.
+  // responseFormat → tools-as-json shape (Claude has no first-class JSON
+  // mode; the idiom is a tool whose input is the JSON, which the model is
+  // made to call). If callers provide both explicit tools AND
+  // responseFormat, the structured-output tool is appended and forced via
+  // tool_choice. Caller's explicit tool_choice wins.
   if (responseFormat && responseFormat.type !== 'text') {
     const outputTool = buildAnthropicJsonTool(responseFormat)
     const existing = Array.isArray(body.tools) ? body.tools as unknown[] : []
@@ -231,9 +225,15 @@ export async function chat(
     if (toolChoice === undefined) {
       body.tool_choice = { type: 'tool', name: outputTool.name }
     }
+    return { body, outputTool: outputTool.name }
   }
 
-  const response = await fetchWithRetry(`${BASE_URL}/messages`, {
+  return { body }
+}
+
+function postMessages(body: Record<string, unknown>): Promise<Response> {
+  const config = getConfig()
+  return fetchWithRetry(`${BASE_URL}/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -242,6 +242,20 @@ export async function chat(
     },
     body: JSON.stringify(body),
   })
+}
+
+/**
+ * Chat completion with full options. Supports tools + structured
+ * output via `responseFormat` (stacksjs/stacks#1878 A-1).
+ */
+export async function chat(
+  messages: AIMessage[],
+  options: ChatCompletionOptions & { system?: string } = {},
+): Promise<AIResult> {
+  // Track wall-clock duration for usage reporters (#1878 A-6).
+  const startedAt = Date.now()
+  const { body, outputTool } = messagesRequest(messages, options)
+  const response = await postMessages(body)
 
   if (!response.ok) {
     const error = await response.text()
@@ -259,7 +273,6 @@ export async function chat(
   // has to run, reported in `toolCalls` - this used to stringify the first
   // tool_use's input into `content`, dropping its name and id and any other
   // call, so a tool could not be answered.
-  const outputTool = responseFormat && responseFormat.type !== 'text' ? buildAnthropicJsonTool(responseFormat).name : undefined
   const blocks = data.content as Array<{ type: string, text?: string, id?: string, name?: string, input?: Record<string, unknown> }>
   const structured = outputTool ? blocks.find(b => b.type === 'tool_use' && b.name === outputTool) : undefined
   const toolCalls: AIToolCall[] = blocks
@@ -327,78 +340,129 @@ function buildAnthropicJsonTool(format: NonNullable<ChatCompletionOptions['respo
   }
 }
 
+/** The Messages API's streamed events, as far as a chat completion reads them. */
+type MessagesStreamEvent =
+  | { type: 'message_start', message: { model: string, usage?: { input_tokens?: number, output_tokens?: number } } }
+  | { type: 'content_block_start', index: number, content_block: { type: string, id?: string, name?: string } }
+  | { type: 'content_block_delta', index: number, delta: { type: 'text_delta', text: string } | { type: 'input_json_delta', partial_json: string } | { type: string } }
+  | { type: 'content_block_stop', index: number }
+  | { type: 'message_delta', delta: { stop_reason?: string }, usage?: { output_tokens?: number } }
+  | { type: 'message_stop' }
+  | { type: 'ping' }
+  | { type: 'error', error: { type: string, message: string } }
+
 /**
- * Stream chat completion
+ * A streamed chat completion, as events: text as it is written, each tool
+ * call once its arguments have streamed, then the whole result.
+ *
+ * A `tool_use` block streams its input as `input_json_delta` fragments, so a
+ * call is reported at its `content_block_stop`, whole. The structured-output
+ * tool is internal, as in `chat()`: its JSON streams as text. An `error`
+ * event (an overload mid-stream) throws rather than ending the stream as if
+ * the model had finished.
  */
-export async function* streamChat(
+export async function* streamChatEvents(
   messages: AIMessage[],
   options: ChatCompletionOptions & { system?: string } = {},
-): AsyncGenerator<string> {
-  const config = getConfig()
-  const {
-    model = DEFAULT_MODEL,
-    maxTokens = DEFAULT_MAX_TOKENS,
-    temperature,
-    topP,
-    stop,
-    system,
-  } = options
-
-  const response = await fetchWithRetry(`${BASE_URL}/messages`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.apiKey,
-      'anthropic-version': config.anthropicVersion || DEFAULT_VERSION,
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      top_p: topP,
-      stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
-      system,
-      stream: true,
-      messages: normalizeMessagesForProvider(messages, 'anthropic'),
-    }),
-  })
+): AsyncGenerator<AIStreamEvent> {
+  const startedAt = Date.now()
+  const { body, outputTool } = messagesRequest(messages, options)
+  const response = await postMessages({ ...body, stream: true })
 
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Claude API error: ${error}`)
   }
+  if (!response.body) throw new Error('No response body')
 
-  const reader = response.body?.getReader()
-  if (!reader) throw new Error('No response body')
+  const toolBlocks = new Map<number, { id: string, name: string, json: string, structured: boolean }>()
+  const toolCalls: AIToolCall[] = []
+  let content = ''
+  let model = String(body.model)
+  let promptTokens = 0
+  let completionTokens = 0
+  let finishReason: string | undefined
 
-  const decoder = new TextDecoder()
-  let buffer = ''
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() || ''
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6)
-        if (data === '[DONE]') continue
-
-        try {
-          const event = JSON.parse(data) as ClaudeStreamEvent
-          if (event.type === 'content_block_delta' && event.delta?.text) {
-            yield event.delta.text
+  for await (const event of sseJson(response.body, 'Claude API') as AsyncGenerator<MessagesStreamEvent>) {
+    switch (event.type) {
+      case 'message_start':
+        model = event.message.model || model
+        promptTokens = event.message.usage?.input_tokens ?? 0
+        completionTokens = event.message.usage?.output_tokens ?? 0
+        break
+      case 'content_block_start':
+        if (event.content_block.type === 'tool_use') {
+          const name = event.content_block.name ?? ''
+          toolBlocks.set(event.index, { id: event.content_block.id ?? '', name, json: '', structured: name === outputTool })
+        }
+        break
+      case 'content_block_delta': {
+        const delta = event.delta
+        if ('text' in delta && delta.type === 'text_delta') {
+          content += delta.text
+          yield { type: 'text', text: delta.text }
+        }
+        else if ('partial_json' in delta && delta.type === 'input_json_delta') {
+          const block = toolBlocks.get(event.index)
+          if (!block)
+            break
+          block.json += delta.partial_json
+          if (block.structured && delta.partial_json) {
+            content += delta.partial_json
+            yield { type: 'text', text: delta.partial_json }
           }
         }
-        catch {
-          // Skip invalid JSON
-        }
+        break
       }
+      case 'content_block_stop': {
+        const block = toolBlocks.get(event.index)
+        if (block && !block.structured) {
+          const call: AIToolCall = { id: block.id, name: block.name, arguments: parseToolArguments(block.json, block.name) }
+          toolCalls.push(call)
+          yield { type: 'tool_call', call }
+        }
+        break
+      }
+      case 'message_delta':
+        finishReason = event.delta.stop_reason ?? finishReason
+        completionTokens = event.usage?.output_tokens ?? completionTokens
+        break
+      case 'error':
+        throw new Error(`Claude API error: ${event.error.type}: ${event.error.message}`)
     }
   }
+
+  const result: AIResult = {
+    content,
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
+    model,
+    usage: { promptTokens, completionTokens, totalTokens: promptTokens + completionTokens },
+    ...(finishReason ? { finishReason } : {}),
+  }
+
+  recordUsage({
+    provider: 'anthropic',
+    model,
+    promptTokens,
+    completionTokens,
+    totalTokens: promptTokens + completionTokens,
+    durationMs: Date.now() - startedAt,
+    timestamp: Date.now(),
+  })
+
+  yield { type: 'done', result }
+}
+
+/**
+ * Stream chat completion: the text as it is written. Tool calls, usage and
+ * the stop reason are in the result the generator returns; iterate
+ * {@link streamChatEvents} to act on a tool call as soon as it arrives.
+ */
+export function streamChat(
+  messages: AIMessage[],
+  options: ChatCompletionOptions & { system?: string } = {},
+): AsyncGenerator<string, AIResult, undefined> {
+  return streamText(streamChatEvents(messages, options))
 }
 
 /**
@@ -429,6 +493,7 @@ export const anthropic = {
   configure,
   chat,
   streamChat,
+  streamChatEvents,
   prompt,
   estimateTokens,
   createDriver: createAnthropicDriver,

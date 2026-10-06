@@ -5,7 +5,8 @@
  * Supports chat completions, streaming, and embeddings.
  */
 
-import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIToolCall, ChatCompletionOptions, OllamaAPIResponse } from '../../types'
+import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIStreamEvent, AIToolCall, ChatCompletionOptions, OllamaAPIResponse } from '../../types'
+import { ndjson, streamText } from '../../utils/stream'
 import { parseToolArguments, toOllamaMessages } from '../../utils/tools'
 
 export interface OllamaDriverConfig extends AIDriverConfig {
@@ -148,12 +149,11 @@ export function createOllamaDriver(config: OllamaDriverConfig = {}): AIDriver {
 }
 
 /**
- * Chat completion with full options
+ * The `/api/chat` request for a chat completion, streamed or not. Shared so a
+ * stream offers the model exactly what `chat()` would: the stream used to
+ * send no tools and no format, so it could never see a tool call.
  */
-export async function chat(
-  messages: AIMessage[],
-  options: ChatCompletionOptions = {},
-): Promise<AIResult> {
+function chatRequest(messages: AIMessage[], options: ChatCompletionOptions, stream: boolean): Record<string, unknown> {
   const config = getConfig()
   const {
     model = config.model,
@@ -176,28 +176,65 @@ export async function chat(
       ? 'json'
       : undefined
 
+  return {
+    model,
+    messages: toOllamaMessages(messages),
+    stream,
+    format,
+    ...(offered.length > 0
+      ? {
+          tools: offered.map(tool => ({
+            type: 'function',
+            function: { name: tool.name, description: tool.description, parameters: tool.parameters ?? { type: 'object', properties: {} } },
+          })),
+        }
+      : {}),
+    options: {
+      temperature,
+      top_p: topP,
+      stop,
+    },
+  }
+}
+
+type OllamaToolCalls = Array<{ id?: string, function: { name: string, arguments: unknown } }>
+
+/** One line of a streamed `/api/chat` response. */
+interface OllamaChatChunk {
+  model?: string
+  message?: { content?: string, tool_calls?: OllamaToolCalls }
+  done?: boolean
+  done_reason?: string
+  prompt_eval_count?: number
+  eval_count?: number
+  error?: string
+}
+
+/**
+ * Ollama's calls in the cross-driver shape. Ollama matches a result to its
+ * call by tool name, and older servers send no id; one is made up from the
+ * call's position so the shape always has one.
+ */
+function toToolCalls(calls: OllamaToolCalls, offset = 0): AIToolCall[] {
+  return calls.map((call, index) => ({
+    id: call.id ?? `call_${offset + index}`,
+    name: call.function.name,
+    arguments: parseToolArguments(call.function.arguments, call.function.name),
+  }))
+}
+
+/**
+ * Chat completion with full options
+ */
+export async function chat(
+  messages: AIMessage[],
+  options: ChatCompletionOptions = {},
+): Promise<AIResult> {
+  const config = getConfig()
   const response = await fetch(`${config.host}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages: toOllamaMessages(messages),
-      stream: false,
-      format,
-      ...(offered.length > 0
-        ? {
-            tools: offered.map(tool => ({
-              type: 'function',
-              function: { name: tool.name, description: tool.description, parameters: tool.parameters ?? { type: 'object', properties: {} } },
-            })),
-          }
-        : {}),
-      options: {
-        temperature,
-        top_p: topP,
-        stop,
-      },
-    }),
+    body: JSON.stringify(chatRequest(messages, options, false)),
   })
 
   if (!response.ok) {
@@ -206,14 +243,7 @@ export async function chat(
   }
 
   const data = (await response.json())
-  const calls = (data.message?.tool_calls ?? []) as Array<{ id?: string, function: { name: string, arguments: unknown } }>
-  const toolCalls: AIToolCall[] = calls.map((call, index) => ({
-    // Ollama matches a result to its call by tool name, and older servers
-    // send no id; one is made up so the cross-driver shape always has one.
-    id: call.id ?? `call_${index}`,
-    name: call.function.name,
-    arguments: parseToolArguments(call.function.arguments, call.function.name),
-  }))
+  const toolCalls = toToolCalls((data.message?.tool_calls ?? []) as OllamaToolCalls)
 
   return {
     content: data.message?.content ?? '',
@@ -229,68 +259,84 @@ export async function chat(
 }
 
 /**
- * Stream chat completion
+ * A streamed chat completion, as events: text as it is written, each tool
+ * call as it arrives, then the whole result.
+ *
+ * Ollama streams newline-delimited JSON. A tool call arrives whole, on the
+ * message of whichever chunk carries it, and the counts and stop reason on
+ * the last (`done: true`) one. An `error` line throws.
  */
-export async function* streamChat(
+export async function* streamChatEvents(
   messages: AIMessage[],
   options: ChatCompletionOptions = {},
-): AsyncGenerator<string> {
+): AsyncGenerator<AIStreamEvent> {
   const config = getConfig()
-  const {
-    model = config.model,
-    temperature,
-    topP,
-    stop,
-  } = options
-
+  const body = chatRequest(messages, options, true)
   const response = await fetch(`${config.host}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages: toOllamaMessages(messages),
-      stream: true,
-      options: {
-        temperature,
-        top_p: topP,
-        stop,
-      },
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Ollama API error: ${error}`)
   }
+  if (!response.body) throw new Error('No response body')
 
-  const reader = response.body?.getReader()
-  if (!reader) throw new Error('No response body')
+  const toolCalls: AIToolCall[] = []
+  let content = ''
+  let model = String(body.model)
+  let usage: AIResult['usage']
+  let finishReason: string | undefined
 
-  const decoder = new TextDecoder()
-  let buffer = ''
+  for await (const chunk of ndjson(response.body, 'Ollama API') as AsyncGenerator<OllamaChatChunk>) {
+    if (chunk.error)
+      throw new Error(`Ollama API error: ${chunk.error}`)
+    if (chunk.model)
+      model = chunk.model
 
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
+    if (chunk.message?.content) {
+      content += chunk.message.content
+      yield { type: 'text', text: chunk.message.content }
+    }
+    for (const call of toToolCalls(chunk.message?.tool_calls ?? [], toolCalls.length)) {
+      toolCalls.push(call)
+      yield { type: 'tool_call', call }
+    }
 
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() || ''
-
-    for (const line of lines) {
-      if (!line.trim()) continue
-
-      try {
-        const data = JSON.parse(line) as OllamaAPIResponse
-        if (data.message?.content) {
-          yield data.message.content
-        }
-      }
-      catch {
-        // Skip invalid JSON
+    if (chunk.done) {
+      finishReason = chunk.done_reason || 'stop'
+      usage = {
+        promptTokens: chunk.prompt_eval_count || 0,
+        completionTokens: chunk.eval_count || 0,
+        totalTokens: (chunk.prompt_eval_count || 0) + (chunk.eval_count || 0),
       }
     }
   }
+
+  yield {
+    type: 'done',
+    result: {
+      content,
+      ...(toolCalls.length > 0 ? { toolCalls } : {}),
+      model,
+      ...(usage ? { usage } : {}),
+      ...(finishReason ? { finishReason } : {}),
+    },
+  }
+}
+
+/**
+ * Stream chat completion: the text as it is written. Tool calls, usage and
+ * the stop reason are in the result the generator returns; iterate
+ * {@link streamChatEvents} to act on a tool call as soon as it arrives.
+ */
+export function streamChat(
+  messages: AIMessage[],
+  options: ChatCompletionOptions = {},
+): AsyncGenerator<string, AIResult, undefined> {
+  return streamText(streamChatEvents(messages, options))
 }
 
 /**
@@ -534,6 +580,7 @@ export const ollama = {
   configure,
   chat,
   streamChat,
+  streamChatEvents,
   generate,
   embed,
   listModels,

@@ -151,6 +151,20 @@ export interface AIResult {
   finishReason?: string
 }
 
+/**
+ * One event of a streamed chat completion, the same from every driver.
+ *
+ * `text` arrives in pieces as the model writes. A `tool_call` arrives whole,
+ * once its arguments have finished streaming, so it can be run as soon as
+ * it is seen. `done` comes last, exactly once, with everything the stream
+ * carried in the shape `chat()` returns - text, tool calls, usage and why
+ * the model stopped.
+ */
+export type AIStreamEvent =
+  | { type: 'text', text: string }
+  | { type: 'tool_call', call: AIToolCall }
+  | { type: 'done', result: AIResult }
+
 export interface ClaudeAPIResponse {
   content: Array<{ type: string, text: string }>
 }

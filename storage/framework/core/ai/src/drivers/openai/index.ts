@@ -5,8 +5,9 @@
  * Supports chat completions, streaming, and embeddings.
  */
 
-import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIToolCall, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
+import type { AIDriver, AIDriverConfig, AIMessage, AIResult, AIStreamEvent, AIToolCall, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { sseJson, streamText } from '../../utils/stream'
 import { parseToolArguments, toChatCompletionMessages } from '../../utils/tools'
 import { recordUsage } from '../../utils/usage'
 
@@ -204,13 +205,11 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
 }
 
 /**
- * Chat completion with full options
+ * The Chat Completions request for a chat completion, streamed or not. Shared
+ * so a stream offers the model exactly what `chat()` would: the stream used
+ * to send no tools, so it could never see a tool call.
  */
-export async function chat(
-  messages: AIMessage[],
-  options: ChatCompletionOptions = {},
-): Promise<AIResult> {
-  const config = getConfig()
+function completionRequest(messages: AIMessage[], options: ChatCompletionOptions): Record<string, unknown> {
   const {
     model = DEFAULT_MODEL,
     maxTokens = DEFAULT_MAX_TOKENS,
@@ -226,18 +225,13 @@ export async function chat(
   // (stacksjs/stacks#1878 A-3). Apps that authored messages with
   // Anthropic-style `{ type: 'image', source: {...} }` blocks
   // (or use cross-driver helpers) get the right shape.
-  const normalizedMessages = toChatCompletionMessages(messages, { argumentsAsString: true })
-
-  // Track wall-clock duration for usage reporters (#1878 A-6).
-  const startedAt = Date.now()
-
   const body: Record<string, unknown> = {
     model,
     max_tokens: maxTokens,
     temperature,
     top_p: topP,
     stop,
-    messages: normalizedMessages,
+    messages: toChatCompletionMessages(messages, { argumentsAsString: true }),
   }
 
   if (tools?.length) {
@@ -260,7 +254,12 @@ export async function chat(
   if (responseFormat && responseFormat.type !== 'text')
     body.response_format = responseFormat
 
-  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
+  return body
+}
+
+function postCompletion(body: Record<string, unknown>): Promise<Response> {
+  const config = getConfig()
+  return fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -268,6 +267,18 @@ export async function chat(
     },
     body: JSON.stringify(body),
   })
+}
+
+/**
+ * Chat completion with full options
+ */
+export async function chat(
+  messages: AIMessage[],
+  options: ChatCompletionOptions = {},
+): Promise<AIResult> {
+  // Track wall-clock duration for usage reporters (#1878 A-6).
+  const startedAt = Date.now()
+  const response = await postCompletion(completionRequest(messages, options))
 
   if (!response.ok) {
     const error = await response.text()
@@ -319,74 +330,129 @@ export async function chat(
   return result
 }
 
+/** A Chat Completions stream chunk, as far as a chat completion reads it. */
+interface CompletionChunk {
+  model?: string
+  choices?: Array<{
+    delta?: {
+      content?: string | null
+      tool_calls?: Array<{ index: number, id?: string, function?: { name?: string, arguments?: string } }>
+    }
+    finish_reason?: string | null
+  }>
+  usage?: { prompt_tokens?: number, completion_tokens?: number, total_tokens?: number } | null
+  error?: { message?: string, type?: string }
+}
+
 /**
- * Stream chat completion
+ * A streamed chat completion, as events: text as it is written, each tool
+ * call once its arguments have streamed, then the whole result.
+ *
+ * A tool call streams as `delta.tool_calls` pieces keyed by `index`: the id
+ * and name first, then the arguments a fragment at a time. The calls are
+ * complete when the choice finishes, and are reported then, in index order.
+ * Usage only comes with `stream_options.include_usage`, on a last chunk with
+ * no choices, so it is asked for. An `error` chunk throws.
  */
-export async function* streamChat(
+export async function* streamChatEvents(
   messages: AIMessage[],
   options: ChatCompletionOptions = {},
-): AsyncGenerator<string> {
-  const config = getConfig()
-  const {
-    model = DEFAULT_MODEL,
-    maxTokens = DEFAULT_MAX_TOKENS,
-    temperature,
-    topP,
-    stop,
-  } = options
-
-  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      top_p: topP,
-      stop,
-      stream: true,
-      messages: toChatCompletionMessages(messages, { argumentsAsString: true }),
-    }),
-  })
+): AsyncGenerator<AIStreamEvent> {
+  const startedAt = Date.now()
+  const body = completionRequest(messages, options)
+  const response = await postCompletion({ ...body, stream: true, stream_options: { include_usage: true } })
 
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`OpenAI API error: ${error}`)
   }
+  if (!response.body) throw new Error('No response body')
 
-  const reader = response.body?.getReader()
-  if (!reader) throw new Error('No response body')
+  const pending = new Map<number, { id: string, name: string, args: string }>()
+  const toolCalls: AIToolCall[] = []
+  let content = ''
+  let model = String(body.model)
+  let usage: AIResult['usage']
+  let finishReason: string | undefined
 
-  const decoder = new TextDecoder()
-  let buffer = ''
+  // Reported when the choice finishes, or when the stream ends without
+  // saying so, which an OpenAI-compatible server is free to do.
+  function* flushCalls(): Generator<AIStreamEvent> {
+    for (const index of [...pending.keys()].sort((a, b) => a - b)) {
+      const piece = pending.get(index)!
+      const call: AIToolCall = { id: piece.id, name: piece.name, arguments: parseToolArguments(piece.args, piece.name) }
+      toolCalls.push(call)
+      yield { type: 'tool_call', call }
+    }
+    pending.clear()
+  }
 
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() || ''
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6)
-        if (data === '[DONE]') continue
-
-        try {
-          const parsed = JSON.parse(data)
-          const content = parsed.choices[0]?.delta?.content
-          if (content) yield content
-        }
-        catch {
-          // Skip invalid JSON
-        }
+  for await (const chunk of sseJson(response.body, 'OpenAI API') as AsyncGenerator<CompletionChunk>) {
+    if (chunk.error)
+      throw new Error(`OpenAI API error: ${chunk.error.type ? `${chunk.error.type}: ` : ''}${chunk.error.message ?? 'stream error'}`)
+    if (chunk.model)
+      model = chunk.model
+    if (chunk.usage) {
+      usage = {
+        promptTokens: chunk.usage.prompt_tokens ?? 0,
+        completionTokens: chunk.usage.completion_tokens ?? 0,
+        totalTokens: chunk.usage.total_tokens ?? 0,
       }
     }
+
+    const choice = chunk.choices?.[0]
+    if (!choice)
+      continue
+
+    if (choice.delta?.content) {
+      content += choice.delta.content
+      yield { type: 'text', text: choice.delta.content }
+    }
+    for (const piece of choice.delta?.tool_calls ?? []) {
+      const entry = pending.get(piece.index) ?? { id: '', name: '', args: '' }
+      if (piece.id) entry.id = piece.id
+      if (piece.function?.name) entry.name += piece.function.name
+      if (piece.function?.arguments) entry.args += piece.function.arguments
+      pending.set(piece.index, entry)
+    }
+    if (choice.finish_reason) {
+      finishReason = choice.finish_reason
+      yield * flushCalls()
+    }
   }
+  yield * flushCalls()
+
+  const result: AIResult = {
+    content,
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
+    model,
+    ...(usage ? { usage } : {}),
+    ...(finishReason ? { finishReason } : {}),
+  }
+
+  if (usage) {
+    recordUsage({
+      provider: 'openai',
+      model,
+      ...usage,
+      durationMs: Date.now() - startedAt,
+      timestamp: Date.now(),
+    })
+  }
+
+  yield { type: 'done', result }
+}
+
+/**
+ * Stream chat completion: the text as it is written. Tool calls, usage and
+ * the stop reason are in the result the generator returns; iterate
+ * {@link streamChatEvents} to act on a tool call as soon as it arrives.
+ */
+export function streamChat(
+  messages: AIMessage[],
+  options: ChatCompletionOptions = {},
+): AsyncGenerator<string, AIResult, undefined> {
+  return streamText(streamChatEvents(messages, options))
 }
 
 /**
@@ -557,6 +623,7 @@ export const openai = {
   configure,
   chat,
   streamChat,
+  streamChatEvents,
   embed,
   generateImage,
   transcribe,

@@ -164,8 +164,32 @@ console.log(result.content)
 
 `toolChoice` is `'auto'`, `'required'`, `'none'` or `{ name }`. Ollama has no
 way to force a call, so `'required'` and `{ name }` are refused there rather
-than ignored. `streamChat()` streams text only; use `chat()` when the model
-may call a tool.
+than ignored.
+
+### Streaming with tools
+
+`streamChat()` yields the text as it is written, and every driver accepts the
+same `tools`, `toolChoice` and `responseFormat` as `chat()`. When the stream
+ends, the generator returns the whole result, tool calls included. To act on a
+call as soon as the model makes it, iterate `streamChatEvents()` instead:
+
+```typescript
+import { anthropic } from '@stacksjs/ai'
+
+for await (const event of anthropic.streamChatEvents(messages, { tools })) {
+  if (event.type === 'text')
+    process.stdout.write(event.text)
+  else if (event.type === 'tool_call')
+    console.log('calling', event.call.name, event.call.arguments)
+  else // 'done', always last, in the shape chat() returns
+    console.log(event.result.usage)
+}
+```
+
+A tool call arrives whole, once its arguments have finished streaming. The
+structured-output tool `responseFormat` uses streams as text, as its JSON is
+`content` in `chat()`. A provider error in the middle of a stream throws rather
+than ending it as if the model had finished.
 
 ### Structured output
 
@@ -236,9 +260,11 @@ Anthropic's first-use form. The same is `requestModelAccess(models?)` in code.
 
 ### Lower level
 
-`invokeModel`, `invokeModelWithResponseStream` and `converse` from
-`@stacksjs/ai` call Bedrock with the model's own request body; the stream yields
-each chunk's decoded model output.
+`invokeModel` and `invokeModelWithResponseStream` from `@stacksjs/ai` call
+Bedrock with the model's own request body; the stream yields each chunk's
+decoded model output. `converse` and `converseStream` take Converse's request
+shape; the stream yields its events (`contentBlockDelta`, `messageStop`,
+`metadata`, ...).
 
 ## AI Agents
 
@@ -452,7 +478,8 @@ Each of `anthropic`, `openai`, `ollama` and `bedrock`:
 |----------|-------------|
 | `configure(config)` | Set the model, key or host for later calls |
 | `chat(messages, options)` | One completion, an `AIResult` |
-| `streamChat(messages, options)` | Text as it is generated (not `bedrock`) |
+| `streamChat(messages, options)` | Text as it is generated; returns the full `AIResult` when it ends |
+| `streamChatEvents(messages, options)` | `text`, `tool_call` and a final `done` event |
 | `openai.embed(input, model?)` / `ollama.embed(input, model?)` | Embedding vectors |
 | `ollama.listModels()` / `ollama.pullModel(name, onProgress?)` | Local models |
 | `assistantTurn(result)` / `toolResultsTurn(results)` | The messages that answer `result.toolCalls` |
@@ -470,7 +497,7 @@ Each of `anthropic`, `openai`, `ollama` and `bedrock`:
 | Function | Description |
 |----------|-------------|
 | `bedrock.chat(messages, options)` | A completion through the Converse API |
-| `converse(params, region?)` | Converse with Bedrock's own request shape |
+| `converse(params, region?)` / `converseStream(params, region?)` | Converse with Bedrock's own request shape, whole or as events |
 | `invokeModel(params)` / `invokeModelWithResponseStream(params)` | The model's native request body |
 | `listFoundationModels(params)` | What Bedrock offers |
 | `requestModelAccess(models?, { region })` | Make models invocable; `buddy ai:access` |

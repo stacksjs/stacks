@@ -69,7 +69,8 @@ const result = await bedrock.chat([{ role: 'user', content: 'Hello' }], { system
 ```
 
 - Every request goes through Bedrock's Converse API, so one shape serves Nova,
-  Claude and Llama; the model is configuration. No streaming yet.
+  Claude and Llama; the model is configuration. `bedrock.streamChat()` and
+  `streamChatEvents()` stream through `converse-stream` (ts-cloud >= 0.16.44).
 - Credentials come from the AWS credential chain, never config. Region:
   `drivers.bedrock.region`, `AWS_REGION`, `AWS_DEFAULT_REGION`, us-east-1.
 - Default model `amazon.nova-lite-v1:0`: on demand, no profile, no agreement.
@@ -96,7 +97,11 @@ messages.push(assistantTurn(result), toolResultsTurn(
 - The `responseFormat` structured-output tool is internal: its JSON is
   `content`, never a tool call.
 - Ollama refuses `toolChoice: 'required'` / `{ name }`; it cannot force a call.
-- `streamChat()` streams text only.
+- Streaming takes the same `tools`. `streamChat()` yields text and returns the
+  full `AIResult` (with `toolCalls`) when it ends; `streamChatEvents()` yields
+  `{ type: 'text' }`, `{ type: 'tool_call', call }` (whole, once its arguments
+  have streamed) and a final `{ type: 'done', result }`. Every driver,
+  Bedrock included.
 
 ## Provider-Neutral Client
 

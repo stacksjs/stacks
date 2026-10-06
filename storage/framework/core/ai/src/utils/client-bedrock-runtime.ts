@@ -1,6 +1,7 @@
 import type {
   ConverseCommandInput,
   ConverseCommandOutput,
+  ConverseStreamCommandOutput,
   InvokeModelCommandInput,
   InvokeModelCommandOutput,
   InvokeModelWithResponseStreamCommandInput,
@@ -47,6 +48,17 @@ async function getClient(region?: string): Promise<any> {
 export async function converse(params: ConverseCommandInput, region?: string): Promise<ConverseCommandOutput> {
   const c = await getClient(region)
   return c.converse(params)
+}
+
+/*
+ * Converse, streamed: the same request, answered as events
+ * @see https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ConverseStream.html
+ */
+export async function converseStream(params: ConverseCommandInput, region?: string): Promise<ConverseStreamCommandOutput> {
+  const c = await getClient(region)
+  if (typeof c.converseStream !== 'function')
+    throw new Error('This @stacksjs/ts-cloud cannot stream the Converse API: upgrade it to 0.16.44 or newer.')
+  return c.converseStream(params)
 }
 
 /*
