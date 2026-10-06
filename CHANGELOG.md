@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.73...v0.75.74)
+
+## ✨ Features
+
+- **ai**: carry tool calls through AIResult in every driver, and send results back ([c007974](https://github.com/stacksjs/stacks/commit/c007974)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **mobile**: the tab bar steps aside while the keyboard is up ([2b0fcb2](https://github.com/stacksjs/stacks/commit/2b0fcb2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.72...v0.75.73)
 
 ## 💥 Breaking Changes
