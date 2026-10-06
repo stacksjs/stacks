@@ -3145,6 +3145,15 @@ async function runSshDeploy(args: {
   if (ok && dnsAllowed)
     await reconcileCloudflareCdnForDeploy(tsCloudConfig, ip, ipv6, log)
 
+  // Object storage the app declares on Cloudflare R2 (config/cloud.ts
+  // `infrastructure.r2`): the buckets themselves, their CORS and lifecycle, and
+  // the custom domains that publish them. Attaching a custom domain is also what
+  // creates its DNS record, so this is the DNS step for a bucket-served host
+  // like tiles.example.com. After the CDN step for the same reason that step is
+  // after TLS: nothing here should race the box's own records.
+  if (ok && dnsAllowed)
+    await reconcileR2ForDeploy(tsCloudConfig, log)
+
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
@@ -4832,6 +4841,63 @@ async function reconcileCloudflareCdnForDeploy(
   }
   catch (err: any) {
     logger.warn(`Cloudflare CDN: ${err?.message || err}`)
+  }
+}
+
+/**
+ * Provision the R2 buckets the app declares, through ts-cloud.
+ *
+ * Every bucket under `infrastructure.r2.buckets` is made to match its config:
+ * the bucket, CORS, lifecycle rules, whether the r2.dev URL is on, the custom
+ * domains (which bring their own proxied DNS records) and any edge cache rule
+ * for them. ts-cloud reads first and only writes a difference, so a deploy with
+ * nothing changed makes no writes.
+ *
+ * Non-fatal like the reconcilers around it: the release is already live. The
+ * one failure worth naming precisely is an account that has never enabled R2,
+ * because that is a dashboard click no token can make.
+ */
+async function reconcileR2ForDeploy(tsCloudConfig: any, logger: typeof log): Promise<void> {
+  const buckets = tsCloudConfig?.infrastructure?.r2?.buckets
+  if (!buckets || Object.keys(buckets).length === 0) return
+
+  let reconcileR2Buckets: any
+  try {
+    ({ reconcileR2Buckets } = await import('@stacksjs/ts-cloud'))
+  }
+  catch {
+    return
+  }
+  if (typeof reconcileR2Buckets !== 'function') {
+    logger.warn('R2: installed @stacksjs/ts-cloud is too old to manage buckets. Upgrade it to provision infrastructure.r2.')
+    return
+  }
+
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
+  if (!apiToken || !accountId) {
+    logger.warn('R2: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are both needed to provision buckets. Skipping.')
+    return
+  }
+
+  logger.info(`R2: reconciling ${Object.keys(buckets).length} bucket(s)...`)
+  try {
+    const summary = await reconcileR2Buckets(tsCloudConfig, {
+      apiToken,
+      accountId,
+      zoneId: process.env.CLOUDFLARE_ZONE_ID || undefined,
+      log: (message: string) => logger.info(`  ${message}`),
+    })
+    for (const bucket of summary?.buckets ?? []) {
+      const changes = bucket.changes?.length ? bucket.changes.join(', ') : 'in sync'
+      logger.success(`  ${bucket.name}: ${changes}`)
+      for (const domain of bucket.domains ?? [])
+        logger.success(`    https://${domain.domain}${domain.status ? ` (${domain.status})` : ''}`)
+    }
+    for (const warning of summary?.warnings ?? []) logger.warn(`  ${warning}`)
+  }
+  catch (err: any) {
+    logger.warn(`R2: ${err?.message || err}`)
   }
 }
 
