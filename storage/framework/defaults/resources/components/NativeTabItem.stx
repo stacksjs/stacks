@@ -6,9 +6,10 @@ interface NativeTabItemProps {
   /** A count on the icon. Zero and empty draw nothing. */
   badge?: string | number
   /**
-   * More paths that belong to this tab, space-separated: a workout opened from
-   * the calendar keeps the Calendar tab lit. A tab bar is a <nav>, where a
-   * link is otherwise current only on its own page.
+   * More paths that belong to this tab, space-separated, for a screen
+   * reached with no tab current yet: a deep link to a workout lights the
+   * Calendar tab. Opened from a tab, a screen keeps that tab lit instead
+   * (the tab bar's sticky nav).
    */
   match?: string
 }

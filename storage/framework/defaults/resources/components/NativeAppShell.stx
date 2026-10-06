@@ -76,6 +76,12 @@ const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${cla
     padding-left: var(--native-safe-area-left);
   }
 
+  /* iOS zooms the page into a text field smaller than 16px when it takes
+     focus, and inside an app nothing zooms it back out: the whole screen
+     stayed magnified and shifted sideways after typing a comment. A field in
+     the shell is never smaller than that. */
+  .native-app-shell :is(input, textarea, select) { font-size: max(16px, 1em); }
+
   .native-app-shell::before {
     content: '';
     position: fixed;

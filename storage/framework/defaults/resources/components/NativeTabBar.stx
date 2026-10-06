@@ -14,7 +14,10 @@ function selectTab(): void {
 }
 </script>
 
-<nav aria-label="{{ label }}" class="native-tab-bar" @click="selectTab()">
+<!-- `data-stx-sticky-active`: each tab owns the screens opened from it, as on
+     iOS, so a workout opened from Today keeps Today lit; a tab's `match`
+     decides only for a screen reached with no tab current yet (a deep link). -->
+<nav aria-label="{{ label }}" class="native-tab-bar" data-stx-sticky-active @click="selectTab()">
   <slot />
 </nav>
 

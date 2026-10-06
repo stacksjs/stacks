@@ -7,28 +7,51 @@ interface NativeNavBarProps {
   backLabel?: string
   /** `false` for a pushed screen: the title sits in the bar from the start. */
   large?: boolean
+  /**
+   * For a pushed screen that draws its own heading: the bar leaves the title
+   * out until that heading has scrolled away, rather than showing it twice.
+   */
+  titleOnScroll?: boolean
 }
 
 const { title = '', back = '', backLabel = 'Back', large = true } = defineProps<NativeNavBarProps>()
 </script>
 
 <script client>
-import { goBack, haptics, observePageScroll } from '@stacksjs/mobile'
+import { backLabelFor, canGoBack, enterNavTrail, goBack, haptics, navTrail, observePageScroll } from '@stacksjs/mobile'
 
 const isLarge = useReactiveProp<boolean>('large', true)
+const onScroll = useReactiveProp<boolean>('titleOnScroll', false)
 // Reactive, so a screen whose name arrives with its data can pass it in.
 const navTitle = useReactiveProp<string>('title', '')
 const scrolled = state(false)
 let stopScroll: (() => void) | null = null
 
+// The back button names the screen it returns to, as on iOS: the one the app
+// actually came from, which a fixed label cannot know (a workout opened from
+// Today is not going back to the calendar). Each bar records its screen's
+// name on the window's trail of screens.
+const fallbackLabel = useReactiveProp<string>('backLabel', 'Back')
+const previousTitle = state('')
+const backText = derived(() => backLabelFor({ path: '', title: previousTitle() }, fallbackLabel()))
+let here: { path: string, title: string } | null = null
+effect(() => {
+  const name = navTitle()
+  if (here) here.title = name
+})
+
 onMount(() => {
   // The large title is about 44px tall; past it, its name belongs in the bar.
   stopScroll = observePageScroll(offset => scrolled.set(offset > 40))
+  const { current, previous } = enterNavTrail(navTrail(), window.location.pathname + window.location.search)
+  here = current
+  current.title = navTitle()
+  if (previous && canGoBack()) previousTitle.set(previous.title)
 })
 onDestroy(() => stopScroll?.())
 
 const barClass = derived(() => {
-  const collapsed = !isLarge() || scrolled()
+  const collapsed = (!isLarge() && !onScroll()) || scrolled()
   return `native-nav-bar${collapsed ? ' is-collapsed' : ''}${scrolled() ? ' is-scrolled' : ''}`
 })
 
@@ -44,9 +67,9 @@ function tapBack(event: MouseEvent): void {
   <header :class="barClass()">
     <div class="native-nav-side">
       @if(back)
-        <a href="{{ back }}" class="native-nav-back" aria-label="{{ backLabel }}" draggable="false" @click="tapBack">
+        <a href="{{ back }}" class="native-nav-back" :aria-label="backText()" draggable="false" @click="tapBack">
           <i aria-hidden="true" class="i-lucide-chevron-left native-nav-back-icon"></i>
-          <span>{{ backLabel }}</span>
+          <span class="native-nav-back-label">{{ backText() }}</span>
         </a>
       @endif
       <slot name="leading" />
@@ -107,7 +130,10 @@ function tapBack(event: MouseEvent): void {
     background: var(--native-bar-background-dark, rgb(2 6 23 / 0.86));
   }
 
-  .native-nav-side { display: flex; gap: 0.25rem; align-items: center; min-width: 0; }
+  /* Each side is a container, so the back button can tell when its column is
+     too narrow for its word and keep only the chevron, as iOS does, rather
+     than running into the title. */
+  .native-nav-side { display: flex; gap: 0.25rem; align-items: center; min-width: 0; container-type: inline-size; }
   .native-nav-actions { justify-content: flex-end; }
 
   .native-nav-title {
@@ -124,8 +150,12 @@ function tapBack(event: MouseEvent): void {
 
   .native-nav-bar.is-collapsed .native-nav-title { opacity: 1; transform: none; }
 
+  /* A title that is not showing takes no room from the sides either. */
+  .native-nav-bar:not(.is-collapsed) .native-nav-title { max-width: 0; }
+
   .native-nav-back {
     display: inline-flex;
+    max-width: 100%;
     gap: 0.1rem;
     align-items: center;
     min-height: 2.75rem;
@@ -139,7 +169,11 @@ function tapBack(event: MouseEvent): void {
 
   .dark .native-nav-back { color: var(--native-accent-dark, rgb(96 165 250)); }
   .native-nav-back:active { opacity: 0.55; }
-  .native-nav-back-icon { width: 1.6rem; height: 1.6rem; }
+  .native-nav-back-icon { flex-shrink: 0; width: 1.6rem; height: 1.6rem; }
+  .native-nav-back-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @container (max-width: 4.5rem) {
+    .native-nav-back-label { display: none; }
+  }
 
   .native-nav-large-title.is-empty { display: none; }
 

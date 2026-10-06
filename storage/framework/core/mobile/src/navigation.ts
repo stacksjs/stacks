@@ -37,6 +37,49 @@ export function goBack(host: HistoryHost | undefined = historyHost()): boolean {
   return true
 }
 
+/** A screen the app has shown, by the path it was at and the name it showed. */
+export interface NavTrailEntry {
+  path: string
+  title: string
+}
+
+/**
+ * Records arriving at `path` on the trail of screens, and answers this
+ * screen's entry and the one a back button returns to.
+ *
+ * Arriving at the screen just before the current one is going back, so the
+ * current one is dropped; arriving at the current one again (a reload, a
+ * re-render) changes nothing; anything else is a push. The trail is capped,
+ * oldest first.
+ */
+export function enterNavTrail(trail: NavTrailEntry[], path: string, limit = 50): { current: NavTrailEntry, previous: NavTrailEntry | null } {
+  const last = trail[trail.length - 1]
+  if (trail.length >= 2 && trail[trail.length - 2]!.path === path)
+    trail.pop()
+  else if (!last || last.path !== path)
+    trail.push({ path, title: '' })
+  if (trail.length > limit)
+    trail.splice(0, trail.length - limit)
+  return { current: trail[trail.length - 1]!, previous: trail[trail.length - 2] ?? null }
+}
+
+/**
+ * What a back button says: the name of the screen it returns to, as iOS
+ * does, when that is short enough to sit beside the title; otherwise the
+ * button's own word ("Back", "Workout").
+ */
+export function backLabelFor(previous: NavTrailEntry | null, fallback: string, max = 12): string {
+  const title = previous?.title.trim() ?? ''
+  return title && title.length <= max ? title : fallback
+}
+
+/** The trail for this window: it outlives each screen, not a full reload. */
+export function navTrail(): NavTrailEntry[] {
+  if (typeof window === 'undefined') return []
+  const host = window as unknown as { __stacksNavTrail?: NavTrailEntry[] }
+  return (host.__stacksNavTrail ??= [])
+}
+
 /**
  * The in-app path a deep link opens, or null when it is not this app's.
  *

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { canGoBack, goBack } from '../src/navigation'
+import { backLabelFor, canGoBack, enterNavTrail, goBack } from '../src/navigation'
+import type { NavTrailEntry } from '../src/navigation'
 
 describe('back navigation', () => {
   it('goes back only through entries the app pushed', () => {
@@ -59,5 +60,43 @@ describe('deep links', () => {
       if (original) Object.defineProperty(globalThis, 'sessionStorage', original)
       else Reflect.deleteProperty(globalThis, 'sessionStorage')
     }
+  })
+})
+
+describe('the trail of screens a back button names', () => {
+  it('pushes a new screen and names the one before it', () => {
+    const trail: NavTrailEntry[] = []
+    enterNavTrail(trail, '/m').current.title = 'Today'
+    const { previous } = enterNavTrail(trail, '/m/workout/5')
+    expect(previous?.title).toBe('Today')
+    expect(trail.map(entry => entry.path)).toEqual(['/m', '/m/workout/5'])
+  })
+
+  it('pops when the screen arrived at is the one before', () => {
+    const trail: NavTrailEntry[] = [{ path: '/m', title: 'Today' }, { path: '/m/calendar', title: 'Calendar' }, { path: '/m/workout/5', title: 'Core' }]
+    const { current, previous } = enterNavTrail(trail, '/m/calendar')
+    expect(current.title).toBe('Calendar')
+    expect(previous?.title).toBe('Today')
+    expect(trail).toHaveLength(2)
+  })
+
+  it('leaves a re-render of the same screen alone', () => {
+    const trail: NavTrailEntry[] = [{ path: '/m', title: 'Today' }]
+    enterNavTrail(trail, '/m')
+    expect(trail).toHaveLength(1)
+  })
+
+  it('keeps a bounded trail', () => {
+    const trail: NavTrailEntry[] = []
+    for (let i = 0; i < 60; i++) enterNavTrail(trail, `/m/workout/${i}`, 50)
+    expect(trail).toHaveLength(50)
+    expect(trail[0]!.path).toBe('/m/workout/10')
+  })
+
+  it('says the screen\'s name when it is short, and its own word when not', () => {
+    expect(backLabelFor({ path: '/m', title: 'Today' }, 'Calendar')).toBe('Today')
+    expect(backLabelFor({ path: '/m/workout/5', title: 'Core Workout for Runners' }, 'Workout')).toBe('Workout')
+    expect(backLabelFor(null, 'Back')).toBe('Back')
+    expect(backLabelFor({ path: '/m', title: '  ' }, 'Back')).toBe('Back')
   })
 })

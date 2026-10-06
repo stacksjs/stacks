@@ -40,6 +40,21 @@ describe('Native components', () => {
     expect(bar).toContain("useReactiveProp<string>('title', '')")
   })
 
+  it('keeps every text field big enough that iOS does not zoom into it', () => {
+    expect(read('NativeAppShell')).toContain('.native-app-shell :is(input, textarea, select) { font-size: max(16px, 1em); }')
+  })
+
+  it('keeps the tab a screen was opened from lit', () => {
+    expect(read('NativeTabBar')).toContain('data-stx-sticky-active')
+  })
+
+  it('names the screen the back button returns to, and gives way to the title', () => {
+    const bar = read('NativeNavBar')
+    expect(bar).toContain('enterNavTrail(navTrail(), window.location.pathname + window.location.search)')
+    expect(bar).toContain('@container (max-width: 4.5rem)')
+    expect(bar).toContain("useReactiveProp<boolean>('titleOnScroll', false)")
+  })
+
   it('lifts an open sheet out of the router\'s stacking context', () => {
     const sheet = read('NativeSheet')
     expect(sheet).toContain('main:has(.native-sheet.is-open) { view-transition-name: none; }')
