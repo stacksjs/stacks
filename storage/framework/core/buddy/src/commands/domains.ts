@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { bgCyan, bold, intro, italic, log, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { awaitConfig } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
+import { hasTTY, isCI } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
@@ -66,6 +67,7 @@ export function domains(buddy: CLI): void {
     .option('--tech-phone <phone>', 'Tech phone')
     .option('--tech-email <email>', 'Tech email')
     .option('--contact-type <type>', 'Contact type (default: contactInfo.contactType, else person)')
+    .option('-y, --yes', 'Register (and pay for) the domain without asking first', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (domain: string, options: DomainsOptions) => {
@@ -75,12 +77,37 @@ export function domains(buddy: CLI): void {
       // `false` is dropped on the way to an action (see buddyOptionArgs), so
       // `--no-privacy` is sent as the string the action's parser reads back
       // as false.
-      const forwarded: Record<string, unknown> = { ...options }
+      // `-y` arrives under both spellings; neither is the registrar's business.
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      const { yes, y, ...rest } = options as DomainsOptions & { y?: boolean }
+      const forwarded: Record<string, unknown> = { ...rest }
       for (const key of ['privacy', 'autoRenew'] as const) {
         if (forwarded[key] === false)
           forwarded[key] = 'false'
       }
       const startTime = await intro('buddy domains:purchase')
+      const interactive = !isCI && hasTTY && Boolean(process.stdin.isTTY)
+
+      // Registering a domain bills the AWS account for it, and Route 53 does
+      // not refund a registration. This used to run straight away and ask a
+      // question only afterwards (whether to point APP_URL at it), so the
+      // one prompt the command had came after the money was spent.
+      if (!yes) {
+        if (!interactive) {
+          log.syncError(`Refusing to register ${domain} from a non-interactive shell without confirmation.`)
+          log.syncError(`   ➡️  Re-run with \`--yes\`: \`buddy domains:purchase ${domain} --yes\``)
+          await log.flush()
+          process.exit(ExitCode.FatalError)
+        }
+
+        const years = Number(options.years) || 1
+        const confirmed = await prompts.confirm(`Register ${domain} for ${years} year${years === 1 ? '' : 's'}? Route 53 bills your AWS account and does not refund registrations.`)
+        if (!confirmed) {
+          await outro('Cancelled the domains:purchase command', { startTime, useSeconds: true, type: 'info' })
+          process.exit(ExitCode.Success)
+        }
+      }
+
       const result = await runAction(Action.DomainsPurchase, forwarded as DomainsOptions)
 
       if (resultFailed(result)) {
@@ -96,9 +123,11 @@ export function domains(buddy: CLI): void {
       // package of that name exports - calling it threw "prompts is not a
       // function" at every one of these interactive paths. Behind
       // `(prompts)(...)`, nothing said so.
-      const confirm = await prompts.confirm(`Would you like to set ${domain} as your APP_URL?`)
+      // Only asked when someone is there to answer it. `--yes` agreed to the
+      // purchase, not to rewriting .env, so it leaves APP_URL alone.
+      const setAppUrl = !yes && interactive && await prompts.confirm(`Would you like to set ${domain} as your APP_URL?`)
 
-      if (!confirm) {
+      if (!setAppUrl) {
         await outro(`Alrighty! ${italic(domain)} was added to your account.`, {
           startTime,
           useSeconds: true,
@@ -111,6 +140,8 @@ export function domains(buddy: CLI): void {
             email ?? 'registrant',
           )} inbox.`,
         )
+        if (yes || !interactive)
+          log.info(`APP_URL was left as it is. To serve the app from ${domain}, run \`buddy env:set APP_URL ${domain}\`.`)
         await log.flush()
         process.exit(ExitCode.Success)
       }
@@ -162,7 +193,7 @@ export function domains(buddy: CLI): void {
 
   buddy
     .command('domains:remove <domain>', descriptions.remove)
-    .option('--yes', descriptions.skip, { default: false })
+    .option('-y, --yes', descriptions.skip, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // The positional first, as cac passes it. Taking only `options`, this
     // received the domain string, found no `.domain` on it, and fell back to
@@ -175,6 +206,15 @@ export function domains(buddy: CLI): void {
       const startTime = await intro('buddy domains:remove')
 
       if (!opts.yes) {
+        // A prompt nobody can answer either hangs or reads end-of-input as a
+        // refusal; say which flag the caller needs instead.
+        if (isCI || !hasTTY || !process.stdin.isTTY) {
+          log.syncError(`Refusing to remove ${domain} from a non-interactive shell without confirmation.`)
+          log.syncError(`   ➡️  Re-run with \`--yes\`: \`buddy domains:remove ${domain} --yes\``)
+          await log.flush()
+          process.exit(ExitCode.FatalError)
+        }
+
         // `prompts` is an object of prompt functions, not the callable the npm
         // package of that name exports - calling it threw "prompts is not a
         // function" at every one of these interactive paths. Behind

@@ -921,6 +921,7 @@ export function cloud(buddy: CLI): void {
     .option('--connect', descriptions.ssh, { default: false })
     .option('--invalidate-cache', descriptions.invalidateCache, { default: false })
     .option('--paths [paths]', descriptions.paths)
+    .option('-y, --yes', 'Invalidate the CDN cache without asking first', { default: false })
     .option('--diff', descriptions.diff, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -972,7 +973,7 @@ export function cloud(buddy: CLI): void {
         // package of that name exports - calling it threw "prompts is not a
         // function" at every one of these interactive paths. Behind
         // `(prompts)(...)`, nothing said so.
-        const confirm = await prompts.confirm('Would you like to invalidate the CDN (CloudFront) cache?')
+        const confirm = await confirmInvalidation(options, 'buddy cloud --invalidate-cache --yes', 'Would you like to invalidate the CDN (CloudFront) cache?')
 
         if (!confirm) {
           await outro('Exited', { startTime, useSeconds: true })
@@ -1071,7 +1072,7 @@ export function cloud(buddy: CLI): void {
     // past that means retaining the resources CloudFormation could not delete,
     // which `undeployStack` has no notion of - a feature to build, not a flag
     // to leave lying around promising it.
-    .option('--yes', 'Skip confirmation prompts', { default: false })
+    .option('-y, --yes', 'Skip the confirmation prompt', { default: false })
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: false }) // TODO: implement this
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -1347,6 +1348,7 @@ export function cloud(buddy: CLI): void {
   buddy
     .command('cloud:invalidate-cache', descriptions.invalidateCache)
     .option('--paths [paths]', descriptions.paths, { default: false })
+    .option('-y, --yes', 'Invalidate without asking first', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
@@ -1358,7 +1360,7 @@ export function cloud(buddy: CLI): void {
       // package of that name exports - calling it threw "prompts is not a
       // function" at every one of these interactive paths. Behind
       // `(prompts)(...)`, nothing said so.
-      const confirm = await prompts.confirm('Would you like to invalidate the CloudFront cache?')
+      const confirm = await confirmInvalidation(options, 'buddy cloud:invalidate-cache --yes', 'Would you like to invalidate the CloudFront cache?')
 
       if (!confirm) {
         await outro('Exited', { startTime, useSeconds: true })
@@ -2006,4 +2008,24 @@ export function cloud(buddy: CLI): void {
     })
 
   onUnknownSubcommand(buddy, "cloud")
+}
+
+/**
+ * Ask before invalidating the CDN cache, unless `--yes` says not to.
+ *
+ * Neither command had any way to skip the question, so neither could run in
+ * CI, and the global `--force` they appeared to offer was never read
+ * (stacksjs/stacks#2869). A shell that cannot answer is refused with the
+ * flag to use, rather than left waiting on a prompt.
+ */
+export async function confirmInvalidation(options: { yes?: boolean }, retry: string, question: string): Promise<boolean> {
+  if (options.yes)
+    return true
+  if (isCI || !hasTTY || !process.stdin.isTTY) {
+    log.syncError('Refusing to invalidate the CDN cache from a non-interactive shell without confirmation.')
+    log.syncError(`   ➡️  Re-run with \`--yes\`: \`${retry}\``)
+    await log.flush()
+    process.exit(ExitCode.FatalError)
+  }
+  return await prompts.confirm(question)
 }

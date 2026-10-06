@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { intro, onUnknownSubcommand, outro, prompts } from '@stacksjs/cli'
+import { hasTTY, isCI } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 import { loadTsCloudConfig, loadTsCloudDeployApi, resolveProvider } from './deploy'
 import { mergeSshStatePin, resolveSshTarget, sshCliArgs, sshStatePin, type SshTarget } from './deploy-ssh-target'
@@ -354,7 +355,7 @@ export function server(buddy: CLI): void {
     .option('--device <path>', descriptions.device, { default: undefined })
     .option('--list', 'List the disks that could be written to, and exit', { default: false })
     .option('--dry-run', 'Say what would happen without writing anything', { default: false })
-    .option('--yes', 'Do not ask for confirmation before writing', { default: false })
+    .option('-y, --yes', 'Do not ask for confirmation before writing', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: { os: ServerOsId, device?: string, list?: boolean, dryRun?: boolean, yes?: boolean, verbose?: boolean }) => {
       const perf = await intro('buddy server:flash')
@@ -436,6 +437,14 @@ export function server(buddy: CLI): void {
       }
 
       if (!options.yes) {
+        // No one to answer: refuse rather than hang on, or quietly decline,
+        // a prompt about erasing a disk.
+        if (isCI || !hasTTY || !process.stdin.isTTY) {
+          log.error('Refusing to erase a disk from a non-interactive shell without confirmation.')
+          log.info(`   ➡️  Re-run with \`--yes\`: \`buddy server:flash --device ${info.DeviceNode} --yes\``)
+          process.exit(ExitCode.FatalError)
+        }
+
         const answer = await prompts.confirm({ message: `Erase ${describeDisk(info)} and write ${image.name}?`, initial: false })
         if (answer !== true) {
           log.info('Nothing was written.')

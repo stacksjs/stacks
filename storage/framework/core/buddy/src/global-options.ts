@@ -27,6 +27,12 @@ interface GlobalOptionRegistration {
  * with a non-zero exit everywhere it is not implemented. A flag that silently
  * does nothing is worse than one that does not exist, because it is exactly
  * what a careful operator reaches for first.
+ *
+ * `--force` is not here either, for the same reason (stacksjs/stacks#2869).
+ * It promised "Skip confirmation prompts" on every command, while the
+ * commands that confirm skip it with `--yes`: `gdpr:erase --force` was
+ * accepted, ignored, and then refused in a non-interactive shell. The 46
+ * commands that implement `--force` declare it, each with what it means there.
  */
 export function registerGlobalOptions(buddy: CLI, options: GlobalOptionRegistration = {}): void {
   const command = options.version === false
@@ -39,7 +45,6 @@ export function registerGlobalOptions(buddy: CLI, options: GlobalOptionRegistrat
     .option('--debug', 'Enable debug output and stack traces')
     .option('--no-interaction', 'Do not ask interactive questions')
     .option('--env <environment>', 'Target an environment')
-    .option('--force', 'Skip confirmation prompts')
     .option('--no-emoji', 'Disable emoji in output')
     .option('--no-cache', 'Disable command metadata caching')
 }

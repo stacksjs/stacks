@@ -550,6 +550,7 @@ Interact with the Stacks Cloud
 | `--connect` | SSH into the Stacks Cloud | boolean, optional | `false` |
 | `--invalidate-cache` | Invalidate the CloudFront cache | boolean, optional | `false` |
 | `--paths` | The paths to invalidate | value, optional | - |
+| `-y`, `--yes` | Invalidate the CDN cache without asking first | boolean, optional | `false` |
 | `--diff` | Show the diff of the current, undeployed cloud changes  | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -660,6 +661,7 @@ Invalidate the CloudFront cache
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--paths` | The paths to invalidate | value, optional | `false` |
+| `-y`, `--yes` | Invalidate without asking first | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -709,7 +711,7 @@ Remove the Stacks Cloud. In case it fails, try again
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--jump-box` | Check for the jump box, and say how to remove it from the stack | boolean, optional | `false` |
-| `--yes` | Skip confirmation prompts | boolean, optional | `false` |
+| `-y`, `--yes` | Skip the confirmation prompt | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -1747,6 +1749,7 @@ Purchase a domain
 | `--tech-phone` | Tech phone | value, required | - |
 | `--tech-email` | Tech email | value, required | - |
 | `--contact-type` | Contact type (default: contactInfo.contactType, else person) | value, required | - |
+| `-y`, `--yes` | Register (and pay for) the domain without asking first | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -1761,7 +1764,7 @@ Remove a domain from your cloud
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--yes` | Skip the confirmation prompt | boolean, optional | `false` |
+| `-y`, `--yes` | Skip the confirmation prompt | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `down`
@@ -4873,7 +4876,7 @@ Write a Linux OS image to an SD card or USB disk
 | `--device` | The whole disk to write to, for example /dev/disk4 | value, required | - |
 | `--list` | List the disks that could be written to, and exit | boolean, optional | `false` |
 | `--dry-run` | Say what would happen without writing anything | boolean, optional | `false` |
-| `--yes` | Do not ask for confirmation before writing | boolean, optional | `false` |
+| `-y`, `--yes` | Do not ask for confirmation before writing | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `server:setup`

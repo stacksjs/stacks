@@ -37,6 +37,14 @@ Purchase a new domain through AWS Route 53:
 buddy domains:purchase myapp.com
 ```
 
+Route 53 bills the registration to your AWS account and does not refund it, so the command asks before it registers anything. From CI or any other non-interactive shell it refuses unless you pass `-y, --yes`:
+
+```bash
+buddy domains:purchase myapp.com --yes
+```
+
+`--yes` agrees to the purchase only. It leaves `APP_URL` as it is; point it at the new domain with `buddy env:set APP_URL myapp.com`.
+
 ### Add Domain
 
 Add an existing domain (owned through another registrar):
@@ -60,6 +68,7 @@ buddy domains:remove myapp.com
 | `--years <years>` | Number of years to purchase | 1 |
 | `--privacy` | Enable privacy protection | true |
 | `--auto-renew` | Enable auto-renewal | true |
+| `-y, --yes` | Register without asking first (required in a non-interactive shell) | false |
 
 ### Registrant Information
 

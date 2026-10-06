@@ -89,8 +89,8 @@ describe('--dry-run', () => {
 
     expect(names).not.toContain('dryRun')
     expect(names).not.toContain('dry-run')
-    // The siblings it was registered beside are deliberately still global.
-    expect(names).toContain('force')
+    // What is still global is what every command can honour; `--force` left
+    // for the same reason (stacksjs/stacks#2869).
     expect(names).toContain('quiet')
   })
 
