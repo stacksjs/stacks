@@ -29,6 +29,16 @@ import type { RemoteCommand, RemoteHost } from '../storage/framework/defaults/ap
  *   set, so a host that wants a password fails rather than hanging on a prompt
  *   nobody can answer.
  *
+ * ## Terminals are a separate decision
+ *
+ * A host also allows interactive terminal sessions from the dashboard only
+ * when it sets `terminal: true`, and each session is authorized by the
+ * `open-remote-terminal` gate. A session ends after 15 minutes without input,
+ * after 2 hours in all, and 30 seconds after its tab closes; the remote shell
+ * is killed rather than left running. What is typed is recorded line by line
+ * in the application log - so reach these hosts with keys, and grant sudo
+ * without a password, rather than type one into a recorded session.
+ *
  * ## And authorization is separate
  *
  * Declaring a host does not grant anyone access to it. Every run is checked
@@ -43,6 +53,8 @@ export const hosts: RemoteHost[] = [
   //   // ssh-keyscan -t ed25519 app.example.com
   //   knownHosts: 'app.example.com ssh-ed25519 AAAAC3Nz...',
   //   // identityFile: '/home/stacks/.ssh/id_ed25519',
+  //   // Allow interactive terminals too, authorized by `open-remote-terminal`.
+  //   // terminal: true,
   // },
 ]
 

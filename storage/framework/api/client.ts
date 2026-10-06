@@ -4174,6 +4174,41 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/remote/terminals
+   */
+  postDashboardRemoteTerminals(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/remote/terminals", {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/dashboard/remote/terminals/{id}
+   */
+  deleteDashboardRemoteTerminalsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/dashboard/remote/terminals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/remote/terminals/{id}/input
+   */
+  postDashboardRemoteTerminalsIdInput(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/remote/terminals/{id}/input", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/remote/terminals/{id}/resize
+   */
+  postDashboardRemoteTerminalsIdResize(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/remote/terminals/{id}/resize", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/remote/terminals/{id}/stream
+   */
+  getDashboardRemoteTerminalsIdStream(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/remote/terminals/{id}/stream", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/requests
    */
   getDashboardRequests(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

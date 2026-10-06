@@ -1,0 +1,162 @@
+<script client>
+import type { RemoteCommandResult, RemoteRegistry } from '../../../../functions/remote'
+import { fetchRemoteRegistry, requestRemoteCommand } from '../../../../functions/remote'
+import { registerRemoteTerminal } from '../../../../functions/remote-terminal-element'
+import { pushToast } from '../../../../functions/toasts'
+
+void registerRemoteTerminal()
+
+const registry = state<RemoteRegistry | null>(null)
+const isLoading = state(true)
+const loadError = state('')
+const selectedHost = state('')
+const selectedCommand = state('')
+const isRunning = state(false)
+const result = state<RemoteCommandResult | null>(null)
+const terminalHost = state('')
+
+// Template expressions are evaluated as JavaScript, not TypeScript: no `!`.
+const hosts = derived(() => registry()?.hosts ?? [])
+const commands = derived(() => registry()?.commands ?? [])
+
+const commandsForHost = derived(() => {
+  const host = selectedHost()
+  return (registry()?.commands ?? []).filter(command => !command.hosts || command.hosts.includes(host))
+})
+
+async function load(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchRemoteRegistry()
+    registry.set(data)
+    if (data.hosts.length > 0)
+      selectedHost.set(data.hosts[0].key)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'The remote hosts could not be loaded.')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function run(): Promise<void> {
+  if (!selectedHost() || !selectedCommand() || isRunning())
+    return
+  isRunning.set(true)
+  result.set(null)
+  try {
+    result.set(await requestRemoteCommand(selectedHost(), selectedCommand()))
+  }
+  catch (error) {
+    pushToast('error', 'The command did not run', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    isRunning.set(false)
+  }
+}
+
+function showTerminal(host: string): void {
+  terminalHost.set(host)
+}
+
+function hideTerminal(): void {
+  terminalHost.set('')
+}
+
+function onTerminalExit(event: CustomEvent<{ reason: string, message?: string }>): void {
+  if (event.detail.reason === 'refused')
+    pushToast('error', 'The terminal could not open', { detail: event.detail.message ?? '' })
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<div class="space-y-6">
+  <header>
+    <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Remote</h1>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Run configured operations on configured hosts, or open a terminal on a host that allows one. Every run and session is recorded.</p>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <div :if="isLoading()" class="text-gray-500 text-sm dark:text-neutral-400">Loading hosts</div>
+
+  <section :if="!isLoading() && registry() && hosts().length === 0" class="p-6 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 dark:text-white">No hosts are configured</h2>
+    <p class="mt-1 max-w-2xl text-gray-500 text-sm dark:text-neutral-400">
+      Declare a host and its pinned host key in <code class="font-mono">config/remote.ts</code>, then define the <code class="font-mono">run-remote-command</code> and <code class="font-mono">open-remote-terminal</code> gates in <code class="font-mono">app/Gates.ts</code>. Until then nobody can reach a server from here, which is the safe default.
+    </p>
+  </section>
+
+  <section :if="hosts().length > 0" class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-5 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Hosts</h2>
+    </div>
+    <ul class="divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :for="entry in hosts()">
+        <li class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3">
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white">{{ entry.key }}</p>
+            <p class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ entry.user + '@' + entry.host + ':' + entry.port }}</p>
+          </div>
+          <Button :if="entry.terminal" variant="outline" @click="showTerminal(entry.key)">
+            <span class="h-4 w-4 i-hugeicons-command-line"></span>
+            Open terminal
+          </Button>
+          <span :if="!entry.terminal" class="text-gray-400 text-xs dark:text-neutral-500">Named commands only</span>
+        </li>
+      </template>
+    </ul>
+  </section>
+
+  <section :if="terminalHost()" class="overflow-hidden bg-neutral-950 border border-neutral-800 rounded-lg">
+    <div class="flex items-center justify-between px-4 py-2 border-b border-neutral-800">
+      <p class="font-mono text-neutral-300 text-sm">{{ terminalHost() }}</p>
+      <Button variant="ghost" size="sm" @click="hideTerminal()">
+        <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
+        Close
+      </Button>
+    </div>
+    <div class="p-2 h-[28rem]">
+      <stacks-remote-terminal :host="terminalHost()" class="block h-full" @terminal-exit="onTerminalExit"></stacks-remote-terminal>
+    </div>
+  </section>
+
+  <section :if="commands().length > 0" class="p-5 space-y-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 dark:text-white">Run a command</h2>
+    <form class="flex flex-col gap-3 sm:flex-row sm:items-end" @submit.prevent="run">
+      <label class="flex flex-col gap-1 text-gray-700 text-sm dark:text-neutral-200">
+        Host
+        <select x-model="selectedHost" class="px-3 py-2 text-sm dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
+          <template :for="entry in hosts()">
+            <option :value="entry.key">{{ entry.key }}</option>
+          </template>
+        </select>
+      </label>
+      <label class="flex flex-1 flex-col gap-1 text-gray-700 text-sm dark:text-neutral-200">
+        Command
+        <select x-model="selectedCommand" class="px-3 py-2 text-sm dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
+          <option value="">Choose a command</option>
+          <template :for="command in commandsForHost()">
+            <option :value="command.key">{{ command.key }} - {{ command.description }}</option>
+          </template>
+        </select>
+      </label>
+      <Button type="submit" :disabled="!selectedCommand()" :loading="isRunning()">Run</Button>
+    </form>
+
+    <div :if="result()" class="space-y-2">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">
+        {{ result()?.command }} on {{ result()?.host }}: {{ result()?.timedOut ? 'timed out' : 'exit ' + result()?.exitCode }} in {{ result()?.durationMs }} ms
+      </p>
+      <pre :if="result()?.stdout" class="overflow-auto p-3 max-h-80 font-mono text-neutral-100 text-xs bg-neutral-950 rounded-md">{{ result()?.stdout }}</pre>
+      <pre :if="result()?.stderr" class="overflow-auto p-3 max-h-80 font-mono text-red-200 text-xs bg-neutral-950 rounded-md">{{ result()?.stderr }}</pre>
+    </div>
+  </section>
+</div>

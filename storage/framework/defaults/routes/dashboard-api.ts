@@ -282,6 +282,13 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
    */
   authenticatedGuard(route.get('/remote/commands', 'Actions/Dashboard/Remote/RemoteCommandIndexAction'))
   authenticatedGuard(route.post('/remote/run', 'Actions/Dashboard/Remote/RemoteCommandRunAction'))
+  // Interactive terminals into hosts that opt in with `terminal: true`,
+  // authorized by the `open-remote-terminal` gate. Same guard, same reason.
+  authenticatedGuard(route.post('/remote/terminals', 'Actions/Dashboard/Remote/RemoteTerminalOpenAction'))
+  authenticatedGuard(route.get('/remote/terminals/{id}/stream', 'Actions/Dashboard/Remote/RemoteTerminalStreamAction'))
+  authenticatedGuard(route.post('/remote/terminals/{id}/input', 'Actions/Dashboard/Remote/RemoteTerminalInputAction'))
+  authenticatedGuard(route.post('/remote/terminals/{id}/resize', 'Actions/Dashboard/Remote/RemoteTerminalResizeAction'))
+  authenticatedGuard(route.delete('/remote/terminals/{id}', 'Actions/Dashboard/Remote/RemoteTerminalCloseAction'))
 
   guard(route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction'))
   // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run

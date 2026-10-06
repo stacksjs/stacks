@@ -27,10 +27,10 @@ const remoteRoutes = routes
   .filter(line => line.includes('Actions/Dashboard/Remote/'))
 
 describe('remote-command routes', () => {
-  it('registers both endpoints', () => {
-    expect(remoteRoutes).toHaveLength(2)
-    expect(remoteRoutes.join('\n')).toContain('RemoteCommandIndexAction')
-    expect(remoteRoutes.join('\n')).toContain('RemoteCommandRunAction')
+  it('registers the command and terminal endpoints', () => {
+    expect(remoteRoutes).toHaveLength(7)
+    for (const action of ['RemoteCommandIndexAction', 'RemoteCommandRunAction', 'RemoteTerminalOpenAction', 'RemoteTerminalStreamAction', 'RemoteTerminalInputAction', 'RemoteTerminalResizeAction', 'RemoteTerminalCloseAction'])
+      expect(remoteRoutes.join('\n')).toContain(action)
   })
 
   it('never uses the guard that drops auth in local environments', () => {

@@ -477,6 +477,9 @@ export function buildNavSections(
     const managementItems: NavItem[] = [
       { to: '/cloud', icon: 'cloud', text: 'Cloud' },
       { to: '/servers', icon: 'server', text: 'Servers' },
+      // Named commands and terminals on configured hosts (stacksjs/stacks#960).
+      // Hidden from client-role viewers; the gates decide who may use it.
+      { to: '/remote', icon: 'terminal', text: 'Remote', roles: ['admin', 'dev'] },
       { to: '/serverless', icon: 'zap', text: 'Serverless' },
       { to: '/dns', icon: 'globe-search', text: 'DNS' },
       { to: '/management/permissions', icon: 'lock', text: 'Permissions' },

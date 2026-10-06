@@ -65,7 +65,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-650 default actions and 104 built-in models you can use or override.
+657 default actions and 104 built-in models you can use or override.
 
 ---
 
@@ -105,7 +105,7 @@ Every skill also has a docs page at https://stacksjs.com/docs/skills, one per sk
 |---|---|
 | E-commerce (products, orders, customers, coupons, payments, shipping, tax, ...) | `stacks-commerce`, `stacks-payments` |
 | CMS (posts, authors, pages, categories, tags, comments, RSS, sitemap) | `stacks-cms` |
-| Admin dashboard pages, model views, widgets (407 components) | `stacks-dashboard` |
+| Admin dashboard pages, model views, widgets (408 components) | `stacks-dashboard` |
 | i18n / translations / formatting | `stacks-i18n` |
 | Utilities: strings, arrays, collections, objects, datetime, slugs | `stacks-strings`, `stacks-arrays`, `stacks-collections`, `stacks-objects`, `stacks-datetime`, `stacks-slug` |
 

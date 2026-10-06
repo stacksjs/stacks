@@ -62,6 +62,15 @@ export interface RemoteHost {
    * the host can declare its fingerprint at the same time.
    */
   knownHosts: string
+  /**
+   * Allow interactive terminal sessions into this host from the dashboard.
+   *
+   * Off unless set. A host declared for named commands is not thereby a host
+   * anyone may open a shell on: a terminal is every command at once, so it is
+   * a separate decision, and authorized by its own gate,
+   * `open-remote-terminal`.
+   */
+  terminal?: boolean
 }
 
 /** An operation that may be run, as config declares it. */
@@ -144,6 +153,26 @@ const DEFAULT_MAX_OUTPUT = 64 * 1024
  *   interpreted by a local shell.
  */
 export function sshArgv(host: RemoteHost, command: RemoteCommand, knownHostsPath: string): string[] {
+  return [...sshConnectionArgv(host, knownHostsPath), '--', ...command.argv]
+}
+
+/**
+ * The `ssh` argv for an interactive session: the same pinned-key options and
+ * no remote command, so the host starts the user's login shell.
+ *
+ * `-tt` forces a remote PTY. ssh would allocate one anyway when its own stdin
+ * is a terminal, which it is - the session runs under a local PTY so a window
+ * resize reaches the remote side - but forcing it keeps the remote behaviour
+ * independent of how the local side happens to be wired.
+ */
+export function sshTerminalArgv(host: RemoteHost, knownHostsPath: string): string[] {
+  const argv = sshConnectionArgv(host, knownHostsPath)
+  // Before the destination: options after it would be read as the command.
+  argv.splice(argv.length - 1, 0, '-tt', '-o', 'ServerAliveInterval=30')
+  return argv
+}
+
+function sshConnectionArgv(host: RemoteHost, knownHostsPath: string): string[] {
   const argv = [
     'ssh',
     '-o', 'StrictHostKeyChecking=yes',
@@ -157,7 +186,7 @@ export function sshArgv(host: RemoteHost, command: RemoteCommand, knownHostsPath
   if (host.identityFile)
     argv.push('-i', host.identityFile, '-o', 'IdentitiesOnly=yes')
 
-  argv.push(`${host.user}@${host.host}`, '--', ...command.argv)
+  argv.push(`${host.user}@${host.host}`)
   return argv
 }
 

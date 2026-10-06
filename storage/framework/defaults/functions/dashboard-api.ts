@@ -111,6 +111,19 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
 }
 
 /**
+ * Open a guarded dashboard stream - server-sent events read through `fetch`,
+ * because `EventSource` cannot send the bearer token the dashboard
+ * authenticates with. Throws on a non-2xx response, as `dashboardApi` does;
+ * the caller reads `res.body`.
+ */
+export async function dashboardStream(path: string, options: Pick<ApiRequestOptions, 'signal'> = {}): Promise<Response> {
+  const res = await dashboardResponse(path, options, 'text/event-stream')
+  if (!res.ok)
+    throw await dashboardResponseError(res)
+  return res
+}
+
+/**
  * Download a guarded dashboard resource while preserving bearer and session
  * authentication. The object URL only exists for the duration of the browser
  * download and is then released.

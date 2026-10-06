@@ -1,9 +1,10 @@
 import type { RemoteAuditSink, RemoteCommand, RemoteHost, RemoteRunner } from './remote-commands'
+import type { TerminalAuditSink, TerminalSpawner } from './remote-terminal'
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { log } from '@stacksjs/logging'
-import { sshArgv } from './remote-commands'
+import { sshArgv, sshTerminalArgv } from './remote-commands'
 
 /**
  * The SSH transport and audit sink behind `runRemoteCommand`
@@ -90,5 +91,85 @@ export const loggingAuditSink: RemoteAuditSink = {
   async finished(entry) {
     const outcome = entry.timedOut ? 'timed out' : `exited ${entry.exitCode}`
     await log.info(`[remote] ${entry.user} finished ${entry.commandKey} on ${entry.hostKey}: ${outcome} in ${entry.durationMs}ms`)
+  },
+}
+
+/**
+ * Terminal sessions as a local PTY running `ssh -tt` (stacksjs/stacks#960).
+ *
+ * The local PTY is what the command runner could not have: Bun's spawn gained
+ * one (`terminal`), and with it a window resize in the browser reaches the
+ * remote shell - `resize()` here changes the local PTY's size, ssh sees the
+ * SIGWINCH and forwards it. Without it the remote side stayed 80x24.
+ *
+ * The child gets a minimal environment rather than the app server's, which
+ * holds the application's secrets: ssh needs a PATH, a HOME for its own files,
+ * and a TERM to forward.
+ *
+ * `argvFor` is the seam a test uses to run a local command under the same PTY.
+ */
+export function createPtySpawner(argvFor: (host: RemoteHost, knownHostsPath: string) => string[] = sshTerminalArgv): TerminalSpawner {
+  return (host, size, onOutput) => {
+    const dir = mkdtempSync(join(tmpdir(), 'stacks-terminal-'))
+    const knownHostsPath = join(dir, 'known_hosts')
+
+    try {
+      writeFileSync(knownHostsPath, host.knownHosts.endsWith('\n') ? host.knownHosts : `${host.knownHosts}\n`)
+      chmodSync(knownHostsPath, 0o600)
+
+      const proc = Bun.spawn(argvFor(host, knownHostsPath), {
+        env: {
+          PATH: process.env.PATH ?? '/usr/bin:/bin',
+          HOME: process.env.HOME ?? tmpdir(),
+          TERM: 'xterm-256color',
+          LANG: process.env.LANG ?? 'en_US.UTF-8',
+        },
+        terminal: {
+          cols: size.cols,
+          rows: size.rows,
+          // The buffer is the PTY's own and is reused; a viewer may read the
+          // chunk after the next one has arrived.
+          data: (_terminal, bytes) => onOutput(new Uint8Array(bytes)),
+        },
+      })
+      const terminal = proc.terminal!
+
+      return {
+        write: data => terminal.write(data),
+        resize: (cols, rows) => terminal.resize(cols, rows),
+        kill: () => proc.kill(),
+        exited: proc.exited.finally(() => {
+          terminal.close()
+          rmSync(dir, { force: true, recursive: true })
+        }),
+      }
+    }
+    catch (error) {
+      rmSync(dir, { force: true, recursive: true })
+      throw error
+    }
+  }
+}
+
+/**
+ * Terminal sessions recorded in the application log, for the reasons the
+ * command runner's sink gives: append-only evidence belongs outside the
+ * database the dashboard can edit.
+ *
+ * Input is recorded as typed, line by line. That includes anything typed at a
+ * password prompt, which is one more reason the hosts reached this way should
+ * authenticate with keys and grant sudo without one - and why the log, not the
+ * database, holds it.
+ */
+export const loggingTerminalAuditSink: TerminalAuditSink = {
+  async opened(entry) {
+    await log.info(`[terminal] ${entry.user} opened ${entry.session} on ${entry.hostKey} at ${entry.at}`)
+  },
+  async input(entry) {
+    await log.info(`[terminal] ${entry.user} ${entry.session} on ${entry.hostKey}: ${JSON.stringify(entry.line)}`)
+  },
+  async closed(entry) {
+    const code = entry.exitCode === null ? '' : `, exit ${entry.exitCode}`
+    await log.info(`[terminal] ${entry.user} closed ${entry.session} on ${entry.hostKey}: ${entry.reason}${code} after ${entry.durationMs}ms, ${entry.bytesIn} bytes in, ${entry.bytesOut} out`)
   },
 }

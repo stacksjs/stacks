@@ -59,6 +59,20 @@ export default defineGates({
      */
     // 'run-remote-command': (user: UserModel | null, hostKey: string, commandKey: string) => false,
 
+    /**
+     * Whether a user may open an interactive terminal on a configured host
+     * (stacksjs/stacks#960).
+     *
+     * A terminal is every command at once, so this is its own ability, and
+     * the host must also allow it with `terminal: true` in `config/remote.ts`.
+     * Without this gate defined, every session is refused.
+     *
+     * @example Only admins, and only on the app box
+     * 'open-remote-terminal': (user, hostKey) =>
+     *   hostKey === 'app' && user?.email?.endsWith('@example.com') === true,
+     */
+    // 'open-remote-terminal': (user: UserModel | null, hostKey: string) => false,
+
     // Add more gates here...
     // 'ability-name': (user, ...args) => boolean,
   },
