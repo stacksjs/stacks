@@ -81,9 +81,15 @@ describe('the comparison list', () => {
 })
 
 describe('the fairness policy these pages promise', () => {
+  // Pages whose "Pick X for" list is an editorial decision by the maintainer
+  // rather than the usual technical case. Each still has to say something;
+  // only the three-point minimum is waived. See the comment on the entry.
+  const editorialExceptions = new Set(['rails'])
+
   test('every comparison says where the other framework wins', () => {
     for (const comparison of comparisons) {
-      expect(comparison.page.theirStrengths.length).toBeGreaterThanOrEqual(3)
+      const minimum = editorialExceptions.has(comparison.slug) ? 1 : 3
+      expect(comparison.page.theirStrengths.length).toBeGreaterThanOrEqual(minimum)
 
       for (const point of comparison.page.theirStrengths) {
         expect(point.title.trim().length).toBeGreaterThan(0)

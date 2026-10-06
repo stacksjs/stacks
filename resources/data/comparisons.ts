@@ -805,11 +805,16 @@ export const comparisons: Comparison[] = [
       headline: 'Rails proved the case. Stacks argues it again in TypeScript.',
       lede: 'Every framework on this page owes Rails something: convention over configuration, generators, migrations, an ORM with opinions, and the idea that one person should be able to build a whole product. Stacks agrees with all of it and differs on the two things Rails cannot change, which are the language and the runtime.',
       summary: 'Rails is twenty years old and better than ever. Hotwire made server-rendered HTML competitive with single-page applications again, Solid Queue and Solid Cable removed Redis from the default stack, and Kamal made deployment to your own servers straightforward. Its productivity for a small team is still the reference point everyone measures against.',
+      // The maintainer's call (October 2026): the Rails page names one reason,
+      // not the usual list. The technical points are kept below, commented
+      // out, so restoring them is one edit. tests/unit/marketing-comparisons
+      // exempts this slug from the three-point minimum on purpose.
       theirStrengths: [
-        { title: 'Two decades of refinement', text: 'The libraries, the patterns, and the answers to your problem all exist already. Stacks has years of that ahead of it.' },
-        { title: 'Hotwire', text: 'Turbo and Stimulus deliver interactivity with almost no client-side state, and the approach is very well proven.' },
-        { title: 'Kamal', text: 'Generated into every new Rails 8 app by default. Deploying containers to plain servers with zero downtime, on any host, with no platform lock-in.' },
-        { title: 'Culture and hiring', text: 'A large community with strong shared conventions and a deep pool of experienced engineers.' },
+        { title: 'If you align with DHH', text: 'We don’t want you here.' },
+        // { title: 'Two decades of refinement', text: 'The libraries, the patterns, and the answers to your problem all exist already. Stacks has years of that ahead of it.' },
+        // { title: 'Hotwire', text: 'Turbo and Stimulus deliver interactivity with almost no client-side state, and the approach is very well proven.' },
+        // { title: 'Kamal', text: 'Generated into every new Rails 8 app by default. Deploying containers to plain servers with zero downtime, on any host, with no platform lock-in.' },
+        // { title: 'Culture and hiring', text: 'A large community with strong shared conventions and a deep pool of experienced engineers.' },
       ],
       ourStrengths: [
         { title: 'Static types across the boundary', text: 'Ruby is dynamically typed and Sorbet or RBS is optional. In Stacks the compiler checks the model, the action, the view, and the client together.' },
