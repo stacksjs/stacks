@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { isBillable } from '@stacksjs/orm'
 import { BILLING_NOT_ENABLED } from '@stacksjs/payments'
 import { response } from '@stacksjs/router'
-import { forBrowser, paymentFailure } from './payment-response'
+import { paymentFailure } from './payment-response'
 
 export default new Action({
   name: 'FetchPaymentCustomerAction',
