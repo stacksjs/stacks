@@ -3154,6 +3154,13 @@ async function runSshDeploy(args: {
   if (ok && dnsAllowed)
     await reconcileR2ForDeploy(tsCloudConfig, log)
 
+  // Cloudflare Workers the app declares (config/cloud.ts
+  // `infrastructure.workers`): bundled from their entry, uploaded with their
+  // bindings, and put on their custom domains, which bring their own DNS
+  // records. After R2 because a Worker's bucket bindings must already exist.
+  if (ok && dnsAllowed)
+    await reconcileWorkersForDeploy(tsCloudConfig, log)
+
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
@@ -4898,6 +4905,59 @@ async function reconcileR2ForDeploy(tsCloudConfig: any, logger: typeof log): Pro
   }
   catch (err: any) {
     logger.warn(`R2: ${err?.message || err}`)
+  }
+}
+
+/**
+ * Deploy the Cloudflare Workers the app declares, through ts-cloud.
+ *
+ * Each Worker under `infrastructure.workers` is bundled from its entry,
+ * uploaded only when the bundle changed, given its bindings (an R2 bucket,
+ * plain variables) and attached to its custom domains. Non-fatal like the
+ * reconcilers around it: the release is already live.
+ */
+async function reconcileWorkersForDeploy(tsCloudConfig: any, logger: typeof log): Promise<void> {
+  const workers = tsCloudConfig?.infrastructure?.workers
+  if (!workers || Object.keys(workers).length === 0) return
+
+  let reconcileCloudflareWorkers: any
+  try {
+    ({ reconcileCloudflareWorkers } = await import('@stacksjs/ts-cloud'))
+  }
+  catch {
+    return
+  }
+  if (typeof reconcileCloudflareWorkers !== 'function') {
+    logger.warn('Workers: installed @stacksjs/ts-cloud is too old to deploy them. Upgrade it to deploy infrastructure.workers.')
+    return
+  }
+
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
+  if (!apiToken || !accountId) {
+    logger.warn('Workers: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are both needed to deploy them. Skipping.')
+    return
+  }
+
+  logger.info(`Workers: reconciling ${Object.keys(workers).length} worker(s)...`)
+  try {
+    const summary = await reconcileCloudflareWorkers(tsCloudConfig, {
+      apiToken,
+      accountId,
+      projectRoot: process.cwd(),
+      zoneId: process.env.CLOUDFLARE_ZONE_ID || undefined,
+      log: (message: string) => logger.info(`  ${message}`),
+    })
+    for (const worker of summary?.workers ?? []) {
+      const changes = worker.changes?.length ? worker.changes.join(', ') : 'in sync'
+      logger.success(`  ${worker.name}: ${changes}`)
+      for (const domain of worker.domains ?? [])
+        logger.success(`    https://${domain.domain}${domain.status ? ` (${domain.status})` : ''}`)
+    }
+    for (const warning of summary?.warnings ?? []) logger.warn(`  ${warning}`)
+  }
+  catch (err: any) {
+    logger.warn(`Workers: ${err?.message || err}`)
   }
 }
 
