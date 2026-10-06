@@ -730,6 +730,104 @@ export const tsCloud: CloudConfig = {
       related: ['storage', 'testing', 'queues-and-mail'],
     },
   },
+  {
+    slug: 'environment-setup',
+    title: 'Environment setup',
+    blurb: 'Pantry installs Bun, the database, the mail server, and every tool a project declares, per project, then starts and migrates the database.',
+    icon: 'i-hugeicons-package-open',
+    group: 'build',
+    bento: { cols: 6, visual: 'code' },
+    page: {
+      kicker: 'Build',
+      headline: 'A new machine is one command from a running app.',
+      lede: 'config/deps.ts declares the system tools a project needs, the way package.json declares its JavaScript. Pantry installs them into the project rather than globally, so two apps on one laptop can want different versions of the same database, and CI gets exactly what development had.',
+      capabilities: [
+        { title: 'Declared, not documented', text: 'Bun, Git, the database engine, the mail server, Redis: whatever config/deps.ts names is installed at the version range it names, instead of a README step someone skips.' },
+        { title: 'Per project', text: 'Tools install into the project, not system-wide, so one app on one Postgres and another on the next major coexist on the same machine.' },
+        { title: 'Database, started and migrated', text: 'Pantry provisions the database the app is configured for, starts it, then runs buddy migrate and buddy seed, so a fresh clone opens with data in it.' },
+        { title: 'Follows your .env', text: 'buddy setup rewrites the dependency list for the database DB_CONNECTION names, so only the engine you actually use gets installed.' },
+        { title: 'Same versions everywhere', text: 'pantry.lock pins every tool and CI installs from it, failing the build if the lock no longer describes the tree, so version drift is caught before a deploy.' },
+        { title: 'A large registry', text: 'Around 3,500 packages, from databases and search engines to compilers and CLIs, through one installer and one lockfile.' },
+      ],
+      code: {
+        file: 'config/deps.ts',
+        code: `import type { PantryConfig } from 'ts-pantry'
+
+// System tools, declared like package.json declares
+// JavaScript. Installed into the project, not globally.
+export const config: PantryConfig = {
+  dependencies: {
+    'bun': '1.4.2',
+    'git': '^2.47.0',
+    'sqlite': '^3.47.2',
+    'github.com/mail-os/mail': '^0.3.2',
+    // 'redis.io': '^8.4.0',
+  },
+
+  services: {
+    enabled: true,
+    autoStart: true,
+    database: { connection: 'sqlite', name: 'app' },
+    postDatabaseSetup: ['./buddy migrate', './buddy seed'],
+  },
+}`,
+      },
+      commands: [
+        'curl -fsSL https://pantry.dev | bash',
+        'pantry install',
+        'buddy setup',
+      ],
+      docs: '/docs',
+      related: ['application-core', 'testing', 'automated-upgrades'],
+    },
+  },
+
+  {
+    slug: 'automated-upgrades',
+    title: 'Automated upgrades',
+    blurb: 'buddy upgrade moves an app to the next release: framework, dependencies, migrations, and CI, previewed first and never over your uncommitted edits.',
+    icon: 'i-hugeicons-arrow-reload-horizontal',
+    group: 'ship',
+    bento: { cols: 6, visual: 'capabilities' },
+    page: {
+      kicker: 'Ship',
+      headline: 'Upgrades are a command, not a weekend.',
+      lede: 'What Laravel Shift sells as a separate service is part of the framework here. buddy upgrade pulls the next release into the app, refreshes dependencies, runs the migrations it brings, and raises the Bun version your CI and containers pin. Every change can be previewed first, and it will not overwrite framework files you edited and did not commit.',
+      capabilities: [
+        { title: 'Preview first', text: 'buddy upgrade --dry-run lists every file a real run would change, from a snapshot of the release, without writing a byte to the project.' },
+        { title: 'Your edits are safe', text: 'Uncommitted changes inside managed framework paths stop the upgrade unless you pass --force, so nothing hand-edited is silently replaced.' },
+        { title: 'Dependencies and migrations', text: 'After the sync the dependencies are refreshed and the migrations the release brings are run, so the app and its schema land on the new version together.' },
+        { title: 'CI and containers follow', text: 'The Bun version your workflows, Pantry config, and Dockerfiles pin moves up to the framework’s, and never down.' },
+        { title: 'Config codemods', text: 'buddy config:migrate rewrites config keys a release renamed, as a reviewable text diff rather than a reformat of your file.' },
+        { title: 'Coming from Laravel', text: 'buddy migrate:project --from laravel translates Eloquent models and migrations into defineModel() files and SQL, and writes a report of everything left to port by hand.' },
+      ],
+      code: {
+        file: 'Terminal',
+        code: `// See everything the next release would change
+buddy upgrade --dry-run
+
+// Apply it: framework, dependencies, migrations, CI
+buddy upgrade
+
+// Follow fixes as they land, or pin a release
+buddy upgrade --canary
+buddy upgrade --version 0.75.82
+
+// Rewrite config keys a release renamed
+buddy config:migrate
+
+// Bring an existing Laravel app across
+buddy migrate:project ./app --from laravel --source ../old`,
+      },
+      commands: [
+        'buddy upgrade --dry-run',
+        'buddy upgrade',
+        'buddy config:migrate',
+      ],
+      docs: '/docs',
+      related: ['environment-setup', 'cloud-deploys', 'testing'],
+    },
+  },
 ]
 
 export function featureBySlug(slug: string): Feature | undefined {

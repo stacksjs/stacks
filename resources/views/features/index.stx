@@ -4,11 +4,11 @@
  * groups them, from the same data. It is also where the menu's trigger
  * lands on a touch device, which has no hover to open a panel with.
  */
-import { featureGroups, featuresInGroup } from '../../data/features'
+import { featureGroups, features, featuresInGroup } from '../../data/features'
 
 
 const pageTitle = 'Features - Stacks'
-const pageDescription = 'Routing, views, models, auth, CMS, commerce, AI, native apps, storage, realtime, search, testing, and cloud deploys. Every layer of a Stacks app, first-party and typed against the others.'
+const pageDescription = 'Routing, views, models, auth, CMS, commerce, AI, native apps, storage, realtime, search, testing, cloud deploys, environment setup, and automated upgrades. Every layer of a Stacks app, first-party and typed against the others.'
 const canonicalPath = '/features'
 
 const megaGroups = featureGroups.map(group => ({
@@ -30,7 +30,7 @@ const megaGroups = featureGroups.map(group => ({
         <section class="page-hero page-hero--solo site-shell">
           <div>
             <span class="kicker">Every layer</span>
-            <h1 class="page-title">Twelve subsystems, one install.</h1>
+            <h1 class="page-title">{{ features.length }} subsystems, one install.</h1>
             <p class="page-lede">
               None of these is a plugin you add later or a service you host separately. They ship together, share the same models and config, and are typed against each other, which is the only reason a rename can be safe across all of them.
             </p>

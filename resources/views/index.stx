@@ -143,7 +143,7 @@ const deployLines = [
 
 /*
  * The long tail. Each is real, first-party, and on the same config and types
- * as the twelve features above, but has no page of its own yet, which is why
+ * as the features above, but has no page of its own yet, which is why
  * they are a list rather than cells. Nothing here repeats a bento feature,
  * and nothing is a stub: every entry was checked against its package or its
  * buddy command (October 2026), so add to it the same way.
@@ -181,6 +181,8 @@ const longTail = [
   { icon: 'i-hugeicons-puzzle', label: 'Browser extensions' },
   { icon: 'i-hugeicons-code', label: '150+ composables' },
   { icon: 'i-hugeicons-computer-terminal-01', label: 'Tinker REPL' },
+  { icon: 'i-hugeicons-source-code-square', label: 'VS Code extension' },
+  { icon: 'i-hugeicons-magic-wand-01', label: 'Linting and formatting' },
 ]
 
 const startSteps = [
