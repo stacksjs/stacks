@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { createHash, generateKeyPairSync, sign } from 'node:crypto'
-import { readFile, rm } from 'node:fs/promises'
+import { mkdir, readdir, readFile, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { tmpdir } from 'node:os'
 import { checkForDesktopUpdate, compareVersions, sendDesktopInvites, stageDesktopUpdate, updateManifestPayload, validateUpdateManifest } from '../src/index'
@@ -160,5 +160,67 @@ describe('desktop update security controls', () => {
     expect(() => validateUpdateManifest({ ...signedManifest(), sourceRevision: 'short' })).toThrow('source revision')
     expect(() => validateUpdateManifest({ ...signedManifest(), platform: 'solaris' })).toThrow('platform')
     expect(() => validateUpdateManifest({ ...signedManifest(), architecture: 'x86 64' })).toThrow('architecture')
+  })
+})
+
+// Failed updates and builds for another target (stacksjs/stacks#2059).
+describe('desktop update failures', () => {
+  async function stagingDirectory(): Promise<string> {
+    const directory = path.join(tmpdir(), `desktop-update-${crypto.randomUUID()}`)
+    temporaryPaths.push(directory)
+    return directory
+  }
+
+  function releaseOf(text: string, version: string) {
+    const payload = new TextEncoder().encode(text)
+    const manifest = signedManifest({
+      version,
+      url: `https://releases.example.com/${version}.bin`,
+      sha256: createHash('sha256').update(payload).digest('hex'),
+      size: payload.byteLength,
+    })
+    return { manifest, fetcher: async () => new Response(payload) }
+  }
+
+  it('refuses a manifest built for another platform or architecture, when checking and when staging', async () => {
+    const elsewhere = signedManifest({ platform: process.platform === 'linux' ? 'darwin' : 'linux' })
+    await expect(checkForDesktopUpdate({ currentVersion: '1.0.0', manifestUrl: 'https://releases.example.com/stable.json', trustedKeys, fetcher: async () => Response.json(elsewhere) }))
+      .rejects.toThrow(`Desktop update is built for ${elsewhere.platform}-${process.arch}, not this app's ${process.platform}-${process.arch}`)
+
+    const otherArch = signedManifest({ architecture: process.arch === 'arm64' ? 'x64' : 'arm64' })
+    await expect(stageDesktopUpdate(otherArch, path.join(await stagingDirectory(), 'update.bin'), async () => new Response(new Uint8Array(1)), trustedKeys))
+      .rejects.toThrow(`built for ${process.platform}-${otherArch.architecture}`)
+  })
+
+  it('checks against the target it is given, for a launcher acting for another build', async () => {
+    const forArm = signedManifest({ platform: 'darwin', architecture: 'arm64' })
+    expect(await checkForDesktopUpdate({ currentVersion: '1.0.0', manifestUrl: 'https://releases.example.com/stable.json', trustedKeys, fetcher: async () => Response.json(forArm), target: { platform: 'darwin', architecture: 'arm64' } }))
+      .toEqual(forArm)
+  })
+
+  it('leaves the update staged before untouched when the next one fails, and no partial file behind', async () => {
+    const directory = await stagingDirectory()
+    const destination = path.join(directory, 'update.bin')
+    const good = releaseOf('version two', '2.0.0')
+    await stageDesktopUpdate(good.manifest, destination, good.fetcher, trustedKeys)
+
+    const corrupted = releaseOf('version three', '3.0.0')
+    await expect(stageDesktopUpdate(corrupted.manifest, destination, async () => new Response('version thre!'), trustedKeys)).rejects.toThrow('checksum mismatch')
+    await expect(stageDesktopUpdate(corrupted.manifest, destination, async () => new Response('gone', { status: 503 }), trustedKeys)).rejects.toThrow('HTTP 503')
+    await expect(stageDesktopUpdate(corrupted.manifest, destination, async () => { throw new TypeError('network down') }, trustedKeys)).rejects.toThrow('network down')
+
+    expect(await readFile(destination, 'utf8')).toBe('version two')
+    expect(await readdir(directory)).toEqual(['update.bin'])
+  })
+
+  it('removes its partial download when it cannot move it into place', async () => {
+    const directory = await stagingDirectory()
+    // A directory where the update should go: the rename fails after the write.
+    const destination = path.join(directory, 'update.bin')
+    await mkdir(path.join(destination, 'occupied'), { recursive: true })
+    const release = releaseOf('version two', '2.0.0')
+
+    await expect(stageDesktopUpdate(release.manifest, destination, release.fetcher, trustedKeys)).rejects.toThrow()
+    expect(await readdir(directory)).toEqual(['update.bin'])
   })
 })

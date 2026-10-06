@@ -1,5 +1,6 @@
 import { createHash, createPublicKey, verify } from 'node:crypto'
-import { mkdir, rename, writeFile } from 'node:fs/promises'
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
+import process from 'node:process'
 import { dirname } from 'node:path'
 
 export interface DesktopUpdateManifest {
@@ -16,11 +17,21 @@ export interface DesktopUpdateManifest {
   notes?: string
 }
 
+/** The build an update has to match: this process's, unless told otherwise. */
+export interface DesktopUpdateTarget {
+  /** A Node platform id: `darwin`, `linux` or `win32`. */
+  platform: string
+  /** A Node architecture id, such as `arm64` or `x64`. */
+  architecture: string
+}
+
 export interface CheckDesktopUpdateOptions {
   currentVersion: string
   manifestUrl: string
   trustedKeys: Record<string, string>
   fetcher?: DesktopFetcher
+  /** Defaults to the running process's platform and architecture. */
+  target?: DesktopUpdateTarget
 }
 
 export type DesktopFetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
@@ -41,6 +52,7 @@ export async function checkForDesktopUpdate(options: CheckDesktopUpdateOptions):
 
   const manifest = validateUpdateManifest(await response.json())
   verifyUpdateManifestSignature(manifest, options.trustedKeys)
+  assertUpdateTarget(manifest, options.target)
   return compareVersions(manifest.version, options.currentVersion) > 0 ? manifest : null
 }
 
@@ -49,10 +61,12 @@ export async function stageDesktopUpdate(
   destination: string,
   fetcher: DesktopFetcher = fetch,
   trustedKeys?: Record<string, string>,
+  target?: DesktopUpdateTarget,
 ): Promise<StagedDesktopUpdate> {
   validateUpdateManifest(manifest)
   if (!trustedKeys) throw new Error('Desktop update staging requires trusted signing keys')
   verifyUpdateManifestSignature(manifest, trustedKeys)
+  assertUpdateTarget(manifest, target)
   assertSecureUrl(manifest.url)
   const response = await fetcher(manifest.url)
   if (!response.ok)
@@ -66,10 +80,19 @@ export async function stageDesktopUpdate(
   if (checksum !== manifest.sha256.toLowerCase())
     throw new Error('Desktop update checksum mismatch')
 
+  // Written beside the destination and renamed over it, so a failure at any
+  // point leaves whatever was staged before untouched. The partial file is
+  // removed on the way out; a failed update leaves nothing behind.
   await mkdir(dirname(destination), { recursive: true })
   const temporaryPath = `${destination}.download-${crypto.randomUUID()}`
-  await writeFile(temporaryPath, bytes, { mode: 0o700 })
-  await rename(temporaryPath, destination)
+  try {
+    await writeFile(temporaryPath, bytes, { mode: 0o700 })
+    await rename(temporaryPath, destination)
+  }
+  catch (error) {
+    await rm(temporaryPath, { force: true })
+    throw error
+  }
   return { manifest, path: destination, bytes: bytes.byteLength }
 }
 
@@ -136,6 +159,17 @@ export function verifyUpdateManifestSignature(manifest: DesktopUpdateManifest, t
   catch {
     throw new Error('Desktop update manifest signature verification failed')
   }
+}
+
+/**
+ * An update is a build for one platform and architecture, signed as such. A
+ * release channel serving another build's manifest - an arm64 macOS package
+ * offered to an x64 Linux install - is refused, rather than downloaded and
+ * staged for an app that cannot run it.
+ */
+function assertUpdateTarget(manifest: DesktopUpdateManifest, target: DesktopUpdateTarget = { platform: process.platform, architecture: process.arch }): void {
+  if (manifest.platform !== target.platform || manifest.architecture !== target.architecture)
+    throw new Error(`Desktop update is built for ${manifest.platform}-${manifest.architecture}, not this app's ${target.platform}-${target.architecture}`)
 }
 
 function parseVersion(version: string): [number, number, number] {
