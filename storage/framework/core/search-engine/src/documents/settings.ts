@@ -6,7 +6,7 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
-import { snakeCase } from '@stacksjs/strings'
+import { settingsFromSearchTrait } from './trait-settings'
 
 export async function updateIndexSettings(): Promise<Result<string, string>> {
   try {
@@ -20,11 +20,8 @@ export async function updateIndexSettings(): Promise<Result<string, string>> {
       const tableName = getTableName(modelInstance, model)
 
       if (searchable && typeof searchable === 'object') {
-        const filterableAttributes = ((typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.filterable) || []).map(attr => snakeCase(attr))
-        const sortableAttributes = ((typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.sortable) || []).map(attr => snakeCase(attr))
-        const searchableAttributes = ((typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.searchable) || []).map(attr => snakeCase(attr))
-
-        await updateSettings(tableName, { filterableAttributes, sortableAttributes, searchableAttributes })
+        // Displayed attributes are left to the import, as they always were here.
+        await updateSettings(tableName, settingsFromSearchTrait(searchable, { displayed: false }))
       }
     }
 

@@ -6,7 +6,7 @@ import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
-import { snakeCase } from '@stacksjs/strings'
+import { settingsFromSearchTrait } from './trait-settings'
 
 export async function importModelDocuments(modelOption?: string): Promise<Result<string, string>> {
   try {
@@ -24,12 +24,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Result
 
       if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object')) {
         if (typeof searchable === 'object') {
-          await updateSettings(tableName, {
-            searchableAttributes: (searchable.searchable ?? []).map(attr => snakeCase(attr)),
-            filterableAttributes: (searchable.filterable ?? []).map(attr => snakeCase(attr)),
-            sortableAttributes: (searchable.sortable ?? []).map(attr => snakeCase(attr)),
-            displayedAttributes: (searchable.displayable ?? []).map(attr => snakeCase(attr)),
-          })
+          await updateSettings(tableName, settingsFromSearchTrait(searchable))
         }
 
         type SearchableRow = { toSearchableObject?: () => Record<string, unknown> | null, id?: unknown }
