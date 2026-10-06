@@ -1,6 +1,6 @@
 import type {Result} from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
-import { ok } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
@@ -28,9 +28,12 @@ export async function flushModelDocuments(modelOption?: string): Promise<Result<
 
     return ok('Successfully flushed all model data from search engine!')
   }
-  catch (err: any) {
-    log.error(err)
+  catch (error) {
+    // The catch variable was named `err`, hiding the `err` helper, so this
+    // called the caught Error as a function and threw a TypeError in place of
+    // returning the failure.
+    log.error(error)
 
-    return err(err)
+    return err(error instanceof Error ? error.message : String(error))
   }
 }

@@ -52,9 +52,21 @@ export function useSearchEngine(): SearchEngineDriver {
       if (resolvedDriver)
         return Reflect.get(resolvedDriver as object, prop)
 
+      // Not a promise, and not a member anything should find by guessing.
+      // Every name used to come back as a function, `then` included, so
+      // `await useSearchEngine()` - or returning it from an async function -
+      // waited on a "promise" that never settled.
+      if (typeof prop === 'symbol' || prop === 'then')
+        return undefined
+
       return (...args: unknown[]) => driverReady.then((driver) => {
         const member = Reflect.get(driver as object, prop)
-        return typeof member === 'function' ? member.apply(driver, args) : member
+        // A method the driver does not have is an error, as it is once the
+        // driver has loaded. It used to resolve to `undefined`, so a call made
+        // early "succeeded" having done nothing.
+        if (typeof member !== 'function')
+          throw new TypeError(`The ${searchEngine.driver ?? 'configured'} search engine driver has no method "${prop}"`)
+        return member.apply(driver, args)
       })
     },
   })
