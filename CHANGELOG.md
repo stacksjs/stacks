@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.80...v0.75.81)
+
+## 🐛 Bug Fixes
+
+- **build**: require dtsx 0.11.19, so the Payment facade and billable methods are typed ([3e2ff66](https://github.com/stacksjs/stacks/commit/3e2ff66)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: saas plan metadata is any string record ([5cd4082](https://github.com/stacksjs/stacks/commit/5cd4082)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.79...v0.75.80)
 
 ## ✨ Features
