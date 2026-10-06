@@ -361,7 +361,7 @@ export default defineGates({
         { title: 'Subscriptions and billing', text: 'Make any model billable for Stripe subscriptions, invoices, checkout sessions, and the customer portal; buddy stripe:setup creates the products and prices.' },
         { title: 'Marketplaces', text: 'Stripe Connect accounts, transfers, and payouts, so the platform takes its fee and sellers get paid.' },
         { title: 'Coupons and gift cards', text: 'Discount rules and stored-value cards as first-class models, not a string parsed at checkout.' },
-        { title: 'Shipping and tax', text: 'Shipping methods and tax rates configured per region, applied the same way in the API and the dashboard.' },
+        { title: 'Shipping and tax', text: 'Zones, methods, and rates, plus couriers, delivery routes, and tracking; license keys and digital deliveries for what has nothing to ship; tax rates per region.' },
         { title: 'Waitlists and POS', text: 'Product and restaurant waitlists, plus a point-of-sale view in the dashboard for in-person orders.' },
         { title: 'Auctions', text: 'Lots, proxy bidding, anti-sniping that extends a lot while bids keep coming, pledges, settlement, and bids pushed to every viewer in realtime.' },
         { title: 'Import your store', text: 'buddy commerce:import moves a Shopify, WooCommerce, or Shopware catalog across, and its customers and orders with --customers and --orders. Re-running updates rather than duplicates.' },
