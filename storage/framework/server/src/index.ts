@@ -2,8 +2,6 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging/runtime'
 import { serverResponse } from '@stacksjs/router/runtime'
 import { retry } from '@stacksjs/utils/retry'
-import type { Server, ServerWebSocket } from 'bun'
-import { isWebSocketUpgrade } from './request'
 
 // Auto-imports (ORM models + resources/functions) are loaded via preloader
 // See: storage/framework/defaults/resources/plugins/preloader.ts
@@ -52,26 +50,15 @@ const server = Bun.serve({
   // should fail loudly with EADDRINUSE, not silently split traffic.
   reusePort: !development,
 
-  async fetch(request: Request, server: Server<any>): Promise<Response | undefined> {
-    if (isWebSocketUpgrade(request) && server.upgrade(request)) {
-      return
-    }
-
+  // No `websocket` here, so Bun cannot upgrade a request: one asking for a
+  // websocket is answered like any other, through the router, which 404s an
+  // unmatched path. This used to upgrade every such request, on any path and
+  // unauthenticated, to handlers that did nothing - an open socket per
+  // request, held until the idle timeout, and an entry point a later handler
+  // would have inherited without auth (stacksjs/stacks#2864). Realtime runs
+  // its own server and authorizes its connections.
+  async fetch(request: Request): Promise<Response> {
     return serverResponse(request)
-  },
-
-  websocket: {
-    open(_ws: ServerWebSocket): void {
-      // WebSocket connection opened
-    },
-
-    message(_ws: ServerWebSocket, _message: string): void {
-      // WebSocket message received
-    },
-
-    close(_ws: ServerWebSocket, _code: number, _reason?: string): void {
-      // WebSocket connection closed
-    },
   },
 })
 
