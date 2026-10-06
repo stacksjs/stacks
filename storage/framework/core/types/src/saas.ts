@@ -8,10 +8,13 @@ export interface SaasOption {
       interval?: 'day' | 'month' | 'week' | 'year' // Optional interval
       currency: string
     }[]
-    metadata: {
-      createdBy: string
-      version: string
-    }
+    /**
+     * Stored on the Stripe product `buddy stripe:setup` creates, as Stripe
+     * metadata: any string keys and values (a tier, a feature limit). It was
+     * typed as exactly `{ createdBy, version }`, which refused every other key
+     * although Stripe and the setup code pass whatever is there.
+     */
+    metadata?: Record<string, string>
   }[]
   webhook: {
     endpoint: string
