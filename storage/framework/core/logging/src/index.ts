@@ -537,7 +537,9 @@ async function resolveSettings(logging: LoggingConfigSection | null, fallbackDir
     try {
       // Lazy import path to avoid a circular dependency (path imports logging).
       const p = await import('@stacksjs/path')
-      logDirectory = p.projectPath('storage/logs')
+      const { existsSync } = await import('node:fs')
+      const { homedir } = await import('node:os')
+      logDirectory = defaultLogDirectory(p.projectPath(), existsSync, homedir())
     }
     catch {
       logDirectory = 'storage/logs'
@@ -545,6 +547,21 @@ async function resolveSettings(logging: LoggingConfigSection | null, fallbackDir
   }
 
   return { level, format, writeToFile, logDirectory }
+}
+
+/**
+ * Where logs go when config names no `logsPath`: the project's storage/logs,
+ * or, when the working directory is not a project at all, a per-user cache.
+ *
+ * Commands run outside a project are real: `buddy new my-app` (often through
+ * `panx buddy new`) runs from wherever the user happens to be. Resolving
+ * storage/logs there made every such run leave a stray `storage/logs/` beside
+ * the new app, in ~/Code or wherever it was started. A directory counts as a
+ * project if it has a package.json or a storage/ of its own.
+ */
+export function defaultLogDirectory(projectRoot: string, exists: (path: string) => boolean, home: string): string {
+  const isProject = exists(`${projectRoot}/package.json`) || exists(`${projectRoot}/storage`)
+  return isProject ? `${projectRoot}/storage/logs` : `${home}/.cache/stacks/logs`
 }
 
 /** Attach transports a config section declares, skipping any already attached. */
