@@ -228,9 +228,14 @@ export interface AIConfig {
   mcp?: MCPConfig
 }
 
-export type AIProvider = 'anthropic' | 'openai' | 'ollama'
+export type AIProvider = 'anthropic' | 'openai' | 'ollama' | 'bedrock'
 
-export type AIConfigurationSource = 'config' | 'environment' | 'base-url' | 'local' | 'none'
+/**
+ * Where a provider's credentials come from. `aws-credential-chain`: Bedrock
+ * resolves them per request from the environment, a shared profile, or the
+ * instance role, so whether they exist is only known when one is made.
+ */
+export type AIConfigurationSource = 'config' | 'environment' | 'base-url' | 'local' | 'aws-credential-chain' | 'none'
 
 /**
  * Safe, provider-neutral configuration metadata for diagnostics and UI.
@@ -248,6 +253,7 @@ export interface ConfiguredAIOptions extends AIConfig {
     anthropic?: AIDriverConfig & { anthropicVersion?: string }
     openai?: AIDriverConfig & { embeddingModel?: string }
     ollama?: AIDriverConfig & { host?: string, embeddingModel?: string }
+    bedrock?: { model?: string, region?: string, maxTokens?: number }
   }
 }
 

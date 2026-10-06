@@ -10,20 +10,16 @@ import type { AiConfig } from '@stacksjs/types'
 export default {
   default: 'openai',
 
+  // Amazon Bedrock models this app uses. `buddy` requests access to each of
+  // them; see `bedrockModels` in @stacksjs/types for the ids Bedrock serves.
   models: [
-    // 'amazon.titan-embed-text-v1',
-    // Supported use cases – Retrieval augmented generation, open-ended text generation, brainstorming, summarizations, code generation, table creation, data formatting, paraphrasing, chain of thought, rewrite, extraction, QnA, and chat
-    'amazon.titan-text-express-v1',
-    // Amazon Titan Text Lite is a light weight efficient model, ideal for fine-tuning of English-language tasks, including like summarizations and copy writing, where customers want a smaller, more cost-effective model that is also highly customizable
-    'amazon.titan-text-lite-v1',
-    // 'amazon.titan-embed-image-v1',
-    // 'amazon.titan-image-generator-v1',
-    // 'anthropic.claude-v1',
-    // 'anthropic.claude-v2',
-    // 'anthropic.claude-v2:1',
-    // 'anthropic.claude-instant-v1',
-    // 'meta.llama2-13b-chat-v1',
-    'meta.llama2-70b-chat-v1',
+    // Amazon Nova Lite: the default for `ai.ask()`, `ai.summarize()` and the
+    // `bedrock` driver, invocable on demand
+    'amazon.nova-lite-v1:0',
+    // Text embeddings for retrieval
+    'amazon.titan-embed-text-v2:0',
+    // Claude through its global inference profile
+    // 'global.anthropic.claude-sonnet-5-5',
   ],
 
   deploy: true, // deploys AI endpoints

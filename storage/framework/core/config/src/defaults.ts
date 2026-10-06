@@ -62,14 +62,10 @@ export const defaults: StacksOptions = {
   ai: {
     deploy: false,
     models: [
-      'anthropic.claude-sonnet-4-20250514-v1:0',
-      'anthropic.claude-haiku-4-20250514-v1:0',
-      'anthropic.claude-3-5-sonnet-20241022-v2:0',
+      'amazon.nova-lite-v1:0',
       'amazon.titan-embed-text-v2:0',
-      'amazon.titan-text-premier-v1:0',
-      'amazon.titan-image-generator-v2:0',
-      'meta.llama3-1-70b-instruct-v1:0',
-      'meta.llama3-1-8b-instruct-v1:0',
+      'global.anthropic.claude-sonnet-5-5',
+      'global.anthropic.claude-haiku-4-5-20251001-v1:0',
     ],
   },
 

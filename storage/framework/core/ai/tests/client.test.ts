@@ -79,8 +79,24 @@ describe('configured AI client', () => {
     })).toEqual(['$.files must contain at least 1 items'])
   })
 
-  test('rejects unsupported legacy model defaults with an actionable error', () => {
-    expect(() => createAIClient({ default: 'meta.llama3-70b-instruct-v1:0' })).toThrow('Unsupported configured AI driver')
+  test('rejects a default no driver serves with an actionable error', () => {
+    expect(() => createAIClient({ default: 'mistral-large' })).toThrow('Unsupported configured AI driver: mistral-large')
+  })
+
+  test('routes Bedrock model and profile ids to the Bedrock driver, never the first-party APIs', () => {
+    expect(resolveAIProvider({ default: 'meta.llama3-70b-instruct-v1:0' })).toBe('bedrock')
+    expect(resolveAIProvider({ default: 'amazon.nova-lite-v1:0' })).toBe('bedrock')
+    // This used to select the Anthropic driver, which sent the Bedrock id to
+    // api.anthropic.com as a model name.
+    expect(resolveAIProvider({ default: 'anthropic.claude-sonnet-5-5' })).toBe('bedrock')
+    expect(resolveAIProvider({ default: 'global.anthropic.claude-sonnet-5-5' })).toBe('bedrock')
+    expect(resolveAIProvider({ default: 'arn:aws:bedrock:us-east-1:123456789012:inference-profile/x' })).toBe('bedrock')
+    expect(resolveAIProvider({ default: 'bedrock' })).toBe('bedrock')
+    expect(resolveAIProvider({ default: 'claude-sonnet-5-5' })).toBe('anthropic')
+    expect(getAIProviderConfiguration({ default: 'bedrock' }, undefined, {}))
+      .toEqual({ provider: 'bedrock', model: 'amazon.nova-lite-v1:0', configured: true, source: 'aws-credential-chain' })
+    expect(getAIProviderConfiguration({ default: 'us.anthropic.claude-sonnet-5-5' }, undefined, {}).model)
+      .toBe('us.anthropic.claude-sonnet-5-5')
   })
 
   test('resolves provider aliases and exposes safe configuration metadata', () => {

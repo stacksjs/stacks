@@ -15,358 +15,191 @@ bun add @stacksjs/ai
 ## Basic Usage
 
 ```typescript
-import { anthropic, openai, ollama } from '@stacksjs/ai'
+import { anthropic, bedrock, ollama, openai } from '@stacksjs/ai'
 
-// Using Anthropic Claude
-const response = await anthropic.chat({
-  messages: [{ role: 'user', content: 'Hello, Claude!' }]
-})
+const messages = [{ role: 'user' as const, content: 'Hello!' }]
 
-// Using OpenAI
-const gptResponse = await openai.chat({
-  messages: [{ role: 'user', content: 'Hello, GPT!' }]
-})
+// Each driver's chat() takes the messages, then the options.
+const claude = await anthropic.chat(messages)
+const gpt = await openai.chat(messages, { temperature: 0.7 })
+const local = await ollama.chat(messages, { model: 'llama3.2' })
+const nova = await bedrock.chat(messages, { model: 'amazon.nova-lite-v1:0' })
 
-// Using Ollama (local models)
-const localResponse = await ollama.chat({
-  model: 'llama2',
-  messages: [{ role: 'user', content: 'Hello, Llama!' }]
-})
+console.log(claude.content, claude.usage)
 ```
 
 ## Configuration
 
-Configure AI providers in `config/ai.ts`:
+Configure AI providers in `config/ai.ts`. `default` picks the provider: a
+provider name, or a model id that implies one (`claude-...` is Anthropic,
+`gpt-...` is OpenAI, a Bedrock id such as `amazon.nova-lite-v1:0` or
+`global.anthropic.claude-sonnet-5-5` is Bedrock).
 
 ```typescript
+import type { AiConfig } from '@stacksjs/types'
+
 export default {
-  // Default AI provider
   default: 'anthropic',
 
-  // Anthropic configuration
-  anthropic: {
-    apiKey: process.env.ANTHROPIC_API_KEY,
-    model: 'claude-3-opus-20240229',
-    maxTokens: 4096,
+  // The Amazon Bedrock models this app uses; `buddy ai:access` makes them
+  // invocable in the AWS account.
+  models: ['amazon.nova-lite-v1:0', 'amazon.titan-embed-text-v2:0'],
+
+  deploy: false,
+
+  drivers: {
+    anthropic: { model: 'claude-sonnet-5-5', maxTokens: 4096 }, // key: ANTHROPIC_API_KEY
+    openai: { model: 'gpt-4o' }, // key: OPENAI_API_KEY
+    ollama: { host: 'http://localhost:11434', model: 'llama3.2' },
+    // Credentials come from the AWS credential chain, never from this file.
+    bedrock: { model: 'amazon.nova-lite-v1:0', region: 'us-east-1' },
   },
-
-  // OpenAI configuration
-  openai: {
-    apiKey: process.env.OPENAI_API_KEY,
-    model: 'gpt-4-turbo-preview',
-    maxTokens: 4096,
-    organization: process.env.OPENAI_ORG_ID,
-  },
-
-  // Ollama configuration (local)
-  ollama: {
-    host: 'http://localhost:11434',
-    model: 'llama2',
-  },
-
-  // AWS Bedrock configuration
-  bedrock: {
-    region: process.env.AWS_DEFAULT_REGION || 'us-east-1',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    model: 'anthropic.claude-3-sonnet-20240229-v1:0',
-  },
-}
+} satisfies AiConfig
 ```
 
-## Anthropic (Claude)
+## Drivers
 
-### Basic Chat
+Every driver has the same shape: `configure(config)` once, then
+`chat(messages, options)` resolving to an `AIResult` -
+`{ content, model, usage, finishReason }` - and `streamChat(messages, options)`
+yielding text. A system prompt is `options.system` (Anthropic, Bedrock) or a
+`system` message (all of them).
+
+### Anthropic (Claude)
 
 ```typescript
 import { anthropic } from '@stacksjs/ai'
 
-const response = await anthropic.chat({
-  model: 'claude-3-opus-20240229',
-  messages: [
-    { role: 'user', content: 'Explain quantum computing in simple terms.' }
+anthropic.configure({ apiKey: process.env.ANTHROPIC_API_KEY!, model: 'claude-sonnet-5-5' })
+
+const result = await anthropic.chat(
+  [
+    { role: 'user', content: 'What is the capital of France?' },
+    { role: 'assistant', content: 'Paris.' },
+    { role: 'user', content: 'What is its population?' },
   ],
-  maxTokens: 1024,
-})
+  { system: 'Answer in one sentence.', maxTokens: 200 },
+)
+console.log(result.content)
 
-console.log(response.content)
-```
+for await (const text of anthropic.streamChat([{ role: 'user', content: 'Write a haiku.' }]))
+  process.stdout.write(text)
 
-### Streaming Responses
-
-```typescript
-import { anthropic } from '@stacksjs/ai'
-
-const stream = await anthropic.stream({
-  model: 'claude-3-sonnet-20240229',
-  messages: [
-    { role: 'user', content: 'Write a short story about a robot.' }
+// Images are content blocks
+const described = await anthropic.chat([{
+  role: 'user',
+  content: [
+    { type: 'image', source: { type: 'base64', media_type: 'image/png', data: base64Image } },
+    { type: 'text', text: 'What do you see?' },
   ],
-})
-
-for await (const chunk of stream) {
-  process.stdout.write(chunk.content || '')
-}
+}])
 ```
 
-### System Prompts
-
-```typescript
-import { anthropic } from '@stacksjs/ai'
-
-const response = await anthropic.chat({
-  model: 'claude-3-opus-20240229',
-  system: 'You are a helpful coding assistant. Provide concise, accurate answers.',
-  messages: [
-    { role: 'user', content: 'How do I sort an array in TypeScript?' }
-  ],
-})
-```
-
-### Multi-turn Conversations
-
-```typescript
-import { anthropic } from '@stacksjs/ai'
-
-const conversation = [
-  { role: 'user', content: 'What is the capital of France?' },
-  { role: 'assistant', content: 'The capital of France is Paris.' },
-  { role: 'user', content: 'What is its population?' }
-]
-
-const response = await anthropic.chat({
-  messages: conversation,
-})
-// Claude knows "its" refers to Paris from context
-```
-
-### Vision (Image Analysis)
-
-```typescript
-import { anthropic } from '@stacksjs/ai'
-import { readFile } from 'node:fs/promises'
-
-const imageData = await readFile('image.png')
-const base64Image = imageData.toString('base64')
-
-const response = await anthropic.chat({
-  model: 'claude-3-opus-20240229',
-  messages: [
-    {
-      role: 'user',
-      content: [
-        {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: 'image/png',
-            data: base64Image,
-          },
-        },
-        {
-          type: 'text',
-          text: 'What do you see in this image?',
-        },
-      ],
-    },
-  ],
-})
-```
-
-## OpenAI
-
-### Basic Chat
+### OpenAI
 
 ```typescript
 import { openai } from '@stacksjs/ai'
 
-const response = await openai.chat({
-  model: 'gpt-4-turbo-preview',
-  messages: [
-    { role: 'system', content: 'You are a helpful assistant.' },
-    { role: 'user', content: 'What is the meaning of life?' }
-  ],
-})
+openai.configure({ apiKey: process.env.OPENAI_API_KEY!, model: 'gpt-4o' })
 
-console.log(response.choices[0].message.content)
+const result = await openai.chat([
+  { role: 'system', content: 'You are a helpful assistant.' },
+  { role: 'user', content: 'Tell me a joke.' },
+], { temperature: 0.7 })
+
+for await (const text of openai.streamChat([{ role: 'user', content: 'Count to five.' }]))
+  process.stdout.write(text)
+
+// One string gives one vector, an array gives one per string
+const vector = await openai.embed('The quick brown fox') as number[]
 ```
 
-### Streaming
-
-```typescript
-import { openai } from '@stacksjs/ai'
-
-const stream = await openai.stream({
-  model: 'gpt-4-turbo-preview',
-  messages: [
-    { role: 'user', content: 'Tell me a joke.' }
-  ],
-})
-
-for await (const chunk of stream) {
-  const content = chunk.choices[0]?.delta?.content
-  if (content) process.stdout.write(content)
-}
-```
-
-### Function Calling
-
-```typescript
-import { openai } from '@stacksjs/ai'
-
-const response = await openai.chat({
-  model: 'gpt-4-turbo-preview',
-  messages: [
-    { role: 'user', content: 'What is the weather in San Francisco?' }
-  ],
-  tools: [
-    {
-      type: 'function',
-      function: {
-        name: 'get_weather',
-        description: 'Get the current weather in a location',
-        parameters: {
-          type: 'object',
-          properties: {
-            location: {
-              type: 'string',
-              description: 'The city and state, e.g. San Francisco, CA',
-            },
-            unit: {
-              type: 'string',
-              enum: ['celsius', 'fahrenheit'],
-            },
-          },
-          required: ['location'],
-        },
-      },
-    },
-  ],
-})
-
-// Handle function call
-if (response.choices[0].message.tool_calls) {
-  const toolCall = response.choices[0].message.tool_calls[0]
-  const args = JSON.parse(toolCall.function.arguments)
-
-  // Call your weather API
-  const weather = await getWeather(args.location, args.unit)
-
-  // Continue conversation with function result
-  const followUp = await openai.chat({
-    model: 'gpt-4-turbo-preview',
-    messages: [
-      ...messages,
-      response.choices[0].message,
-      {
-        role: 'tool',
-        tool_call_id: toolCall.id,
-        content: JSON.stringify(weather),
-      },
-    ],
-  })
-}
-```
-
-### Embeddings
-
-```typescript
-import { openai } from '@stacksjs/ai'
-
-const embedding = await openai.embed({
-  model: 'text-embedding-3-small',
-  input: 'The quick brown fox jumps over the lazy dog.',
-})
-
-console.log(embedding.data[0].embedding) // Vector of floats
-```
-
-## Ollama (Local Models)
-
-### Basic Chat
+### Ollama (local models)
 
 ```typescript
 import { ollama } from '@stacksjs/ai'
 
-const response = await ollama.chat({
-  model: 'llama2',
-  messages: [
-    { role: 'user', content: 'Hello! How are you?' }
-  ],
-})
+ollama.configure({ host: 'http://localhost:11434', model: 'llama3.2' })
 
-console.log(response.message.content)
-```
-
-### Available Models
-
-```typescript
-import { ollama } from '@stacksjs/ai'
-
-// List installed models
-const models = await ollama.list()
-console.log(models)
-
-// Pull a new model
-await ollama.pull('mistral')
-
-// Use specific model
-const response = await ollama.chat({
-  model: 'codellama',
-  messages: [
-    { role: 'user', content: 'Write a Python function to reverse a string.' }
-  ],
-})
-```
-
-### Streaming with Ollama
-
-```typescript
-import { ollama } from '@stacksjs/ai'
-
-const stream = await ollama.stream({
-  model: 'llama2',
-  messages: [
-    { role: 'user', content: 'Explain machine learning.' }
-  ],
-})
-
-for await (const chunk of stream) {
-  process.stdout.write(chunk.message?.content || '')
+if (await ollama.isRunning()) {
+  await ollama.pullModel('llama3.2', status => console.log(status))
+  const result = await ollama.chat([{ role: 'user', content: 'Hello!' }])
+  const installed = await ollama.listModels()
 }
+```
+
+### Structured output
+
+`responseFormat` asks any driver for JSON, and `createAIClient().generateObject()`
+validates it against a schema and retries once on a mismatch. Anthropic and
+Bedrock implement it with a forced tool call, OpenAI natively, Ollama through
+its `format` option.
+
+```typescript
+import { createAIClient } from '@stacksjs/ai'
+
+const client = createAIClient({ default: 'anthropic' })
+const { data } = await client.generateObject<{ city: string }>(
+  [{ role: 'user', content: 'Which city is the Eiffel Tower in?' }],
+  { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] },
+)
 ```
 
 ## AWS Bedrock
 
-### Using Bedrock Client
-
-There is no client to construct. The Bedrock clients are created lazily from
-`config/ai.ts` and the AWS environment, so the functions take the call's
-parameters directly:
+The `bedrock` driver sends every request through Bedrock's Converse API, so one
+request shape works for each text model Bedrock serves - Nova, Claude, Llama -
+and the model is configuration. Credentials come from the AWS credential chain
+(environment keys, a shared profile, the instance role). The region is
+`drivers.bedrock.region`, then `AWS_REGION`, then `AWS_DEFAULT_REGION`, then
+us-east-1.
 
 ```typescript
-import { invokeModel, listFoundationModels, requestModelAccess } from '@stacksjs/ai'
+import { bedrock, createAIClient } from '@stacksjs/ai'
 
-// Request access to every model named in config/ai.ts
-await requestModelAccess()
+// Directly
+const answer = await bedrock.chat(
+  [{ role: 'user', content: 'Name three primary colours.' }],
+  { model: 'global.anthropic.claude-sonnet-5-5', maxTokens: 200 },
+)
 
-// What the account can actually reach
-const { modelSummaries } = await listFoundationModels({})
-
-const response = await invokeModel({
-  modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
-  contentType: 'application/json',
-  body: JSON.stringify({
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: 1024,
-    messages: [
-      { role: 'user', content: 'Hello!' },
-    ],
-  }),
-})
+// Or through config/ai.ts, with `default: 'bedrock'` or a Bedrock model id
+const client = createAIClient({ default: 'bedrock', drivers: { bedrock: { model: 'amazon.nova-lite-v1:0' } } })
+const { data } = await client.generateObject(
+  [{ role: 'user', content: 'Give me a colour as JSON' }],
+  { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
+)
 ```
 
-`invokeModelWithResponseStream` has the same shape and yields chunks.
+### Which model id to use
+
+Claude and the newer Nova and Llama generations are served only through
+an **inference profile**, so they are invoked by profile id - `global.` or a
+geography such as `us.` in front of the model id. Invoking the bare
+`anthropic.claude-...` id is refused. `bedrockModels` in `@stacksjs/types`
+lists the ids Bedrock serves, in the form each is invoked by, and is what the
+`models` autocompletion in `config/ai.ts` offers.
+
+The default, `amazon.nova-lite-v1:0`, is invocable on demand with no profile
+and no agreement, so it answers in a fresh account.
+
+### Model access
+
+```bash
+buddy ai:access                                      # every model in config/ai.ts
+buddy ai:access global.anthropic.claude-sonnet-5-5   # just this one
+```
+
+For each model this reports `available` (invocable now), `requested` (an
+agreement was made from the model's public offer, and Bedrock is processing
+it) or `failed` with the reason - for instance an account that still owes
+Anthropic's first-use form. The same is `requestModelAccess(models?)` in code.
+
+### Lower level
+
+`invokeModel`, `invokeModelWithResponseStream` and `converse` from
+`@stacksjs/ai` call Bedrock with the model's own request body; the stream yields
+each chunk's decoded model output.
 
 ## AI Agents
 
@@ -458,6 +291,10 @@ const complete = await fullResponse
 
 ### Text Generation
 
+`ask()` and `summarize()` run on the Bedrock driver: `drivers.bedrock` in
+config/ai.ts, `BEDROCK_MODEL_ID`, then `amazon.nova-lite-v1:0`. `modelId`
+overrides it for one call.
+
 ```typescript
 import { analyzeSentiment, ask, classifyText, summarize } from '@stacksjs/ai'
 
@@ -531,91 +368,38 @@ functions remain available when you want the raw OpenAI response.
 
 ## Error Handling
 
+A driver that gets an error status throws an `Error` whose message carries the
+provider's own response body, so the reason (an invalid key, an unknown model, a
+rate limit) is in `error.message`. The Bedrock driver's errors also carry
+`statusCode` and `code` from AWS, and a rejected credential names where it came
+from.
+
 ```typescript
-import { anthropic } from '@stacksjs/ai'
+import { createAIClient } from '@stacksjs/ai'
 
 try {
-  const response = await anthropic.chat({
-    messages: [{ role: 'user', content: 'Hello' }],
-  })
-} catch (error) {
-  if (error.status === 429) {
-    // Rate limited
-    console.log('Too many requests, waiting...')
-    await delay(error.headers['retry-after'] _ 1000)
-  } else if (error.status === 401) {
-    // Invalid API key
-    console.error('Invalid API key')
-  } else if (error.status === 500) {
-    // Server error
-    console.error('AI provider error')
-  }
+  const result = await createAIClient({ default: 'anthropic' }).generate([{ role: 'user', content: 'Hello' }])
+}
+catch (error) {
+  console.error((error as Error).message)
 }
 ```
 
-## Edge Cases
+Rate limits are retried for you: the drivers send their requests through
+`fetchWithRetry`, which backs off exponentially on 429 and 5xx and honours
+`Retry-After`, and the Bedrock client retries throttling the same way.
 
-### Handling Long Conversations
+### Long conversations
 
-```typescript
-import { anthropic } from '@stacksjs/ai'
-
-// Truncate or summarize old messages to stay within token limits
-function trimConversation(messages: Message[], maxTokens: number) {
-  // Keep system message and recent messages
-  const systemMessage = messages.find(m => m.role === 'system')
-  const recentMessages = messages.slice(-10)
-
-  return systemMessage
-    ? [systemMessage, ...recentMessages]
-    : recentMessages
-}
-
-const trimmedMessages = trimConversation(conversation, 4096)
-const response = await anthropic.chat({ messages: trimmedMessages })
-```
-
-### Retrying Failed Requests
+Nothing trims history for you. Keep the system prompt and the recent turns:
 
 ```typescript
-import { anthropic } from '@stacksjs/ai'
+import type { AIMessage } from '@stacksjs/ai'
 
-async function chatWithRetry(
-  messages: Message[],
-  maxRetries = 3
-) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await anthropic.chat({ messages })
-    } catch (error) {
-      if (attempt === maxRetries) throw error
-
-      const delay = Math.pow(2, attempt) _ 1000 // Exponential backoff
-      await new Promise(r => setTimeout(r, delay))
-    }
-  }
-}
-```
-
-### Timeout Handling
-
-```typescript
-import { anthropic } from '@stacksjs/ai'
-
-const controller = new AbortController()
-const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
-
-try {
-  const response = await anthropic.chat({
-    messages: [{ role: 'user', content: 'Complex question...' }],
-    signal: controller.signal,
-  })
-} catch (error) {
-  if (error.name === 'AbortError') {
-    console.log('Request timed out')
-  }
-} finally {
-  clearTimeout(timeoutId)
+function trimConversation(messages: AIMessage[], keep = 10): AIMessage[] {
+  const system = messages.filter(message => message.role === 'system')
+  const turns = messages.filter(message => message.role !== 'system')
+  return [...system, ...turns.slice(-keep)]
 }
 ```
 
@@ -623,17 +407,15 @@ try {
 
 ### Provider Functions
 
+Each of `anthropic`, `openai`, `ollama` and `bedrock`:
+
 | Function | Description |
 |----------|-------------|
-| `anthropic.chat(options)` | Chat with Claude |
-| `anthropic.stream(options)` | Stream Claude response |
-| `openai.chat(options)` | Chat with GPT |
-| `openai.stream(options)` | Stream GPT response |
-| `openai.embed(options)` | Generate embeddings |
-| `ollama.chat(options)` | Chat with local model |
-| `ollama.stream(options)` | Stream local model |
-| `ollama.list()` | List installed models |
-| `ollama.pull(model)` | Download model |
+| `configure(config)` | Set the model, key or host for later calls |
+| `chat(messages, options)` | One completion, an `AIResult` |
+| `streamChat(messages, options)` | Text as it is generated (not `bedrock`) |
+| `openai.embed(input, model?)` / `ollama.embed(input, model?)` | Embedding vectors |
+| `ollama.listModels()` / `ollama.pullModel(name, onProgress?)` | Local models |
 
 ### Speech Functions
 
@@ -647,16 +429,18 @@ try {
 
 | Function | Description |
 |----------|-------------|
-| `createBedrockClient(config)` | Create Bedrock client |
-| `createBedrockRuntimeClient(config)` | Create runtime client |
-| `invokeModel(client, params)` | Invoke model |
-| `checkModelAccess(client, modelId)` | Check access |
+| `bedrock.chat(messages, options)` | A completion through the Converse API |
+| `converse(params, region?)` | Converse with Bedrock's own request shape |
+| `invokeModel(params)` / `invokeModelWithResponseStream(params)` | The model's native request body |
+| `listFoundationModels(params)` | What Bedrock offers |
+| `requestModelAccess(models?, { region })` | Make models invocable; `buddy ai:access` |
+| `isBedrockModelId(id)` | Whether an id names a Bedrock model or profile |
 
 ### Text Utilities
 
 | Function | Description |
 |----------|-------------|
 | `ask(question, options)` | Generate text |
-| `summarize(options)` | Summarize text |
+| `summarize(text, options)` | Summarize text |
 
 | `analyzeSentiment(text)` | Analyze sentiment |

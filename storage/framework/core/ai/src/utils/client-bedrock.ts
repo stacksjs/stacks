@@ -6,7 +6,7 @@ import type {
   ListFoundationModelsCommandInput,
   ListFoundationModelsCommandOutput,
 } from '@stacksjs/ts-cloud/aws'
-import process from 'node:process'
+import { bedrockRegion } from './client-bedrock-runtime'
 
 // Lazy-load the runtime BedrockClient. `@stacksjs/ts-cloud/aws` ships the
 // type declarations but the JS bundle for that subpath isn't always
@@ -25,7 +25,7 @@ async function getClient(): Promise<any> {
       '@stacksjs/ts-cloud/aws does not export BedrockClient - rebuild ts-cloud or remove the AI dependency.',
     )
   }
-  _client = new mod.BedrockClient(process.env.REGION || 'us-east-1')
+  _client = new mod.BedrockClient(bedrockRegion())
   return _client
 }
 

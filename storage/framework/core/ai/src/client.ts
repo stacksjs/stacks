@@ -1,4 +1,5 @@
 import type {
+  AIDriverConfig,
   AIMessage,
   AIMessageContent,
   AIProvider,
@@ -10,6 +11,7 @@ import type {
   GenerateObjectOptions,
 } from './types'
 import * as anthropic from './drivers/anthropic'
+import * as bedrock from './drivers/bedrock'
 import * as ollama from './drivers/ollama'
 import * as openai from './drivers/openai'
 
@@ -23,13 +25,28 @@ export function resolveAIProvider(config: ConfiguredAIOptions, override?: AIProv
   if (override)
     return override
   const configured = String(config.default || '').toLowerCase()
-  if (configured === 'anthropic' || configured.startsWith('anthropic.'))
+  if (configured === 'bedrock' || isBedrockModelId(configured))
+    return 'bedrock'
+  if (configured === 'anthropic' || configured.startsWith('claude-'))
     return 'anthropic'
   if (configured === 'openai' || configured.startsWith('gpt-') || configured.startsWith('o1') || configured.startsWith('o3'))
     return 'openai'
   if (configured === 'ollama')
     return 'ollama'
-  throw new Error(`Unsupported configured AI driver: ${config.default || '(empty)'}. Expected anthropic, openai, or ollama.`)
+  throw new Error(`Unsupported configured AI driver: ${config.default || '(empty)'}. Expected anthropic, openai, ollama, bedrock, or a model id.`)
+}
+
+/**
+ * A Bedrock model or inference profile id: `<provider>.<model>`, optionally
+ * behind a geography (`us.`, `global.`), or a Bedrock ARN.
+ *
+ * `anthropic.claude-...` used to select the first-party Anthropic driver,
+ * which sent the Bedrock id to api.anthropic.com as a model name it does not
+ * have. A first-party Claude model is `claude-...`.
+ */
+export function isBedrockModelId(id: string): boolean {
+  return /^arn:aws[\w-]*:bedrock:/.test(id)
+    || /^(?:(?:global|us|us-gov|eu|apac|jp|au|ca)\.)?(?:amazon|anthropic|meta|mistral|cohere|ai21|deepseek|openai|qwen|writer|stability)\.[a-z0-9]/.test(id)
 }
 
 function configuredModel(config: ConfiguredAIOptions, provider: AIProvider): string | undefined {
@@ -51,13 +68,16 @@ export function getAIProviderConfiguration(
   environment: Record<string, string | undefined> = process.env,
 ): AIProviderConfiguration {
   const provider = resolveAIProvider(config, override)
-  const driver = config.drivers?.[provider] ?? {}
   const model = configuredModel(config, provider)
 
   if (provider === 'ollama') {
     return { provider, model, configured: true, source: 'local' }
   }
+  if (provider === 'bedrock') {
+    return { provider, model: model ?? (environment.BEDROCK_MODEL_ID || bedrock.DEFAULT_BEDROCK_MODEL), configured: true, source: 'aws-credential-chain' }
+  }
 
+  const driver: AIDriverConfig = config.drivers?.[provider] ?? {}
   if (driver.apiKey?.trim()) {
     return { provider, model, configured: true, source: 'config' }
   }
@@ -165,6 +185,12 @@ function createGenerate(config: ConfiguredAIOptions, provider: AIProvider) {
         system: [options.system, ...systemMessages].filter(Boolean).join('\n\n') || undefined,
       })
     }
+  }
+  if (provider === 'bedrock') {
+    const driver = config.drivers?.bedrock ?? {}
+    bedrock.configure({ model: configuredModel(config, 'bedrock'), region: driver.region, maxTokens: driver.maxTokens })
+    return (messages: AIMessage[], options: ChatCompletionOptions & { system?: string } = {}): Promise<AIResult> =>
+      bedrock.chat(messages, options)
   }
   if (provider === 'openai') {
     const driver = config.drivers?.openai ?? {}

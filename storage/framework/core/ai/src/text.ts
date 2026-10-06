@@ -1,14 +1,16 @@
-import { invokeModel } from './utils/client-bedrock-runtime'
+import type { AIResult } from './types'
+import { ai } from '@stacksjs/config'
+import { chat, configure } from './drivers/bedrock'
 
 interface AiOptions {
   maxTokenCount?: number
   temperature?: number
   topP?: number
   /**
-   * Override the Bedrock model. Defaults to `config.ai?.bedrock?.model` →
-   * `BEDROCK_MODEL_ID` env → `amazon.titan-text-express-v1` (the prior
-   * hard-coded default). Letting callers swap models per-call lets ops
-   * pin a different model in production than in dev without code changes.
+   * Override the Bedrock model for this call. Defaults to
+   * `ai.drivers.bedrock.model` in config/ai.ts, then `BEDROCK_MODEL_ID`, then
+   * `amazon.nova-lite-v1:0`. Any text model Bedrock serves works, since the
+   * request goes through the Converse API.
    */
   modelId?: string
 }
@@ -16,64 +18,37 @@ interface AiOptions {
 export interface SummarizeOptions extends AiOptions {}
 export interface AskOptions extends AiOptions {}
 
-const DEFAULT_MODEL = 'amazon.titan-text-express-v1'
-
-function resolveModel(override?: string): string {
-  if (override) return override
-  const cfg = (globalThis as { config?: any }).config?.ai?.bedrock?.model
-  return cfg || process.env.BEDROCK_MODEL_ID || DEFAULT_MODEL
-}
-
-export async function summarize(text: string, options: SummarizeOptions = {}): Promise<string> {
+/**
+ * Both helpers used to hand-build Amazon Titan's request body and default to
+ * `amazon.titan-text-express-v1`, which Bedrock has retired ("This model
+ * version has reached the end of its life"), so neither returned anything.
+ * They also read the model override from a `globalThis.config` only tinker
+ * sets. They go through the Bedrock driver now, configured from config/ai.ts.
+ */
+async function complete(prompt: string, options: AiOptions, failure: string): Promise<string> {
   const { maxTokenCount = 512, temperature = 0, topP = 0.9, modelId } = options
+  const driver = ai.drivers?.bedrock
+  configure({ model: driver?.model, region: driver?.region })
 
+  let result: AIResult
   try {
-    const response = await invokeModel({
-      modelId: resolveModel(modelId),
-      contentType: 'application/json',
-      accept: '*/*',
-      body: JSON.stringify({
-        inputText: `Summarize the following text: ${text}`,
-        textGenerationConfig: {
-          maxTokenCount,
-          stopSequences: [],
-          temperature,
-          topP,
-        },
-      }),
+    result = await chat([{ role: 'user', content: prompt }], {
+      model: modelId,
+      maxTokens: maxTokenCount,
+      temperature,
+      topP,
     })
-
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body))
-    return responseBody.results[0].outputText
   }
   catch (error) {
-    throw new Error(`Error summarizing text: ${(error as Error).message}`)
+    throw new Error(`${failure}: ${(error as Error).message}`)
   }
+  return result.content
 }
 
-export async function ask(question: string, options: AskOptions = {}): Promise<string> {
-  const { maxTokenCount = 512, temperature = 0, topP = 0.9, modelId } = options
+export function summarize(text: string, options: SummarizeOptions = {}): Promise<string> {
+  return complete(`Summarize the following text: ${text}`, options, 'Error summarizing text')
+}
 
-  try {
-    const response = await invokeModel({
-      modelId: resolveModel(modelId),
-      contentType: 'application/json',
-      accept: '*/*',
-      body: JSON.stringify({
-        inputText: question,
-        textGenerationConfig: {
-          maxTokenCount,
-          stopSequences: [],
-          temperature,
-          topP,
-        },
-      }),
-    })
-
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body))
-    return responseBody.results[0].outputText
-  }
-  catch (error) {
-    throw new Error(`Error asking question: ${(error as Error).message}`)
-  }
+export function ask(question: string, options: AskOptions = {}): Promise<string> {
+  return complete(question, options, 'Error asking question')
 }
