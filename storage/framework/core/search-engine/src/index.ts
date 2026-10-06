@@ -30,7 +30,9 @@ let resolvedDriver: SearchEngineDriver | undefined
 const driverReady: Promise<SearchEngineDriver> = (async () => {
   await overridesReady
   const driverModule = await importDriverModule(searchEngine.driver)
-  resolvedDriver = driverModule.default as SearchEngineDriver
+  // No cast: every driver's default export is typed `SearchEngineDriver`, so
+  // one missing a member fails to compile here instead of failing at runtime.
+  resolvedDriver = driverModule.default
   return resolvedDriver
 })()
 
