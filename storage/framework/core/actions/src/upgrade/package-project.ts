@@ -238,6 +238,10 @@ export function syncPackageProjectFiles(
     )
   }
 
+  const bunVersion = shippedBunVersion(defaultsPackageRoot)
+  if (bunVersion)
+    alignBunPins(projectRoot, bunVersion, changes, options)
+
   for (const legacyFile of LEGACY_PACKAGE_PROJECT_FILES) {
     const target = join(projectRoot, legacyFile)
     if (!existsSync(target))
@@ -251,6 +255,102 @@ export function syncPackageProjectFiles(
   if (!options.dryRun)
     stampDefaultsSync(targetDefaults, defaultsPackageRoot)
 
+  return changes
+}
+
+/**
+ * The Bun version a release is built and tested on: the repository's
+ * `engines.bun`, which the defaults build writes to `project/bun-version`.
+ */
+export const BUN_VERSION_FILE = 'project/bun-version'
+
+function shippedBunVersion(defaultsPackageRoot: string): string | null {
+  try {
+    const version = readFileSync(join(defaultsPackageRoot, BUN_VERSION_FILE), 'utf8').trim()
+    return /^\d+\.\d+\.\d+$/.test(version) ? version : null
+  }
+  catch {
+    return null
+  }
+}
+
+function olderVersion(candidate: string, than: string): boolean {
+  const left = candidate.split('.').map(Number)
+  const right = than.split('.').map(Number)
+  for (let i = 0; i < 3; i++) {
+    if (left[i] !== right[i])
+      return (left[i] ?? 0) < (right[i] ?? 0)
+  }
+  return false
+}
+
+const VERSION = '(\\d+\\.\\d+\\.\\d+)'
+
+/**
+ * Where an app names an exact Bun: a workflow's `BUN_VERSION` / `bun-version`,
+ * a Pantry `bun.sh@X` package, a Dockerfile's `oven/bun:X` or `ARG BUN_VERSION=X`.
+ * Ranges and `latest` are the app's choice and are left alone.
+ */
+const BUN_PINS: RegExp[] = [
+  new RegExp(`^(\\s*BUN_VERSION:\\s*['"]?)${VERSION}`, 'gm'),
+  new RegExp(`^(\\s*bun-version:\\s*['"]?)${VERSION}`, 'gm'),
+  new RegExp(`((?:^|[\\s'"])bun(?:\\.sh|\\.com)?@)${VERSION}`, 'gm'),
+  new RegExp(`(oven/bun:)${VERSION}`, 'g'),
+  new RegExp(`^(\\s*ARG\\s+BUN_VERSION=)${VERSION}`, 'gm'),
+]
+
+/** Raise every exact Bun pin in `text` that is older than `version`. */
+export function raiseBunPins(text: string, version: string): string {
+  let next = text
+  for (const pattern of BUN_PINS)
+    next = next.replace(pattern, (match, prefix: string, pinned: string) => olderVersion(pinned, version) ? `${prefix}${version}` : match)
+  return next
+}
+
+function bunPinFiles(projectRoot: string): string[] {
+  const files: string[] = []
+  const workflows = join(projectRoot, '.github/workflows')
+  if (existsSync(workflows)) {
+    for (const entry of readdirSync(workflows)) {
+      if (/\.ya?ml$/.test(entry))
+        files.push(join(workflows, entry))
+    }
+  }
+  for (const entry of readdirSync(projectRoot)) {
+    if (/^Dockerfile/.test(entry))
+      files.push(join(projectRoot, entry))
+  }
+  for (const path of ['storage/framework/Dockerfile', 'storage/framework/server/Dockerfile']) {
+    if (existsSync(join(projectRoot, path)))
+      files.push(join(projectRoot, path))
+  }
+  return files
+}
+
+/**
+ * Move an app's CI and container Bun up to the framework's.
+ *
+ * CI and the image are the app's own files, which the defaults sync never
+ * touches, so they kept whatever Bun the app was created with. Once a newer
+ * Bun had rewritten bun.lock (lockfileVersion 2), CI's older Bun could not
+ * parse it and every job failed at install (hq.training, 1.3.14 in CI and
+ * Docker against 1.4.2 locally and on the server). Never lowers a pin.
+ */
+export function alignBunPins(
+  projectRoot: string,
+  version: string,
+  changes: ProjectStructureChange[] = [],
+  options: PackageProjectOptions = {},
+): ProjectStructureChange[] {
+  for (const file of bunPinFiles(projectRoot)) {
+    const text = readFileSync(file, 'utf8')
+    const next = raiseBunPins(text, version)
+    if (next === text)
+      continue
+    changes.push({ path: relative(projectRoot, file), action: 'update' })
+    if (!options.dryRun)
+      writeFileSync(file, next)
+  }
   return changes
 }
 

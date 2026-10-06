@@ -4,10 +4,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DEFAULTS_SYNC_MARKER, installedDefaultsVersion } from '@stacksjs/path'
 import {
+  alignBunPins,
   detectProjectAiProviders,
   measureDefaultsDrift,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
+  raiseBunPins,
   summarizeStructureChanges,
   syncPackageProjectFiles,
 } from '../src/upgrade/package-project'
@@ -254,5 +256,59 @@ describe('AI provider refresh detection', () => {
     write('GEMINI.md', 'instructions')
 
     expect(detectProjectAiProviders(root)).toEqual(['codex', 'claude', 'cursor', 'gemini'])
+  })
+})
+
+describe('Bun pins in CI and containers', () => {
+  const workflow = [
+    'env:',
+    '  BUN_VERSION: 1.3.14',
+    'jobs:',
+    '  test:',
+    '    steps:',
+    '      - uses: oven-sh/setup-bun@v2',
+    '        with:',
+    '          bun-version: ${{ env.BUN_VERSION }}',
+    '      - uses: pantry-pm/pantry/packages/action@main',
+    '        with:',
+    '          packages: bun.sh@1.3.14 bun-plugin-stx@0.2.1',
+    '',
+  ].join('\n')
+
+  it('raises exact pins and leaves expressions, ranges and other packages alone', () => {
+    expect(raiseBunPins(workflow, '1.4.2')).toBe(workflow
+      .replace('BUN_VERSION: 1.3.14', 'BUN_VERSION: 1.4.2')
+      .replace('bun.sh@1.3.14', 'bun.sh@1.4.2'))
+    expect(raiseBunPins('bun-version: "1.3.10"\n', '1.4.2')).toBe('bun-version: "1.4.2"\n')
+    expect(raiseBunPins('FROM oven/bun:1.3.14\n', '1.4.2')).toBe('FROM oven/bun:1.4.2\n')
+    expect(raiseBunPins('ARG BUN_VERSION=1.3.14\nFROM oven/bun:${BUN_VERSION}-alpine\n', '1.4.2'))
+      .toBe('ARG BUN_VERSION=1.4.2\nFROM oven/bun:${BUN_VERSION}-alpine\n')
+    expect(raiseBunPins('bun.com: ^1.3.0\n', '1.4.2')).toBe('bun.com: ^1.3.0\n')
+  })
+
+  it('never lowers a newer pin', () => {
+    expect(raiseBunPins('FROM oven/bun:1.5.0\n', '1.4.2')).toBe('FROM oven/bun:1.5.0\n')
+    expect(raiseBunPins('  BUN_VERSION: 1.10.0\n', '1.4.2')).toBe('  BUN_VERSION: 1.10.0\n')
+  })
+
+  it('updates workflows and Dockerfiles when the defaults ship a newer Bun', () => {
+    write('.github/workflows/ci.yml', workflow)
+    write('Dockerfile', 'FROM oven/bun:1.3.14\n')
+    write('storage/framework/server/Dockerfile', 'FROM oven/bun:1.3.14\n')
+    write('README.md', 'Bun 1.3.14\n')
+    writeDefault('project/bun-version', '1.4.2\n')
+
+    const changes = syncPackageProjectFiles(root, defaultsRoot)
+    expect(changes.map(change => change.path).filter(path => path.endsWith('Dockerfile') || path.endsWith('.yml')).sort())
+      .toEqual(['.github/workflows/ci.yml', 'Dockerfile', 'storage/framework/server/Dockerfile'])
+    expect(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8')).toContain('BUN_VERSION: 1.4.2')
+    expect(readFileSync(join(root, 'Dockerfile'), 'utf8')).toBe('FROM oven/bun:1.4.2\n')
+    expect(readFileSync(join(root, 'README.md'), 'utf8')).toBe('Bun 1.3.14\n')
+  })
+
+  it('reports without writing on a dry run', () => {
+    write('Dockerfile', 'FROM oven/bun:1.3.14\n')
+    expect(alignBunPins(root, '1.4.2', [], { dryRun: true })).toEqual([{ path: 'Dockerfile', action: 'update' }])
+    expect(readFileSync(join(root, 'Dockerfile'), 'utf8')).toBe('FROM oven/bun:1.3.14\n')
   })
 })

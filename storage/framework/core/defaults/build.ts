@@ -11,7 +11,7 @@
  * package, including the AI skills and editor guidance. `project/` carries the
  * handful of root/support files that live outside the defaults tree.
  */
-import { cp, readdir, rm } from 'node:fs/promises'
+import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 const here = import.meta.dir
@@ -57,6 +57,16 @@ for (const file of projectFiles) {
   await cp(file.source, file.destination, { recursive: true })
   // eslint-disable-next-line no-console
   console.log(`@stacksjs/defaults: copied project support file ${file.source}`)
+}
+
+// The Bun version the framework is built and tested on (the repository's
+// `engines.bun`), for `buddy upgrade` to raise an app's CI and container pins
+// to (alignBunPins in actions/src/upgrade/package-project.ts).
+const rootManifest = JSON.parse(await readFile(join(here, '../../../../package.json'), 'utf8'))
+if (typeof rootManifest.engines?.bun === 'string') {
+  await writeFile(join(here, 'project/bun-version'), `${rootManifest.engines.bun}\n`)
+  // eslint-disable-next-line no-console
+  console.log(`@stacksjs/defaults: Bun ${rootManifest.engines.bun}`)
 }
 
 // The framework's type declarations, which `buddy upgrade` keeps current in a
