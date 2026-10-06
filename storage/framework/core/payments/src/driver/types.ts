@@ -108,7 +108,15 @@ export interface CheckoutRequest {
   cancelUrl?: string
   /** Your reference for this checkout, echoed back in its webhook. */
   reference?: string
+  /**
+   * Kept on the checkout and on what it creates - the payment, or the
+   * subscription - so a later webhook about either can be attributed.
+   */
   metadata?: Record<string, string>
+  /** Let the payer enter a promotion code. Stripe only. */
+  allowPromotionCodes?: boolean
+  /** Have the provider calculate tax. Stripe only (Stripe Tax). */
+  automaticTax?: boolean
 }
 
 export interface CheckoutSession {

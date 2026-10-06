@@ -77,6 +77,8 @@ const subscription = await user.newSubscription('default', 'pro_monthly')
 await user.cancelSubscription(subscription.id, { atPeriodEnd: true })
 ```
 
+A checkout's `reference` and `metadata` are copied onto the payment or subscription it creates, so the webhooks about those can be attributed; a session's own metadata never reaches them on Stripe. `allowPromotionCodes` and `automaticTax` are Stripe only, and Adyen refuses them.
+
 `paymentCustomer`, `charge`, `createPayment`, `checkout`, `paymentMethods`, `removePaymentMethod`, `newSubscription`, `cancelSubscription` and `activeSubscription` return the driver's own shapes (`CheckoutSession`, `SubscriptionSummary`, ...). `cancelSubscription` refuses a subscription the record does not own. The Stripe-only methods (`createStripeUser` and the other `*StripeUser` methods, `setDefaultPaymentMethod`, `addPaymentMethod`, `updateSubscription`, `createSetupIntent`, `subscriptionHistory` and the Connect methods) throw `PaymentUnsupportedError` when another driver is configured.
 
 ### Orders from payment webhooks

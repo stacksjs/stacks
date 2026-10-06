@@ -182,6 +182,8 @@ describe('Adyen payments', () => {
     await expect(driver.checkout(payer, { ...base, mode: 'subscription', lines: [] })).rejects.toThrow(PaymentUnsupportedError)
     await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [{ price: 'price_1', quantity: 1 }] })).rejects.toThrow('does not support catalog prices')
     await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], cancelUrl: 'https://app.test/cancel' })).rejects.toThrow('separate cancelUrl')
+    await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], allowPromotionCodes: true })).rejects.toThrow('promotion codes')
+    await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], automaticTax: true })).rejects.toThrow('automatic tax')
     const error = await driver.subscribe().catch(e => e)
     expect(error).toBeInstanceOf(PaymentUnsupportedError)
     expect(error).toMatchObject({ driver: 'adyen', operation: 'subscriptions' })
@@ -322,6 +324,34 @@ describe('the Stripe driver', () => {
         { quantity: 1, price_data: { currency: 'eur', unit_amount: 900, product_data: { name: 'Setup' } } },
       ],
       client_reference_id: 'order-3',
+      // On the PaymentIntent too, which is what payment_intent.* webhooks read.
+      payment_intent_data: { metadata: { reference: 'order-3' } },
+    })
+  })
+
+  it('carries a subscription checkout\'s metadata onto the subscription, with promotion codes and tax', async () => {
+    const { driver, calls } = stripeDriver()
+    await driver.checkout(payer, {
+      mode: 'subscription',
+      lines: [{ price: 'price_pro', quantity: 1 }],
+      successUrl: 'https://app.test/welcome',
+      cancelUrl: 'https://app.test/pricing',
+      metadata: { user_id: '7' },
+      allowPromotionCodes: true,
+      automaticTax: true,
+    })
+    expect(calls.find(([name]) => name === 'createCheckout')![1][1]).toEqual({
+      customer: 'cus_1',
+      mode: 'subscription',
+      success_url: 'https://app.test/welcome',
+      cancel_url: 'https://app.test/pricing',
+      line_items: [{ price: 'price_pro', quantity: 1 }],
+      metadata: { user_id: '7' },
+      // A session's metadata never reaches the subscription it creates; the
+      // customer.subscription.* webhooks read the subscription's own.
+      subscription_data: { metadata: { user_id: '7' } },
+      allow_promotion_codes: true,
+      automatic_tax: { enabled: true },
     })
   })
 

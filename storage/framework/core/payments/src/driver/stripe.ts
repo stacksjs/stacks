@@ -257,6 +257,12 @@ export class StripeDriver implements PaymentDriver {
       }
     })
 
+    // A session's metadata stays on the session. The payment or subscription
+    // it creates carries its own, which is what their later webhooks read, so
+    // the reference and metadata are copied there too.
+    const carried = { ...request.metadata, ...(request.reference ? { reference: request.reference } : {}) }
+    const hasCarried = Object.keys(carried).length > 0
+
     const session = await this.ops.createCheckout(payer, {
       customer: customer.id,
       mode: request.mode,
@@ -265,6 +271,11 @@ export class StripeDriver implements PaymentDriver {
       ...(request.mode === 'setup' ? { currency: request.currency?.toLowerCase() } : { line_items: lineItems }),
       ...(request.reference ? { client_reference_id: request.reference } : {}),
       ...(request.metadata ? { metadata: request.metadata } : {}),
+      ...(hasCarried && request.mode === 'payment' ? { payment_intent_data: { metadata: carried } } : {}),
+      ...(hasCarried && request.mode === 'subscription' ? { subscription_data: { metadata: carried } } : {}),
+      ...(hasCarried && request.mode === 'setup' ? { setup_intent_data: { metadata: carried } } : {}),
+      ...(request.allowPromotionCodes ? { allow_promotion_codes: true } : {}),
+      ...(request.automaticTax ? { automatic_tax: { enabled: true } } : {}),
     })
 
     if (!session.url)
