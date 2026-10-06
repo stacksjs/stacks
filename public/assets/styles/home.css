@@ -1254,6 +1254,66 @@
   transform: translateX(3px);
 }
 
+/* The spotlight comparison, as a full-width bar under the two hubs. */
+.spotlight {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 1.35rem 1.6rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: 16px;
+  background:
+    radial-gradient(70% 140% at 100% 50%, rgba(var(--accent-rgb), 0.14), transparent 70%),
+    var(--surface);
+  transition: border-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.spotlight:hover {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: var(--shadow);
+}
+
+.spotlight-text {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.spotlight-text strong {
+  font-size: 1.12rem;
+  font-weight: 660;
+  letter-spacing: -0.015em;
+}
+
+.spotlight-text span {
+  max-width: 70ch;
+  color: var(--muted);
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+
+.spotlight-cta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border-radius: 10px;
+  color: var(--on-accent);
+  font-size: 0.92rem;
+  font-weight: 600;
+  background: var(--button-bg);
+}
+
+@media (max-width: 760px) {
+  .spotlight {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* ── Closing call to action ─────────────────────────────────────── */
 
 .cta {

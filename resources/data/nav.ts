@@ -17,9 +17,29 @@
  *   Compare    resources/data/comparisons.ts
  */
 
-import { comparisonGroups, comparisonsInGroup } from './comparisons'
+import { comparisonBySlug, comparisonGroups, comparisonsInGroup } from './comparisons'
 import { featureGroups, featuresInGroup } from './features'
 import { useCaseGroups, useCasesInGroup } from './use-cases'
+
+/**
+ * The comparison the site puts in front of everyone: the nav's Compare panel,
+ * the footer spotlight, the first entry in the footer's Compare column, and
+ * the call-out on the home page. Laravel, because it is the framework Stacks
+ * is most often weighed against and the one whose shape it deliberately
+ * echoes. Changing this one slug moves all four.
+ */
+export const spotlightComparisonSlug = 'laravel'
+
+const spotlight = comparisonBySlug(spotlightComparisonSlug)
+if (!spotlight)
+  throw new Error(`nav.ts: the spotlight comparison "${spotlightComparisonSlug}" is not in comparisons.ts`)
+
+export const comparisonSpotlight = {
+  kicker: `Coming from ${spotlight.name}?`,
+  copy: 'Models, migrations, queues, mail, and a CLI that will feel familiar, in TypeScript, with the dashboard, deploys, and your own mail server in the same install.',
+  label: `Stacks vs ${spotlight.name}`,
+  url: `/compare/${spotlight.slug}`,
+}
 
 export interface MegaLink {
   title: string
@@ -128,11 +148,11 @@ export const navMenus: NavMenu[] = [
     })),
     variant: 'compact',
     aside: {
-      kicker: 'Honest about it',
-      copy: 'Every comparison says where the other framework is the better choice before it says where this one is.',
+      kicker: comparisonSpotlight.kicker,
+      copy: `${comparisonSpotlight.copy} Every comparison says where the other framework is the better choice first.`,
       actions: [
-        { label: 'See the table', url: '/compare', primary: true },
-        { label: 'All features', url: '/features' },
+        { label: comparisonSpotlight.label, url: comparisonSpotlight.url, primary: true },
+        { label: 'See the table', url: '/compare' },
       ],
     },
   },
@@ -188,12 +208,15 @@ const useCaseLinks: MegaAction[] = useCaseGroups.flatMap(group =>
   })),
 )
 
-const comparisonLinks: MegaAction[] = comparisonGroups.flatMap(group =>
-  comparisonsInGroup(group.id).map(comparison => ({
+// The spotlight comparison leads the column. In group order it came 14th of
+// 18, past the cap, so the footer never showed it at all.
+const comparisonLinks: MegaAction[] = comparisonGroups
+  .flatMap(group => comparisonsInGroup(group.id))
+  .sort((a, b) => Number(b.slug === spotlightComparisonSlug) - Number(a.slug === spotlightComparisonSlug))
+  .map(comparison => ({
     label: `vs ${comparison.name}`,
     url: `/compare/${comparison.slug}`,
-  })),
-)
+  }))
 
 export const footerColumns: FooterColumn[] = [
   {

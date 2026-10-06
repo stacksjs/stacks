@@ -745,6 +745,50 @@ input[type="email"]:focus {
   font-size: 0.82rem;
 }
 
+/* The spotlight comparison, under the brand column: the one comparison the
+  footer names outright rather than leaving to a capped list. */
+.footer-spotlight {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 24rem;
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(var(--accent-rgb), 0.12), transparent 60%),
+    var(--surface);
+  transition: border-color 0.16s ease, transform 0.16s ease;
+}
+
+.footer-spotlight:hover {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  transform: translateY(-1px);
+}
+
+.footer-spotlight strong {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.footer-spotlight span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.footer-spotlight em {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin-top: 0.2rem;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-style: normal;
+  font-weight: 600;
+}
+
 .footer-columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

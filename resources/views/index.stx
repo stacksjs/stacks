@@ -4,6 +4,7 @@ import { features } from '../data/features'
 import { highlight } from '../data/highlight'
 import { stats } from '../data/stats'
 import { useCases } from '../data/use-cases'
+import { comparisonSpotlight } from '../data/nav'
 
 const appName = 'Stacks'
 
@@ -552,6 +553,14 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
               <a class="path-link" href="/compare">See the comparison table<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></a>
             </article>
           </div>
+
+          <a class="rise spotlight" href="{{ comparisonSpotlight.url }}">
+            <span class="spotlight-text">
+              <strong>{{ comparisonSpotlight.kicker }}</strong>
+              <span>{{ comparisonSpotlight.copy }}</span>
+            </span>
+            <span class="spotlight-cta">{{ comparisonSpotlight.label }}<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
+          </a>
         </section>
 
         <section class="home-section home-section--last site-shell" aria-labelledby="cta-heading">

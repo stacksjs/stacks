@@ -5,7 +5,7 @@
   carries the whole site rather than one link: the three menus as columns,
   the resources, and where to ask for help. --}}
 <script server>
-import { footerColumns, footerNote } from '../data/nav'
+import { comparisonSpotlight, footerColumns, footerNote } from '../data/nav'
 
 const footerYear = 2026
 </script>
@@ -25,6 +25,11 @@ const footerYear = 2026
           <a class="button primary" href="/docs" data-no-router>Read the docs</a>
           <a class="button" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
         </div>
+        <a class="footer-spotlight" href="{{ comparisonSpotlight.url }}">
+          <strong>{{ comparisonSpotlight.kicker }}</strong>
+          <span>{{ comparisonSpotlight.copy }}</span>
+          <em>{{ comparisonSpotlight.label }}<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></em>
+        </a>
       </div>
 
       <nav class="footer-columns" aria-label="Footer navigation">
