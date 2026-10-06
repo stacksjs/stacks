@@ -1,15 +1,11 @@
 import type { CreateIndexOptions, SearchEngineDriver, SearchEngineSearchParams, SearchFilter } from '@stacksjs/types'
 import type {
-  Dictionary,
   EnqueuedTask,
-  Faceting,
   Index,
   IndexesResults,
-  PaginationSettings,
   SearchResponse,
   Settings,
   Synonyms,
-  TypoTolerance,
 } from 'meilisearch'
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
@@ -608,8 +604,68 @@ async function getSettings(index: string): Promise<Settings> {
   }
 }
 
-function notImplemented(_index: string, _arg?: unknown): Promise<EnqueuedTask> {
-  return Promise.resolve(fakeTask('typesense'))
+/**
+ * A setting Typesense has no index-level equivalent for. These answered a
+ * successful task and did nothing, so `updateRankingRules()` or
+ * `resetSettings()` reported success with nothing changed; a getter returned
+ * an empty object, as if the index had no such setting.
+ */
+function unsupported(feature: string, hint: string): never {
+  throw new Error(`[search/typesense] ${feature} is not supported by Typesense. ${hint}`)
+}
+
+const perQuery = 'Typesense takes it per search request, not as an index setting.'
+const viaSchema = 'Typesense derives it from the collection schema: declare it in the model\'s useSearch trait.'
+
+/** Every collection, in the shape `listAllIndexes()` returns for the other drivers. */
+async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
+  const collections = await request<Array<Record<string, unknown>>>('GET', '/collections')
+  const results = collections.map(collection => ({ ...collection, uid: collection.name, primaryKey: 'id' }))
+  return { results, offset: 0, limit: results.length, total: results.length } as unknown as IndexesResults<Index[]>
+}
+
+/** One document by id. It returned a fake "succeeded" task, never the document. */
+async function getDocument(indexName: string, id: number | string): Promise<Record<string, unknown>> {
+  return await request<Record<string, unknown>>('GET', `${collectionPath(indexName)}/documents/${encodeURIComponent(String(id))}`)
+}
+
+interface TypesenseSynonym { id: string, synonyms: string[], root?: string }
+
+/**
+ * Synonyms in the contract's shape - `{ word: [words it also finds] }` - from
+ * Typesense's synonym sets: a one-way set (`root`) is its root's entry; a
+ * multi-way set gives each word the others.
+ */
+async function getSynonyms(indexName: string): Promise<Synonyms> {
+  const result = await request<{ synonyms?: TypesenseSynonym[] }>('GET', `${collectionPath(indexName)}/synonyms`)
+  const synonyms: Record<string, string[]> = {}
+  for (const set of result.synonyms ?? []) {
+    if (set.root) {
+      synonyms[set.root] = [...(synonyms[set.root] ?? []), ...set.synonyms]
+      continue
+    }
+    for (const word of set.synonyms)
+      synonyms[word] = [...(synonyms[word] ?? []), ...set.synonyms.filter(other => other !== word)]
+  }
+  return synonyms as Synonyms
+}
+
+/** Replace the collection's synonyms: one one-way set per word, as the contract means it. */
+async function updateSynonyms(indexName: string, synonyms: Synonyms): Promise<EnqueuedTask> {
+  await resetSynonyms(indexName)
+  for (const [word, others] of Object.entries((synonyms ?? {}) as Record<string, string[]>)) {
+    if (!others?.length)
+      continue
+    await request('PUT', `${collectionPath(indexName)}/synonyms/${encodeURIComponent(`stacks-${word}`)}`, { root: word, synonyms: others })
+  }
+  return fakeTask(indexName)
+}
+
+async function resetSynonyms(indexName: string): Promise<EnqueuedTask> {
+  const result = await request<{ synonyms?: TypesenseSynonym[] }>('GET', `${collectionPath(indexName)}/synonyms`)
+  for (const set of result.synonyms ?? [])
+    await request('DELETE', `${collectionPath(indexName)}/synonyms/${encodeURIComponent(set.id)}`)
+  return fakeTask(indexName)
 }
 
 const typesense: SearchEngineDriver = {
@@ -623,9 +679,9 @@ const typesense: SearchEngineDriver = {
   getIndex,
   createIndex,
   deleteIndex,
-  updateIndex: notImplemented,
-  listAllIndexes: async () => ({ results: [] } as unknown as IndexesResults<Index[]>),
-  listAllIndices: async () => ({ results: [] } as unknown as IndexesResults<Index[]>),
+  updateIndex: () => unsupported('updateIndex (changing the primary key)', 'A Typesense collection\'s key is always `id`.'),
+  listAllIndexes,
+  listAllIndices: listAllIndexes,
 
   addDocument,
   addDocuments,
@@ -634,55 +690,55 @@ const typesense: SearchEngineDriver = {
   deleteDocument,
   deleteDocuments,
   deleteAllDocuments,
-  getDocument: async () => fakeTask('typesense'),
+  getDocument,
 
   getFilterableAttributes,
   updateFilterableAttributes: settingUpdater('filterableAttributes'),
   resetFilterableAttributes: index => updateSettings(index, { filterableAttributes: [] }),
 
   updateDisplayedAttributes: settingUpdater('displayedAttributes'),
-  resetDisplayedAttributes: notImplemented,
+  resetDisplayedAttributes: () => unsupported('resetDisplayedAttributes', viaSchema),
   getDisplayedAttributes,
 
   updateSearchableAttributes: settingUpdater('searchableAttributes'),
-  resetSearchableAttributes: notImplemented,
+  resetSearchableAttributes: () => unsupported('resetSearchableAttributes', viaSchema),
   getSearchableAttributes,
 
   updateSortableAttributes: settingUpdater('sortableAttributes'),
-  resetSortableAttributes: notImplemented,
+  resetSortableAttributes: () => unsupported('resetSortableAttributes', viaSchema),
   getSortableAttributes,
 
   getSettings,
   updateSettings,
-  resetSettings: notImplemented,
+  resetSettings: () => unsupported('resetSettings', viaSchema),
 
-  getPagination: async () => ({} as PaginationSettings),
-  updatePagination: notImplemented,
-  resetPagination: notImplemented,
+  getPagination: () => unsupported('Index pagination settings', perQuery),
+  updatePagination: () => unsupported('Index pagination settings', perQuery),
+  resetPagination: () => unsupported('Index pagination settings', perQuery),
 
-  getSynonyms: async () => ({} as Synonyms),
-  updateSynonyms: notImplemented,
-  resetSynonyms: notImplemented,
+  getSynonyms,
+  updateSynonyms,
+  resetSynonyms,
 
-  getRankingRules: async () => [],
-  updateRankingRules: notImplemented,
-  resetRankingRules: notImplemented,
+  getRankingRules: () => unsupported('Ranking rules', perQuery),
+  updateRankingRules: () => unsupported('Ranking rules', perQuery),
+  resetRankingRules: () => unsupported('Ranking rules', perQuery),
 
-  getDistinctAttribute: async () => null,
-  updateDistinctAttribute: notImplemented,
-  resetDistinctAttribute: notImplemented,
+  getDistinctAttribute: () => unsupported('A distinct attribute', perQuery),
+  updateDistinctAttribute: () => unsupported('A distinct attribute', perQuery),
+  resetDistinctAttribute: () => unsupported('A distinct attribute', perQuery),
 
-  getFaceting: async () => ({} as Faceting),
-  updateFaceting: notImplemented,
-  resetFaceting: notImplemented,
+  getFaceting: () => unsupported('Faceting settings', perQuery),
+  updateFaceting: () => unsupported('Faceting settings', perQuery),
+  resetFaceting: () => unsupported('Faceting settings', perQuery),
 
-  getTypoTolerance: async () => ({} as TypoTolerance),
-  updateTypoTolerance: notImplemented,
-  resetTypoTolerance: notImplemented,
+  getTypoTolerance: () => unsupported('Typo tolerance settings', perQuery),
+  updateTypoTolerance: () => unsupported('Typo tolerance settings', perQuery),
+  resetTypoTolerance: () => unsupported('Typo tolerance settings', perQuery),
 
-  getDictionary: async () => ({} as Dictionary),
-  updateDictionary: notImplemented,
-  resetDictionary: notImplemented,
+  getDictionary: () => unsupported('Custom dictionaries', 'Typesense has no equivalent.'),
+  updateDictionary: () => unsupported('Custom dictionaries', 'Typesense has no equivalent.'),
+  resetDictionary: () => unsupported('Custom dictionaries', 'Typesense has no equivalent.'),
 }
 
 export default typesense

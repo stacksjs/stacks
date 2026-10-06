@@ -175,7 +175,8 @@ export interface SearchEngineDriver {
   updateDocuments: (indexName: string, params: DocumentOptions[]) => Promise<EnqueuedTask>
   updateDocument: (indexName: string, params: DocumentOptions) => Promise<EnqueuedTask>
   addDocuments: (indexName: string, params: any[]) => Promise<EnqueuedTask>
-  getDocument: (indexName: string, id: number, fields: any) => Promise<EnqueuedTask>
+  /** The stored document, by id. (Typed as a task until now, which no driver returns.) */
+  getDocument: (indexName: string, id: number | string, fields?: any) => Promise<Record<string, any>>
   deleteDocument: (indexName: string, id: number) => Promise<EnqueuedTask>
   /** Delete the documents matching a filter, written in the engine's own syntax. */
   deleteDocuments: (indexName: string, filters: string | string[]) => Promise<EnqueuedTask>

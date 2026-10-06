@@ -272,7 +272,7 @@ async function addDocuments(index: string, documents: any[]): Promise<any> {
   return task(index, 'documentAdditionOrUpdate')
 }
 
-async function getDocument(index: string, id: number, fields?: any): Promise<any> {
+async function getDocument(index: string, id: number | string, fields?: any): Promise<any> {
   const source = fields ? `?_source=${encodeURIComponent(Array.isArray(fields) ? fields.join(',') : String(fields))}` : ''
   const result = await request<any>('GET', `${indexPath(index)}/_doc/${encodeURIComponent(String(id))}${source}`)
   return { id: result._source?.id ?? result._id, ...result._source }

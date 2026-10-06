@@ -158,7 +158,7 @@ async function deleteAllDocuments(indexName: string): Promise<EnqueuedTask> {
   return await client().index(indexName).deleteAllDocuments()
 }
 
-async function getDocument(indexName: string, id: number, fields: any): Promise<EnqueuedTask> {
+async function getDocument(indexName: string, id: number | string, fields?: any): Promise<Record<string, any>> {
   return await client().index(indexName).getDocument(id, fields)
 }
 

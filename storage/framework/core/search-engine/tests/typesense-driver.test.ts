@@ -250,3 +250,66 @@ describe('Typesense settings', () => {
     expect(fetchStub.requests.map(r => r.method)).toEqual(['GET'])
   })
 })
+
+/**
+ * The methods that answered a fake "succeeded" task, or an empty object, and
+ * did nothing: listing collections, fetching a document, synonyms - which
+ * Typesense has - and the index settings it does not have at all, which now
+ * say so.
+ */
+describe('Typesense methods that used to pretend', () => {
+  test('listAllIndexes() lists the collections', async () => {
+    fetchStub = stubFetch(() => Response.json([{ name: 'products', num_documents: 3 }, { name: 'posts', num_documents: 0 }]))
+
+    const result = await typesense.listAllIndexes()
+
+    expect(fetchStub.requests.at(-1)!.url).toBe(`${BASE}/collections`)
+    expect((result.results as any[]).map(index => index.uid)).toEqual(['products', 'posts'])
+    expect(result.total).toBe(2)
+  })
+
+  test('getDocument() returns the document', async () => {
+    fetchStub = stubFetch(() => Response.json({ id: '7', name: 'Widget' }))
+
+    expect(await typesense.getDocument('products', 7)).toEqual({ id: '7', name: 'Widget' })
+    expect(fetchStub.requests.at(-1)!.url).toBe(`${BASE}/collections/products/documents/7`)
+  })
+
+  test('synonyms round-trip through Typesense synonym sets', async () => {
+    const requests: Array<{ method: string, url: string, body?: unknown }> = []
+    fetchStub = stubFetch((request: RecordedRequest) => {
+      requests.push({ method: request.method, url: request.url, body: request.body ? JSON.parse(String(request.body)) : undefined })
+      if (request.method === 'GET')
+        return Response.json({ synonyms: [{ id: 'old', synonyms: ['car', 'auto'] }, { id: 'one-way', root: 'tv', synonyms: ['television'] }] })
+      return Response.json({ ok: true })
+    })
+
+    expect(await typesense.getSynonyms('products')).toEqual({ car: ['auto'], auto: ['car'], tv: ['television'] })
+
+    requests.length = 0
+    await typesense.updateSynonyms('products', { phone: ['mobile', 'cell'] })
+    // The old sets are removed, then one one-way set per word is written.
+    expect(requests.filter(r => r.method === 'DELETE').map(r => r.url)).toEqual([
+      `${BASE}/collections/products/synonyms/old`,
+      `${BASE}/collections/products/synonyms/one-way`,
+    ])
+    expect(requests.find(r => r.method === 'PUT')).toEqual({
+      method: 'PUT',
+      url: `${BASE}/collections/products/synonyms/stacks-phone`,
+      body: { root: 'phone', synonyms: ['mobile', 'cell'] },
+    })
+  })
+
+  test.each([
+    ['getRankingRules', () => typesense.getRankingRules('products')],
+    ['updateRankingRules', () => typesense.updateRankingRules('products', ['words'])],
+    ['getPagination', () => typesense.getPagination('products')],
+    ['updateTypoTolerance', () => typesense.updateTypoTolerance('products', null)],
+    ['resetSettings', () => typesense.resetSettings('products')],
+    ['updateIndex', () => (typesense.updateIndex as (...args: unknown[]) => Promise<unknown>)('products', { primaryKey: 'sku' })],
+  ])('%s says Typesense has no such setting, instead of reporting success', async (_name, call) => {
+    fetchStub = stubFetch(() => Response.json({}))
+    await expect((async () => call())()).rejects.toThrow(/not supported by Typesense/)
+    expect(fetchStub.requests).toHaveLength(0)
+  })
+})

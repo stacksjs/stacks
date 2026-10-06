@@ -1052,7 +1052,7 @@ async function updateDocuments(indexName: string, documents: DocumentOptions[]):
   return toTask(indexName, 'documentAdditionOrUpdate', await batch(indexName, requests))
 }
 
-async function getDocument(indexName: string, id: number, fields?: any): Promise<any> {
+async function getDocument(indexName: string, id: number | string, fields?: any): Promise<any> {
   const list: string[] | undefined = Array.isArray(fields) ? fields : Array.isArray(fields?.fields) ? fields.fields : undefined
   return await getObject(indexName, encodeURIComponent(String(id)), list)
 }
