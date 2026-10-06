@@ -105,7 +105,7 @@ Detailed Pantry behavior is versioned outside Stacks. The whitepaper pins its
 
 ```bash
 # Create a new project
-panx @stacksjs/buddy new my-app
+panx buddy new my-app
 
 # Navigate to project
 cd my-app

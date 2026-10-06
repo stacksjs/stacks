@@ -22,7 +22,7 @@ Stacks library features:
 
 ```bash
 # Create a new library project
-panx @stacksjs/buddy new my-library
+panx buddy new my-library
 ```
 
 ### Project Structure

@@ -22,7 +22,7 @@ Stacks app types:
 
 ```bash
 # Create SPA
-panx @stacksjs/buddy new my-app
+panx buddy new my-app
 
 # Development server
 buddy dev
@@ -35,7 +35,7 @@ buddy build
 
 ```bash
 # Create SSR app
-panx @stacksjs/buddy new my-app
+panx buddy new my-app
 
 # Development
 buddy dev
@@ -77,7 +77,7 @@ Stacks uses the first-party Craft runtime for native desktop apps. Craft opens t
 
 ```bash
 # Create desktop app
-panx @stacksjs/buddy new my-app
+panx buddy new my-app
 
 # Development mode
 buddy dev:desktop
@@ -239,7 +239,7 @@ PushNotifications.addListener('pushNotificationReceived', (notification) => {
 
 ```bash
 # Create CLI app
-panx @stacksjs/buddy new my-cli
+panx buddy new my-cli
 
 # Run CLI
 bun run cli

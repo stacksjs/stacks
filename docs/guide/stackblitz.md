@@ -23,7 +23,7 @@ The dedicated [stacksjs/stackblitz](https://github.com/stacksjs/stackblitz) star
 The browser starter is intentionally frontend-scoped. Full Stacks projects also use SQLite, rpx, and tlsx, so database, backend, cloud, and pretty local domain development run locally:
 
 ```bash
-panx @stacksjs/buddy new my-app
+panx buddy new my-app
 cd my-app
 ./buddy dev
 ```

@@ -71,7 +71,7 @@ install locally.
 The fastest path after Pantry is installed:
 
 ```bash
-panx @stacksjs/buddy new my-project
+panx buddy new my-project
 ```
 
 Pantry executes Buddy in an isolated environment and provisions the generated project's declared toolchain during setup.
@@ -179,7 +179,7 @@ buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new project? use `panx @stacksjs/buddy new`)
+buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new project? use `panx buddy new`)
 
 buddy migrate # runs database migrations
 buddy migrate:fresh # drops all tables & re-runs migrations (destroys all data; --seed reseeds)

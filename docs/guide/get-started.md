@@ -21,7 +21,7 @@ resolution, integrity, authentication, storage, and failure semantics.
 ## Create a New Project
 
 ```bash
-panx @stacksjs/buddy new my-app
+panx buddy new my-app
 ```
 
 The installer downloads the project template. Buddy and Pantry then install the declared machine and project dependencies, create your `.env` file, and generate an application key.

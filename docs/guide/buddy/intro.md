@@ -16,7 +16,7 @@ Buddy comes pre-installed with every Stacks project. When you create a new Stack
 
 ```bash
 # Create a new Stacks project
-panx @stacksjs/buddy new my-project
+panx buddy new my-project
 
 # Navigate to your project
 cd my-project
@@ -30,7 +30,7 @@ buddy --help
 Run Buddy without a project through Pantry's isolated package executor:
 
 ```bash
-panx @stacksjs/buddy --help
+panx buddy --help
 ```
 
 This invocation uses Pantry's versioned package-manager and registry boundaries.

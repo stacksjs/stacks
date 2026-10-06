@@ -79,7 +79,7 @@ buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new project? use `panx @stacksjs/buddy new`)
+buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new project? use `panx buddy new`)
 
 buddy migrate # runs database migrations
 buddy migrate:fresh # drops all tables & re-runs migrations (destroys all data; --seed reseeds)

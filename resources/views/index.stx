@@ -187,7 +187,7 @@ const longTail = [
 
 const startSteps = [
   { icon: 'i-hugeicons-package-open', title: 'Install Pantry', text: 'Provisions Bun, Git, SQLite, and every tool the project declares.', command: 'curl -fsSL https://pantry.dev | bash' },
-  { icon: 'i-hugeicons-magic-wand-01', title: 'Create a project', text: 'Scaffolds the app, its config, and its toolchain in one pass.', command: 'panx @stacksjs/buddy new my-app' },
+  { icon: 'i-hugeicons-magic-wand-01', title: 'Create a project', text: 'Scaffolds the app, its config, and its toolchain in one pass.', command: 'panx buddy new my-app' },
   { icon: 'i-hugeicons-computer-terminal-01', title: 'Develop', text: 'Serves the frontend, API, docs, and dashboard with hot reload.', command: 'buddy dev' },
   { icon: 'i-hugeicons-rocket-01', title: 'Deploy', text: 'Builds every surface and publishes the infrastructure behind it.', command: 'buddy deploy' },
 ]
@@ -573,7 +573,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
             <img class="cta-mark" src="/images/logos/favicon.svg" alt="" width="64" height="64" loading="lazy" decoding="async">
             <h2 id="cta-heading" class="home-h2">Start building.</h2>
             <p class="home-sub">Free and open source under the MIT license.</p>
-            <div class="cta-command"><span class="home-prompt">$</span> <span class="cta-command-text">panx &#64;stacksjs/buddy new my-app</span></div>
+            <div class="cta-command"><span class="home-prompt">$</span> <span class="cta-command-text">panx buddy new my-app</span></div>
             <div class="home-actions">
               <a class="button primary" href="/docs" data-no-router>Read the docs</a>
               <a class="button" href="https://github.com/stacksjs/stacks"><i class="i-hugeicons-github" aria-hidden="true"></i>Star on GitHub</a>

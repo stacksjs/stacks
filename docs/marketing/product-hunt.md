@@ -40,7 +40,7 @@ We would especially value feedback on onboarding, framework conventions, and the
 ## Gallery plan
 
 1. Product overview using the Stacks social card and the line "One toolkit from idea to production."
-2. Buddy terminal showing `panx @stacksjs/buddy new`, `buddy doctor`, and `buddy dev`.
+2. Buddy terminal showing `panx buddy new`, `buddy doctor`, and `buddy dev`.
 3. STX editor and browser preview showing reactive state and Crosswind styles.
 4. Model-to-API flow showing a model, generated migration, action, route, and test.
 5. Project-shaped stack installation showing `buddy add calendar` and the files added to the project.
@@ -49,7 +49,7 @@ We would especially value feedback on onboarding, framework conventions, and the
 ## Launch checks
 
 - [ ] Stacks 1.0 packages and binaries are published.
-- [ ] `panx @stacksjs/buddy new product-hunt-check` succeeds on a clean machine.
+- [ ] `panx buddy new product-hunt-check` succeeds on a clean machine.
 - [ ] `buddy doctor`, `buddy dev`, `buddy test`, and `buddy build` pass in the generated project.
 - [ ] https://stacksjs.com, documentation, and the StackBlitz starter are healthy.
 - [ ] The release notes and migration guide are published.

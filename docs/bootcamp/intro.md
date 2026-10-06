@@ -41,7 +41,7 @@ Get started by creating a new Stacks project:
 
 ```bash
 # Create a new project through Pantry's package executor
-panx @stacksjs/buddy new my-project
+panx buddy new my-project
 
 # Navigate to your project
 cd my-project

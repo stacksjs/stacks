@@ -35,7 +35,7 @@ curl -Ssf stacksjs.com/install | sh # wip
 
 # alternatively, if Bun >= v1.1.11 is installed already
 # you may also get started via
-panx @stacksjs/buddy new my-project
+panx buddy new my-project
 ```
 
 ## Usage

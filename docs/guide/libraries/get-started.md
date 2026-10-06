@@ -20,7 +20,7 @@ Before creating a library, ensure you have:
 Create a dedicated library project:
 
 ```bash
-panx @stacksjs/buddy new my-library
+panx buddy new my-library
 
 cd my-library
 bun install

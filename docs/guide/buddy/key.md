@@ -83,7 +83,7 @@ APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Generate a key when setting up a new project:
 
 ```bash
-panx @stacksjs/buddy new my-project
+panx buddy new my-project
 cd my-project
 buddy key:generate
 ```
