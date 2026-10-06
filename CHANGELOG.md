@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.84...v0.75.85)
+
+## ✨ Features
+
+- **notifications**: email a notification in the framework's layout, with a button ([ade3058](https://github.com/stacksjs/stacks/commit/ade3058)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **notifications**: EmailBodyPart as a type, which template variables accept ([b2a91f7](https://github.com/stacksjs/stacks/commit/b2a91f7)) _(by Chris <chris@stacksjs.com>)_
+- **logging**: log to a user cache, not the cwd, when run outside a project ([f15a8d5](https://github.com/stacksjs/stacks/commit/f15a8d5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2576](https://github.com/stacksjs/stacks/issues/2576))
+
+## 🔧 Chores
+
+- **deps**: require ts-cloud 0.16.42 ([a9ebb2a](https://github.com/stacksjs/stacks/commit/a9ebb2a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.83...v0.75.84)
 
 ## ✨ Features
