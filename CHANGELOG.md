@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.77...v0.75.78)
+
+## ✨ Features
+
+- **payments**: carry checkout metadata to what it creates; promotion codes and tax ([33f22d6](https://github.com/stacksjs/stacks/commit/33f22d6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **dashboard**: the billing page reads the payment driver's shapes ([b0dd4cd](https://github.com/stacksjs/stacks/commit/b0dd4cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.76...v0.75.77)
 
 ## ✨ Features
