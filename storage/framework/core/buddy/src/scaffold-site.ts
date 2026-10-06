@@ -29,6 +29,7 @@ export const SITE_ONLY_PATHS: readonly string[] = [
   'resources/views/components/FeatureCard.stx',
   'resources/views/layouts/marketing.stx',
   'resources/views/partials/theme.stx',
+  'resources/data/assets.ts',
   'resources/data/comparisons.ts',
   'resources/data/features.ts',
   'resources/data/highlight.ts',

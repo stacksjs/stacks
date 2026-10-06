@@ -16,7 +16,10 @@
 //
 // The email form posts to the same rate-limited endpoint the framework form
 // used (/api/email/subscribe).
+import { assetUrl } from '../data/assets'
+
 const appName = 'Stacks'
+const themeCss = assetUrl('/assets/styles/theme.css')
 const siteDescription = 'Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment. The public launch is almost here.'
 </script>
 
@@ -91,7 +94,7 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       primitives. This page used to restate all of it inline, which made a
       colour change two edits with one easy to forget. What is left below is
       only what the holding page itself needs. --}}
-    <link rel="stylesheet" href="/assets/styles/theme.css">
+    <link rel="stylesheet" href="{{ themeCss }}">
     <style>
 
       body {

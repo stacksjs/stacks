@@ -4,9 +4,12 @@ import { features } from '../data/features'
 import { highlight } from '../data/highlight'
 import { stats } from '../data/stats'
 import { useCases } from '../data/use-cases'
+import { assetUrl } from '../data/assets'
 import { comparisonSpotlight } from '../data/nav'
 
 const appName = 'Stacks'
+
+const homeCss = assetUrl('/assets/styles/home.css')
 
 /*
  * Launched. Two gates gated this page and both had to open:
@@ -237,7 +240,7 @@ const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(gro
 <html lang="en">
   <head>
     @include('marketing-head')
-    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="{{ homeCss }}">
   </head>
   <body data-site-mode="{{ siteMode }}" data-coming-soon-bypass-enabled="{{ comingSoonBypassEnabled }}" data-coming-soon-bypass="{{ comingSoonBypassToken }}">
     <section class="mode-screen" aria-labelledby="coming-soon-heading">

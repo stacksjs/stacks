@@ -5,6 +5,22 @@
   pageDescription and canonicalPath in its own <script server> and this reads
   them. Anything optional (jsonLd, ogImage) is guarded, so a page that has
   nothing to say about it simply does not declare it. --}}
+<script server>
+// The partial imports what it uses rather than leaning on the page's scope:
+// a shared head that reads an import only some pages happen to make renders
+// an empty href on all the others.
+import { assetUrl } from '../data/assets'
+
+// The page owns these; declaring them types the template without emitting
+// anything, so the page's own values still render.
+declare const pageTitle: string
+declare const pageDescription: string
+declare const canonicalPath: string
+declare const jsonLd: string | undefined
+
+const themeCss = assetUrl('/assets/styles/theme.css')
+const marketingCss = assetUrl('/assets/styles/marketing.css')
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="{{ pageDescription }}">
@@ -101,5 +117,5 @@
 </script>
 {{-- theme.css first: marketing.css builds on its tokens and primitives, and
   the holding page links theme.css on its own. --}}
-<link rel="stylesheet" href="/assets/styles/theme.css">
-<link rel="stylesheet" href="/assets/styles/marketing.css">
+<link rel="stylesheet" href="{{ themeCss }}">
+<link rel="stylesheet" href="{{ marketingCss }}">
