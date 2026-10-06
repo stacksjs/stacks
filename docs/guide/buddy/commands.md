@@ -543,7 +543,7 @@ Add a resource to the Stacks Cloud
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--jump-box` | Remove the jump-box | boolean, optional | `false` |
+| `--jump-box` | Check for the jump box, and say how to declare one if the stack has none | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -671,7 +671,7 @@ Remove certain resources that may be re-applied at a later time
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--jump-box` | Remove the jump-box | boolean, optional | `true` |
+| `--jump-box` | Check for the jump box, and say how to remove it from the stack | boolean, optional | `true` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -686,7 +686,7 @@ Remove the Stacks Cloud. In case it fails, try again
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--jump-box` | Remove the jump-box | boolean, optional | `false` |
+| `--jump-box` | Check for the jump box, and say how to remove it from the stack | boolean, optional | `false` |
 | `--yes` | Skip confirmation prompts | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |

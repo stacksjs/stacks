@@ -1233,7 +1233,10 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
 
   const projectConfig = await getProjectConfig()
   const projectName = projectConfig.name
-  const stackName = `${projectName}-cloud`
+  // The name @stacksjs/cloud looks the stack up by - its jump box, its
+  // deployment state - so the two cannot drift apart again.
+  const { stacksCloudName } = await import('@stacksjs/cloud')
+  const stackName = await stacksCloudName()
 
   if (verbose) console.log(`Deploying ${stackName} to ${region}...`)
 
@@ -1725,8 +1728,9 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
   const { environment, region, verbose } = options
 
   const projectConfig = await getProjectConfig()
-  const projectName = projectConfig.name
-  const stackName = `${projectName}-cloud`
+  // The name `deployStack()` created it under, and @stacksjs/cloud reads.
+  const { stacksCloudName } = await import('@stacksjs/cloud')
+  const stackName = await stacksCloudName()
 
   console.log(`Undeploying ${stackName} from ${region}...`)
   console.log('')

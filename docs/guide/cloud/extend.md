@@ -32,7 +32,7 @@ Use server mode for persistent processes and WebSockets. Use serverless mode for
 
 ```ts
 import {
-  addJumpBox,
+  getJumpBoxInstanceId,
   getSecurityGroupId,
   hasBeenDeployed,
   purchaseDomain,
@@ -41,7 +41,8 @@ import {
 const deployed = await hasBeenDeployed()
 const securityGroupId = await getSecurityGroupId('my-app')
 
-await addJumpBox('my-app-cloud')
+// Declared by infrastructure.jumpBox, read from the deployed stack's output
+const jumpBoxId = await getJumpBoxInstanceId()
 await purchaseDomain('example.com', { years: 1, privacy: true, autoRenew: true })
 ```
 

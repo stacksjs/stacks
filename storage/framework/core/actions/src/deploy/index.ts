@@ -487,7 +487,10 @@ try {
   const { deployStack, deployFrontend: _deployFrontend } = await import('../../deploy')
 
   const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
-  const region = process.env.AWS_REGION || 'us-east-1'
+  // AWS_REGION, else the region config/cloud.ts declares - the one ts-cloud
+  // puts the stack's subnets in - rather than a literal us-east-1.
+  const { stacksCloudRegion } = await import('@stacksjs/cloud')
+  const region = await stacksCloudRegion(undefined, environment)
 
   // Check deployment mode - use relative import from project root
   const cloudConfigModule = await import(p.projectPath('config/cloud'))

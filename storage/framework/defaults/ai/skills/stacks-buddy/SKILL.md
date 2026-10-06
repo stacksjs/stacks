@@ -426,14 +426,14 @@ buddy cloud --diff             # show infrastructure changes (local vs deployed 
 buddy cloud --invalidate-cache # invalidate CloudFront CDN cache
   --paths [paths]              # specific paths to invalidate (default: /*)
 
-buddy cloud:add --jump-box     # add jump box EC2 instance
+buddy cloud:add --jump-box     # check for the jump box infrastructure.jumpBox declares (buddy deploy creates it)
 buddy cloud:remove             # remove cloud infrastructure (aliases: cloud:destroy, cloud:rm, undeploy)
-  --jump-box                   # remove just the jump-box
+  --jump-box                   # check for the jump box, say how to drop it from the stack
   --force                      # force deletion
   --yes                        # skip confirmation
-buddy cloud:optimize-cost      # remove optional resources (jump-box)
+buddy cloud:optimize-cost      # check optional resources (jump-box) that can be dropped
 buddy cloud:cleanup            # clean up retained resources after stack deletion
-# Cleans: jump-boxes, S3 buckets, Lambda functions, CloudWatch logs,
+# Cleans: S3 buckets, Lambda functions, CloudWatch logs,
 # Parameter Store, VPCs, Subnets, CDK remnants, IAM users
 buddy cloud:invalidate-cache   # invalidate CloudFront cache
   --paths [paths]              # paths to invalidate

@@ -43,7 +43,7 @@ buddy cloud --ssh
 buddy cloud --connect
 ```
 
-This uses AWS Systems Manager Session Manager to connect to your jump box.
+This uses AWS Systems Manager Session Manager to connect to your jump box, the instance the deployed stack reports as its `JumpBoxInstanceId` output. It needs the [AWS CLI's Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html).
 
 ### Cloud Diff
 
@@ -69,13 +69,20 @@ buddy cloud:invalidate-cache --paths "/*"
 
 ### Add Jump Box
 
-Add a jump box (bastion host) to your cloud infrastructure:
+The jump box (bastion host) is part of your stack. Declare it in the `tsCloud` export of `config/cloud.ts` and deploy:
 
-```bash
-buddy cloud:add --jump-box
+```ts
+infrastructure: {
+  jumpBox: true,
+  // or: jumpBox: { size: 'micro', allowedCidrs: ['203.0.113.0/24'], databaseTools: true, mountEfs: true },
+},
 ```
 
-This creates an EC2 instance that allows you to SSH into your VPC.
+```bash
+buddy deploy
+```
+
+CloudFormation creates the instance in the stack's VPC, with its security group and an SSM role. `buddy cloud:add --jump-box` reports whether the deployed stack has one, and what to change when it does not. It does not create instances outside the stack.
 
 ## Cloud Remove Commands
 
@@ -93,11 +100,7 @@ buddy undeploy
 
 ### Remove Jump Box
 
-Remove only the jump box to reduce costs:
-
-```bash
-buddy cloud:remove --jump-box
-```
+Remove `infrastructure.jumpBox` from `config/cloud.ts` (or set `enabled: false`) and run `buddy deploy`. CloudFormation deletes the instance, its security group and its role. `buddy cloud:remove --jump-box` reports whether the stack still has one.
 
 ### Force Removal
 
@@ -127,7 +130,6 @@ buddy cloud:clean-up
 
 This removes:
 
-- Jump boxes
 - S3 buckets
 - Lambda functions
 - Log groups
@@ -144,7 +146,7 @@ Remove non-essential resources to reduce costs:
 buddy cloud:optimize-cost
 ```
 
-By default, this removes the jump box which can be re-added later.
+By default, this checks for a jump box, the one optional resource that can be declared again later, and says how to drop it from the stack.
 
 ## Options Reference
 
@@ -169,7 +171,7 @@ By default, this removes the jump box which can be re-added later.
 
 | Option | Description |
 |--------|-------------|
-| `--jump-box` | Remove only the jump box |
+| `--jump-box` | Check for the jump box and say how to remove it |
 | `--force` | Force deletion of stuck stacks |
 | `--yes` | Skip confirmation prompts |
 
@@ -209,14 +211,14 @@ buddy cloud:cleanup
 ### Add Jump Box for Debugging
 
 ```bash
-# Add jump box
-buddy cloud:add --jump-box
+# Set infrastructure.jumpBox: true in config/cloud.ts, then
+buddy deploy
 
 # SSH into it
 buddy cloud --ssh
 
-# Remove when done (to save costs)
-buddy cloud:remove --jump-box
+# When done, remove infrastructure.jumpBox and deploy again (to save costs)
+buddy deploy
 ```
 
 ### Invalidate Specific Paths
@@ -305,7 +307,7 @@ aws sts get-caller-identity
 ### Cost Management
 
 ```bash
-# Remove jump box when not needed
+# Check for a jump box you no longer need (removing it is a config change and a deploy)
 buddy cloud:remove --jump-box
 
 # Or use cost optimization

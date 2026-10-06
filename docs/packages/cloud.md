@@ -191,7 +191,7 @@ mail records.
 ### Managing servers
 
 ```bash
-buddy cloud:add --jump-box        # add a bastion
+buddy cloud:add --jump-box        # check for the bastion infrastructure.jumpBox declares
 buddy cloud:attach                # attach this project to a server another project owns
 buddy cloud:move                  # move a site to another server, cutting DNS over when it serves
 buddy cloud:rename                # rename a server, keeping provider, pin, hostname and inventory in step
@@ -238,13 +238,22 @@ if (await isFailedState()) {
 
 ### Jump box
 
-```typescript
-import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId } from '@stacksjs/cloud'
+The jump box is a resource of the app's stack, declared by `infrastructure.jumpBox` in the
+`tsCloud` export of `config/cloud.ts` and created or deleted by `buddy deploy`. The helpers read
+it from the deployed stack's `JumpBoxInstanceId` output, in the stack's region; they never create
+or terminate an instance outside CloudFormation.
 
-await addJumpBox()
-const id = await getJumpBoxInstanceId()
-await deleteJumpBox()
+```typescript
+import { addJumpBox, deleteJumpBox, getJumpBoxInstanceId, getJumpBoxState } from '@stacksjs/cloud'
+
+const id = await getJumpBoxInstanceId()        // undefined when the stack has none
+const state = await getJumpBoxState()          // { stack, region, declared, deployed, instanceId }
+const add = await addJumpBox()                 // { done, message }: what to change when there is none
+const remove = await deleteJumpBox()           // { done, message }: what to change to drop it
 ```
+
+`stacksCloudName()` and `stacksCloudRegion()` name the stack and region every one of these reads -
+the same ones `buddy deploy` and `cloud:remove` use.
 
 ### Teardown helpers
 
@@ -255,7 +264,6 @@ throwing halfway through:
 ```typescript
 import {
   deleteCdkRemnants,
-  deleteEc2Instance,
   deleteIamUsers,
   deleteLogGroups,
   deleteParameterStore,

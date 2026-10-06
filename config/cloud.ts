@@ -318,9 +318,12 @@ export const tsCloud: TsCloudConfig = {
      *
      * Provides SSH access to your private cloud resources.
      * Set to `true` for a default t3.micro jump box, or configure options.
+     * It is part of the stack: `buddy deploy` creates it, and removing this
+     * and deploying again deletes it. `buddy cloud:add --jump-box` reports
+     * whether the deployed stack has one.
      *
-     * Connect via: buddy cloud:ssh
-     * Or via SSM: aws ssm start-session --target <instance-id>
+     * Connect via: buddy cloud --ssh (an SSM session to the stack's
+     * JumpBoxInstanceId output)
      */
     // jumpBox: true,
     // jumpBox: {

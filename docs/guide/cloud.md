@@ -446,7 +446,7 @@ buddy deploy
 # Show the diff of the current, undeployed cloud changes
 buddy cloud:diff
 
-# Add a resource to your cloud (e.g. a jump box)
+# Check for a jump box (declared by infrastructure.jumpBox, created by buddy deploy)
 buddy cloud:add --jump-box
 
 # Inspect servers, sites & deploys in the local cloud cockpit

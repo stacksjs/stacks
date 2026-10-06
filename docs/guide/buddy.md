@@ -107,7 +107,7 @@ buddy undeploy # be careful: "undeploys" removes/deletes your deployed resources
 
 buddy cloud:remove # removes cloud setup
 buddy cloud:cleanup # removes cloud setup & cleans up all potentially leftover resources
-buddy cloud:add --jump-box # adds a jump box to your cloud setup
+buddy cloud:add --jump-box # checks for the jump box config/cloud.ts declares and buddy deploy creates
 
 # you likely won't need to run these commands as they are auto-triggered, but they are available
 buddy generate  # prompts you to select which generator to run

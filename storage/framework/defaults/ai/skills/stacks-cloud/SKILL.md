@@ -157,15 +157,15 @@ await purchaseDomain('example.com', { years: 1, privacy: true, autoRenew: true }
 
 // Infrastructure queries
 const sgId = await getSecurityGroupId('my-sg')
-const jumpBoxId = await getJumpBoxInstanceId('stack-name')
+const jumpBoxId = await getJumpBoxInstanceId() // the deployed stack's JumpBoxInstanceId output
 const deployed = await hasBeenDeployed()
 const firstDeploy = await isFirstDeployment()
 const failed = await isFailedState()
 
-// Resource management
-await addJumpBox('stack-name')
-await deleteJumpBox('stack-name')
-await deleteEc2Instance(instanceId, 'stack-name')
+// The jump box is declared by infrastructure.jumpBox and created by `buddy deploy`;
+// these report the stack's state and what to change, never create or terminate.
+await addJumpBox()
+await deleteJumpBox()
 
 // Cleanup
 await deleteStacksBuckets()
@@ -236,7 +236,7 @@ buddy server:setup                    # adopt and bootstrap an ssh host
 buddy cloud --diff                    # show infrastructure changes (aws)
 buddy cloud --ssh                     # SSH into cloud
 buddy cloud --invalidate-cache        # invalidate CDN
-buddy cloud:add --jump-box            # add jump box instance
+buddy cloud:add --jump-box            # check for the jump box (declare infrastructure.jumpBox + buddy deploy)
 buddy cloud:remove --force            # destroy cloud resources
 buddy cloud:cleanup                   # clean retained resources
 buddy cloud:optimize-cost             # remove optional resources
@@ -292,7 +292,10 @@ Stack naming: `{slugified-app-name}-cloud`
 - Server mode uses EC2 + ALB; serverless uses Lambda + API Gateway + CloudFront
 - Origin failover only retries GET, HEAD and OPTIONS on a cache miss; it does not protect writes,
   and the failover replica outlives `buddy cloud:remove`
-- Jump boxes are optional, used for SSH access to private instances
+- Jump boxes are optional, used for SSH access to private instances. They are stack resources:
+  `infrastructure.jumpBox` in config/cloud.ts plus `buddy deploy`, found by the stack's
+  `JumpBoxInstanceId` output. The stack is `stacksCloudName()` (`<project.name>-cloud`) in
+  `stacksCloudRegion()` (AWS_REGION, else the configured region)
 - `cloud:remove` with `--force` skips confirmation and is destructive
 - CDK toolkit stack is named `stacks-toolkit`
 - Environment mapping: `local` → `development`, others preserved

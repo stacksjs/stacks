@@ -1,3 +1,4 @@
+import type { JumpBoxChange } from '@stacksjs/cloud'
 import type { OperationPlan } from '@stacksjs/ts-cloud'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -16,7 +17,7 @@ import {
   deleteSubnets,
   deleteVpcs,
   getCloudFrontDistributionId,
-  getJumpBoxInstanceId,
+  stacksCloudRegion,
 } from '@stacksjs/cloud'
 import { hasTTY, isCI } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
@@ -889,11 +890,25 @@ export function cloud(buddy: CLI): void {
       const startTime = performance.now()
 
       if (options.ssh || options.connect) {
-        const jumpBoxId = await getJumpBoxInstanceId()
+        // The jump box is the deployed stack's, found by its output. Without
+        // one this used to start a session with `--target undefined`.
+        const jumpBox = await addJumpBox()
+        if (isResultError(jumpBox)) {
+          await outro('Could not find the jump box', { startTime, useSeconds: true }, getResultError(jumpBox))
+          process.exit(ExitCode.FatalError)
+        }
+
+        const { message, state } = getResultValue(jumpBox) as JumpBoxChange
+        if (!state.instanceId) {
+          log.info(message)
+          await outro('There is no jump box to connect to', { startTime, useSeconds: true, type: 'warning' })
+          process.exit(ExitCode.FatalError)
+        }
+
         // An interactive session: the terminal's own stdin and stdout. It was
         // given a piped stdin (and, through it, a piped stdout), so nothing
         // typed reached the box and nothing it printed reached the screen.
-        const result = await runCommand(['aws', 'ssm', 'start-session', '--target', String(jumpBoxId)], {
+        const result = await runCommand(['aws', 'ssm', 'start-session', '--target', state.instanceId, '--region', state.region], {
           ...options,
           cwd: p.projectPath(),
           stdin: 'inherit',
@@ -994,7 +1009,7 @@ export function cloud(buddy: CLI): void {
 
   buddy
     .command('cloud:add', descriptions.add)
-    .option('--jump-box', 'Remove the jump-box', { default: false })
+    .option('--jump-box', 'Check for the jump box, and say how to declare one if the stack has none', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
@@ -1003,22 +1018,9 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:add')
 
       if (options.jumpBox) {
-        // `prompts` is an object of prompt functions, not the callable the npm
-        // package of that name exports - calling it threw "prompts is not a
-        // function" at every one of these interactive paths. Behind
-        // `(prompts)(...)`, nothing said so.
-        const confirm = await prompts.confirm('Would you like to add a jump-box to your cloud?')
-
-        if (!confirm) {
-          await outro('Exited', { startTime, useSeconds: true })
-          process.exit(ExitCode.Success)
-        }
-
-        log.info('The jump-box is getting added to your cloud resources...')
-        log.info('This takes a few moments, please be patient.')
-        // sleep for 2 seconds to get the user to read the message
-        await new Promise(resolve => setTimeout(resolve, 2000))
-
+        // The jump box is a resource of the deployed stack, declared by
+        // `infrastructure.jumpBox` in config/cloud.ts, so adding one is a
+        // config change and a deploy. This reports which of the two is missing.
         const result = await addJumpBox()
 
         if (isResultError(result)) {
@@ -1030,19 +1032,15 @@ export function cloud(buddy: CLI): void {
           process.exit(ExitCode.FatalError)
         }
 
-        log.info(italic('View the jump-box in the AWS console:'))
-        log.info(
-          underline(
-            'https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:instanceState=running',
-          ),
-        )
-        log.info(italic('Once it finished initializing, you may SSH into it:'))
-        log.info(underline('buddy cloud --ssh'))
+        const change = getResultValue(result) as JumpBoxChange
+        log.info(change.message)
 
-        await outro('Your jump-box was added.', {
-          startTime,
-          useSeconds: true,
-        })
+        if (!change.done) {
+          await outro('No jump box was added.', { startTime, useSeconds: true, type: 'warning' })
+          process.exit(ExitCode.FatalError)
+        }
+
+        await outro('Your cloud has a jump box.', { startTime, useSeconds: true })
         process.exit(ExitCode.Success)
       }
 
@@ -1059,7 +1057,7 @@ export function cloud(buddy: CLI): void {
     // still mean this.
     .alias('cloud:rm')
     .alias('undeploy')
-    .option('--jump-box', 'Remove the jump-box', { default: false })
+    .option('--jump-box', 'Check for the jump box, and say how to remove it from the stack', { default: false })
     // No `--force`: it was declared for a year and read by nothing, so a stack
     // stuck in DELETE_FAILED failed the same way with or without it. Forcing
     // past that means retaining the resources CloudFormation could not delete,
@@ -1077,6 +1075,30 @@ export function cloud(buddy: CLI): void {
       // Determine environment first, the confirmation guard below names it.
       const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
 
+      if (options.jumpBox) {
+        // Like `cloud:add --jump-box`: the instance is the stack's, so it is
+        // removed by dropping it from config/cloud.ts and deploying. This used
+        // to terminate it directly, behind CloudFormation's back. It deletes
+        // nothing now, so it needs neither `--yes` nor the guard below.
+        const result = await deleteJumpBox()
+
+        if (isResultError(result)) {
+          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, getResultError(result))
+          process.exit(ExitCode.FatalError)
+        }
+
+        const change = getResultValue(result) as JumpBoxChange
+        log.info(change.message)
+
+        if (!change.done) {
+          await outro('The jump box was not removed.', { startTime, useSeconds: true, type: 'warning' })
+          process.exit(ExitCode.FatalError)
+        }
+
+        await outro('Your cloud has no jump box.', { startTime, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
       // Safety guard (stacksjs/stacks#2002): this command deletes real cloud
       // infrastructure and previously did so with no confirmation at all,
       // leaving the declared `--yes` flag inert. Now `--yes` is the explicit
@@ -1089,34 +1111,6 @@ export function cloud(buddy: CLI): void {
         await outro('cloud:remove cancelled.', { startTime, useSeconds: true, type: 'warning' })
         await log.flush()
         process.exit(ExitCode.FatalError)
-      }
-
-      if (options.jumpBox) {
-        if (!options.yes) {
-          // `prompts` is an object of prompt functions, not the callable the npm
-          // package of that name exports - calling it threw "prompts is not a
-          // function" at every one of these interactive paths. Behind
-          // `(prompts)(...)`, nothing said so.
-          const confirm = await prompts.confirm('Would you like to remove your jump-box for now?')
-
-          if (!confirm) {
-            await outro('Exited', { startTime, useSeconds: true })
-            process.exit(ExitCode.Success)
-          }
-        }
-
-        const result = await deleteJumpBox()
-
-        if (isResultError(result)) {
-          await outro('While removing your jump-box, there was an issue', { startTime, useSeconds: true }, getResultError(result))
-          process.exit(ExitCode.FatalError)
-        }
-
-        await outro('Your jump-box was removed.', {
-          startTime,
-          useSeconds: true,
-        })
-        process.exit(ExitCode.Success)
       }
 
       // Typed confirmation for a full infrastructure teardown, mirroring the
@@ -1176,7 +1170,8 @@ export function cloud(buddy: CLI): void {
       try {
         const { undeployStack } = await import('../../../actions/deploy')
 
-        const region = process.env.AWS_REGION || 'us-east-1'
+        // Where `buddy deploy` put it: AWS_REGION, else the configured region.
+        const region = await stacksCloudRegion(undefined, environment)
 
         await undeployStack({
           environment,
@@ -1234,7 +1229,7 @@ export function cloud(buddy: CLI): void {
 
   buddy
     .command('cloud:optimize-cost', descriptions.optimizeCost)
-    .option('--jump-box', 'Remove the jump-box', { default: true }) // removes the ec2 instance
+    .option('--jump-box', 'Check for the jump box, and say how to remove it from the stack', { default: true })
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: true }) // TODO: implement this - removes the Kinesis Data Stream
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -1244,23 +1239,24 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:optimize-cost')
 
       if (options.jumpBox) {
-        // `prompts` is an object of prompt functions, not the callable the npm
-        // package of that name exports - calling it threw "prompts is not a
-        // function" at every one of these interactive paths. Behind
-        // `(prompts)(...)`, nothing said so.
-        const confirm = await prompts.confirm('Would you like to remove your jump-box to optimize your costs?')
+        // The jump box is the only resource this offers to drop, since it can
+        // be declared again later. It belongs to the stack, so dropping it is
+        // a config change and a deploy, which this spells out. It used to
+        // terminate the instance directly and report success whatever happened.
+        const result = await deleteJumpBox()
 
-        if (!confirm) {
-          await outro('Exited', { startTime, useSeconds: true })
-          process.exit(ExitCode.Success)
+        if (isResultError(result)) {
+          await outro('While checking your jump-box, there was an issue', { startTime, useSeconds: true }, getResultError(result))
+          process.exit(ExitCode.FatalError)
         }
 
-        // at the moment, the jump-box is the only resource that is removed to optimize costs
-        // because it can be re-applied at any later time
-        await deleteJumpBox()
+        const change = getResultValue(result) as JumpBoxChange
+        log.info(change.message)
 
-        await outro('Your jump-box was removed & cost optimizations are applied.', { startTime, useSeconds: true })
-        process.exit(ExitCode.Success)
+        if (!change.done) {
+          await outro('No cost optimization was applied', { startTime, useSeconds: true, type: 'warning' })
+          process.exit(ExitCode.FatalError)
+        }
       }
 
       await outro('No cost optimization was applied', {
@@ -1288,8 +1284,9 @@ export function cloud(buddy: CLI): void {
       // sleep for 2 seconds to get the user to read the message
       await new Promise(resolve => setTimeout(resolve, 2000))
 
+      // No jump-box step: the jump box is a resource of the stack, so
+      // CloudFormation deletes it with the stack and nothing of it is retained.
       const cleanupSteps: { label: string; fn: () => Promise<unknown>; ignoreErrors?: string[] }[] = [
-        { label: 'jump-boxes', fn: deleteJumpBox, ignoreErrors: ['Jump-box not found'] },
         { label: 'retained S3 buckets', fn: deleteStacksBuckets },
         { label: 'retained Lambda functions', fn: deleteStacksFunctions, ignoreErrors: ['No stacks functions found'] },
         { label: 'remaining Stacks logs', fn: deleteLogGroups },

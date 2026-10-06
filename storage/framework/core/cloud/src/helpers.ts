@@ -1,6 +1,8 @@
 import type { CountryCode } from '@stacksjs/ts-cloud'
 import type { Result } from '@stacksjs/error-handling'
 import type { ContactInfo } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
+import process from 'node:process'
 import {
   AWSClient,
   AWSCloudFormationClient as CloudFormationClient,
@@ -12,25 +14,75 @@ import {
   S3Client,
   SSMClient,
 } from '@stacksjs/ts-cloud'
-import { awaitConfig, config } from '@stacksjs/config'
+import { config } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { slug } from '@stacksjs/strings'
 
 /**
- * The CloudFormation stack this app's AWS resources belong to.
+ * The part of `config/cloud.ts`'s `tsCloud` export this package reads: what
+ * names the stack, where it lives, and whether it declares a jump box.
  *
- * Read per call, after the app's config has loaded. It was computed once at
- * import, when `config.app.env` is still the framework default `'local'`, so
- * it was `stacks-cloud-dev` in every environment: with `APP_ENV=production`,
- * every stack and jump-box lookup here - `cloud:remove` included - named the
- * development stack.
+ * `buddy deploy` hands the whole `tsCloud` object to ts-cloud's
+ * `InfrastructureGenerator`; this is a structural slice of it, so a test can
+ * pass a literal.
  */
-export async function stacksCloudName(): Promise<string> {
-  const { app } = await awaitConfig()
-  const env = !app?.env || app.env === 'local' ? 'dev' : app.env
-  return `stacks-cloud-${env}`
+export interface CloudStackConfig {
+  project?: { name?: string, region?: string }
+  environments?: Partial<Record<string, { region?: string } | undefined>>
+  infrastructure?: { jumpBox?: boolean | { enabled?: boolean } }
+}
+
+/**
+ * The `tsCloud` export of the app's `config/cloud.ts`, which is what
+ * `buddy deploy` generates the stack from. An app without the file deploys
+ * with ts-cloud's defaults, so it reads as empty; a file that fails to load
+ * is an error, not an empty config.
+ */
+export async function loadCloudStackConfig(): Promise<CloudStackConfig> {
+  const file = p.projectPath('config/cloud.ts')
+  if (!existsSync(file))
+    return {}
+
+  const mod = await import(file)
+  return (mod.tsCloud ?? {}) as CloudStackConfig
+}
+
+/**
+ * The environment a deploy targets, resolved the way `buddy deploy` and
+ * `cloud:remove` resolve it.
+ */
+export function cloudEnvironment(): string {
+  return process.env.APP_ENV || process.env.NODE_ENV || 'production'
+}
+
+/**
+ * The CloudFormation stack this app's AWS resources belong to: the one
+ * `buddy deploy` creates and `cloud:remove` deletes, `<project.name>-cloud`.
+ *
+ * Both of those now ask this function, so the name has one owner. It used to
+ * be `stacks-cloud-<env>`, a name nothing has created since the CDK deploy was
+ * replaced, so every lookup through it - the jump box, `isFirstDeployment`,
+ * `isFailedState` - asked AWS about a stack that does not exist.
+ */
+export async function stacksCloudName(cloud?: CloudStackConfig): Promise<string> {
+  const { project } = cloud ?? await loadCloudStackConfig()
+  return `${project?.name || 'stacks'}-cloud`
+}
+
+/**
+ * The region the app's stack is deployed to.
+ *
+ * `AWS_REGION` wins, as it always has for `buddy deploy`. Without it, the
+ * region `config/cloud.ts` declares for the environment, then the project's -
+ * the same values ts-cloud places the stack's subnets in. The fallback used to
+ * be a literal `us-east-1`, here and in the deploy, so an app configured for
+ * any other region was deployed and looked up in the wrong one.
+ */
+export async function stacksCloudRegion(cloud?: CloudStackConfig, environment: string = cloudEnvironment()): Promise<string> {
+  const { project, environments } = cloud ?? await loadCloudStackConfig()
+  return process.env.AWS_REGION || environments?.[environment]?.region || project?.region || 'us-east-1'
 }
 
 /**
@@ -72,22 +124,8 @@ async function cwlRequest(region: string, action: string, payload: Record<string
   return result as Record<string, unknown>
 }
 
-/**
- * Helper to make raw EFS API calls since EFSClient is not available
- */
-async function efsRequest(_action: string, method: string, path: string): Promise<Record<string, unknown>> {
-  const client = new AWSClient()
-  const result = await client.request({
-    service: 'elasticfilesystem',
-    region: 'us-east-1',
-    method,
-    path,
-  })
-  return result as Record<string, unknown>
-}
-
 export async function getSecurityGroupId(securityGroupName: string): Promise<Result<string | undefined, string>> {
-  const ec2 = new EC2Client('us-east-1')
+  const ec2 = new EC2Client(await stacksCloudRegion())
   const { SecurityGroups } = await ec2.describeSecurityGroups({
     Filters: [{ Name: 'group-name', Values: [securityGroupName] }],
   })
@@ -332,51 +370,172 @@ export async function purchaseDomain(
   }
 }
 
-export async function getJumpBoxInstanceId(name?: string): Promise<string | undefined> {
-  if (!name)
-    name = `${await stacksCloudName()}/JumpBox`
-
-  const ec2 = new EC2Client('us-east-1')
-  const data = await ec2.describeInstances({
-    Filters: [
-      {
-        Name: 'tag:Name',
-        Values: [name],
-      },
-    ],
-  })
-
-  if (data.Reservations?.[0]?.Instances?.[0])
-    return data.Reservations[0].Instances[0].InstanceId
-
-  return undefined
+/**
+ * The CloudFormation calls the jump-box helpers make. ts-cloud's client by
+ * default; a test passes a fake, as `purchaseDomain()` takes its registrar.
+ */
+export interface StackDescriber {
+  describeStacks: (options: { stackName: string }) => Promise<{
+    Stacks?: Array<{ StackStatus?: string, Outputs?: Array<{ OutputKey?: string, OutputValue?: string }> }>
+  }>
 }
 
-export async function deleteEc2Instance(id: string, stackName?: string): Promise<Result<string, string>> {
-  if (!stackName)
-    stackName = await stacksCloudName()
-
-  if (!id)
-    return err(`Instance ${id} not found`)
-
-  const ec2 = new EC2Client('us-east-1')
-  await ec2.terminateInstances([id])
-
-  return ok(`Instance ${id} is being terminated`)
+export interface JumpBoxOptions {
+  /** The `tsCloud` config. Defaults to the app's `config/cloud.ts`. */
+  config?: CloudStackConfig
+  /** Builds the CloudFormation client for the stack's region. */
+  cloudFormation?: (region: string) => StackDescriber
 }
 
-export async function deleteJumpBox(stackName?: string): Promise<Result<string, string>> {
-  if (!stackName)
-    stackName = await stacksCloudName()
+/**
+ * Where the app's jump box stands: what `config/cloud.ts` declares, and what
+ * the deployed stack has.
+ */
+export interface JumpBoxState {
+  stack: string
+  region: string
+  /** Whether `infrastructure.jumpBox` asks for one, as ts-cloud reads it. */
+  declared: boolean
+  /** Whether the stack exists in that region at all. */
+  deployed: boolean
+  /** The stack's `JumpBoxInstanceId` output, when it has a jump box. */
+  instanceId?: string
+}
 
-  const jumpBoxId = await getJumpBoxInstanceId()
+/** The stack output ts-cloud's generator gives the jump box's instance id. */
+export const JUMP_BOX_OUTPUT = 'JumpBoxInstanceId'
 
-  if (!jumpBoxId)
-    return err('Jump-box not found')
+const JUMP_BOX_CONFIG_HINT = 'Set `infrastructure.jumpBox: true` in the `tsCloud` export of config/cloud.ts (or an object: `{ size, keyName, allowedCidrs, databaseTools, mountEfs }`), then run `buddy deploy`.'
 
-  log.info(`Deleting jump-box ${jumpBoxId}...`)
+/**
+ * Whether the config asks for a jump box - `true`, or an object whose
+ * `enabled` is not `false` - exactly as ts-cloud's `generateJumpBox()` reads it.
+ */
+export function declaresJumpBox(cloud: CloudStackConfig): boolean {
+  const jumpBox = cloud.infrastructure?.jumpBox
+  if (!jumpBox)
+    return false
+  return jumpBox === true || jumpBox.enabled !== false
+}
 
-  return await deleteEc2Instance(jumpBoxId, stackName)
+/**
+ * Reads the jump box from the deployed stack.
+ *
+ * The jump box is a resource of the app's stack: `infrastructure.jumpBox` in
+ * `config/cloud.ts` makes ts-cloud generate the instance, its security group
+ * and its SSM role, and publish the instance id as the `JumpBoxInstanceId`
+ * output. This reads that output. It used to search EC2 for a `Name` tag of
+ * `<stack>/JumpBox`, which neither the generator nor the old `addJumpBox()`
+ * (`<stack>-jump-box`) ever wrote, always in us-east-1.
+ */
+export async function getJumpBoxState(options: JumpBoxOptions = {}): Promise<Result<JumpBoxState, Error>> {
+  const cloud = options.config ?? await loadCloudStackConfig()
+  const stack = await stacksCloudName(cloud)
+  const region = await stacksCloudRegion(cloud)
+  const cloudFormation = (options.cloudFormation ?? (r => new CloudFormationClient(r)))(region)
+  const state: JumpBoxState = { stack, region, declared: declaresJumpBox(cloud), deployed: false }
+
+  try {
+    const { Stacks } = await cloudFormation.describeStacks({ stackName: stack })
+    const deployed = Stacks?.[0]
+    if (!deployed || deployed.StackStatus === 'DELETE_COMPLETE')
+      return ok(state)
+
+    state.deployed = true
+    state.instanceId = deployed.Outputs?.find(output => output.OutputKey === JUMP_BOX_OUTPUT)?.OutputValue || undefined
+    return ok(state)
+  }
+  catch (error: unknown) {
+    const e = error instanceof Error ? error : new Error(String(error))
+    // CloudFormation answers a DescribeStacks for a missing stack with a
+    // ValidationError: "Stack with id <name> does not exist".
+    if (/does not exist/i.test(e.message))
+      return ok(state)
+    return err(e)
+  }
+}
+
+/**
+ * The deployed jump box's instance id, or undefined when the stack has none.
+ * Throws when the stack cannot be read, so a credentials or network failure
+ * is not reported as "no jump box".
+ */
+export async function getJumpBoxInstanceId(options: JumpBoxOptions = {}): Promise<string | undefined> {
+  const state = await getJumpBoxState(options)
+  if (state.isErr)
+    throw state.error
+  return state.value.instanceId
+}
+
+/**
+ * What `cloud:add --jump-box` and `cloud:remove --jump-box` found.
+ *
+ * `done` is true when the stack is already in the state asked for. Otherwise
+ * `message` says what to change, since the change is a deploy.
+ */
+export interface JumpBoxChange {
+  done: boolean
+  message: string
+  state: JumpBoxState
+}
+
+function report(done: boolean, state: JumpBoxState, message: string): JumpBoxChange {
+  return { done, state, message }
+}
+
+function where(state: JumpBoxState): string {
+  return `the ${state.stack} stack (${state.region})`
+}
+
+/**
+ * Reports how to get a jump box. It does not create one.
+ *
+ * The instance belongs to the stack, so making it outside CloudFormation would
+ * leave a resource the next deploy does not know about. This used to call
+ * RunInstances itself, and could never get there: it refused when a jump box
+ * existed, then read the security group from the existing jump box. Past
+ * that, it named one account's subnet and AMI, in us-east-1, and cloned the
+ * framework repository over the app's EFS mount.
+ */
+export async function addJumpBox(options: JumpBoxOptions = {}): Promise<Result<JumpBoxChange, string>> {
+  const result = await getJumpBoxState(options)
+  if (result.isErr)
+    return err(`Could not read the jump box from the deployed stack: ${result.error.message}`)
+
+  const state = result.value
+  if (state.instanceId)
+    return ok(report(true, state, `${where(state)} already has a jump box, ${state.instanceId}. Connect with \`buddy cloud --ssh\`.`))
+
+  if (state.declared) {
+    const missing = state.deployed ? 'has not been deployed with it yet' : 'is not deployed'
+    return ok(report(false, state, `config/cloud.ts declares a jump box, but ${where(state)} ${missing}. Run \`buddy deploy\` to create it.`))
+  }
+
+  return ok(report(false, state, `${where(state)} has no jump box. ${JUMP_BOX_CONFIG_HINT}`))
+}
+
+/**
+ * Reports how to remove the jump box. It does not terminate it.
+ *
+ * Terminating a stack-owned instance directly leaves CloudFormation describing
+ * an instance that is gone, and the next update fails or recreates it. Removing
+ * it from the config and deploying deletes it, with its security group and role.
+ */
+export async function deleteJumpBox(options: JumpBoxOptions = {}): Promise<Result<JumpBoxChange, string>> {
+  const result = await getJumpBoxState(options)
+  if (result.isErr)
+    return err(`Could not read the jump box from the deployed stack: ${result.error.message}`)
+
+  const state = result.value
+  if (!state.instanceId) {
+    const pending = state.declared ? ' config/cloud.ts still declares one, so the next `buddy deploy` creates it; remove `infrastructure.jumpBox` to keep it gone.' : ''
+    return ok(report(true, state, `${where(state)} has no jump box.${pending}`))
+  }
+
+  if (state.declared)
+    return ok(report(false, state, `${where(state)} has a jump box, ${state.instanceId}. Remove \`infrastructure.jumpBox\` from the \`tsCloud\` export of config/cloud.ts (or set \`enabled: false\`), then run \`buddy deploy\`; CloudFormation deletes the instance, its security group and its role.`))
+
+  return ok(report(false, state, `${where(state)} still has a jump box, ${state.instanceId}, though config/cloud.ts no longer declares one. Run \`buddy deploy\` to remove it.`))
 }
 
 export async function deleteIamUsers(): Promise<Result<string, string>> {
@@ -818,140 +977,10 @@ export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
   }
 }
 
-export async function getJumpBoxInstanceProfileName(): Promise<Result<string, string>> {
-  const iam = new IAMClient('us-east-1')
-  const data = await iam.listInstanceProfiles()
-  const instanceProfile = data.InstanceProfiles?.find((profile: unknown) => {
-    const p = profile as Record<string, unknown>
-    return (p.InstanceProfileName as string | undefined)?.includes('JumpBox')
-  })
-
-  const profileName = instanceProfile?.InstanceProfileName
-  if (!profileName)
-    return err('Jump-box IAM instance profile not found')
-
-  return ok(profileName)
-}
-
-export async function addJumpBox(stackName?: string): Promise<Result<string, string>> {
-  if (!stackName)
-    stackName = await stacksCloudName()
-
-  if (await getJumpBoxInstanceId()) {
-    return err(
-      'The jump-box you are trying to add already exists. Please remove it & wait until it finished terminating.',
-    )
-  }
-
-  const ec2 = new EC2Client('us-east-1')
-  const r = await getJumpBoxSecurityGroupName()
-
-  if (r.isErr)
-    return err(r.error)
-  if (!(r as unknown as Record<string, unknown>).value)
-    return err('Security group not found when adding jump-box')
-
-  const result = await getSecurityGroupId((r as unknown as Record<string, unknown>).value as string)
-  if (result.isErr)
-    return err(result.error)
-  const sgId = (result as unknown as Record<string, unknown>).value as string | undefined
-
-  if (!sgId)
-    return err('Security group not found when adding jump-box')
-
-  // Use raw EFS API call since EFSClient is not available
-  const efsData = await efsRequest('DescribeFileSystems', 'GET', '/2015-02-01/file-systems')
-  const fileSystems = (efsData.FileSystems ?? []) as unknown as Array<Record<string, unknown>>
-  const fileSystemName = `stacks-${config.app.env}-efs`
-  const fileSystem = fileSystems.find((fs: Record<string, unknown>) => fs.Name === fileSystemName)
-  const fileSystemId = fileSystem?.FileSystemId as string | undefined
-
-  if (!fileSystem || !fileSystemId)
-    return err(`EFS file system ${fileSystemName} not found`)
-
-  const userDataScript = `
-#!/bin/bash
-yum update -y
-yum install -y amazon-efs-utils
-yum install -y git
-yum install -y https://s3.us-east-1.amazonaws.com/amazon-ssm-us-east-1/latest/linux_amd64/amazon-ssm-agent.rpm
-mkdir /mnt/efs
-mount -t efs ${fileSystemId}:/ /mnt/efs
-git clone https://github.com/stacksjs/stacks.git /mnt/efs
-`
-
-  const base64UserData = btoa(userDataScript)
-  const res = await getJumpBoxInstanceProfileName()
-
-  if (res.isErr)
-    return err(res.error)
-
-  const jumpBoxInstanceProfileName: string | undefined = (res as unknown as Record<string, unknown>).value as string | undefined
-  if (!jumpBoxInstanceProfileName)
-    return err('Jump-box IAM instance profile not found')
-
-  // Use raw EC2 API call for RunInstances since EC2Client doesn't expose it
-  const instance = await ec2Request('RunInstances', {
-    'ImageId': 'ami-03a6eaae9938c858c',
-    'InstanceType': 't2.micro',
-    'MaxCount': '1',
-    'MinCount': '1',
-    'SecurityGroupId.1': sgId,
-    'SubnetId': 'subnet-004c5f196358b00f0',
-    'TagSpecification.1.ResourceType': 'instance',
-    'TagSpecification.1.Tag.1.Key': 'Name',
-    'TagSpecification.1.Tag.1.Value': `${stackName}-jump-box`,
-    'UserData': base64UserData,
-    'IamInstanceProfile.Name': jumpBoxInstanceProfileName,
-  })
-
-  const instancesSet = instance.instancesSet as unknown as Record<string, unknown> | undefined
-  const items = (instancesSet?.item ?? []) as unknown as Array<Record<string, unknown>>
-  const firstInstance = Array.isArray(items) ? items[0] : undefined
-
-  return firstInstance
-    ? ok(`Jump-box created with id ${firstInstance.instanceId as string}`)
-    : err('Jump-box creation failed')
-}
-
-export async function getJumpBoxSecurityGroupName(): Promise<Result<string | undefined, string>> {
-  const jumpBoxId = await getJumpBoxInstanceId()
-
-  if (!jumpBoxId)
-    return err('Jump-box not found')
-
-  const ec2 = new EC2Client('us-east-1')
-  const data = await ec2.describeInstances({ InstanceIds: [jumpBoxId] })
-
-  if (data.Reservations?.[0]?.Instances?.[0]) {
-    const instance = data.Reservations[0].Instances[0]
-    const securityGroups = instance.SecurityGroups
-
-    if (securityGroups?.[0])
-      return ok(securityGroups[0].GroupName)
-  }
-
-  return err('Security group not found')
-}
-
-export async function getSecurityGroupFromInstanceId(instanceId: string): Promise<string | undefined> {
-  const ec2 = new EC2Client('us-east-1')
-  const data = await ec2.describeInstances({ InstanceIds: [instanceId] })
-
-  if (data.Reservations?.[0]?.Instances?.[0]) {
-    const instance = data.Reservations[0].Instances[0]
-    const securityGroups = instance.SecurityGroups
-
-    if (securityGroups?.[0])
-      return securityGroups[0].GroupId
-  }
-
-  return undefined
-}
-
 export async function isFirstDeployment(): Promise<boolean> {
-  const stackName = await stacksCloudName()
-  const cloudFormation = new CloudFormationClient('us-east-1')
+  const cloud = await loadCloudStackConfig()
+  const stackName = await stacksCloudName(cloud)
+  const cloudFormation = new CloudFormationClient(await stacksCloudRegion(cloud))
   const data = await cloudFormation.listStacks(['CREATE_COMPLETE', 'UPDATE_COMPLETE'])
   const isStacksCloudPresent = data.StackSummaries?.some((stack: unknown) => {
     const s = stack as Record<string, unknown>
@@ -969,8 +998,9 @@ export async function isFirstDeployment(): Promise<boolean> {
  * healthy and a healthy one as failed.
  */
 export async function isFailedState(): Promise<boolean> {
-  const stackName = await stacksCloudName()
-  const cloudFormation = new CloudFormationClient('us-east-1')
+  const cloud = await loadCloudStackConfig()
+  const stackName = await stacksCloudName(cloud)
+  const cloudFormation = new CloudFormationClient(await stacksCloudRegion(cloud))
   const data = await cloudFormation.listStacks(['CREATE_FAILED', 'UPDATE_FAILED', 'ROLLBACK_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'])
   return Boolean(data.StackSummaries?.some((stack: unknown) => (stack as Record<string, unknown>).StackName === stackName))
 }

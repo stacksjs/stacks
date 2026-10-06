@@ -34,11 +34,6 @@ describe('Cloud Helper Functions', () => {
     expect(typeof mod.getJumpBoxInstanceId).toBe('function')
   })
 
-  test('deleteEc2Instance is exported', async () => {
-    const mod = await import('../src/helpers')
-    expect(typeof mod.deleteEc2Instance).toBe('function')
-  })
-
   test('deleteJumpBox is exported', async () => {
     const mod = await import('../src/helpers')
     expect(typeof mod.deleteJumpBox).toBe('function')
