@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.74...v0.75.75)
+
+## ✨ Features
+
+- **mobile**: speech, and the app built with the Craft its pages use ([6a50d08](https://github.com/stacksjs/stacks/commit/6a50d08)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **payments**: a provider-neutral driver interface, with Stripe and Adyen drivers (#665, #450) ([c467432](https://github.com/stacksjs/stacks/commit/c467432)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#665](https://github.com/stacksjs/stacks/issues/665), [#450](https://github.com/stacksjs/stacks/issues/450))
+- **dashboard**: interactive terminals into configured hosts (#960) ([3d4626b](https://github.com/stacksjs/stacks/commit/3d4626b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#960](https://github.com/stacksjs/stacks/issues/960))
+
+## 🐛 Bug Fixes
+
+- **server**: stop upgrading every websocket request in the production entry (#2864) ([4fbbf3d](https://github.com/stacksjs/stacks/commit/4fbbf3d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2864](https://github.com/stacksjs/stacks/issues/2864))
+- **dashboard**: declare the xterm stylesheet text import ([250b450](https://github.com/stacksjs/stacks/commit/250b450)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: the home page no longer 500s for an app without commerce ([95daf8b](https://github.com/stacksjs/stacks/commit/95daf8b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.73...v0.75.74)
 
 ## ✨ Features
