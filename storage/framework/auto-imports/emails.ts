@@ -9,6 +9,7 @@ export const emails = {
   'order-confirmation': '../../../resources/emails/order-confirmation.stx',
   'subscription-confirmation': '../../../resources/emails/subscription-confirmation.stx',
   'email-verification': '../defaults/resources/emails/email-verification.stx',
+  'notification': '../defaults/resources/emails/notification.stx',
   'password-changed': '../defaults/resources/emails/password-changed.stx',
   'password-reset': '../defaults/resources/emails/password-reset.stx',
   'team-invitation': '../defaults/resources/emails/team-invitation.stx',
