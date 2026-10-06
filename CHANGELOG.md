@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.83...v0.75.84)
+
+## ✨ Features
+
+- **deploy**: deploy the Cloudflare Workers an app declares ([97b18fd](https://github.com/stacksjs/stacks/commit/97b18fd)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: one reason on the Rails page's Pick Rails list ([4899506](https://github.com/stacksjs/stacks/commit/4899506)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.82...v0.75.83)
 
 ## 💥 Breaking Changes
