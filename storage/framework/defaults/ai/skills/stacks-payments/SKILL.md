@@ -87,7 +87,7 @@ const upgrade = await Payment.subscriptionCheckout(user, 'price_xxx', {
 })
 ```
 
-Send the payer to `session.url`. `reference` and `metadata` are copied onto the payment or subscription the checkout creates. Return URLs must be on the app's origin.
+Send the payer to `session.url`. `trialDays` starts a subscription checkout with a trial. `reference` and `metadata` are copied onto the payment or subscription the checkout creates. Return URLs must be on the app's origin.
 
 ### Subscriptions
 

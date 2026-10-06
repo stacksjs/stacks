@@ -190,6 +190,7 @@ describe('Adyen payments', () => {
     await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], cancelUrl: 'https://app.test/cancel' })).rejects.toThrow('separate cancelUrl')
     await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], allowPromotionCodes: true })).rejects.toThrow('promotion codes')
     await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], automaticTax: true })).rejects.toThrow('automatic tax')
+    await expect(driver.checkout(payer, { ...base, mode: 'payment', lines: [], trialDays: 14 })).rejects.toThrow('subscription checkout')
     const error = await driver.subscribe().catch(e => e)
     expect(error).toBeInstanceOf(PaymentUnsupportedError)
     expect(error).toMatchObject({ driver: 'adyen', operation: 'subscriptions' })
@@ -333,6 +334,32 @@ describe('the Stripe driver', () => {
       // On the PaymentIntent too, which is what payment_intent.* webhooks read.
       payment_intent_data: { metadata: { reference: 'order-3' } },
     })
+  })
+
+  it('starts a subscription checkout with a trial, beside the carried metadata', async () => {
+    const { driver, calls } = stripeDriver()
+    await driver.checkout(payer, {
+      mode: 'subscription',
+      lines: [{ price: 'price_pro', quantity: 1 }],
+      successUrl: 'https://app.test/welcome',
+      metadata: { plan: 'pro' },
+      trialDays: 14,
+    })
+    expect(calls.find(([name]) => name === 'createCheckout')![1][1]).toMatchObject({
+      subscription_data: { metadata: { plan: 'pro' }, trial_period_days: 14 },
+    })
+
+    const plain = stripeDriver()
+    await plain.driver.checkout(payer, { mode: 'subscription', lines: [{ price: 'price_pro', quantity: 1 }], successUrl: 'https://app.test/welcome', trialDays: 7 })
+    expect(plain.calls.find(([name]) => name === 'createCheckout')![1][1]).toMatchObject({ subscription_data: { trial_period_days: 7 } })
+  })
+
+  it('refuses a trial on anything but a subscription, or one that is not whole days', async () => {
+    const { driver } = stripeDriver()
+    const base = { lines: [{ price: 'price_pro', quantity: 1 }], successUrl: 'https://app.test/welcome' }
+    await expect(driver.checkout(payer, { ...base, mode: 'payment', trialDays: 14 })).rejects.toThrow('subscription checkout')
+    await expect(driver.checkout(payer, { ...base, mode: 'subscription', trialDays: 1.5 })).rejects.toThrow('whole number')
+    await expect(driver.checkout(payer, { ...base, mode: 'subscription', trialDays: 0 })).rejects.toThrow('whole number')
   })
 
   it('carries a subscription checkout\'s metadata onto the subscription, with promotion codes and tax', async () => {

@@ -260,6 +260,10 @@ export class StripeDriver implements PaymentDriver {
   }
 
   async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
+    if (request.trialDays !== undefined && (!Number.isSafeInteger(request.trialDays) || request.trialDays < 1))
+      throw new TypeError('trialDays is a whole number of days, at least 1.')
+    if (request.trialDays && request.mode !== 'subscription')
+      throw new TypeError('trialDays applies to a subscription checkout.')
     const customer = await this.ops.customer(payer)
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = request.lines.map((line) => {
       if ('price' in line)
@@ -287,7 +291,9 @@ export class StripeDriver implements PaymentDriver {
       ...(request.reference ? { client_reference_id: request.reference } : {}),
       ...(request.metadata ? { metadata: request.metadata } : {}),
       ...(hasCarried && request.mode === 'payment' ? { payment_intent_data: { metadata: carried } } : {}),
-      ...(hasCarried && request.mode === 'subscription' ? { subscription_data: { metadata: carried } } : {}),
+      ...(request.mode === 'subscription' && (hasCarried || request.trialDays)
+        ? { subscription_data: { ...(hasCarried ? { metadata: carried } : {}), ...(request.trialDays ? { trial_period_days: request.trialDays } : {}) } }
+        : {}),
       ...(hasCarried && request.mode === 'setup' ? { setup_intent_data: { metadata: carried } } : {}),
       ...(request.allowPromotionCodes ? { allow_promotion_codes: true } : {}),
       ...(request.automaticTax ? { automatic_tax: { enabled: true } } : {}),

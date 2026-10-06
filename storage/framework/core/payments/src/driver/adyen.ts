@@ -298,6 +298,8 @@ export class AdyenDriver implements PaymentDriver {
   }
 
   async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
+    if (request.trialDays && request.mode !== 'subscription')
+      throw new TypeError('trialDays applies to a subscription checkout.')
     if (request.mode === 'subscription')
       throw new PaymentUnsupportedError('adyen', 'subscription checkout', 'Adyen has no subscriptions; store a card with mode "setup" and charge it on your schedule')
     if (request.cancelUrl && request.cancelUrl !== request.successUrl)

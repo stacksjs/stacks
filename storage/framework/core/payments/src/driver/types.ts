@@ -113,6 +113,8 @@ export interface CheckoutRequest {
    * subscription - so a later webhook about either can be attributed.
    */
   metadata?: Record<string, string>
+  /** In `subscription` mode, days before the first charge. */
+  trialDays?: number
   /** Let the payer enter a promotion code. Stripe only. */
   allowPromotionCodes?: boolean
   /** Have the provider calculate tax. Stripe only (Stripe Tax). */
