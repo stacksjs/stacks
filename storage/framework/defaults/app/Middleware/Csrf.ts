@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { HttpError } from '@stacksjs/error-handling/http-error'
 import type { EnhancedRequest } from '@stacksjs/router'
-import { Middleware } from '@stacksjs/router/middleware'
+import { Middleware, parseBearerToken } from '@stacksjs/router/middleware'
 
 /**
  * CSRF Protection Middleware (default-on for unsafe methods)
@@ -318,8 +318,9 @@ function safeEqual(a: string, b: string): boolean {
  * an ambient cookie credential, so cross-site forgery doesn't apply).
  */
 function hasBearerToken(req: Request): boolean {
-  const auth = req.headers.get('authorization')
-  return typeof auth === 'string' && /^bearer /i.test(auth)
+  // The same parser Auth uses, so a request is exempt here exactly when Auth
+  // will authenticate it by that token rather than by its cookie.
+  return parseBearerToken(req.headers.get('authorization')) !== null
 }
 
 /**

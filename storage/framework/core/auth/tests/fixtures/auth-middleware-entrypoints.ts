@@ -31,6 +31,9 @@ try {
   const cookieName = cookie.authCookieName()
   for (const [headers, expected, hasToken] of [
     [{ authorization: 'Bearer valid-bearer', cookie: `${cookieName}=valid-cookie; session_id=valid-session` }, bearerUser, true],
+    // The scheme is case-insensitive, as the CSRF check reads it.
+    [{ authorization: 'bearer valid-bearer', cookie: `${cookieName}=valid-cookie` }, bearerUser, true],
+    [{ authorization: 'BEARER valid-bearer' }, bearerUser, true],
     [{ cookie: `${cookieName}=valid-cookie; session_id=valid-session` }, cookieUser, true],
     [{ cookie: 'session_id=valid-session' }, sessionUser, false],
   ] as const) {
@@ -45,6 +48,9 @@ try {
   for (const headers of [
     {},
     { authorization: 'Bearer invalid', cookie: `${cookieName}=valid-cookie` },
+    // A lowercase scheme used to carry no token, so the request authenticated
+    // by its cookie - with CSRF already skipped for it as token-authenticated.
+    { authorization: 'bearer invalid', cookie: `${cookieName}=valid-cookie` },
     { cookie: `${cookieName}=invalid; session_id=valid-session` },
     { cookie: 'session_id=invalid' },
   ]) {
@@ -54,7 +60,7 @@ try {
       assert.equal(req._authenticatedUser, undefined)
     })
   }
-  assert.equal(tokenSpy.mock.calls.length, 4)
+  assert.equal(tokenSpy.mock.calls.length, 7)
   assert.equal(sessionSpy.mock.calls.length, 2)
   console.log('PASS entrypoint identity, credential precedence, request state and refusals')
 }

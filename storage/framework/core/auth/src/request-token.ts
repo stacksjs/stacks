@@ -1,3 +1,4 @@
+import { parseBearerToken } from '@stacksjs/bun-router'
 import { authCookieToken } from './cookie'
 
 /**
@@ -32,13 +33,16 @@ export interface TokenBearingRequest {
 export function requestToken(request: TokenBearingRequest | null | undefined): string | null {
   let token: string | undefined | null = request?.bearerToken?.()
 
-  if (!token) {
-    const header = request?.headers?.get?.('authorization') || request?.headers?.get?.('Authorization')
-    if (typeof header === 'string' && header.startsWith('Bearer '))
-      token = header.substring(7)
-  }
+  // Read case-insensitively, as the CSRF check reads it. Requiring exactly
+  // `Bearer ` meant `bearer abc` carried no token, so this fell through to
+  // the auth cookie - for a request CSRF had exempted as token-authenticated.
+  const header = request?.headers?.get?.('authorization') ?? null
+  if (!token)
+    token = parseBearerToken(header)
 
-  if (!token && request?.headers)
+  // An Authorization header that names a bearer token decides, even when the
+  // token is bad: it is never traded for the cookie beside it.
+  if (!token && request?.headers && !/^\s*bearer\b/i.test(header ?? ''))
     token = authCookieToken({ headers: request.headers })
 
   return token || null

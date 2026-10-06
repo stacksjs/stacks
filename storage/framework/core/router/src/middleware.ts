@@ -1,5 +1,8 @@
 import type { EnhancedRequest, MiddlewareHandler } from '@stacksjs/bun-router'
 
+/** The one reader of `Authorization: Bearer …` - Auth and CSRF must agree on it. */
+export { parseBearerToken } from '@stacksjs/bun-router'
+
 /**
  * Middleware class for defining route middleware
  *

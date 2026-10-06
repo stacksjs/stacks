@@ -2,22 +2,20 @@ import { Auth } from '@stacksjs/auth/authentication'
 import { authCookieName } from '@stacksjs/auth/cookie'
 import { sessionUser } from '@stacksjs/auth/session-auth'
 import { HttpError } from '@stacksjs/error-handling'
-import { Middleware } from '@stacksjs/router'
+import { Middleware, parseBearerToken } from '@stacksjs/router'
 
+/**
+ * The request's bearer token, read the way the CSRF check reads it: the
+ * scheme name is case-insensitive. This required exactly `Bearer `, so
+ * `bearer abc` carried no token here while CSRF treated the request as
+ * token-authenticated and exempt - and authentication then fell back to the
+ * session cookie, a cookie-authenticated request with CSRF skipped.
+ */
 function bearerToken(request: any): string | null {
-  if (typeof request.bearerToken === 'function') {
-    const token = request.bearerToken()
-    if (token)
-      return token
-  }
-
   const header
     = (typeof request.header === 'function' && request.header('authorization'))
       || request.headers?.get?.('authorization')
-      || request.headers?.get?.('Authorization')
-  return typeof header === 'string' && header.startsWith('Bearer ')
-    ? header.slice(7)
-    : null
+  return parseBearerToken(typeof header === 'string' ? header : null)
 }
 
 async function stampTokenUser(request: any, token: string): Promise<void> {

@@ -20,7 +20,7 @@
 import process from 'node:process'
 import type { DbWriteResult } from '@stacksjs/database/runtime'
 import type { EnhancedRequest } from '@stacksjs/router'
-import { route } from '@stacksjs/router'
+import { parseBearerToken, route } from '@stacksjs/router'
 import { env } from '@stacksjs/env'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
@@ -396,10 +396,7 @@ function bearerOf(req: EnhancedRequest): string | null {
     const t = fn.call(req)
     if (t) return t
   }
-  const auth = req.headers?.get?.('authorization') || req.headers?.get?.('Authorization') || ''
-  if (typeof auth === 'string' && auth.startsWith('Bearer '))
-    return auth.substring(7)
-  return null
+  return parseBearerToken(req.headers?.get?.('authorization') ?? null)
 }
 
 // Helper: resolve the authed user via the @stacksjs/auth façade — used by the
