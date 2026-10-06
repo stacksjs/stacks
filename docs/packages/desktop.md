@@ -119,9 +119,11 @@ so treat any page the window can navigate to as able to call those.
 - **No secret-storage API.** Stacks does not wrap the Keychain, Credential Manager or
   Secret Service. An app that holds tokens needs its own.
 - **Updates are staged, not installed.** `stageDesktopUpdate` refuses a manifest without
-  a valid Ed25519 signature from a trusted key, refuses plain HTTP outside loopback,
-  checks the exact size and SHA-256, then writes the file with mode `0700` through a
-  temporary name and an atomic rename. Applying it is the caller's job.
+  a valid Ed25519 signature from a trusted key, refuses a build for another platform or
+  architecture, refuses plain HTTP outside loopback, checks the exact size and SHA-256,
+  then writes the file with mode `0700` through a temporary name and an atomic rename. A
+  failed download, check or write leaves the update staged before it untouched and no
+  partial file behind. Applying it is the caller's job.
 
 ### Protocol handlers
 
