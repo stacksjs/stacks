@@ -32,6 +32,7 @@ import {
   pushNotifications as craftPushNotifications,
   secureStorage as craftSecureStorage,
   share as craftShare,
+  speech as craftSpeech,
   watchConnectivity as craftWatchConnectivity,
 } from 'craft-native/mobile'
 
@@ -56,6 +57,7 @@ import type {
   PushNotificationsApi,
   SecureStorageApi,
   ShareApi,
+  SpeechApi,
   WatchConnectivityApi,
 } from './types'
 
@@ -118,6 +120,12 @@ export const deepLinks: DeepLinksApi = {
   },
 }
 export const keepAwake: KeepAwakeApi = craftKeepAwake
+/**
+ * Short spoken cues ("Rest, 15 seconds"). In the app the voice ducks the
+ * user's music and plays with the silent switch on; in a browser it falls back
+ * to the Web Speech API.
+ */
+export const speech: SpeechApi = craftSpeech
 export const network: NetworkApi = craftNetwork
 export const pushNotifications: PushNotificationsApi = craftPushNotifications
 export const health: HealthApi = craftHealth
@@ -278,6 +286,7 @@ export const mobile: MobileApi = {
   appReview,
   deepLinks,
   keepAwake,
+  speech,
   network,
   pushNotifications,
   health,

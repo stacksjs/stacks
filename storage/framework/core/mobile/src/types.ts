@@ -70,6 +70,7 @@ export interface MobileApi {
   appReview: AppReviewApi
   deepLinks: DeepLinksApi
   keepAwake: KeepAwakeApi
+  speech: SpeechApi
   network: NetworkApi
   pushNotifications: PushNotificationsApi
   health: HealthApi
@@ -267,6 +268,23 @@ export interface NotificationsApi {
 export interface KeepAwakeApi {
   enable: () => Promise<void>
   disable: () => Promise<void>
+}
+
+export interface SpeechOptions {
+  /** 0.5 to 2; 1 is a normal speaking rate. */
+  rate?: number
+  /** A BCP-47 language tag; the device's language when left out. */
+  language?: string
+  /** Stop whatever is being said first. Defaults to true. */
+  interrupt?: boolean
+}
+
+export interface SpeechApi {
+  /** Whether anything can speak here: the app's voice or the browser's. */
+  isAvailable: () => boolean
+  /** Speaks, and settles when it ends: true when spoken, false when stopped. */
+  speak: (text: string, options?: SpeechOptions) => Promise<boolean>
+  stop: () => Promise<void>
 }
 
 export interface DeepLinksApi {

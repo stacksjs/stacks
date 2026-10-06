@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
+import { craftBuilderSpecifier } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { toCraftAndroidConfig, validateAndroidMobileConfig } from './android-config'
 import { resolveMobilePath } from './ios-config'
@@ -30,8 +31,7 @@ async function loadCraftAndroidBuilder(): Promise<CraftAndroidBuilder> {
   const explicit = process.env.CRAFT_ANDROID_SRC
   try {
     if (explicit) return await import(pathToFileURL(explicit).href) as CraftAndroidBuilder
-    const packageEntry = 'craft-native/android'
-    return await import(packageEntry) as CraftAndroidBuilder
+    return await import(craftBuilderSpecifier('android', projectPath())) as CraftAndroidBuilder
   }
   catch (error) {
     throw new Error(

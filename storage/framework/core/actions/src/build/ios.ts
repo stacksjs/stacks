@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
+import { craftBuilderSpecifier } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 
@@ -31,8 +32,7 @@ async function loadCraftIosBuilder(): Promise<CraftIosBuilder> {
   const explicit = process.env.CRAFT_IOS_SRC
   try {
     if (explicit) return await import(pathToFileURL(explicit).href) as CraftIosBuilder
-    const moduleName = 'craft-native/ios'
-    return await import(moduleName) as CraftIosBuilder
+    return await import(craftBuilderSpecifier('ios', projectPath())) as CraftIosBuilder
   }
   catch (error) {
     throw new Error(
