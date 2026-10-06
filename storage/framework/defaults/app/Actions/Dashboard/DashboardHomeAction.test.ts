@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { orderActivityStatus, serializeHealthCheck, summarizeHttpRequests } from './DashboardHomeAction'
+import { homeStats, orderActivityStatus, serializeHealthCheck, settleEach, summarizeHttpRequests } from './DashboardHomeAction'
 
 describe('dashboard HTTP metrics', () => {
   it('summarizes captured requests without fake values', () => {
@@ -37,5 +37,37 @@ describe('dashboard HTTP metrics', () => {
     expect(orderActivityStatus('cancelled')).toBe('warning')
     expect(orderActivityStatus('failed')).toBe('warning')
     expect(orderActivityStatus('preparing')).toBe('success')
+  })
+})
+
+describe('dashboard home queries', () => {
+  it('turns a query that throws before returning a promise into a rejected entry', async () => {
+    // What `Product.count()` does with commerce off: the model is not loaded,
+    // `count` is undefined, and calling it throws synchronously. Evaluated as
+    // `Promise.allSettled([Product.count(), ...])` that escaped allSettled and
+    // returned a 500 for the whole page.
+    const unloaded = {} as { count: () => Promise<number> }
+    const [users, products] = await settleEach([async () => 3, () => unloaded.count()] as const)
+
+    expect(users).toEqual({ status: 'fulfilled', value: 3 })
+    expect(products.status).toBe('rejected')
+  })
+
+  it('shows commerce numbers only when commerce is on', () => {
+    const users = { status: 'fulfilled', value: 12 } as const
+    expect(homeStats({ users }, false)).toEqual([{ label: 'Total Users', value: '12', color: 'blue' }])
+
+    const on = homeStats({
+      users,
+      products: { status: 'fulfilled', value: 4 },
+      revenue: { status: 'fulfilled', value: 1250 },
+      orders: { status: 'rejected', reason: new Error('down') },
+    }, true)
+    expect(on.map(stat => [stat.label, stat.value])).toEqual([
+      ['Total Users', '12'],
+      ['Products', '4'],
+      ['Revenue', '$1,250'],
+      ['Orders', 'Unavailable'],
+    ])
   })
 })
