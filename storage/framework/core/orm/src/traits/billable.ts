@@ -69,16 +69,12 @@ async function driver(): Promise<PaymentDriver> {
 
 /**
  * Refuse a Stripe-only method when the app is configured for another
- * provider, naming it - rather than reaching Stripe with keys the app does
- * not have, or quietly mixing two providers' customers.
+ * provider, naming it. The check is the payments package's, shared with the
+ * Payment facade, so both answer the same question the same way.
  */
 async function requireStripe(operation: string): Promise<void> {
-  const { config } = await import('@stacksjs/config')
-  const configured = (config as { payment?: { driver?: string } }).payment?.driver ?? 'stripe'
-  if (configured !== 'stripe') {
-    const { PaymentUnsupportedError } = await import('@stacksjs/payments')
-    throw new PaymentUnsupportedError(configured, operation, 'it is a Stripe-only method')
-  }
+  const { assertStripeDriver } = await import('@stacksjs/payments')
+  assertStripeDriver(operation)
 }
 
 export function createBillableMethods(_tableName: string) {

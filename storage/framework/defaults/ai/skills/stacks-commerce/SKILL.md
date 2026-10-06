@@ -230,11 +230,12 @@ straight-line distance by a detour factor and returns `null` for a stationary
 courier rather than `Infinity`.
 
 ## Integration with Payments
-Commerce works with `@stacksjs/payments` for Stripe integration:
+Commerce takes payments through `@stacksjs/payments`, on whichever provider `config.payment.driver` names:
 ```typescript
 import { Payment } from '@stacksjs/payments'
-await Payment.charge(customer, order.totalAmount, paymentMethodId)
+await Payment.charge(customer, { amount: order.totalAmount, currency: 'usd' }, paymentMethodId, { reference: `order-${order.id}` })
 ```
+The provider's webhook reaches orders through `POST /webhooks/payments` (see `stacks-payments`).
 
 ## Dashboard Routes
 All commerce models have dashboard views at `/dashboard/commerce/*`.

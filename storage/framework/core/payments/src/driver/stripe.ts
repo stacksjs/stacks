@@ -103,10 +103,25 @@ function subscriptionStatus(status: Stripe.Subscription.Status): SubscriptionSta
 
 const INTERVALS = new Set<string>(['day', 'week', 'month', 'year'])
 
-export function summarizeSubscription(subscription: Stripe.Subscription): SubscriptionSummary {
+/**
+ * When the current billing period ends, in Unix seconds.
+ *
+ * Read from the subscription's item: Stripe moved `current_period_end` there
+ * in API 2025-03-31.basil, and the subscription no longer carries it. Reading
+ * the subscription's own field left `ends_at` empty on every row stored since.
+ */
+export function subscriptionPeriodEnd(subscription: Stripe.Subscription): number | undefined {
   const item = subscription.items?.data?.[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined
-  // Newer API versions moved the period onto the item.
-  const periodEnd = item?.current_period_end ?? (subscription as { current_period_end?: number }).current_period_end
+  const fromItem = item?.current_period_end
+  if (typeof fromItem === 'number')
+    return fromItem
+  const legacy = (subscription as unknown as { current_period_end?: unknown }).current_period_end
+  return typeof legacy === 'number' ? legacy : undefined
+}
+
+export function summarizeSubscription(subscription: Stripe.Subscription): SubscriptionSummary {
+  const item = subscription.items?.data?.[0]
+  const periodEnd = subscriptionPeriodEnd(subscription)
   const price = item?.price
   // The first invoice's confirmation secret, when it was expanded and the
   // subscription is still waiting on the payer (3-D Secure, a declined card).

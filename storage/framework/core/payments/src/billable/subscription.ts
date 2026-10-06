@@ -2,13 +2,14 @@ import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database/runtime'
 import { HttpError } from '@stacksjs/error-handling'
-import { isUniqueViolation } from '@stacksjs/orm'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 
 type SubscriptionsTable = Record<string, unknown>
 
 import { stripe } from '../drivers/stripe'
 import { manageCustomer } from './customer'
 import { managePrice } from './price'
+import { subscriptionPeriodEnd } from '../driver/stripe'
 import { stacksIdempotencyKey } from '../idempotency'
 
 export interface SubscriptionManager {
@@ -22,6 +23,12 @@ export interface SubscriptionManager {
    * the mismatch.
    */
   cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCancelParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  /**
+   * Stop renewing: the customer keeps what they paid for until the period
+   * ends, then Stripe cancels it. The stored row stays `active` - it still
+   * entitles - and records when access ends in `ends_at`.
+   */
+  cancelAtPeriodEnd: (subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   retrieve: (user: UserModel, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>
@@ -49,6 +56,15 @@ export const INCOMPLETE_STATUSES = ['incomplete'] as const
  * subscription failed.
  */
 export const SUBSCRIPTION_CREATE_EXPAND = ['latest_invoice.confirmation_secret'] as const
+
+/**
+ * A Stripe timestamp (Unix seconds) as a database timestamp. These columns
+ * are timestamps, and were written the raw seconds as text (`"1790000000"`),
+ * which nothing reading them as dates could use.
+ */
+export function stripeTimestamp(seconds: number | null | undefined): string | undefined {
+  return typeof seconds === 'number' ? formatDate(new Date(seconds * 1000)) : undefined
+}
 
 export const manageSubscription: SubscriptionManager = (() => {
   async function create(
@@ -185,6 +201,18 @@ export const manageSubscription: SubscriptionManager = (() => {
     return updatedSubscription
   }
 
+  async function cancelAtPeriodEnd(subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
+    const subscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true }, {
+      idempotencyKey: stacksIdempotencyKey('subscription.cancel_at_period_end', subscriptionId),
+    })
+
+    const endsAt = stripeTimestamp(subscriptionPeriodEnd(subscription))
+    if (endsAt)
+      await db.updateTable('subscriptions').set({ ends_at: endsAt }).where('provider_id', '=', subscriptionId).executeTakeFirst()
+
+    return subscription
+  }
+
   async function retrieve(user: UserModel, subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
     if (!manageCustomer.hasStripeId(user)) {
       throw new Error('Customer does not exist in Stripe')
@@ -257,10 +285,10 @@ export const manageSubscription: SubscriptionManager = (() => {
       provider_status: options.status,
       provider_price_id: firstItem.price.id,
       quantity: firstItem.quantity,
-      trial_ends_at: options.trial_end != null ? String(options.trial_end) : undefined,
-      ends_at: (options as unknown as Record<string, unknown>).current_period_end != null ? String((options as unknown as Record<string, unknown>).current_period_end) : undefined,
+      trial_ends_at: stripeTimestamp(options.trial_end),
+      ends_at: stripeTimestamp(subscriptionPeriodEnd(options)),
       provider_type: 'stripe',
-      last_used_at: (options as unknown as Record<string, unknown>).current_period_end != null ? String((options as unknown as Record<string, unknown>).current_period_end) : undefined,
+      last_used_at: stripeTimestamp(subscriptionPeriodEnd(options)),
     })
 
     // A duplicate provider_id (e.g. a retried Stripe webhook delivery) hits
@@ -309,5 +337,5 @@ export const manageSubscription: SubscriptionManager = (() => {
     ) as Partial<T>
   }
 
-  return { create, update, isValid, isIncomplete, cancel, retrieve }
+  return { create, update, isValid, isIncomplete, cancel, cancelAtPeriodEnd, retrieve }
 })()

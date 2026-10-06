@@ -13,6 +13,7 @@ import { constructEvent } from '../billable/webhook'
 import { stripe } from '../drivers/stripe'
 import { freshIdempotencyKey } from '../idempotency'
 import { AdyenDriver } from './adyen'
+import { PaymentUnsupportedError } from './types'
 import { StripeDriver } from './stripe'
 
 export * from './adyen'
@@ -31,7 +32,7 @@ export const defaultStripeOperations: StripeOperations = {
   deletePaymentMethod: (payer, paymentMethodId) => managePaymentMethod.deletePaymentMethod(payer as unknown as UserModel, paymentMethodId),
   subscribe: (payer, type, lookupKey) => manageSubscription.create(payer as unknown as UserModel, type, lookupKey, {}),
   cancelSubscription: (subscriptionId, atPeriodEnd) => atPeriodEnd
-    ? stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true })
+    ? manageSubscription.cancelAtPeriodEnd(subscriptionId)
     : manageSubscription.cancel(subscriptionId),
   listSubscriptions: async customerId => (await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })).data,
   constructEvent: (payload, signature, secret) => constructEvent(payload, signature, secret),
@@ -70,6 +71,22 @@ export function adyenConfig(settings: Partial<AdyenConfig> = {}, env: Record<str
   }
 }
 
+/** The driver `config.payment.driver` names: `stripe` unless it says otherwise. */
+export function configuredPaymentDriver(): string {
+  return ((config as { payment?: PaymentSettings }).payment ?? {}).driver ?? 'stripe'
+}
+
+/**
+ * Refuse a Stripe-only operation when the app pays through another provider,
+ * naming the operation - rather than reaching Stripe with keys the app does
+ * not have, or quietly mixing two providers' customers.
+ */
+export function assertStripeDriver(operation: string): void {
+  const configured = configuredPaymentDriver()
+  if (configured !== 'stripe')
+    throw new PaymentUnsupportedError(configured, operation, 'it is a Stripe-only operation')
+}
+
 /**
  * The payment driver `config.payment.driver` names - `stripe` unless it says
  * otherwise - or the one named here. This is the first thing to read that
@@ -77,7 +94,7 @@ export function adyenConfig(settings: Partial<AdyenConfig> = {}, env: Record<str
  */
 export function paymentDriver(name?: string): PaymentDriver {
   const settings = ((config as { payment?: PaymentSettings }).payment ?? {})
-  const chosen = name ?? settings.driver ?? 'stripe'
+  const chosen = name ?? configuredPaymentDriver()
 
   if (chosen === 'stripe') {
     return new StripeDriver({

@@ -58,7 +58,7 @@ An operation a driver cannot do throws `PaymentUnsupportedError`, naming the dri
 
 Set `driver: 'adyen'` in `config/payment.ts` and `ADYEN_API_KEY`, `ADYEN_MERCHANT_ACCOUNT` and `ADYEN_HMAC_KEY` (the hex key of your standard webhook). `ADYEN_ENVIRONMENT=live` also needs `ADYEN_LIVE_URL_PREFIX`, your account's endpoint prefix from the Customer Area. The driver uses Checkout API v72.
 
-The Stripe-specific functions below, the raw `stripe` client and the `manage*` modules remain Stripe's API.
+The Payment facade's Stripe-only functions (below), the raw `stripe` client and the `manage*` modules remain Stripe's API.
 
 ### Billable models
 
@@ -110,32 +110,54 @@ Set `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` in the environment. `config
 
 Never hardcode API keys or webhook secrets in application source.
 
-## Charge a customer
+## The Payment facade
+
+`Payment` from `@stacksjs/payments` has two halves.
+
+The provider-neutral half goes through the configured driver, so the same call works on Stripe and Adyen. Money is `{ amount, currency }` in minor units, and results are the driver's own shapes:
 
 ```ts
 import { Payment } from '@stacksjs/payments'
 
-const intent = await Payment.charge(user, 2999, 'pm_example', {
-  currency: 'usd',
+const result = await Payment.charge(user, { amount: 2999, currency: 'usd' }, 'pm_example', {
+  reference: `order-${order.id}`,
 })
-```
 
-Amounts are integers in the smallest currency unit. Use `Payment.toCents()`, `Payment.toDollars()`, and `Payment.formatAmount()` for conversion and display.
+const session = await Payment.checkout(user, {
+  mode: 'payment',
+  lines: [{ price: 'price_example', quantity: 1 }],
+  successUrl: 'https://example.com/billing/success',
+  cancelUrl: 'https://example.com/billing',
+})
 
-## Create checkout and subscriptions
-
-```ts
-const checkout = await Payment.checkout(user, [
-  { price: 'price_example', quantity: 1 },
-], {
-  success_url: 'https://example.com/billing/success',
-  cancel_url: 'https://example.com/billing',
+const upgrade = await Payment.subscriptionCheckout(user, 'price_pro', {
+  successUrl: 'https://example.com/welcome',
+  cancelUrl: 'https://example.com/pricing',
 })
 
 const subscription = await Payment.subscribe(user, 'premium-monthly')
+await Payment.cancelSubscription(subscription.id, { atPeriodEnd: true })
 ```
 
-Subscription creation resolves the Stripe price by lookup key. The user must have a Stripe customer ID before checkout.
+| Provider-neutral | Returns |
+| --- | --- |
+| `charge(payer, money, paymentMethod, options)` | `PaymentResult` |
+| `createPayment(payer, money, options)` | `PaymentResult`, with the browser's `clientConfirmation` |
+| `refund(paymentId, { amount?, reason? })` | `RefundResult` |
+| `checkout(payer, request)`, `subscriptionCheckout(payer, price, options)` | `CheckoutSession` |
+| `subscribe(payer, price, { type? })` | `SubscriptionSummary` |
+| `cancelSubscription(id, { atPeriodEnd? })` | `SubscriptionSummary` |
+| `subscriptions(payer)` | `SubscriptionSummary[]` |
+| `hasActiveSubscription(user, type?)` | `boolean`, from the local `subscriptions` table |
+| `getOrCreateCustomer(payer)` | `Customer` |
+| `paymentMethods(payer)` | `StoredPaymentMethod[]` |
+| `removePaymentMethod(payer, providerId)` | nothing |
+
+The Stripe-only half keeps Stripe's types and throws `PaymentUnsupportedError`, naming the operation, under another driver: `changeSubscription`, `updateCustomer`, `deleteCustomer`, `addPaymentMethod`, `setDefaultPaymentMethod`, `createSetupIntent`, the invoice functions, `createProduct`, `getPrice`, `listProducts`, the coupon and promotion-code functions, and `billingPortal`. Anything Stripe-specific the neutral half cannot say, such as a Connect destination charge or `prorate` on a cancellation, is the `manage*` modules' job.
+
+`cancelSubscription(id)` cancels now; `{ atPeriodEnd: true }` stops renewal and keeps the customer entitled until the period ends, recording that date in the subscription's `ends_at`. It replaces `cancelSubscription(id, immediately)`, whose `false` also cancelled at once, only with a proration.
+
+Amounts are integers in the smallest currency unit. Use `Payment.toCents()`, `Payment.toDollars()`, and `Payment.formatAmount()` for conversion and display.
 
 ## Process signed webhooks
 

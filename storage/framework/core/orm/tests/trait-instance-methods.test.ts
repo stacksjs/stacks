@@ -71,6 +71,9 @@ const { BILLABLE_INSTANCE_METHODS, createBillableMethods, isBillable, Subscripti
 // once the first has been imported, so the tests share this one.
 type PaymentsStub = Record<string, (...args: any[]) => unknown>
 const { PaymentUnsupportedError } = await import('../../payments/src/driver/types')
+// The real check, which reads config.payment.driver; the stub below is only
+// in the way of the Stripe calls behind it.
+const { assertStripeDriver } = await import('../../payments/src/driver/index')
 // The configured driver the provider-neutral methods reach. Each test fills in
 // what it needs; every call lands in `driverCalls`.
 const driverCalls: Array<[string, unknown[]]> = []
@@ -93,6 +96,7 @@ const payments = {
   manageSubscription: {} as PaymentsStub,
   paymentDriver: () => recordingDriver,
   PaymentUnsupportedError,
+  assertStripeDriver,
 }
 mock.module('@stacksjs/payments', () => payments)
 
