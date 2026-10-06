@@ -55,9 +55,10 @@ import { Middleware } from '@stacksjs/router'
  * **Credentials safety**
  *
  * When `credentials: true`, the spec forbids `Access-Control-Allow-Origin: *`.
- * In that case we echo the request's Origin (only if it matches the
- * configured allow-list) or omit the header entirely — never `*`. This
- * prevents the most common credentials-bypass misconfiguration.
+ * In that case we echo the request's Origin only when it is on an explicit
+ * allow-list (or a predicate accepts it), and omit the header otherwise -
+ * never `*`. A wildcard policy with credentials allows no origin at all,
+ * since reflecting every Origin would hand any site credentialed access.
  *
  * @example
  * ```ts
@@ -147,8 +148,18 @@ function computeAllowOrigin(
   if (!isOriginAllowed(requestOrigin, cfg.origin))
     return null
 
+  // A wildcard policy with credentials allows no origin. The spec forbids
+  // `*` beside `Allow-Credentials`, and echoing the request's Origin instead -
+  // what this did - grants every site on the internet credentialed access:
+  // any page could read a signed-in user's API responses. Name the origins
+  // that may send credentials, or turn credentials off.
+  if (cfg.credentials && cfg.origin === '*') {
+    warnWildcardWithCredentials()
+    return null
+  }
+
   // Credentials mode forbids the literal `*` per the CORS spec — browsers
-  // reject the response if both are present. Echo the actual origin
+  // reject the response if both are present. Echo the matched origin
   // instead so the Allow-Credentials response is usable.
   if (cfg.credentials)
     return requestOrigin
@@ -159,6 +170,15 @@ function computeAllowOrigin(
     return '*'
 
   return requestOrigin
+}
+
+let warnedWildcardWithCredentials = false
+
+function warnWildcardWithCredentials(): void {
+  if (warnedWildcardWithCredentials)
+    return
+  warnedWildcardWithCredentials = true
+  console.warn('[cors] `origin: \'*\'` with `credentials: true` allows no cross-origin request: list the origins that may send credentials in config/cors.ts, or set credentials to false.')
 }
 
 /**
