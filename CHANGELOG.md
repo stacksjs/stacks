@@ -1,5 +1,43 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.90...v0.75.91)
+
+## ✨ Features
+
+- **socials**: run X's consent flow from the terminal ([f4586fc](https://github.com/stacksjs/stacks/commit/f4586fc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2873](https://github.com/stacksjs/stacks/issues/2873))
+- **socials**: publishAs, so a caller names an identity and not a credential ([73218d8](https://github.com/stacksjs/stacks/commit/73218d8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2873](https://github.com/stacksjs/stacks/issues/2873))
+- **socials**: the four remaining platforms' credential shapes ([c206d3e](https://github.com/stacksjs/stacks/commit/c206d3e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859), [#2873](https://github.com/stacksjs/stacks/issues/2873))
+- **dashboard**: the operator can see the screenshot that was sent ([632a4fa](https://github.com/stacksjs/stacks/commit/632a4fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **dashboard**: a reviewer can attach the screenshot, by picking, dropping or pasting ([c4ebb04](https://github.com/stacksjs/stacks/commit/c4ebb04)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **dashboard**: the rules for a screenshot on a feedback card ([f0c07f9](https://github.com/stacksjs/stacks/commit/f0c07f9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **dashboard**: say something when feedback arrives ([4c30631](https://github.com/stacksjs/stacks/commit/4c30631)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **dashboard**: a feedback form for the reviewer, at the link they were sent ([7faea8f](https://github.com/stacksjs/stacks/commit/7faea8f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **buddy**: mint, list and revoke feedback links from the command line ([9bf8619](https://github.com/stacksjs/stacks/commit/9bf8619)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **commerce**: sales tax a register can show before it charges ([731191c](https://github.com/stacksjs/stacks/commit/731191c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **features**: gate card_attachments with the dashboard that owns its parent ([1eba71d](https://github.com/stacksjs/stacks/commit/1eba71d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: a card attachment on a disk that cannot sign is listed without a URL ([e7530ce](https://github.com/stacksjs/stacks/commit/e7530ce)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: read an uploaded screenshot the way the router hands it over ([6d85ee4](https://github.com/stacksjs/stacks/commit/6d85ee4)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+
+## 📝 Documentation
+
+- recount the actions, models, migrations and components agents are told about ([30a4091](https://github.com/stacksjs/stacks/commit/30a4091)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **socials**: no credential reaches a log line, a console line or an error ([3164976](https://github.com/stacksjs/stacks/commit/3164976)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2873](https://github.com/stacksjs/stacks/issues/2873))
+
+## 🔧 Chores
+
+- **deps**: refresh pantry.lock for stx 0.2.396 ([3ab33d7](https://github.com/stacksjs/stacks/commit/3ab33d7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.89...v0.75.90)
 
 ## ✨ Features
