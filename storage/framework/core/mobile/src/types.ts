@@ -142,7 +142,11 @@ export interface PhotoResult {
   mimeType: string
 }
 
-export type BiometricType = 'faceId' | 'touchId' | 'fingerprint' | 'face' | 'iris'
+/**
+ * The kind of biometric the device offers. Craft reports `'none'` as well
+ * since craft-native 0.0.119, so the type admits it.
+ */
+export type BiometricType = 'faceId' | 'touchId' | 'fingerprint' | 'face' | 'iris' | 'none'
 
 export interface Location {
   latitude: number
