@@ -18,6 +18,14 @@ describe('back navigation', () => {
 
     expect(goBack(undefined)).toBe(false)
   })
+
+  it('tells an entry the STX router pushed from the one it opened with', () => {
+    const host = (state: unknown) => ({ history: { state, back: () => {} } })
+    expect(canGoBack(host({ __stxScroll: 'a', __stxPushed: true }))).toBe(true)
+    // The router stamps its scroll token on the first entry too.
+    expect(canGoBack(host({ __stxScroll: 'a' }))).toBe(false)
+    expect(canGoBack(host({ __stxPushed: false }))).toBe(false)
+  })
 })
 
 describe('deep links', () => {

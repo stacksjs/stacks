@@ -4,9 +4,10 @@
  * A back button that links to its parent reloads the parent at the top, where
  * a phone user expects to land back where they were in the list. Going back
  * through history keeps that. It is only safe when the entry being left was
- * pushed by the app: the STX router pushes a state object, and the entry a
- * cold start (or a link from another site) opens with has none. There the
- * button follows its link instead, so it never leaves the app.
+ * pushed by the app: the STX router marks the entries it pushes, while the
+ * entry a cold start (or a link from another site) opens with carries only
+ * its scroll token, or nothing. There the button follows its link instead, so
+ * it never leaves the app.
  */
 
 import type { DeepLinksApi } from './types'
@@ -21,10 +22,21 @@ function historyHost(): HistoryHost | undefined {
   return window as unknown as HistoryHost
 }
 
+/** The STX router's mark on an entry it pushed. */
+const PUSHED_MARK = '__stxPushed'
+/** The STX router's scroll token, on every entry, the first one too. */
+const SCROLL_TOKEN = '__stxScroll'
+
 /** Whether going back stays inside this app. */
 export function canGoBack(host: HistoryHost | undefined = historyHost()): boolean {
   const state = host?.history?.state
-  return state !== null && state !== undefined
+  if (state === null || state === undefined) return false
+  if (typeof state !== 'object') return true
+  const entry = state as Record<string, unknown>
+  if (PUSHED_MARK in entry) return entry[PUSHED_MARK] === true
+  // A scroll token alone is the router stamping the entry the app opened
+  // with: going back from it leaves the app, or does nothing in a phone app.
+  return !(SCROLL_TOKEN in entry)
 }
 
 /**
