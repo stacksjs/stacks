@@ -13,7 +13,6 @@ export function seed(buddy: CLI): void {
   buddy
     .command('seed', descriptions.seed)
     .alias('db:seed')
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--only [models]', 'Comma-separated list of models to seed', { default: '' })
     .option('--except [models]', 'Comma-separated list of models to skip', { default: '' })
     .option('--only-seeders [seeders]', 'Comma-separated list of application seeder classes to run', { default: '' })

@@ -485,7 +485,6 @@ export function dev(buddy: CLI): void {
 
   buddy
     .command('dev:components', descriptions.components)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
 

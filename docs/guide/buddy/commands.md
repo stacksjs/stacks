@@ -567,7 +567,6 @@ Add a resource to the Stacks Cloud
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--jump-box` | Check for the jump box, and say how to declare one if the stack has none | boolean, optional | `false` |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:attach`
@@ -598,7 +597,6 @@ Remove all resources that were retained during the cloud deletion
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:dashboard`
@@ -646,7 +644,6 @@ Show the diff of the current, undeployed cloud changes
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:invalidate-cache`
@@ -696,7 +693,6 @@ Remove certain resources that may be re-applied at a later time
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--jump-box` | Check for the jump box, and say how to remove it from the stack | boolean, optional | `true` |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:remove`
@@ -712,7 +708,6 @@ Remove the Stacks Cloud. In case it fails, try again
 | --- | --- | --- | --- |
 | `--jump-box` | Check for the jump box, and say how to remove it from the stack | boolean, optional | `false` |
 | `-y`, `--yes` | Skip the confirmation prompt | boolean, optional | `false` |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:rename`
@@ -1425,7 +1420,6 @@ Start the Components development server
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `dev:dashboard`
@@ -2522,7 +2516,6 @@ Generate component meta information
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:core-symlink`
@@ -2589,7 +2582,6 @@ Generate IDE helpers
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:images`
@@ -2641,7 +2633,6 @@ Generate the OpenAPI specification
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:pantry-config`
@@ -2655,7 +2646,6 @@ Generate the pantry configuration file
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:types`
@@ -2698,7 +2688,6 @@ Generate VS Code custom data (custom-elements.json) for IDEs
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:web-types`
@@ -2712,7 +2701,6 @@ Generate web-types.json for IDEs
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `http`
@@ -2884,7 +2872,6 @@ Automagically lints your project codebase
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-f`, `--fix` | Automagically fixes all lint errors | boolean, optional | `false` |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--stx` | Run the stx conformance checks instead of code style | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -2899,7 +2886,6 @@ Automagically fixes all lint errors
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `list`
@@ -3735,7 +3721,6 @@ Create the queue jobs table migration
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `make:resource`
@@ -3992,7 +3977,6 @@ List all the outdated project dependencies
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `package:discover`
@@ -4801,7 +4785,6 @@ Seed your database
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--only` | Comma-separated list of models to seed | value, optional | `""` |
 | `--except` | Comma-separated list of models to skip | value, optional | `""` |
 | `--only-seeders` | Comma-separated list of application seeder classes to run | value, optional | `""` |
@@ -5370,7 +5353,6 @@ Interactive REPL with Stacks framework preloaded
 | `--print` | Evaluate, print, and exit | value, optional | `""` |
 | `--no-banner` | Skip the welcome banner | boolean, optional, negated | `true` |
 | `--preload` | Additional modules to preload (comma-separated) | value, optional | `""` |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `types:fix`
@@ -5384,7 +5366,6 @@ Fix the generated types of & for your library/libraries (not yet implemented)
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `types:generate`

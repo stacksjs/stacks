@@ -20,8 +20,14 @@ import { join } from 'node:path'
 
 const dir = join(import.meta.dir, '..', 'src', 'commands')
 
-/** Handled by the CLI framework itself rather than by any one command. */
-const framework = new Set(['verbose', 'quiet', 'debug', 'help', 'version', 'noInteraction', 'env', 'project'])
+/**
+ * Handled by the CLI framework itself rather than by any one command.
+ *
+ * `project` used to be on this list and does not belong: `--project` is not a
+ * process-wide option, it is declared per command, and 19 commands declared it
+ * while reading nothing. The exemption was hiding them (stacksjs/stacks#2875).
+ */
+const framework = new Set(['verbose', 'quiet', 'debug', 'help', 'version', 'noInteraction', 'env'])
 
 const camel = (flag: string) => flag.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
 

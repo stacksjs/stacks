@@ -1019,7 +1019,6 @@ export function cloud(buddy: CLI): void {
   buddy
     .command('cloud:add', descriptions.add)
     .option('--jump-box', 'Check for the jump box, and say how to declare one if the stack has none', { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:add` ...', options)
@@ -1074,7 +1073,6 @@ export function cloud(buddy: CLI): void {
     // to leave lying around promising it.
     .option('-y, --yes', 'Skip the confirmation prompt', { default: false })
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: false }) // TODO: implement this
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:remove` ...', options)
@@ -1240,7 +1238,6 @@ export function cloud(buddy: CLI): void {
     .command('cloud:optimize-cost', descriptions.optimizeCost)
     .option('--jump-box', 'Check for the jump box, and say how to remove it from the stack', { default: true })
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: true }) // TODO: implement this - removes the Kinesis Data Stream
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:optimize-cost` ...', options)
@@ -1278,7 +1275,6 @@ export function cloud(buddy: CLI): void {
   buddy
     .command('cloud:cleanup', descriptions.cleanUp)
     .alias('cloud:clean-up')
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:cleanup` ...', options)
@@ -1406,7 +1402,6 @@ export function cloud(buddy: CLI): void {
 
   buddy
     .command('cloud:diff', descriptions.diff)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CloudCliOptions) => {
       log.debug('Running `buddy cloud:diff` ...', options)

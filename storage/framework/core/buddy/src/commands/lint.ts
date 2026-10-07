@@ -94,7 +94,6 @@ export function lint(buddy: CLI): void {
   buddy
     .command('lint', descriptions.lint)
     .option('-f, --fix', descriptions.lintFix, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--stx', descriptions.stx, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions & { stx?: boolean }) => {
@@ -114,7 +113,6 @@ export function lint(buddy: CLI): void {
 
   buddy
     .command('lint:fix', descriptions.lintFix)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       log.debug('Running `buddy lint:fix` ...', options)

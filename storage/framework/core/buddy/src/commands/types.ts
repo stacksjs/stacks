@@ -29,7 +29,6 @@ export function types(buddy: CLI): void {
 
   buddy
     .command('types:fix', descriptions.fix)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
       // await fixTypes()

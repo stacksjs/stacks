@@ -20,7 +20,6 @@ export function tinker(buddy: CLI): void {
     .option('--print [expression]', descriptions.print, { default: '' })
     .option('--no-banner', descriptions.noBanner)
     .option('--preload [modules]', descriptions.preload, { default: '' })
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: TinkerOptions) => {
       log.debug('Running `buddy tinker` ...', options)

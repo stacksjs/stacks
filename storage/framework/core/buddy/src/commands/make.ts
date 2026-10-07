@@ -605,7 +605,6 @@ export function make(buddy: CLI): void {
 
   buddy
     .command('make:queue-table', descriptions.queueTable)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {
       log.debug('Running `buddy make queue:table` ...', options)

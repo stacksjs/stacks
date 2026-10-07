@@ -241,7 +241,6 @@ export function generate(buddy: CLI): void {
 
   buddy
     .command('generate:web-types', descriptions.webTypes)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:web-types` ...', options)
@@ -250,7 +249,6 @@ export function generate(buddy: CLI): void {
 
   buddy
     .command('generate:vscode-custom-data', descriptions.customData)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:vscode-custom-data` ...', options)
@@ -261,7 +259,6 @@ export function generate(buddy: CLI): void {
 
   buddy
     .command('generate:ide-helpers', descriptions.ideHelpers)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:ide-helpers` ...', options)
@@ -270,7 +267,6 @@ export function generate(buddy: CLI): void {
 
   buddy
     .command('generate:component-meta', descriptions.componentMeta)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:component-meta` ...', options)
@@ -279,7 +275,6 @@ export function generate(buddy: CLI): void {
 
   buddy
     .command('generate:pantry-config', descriptions.pantry)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:pantry-config` ...', options)
@@ -289,7 +284,6 @@ export function generate(buddy: CLI): void {
   buddy
     .command('generate:openapi-spec', descriptions.openApi)
     .alias('generate:openapi')
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:openapi-spec` ...', options)

@@ -13,7 +13,6 @@ export function outdated(buddy: CLI): void {
 
   buddy
     .command('outdated', descriptions.outdated)
-    .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async () => {
       log.debug('Running `buddy outdated` ...')
