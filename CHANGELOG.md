@@ -1,5 +1,38 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.89...v0.75.90)
+
+## ✨ Features
+
+- **commerce**: register, catalog and release rules for the browser ([0873a18](https://github.com/stacksjs/stacks/commit/0873a18)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: file feedback through a revocable link, without an account ([de9c4fa](https://github.com/stacksjs/stacks/commit/de9c4fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **marketing**: put the mail server on every comparison ([bdcd9a7](https://github.com/stacksjs/stacks/commit/bdcd9a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: a revocable capability token for external feedback ([14f9e3d](https://github.com/stacksjs/stacks/commit/14f9e3d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2872](https://github.com/stacksjs/stacks/issues/2872))
+- **mobile**: declaring app-bound domains now grants the app-bound APIs ([001c653](https://github.com/stacksjs/stacks/commit/001c653)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2878](https://github.com/stacksjs/stacks/issues/2878))
+- **mobile**: plumb limitNavigationsToAppBoundDomains through to Craft ([0e276b0](https://github.com/stacksjs/stacks/commit/0e276b0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2878](https://github.com/stacksjs/stacks/issues/2878))
+- **socials**: named identities, so credentials have a declared home ([4e4318a](https://github.com/stacksjs/stacks/commit/4e4318a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2873](https://github.com/stacksjs/stacks/issues/2873))
+
+## 🐛 Bug Fixes
+
+- **features**: gate feedback_tokens with the dashboard bundle that owns boards ([4bf890f](https://github.com/stacksjs/stacks/commit/4bf890f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: buddy commit stops reporting a commit it never made ([01eaefd](https://github.com/stacksjs/stacks/commit/01eaefd)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2877](https://github.com/stacksjs/stacks/issues/2877), [#2876](https://github.com/stacksjs/stacks/issues/2876))
+- **config**: config/sms.ts was read by nothing ([79da594](https://github.com/stacksjs/stacks/commit/79da594)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2876](https://github.com/stacksjs/stacks/issues/2876))
+- **buddy**: stop 19 commands advertising a --project flag they ignore ([1d6aaf9](https://github.com/stacksjs/stacks/commit/1d6aaf9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2875](https://github.com/stacksjs/stacks/issues/2875), [#2865](https://github.com/stacksjs/stacks/issues/2865))
+- **buddy**: stop the shell completions offering --force and --dry-run ([1b6335e](https://github.com/stacksjs/stacks/commit/1b6335e)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2865](https://github.com/stacksjs/stacks/issues/2865), [#2869](https://github.com/stacksjs/stacks/issues/2869))
+
+## 📝 Documentation
+
+- **ai**: refresh agent-facing counts from the tree ([7359e9d](https://github.com/stacksjs/stacks/commit/7359e9d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- regenerate the artifacts the feedback-link action needs ([d3d2f2a](https://github.com/stacksjs/stacks/commit/d3d2f2a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.88...v0.75.89)
 
 ## 🐛 Bug Fixes
