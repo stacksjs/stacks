@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.87...v0.75.88)
+
+## ✨ Features
+
+- **deploy**: Fly.io as a provider, and pull-request preview deployments ([31bd6ae](https://github.com/stacksjs/stacks/commit/31bd6ae)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1044](https://github.com/stacksjs/stacks/issues/1044), [#735](https://github.com/stacksjs/stacks/issues/735))
+- **build**: pass the app-bound domains through to the iOS app ([d16f31d](https://github.com/stacksjs/stacks/commit/d16f31d)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: tell a treadmill from a run outside, and read a typed distance ([f500d6b](https://github.com/stacksjs/stacks/commit/f500d6b)) _(by Chris <chris@stacksjs.com>)_
+- **payments**: a Lemon Squeezy driver ([15f49c5](https://github.com/stacksjs/stacks/commit/15f49c5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#536](https://github.com/stacksjs/stacks/issues/536))
+
+## 🐛 Bug Fixes
+
+- **email**: the log driver writes where the dashboard reads, in an installed app ([5f2091e](https://github.com/stacksjs/stacks/commit/5f2091e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: require ts-cloud 0.16.47, stx 0.2.389 and craft-native 0.0.119 ([1885797](https://github.com/stacksjs/stacks/commit/1885797)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.86...v0.75.87)
 
 ## ✨ Features
