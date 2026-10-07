@@ -1,6 +1,7 @@
 // Main commerce module index file
 import * as auctions from './auctions'
 import * as carts from './carts'
+import * as catalog from './catalog'
 import * as catalogImport from './imports'
 import * as coupons from './coupons'
 import * as customers from './customers'
@@ -11,6 +12,8 @@ import * as money from './money'
 import * as orders from './orders'
 import * as payments from './payments'
 import * as products from './products'
+import * as register from './register'
+import * as releases from './releases'
 import * as receipts from './receipts'
 import * as shippings from './shippings'
 import * as tax from './tax'
@@ -19,6 +22,9 @@ import * as restaurant from './waitlists/restaurant'
 
 type AuctionsModule = typeof auctions
 type CartsModule = typeof carts
+type CatalogModule = typeof catalog
+type RegisterModule = typeof register
+type ReleasesModule = typeof releases
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
 type ErrorsModule = typeof errors
@@ -38,6 +44,8 @@ export interface CommerceNamespace {
   auctions: AuctionsModule
   /** Shopping carts: the pre-order basket a customer builds before checkout. */
   carts: CartsModule
+  /** A catalog's order (category, name, sizes small to large), search and low stock. */
+  catalog: CatalogModule
   coupons: CouponsModule
   customers: CustomersModule
   errors: ErrorsModule
@@ -45,6 +53,10 @@ export interface CommerceNamespace {
   orders: OrdersModule
   payments: PaymentsModule
   products: ProductsModule
+  /** A point-of-sale register's basket, held against the stock on the shelf. */
+  register: RegisterModule
+  /** When each part of a digital product opens for a buyer: all at once, a drip, or a schedule. */
+  releases: ReleasesModule
   restaurant: RestaurantModule
   shippings: ShippingsModule
   tax: TaxModule
@@ -56,6 +68,7 @@ export interface CommerceNamespace {
 export const commerce: CommerceNamespace = {
   auctions,
   carts,
+  catalog,
   coupons,
   customers,
   devices,
@@ -65,6 +78,8 @@ export const commerce: CommerceNamespace = {
   payments,
   products,
   receipts,
+  register,
+  releases,
   restaurant,
   shippings,
   tax,
@@ -78,6 +93,7 @@ export default commerce
 export {
   auctions,
   carts,
+  catalog,
   catalogImport,
   coupons,
   customers,
@@ -89,6 +105,8 @@ export {
   payments,
   products,
   receipts,
+  register,
+  releases,
   restaurant,
   shippings,
   tax,
