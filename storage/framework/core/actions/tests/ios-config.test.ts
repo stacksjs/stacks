@@ -83,6 +83,54 @@ describe('iOS mobile build configuration', () => {
     expect(Object.values(config).includes(undefined)).toBe(false)
   })
 
+  /**
+   * Declaring app-bound domains is only half of what iOS needs. Service
+   * workers, and so offline support, are granted only to a web view that has
+   * also opted into the restriction, and `IosMobileConfig` exposed the domains
+   * without the opt-in: `WKAppBoundDomains` landed in Info.plist and changed
+   * nothing, so a service worker silently never registered
+   * (stacksjs/stacks#2878).
+   *
+   * Craft's config key drops the `s` that Apple's
+   * `limitsNavigationsToAppBoundDomains` has. That is Craft's spelling, not a
+   * typo, and correcting it here would send a key Craft does not read.
+   */
+  it('carries the app-bound navigation limit through to Craft', () => {
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      appBoundDomains: ['hq.training'],
+      limitNavigationsToAppBoundDomains: true,
+    })
+
+    expect(config.appBoundDomains).toEqual(['hq.training'])
+    expect(config.limitNavigationsToAppBoundDomains).toBe(true)
+  })
+
+  it('leaves the limit out when unset, and keeps an explicit false', () => {
+    // Absent rather than undefined, like every other option: Craft releases
+    // before 0.0.101 let an undefined erase their default. `false` is a
+    // decision, though, so it has to survive the same pruning pass - an app
+    // whose web view legitimately navigates off its own domains needs to be
+    // able to say so.
+    const unset = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      appBoundDomains: ['hq.training'],
+    })
+    expect('limitNavigationsToAppBoundDomains' in unset).toBe(false)
+
+    const off = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      limitNavigationsToAppBoundDomains: false,
+    })
+    expect(off.limitNavigationsToAppBoundDomains).toBe(false)
+  })
+
   it('rejects insecure production URLs and malformed associated domains', () => {
     expect(() => validateIosMobileConfig({
       appName: 'WildLoop',

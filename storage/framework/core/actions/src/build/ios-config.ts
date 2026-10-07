@@ -21,6 +21,7 @@ export interface CraftIosConfig {
   urlSchemes?: string[]
   trustedOrigins?: string[]
   appBoundDomains?: string[]
+  limitNavigationsToAppBoundDomains?: boolean
   associatedDomains?: string[]
   appGroups?: string[]
   appIconPath?: string
@@ -100,6 +101,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     urlSchemes: config.urlSchemes,
     trustedOrigins: [...trustedOrigins],
     appBoundDomains: config.appBoundDomains,
+    limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains,
     associatedDomains: config.associatedDomains,
     appGroups: config.appGroups,
     appIconPath: config.appIcon,

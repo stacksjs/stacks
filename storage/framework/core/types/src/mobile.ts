@@ -97,6 +97,26 @@ export interface IosMobileConfig {
    * the hosts of `trustedOrigins`; `[]` declares none.
    */
   appBoundDomains?: string[]
+  /**
+   * Confine the web view to {@link IosMobileConfig.appBoundDomains}, which is
+   * what actually turns the app-bound APIs on.
+   *
+   * Declaring the domains is only half of it. iOS grants service workers, and
+   * so offline support, only to a web view that has *also* opted into the
+   * restriction, by setting `limitsNavigationsToAppBoundDomains` on its
+   * configuration. Without this, `WKAppBoundDomains` lands in Info.plist and
+   * changes nothing, and a service worker silently never registers
+   * (stacksjs/stacks#2878).
+   *
+   * The cost is the point of the opt-in: the web view may then navigate only
+   * to those domains, so an app that legitimately sends its web view elsewhere
+   * must leave this off. Which is why it is not implied by declaring the
+   * domains.
+   *
+   * Craft's config key deliberately drops the `s` that Apple's property has;
+   * Craft maps one onto the other.
+   */
+  limitNavigationsToAppBoundDomains?: boolean
   associatedDomains?: string[]
   appGroups?: string[]
   appIcon?: string
