@@ -44,6 +44,16 @@ function resolveDialect(explicit?: Dialect): Dialect {
   if (explicit)
     return explicit
 
+  // Canonical generation promises output that is a function of the source
+  // tree alone (see `canonicalFeatures()` in @stacksjs/config), and the
+  // committed `database/types.d.ts` is checked against exactly that. Reading
+  // the dialect from the generating shell broke the promise: one developer's
+  // DB_CONNECTION=postgres committed `boolean` for every flag column, and the
+  // next sqlite run rewrote all of them (stacksjs/stacks#2879). So canonical
+  // output is written for the framework's default connection.
+  if (process.env.STACKS_CANONICAL_FEATURES === '1')
+    return 'sqlite'
+
   // The same signal `@stacksjs/orm` derives its own connection from, so the
   // generated types and the running query builder cannot disagree.
   const configured = String(process.env.DB_CONNECTION ?? '').toLowerCase()

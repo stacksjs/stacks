@@ -516,7 +516,9 @@ jobs:
       # generation was config-driven: a developer with every feature scaffolded
       # produced one file and CI produced another, so a diff meant nothing.
       # The script sets STACKS_CANONICAL_FEATURES, which makes the output a
-      # function of the source tree - so a diff here means stale.
+      # function of the source tree - so a diff here means stale. It compares
+      # every file generation touches, measured rather than listed: it used to
+      # read one and pass while `database/types.d.ts` was stale (#2879).
       - name: declarations:check
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run declarations:check

@@ -210,6 +210,37 @@ describe('a boolean column', () => {
 
     expect(widgets.columns.active).toBe('boolean')
   })
+
+  describe('with no dialect passed', () => {
+    const saved = { connection: process.env.DB_CONNECTION, canonical: process.env.STACKS_CANONICAL_FEATURES }
+    afterAll(() => {
+      for (const [key, value] of [['DB_CONNECTION', saved.connection], ['STACKS_CANONICAL_FEATURES', saved.canonical]] as const) {
+        if (value === undefined)
+          delete process.env[key]
+        else
+          process.env[key] = value
+      }
+    })
+
+    async function active(): Promise<string | undefined> {
+      const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true })
+      return result.tables.find(one => one.table === 'widgets')!.columns.active
+    }
+
+    test('follows the configured connection', async () => {
+      delete process.env.STACKS_CANONICAL_FEATURES
+      process.env.DB_CONNECTION = 'postgres'
+      expect(await active()).toBe('boolean')
+    })
+
+    // The committed file is checked against canonical output, so canonical
+    // output cannot depend on the shell that generated it (stacksjs/stacks#2879).
+    test('is the default connection\'s answer in canonical mode, whatever the shell says', async () => {
+      process.env.STACKS_CANONICAL_FEATURES = '1'
+      process.env.DB_CONNECTION = 'postgres'
+      expect(await active()).toBe('number')
+    })
+  })
 })
 
 describe('a multi-word column', () => {

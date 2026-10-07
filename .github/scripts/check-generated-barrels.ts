@@ -25,6 +25,11 @@
  * answer, and an earlier version of this check that included it went red in CI
  * for that reason (#2408).
  *
+ * Both are covered, canonically, by `declarations:check`
+ * (check-declarations-fresh.ts), which regenerates with every feature on and
+ * compares every file the run touches (#2879). This check stays for the plain,
+ * non-canonical `buddy generate` path a developer actually runs.
+ *
  * The three barrels here are pure directory scans with no feature gating, and
  * both scanners now sort — the in-repo one in 25109ce2ff, the plugin's in
  * bun-plugin-auto-imports 0.4.2 — so their output is a function of the source
