@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.88...v0.75.89)
+
+## 🐛 Bug Fixes
+
+- **mobile**: go back only from entries the app pushed ([a446bc9](https://github.com/stacksjs/stacks/commit/a446bc9)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: require stx 0.2.395 ([82c2f3a](https://github.com/stacksjs/stacks/commit/82c2f3a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.391 ([cefa781](https://github.com/stacksjs/stacks/commit/cefa781)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.87...v0.75.88)
 
 ## ✨ Features
