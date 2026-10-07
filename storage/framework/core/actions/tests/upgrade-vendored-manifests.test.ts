@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { reconcileVendoredManifests, resolveManifestSpec } from '../src/upgrade/packages'
+import { reconcileVendoredManifests, resolveManifestSpec, workspaceMembers } from '../src/upgrade/packages'
 
 /**
  * An app that vendors part of the framework has manifests under
@@ -202,5 +202,105 @@ describe('reconcileVendoredManifests', () => {
     const raw = readFileSync(join(root, 'storage/framework/api/package.json'), 'utf-8')
     expect(raw.endsWith('\n')).toBe(true)
     expect(raw).toContain('  "name"')
+  })
+})
+
+/**
+ * stacksjs/stacks#2880: `buddy upgrade` rewrote every `workspace:*` it found to
+ * `^<target>`, including references to members that were still there - 33
+ * declarations across 7 manifests in one app. A published range stops the local
+ * member satisfying the reference, so the upgrade broke the workspace it was
+ * delivering types to. Only a reference with nothing to resolve to is rewritten.
+ */
+describe('a workspace reference to a member that is still there', () => {
+  const members = new Set(['@stacksjs/api', '@stacksjs/orm'])
+
+  it('is left as written', () => {
+    expect(resolveManifestSpec('@stacksjs/orm', 'workspace:*', '0.75.89', undefined, members)).toBeNull()
+    expect(resolveManifestSpec('@stacksjs/orm', 'workspace:^', '0.75.89', undefined, members)).toBeNull()
+  })
+
+  it('is left as written even for a package that versions on its own', () => {
+    const context = { lockstep: new Set<string>(), metaDeps: { '@stacksjs/api': '^0.13.0' } }
+    expect(resolveManifestSpec('@stacksjs/api', 'workspace:*', '0.75.89', context, members)).toBeNull()
+  })
+
+  it('is still rewritten when the member is gone', () => {
+    expect(resolveManifestSpec('@stacksjs/utils', 'workspace:*', '0.75.89', undefined, members)).toBe('^0.75.89')
+  })
+
+  it('does not change how a numeric range is bumped', () => {
+    expect(resolveManifestSpec('@stacksjs/orm', '^0.75.81', '0.75.89', undefined, members)).toBe('^0.75.89')
+  })
+})
+
+describe('workspaceMembers', () => {
+  it('reads the array form, expanding globs to the manifests they match', () => {
+    writeManifest('package.json', { name: 'app', workspaces: ['storage/framework/*', 'storage/framework/libs/components/*'] })
+    writeManifest('storage/framework/orm/package.json', { name: '@stacksjs/orm' })
+    writeManifest('storage/framework/api/package.json', { name: '@stacksjs/api' })
+    writeManifest('storage/framework/libs/components/web/package.json', { name: 'web' })
+
+    expect([...workspaceMembers(root)].sort()).toEqual(['@stacksjs/api', '@stacksjs/orm', 'web'])
+  })
+
+  it('reads the object form', () => {
+    writeManifest('package.json', { name: 'app', workspaces: { packages: ['storage/framework/orm'] } })
+    writeManifest('storage/framework/orm/package.json', { name: '@stacksjs/orm' })
+
+    expect([...workspaceMembers(root)]).toEqual(['@stacksjs/orm'])
+  })
+
+  it('honours an exclusion', () => {
+    writeManifest('package.json', { name: 'app', workspaces: ['storage/framework/*', '!storage/framework/api'] })
+    writeManifest('storage/framework/orm/package.json', { name: '@stacksjs/orm' })
+    writeManifest('storage/framework/api/package.json', { name: '@stacksjs/api' })
+
+    expect([...workspaceMembers(root)]).toEqual(['@stacksjs/orm'])
+  })
+
+  it('is empty for a project with no workspaces, or no manifest at all', () => {
+    expect(workspaceMembers(root).size).toBe(0)
+    writeManifest('package.json', { name: 'app' })
+    expect(workspaceMembers(root).size).toBe(0)
+  })
+
+  it('does not count a member\'s installed dependencies', () => {
+    writeManifest('package.json', { name: 'app', workspaces: ['storage/framework/**'] })
+    writeManifest('storage/framework/orm/package.json', { name: '@stacksjs/orm' })
+    writeManifest('storage/framework/orm/node_modules/@stacksjs/utils/package.json', { name: '@stacksjs/utils' })
+
+    expect([...workspaceMembers(root)]).toEqual(['@stacksjs/orm'])
+  })
+})
+
+describe('reconcileVendoredManifests in an app that still has its members', () => {
+  // The shape from the report: members under storage/framework referring to
+  // each other by workspace, with no vendored core behind them.
+  it('keeps references to present members and rewrites only the dangling ones', () => {
+    writeManifest('package.json', { name: 'app', workspaces: ['storage/framework/*'] })
+    writeManifest('storage/framework/orm/package.json', { name: '@stacksjs/orm' })
+    writeManifest('storage/framework/api/package.json', {
+      name: '@stacksjs/api',
+      dependencies: { '@stacksjs/orm': 'workspace:*', '@stacksjs/utils': 'workspace:*' },
+    })
+
+    const changes = reconcileVendoredManifests(root, '0.75.89')
+
+    expect(changes.map(one => `${one.name} ${one.from} -> ${one.to}`)).toEqual(['@stacksjs/utils workspace:* -> ^0.75.89'])
+    expect(readManifest('storage/framework/api/package.json').dependencies).toEqual({
+      '@stacksjs/orm': 'workspace:*',
+      '@stacksjs/utils': '^0.75.89',
+    })
+  })
+
+  it('leaves an app whose every reference resolves exactly as it was', () => {
+    writeManifest('package.json', { name: 'app', workspaces: ['storage/framework/*'] })
+    writeManifest('storage/framework/orm/package.json', { name: '@stacksjs/orm', dependencies: { '@stacksjs/api': 'workspace:*' } })
+    const api = writeManifest('storage/framework/api/package.json', { name: '@stacksjs/api', dependencies: { '@stacksjs/orm': 'workspace:*' } })
+    const before = readFileSync(api, 'utf-8')
+
+    expect(reconcileVendoredManifests(root, '0.75.89')).toEqual([])
+    expect(readFileSync(api, 'utf-8')).toBe(before)
   })
 })

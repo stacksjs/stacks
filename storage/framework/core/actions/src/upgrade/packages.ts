@@ -441,14 +441,31 @@ export interface ManifestSpecContext {
  * - the same trap #2078 fixed for the root manifest. Pass `context` and an
  * independently-versioned package takes the meta's declared range instead, or
  * is reported rather than guessed at.
+ *
+ * And a `workspace:` reference is only rewritten when it has nothing to
+ * resolve to. Where the named package is still a member of the app's
+ * workspace, the reference is correct as written - the workspace decides that
+ * member's version - and rewriting it to a published range stops the local
+ * member satisfying it. That is what `buddy upgrade` did to every vendored
+ * manifest, 33 declarations in one app, so the command that delivers the
+ * framework's types was also the one that broke the workspace
+ * (stacksjs/stacks#2880). Pass `members` (see `workspaceMembers`) to say
+ * which packages are present; without it every workspace reference is treated
+ * as dangling, which is the un-vendoring case above.
  */
 export function resolveManifestSpec(
   name: string,
   spec: string,
   target: string,
   context?: ManifestSpecContext,
+  members?: ReadonlySet<string>,
 ): string | null {
   if (name !== 'stacks' && !name.startsWith('@stacksjs/'))
+    return null
+
+  // Set deliberately, by `buddy new`, and still resolvable: the same reason a
+  // `file:` link is left alone below.
+  if (spec.startsWith('workspace:') && members?.has(name))
     return null
 
   // Independently-versioned: the meta's own range is the only trustworthy
@@ -477,6 +494,55 @@ export function resolveManifestSpec(
 }
 
 /**
+ * The package names the project's workspace resolves locally.
+ *
+ * Read from the root manifest's `workspaces` (the array form, or the
+ * `{ packages }` object form), expanding each pattern to the `package.json`
+ * files it matches, the way the installer does. A `!pattern` excludes. A
+ * project with no workspaces has no members, so every `workspace:` reference
+ * in it is dangling.
+ */
+export function workspaceMembers(projectRoot: string): Set<string> {
+  const members = new Set<string>()
+
+  let patterns: string[] = []
+  try {
+    const root = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as { workspaces?: string[] | { packages?: string[] } }
+    const declared = Array.isArray(root.workspaces) ? root.workspaces : root.workspaces?.packages
+    patterns = (declared ?? []).filter((one): one is string => typeof one === 'string')
+  }
+  catch {
+    return members
+  }
+
+  const manifestsFor = (pattern: string): string[] => {
+    const glob = new Bun.Glob(`${pattern.replace(/\/+$/, '')}/package.json`)
+    return [...glob.scanSync({ cwd: projectRoot, onlyFiles: true })]
+      .filter(file => !file.split('/').includes('node_modules'))
+  }
+
+  const excluded = new Set(patterns.filter(one => one.startsWith('!')).flatMap(one => manifestsFor(one.slice(1))))
+
+  for (const pattern of patterns.filter(one => !one.startsWith('!'))) {
+    for (const file of manifestsFor(pattern)) {
+      if (excluded.has(file))
+        continue
+      try {
+        const name = (JSON.parse(readFileSync(join(projectRoot, file), 'utf-8')) as { name?: unknown }).name
+        if (typeof name === 'string' && name)
+          members.add(name)
+      }
+      catch {
+        // A malformed member is the app's to fix, and it cannot satisfy a
+        // workspace reference either way.
+      }
+    }
+  }
+
+  return members
+}
+
+/**
  * Point the vendored `storage/framework/**` manifests at the target version.
  *
  * The root package.json is not the whole story for an app that keeps parts of
@@ -498,6 +564,7 @@ export function reconcileVendoredManifests(
     return []
 
   const changes: ManifestChange[] = []
+  const members = workspaceMembers(projectRoot)
 
   const walk = (dir: string): void => {
     let entries: string[]
@@ -555,7 +622,7 @@ export function reconcileVendoredManifests(
           continue
 
         for (const [name, spec] of Object.entries(deps)) {
-          const next = resolveManifestSpec(name, spec, target, options.context)
+          const next = resolveManifestSpec(name, spec, target, options.context, members)
           if (!next)
             continue
 
