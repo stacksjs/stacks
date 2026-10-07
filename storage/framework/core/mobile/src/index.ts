@@ -64,6 +64,7 @@ import type {
 export * from './gestures'
 export * from './navigation'
 export * from './route'
+export * from './indoor'
 export * from './spotlight'
 export * from './types'
 
