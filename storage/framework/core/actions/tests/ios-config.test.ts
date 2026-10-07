@@ -118,7 +118,6 @@ describe('iOS mobile build configuration', () => {
       appName: 'HQ.training',
       bundleId: 'training.hq.app',
       url: 'https://hq.training',
-      appBoundDomains: ['hq.training'],
     })
     expect('limitNavigationsToAppBoundDomains' in unset).toBe(false)
 
@@ -129,6 +128,59 @@ describe('iOS mobile build configuration', () => {
       limitNavigationsToAppBoundDomains: false,
     })
     expect(off.limitNavigationsToAppBoundDomains).toBe(false)
+  })
+
+  /**
+   * Declaring app-bound domains is the only reason to list them, and listing
+   * them without the restriction gets the plist key and none of the APIs. So
+   * the declaration turns it on (stacksjs/stacks#2878).
+   */
+  it('turns the limit on for an app that declares app-bound domains', () => {
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      appBoundDomains: ['hq.training'],
+    })
+
+    expect(config.limitNavigationsToAppBoundDomains).toBe(true)
+  })
+
+  it('does not turn it on from trustedOrigins, or from an empty declaration', () => {
+    // `trustedOrigins` is seeded from `config.url` for every app, so keying
+    // the default on it would confine every Craft web view on upgrade rather
+    // than the ones that asked. `appBoundDomains: []` declares none, which is
+    // a statement and not an absence.
+    const origins = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      trustedOrigins: ['https://cdn.hq.training'],
+    })
+    expect('limitNavigationsToAppBoundDomains' in origins).toBe(false)
+
+    const none = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      appBoundDomains: [],
+    })
+    expect('limitNavigationsToAppBoundDomains' in none).toBe(false)
+  })
+
+  it('lets an explicit false beat the default', () => {
+    // The escape hatch for an app whose web view legitimately navigates off
+    // its own domains: without this it would start being blocked by an
+    // upgrade it did not ask for.
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training',
+      appBoundDomains: ['hq.training'],
+      limitNavigationsToAppBoundDomains: false,
+    })
+
+    expect(config.limitNavigationsToAppBoundDomains).toBe(false)
   })
 
   it('rejects insecure production URLs and malformed associated domains', () => {

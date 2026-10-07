@@ -108,10 +108,14 @@ export interface IosMobileConfig {
    * changes nothing, and a service worker silently never registers
    * (stacksjs/stacks#2878).
    *
-   * The cost is the point of the opt-in: the web view may then navigate only
+   * Defaults to on when {@link IosMobileConfig.appBoundDomains} lists at least
+   * one domain, because nothing else declares those domains for, and getting
+   * the plist key without the APIs is the surprising outcome. Not keyed on
+   * `trustedOrigins`, which every app has.
+   *
+   * The cost is why it remains settable: the web view may then navigate only
    * to those domains, so an app that legitimately sends its web view elsewhere
-   * must leave this off. Which is why it is not implied by declaring the
-   * domains.
+   * sets this to `false` explicitly, which wins over the default.
    *
    * Craft's config key deliberately drops the `s` that Apple's property has;
    * Craft maps one onto the other.

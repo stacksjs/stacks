@@ -84,6 +84,19 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
   const devServerURL = normalizeMobileUrl(config.url)
   const trustedOrigins = new Set(config.trustedOrigins ?? [])
   if (devServerURL) trustedOrigins.add(new URL(devServerURL).origin)
+
+  // An app that lists app-bound domains has asked for the app-bound model, and
+  // the restriction is what actually grants it: without the limit the plist
+  // key changes nothing and service workers never register
+  // (stacksjs/stacks#2878). So declaring them turns it on, and an explicit
+  // `false` below still wins for an app that navigates off its own domains.
+  //
+  // Deliberately keyed on `appBoundDomains` alone and not on
+  // `trustedOrigins`, which this function seeds from `config.url` for every
+  // app: Craft derives app-bound domains from those when none are declared,
+  // so keying on them would confine every Craft web view rather than the ones
+  // that asked for it. `appBoundDomains: []` declares none, so it stays off.
+  const declaresAppBoundDomains = (config.appBoundDomains?.length ?? 0) > 0
   const craft: CraftIosConfig = {
     appName: config.appName,
     bundleId: config.bundleId,
@@ -101,7 +114,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     urlSchemes: config.urlSchemes,
     trustedOrigins: [...trustedOrigins],
     appBoundDomains: config.appBoundDomains,
-    limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains,
+    limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains ?? (declaresAppBoundDomains || undefined),
     associatedDomains: config.associatedDomains,
     appGroups: config.appGroups,
     appIconPath: config.appIcon,
