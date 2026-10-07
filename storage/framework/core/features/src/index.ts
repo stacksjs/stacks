@@ -80,6 +80,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
     'app/Models/BoardColumn.ts',
     'app/Models/Card.ts',
     'app/Models/CardComment.ts',
+    'app/Models/FeedbackToken.ts',
     'app/Models/Label.ts',
     'app/Models/Log.ts',
     'app/Models/Request.ts',
@@ -208,6 +209,9 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // Kanban
     'boards', 'board_columns', 'cards', 'card_labels', 'card_assignees',
     'card_comments', 'labels',
+    // Revocable feedback links. Each keys to `boards`, so it gates with the
+    // board it names, or a disabled dashboard migrates it against no parent.
+    'feedback_tokens',
     // CI tracking surface
     'ci_run_states', 'ci_runner_samples', 'ci_runner_alert_states',
     // Dashboard observability tables

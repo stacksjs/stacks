@@ -80,9 +80,15 @@ describe('model relations', () => {
         if (!block)
           continue
 
-        for (const target of block[1].matchAll(/'([A-Za-z]\w*)'/g)) {
-          if (!declared.has(target[1]))
-            dangling.push(`${self}.${kind} names '${target[1]}', which is not a model`)
+        // An entry is a bare name ('Board') or a Relation object
+        // ({ model: 'Board', onDelete: 'cascade' }). Only the bare string and
+        // the `model` value name a model; the other keys' values ('cascade')
+        // do not, and reading every quoted word flagged them as dangling.
+        for (const target of block[1].matchAll(/(?:\b(\w+)\s*:\s*)?'([A-Za-z]\w*)'/g)) {
+          if (target[1] !== undefined && target[1] !== 'model')
+            continue
+          if (!declared.has(target[2]!))
+            dangling.push(`${self}.${kind} names '${target[2]}', which is not a model`)
         }
       }
 
