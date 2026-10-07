@@ -1,14 +1,16 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
+import { removeCardAttachments, storageDisks } from './card-attachments'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 /**
  * `DELETE /api/dashboard/kanban/boards/:id`.
  *
  * Hard delete with cascade: removes the board, its columns, its cards,
- * its labels, and the relevant pivot rows in `card_labels` and
- * `card_assignees`. No DB-level FK cascade to lean on — the existing
+ * its labels, the relevant pivot rows in `card_labels` and
+ * `card_assignees`, the cards' attachments (files and rows), and the
+ * feedback links issued for the board. No DB-level FK cascade to lean on — the existing
  * Stacks migration convention is app-layer integrity, so the cascade
  * lives in this action.
  *
@@ -31,11 +33,18 @@ export default new Action({
     }
 
     try {
+      const openDisk = await storageDisks()
       await db.transaction(async (rawTrx) => {
         const qb = rawTrx as unknown as typeof db
         // Postgres numbers its parameters, so the `?` these carried bound
         // nothing there (stacksjs/stacks#2846).
         const { param } = sqlHelpers(getDatabaseDialect())
+        // Attachments first, files and rows (stacksjs/stacks#2881), so a disk
+        // that refuses leaves every card here whole.
+        await removeCardAttachments(qb, {
+          sql: `card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)})`,
+          params: [id],
+        }, openDisk)
         // Pivots + card-scoped children first — they reference cards.
         await qb.unsafe(
           `DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE board_id = ${param(1)})`,
@@ -53,6 +62,9 @@ export default new Action({
         ).execute()
         // Cards (denormalised board_id avoids the column join).
         await qb.deleteFrom('cards').where('board_id', '=', id).execute()
+        // Feedback links name this board. Left behind they are tokens for a
+        // board that no longer exists, each carrying who it was issued to.
+        await qb.deleteFrom('feedback_tokens').where('board_id', '=', id).execute()
         // Columns + labels — both directly reference board_id.
         await qb.deleteFrom('board_columns').where('board_id', '=', id).execute()
         await qb.deleteFrom('labels').where('board_id', '=', id).execute()

@@ -105,3 +105,62 @@ export async function signCardAttachmentUrl(
     return null
   }
 }
+
+/** What `removeCardAttachments` runs its two statements through: `db`, or a transaction. */
+export interface AttachmentStatementRunner {
+  unsafe: (sql: string, params?: unknown[]) => { execute: () => Promise<unknown> }
+}
+
+/**
+ * Remove every attachment of the cards `cardsWhere` selects: the bytes, then the rows.
+ *
+ * Deleting a card, a column or a board used to leave both behind. The cascade
+ * those actions run lives in the application, not in a foreign key (SQLite
+ * does not enforce one unless asked), and none of them knew about
+ * `card_attachments`. So every screenshot on a deleted card stayed on the disk
+ * with a row pointing at it that nothing could reach (stacksjs/stacks#2881).
+ * A feedback screenshot is a picture of a stranger's screen, which is exactly
+ * what a deletion is supposed to remove.
+ *
+ * Bytes first, then rows, so it can be run again. A file already gone counts
+ * as deleted (that is `deleteFile`'s contract on every disk), and any other
+ * failure throws before a row is touched. Run inside the caller's transaction,
+ * that means a disk it cannot reach leaves the card exactly as it was, with
+ * every row still saying where its file is, rather than a card that is gone
+ * and a file nothing can find any more.
+ *
+ * `cardsWhere` is a predicate over `card_id`, for example
+ * `card_id IN (SELECT id FROM cards WHERE board_id = $1)`, with its params.
+ * Returns how many attachments went.
+ */
+export async function removeCardAttachments(
+  handle: AttachmentStatementRunner,
+  cardsWhere: { sql: string, params: unknown[] },
+  openDisk: (name: string) => Pick<StorageAdapter, 'deleteFile'>,
+): Promise<number> {
+  const rows = await handle.unsafe(
+    `SELECT id, disk, path FROM card_attachments WHERE ${cardsWhere.sql}`,
+    cardsWhere.params,
+  ).execute() as Array<Pick<CardAttachmentRow, 'id' | 'disk' | 'path'>>
+
+  if (!rows?.length)
+    return 0
+
+  for (const row of rows) {
+    try {
+      await openDisk(row.disk).deleteFile(row.path)
+    }
+    catch (err) {
+      throw new Error(`could not delete attachment ${row.id} (${row.disk}:${row.path}), so nothing was deleted: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  await handle.unsafe(`DELETE FROM card_attachments WHERE ${cardsWhere.sql}`, cardsWhere.params).execute()
+  return rows.length
+}
+
+/** The real disks, for `removeCardAttachments`. */
+export async function storageDisks(): Promise<(name: string) => Pick<StorageAdapter, 'deleteFile'>> {
+  const { Storage } = await import('@stacksjs/storage')
+  return name => Storage.disk(name as never)
+}

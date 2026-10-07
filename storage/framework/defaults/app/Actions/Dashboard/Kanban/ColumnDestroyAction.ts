@@ -1,13 +1,15 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
+import { removeCardAttachments, storageDisks } from './card-attachments'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
 /**
  * `DELETE /api/dashboard/kanban/columns/:id`.
  *
  * Hard-deletes the column and cascade-cleans every card inside it
- * (plus the pivot rows referencing those cards). Same convention as
+ * (plus the pivot rows referencing those cards, and their attachments,
+ * files included). Same convention as
  * BoardDestroyAction — Stacks doesn't lean on DB-level FK cascade, so
  * the cascade lives in this action.
  *
@@ -27,11 +29,18 @@ export default new Action({
     }
 
     try {
+      const openDisk = await storageDisks()
       await db.transaction(async (rawTrx) => {
         const qb = rawTrx as unknown as typeof db
         // Postgres numbers its parameters, so the `?` these carried bound
         // nothing there (stacksjs/stacks#2846).
         const { param } = sqlHelpers(getDatabaseDialect())
+        // Attachments first, files and rows (stacksjs/stacks#2881), so a disk
+        // that refuses leaves every card here whole.
+        await removeCardAttachments(qb, {
+          sql: `card_id IN (SELECT id FROM cards WHERE column_id = ${param(1)})`,
+          params: [id],
+        }, openDisk)
         await qb.unsafe(
           `DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE column_id = ${param(1)})`,
           [id],

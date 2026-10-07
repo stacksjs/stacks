@@ -25,13 +25,20 @@ import { schema } from '@stacksjs/validation/runtime'
  * stranger's upload landing under `public/` would be world-readable at a
  * path the dashboard also prints.
  *
- * ## Erasure removes the row, not yet the bytes
+ * ## Removing a screenshot removes the file
  *
- * The `gdpr` trait deletes this row, and a screenshot is likely to contain
- * personal data - it is a picture of somebody's screen. Deleting the row
- * leaves the file behind, because nothing here sweeps a disk. Stated rather
- * than implied, and tracked separately: a half-done erasure that looks done
- * is worse than one that says what it did.
+ * A screenshot is likely to contain personal data - it is a picture of
+ * somebody's screen - so deleting one has to delete the bytes, not only this
+ * row. The card, column and board destroy actions do both, file first, through
+ * `removeCardAttachments` (stacksjs/stacks#2881). They cannot lean on the
+ * cascade declared below, which SQLite does not enforce, and a row deleted
+ * without its file leaves bytes on the disk that nothing can find again.
+ *
+ * `buddy gdpr:erase` does not reach these rows, and the `gdpr` trait here is
+ * the processing-register entry rather than an erasure path. The submitter of
+ * a feedback card is not an account: the card is filed with no user, so no
+ * data subject's erasure can match it. An external reviewer's request is met
+ * by deleting the card they filed, which removes the screenshot with it.
  *
  * No `useApi`. These rows are written by the feedback intake action and read
  * by the dashboard's own board actions; a REST surface over them would
