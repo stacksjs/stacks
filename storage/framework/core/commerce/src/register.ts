@@ -28,12 +28,14 @@ export interface RegisterFields {
   price: string
   inventory: string
   lowStock: string
+  /** A product is taxed unless this field is `false`. */
+  taxable: string
 }
 
-export const DEFAULT_FIELDS: RegisterFields = { id: 'id', price: 'price', inventory: 'inventory', lowStock: 'low_stock_threshold' }
+export const DEFAULT_FIELDS: RegisterFields = { id: 'id', price: 'price', inventory: 'inventory', lowStock: 'low_stock_threshold', taxable: 'taxable' }
 
 /** Field names for a catalog stored with `price_cents` and `inventory_quantity`. */
-export const CENTS_FIELDS: RegisterFields = { id: 'id', price: 'price_cents', inventory: 'inventory_quantity', lowStock: 'low_stock_threshold' }
+export const CENTS_FIELDS: RegisterFields = { id: 'id', price: 'price_cents', inventory: 'inventory_quantity', lowStock: 'low_stock_threshold', taxable: 'taxable' }
 
 type Product = Record<string, any>
 
@@ -90,6 +92,17 @@ export function basketLines<T extends Product>(basket: BasketLine[], products: T
 /** The basket's total, in minor units. */
 export function basketTotal(basket: BasketLine[], products: Product[], fields: RegisterFields = DEFAULT_FIELDS): number {
   return basketLines(basket, products, fields).reduce((sum, line) => sum + Number(line.product[fields.price] || 0) * line.quantity, 0)
+}
+
+/**
+ * The part of the basket's total that sales tax applies to: every line whose
+ * product is not marked `taxable: false` (a food product, an admission).
+ * Feed it to `breakdownFor` from `@stacksjs/commerce/sales-tax`.
+ */
+export function basketTaxable(basket: BasketLine[], products: Product[], fields: RegisterFields = DEFAULT_FIELDS): number {
+  return basketLines(basket, products, fields)
+    .filter(line => line.product[fields.taxable] !== false)
+    .reduce((sum, line) => sum + Number(line.product[fields.price] || 0) * line.quantity, 0)
 }
 
 /** How many units are in the basket. */

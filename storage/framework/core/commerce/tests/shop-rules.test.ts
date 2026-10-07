@@ -5,7 +5,8 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { addToBasket, basketCount, basketLines, basketTotal, canAdd, CENTS_FIELDS, groupsOf, setQuantity, shelfLeft, stockLabel } from '../src/register'
+import { breakdownFor } from '../src/sales-tax'
+import { addToBasket, basketCount, basketLines, basketTaxable, basketTotal, canAdd, CENTS_FIELDS, groupsOf, setQuantity, shelfLeft, stockLabel } from '../src/register'
 import { categoryRank, compareCatalog, isLowStock, matchesSearch, sizeOf } from '../src/catalog'
 import { describeRollout, releaseSchedule, rolloutFromProduct, unlockAt, unlockedPrefix } from '../src/releases'
 
@@ -48,6 +49,17 @@ describe('register', () => {
     expect(stockLabel({ id: 3, inventory: 12 })).toEqual({ text: '12 left', tone: 'ok' })
     expect(stockLabel({ id: 3, inventory: 5 })).toEqual({ text: '5 left', tone: 'low' })
     expect(stockLabel(tee)).toBeNull()
+  })
+
+  it('taxes only what is taxable, itemised and rounded per component', () => {
+    const shirt = { id: 7, price: 2800 }
+    const water = { id: 8, price: 300, taxable: false }
+    const basket = addToBasket(addToBasket(addToBasket([], shirt), water), water)
+    expect(basketTaxable(basket, [shirt, water])).toBe(2800)
+    const tax = breakdownFor(basketTaxable(basket, [shirt, water]), [{ id: 1, code: 'sm', name: 'Sales tax', rate: 11.25 }])
+    expect(tax.tax).toBe(315)
+    expect(tax.components[0]).toMatchObject({ code: 'sm', amount: 315, exempted: false })
+    expect(breakdownFor(1000, [{ rate: 6 }, { rate: 4.75, exemptible: true }], { exempt: true })).toMatchObject({ tax: 60, exempted: 48 })
   })
 
   it('lists groups in the order products come', () => {
@@ -150,7 +162,7 @@ describe('rollout', () => {
 describe('browser entrypoints', () => {
   it('import nothing, so a page can bundle them', () => {
     const transpiler = new Bun.Transpiler({ loader: 'ts' })
-    for (const file of ['register.ts', 'catalog.ts', 'releases.ts', 'money.ts'])
+    for (const file of ['register.ts', 'catalog.ts', 'releases.ts', 'money.ts', 'sales-tax.ts'])
       expect(transpiler.scanImports(readFileSync(join(import.meta.dir, '../src', file), 'utf8')).map(entry => entry.path), file).toEqual([])
   })
 })

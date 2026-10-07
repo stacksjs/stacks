@@ -130,3 +130,8 @@ export {
   PriceFormatError,
 } from './money'
 export type { MoneyInputOptions } from './money'
+
+// Itemised sales tax on an amount: pure, so a register shows it before it
+// charges. Browser code imports it from `@stacksjs/commerce/sales-tax`.
+export { breakdownFor, multiplierOf } from './sales-tax'
+export type { TaxRateRow } from './sales-tax'
