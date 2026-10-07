@@ -47,6 +47,21 @@ route.post('/api/contact', 'Actions/ContactAction').name('contact.send').skipCsr
 route.get('/api/team-invitation-links/{token}', 'Actions/Teams/ShowInvitationAction').rateLimit(30, 'minute')
 route.post('/api/team-invitations/{token}/accept', 'Actions/Teams/AcceptInvitationAction').middleware('auth').rateLimit(10, 'minute')
 
+// An external reviewer files feedback through a revocable link, without an
+// account: the only unauthenticated write the dashboard has. Outside every
+// `auth` group on purpose, and narrow because of it - the token names one
+// board, adds a card to it, and reads nothing.
+//
+// CSRF is skipped for the same reason `/api/contact` above skips it, and more
+// safely: there is no ambient authority to borrow here. The capability is the
+// high-entropy token in the path, not a cookie the browser attaches, so a
+// cross-site POST has nothing to forge with.
+//
+// Rate limited like the other token-bearing unauthenticated routes. The token
+// is 256 bits, so this is about stopping a flood of cards from a link that
+// leaked, not about guessing.
+route.post('/api/feedback/{token}', 'Actions/Dashboard/Feedback/FeedbackStoreAction').name('feedback.store').skipCsrf().rateLimit(10, 'minute')
+
 // ============================================================================
 // Storefront (anonymous cart + multi-step checkout)
 //
