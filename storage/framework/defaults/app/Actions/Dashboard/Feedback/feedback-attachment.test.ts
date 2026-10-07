@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   acceptAttachment,
+  acceptAttachmentSize,
   FEEDBACK_ATTACHMENT_MAX_BYTES,
   FEEDBACK_ATTACHMENT_TYPES,
   feedbackAttachmentPath,
@@ -66,6 +67,39 @@ describe('sniffImageType', () => {
     expect(sniffImageType(new Uint8Array([0x89, 0x50]))).toBeNull()
     expect(sniffImageType(new Uint8Array([0x52, 0x49, 0x46, 0x46]))).toBeNull()
     expect(sniffImageType(new Uint8Array())).toBeNull()
+  })
+})
+
+describe('acceptAttachmentSize', () => {
+  it('is the gate that passes before a byte is read', () => {
+    // The router hands an action an `UploadedFile` wrapper, which reports
+    // `size` synchronously and has NO `slice` - reading the leading bytes
+    // means reading the whole file. The first version of the action sniffed
+    // first and threw `screenshot.slice is not a function` on every upload,
+    // which only a real multipart POST found: every unit test here passes a
+    // plain Uint8Array, and so did the one the action was written against.
+    expect(acceptAttachmentSize(120_000)).toEqual({ ok: true })
+    expect(acceptAttachmentSize(FEEDBACK_ATTACHMENT_MAX_BYTES)).toEqual({ ok: true })
+  })
+
+  it('refuses an empty or absurd size', () => {
+    for (const size of [0, -1, Number.NaN, Number.POSITIVE_INFINITY])
+      expect(acceptAttachmentSize(size)).toMatchObject({ ok: false, reason: 'empty' })
+  })
+
+  it('refuses one byte over the cap', () => {
+    expect(acceptAttachmentSize(FEEDBACK_ATTACHMENT_MAX_BYTES + 1))
+      .toMatchObject({ ok: false, reason: 'too-large' })
+  })
+
+  it('agrees with acceptAttachment, so the order of refusals is the same either way', () => {
+    for (const size of [0, 1, FEEDBACK_ATTACHMENT_MAX_BYTES, FEEDBACK_ATTACHMENT_MAX_BYTES + 1]) {
+      const gate = acceptAttachmentSize(size)
+      const full = acceptAttachment({ size, head: head('png') })
+      expect(full.ok).toBe(gate.ok)
+      if (!gate.ok && !full.ok)
+        expect(full.reason).toBe(gate.reason)
+    }
   })
 })
 

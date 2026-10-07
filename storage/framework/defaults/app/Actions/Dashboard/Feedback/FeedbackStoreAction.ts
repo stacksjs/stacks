@@ -6,6 +6,7 @@ import { response } from '@stacksjs/router'
 import { kanbanActionError } from '../Kanban/kanban-response'
 import {
   acceptAttachment,
+  acceptAttachmentSize,
   FEEDBACK_ATTACHMENT_MAX_FILES,
   feedbackAttachmentPath,
   SNIFF_BYTES,
@@ -116,17 +117,25 @@ export default new Action({
 
     let attachment: { bytes: Uint8Array, mimeType: string, extension: string } | undefined
     if (screenshot) {
-      // Only the sniff window is read to decide, and the size is checked
-      // first, so an enormous upload is refused without being loaded.
-      const head = new Uint8Array(await screenshot.slice(0, SNIFF_BYTES).arrayBuffer())
-      const verdict = acceptAttachment({ size: Number(screenshot.size || 0), head })
+      // Size first, and on its own. The router hands this an `UploadedFile`
+      // wrapper, which reports `size` synchronously and has no `slice`, so
+      // reading the leading bytes means reading the whole file. Sniffing
+      // first would load a 2 GB upload into memory to decide it was too
+      // large.
+      const size = Number(screenshot.size || 0)
+      const sized = acceptAttachmentSize(size)
+      if (!sized.ok)
+        return response.json({ message: sized.message }, 400)
+
+      const bytes = await screenshot.bytes()
+      const verdict = acceptAttachment({ size, head: bytes.subarray(0, SNIFF_BYTES) })
       if (!verdict.ok)
         return response.json({ message: verdict.message }, 400)
 
       attachment = {
-        bytes: new Uint8Array(await screenshot.arrayBuffer()),
-        // From the bytes, never from `screenshot.type`, which the submitter
-        // writes. The dashboard serves the file as this.
+        bytes,
+        // From the bytes, never from `screenshot.mimeType`, which the
+        // submitter writes. The dashboard serves the file as this.
         mimeType: verdict.type,
         extension: verdict.extension,
       }

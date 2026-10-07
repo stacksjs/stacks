@@ -88,20 +88,38 @@ export type FeedbackAttachmentVerdict =
   | { ok: false, reason: FeedbackAttachmentRefusal, message: string }
 
 /**
- * Whether this file may be attached.
+ * Whether a file of this size may be attached at all.
  *
- * `size` is the whole file's length and `head` only its first
- * {@link SNIFF_BYTES}, so a refusal costs no more than that: the size is
- * checked first, and a 2 GB upload is turned away without being read.
+ * Separate from {@link acceptAttachment} because it is the gate that has to
+ * be passed BEFORE the bytes are read. The router hands an action an
+ * `UploadedFile` wrapper, which exposes `size` synchronously and has no
+ * `slice`, so reading the leading bytes means reading the whole file: a
+ * caller that sniffed first would load a 2 GB upload into memory to decide
+ * it was too large. Checked by itself, nothing is read.
  */
-export function acceptAttachment(input: { size: number, head: Uint8Array }): FeedbackAttachmentVerdict {
-  if (!Number.isFinite(input.size) || input.size <= 0)
+export function acceptAttachmentSize(size: number): { ok: true } | { ok: false, reason: FeedbackAttachmentRefusal, message: string } {
+  if (!Number.isFinite(size) || size <= 0)
     return { ok: false, reason: 'empty', message: 'That file is empty.' }
 
-  if (input.size > FEEDBACK_ATTACHMENT_MAX_BYTES) {
+  if (size > FEEDBACK_ATTACHMENT_MAX_BYTES) {
     const mb = Math.floor(FEEDBACK_ATTACHMENT_MAX_BYTES / (1024 * 1024))
     return { ok: false, reason: 'too-large', message: `A screenshot must be ${mb} MB or smaller.` }
   }
+
+  return { ok: true }
+}
+
+/**
+ * Whether this file may be attached.
+ *
+ * `size` is the whole file's length and `head` its leading bytes. The size is
+ * judged first, through {@link acceptAttachmentSize}, so the order of the
+ * refusals is the same whether a caller gates on size separately or not.
+ */
+export function acceptAttachment(input: { size: number, head: Uint8Array }): FeedbackAttachmentVerdict {
+  const sized = acceptAttachmentSize(input.size)
+  if (!sized.ok)
+    return sized
 
   const type = sniffImageType(input.head)
   if (!type) {

@@ -67,6 +67,20 @@ describe('feedback intake contract', () => {
     expect(verdict).toBeLessThan(create)
   })
 
+  test('refuses an oversized upload before it reads it', () => {
+    // The router hands this an `UploadedFile` wrapper: `size` is synchronous
+    // and there is no `slice`, so reading the leading bytes means reading the
+    // whole file. The first version sniffed first and threw
+    // `screenshot.slice is not a function` on every upload, which no unit
+    // test could see because they all pass a plain Uint8Array.
+    const gate = action.indexOf('acceptAttachmentSize(size)')
+    const read = action.indexOf('await screenshot.bytes()')
+    expect(gate).toBeGreaterThan(-1)
+    expect(read).toBeGreaterThan(-1)
+    expect(gate).toBeLessThan(read)
+    expect(action).not.toContain('screenshot.slice')
+  })
+
   test('records what the bytes are, not what the upload claimed', () => {
     // `screenshot.type` and the filename are both written by whoever is
     // uploading. The dashboard serves the file as the recorded type, so a
