@@ -20,6 +20,7 @@ export interface CraftIosConfig {
   devServerURL?: string
   urlSchemes?: string[]
   trustedOrigins?: string[]
+  appBoundDomains?: string[]
   associatedDomains?: string[]
   appGroups?: string[]
   appIconPath?: string
@@ -98,6 +99,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     devServerURL,
     urlSchemes: config.urlSchemes,
     trustedOrigins: [...trustedOrigins],
+    appBoundDomains: config.appBoundDomains,
     associatedDomains: config.associatedDomains,
     appGroups: config.appGroups,
     appIconPath: config.appIcon,

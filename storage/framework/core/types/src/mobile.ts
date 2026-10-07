@@ -91,6 +91,12 @@ export interface IosMobileConfig {
   swipeNavigation?: boolean
   urlSchemes?: string[]
   trustedOrigins?: string[]
+  /**
+   * Domains the app's web view treats as its own (WKAppBoundDomains). iOS runs
+   * service workers, and so offline support, only on these. Unset, Craft uses
+   * the hosts of `trustedOrigins`; `[]` declares none.
+   */
+  appBoundDomains?: string[]
   associatedDomains?: string[]
   appGroups?: string[]
   appIcon?: string
