@@ -26,4 +26,29 @@ describe('userConfigs allowlist', () => {
     for (const key of ['app', 'auth', 'database', 'email', 'ports', 'server'])
       expect(source).toContain(`['${key}', '${key}']`)
   })
+
+  /**
+   * `config/sms.ts` was the third file to go missing from this list, after
+   * `cors` and `socials` (stacksjs/stacks#2876). It ships in every scaffolded
+   * app and declares the provider, drivers and credentials, and `config.sms`
+   * was the framework default no matter what it said. It hid for so long
+   * because the default happens to match the shipped file's first two values,
+   * so the resolved config looked right until you changed the file.
+   *
+   * Spot-checking names cannot catch the next one. The invariant is exact: a
+   * section declared in `StacksOptions` is a section an application can write
+   * a config file for, so every one of them needs an entry here. It holds with
+   * no exceptions today, which is why this needs no allowlist.
+   */
+  it('has an entry for every section StacksOptions declares', () => {
+    const stacks = readFileSync(resolve(import.meta.dir, '../../types/src/stacks.ts'), 'utf-8')
+    const body = stacks.slice(stacks.indexOf('export interface StacksOptions'))
+    const declared = [...body.slice(0, body.indexOf('\n}')).matchAll(/^\s{2}(\w+)\??:\s*\w+/gm)].map(m => m[1])
+
+    const list = source.slice(source.indexOf('const userConfigs'))
+    const keys = new Set([...list.slice(0, list.indexOf('\n]')).matchAll(/\['(\w+)',/g)].map(m => m[1]))
+
+    expect(declared.length).toBeGreaterThan(30)
+    expect(declared.filter(section => !keys.has(section))).toEqual([])
+  })
 })

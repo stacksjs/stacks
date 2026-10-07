@@ -110,6 +110,7 @@ export function defaultsForOverrides(): StacksConfig {
     sites: {},
     forms: {},
     services: {},
+    sms: {},
     socials: {},
     filesystems: {},
     team: {},
@@ -191,6 +192,14 @@ const userConfigs: Array<[keyof StacksConfig, string, ...string[]]> = [
   ['forms', 'forms'],
   ['server', 'server'],
   ['services', 'services'],
+  // `config/sms.ts` ships in every app and declares `provider`, the drivers
+  // and their credentials, and `StacksOptions` has always declared
+  // `sms: SmsConfig` — but the entry was missing here, so the file was read by
+  // nothing and `config.sms` was the framework default no matter what the app
+  // wrote. Verified by setting `provider: 'vonage'` in `config/sms.ts` and
+  // watching `config.sms.provider` still resolve to `'twilio'`. Same shape as
+  // the `cors` entry above (stacksjs/stacks#2876).
+  ['sms', 'sms'],
   ['socials', 'socials'],
   ['filesystems', 'filesystems'],
   ['team', 'team'],
