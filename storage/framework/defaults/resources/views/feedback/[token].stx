@@ -1,5 +1,9 @@
 <script server>
+import { FEEDBACK_ATTACHMENT_MAX_BYTES, FEEDBACK_ATTACHMENT_TYPES } from '../../../app/Actions/Dashboard/Feedback/feedback-attachment'
 import { FEEDBACK_MAX_DESCRIPTION, FEEDBACK_MAX_TITLE } from '../../../app/Actions/Dashboard/Feedback/feedback-token'
+
+/** The accepted image types, as the file picker's `accept` attribute wants them. */
+const accept = Object.keys(FEEDBACK_ATTACHMENT_TYPES).join(',')
 
 /**
  * Where a feedback link lands, at `/feedback/{token}`.
@@ -18,4 +22,4 @@ import { FEEDBACK_MAX_DESCRIPTION, FEEDBACK_MAX_TITLE } from '../../../app/Actio
  */
 </script>
 
-<FeedbackForm maxTitle="{{ FEEDBACK_MAX_TITLE }}" maxDescription="{{ FEEDBACK_MAX_DESCRIPTION }}" />
+<FeedbackForm maxTitle="{{ FEEDBACK_MAX_TITLE }}" maxDescription="{{ FEEDBACK_MAX_DESCRIPTION }}" maxBytes="{{ FEEDBACK_ATTACHMENT_MAX_BYTES }}" accept="{{ accept }}" />

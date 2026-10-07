@@ -2,6 +2,10 @@ import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
 import { renderTemplate } from '@stacksjs/stx'
 import {
+  FEEDBACK_ATTACHMENT_MAX_BYTES,
+  FEEDBACK_ATTACHMENT_TYPES,
+} from '../../storage/framework/defaults/app/Actions/Dashboard/Feedback/feedback-attachment'
+import {
   FEEDBACK_MAX_DESCRIPTION,
   FEEDBACK_MAX_TITLE,
 } from '../../storage/framework/defaults/app/Actions/Dashboard/Feedback/feedback-token'
@@ -72,6 +76,35 @@ describe('the feedback form page', () => {
     const out = await html()
     expect(out).toContain(`&quot;maxTitle&quot;:&quot;${FEEDBACK_MAX_TITLE}&quot;`)
     expect(out).toContain(`&quot;maxDescription&quot;:&quot;${FEEDBACK_MAX_DESCRIPTION}&quot;`)
+    expect(out).toContain(`&quot;maxBytes&quot;:&quot;${FEEDBACK_ATTACHMENT_MAX_BYTES}&quot;`)
+  })
+
+  it('offers the image types the action accepts, and no others', async () => {
+    const out = await html()
+    const accepted = Object.keys(FEEDBACK_ATTACHMENT_TYPES)
+    expect(out).toContain(`&quot;accept&quot;:&quot;${accepted.join(',')}&quot;`)
+    // SVG must not be offered: the server refuses it, and a picker that
+    // accepts it produces a refusal the reviewer cannot explain.
+    expect(out).not.toContain('image/svg')
+  })
+
+  it('takes a screenshot by picker, by drop and by paste', async () => {
+    // A screenshot is usually on the clipboard rather than on disk, so paste
+    // is the shortest path and the one most likely to be reached for.
+    const out = await html()
+    expect(out).toContain('type="file"')
+    expect(out).toContain('@drop.prevent')
+    expect(out).toContain('@paste')
+    expect(out).toContain('name="screenshot"')
+  })
+
+  it('sends multipart, so the file has somewhere to go', async () => {
+    const out = await html()
+    expect(out).toContain('FormData')
+    // Not a JSON body: a file cannot travel in one, and the action reads its
+    // text fields through `request.all()`, which merges a form body the same
+    // way it merges JSON.
+    expect(out).not.toContain('JSON.stringify({ title')
   })
 
   it('tells the visitor what the link can and cannot do', async () => {

@@ -1,8 +1,15 @@
 import type { RequestInstance } from '@stacksjs/types'
+import { randomUUID } from 'node:crypto'
 import { Action } from '@stacksjs/actions/runtime'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { kanbanActionError } from '../Kanban/kanban-response'
+import {
+  acceptAttachment,
+  FEEDBACK_ATTACHMENT_MAX_FILES,
+  feedbackAttachmentPath,
+  SNIFF_BYTES,
+} from './feedback-attachment'
 import { notifyFeedbackFiled } from './feedback-notifier'
 import {
   authorizeFeedbackToken,
@@ -16,6 +23,44 @@ import {
 interface FeedbackInput {
   title?: unknown
   description?: unknown
+}
+
+/**
+ * Write the screenshot and record it against the card.
+ *
+ * Runs after the card exists, because the path is keyed by card id. A failure
+ * here is logged and swallowed: the report is already saved and is worth more
+ * than the picture, and telling the reviewer their submission failed would
+ * invite a resubmit that files the card twice.
+ */
+async function storeAttachment(
+  cardId: number,
+  attachment: { bytes: Uint8Array, mimeType: string, extension: string },
+): Promise<void> {
+  try {
+    const { dashboard } = await import('@stacksjs/config')
+    // `local` is private storage under `storage/app`. The default is not read
+    // from `filesystems.driver`, which an app may point at `public`: an
+    // unauthenticated stranger's upload does not belong in a web-served
+    // directory.
+    const disk = String((dashboard as any)?.feedback?.attachments?.disk || 'local')
+    const path = feedbackAttachmentPath(cardId, randomUUID(), attachment.extension)
+
+    const { Storage } = await import('@stacksjs/storage')
+    await Storage.disk(disk as never).write(path, attachment.bytes)
+
+    const { CardAttachment } = await import('@stacksjs/orm')
+    await CardAttachment.create({
+      cardId,
+      disk,
+      path,
+      mimeType: attachment.mimeType,
+      sizeBytes: attachment.bytes.byteLength,
+    })
+  }
+  catch (err) {
+    console.warn(`[FeedbackStoreAction] card ${cardId} was filed without its screenshot: ${err instanceof Error ? err.message : String(err)}`)
+  }
 }
 
 /**
@@ -59,6 +104,33 @@ export default new Action({
     if (rawDescription.length > MAX_DESCRIPTION)
       return response.json({ message: `The description must be ${MAX_DESCRIPTION} characters or fewer.` }, 400)
     const description = rawDescription || undefined
+
+    // The screenshot is judged BEFORE anything is written. Filing the card
+    // first and then refusing the file would show the reviewer an error for a
+    // report that was in fact saved, and the obvious thing to do about an
+    // error is to send it again.
+    const sent = request.getFiles('screenshot')
+    const screenshot = sent.length > 0 ? sent[0] : request.file('screenshot')
+    if (sent.length > FEEDBACK_ATTACHMENT_MAX_FILES)
+      return response.json({ message: `Attach ${FEEDBACK_ATTACHMENT_MAX_FILES === 1 ? 'one screenshot' : `${FEEDBACK_ATTACHMENT_MAX_FILES} screenshots`} at most.` }, 400)
+
+    let attachment: { bytes: Uint8Array, mimeType: string, extension: string } | undefined
+    if (screenshot) {
+      // Only the sniff window is read to decide, and the size is checked
+      // first, so an enormous upload is refused without being loaded.
+      const head = new Uint8Array(await screenshot.slice(0, SNIFF_BYTES).arrayBuffer())
+      const verdict = acceptAttachment({ size: Number(screenshot.size || 0), head })
+      if (!verdict.ok)
+        return response.json({ message: verdict.message }, 400)
+
+      attachment = {
+        bytes: new Uint8Array(await screenshot.arrayBuffer()),
+        // From the bytes, never from `screenshot.type`, which the submitter
+        // writes. The dashboard serves the file as this.
+        mimeType: verdict.type,
+        extension: verdict.extension,
+      }
+    }
 
     try {
       const token = await (db as any)
@@ -121,6 +193,9 @@ export default new Action({
       ).execute()
 
       const cardId = Number(card.get('id'))
+
+      if (attachment)
+        await storeAttachment(cardId, attachment)
 
       // `void`: the card is saved, so the reviewer is told it went through
       // whatever the notification does. Blocking on an SMTP round-trip would

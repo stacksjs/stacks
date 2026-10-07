@@ -14,18 +14,97 @@
 --}}
 
 <script client>
-// Both arrive as strings: they are decided server-side from the action's own
-// constants so the `maxlength` the reviewer types against is the one the
+// All four arrive as strings: they are the action's own constants, decided
+// server-side so the limits the reviewer types against are the ones the
 // submission is judged by, and a client script cannot read them itself.
 const maxTitle = useReactiveProp('maxTitle', '300')
 const maxDescription = useReactiveProp('maxDescription', '10000')
+const maxBytes = useReactiveProp('maxBytes', '5242880')
+const accept = useReactiveProp('accept', 'image/png,image/jpeg,image/webp,image/gif')
 const route = useRoute()
+const picker = useRef<HTMLInputElement>('feedbackScreenshotInput')
 
 /** ready | sending | filed | dead */
 const status = state('ready')
 const title = state('')
 const description = state('')
 const error = state('')
+const screenshot = state<File | null>(null)
+const preview = state('')
+
+const sizeLimit = derived(() => Number(maxBytes()) || 5 * 1024 * 1024)
+const acceptedTypes = derived(() => accept().split(',').map(type => type.trim()).filter(Boolean))
+
+function megabytes(bytes: number): string {
+  return `${Math.round((bytes / (1024 * 1024)) * 10) / 10} MB`
+}
+
+/**
+ * Hold a chosen screenshot, or say why it cannot be held.
+ *
+ * Checked here as well as on the server, so a reviewer finds out before
+ * uploading five megabytes rather than after. The server checks the bytes
+ * themselves and is the one that decides; this only saves the round trip, so
+ * it reads the declared type, which is all a browser offers.
+ */
+function choose(file: File | null | undefined): void {
+  releasePreview()
+
+  if (!file) {
+    screenshot.set(null)
+    return
+  }
+
+  if (!acceptedTypes().includes(file.type)) {
+    screenshot.set(null)
+    error.set('Attach a PNG, JPEG, WebP or GIF image.')
+    return
+  }
+
+  if (file.size > sizeLimit()) {
+    screenshot.set(null)
+    error.set(`A screenshot must be ${megabytes(sizeLimit())} or smaller. That one is ${megabytes(file.size)}.`)
+    return
+  }
+
+  error.set('')
+  screenshot.set(file)
+  preview.set(URL.createObjectURL(file))
+}
+
+function releasePreview(): void {
+  const url = preview()
+  if (url) {
+    // Each object URL pins the whole file in memory until it is revoked, and
+    // somebody filing several reports in a row would pin every screenshot
+    // they had chosen and changed their mind about.
+    URL.revokeObjectURL(url)
+    preview.set('')
+  }
+}
+
+function pick(event: Event): void {
+  choose((event.target as HTMLInputElement).files?.[0])
+}
+
+function drop(event: DragEvent): void {
+  choose(event.dataTransfer?.files?.[0])
+}
+
+function paste(event: ClipboardEvent): void {
+  // A screenshot usually arrives on the clipboard rather than as a file on
+  // disk, so pasting into the form is the shortest path there is.
+  const file = event.clipboardData?.files?.[0]
+  if (file)
+    choose(file)
+}
+
+function clear(): void {
+  releasePreview()
+  screenshot.set(null)
+  if (picker.current)
+    picker.current.value = ''
+}
 
 function canSubmit() {
   return status() !== 'sending' && title().trim().length > 0
@@ -39,14 +118,25 @@ async function submit() {
   error.set('')
 
   try {
+    // Multipart whether or not a file came with it. The action reads its
+    // fields through `request.all()`, which merges a form body the same way
+    // it merges JSON, so one shape covers both.
+    const body = new FormData()
+    body.set('title', title().trim())
+    if (description().trim())
+      body.set('description', description().trim())
+    const file = screenshot()
+    if (file)
+      body.set('screenshot', file, file.name || 'screenshot')
+
     const reply = await fetch(`/api/feedback/${encodeURIComponent(String(route.params.token || ''))}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: title().trim(), description: description().trim() || undefined }),
+      body,
     })
-    const body = await reply.json().catch(() => ({}))
+    const payload = await reply.json().catch(() => ({}))
 
     if (reply.ok) {
+      releasePreview()
       status.set('filed')
       return
     }
@@ -62,7 +152,7 @@ async function submit() {
     }
 
     status.set('ready')
-    error.set(String(body.message || body.error || 'That did not go through. Try again in a moment.'))
+    error.set(String(payload.message || payload.error || 'That did not go through. Try again in a moment.'))
   }
   catch {
     status.set('ready')
@@ -74,6 +164,7 @@ function another() {
   title.set('')
   description.set('')
   error.set('')
+  clear()
   status.set('ready')
 }
 </script>
@@ -110,7 +201,7 @@ function another() {
           </p>
         </div>
 
-        <form @submit.prevent="submit" class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-sm">
+        <form @submit.prevent="submit" @paste="paste($event)" class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-sm">
           <div :if="error()" role="alert" class="flex gap-2 items-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
             <span class="h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
             <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
@@ -129,7 +220,7 @@ function another() {
             />
           </label>
 
-          <label class="block mb-5">
+          <label class="block mb-4">
             <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Details <span class="font-normal text-neutral-400">(optional)</span></span>
             <textarea
               x-model="description"
@@ -140,6 +231,33 @@ function another() {
               class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg resize-y transition-colors dark:border-neutral-600 placeholder:text-neutral-400 hover:border-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             ></textarea>
           </label>
+
+          <div class="mb-5">
+            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Screenshot <span class="font-normal text-neutral-400">(optional)</span></span>
+
+            <div :if="screenshot()" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 rounded-lg dark:border-neutral-700">
+              <img :src="preview()" alt="The screenshot you chose" class="h-14 w-14 bg-white dark:bg-neutral-900 border border-neutral-200 rounded object-cover dark:border-neutral-700" />
+              <span class="flex-1 min-w-0 text-neutral-600 text-sm truncate dark:text-neutral-300">{{ screenshot()?.name || 'Pasted image' }}</span>
+              <button type="button" @click="clear" class="flex-shrink-0 px-2.5 py-1.5 font-medium text-neutral-600 text-xs dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700">
+                Remove
+              </button>
+            </div>
+
+            <label :else class="flex flex-col items-center justify-center px-4 py-6 text-center border border-neutral-300 border-dashed rounded-lg cursor-pointer transition-colors dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600" @dragover.prevent @drop.prevent="drop($event)">
+              <span class="h-6 w-6 text-neutral-400 i-hugeicons-image-upload"></span>
+              <span class="mt-2 font-medium text-neutral-700 text-sm dark:text-neutral-200">Choose an image, drop it here, or paste it</span>
+              <span class="mt-1 text-neutral-400 text-xs">PNG, JPEG, WebP or GIF, up to {{ megabytes(sizeLimit()) }}</span>
+              <input
+                ref="feedbackScreenshotInput"
+                type="file"
+                name="screenshot"
+                class="sr-only"
+                :accept="accept()"
+                :disabled="status() === 'sending'"
+                @change="pick($event)"
+              />
+            </label>
+          </div>
 
           <button
             type="submit"

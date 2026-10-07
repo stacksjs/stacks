@@ -56,6 +56,47 @@ describe('feedback intake contract', () => {
       expect(acknowledgement![0]).not.toContain(leak)
   })
 
+  test('judges the screenshot before anything is written', () => {
+    // Filing the card and then refusing the file would show the reviewer an
+    // error for a report that was in fact saved, and the obvious response to
+    // an error is to send it again.
+    const verdict = action.indexOf('acceptAttachment({')
+    const create = action.indexOf('Card.create(')
+    expect(verdict).toBeGreaterThan(-1)
+    expect(create).toBeGreaterThan(-1)
+    expect(verdict).toBeLessThan(create)
+  })
+
+  test('records what the bytes are, not what the upload claimed', () => {
+    // `screenshot.type` and the filename are both written by whoever is
+    // uploading. The dashboard serves the file as the recorded type, so a
+    // claimed one would be a stored content-type confusion.
+    expect(action).toContain('mimeType: verdict.type')
+    expect(action).not.toMatch(/mimeType:\s*(String\()?screenshot\.type/)
+    expect(action).not.toMatch(/screenshot\.name/)
+  })
+
+  test('builds the storage path itself, from no part of the upload', () => {
+    // Path traversal through an upload's filename is the oldest bug in this
+    // category, and the extension comes from the sniffed type rather than
+    // from the name.
+    expect(action).toContain('feedbackAttachmentPath(cardId, randomUUID(), attachment.extension)')
+  })
+
+  test('writes a stranger\'s upload to a private disk', () => {
+    // `filesystems.driver` may be `public`, which is a web-served directory.
+    expect(action).toContain("?.attachments?.disk || 'local'")
+    expect(action).not.toMatch(/disk\(['"]public['"]\)/)
+  })
+
+  test('keeps a failed upload from failing the submission', () => {
+    // The report is saved by then and is worth more than the picture, and a
+    // reviewer told their submission failed would send it again.
+    const helper = action.slice(action.indexOf('async function storeAttachment'))
+    expect(helper).toMatch(/catch \(err\) \{[\s\S]*console\.warn/)
+    expect(helper.slice(0, helper.indexOf('catch'))).not.toContain('throw')
+  })
+
   test('notifies without handing the notification a token', () => {
     // The card is saved before this fires, so the notification must not be
     // able to fail the submission, and it must not carry the credential into
