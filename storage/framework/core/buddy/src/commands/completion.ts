@@ -77,7 +77,7 @@ _buddy_completion() {
     # Complete global flags
     case "$prev" in
         buddy|*)
-            COMPREPLY=( $(compgen -W "--help --version --verbose --quiet --debug --no-interaction --env --force" -- "$cur") )
+            COMPREPLY=( $(compgen -W "--help --version --verbose --quiet --debug --no-interaction --env" -- "$cur") )
             return 0
             ;;
     esac
@@ -116,7 +116,6 @@ ${commandList}
         '--debug[Enable debug mode]'
         '--no-interaction[Do not ask interactive questions]'
         '--env[Target environment]:environment:'
-        '--force[Skip confirmation prompts]'
     )
 
     _arguments -C \\
@@ -167,7 +166,6 @@ complete -c buddy -s q -l quiet -d "Suppress non-essential output"
 complete -c buddy -l debug -d "Enable debug mode"
 complete -c buddy -s n -l no-interaction -d "Do not ask interactive questions"
 complete -c buddy -l env -d "Target environment" -r
-complete -c buddy -s f -l force -d "Skip confirmation prompts"
 
 # Installation:
 # Save this file to:
