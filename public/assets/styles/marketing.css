@@ -1523,6 +1523,37 @@ input[type="email"]:focus {
   background: rgba(var(--accent-rgb), 0.08);
 }
 
+/* The capability matrix has eight columns. Its headers wrap and its cells
+  sit tighter than the per-page tables, so the whole matrix fits a desktop
+  width instead of hiding its last columns behind a horizontal scroll. */
+.matrix-table th,
+.matrix-table td {
+  padding: 0.8rem 0.4rem;
+}
+
+.matrix-table thead th {
+  vertical-align: bottom;
+  letter-spacing: 0.06em;
+  white-space: normal;
+}
+
+.matrix-table thead th:first-child,
+.matrix-table tbody th {
+  padding-left: 1rem;
+}
+
+.matrix-table tbody th {
+  width: 172px;
+  white-space: normal;
+}
+
+.matrix-table .level {
+  gap: 0.3rem;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.64rem;
+  letter-spacing: 0;
+}
+
 .matrix-name {
   display: inline-flex;
   gap: 0.55rem;

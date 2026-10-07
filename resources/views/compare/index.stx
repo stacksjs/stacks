@@ -85,7 +85,7 @@ const total = comparisons.length
               Every page here says where the other framework is the better choice before it says where Stacks is, because a comparison that never concedes anything is an advertisement. The table below is about what ships in the box, which you can check, rather than which is faster, which depends on what you build.
             </p>
             <p class="page-lede">
-              Where Stacks fits best is a team that wants to own its data and its environment. The database, the files, the mail server, and the app all run on servers you choose, through deploy drivers for Hetzner, AWS, or any Linux box over SSH, and the only bill is the servers themselves.
+              Where Stacks fits best is a team that wants to own its data and its environment. The database, the files, the mail server, and the app all run on servers you choose, through deploy drivers for Hetzner, AWS, or any Linux box over SSH, and the only bill is the servers themselves. It is also the only framework here with its own mail server: real mailboxes on your domain, on the same box, with no per-seat inbox subscription.
             </p>
             <div class="hero-actions">
               <a class="button primary" href="/features">All features</a>
@@ -101,7 +101,7 @@ const total = comparisons.length
           </div>
 
           <div class="rise table-scroll">
-            <table class="compare-table">
+            <table class="compare-table matrix-table">
               <thead>
                 <tr>
                   <th scope="col">Framework</th>
