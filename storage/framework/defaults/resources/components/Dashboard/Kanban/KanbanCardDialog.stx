@@ -8,6 +8,7 @@ const loadingCard = derived(() => kanban.loadingCard())
 const errorCard = derived(() => kanban.errorCard())
 const allLabels = derived(() => kanban.currentLabels())
 const cardComments = derived(() => openCard()?.comments ?? [])
+const cardAttachments = derived(() => openCard()?.attachments ?? [])
 const cardLabels = derived(() => openCard()?.labels ?? [])
 const cardAssignees = derived(() => openCard()?.assignees ?? [])
 const titleDraft = state('')
@@ -215,6 +216,15 @@ function initialsOf(name: string | null, email: string | null): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
+function formatBytes(bytes: number): string {
+  const value = Number(bytes)
+  if (!Number.isFinite(value) || value <= 0)
+    return ''
+  const units = ['B', 'KB', 'MB', 'GB']
+  const index = Math.min(units.length - 1, Math.floor(Math.log(value) / Math.log(1024)))
+  return `${Math.round((value / 1024 ** index) * 10) / 10} ${units[index]}`
+}
+
 function formatTimestamp(iso: string | null | undefined): string {
   if (!iso)
     return ''
@@ -268,6 +278,26 @@ function formatTimestamp(iso: string | null | undefined): string {
             placeholder="Add a more detailed description"
             class="px-3 py-2 w-full text-zinc-800 text-sm dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
           ></textarea>
+        </section>
+
+        <section :if="cardAttachments().length">
+          <h4 class="mb-2 font-medium text-zinc-500 text-xs tracking-wide uppercase">Attachments</h4>
+          <ul class="grid gap-3 grid-cols-2 sm:grid-cols-3">
+            <li :for="attachment in cardAttachments" class="overflow-hidden bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800">
+              <!-- The URL is signed and expires, so it is opened in a new tab rather than linked anywhere that outlives the modal. -->
+              <a :if="attachment.url" :href="attachment.url" target="_blank" rel="noopener noreferrer" class="block">
+                <img :src="attachment.url" :alt="'Attachment ' + attachment.id" loading="lazy" class="h-28 w-full bg-zinc-50 dark:bg-zinc-900 object-cover" />
+              </a>
+              <!-- Listed even without a URL: a screenshot nobody can open is worth chasing, and is not the same as no screenshot. -->
+              <div :else class="flex items-center justify-center h-28 bg-zinc-50 dark:bg-zinc-900">
+                <span class="h-5 w-5 text-zinc-400 i-hugeicons-image-not-found-01"></span>
+              </div>
+              <div class="px-2 py-1.5">
+                <p class="text-[10px] text-zinc-500 dark:text-zinc-400" :text="attachment.mimeType"></p>
+                <p class="text-[10px] text-zinc-400" :text="formatBytes(attachment.sizeBytes)"></p>
+              </div>
+            </li>
+          </ul>
         </section>
 
         <section>

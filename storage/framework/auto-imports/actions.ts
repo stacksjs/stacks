@@ -468,6 +468,7 @@ export const actions = {
   'Actions/Dashboard/Kanban/LabelStoreAction': '../defaults/app/Actions/Dashboard/Kanban/LabelStoreAction.ts',
   'Actions/Dashboard/Kanban/LabelUpdateAction': '../defaults/app/Actions/Dashboard/Kanban/LabelUpdateAction.ts',
   'Actions/Dashboard/Kanban/UsersListAction': '../defaults/app/Actions/Dashboard/Kanban/UsersListAction.ts',
+  'Actions/Dashboard/Kanban/card-attachments': '../defaults/app/Actions/Dashboard/Kanban/card-attachments.ts',
   'Actions/Dashboard/Kanban/kanban-comment': '../defaults/app/Actions/Dashboard/Kanban/kanban-comment.ts',
   'Actions/Dashboard/Kanban/kanban-model': '../defaults/app/Actions/Dashboard/Kanban/kanban-model.ts',
   'Actions/Dashboard/Kanban/kanban-response': '../defaults/app/Actions/Dashboard/Kanban/kanban-response.ts',

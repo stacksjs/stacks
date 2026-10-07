@@ -28,6 +28,24 @@ interface CardComment {
   updatedAt: string | null
 }
 
+/**
+ * A file on a card. Today that is a screenshot from a feedback link
+ * (stacksjs/stacks#2872).
+ *
+ * `url` is signed and expires, because the bytes live on a private disk and
+ * there is no path a browser could fetch. It is null when one could not be
+ * minted, which is a listed attachment nobody can open and a different
+ * problem from a card with no attachment.
+ */
+interface CardAttachment {
+  id: number
+  uuid: string | null
+  mimeType: string
+  sizeBytes: number
+  createdAt: string | null
+  url: string | null
+}
+
 interface CardRecord {
   id: number
   uuid: string | null
@@ -53,6 +71,7 @@ interface CardDetail extends CardRecord {
   labels: CardLabel[]
   assignees: CardAssignee[]
   comments: CardComment[]
+  attachments: CardAttachment[]
 }
 
 interface ColumnRecord {
@@ -373,7 +392,10 @@ export const kanbanStore = defineStore('kanban', () => {
       ...c,
       labels: c.labels ?? [],
       assignees: c.assignees ?? [],
-      comments: [], // hydrated by openCardDetail
+      // Both hydrated by openCardDetail. A signed URL cannot be seeded from
+      // the board view, which never carries one.
+      comments: [],
+      attachments: [],
     }
   }
 
@@ -400,6 +422,7 @@ export const kanbanStore = defineStore('kanban', () => {
         labels?: CardLabel[]
         assignees?: CardAssignee[]
         comments?: CardComment[]
+        attachments?: CardAttachment[]
         error?: string
       }>(`/api/dashboard/kanban/cards/${cardId}`)
       if (data.error || !data.card)
@@ -409,6 +432,7 @@ export const kanbanStore = defineStore('kanban', () => {
         labels: data.labels ?? [],
         assignees: data.assignees ?? [],
         comments: data.comments ?? [],
+        attachments: data.attachments ?? [],
       })
     }
     catch (e) {

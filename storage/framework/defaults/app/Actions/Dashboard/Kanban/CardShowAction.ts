@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
+import { cardAttachments } from './card-attachments'
 import { modelBoolean } from './kanban-model'
 import { kanbanActionError, kanbanError } from './kanban-response'
 
@@ -29,11 +30,12 @@ interface CardRow {
  * pivots) — this endpoint is for the case where the user lands
  * directly on a card URL or refreshes mid-modal.
  *
- * Three queries via `Promise.all`:
- *   1. The card itself.
- *   2. Labels via the card_labels pivot (with the label row).
- *   3. Assignees via the card_assignees pivot (with user.name/email).
- *   4. Comments (denormalised user name/email for display).
+ * The card itself, then four in parallel via `Promise.all`:
+ *   1. Labels via the card_labels pivot (with the label row).
+ *   2. Assignees via the card_assignees pivot (with user.name/email).
+ *   3. Comments (denormalised user name/email for display).
+ *   4. Attachments, each with a freshly signed, expiring URL. They live on a
+ *      private disk, so there is no path a browser could fetch.
  */
 export default new Action({
   name: 'Kanban Card Show',
@@ -59,7 +61,7 @@ export default new Action({
         return kanbanError('Card not found', 404)
       }
 
-      const [labels, assignees, comments] = await Promise.all([
+      const [labels, assignees, comments, attachments] = await Promise.all([
         db.unsafe(
           `SELECT l.id, l.name, l.color
           FROM card_labels cl
@@ -83,6 +85,9 @@ export default new Action({
           ORDER BY cc.created_at ASC, cc.id ASC`,
           [id],
         ).execute() as Promise<Array<{ id: number, uuid: string | null, user_id: number | null, body: string, created_at: string | null, updated_at: string | null, name: string | null, email: string | null }>>,
+        // Each one carries a freshly signed, expiring URL: the bytes are on a
+        // private disk, so there is no path the browser could fetch.
+        cardAttachments(id),
       ])
 
       return {
@@ -108,6 +113,7 @@ export default new Action({
           assignedByUserId: a.assigned_by_user_id,
           assignedAt: a.created_at,
         })),
+        attachments,
         comments: (comments ?? []).map(c => ({
           id: c.id,
           uuid: c.uuid,
