@@ -96,6 +96,11 @@ export const defaults: StacksOptions = {
     driver: 'analyticshq',
   },
 
+  // No identities by default. An application that posts declares its own in
+  // `config/socials.ts`; shipping a default here would mean every install
+  // claiming to own an account it does not have.
+  socials: {},
+
   // api: {
   //   // version: 'v1',
   //   prefix: 'api',

@@ -34,6 +34,7 @@ import type {
   FormsConfig,
   SitesConfig,
   SmsConfig,
+  SocialsConfig,
   SecurityConfig,
   ServerConfig,
   ServicesConfig,
@@ -359,6 +360,17 @@ export interface StacksOptions {
    * Configured via `config/sms.ts`.
    */
   sms: SmsConfig
+
+  /**
+   * **Socials Options**
+   *
+   * This configuration defines which social accounts this application posts
+   * as, and where each one's credentials come from. Because Stacks is
+   * fully-typed, you may hover any of the options below and the definitions
+   * will be provided. In case you have any questions, feel free to reach out
+   * via Discord or GitHub Discussions.
+   */
+  socials: SocialsConfig
 
   services: ServicesConfig
 
