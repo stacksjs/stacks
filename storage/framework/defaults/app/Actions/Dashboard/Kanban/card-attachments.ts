@@ -1,3 +1,4 @@
+import type { StorageAdapter } from '@stacksjs/storage'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 
 /**
@@ -75,17 +76,32 @@ export async function cardAttachments(cardId: number): Promise<CardAttachmentVie
 
   const { Storage } = await import('@stacksjs/storage')
 
-  return Promise.all((rows ?? []).map(async (row) => {
-    let url: string | null = null
-    try {
-      url = await Storage.disk(row.disk as never).signedUrl(row.path, { expiresIn: CARD_ATTACHMENT_URL_TTL_SECONDS })
-    }
-    catch (err) {
-      // A disk that is no longer configured, or an APP_KEY too short to sign
-      // with. Per attachment, so one unreadable file does not take the card
-      // down with it.
-      console.warn(`[card-attachments] could not sign attachment ${row.id}: ${err instanceof Error ? err.message : String(err)}`)
-    }
-    return shapeCardAttachment(row, url)
-  }))
+  return Promise.all((rows ?? []).map(async row =>
+    shapeCardAttachment(row, await signCardAttachmentUrl(row, name => Storage.disk(name as never))),
+  ))
+}
+
+/**
+ * A signed URL for one attachment, or null when its disk cannot mint one.
+ *
+ * Per attachment, so one unreadable file does not take the card down with it.
+ */
+export async function signCardAttachmentUrl(
+  row: CardAttachmentRow,
+  openDisk: (name: string) => Pick<StorageAdapter, 'signedUrl'>,
+): Promise<string | null> {
+  try {
+    const disk = openDisk(row.disk)
+    // A disk with no signer at all (a driver that cannot mint one) is the
+    // same outcome as one that fails to: listed, but with nothing to open.
+    if (typeof disk.signedUrl !== 'function')
+      throw new Error(`disk '${row.disk}' does not support signedUrl`)
+    return await disk.signedUrl(row.path, { expiresIn: CARD_ATTACHMENT_URL_TTL_SECONDS })
+  }
+  catch (err) {
+    // A disk that is no longer configured or cannot sign, or an APP_KEY too
+    // short to sign with.
+    console.warn(`[card-attachments] could not sign attachment ${row.id}: ${err instanceof Error ? err.message : String(err)}`)
+    return null
+  }
 }

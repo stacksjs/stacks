@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'bun:test'
+import { afterAll, afterEach, describe, expect, it, spyOn } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { CARD_ATTACHMENT_URL_TTL_SECONDS, shapeCardAttachment } from './card-attachments'
+import { CARD_ATTACHMENT_URL_TTL_SECONDS, shapeCardAttachment, signCardAttachmentUrl } from './card-attachments'
 
 const row = {
   id: 7,
@@ -57,6 +57,47 @@ describe('the signed URL lifetime', () => {
     // out of devtools is not a handout.
     expect(CARD_ATTACHMENT_URL_TTL_SECONDS).toBeGreaterThanOrEqual(5 * 60)
     expect(CARD_ATTACHMENT_URL_TTL_SECONDS).toBeLessThanOrEqual(60 * 60)
+  })
+})
+
+describe('signing one attachment', () => {
+  const warn = spyOn(console, 'warn').mockImplementation(() => {})
+  afterEach(() => warn.mockClear())
+  afterAll(() => warn.mockRestore())
+
+  it('asks the row\'s own disk, for the row\'s path, with the card lifetime', async () => {
+    const asked: unknown[] = []
+    const url = await signCardAttachmentUrl(row, (name) => {
+      asked.push(name)
+      return {
+        signedUrl: async (path, options) => {
+          asked.push(path, options)
+          return `https://app.test/__storage/${path}?token=t`
+        },
+      }
+    })
+    expect(url).toBe(`https://app.test/__storage/${row.path}?token=t`)
+    expect(asked).toEqual(['local', row.path, { expiresIn: CARD_ATTACHMENT_URL_TTL_SECONDS }])
+  })
+
+  it('is null, not a throw, for a disk with no signer', async () => {
+    expect(await signCardAttachmentUrl(row, () => ({}))).toBeNull()
+    expect(String(warn.mock.calls[0]?.[0])).toContain('does not support signedUrl')
+  })
+
+  it('is null, not a throw, for a disk that is no longer configured', async () => {
+    const url = await signCardAttachmentUrl(row, () => {
+      throw new Error('disk \'local\' is not configured')
+    })
+    expect(url).toBeNull()
+    expect(String(warn.mock.calls[0]?.[0])).toContain(`attachment ${row.id}`)
+  })
+
+  it('is null, not a throw, when the signer refuses', async () => {
+    const url = await signCardAttachmentUrl(row, () => ({
+      signedUrl: async () => { throw new Error('APP_KEY is too short to sign with') },
+    }))
+    expect(url).toBeNull()
   })
 })
 
