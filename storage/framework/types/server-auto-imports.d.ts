@@ -68,6 +68,7 @@ declare global {
   const CampaignSend: typeof import('../defaults/app/Models/CampaignSend')['default']
   const CampaignVariant: typeof import('../defaults/app/Models/CampaignVariant')['default']
   const Card: typeof import('../defaults/app/Models/Card')['default']
+  const CardAttachment: typeof import('../defaults/app/Models/CardAttachment')['default']
   const CardComment: typeof import('../defaults/app/Models/CardComment')['default']
   const Comment: typeof import('../defaults/app/Models/Comment')['default']
   const CommunicationSuppression: typeof import('../defaults/app/Models/CommunicationSuppression')['default']

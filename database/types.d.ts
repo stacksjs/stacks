@@ -247,6 +247,18 @@ declare module '@stacksjs/database' {
       assigned_by_user_id: number | null
       created_at: string | null
     }
+    card_attachments: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      disk: string
+      path: string
+      mime_type: string
+      size_bytes: number
+      card_id: number
+    }
     card_comments: {
       // columns
       id: number

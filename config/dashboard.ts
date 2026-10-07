@@ -97,6 +97,11 @@ export default {
   // accident. `chat` needs no recipients (Slack via webhook); email, sms and
   // database each need a recipient carrying their own contact field.
   feedback: {
+    // A screenshot goes to private storage: the upload authenticates nobody,
+    // so a `public` disk would leave a stranger's file world-readable.
+    attachments: {
+      disk: 'local',
+    },
     notifications: {
       enabled: false,
       channels: ['chat'],

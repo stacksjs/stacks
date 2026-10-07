@@ -16,6 +16,7 @@
     "CampaignSend": true,
     "CampaignVariant": true,
     "Card": true,
+    "CardAttachment": true,
     "CardComment": true,
     "Cart": true,
     "CartItem": true,

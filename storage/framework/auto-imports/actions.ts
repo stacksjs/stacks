@@ -418,6 +418,7 @@ export const actions = {
   'Actions/Dashboard/Email/mail-preference': '../defaults/app/Actions/Dashboard/Email/mail-preference.ts',
   'Actions/Dashboard/Email/sanitize-inbox-html': '../defaults/app/Actions/Dashboard/Email/sanitize-inbox-html.ts',
   'Actions/Dashboard/Feedback/FeedbackStoreAction': '../defaults/app/Actions/Dashboard/Feedback/FeedbackStoreAction.ts',
+  'Actions/Dashboard/Feedback/feedback-attachment': '../defaults/app/Actions/Dashboard/Feedback/feedback-attachment.ts',
   'Actions/Dashboard/Feedback/feedback-notifier': '../defaults/app/Actions/Dashboard/Feedback/feedback-notifier.ts',
   'Actions/Dashboard/Feedback/feedback-token': '../defaults/app/Actions/Dashboard/Feedback/feedback-token.ts',
   'Actions/Dashboard/Infrastructure/CommandIndexAction': '../defaults/app/Actions/Dashboard/Infrastructure/CommandIndexAction.ts',

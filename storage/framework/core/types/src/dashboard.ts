@@ -151,6 +151,18 @@ export interface DashboardOptions {
    */
   feedback?: {
     /**
+     * Where a submitted screenshot is written.
+     *
+     * Defaults to `local`, which is PRIVATE storage under `storage/app`. The
+     * upload is unauthenticated, so a `public` disk would put a stranger's
+     * file in a world-readable directory at a path the dashboard also prints.
+     * Point this at an S3 disk on a host whose local disk does not persist.
+     */
+    attachments?: {
+      disk?: string
+    }
+
+    /**
      * Tell somebody when a card arrives.
      *
      * Off by default, like every other notification surface here. A card

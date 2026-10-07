@@ -355,6 +355,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Board', [''], 'dashboard'],
   ['BoardColumn', [''], 'dashboard'],
   ['Card', [''], 'dashboard'],
+  ['CardAttachment', [''], 'dashboard'],
   ['CardComment', [''], 'dashboard'],
   ['Deployment', [''], 'dashboard'],
   ['FeedbackToken', [''], 'dashboard'],
@@ -499,6 +500,7 @@ export const Board = lazyModel<typeof import('../../../defaults/app/Models/Board
 export const BoardColumn = lazyModel<typeof import('../../../defaults/app/Models/BoardColumn').default>('BoardColumn')
 export const Campaign = lazyModel<typeof import('../../../defaults/app/Models/Campaign').default>('Campaign')
 export const Card = lazyModel<typeof import('../../../defaults/app/Models/Card').default>('Card')
+export const CardAttachment = lazyModel<typeof import('../../../defaults/app/Models/CardAttachment').default>('CardAttachment')
 export const CardComment = lazyModel<typeof import('../../../defaults/app/Models/CardComment').default>('CardComment')
 export const Cart = lazyModel<typeof import('../../../defaults/app/Models/commerce/Cart').default>('Cart')
 export const CartItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/CartItem').default>('CartItem')
