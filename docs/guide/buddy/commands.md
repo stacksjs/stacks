@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **351 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **353 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -68,6 +68,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `setup` | 3 |
 | `simulator` | 2 |
 | `sms` | 6 |
+| `socials` | 2 |
 | `stack` | 3 |
 | `storage` | 3 |
 | `stripe` | 1 |
@@ -5154,6 +5155,43 @@ Verify a sandbox phone number
 - Namespace: `sms`
 - Aliases: none
 - Arguments: `<id>`, `<code>`
+
+### `socials:authorize`
+
+Run a platform consent flow and print the tokens for .env
+
+- Usage: `$ buddy socials:authorize [identity]`
+- Namespace: `socials`
+- Aliases: none
+- Arguments: `[identity]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--platform` | Which platform to authorize. Only `twitter` needs a consent flow today. | value, required | `"twitter"` |
+| `--port` | Loopback port the redirect comes back on. Must match the registered redirect URI. | value, required | `"7731"` |
+| `--timeout` | How long to wait at the browser | value, required | `"300"` |
+
+Examples:
+
+```bash
+buddy socials:authorize home-lang
+buddy socials:authorize stacks --platform twitter --port 7731
+```
+
+### `socials:identities`
+
+List the social identities and whether each platform is ready to post
+
+- Usage: `$ buddy socials:identities`
+- Namespace: `socials`
+- Aliases: none
+- Arguments: none
+
+Examples:
+
+```bash
+buddy socials:identities
+```
 
 ### `stack:install`
 

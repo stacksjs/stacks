@@ -144,6 +144,7 @@
     "@stacksjs/server": "^0.75.90",
     "@stacksjs/sites": "^0.75.90",
     "@stacksjs/skills": "^0.75.90",
+    "@stacksjs/socials": "^0.75.90",
     "@stacksjs/storage": "^0.75.90",
     "@stacksjs/strings": "^0.75.90",
     "@stacksjs/stx": "^0.2.395",

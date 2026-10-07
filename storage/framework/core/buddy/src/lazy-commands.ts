@@ -107,6 +107,10 @@ const commandRegistry: Record<string, CommandLoader> = {
   'feedback:invite': { path: './commands/feedback.ts', exportName: 'feedback' },
   'feedback:tokens': { path: './commands/feedback.ts', exportName: 'feedback' },
   'feedback:revoke': { path: './commands/feedback.ts', exportName: 'feedback' },
+  // Social identities and the one consent flow that cannot be prepared in
+  // `.env` (stacksjs/stacks#2873).
+  'socials:identities': { path: './commands/socials.ts', exportName: 'socials' },
+  'socials:authorize': { path: './commands/socials.ts', exportName: 'socials' },
   'fresh': { path: './commands/fresh.ts', exportName: 'fresh' },
   'generate': { path: './commands/generate.ts', exportName: 'generate' },
   // Data-subject requests and the processing register (stacksjs/stacks#365).

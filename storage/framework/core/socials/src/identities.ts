@@ -145,6 +145,34 @@ export function pickIdentity(socials: SocialsShape, identity?: string): string {
 }
 
 /**
+ * Whatever is configured for one identity on one platform, without judging it.
+ *
+ * Inline `credentials` win; otherwise the environment convention applies.
+ *
+ * Separate from {@link pickCredentials} because a consent flow needs exactly
+ * this: it reads `clientId` and `clientSecret` in order to GO AND GET the
+ * access token, so the validator that insists on an access token would refuse
+ * the one command that can produce one.
+ */
+export function readCredentials<P extends SocialCredentialPlatform>(
+  socials: SocialsShape,
+  platform: P,
+  identity: string,
+  env: Record<string, string | undefined> = process.env,
+): Partial<SocialCredentialsByPlatform[P]> {
+  const declared = socials.identities?.[identity] ?? {}
+  const inline = (declared.credentials?.[platform] ?? {}) as Record<string, string | undefined>
+  const resolved: Record<string, string> = {}
+
+  for (const field of SOCIAL_CREDENTIAL_FIELDS[platform]) {
+    const value = (inline[field] ?? env[envName(identity, platform, field)] ?? '').trim()
+    if (value) resolved[field] = value
+  }
+
+  return resolved as Partial<SocialCredentialsByPlatform[P]>
+}
+
+/**
  * The credentials for one identity on one platform, given the configuration.
  *
  * Inline `credentials` win; otherwise the environment convention applies. The
@@ -158,14 +186,7 @@ export function pickCredentials<P extends SocialCredentialPlatform>(
   env: Record<string, string | undefined> = process.env,
 ): SocialCredentialsByPlatform[P] {
   const name = pickIdentity(socials, identity)
-  const declared = socials.identities?.[name] ?? {}
-  const inline = (declared.credentials?.[platform] ?? {}) as Record<string, string | undefined>
-  const resolved: Record<string, string> = {}
-
-  for (const field of SOCIAL_CREDENTIAL_FIELDS[platform]) {
-    const value = (inline[field] ?? env[envName(name, platform, field)] ?? '').trim()
-    if (value) resolved[field] = value
-  }
+  const resolved = readCredentials(socials, platform, name, env) as Record<string, string>
 
   const missing = REQUIRED_SOCIAL_CREDENTIALS[platform].filter(field => !resolved[field])
   if (missing.length) {
