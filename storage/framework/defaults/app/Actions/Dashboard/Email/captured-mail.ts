@@ -1,7 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 import { log as logDriver } from '@stacksjs/email'
-import { logsPath } from '@stacksjs/path'
 
 const { LogEmailDriver } = logDriver
 
@@ -36,8 +35,9 @@ export interface CapturedMailListing {
   problems: CapturedMailProblem[]
 }
 
+// The driver's own answer, so the page reads exactly where captures are written.
 function capturedMailDirectory(): string {
-  return process.env.LOG_MAIL_DIR || logsPath('mail')
+  return LogEmailDriver.directory()
 }
 
 function formatAddress(value: unknown): string {

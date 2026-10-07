@@ -2,6 +2,7 @@ import type { EmailMessage, EmailResult } from '@stacksjs/types'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { log } from '@stacksjs/logging'
+import { logsPath } from '@stacksjs/path'
 import type { TemplateOptions } from '../template'
 import { templateByName } from '../template'
 import { BaseEmailDriver } from './base'
@@ -31,14 +32,20 @@ const captured: CapturedEmail[] = []
 export class LogEmailDriver extends BaseEmailDriver {
   public name = 'log'
 
-  // Log destination — defaults to `storage/logs/mail/` so it sits next to
-  // the rest of the framework's log output. Tests can override via
-  // services.log.path or env LOG_MAIL_DIR.
-  private resolveDir(): string {
+  /**
+   * Where captures are written: `LOG_MAIL_DIR`, else the project's
+   * `storage/logs/mail/`, beside the rest of its logs. The dashboard's
+   * captured-mail pages read the same directory through this.
+   *
+   * It used to count five directories up from this file, which is
+   * `storage/` only in the framework's own checkout. From an installed
+   * package (`node_modules/@stacksjs/email/dist/drivers/`) it is the app's
+   * root, so captures landed in `<app>/logs/mail` while the dashboard read
+   * `<app>/storage/logs/mail` and showed none of them.
+   */
+  public static directory(): string {
     const fromEnv = process.env.LOG_MAIL_DIR
-    if (fromEnv) return resolve(fromEnv)
-    // storage/framework/core/email/src/drivers/log.ts → ../../../../../logs/mail
-    return resolve(join(import.meta.dir, '..', '..', '..', '..', '..', 'logs', 'mail'))
+    return fromEnv ? resolve(fromEnv) : logsPath('mail')
   }
 
   public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
@@ -57,7 +64,7 @@ export class LogEmailDriver extends BaseEmailDriver {
       const stamp = new Date()
       const safeSubject = (message.subject || 'no-subject').replace(/[^\w.-]+/g, '-').slice(0, 60)
       const filename = `${stamp.toISOString().replace(/[:.]/g, '-')}-${safeSubject}.html`
-      const dir = this.resolveDir()
+      const dir = LogEmailDriver.directory()
 
       try {
         await mkdir(dir, { recursive: true })
