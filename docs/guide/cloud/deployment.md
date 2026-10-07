@@ -7,13 +7,14 @@ description: "buddy deploy builds the application and ships it to one of three t
 `buddy deploy` builds the application and ships it. Where it ships is decided by one setting,
 `cloud.provider` in `config/cloud.ts`.
 
-## The three targets
+## The targets
 
 | `cloud.provider` | Target | How it gets there |
 |---|---|---|
 | `'aws'` (default) | AWS | Generates the infrastructure and creates or updates a CloudFormation stack |
 | `'hetzner'` | A Hetzner Cloud server | Provisions the server through the Hetzner API, then deploys over SSH |
 | `'ssh'` | A Linux host you already own | Adopts and bootstraps the host over SSH, then deploys to it |
+| `'fly'` | Fly.io Machines | Builds a container image, pushes it to Fly's registry, and rolls the app's Machines onto it |
 
 `CLOUD_PROVIDER` in the environment overrides the config value. With neither set, the provider is
 `aws`.
@@ -129,6 +130,80 @@ set `ssh.publicIp`. DNS and certificates then work exactly as they do for Hetzne
 The full walkthrough, including flashing an image, first-boot configuration, trusting the box's
 local certificate authority, and troubleshooting, is in
 [Deploying to a Raspberry Pi](/guide/cloud/raspberry-pi).
+
+## Fly.io (`provider: 'fly'`)
+
+The app runs as a container image on Fly.io Machines. There is no server to provision and nothing
+to reach over SSH.
+
+```ts
+cloud: {
+  provider: 'fly',
+},
+
+fly: {
+  regions: ['iad', 'ams'],
+  vm: { memoryMb: 1024 },
+  volume: { sizeGb: 1, path: '/data' },
+  hostnames: ['acme.com'],
+},
+```
+
+`buddy deploy` then:
+
+1. creates the Fly app (`<slug>-<environment>` unless `fly.app` says otherwise) when it does not
+   exist yet, so its registry can take the image
+2. builds `storage/framework/Dockerfile` for linux/amd64 and pushes it to
+   `registry.fly.io/<app>:<commit>`. Docker has to be installed where the deploy runs
+3. sets every value in `.env.<environment>` as a Fly secret, never as plain Machine env
+4. gives the app a dedicated IPv6 and a shared IPv4, so `<app>.fly.dev` answers
+5. updates each Machine in place under its lease, waiting for it to start before the next, and
+   creates the Machines a region is missing, each with its own volume when one is configured
+6. requests a certificate for each of `fly.hostnames` and prints the record it needs
+
+It never destroys anything. Machines beyond `fly.count`, or in a region you removed, are reported
+and left running, because a Machine can hold the only copy of its volume's data.
+
+The token comes from `FLY_API_TOKEN`. `fly tokens create deploy` makes one scoped to the app, and
+an organization token lets the first deploy create the app.
+
+## Preview deployments
+
+Every pull request can run as its own copy of the app at `pr-<number>.<preview domain>`, on the
+app's own Hetzner or `ssh` box, and disappear when the pull request closes.
+
+```bash
+buddy deploy:preview pr-123
+buddy deploy:preview:remove pr-123
+```
+
+A preview is its own project as far as the box is concerned: slug `<slug>-pr-123`, attached to the
+app's box like any tenant. That is what isolates it:
+
+- its gateway route, services and files carry the preview's slug, so deploying or removing it
+  never touches the app's
+- a relative SQLite path lands in the preview's own data directory, so each preview has its own
+  database without any setup
+- its secrets come from `.env.preview` alone, never layered over `.env.production`, so a pull
+  request cannot reach production data. The deploy refuses to run without that file.
+
+Set it up once:
+
+1. Choose a domain for previews, with its DNS at a provider the deploy has keys for, and set
+   `cloud.previews.domain` in `config/cloud.ts` (or `PREVIEW_DOMAIN`).
+2. Create `.env.preview` with its own credentials: `buddy env:set --file .env.preview APP_KEY ...`
+3. `cloud.previews.site` picks which site to preview; the first one that runs a server is the
+   default. `--base staging` puts a preview on the staging box instead of production's.
+
+New apps ship `.github/workflows/preview.yml`. It deploys on every push to a pull request,
+keeps the URL in one comment on it, and removes the preview on close. Pull requests from forks
+are skipped, since deploying a fork's code with the app's secrets would hand those secrets over.
+It needs `DEPLOY_SSH_KEY` and `DOTENV_PRIVATE_KEY_PREVIEW` as secrets and `PREVIEW_DOMAIN` as a
+repository variable.
+
+Removing a preview stops and deletes its services, its gateway route and certificate units, its
+files and data directory, and its DNS records, by their exact names. Another preview whose name
+starts the same way, such as `pr-1-docs` beside `pr-1`, is left alone.
 
 ## Deployment hooks
 

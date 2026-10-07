@@ -21,6 +21,7 @@ import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
+import { buildPreviewTeardownScript, derivePreviewConfig, previewDomain, previewPort, previewTarget } from './preview-deploy'
 import type { SshTarget } from './deploy-ssh-target'
 import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
@@ -1094,14 +1095,20 @@ done`,
 export async function resolveDeployEnvValues(
   environment: 'production' | 'staging' | 'development',
   tsCloudConfig?: { project?: { slug?: string } },
+  /**
+   * Read this file and nothing else. A preview deploys against its base
+   * environment's box but must never see that environment's secrets, so it
+   * names `.env.preview` here rather than falling back to `.env.production`.
+   */
+  fileOverride?: string,
 ): Promise<Record<string, string>> {
-  const fileName = environment === 'production'
+  const fileName = fileOverride ?? (environment === 'production'
     ? '.env.production'
     : environment === 'staging'
       ? '.env.staging'
       : existsSync(p.projectPath('.env.development'))
         ? '.env.development'
-        : '.env'
+        : '.env')
   const filePath = p.projectPath(fileName)
   if (!existsSync(filePath))
     return {}
@@ -1135,7 +1142,8 @@ export async function resolveDeployEnvValues(
     // not recoverable here — the private key is the only thing that would help.
     if (undecrypted.length > 0) {
       log.error(`${undecrypted.length} value(s) in ${fileName} could not be decrypted: ${undecrypted.join(', ')}`)
-      log.info(`The private key for this environment lives in .env.keys, which is not committed. Restore it, or set DOTENV_PRIVATE_KEY_${environment.toUpperCase()} in the environment running the deploy.`)
+      const keyEnvironment = fileOverride ? fileOverride.replace(/^\.env\.?/, '') || environment : environment
+      log.info(`The private key for this environment lives in .env.keys, which is not committed. Restore it, or set DOTENV_PRIVATE_KEY_${keyEnvironment.toUpperCase()} in the environment running the deploy.`)
       process.exit(ExitCode.FatalError)
     }
 
@@ -2045,7 +2053,7 @@ export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null
  *
  * The app is served directly on the server's public IP (no domain required).
  */
-async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions): Promise<void> {
+async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions, envFile?: string): Promise<void> {
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
   const provider = resolveProvider(tsCloudConfig)
@@ -2118,7 +2126,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
-    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget })
+    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget, envFile })
   }
   catch (err) {
     log.error(`${deployTargetLabel(provider, sshTarget?.profile)} deploy failed:`)
@@ -2485,6 +2493,8 @@ async function startGithubDeployments(args: {
 async function runSshDeploy(args: {
   tsCloudConfig: any
   environment: 'production' | 'staging' | 'development'
+  /** Read site env from this file only (a preview's `.env.preview`). */
+  envFile?: string
   verbose: boolean
   docker: boolean
   createCloudDriver: any
@@ -2927,7 +2937,7 @@ async function runSshDeploy(args: {
   // `env` overrides — see resolveDeployEnvValues' doc comment for why this
   // has to happen here (ts-cloud has no idea .env.production/decryption
   // exist) rather than inside ts-cloud itself.
-  const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig)
+  const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig, args.envFile)
   // Persistent-state paths are declared AFTER the env merge: which file (or
   // whether any file) the app opens is decided by the site's resolved
   // DB_CONNECTION/DB_DATABASE_PATH, not by config/cloud.ts. Requires a ts-cloud
@@ -5212,6 +5222,185 @@ export async function reconcileHetznerDns(sites: Record<string, any>, ip: string
 }
 
 /**
+ * `deploy:preview` and `deploy:preview:remove` (stacksjs/stacks#735). The
+ * preview is derived in `preview-deploy.ts`; this finds the box, picks the
+ * port, deploys through the ordinary attach path, and undoes it on removal.
+ */
+async function runPreviewCommand(name: string, options: { base?: string, verbose?: boolean }, action: 'deploy' | 'remove'): Promise<void> {
+  const base = resolveDeploymentEnvironment({ option: options.base }) as 'production' | 'staging' | 'development'
+
+  // A preview's secrets are `.env.preview`'s alone. Loaded before the config
+  // is evaluated, so config/cloud.ts sees them, and never layered over the
+  // base environment's file: a pull request must not reach production data.
+  const envFile = '.env.preview'
+  if (action === 'deploy' && !existsSync(p.projectPath(envFile))) {
+    log.error(`Previews read their secrets from ${envFile} only, and this project has none.`)
+    log.info(`Create it with its own database, mail and API credentials (never production's): buddy env:set --file ${envFile} APP_KEY ...`)
+    process.exit(ExitCode.FatalError)
+  }
+  if (existsSync(p.projectPath(envFile))) {
+    const { loadEnv } = await import('@stacksjs/env')
+    loadEnv({ path: envFile, env: 'preview', keysFile: '.env.keys', overload: true, quiet: true })
+  }
+
+  const appConfig = await loadTsCloudConfig(base)
+  if (!appConfig) {
+    log.error('Previews need config/cloud.ts.')
+    process.exit(ExitCode.FatalError)
+  }
+  const provider = resolveProvider(appConfig)
+  if (!isSshPipelineProvider(provider)) {
+    log.error(`Previews run as a tenant on the app's box, which the '${provider}' provider does not have. They work with cloud.provider 'hetzner' or 'ssh'.`)
+    process.exit(ExitCode.FatalError)
+  }
+
+  let target: ReturnType<typeof previewTarget>
+  try {
+    target = previewTarget(appConfig, name, previewDomain(appConfig, process.env))
+  }
+  catch (error) {
+    log.error(getErrorMessage(error))
+    process.exit(ExitCode.InvalidArgument)
+  }
+
+  // The box: the operator's host for `ssh`, the owner's labelled server for Hetzner.
+  const sshTarget = provider === 'ssh' ? resolveSshTarget(appConfig) : null
+  const lookup = provider === 'ssh' ? null : await resolveAttachTargetBox(target.owner, base, appConfig)
+  const host = sshTarget?.host ?? lookup?.box?.publicIp
+  if (!host) {
+    log.error(provider === 'ssh' ? 'No SSH host configured for this project.' : describeAttachLookupFailure(target.owner, base, lookup?.failure))
+    process.exit(ExitCode.FatalError)
+  }
+  const remoteTarget: SshTarget = sshTarget ? { ...sshTarget, host } : hetznerTarget(host)
+  const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+  const runRemote = (script: string): Promise<string> => {
+    const encoded = Buffer.from(script).toString('base64')
+    const privileged = remoteTarget.user === 'root' ? 'bash' : 'sudo -n bash'
+    return sshExecOrThrow(host, `echo ${encoded} | base64 -d | ${privileged}`, remoteExecOptions(remoteTarget, 15))
+  }
+
+  if (action === 'remove') {
+    await removePreview(target, base, runRemote)
+    return
+  }
+
+  const { buildHostSitePortsScript, occupiedHostPorts, parseHostSiteFragments } = await import('@stacksjs/ts-cloud')
+  const owners = occupiedHostPorts(parseHostSiteFragments(await runRemote(buildHostSitePortsScript())))
+  const port = previewPort(owners, target.slug, Number(appConfig.sites?.[target.site]?.port) || 3000)
+  log.info(`Deploying preview ${target.slug} to ${target.url} (port ${port} on ${host})`)
+
+  await deployOverSsh(derivePreviewConfig(appConfig, target, port), base, { verbose: options.verbose === true, yes: true } as DeployOptions, envFile)
+
+  log.success(`Preview deployed: ${target.url}`)
+  // For the workflow that comments the URL on the pull request.
+  if (process.env.GITHUB_OUTPUT)
+    writeFileSync(process.env.GITHUB_OUTPUT, `url=${target.url}\n`, { flag: 'a' })
+}
+
+/**
+ * Undo a preview: its units, gateway route, certificate units and files on
+ * the box, its DNS records, and this checkout's state pin for it.
+ */
+async function removePreview(target: ReturnType<typeof previewTarget>, base: string, runRemote: (script: string) => Promise<string>): Promise<void> {
+  log.info(`Removing preview ${target.slug} (${target.host})`)
+  await runRemote(buildPreviewTeardownScript(target.slug, target.site))
+  log.success(`Removed ${target.slug} from the box`)
+
+  const tsCloudConfig = await loadTsCloudConfig(base).catch(() => undefined)
+  const providerConfigs = dnsProviderConfigsFromEnv(declaredDnsProvider(tsCloudConfig))
+  // The host is the zone argument, exactly as reconcileHetznerDns created the
+  // records: the provider derives the real zone root from it.
+  const zone = target.host
+  const provider = providerConfigs.length > 0 ? await resolveZoneDnsProvider(zone, providerConfigs, log) : undefined
+  if (!provider) {
+    log.warn(`DNS: no configured provider manages ${zone}; remove the A/AAAA records for ${target.host} by hand.`)
+  }
+  else {
+    const { removeAddressRecords } = await import('@stacksjs/ts-cloud')
+    const { removed, warnings } = await removeAddressRecords(provider, zone, target.host)
+    for (const record of removed)
+      log.success(`DNS: deleted ${record.type} ${target.host} (${provider.name})`)
+    for (const warning of warnings)
+      log.warn(`DNS: ${warning}`)
+  }
+
+  const pin = join(process.cwd(), 'storage', 'cloud', 'state', `${target.slug}-${base}.json`)
+  if (existsSync(pin)) {
+    const { rmSync } = await import('node:fs')
+    rmSync(pin)
+  }
+  log.success(`Preview ${target.slug} removed`)
+}
+
+/**
+ * Deploy a `cloud.provider: 'fly'` project: build and push the image, then
+ * converge the Fly app. The work is in `deploy-fly.ts`; this supplies the real
+ * process runner, filesystem and ts-cloud, and reports the outcome.
+ */
+async function deployToFlyProvider(tsCloudConfig: any, environment: string, verbose: boolean): Promise<void> {
+  const { FlyDeployError, runFlyDeploy } = await import('./deploy-fly')
+  const api = await loadTsCloudDeployApi()
+  if (typeof (api as { deployToFly?: unknown }).deployToFly !== 'function') {
+    log.error('This @stacksjs/ts-cloud cannot deploy to Fly.io: upgrade it to 0.16.45 or newer.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  const { execSync } = await import('node:child_process')
+  let release: string
+  try {
+    release = execSync('git rev-parse --short=12 HEAD', { cwd: p.projectPath(), stdio: 'pipe' }).toString().trim()
+  }
+  catch {
+    release = `build-${Date.now()}`
+  }
+
+  const deployEnv = (environment === 'prod' ? 'production' : environment) as 'production' | 'staging' | 'development'
+  try {
+    const result = await runFlyDeploy({
+      config: tsCloudConfig,
+      environment: deployEnv,
+      token: process.env.FLY_API_TOKEN,
+      release,
+      envValues: await resolveDeployEnvValues(deployEnv, tsCloudConfig),
+      projectRoot: p.projectPath(),
+    }, {
+      api,
+      run: (command, options) => {
+        const child = Bun.spawnSync(command, {
+          cwd: options.cwd,
+          stdin: options.stdin === undefined ? 'inherit' : new TextEncoder().encode(options.stdin),
+          stdout: verbose ? 'inherit' : 'pipe',
+          stderr: verbose ? 'inherit' : 'pipe',
+        })
+        return { exitCode: child.exitCode, output: `${child.stdout ?? ''}${child.stderr ?? ''}` }
+      },
+      exists: existsSync,
+      log: line => log.info(line),
+    })
+
+    log.success(`Deployed to ${result.url}`)
+    if (result.untouched.length > 0)
+      log.warn(`Left ${result.untouched.length} Machine(s) the config no longer accounts for: ${result.untouched.join(', ')}. Remove them with \`fly machine destroy\` once nothing needs their data.`)
+    for (const certificate of result.certificates) {
+      if (certificate.configured)
+        continue
+      const needs = certificate.dns_requirements
+      const target = needs?.cname ? `a CNAME to ${needs.cname}` : [...(needs?.a ?? []), ...(needs?.aaaa ?? [])].join(', ') || 'Fly\'s addresses'
+      log.info(`${certificate.hostname}: point it at ${target}; Fly issues the certificate once it resolves.`)
+    }
+  }
+  catch (error) {
+    if (error instanceof FlyDeployError) {
+      log.error(error.message)
+      if (error.hint)
+        log.info(error.hint)
+      process.exit(ExitCode.FatalError)
+    }
+    throw error
+  }
+}
+
+/**
  * Build an OCI container image for each site using pantry's native, daemon-less
  * builder — no Docker dependency. The image is built from the framework's
  * generated `storage/framework/Dockerfile` and pushed to the pantry registry
@@ -5404,6 +5593,11 @@ export function deploy(buddy: CLI): void {
       // CloudFormation path below. Route them off before any AWS credential or
       // domain check runs.
       const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
+      // Fly.io runs an image on Machines: no box, no SSH, no CloudFormation.
+      if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'fly') {
+        await deployToFlyProvider(tsCloudConfig, deployEnvName, options.verbose === true)
+        return
+      }
       if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
         await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options)
         return
@@ -5494,6 +5688,22 @@ export function deploy(buddy: CLI): void {
       const exitCode = await runDeployRollback(site, options)
       if (exitCode !== ExitCode.Success)
         process.exit(exitCode)
+    })
+
+  buddy
+    .command('deploy:preview <name>', 'Deploy a preview (e.g. pr-123) as its own tenant on the app\'s box, at <name>.<preview domain>')
+    .option('--base <environment>', 'The environment whose box the preview runs on', { default: 'production' })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: { base?: string, verbose?: boolean }) => {
+      await runPreviewCommand(name, options, 'deploy')
+    })
+
+  buddy
+    .command('deploy:preview:remove <name>', 'Remove a preview from the app\'s box: its services, gateway route, certificate, files and DNS records')
+    .option('--base <environment>', 'The environment whose box the preview runs on', { default: 'production' })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: { base?: string, verbose?: boolean }) => {
+      await runPreviewCommand(name, options, 'remove')
     })
 
   onUnknownSubcommand(buddy, "deploy")

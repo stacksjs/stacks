@@ -1,0 +1,141 @@
+name: Preview
+
+# A preview deployment for every pull request (stacksjs/stacks#735).
+#
+# Each pull request is deployed as its own tenant on the app's box, at
+# pr-<number>.<preview domain>, with its own database and its own secrets
+# from .env.preview, and removed when the pull request closes. The URL is
+# kept current in one comment on the pull request.
+#
+# Set up once:
+#   - PREVIEW_DOMAIN as a repository variable (or cloud.previews.domain in
+#     config/cloud.ts), with its DNS at a provider whose keys are below
+#   - .env.preview, committed encrypted, holding credentials that are NOT
+#     production's: its own database, mail and API keys
+#   - DOTENV_PRIVATE_KEY_PREVIEW and DEPLOY_SSH_KEY as secrets
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+# One run per pull request at a time, in order: a removal must not race the
+# deploy it follows, and half a deploy is a release uploaded but not live.
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview:
+    # Only pull requests from this repository. A fork's pull request runs
+    # without secrets, and deploying its code with them would hand the fork
+    # this app's preview credentials and SSH access to the box.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: preview
+    env:
+      PREVIEW: pr-${{ github.event.pull_request.number }}
+
+    steps:
+      # A repository that has not set previews up finishes green with a notice,
+      # rather than failing every pull request.
+      - name: Are previews configured?
+        id: check
+        env:
+          DOTENV_PRIVATE_KEY_PREVIEW: ${{ secrets.DOTENV_PRIVATE_KEY_PREVIEW }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          if [ -n "$DOTENV_PRIVATE_KEY_PREVIEW" ] && [ -n "$DEPLOY_SSH_KEY" ]; then
+            echo 'configured=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'configured=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Previews are not configured, so this run did nothing. Add DEPLOY_SSH_KEY and DOTENV_PRIVATE_KEY_PREVIEW (from .env.keys), and set PREVIEW_DOMAIN.'
+          fi
+
+      - name: Checkout
+        if: steps.check.outputs.configured == 'true'
+        uses: actions/checkout@v6
+        with:
+          # The pull request's head, not the merge commit GitHub builds.
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Bun
+        if: steps.check.outputs.configured == 'true'
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Pantry
+        if: steps.check.outputs.configured == 'true'
+        uses: home-lang/pantry/packages/action@main
+
+      - name: Install dependencies
+        if: steps.check.outputs.configured == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Load the deploy key
+        if: steps.check.outputs.configured == 'true'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
+          chmod 644 ~/.ssh/id_ed25519.pub
+          eval "$(ssh-agent -s)" >/dev/null
+          ssh-add ~/.ssh/id_ed25519
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+
+      - name: Deploy the preview
+        id: deploy
+        if: steps.check.outputs.configured == 'true' && github.event.action != 'closed'
+        run: ./buddy deploy:preview "$PREVIEW"
+        env:
+          DOTENV_PRIVATE_KEY_PREVIEW: ${{ secrets.DOTENV_PRIVATE_KEY_PREVIEW }}
+          PREVIEW_DOMAIN: ${{ vars.PREVIEW_DOMAIN }}
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
+          PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          COPYFILE_DISABLE: '1'
+
+      - name: Remove the preview
+        id: remove
+        if: steps.check.outputs.configured == 'true' && github.event.action == 'closed'
+        run: ./buddy deploy:preview:remove "$PREVIEW"
+        env:
+          DOTENV_PRIVATE_KEY_PREVIEW: ${{ secrets.DOTENV_PRIVATE_KEY_PREVIEW }}
+          PREVIEW_DOMAIN: ${{ vars.PREVIEW_DOMAIN }}
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
+          PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # One comment per pull request, edited in place rather than added to on
+      # every push, found by the marker on its first line.
+      - name: Say where it is
+        if: always() && steps.check.outputs.configured == 'true' && (steps.deploy.outcome != 'skipped' || steps.remove.outcome != 'skipped')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.deploy.outputs.url }}
+          DEPLOYED: ${{ steps.deploy.outcome }}
+          REMOVED: ${{ steps.remove.outcome }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          marker='<!-- stacks-preview -->'
+          if [ "$REMOVED" = 'success' ]; then
+            body="$marker"$'\n'"Preview removed: the pull request is closed."
+          elif [ "$DEPLOYED" = 'success' ]; then
+            body="$marker"$'\n'"Preview of ${SHA::7}: $URL"
+          else
+            body="$marker"$'\n'"The preview of ${SHA::7} failed to deploy; see the run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          existing=$(gh api "repos/${{ github.repository }}/issues/$NUMBER/comments" --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n 1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$existing" -f body="$body" >/dev/null
+          else
+            gh api "repos/${{ github.repository }}/issues/$NUMBER/comments" -f body="$body" >/dev/null
+          fi

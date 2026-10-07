@@ -20,6 +20,7 @@ environment overrides it. With neither set, the provider is `aws`.
 | `'aws'` (default) | AWS | Generates infrastructure, creates or updates a CloudFormation stack |
 | `'hetzner'` | Hetzner Cloud | Provisions the server through the Hetzner API, then deploys over SSH |
 | `'ssh'` | A host you already own | Adopts and bootstraps the host over SSH, then deploys to it |
+| `'fly'` | Fly.io Machines | Builds `storage/framework/Dockerfile`, pushes it to `registry.fly.io`, rolls the Machines under their leases |
 
 Read the repo's own `config/cloud.ts` before assuming a target. This repo uses `'hetzner'`.
 
@@ -67,6 +68,22 @@ a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for API and tool consumers.
 1. A host in `ssh.hosts`, or `TS_CLOUD_SSH_HOST` in the environment
 2. A key that reaches it, and passwordless sudo when the user is not root
 3. `buddy server:doctor` clean
+
+**Fly.io** (`provider: 'fly'`)
+
+1. `FLY_API_TOKEN` (an org token lets the first deploy create the app)
+2. Docker where the deploy runs, for the image build and push
+3. `fly.*` in `config/cloud.ts`: `regions`, `count`, `vm`, `volume`, `hostnames`. Every `.env.<env>`
+   value becomes a Fly secret. A deploy never destroys Machines; extras are reported.
+
+## Preview deployments (Hetzner and `ssh`)
+
+`buddy deploy:preview pr-123` deploys the app as its own tenant (slug `<slug>-pr-123`, attached to
+the app's box) at `pr-123.<cloud.previews.domain | PREVIEW_DOMAIN>`; `deploy:preview:remove pr-123`
+removes its units, gateway route, cert units, files and DNS records by exact name. Secrets come
+from `.env.preview` only (the deploy refuses without it), and a relative SQLite path gets its own
+data dir. `--base staging` uses the staging box. New apps ship `.github/workflows/preview.yml`
+(same-repo PRs only; needs `DEPLOY_SSH_KEY`, `DOTENV_PRIVATE_KEY_PREVIEW`, `vars.PREVIEW_DOMAIN`).
 
 ## Deployment Flow
 

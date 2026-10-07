@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **346 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **348 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -25,7 +25,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `core` | 1 |
 | `dashboard` | 2 |
 | `db` | 3 |
-| `deploy` | 1 |
+| `deploy` | 3 |
 | `desktop` | 7 |
 | `dev` | 8 |
 | `dns` | 3 |
@@ -1161,6 +1161,34 @@ Deploy your project
 | `--dry-run` | Preview the deployment and change nothing | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
 | `-J`, `--json` | Emit a machine-readable deployment preview | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `deploy:preview`
+
+Deploy a preview (e.g. pr-123) as its own tenant on the app's box, at <name>.<preview domain>
+
+- Usage: `$ buddy deploy:preview <name>`
+- Namespace: `deploy`
+- Aliases: none
+- Arguments: `<name>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--base` | The environment whose box the preview runs on | value, required | `"production"` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `deploy:preview:remove`
+
+Remove a preview from the app's box: its services, gateway route, certificate, files and DNS records
+
+- Usage: `$ buddy deploy:preview:remove <name>`
+- Namespace: `deploy`
+- Aliases: none
+- Arguments: `<name>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--base` | The environment whose box the preview runs on | value, required | `"production"` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `deploy:rollback`
