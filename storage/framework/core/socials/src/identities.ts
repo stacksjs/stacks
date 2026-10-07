@@ -89,7 +89,16 @@ export class SocialIdentityError extends Error {
   }
 }
 
-async function socialsConfig(): Promise<SocialsShape> {
+/**
+ * This application's `socials` configuration, after the overrides have
+ * merged.
+ *
+ * Exported so the publishing layer reads it through the same barrier rather
+ * than reaching for `config` itself: an early read answers with framework
+ * defaults, and a credential resolved from a default is an empty string that
+ * fails much later and somewhere else (stacksjs/stacks#2333).
+ */
+export async function socialsConfig(): Promise<SocialsShape> {
   const { config, overridesReady } = await import('@stacksjs/config')
   await overridesReady
   return (config as { socials?: SocialsShape }).socials ?? {}
