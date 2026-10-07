@@ -18,6 +18,19 @@ import { createHash, randomBytes } from 'node:crypto'
 /** 256 bits. The raw token is the only secret, so it carries all the entropy. */
 export const FEEDBACK_TOKEN_BYTES = 32
 
+/**
+ * What a submission may carry, matching `cards.title` and
+ * `cards.description`.
+ *
+ * Here rather than in the action so the form can render the same limits it
+ * will be judged against. A `maxlength` the server disagrees with is the
+ * worst of both: the reviewer is either stopped from typing something that
+ * would have been accepted, or allowed to write a report that is refused on
+ * submit.
+ */
+export const FEEDBACK_MAX_TITLE = 300
+export const FEEDBACK_MAX_DESCRIPTION = 10_000
+
 /** A raw token as it appears in a link, and as the column stores it. */
 const RAW_TOKEN = /^[0-9a-f]{64}$/
 

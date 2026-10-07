@@ -32,13 +32,14 @@ export type DefaultViewsSetting = boolean | string[]
  * three checkout steps to `/api/checkout/{contact,shipping,place}`, and
  * `/orders/{id}` is where `place` lands. `dashboard/index.stx` is the stub
  * `/dashboard` renders on the views server, meaningless without the bundle.
+ * `feedback/{token}` posts to `/api/feedback/{token}` from the same file.
  *
  * Served with every bundle mounted, withheld without it: an app answering 200
  * on `/login` whose form posts into a 404 is worse than an app answering 404.
  */
 export const DEFAULT_VIEW_ROUTE_BUNDLES: Readonly<Record<string, readonly string[]>> = {
   auth: ['login.stx', 'register.stx', 'forgot-password.stx', 'password', 'auth'],
-  dashboard: ['cart.stx', 'checkout', 'orders', 'dashboard'],
+  dashboard: ['cart.stx', 'checkout', 'orders', 'dashboard', 'feedback'],
 }
 
 /**

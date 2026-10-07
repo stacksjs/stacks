@@ -94,12 +94,16 @@ export function toStoredTimestamp(at: Date): string {
 }
 
 /**
- * The URL to hand the reviewer.
+ * The URL to hand the reviewer: the form, not the endpoint behind it.
+ *
+ * `/feedback/{token}` is the page; it posts to `/api/feedback/{token}` itself.
+ * Handing out the endpoint would hand out something only a developer with a
+ * terminal could use.
  *
  * `config.app.url` is a bare host in a default app (`stacks.localhost`), so
  * the scheme is added when it is missing, the way the dev server and the
  * mobile build already do. Any path, query or fragment on the configured URL
- * is dropped: the route is registered at an absolute path.
+ * is dropped: the page is registered at an absolute path.
  */
 export function feedbackSubmitUrl(appUrl: string | undefined, rawToken: string): string {
   const base = (appUrl ?? '').trim()
@@ -107,7 +111,7 @@ export function feedbackSubmitUrl(appUrl: string | undefined, rawToken: string):
     throw new Error('No app URL configured. Set APP_URL or config.app.url.')
 
   const url = new URL(/^https?:\/\//i.test(base) ? base : `https://${base}`)
-  url.pathname = `/api/feedback/${rawToken}`
+  url.pathname = `/feedback/${rawToken}`
   url.search = ''
   url.hash = ''
   return url.toString()

@@ -128,7 +128,10 @@ const ALL_BUNDLES = new Set(['auth', 'dashboard', 'delivery', 'email', 'forms', 
 const NO_BUNDLES = new Set<string>()
 
 const AUTH_PAGES = ['login.stx', 'register.stx', 'forgot-password.stx', 'password', 'auth']
-const STOREFRONT_PAGES = ['cart.stx', 'checkout', 'orders', 'dashboard']
+// The pages whose routes live in `defaults/routes/dashboard.ts`: the demo
+// storefront, the `/dashboard` stub, and the feedback form, which posts to
+// `/api/feedback/{token}` from that same file.
+const DASHBOARD_PAGES = ['cart.stx', 'checkout', 'orders', 'dashboard', 'feedback']
 
 function unset(mounted: ReadonlySet<string> | undefined) {
   return resolveViewPatterns(USER, DEFAULTS, undefined, exists, [], mounted)
@@ -146,7 +149,7 @@ describe('unset defaultViews follows the mounted route bundles', () => {
 
   it('an app mounting nothing serves neither the auth pages nor the storefront', () => {
     const { withheld, exclude } = unset(NO_BUNDLES)
-    expect(withheld).toEqual([...AUTH_PAGES, ...STOREFRONT_PAGES, 'cms'])
+    expect(withheld).toEqual([...AUTH_PAGES, ...DASHBOARD_PAGES, 'cms'])
     expect(exclude).toEqual(withheld.map(name => join(DEFAULTS, name)))
   })
 
@@ -154,7 +157,7 @@ describe('unset defaultViews follows the mounted route bundles', () => {
     const { withheld } = unset(new Set(['auth']))
     for (const page of AUTH_PAGES)
       expect(withheld).not.toContain(page)
-    for (const page of STOREFRONT_PAGES)
+    for (const page of DASHBOARD_PAGES)
       expect(withheld).toContain(page)
   })
 
@@ -162,7 +165,7 @@ describe('unset defaultViews follows the mounted route bundles', () => {
     // defaults/routes/dashboard.ts carries /api/cart/* and /api/checkout/*;
     // there is no storefront bundle of its own.
     const { withheld } = unset(new Set(['dashboard']))
-    for (const page of STOREFRONT_PAGES)
+    for (const page of DASHBOARD_PAGES)
       expect(withheld).not.toContain(page)
     for (const page of AUTH_PAGES)
       expect(withheld).toContain(page)

@@ -1,0 +1,21 @@
+<script server>
+import { FEEDBACK_MAX_DESCRIPTION, FEEDBACK_MAX_TITLE } from '../../../app/Actions/Dashboard/Feedback/feedback-token'
+
+/**
+ * Where a feedback link lands, at `/feedback/{token}`.
+ *
+ * The logic sits in the component, like the other public token pages here.
+ *
+ * The limits are passed down because they are the action's own constants and
+ * a client script cannot read them. A `maxlength` the server disagrees with
+ * either stops the reviewer typing something that would have been accepted,
+ * or lets them write a report that is refused on submit.
+ *
+ * Nothing here looks the token up. Answering "is this link good?" before a
+ * submit would need a read endpoint for feedback tokens, and a capability
+ * that may add one card and learn nothing is the whole point of the design
+ * (stacksjs/stacks#2872).
+ */
+</script>
+
+<FeedbackForm maxTitle="{{ FEEDBACK_MAX_TITLE }}" maxDescription="{{ FEEDBACK_MAX_DESCRIPTION }}" />

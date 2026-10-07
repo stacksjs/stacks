@@ -5,6 +5,8 @@ import { response } from '@stacksjs/router'
 import { kanbanActionError } from '../Kanban/kanban-response'
 import {
   authorizeFeedbackToken,
+  FEEDBACK_MAX_DESCRIPTION as MAX_DESCRIPTION,
+  FEEDBACK_MAX_TITLE as MAX_TITLE,
   hashFeedbackToken,
   looksLikeFeedbackToken,
   refusalMessage,
@@ -14,12 +16,6 @@ interface FeedbackInput {
   title?: unknown
   description?: unknown
 }
-
-/** Matches `Card.description`, so a submission cannot be longer than the column. */
-const MAX_DESCRIPTION = 10_000
-
-/** Matches `Card.title`. */
-const MAX_TITLE = 300
 
 /**
  * `POST /api/feedback/{token}`.

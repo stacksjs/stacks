@@ -1,0 +1,160 @@
+{{--
+  What an external reviewer sees at `/feedback/{token}`.
+
+  Deliberately standalone rather than built out of the Dashboard UI
+  components: the person opening this has no account and no reason to load the
+  dashboard's bundle, and the closest precedent (MagicLink, the other public
+  token page) is plain markup for the same reason.
+
+  The link is never validated before a submit, and cannot be. Telling the page
+  up front whether a token is good would need a read endpoint for feedback
+  tokens, which is exactly what the capability design refuses - the token may
+  add one card and learn nothing. So the form always renders and the verdict
+  arrives with the first submit (stacksjs/stacks#2872).
+--}}
+
+<script client>
+// Both arrive as strings: they are decided server-side from the action's own
+// constants so the `maxlength` the reviewer types against is the one the
+// submission is judged by, and a client script cannot read them itself.
+const maxTitle = useReactiveProp('maxTitle', '300')
+const maxDescription = useReactiveProp('maxDescription', '10000')
+const route = useRoute()
+
+/** ready | sending | filed | dead */
+const status = state('ready')
+const title = state('')
+const description = state('')
+const error = state('')
+
+function canSubmit() {
+  return status() !== 'sending' && title().trim().length > 0
+}
+
+async function submit() {
+  if (!canSubmit())
+    return
+
+  status.set('sending')
+  error.set('')
+
+  try {
+    const reply = await fetch(`/api/feedback/${encodeURIComponent(String(route.params.token || ''))}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title().trim(), description: description().trim() || undefined }),
+    })
+    const body = await reply.json().catch(() => ({}))
+
+    if (reply.ok) {
+      status.set('filed')
+      return
+    }
+
+    // 404 is the link itself: unknown, revoked or expired, all answered the
+    // same so a guessed token learns nothing. Retrying cannot help, so the
+    // form goes away rather than inviting the reviewer to type it all again.
+    // A 400 is about this submission, so the fields are kept and the reason
+    // shown above them.
+    if (reply.status === 404) {
+      status.set('dead')
+      return
+    }
+
+    status.set('ready')
+    error.set(String(body.message || body.error || 'That did not go through. Try again in a moment.'))
+  }
+  catch {
+    status.set('ready')
+    error.set('Could not reach the server. Check your connection and try again.')
+  }
+}
+
+function another() {
+  title.set('')
+  description.set('')
+  error.set('')
+  status.set('ready')
+}
+</script>
+
+<template>
+  <main class="flex items-center justify-center px-4 py-12 min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950">
+    <div class="max-w-xl w-full">
+      <div :if="status() === 'dead'" class="p-8 text-center bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800">
+        <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-full">
+          <span class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
+        </div>
+        <h1 class="mb-2 font-semibold text-xl text-neutral-900 tracking-tight dark:text-white">This feedback link is not valid</h1>
+        <p class="text-[15px] text-neutral-500 dark:text-neutral-400">
+          It may have been turned off, or it may have expired. Ask whoever sent it for a fresh one.
+        </p>
+      </div>
+
+      <div :else-if="status() === 'filed'" class="p-8 text-center bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800">
+        <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full">
+          <span class="h-6 w-6 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02"></span>
+        </div>
+        <h1 class="mb-2 font-semibold text-xl text-neutral-900 tracking-tight dark:text-white">Thank you</h1>
+        <p class="mb-6 text-[15px] text-neutral-500 dark:text-neutral-400">Your feedback is on the board.</p>
+        <button type="button" @click="another" class="px-5 py-2.5 font-medium text-sm text-white bg-neutral-900 rounded-lg transition-transform dark:bg-white dark:text-neutral-900 active:scale-[0.98]">
+          Send another
+        </button>
+      </div>
+
+      <div :else>
+        <div class="mb-6">
+          <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Send feedback</h1>
+          <p class="mt-2 text-[15px] text-neutral-500 dark:text-neutral-400">
+            One thing per message, so each one can be picked up on its own.
+          </p>
+        </div>
+
+        <form @submit.prevent="submit" class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-sm">
+          <div :if="error()" role="alert" class="flex gap-2 items-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
+            <span class="h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
+            <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+          </div>
+
+          <label class="block mb-4">
+            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">What happened</span>
+            <input
+              type="text"
+              x-model="title"
+              :maxlength="maxTitle()"
+              :disabled="status() === 'sending'"
+              required
+              placeholder="A short summary"
+              class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg transition-colors dark:border-neutral-600 placeholder:text-neutral-400 hover:border-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
+          </label>
+
+          <label class="block mb-5">
+            <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Details <span class="font-normal text-neutral-400">(optional)</span></span>
+            <textarea
+              x-model="description"
+              rows="6"
+              :maxlength="maxDescription()"
+              :disabled="status() === 'sending'"
+              placeholder="Where you were, what you expected, and what you got instead"
+              class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg resize-y transition-colors dark:border-neutral-600 placeholder:text-neutral-400 hover:border-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            ></textarea>
+          </label>
+
+          <button
+            type="submit"
+            :disabled="!canSubmit()"
+            class="flex gap-2 items-center justify-center px-5 py-2.5 w-full font-medium text-sm text-white bg-neutral-900 rounded-lg transition-transform dark:bg-white dark:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.99]"
+          >
+            <span :if="status() === 'sending'" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+            <span>{{ status() === 'sending' ? 'Sending' : 'Send feedback' }}</span>
+          </button>
+        </form>
+
+        <p class="mt-4 text-center text-neutral-400 text-xs dark:text-neutral-500">
+          This link lets you send feedback. It does not sign you in, and it cannot read anything back.
+        </p>
+      </div>
+    </div>
+  </main>
+</template>

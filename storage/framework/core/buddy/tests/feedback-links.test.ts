@@ -129,18 +129,18 @@ describe('feedbackSubmitUrl', () => {
   const raw = 'a'.repeat(64)
 
   it('adds the scheme a bare configured host does not have', () => {
-    expect(feedbackSubmitUrl('stacks.localhost', raw)).toBe(`https://stacks.localhost/api/feedback/${raw}`)
+    expect(feedbackSubmitUrl('stacks.localhost', raw)).toBe(`https://stacks.localhost/feedback/${raw}`)
   })
 
   it('keeps a configured scheme, including a local http one', () => {
-    expect(feedbackSubmitUrl('http://localhost:3000', raw)).toBe(`http://localhost:3000/api/feedback/${raw}`)
-    expect(feedbackSubmitUrl('https://example.com', raw)).toBe(`https://example.com/api/feedback/${raw}`)
+    expect(feedbackSubmitUrl('http://localhost:3000', raw)).toBe(`http://localhost:3000/feedback/${raw}`)
+    expect(feedbackSubmitUrl('https://example.com', raw)).toBe(`https://example.com/feedback/${raw}`)
   })
 
   it('drops a path, query or fragment on the configured URL', () => {
     // The route is registered at an absolute path, so carrying a configured
     // path through would produce a link that 404s.
-    expect(feedbackSubmitUrl('https://example.com/dashboard?a=1#x', raw)).toBe(`https://example.com/api/feedback/${raw}`)
+    expect(feedbackSubmitUrl('https://example.com/dashboard?a=1#x', raw)).toBe(`https://example.com/feedback/${raw}`)
   })
 
   it('refuses to invent a host', () => {
