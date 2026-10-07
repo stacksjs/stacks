@@ -358,16 +358,12 @@ function restoreCommittedLockfiles(): void {
     writeFileSync(pantryLockPath, committedPantryLock)
 }
 
-if (!isDryRun)
-  await refreshPantryLock()
-
 // The package-version fan-out above changes hundreds of workspace manifests.
 // Keep the root Bun lockfile synchronized in the same release commit; otherwise
 // every post-release CI job using `bun install --frozen-lockfile` fails before
 // lint, typecheck, or tests can run.
 if (!isDryRun && committedBunLock) {
   const lockPath = bunLockPath
-  const previousLock = committedBunLock
 
   // Bun updates package resolutions in place, but it does not rewrite stale
   // workspace manifest snapshots after the release changes lockstep ranges.
@@ -385,11 +381,6 @@ if (!isDryRun && committedBunLock) {
     throw error
   }
 
-  // A release must preserve the canonical lockfile format already committed by
-  // the repository. Derive it from that file instead of duplicating the Bun to
-  // lockfile-version mapping here: Pantry and engines.bun own the toolchain, and
-  // .github/scripts/check-lockfile-version.ts verifies the checked-in format.
-  // A different local Bun would otherwise write a lockfile CI cannot consume.
   /*
    * A lockfile that was not written back is not a lockfile to read.
    *
@@ -409,7 +400,39 @@ if (!isDryRun && committedBunLock) {
       + 'release that package first, then re-run.',
     )
   }
+}
 
+// pantry.lock is refreshed AFTER bun.lock is regenerated, never before.
+//
+// Regenerating bun.lock from scratch resolves every caret range to the newest
+// published version, and `pantry install` deliberately follows bun.lock's pin
+// for any range it satisfies (stacksjs/stacks#2848), so pantry/ and
+// node_modules/ hold one tree. Refreshed first, pantry.lock kept the versions
+// the OLD bun.lock pinned; bun.lock then moved to whatever had been published
+// since. v0.75.90 committed pantry.lock on stx 0.2.395 next to bun.lock on
+// 0.2.396, and CI's `pantry install` followed bun.lock, rewrote pantry.lock and
+// failed the lockfile check on the release commit and every push after it.
+if (!isDryRun) {
+  try {
+    await refreshPantryLock()
+  }
+  catch (error) {
+    restoreCommittedLockfiles()
+    throw error
+  }
+}
+
+// The format check reads bun.lock as committed, after every step above that
+// could rewrite it - the Pantry refresh included, since it runs Bun.
+if (!isDryRun && committedBunLock) {
+  const lockPath = bunLockPath
+  const previousLock = committedBunLock
+
+  // A release must preserve the canonical lockfile format already committed by
+  // the repository. Derive it from that file instead of duplicating the Bun to
+  // lockfile-version mapping here: Pantry and engines.bun own the toolchain, and
+  // .github/scripts/check-lockfile-version.ts verifies the checked-in format.
+  // A different local Bun would otherwise write a lockfile CI cannot consume.
   const expectedLockfileVersion = lockfileVersion(previousLock.toString('utf8'))
   const regeneratedLock = readFileSync(lockPath, 'utf8')
   const producedVersion = lockfileVersion(regeneratedLock)

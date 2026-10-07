@@ -124,6 +124,26 @@ describe('framework release artifact staging', () => {
   })
 
   /**
+   * `pantry install` follows bun.lock's pin for every range it satisfies, so
+   * pantry.lock has to be refreshed against the bun.lock this release commits,
+   * not the one it replaces. Regenerating bun.lock resolves each caret range
+   * to the newest release; refreshed first, pantry.lock kept the old bun.lock's
+   * versions. v0.75.90 shipped pantry.lock on stx 0.2.395 beside bun.lock on
+   * 0.2.396, and CI's `pantry install` rewrote it and failed the lockfile check.
+   */
+  test('refreshes pantry.lock after bun.lock is regenerated', () => {
+    const src = source()
+    const regenerated = src.indexOf("['bun', 'install', '--lockfile-only']")
+    const pantryRefresh = src.indexOf('await refreshPantryLock()')
+    const formatCheck = src.indexOf('const expectedLockfileVersion')
+
+    expect(regenerated).toBeGreaterThan(-1)
+    expect(regenerated).toBeLessThan(pantryRefresh)
+    // The format check reads the bun.lock the Pantry refresh leaves behind.
+    expect(pantryRefresh).toBeLessThan(formatCheck)
+  })
+
+  /**
    * An aborted release has to leave the lockfiles exactly as it found them.
    * Only bun.lock was restored before, so a release that stopped after the
    * Pantry refresh left a rewritten pantry.lock behind - and on a machine that
