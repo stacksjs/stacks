@@ -43,6 +43,7 @@
     "ExampleTwoJob": true,
     "FailedJob": true,
     "Feature": true,
+    "FeedbackToken": true,
     "Form": true,
     "FormField": true,
     "FormSubmission": true,

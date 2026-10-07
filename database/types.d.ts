@@ -156,7 +156,7 @@ declare module '@stacksjs/database' {
       icon: string
       color: string
       position: number
-      archived: number
+      archived: boolean
       team_id: number
     }
     campaign_sends: {
@@ -199,7 +199,7 @@ declare module '@stacksjs/database' {
       open_count: number
       click_count: number
       conversion_count: number
-      is_winner: number
+      is_winner: boolean
       team_id: number
       campaign_id: number
     }
@@ -276,7 +276,7 @@ declare module '@stacksjs/database' {
       position: number
       created_by_user_id: number
       due_date: string
-      archived: number
+      archived: boolean
       board_column_id: number
       user_id: number
     }
@@ -328,7 +328,7 @@ declare module '@stacksjs/database' {
       description: string
       slug: string
       image_url: string
-      is_active: number
+      is_active: boolean
       parent_category_id: string
       display_order: number
     }
@@ -349,7 +349,7 @@ declare module '@stacksjs/database' {
       name: string
       slug: string
       description: string | null
-      is_active: number
+      is_active: boolean
       categorizable_id: number
       categorizable_type: string
     }
@@ -454,7 +454,7 @@ declare module '@stacksjs/database' {
       code: string
       description: string
       status: "Active" | "Scheduled" | "Expired"
-      is_active: number
+      is_active: boolean
       discount_type: "fixed_amount" | "percentage"
       discount_value: number
       min_order_amount: number
@@ -593,8 +593,8 @@ declare module '@stacksjs/database' {
       description: string
       download_limit: number
       expiry_days: number
-      requires_login: number
-      automatic_delivery: number
+      requires_login: boolean
+      automatic_delivery: boolean
       status: "active" | "inactive"
     }
     email_idempotency: {
@@ -607,7 +607,7 @@ declare module '@stacksjs/database' {
       recipient: string
       subject: string
       provider: string
-      success: number
+      success: boolean
     }
     email_list_subscribers: {
       // columns
@@ -683,6 +683,20 @@ declare module '@stacksjs/database' {
       duration_ms: number
       failed_at: string
     }
+    feedback_tokens: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      token: string
+      label: string
+      revoked_at: string
+      expires_at: string
+      last_used_at: string
+      created_by_user_id: number
+      board_id: number
+    }
     form_fields: {
       // columns
       id: number
@@ -691,7 +705,7 @@ declare module '@stacksjs/database' {
       name: string
       label: string
       type: "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"
-      required: number
+      required: boolean
       position: number
       width: "full" | "half"
       options: unknown
@@ -755,9 +769,9 @@ declare module '@stacksjs/database' {
       recipient_email: string
       recipient_name: string
       personal_message: string
-      is_digital: number
-      is_reloadable: number
-      is_active: number
+      is_digital: boolean
+      is_reloadable: boolean
+      is_active: boolean
       expiry_date: string
       last_used_date: string
       template_id: string
@@ -856,7 +870,7 @@ declare module '@stacksjs/database' {
       source_reference_id: string
       description: string
       expiry_date: string
-      is_used: number
+      is_used: boolean
       customer_id: number
     }
     loyalty_rewards: {
@@ -871,7 +885,7 @@ declare module '@stacksjs/database' {
       reward_type: string
       discount_percentage: number
       free_product_id: string
-      is_active: number
+      is_active: boolean
       expiry_days: number
       image_url: string
       product_id: number
@@ -901,17 +915,17 @@ declare module '@stacksjs/database' {
       theme: "light" | "dark" | "system"
       language: "en" | "fr" | "de" | "es" | "ja"
       default_reply_behavior: "reply" | "replyAll"
-      send_and_archive: number
+      send_and_archive: boolean
       auto_advance: "newer" | "older" | "back"
-      desktop_notifications: number
+      desktop_notifications: boolean
       notification_sound: "default" | "subtle" | "none"
-      notification_preview: number
+      notification_preview: boolean
       filters: string
       blocked_senders: string
       labels: string
-      load_remote_images: number
-      show_external_content: number
-      vacation_enabled: number
+      load_remote_images: boolean
+      show_external_content: boolean
+      vacation_enabled: boolean
       vacation_start_date: string
       vacation_end_date: string
       vacation_subject: string
@@ -926,7 +940,7 @@ declare module '@stacksjs/database' {
       manufacturer: string
       description: string
       country: string
-      featured: number
+      featured: boolean
     }
     menu_items: {
       // columns
@@ -987,7 +1001,7 @@ declare module '@stacksjs/database' {
       name: string
       token: string
       scopes: string
-      revoked: number
+      revoked: boolean
       expires_at: string
       user_agent: string
       ip_address: string
@@ -1080,7 +1094,7 @@ declare module '@stacksjs/database' {
       brand: string
       exp_month: number
       exp_year: number
-      is_default: number
+      is_default: boolean
       provider_id: string
       user_id: number
     }
@@ -1211,7 +1225,7 @@ declare module '@stacksjs/database' {
       abbreviation: string
       type: string
       description: string
-      is_default: number
+      is_default: boolean
       product_id: number
     }
     product_variants: {
@@ -1241,7 +1255,7 @@ declare module '@stacksjs/database' {
       description: string
       price: number
       image_url: string
-      is_available: number
+      is_available: boolean
       inventory_count: number
       preparation_time: number
       allergens: string
@@ -1369,9 +1383,9 @@ declare module '@stacksjs/database' {
       rating: number
       title: string
       content: string
-      is_verified_purchase: number
-      is_approved: number
-      is_featured: number
+      is_verified_purchase: boolean
+      is_approved: boolean
+      is_featured: boolean
       helpful_votes: number
       unhelpful_votes: number
       purchase_date: string
@@ -1451,7 +1465,7 @@ declare module '@stacksjs/database' {
       created_at: string
       updated_at: string | null
       domain: string
-      is_primary: number
+      is_primary: boolean
       verified_at: string
       ssl_status: "pending" | "issued" | "failed"
       site_id: number
@@ -1530,7 +1544,7 @@ declare module '@stacksjs/database' {
       updated_at: string | null
       disk: string
       path: string
-      favorite: number
+      favorite: boolean
     }
     subscriber_emails: {
       // columns
@@ -1617,9 +1631,9 @@ declare module '@stacksjs/database' {
       country: string
       region: "North America" | "South America" | "Europe" | "Asia" | "Africa" | "Oceania" | "Antarctica"
       status: "active" | "inactive"
-      is_default: number
+      is_default: boolean
       code: string
-      exemptible: number
+      exemptible: boolean
     }
     team_invitations: {
       // columns
@@ -1712,7 +1726,7 @@ declare module '@stacksjs/database' {
       email_verified_at: string | null
       password_changed_at: string | null
       two_factor_secret: string | null
-      two_factor_enabled: number | null
+      two_factor_enabled: boolean | null
       two_factor_last_used_step: number | null
       stripe_id: string | null
       name: string

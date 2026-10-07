@@ -357,6 +357,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Card', [''], 'dashboard'],
   ['CardComment', [''], 'dashboard'],
   ['Deployment', [''], 'dashboard'],
+  ['FeedbackToken', [''], 'dashboard'],
   ['Label', [''], 'dashboard'],
   ['Release', [''], 'dashboard'],
   ['Notification', [''], 'dashboard'],
@@ -508,6 +509,7 @@ export const Customer = lazyModel<typeof import('../../../defaults/app/Models/co
 export const DeliveryRoute = lazyModel<typeof import('../../../defaults/app/Models/commerce/DeliveryRoute').default>('DeliveryRoute')
 export const DeliveryStop = lazyModel<typeof import('../../../defaults/app/Models/commerce/DeliveryStop').default>('DeliveryStop')
 export const Deployment = lazyModel<typeof import('../../../defaults/app/Models/Deployment').default>('Deployment')
+export const FeedbackToken = lazyModel<typeof import('../../../defaults/app/Models/FeedbackToken').default>('FeedbackToken')
 export const DigitalDelivery = lazyModel<typeof import('../../../defaults/app/Models/commerce/DigitalDelivery').default>('DigitalDelivery')
 export const Courier = lazyModel<typeof import('../../../defaults/app/Models/commerce/Courier').default>('Courier')
 export const CourierPing = lazyModel<typeof import('../../../defaults/app/Models/commerce/CourierPing').default>('CourierPing')

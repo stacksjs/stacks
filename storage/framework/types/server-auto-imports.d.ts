@@ -79,6 +79,7 @@ declare global {
   const EmailSuppression: typeof import('../defaults/app/Models/EmailSuppression')['default']
   const EmailWebhookEvent: typeof import('../defaults/app/Models/EmailWebhookEvent')['default']
   const FailedJob: typeof import('../defaults/app/Models/FailedJob')['default']
+  const FeedbackToken: typeof import('../defaults/app/Models/FeedbackToken')['default']
   const GdprRequest: typeof import('../defaults/app/Models/GdprRequest')['default']
   const Job: typeof import('../defaults/app/Models/Job')['default']
   const Label: typeof import('../defaults/app/Models/Label')['default']

@@ -417,6 +417,7 @@ export const actions = {
   'Actions/Dashboard/Email/inbox-request': '../defaults/app/Actions/Dashboard/Email/inbox-request.ts',
   'Actions/Dashboard/Email/mail-preference': '../defaults/app/Actions/Dashboard/Email/mail-preference.ts',
   'Actions/Dashboard/Email/sanitize-inbox-html': '../defaults/app/Actions/Dashboard/Email/sanitize-inbox-html.ts',
+  'Actions/Dashboard/Feedback/feedback-token': '../defaults/app/Actions/Dashboard/Feedback/feedback-token.ts',
   'Actions/Dashboard/Infrastructure/CommandIndexAction': '../defaults/app/Actions/Dashboard/Infrastructure/CommandIndexAction.ts',
   'Actions/Dashboard/Infrastructure/DnsIndexAction': '../defaults/app/Actions/Dashboard/Infrastructure/DnsIndexAction.ts',
   'Actions/Dashboard/Infrastructure/EnvironmentIndexAction': '../defaults/app/Actions/Dashboard/Infrastructure/EnvironmentIndexAction.ts',
