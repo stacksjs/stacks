@@ -4685,6 +4685,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * feedback.store
+   */
+  feedbackStore(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/feedback/{token}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/form-fields
    */
   getFormFields(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "name": string; "label": string; "type": "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"; "required"?: boolean; "position"?: number; "width"?: "full" | "half"; "options"?: unknown; "conditions"?: unknown; "form_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
