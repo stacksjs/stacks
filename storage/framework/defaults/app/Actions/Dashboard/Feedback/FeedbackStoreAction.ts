@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { db, getDatabaseDialect, sqlHelpers } from '@stacksjs/database/runtime'
 import { response } from '@stacksjs/router'
 import { kanbanActionError } from '../Kanban/kanban-response'
+import { notifyFeedbackFiled } from './feedback-notifier'
 import {
   authorizeFeedbackToken,
   FEEDBACK_MAX_DESCRIPTION as MAX_DESCRIPTION,
@@ -63,7 +64,7 @@ export default new Action({
       const token = await (db as any)
         .selectFrom('feedback_tokens')
         .where('token', '=', hashFeedbackToken(raw))
-        .select(['id', 'board_id', 'revoked_at', 'expires_at'])
+        .select(['id', 'board_id', 'revoked_at', 'expires_at', 'label'])
         .executeTakeFirst()
 
       const verdict = authorizeFeedbackToken(token)
@@ -119,9 +120,23 @@ export default new Action({
         [new Date().toISOString().slice(0, 19).replace('T', ' '), Number(token.id)],
       ).execute()
 
+      const cardId = Number(card.get('id'))
+
+      // `void`: the card is saved, so the reviewer is told it went through
+      // whatever the notification does. Blocking on an SMTP round-trip would
+      // make a mail outage look like a failed submission, and failing on one
+      // would be worse.
+      void notifyFeedbackFiled({
+        boardId: verdict.boardId,
+        cardId,
+        title,
+        description,
+        label: String(token.label ?? ''),
+      })
+
       // Acknowledgement only. Returning the card, its position or anything
       // about the board would make this a read endpoint, which it is not.
-      return { filed: true, id: Number(card.get('id')) }
+      return { filed: true, id: cardId }
     }
     catch (err) {
       return kanbanActionError(err, 'FeedbackStoreAction')

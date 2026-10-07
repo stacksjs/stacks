@@ -90,4 +90,16 @@ export default {
       retentionHours: 24,
     },
   },
+
+  // Feedback filed through a revocable link, by a reviewer with no account
+  // (stacksjs/stacks#2872). Mint the links with `buddy feedback:invite`.
+  // Notifications are off by default; turn them on so a card is not found by
+  // accident. `chat` needs no recipients (Slack via webhook); email, sms and
+  // database each need a recipient carrying their own contact field.
+  feedback: {
+    notifications: {
+      enabled: false,
+      channels: ['chat'],
+    },
+  },
 } satisfies DashboardConfig

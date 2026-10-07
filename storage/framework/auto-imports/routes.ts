@@ -11,4 +11,5 @@ export const routeNames = {
   'email.subscribe': '/api/email/subscribe',
   'email.unsubscribe': '/api/email/unsubscribe',
   'email.unsubscribe.oneclick': '/api/email/unsubscribe',
+  'feedback.store': '/api/feedback/{token}',
 } as const

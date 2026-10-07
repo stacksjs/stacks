@@ -144,6 +144,43 @@ export interface DashboardOptions {
   }
 
   /**
+   * Feedback filed through a revocable link, by somebody with no account
+   * (stacksjs/stacks#2872). `buddy feedback:invite` mints the links and
+   * `buddy feedback:tokens` lists them; this is only about being told when
+   * one is used.
+   */
+  feedback?: {
+    /**
+     * Tell somebody when a card arrives.
+     *
+     * Off by default, like every other notification surface here. A card
+     * lands on a board nobody is necessarily looking at, so without this the
+     * feedback is found by accident.
+     *
+     * No cooldown, deliberately: {@link ci.notifications} needs one because a
+     * flapping repo re-reports the same fact, while every feedback card is a
+     * different person saying a different thing. The route's rate limit is
+     * what bounds the volume.
+     */
+    notifications?: {
+      enabled?: boolean
+      /**
+       * Channels to fan out through, as `notify()` accepts them. Defaults to
+       * `['chat']`, which needs no recipient list because it is already
+       * scoped to one Slack channel by env.
+       */
+      channels?: Array<'email' | 'sms' | 'chat' | 'database'>
+      /**
+       * Recipients for the channels that need one (email/sms/database).
+       * Skipped for `chat`. A recipient is offered only the channels whose
+       * contact field it carries, so a phone-only entry listed under `email`
+       * is left out rather than failing the send.
+       */
+      recipients?: Array<{ email?: string, phone?: string, userId?: number }>
+    }
+  }
+
+  /**
    * **Dashboard Data Providers**
    *
    * Where each dashboard section reads its data from. The dashboard's Logs,

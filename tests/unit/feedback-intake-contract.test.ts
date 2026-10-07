@@ -44,9 +44,26 @@ describe('feedback intake contract', () => {
   test('acknowledges rather than reading the board back', () => {
     // Returning the card, its position, its column or anything about the
     // board would make a write-only capability into a read endpoint.
-    expect(action).toContain('return { filed: true, id: Number(card.get(\'id\')) }')
-    expect(action).not.toMatch(/return \{[^}]*\bboardId\b/)
-    expect(action).not.toMatch(/return \{[^}]*\bcolumnId\b/)
+    //
+    // Asserted on the fields rather than the exact expression, which pinned
+    // `Number(card.get('id'))` and so failed when the id was lifted into a
+    // variable to be notified with. The contract is which fields go back, not
+    // how the id is spelled.
+    const acknowledgement = action.match(/return \{ filed: true[^}]*\}/)
+    expect(acknowledgement).not.toBeNull()
+    expect(acknowledgement![0]).toMatch(/\bid\b/)
+    for (const leak of ['boardId', 'columnId', 'position', 'title', 'description', 'label'])
+      expect(acknowledgement![0]).not.toContain(leak)
+  })
+
+  test('notifies without handing the notification a token', () => {
+    // The card is saved before this fires, so the notification must not be
+    // able to fail the submission, and it must not carry the credential into
+    // an email, an SMS or a Slack channel.
+    const call = action.match(/void notifyFeedbackFiled\(\{[^}]*\}\)/)
+    expect(call).not.toBeNull()
+    expect(call![0]).not.toMatch(/\braw\b|hashFeedbackToken|\btoken\.token\b/)
+    expect(call![0]).toContain('void ')
   })
 
   test('verifies the board instead of trusting the cascade', () => {
