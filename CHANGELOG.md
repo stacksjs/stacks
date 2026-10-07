@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.91...v0.75.92)
+
+## 🔧 Chores
+
+- **deps**: refresh pantry.lock for claude-agent-sdk 0.3.293 and logsmith 0.2.13 ([5edf11f](https://github.com/stacksjs/stacks/commit/5edf11f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.90...v0.75.91)
 
 ## ✨ Features
