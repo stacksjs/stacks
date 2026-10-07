@@ -1,8 +1,12 @@
 import type {
   BlueskyCredentialOptions,
+  InstagramCredentialOptions,
+  LinkedInCredentialOptions,
+  MastodonCredentialOptions,
   SocialCredentialPlatform,
   SocialCredentialsByPlatform,
   SocialIdentityOptions,
+  ThreadsCredentialOptions,
   TwitterCredentialOptions,
 } from '@stacksjs/types'
 
@@ -21,16 +25,42 @@ import type {
  * from a default is an empty string that fails much later and somewhere else.
  */
 
-/** The field names each platform's credentials are read from, in env order. */
-const FIELDS = {
+/**
+ * The field names each platform's credentials are read from, in env order.
+ *
+ * Exported so a test can hold them against the drivers rather than against
+ * this file: these tables ARE the claim that a platform's credentials are
+ * complete, and a claim nothing checks is a comment.
+ */
+export const SOCIAL_CREDENTIAL_FIELDS = {
   bluesky: ['identifier', 'password', 'service'],
   twitter: ['clientId', 'clientSecret', 'accessToken', 'refreshToken'],
+  linkedin: ['accessToken', 'memberUrn', 'clientId', 'clientSecret', 'apiVersion'],
+  mastodon: ['accessToken', 'instanceUrl'],
+  instagram: ['accessToken', 'accountId', 'clientId', 'clientSecret'],
+  threads: ['accessToken', 'userId', 'clientId', 'clientSecret'],
 } as const satisfies Record<SocialCredentialPlatform, readonly string[]>
 
-/** The fields a platform cannot act without. */
-const REQUIRED = {
+/**
+ * The fields a platform cannot act without.
+ *
+ * Taken from what each driver's `publish()` dereferences and throws over, not
+ * from what its API documents. LinkedIn, Mastodon, Instagram and Threads each
+ * need a second value besides the token - the member URN, the instance, the
+ * account id, the user id - because a token alone does not say where or as
+ * whom to post, and each driver refuses without it.
+ *
+ * `clientId` and `clientSecret` are NOT required for those four: they are for
+ * refreshing, and an identity with a live token posts without them. Requiring
+ * them would refuse a working configuration.
+ */
+export const REQUIRED_SOCIAL_CREDENTIALS = {
   bluesky: ['identifier', 'password'],
   twitter: ['clientId', 'clientSecret', 'accessToken'],
+  linkedin: ['accessToken', 'memberUrn'],
+  mastodon: ['accessToken', 'instanceUrl'],
+  instagram: ['accessToken', 'accountId'],
+  threads: ['accessToken', 'userId'],
 } as const satisfies Record<SocialCredentialPlatform, readonly string[]>
 
 /**
@@ -123,12 +153,12 @@ export function pickCredentials<P extends SocialCredentialPlatform>(
   const inline = (declared.credentials?.[platform] ?? {}) as Record<string, string | undefined>
   const resolved: Record<string, string> = {}
 
-  for (const field of FIELDS[platform]) {
+  for (const field of SOCIAL_CREDENTIAL_FIELDS[platform]) {
     const value = (inline[field] ?? env[envName(name, platform, field)] ?? '').trim()
     if (value) resolved[field] = value
   }
 
-  const missing = REQUIRED[platform].filter(field => !resolved[field])
+  const missing = REQUIRED_SOCIAL_CREDENTIALS[platform].filter(field => !resolved[field])
   if (missing.length) {
     const vars = missing.map(field => envName(name, platform, field)).join(', ')
     throw new SocialIdentityError(
@@ -160,4 +190,20 @@ export function resolveBlueskyCredentials(identity?: string, env?: Record<string
 
 export function resolveTwitterCredentials(identity?: string, env?: Record<string, string | undefined>): Promise<TwitterCredentialOptions> {
   return resolveSocialCredentials('twitter', identity, env)
+}
+
+export function resolveLinkedInCredentials(identity?: string, env?: Record<string, string | undefined>): Promise<LinkedInCredentialOptions> {
+  return resolveSocialCredentials('linkedin', identity, env)
+}
+
+export function resolveMastodonCredentials(identity?: string, env?: Record<string, string | undefined>): Promise<MastodonCredentialOptions> {
+  return resolveSocialCredentials('mastodon', identity, env)
+}
+
+export function resolveInstagramCredentials(identity?: string, env?: Record<string, string | undefined>): Promise<InstagramCredentialOptions> {
+  return resolveSocialCredentials('instagram', identity, env)
+}
+
+export function resolveThreadsCredentials(identity?: string, env?: Record<string, string | undefined>): Promise<ThreadsCredentialOptions> {
+  return resolveSocialCredentials('threads', identity, env)
 }
