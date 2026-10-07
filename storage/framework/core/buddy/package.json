@@ -146,7 +146,7 @@
     "@stacksjs/skills": "^0.75.88",
     "@stacksjs/storage": "^0.75.88",
     "@stacksjs/strings": "^0.75.88",
-    "@stacksjs/stx": "^0.2.391",
+    "@stacksjs/stx": "^0.2.395",
     "@stacksjs/testing": "^0.75.88",
     "@stacksjs/tinker": "^0.75.88",
     "@stacksjs/tlsx": "^0.13.19",
@@ -158,7 +158,7 @@
     "@stacksjs/validation": "^0.75.88",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "bun-plugin-stx": "^0.2.391",
+    "bun-plugin-stx": "^0.2.395",
     "ts-pantry": "^0.11.69"
   },
   "devDependencies": {
