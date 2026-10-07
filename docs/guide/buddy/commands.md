@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **348 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **351 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -34,6 +34,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `email` | 7 |
 | `env` | 7 |
 | `extension` | 13 |
+| `feedback` | 3 |
 | `format` | 1 |
 | `forms` | 2 |
 | `gdpr` | 5 |
@@ -2300,6 +2301,65 @@ Show which framework feature bundles are active.
 - Namespace: none
 - Aliases: none
 - Arguments: none
+
+### `feedback:invite`
+
+Mint a revocable link an external reviewer files feedback through
+
+- Usage: `$ buddy feedback:invite <label>`
+- Namespace: `feedback`
+- Aliases: none
+- Arguments: `<label>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--board` | Board id or name to file into. Defaults to `Feedback`. | value, required | - |
+| `--expires` | Expire the link after this many days. Omitted, it lasts until revoked. | value, required | - |
+| `--create-board` | Create the board, with columns, if it does not exist | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy feedback:invite Pawel
+buddy feedback:invite Pawel --expires 30 --create-board
+buddy feedback:invite "Design review" --board 3
+```
+
+### `feedback:revoke`
+
+Stop a feedback link, by id or by the label it was minted with
+
+- Usage: `$ buddy feedback:revoke <link>`
+- Namespace: `feedback`
+- Aliases: none
+- Arguments: `<link>`
+
+Examples:
+
+```bash
+buddy feedback:revoke 3
+buddy feedback:revoke Pawel
+```
+
+### `feedback:tokens`
+
+List the feedback links and whether they still work
+
+- Usage: `$ buddy feedback:tokens`
+- Namespace: `feedback`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--board` | Only links filing into this board id or name | value, required | - |
+
+Examples:
+
+```bash
+buddy feedback:tokens
+buddy feedback:tokens --board Feedback
+```
 
 ### `format`
 

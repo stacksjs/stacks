@@ -102,6 +102,11 @@ const commandRegistry: Record<string, CommandLoader> = {
   'storage:backup': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
   'storage:backups': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
   'storage:restore': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
+  // Revocable links an external reviewer files feedback through, without an
+  // account (stacksjs/stacks#2872).
+  'feedback:invite': { path: './commands/feedback.ts', exportName: 'feedback' },
+  'feedback:tokens': { path: './commands/feedback.ts', exportName: 'feedback' },
+  'feedback:revoke': { path: './commands/feedback.ts', exportName: 'feedback' },
   'fresh': { path: './commands/fresh.ts', exportName: 'fresh' },
   'generate': { path: './commands/generate.ts', exportName: 'generate' },
   // Data-subject requests and the processing register (stacksjs/stacks#365).
