@@ -94,7 +94,11 @@ describe('authorizeFeedbackToken', () => {
 
   it('refuses an expired token, counting the exact moment as expired', () => {
     const now = new Date('2026-10-07T12:00:00.000Z')
-    expect(authorizeFeedbackToken({ boardId: 7, expiresAt: PAST }, now)).toEqual({ ok: false, reason: 'expired' })
+    // Measured from this test's `now`, not the clock: the shared PAST is a day
+    // before the real time, which passed this fixed moment on 2026-10-08 and
+    // turned "expired" into a token that expires tomorrow.
+    const past = new Date(now.getTime() - 86_400_000).toISOString()
+    expect(authorizeFeedbackToken({ boardId: 7, expiresAt: past }, now)).toEqual({ ok: false, reason: 'expired' })
     expect(authorizeFeedbackToken({ boardId: 7, expiresAt: now.toISOString() }, now)).toEqual({ ok: false, reason: 'expired' })
   })
 
