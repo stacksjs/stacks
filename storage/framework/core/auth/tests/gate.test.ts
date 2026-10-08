@@ -289,3 +289,149 @@ describe('Gate.flush', () => {
     expect(await Gate.allows('temp', null as TestUser)).toBe(false)
   })
 })
+
+// ─── inspectFor: a policy check for code that holds rows, not instances ──────
+
+/**
+ * Why this exists (stacksjs/stacks#2883).
+ *
+ * `policy.ts` declares Nova's whole vocabulary and 0 of the 750 default actions
+ * consult it. The reason turned out to be that they could not: policy
+ * resolution keys on `args[0].constructor.name`, so it needs a model INSTANCE,
+ * and the generated API and the dashboard actions both hold rows the query
+ * builder returned - plain objects, whose constructor is `Object`. There was no
+ * path from a model NAME to its policy, so the vocabulary was unreachable from
+ * the only code that wanted it.
+ *
+ * `inspectFor` is that path, and it answers three states rather than two: no
+ * policy registered (null), allowed, denied. The distinction is the whole
+ * point. `allows()` denies when nothing is registered, which is right for a
+ * named gate and catastrophic for a generated route - it would 403 every one of
+ * the 107 models that has no policy.
+ */
+describe('Gate.inspectFor', () => {
+  class OrderPolicy {
+    async viewAny(_user: TestUser) {
+      return true
+    }
+
+    async view(_user: TestUser, order: any) {
+      return order?.ownerId === 7
+    }
+
+    async delete(_user: TestUser) {
+      return false
+    }
+  }
+
+  it('is null when the model has no policy, which is not a denial', () => {
+    // The state every model is in by default. A caller must be able to tell
+    // "nobody has an opinion" from "the answer is no", or wiring this into a
+    // generated route would refuse every unpoliced model.
+    expect(Gate.hasPolicy('Order')).toBe(false)
+    expect(Gate.inspectFor('Order', 'view', null, { id: 1 })).resolves.toBeNull()
+  })
+
+  it('resolves the policy by model name, with a plain row as the subject', async () => {
+    Gate.policy('Order', OrderPolicy as any)
+
+    const mine = await Gate.inspectFor('Order', 'view', { id: 7 }, { id: 1, ownerId: 7 })
+    const theirs = await Gate.inspectFor('Order', 'view', { id: 7 }, { id: 2, ownerId: 9 })
+
+    expect(mine?.isAllowed).toBe(true)
+    expect(theirs?.isAllowed).toBe(false)
+  })
+
+  it('takes an ability that needs no subject', async () => {
+    Gate.policy('Order', OrderPolicy as any)
+
+    expect((await Gate.inspectFor('Order', 'viewAny', { id: 7 }))?.isAllowed).toBe(true)
+  })
+
+  it('denies when the policy says so', async () => {
+    Gate.policy('Order', OrderPolicy as any)
+
+    expect((await Gate.inspectFor('Order', 'delete', { id: 7 }, { id: 1 }))?.isAllowed).toBe(false)
+  })
+
+  it('denies an ability the policy does not implement, rather than allowing it', async () => {
+    // A policy that covers `view` and not `restore` has not permitted
+    // `restore`. Falling through to allow would make every unimplemented
+    // ability a hole.
+    Gate.policy('Order', OrderPolicy as any)
+
+    expect((await Gate.inspectFor('Order', 'restore', { id: 7 }, { id: 1 }))?.isAllowed).toBe(false)
+  })
+
+  it('never resolves an inherited helper as an ability', async () => {
+    // The #1985 fail-open: `policyInstance['allow']` returns an unconditional
+    // allow, and an ability name can be caller-influenced.
+    Gate.policy('Order', OrderPolicy as any)
+
+    for (const reserved of ['allow', 'allowIf', 'before', 'constructor'])
+      expect((await Gate.inspectFor('Order', reserved, { id: 7 }, { id: 1 }))?.isAllowed, reserved).toBe(false)
+  })
+
+  it('honours the policy before hook', async () => {
+    class Bypass {
+      async before(user: TestUser) {
+        return user?.admin === true ? true : null
+      }
+
+      async delete() {
+        return false
+      }
+    }
+    Gate.policy('Order', Bypass as any)
+
+    expect((await Gate.inspectFor('Order', 'delete', { admin: true }))?.isAllowed).toBe(true)
+    expect((await Gate.inspectFor('Order', 'delete', { admin: false }))?.isAllowed).toBe(false)
+  })
+
+  it('runs the global before and after callbacks, so a lockdown still applies', async () => {
+    Gate.policy('Order', OrderPolicy as any)
+    Gate.after(() => false)
+
+    expect((await Gate.inspectFor('Order', 'viewAny', { id: 7 }))?.isAllowed).toBe(false)
+  })
+
+  it('does not run them when no policy is registered, because no check happened', async () => {
+    // An `after` lockdown overrides a decision; with no policy there is no
+    // decision to override, and inventing one here would turn `inspectFor`
+    // into the thing it exists not to be - a deny for every unpoliced model.
+    let ran = false
+    Gate.after(() => {
+      ran = true
+      return undefined as any
+    })
+
+    expect(await Gate.inspectFor('Order', 'viewAny', { id: 7 })).toBeNull()
+    expect(ran).toBe(false)
+  })
+})
+
+describe('Gate.allowsFor', () => {
+  class ReadOnly {
+    async viewAny() {
+      return true
+    }
+
+    async delete() {
+      return false
+    }
+  }
+
+  it('reads an unpoliced model as allowed, leaving the caller as it was', async () => {
+    // The convenience form for a caller with nothing to add: no policy means
+    // this layer is not the one saying no. Whoever needs the three-way answer
+    // uses inspectFor.
+    expect(await Gate.allowsFor('Order', 'delete', null, { id: 1 })).toBe(true)
+  })
+
+  it('follows the policy once there is one', async () => {
+    Gate.policy('Order', ReadOnly as any)
+
+    expect(await Gate.allowsFor('Order', 'viewAny', { id: 7 })).toBe(true)
+    expect(await Gate.allowsFor('Order', 'delete', { id: 7 }, { id: 1 })).toBe(false)
+  })
+})

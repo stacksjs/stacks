@@ -497,36 +497,11 @@ async function resolveAbility(ability: string, user: UserModel | null, args: any
   // Check for policy first (if model is passed)
   const model = args[0]
   if (model && typeof model === 'object') {
-    const modelName = model.constructor?.name
-    const policyClass = state.policies.get(modelName)
-
+    const policyClass = state.policies.get(model.constructor?.name)
     if (policyClass) {
-      const policyInstance = new policyClass()
-
-      // Check policy's before method
-      if (policyInstance.before) {
-        const beforeResult = await policyInstance.before(user, ability)
-        if (beforeResult === true) {
-          return AuthorizationResponse.allow()
-        }
-        if (beforeResult === false) {
-          return AuthorizationResponse.deny()
-        }
-      }
-
-      // Resolve the ability to a policy method, but never to an inherited
-      // BasePolicy/Object helper (see RESERVED_POLICY_MEMBERS) — that path
-      // is a fail-open bypass when the ability string is caller-influenced.
-      // Require an own function too, so only real ability methods run.
-      const method = RESERVED_POLICY_MEMBERS.has(ability)
-        ? undefined
-        : policyInstance[ability] as PolicyMethod | undefined
-      if (typeof method === 'function') {
-        const result = await method.call(policyInstance, user, ...args)
-        // null is treated as "no opinion" — fall through to deny here since
-        // we already exhausted the policy resolution path for this ability.
-        return normalizeResponse(result ?? false)
-      }
+      const response = await runPolicy(policyClass, ability, user, args)
+      if (response)
+        return response
     }
   }
 
@@ -538,6 +513,135 @@ async function resolveAbility(ability: string, user: UserModel | null, args: any
 
   // No gate or policy found - deny by default
   return AuthorizationResponse.deny(`No gate or policy defined for ability: ${ability}`)
+}
+
+/**
+ * Run one policy class for one ability.
+ *
+ * Shared by the instance-keyed path (`resolveAbility`, which finds the policy
+ * through `args[0].constructor.name`) and the name-keyed one (`inspectFor`), so
+ * neither can drift from the other on the part that matters: the
+ * RESERVED_POLICY_MEMBERS guard. Without it, `policyInstance[ability]` resolves
+ * inherited helpers like `allow` / `allowIf`, and `allow()` returns an
+ * unconditional ALLOW - a fail-open bypass whenever the ability string is
+ * caller-influenced (stacksjs/stacks#1985).
+ *
+ * Returns null when this policy has no own method for the ability, so the
+ * caller decides what that means: `resolveAbility` falls through to an inline
+ * gate, and `inspectFor` denies, having nowhere else to look.
+ */
+async function runPolicy(
+  policyClass: new () => any,
+  ability: string,
+  user: UserModel | null,
+  args: any[],
+): Promise<AuthorizationResponse | null> {
+  const policyInstance = new policyClass()
+
+  if (policyInstance.before) {
+    const beforeResult = await policyInstance.before(user, ability)
+    if (beforeResult === true)
+      return AuthorizationResponse.allow()
+    if (beforeResult === false)
+      return AuthorizationResponse.deny()
+  }
+
+  const method = RESERVED_POLICY_MEMBERS.has(ability)
+    ? undefined
+    : policyInstance[ability] as PolicyMethod | undefined
+
+  if (typeof method !== 'function')
+    return null
+
+  const result = await method.call(policyInstance, user, ...args)
+  // null is "no opinion", and the policy resolution path for this ability is
+  // already exhausted, so it means no.
+  return normalizeResponse(result ?? false)
+}
+
+/**
+ * Check an ability against the policy registered for a model NAME, answering
+ * three states: no policy (null), allowed, denied.
+ *
+ * The vocabulary in `policy.ts` was unreachable from the code that wanted it.
+ * Resolution keys on `args[0].constructor.name`, so it needs a model INSTANCE,
+ * and the generated API and the dashboard actions both hold rows the query
+ * builder returned - plain objects, whose constructor is `Object`. There was no
+ * path from a model name to its policy, which is why 0 of the 750 default
+ * actions consult one (stacksjs/stacks#2883).
+ *
+ * The three-way answer is the point. `allows()` DENIES when nothing is
+ * registered, which is right for a named gate and catastrophic for a generated
+ * route: it would refuse every one of the 107 models that has no policy. A
+ * caller must be able to tell "nobody has an opinion" from "the answer is no",
+ * and null makes that impossible to read as fail-open by accident.
+ *
+ * The global before/after callbacks run when a policy IS registered, so a
+ * `Gate.after()` lockdown still applies. They do not run otherwise: with no
+ * policy there is no decision to override, and inventing one would turn this
+ * back into a deny for every unpoliced model.
+ *
+ * @example
+ * const verdict = await Gate.inspectFor('Order', 'delete', user, row)
+ * if (verdict && !verdict.isAllowed)
+ *   return response.json({ message: verdict.message }, 403)
+ */
+export async function inspectFor(
+  model: string | { name: string },
+  ability: Ability,
+  user: UserModel | null,
+  ...args: any[]
+): Promise<AuthorizationResponse | null> {
+  const modelName = typeof model === 'string' ? model : model.name
+  const policyClass = state.policies.get(modelName)
+
+  if (!policyClass)
+    return null
+
+  let response: AuthorizationResponse | null = null
+
+  for (const callback of state.beforeCallbacks) {
+    const beforeResult = await callback(user, ability, args)
+    if (beforeResult === true) {
+      response = AuthorizationResponse.allow()
+      break
+    }
+    if (beforeResult === false) {
+      response = AuthorizationResponse.deny()
+      break
+    }
+  }
+
+  // A policy with no own method for this ability has not permitted it. There
+  // is no inline-gate fallback here: the caller named a model, so an ability
+  // the model's policy does not implement is one nothing has allowed.
+  response ??= await runPolicy(policyClass, ability, user, args)
+    ?? AuthorizationResponse.deny(`${modelName}'s policy defines no ${String(ability)} ability`)
+
+  for (const callback of state.afterCallbacks) {
+    const afterResult = await callback(user, ability, response.isAllowed, args)
+    if (typeof afterResult === 'boolean')
+      return afterResult ? AuthorizationResponse.allow() : AuthorizationResponse.deny()
+  }
+
+  return response
+}
+
+/**
+ * {@link inspectFor} as a boolean, reading "no policy registered" as allowed.
+ *
+ * The convenience form for a caller with nothing of its own to add: no policy
+ * means this layer is not the one saying no. Anything that needs to tell that
+ * apart from a permission - to log it, or to skip work - uses `inspectFor`.
+ */
+export async function allowsFor(
+  model: string | { name: string },
+  ability: Ability,
+  user: UserModel | null,
+  ...args: any[]
+): Promise<boolean> {
+  const response = await inspectFor(model, ability, user, ...args)
+  return response ? response.isAllowed : true
 }
 
 /**
@@ -630,6 +734,7 @@ export const Gate = {
   before,
   after,
   allows,
+  allowsFor,
   denies,
   can,
   cannot,
@@ -638,6 +743,7 @@ export const Gate = {
   none,
   authorize,
   inspect,
+  inspectFor,
   has,
   hasPolicy,
   abilities,
