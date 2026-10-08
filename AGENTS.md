@@ -191,6 +191,10 @@ and currently disagrees with the browser in both directions.
   `useWebSocket`.
 - Signals and lifecycle: `state`, `derived`, `effect`, `batch`, `nextTick`,
   `onMount`, `onDestroy`, `provide`, `defineStore`, `stx`.
+- Kept values: `keptState` is a state kept in localStorage between visits
+  (name, initial value, and a scope option), so a phone tab draws last launch's
+  data at once. Scope it to the signed-in account; a scope of false keeps
+  nothing. `forgetKeptState` clears one scope, or every kept value, on sign-out.
 - Server-rendered data: `clearServerData`. The page embeds its hydration payload
   in a `script[data-stx-server-data]` tag, which `useFetch` and `useQuery` read
   once on mount instead of refetching. `clearServerData(key)` drops one entry and

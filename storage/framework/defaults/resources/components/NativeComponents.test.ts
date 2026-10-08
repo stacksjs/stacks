@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { processDirectives } from '@stacksjs/stx'
 
 const read = (name: string) => readFileSync(join(import.meta.dir, `${name}.stx`), 'utf8')
 
@@ -111,6 +112,30 @@ describe('Native components', () => {
     const control = read('NativeSegmentedControl')
     expect(control).toContain('haptics.selection()')
     expect(control).toContain("emit('change', value)")
+  })
+
+  it('renders its segments in the browser, from whatever the options prop holds', async () => {
+    // `options` is both the prop and the derived list the segments loop over.
+    // stx once took the prop's value in the render context for server data and
+    // turned the `:for` into a server `@foreach(options())`, which rendered an
+    // empty track (the workout player's rest picker).
+    const warn = spyOn(console, 'warn')
+    try {
+      const html = await processDirectives(
+        `<NativeSegmentedControl label="Rest" :options="[{ label: '30s', value: 30 }, { label: '60s', value: 60 }]" />`,
+        {},
+        join(import.meta.dir, 'page.stx'),
+        { componentsDir: import.meta.dir, partialsDir: import.meta.dir } as Parameters<typeof processDirectives>[3],
+        new Set<string>(),
+      )
+      expect(html).toContain('class="native-segmented"')
+      expect(html).toContain(':for="(option, index) in options()"')
+      expect(html).not.toContain('Foreach Error')
+      expect(warn.mock.calls.some(call => String(call[0]).includes('is not iterable server-side'))).toBe(false)
+    }
+    finally {
+      warn.mockRestore()
+    }
   })
 
   it('steps the tab bar away for a screen that is a task of its own', () => {
