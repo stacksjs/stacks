@@ -12,7 +12,7 @@ interface NativeAccountButtonProps {
   label?: string
 }
 
-const { href, label = 'Account' } = defineProps<NativeAccountButtonProps>()
+defineProps<NativeAccountButtonProps>()
 </script>
 
 <script client>
@@ -21,6 +21,11 @@ import { haptics } from '@stacksjs/mobile'
 // The account at the top right of a tab's screen, as iOS apps put it: the
 // tab bar keeps its tabs for the places the app is used from. Reactive, so it
 // follows the signed-in person and the count as they change.
+// Every prop through useReactiveProp, under names of its own: read as plain
+// {{ label }}, a host's client signal of the same name (a pull-to-refresh's
+// "Refreshing") was shown instead of the button's own.
+const accountHref = useReactiveProp<string>('href', '')
+const accountLabel = useReactiveProp<string>('label', 'Account')
 const accountName = useReactiveProp<string>('name', '')
 const accountImage = useReactiveProp<string>('image', '')
 const accountBadge = useReactiveProp<string | number>('badge', '')
@@ -42,8 +47,8 @@ function tapAccount(): void {
 }
 </script>
 
-<a href="{{ href }}" class="native-account-button" draggable="false" data-stx-link data-stx-prefetch="eager" @click="tapAccount()">
-  <span class="native-account-label">{{ label }}<span :if="accountCount()">, {{ accountCount() }}</span></span>
+<a :href="accountHref()" class="native-account-button" draggable="false" data-stx-link data-stx-prefetch="eager" @click="tapAccount()">
+  <span class="native-account-label">{{ accountLabel() }}<span :if="accountCount()">, {{ accountCount() }}</span></span>
   <span aria-hidden="true" class="native-account-face" :style="accountPhoto()">
     <span :if="!accountImage() && accountInitials()">{{ accountInitials() }}</span>
     <i :if="!accountImage() && !accountInitials()" class="i-lucide-circle-user-round native-account-glyph"></i>
