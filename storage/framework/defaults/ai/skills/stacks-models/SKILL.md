@@ -132,6 +132,44 @@ shape, authorization boundary, or aggregation differs from generic CRUD. Do
 not expose a sensitive model through unguarded generated routes just because a
 separate dashboard endpoint is protected.
 
+#### Who may reach the generated routes
+
+Omit `middleware` and reads AND writes get `auth`: an undeclared read route is
+how a customer list leaks (#2224). Four declaration forms, narrowest last:
+
+```ts
+middleware: ['auth']                       // every ability
+middleware: []                             // every ability public; warns at boot
+middleware: { read: [], write: ['auth'] }  // public catalog, guarded writes
+middleware: { write: ['auth'], destroy: ['auth', 'role:admin'] }  // per ability
+```
+
+`read` covers `index` and `show`; `write` covers `store`, `update` and
+`destroy`; an ability name overrides its side; and `destroy` covers bulk-delete
+with the single delete. Use the per-ability form for the "fewer actions" half of
+a tiered role - "may file an order, may not void one" is `store` versus
+`destroy`, which the read/write split cannot express. Declaring one ability
+leaves the other four on `auth`, so narrowing one route never widens another.
+
+A model is also gated by the roles it declares for the dashboard:
+
+```ts
+dashboard: { roles: ['admin'] }   // hides the sidebar row AND gates every generated route
+```
+
+That one declaration covers both surfaces (#2883). It appends `role:admin` to
+the resolved middleware of each ability, unless that ability names a `role:`
+itself (explicit wins) or was explicitly emptied (a deliberately public surface
+is reported at boot, not quietly closed). `dashboard: { roles: [...], enforce:
+false }` keeps the row hidden and the API as the middleware leaves it, for a row
+hidden only to reduce clutter.
+
+Row-level scoping is separate and already on: a model scopes rows by an
+`ownership` config or a `team_id` column, and `security.api.rowScoping` defaults
+to `'deny'`, which withholds store/update/destroy from a model that scopes
+neither (#2375). A role says who may call the route; ownership says which rows
+are theirs. A tiered app usually needs both.
+
 Generated store and update routes accept both spellings of every fillable
 attribute and each foreign key implied by `belongsTo`. Declaring Product as a
 belongs-to relation therefore accepts `productId` or `product_id` without
