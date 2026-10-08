@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -920,5 +920,106 @@ describe('describeUnscopedMutatingModels', () => {
     // The sibling warning about public reads was demoted to `debug` because a
     // line per model on every boot is how a warning stops being read.
     expect(report?.split('\n')).toHaveLength(1)
+  })
+})
+
+/**
+ * `dashboard.roles` gating the generated API, not only the sidebar row
+ * (stacksjs/stacks#2883).
+ *
+ * #1843 gave models a `dashboard.roles` list and taught the sidebar to hide
+ * rows a viewer's roles do not match. Nothing carried the same list to the
+ * routes behind those rows, so a model declaring `roles: ['admin']` registered
+ * `['auth']` and served every row of itself - and accepted a DELETE and a
+ * bulk-delete - to anyone signed in. Reproduced by booting the real generator
+ * against a throwaway project in model-dashboard-roles.test.ts.
+ */
+describe('dashboardRoleMiddleware', () => {
+  it('turns a role list into one any-of middleware entry', () => {
+    expect(dashboardRoleMiddleware({ roles: ['admin'] })).toBe('role:admin')
+    expect(dashboardRoleMiddleware({ roles: ['admin', 'dev'] })).toBe('role:admin,dev')
+  })
+
+  it('trims and drops blank or non-string entries', () => {
+    expect(dashboardRoleMiddleware({ roles: [' admin ', '', 'dev', 42 as any, null as any] })).toBe('role:admin,dev')
+  })
+
+  it('is null without roles to gate on', () => {
+    for (const dashboard of [undefined, null, {}, { roles: [] }, { roles: ['', '  '] }, { roles: 'admin' }])
+      expect(dashboardRoleMiddleware(dashboard)).toBeNull()
+  })
+
+  it('is null when the model opts out of enforcement', () => {
+    // The row stays hidden; the endpoints stay as the `useApi` middleware
+    // leaves them. An explicit opt-out, because the silent version of it was
+    // the bug being fixed.
+    expect(dashboardRoleMiddleware({ roles: ['admin'], enforce: false })).toBeNull()
+    expect(dashboardRoleMiddleware({ roles: ['admin'], enforce: true })).toBe('role:admin')
+  })
+
+  it('treats a non-boolean enforce as unset rather than as an opt-out', () => {
+    // A typo must not silently reopen the API the roles list closed.
+    for (const enforce of [0 as any, '' as any, 'false' as any, null as any])
+      expect(dashboardRoleMiddleware({ roles: ['admin'], enforce })).toBe('role:admin')
+  })
+})
+
+describe('resolveApiMiddleware with dashboard.roles', () => {
+  it('appends the role to both sides of the secure default', () => {
+    expect(resolveApiMiddleware(true, { roles: ['admin'] }))
+      .toEqual({ read: ['auth', 'role:admin'], write: ['auth', 'role:admin'], declared: false })
+  })
+
+  it('appends to a declared list without disturbing its order', () => {
+    expect(resolveApiMiddleware({ middleware: ['auth', 'throttle'] }, { roles: ['admin', 'dev'] }))
+      .toEqual({ read: ['auth', 'throttle', 'role:admin,dev'], write: ['auth', 'throttle', 'role:admin,dev'], declared: true })
+  })
+
+  it('leaves an explicitly empty side empty', () => {
+    // `middleware: { read: [] }` is a public catalog asked for in as many
+    // words. Closing it from a sidebar field would undo a decision the app
+    // stated; the contradiction is warned about at boot instead.
+    expect(resolveApiMiddleware({ middleware: { read: [], write: ['auth'] } }, { roles: ['admin'] }))
+      .toEqual({ read: [], write: ['auth', 'role:admin'], declared: true })
+    expect(resolveApiMiddleware({ middleware: [] }, { roles: ['admin'] }))
+      .toEqual({ read: [], write: [], declared: true })
+  })
+
+  it('lets an explicit role entry win over the derived one, per side', () => {
+    expect(resolveApiMiddleware({ middleware: { read: ['auth', 'role:dev'], write: ['auth'] } }, { roles: ['admin'] }))
+      .toEqual({ read: ['auth', 'role:dev'], write: ['auth', 'role:admin'], declared: true })
+  })
+
+  it('does not double-append when the declared list already names the same role', () => {
+    expect(resolveApiMiddleware({ middleware: ['auth', 'role:admin'] }, { roles: ['admin'] }))
+      .toEqual({ read: ['auth', 'role:admin'], write: ['auth', 'role:admin'], declared: true })
+  })
+
+  it('changes nothing for a model with no dashboard roles', () => {
+    // The framework's own 107 models declare none, so an upgrade moves nothing.
+    expect(resolveApiMiddleware(true, undefined)).toEqual({ read: ['auth'], write: ['auth'], declared: false })
+    expect(resolveApiMiddleware(true, { label: 'Audit Trail' })).toEqual({ read: ['auth'], write: ['auth'], declared: false })
+    expect(resolveApiMiddleware(true)).toEqual({ read: ['auth'], write: ['auth'], declared: false })
+  })
+})
+
+describe('describeContradictoryRoleGates', () => {
+  it('names a model whose roles gate a side its middleware opened', () => {
+    expect(describeContradictoryRoleGates([{ model: 'AuditTrail', sides: ['read'] }]))
+      .toContain('AuditTrail (read)')
+  })
+
+  it('lists both sides and every model, and says what to do about it', () => {
+    const message = describeContradictoryRoleGates([
+      { model: 'AuditTrail', sides: ['read', 'write'] },
+      { model: 'Ledger', sides: ['write'] },
+    ])
+    expect(message).toContain('AuditTrail (read, write)')
+    expect(message).toContain('Ledger (write)')
+    expect(message).toContain('dashboard.enforce')
+  })
+
+  it('is null when nothing contradicts, so the caller logs nothing', () => {
+    expect(describeContradictoryRoleGates([])).toBeNull()
   })
 })

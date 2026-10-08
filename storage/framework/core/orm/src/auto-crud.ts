@@ -735,12 +735,13 @@ function middlewareList(raw: unknown): string[] {
  * opens writes at the same time. That is a worse trade than the bug being fixed,
  * so `{ read: [], write: ['auth'] }` says it exactly.
  */
-export function resolveApiMiddleware(useApi: unknown): { read: string[], write: string[], declared: boolean } {
+export function resolveApiMiddleware(useApi: unknown, dashboard?: unknown): { read: string[], write: string[], declared: boolean } {
   const declared = typeof useApi === 'object' && useApi !== null && 'middleware' in (useApi as Record<string, unknown>)
   const raw = (useApi as { middleware?: unknown } | null | undefined)?.middleware
+  const role = dashboardRoleMiddleware(dashboard)
 
   if (!declared)
-    return { read: ['auth'], write: ['auth'], declared: false }
+    return { read: withDashboardRole(['auth'], role), write: withDashboardRole(['auth'], role), declared: false }
 
   // Split form. `read`/`write` are independent: an omitted side falls back to
   // the secure default rather than to "public", so `{ write: ['auth'] }` does
@@ -748,14 +749,100 @@ export function resolveApiMiddleware(useApi: unknown): { read: string[], write: 
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
     const split = raw as Record<string, unknown>
     return {
-      read: 'read' in split ? middlewareList(split.read) : ['auth'],
-      write: 'write' in split ? middlewareList(split.write) : ['auth'],
+      read: withDashboardRole('read' in split ? middlewareList(split.read) : ['auth'], role),
+      write: withDashboardRole('write' in split ? middlewareList(split.write) : ['auth'], role),
       declared: true,
     }
   }
 
   const list = middlewareList(raw)
-  return { read: list, write: list, declared: true }
+  return { read: withDashboardRole(list, role), write: withDashboardRole(list, role), declared: true }
+}
+
+/**
+ * The `role:` middleware entry a model's `dashboard.roles` implies, or null.
+ *
+ * #1843 gave models a `dashboard.roles` list and taught the sidebar to hide
+ * rows whose roles a viewer does not hold. Nothing carried that list to the
+ * routes behind those rows, so a model declaring `roles: ['admin']` registered
+ * `['auth']`: the row vanished and `GET /api/<uri>` still returned every row of
+ * it to anyone signed in, `DELETE` and `bulk-delete` included. A hidden row is
+ * presentation, and the field is called `roles` - an app writing one is saying
+ * who may reach the model (stacksjs/stacks#2883).
+ *
+ * One entry rather than one per role, because `role:a,b` is Role.ts's any-of
+ * form and matches what the list means in the sidebar.
+ *
+ * `enforce: false` opts out, for a row hidden only to reduce clutter. It has to
+ * be the boolean: a truthy-looking typo must not reopen what the roles closed,
+ * so anything else reads as unset.
+ */
+export function dashboardRoleMiddleware(dashboard: unknown): string | null {
+  if (!dashboard || typeof dashboard !== 'object')
+    return null
+
+  const options = dashboard as { roles?: unknown, enforce?: unknown }
+  if (options.enforce === false)
+    return null
+
+  if (!Array.isArray(options.roles))
+    return null
+
+  const roles = options.roles
+    .filter((role: unknown): role is string => typeof role === 'string')
+    .map((role: string) => role.trim())
+    .filter((role: string) => role.length > 0)
+
+  return roles.length > 0 ? `role:${roles.join(',')}` : null
+}
+
+/**
+ * Append a derived role entry to one side's middleware list.
+ *
+ * Two lists are left alone. An EMPTY one is a public surface the model asked
+ * for in as many words (`middleware: []`, or `{ read: [] }` for a catalog), and
+ * closing it from a sidebar field would undo a stated decision rather than
+ * complete one; `describeContradictoryRoleGates` reports that pairing at boot
+ * instead. A list that already names a `role:` is one the app wrote itself, and
+ * explicit beats derived - which also keeps the same role from being appended
+ * twice.
+ */
+function withDashboardRole(list: string[], role: string | null): string[] {
+  if (!role || list.length === 0)
+    return list
+
+  if (list.some(entry => entry === 'role' || entry.startsWith('role:')))
+    return list
+
+  return [...list, role]
+}
+
+/**
+ * The one-line-per-boot report about models whose `dashboard.roles` gates a
+ * side their `useApi.middleware` deliberately opened.
+ *
+ * `dashboard: { roles: ['admin'] }` beside `middleware: { read: [] }` says two
+ * opposite things: admins only, and anyone at all. Neither half can be assumed
+ * to be the mistake, so the generator honours the explicit middleware and names
+ * the pairing here. Aggregated into one line for the reason the sibling
+ * row-scoping report is (see `describeUnscopedMutatingModels`).
+ *
+ * Returns null when there is nothing to report, so the caller logs nothing.
+ */
+export function describeContradictoryRoleGates(
+  entries: ReadonlyArray<{ model: string, sides: readonly string[] }>,
+): string | null {
+  if (entries.length === 0)
+    return null
+
+  const named = [...entries]
+    .sort((a, b) => a.model.localeCompare(b.model))
+    .map(entry => `${entry.model} (${[...entry.sides].join(', ')})`)
+    .join(', ')
+
+  return `[orm] ${entries.length} model(s) role-gate their sidebar row and publish the matching API to everyone, `
+    + `because \`useApi.middleware\` declares that side empty - ${named}. `
+    + `Drop the empty list to let \`dashboard.roles\` gate it, or set \`dashboard.enforce: false\` to keep the row hidden and the API public.`
 }
 
 // Default page size for the auto-CRUD index route. Matches the

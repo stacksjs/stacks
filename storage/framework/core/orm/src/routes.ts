@@ -26,7 +26,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
-import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import type { RegisteredRouteLike } from './auto-crud'
 import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
@@ -547,6 +547,12 @@ const apiModels = (() => {
 /** Models registering mutating routes that no row-level check applies to. */
 const unscopedMutatingModels: string[] = []
 
+/**
+ * Models whose `dashboard.roles` gates the sidebar row while their own
+ * `useApi.middleware` declares a side public. Reported together at the end.
+ */
+const contradictoryRoleGates: Array<{ model: string, sides: string[] }> = []
+
 // Register CRUD routes for each selected model with a useApi trait
 for (const [modelName, model] of Object.entries(apiModels)) {
   const useApi = model.traits?.useApi
@@ -574,7 +580,24 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   // on both sides: with nothing declared, reads AND writes get `auth`. A public
   // catalog asks for it with `middleware: { read: [], write: ['auth'] }`, or
   // opens everything with `middleware: []`. See `resolveApiMiddleware`.
-  const { read: readMiddleware0, write: writeMiddleware, declared } = resolveApiMiddleware(useApi)
+  //
+  // `model.dashboard` is read for its `roles`, which gate these routes as well
+  // as the sidebar row they sit behind. Until #2883 the list reached only the
+  // sidebar, so a model declaring `roles: ['admin']` hid its row and served
+  // every endpoint to anyone signed in.
+  const { read: readMiddleware0, write: writeMiddleware, declared } = resolveApiMiddleware(useApi, model.dashboard)
+
+  // A role list beside an explicitly empty side is contradictory, and the
+  // explicit middleware wins. Collected per model and reported once at the end.
+  if (dashboardRoleMiddleware(model.dashboard)) {
+    const sides = [
+      ...(readMiddleware0.length === 0 && ['index', 'show'].some(r => enabledRoutes.includes(r)) ? ['read'] : []),
+      ...(writeMiddleware.length === 0 && ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r)) ? ['write'] : []),
+    ]
+    if (sides.length > 0)
+      contradictoryRoleGates.push({ model: modelName, sides })
+  }
+
   const hasMutating = ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r))
   if (hasMutating && declared && writeMiddleware.length === 0)
     log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED mutating routes at ${basePath} (explicit \`middleware: []\` opt-out)`)
@@ -1207,6 +1230,10 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   const report = describeUnscopedMutatingModels(unscopedMutatingModels, rowScopingPolicy)
   if (report)
     log.warn(report)
+
+  const contradictions = describeContradictoryRoleGates(contradictoryRoleGates)
+  if (contradictions)
+    log.warn(contradictions)
 }
 
 export default route

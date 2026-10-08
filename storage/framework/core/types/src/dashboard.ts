@@ -300,10 +300,13 @@ export type DashboardConfig = Partial<DashboardOptions>
  *      the path-based auto-categorisation (commerce/, Content/, etc.).
  *   3. `dashboard.label` / `dashboard.icon` → display overrides; fall back
  *      to the model name and `iconMap` lookup.
- *   4. `dashboard.roles` → role-gates the sidebar row. The server-side
- *      sidebar builder emits the row with role metadata; the client filters
- *      it out for users who lack a matching role. Permissive default
- *      (unauthenticated viewers see everything — see `useRole.ts`).
+ *   4. `dashboard.roles` → role-gates the sidebar row AND the API the
+ *      `useApi` trait generates. The sidebar builder emits the row with role
+ *      metadata and the client filters it out for users who lack a matching
+ *      role, permissively by default (unauthenticated viewers see everything -
+ *      see `useRole.ts`); the route generator appends `role:<the list>` to the
+ *      resolved middleware, which `dashboard.enforce: false` opts out of
+ *      (stacksjs/stacks#2883).
  */
 export interface DashboardModelOptions {
   /**
@@ -353,15 +356,47 @@ export interface DashboardModelOptions {
     | 'app'
 
   /**
-   * Role-gate the sidebar row. The row is rendered server-side with
-   * `data-required-roles="…"`; the client filters it out via
-   * `useRole()` if the viewer doesn't hold any of the listed roles.
+   * Which roles this model is for.
    *
-   * The dev-mode default in `useRole()` means unauthenticated viewers
-   * (e.g., the local dev dashboard) see role-gated rows as if they
-   * were a dev — see `composables/useRole.ts` for the full chain.
+   * Gates the sidebar row AND the API the `useApi` trait generates, so one
+   * declaration covers both surfaces.
+   *
+   * The row is emitted with role metadata and filtered client-side for viewers
+   * holding none of the listed roles; unauthenticated viewers see every row,
+   * which is what keeps the local dev dashboard usable (see
+   * `composables/useRole.ts` for that chain).
+   *
+   * The generated routes get `role:<the list>` appended to their resolved
+   * middleware. That half arrived later, in stacksjs/stacks#2883: from #1843
+   * until then this field hid the row and left the endpoints behind it open to
+   * any authenticated caller, so a model declaring `roles: ['admin']` served
+   * every row of itself - and accepted a DELETE - for anyone signed in. A
+   * hidden row is presentation; the field is called `roles`, and an app that
+   * writes one is declaring who may reach the model, not who may see a link to
+   * it.
+   *
+   * Set {@link DashboardModelOptions.enforce} to `false` for a row that is
+   * genuinely only cosmetic.
    */
   roles?: string[]
+
+  /**
+   * Whether {@link DashboardModelOptions.roles} gates the generated API as
+   * well as the sidebar row. Defaults to `true`, and means nothing without
+   * `roles`.
+   *
+   * `false` is the escape hatch for a row hidden purely to reduce clutter,
+   * where the endpoints behind it are meant to stay reachable by anyone the
+   * `useApi` middleware already admits. It is an explicit opt-out because the
+   * silent version of it was the bug: this defaulting to "sidebar only" is what
+   * let a model look restricted and serve itself to everyone
+   * (stacksjs/stacks#2883).
+   *
+   * An explicit `useApi.middleware` role entry wins over the derived one, and
+   * an explicitly empty middleware list stays empty - a deliberate public
+   * surface is not quietly closed, it is warned about at boot.
+   */
+  enforce?: boolean
 
   /**
    * Short tooltip / hover description for the sidebar row. Optional —
