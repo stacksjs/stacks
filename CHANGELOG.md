@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.94...v0.75.95)
+
+## 🐛 Bug Fixes
+
+- **components**: NativeAccountButton reads its own label and href, never a host signal's ([b58f1a6](https://github.com/stacksjs/stacks/commit/b58f1a6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.93...v0.75.94)
 
 ## ✨ Features
