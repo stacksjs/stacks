@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **353 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **354 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -57,6 +57,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 5 |
 | `queue` | 21 |
 | `realtime` | 2 |
+| `release` | 1 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -4669,6 +4670,20 @@ Release a new version of your libraries/packages
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| calendar \| x.y.z | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `release:ios`
+
+Ship the iOS app: regenerate its project for production, commit, tag and push
+
+- Usage: `$ buddy release:ios`
+- Namespace: `release`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--bump` | Raise the app version first: patch \| minor \| major \| x.y.z (default: a new build of the current version) | value, required | - |
+| `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 
 ### `route:list`
 

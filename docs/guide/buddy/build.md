@@ -133,6 +133,33 @@ buddy prod:ios
 buddy prod:android
 ```
 
+### Shipping the iOS App to TestFlight
+
+`buddy release:ios` turns the current main into a TestFlight build. It
+regenerates the iOS project for production (dropping any `MOBILE_URL` a dev
+shell exported), commits it, tags the commit and pushes main with the tag in
+one atomic push:
+
+```bash
+buddy release:ios                 # v1.0.0-build.1, v1.0.0-build.2, ... (same version, next build)
+buddy release:ios --bump patch    # 1.0.0 → 1.0.1, then v1.0.1-build.1
+buddy release:ios --bump minor    # or major, or an exact version like 2.0.0
+buddy release:ios --dry-run       # print the tag it would push
+```
+
+`--bump` raises the iOS `version` in `config/mobile.ts` (the default behind
+an env override, such as `envVars.IOS_APP_VERSION ?? '1.0.0'`) and
+`package.json` together. Without it the version stays, which is what you want
+until the version is released on the App Store.
+
+The tag is what ships. Commit the generated project
+(`storage/framework/mobile/ios`), then set the Xcode Cloud workflow's start
+condition to **Tag Changes** with tag prefix `v` and an **Archive - iOS**
+action distributing to App Store Connect. Xcode Cloud numbers the builds
+itself, and an internal TestFlight group with access to all builds hands each
+one to its testers; with TestFlight's automatic updates on, their phones
+install it once Apple has processed it.
+
 ### Server Docker Image
 
 Build the production server Docker image:
