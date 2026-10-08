@@ -27,6 +27,17 @@ describe('Native components', () => {
     expect(shell).toContain('padding-bottom: calc(var(--craft-tab-bar-height, 6rem) + 0.75rem);')
   })
 
+  it('puts the account at the top right: initials or a photo, a count, a native press', () => {
+    const button = read('NativeAccountButton')
+    // Reactive, so it follows the signed-in person and the count.
+    expect(button).toContain("useReactiveProp<string>('name', '')")
+    expect(button).toContain("useReactiveProp<string | number>('badge', '')")
+    expect(button).toContain('data-stx-link data-stx-prefetch="eager"')
+    expect(button).toContain('void haptics.selection()')
+    // A photo is a background, not an <img>: apps check that every image goes through their delivery.
+    expect(button).not.toContain('<img')
+  })
+
   it('lifts the launch splash once the first screen has painted', () => {
     expect(read('NativeAppShell')).toContain('requestAnimationFrame(() => requestAnimationFrame(() => splash.hide()))')
   })

@@ -1,0 +1,115 @@
+<script>
+interface NativeAccountButtonProps {
+  /** Where the account screen is, such as `/m/me`. */
+  href: string
+  /** The person's name; the button shows its initials. */
+  name?: string
+  /** A photo of them, shown instead of the initials. */
+  image?: string
+  /** A count on the button (unread notifications, say). Zero and empty draw nothing. */
+  badge?: string | number
+  /** What a screen reader calls the button. */
+  label?: string
+}
+
+const { href, label = 'Account' } = defineProps<NativeAccountButtonProps>()
+</script>
+
+<script client>
+import { haptics } from '@stacksjs/mobile'
+
+// The account at the top right of a tab's screen, as iOS apps put it: the
+// tab bar keeps its tabs for the places the app is used from. Reactive, so it
+// follows the signed-in person and the count as they change.
+const accountName = useReactiveProp<string>('name', '')
+const accountImage = useReactiveProp<string>('image', '')
+const accountBadge = useReactiveProp<string | number>('badge', '')
+
+const accountInitials = derived(() => {
+  const parts = String(accountName() || '').trim().split(/\s+/).filter(Boolean)
+  const first = parts[0]?.[0] ?? ''
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : ''
+  return (first + last).toUpperCase()
+})
+const accountCount = derived(() => {
+  const value = accountBadge()
+  return value === '' || value === 0 || value === '0' || value == null ? '' : String(value)
+})
+const accountPhoto = derived(() => (accountImage() ? `background-image: url("${String(accountImage()).replace(/"/g, '%22')}")` : ''))
+
+function tapAccount(): void {
+  void haptics.selection()
+}
+</script>
+
+<a href="{{ href }}" class="native-account-button" draggable="false" data-stx-link data-stx-prefetch="eager" @click="tapAccount()">
+  <span class="native-account-label">{{ label }}<span :if="accountCount()">, {{ accountCount() }}</span></span>
+  <span aria-hidden="true" class="native-account-face" :style="accountPhoto()">
+    <span :if="!accountImage() && accountInitials()">{{ accountInitials() }}</span>
+    <i :if="!accountImage() && !accountInitials()" class="i-lucide-circle-user-round native-account-glyph"></i>
+  </span>
+  <span :if="accountCount()" aria-hidden="true" class="native-account-badge"></span>
+</a>
+
+<style>
+  .native-account-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    transition: transform 120ms ease, opacity 120ms ease;
+  }
+
+  .native-account-button:active { transform: scale(0.94); opacity: 0.85; }
+
+  .native-account-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .native-account-face {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    overflow: hidden;
+    border-radius: 999px;
+    color: var(--native-accent, rgb(29 78 216));
+    background: rgb(219 234 254) center / cover no-repeat;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .native-account-glyph { width: 1.25rem; height: 1.25rem; }
+
+  .native-account-badge {
+    position: absolute;
+    top: 0.375rem;
+    right: 0.375rem;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 999px;
+    background: rgb(225 29 72);
+    box-shadow: 0 0 0 2px var(--native-safe-area-background, white);
+  }
+
+  .dark .native-account-face {
+    color: var(--native-accent-dark, rgb(147 197 253));
+    background-color: rgb(30 58 138 / 0.45);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-account-button { transition: none; }
+  }
+</style>

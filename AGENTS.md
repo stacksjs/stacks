@@ -105,7 +105,7 @@ Every skill also has a docs page at https://stacksjs.com/docs/skills, one per sk
 |---|---|
 | E-commerce (products, orders, customers, coupons, payments, shipping, tax, ...) | `stacks-commerce`, `stacks-payments` |
 | CMS (posts, authors, pages, categories, tags, comments, RSS, sitemap) | `stacks-cms` |
-| Admin dashboard pages, model views, widgets (409 components) | `stacks-dashboard` |
+| Admin dashboard pages, model views, widgets (410 components) | `stacks-dashboard` |
 | i18n / translations / formatting | `stacks-i18n` |
 | Utilities: strings, arrays, collections, objects, datetime, slugs | `stacks-strings`, `stacks-arrays`, `stacks-collections`, `stacks-objects`, `stacks-datetime`, `stacks-slug` |
 
