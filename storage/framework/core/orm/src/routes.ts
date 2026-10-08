@@ -26,8 +26,8 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
-import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveAbilityMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
-import type { RegisteredRouteLike } from './auto-crud'
+import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, policyDecision, resolveAbilityMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import type { PolicyGate, RegisteredRouteLike } from './auto-crud'
 import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
 
@@ -421,6 +421,77 @@ async function authedUserFromRequest(req: EnhancedRequest): Promise<any | null> 
   }
 }
 
+/**
+ * A model's policy, consulted for one ability, as a 403 or nothing
+ * (stacksjs/stacks#2883).
+ *
+ * `policy.ts` has declared Nova's vocabulary all along and nothing consulted
+ * it, because nothing could: resolution keyed on `args[0].constructor.name` and
+ * these handlers hold rows the query builder returned, whose constructor is
+ * `Object`. `Gate.inspectFor` resolves by model name instead.
+ *
+ * Three states, and each one matters here:
+ *
+ *   - no policy registered for this model: returns null, and NOTHING about the
+ *     request changes. That is the state all 107 framework models and every
+ *     existing app are in, so this is what keeps wiring policies in from being
+ *     a breaking change.
+ *   - allowed: null as well.
+ *   - denied: a 403 carrying the policy's own message.
+ *
+ * `hasPolicy` is checked before the user is resolved, because resolving the
+ * user costs a token lookup and a query. An unpoliced model pays one Map
+ * lookup for all of this.
+ *
+ * Failure is split deliberately. If `@stacksjs/auth` cannot be imported at all
+ * then no policy can have been registered either - the registry lives in that
+ * module - so there is nothing to enforce and the request proceeds, matching
+ * what `authedUserFromRequest` already does with the same failure. A policy
+ * that THROWS is the opposite case: a model that HAS a policy, whose answer we
+ * failed to get, so that fails closed.
+ */
+let authGateModule: typeof import('@stacksjs/auth') | undefined
+
+/** The Gate, or null when `@stacksjs/auth` cannot be loaded. See `policyDecision`. */
+async function authGate(): Promise<PolicyGate | null> {
+  try {
+    const { Gate } = authGateModule ??= await import('@stacksjs/auth')
+    return Gate
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Whether this model has a policy at all, without resolving anyone.
+ *
+ * For the one caller that would have to do WORK to produce a subject:
+ * bulk-delete needs a row per id, and fetching one per id for the 107 models
+ * that have no policy would be a query per id that did not exist before.
+ */
+async function hasPolicyFor(modelName: string): Promise<boolean> {
+  const gate = await authGate()
+  return !!gate && gate.hasPolicy(modelName)
+}
+
+/** A model's policy, consulted for one ability, as a 403 response or nothing. */
+async function policyRefusal(
+  modelName: string,
+  ability: 'viewAny' | 'view' | 'create' | 'update' | 'delete',
+  req: EnhancedRequest,
+  subject?: unknown,
+): Promise<Response | null> {
+  const refusal = await policyDecision(
+    modelName,
+    ability,
+    { gate: authGate, user: () => authedUserFromRequest(req) },
+    subject,
+  )
+
+  return refusal ? jsonResponse({ error: refusal.message }, refusal.status) : null
+}
+
 // Helper: resolve the authed user's "owner identity" for a given model so
 // the auto-CRUD update/destroy/bulk-destroy paths can compare it against
 // the row's `field`.
@@ -685,6 +756,10 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const { page, perPage, offset } = resolveIndexPageArgs(url.searchParams)
         const sort = url.searchParams.get('sort')
 
+        // Before any query work: a listing nobody may see should not be built.
+        const refusedList = await policyRefusal(modelName, 'viewAny', req)
+        if (refusedList) return refusedList
+
         let query = dyn.selectFrom(table)
         query = applySorting(query, sort, readColumns)
 
@@ -878,6 +953,11 @@ for (const [modelName, model] of Object.entries(apiModels)) {
           }
         }
 
+        // After the 404 and the ownership check, so a policy is asked only
+        // about a row this caller could otherwise have seen.
+        const refusedView = await policyRefusal(modelName, 'view', req, result)
+        if (refusedView) return refusedView
+
         let payload: any = stripHidden(applyReadCasts(result, model), hiddenFields)
 
         // ?include=user,host_profile,car_photos hydrates declared relations.
@@ -945,6 +1025,12 @@ for (const [modelName, model] of Object.entries(apiModels)) {
               data[k] = v
           }
         }
+
+        // No subject, matching the declared `create?(user)` signature: there is
+        // no row yet, and passing the payload would be inventing an argument
+        // the Policy interface does not document.
+        const refusedCreate = await policyRefusal(modelName, 'create', req)
+        if (refusedCreate) return refusedCreate
 
         // Every row-scoped create is stamped from the authenticated ownership
         // resolver. Client input can never assign a record to another team.
@@ -1053,6 +1139,9 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         // authed user could PATCH /api/cars/{id} and re-parent another host's
         // car to themselves. `authedFill.updating` ALSO can't defend on its
         // own because it only fills missing fields, not replaces submitted ones.
+        const refusedUpdate = await policyRefusal(modelName, 'update', req, existing)
+        if (refusedUpdate) return refusedUpdate
+
         const own = await resolveOwnership(model, authedUser, req)
         if (own.enforced && !own.bypass) {
           if (!authedUser) return jsonResponse({ error: 'Auth required' }, 401)
@@ -1135,6 +1224,9 @@ for (const [modelName, model] of Object.entries(apiModels)) {
           }
         }
 
+        const refusedDelete = await policyRefusal(modelName, 'delete', req, existing)
+        if (refusedDelete) return refusedDelete
+
         if (usesSoftDeletes) {
           // Soft delete: stamp deleted_at + updated_at instead of dropping the row.
           // Reads in the index handler filter `WHERE deleted_at IS NULL` unless
@@ -1210,6 +1302,26 @@ for (const [modelName, model] of Object.entries(apiModels)) {
           const notOwned = validIds.filter(id => !ownedIds.has(String(id)))
           if (notOwned.length > 0)
             return jsonResponse({ error: `Cannot delete ${modelName} you don't own`, ids: notOwned }, 403)
+        }
+
+        // Per row, and all of them BEFORE anything is deleted: a bulk delete
+        // that refused halfway would leave the caller's own request half
+        // applied, with no way to tell which half.
+        //
+        // Behind `hasPolicyFor`, because this is the one path where consulting
+        // a policy costs a query: it needs the row as the subject. Without the
+        // guard every bulk delete on the 107 models that have no policy would
+        // have paid a SELECT per id that it did not pay before.
+        if (await hasPolicyFor(modelName)) {
+          const refusedRows: Array<string | number> = []
+          for (const id of validIds) {
+            const row = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
+            if (!row) continue
+            if (await policyRefusal(modelName, 'delete', req, row))
+              refusedRows.push(id)
+          }
+          if (refusedRows.length > 0)
+            return jsonResponse({ error: `Cannot delete ${modelName} this policy refuses`, ids: refusedRows }, 403)
         }
 
         const now = new Date().toISOString()

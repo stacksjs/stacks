@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveAbilityMiddleware, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, POLICY_ABILITY, policyDecision, resolveAbilityMiddleware, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -1123,5 +1123,136 @@ describe('resolveAbilityMiddleware', () => {
     expect(resolved.read).toEqual([])
     expect(resolved.write).toEqual(['auth'])
     expect(resolved.declared).toBe(true)
+  })
+})
+
+/**
+ * Consulting a model's policy from a generated route (stacksjs/stacks#2883).
+ *
+ * `policy.ts` declared Nova's vocabulary and 0 of the 750 default actions
+ * consulted it, because nothing could: resolution keyed on
+ * `args[0].constructor.name` and these handlers hold rows the query builder
+ * returned, whose constructor is `Object`. `Gate.inspectFor` resolves by model
+ * name; this flattens its three-state answer into what a handler needs.
+ *
+ * Dependency-injected so the three decisions are testable without an auth
+ * module, a database or an HTTP request - which is the whole reason the logic
+ * does not live inside the handlers.
+ */
+describe('policyDecision', () => {
+  const gateWith = (verdict: { isAllowed: boolean, message?: string } | null, policed = true) => ({
+    gate: async () => ({
+      hasPolicy: () => policed,
+      inspectFor: async () => verdict,
+    }),
+    user: async () => ({ id: 7 }),
+  })
+
+  it('asks the ability each route means, in Nova\'s vocabulary not the trait\'s', () => {
+    // `index` reads a collection, which is `viewAny`; `show` reads one row,
+    // which is `view`. A policy speaks the former.
+    expect(POLICY_ABILITY).toEqual({
+      index: 'viewAny',
+      show: 'view',
+      store: 'create',
+      update: 'update',
+      destroy: 'delete',
+    })
+  })
+
+  it('changes nothing when the model has no policy', async () => {
+    // The state all 107 framework models and every existing app are in. This
+    // is what keeps wiring policies in from being a breaking change.
+    expect(await policyDecision('Order', 'delete', gateWith({ isAllowed: false }, false), { id: 1 })).toBeNull()
+  })
+
+  it('changes nothing when the policy allows', async () => {
+    expect(await policyDecision('Order', 'view', gateWith({ isAllowed: true }), { id: 1 })).toBeNull()
+  })
+
+  it('refuses with the policy\'s own message', async () => {
+    expect(await policyDecision('Order', 'delete', gateWith({ isAllowed: false, message: 'Only the owner may void an order.' }), { id: 1 }))
+      .toEqual({ status: 403, message: 'Only the owner may void an order.' })
+  })
+
+  it('refuses with a default message when the policy gave none', async () => {
+    expect(await policyDecision('Order', 'delete', gateWith({ isAllowed: false }), { id: 1 }))
+      .toEqual({ status: 403, message: 'This action is unauthorized.' })
+  })
+
+  it('treats a null verdict as no opinion, not as a refusal', async () => {
+    // `inspectFor` answers null for an unregistered policy, and `hasPolicy`
+    // has already said there is one - but if the two ever disagree, the
+    // absence of an opinion must not read as a denial.
+    expect(await policyDecision('Order', 'delete', gateWith(null), { id: 1 })).toBeNull()
+  })
+
+  it('proceeds when the auth module cannot be loaded at all', async () => {
+    // The policy registry lives in that module, so if it is unreachable then
+    // no policy can have been registered either and there is nothing to
+    // enforce. 403-ing here would brick every generated route in an app that
+    // has no policies, which is most of them.
+    const missing = {
+      gate: async () => {
+        throw new Error('Cannot find module @stacksjs/auth')
+      },
+      user: async () => null,
+    }
+
+    expect(await policyDecision('Order', 'delete', missing, { id: 1 })).toBeNull()
+    expect(await policyDecision('Order', 'delete', { gate: async () => null, user: async () => null }, { id: 1 })).toBeNull()
+  })
+
+  it('refuses when a policy throws, because that model HAS one', async () => {
+    // The opposite case to a missing module: there is something to enforce and
+    // we could not get the answer. Fails closed.
+    const throwing = {
+      gate: async () => ({
+        hasPolicy: () => true,
+        inspectFor: async () => {
+          throw new Error('no such table: orders')
+        },
+      }),
+      user: async () => ({ id: 7 }),
+    }
+
+    expect(await policyDecision('Order', 'delete', throwing, { id: 1 })).toEqual({ status: 403, message: 'This action is unauthorized.' })
+  })
+
+  it('does not resolve the caller for an unpoliced model', async () => {
+    // Resolving the user costs a token lookup and a query. An unpoliced model
+    // pays one Map lookup for all of this.
+    let resolved = 0
+    const deps = {
+      gate: async () => ({ hasPolicy: () => false, inspectFor: async () => null }),
+      user: async () => {
+        resolved++
+        return { id: 7 }
+      },
+    }
+
+    await policyDecision('Order', 'viewAny', deps)
+    expect(resolved).toBe(0)
+  })
+
+  it('passes the subject through, and omits it entirely when there is none', async () => {
+    // `create?(user)` takes no model in the Policy interface, so `store` must
+    // not invent one.
+    const seen: unknown[][] = []
+    const deps = {
+      gate: async () => ({
+        hasPolicy: () => true,
+        inspectFor: async (_m: string, _a: string, _u: unknown, ...args: unknown[]) => {
+          seen.push(args)
+          return { isAllowed: true }
+        },
+      }),
+      user: async () => ({ id: 7 }),
+    }
+
+    await policyDecision('Order', 'view', deps, { id: 1, ownerId: 7 })
+    await policyDecision('Order', 'create', deps)
+
+    expect(seen).toEqual([[{ id: 1, ownerId: 7 }], []])
   })
 })

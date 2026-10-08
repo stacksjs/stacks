@@ -910,6 +910,111 @@ export function describeContradictoryRoleGates(
     + `Drop the empty list to let \`dashboard.roles\` gate them, or set \`dashboard.enforce: false\` to keep the row hidden and the API public.`
 }
 
+/**
+ * The policy ability each generated route asks about.
+ *
+ * Matches the `Policy` interface in `@stacksjs/auth` rather than this file's
+ * own {@link API_ABILITIES}: a policy speaks Nova's vocabulary, where reading a
+ * collection is `viewAny` and reading one row is `view`.
+ */
+export const POLICY_ABILITY: Record<ApiAbility, 'viewAny' | 'view' | 'create' | 'update' | 'delete'> = {
+  index: 'viewAny',
+  show: 'view',
+  store: 'create',
+  update: 'update',
+  destroy: 'delete',
+}
+
+/** What a policy answered, flattened to what a route handler needs. */
+export interface PolicyVerdict {
+  status: 403
+  message: string
+}
+
+/**
+ * As much of `@stacksjs/auth`'s Gate as a policy check needs.
+ *
+ * `user` is `any` rather than `unknown` on purpose. This is a structural
+ * description of a module this package must not import - the auth package
+ * imports the ORM's types - and the real `inspectFor` takes `UserModel | null`,
+ * which an `unknown` parameter is not assignable to. `authedUserFromRequest`
+ * already hands the user across the same boundary the same way.
+ */
+export interface PolicyGate {
+  hasPolicy: (model: string) => boolean
+  inspectFor: (model: string, ability: string, user: any, ...args: any[]) => Promise<{ isAllowed: boolean, message?: string } | null>
+}
+
+/** The two things a policy check needs from the outside world. */
+export interface PolicyGateDeps {
+  /**
+   * The Gate, or null when `@stacksjs/auth` cannot be loaded at all.
+   *
+   * Null is not a denial. The policy registry lives in that module, so if it
+   * cannot be loaded then no policy can have been registered either, and there
+   * is nothing to enforce. `authedUserFromRequest` treats the same failure the
+   * same way.
+   */
+  gate: () => Promise<PolicyGate | null>
+  /** The caller. Resolved only once a policy is known to exist, since it costs a token lookup and a query. */
+  user: () => Promise<any>
+}
+
+/**
+ * Consult a model's policy for one ability (stacksjs/stacks#2883).
+ *
+ * `policy.ts` declared Nova's vocabulary and nothing consulted it, because
+ * nothing could: resolution keyed on `args[0].constructor.name` and the
+ * generated handlers hold rows the query builder returned, whose constructor is
+ * `Object`. `Gate.inspectFor` resolves by model name, and this turns its
+ * three-state answer into the one thing a handler needs.
+ *
+ * Returns null to mean "nothing about this request changes", for both of the
+ * cases where that is right: no policy registered (the state all 107 framework
+ * models and every existing app are in, which is what keeps this from being a
+ * breaking change) and a policy that allowed it.
+ *
+ * Dependency-injected rather than importing the Gate itself, so the three
+ * decisions here - skip when unpoliced, fail open when the module is missing,
+ * fail closed when a policy throws - are testable without an auth module, a
+ * database or an HTTP request. The handlers are not.
+ */
+export async function policyDecision(
+  modelName: string,
+  ability: 'viewAny' | 'view' | 'create' | 'update' | 'delete',
+  deps: PolicyGateDeps,
+  subject?: unknown,
+): Promise<PolicyVerdict | null> {
+  let gate: PolicyGate | null
+  try {
+    gate = await deps.gate()
+  }
+  catch {
+    return null
+  }
+
+  if (!gate || !gate.hasPolicy(modelName))
+    return null
+
+  try {
+    const user = await deps.user()
+    const verdict = subject === undefined
+      ? await gate.inspectFor(modelName, ability, user)
+      : await gate.inspectFor(modelName, ability, user, subject)
+
+    if (verdict && !verdict.isAllowed)
+      return { status: 403, message: verdict.message || 'This action is unauthorized.' }
+
+    return null
+  }
+  catch {
+    // A model that HAS a policy, whose answer we failed to get. The opposite
+    // case to a missing module: there is something to enforce and we could not,
+    // so this one fails closed.
+    return { status: 403, message: 'This action is unauthorized.' }
+  }
+}
+
 // Default page size for the auto-CRUD index route. Matches the
 // request-aware Model.paginate() / resolvePageArgs default (15) so the
 // REST list endpoint and the in-process paginator agree out of the box.
