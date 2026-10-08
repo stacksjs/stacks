@@ -170,6 +170,41 @@ to `'deny'`, which withholds store/update/destroy from a model that scopes
 neither (#2375). A role says who may call the route; ownership says which rows
 are theirs. A tiered app usually needs both.
 
+#### Per-row rules: a policy
+
+Middleware answers "may this caller use this endpoint". A policy answers "may
+this caller do this to THIS row", which is the part a role cannot express. The
+generated routes consult one when the model has one (#2883):
+
+| Route | Ability | Subject |
+|---|---|---|
+| `index` | `viewAny` | none |
+| `show` | `view` | the row |
+| `store` | `create` | none |
+| `update` | `update` | the existing row |
+| `destroy`, bulk-delete | `delete` | the row, one call each |
+
+```ts
+// app/Policies/OrderPolicy.ts
+export default class OrderPolicy {
+  viewAny(user) { return user !== null }
+  view(user, order) { return order.customer_id === user?.id }
+  delete(user, order) { return order.status === 'draft' && order.customer_id === user?.id }
+}
+```
+
+Register it in `app/Gates.ts` under `policies`, or name it `<Model>Policy` under
+`app/Policies/` and it is discovered by convention. A model with no policy is
+unaffected, so adding one is opt-in per model. A refusal is a 403 carrying the
+policy's own message; an ability the policy does not implement is a refusal too,
+so a partial policy does not leave the rest open.
+
+`Gate.inspectFor(model, ability, user, row)` is the same check from your own
+code, keyed by model NAME rather than by instance - which is what a dashboard
+action holding a query-builder row needs. It answers null for "no policy
+registered", which is deliberately distinct from a denial; `Gate.allowsFor`
+is the boolean form that reads null as allowed.
+
 Generated store and update routes accept both spellings of every fillable
 attribute and each foreign key implied by `belongsTo`. Declaring Product as a
 belongs-to relation therefore accepts `productId` or `product_id` without
