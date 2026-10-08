@@ -14,6 +14,23 @@ describe('Native components', () => {
     expect(shell).toContain('followDeepLinks(path => navigate(path), deepLinkService)')
   })
 
+  it('hands the tab bar to the phone inside Craft, and draws the glass capsule elsewhere', () => {
+    const bar = read('NativeTabBar')
+    // The links stay as the native bar's model; the router keeps them current.
+    expect(bar).toContain('stopMirror = mirrorTabBar(nav)')
+    expect(bar).toContain('html[data-craft-chrome] .native-tab-bar { display: none; }')
+    expect(bar).toContain('border-radius: 999px;')
+    const item = read('NativeTabItem')
+    expect(item).toContain('data-native-tab="{{ label }}"')
+    expect(item).toContain('data-native-tab-symbol="{{ symbol }}"')
+    const shell = read('NativeAppShell')
+    expect(shell).toContain('padding-bottom: calc(var(--craft-tab-bar-height, 6rem) + 0.75rem);')
+  })
+
+  it('lifts the launch splash once the first screen has painted', () => {
+    expect(read('NativeAppShell')).toContain('requestAnimationFrame(() => requestAnimationFrame(() => splash.hide()))')
+  })
+
   it('keeps a tab lit on the paths it names, and never drags a tab', () => {
     const item = read('NativeTabItem')
     expect(item).toContain('activeMatch="{{ match }}"')

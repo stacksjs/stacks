@@ -7,17 +7,32 @@ const { label = 'App navigation' } = defineProps<NativeTabBarProps>()
 </script>
 
 <script client>
-import { haptics } from '@stacksjs/mobile'
+import { haptics, mirrorTabBar } from '@stacksjs/mobile'
+
+// Inside Craft's iOS shell the phone draws this bar natively (Liquid Glass on
+// iOS 26 and later) and these links stay as its model: the router keeps the
+// current one marked, and a native tap comes back as a click on one of them.
+const bar = useRef('nativeTabBar')
+let mirrored = false
+let stopMirror: (() => void) | null = null
+onMount(() => {
+  const nav = bar.current as HTMLElement | null
+  if (!nav) return
+  stopMirror = mirrorTabBar(nav)
+  mirrored = stopMirror !== null
+})
+onDestroy(() => stopMirror?.())
 
 function selectTab(): void {
-  void haptics.selection()
+  // The native bar has already played its own.
+  if (!mirrored) void haptics.selection()
 }
 </script>
 
 <!-- `data-stx-sticky-active`: each tab owns the screens opened from it, as on
      iOS, so a workout opened from Today keeps Today lit; a tab's `match`
      decides only for a screen reached with no tab current yet (a deep link). -->
-<nav aria-label="{{ label }}" class="native-tab-bar" data-stx-sticky-active @click="selectTab()">
+<nav ref="nativeTabBar" aria-label="{{ label }}" class="native-tab-bar" data-stx-sticky-active @click="selectTab()">
   <slot />
 </nav>
 
@@ -28,17 +43,32 @@ function selectTab(): void {
      box steps aside, so the link is the grid item and centres in the bar. */
   .native-tab-bar > [data-stx-scope]:has(> .native-tab-item) { display: contents; }
 
+  /* The floating glass capsule iOS 26 draws, for a browser: inset from the
+     screen's edges, above the home indicator, the content showing through. */
   .native-tab-bar {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
-    min-height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
-    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    border-top: 1px solid rgb(148 163 184 / 0.22);
-    background: rgb(255 255 255 / 0.9);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    gap: 0.125rem;
+    max-width: 32rem;
+    min-height: 3.875rem;
+    margin: 0 max(1rem, env(safe-area-inset-right, 0px)) calc(0.375rem + env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+    padding: 0.25rem;
+    border: 1px solid rgb(255 255 255 / 0.55);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.68);
+    box-shadow: 0 12px 32px -14px rgb(15 23 42 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.7);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
   }
+
+  @media (min-width: 34rem) {
+    .native-tab-bar { margin-right: auto; margin-left: auto; }
+  }
+
+  /* In Craft's iOS shell the phone draws the bar; this one stays in the
+     document, hidden, as the native one's model. */
+  html[data-craft-chrome] .native-tab-bar { display: none; }
 
   .native-tab-item {
     display: flex;
@@ -47,12 +77,13 @@ function selectTab(): void {
     align-items: center;
     justify-content: center;
     min-width: 2.75rem;
-    color: rgb(100 116 139);
+    border-radius: 999px;
+    color: rgb(15 23 42);
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1;
     text-decoration: none;
-    transition: color 150ms ease, transform 150ms ease;
+    transition: color 150ms ease, background-color 200ms ease, transform 150ms ease;
     -webkit-tap-highlight-color: transparent;
     /* No link preview or callout on a long press: a tab is not a link to share. */
     -webkit-touch-callout: none;
@@ -75,16 +106,24 @@ function selectTab(): void {
   }
 
   .native-tab-item:active { transform: scale(0.96); }
-  .native-tab-item.is-active { color: var(--native-tab-active, rgb(5 150 105)); }
+  .native-tab-item.is-active {
+    color: var(--native-tab-active, rgb(15 23 42));
+    background: rgb(15 23 42 / 0.07);
+    font-weight: 600;
+  }
   .native-tab-icon { width: 1.35rem; height: 1.35rem; }
 
   .dark .native-tab-bar {
-    border-color: rgb(71 85 105 / 0.55);
-    background: rgb(15 23 42 / 0.9);
+    border-color: rgb(255 255 255 / 0.12);
+    background: rgb(30 41 59 / 0.62);
+    box-shadow: 0 12px 32px -14px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.08);
   }
 
-  .dark .native-tab-item { color: rgb(148 163 184); }
-  .dark .native-tab-item.is-active { color: var(--native-tab-active-dark, rgb(52 211 153)); }
+  .dark .native-tab-item { color: rgb(226 232 240); }
+  .dark .native-tab-item.is-active {
+    color: var(--native-tab-active-dark, rgb(255 255 255));
+    background: rgb(255 255 255 / 0.1);
+  }
 
   @media (prefers-reduced-transparency: reduce) {
     .native-tab-bar {

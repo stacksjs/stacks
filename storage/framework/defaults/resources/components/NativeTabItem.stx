@@ -3,6 +3,12 @@ interface NativeTabItemProps {
   label: string
   href: string
   icon: string
+  /**
+   * The SF Symbol the phone's native tab bar draws for this tab, such as
+   * `calendar`; the current tab gets its `.fill` variant when there is one.
+   * `icon` is the web bar's.
+   */
+  symbol?: string
   /** A count on the icon. Zero and empty draw nothing. */
   badge?: string | number
   /**
@@ -14,7 +20,7 @@ interface NativeTabItemProps {
   match?: string
 }
 
-const { href, icon, label, badge = '', match = '' } = defineProps<NativeTabItemProps>()
+const { href, icon, label, symbol = 'circle', badge = '', match = '' } = defineProps<NativeTabItemProps>()
 const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
 </script>
 
@@ -24,7 +30,9 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
      the current one is idle, so switching tabs is served from the router's
      cache, as instant as a native tab bar. `data-stx-transition="none"`: and
      swapped without the router's cross-fade, which iOS never draws between
-     tabs (it read as a quarter-second lag on every tap). -->
+     tabs (it read as a quarter-second lag on every tap). `data-native-tab`
+     and `data-native-tab-symbol` describe the tab to the phone's native bar
+     (@stacksjs/mobile mirrorTabBar). -->
 <StxLink
   to="{{ href }}"
   aria-label="{{ label }}"
@@ -34,6 +42,8 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
   draggable="false"
   data-stx-prefetch="eager"
   data-stx-transition="none"
+  data-native-tab="{{ label }}"
+  data-native-tab-symbol="{{ symbol }}"
 >
   <span class="native-tab-glyph">
     <i aria-hidden="true" class="{{ icon }} native-tab-icon"></i>

@@ -124,6 +124,17 @@ export interface IosMobileConfig {
   associatedDomains?: string[]
   appGroups?: string[]
   appIcon?: string
+  /**
+   * The logo on the launch screen, on `backgroundColor`. Craft holds it on
+   * screen until the first page has painted (NativeAppShell says when), so
+   * the app goes from launch to content without a blank web view between.
+   * PNG, PDF or SVG, drawn at its own size in points.
+   */
+  splash?: {
+    image?: string
+    /** The logo in Dark Mode, on `backgroundColorDark`. */
+    imageDark?: string
+  }
   privacy?: MobilePrivacyManifest
   orientations?: MobileOrientation[]
   deviceFamilies?: IosDeviceFamily[]

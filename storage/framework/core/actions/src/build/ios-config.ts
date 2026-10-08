@@ -25,6 +25,8 @@ export interface CraftIosConfig {
   associatedDomains?: string[]
   appGroups?: string[]
   appIconPath?: string
+  splashImagePath?: string
+  splashImagePathDark?: string
   privacy?: IosMobileConfig['privacy']
   orientations?: IosMobileConfig['orientations']
   deviceFamilies?: IosMobileConfig['deviceFamilies']

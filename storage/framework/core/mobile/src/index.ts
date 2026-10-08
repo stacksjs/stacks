@@ -33,6 +33,7 @@ import {
   secureStorage as craftSecureStorage,
   share as craftShare,
   speech as craftSpeech,
+  splash as craftSplash,
   watchConnectivity as craftWatchConnectivity,
 } from 'craft-native/mobile'
 
@@ -66,6 +67,7 @@ export * from './navigation'
 export * from './route'
 export * from './indoor'
 export * from './spotlight'
+export * from './tab-bar'
 export * from './types'
 
 export const biometrics: BiometricsApi = craftBiometrics
@@ -132,6 +134,13 @@ export const pushNotifications: PushNotificationsApi = craftPushNotifications
 export const health: HealthApi = craftHealth
 export const liveActivities: LiveActivitiesApi = craftLiveActivities
 export const watchConnectivity: WatchConnectivityApi = craftWatchConnectivity
+
+/**
+ * The launch splash Craft holds over the page until the page is ready, so the
+ * app goes from its launch screen to content with no blank page in between.
+ * `NativeAppShell` hides it once the first screen has painted.
+ */
+export const splash: { hide: () => boolean } = craftSplash
 
 interface CraftHost extends EventTarget {
   craft?: unknown

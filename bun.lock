@@ -175,7 +175,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.119",
+        "craft-native": ">=0.0.123",
         "pickier": "^0.1.68",
       },
       "optionalPeers": [
@@ -651,7 +651,7 @@
       "name": "@stacksjs/desktop-build",
       "version": "0.75.92",
       "dependencies": {
-        "craft-native": ">=0.0.119",
+        "craft-native": ">=0.0.123",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -906,7 +906,7 @@
       "name": "@stacksjs/mobile",
       "version": "0.75.92",
       "dependencies": {
-        "craft-native": ">=0.0.119",
+        "craft-native": ">=0.0.123",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1926,7 +1926,7 @@
 
     "cors": ["cors@2.8.6", "", { "dependencies": { "object-assign": "^4", "vary": "^1" } }, "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw=="],
 
-    "craft-native": ["craft-native@0.0.120", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-pK5qHgDeGFQhIaBPabcFboizPKtcpRm6sMHCyAwMgumP4Cy49AVeeBlJlmpf9oGnped3T/fCHrGrPtXJOLOceA=="],
+    "craft-native": ["craft-native@0.0.123", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-XVpPrnenJHz6/I+ilR8qZbagd0LUq7BGG06gHFZ9CC/6ao3YzejpUXiiWm1BPbDny1yZ0kV0PfxTJxMfQ/q4Fw=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 
@@ -2122,7 +2122,7 @@
 
     "ts-medium-editor": ["ts-medium-editor@0.2.0", "", {}, "sha512-XR4Orpxm1v9OfP6dCMImYpPaqdJUdoRl3laUUiPB9dR9WJHSFbWZmHCBdPG3uiQiaQljeSssKQTZTUcfQnsj3g=="],
 
-    "ts-pantry": ["ts-pantry@0.11.74", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-afSiEX6Gt3jjeDLZQOJGxS3sbRjLc7GCS3OvD/E46dAqrazxmTnTGLDVqDmL5yM8gS2lVCsmgYjiFaEG85N5Zw=="],
+    "ts-pantry": ["ts-pantry@0.11.75", "", { "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-922wr15YJlPpu6l0/lTTODm0ZUgtEoLQ2wd3Xpz0A9Q7Dac4tolagHLzSVhMyuv7Sug8to6aSF18T6J3O1eYEQ=="],
 
     "ts-qr-codes": ["ts-qr-codes@0.1.8", "", { "bin": { "qrx": "./dist/cli.js" } }, "sha512-/gd6qvBusEwVo5zfuwreyAdqFEbMGWUzhc5sAJqarPdQ79kzh1iL7xn6xrw/X5mFDZbjIK9kWhbkwlrILZiIOA=="],
 

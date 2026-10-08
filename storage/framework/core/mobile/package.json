@@ -32,7 +32,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "craft-native": ">=0.0.119"
+    "craft-native": ">=0.0.123"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

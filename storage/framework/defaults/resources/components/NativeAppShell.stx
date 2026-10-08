@@ -10,7 +10,7 @@ const { tabBar = false } = defineProps<NativeAppShellProps>()
 </script>
 
 <script client>
-import { deepLinks as deepLinkService, device, followDeepLinks, isNativeMobile, whenNativeMobile } from '@stacksjs/mobile'
+import { deepLinks as deepLinkService, device, followDeepLinks, isNativeMobile, splash, whenNativeMobile } from '@stacksjs/mobile'
 
 const className = useReactiveProp<string>('class', '')
 // A bare attribute arrives as an empty string.
@@ -22,6 +22,14 @@ onMount(() => {
     stopDeepLinks = followDeepLinks(path => navigate(path), deepLinkService)
 })
 onDestroy(() => stopDeepLinks?.())
+
+// Craft holds its launch splash over the page until the page is ready. The
+// first screen is: once it has painted (the second frame after mounting), the
+// splash fades and the app goes from launch to content with nothing blank in
+// between. Later screens call this too, which the shell ignores.
+onMount(() => {
+  requestAnimationFrame(() => requestAnimationFrame(() => splash.hide()))
+})
 
 // Asked twice on purpose. Craft installs its bridge after the document starts,
 // so on a phone the answer at setup is often `false`, and every rule hanging
@@ -122,6 +130,19 @@ const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${cla
   .native-app-shell.native-mobile:has(.native-app-tab-slot) { --native-tab-bar-height: 4.5rem; }
   .native-app-shell.native-mobile:has(.native-app-tab-slot) .native-app-content {
     padding-bottom: calc(5rem + var(--native-safe-area-bottom));
+  }
+
+  /* In Craft's iOS shell the phone draws the tab bar natively, floating over
+     the page, and says how much of the screen it covers in
+     --craft-tab-bar-height. Content scrolls under it and clears it at the end. */
+  html[data-craft-chrome] .native-app-shell:has(.native-app-tab-slot) {
+    --native-tab-bar-height: var(--craft-tab-bar-height, 6rem);
+  }
+  html[data-craft-chrome] .native-app-shell:has(.native-app-tab-slot) .native-app-content {
+    padding-bottom: calc(var(--craft-tab-bar-height, 6rem) + 0.75rem);
+  }
+  html[data-craft-chrome] .native-app-shell:has([data-native-hide-tab-bar]) .native-app-content {
+    padding-bottom: var(--native-safe-area-bottom);
   }
 
   .native-app-sticky-top {

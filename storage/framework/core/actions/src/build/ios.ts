@@ -57,6 +57,8 @@ const webAssets = resolveMobilePath(projectPath(), config.webAssets)
 const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAssets)
 const craftConfig = toCraftIosConfig(config)
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
+craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
+craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
 const builder = await loadCraftIosBuilder()
 
 await builder.init({
