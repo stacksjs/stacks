@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.93...v0.75.94)
+
+## ✨ Features
+
+- **components**: NativeAccountButton, the account at the top right of a phone screen ([3b2faf1](https://github.com/stacksjs/stacks/commit/3b2faf1)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.92...v0.75.93)
 
 ## ✨ Features
