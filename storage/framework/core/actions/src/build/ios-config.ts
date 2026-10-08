@@ -1,6 +1,6 @@
 import type { IosMobileConfig, MobileConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { isAbsolute, join, resolve } from 'node:path'
+import { isAbsolute, join, relative, resolve } from 'node:path'
 import { spotlightActivityTypes } from '@stacksjs/mobile'
 
 export interface CraftIosConfig {
@@ -75,6 +75,27 @@ export function normalizeMobileUrl(value: string | undefined): string | undefine
   const input = value?.trim()
   if (!input) return undefined
   return new URL(/^https?:\/\//i.test(input) ? input : `https://${input}`).toString().replace(/\/$/, '')
+}
+
+/**
+ * The generated project's records (craft.config.json, stacks-mobile.json)
+ * with every file path inside the app written relative to the project folder.
+ * They are committed for CI builds, and an absolute path named the machine
+ * that generated them: each developer's build rewrote every icon and splash
+ * path, and the diff said nothing about the app.
+ */
+export function portablePaths<T>(value: T, projectDir: string, appRoot: string): T {
+  if (typeof value === 'string')
+    return (isAbsolute(value) && !relative(appRoot, value).startsWith('..') ? relative(projectDir, value) || '.' : value) as T
+  if (Array.isArray(value))
+    return value.map(item => portablePaths(item, projectDir, appRoot)) as T
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [key, item] of Object.entries(value))
+      out[key] = typeof item === 'string' && !/path$/i.test(key) ? item : portablePaths(item, projectDir, appRoot)
+    return out as T
+  }
+  return value
 }
 
 export function resolveMobilePath(root: string, value: string | undefined): string | undefined {

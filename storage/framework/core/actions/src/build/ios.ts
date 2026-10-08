@@ -6,7 +6,7 @@ import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 
 // Action runners install a global exception reporter. Start pessimistically so
 // a reported exception can never look like a successful CI build.
@@ -84,8 +84,9 @@ if (activityTypes)
 
 const sourceRevision = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() }).stdout.toString().trim()
 const craftConfigPath = `${output}/craft.config.json`
-const generatedConfig = JSON.parse(readFileSync(craftConfigPath, 'utf8')) as Record<string, unknown>
-writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify({
+const generatedConfig = portablePaths(JSON.parse(readFileSync(craftConfigPath, 'utf8')) as Record<string, unknown>, output, projectPath())
+writeFileSync(craftConfigPath, `${JSON.stringify(generatedConfig, null, 2)}\n`)
+writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify(portablePaths({
   schemaVersion: '1.0.0',
   platform: 'ios',
   sourceRevision,
@@ -97,7 +98,7 @@ writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify({
   capabilities: config.capabilities ?? {},
   builder: resolveCraftBuilderProvenance(process.env.CRAFT_IOS_SRC),
   craft: generatedConfig,
-}, null, 2)}\n`)
+}, output, projectPath()), null, 2)}\n`)
 
 log.success(`Built the Craft iOS project in ${output}`)
 await log.flush()

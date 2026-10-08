@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { normalizeMobileUrl, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
+import { normalizeMobileUrl, portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 /** The shape Craft's template emits: nested dicts, the root dict last. */
 const CRAFT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
@@ -302,5 +302,24 @@ describe('the activity types a tapped entry needs declared', () => {
 
     expect(writeIosActivityTypes(output, { ios: MOBILE.ios })).toBeNull()
     expect(await Bun.file(join(output, 'Info.plist')).text()).toBe(CRAFT_PLIST)
+  })
+})
+
+describe('the generated project\'s records', () => {
+  it('name the app\'s files relative to the project folder, not the machine', () => {
+    const records = portablePaths({
+      appIconPath: '/Users/a/app/public/icon.png',
+      splashImagePath: '/Users/a/app/public/splash.svg',
+      devServerURL: 'https://hq.training/m',
+      source: { kind: 'bundled', path: '/Users/a/app/dist/mobile' },
+      outsidePath: '/opt/elsewhere/file.png',
+      name: '/Users/a/app/not-a-path-key',
+    }, '/Users/a/app/storage/framework/mobile/ios', '/Users/a/app')
+    expect(records.appIconPath).toBe('../../../../public/icon.png')
+    expect(records.splashImagePath).toBe('../../../../public/splash.svg')
+    expect(records.source.path).toBe('../../../../dist/mobile')
+    expect(records.devServerURL).toBe('https://hq.training/m')
+    expect(records.outsidePath).toBe('/opt/elsewhere/file.png')
+    expect(records.name).toBe('/Users/a/app/not-a-path-key')
   })
 })
