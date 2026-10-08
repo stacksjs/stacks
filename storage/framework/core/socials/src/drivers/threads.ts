@@ -132,12 +132,12 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
   async resolveAccount(accessToken: string): Promise<ThreadsAccount> {
     const query = new URLSearchParams({
       fields: 'id,username',
-      access_token: accessToken,
     })
 
     const payload = await this.graph<{ id?: string, username?: string }>(
       `/me?${query.toString()}`,
       { method: 'GET' },
+      accessToken,
     )
 
     if (!payload.id) {
@@ -172,7 +172,6 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
     const media = post.media?.[0]
     const containerBody = new URLSearchParams({
       text: post.text,
-      access_token: identity.accessToken,
     })
     if (media?.url) {
       containerBody.set('media_type', 'IMAGE')
@@ -189,6 +188,7 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body: containerBody.toString(),
       },
+      identity.accessToken,
     )
 
     if (!container.id) {
@@ -203,9 +203,9 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           creation_id: container.id,
-          access_token: identity.accessToken,
         }).toString(),
       },
+      identity.accessToken,
     )
 
     if (!published.id) {
@@ -213,8 +213,9 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
     }
 
     const permalink = await this.graph<{ permalink?: string }>(
-      `/${published.id}?fields=permalink&access_token=${encodeURIComponent(identity.accessToken)}`,
+      `/${published.id}?fields=permalink`,
       { method: 'GET' },
+      identity.accessToken,
     ).catch(() => undefined)
 
     return {
@@ -229,8 +230,22 @@ export class ThreadsPublishingDriver implements SocialPublishingDriver {
     return { items: [] }
   }
 
-  protected async graph<T>(path: string, init: RequestInit): Promise<T> {
-    const response = await fetch(`${this.graphBase}/${this.graphVersion}${path}`, init)
+  /**
+   * One request to the Threads API, with the credential in a header.
+   *
+   * `token` is a parameter of this helper rather than something a caller puts
+   * in the path or the body. A URL is the one part of a request that is logged
+   * by default everywhere it passes, so a long-lived publishing token in a
+   * query string is a credential sitting in files nobody treats as secret
+   * (stacksjs/stacks#2882). Verified against the live API: a bad token in this
+   * header answers `Cannot parse access token`, the same as the query form,
+   * while sending none answers `Invalid OAuth 2.0 Access Token`.
+   */
+  protected async graph<T>(path: string, init: RequestInit, token?: string): Promise<T> {
+    const headers = new Headers(init.headers)
+    if (token) headers.set('authorization', `Bearer ${token}`)
+
+    const response = await fetch(`${this.graphBase}/${this.graphVersion}${path}`, { ...init, headers })
     const text = await response.text()
     let json: any = {}
     try {

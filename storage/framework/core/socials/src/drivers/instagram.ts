@@ -90,16 +90,23 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
 
   /** Exchange an authorization code for a user access token. */
   async exchangeCode(input: InstagramTokenExchangeInput): Promise<{ accessToken: string, expiresIn?: number }> {
-    const query = new URLSearchParams({
-      client_id: input.clientId,
-      client_secret: input.clientSecret,
-      redirect_uri: input.redirectUrl,
-      code: input.code,
-    })
-
+    // POST, so the CLIENT SECRET is not in a URL either. It is a long-lived
+    // app credential and the same logging argument applies to it even more
+    // than to a user token. Meta's token endpoint accepts both forms: probed
+    // live, a bad client id answers `code 101 Missing or invalid client id`
+    // identically whether the parameters arrive as a query or as a body.
     const payload = await this.graph<{ access_token: string, expires_in?: number }>(
-      `/oauth/access_token?${query.toString()}`,
-      { method: 'GET' },
+      '/oauth/access_token',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: input.clientId,
+          client_secret: input.clientSecret,
+          redirect_uri: input.redirectUrl,
+          code: input.code,
+        }).toString(),
+      },
     )
 
     if (!payload.access_token) {
@@ -116,7 +123,6 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
   async resolveAccount(accessToken: string): Promise<InstagramAccount> {
     const query = new URLSearchParams({
       fields: 'name,access_token,instagram_business_account{id,username}',
-      access_token: accessToken,
     })
 
     const payload = await this.graph<{
@@ -124,7 +130,7 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
         access_token?: string
         instagram_business_account?: { id: string, username?: string }
       }>
-    }>(`/me/accounts?${query.toString()}`, { method: 'GET' })
+    }>(`/me/accounts?${query.toString()}`, { method: 'GET' }, accessToken)
 
     const page = (payload.data || []).find(entry => entry.instagram_business_account?.id)
     const account = page?.instagram_business_account
@@ -166,9 +172,9 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
         body: new URLSearchParams({
           image_url: media.url,
           caption: post.text,
-          access_token: identity.accessToken,
         }).toString(),
       },
+      identity.accessToken,
     )
 
     if (!container.id) {
@@ -183,14 +189,15 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           creation_id: container.id,
-          access_token: identity.accessToken,
         }).toString(),
       },
+      identity.accessToken,
     )
 
     const permalink = await this.graph<{ permalink?: string }>(
-      `/${published.id}?fields=permalink&access_token=${encodeURIComponent(identity.accessToken)}`,
+      `/${published.id}?fields=permalink`,
       { method: 'GET' },
+      identity.accessToken,
     ).catch(() => undefined)
 
     return {
@@ -205,8 +212,23 @@ export class InstagramPublishingDriver implements SocialPublishingDriver {
     return { items: [] }
   }
 
-  protected async graph<T>(path: string, init: RequestInit): Promise<T> {
-    const response = await fetch(`${this.graphBase}/${this.graphVersion}${path}`, init)
+  /**
+   * One request to the Graph API, with the credential in a header.
+   *
+   * `token` is deliberately a parameter of this helper rather than something a
+   * caller puts in the path or the body. A URL is the one part of a request
+   * that is logged by default everywhere it passes - this process, any forward
+   * proxy, Meta's own edge - so a long-lived publishing token in a query
+   * string is a credential sitting in files nobody treats as secret
+   * (stacksjs/stacks#2882). Verified against the live API: a bad token in this
+   * header answers `code 190 Cannot parse access token`, byte for byte what
+   * the query form answers, while sending none answers `code 2500`.
+   */
+  protected async graph<T>(path: string, init: RequestInit, token?: string): Promise<T> {
+    const headers = new Headers(init.headers)
+    if (token) headers.set('authorization', `Bearer ${token}`)
+
+    const response = await fetch(`${this.graphBase}/${this.graphVersion}${path}`, { ...init, headers })
     const text = await response.text()
     let json: any = {}
     try {

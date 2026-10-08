@@ -91,9 +91,17 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
    * Maps the Facebook-specific user data to our normalized SocialUser type.
    */
   public async getUserByToken(token: string): Promise<SocialUser> {
+    // The token goes in a header, not the query string. A URL is logged by
+    // everything it passes through, and this driver was the only one of its
+    // siblings still putting a credential in one - Google's reads the profile
+    // exactly this way (stacksjs/stacks#2882). The Graph API takes either
+    // form: probed live, a bad token in this header answers
+    // `code 190 Cannot parse access token`, the same as the query form.
     const response = await fetcher
+      .withHeaders({
+        Authorization: `Bearer ${token}`,
+      })
       .get<FacebookUser>(`${this.apiUrl}/${this.graphVersion}/me?${new URLSearchParams({
-        access_token: token,
         fields: 'id,name,email,picture',
       }).toString()}`)
 
