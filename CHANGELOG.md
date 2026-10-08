@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.96...v0.75.97)
+
+## ✨ Features
+
+- **buddy**: release:ios ships an app build from a version tag ([6c06405](https://github.com/stacksjs/stacks/commit/6c06405)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: release:ios, and the regenerated command reference ([71c2844](https://github.com/stacksjs/stacks/commit/71c2844)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **dashboard**: measure the expired feedback token from the test's own clock ([7ccbd1f](https://github.com/stacksjs/stacks/commit/7ccbd1f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.95...v0.75.96)
 
 ## ✨ Features
