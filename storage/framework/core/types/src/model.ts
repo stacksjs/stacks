@@ -244,20 +244,31 @@ export type SocialOptions = SocialProviders[]
  * Omit it and both reads and writes get `auth` — an undeclared read route is
  * how a customer list leaks (stacksjs/stacks#2224). A flat list applies to
  * both sides; the split form states them separately, which is the only way to
- * express the common "public catalog, authenticated writes" shape:
+ * express the common "public catalog, authenticated writes" shape; and an
+ * ability name overrides the side it belongs to, which is the only way to say
+ * "may create, may not delete" (stacksjs/stacks#2883):
  *
  * ```ts
  * middleware: ['auth']                        // both sides
  * middleware: []                              // both sides public (warns at boot)
  * middleware: { read: [], write: ['auth'] }   // public reads, guarded writes
+ * middleware: { destroy: ['auth', 'role:admin'] }   // only deletes need the role
+ * middleware: { write: ['auth'], destroy: ['auth', 'role:admin'] }  // both at once
  * ```
  *
- * An omitted side of the split form falls back to `auth`, not to public.
+ * `read` covers `index` and `show`, `write` covers `store`, `update` and
+ * `destroy`, and `destroy` covers bulk-delete along with the single delete.
+ * An omitted side falls back to `auth` rather than to public, and so does an
+ * ability whose side is omitted too - declaring one ability never widens
+ * another.
  */
 export type ApiMiddleware =
   | string
   | string[]
-  | { read?: string | string[], write?: string | string[] }
+  | (
+    { read?: string | string[], write?: string | string[] }
+    & { [ability in ApiRoutes]?: string | string[] }
+  )
 
 export interface ApiSettings {
   uri: string

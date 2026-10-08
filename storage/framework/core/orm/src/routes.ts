@@ -26,7 +26,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
-import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, resolveAbilityMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import type { RegisteredRouteLike } from './auto-crud'
 import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
@@ -551,7 +551,7 @@ const unscopedMutatingModels: string[] = []
  * Models whose `dashboard.roles` gates the sidebar row while their own
  * `useApi.middleware` declares a side public. Reported together at the end.
  */
-const contradictoryRoleGates: Array<{ model: string, sides: string[] }> = []
+const contradictoryRoleGates: Array<{ model: string, abilities: string[] }> = []
 
 // Register CRUD routes for each selected model with a useApi trait
 for (const [modelName, model] of Object.entries(apiModels)) {
@@ -585,22 +585,33 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   // as the sidebar row they sit behind. Until #2883 the list reached only the
   // sidebar, so a model declaring `roles: ['admin']` hid its row and served
   // every endpoint to anyone signed in.
-  const { read: readMiddleware0, write: writeMiddleware, declared } = resolveApiMiddleware(useApi, model.dashboard)
+  //
+  // `abilities` is the per-route granularity; `read`/`write` are the coarse
+  // sides the boot warnings below are phrased in.
+  const { abilities, declared } = resolveAbilityMiddleware(useApi, model.dashboard)
 
-  // A role list beside an explicitly empty side is contradictory, and the
-  // explicit middleware wins. Collected per model and reported once at the end.
+  // A role list beside an ability its own middleware emptied is contradictory,
+  // and the explicit middleware wins. Collected per model, reported once at the
+  // end. Checked per ability rather than per side: `{ destroy: [] }` opens one
+  // route, and only the routes this model actually registers can be open.
   if (dashboardRoleMiddleware(model.dashboard)) {
-    const sides = [
-      ...(readMiddleware0.length === 0 && ['index', 'show'].some(r => enabledRoutes.includes(r)) ? ['read'] : []),
-      ...(writeMiddleware.length === 0 && ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r)) ? ['write'] : []),
-    ]
-    if (sides.length > 0)
-      contradictoryRoleGates.push({ model: modelName, sides })
+    const open = API_ABILITIES.filter(ability => enabledRoutes.includes(ability) && abilities[ability].length === 0)
+    if (open.length > 0)
+      contradictoryRoleGates.push({ model: modelName, abilities: open })
   }
 
   const hasMutating = ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r))
-  if (hasMutating && declared && writeMiddleware.length === 0)
-    log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED mutating routes at ${basePath} (explicit \`middleware: []\` opt-out)`)
+
+  // Named per ability, for the same reason the contradiction report is: once
+  // one ability can override its side, "the write side is empty" is both too
+  // loose and too strict. `{ write: [], store: ['auth'] }` leaves nothing
+  // unauthenticated the warning should name, and `{ store: [] }` opens a route
+  // the old side check could not see at all.
+  const openWrites = API_ABILITIES.filter(ability =>
+    ability !== 'index' && ability !== 'show' && enabledRoutes.includes(ability) && abilities[ability].length === 0,
+  )
+  if (declared && openWrites.length > 0)
+    log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED ${openWrites.join(', ')} at ${basePath} (explicit empty \`middleware\` opt-out)`)
 
   // Anonymous reads are recorded, not warned about.
   //
@@ -611,9 +622,11 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   // models declare it, so warning here meant 15 lines on every boot about
   // behaviour that is working as intended, which is how a warning stops being
   // read at all. `debug` keeps it available to anyone auditing the surface.
-  const hasRead = ['index', 'show'].some(r => enabledRoutes.includes(r))
-  if (hasRead && declared && readMiddleware0.length === 0)
-    log.debug(`[orm] ${modelName}: registering public read routes at ${basePath} (declared \`middleware.read: []\`)`)
+  const openReads = API_ABILITIES.filter(ability =>
+    (ability === 'index' || ability === 'show') && enabledRoutes.includes(ability) && abilities[ability].length === 0,
+  )
+  if (declared && openReads.length > 0)
+    log.debug(`[orm] ${modelName}: registering public ${openReads.join(', ')} at ${basePath} (declared an empty read \`middleware\`)`)
 
   // Row-scoped resource? (explicit `ownership`, or a model with a team_id
   // column that's auto-team-scoped). If so its index/show handlers below
@@ -622,9 +635,9 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   // (no team_id, no ownership) stay anonymously browsable. Computed once and
   // reused by the handlers to gate the (DB-hitting) ownership resolution.
   const rowScoped = !!effectiveOwnershipConfig(model)
-  const readMiddleware = (rowScoped && !readMiddleware0.includes('auth'))
-    ? ['auth', ...readMiddleware0]
-    : readMiddleware0
+  const forceAuth = (names: string[]): string[] => (rowScoped && !names.includes('auth')) ? ['auth', ...names] : names
+  const indexMiddleware = forceAuth(abilities.index)
+  const showMiddleware = forceAuth(abilities.show)
 
   // A model with no ownership config and no team_id column gets mutating
   // routes that no row-level check applies to: authentication says who is
@@ -650,7 +663,11 @@ for (const [modelName, model] of Object.entries(apiModels)) {
   // Local helper: chain `.middleware()` for every entry in `names`.
   // The chainable return value from `route.get/post/...` accepts one
   // name per call, so we fold the list into successive calls.
-  const applyMiddleware = (chain: any, names: string[] = readMiddleware): any => {
+  //
+  // `names` is required rather than defaulted: every call site names the
+  // ability it is registering, so narrowing one route cannot leave another
+  // quietly on the read side's list (stacksjs/stacks#2883).
+  const applyMiddleware = (chain: any, names: string[]): any => {
     let r = chain
     for (const name of names) {
       if (r && typeof r.middleware === 'function') r = r.middleware(name)
@@ -820,7 +837,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         }
         return jsonResponse({ error: `Failed to fetch ${uri}`, detail: String(err) }, 500)
       }
-    }))
+    }), indexMiddleware)
   }
 
   // GET /api/{uri}/{id} — show single record
@@ -902,7 +919,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         }
         return jsonResponse({ error: `Failed to fetch ${modelName}`, detail: String(err) }, 500)
       }
-    }))
+    }), showMiddleware)
   }
 
   // POST /api/{uri} — create record
@@ -989,7 +1006,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const { status, body } = mapWriteError(err, modelName, 'create')
         return jsonResponse(body, status)
       }
-    }), writeMiddleware)
+    }), abilities.store)
   }
 
   // PUT/PATCH /api/{uri}/{id} — update record
@@ -1085,10 +1102,10 @@ for (const [modelName, model] of Object.entries(apiModels)) {
     }
 
     if (!routeClaimed('PUT', `${basePath}/{id}`)) {
-      applyMiddleware(route.put(`${basePath}/{id}`, updateHandler), writeMiddleware)
+      applyMiddleware(route.put(`${basePath}/{id}`, updateHandler), abilities.update)
     }
     if (!routeClaimed('PATCH', `${basePath}/{id}`)) {
-      applyMiddleware(route.patch(`${basePath}/{id}`, updateHandler), writeMiddleware)
+      applyMiddleware(route.patch(`${basePath}/{id}`, updateHandler), abilities.update)
     }
   }
 
@@ -1142,7 +1159,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         }
         return jsonResponse({ error: `Failed to delete ${modelName}`, detail: String(err) }, 500)
       }
-    }), writeMiddleware)
+    }), abilities.destroy)
   }
 
   // POST /api/{uri}/bulk-delete — delete multiple records (also soft-aware,
@@ -1218,7 +1235,8 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         }
         return jsonResponse({ error: `Failed to bulk delete ${uri}`, detail: String(err) }, 500)
       }
-    }), writeMiddleware)
+    // Bulk delete is a destroy: one request, many rows, same ability.
+    }), abilities.destroy)
   }
 }
 

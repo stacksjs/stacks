@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, indexRouteShapes, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveAbilityMiddleware, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, routeShapeKey, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -1004,22 +1004,124 @@ describe('resolveApiMiddleware with dashboard.roles', () => {
 })
 
 describe('describeContradictoryRoleGates', () => {
-  it('names a model whose roles gate a side its middleware opened', () => {
-    expect(describeContradictoryRoleGates([{ model: 'AuditTrail', sides: ['read'] }]))
-      .toContain('AuditTrail (read)')
+  it('names a model whose roles gate an ability its middleware opened', () => {
+    expect(describeContradictoryRoleGates([{ model: 'AuditTrail', abilities: ['index'] }]))
+      .toContain('AuditTrail (index)')
   })
 
-  it('lists both sides and every model, and says what to do about it', () => {
+  it('lists every ability and every model, and says what to do about it', () => {
     const message = describeContradictoryRoleGates([
-      { model: 'AuditTrail', sides: ['read', 'write'] },
-      { model: 'Ledger', sides: ['write'] },
+      { model: 'AuditTrail', abilities: ['index', 'show'] },
+      { model: 'Ledger', abilities: ['destroy'] },
     ])
-    expect(message).toContain('AuditTrail (read, write)')
-    expect(message).toContain('Ledger (write)')
+    expect(message).toContain('AuditTrail (index, show)')
+    expect(message).toContain('Ledger (destroy)')
     expect(message).toContain('dashboard.enforce')
   })
 
   it('is null when nothing contradicts, so the caller logs nothing', () => {
     expect(describeContradictoryRoleGates([])).toBeNull()
+  })
+})
+
+/**
+ * Per-ability middleware (stacksjs/stacks#2883).
+ *
+ * The read/write split expresses "may look, may not change". It cannot express
+ * "may create, may not delete", because store and destroy share the write
+ * bucket - and that distinction is most of what a tiered app means by giving a
+ * role fewer actions. The five ability names are the ones the trait's `routes`
+ * list already uses, so this adds a granularity rather than a vocabulary.
+ */
+describe('resolveAbilityMiddleware', () => {
+  const abilitiesOf = (useApi: unknown, dashboard?: unknown) => resolveAbilityMiddleware(useApi, dashboard).abilities
+
+  it('covers exactly the five generated abilities', () => {
+    expect(API_ABILITIES).toEqual(['index', 'show', 'store', 'update', 'destroy'])
+    expect(Object.keys(abilitiesOf(true)).sort()).toEqual([...API_ABILITIES].sort())
+  })
+
+  it('spreads each side over its abilities when nothing finer is declared', () => {
+    expect(abilitiesOf({ middleware: { read: ['auth'], write: ['auth', 'team'] } })).toEqual({
+      index: ['auth'],
+      show: ['auth'],
+      store: ['auth', 'team'],
+      update: ['auth', 'team'],
+      destroy: ['auth', 'team'],
+    })
+  })
+
+  it('lets one ability override the side it belongs to', () => {
+    // The shape a tiered app actually wants: everyone signed in may read and
+    // write, and only an admin may delete.
+    expect(abilitiesOf({ middleware: { read: ['auth'], write: ['auth'], destroy: ['auth', 'role:admin'] } })).toEqual({
+      index: ['auth'],
+      show: ['auth'],
+      store: ['auth'],
+      update: ['auth'],
+      destroy: ['auth', 'role:admin'],
+    })
+  })
+
+  it('takes ability keys with no side declared, the rest falling back to auth', () => {
+    expect(abilitiesOf({ middleware: { destroy: ['auth', 'role:admin'] } })).toEqual({
+      index: ['auth'],
+      show: ['auth'],
+      store: ['auth'],
+      update: ['auth'],
+      destroy: ['auth', 'role:admin'],
+    })
+  })
+
+  it('opens a single ability without opening its side', () => {
+    expect(abilitiesOf({ middleware: { index: [] } })).toEqual({
+      index: [],
+      show: ['auth'],
+      store: ['auth'],
+      update: ['auth'],
+      destroy: ['auth'],
+    })
+  })
+
+  it('accepts the string shorthand per ability', () => {
+    expect(abilitiesOf({ middleware: { destroy: 'role:admin' } }).destroy).toEqual(['role:admin'])
+  })
+
+  it('spreads a flat list and a bare `true` over all five', () => {
+    expect(abilitiesOf(true)).toEqual({ index: ['auth'], show: ['auth'], store: ['auth'], update: ['auth'], destroy: ['auth'] })
+    expect(abilitiesOf({ middleware: ['throttle'] })).toEqual({
+      index: ['throttle'],
+      show: ['throttle'],
+      store: ['throttle'],
+      update: ['throttle'],
+      destroy: ['throttle'],
+    })
+  })
+
+  it('appends a dashboard role to an ability-specific list too', () => {
+    expect(abilitiesOf({ middleware: { destroy: ['auth'] } }, { roles: ['admin'] })).toEqual({
+      index: ['auth', 'role:admin'],
+      show: ['auth', 'role:admin'],
+      store: ['auth', 'role:admin'],
+      update: ['auth', 'role:admin'],
+      destroy: ['auth', 'role:admin'],
+    })
+  })
+
+  it('leaves an explicitly emptied ability empty, and lets its own role win', () => {
+    expect(abilitiesOf({ middleware: { index: [], destroy: ['auth', 'role:dev'] } }, { roles: ['admin'] })).toEqual({
+      index: [],
+      show: ['auth', 'role:admin'],
+      store: ['auth', 'role:admin'],
+      update: ['auth', 'role:admin'],
+      destroy: ['auth', 'role:dev'],
+    })
+  })
+
+  it('still reports the coarse sides, which the boot warnings read', () => {
+    const resolved = resolveAbilityMiddleware({ middleware: { read: [], write: ['auth'] } })
+    expect(resolved.read).toEqual([])
+    expect(resolved.write).toEqual(['auth'])
+    expect(resolved.declared).toBe(true)
   })
 })

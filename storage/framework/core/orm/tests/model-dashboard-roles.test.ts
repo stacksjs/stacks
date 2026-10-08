@@ -119,7 +119,7 @@ describe('dashboard.roles on a generated model API', () => {
     expect(middleware.get('GET /api/audit-trails')).toEqual(['auth', 'role:dev'])
   }, 60_000)
 
-  it('keeps a deliberately public side public, and says so once at boot', () => {
+  it('keeps a deliberately public side public, and names the abilities at boot', () => {
     // Two opposite statements, neither safe to assume is the mistake: the
     // explicit middleware wins and the pairing is named.
     const { middleware, output } = boot({
@@ -129,7 +129,49 @@ describe('dashboard.roles on a generated model API', () => {
 
     expect(middleware.get('GET /api/audit-trails')).toEqual([])
     expect(middleware.get('DELETE /api/audit-trails/{id}')).toEqual(['auth', 'role:admin'])
-    expect(output).toContain('AuditTrail (read)')
+    expect(output).toContain('AuditTrail (index, show)')
     expect(output).toContain('dashboard.enforce')
+  }, 60_000)
+  /**
+   * Per-ability middleware. The read/write split cannot say "may create, may
+   * not delete" - store and destroy share the write bucket - and that is most
+   * of what giving a role fewer actions means.
+   */
+  it('gates one ability without gating its side', () => {
+    const { middleware } = boot(trait({ read: ['auth'], write: ['auth'], destroy: ['auth', 'role:admin'] }))
+
+    expect(middleware.get('GET /api/audit-trails')).toEqual(['auth'])
+    expect(middleware.get('POST /api/audit-trails')).toEqual(['auth'])
+    expect(middleware.get('PUT /api/audit-trails/{id}')).toEqual(['auth'])
+    expect(middleware.get('PATCH /api/audit-trails/{id}')).toEqual(['auth'])
+    expect(middleware.get('DELETE /api/audit-trails/{id}')).toEqual(['auth', 'role:admin'])
+    // One request, many rows, same ability.
+    expect(middleware.get('POST /api/audit-trails/bulk-delete')).toEqual(['auth', 'role:admin'])
+  }, 60_000)
+
+  it('leaves the other four on the secure default when one ability is declared', () => {
+    // Narrowing one route must never widen another.
+    const { middleware } = boot(trait({ destroy: ['auth', 'role:admin'] }))
+
+    for (const endpoint of ['GET /api/audit-trails', 'GET /api/audit-trails/{id}', 'POST /api/audit-trails', 'PUT /api/audit-trails/{id}'])
+      expect(middleware.get(endpoint), endpoint).toEqual(['auth'])
+    expect(middleware.get('DELETE /api/audit-trails/{id}')).toEqual(['auth', 'role:admin'])
+  }, 60_000)
+
+  it('warns about exactly the abilities an empty list opened', () => {
+    const { middleware, output } = boot(trait({ store: [] }))
+
+    expect(middleware.get('POST /api/audit-trails')).toEqual([])
+    expect(middleware.get('DELETE /api/audit-trails/{id}')).toEqual(['auth'])
+    // The side check this replaced could not see a single opened ability.
+    expect(output).toContain('UNAUTHENTICATED store')
+    expect(output).not.toContain('UNAUTHENTICATED store, update, destroy')
+  }, 60_000)
+
+  it('does not cry unauthenticated when every ability overrides an empty side', () => {
+    const { middleware, output } = boot(trait({ write: [], store: ['auth'], update: ['auth'], destroy: ['auth'] }))
+
+    expect(middleware.get('POST /api/audit-trails')).toEqual(['auth'])
+    expect(output).not.toContain('UNAUTHENTICATED')
   }, 60_000)
 })

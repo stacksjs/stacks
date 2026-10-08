@@ -797,6 +797,67 @@ export function dashboardRoleMiddleware(dashboard: unknown): string | null {
 }
 
 /**
+ * The abilities the `useApi` trait generates, in the order its `routes` list
+ * names them. The same five strings, so a model declaring
+ * `routes: ['index', 'show']` and `middleware: { show: [...] }` is using one
+ * vocabulary rather than two.
+ */
+export const API_ABILITIES = ['index', 'show', 'store', 'update', 'destroy'] as const
+
+export type ApiAbility = (typeof API_ABILITIES)[number]
+
+/** Which coarse side an ability falls back to when it declares nothing. */
+const ABILITY_SIDE: Record<ApiAbility, 'read' | 'write'> = {
+  index: 'read',
+  show: 'read',
+  store: 'write',
+  update: 'write',
+  destroy: 'write',
+}
+
+/**
+ * Per-ability middleware for a model's generated routes.
+ *
+ * `resolveApiMiddleware` answers "may look" and "may change", which is as fine
+ * as the read/write split goes. It cannot say "may create, may not delete",
+ * because store and destroy share the write bucket - and that distinction is
+ * most of what giving a role fewer ACTIONS means (stacksjs/stacks#2883). An
+ * ability key overrides the side it belongs to:
+ *
+ *   `middleware: { read: ['auth'], write: ['auth'], destroy: ['auth', 'role:admin'] }`
+ *
+ * reads as everyone signed in may read and write, and only an admin may delete.
+ * Declaring an ability and no side leaves the other four on the secure default,
+ * so narrowing one route never widens another.
+ *
+ * The coarse sides come back too: the boot warnings are phrased in terms of
+ * reads and writes, and they stay the right granularity for "this model
+ * publishes mutating routes to everyone".
+ */
+export function resolveAbilityMiddleware(
+  useApi: unknown,
+  dashboard?: unknown,
+): { abilities: Record<ApiAbility, string[]>, read: string[], write: string[], declared: boolean } {
+  const { read, write, declared } = resolveApiMiddleware(useApi, dashboard)
+  const role = dashboardRoleMiddleware(dashboard)
+  const raw = (useApi as { middleware?: unknown } | null | undefined)?.middleware
+  const declaredPerAbility = raw && typeof raw === 'object' && !Array.isArray(raw)
+    ? raw as Record<string, unknown>
+    : undefined
+
+  const abilities = {} as Record<ApiAbility, string[]>
+  for (const ability of API_ABILITIES) {
+    abilities[ability] = declaredPerAbility && ability in declaredPerAbility
+      // The same append rules as a side: an emptied ability stays public, and
+      // its own `role:` beats the one derived from `dashboard.roles`.
+      ? withDashboardRole(middlewareList(declaredPerAbility[ability]), role)
+      : (ABILITY_SIDE[ability] === 'read' ? read : write)
+  }
+
+  return { abilities, read, write, declared }
+}
+
+/**
  * Append a derived role entry to one side's middleware list.
  *
  * Two lists are left alone. An EMPTY one is a public surface the model asked
@@ -818,8 +879,8 @@ function withDashboardRole(list: string[], role: string | null): string[] {
 }
 
 /**
- * The one-line-per-boot report about models whose `dashboard.roles` gates a
- * side their `useApi.middleware` deliberately opened.
+ * The one-line-per-boot report about models whose `dashboard.roles` gates the
+ * sidebar row while their own `useApi.middleware` leaves an ability public.
  *
  * `dashboard: { roles: ['admin'] }` beside `middleware: { read: [] }` says two
  * opposite things: admins only, and anyone at all. Neither half can be assumed
@@ -827,22 +888,26 @@ function withDashboardRole(list: string[], role: string | null): string[] {
  * the pairing here. Aggregated into one line for the reason the sibling
  * row-scoping report is (see `describeUnscopedMutatingModels`).
  *
+ * Named per ability rather than per side, because that is the granularity the
+ * middleware resolves at: `middleware: { destroy: [] }` opens one route, and
+ * saying "write" would overstate it by two.
+ *
  * Returns null when there is nothing to report, so the caller logs nothing.
  */
 export function describeContradictoryRoleGates(
-  entries: ReadonlyArray<{ model: string, sides: readonly string[] }>,
+  entries: ReadonlyArray<{ model: string, abilities: readonly string[] }>,
 ): string | null {
   if (entries.length === 0)
     return null
 
   const named = [...entries]
     .sort((a, b) => a.model.localeCompare(b.model))
-    .map(entry => `${entry.model} (${[...entry.sides].join(', ')})`)
+    .map(entry => `${entry.model} (${[...entry.abilities].join(', ')})`)
     .join(', ')
 
-  return `[orm] ${entries.length} model(s) role-gate their sidebar row and publish the matching API to everyone, `
-    + `because \`useApi.middleware\` declares that side empty - ${named}. `
-    + `Drop the empty list to let \`dashboard.roles\` gate it, or set \`dashboard.enforce: false\` to keep the row hidden and the API public.`
+  return `[orm] ${entries.length} model(s) role-gate their sidebar row and publish part of the matching API to everyone, `
+    + `because \`useApi.middleware\` declares those abilities empty - ${named}. `
+    + `Drop the empty list to let \`dashboard.roles\` gate them, or set \`dashboard.enforce: false\` to keep the row hidden and the API public.`
 }
 
 // Default page size for the auto-CRUD index route. Matches the
