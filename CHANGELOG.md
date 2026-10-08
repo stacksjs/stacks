@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.92...v0.75.93)
+
+## ✨ Features
+
+- **mobile**: a native Liquid Glass tab bar and a launch splash through Craft ([de67091](https://github.com/stacksjs/stacks/commit/de67091)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: deleting a card removes its screenshots from the disk (#2881) ([f665750](https://github.com/stacksjs/stacks/commit/f665750)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2881](https://github.com/stacksjs/stacks/issues/2881))
+- **upgrade**: leave a workspace reference alone while its member is there (#2880) ([3c7ca02](https://github.com/stacksjs/stacks/commit/3c7ca02)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2880](https://github.com/stacksjs/stacks/issues/2880))
+- **ci**: declarations:check compares every file generate:types writes (#2879) ([c718482](https://github.com/stacksjs/stacks/commit/c718482)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2879](https://github.com/stacksjs/stacks/issues/2879))
+- **release**: refresh pantry.lock after bun.lock is regenerated ([3cef214](https://github.com/stacksjs/stacks/commit/3cef214)) _(by Chris <chrisbreuer93@gmail.com>)_ ([stacksjs/stacks#2848](https://github.com/stacksjs/stacks/issues/2848))
+
+## 💚 Continuous Integration
+
+- run pantry 0.11.75, which names every pantry.lock pin it moves ([780ab77](https://github.com/stacksjs/stacks/commit/780ab77)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.91...v0.75.92)
 
 ## 🔧 Chores
