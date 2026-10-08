@@ -11,6 +11,41 @@
  * built-in rows so a project can drop, say, the newsletter Subscribers
  * row when there's no newsletter without losing the model viewer.
  */
+/**
+ * The framework's own dashboard route groups, by the prefix each one registers.
+ *
+ * Mirrors `DASHBOARD_ROUTE_GROUPS` in `@stacksjs/router`, which is the runtime
+ * source of truth; `core/router/tests/dashboard-access.test.ts` pins this
+ * union, that list and the prefixes `defaults/routes/dashboard.ts` actually
+ * registers against each other, because three copies of one list is a mirror
+ * and mirrors drift.
+ */
+export type DashboardRouteGroup =
+  | '/ai'
+  | '/api/analytics'
+  | '/api/commerce'
+  | '/api/data'
+  | '/api/marketing'
+  | '/api/monitoring'
+  | '/api/notifications'
+  | '/api/queries'
+  | '/api/settings'
+  | '/cms'
+  | '/dashboard'
+  | '/dashboard/cms'
+  | '/dashboard/commerce'
+  | '/deployments'
+  | '/infrastructure'
+  | '/jobs'
+  | '/library'
+  | '/models'
+  | '/payments'
+  | '/queue'
+  | '/queues'
+  | '/realtime'
+  | '/releases'
+  | '/voide'
+
 export interface DashboardOptions {
   /**
    * Top-level feature gate. When `false`, the entire admin SPA + dashboard
@@ -20,6 +55,32 @@ export interface DashboardOptions {
   enabled?: boolean
   /** Optional deploy-target gate, e.g. `['production']`. */
   env?: string[]
+  /**
+   * Which roles may reach each of the framework's own dashboard route groups.
+   *
+   * ```ts
+   * access: {
+   *   '/api/commerce': ['admin', 'superadmin'],
+   *   '/cms': ['admin', 'editor'],
+   * }
+   * ```
+   *
+   * The 24 groups in `defaults/routes/dashboard.ts` ship `middleware: 'auth'`
+   * and nothing more, so every signed-in user could reach `/api/commerce`,
+   * `/cms` and the rest whatever the sidebar showed them - and an app had no
+   * way to tighten that, because the routes file is framework-owned, there is
+   * no global middleware stack, and nothing attached middleware to a path.
+   * This is that way (stacksjs/stacks#2883).
+   *
+   * Each entry appends `role:<the list>` after the group's `auth`, so any one
+   * of the named roles admits. Omitting a group leaves it exactly as it was.
+   *
+   * Keyed by prefix rather than by section because a section has no one path:
+   * the sidebar's commerce section points at `/commerce/*` pages while its API
+   * lives at `/api/commerce/*` and `/dashboard/commerce/*`. Gating the API does
+   * not gate the page routes; name both prefixes when you mean both.
+   */
+  access?: Partial<Record<DashboardRouteGroup, string[]>>
   /**
    * Sections this application adds to the sidebar, above the framework's own.
    *

@@ -20,6 +20,29 @@ import type { DashboardConfig } from '@stacksjs/types'
 export default {
   enabled: true,
 
+  /**
+   * Which roles may reach each of the framework's own dashboard route groups
+   * (stacksjs/stacks#2883).
+   *
+   * Every group ships `auth` and nothing more, so any signed-in user can reach
+   * `/api/commerce`, `/cms` or `/models` whatever the sidebar shows them.
+   * Naming a group here appends `role:<the list>` after its `auth`, and any one
+   * of the listed roles admits. Omitted groups are unchanged.
+   *
+   * Keyed by the group's prefix, so gating the API does not gate the pages:
+   * name both when you mean both. The prefixes are a typed union, so a typo is
+   * a compile error rather than a gate that silently is not there.
+   *
+   *   access: {
+   *     '/api/commerce': ['admin', 'superadmin'],
+   *     '/dashboard/commerce': ['admin', 'superadmin'],
+   *     '/cms': ['admin', 'editor'],
+   *   },
+   *
+   * A model's own generated API is gated on the model instead, with
+   * `dashboard: { roles: [...] }` or `useApi.middleware`.
+   */
+
   sections: {
     library: { enabled: true },
     content: { enabled: true },

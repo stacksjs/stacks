@@ -56,6 +56,8 @@ export {
 
 // Export route introspection helpers
 export { listNamedRoutes, listRegisteredRoutes, routeParams } from './stacks-router'
+export { DASHBOARD_ROUTE_GROUPS, dashboardGroupMiddleware, describeUnknownDashboardGroups, resolveDashboardAccess } from './dashboard-access'
+export type { DashboardAccess, DashboardRouteGroupPrefix } from './dashboard-access'
 export type { UrlParams } from './stacks-router'
 
 // Registering an action by import rather than by name: the seam that lets a

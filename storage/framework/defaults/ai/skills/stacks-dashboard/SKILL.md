@@ -311,6 +311,48 @@ review and must not be silently recorded.
 - `/kanban` - model-backed board management
 - `/ci`, `/buddy` - CI and Buddy workflows
 
+## Who may reach a dashboard surface
+
+Two axes, declared in different places.
+
+**Route groups** are gated in `config/dashboard.ts`, keyed by the group's path
+prefix:
+
+```ts
+access: {
+  '/api/commerce': ['admin', 'superadmin'],
+  '/dashboard/commerce': ['admin', 'superadmin'],
+  '/cms': ['admin', 'editor'],
+}
+```
+
+Each entry appends `role:<the list>` after that group's `auth`, so any one of
+the named roles admits. Every group ships `auth` and nothing more, so an
+omitted group stays reachable by any signed-in user; naming it is the only way
+to tighten it, since `defaults/routes/dashboard.ts` is framework-owned
+(stacksjs/stacks#2883). Keyed by prefix, so gating `/api/commerce` does not
+gate `/dashboard/commerce`: name both when you mean both. The prefixes are a
+typed union, so a typo is a compile error rather than a gate that is quietly
+absent.
+
+**A model's own generated API** is gated on the model, not here: either
+`dashboard: { roles: ['admin'] }`, which gates the sidebar row and every
+generated route together, or `useApi.middleware` for per-ability control. See
+`stacks-models`.
+
+**The sidebar** filters itself. A row carrying roles (from a model's
+`dashboard.roles` or a `nav` item's `roles`) is hidden client-side from viewers
+holding none of them, permissively for unauthenticated viewers so the local dev
+dashboard stays usable (#1843). That is presentation: it hides the link, not
+the endpoint, so it is never the gate on its own.
+
+**SSR pages** take the same middleware names as an API route, because the page
+servers build their registry from `app/Middleware.ts`:
+
+```stx
+definePageMeta({ middleware: ['auth', 'role:admin'] })
+```
+
 ## Dashboard Components (250+)
 
 ### Layout Components
