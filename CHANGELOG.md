@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.95...v0.75.96)
+
+## ✨ Features
+
+- **orm**: the generated API consults a model's policy ([e66393b](https://github.com/stacksjs/stacks/commit/e66393b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883), [#2883](https://github.com/stacksjs/stacks/issues/2883))
+- **auth**: check a policy by model name, for code that holds rows ([2d87ae5](https://github.com/stacksjs/stacks/commit/2d87ae5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883), [#1985](https://github.com/stacksjs/stacks/issues/1985))
+- **dashboard**: role-gate the framework's own route groups from config ([7341833](https://github.com/stacksjs/stacks/commit/7341833)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883), [#1843](https://github.com/stacksjs/stacks/issues/1843))
+- **orm**: per-ability middleware on a generated model API ([94934ca](https://github.com/stacksjs/stacks/commit/94934ca)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883))
+
+## 🐛 Bug Fixes
+
+- **components**: NativeSegmentedControl renders its segments again, on stx 0.2.406 ([e1af65e](https://github.com/stacksjs/stacks/commit/e1af65e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: dashboard.roles gates the generated API, not just the sidebar row ([31cafd2](https://github.com/stacksjs/stacks/commit/31cafd2)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883), [#1843](https://github.com/stacksjs/stacks/issues/1843), [#2224](https://github.com/stacksjs/stacks/issues/2224), [#2375](https://github.com/stacksjs/stacks/issues/2375), [stacksjs/stacks#1843](https://github.com/stacksjs/stacks/issues/1843))
+- **socials**: send Meta access tokens in a header, not a URL ([864cd73](https://github.com/stacksjs/stacks/commit/864cd73)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2882](https://github.com/stacksjs/stacks/issues/2882))
+
+## 📝 Documentation
+
+- **skills**: per-row rules on a generated model API ([391cd36](https://github.com/stacksjs/stacks/commit/391cd36)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883))
+- **skills**: who may reach a model's generated routes ([78d79bc](https://github.com/stacksjs/stacks/commit/78d79bc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883), [#2224](https://github.com/stacksjs/stacks/issues/2224), [#2883](https://github.com/stacksjs/stacks/issues/2883))
+
+## ✅ Tests
+
+- **auth**: pin why the page gate contributes only auth and guest ([b7d16d5](https://github.com/stacksjs/stacks/commit/b7d16d5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2883](https://github.com/stacksjs/stacks/issues/2883), [#2883](https://github.com/stacksjs/stacks/issues/2883), [#2274](https://github.com/stacksjs/stacks/issues/2274))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.94...v0.75.95)
 
 ## 🐛 Bug Fixes
