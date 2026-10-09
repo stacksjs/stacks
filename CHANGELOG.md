@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.102...v0.75.103)
+
+## 🐛 Bug Fixes
+
+- **mobile**: record the native screens' bundle relative to the iOS project, like its other files ([4de9783](https://github.com/stacksjs/stacks/commit/4de9783)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.101...v0.75.102)
 
 ## ✨ Features
