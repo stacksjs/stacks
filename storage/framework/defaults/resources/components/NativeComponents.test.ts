@@ -208,7 +208,8 @@ describe('Native components feel native', () => {
 
   it('keeps the native chrome in step with the page once in the phone app', () => {
     const shell = read('NativeAppShell')
-    expect(shell).toContain('if (native && !destroyed) stopChrome = installNativeChrome(root.ownerDocument)')
+    expect(shell).toContain('if (!native || destroyed) return')
+    expect(shell).toContain('stopChrome = installNativeChrome(root.ownerDocument)')
   })
 
   it('links the bar to the scroll a frame at a time, and stretches the large title past the top', () => {
