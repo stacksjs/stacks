@@ -105,7 +105,7 @@
     "@stacksjs/sites": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.406",
+    "@stacksjs/stx": "^0.2.408",
     "@stacksjs/tlsx": "^0.13.19",
     "@stacksjs/ts-cloud": "^0.16.47",
     "@stacksjs/ts-md": "^0.1.1",
@@ -113,10 +113,10 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "bun-plugin-stx": "^0.2.406"
+    "bun-plugin-stx": "^0.2.408"
   },
   "peerDependencies": {
-    "craft-native": ">=0.0.123",
+    "craft-native": ">=0.0.124",
     "pickier": "^0.1.68"
   },
   "peerDependenciesMeta": {
