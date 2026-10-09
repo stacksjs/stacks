@@ -139,10 +139,11 @@ onDestroy(() => {
 })
 
 // The router moved to another screen while this one's sheet was up.
-useEventListener('stx:navigate', (event: CustomEvent<{ url?: string }>) => {
+useEventListener('stx:navigate', (event: Event) => {
   if (!open()) return
+  const url = (event as CustomEvent<{ url?: string }>).detail?.url
   const location = root()?.ownerDocument.defaultView?.location
-  const to = event.detail?.url ? new URL(event.detail.url, location?.href).pathname : currentPath()
+  const to = url ? new URL(url, location?.href).pathname : currentPath()
   if (to !== openedOn) close()
 })
 
