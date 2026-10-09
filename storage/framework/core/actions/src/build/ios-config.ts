@@ -14,6 +14,12 @@ export interface CraftIosConfig {
   backgroundColor?: string
   backgroundColorDark?: string
   swipeNavigation?: boolean
+  allowsLinkPreview?: boolean
+  keyboardAccessory?: boolean
+  disableZoom?: boolean
+  splashMaxSeconds?: number
+  requestTimeoutSeconds?: number
+  backgroundRefresh?: IosMobileConfig['backgroundRefresh']
   iosVersion?: string
   watchosVersion?: string
   teamId?: string
@@ -103,6 +109,19 @@ export function resolveMobilePath(root: string, value: string | undefined): stri
   return isAbsolute(value) ? value : resolve(root, value)
 }
 
+/**
+ * Whether WebKit's own edge swipe goes back through history.
+ *
+ * Off unless asked for: the stx router swipes back itself, dragging the
+ * previous screen in under the finger, and with WebKit's gesture on as well
+ * the two fought over every edge swipe. `swipeBack` names who answers it; an
+ * explicit `swipeNavigation` still wins, for an app that set it before.
+ */
+export function resolveSwipeNavigation(config: Pick<IosMobileConfig, 'swipeBack' | 'swipeNavigation'>): boolean {
+  if (config.swipeNavigation !== undefined) return config.swipeNavigation
+  return config.swipeBack === 'webview'
+}
+
 export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
   const devServerURL = normalizeMobileUrl(config.url)
   const trustedOrigins = new Set(config.trustedOrigins ?? [])
@@ -129,7 +148,13 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     appearance: config.appearance,
     backgroundColor: config.backgroundColor,
     backgroundColorDark: config.backgroundColorDark,
-    swipeNavigation: config.swipeNavigation,
+    swipeNavigation: resolveSwipeNavigation(config),
+    allowsLinkPreview: config.allowsLinkPreview,
+    keyboardAccessory: config.keyboardAccessory,
+    disableZoom: config.disableZoom,
+    splashMaxSeconds: config.splashMaxSeconds,
+    requestTimeoutSeconds: config.requestTimeoutSeconds,
+    backgroundRefresh: config.backgroundRefresh,
     iosVersion: config.deploymentTarget,
     watchosVersion: config.watchDeploymentTarget,
     teamId: config.teamId,
@@ -188,6 +213,17 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
     if (!/^(applinks|webcredentials|activitycontinuation):[^/\s]+$/.test(domain)) {
       throw new Error(`Invalid iOS associated domain: ${domain}`)
     }
+  }
+  for (const key of ['splashMaxSeconds', 'requestTimeoutSeconds'] as const) {
+    const value = config[key]
+    if (value !== undefined && (!Number.isFinite(value) || value <= 0)) throw new Error(`ios.${key} must be a positive number of seconds`)
+  }
+  const refresh = config.backgroundRefresh
+  if (refresh) {
+    if (refresh.identifier !== undefined && !/^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(refresh.identifier))
+      throw new Error(`Invalid iOS background refresh identifier: ${refresh.identifier}`)
+    if (refresh.minimumIntervalMinutes !== undefined && (!Number.isFinite(refresh.minimumIntervalMinutes) || refresh.minimumIntervalMinutes <= 0))
+      throw new Error('ios.backgroundRefresh.minimumIntervalMinutes must be a positive number of minutes')
   }
   if (config.capabilities?.watchApp) {
     const target = Number.parseFloat(config.watchDeploymentTarget ?? '9.0')

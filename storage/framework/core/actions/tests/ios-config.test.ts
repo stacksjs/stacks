@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { normalizeMobileUrl, portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
+import { normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 /** The shape Craft's template emits: nested dicts, the root dict last. */
 const CRAFT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
@@ -81,6 +81,58 @@ describe('iOS mobile build configuration', () => {
     // undefined erase its default.
     expect('darkMode' in config).toBe(false)
     expect(Object.values(config).includes(undefined)).toBe(false)
+  })
+
+  it('passes the native-feel options through to Craft under its own names', () => {
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training/m',
+      associatedDomains: ['applinks:hq.training', 'webcredentials:hq.training'],
+      backgroundRefresh: { enabled: true, identifier: 'training.hq.app.refresh', minimumIntervalMinutes: 30 },
+      allowsLinkPreview: false,
+      keyboardAccessory: false,
+      disableZoom: true,
+      splashMaxSeconds: 2,
+      requestTimeoutSeconds: 8,
+    })
+
+    expect(config.associatedDomains).toEqual(['applinks:hq.training', 'webcredentials:hq.training'])
+    expect(config.backgroundRefresh).toEqual({ enabled: true, identifier: 'training.hq.app.refresh', minimumIntervalMinutes: 30 })
+    expect(config.allowsLinkPreview).toBe(false)
+    expect(config.keyboardAccessory).toBe(false)
+    expect(config.disableZoom).toBe(true)
+    expect(config.splashMaxSeconds).toBe(2)
+    expect(config.requestTimeoutSeconds).toBe(8)
+  })
+
+  it('leaves the native-feel options to Craft\'s defaults when unset', () => {
+    const config = toCraftIosConfig({ appName: 'Example', bundleId: 'org.example.app', url: 'example.com' })
+    for (const key of ['backgroundRefresh', 'allowsLinkPreview', 'keyboardAccessory', 'disableZoom', 'splashMaxSeconds', 'requestTimeoutSeconds'])
+      expect(key in config).toBe(false)
+  })
+
+  /**
+   * The stx router swipes back itself, dragging the previous screen in under
+   * the finger. With WebKit's history gesture on as well, the two fought over
+   * every edge swipe, so it is off unless an app asks for it.
+   */
+  it('leaves WebKit\'s swipe off for the router\'s own, unless asked for', () => {
+    expect(toCraftIosConfig({ appName: 'Example', bundleId: 'org.example.app', url: 'example.com' }).swipeNavigation).toBe(false)
+    expect(resolveSwipeNavigation({ swipeBack: 'router' })).toBe(false)
+    expect(resolveSwipeNavigation({ swipeBack: 'webview' })).toBe(true)
+    // An app that set it before keeps what it set.
+    expect(resolveSwipeNavigation({ swipeNavigation: true })).toBe(true)
+    expect(resolveSwipeNavigation({ swipeBack: 'webview', swipeNavigation: false })).toBe(false)
+  })
+
+  it('rejects timings and background refresh settings Craft cannot use', () => {
+    const base = { appName: 'Example', bundleId: 'org.example.app', url: 'https://example.com' }
+    expect(() => validateIosMobileConfig({ ...base, splashMaxSeconds: 0 })).toThrow('ios.splashMaxSeconds')
+    expect(() => validateIosMobileConfig({ ...base, requestTimeoutSeconds: -1 })).toThrow('ios.requestTimeoutSeconds')
+    expect(() => validateIosMobileConfig({ ...base, backgroundRefresh: { enabled: true, identifier: 'refresh' } })).toThrow('background refresh identifier')
+    expect(() => validateIosMobileConfig({ ...base, backgroundRefresh: { enabled: true, minimumIntervalMinutes: 0 } })).toThrow('minimumIntervalMinutes')
+    expect(() => validateIosMobileConfig({ ...base, splashMaxSeconds: 3, backgroundRefresh: { enabled: true, identifier: 'org.example.app.refresh' } })).not.toThrow()
   })
 
   /**

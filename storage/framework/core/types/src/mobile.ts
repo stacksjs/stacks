@@ -61,11 +61,26 @@ export interface MobilePrivacyManifest {
   accessedApiTypes?: MobilePrivacyAccessedApiType[]
 }
 
+/** iOS waking the app now and then to refresh its content (BGAppRefreshTask). */
+export interface IosBackgroundRefreshConfig {
+  enabled: boolean
+  /** The task's identifier, reverse-DNS. Craft derives one from the bundle id when left out. */
+  identifier?: string
+  /** The soonest iOS may run it again after the last time, in minutes. iOS decides the rest. */
+  minimumIntervalMinutes?: number
+}
+
 export interface IosMobileConfig {
   appName: string
   bundleId: string
   version?: string
   buildNumber?: string
+  /**
+   * The oldest iOS the app runs on. Craft's default suits most apps; the
+   * Liquid Glass tab bar and chrome need iOS 26 at run time, and older
+   * systems get the classic bars, so raising it is a product decision rather
+   * than a requirement.
+   */
   deploymentTarget?: string
   watchDeploymentTarget?: string
   teamId?: string
@@ -85,10 +100,31 @@ export interface IosMobileConfig {
   /** The launch and webview background while the phone is in Dark Mode. */
   backgroundColorDark?: string
   /**
-   * An edge swipe goes back (and forward) through the page's history, pushed
-   * routes included, the way an iOS navigation stack does.
+   * Who answers an edge swipe back. `router` (the default): the stx router's
+   * own interactive swipe, which drags the previous screen in under the
+   * finger as UINavigationController does, so WebKit's history gesture is
+   * left off. `webview`: WebKit's back/forward swipe, for an app whose pages
+   * are not on the stx router.
+   */
+  swipeBack?: 'router' | 'webview'
+  /**
+   * WebKit's own back/forward edge swipe through the page's history. Off by
+   * default, because the stx router swipes back itself and the two would
+   * fight over one gesture; `swipeBack` is the clearer way to choose. Set
+   * explicitly, it wins.
    */
   swipeNavigation?: boolean
+  /** A long press on a link previews it (WebKit's link preview). Off by default, as in native apps. */
+  allowsLinkPreview?: boolean
+  /** The previous/next/Done bar iOS puts above the keyboard. Off by default, as in native apps. */
+  keyboardAccessory?: boolean
+  /** Pinch and double-tap zoom off, as a native screen does not zoom. On by default. */
+  disableZoom?: boolean
+  /** The longest the launch screen waits for the first page to paint, in seconds. Craft's default is 3. */
+  splashMaxSeconds?: number
+  /** How long the first page load may take before the offline fallback, in seconds. Craft's default is 10. */
+  requestTimeoutSeconds?: number
+  backgroundRefresh?: IosBackgroundRefreshConfig
   urlSchemes?: string[]
   trustedOrigins?: string[]
   /**
@@ -121,6 +157,11 @@ export interface IosMobileConfig {
    * Craft maps one onto the other.
    */
   limitNavigationsToAppBoundDomains?: boolean
+  /**
+   * Universal links and shared credentials: `applinks:example.com`,
+   * `webcredentials:example.com`. The site serves the matching
+   * apple-app-site-association file.
+   */
   associatedDomains?: string[]
   appGroups?: string[]
   appIcon?: string

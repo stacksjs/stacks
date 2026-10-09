@@ -51,6 +51,9 @@ const configModule = await import(`${pathToFileURL(configPath).href}?t=${Date.no
 const mobile = configModule.default
 const config = mobile.ios
 validateIosMobileConfig(config)
+// The stx router swipes back itself; WebKit's gesture on as well fights it.
+if (config.swipeNavigation === true && config.swipeBack !== 'webview')
+  log.warn('ios.swipeNavigation turns on WebKit\'s edge swipe alongside the stx router\'s own. Remove it, or set ios.swipeBack: \'webview\' for an app not on the router.')
 
 const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('framework/mobile/ios')
 const webAssets = resolveMobilePath(projectPath(), config.webAssets)
