@@ -12,7 +12,7 @@ Stacks app types:
 
 - **Web Apps** - SPA, SSR, or static sites
 - **Desktop Apps** - Native apps with Craft
-- **Mobile Apps** - iOS and Android with Capacitor
+- **Mobile Apps** - iOS and Android with Craft
 - **CLI Apps** - Command-line tools
 - **Libraries** - Reusable packages
 
@@ -152,86 +152,18 @@ export default defineDesktopConfig({
 
 ## Mobile Applications
 
-### Capacitor Integration
-
-Build native mobile apps with Capacitor.
+Stacks builds native iOS and Android apps from the same STX application with
+Craft: the views, routes and API stay the ones the web app uses, the Native
+components behave like UIKit's controls, and `@stacksjs/mobile` reaches the
+phone's native features with a web fallback for each.
 
 ```bash
-# The buddy mobile:* commands are not implemented yet
-# Use the Capacitor CLI directly in the meantime
-
-# Add platforms
-bunx cap add ios
-bunx cap add android
-
-# Sync & open in the native IDE
-bunx cap sync
-bunx cap open ios
+buddy build:ios
+buddy build:android
 ```
 
-### Mobile Configuration
-
-```typescript
-// config/mobile.ts
-export default defineMobileConfig({
-  appId: 'com.mycompany.myapp',
-  appName: 'My App',
-
-  ios: {
-    scheme: 'MyApp',
-    deploymentTarget: '13.0',
-  },
-
-  android: {
-    minSdkVersion: 24,
-    targetSdkVersion: 34,
-  },
-
-  plugins: [
-    '@capacitor/camera',
-    '@capacitor/geolocation',
-    '@capacitor/push-notifications',
-  ],
-})
-```
-
-### Native Features
-
-```typescript
-// Camera
-import { Camera, CameraResultType } from '@capacitor/camera'
-
-async function takePhoto() {
-  const photo = await Camera.getPhoto({
-    quality: 90,
-    allowEditing: true,
-    resultType: CameraResultType.Uri,
-  })
-
-  return photo.webPath
-}
-
-// Geolocation
-import { Geolocation } from '@capacitor/geolocation'
-
-async function getCurrentPosition() {
-  const position = await Geolocation.getCurrentPosition()
-  return {
-    lat: position.coords.latitude,
-    lng: position.coords.longitude,
-  }
-}
-
-// Push Notifications
-import { PushNotifications } from '@capacitor/push-notifications'
-
-await PushNotifications.requestPermissions()
-await PushNotifications.register()
-
-PushNotifications.addListener('pushNotificationReceived', (notification) => {
-  console.log('Push received:', notification)
-})
-```
+See [Mobile Apps](/guide/mobile) for configuration, the components and the
+runtime API.
 
 ## CLI Applications
 

@@ -14,6 +14,30 @@ if (isNativeMobile())
 const position = await location.getCurrentPosition()
 ```
 
+## Waiting for the bridge
+
+Craft's newer iOS shell injects `window.craft` at document start; an older
+one installs it once the page has loaded. A call made inside a native host
+before the bridge exists now waits for it (up to `BRIDGE_WAIT_MS`, 2.5s)
+instead of quietly taking the web path, and a browser takes the fallback at
+once. `callNative(path, args, fallback)` and `afterBridge(run)` are the
+building blocks, for a bridge API this package does not wrap yet.
+
+## Beyond the core services
+
+Each with a web fallback, and none throwing for being unsupported:
+`dialog` (alert, confirm, actionSheet; HTML stand-ins in a browser),
+`confirmAction`, `useActionSheet`, `contextMenu`, `browser.open` (in-app
+Safari or an auth session), `symbols.image` (SF Symbols, cached), `statusBar`,
+`chrome`, `refresh` and `observeNativeRefresh` (the native refresh control),
+`background`, `clipboard`, `db`, `files`, `shortcuts`, `widgets`,
+`orientation`, `auth.signInWithApple` and `storeKit`; the phone's events
+`onAppearance`, `onResume`, `onMemoryWarning`, `onSilentPush` and
+`onBackgroundRefresh`; and `haptics.prepare()`. The gesture logic behind the
+Native components (sheet detents, the large title, long press, segment
+scrubbing, pressables, the chrome sync) is exported too. See the
+[Mobile Apps guide](https://stacksjs.org/guide/mobile).
+
 ## Native bridge availability
 
 `mobile` is a typed service collection (`MobileApi`), available in both browsers

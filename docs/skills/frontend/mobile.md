@@ -7,7 +7,7 @@ description: "Use when building native iOS or Android applications from a Stacks
 `stacks-mobile` · Frontend · model-invoked
 
 Native iOS and Android apps: the Craft bridge, mobile builds and the mobile
-component set.
+component set. For the guide, see [Mobile Apps](/guide/mobile).
 
 ## Inside the skill
 
@@ -19,6 +19,7 @@ The sections an agent reads once the skill loads.
 - Device search index
 - Runtime API
 - STX components
+- Appearance and navigation
 - Health and watch surfaces
 - Validation
 

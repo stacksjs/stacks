@@ -87,6 +87,7 @@ const config: BunPressOptions = {
           items: [
             { text: 'Authentication', link: '/guide/auth' },
             { text: 'Personal Data and GDPR', link: '/guide/gdpr' },
+            { text: 'Mobile Apps', link: '/guide/mobile' },
             { text: 'Package Discovery', link: '/guide/package-discovery' },
             { text: 'Database', link: '/packages/database' },
             { text: 'Scaling the Database', link: '/guide/database-scaling' },
