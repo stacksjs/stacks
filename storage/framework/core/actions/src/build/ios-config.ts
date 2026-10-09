@@ -29,6 +29,10 @@ export interface CraftIosConfig {
   appBoundDomains?: string[]
   limitNavigationsToAppBoundDomains?: boolean
   associatedDomains?: string[]
+  nativeScreens?: Record<string, string>
+  nativeBundle?: string
+  tabs?: IosMobileConfig['tabs']
+  shareStorage?: Record<string, string>
   appGroups?: string[]
   appIconPath?: string
   splashImagePath?: string
@@ -164,6 +168,9 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     appBoundDomains: config.appBoundDomains,
     limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains ?? (declaresAppBoundDomains || undefined),
     associatedDomains: config.associatedDomains,
+    nativeScreens: config.nativeScreens,
+    tabs: config.tabs,
+    shareStorage: config.shareStorage,
     appGroups: config.appGroups,
     appIconPath: config.appIcon,
     privacy: config.privacy,

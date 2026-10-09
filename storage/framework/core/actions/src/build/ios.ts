@@ -7,6 +7,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { compileNativeScreens } from './native-screens'
 
 // Action runners install a global exception reporter. Start pessimistically so
 // a reported exception can never look like a successful CI build.
@@ -62,6 +63,16 @@ const craftConfig = toCraftIosConfig(config)
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
 craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
+
+// Screens drawn natively, compiled by stx before Craft copies them in.
+const nativeBundle = await compileNativeScreens(config, projectPath(), output)
+if (nativeBundle) {
+  craftConfig.nativeBundle = nativeBundle.outFile
+  for (const diagnostic of nativeBundle.diagnostics ?? [])
+    log.warn(`${diagnostic.file ? `${diagnostic.file}: ` : ''}${diagnostic.message}`)
+  log.info(`Compiled ${Object.keys(config.nativeScreens ?? {}).length} native screen path(s) into ${nativeBundle.outFile}`)
+}
+
 const builder = await loadCraftIosBuilder()
 
 await builder.init({

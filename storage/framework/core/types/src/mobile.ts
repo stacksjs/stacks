@@ -163,6 +163,30 @@ export interface IosMobileConfig {
    * apple-app-site-association file.
    */
   associatedDomains?: string[]
+  /**
+   * Screens drawn natively instead of in the web view: an app path to the
+   * name of a `.stx` screen in `nativeScreensDir`, e.g.
+   * `{ '/m': 'Today', '/m/calendar': 'Calendar' }`. `buddy build:ios`
+   * compiles those screens with stx into the app, every other path stays in
+   * the web view, and a screen that is missing or throws falls back to the
+   * page. A segment may be a parameter (`/m/workout/:id`), the last one `*`.
+   */
+  nativeScreens?: Record<string, string>
+  /** Where the native screens' `.stx` files live. Default `resources/native`. */
+  nativeScreensDir?: string
+  /**
+   * The native tab bar from the first frame, before the page has loaded and
+   * described its own: each tab's root path, title and SF Symbol. The page's
+   * NativeTabBar replaces it once it mounts. An app with native screens needs
+   * this, or the first screen shows without its tabs.
+   */
+  tabs?: Array<{ id: string, title: string, symbol?: string }>
+  /**
+   * Web-storage keys native screens need, mirrored into the Keychain under
+   * the name given: `{ auth_token: 'auth.token' }` lets a native screen read
+   * the page's sign-in with `craft.secureStorage.getSync('auth.token')`.
+   */
+  shareStorage?: Record<string, string>
   appGroups?: string[]
   appIcon?: string
   /**

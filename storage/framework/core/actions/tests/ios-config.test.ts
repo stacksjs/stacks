@@ -3,6 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { compileNativeScreens, nativeScreenFiles } from '../src/build/native-screens'
 import { normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 /** The shape Craft's template emits: nested dicts, the root dict last. */
@@ -59,6 +60,47 @@ describe('iOS mobile build configuration', () => {
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
     expect(config.associatedDomains).toEqual(['applinks:wildloop.org'])
     expect(config.deviceFamilies).toEqual(['iphone'])
+  })
+
+  it('passes native screens, the first-frame tabs and shared storage through to Craft', () => {
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training/m',
+      nativeScreens: { '/m': 'Today' },
+      tabs: [{ id: '/m', title: 'Today', symbol: 'sun.max' }, { id: '/m/calendar', title: 'Calendar', symbol: 'calendar' }],
+      shareStorage: { auth_token: 'auth.token' },
+    })
+
+    expect(config.nativeScreens).toEqual({ '/m': 'Today' })
+    expect(config.tabs?.map(tab => tab.id)).toEqual(['/m', '/m/calendar'])
+    expect(config.shareStorage).toEqual({ auth_token: 'auth.token' })
+    // An app without them sends none, rather than empty keys Craft must reason about.
+    const plain = toCraftIosConfig({ appName: 'Plain', bundleId: 'org.example.plain', url: 'https://example.org' })
+    expect('nativeScreens' in plain).toBe(false)
+    expect('tabs' in plain).toBe(false)
+  })
+
+  it('compiles each native screen once, from resources/native, before Craft copies the bundle in', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-native-'))
+    await Bun.write(join(root, 'resources/native/Today.stx'), '<View />')
+    const calls: Array<Record<string, unknown>> = []
+    const result = await compileNativeScreens(
+      { nativeScreens: { '/m': 'Today', '/m/today': 'Today' } },
+      root,
+      join(root, 'out'),
+      async (options) => {
+        calls.push(options)
+        return { outFile: options.outFile }
+      },
+    )
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.screens).toEqual({ Today: join(root, 'resources/native/Today.stx') })
+    expect(calls[0]!.minify).toBe(true)
+    expect(result?.outFile).toBe(join(root, 'out', 'native-screens.js'))
+    expect(await compileNativeScreens({}, root, join(root, 'out'), async () => { throw new Error('not called') })).toBeNull()
+    expect(() => nativeScreenFiles({ nativeScreens: { '/m/calendar': 'Calendar' } }, root)).toThrow('Calendar')
   })
 
   it('passes the appearance and the dark background through to Craft', () => {

@@ -133,6 +133,29 @@ buddy prod:ios
 buddy prod:android
 ```
 
+#### Native screens
+
+The screens a cold start shows can be drawn natively (UIKit) instead of in the
+web view. They are ordinary `.stx` files in `resources/native`, compiled by
+stx's native compiler (`@stacksjs/stx/native`) during `buddy build:ios`; every
+other path, and every tap out of a native screen
+(`craft.navigation.open('/path')`), stays in the web view.
+
+```ts
+// config/mobile.ts
+ios: {
+  nativeScreens: { '/m': 'Today' }, // resources/native/Today.stx
+  // The native tab bar's first frame, before the page describes its own.
+  tabs: [{ id: '/m', title: 'Today', symbol: 'sun.max' }, { id: '/m/calendar', title: 'Calendar', symbol: 'calendar' }],
+  // The page's sign-in, for the native screen's own API requests.
+  shareStorage: { auth_token: 'auth.token' },
+}
+```
+
+A native screen reads what the page last saved before its first frame
+(`craft.snapshots.get(name)`, written by the page with `snapshots.set` from
+`@stacksjs/mobile`) and the sign-in with `craft.secureStorage.getSync(key)`.
+
 ### Shipping the iOS App to TestFlight
 
 `buddy release:ios` turns the current main into a TestFlight build. It
