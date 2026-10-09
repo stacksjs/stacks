@@ -1,12 +1,14 @@
 <script client>
-import { haptics } from '@stacksjs/mobile'
+import { focusSegment, haptics, observeSegmentScrub, segmentForKey } from '@stacksjs/mobile'
 
 /**
  * An iOS segmented control: two to five mutually exclusive views of one screen.
  *
  * `options` is a list of strings or `{ label, value }`. Bind the choice with
  * `v-model:value` or listen for `change`. A selection taps the haptic engine
- * the way UISegmentedControl does.
+ * the way UISegmentedControl does. As there, the thumb shrinks under a
+ * finger and can be dragged across to scrub to another segment, and the
+ * arrow keys move between segments.
  */
 interface SegmentOption { label: string, value: string }
 
@@ -20,9 +22,13 @@ const options = derived<SegmentOption[]>(() => rawOptions().map(option =>
   typeof option === 'string' ? { label: option, value: option } : option))
 
 const activeIndex = derived(() => Math.max(0, options().findIndex(option => option.value === (selected() || options()[0]?.value))))
+// Where the thumb is drawn: under the finger while scrubbing, otherwise on the choice.
+const scrubIndex = state<number | null>(null)
+const pressed = state(false)
 const thumbStyle = derived(() => {
   const count = Math.max(1, options().length)
-  return `width:calc((100% - 4px) / ${count});transform:translateX(${activeIndex() * 100}%)`
+  const index = scrubIndex() ?? activeIndex()
+  return `width:calc((100% - 4px) / ${count});transform:translateX(${index * 100}%)${pressed() ? ' scale(0.95)' : ''}`
 })
 
 function choose(value: string): void {
@@ -31,9 +37,46 @@ function choose(value: string): void {
   void haptics.selection()
   emit('change', value)
 }
+
+const track = useRef('nativeSegmented')
+let stopScrub: (() => void) | null = null
+onMount(() => {
+  const element = track.current as HTMLElement | null
+  if (!element) return
+  stopScrub = observeSegmentScrub(element, {
+    count: () => options().length,
+    selected: () => activeIndex(),
+    onPress: (down) => {
+      pressed.set(down)
+      if (!down) scrubIndex.set(null)
+    },
+    onScrub: (index) => {
+      scrubIndex.set(index)
+      void haptics.selection()
+    },
+    onCommit: (index) => {
+      scrubIndex.set(null)
+      const option = options()[index]
+      if (!option || option.value === selected()) return
+      // The scrub already ticked as it crossed each segment.
+      selected.set(option.value)
+      emit('change', option.value)
+    },
+  })
+})
+onDestroy(() => stopScrub?.())
+
+function onKey(event: KeyboardEvent): void {
+  const next = segmentForKey(event.key, activeIndex(), options().length)
+  if (next === null) return
+  event.preventDefault()
+  const option = options()[next]
+  if (option) choose(option.value)
+  if (track.current) focusSegment(track.current as HTMLElement, next)
+}
 </script>
 
-<div role="tablist" :aria-label="ariaLabel()" class="native-segmented" :class="className()">
+<div ref="nativeSegmented" role="tablist" :aria-label="ariaLabel()" class="native-segmented" :class="className()" @keydown="onKey">
   <span aria-hidden="true" class="native-segmented-thumb" :style="thumbStyle()"></span>
   <button
     :for="(option, index) in options()"
@@ -42,6 +85,7 @@ function choose(value: string): void {
     role="tab"
     class="native-segmented-option"
     :aria-selected="index === activeIndex() ? 'true' : 'false'"
+    :tabindex="index === activeIndex() ? '0' : '-1'"
     @click="choose(option.value)"
   >{{ option.label }}</button>
 </div>
@@ -55,8 +99,10 @@ function choose(value: string): void {
     padding: 2px;
     border-radius: 0.6rem;
     background: var(--native-segmented-track, rgb(118 118 128 / 0.12));
+    font-size: var(--native-font-size, 17px);
     -webkit-user-select: none;
     user-select: none;
+    touch-action: pan-y;
   }
 
   .dark .native-segmented { background: var(--native-segmented-track-dark, rgb(118 118 128 / 0.24)); }
@@ -69,7 +115,7 @@ function choose(value: string): void {
     border-radius: 0.45rem;
     background: var(--native-segmented-thumb, white);
     box-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04);
-    transition: transform 220ms cubic-bezier(0.3, 0.7, 0.4, 1);
+    transition: transform 280ms cubic-bezier(0.3, 0.7, 0.4, 1.1);
   }
 
   .dark .native-segmented-thumb { background: var(--native-segmented-thumb-dark, rgb(99 99 102)); }
@@ -82,14 +128,20 @@ function choose(value: string): void {
     border: 0;
     color: inherit;
     background: transparent;
-    font-size: 0.8125rem;
+    /* 13pt at the default text size. */
+    font-size: 0.765em;
     font-weight: 500;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
+
+  .native-segmented-option:focus-visible { outline: 2px solid var(--native-accent, rgb(37 99 235)); outline-offset: -2px; border-radius: 0.45rem; }
 
   .native-segmented-option[aria-selected="true"] { font-weight: 600; }
 
   @media (prefers-reduced-motion: reduce) {
     .native-segmented-thumb { transition: none; }
   }
+
+  :root[data-native-reduce-motion] .native-segmented-thumb { transition: none; }
 </style>

@@ -18,7 +18,7 @@ const { title = '', back = '', backLabel = 'Back', large = true } = defineProps<
 </script>
 
 <script client>
-import { backLabelFor, canGoBack, enterNavTrail, goBack, haptics, navTrail, observePageScroll } from '@stacksjs/mobile'
+import { backLabelFor, canGoBack, enterNavTrail, goBack, haptics, navTrail, observeLargeTitle } from '@stacksjs/mobile'
 
 const isLarge = useReactiveProp<boolean>('large', true)
 const onScroll = useReactiveProp<boolean>('titleOnScroll', false)
@@ -40,9 +40,22 @@ effect(() => {
   if (here) here.title = name
 })
 
+// The bar follows the scroll a frame at a time, as UINavigationBar does:
+// --native-nav-progress runs from 0 (large title in full view) to 1 (scrolled
+// under the bar) and the stylesheet fades the material in and moves the small
+// title into the bar off it; --native-nav-stretch grows the large title a
+// little while the page is pulled past its top. Past half way, the title is
+// the bar's (it takes its room, and VoiceOver reads it there).
+const navRoot = useRef('nativeNav')
+const largeTitle = useRef('nativeNavLargeTitle')
 onMount(() => {
-  // The large title is about 44px tall; past it, its name belongs in the bar.
-  stopScroll = observePageScroll(offset => scrolled.set(offset > 40))
+  const root = navRoot.current as HTMLElement | null
+  if (root) {
+    stopScroll = observeLargeTitle(root, {
+      title: largeTitle.current as HTMLElement | null,
+      onChange: metrics => scrolled.set(metrics.progress >= 0.5),
+    })
+  }
   const { current, previous } = enterNavTrail(navTrail(), window.location.pathname + window.location.search)
   here = current
   current.title = navTitle()
@@ -52,7 +65,7 @@ onDestroy(() => stopScroll?.())
 
 const barClass = derived(() => {
   const collapsed = (!isLarge() && !onScroll()) || scrolled()
-  return `native-nav-bar${collapsed ? ' is-collapsed' : ''}${scrolled() ? ' is-scrolled' : ''}`
+  return `native-nav-bar${isLarge() ? ' is-large' : ''}${collapsed ? ' is-collapsed' : ''}${scrolled() ? ' is-scrolled' : ''}`
 })
 
 function tapBack(event: MouseEvent): void {
@@ -63,12 +76,12 @@ function tapBack(event: MouseEvent): void {
 
 <!-- `display: contents` on this box and on stx's own wrapper: a sticky element
      sticks within its parent, and either box would give the bar no room. -->
-<div class="native-nav" data-native-nav-bar>
+<div ref="nativeNav" class="native-nav" data-native-nav-bar>
   <header :class="barClass()">
     <div class="native-nav-side">
       @if(back)
         <a href="{{ back }}" class="native-nav-back" :aria-label="backText()" draggable="false" @click="tapBack">
-          <i aria-hidden="true" class="i-lucide-chevron-left native-nav-back-icon"></i>
+          <NativeSymbol name="chevron.backward" icon="i-lucide-chevron-left" weight="semibold" class="native-nav-back-icon" />
           <span class="native-nav-back-label">{{ backText() }}</span>
         </a>
       @endif
@@ -80,7 +93,7 @@ function tapBack(event: MouseEvent): void {
     </div>
   </header>
   @if(large)
-    <h1 class="native-nav-large-title" :class="navTitle() ? '' : 'is-empty'">{{ navTitle() }}</h1>
+    <h1 ref="nativeNavLargeTitle" class="native-nav-large-title" :class="navTitle() ? '' : 'is-empty'">{{ navTitle() }}</h1>
   @endif
   <slot />
 </div>
@@ -102,6 +115,9 @@ function tapBack(event: MouseEvent): void {
     align-items: center;
     min-height: 2.75rem;
     padding: 0 0.75rem;
+    /* Dynamic Type, capped as UIKit caps its bars: a bar's text stops
+       growing well before the content's does. */
+    font-size: min(var(--native-font-size, 17px), 23px);
   }
 
   /* The frosted material is always there and only fades. Adding or removing
@@ -125,6 +141,13 @@ function tapBack(event: MouseEvent): void {
 
   .native-nav-bar.is-scrolled::before { opacity: 1; }
 
+  /* Scroll-linked once the page has run: the material comes in with the
+     scroll itself, no transition. */
+  .native-nav[style*="--native-nav-progress"] .native-nav-bar::before {
+    opacity: max(0.001, min(1, var(--native-nav-progress) * 1.5));
+    transition: none;
+  }
+
   .dark .native-nav-bar::before {
     border-color: var(--native-bar-border-dark, rgb(51 65 85 / 0.6));
     background: var(--native-bar-background-dark, rgb(2 6 23 / 0.86));
@@ -139,7 +162,7 @@ function tapBack(event: MouseEvent): void {
   .native-nav-title {
     max-width: 60vw;
     overflow: hidden;
-    font-size: 1.0625rem;
+    font-size: 1em;
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -149,6 +172,14 @@ function tapBack(event: MouseEvent): void {
   }
 
   .native-nav-bar.is-collapsed .native-nav-title { opacity: 1; transform: none; }
+
+  /* Under a large title the small one rises into the bar with the scroll,
+     appearing over the last part of it. */
+  .native-nav[style*="--native-nav-progress"] .native-nav-bar.is-large .native-nav-title {
+    opacity: clamp(0, calc((var(--native-nav-progress) - 0.6) * 2.5), 1);
+    transform: translateY(calc((1 - var(--native-nav-progress)) * 0.5em));
+    transition: none;
+  }
 
   /* A title that is not showing takes no room from the sides either. */
   .native-nav-bar:not(.is-collapsed) .native-nav-title { max-width: 0; }
@@ -162,14 +193,16 @@ function tapBack(event: MouseEvent): void {
     margin-left: -0.4rem;
     padding-right: 0.5rem;
     color: var(--native-accent, rgb(37 99 235));
-    font-size: 1.0625rem;
+    font-size: 1em;
     text-decoration: none;
     -webkit-touch-callout: none;
   }
 
   .dark .native-nav-back { color: var(--native-accent-dark, rgb(96 165 250)); }
   .native-nav-back:active { opacity: 0.55; }
-  .native-nav-back-icon { flex-shrink: 0; width: 1.6rem; height: 1.6rem; }
+  /* SF's chevron.backward at the bar's text size, drawn a little heavier and
+     larger than the label as UIKit draws it. */
+  .native-nav-back-icon { flex-shrink: 0; width: 1.35em; height: 1.35em; }
   .native-nav-back-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* Where the centred title leaves too little room for a word, the chevron
      alone, as on iOS: at 4.5rem a long title still left "Wo…" for "Workout"
@@ -183,15 +216,22 @@ function tapBack(event: MouseEvent): void {
   .native-nav-large-title {
     margin: 0.125rem 0 0.5rem;
     padding: 0 1rem;
-    font-size: 2.125rem;
+    /* 34pt at the default text size: twice the body, as on iOS. */
+    font-size: calc(var(--native-font-size, 17px) * 2);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
+    /* Pulled past the top, it grows from its leading edge. */
+    transform: scale(var(--native-nav-stretch, 1));
+    transform-origin: 0 50%;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .native-nav-bar::before, .native-nav-title { transition: none; }
+    .native-nav-large-title { transform: none; }
   }
+
+  :root[data-native-reduce-motion] .native-nav-large-title { transform: none; }
 
   @media (prefers-reduced-transparency: reduce) {
     .native-nav-bar::before { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--native-bar-solid, rgb(248 250 252)); }

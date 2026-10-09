@@ -1,23 +1,95 @@
 <script client>
-import { haptics } from '@stacksjs/mobile'
+import type { SheetDetent } from '@stacksjs/mobile'
+import { liftToBody, lockBackground, observeSheetDrag, presentPageAsCard, trapFocus } from '@stacksjs/mobile'
 
 /**
  * A bottom sheet: a task that belongs to this screen, raised over it.
  *
- * Bind it with `v-model:open`. It opens with a light haptic tap, closes from
- * its backdrop, its Done button or Escape, and keeps its content clear of the
- * home indicator.
+ * Bind it with `v-model:open`. It closes from its backdrop, its Done button,
+ * Escape, or a drag down from its grabber or header (a flick, or past half
+ * way; a shorter drag springs back). While it is up the page behind it is
+ * inert and still, and focus stays inside it.
+ *
+ * `detents="medium large"` makes it a full-height sheet that rests at half
+ * the screen or all of it and is dragged between them, the first named being
+ * where it opens. At large the page behind shrinks back into a card, as iOS
+ * presents a page sheet. Without `detents` it is as tall as its content.
  */
 const emit = defineEmits()
 const open = useModel('open', { default: false })
 const title = useReactiveProp<string>('title', '')
 const doneLabel = useReactiveProp<string>('doneLabel', 'Done')
+const detentsProp = useReactiveProp<SheetDetent[] | string>('detents', '')
+
+const detents = derived<SheetDetent[]>(() => {
+  const raw = detentsProp()
+  const list = Array.isArray(raw) ? raw : String(raw || '').split(/[\s,]+/)
+  const valid = list.filter((value): value is SheetDetent => value === 'medium' || value === 'large')
+  return valid.length ? valid : ['large']
+})
+const hasDetents = derived(() => Boolean(detentsProp()) && detentsProp().length > 0)
+const detent = state<SheetDetent>('large')
+
+const sheetRoot = useRef('nativeSheet')
+const panel = useRef('nativeSheetPanel')
+const grabber = useRef('nativeSheetGrabber')
+const header = useRef('nativeSheetHeader')
+
+let releaseBackground: (() => void) | null = null
+let putBack: (() => void) | null = null
+let putBackTimer: ReturnType<typeof setTimeout> | null = null
+let previousFocus: HTMLElement | null = null
+let carded = false
+let stopDrag: (() => void) | null = null
+
+function root(): HTMLElement | null {
+  return sheetRoot.current as HTMLElement | null
+}
+
+function present(): void {
+  const element = root()
+  if (!element || releaseBackground) return
+  if (putBackTimer) clearTimeout(putBackTimer)
+  putBackTimer = null
+  detent.set(detents()[0] ?? 'large')
+  previousFocus = element.ownerDocument.activeElement as HTMLElement | null
+  // Out of the page's stacking contexts and transforms (the card below
+  // scales the page), and everything else made inert behind it.
+  putBack ??= liftToBody(element)
+  releaseBackground = lockBackground(element)
+  void nextTick(() => (panel.current as HTMLElement | null)?.focus())
+}
+
+function dismissed(): void {
+  releaseBackground?.()
+  releaseBackground = null
+  previousFocus?.focus?.()
+  previousFocus = null
+  // Back where it was written once it has slid away.
+  putBackTimer = setTimeout(() => {
+    putBackTimer = null
+    putBack?.()
+    putBack = null
+  }, 420)
+}
 
 let wasOpen = false
 effect(() => {
   const isOpen = open()
-  if (isOpen && !wasOpen) void haptics.impact('light')
+  if (isOpen && !wasOpen) present()
+  else if (!isOpen && wasOpen) dismissed()
   wasOpen = isOpen
+})
+
+// The page behind becomes a card while a full-height sheet is at large. Only
+// this sheet's own change is applied, so a closed sheet never undoes an open
+// one's card.
+effect(() => {
+  const element = root()
+  const want = open() && hasDetents() && detent() === 'large'
+  if (!element || want === carded) return
+  carded = want
+  presentPageAsCard(element.ownerDocument, want)
 })
 
 function close(): void {
@@ -25,16 +97,48 @@ function close(): void {
   emit('close')
 }
 
-useEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && open()) close()
+onMount(() => {
+  const sheetPanel = panel.current as HTMLElement | null
+  if (!sheetPanel) return
+  const handles = [grabber.current, header.current].filter(Boolean) as HTMLElement[]
+  stopDrag = observeSheetDrag({
+    panel: sheetPanel,
+    handles,
+    detents: () => detents(),
+    detent: () => detent(),
+    onSettle: (to) => {
+      if (to === 'dismiss') close()
+      else detent.set(to)
+    },
+  })
+  if (open()) present()
 })
+
+onDestroy(() => {
+  stopDrag?.()
+  releaseBackground?.()
+  const element = root()
+  if (carded && element) presentPageAsCard(element.ownerDocument, false)
+  if (putBackTimer) clearTimeout(putBackTimer)
+  putBack?.()
+})
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (!open()) return
+  if (event.key === 'Escape') close()
+  else if (panel.current) trapFocus(panel.current as HTMLElement, event)
+})
+
+const sheetClass = derived(() => `${open() ? 'is-open' : ''}${hasDetents() ? ' has-detents' : ''}${detent() === 'medium' ? ' is-medium' : ''}`.trim())
 </script>
 
-<div class="native-sheet" :class="open() ? 'is-open' : ''" :aria-hidden="open() ? 'false' : 'true'">
+<div ref="nativeSheet" class="native-sheet" :class="sheetClass()" :aria-hidden="open() ? 'false' : 'true'" data-native-sheet>
   <div class="native-sheet-backdrop" @click="close()"></div>
-  <section class="native-sheet-panel" role="dialog" aria-modal="true" :aria-label="title()">
-    <span aria-hidden="true" class="native-sheet-grabber"></span>
-    <header class="native-sheet-header">
+  <section ref="nativeSheetPanel" class="native-sheet-panel" role="dialog" aria-modal="true" :aria-label="title()" tabindex="-1">
+    <div ref="nativeSheetGrabber" class="native-sheet-grabber-area">
+      <span aria-hidden="true" class="native-sheet-grabber"></span>
+    </div>
+    <header ref="nativeSheetHeader" class="native-sheet-header">
       <h2 class="native-sheet-title">{{ title() }}</h2>
       <button type="button" class="native-sheet-done" @click="close()">{{ doneLabel() }}</button>
     </header>
@@ -51,6 +155,8 @@ useEventListener('keydown', (event: KeyboardEvent) => {
     z-index: 70;
     visibility: hidden;
     pointer-events: none;
+    font-size: var(--native-font-size, 17px);
+    -webkit-tap-highlight-color: transparent;
   }
 
   .native-sheet.is-open { visibility: visible; pointer-events: auto; }
@@ -63,7 +169,8 @@ useEventListener('keydown', (event: KeyboardEvent) => {
     transition: opacity 240ms ease;
   }
 
-  .native-sheet.is-open .native-sheet-backdrop { opacity: 1; }
+  /* Dragged, the dimming follows the panel (--native-sheet-presence, 1 to 0). */
+  .native-sheet.is-open .native-sheet-backdrop { opacity: var(--native-sheet-presence, 1); }
 
   .native-sheet-panel {
     position: absolute;
@@ -75,20 +182,41 @@ useEventListener('keydown', (event: KeyboardEvent) => {
     max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1rem);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-radius: 1.25rem 1.25rem 0 0;
+    outline: none;
     background: var(--native-sheet-background, rgb(248 250 252));
     box-shadow: 0 -12px 40px rgb(2 6 23 / 0.18);
     transform: translateY(105%);
-    transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
+    touch-action: pan-y;
   }
 
   .dark .native-sheet-panel { background: var(--native-sheet-background-dark, rgb(15 23 42)); }
   .native-sheet.is-open .native-sheet-panel { transform: none; }
 
+  /* Following the finger: no easing between where it was and where it is. */
+  .native-sheet-panel.is-dragging { transition: none; }
+
+  /* A sheet with detents is full height, and rests with half the screen's
+     worth showing at medium. */
+  .native-sheet.has-detents .native-sheet-panel {
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - 0.625rem);
+    max-height: none;
+  }
+
+  .native-sheet.is-open.is-medium .native-sheet-panel { transform: translateY(calc(100% - 50dvh)); }
+
+  /* The grabber's area is a handle, generous for a thumb. */
+  .native-sheet-grabber-area {
+    display: flex;
+    justify-content: center;
+    padding: 0.4rem 0 0.15rem;
+    touch-action: none;
+    cursor: grab;
+  }
+
   .native-sheet-grabber {
-    align-self: center;
     width: 2.25rem;
     height: 0.3rem;
-    margin-top: 0.4rem;
     border-radius: 999px;
     background: rgb(148 163 184 / 0.55);
   }
@@ -99,17 +227,19 @@ useEventListener('keydown', (event: KeyboardEvent) => {
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 1rem 0.25rem;
+    touch-action: none;
   }
 
-  .native-sheet-title { font-size: 1.0625rem; font-weight: 600; }
+  .native-sheet-title { font-size: 1em; font-weight: 600; }
 
   .native-sheet-done {
     min-height: 2.75rem;
     border: 0;
     color: var(--native-accent, rgb(37 99 235));
     background: transparent;
-    font-size: 1.0625rem;
+    font-size: 1em;
     font-weight: 600;
+    touch-action: manipulation;
   }
 
   .dark .native-sheet-done { color: var(--native-accent-dark, rgb(96 165 250)); }
@@ -120,9 +250,32 @@ useEventListener('keydown', (event: KeyboardEvent) => {
     overscroll-behavior: contain;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .native-sheet-backdrop, .native-sheet-panel { transition: none; }
+  .native-sheet.has-detents .native-sheet-body { flex: 1; }
+
+  /* The page behind a full-height sheet at large: pressed back into a card
+     with rounded corners, centred on what was in view, on black. The
+     content scales rather than the shell, whose fixed tab bar a transform
+     would unpin. */
+  .native-app-content {
+    transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1), border-radius 380ms cubic-bezier(0.32, 0.72, 0, 1);
   }
+
+  :root[data-native-sheet-card] body { background: #000; }
+
+  :root[data-native-sheet-card] .native-app-content {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    transform: scale(0.93);
+    transform-origin: 50% var(--native-sheet-card-origin, 50vh);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-sheet-backdrop, .native-sheet-panel, .native-app-content { transition: none; }
+    :root[data-native-sheet-card] .native-app-content { transform: none; border-radius: 0; }
+  }
+
+  :root[data-native-reduce-motion] .native-sheet-panel { transition: none; }
+  :root[data-native-reduce-motion][data-native-sheet-card] .native-app-content { transform: none; border-radius: 0; }
 
   /* The router names the page's <main> for view transitions, which makes it a
      stacking context: a sheet inside it stacked under the tab bar whatever its

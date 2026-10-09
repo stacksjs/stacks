@@ -7,24 +7,36 @@ const { label = 'App navigation' } = defineProps<NativeTabBarProps>()
 </script>
 
 <script client>
-import { haptics, mirrorTabBar } from '@stacksjs/mobile'
+import { handleTabReselect, haptics, mirrorTabBar } from '@stacksjs/mobile'
 
 // Inside Craft's iOS shell the phone draws this bar natively (Liquid Glass on
 // iOS 26 and later) and these links stay as its model: the router keeps the
 // current one marked, and a native tap comes back as a click on one of them.
+//
+// The tabs are the stx router's (`data-stx-nav="tab"` on each link): each
+// keeps its own screens and history, a switch adds no back entry, and
+// choosing the current tab again scrolls it to the top, then pops it to its
+// root, announcing `stx:tabreselect`. A native tap reaches the router's
+// selectTab(). handleTabReselect covers a router that predates tabs.
 const bar = useRef('nativeTabBar')
 let mirrored = false
 let stopMirror: (() => void) | null = null
+let stopReselect: (() => void) | null = null
 onMount(() => {
   const nav = bar.current as HTMLElement | null
   if (!nav) return
   stopMirror = mirrorTabBar(nav)
   mirrored = stopMirror !== null
+  stopReselect = handleTabReselect(nav)
 })
-onDestroy(() => stopMirror?.())
+onDestroy(() => {
+  stopMirror?.()
+  stopReselect?.()
+})
 
 function selectTab(): void {
-  // The native bar has already played its own.
+  // Only the page's own bar: the phone's native bar plays its own haptic,
+  // and a tap on it comes back without one.
   if (!mirrored) void haptics.selection()
 }
 </script>

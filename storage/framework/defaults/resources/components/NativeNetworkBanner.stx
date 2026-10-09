@@ -77,7 +77,7 @@ onDestroy(() => {
   /* After the base rule and doubled up, so it wins over `display: flex`. */
   .native-network-banner.native-network-banner--quiet { display: none; }
 
-  @media (prefers-color-scheme: dark) {
-    .native-network-banner { color: rgb(254 243 199); background: rgb(120 53 15 / 0.96); }
-  }
+  /* Dark with the app's own theme, the `.dark` class, not the system's: an
+     app pinned to light in a dark phone kept a dark banner on a light page. */
+  .dark .native-network-banner { color: rgb(254 243 199); background: rgb(120 53 15 / 0.96); }
 </style>

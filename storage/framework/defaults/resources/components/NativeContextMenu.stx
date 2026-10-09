@@ -1,0 +1,83 @@
+<script client>
+import type { ContextMenuItem } from '@stacksjs/mobile'
+import { haptics, observeLongPress, showContextMenuFor } from '@stacksjs/mobile'
+
+/**
+ * A context menu on whatever is inside: a long press (half a second, as on
+ * iOS) presses it in, taps the haptic engine and opens the menu beside it.
+ * In Craft's iOS shell that is the phone's own UIMenu; elsewhere a menu drawn
+ * over the blurred page. The keyboard's context-menu key (or Shift+F10)
+ * opens it too.
+ *
+ * `items` are `{ id, title, symbol?, icon?, destructive?, disabled? }`:
+ * `symbol` an SF Symbol for the native menu, `icon` an Iconify class for the
+ * web one. Listen for `select`, which carries the chosen id.
+ */
+const emit = defineEmits()
+const items = useReactiveProp<ContextMenuItem[]>('items', [])
+const title = useReactiveProp<string>('title', '')
+const delay = useReactiveProp<number>('delay', 500)
+const pressing = state(false)
+const target = useRef('nativeContextMenu')
+let stop: (() => void) | null = null
+
+async function openMenu(element: HTMLElement): Promise<void> {
+  if (items().length === 0) return
+  const id = await showContextMenuFor(element, { items: items(), title: title() || undefined })
+  if (id) emit('select', id)
+}
+
+onMount(() => {
+  const element = target.current as HTMLElement | null
+  if (!element) return
+  stop = observeLongPress(element, {
+    delay: Number(delay()) || 500,
+    onPressStart: () => {
+      pressing.set(true)
+      void haptics.prepare('impact')
+    },
+    onPressEnd: () => pressing.set(false),
+    onLongPress: () => {
+      pressing.set(false)
+      void haptics.impact('medium')
+      void openMenu(element)
+    },
+  })
+})
+onDestroy(() => stop?.())
+
+function onKey(event: KeyboardEvent): void {
+  if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return
+  event.preventDefault()
+  const element = target.current as HTMLElement | null
+  if (element) void openMenu(element)
+}
+</script>
+
+<div ref="nativeContextMenu" class="native-context-menu" :class="pressing() ? 'is-pressing' : ''" @keydown="onKey" data-native-context-menu>
+  <slot />
+</div>
+
+<style>
+  /* No text selection, magnifier or link callout on a long press: the press
+     is the menu's. */
+  .native-context-menu {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+
+  /* Pressed in slowly over the long press, as iOS does before the menu lifts. */
+  .native-context-menu.is-pressing {
+    transform: scale(0.97);
+    transition: transform 500ms cubic-bezier(0.3, 0, 0.6, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-context-menu, .native-context-menu.is-pressing { transform: none; transition: none; }
+  }
+
+  :root[data-native-reduce-motion] .native-context-menu.is-pressing { transform: none; }
+</style>

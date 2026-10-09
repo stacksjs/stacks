@@ -1,0 +1,117 @@
+<script server>
+interface NativeSymbolProps {
+  /** The SF Symbol, e.g. `chevron.backward`. */
+  name: string
+  /** The Iconify class drawn where there are no SF Symbols (a browser, an older shell). */
+  icon?: string
+  /** The point size; the surrounding text's size when left out. */
+  size?: number
+  weight?: 'ultralight' | 'thin' | 'light' | 'regular' | 'medium' | 'semibold' | 'bold' | 'heavy' | 'black'
+  /** What the symbol says, for a symbol that stands alone. Decorative when left out. */
+  label?: string
+}
+
+const { name = '', icon = '', label = '' } = defineProps<NativeSymbolProps>()
+
+// The common symbols' Iconify stand-ins, written out here so the stylesheet
+// generator sees every class. Anything else names its own with `icon`.
+const standIns: Record<string, string> = {
+  'chevron.backward': 'i-lucide-chevron-left',
+  'chevron.left': 'i-lucide-chevron-left',
+  'chevron.forward': 'i-lucide-chevron-right',
+  'chevron.right': 'i-lucide-chevron-right',
+  'chevron.down': 'i-lucide-chevron-down',
+  'chevron.up': 'i-lucide-chevron-up',
+  'xmark': 'i-lucide-x',
+  'plus': 'i-lucide-plus',
+  'minus': 'i-lucide-minus',
+  'checkmark': 'i-lucide-check',
+  'ellipsis': 'i-lucide-ellipsis',
+  'ellipsis.circle': 'i-lucide-circle-ellipsis',
+  'square.and.arrow.up': 'i-lucide-share',
+  'trash': 'i-lucide-trash-2',
+  'pencil': 'i-lucide-pencil',
+  'doc.on.doc': 'i-lucide-copy',
+  'link': 'i-lucide-link',
+  'magnifyingglass': 'i-lucide-search',
+  'gearshape': 'i-lucide-settings',
+  'person.crop.circle': 'i-lucide-circle-user',
+  'bell': 'i-lucide-bell',
+  'heart': 'i-lucide-heart',
+  'star': 'i-lucide-star',
+  'bookmark': 'i-lucide-bookmark',
+  'calendar': 'i-lucide-calendar',
+  'house': 'i-lucide-house',
+  'info.circle': 'i-lucide-info',
+  'arrow.clockwise': 'i-lucide-rotate-cw',
+  'play.fill': 'i-lucide-play',
+  'pause.fill': 'i-lucide-pause',
+}
+const standIn = icon || standIns[name] || 'i-lucide-circle'
+</script>
+
+<script client>
+import type { SymbolOptions } from '@stacksjs/mobile'
+import { symbols } from '@stacksjs/mobile'
+
+/**
+ * An SF Symbol, drawn by the phone (`craft.symbols.image`) and painted in the
+ * text colour like any icon, so it follows the theme and the tint. Until the
+ * shell has drawn it, and wherever it cannot, the Iconify stand-in shows.
+ * Drawn symbols are kept in memory, so the next screen's bar has its chevron
+ * from the first frame.
+ */
+const symbolName = useReactiveProp<string>('name', '')
+const size = useReactiveProp<number>('size', 0)
+const weight = useReactiveProp<SymbolOptions['weight']>('weight', 'regular')
+const className = useReactiveProp<string>('class', '')
+const image = state<string | null>(null)
+
+effect(() => {
+  const name = symbolName()
+  if (!name) return
+  const options: SymbolOptions = { pointSize: Number(size()) || 17, weight: weight() }
+  const known = symbols.cached(name, options)
+  if (known !== undefined) {
+    image.set(known)
+    return
+  }
+  void symbols.image(name, options).then((url) => {
+    if (symbolName() === name) image.set(url)
+  })
+})
+
+// One class binding: the drawn symbol and the caller's classes together.
+const symbolClass = derived(() => `${image() ? 'is-symbol ' : ''}${className()}`.trim())
+const symbolStyle = derived(() => {
+  const px = Number(size()) || 0
+  return `${image() ? `--native-symbol:url("${image()}");` : ''}${px ? `font-size:${px}px;` : ''}`
+})
+</script>
+
+@if(label)
+  <i class="native-symbol {{ standIn }}" :class="symbolClass()" :style="symbolStyle()" role="img" aria-label="{{ label }}" data-native-symbol="{{ name }}"></i>
+@else
+  <i class="native-symbol {{ standIn }}" :class="symbolClass()" :style="symbolStyle()" aria-hidden="true" data-native-symbol="{{ name }}"></i>
+@endif
+
+<style>
+  /* stx's box around the component steps aside, so the symbol sits in the
+     line (or the flex row) it was written in. */
+  [data-stx-scope]:has(> .native-symbol) { display: contents; }
+
+  .native-symbol {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+  }
+
+  /* The drawn symbol as a mask over the text colour, in place of the stand-in. */
+  .native-symbol.is-symbol {
+    background-color: currentColor;
+    -webkit-mask: var(--native-symbol) center / contain no-repeat;
+    mask: var(--native-symbol) center / contain no-repeat;
+  }
+</style>

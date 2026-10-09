@@ -1,0 +1,44 @@
+<script client>
+import type { DialogAction } from '@stacksjs/mobile'
+import { dialog } from '@stacksjs/mobile'
+
+/**
+ * An action sheet: a choice raised from the bottom of the screen, with Cancel
+ * set apart. In Craft's iOS shell it is the phone's own UIAlertController;
+ * elsewhere the same sheet drawn in HTML.
+ *
+ * Bind it with `v-model:open` and give it `actions`, each `{ id, title,
+ * style? }` where style is `default`, `destructive` (red) or `cancel`. It
+ * emits `select` with the chosen id, and `close` however it ended.
+ *
+ * For a sheet asked from code rather than declared, `useActionSheet()` and
+ * `confirmAction()` from @stacksjs/mobile do the same in one call.
+ */
+const emit = defineEmits()
+const open = useModel('open', { default: false })
+const title = useReactiveProp<string>('title', '')
+const message = useReactiveProp<string>('message', '')
+const actions = useReactiveProp<DialogAction[]>('actions', [])
+const cancelLabel = useReactiveProp<string>('cancelLabel', 'Cancel')
+
+let showing = false
+effect(() => {
+  if (!open() || showing) return
+  showing = true
+  void dialog.actionSheet({
+    title: title() || undefined,
+    message: message() || undefined,
+    actions: actions(),
+    cancelLabel: cancelLabel(),
+  }).then((id) => {
+    showing = false
+    open.set(false)
+    if (id) emit('select', id)
+    emit('close')
+  })
+})
+</script>
+
+<!-- The sheet is the phone's, or drawn over the page when asked for; nothing
+     of it lives here. -->
+<span hidden data-native-action-sheet></span>

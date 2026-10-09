@@ -10,7 +10,7 @@ const { tabBar = false } = defineProps<NativeAppShellProps>()
 </script>
 
 <script client>
-import { deepLinks as deepLinkService, device, followDeepLinks, isNativeMobile, splash, whenNativeMobile } from '@stacksjs/mobile'
+import { deepLinks as deepLinkService, device, followDeepLinks, installNativeChrome, installPressables, isNativeMobile, splash, whenNativeMobile } from '@stacksjs/mobile'
 
 const className = useReactiveProp<string>('class', '')
 // A bare attribute arrives as an empty string.
@@ -45,9 +45,34 @@ void whenNativeMobile().then((native) => {
 // One class binding: a second binding on the same element overwrites the
 // first's classes whenever it runs.
 const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${className()}`.trim())
+
+// In the phone app the chrome around the page follows it: the colour iOS
+// shows past its edges, the status bar's text for its colour scheme, no
+// previous/next/Done bar over the keyboard, and the phone's Dynamic Type and
+// Reduce Motion settings as attributes the components read. A finger landing
+// on anything `data-native-pressable` wakes the haptics for the tap to come
+// (and, by listening at all, gives iOS its :active pressed state).
+const shell = useRef('nativeAppShell')
+let stopChrome: (() => void) | null = null
+let stopPressables: (() => void) | null = null
+let destroyed = false
+onMount(() => {
+  const root = shell.current as HTMLElement | null
+  if (!root) return
+  stopPressables = installPressables(root.ownerDocument)
+  void whenNativeMobile().then((native) => {
+    if (native && !destroyed) stopChrome = installNativeChrome(root.ownerDocument)
+  })
+})
+onDestroy(() => {
+  destroyed = true
+  stopChrome?.()
+  stopPressables?.()
+})
 </script>
 
 <div
+  ref="nativeAppShell"
   data-native-app-shell
   class="native-app-shell"
   :class="shellClass()"
@@ -76,12 +101,56 @@ const shellClass = derived(() => `${nativeMobile() ? 'native-mobile ' : ''}${cla
     /* The height a fixed tab bar takes, which content and sticky footers clear. */
     --native-tab-bar-height: 0px;
 
+    /* Dynamic Type. The Native components size their text in em off this,
+       17px (iOS's body size) at the phone's default text size, scaled by the
+       setting the shell reports. */
+    --native-font-size: calc(17px * var(--native-font-scale, var(--craft-font-scale, 1)));
+
     min-height: 100dvh;
     color: inherit;
     background: inherit;
     padding-top: var(--native-safe-area-top);
     padding-right: var(--native-safe-area-right);
     padding-left: var(--native-safe-area-left);
+  }
+
+  /* The system font at the body size the phone's text setting chooses, as a
+     native screen's text is. An app keeps a brand face with
+     --native-font-family. The line height stays the app's. */
+  .native-app-shell.native-mobile {
+    font: -apple-system-body;
+    font-family: var(--native-font-family, -apple-system, system-ui, sans-serif);
+    line-height: inherit;
+  }
+
+  /* A tap does not flash a grey box over what was tapped, and does not wait
+     300ms to tell a tap from a double-tap zoom. */
+  .native-mobile :is(a, button, [role=button], label, summary),
+  [data-native-pressable] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* The press every control shares: dimmed and pressed in at once while the
+     finger is down, eased back on release, as UIKit's buttons are.
+     `data-native-pressable="opacity"` only dims, for a large row a scale
+     would shift. */
+  [data-native-pressable] {
+    transition: opacity 240ms ease-out, transform 240ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+
+  [data-native-pressable]:active {
+    opacity: 0.55;
+    transform: scale(0.97);
+    transition: none;
+  }
+
+  [data-native-pressable="opacity"]:active { transform: none; }
+
+  :root[data-native-reduce-motion] [data-native-pressable]:active { transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-native-pressable]:active { transform: none; }
   }
 
   /* iOS zooms the page into a text field smaller than 16px when it takes

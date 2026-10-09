@@ -32,7 +32,10 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
      swapped without the router's cross-fade, which iOS never draws between
      tabs (it read as a quarter-second lag on every tap). `data-native-tab`
      and `data-native-tab-symbol` describe the tab to the phone's native bar
-     (@stacksjs/mobile mirrorTabBar). -->
+     (@stacksjs/mobile mirrorTabBar). `data-stx-nav="tab"`: the stx router
+     treats it as a tab, with its own retained screens and history, no back
+     entry for a switch, and re-selection scrolling to the top, then popping
+     to the tab's root. -->
 <StxLink
   to="{{ href }}"
   aria-label="{{ label }}"
@@ -42,6 +45,7 @@ const hasBadge = badge !== '' && badge !== 0 && badge !== '0'
   draggable="false"
   data-stx-prefetch="eager"
   data-stx-transition="none"
+  data-stx-nav="tab"
   data-native-tab="{{ label }}"
   data-native-tab-symbol="{{ symbol }}"
 >
