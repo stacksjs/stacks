@@ -4,7 +4,7 @@ import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, dmgVolumeName, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -53,6 +53,9 @@ const staging = mkdtempSync(join(tmpdir(), 'stacks-dmg-'))
 // Scratch space kept OUT of the staged folder: hdiutil images that directory
 // wholesale, so anything left there ships inside the DMG next to the app.
 const scratch = mkdtempSync(join(tmpdir(), 'stacks-dmg-work-'))
+
+  rmSync(scratch, { recursive: true, force: true })
+})
 const appDir = join(staging, `${appName}.app`)
 const macosDir = join(appDir, 'Contents/MacOS')
 const resourcesDir = join(appDir, 'Contents/Resources')
@@ -275,9 +278,19 @@ if (notaryProfile)
 symlinkSync('/Applications', join(staging, 'Applications'))
 
 const dmgPath = join(outputDir, `${appName}-${version}.dmg`)
+
+// NOT `appName`. That named the volume after the app and put the app inside it,
+// so the bundle staged at `/Volumes/<App>/<App>.app` - a path macOS refuses on
+// any Mac where that app is installed and TCC-managed, failing the build at the
+// last step with "Operation not permitted" (stacksjs/stacks#2884).
+const volumeName = dmgVolumeName({ appName, version, override: process.env.DESKTOP_VOLUME_NAME })
+if (volumeName === appName) {
+  log.warn(`DESKTOP_VOLUME_NAME is the app's own name, so the bundle stages at /Volumes/${appName}/${appName}.app. That path is refused on a Mac where ${appName} is already installed; drop the variable to get "${appName} ${version}".`)
+}
+
 const created = await runCommand([
   'hdiutil', 'create',
-  '-volname', appName,
+  '-volname', volumeName,
   '-srcfolder', staging,
   '-ov', '-format', 'UDZO',
   dmgPath,

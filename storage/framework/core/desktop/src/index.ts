@@ -387,6 +387,53 @@ export function bundleDirectoryFor(path: string): 'MacOS' | 'Resources' {
   return isMachO(path) ? 'MacOS' : 'Resources'
 }
 
+export interface DmgVolumeOptions {
+  appName: string
+  /** `DESKTOP_APP_VERSION`, which defaults to `0.0.0` upstream. */
+  version?: string
+  /** `DESKTOP_VOLUME_NAME`, for a consumer that needs a fixed name. */
+  override?: string
+}
+
+/**
+ * The volume name for the app's DMG, which must never be the app's own name.
+ *
+ * `hdiutil create -volname <appName> -srcfolder <staging>` stages the bundle at
+ * `/Volumes/<appName>/<appName>.app`. On a Mac where that app is installed in
+ * `/Applications` and TCC-managed - it carries `com.apple.macl` and
+ * `com.apple.provenance` - macOS refuses to let a process without App
+ * Management rights create a bundle that would shadow it, and imaging fails
+ * with "Operation not permitted" (stacksjs/stacks#2884). The bundle is complete
+ * and correct by then; only the final step dies.
+ *
+ * It is the path rather than the content: the same bundle images fine under any
+ * other volume name, and a plain `cp -R` into that path is refused the same
+ * way, so it is not an hdiutil quirk. And it hits exactly the people most
+ * likely to be building, since it takes having installed the app you are
+ * working on.
+ *
+ * `${appName} ${version}` sidesteps it and is the usual convention anyway -
+ * most shipped DMGs mount as "AppName 1.2.3". hdiutil does not truncate long
+ * names (36 characters round-trip intact, probed against the real tool), so
+ * appending the version cannot fold the name back onto the app's.
+ *
+ * An explicit override is returned as given, collision included: the caller is
+ * warned at build time rather than quietly overruled, because rewriting what
+ * somebody typed is how a build becomes unpredictable.
+ */
+export function dmgVolumeName(options: DmgVolumeOptions): string {
+  const override = options.override?.trim()
+  if (override)
+    return override
+
+  const appName = options.appName.trim()
+  const version = options.version?.trim()
+
+  // No version to append still must not return the bare app name: a fallback
+  // that reintroduces the bug is worse than no fallback.
+  return version ? `${appName} ${version}` : `${appName} Installer`
+}
+
 export interface CodesignOptions {
   identity: string
   target: string
