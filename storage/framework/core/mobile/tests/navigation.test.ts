@@ -108,3 +108,39 @@ describe('the trail of screens a back button names', () => {
     expect(backLabelFor({ path: '/m', title: '  ' }, 'Back')).toBe('Back')
   })
 })
+
+describe('the back label', () => {
+  it('names the screen below in this tab\'s stack, not the last one entered', async () => {
+    const { enterNavTrail, previousScreenPath, trailEntryFor } = await import('../src/navigation')
+    const hadWindow = 'window' in globalThis
+    const saved = (globalThis as { window?: unknown }).window
+    const screens = [
+      { url: '/m', tab: '/m', depth: 0, active: false },
+      { url: '/m/calendar', tab: '/m/calendar', depth: 0, active: false },
+      { url: '/m/workout/5?from=week', tab: '/m/calendar', depth: 1, active: true },
+    ]
+    ;(globalThis as { window?: unknown }).window = { stxRouter: { screens: () => screens } }
+    try {
+      const trail: NavTrailEntry[] = []
+      enterNavTrail(trail, '/m/calendar').current.title = 'Calendar'
+      enterNavTrail(trail, '/m').current.title = 'Today'
+      const { previous } = enterNavTrail(trail, '/m/workout/5?from=week')
+      expect(previous?.title).toBe('Today')
+      expect(previousScreenPath()).toBe('/m/calendar')
+      expect(trailEntryFor(trail, previousScreenPath()!)?.title).toBe('Calendar')
+
+      screens[2]!.depth = 0
+      screens[2]!.tab = '/m/workout'
+      expect(previousScreenPath()).toBeNull()
+    }
+    finally {
+      if (hadWindow) (globalThis as { window?: unknown }).window = saved
+      else delete (globalThis as { window?: unknown }).window
+    }
+  })
+
+  it('leaves it to the trail without a router that keeps tabs', async () => {
+    const { previousScreenPath } = await import('../src/navigation')
+    expect(previousScreenPath()).toBeUndefined()
+  })
+})

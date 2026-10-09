@@ -102,6 +102,14 @@ describe('Native components', () => {
     expect(sheet).toContain("useModel('open'")
   })
 
+  it('covers the tab bar while up, and closes when its screen is left', () => {
+    const sheet = read('NativeSheet')
+    expect(sheet).toContain('coverTabBar(element, true)')
+    expect(sheet).toContain('coverTabBar(element, false)')
+    expect(sheet).toContain("useEventListener('stx:navigate'")
+    expect(sheet).toContain('if (to !== openedOn) close()')
+  })
+
   it('refreshes through the shared gesture and hands the page done()', () => {
     const refresh = read('NativePullToRefresh')
     expect(refresh).toContain('observePullToRefresh(')

@@ -92,6 +92,51 @@ export function navTrail(): NavTrailEntry[] {
   return (host.__stacksNavTrail ??= [])
 }
 
+interface RouterScreen {
+  url: string
+  tab: string
+  depth: number
+  active: boolean
+}
+
+function pathOf(url: string): string {
+  try {
+    const parsed = new URL(url, 'http://local')
+    return `${parsed.pathname}${parsed.search}`
+  }
+  catch {
+    return url
+  }
+}
+
+/**
+ * The path a back from the screen on show returns to, in its own tab's stack.
+ *
+ * The trail is one list for the window, but the stx router keeps a stack per
+ * tab, so a screen opened in Calendar after a visit to Today goes back to
+ * Calendar, not to whatever was entered last. Answers null at a tab's root,
+ * and undefined when there is no router that keeps tabs to ask.
+ */
+export function previousScreenPath(): string | null | undefined {
+  if (typeof window === 'undefined') return undefined
+  const router = (window as unknown as { stxRouter?: { screens?: () => RouterScreen[] } }).stxRouter
+  if (typeof router?.screens !== 'function') return undefined
+  const screens = router.screens()
+  const active = screens.find(screen => screen.active)
+  if (!active) return undefined
+  const below = screens.filter(screen => screen.tab === active.tab && screen.depth < active.depth)
+  if (!below.length) return null
+  return pathOf(below.reduce((nearest, screen) => (screen.depth > nearest.depth ? screen : nearest)).url)
+}
+
+/** The latest trail entry for `path`, which carries that screen's name. */
+export function trailEntryFor(trail: NavTrailEntry[], path: string): NavTrailEntry | null {
+  for (let index = trail.length - 1; index >= 0; index--) {
+    if (trail[index]!.path === path) return trail[index]!
+  }
+  return null
+}
+
 /**
  * The in-app path a deep link opens, or null when it is not this app's.
  *

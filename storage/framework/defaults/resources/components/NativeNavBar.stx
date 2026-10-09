@@ -18,7 +18,7 @@ const { title = '', back = '', backLabel = 'Back', large = true } = defineProps<
 </script>
 
 <script client>
-import { backLabelFor, canGoBack, enterNavTrail, goBack, haptics, navTrail, observeLargeTitle } from '@stacksjs/mobile'
+import { backLabelFor, canGoBack, enterNavTrail, goBack, haptics, navTrail, observeLargeTitle, previousScreenPath, trailEntryFor } from '@stacksjs/mobile'
 
 const isLarge = useReactiveProp<boolean>('large', true)
 const onScroll = useReactiveProp<boolean>('titleOnScroll', false)
@@ -59,7 +59,11 @@ onMount(() => {
   const { current, previous } = enterNavTrail(navTrail(), window.location.pathname + window.location.search)
   here = current
   current.title = navTitle()
-  if (previous && canGoBack()) previousTitle.set(previous.title)
+  // With a stack per tab the router knows where back goes; the trail only
+  // knows what was entered last, which may be another tab's screen.
+  const backPath = previousScreenPath()
+  const returnsTo = backPath === undefined ? previous : backPath ? trailEntryFor(navTrail(), backPath) : null
+  if (returnsTo && canGoBack()) previousTitle.set(returnsTo.title)
 })
 onDestroy(() => stopScroll?.())
 

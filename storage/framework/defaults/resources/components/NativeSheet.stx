@@ -1,6 +1,6 @@
 <script client>
 import type { SheetDetent } from '@stacksjs/mobile'
-import { liftToBody, lockBackground, observeSheetDrag, presentPageAsCard, trapFocus } from '@stacksjs/mobile'
+import { coverTabBar, liftToBody, lockBackground, observeSheetDrag, presentPageAsCard, trapFocus } from '@stacksjs/mobile'
 
 /**
  * A bottom sheet: a task that belongs to this screen, raised over it.
@@ -14,6 +14,11 @@ import { liftToBody, lockBackground, observeSheetDrag, presentPageAsCard, trapFo
  * the screen or all of it and is dragged between them, the first named being
  * where it opens. At large the page behind shrinks back into a card, as iOS
  * presents a page sheet. Without `detents` it is as tall as its content.
+ *
+ * As on iOS it covers the tab bar: in the app the native bar steps aside while
+ * it is up. It belongs to the screen it was opened on, so leaving that screen
+ * (a link from outside, a tab switch) closes it rather than carrying it over
+ * the next one.
  */
 const emit = defineEmits()
 const open = useModel('open', { default: false })
@@ -41,6 +46,11 @@ let putBackTimer: ReturnType<typeof setTimeout> | null = null
 let previousFocus: HTMLElement | null = null
 let carded = false
 let stopDrag: (() => void) | null = null
+let openedOn = ''
+
+function currentPath(): string {
+  return root()?.ownerDocument.defaultView?.location.pathname ?? ''
+}
 
 function root(): HTMLElement | null {
   return sheetRoot.current as HTMLElement | null
@@ -57,10 +67,14 @@ function present(): void {
   // scales the page), and everything else made inert behind it.
   putBack ??= liftToBody(element)
   releaseBackground = lockBackground(element)
+  openedOn = currentPath()
+  coverTabBar(element, true)
   void nextTick(() => (panel.current as HTMLElement | null)?.focus())
 }
 
 function dismissed(): void {
+  const element = root()
+  if (element) coverTabBar(element, false)
   releaseBackground?.()
   releaseBackground = null
   previousFocus?.focus?.()
@@ -118,9 +132,18 @@ onDestroy(() => {
   stopDrag?.()
   releaseBackground?.()
   const element = root()
+  if (element && open()) coverTabBar(element, false)
   if (carded && element) presentPageAsCard(element.ownerDocument, false)
   if (putBackTimer) clearTimeout(putBackTimer)
   putBack?.()
+})
+
+// The router moved to another screen while this one's sheet was up.
+useEventListener('stx:navigate', (event: CustomEvent<{ url?: string }>) => {
+  if (!open()) return
+  const location = root()?.ownerDocument.defaultView?.location
+  const to = event.detail?.url ? new URL(event.detail.url, location?.href).pathname : currentPath()
+  if (to !== openedOn) close()
 })
 
 useEventListener('keydown', (event: KeyboardEvent) => {

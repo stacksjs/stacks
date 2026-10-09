@@ -101,11 +101,26 @@ function hexColor(value: string): string | undefined {
   return /^#[0-9a-f]{6}$/i.test(color) ? color : undefined
 }
 
+/**
+ * What an open sheet raises when it starts or stops covering the tab bar. A
+ * sheet on iOS slides up over the tab bar; the native bar is drawn above the
+ * page, so while one is up the bar steps aside instead.
+ */
+export const TAB_BAR_COVER_EVENT = 'stacks:tab-bar-cover'
+
+/** Marks `element` as covering the tab bar, or no longer, and says so. */
+export function coverTabBar(element: Element, covering: boolean): void {
+  if (covering) element.setAttribute('data-native-covers-tab-bar', '')
+  else element.removeAttribute('data-native-covers-tab-bar')
+  element.ownerDocument?.defaultView?.dispatchEvent(new Event(TAB_BAR_COVER_EVENT))
+}
+
 export interface MirrorTabBarOptions {
   /**
    * Whether the current screen hides the bar, as a workout player does. By
    * default, whether the document holds a `[data-native-hide-tab-bar]`, the
-   * same marker that hides the page's own bar.
+   * same marker that hides the page's own bar, or an open sheet covering it
+   * (`coverTabBar`).
    */
   hidden?: () => boolean
   api?: TabBarApi
@@ -119,7 +134,7 @@ export interface MirrorTabBarOptions {
 export function mirrorTabBar(nav: HTMLElement, options: MirrorTabBarOptions = {}): (() => void) | null {
   const api = options.api ?? tabBar
   if (!api.isAvailable()) return null
-  const hidden = options.hidden ?? (() => Boolean(nav.ownerDocument?.querySelector('[data-native-hide-tab-bar]')))
+  const hidden = options.hidden ?? (() => Boolean(nav.ownerDocument?.querySelector('[data-native-hide-tab-bar], [data-native-covers-tab-bar]')))
 
   const style = typeof getComputedStyle === 'function' ? getComputedStyle(nav) : null
   const tint = hexColor(style?.getPropertyValue('--native-tab-active') || '')
@@ -159,11 +174,12 @@ export function mirrorTabBar(nav: HTMLElement, options: MirrorTabBarOptions = {}
   })
   // A screen that hides the bar arrives with a navigation, not a change to the
   // bar. A kept screen the router shows again fires stx:screen-shown, not
-  // stx:load, so both are heard.
+  // stx:load, so both are heard. An open sheet covering the bar says so itself.
   const onLoad = (): void => sync()
   if (typeof window !== 'undefined') {
     window.addEventListener('stx:load', onLoad)
     window.addEventListener('stx:screen-shown', onLoad)
+    window.addEventListener(TAB_BAR_COVER_EVENT, onLoad)
   }
   sync()
 
@@ -173,6 +189,7 @@ export function mirrorTabBar(nav: HTMLElement, options: MirrorTabBarOptions = {}
     if (typeof window !== 'undefined') {
       window.removeEventListener('stx:load', onLoad)
       window.removeEventListener('stx:screen-shown', onLoad)
+      window.removeEventListener(TAB_BAR_COVER_EVENT, onLoad)
     }
     api.hide()
   }

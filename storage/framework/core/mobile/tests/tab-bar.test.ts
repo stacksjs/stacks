@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { mirrorTabBar, nativeTabs, readTabLinks } from '../src/tab-bar'
+import { coverTabBar, mirrorTabBar, nativeTabs, readTabLinks, TAB_BAR_COVER_EVENT } from '../src/tab-bar'
 import type { TabBarApi } from '../src/tab-bar'
 
 /** A tab link as NativeTabItem renders it, enough of one for these tests. */
@@ -81,6 +81,39 @@ describe('the native tab bar', () => {
       calendar.setCurrent(true)
       ;(globalThis as { window: EventTarget }).window.dispatchEvent(new Event('stx:screen-shown'))
       expect(calls.at(-1)).toEqual(['select', '/m/calendar'])
+      stop!()
+    }
+    finally {
+      if (hadWindow) (globalThis as { window?: unknown }).window = saved
+      else delete (globalThis as { window?: unknown }).window
+    }
+  })
+
+  it('steps aside while an open sheet covers it, and comes back after', () => {
+    const hadWindow = 'window' in globalThis
+    const saved = (globalThis as { window?: unknown }).window
+    const win = new EventTarget()
+    ;(globalThis as { window?: unknown }).window = win
+    try {
+      const covering = new Set<string>()
+      const sheet = {
+        setAttribute: (name: string) => { covering.add(name) },
+        removeAttribute: (name: string) => { covering.delete(name) },
+        ownerDocument: { defaultView: win },
+      } as unknown as Element
+      const bar = {
+        querySelectorAll: () => [link('/m', 'Today', 'sun.max', { current: true })],
+        ownerDocument: { querySelector: (selector: string) => (selector.includes('data-native-covers-tab-bar') && covering.has('data-native-covers-tab-bar') ? {} : null) },
+      } as unknown as HTMLElement
+      const { api, calls } = fakeApi()
+      const stop = mirrorTabBar(bar, { api })
+      expect(calls.at(-1)?.[0]).toBe('set')
+
+      coverTabBar(sheet, true)
+      expect(calls.at(-1)).toEqual(['hide'])
+      coverTabBar(sheet, false)
+      expect(calls.at(-1)?.[0]).toBe('set')
+      expect(TAB_BAR_COVER_EVENT).toBe('stacks:tab-bar-cover')
       stop!()
     }
     finally {
