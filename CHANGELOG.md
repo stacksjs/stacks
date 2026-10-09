@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.97...v0.75.98)
+
+## ✨ Features
+
+- **mobile**: pass Craft's native-feel options through the iOS build ([498388e](https://github.com/stacksjs/stacks/commit/498388e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **components**: Native components that move and feel like iOS ([bec391d](https://github.com/stacksjs/stacks/commit/bec391d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: one native refresh control for the screen in view ([fc0aabe](https://github.com/stacksjs/stacks/commit/fc0aabe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: wait for the bridge, and wrap the rest of Craft's iOS shell ([963c2ab](https://github.com/stacksjs/stacks/commit/963c2ab)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **mobile**: the native tab bar follows a kept screen the router shows again ([3a3f6e7](https://github.com/stacksjs/stacks/commit/3a3f6e7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: centre a web action sheet's Cancel across the sheet ([84f1e49](https://github.com/stacksjs/stacks/commit/84f1e49)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **components**: size a NativeSymbol by its caller's class from the first paint ([350ae12](https://github.com/stacksjs/stacks/commit/350ae12)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- count the three new Native components (413) ([f1aa3f9](https://github.com/stacksjs/stacks/commit/f1aa3f9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: a Mobile Apps guide for the native components and runtime ([7f026c6](https://github.com/stacksjs/stacks/commit/7f026c6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.408 and craft-native 0.0.124 ([dc4c840](https://github.com/stacksjs/stacks/commit/dc4c840)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.96...v0.75.97)
 
 ## ✨ Features
