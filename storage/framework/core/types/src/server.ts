@@ -147,7 +147,7 @@ export type RewritesOptions = Record<string, string>
  * Answered by stx's own router (`serve({ domains })`, stx >= 0.2.410) under
  * both `buddy dev` and `buddy serve`; `buddy dev` prints the routes at boot.
  */
-export type DomainsOptions = Record<string, string>
+export type DomainRoutes = Record<string, string>
 
 export interface ServerConfig {
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */
@@ -159,8 +159,8 @@ export interface ServerConfig {
   /** Root paths the API serves under another path. See {@link RewritesOptions}. */
   rewrites?: RewritesOptions
 
-  /** Hosts whose home page is a page of the site. See {@link DomainsOptions}. */
-  domains?: DomainsOptions
+  /** Hosts whose home page is a page of the site. See {@link DomainRoutes}. */
+  domains?: DomainRoutes
 
   /** How rendered pages are cached. See {@link ServerCacheOptions}. */
   cache?: ServerCacheOptions
