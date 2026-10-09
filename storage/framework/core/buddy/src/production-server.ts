@@ -410,6 +410,10 @@ export async function startProductionServer(options?: { port?: string | number, 
         ...(stxModule && { stxModule }),
         ...(i18nConfig && { i18n: i18nConfig }),
         ...(siteConfig?.url && { site: siteConfig }),
+        // `config/server.ts#domains`: hosts whose home page is a page of the
+        // site, routed by stx itself so the page and its params are the ones
+        // its own path would give.
+        ...(config.server?.domains && { domains: config.server.domains }),
         // Override stx-serve's built-in `auth`/`guest` gate, which only
         // checks that the cookie EXISTS — `document.cookie = 'auth-token=x'`
         // satisfied it (stacksjs/stacks#2274). These validate the token like

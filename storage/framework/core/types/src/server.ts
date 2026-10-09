@@ -113,6 +113,42 @@ export type RedirectsOptions = Record<string, string | {
  */
 export type RewritesOptions = Record<string, string>
 
+/**
+ * Hosts whose home page is a page of the site.
+ *
+ * ```ts
+ * domains: {
+ *   '{username}.example.com': '/{username}',
+ *   'shop.example.com': '/store',
+ * }
+ * ```
+ *
+ * `chris.example.com` then renders exactly what `example.com/chris` renders —
+ * the same view, `resources/views/[username].stx`, with the same
+ * `route.params.username` — while the address bar keeps the host. It is how a
+ * profile, a team or a shop gets a domain of its own on a site that is
+ * otherwise one app, the way GitHub Pages or a Substack subdomain does.
+ *
+ * Only the host's root is routed. Every other path on that host (assets,
+ * `/api`, the other pages a navigation bar links to) is the site's own,
+ * answered as on the main domain, so one page can be given a domain without
+ * the rest of the site breaking under it.
+ *
+ * A label written `{name}` matches exactly one DNS label, so the pattern
+ * above matches `chris.example.com` but neither the bare apex nor
+ * `a.b.example.com`. Literal hosts win over parameterised ones. The host is
+ * read from `X-Forwarded-Host` first, as a gateway in front sends it.
+ *
+ * Routing the requests here is half of it: the hostnames must also reach the
+ * server. With ts-cloud, list `*.example.com` in the site's `aliases` (see
+ * `config/cloud.ts`) and the deploy adds the wildcard DNS record, the gateway
+ * route and a wildcard certificate.
+ *
+ * Answered by stx's own router (`serve({ domains })`, stx >= 0.2.410) under
+ * both `buddy dev` and `buddy serve`; `buddy dev` prints the routes at boot.
+ */
+export type DomainsOptions = Record<string, string>
+
 export interface ServerConfig {
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */
   proxy?: ApiProxyOptions
@@ -122,6 +158,9 @@ export interface ServerConfig {
 
   /** Root paths the API serves under another path. See {@link RewritesOptions}. */
   rewrites?: RewritesOptions
+
+  /** Hosts whose home page is a page of the site. See {@link DomainsOptions}. */
+  domains?: DomainsOptions
 
   /** How rendered pages are cached. See {@link ServerCacheOptions}. */
   cache?: ServerCacheOptions

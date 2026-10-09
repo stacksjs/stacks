@@ -75,6 +75,28 @@ export default {
   redirects: {},
 
   /**
+   * **Domains**
+   *
+   * Hosts whose home page is a page of the site.
+   *
+   * ```ts
+   * domains: {
+   *   '{username}.example.com': '/{username}',
+   * }
+   * ```
+   *
+   * `chris.example.com` then renders what `example.com/chris` renders — the
+   * same `resources/views/[username].stx`, with the same params — while the
+   * address bar keeps the host: a profile, a team or a shop with a domain of
+   * its own. Only the host's root is routed; its other paths are the site's
+   * own. A `{name}` label matches one DNS label.
+   *
+   * The hostnames still have to reach the server: with ts-cloud, list
+   * `*.example.com` in the site's `aliases` in `config/cloud.ts`.
+   */
+  domains: {},
+
+  /**
    * **Security headers**
    *
    * Rendered pages carry `X-Frame-Options: SAMEORIGIN`,

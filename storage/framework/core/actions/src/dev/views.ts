@@ -214,6 +214,8 @@ async function startDefaultServer() {
     openPath: process.env.STACKS_DEV_ENTRY_PATH || '/',
     ...(i18nConfig && { i18n: i18nConfig }),
     ...(siteConfig?.url && { site: siteConfig }),
+    // `config/server.ts#domains`, routed by stx itself, as under `buddy serve`.
+    ...(config.server?.domains && { domains: config.server.domains }),
     auth: {
       cookieName: authCookie,
       redirectTo: '/login',
