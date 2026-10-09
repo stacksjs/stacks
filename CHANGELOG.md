@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.100...v0.75.101)
+
+## 🐛 Bug Fixes
+
+- **deploy**: a site's aliases are its own to the fragment guard ([b30c948](https://github.com/stacksjs/stacks/commit/b30c948)) _(by Chris <chris@stacksjs.com>)_
+- **components**: type NativeSheet's stx:navigate listener as an Event, for the view typecheck ([0b54b2f](https://github.com/stacksjs/stacks/commit/0b54b2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **agents**: list the kept-state globals stx 0.2.411 attaches ([fc19097](https://github.com/stacksjs/stacks/commit/fc19097)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.99...v0.75.100)
 
 ## ✨ Features
