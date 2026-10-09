@@ -13,6 +13,7 @@
 // which made it the reason narrowing the server's injection alone saved
 // nothing.
 import '@stacksjs/validation/runtime'
+import { isCompiledBinary } from './utils/compiled-binary'
 
 export * from './utils/prunable'
 export type { PrunableOptions } from './utils/prunable'
@@ -158,7 +159,40 @@ async function importDefault(modulePath: string): Promise<any> {
   }
 }
 
+/**
+ * Said once, not once per model: 36 identical lines is how a warning stops
+ * being read, and the count tracks the enabled features rather than anything
+ * the reader did.
+ */
+let announcedCompiledSkip = false
+
 async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): Promise<any> {
+  // A compiled binary has no model files to find, and the ones it would find
+  // are not its own (stacksjs/stacks#2886).
+  //
+  // The probe below resolves the project root by walking up from the CWD, so a
+  // compiled desktop binary launched from a directory that happens to be a
+  // Stacks project located THAT project's
+  // `storage/framework/defaults/app/Models/*.ts`, tried to import them, and
+  // failed on `Cannot find module '@stacksjs/orm'` once per model. Launched
+  // from anywhere else it found nothing and was silent. Same binary, same
+  // arguments, 36 warnings or none depending on where you stood.
+  //
+  // Skipping rather than quietening it, because the probe cannot succeed here
+  // even in principle: a `.ts` file loaded off disk by a dynamic import
+  // resolves its own imports from disk, so either `@stacksjs/orm` is absent
+  // (the reported failure) or it is present and the model binds against a
+  // SECOND copy of the ORM rather than the bundled one - a split-brain worse
+  // than the failure. Models a compiled app actually uses are bundled by the
+  // static import graph and never come through here.
+  if (isCompiledBinary()) {
+    if (!announcedCompiledSkip) {
+      announcedCompiledSkip = true
+      console.debug('[orm] running from a compiled binary, so framework default models are not probed on disk; models this app uses are bundled.')
+    }
+    return null
+  }
+
   const { path } = await import('@stacksjs/path')
   // 1) User override at app/Models/<Name>.ts (always wins, no subdir search
   //    on the user side — projects flatten their model directory).
