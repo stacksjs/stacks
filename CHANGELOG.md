@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.101...v0.75.102)
+
+## ✨ Features
+
+- **mobile**: snapshots, what a page keeps for its native screens' first frame (craft-native 0.0.125) ([f5144f3](https://github.com/stacksjs/stacks/commit/f5144f3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: native screens in the iOS app, compiled with stx ([056d805](https://github.com/stacksjs/stacks/commit/056d805)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.100...v0.75.101)
 
 ## 🐛 Bug Fixes
