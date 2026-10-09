@@ -943,6 +943,23 @@ export function orphanedFragmentDomains(
 }
 
 /**
+ * Every hostname this project's sites route: each site's `domain` and its
+ * `aliases` (`*.example.com` included), which ts-cloud routes exactly like
+ * the domain. Without the aliases, the second deploy after adding one found
+ * its own wildcard route in the fragment and refused, as if another project
+ * owned it.
+ */
+export function declaredSiteDomains(sites: unknown): string[] {
+  const out: string[] = []
+  for (const site of Object.values((sites ?? {}) as Record<string, { domain?: unknown, aliases?: unknown }>)) {
+    if (!site?.domain) continue
+    out.push(String(site.domain))
+    if (Array.isArray(site.aliases)) out.push(...site.aliases.map(String))
+  }
+  return normalizeDomains(out)
+}
+
+/**
  * Refuse to overwrite a gateway fragment that is serving somebody else.
  *
  * `/etc/rpx/sites.d/<slug>.json` is replaced wholesale by a tenant deploy. If
@@ -967,11 +984,7 @@ export async function assertFragmentIsOurs(
   log: { error: (m: string) => void, info: (m: string) => void },
 ): Promise<void> {
   const slug = tsCloudConfig.project?.slug || 'app'
-  const ours = new Set(
-    Object.values((tsCloudConfig.sites ?? {}) as Record<string, { domain?: string }>)
-      .map(site => String(site?.domain ?? '').toLowerCase())
-      .filter(Boolean),
-  )
+  const ours = new Set(declaredSiteDomains(tsCloudConfig.sites))
 
   let remote = ''
   try {

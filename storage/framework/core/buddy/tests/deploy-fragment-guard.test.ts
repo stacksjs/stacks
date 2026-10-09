@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { normalizeDomains, orphanedFragmentDomains } from '../src/commands/deploy'
+import { declaredSiteDomains, normalizeDomains, orphanedFragmentDomains } from '../src/commands/deploy'
 
 /**
  * What a deploy is allowed to take off the gateway.
@@ -81,5 +81,24 @@ describe('normalizeDomains', () => {
   it('trims, lowercases and drops the empties a config picks up', () => {
     expect(normalizeDomains([' CampusHQ.org ', '', null, undefined, 'WWW.Campushq.ORG']))
       .toEqual(['campushq.org', 'www.campushq.org'])
+  })
+})
+
+describe('declaredSiteDomains', () => {
+  it('counts every site\'s aliases as its own, so a wildcard route is not mistaken for another project\'s', () => {
+    const sites = {
+      main: { domain: 'hq.training', aliases: ['*.hq.training'] },
+      docs: { domain: 'hq.training', path: '/docs' },
+      api: { start: 'bun api.js' },
+    }
+    const declared = declaredSiteDomains(sites)
+    expect(declared).toEqual(['hq.training', '*.hq.training', 'hq.training'])
+    const fragment = JSON.stringify({ proxies: [{ to: 'hq.training' }, { to: '*.hq.training' }, { to: 'www.hq.training' }] })
+    expect(orphanedFragmentDomains(fragment, declared)).toEqual([])
+  })
+
+  it('still finds a domain no site declares', () => {
+    const fragment = JSON.stringify({ proxies: [{ to: 'hq.training' }, { to: '*.someone-else.com' }] })
+    expect(orphanedFragmentDomains(fragment, declaredSiteDomains({ main: { domain: 'hq.training' } }))).toEqual(['*.someone-else.com'])
   })
 })
