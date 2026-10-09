@@ -9,9 +9,12 @@ interface NativeSymbolProps {
   weight?: 'ultralight' | 'thin' | 'light' | 'regular' | 'medium' | 'semibold' | 'bold' | 'heavy' | 'black'
   /** What the symbol says, for a symbol that stands alone. Decorative when left out. */
   label?: string
+  class?: string
 }
 
-const { name = '', icon = '', label = '' } = defineProps<NativeSymbolProps>()
+// The caller's classes are rendered here too, so the symbol has its size
+// from the first paint rather than once the page has run.
+const { name = '', icon = '', label = '', class: extraClass = '' } = defineProps<NativeSymbolProps>()
 
 // The common symbols' Iconify stand-ins, written out here so the stylesheet
 // generator sees every class. Anything else names its own with `icon`.
@@ -48,6 +51,7 @@ const standIns: Record<string, string> = {
   'pause.fill': 'i-lucide-pause',
 }
 const standIn = icon || standIns[name] || 'i-lucide-circle'
+const classes = ['native-symbol', standIn, extraClass].filter(Boolean).join(' ')
 </script>
 
 <script client>
@@ -90,9 +94,9 @@ const symbolStyle = derived(() => {
 </script>
 
 @if(label)
-  <i class="native-symbol {{ standIn }}" :class="symbolClass()" :style="symbolStyle()" role="img" aria-label="{{ label }}" data-native-symbol="{{ name }}"></i>
+  <i class="{{ classes }}" :class="symbolClass()" :style="symbolStyle()" role="img" aria-label="{{ label }}" data-native-symbol="{{ name }}"></i>
 @else
-  <i class="native-symbol {{ standIn }}" :class="symbolClass()" :style="symbolStyle()" aria-hidden="true" data-native-symbol="{{ name }}"></i>
+  <i class="{{ classes }}" :class="symbolClass()" :style="symbolStyle()" aria-hidden="true" data-native-symbol="{{ name }}"></i>
 @endif
 
 <style>

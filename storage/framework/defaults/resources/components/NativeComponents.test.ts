@@ -209,7 +209,8 @@ describe('Native components feel native', () => {
   it('draws the back chevron as the SF Symbol, with its Iconify stand-in in the page', async () => {
     const html = await render('<NativeNavBar title="Workout" back="/m" />')
     expect(html).toContain('data-native-symbol="chevron.backward"')
-    expect(html).toContain('class="native-symbol i-lucide-chevron-left"')
+    // Sized by the bar's class from the first paint.
+    expect(html).toContain('class="native-symbol i-lucide-chevron-left native-nav-back-icon"')
   })
 
   it('draws an SF Symbol from the shell, cached, over an Iconify stand-in', async () => {
