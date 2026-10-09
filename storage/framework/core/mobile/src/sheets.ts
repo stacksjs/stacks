@@ -80,7 +80,7 @@ const STYLES = `
 .native-dialog-actions { display: flex; flex-direction: column; }
 .native-dialog--alert .native-dialog-actions { border-top: 0.5px solid var(--native-separator, rgb(60 60 67 / 0.29)); }
 .native-dialog--alert .native-dialog-actions.is-row { flex-direction: row; }
-.native-dialog-action { min-height: 3.3em; padding: 0 1em; border: 0; border-top: 0.5px solid var(--native-separator, rgb(60 60 67 / 0.29)); color: var(--native-accent, rgb(0 122 255)); background: transparent; font: inherit; font-size: 1.18em; cursor: pointer; }
+.native-dialog-action { width: 100%; min-height: 3.3em; padding: 0 1em; border: 0; border-top: 0.5px solid var(--native-separator, rgb(60 60 67 / 0.29)); color: var(--native-accent, rgb(0 122 255)); background: transparent; font: inherit; font-size: 1.18em; cursor: pointer; }
 .native-dialog--alert .native-dialog-action { min-height: 2.6em; font-size: 1em; }
 .native-dialog-action:first-child { border-top: 0; }
 .native-dialog-actions.is-row .native-dialog-action { flex: 1; border-top: 0; border-left: 0.5px solid var(--native-separator, rgb(60 60 67 / 0.29)); }
