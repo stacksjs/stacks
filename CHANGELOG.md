@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.103...v0.75.104)
+
+## 🐛 Bug Fixes
+
+- **mobile**: a shell without a tab bar hides the native one, and the bar's Back says what it is ([c34b599](https://github.com/stacksjs/stacks/commit/c34b599)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx ^0.2.419 and craft-native >=0.0.127, and keep the shell test on its current code ([4bd9ac7](https://github.com/stacksjs/stacks/commit/4bd9ac7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.102...v0.75.103)
 
 ## 🐛 Bug Fixes
