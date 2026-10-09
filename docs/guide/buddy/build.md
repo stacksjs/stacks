@@ -183,6 +183,20 @@ itself, and an internal TestFlight group with access to all builds hands each
 one to its testers; with TestFlight's automatic updates on, their phones
 install it once Apple has processed it.
 
+Xcode Cloud numbers every run, failed ones too, so a count of tags drifts from
+the build number TestFlight shows. Give the release an App Store Connect API
+key (Users and Access → Integrations → App Store Connect API, App Manager role)
+and it tags `v1.0.0-build.<n>` with the number Xcode Cloud will give that
+build, and expires the builds it supersedes so TestFlight lists only the
+newest (`--keep-builds <n>` keeps more; `--dry-run` shows which would go):
+
+```bash
+# .env
+APP_STORE_CONNECT_KEY_ID=ABC123DEFG
+APP_STORE_CONNECT_ISSUER_ID=00000000-0000-0000-0000-000000000000
+APP_STORE_CONNECT_PRIVATE_KEY_PATH=/path/to/AuthKey_ABC123DEFG.p8
+```
+
 ### Server Docker Image
 
 Build the production server Docker image:

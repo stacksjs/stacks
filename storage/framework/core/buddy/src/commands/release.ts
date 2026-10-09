@@ -2,11 +2,13 @@ import type { CLI, ReleaseOptions } from '@stacksjs/types'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire, tagForXcodeCloudRun } from '../app-store-connect'
 import { bumpedVersion, iosVersionIn, nextBuildTag, withIosVersion } from '../release-ios'
 import { resultFailed } from '../result'
 
@@ -57,8 +59,9 @@ export function release(buddy: CLI): void {
   buddy
     .command('release:ios', 'Ship the iOS app: regenerate its project for production, commit, tag and push')
     .option('--bump <type>', 'Raise the app version first: patch | minor | major | x.y.z (default: a new build of the current version)')
+    .option('--keep-builds <n>', 'TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key)', { default: 1 })
     .option('--dry-run', descriptions.dryRun, { default: false })
-    .action(async (options: { bump?: string, dryRun?: boolean }) => {
+    .action(async (options: { bump?: string, dryRun?: boolean, keepBuilds?: number | string }) => {
       const startTime = await intro('buddy release:ios')
       try {
         const tag = await releaseIos(options)
@@ -85,7 +88,7 @@ function git(...args: string[]): string {
  * atomic push. The project is built for production: MOBILE_URL and the version
  * env overrides a dev shell may carry are dropped for the build.
  */
-async function releaseIos(options: { bump?: string, dryRun?: boolean }): Promise<string> {
+async function releaseIos(options: { bump?: string, dryRun?: boolean, keepBuilds?: number | string }): Promise<string> {
   const root = process.cwd()
   const configPath = join(root, 'config/mobile.ts')
   if (!existsSync(configPath))
@@ -104,10 +107,42 @@ async function releaseIos(options: { bump?: string, dryRun?: boolean }): Promise
   if (!current)
     throw new Error('config/mobile.ts declares no iOS `version`')
   const version = options.bump ? bumpedVersion(current, options.bump) : current
-  const tag = nextBuildTag(version, git('tag', '--list', `v${version}-build.*`).split('\n').filter(Boolean))
+  const existingTags = git('tag', '--list', `v${version}-build.*`).split('\n').filter(Boolean)
+  let tag = nextBuildTag(version, existingTags)
+
+  // With an App Store Connect key, the tag carries the number TestFlight will
+  // show: Xcode Cloud numbers every run, failed ones too, so a count of our
+  // own tags drifted from it (build.4 arrived as (10)).
+  const credentials = appStoreConnectCredentials()
+  let store: { api: AppStoreConnect, appId: string } | null = null
+  if (credentials) {
+    const mobile = (await import(pathToFileURL(configPath).href)).default as { ios?: { bundleId?: string } }
+    const bundleId = mobile.ios?.bundleId
+    if (!bundleId)
+      throw new Error('config/mobile.ts declares no ios.bundleId')
+    const api = await AppStoreConnect.connect(credentials)
+    store = { api, appId: await api.appId(bundleId) }
+    const latestRun = await api.latestXcodeCloudRun(store.appId)
+    if (latestRun !== null) {
+      const fromStore = tagForXcodeCloudRun(version, latestRun)
+      // Never reuse a tag that exists; a run in flight can make that happen.
+      if (!existingTags.includes(fromStore))
+        tag = fromStore
+    }
+  }
+  else {
+    log.warn('No App Store Connect API key (APP_STORE_CONNECT_KEY_ID, _ISSUER_ID, _PRIVATE_KEY_PATH): the tag counts releases, not the build number TestFlight will show, and older builds stay listed.')
+  }
+
   log.info(`Releasing ${tag}${version === current ? '' : ` (version ${current} → ${version})`}`)
-  if (options.dryRun)
+  const keep = Math.max(0, Number(options.keepBuilds ?? 1) || 0)
+  if (options.dryRun) {
+    if (store) {
+      const retiring = buildsToExpire(await store.api.builds(store.appId), keep)
+      log.info(retiring.length ? `Would expire TestFlight builds ${retiring.map(b => b.number).join(', ')}` : 'No TestFlight builds to expire')
+    }
     return tag
+  }
 
   const paths = ['config/mobile.ts', 'storage/framework/mobile/ios']
   if (version !== current) {
@@ -131,6 +166,22 @@ async function releaseIos(options: { bump?: string, dryRun?: boolean }): Promise
     git('commit', '--quiet', '-m', `chore(release): ${tag}`)
   git('tag', '-a', tag, '-m', tag)
   git('push', '--quiet', '--atomic', 'origin', 'main', tag)
+
+  // The builds this one supersedes leave TestFlight, so its list is the
+  // newest kept and this one once it has processed.
+  if (store) {
+    try {
+      const retiring = buildsToExpire(await store.api.builds(store.appId), keep)
+      for (const build of retiring)
+        await store.api.expire(build.id)
+      if (retiring.length)
+        log.info(`Expired TestFlight builds ${retiring.map(b => b.number).join(', ')}`)
+    }
+    catch (error) {
+      // The release is out; tidying TestFlight is not worth failing it.
+      log.warn(`Could not expire older TestFlight builds: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
   return tag
 }
 
