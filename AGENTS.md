@@ -194,7 +194,12 @@ and currently disagrees with the browser in both directions.
 - Kept values: `keptState` is a state kept in localStorage between visits
   (name, initial value, and a scope option), so a phone tab draws last launch's
   data at once. Scope it to the signed-in account; a scope of false keeps
-  nothing. `forgetKeptState` clears one scope, or every kept value, on sign-out.
+  nothing. `setKeptScope` sets the scope that kept values and cached queries
+  use when they name none (the signed-in account), `flushKeptState` finishes
+  writing what is kept (before signing out, or in a test), and
+  `forgetKeptState` clears one scope, or every kept value, on sign-out.
+  `cachedQuery` is a query kept per account and refreshed behind: it answers
+  from the kept copy at once and replaces it with the fresh one.
 - Server-rendered data: `clearServerData`. The page embeds its hydration payload
   in a `script[data-stx-server-data]` tag, which `useFetch` and `useQuery` read
   once on mount instead of refetching. `clearServerData(key)` drops one entry and
