@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.99...v0.75.100)
+
+## ✨ Features
+
+- **server**: domain routes can name where the rest of the site lives ([56761ee](https://github.com/stacksjs/stacks/commit/56761ee)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **orm**: a compiled binary does not probe the disk for framework models ([8610696](https://github.com/stacksjs/stacks/commit/8610696)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2886](https://github.com/stacksjs/stacks/issues/2886))
+- **types**: rename the server domain map so the barrel stops colliding ([c22c5fc](https://github.com/stacksjs/stacks/commit/c22c5fc)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2887](https://github.com/stacksjs/stacks/issues/2887))
+- **desktop**: build:dmg removes its temp directories however it ends ([c1d9093](https://github.com/stacksjs/stacks/commit/c1d9093)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2885](https://github.com/stacksjs/stacks/issues/2885), [#2884](https://github.com/stacksjs/stacks/issues/2884))
+- **desktop**: name the DMG volume after the app AND its version ([6f61dec](https://github.com/stacksjs/stacks/commit/6f61dec)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2884](https://github.com/stacksjs/stacks/issues/2884))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.98...v0.75.99)
 
 ## ✨ Features
