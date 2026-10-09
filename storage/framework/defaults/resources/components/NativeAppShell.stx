@@ -10,7 +10,7 @@ const { tabBar = false } = defineProps<NativeAppShellProps>()
 </script>
 
 <script client>
-import { deepLinks as deepLinkService, device, followDeepLinks, installNativeChrome, installPressables, isNativeMobile, splash, whenNativeMobile } from '@stacksjs/mobile'
+import { deepLinks as deepLinkService, device, followDeepLinks, installNativeChrome, installPressables, isNativeMobile, splash, tabBar as nativeTabBar, whenNativeMobile } from '@stacksjs/mobile'
 
 const className = useReactiveProp<string>('class', '')
 // A bare attribute arrives as an empty string.
@@ -61,7 +61,12 @@ onMount(() => {
   if (!root) return
   stopPressables = installPressables(root.ownerDocument)
   void whenNativeMobile().then((native) => {
-    if (native && !destroyed) stopChrome = installNativeChrome(root.ownerDocument)
+    if (!native || destroyed) return
+    stopChrome = installNativeChrome(root.ownerDocument)
+    // A shell without a tab bar (sign-in, a flow of its own) says so: an app
+    // whose native bar was configured to show from its first frame, before
+    // any page had described one, would otherwise keep it over this screen.
+    if (!root.querySelector('.native-app-tab-slot') && nativeTabBar.isAvailable()) nativeTabBar.hide()
   })
 })
 onDestroy(() => {

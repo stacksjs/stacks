@@ -84,7 +84,7 @@ function tapBack(event: MouseEvent): void {
   <header :class="barClass()">
     <div class="native-nav-side">
       @if(back)
-        <a href="{{ back }}" class="native-nav-back" :aria-label="backText()" draggable="false" @click="tapBack">
+        <a href="{{ back }}" class="native-nav-back" :aria-label="backText()" draggable="false" data-native-back @click="tapBack">
           <NativeSymbol name="chevron.backward" icon="i-lucide-chevron-left" weight="semibold" class="native-nav-back-icon" />
           <span class="native-nav-back-label">{{ backText() }}</span>
         </a>

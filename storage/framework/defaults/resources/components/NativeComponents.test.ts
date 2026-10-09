@@ -102,6 +102,11 @@ describe('Native components', () => {
     expect(sheet).toContain("useModel('open'")
   })
 
+  it('hides the native tab bar under a shell that has none, like a sign-in screen', () => {
+    const shell = read('NativeAppShell')
+    expect(shell).toContain("if (!root.querySelector('.native-app-tab-slot') && nativeTabBar.isAvailable()) nativeTabBar.hide()")
+  })
+
   it('covers the tab bar while up, and closes when its screen is left', () => {
     const sheet = read('NativeSheet')
     expect(sheet).toContain('coverTabBar(element, true)')
