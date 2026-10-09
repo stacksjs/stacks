@@ -212,6 +212,12 @@ export function segmentForKey(key: string, index: number, count: number): number
   }
 }
 
+/** Moves focus to the `index`th tab of a segmented control, as arrow keys do in a tab list. */
+export function focusSegment(track: HTMLElement, index: number): void {
+  const tabs = track.querySelectorAll<HTMLElement>('[role="tab"]')
+  tabs[index]?.focus()
+}
+
 /**
  * Wakes the Taptic Engine as a finger lands on anything marked
  * `data-native-pressable`, so the tap that follows its press plays at once.

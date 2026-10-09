@@ -116,6 +116,14 @@ export const contextMenu: ContextMenuApi = {
   },
 }
 
+/**
+ * Shows a context menu beside `element`, the one that was long-pressed.
+ * Resolves with the chosen item's id, or null.
+ */
+export function showContextMenuFor(element: Element, options: Omit<ContextMenuOptions, 'anchor'>): Promise<string | null> {
+  return contextMenu.show({ ...options, anchor: toNativeRect(element.getBoundingClientRect()) })
+}
+
 // ---------------------------------------------------------------------------
 // In-app browser
 

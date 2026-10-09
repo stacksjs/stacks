@@ -69,7 +69,7 @@ export interface SheetDragOptions {
   handles: HTMLElement[]
   detents: () => SheetDetent[]
   detent: () => SheetDetent
-  /** The viewport's height, for where medium rests. */
+  /** The viewport's height, for where medium rests; the panel's window's by default. */
   viewport?: () => number
   onSettle: (to: SheetSettle) => void
 }
@@ -89,7 +89,8 @@ export function observeSheetDrag(options: SheetDragOptions): () => void {
   let samples: Array<{ y: number, t: number }> = []
   let offset = 0
 
-  const stops = (): SheetStop[] => sheetStops(panel.offsetHeight || panel.getBoundingClientRect().height, options.viewport?.() ?? 800, options.detents())
+  const viewport = (): number => options.viewport?.() ?? panel.ownerDocument?.defaultView?.innerHeight ?? 800
+  const stops = (): SheetStop[] => sheetStops(panel.offsetHeight || panel.getBoundingClientRect().height, viewport(), options.detents())
 
   const onDown = (event: Event): void => {
     const pointer = event as unknown as PointerLike

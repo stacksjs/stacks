@@ -9,6 +9,9 @@ import {
   liftToBody,
   lockBackground,
   mirrorTabBar,
+  observeNativeRefresh,
+  showContextMenuFor,
+  focusSegment,
   observeLargeTitle,
   observeLongPress,
   pageBackground,
@@ -269,5 +272,55 @@ describe('the native chrome', () => {
     expect(setUnderPageColor).toHaveBeenCalledWith('rgb(2, 6, 23)')
     expect(setStyle).toHaveBeenLastCalledWith('light')
     stop()
+  })
+})
+
+describe('the native refresh control', () => {
+  function shown(win: any, id: string, visible: boolean): any {
+    const element = win.document.getElementById(id)
+    element.getClientRects = () => (visible ? [{ width: 1, height: 1 }] : [])
+    return element
+  }
+
+  it('turns on for a screen in view, refreshes only that screen, and ends the spinner after', async () => {
+    const enable = mock(async () => {})
+    const disable = mock(async () => {})
+    const end = mock(async () => {})
+    const win = install({ refresh: { enable, disable, end } })
+    win.document.body.innerHTML = '<div id="today"></div><div id="calendar"></div>'
+    const today = shown(win, 'today', false)
+    const calendar = shown(win, 'calendar', true)
+    const refreshed: string[] = []
+    const stopToday = observeNativeRefresh(today, { onRefresh: () => refreshed.push('today') })
+    const stopCalendar = observeNativeRefresh(calendar, { tintColor: '#2563eb', onRefresh: () => refreshed.push('calendar') })
+    await tick()
+    expect(enable).toHaveBeenCalledWith({ tintColor: '#2563eb' })
+    win.dispatchEvent(new win.CustomEvent('craftRefresh'))
+    await tick(5)
+    expect(refreshed).toEqual(['calendar'])
+    expect(end).toHaveBeenCalledTimes(1)
+    stopCalendar()
+    stopToday()
+    await tick()
+    expect(disable).toHaveBeenCalled()
+  })
+})
+
+describe('element helpers', () => {
+  it('opens a context menu beside an element', async () => {
+    const show = mock(async () => 'copy')
+    const win = install({ contextMenu: { show } })
+    win.document.body.innerHTML = '<div id="row"></div>'
+    const row = win.document.getElementById('row')
+    row.getBoundingClientRect = () => ({ x: 4.2, y: 10, width: 300, height: 44, left: 4.2, top: 10 })
+    expect(await showContextMenuFor(row, { items: [{ id: 'copy', title: 'Copy' }] })).toBe('copy')
+    expect((show.mock.calls[0] as any)[0].anchor).toEqual({ x: 4, y: 10, width: 300, height: 44 })
+  })
+
+  it('moves focus to a segment', () => {
+    const win = install()
+    win.document.body.innerHTML = '<div id="track"><button role="tab">A</button><button role="tab" id="b">B</button></div>'
+    focusSegment(win.document.getElementById('track'), 1)
+    expect(win.document.activeElement.id).toBe('b')
   })
 })
