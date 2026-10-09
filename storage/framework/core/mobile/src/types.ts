@@ -76,6 +76,22 @@ export interface MobileApi {
   health: HealthApi
   liveActivities: LiveActivitiesApi
   watchConnectivity: WatchConnectivityApi
+  dialog: import('./native').DialogApi
+  contextMenu: import('./native').ContextMenuApi
+  browser: import('./native').BrowserApi
+  symbols: import('./native').SymbolsApi
+  statusBar: import('./native').StatusBarApi
+  chrome: import('./native').ChromeApi
+  refresh: import('./native').RefreshApi
+  background: import('./native').BackgroundApi
+  clipboard: import('./native').ClipboardApi
+  db: import('./native').DatabaseApi
+  files: import('./native').FilesApi
+  shortcuts: import('./native').ShortcutsApi
+  widgets: import('./native').WidgetsApi
+  orientation: import('./native').OrientationApi
+  auth: import('./native').AuthApi
+  storeKit: import('./native').StoreKitApi
   isNativeMobile: () => boolean
   whenNative: (timeoutMs?: number) => Promise<boolean>
   onReady: (callback: (event: CraftReadyEvent) => void) => () => void
@@ -204,11 +220,15 @@ export interface DeviceApi {
   getTimezone: () => string
 }
 
+export type HapticKind = 'impact' | 'notification' | 'selection'
+
 export interface HapticsApi {
   impact: (style?: HapticStyle) => Promise<void>
   notification: (type?: HapticNotificationType) => Promise<void>
   selection: () => Promise<void>
   vibrate: (pattern: number[]) => Promise<void>
+  /** Wakes the Taptic Engine for a tap about to come. A no-op where there is none. */
+  prepare: (kind?: HapticKind) => Promise<void>
 }
 
 export interface PermissionsApi {

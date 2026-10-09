@@ -8,9 +8,13 @@
  */
 import { haptics } from 'craft-native/mobile'
 
-/** Where a page scrolls: the window, or a stand-in with the same shape. */
+/**
+ * Where a page scrolls: the window, a scrolling element (a screen that scrolls
+ * inside its own container), or a stand-in with the same shape.
+ */
 export interface ScrollHost extends EventTarget {
   scrollY?: number
+  scrollTop?: number
   document?: { scrollingElement?: { scrollTop: number } | null }
 }
 
@@ -26,6 +30,7 @@ function scrollHost(): ScrollHost | undefined {
 export function pageScrollTop(host: ScrollHost | undefined = scrollHost()): number {
   if (!host) return 0
   if (typeof host.scrollY === 'number') return host.scrollY
+  if (typeof host.scrollTop === 'number') return host.scrollTop
   return host.document?.scrollingElement?.scrollTop ?? 0
 }
 
@@ -53,8 +58,12 @@ export function observePageScroll(callback: (offset: number) => void, host: Scro
 export interface PullToRefreshOptions {
   /** How far, in CSS pixels, a pull must travel to refresh. Default 72. */
   threshold?: number
-  /** Every change in how far the page is pulled, and whether letting go would refresh. */
-  onPull?: (distance: number, armed: boolean) => void
+  /**
+   * Every change in how far the page is pulled, and whether letting go would
+   * refresh. `bounce` is how much of the distance iOS's own rubber band has
+   * already moved the page by, which the content need not be moved by again.
+   */
+  onPull?: (distance: number, armed: boolean, pull: { bounce: number }) => void
   /** Runs once per completed pull. Pulls are ignored until it settles. */
   onRefresh: () => unknown | Promise<unknown>
   /** Where to listen. The window by default. */
@@ -98,7 +107,7 @@ export function observePullToRefresh(options: PullToRefreshOptions): () => void 
   let queued: number | null = null
   const report = (distance: number): void => {
     queued = null
-    options.onPull?.(distance, armed)
+    options.onPull?.(distance, armed, { bounce: Math.min(distance, Math.max(0, -pageScrollTop(host))) })
   }
   const reportNextFrame = (distance: number): void => {
     const scheduled = queued !== null
@@ -173,4 +182,67 @@ export function observePullToRefresh(options: PullToRefreshOptions): () => void 
     host.removeEventListener('touchend', onEnd)
     host.removeEventListener('touchcancel', onCancel)
   }
+}
+
+export interface LargeTitleMetrics {
+  /** 0 with the large title in full view, 1 once it has scrolled under the bar. */
+  progress: number
+  /** The large title's scale: above 1 while the page is pulled past its top, as on iOS. */
+  stretch: number
+}
+
+/**
+ * Where a large-title navigation bar is for a scroll offset.
+ *
+ * The title collapses over its own height. Pulled past the top (iOS's rubber
+ * band, a negative offset) it grows a little, at most 10%, anchored at its
+ * leading edge.
+ */
+export function largeTitleMetrics(offset: number, height = 52): LargeTitleMetrics {
+  const span = Math.max(1, height)
+  const progress = Math.min(1, Math.max(0, offset / span))
+  const stretch = offset < 0 ? 1 + Math.min(0.1, -offset / 600) : 1
+  return { progress: Math.round(progress * 1000) / 1000, stretch: Math.round(stretch * 1000) / 1000 }
+}
+
+export interface LargeTitleOptions {
+  /** The large title's height in pixels; read from `title` when that is given. */
+  height?: number
+  /** The large title element, measured for its height. */
+  title?: HTMLElement | null
+  host?: ScrollHost
+  /** Each frame's metrics, for a caller that wants more than the custom properties. */
+  onChange?: (metrics: LargeTitleMetrics) => void
+}
+
+/**
+ * Links a navigation bar to the page's scroll, a frame at a time.
+ *
+ * Writes `--native-nav-progress` (0 to 1) and `--native-nav-stretch` on
+ * `element`, so its CSS can fade the material in, move the small title into
+ * the bar and stretch the large one, all on the compositor. Nothing re-renders.
+ */
+export function observeLargeTitle(element: HTMLElement, options: LargeTitleOptions = {}): () => void {
+  let last = ''
+  const height = (): number => options.title?.offsetHeight || options.height || 52
+  return observePageScroll((offset) => {
+    const metrics = largeTitleMetrics(offset, height())
+    const key = `${metrics.progress}|${metrics.stretch}`
+    if (key === last) return
+    last = key
+    element.style.setProperty('--native-nav-progress', String(metrics.progress))
+    element.style.setProperty('--native-nav-stretch', String(metrics.stretch))
+    options.onChange?.(metrics)
+  }, options.host)
+}
+
+/**
+ * The element a selector names, as a scroll host: for a screen whose content
+ * scrolls inside a container rather than the page. Undefined (the window)
+ * when nothing matches.
+ */
+export function resolveScrollHost(selector: string | null | undefined): ScrollHost | undefined {
+  if (!selector || typeof window === 'undefined') return undefined
+  const found = window.document?.querySelector(selector)
+  return found ? found as unknown as ScrollHost : undefined
 }

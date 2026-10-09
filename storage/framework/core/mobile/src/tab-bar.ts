@@ -51,6 +51,51 @@ export function nativeTabs(links: TabLink[]): { tabs: NativeTab[], selected?: st
   return { tabs, selected: links.find(link => link.current)?.id }
 }
 
+interface StxRouterTabs {
+  selectTab?: (href: string) => unknown
+}
+
+function stxRouter(): StxRouterTabs | undefined {
+  if (typeof window === 'undefined') return undefined
+  const router = (window as unknown as { stxRouter?: StxRouterTabs }).stxRouter
+  return router && typeof router === 'object' ? router : undefined
+}
+
+/** Whether the stx router runs the tabs itself (`data-stx-nav="tab"`, re-select included). */
+export function routerHandlesTabs(): boolean {
+  return typeof stxRouter()?.selectTab === 'function'
+}
+
+export interface TabReselectOptions {
+  /** Scrolls the screen to its top; the window's by default. */
+  scrollToTop?: () => void
+}
+
+/**
+ * Choosing the tab already current scrolls its screen back to the top, as on
+ * iOS, and announces `stx:tabreselect` { href } for a screen that wants to do
+ * more (a list that resets its filter).
+ *
+ * The stx router does this itself for `data-stx-nav="tab"` links, popping to
+ * the tab's root on a second choice; this covers a router that predates tabs,
+ * and stands aside wherever the router has them.
+ */
+export function handleTabReselect(nav: HTMLElement, options: TabReselectOptions = {}): () => void {
+  const onClick = (event: Event): void => {
+    if (routerHandlesTabs() || event.defaultPrevented) return
+    const link = (event.target as Element | null)?.closest?.('a[data-native-tab]')
+    if (!link || !nav.contains(link)) return
+    if (!link.hasAttribute('data-stx-nav-current') && !link.classList.contains('is-active') && link.getAttribute('aria-current') !== 'page') return
+    event.preventDefault()
+    const view = nav.ownerDocument.defaultView
+    if (options.scrollToTop) options.scrollToTop()
+    else view?.scrollTo?.({ top: 0, behavior: view.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+    view?.dispatchEvent(new CustomEvent('stx:tabreselect', { detail: { href: link.getAttribute('href') || '' } }))
+  }
+  nav.addEventListener('click', onClick)
+  return () => nav.removeEventListener('click', onClick)
+}
+
 function hexColor(value: string): string | undefined {
   const color = value.trim()
   return /^#[0-9a-f]{6}$/i.test(color) ? color : undefined
@@ -99,7 +144,16 @@ export function mirrorTabBar(nav: HTMLElement, options: MirrorTabBarOptions = {}
 
   const observer = typeof MutationObserver === 'function' ? new MutationObserver(sync) : null
   observer?.observe(nav, { attributes: true, attributeFilter: ['data-stx-nav-current', 'class'], childList: true, subtree: true, characterData: true })
+  // A native tap is the router's to handle as a tab switch (each tab keeps
+  // its own screens; choosing the current one again scrolls it to the top,
+  // then pops it to its root). A router without tabs gets the tap as a click
+  // on the same link, as before.
   const stopSelect = api.onSelect((id) => {
+    const router = stxRouter()
+    if (router?.selectTab) {
+      router.selectTab(id)
+      return
+    }
     const link = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[data-native-tab]')).find(item => item.getAttribute('href') === id)
     link?.click()
   })

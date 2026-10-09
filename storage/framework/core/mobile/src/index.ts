@@ -37,6 +37,9 @@ import {
   watchConnectivity as craftWatchConnectivity,
 } from 'craft-native/mobile'
 
+import type { CraftHost } from './bridge'
+import { auth, background, browser, chrome, clipboard, contextMenu, db, dialog, files, orientation, refresh, shortcuts, statusBar, storeKit, symbols, widgets } from './native'
+import { afterBridge, craftHost, hasNativeMobileHost, nativeFunctionNow, subscribeWhenReady, whenBridgeReady } from './bridge'
 import type {
   AppReviewApi,
   BiometricsApi,
@@ -62,25 +65,102 @@ import type {
   WatchConnectivityApi,
 } from './types'
 
+export * from './bridge'
+export * from './controls'
+export * from './events'
 export * from './gestures'
 export * from './navigation'
 export * from './route'
 export * from './indoor'
+export * from './native'
+export * from './sheet-gesture'
+export * from './sheets'
+export * from './shell'
 export * from './spotlight'
 export * from './tab-bar'
 export * from './types'
 
-export const biometrics: BiometricsApi = craftBiometrics
-export const camera: CameraApi = craftCamera
-export const device: DeviceApi = craftDevice
-export const haptics: HapticsApi = craftHaptics
+// Each service's async methods wait for a native host's bridge (afterBridge):
+// asked during an older shell's launch, they reached the web fallback, and a
+// secure-storage read answered from localStorage.
+export const biometrics: BiometricsApi = {
+  isAvailable: () => afterBridge(() => craftBiometrics.isAvailable()),
+  getBiometricType: () => afterBridge(() => craftBiometrics.getBiometricType()),
+  authenticate: reason => afterBridge(() => craftBiometrics.authenticate(reason)),
+}
+export const camera: CameraApi = {
+  takePicture: options => afterBridge(() => craftCamera.takePicture(options)),
+  pickImage: () => afterBridge(() => craftCamera.pickImage()),
+  pickMultiple: options => afterBridge(() => craftCamera.pickMultiple(options)),
+  isAvailable: () => afterBridge(() => craftCamera.isAvailable()),
+}
+export const device: DeviceApi = {
+  getInfo: () => afterBridge(() => craftDevice.getInfo()),
+  getCapabilities: () => afterBridge(() => craftDevice.getCapabilities()),
+  isMobile: () => craftDevice.isMobile(),
+  isIOS: () => craftDevice.isIOS(),
+  isAndroid: () => craftDevice.isAndroid(),
+  getLocale: () => craftDevice.getLocale(),
+  getTimezone: () => craftDevice.getTimezone(),
+}
 export const lifecycle: LifecycleApi = craftLifecycle
-export const location: LocationApi = craftLocation
-export const notifications: NotificationsApi = craftNotifications
-export const permissions: PermissionsApi = craftPermissions
-export const secureStorage: SecureStorageApi = craftSecureStorage
-export const share: ShareApi = craftShare
-export const appReview: AppReviewApi = craftAppReview
+export const location: LocationApi = {
+  getCurrentPosition: options => afterBridge(() => craftLocation.getCurrentPosition(options)),
+  watchPosition: (callback, options) => craftLocation.watchPosition(callback, options),
+  clearWatch: watchId => craftLocation.clearWatch(watchId),
+  startRecording: options => afterBridge(() => craftLocation.startRecording(options)),
+  pauseRecording: () => afterBridge(() => craftLocation.pauseRecording()),
+  resumeRecording: () => afterBridge(() => craftLocation.resumeRecording()),
+  stopRecording: () => afterBridge(() => craftLocation.stopRecording()),
+  getRecordingState: () => afterBridge(() => craftLocation.getRecordingState()),
+  readRecording: () => afterBridge(() => craftLocation.readRecording()),
+}
+export const notifications: NotificationsApi = {
+  show: options => afterBridge(() => craftNotifications.show(options)),
+  schedule: options => afterBridge(() => craftNotifications.schedule(options)),
+  cancelAll: () => afterBridge(() => craftNotifications.cancelAll()),
+  setBadge: count => afterBridge(() => craftNotifications.setBadge(count)),
+}
+export const permissions: PermissionsApi = {
+  check: permission => afterBridge(() => craftPermissions.check(permission)),
+  request: permission => afterBridge(() => craftPermissions.request(permission)),
+  checkMultiple: list => afterBridge(() => craftPermissions.checkMultiple(list)),
+  requestMultiple: list => afterBridge(() => craftPermissions.requestMultiple(list)),
+  openSettings: () => afterBridge(() => craftPermissions.openSettings()),
+}
+export const secureStorage: SecureStorageApi = {
+  set: (key, value) => afterBridge(() => craftSecureStorage.set(key, value)),
+  get: key => afterBridge(() => craftSecureStorage.get(key)),
+  delete: key => afterBridge(() => craftSecureStorage.delete(key)),
+  clear: () => afterBridge(() => craftSecureStorage.clear()),
+}
+export const share: ShareApi = {
+  share: options => afterBridge(() => craftShare.share(options)),
+  isAvailable: () => craftShare.isAvailable(),
+}
+export const appReview: AppReviewApi = {
+  request: () => afterBridge(() => craftAppReview.request()),
+}
+
+/**
+ * Haptic feedback: UIImpactFeedbackGenerator, UINotificationFeedbackGenerator
+ * and UISelectionFeedbackGenerator on iOS, a short vibration elsewhere.
+ *
+ * Never held for a bridge still loading, and never rejects: a tap played late
+ * is a wrong tap, and feedback failing must not stop the flow it decorates.
+ * `prepare()` wakes the Taptic Engine ahead of a likely tap (a finger landing
+ * on a pressable), so the tap that follows plays without latency.
+ */
+export const haptics: HapticsApi = {
+  impact: style => Promise.resolve().then(() => craftHaptics.impact(style)).catch(() => {}),
+  notification: type => Promise.resolve().then(() => craftHaptics.notification(type)).catch(() => {}),
+  selection: () => Promise.resolve().then(() => craftHaptics.selection()).catch(() => {}),
+  vibrate: pattern => Promise.resolve().then(() => craftHaptics.vibrate(pattern)).catch(() => {}),
+  prepare: (kind) => {
+    const prepare = nativeFunctionNow('haptics.prepare')
+    return prepare ? Promise.resolve().then(() => prepare(kind)).then(() => {}, () => {}) : Promise.resolve()
+  },
+}
 export function normalizeDeepLinkURL(value: unknown): string | null {
   if (typeof value === 'string') return value.trim() || null
   if (!value || typeof value !== 'object') return null
@@ -122,18 +202,57 @@ export const deepLinks: DeepLinksApi = {
     }
   },
 }
-export const keepAwake: KeepAwakeApi = craftKeepAwake
+export const keepAwake: KeepAwakeApi = {
+  enable: () => afterBridge(() => craftKeepAwake.enable()),
+  disable: () => afterBridge(() => craftKeepAwake.disable()),
+}
 /**
  * Short spoken cues ("Rest, 15 seconds"). In the app the voice ducks the
  * user's music and plays with the silent switch on; in a browser it falls back
  * to the Web Speech API.
  */
-export const speech: SpeechApi = craftSpeech
-export const network: NetworkApi = craftNetwork
-export const pushNotifications: PushNotificationsApi = craftPushNotifications
-export const health: HealthApi = craftHealth
-export const liveActivities: LiveActivitiesApi = craftLiveActivities
-export const watchConnectivity: WatchConnectivityApi = craftWatchConnectivity
+export const speech: SpeechApi = {
+  isAvailable: () => craftSpeech.isAvailable(),
+  speak: (text, options) => afterBridge(() => craftSpeech.speak(text, options)),
+  stop: () => afterBridge(() => craftSpeech.stop()),
+}
+
+/**
+ * Connectivity. A change subscription made before the bridge arrived listened
+ * to the browser's online/offline events only, and never heard the native
+ * monitor; it is made once the bridge is there.
+ */
+export const network: NetworkApi = {
+  getStatus: () => afterBridge(() => craftNetwork.getStatus()),
+  onChange: callback => subscribeWhenReady(() => craftNetwork.onChange(callback)),
+}
+
+export const pushNotifications: PushNotificationsApi = {
+  register: () => afterBridge(() => craftPushNotifications.register()),
+  onToken: callback => craftPushNotifications.onToken(callback),
+  // A tap is handed over by the bridge's replay buffer, which exists only
+  // once the bridge does; subscribed earlier, a cold-launch tap was missed.
+  onNotification: callback => subscribeWhenReady(() => craftPushNotifications.onNotification(callback)),
+}
+export const health: HealthApi = {
+  requestAuthorization: (types, options) => afterBridge(() => craftHealth.requestAuthorization(types, options)),
+  getData: (type, options) => afterBridge(() => craftHealth.getData(type, options)),
+  saveWorkout: workout => afterBridge(() => craftHealth.saveWorkout(workout)),
+  getWorkouts: options => afterBridge(() => craftHealth.getWorkouts(options)),
+  getDailyStatistics: (type, options) => afterBridge(() => craftHealth.getDailyStatistics(type, options)),
+}
+export const liveActivities: LiveActivitiesApi = {
+  start: options => afterBridge(() => craftLiveActivities.start(options)),
+  update: state => afterBridge(() => craftLiveActivities.update(state)),
+  end: () => afterBridge(() => craftLiveActivities.end()),
+}
+export const watchConnectivity: WatchConnectivityApi = {
+  send: message => afterBridge(() => craftWatchConnectivity.send(message)),
+  updateContext: context => afterBridge(() => craftWatchConnectivity.updateContext(context)),
+  isReachable: () => afterBridge(() => craftWatchConnectivity.isReachable()),
+  onMessage: callback => craftWatchConnectivity.onMessage(callback),
+  onReachabilityChange: callback => craftWatchConnectivity.onReachabilityChange(callback),
+}
 
 /**
  * The launch splash Craft holds over the page until the page is ready, so the
@@ -142,13 +261,8 @@ export const watchConnectivity: WatchConnectivityApi = craftWatchConnectivity
  */
 export const splash: { hide: () => boolean } = craftSplash
 
-interface CraftHost extends EventTarget {
-  craft?: unknown
-}
-
 function host(): CraftHost | undefined {
-  if (typeof window === 'undefined') return undefined
-  return window as unknown as CraftHost
+  return craftHost()
 }
 
 /** Reads the current host, including a bridge injected after this module loaded. */
@@ -170,30 +284,6 @@ export function isNativeMobile(): boolean {
   return getNativeMobileBridge() !== null
 }
 
-interface CraftTransports {
-  craft?: unknown
-  CraftAndroid?: unknown
-  webkit?: { messageHandlers?: { craft?: unknown } }
-}
-
-/**
- * Whether this page runs inside Craft's phone shell, before the bridge exists.
- *
- * Craft installs `window.craft` once the page has finished loading — images
- * and all — so `isNativeMobile()` answers `false` during setup on a phone, and
- * a layout that decides then renders the website's chrome in the app. The
- * transports are there from the start: Android's `CraftAndroid` interface, and
- * on iOS the `craft` message handler. Craft's macOS windows carry that handler
- * too, so on iOS an iPhone or iPad user agent is what makes it the phone app.
- */
-export function hasNativeMobileHost(): boolean {
-  if (typeof window === 'undefined') return false
-  const host = window as unknown as CraftTransports
-  if (host.CraftAndroid) return true
-  const agent = typeof navigator === 'undefined' ? '' : navigator.userAgent
-  return Boolean(host.webkit?.messageHandlers?.craft) && /iPhone|iPad|iPod/.test(agent)
-}
-
 /**
  * Resolves `true` inside the phone shell and `false` in a browser, at a moment
  * when the answer is right.
@@ -206,8 +296,7 @@ export function hasNativeMobileHost(): boolean {
 export function whenNativeMobile(timeoutMs = 2000): Promise<boolean> {
   if (isNativeMobile() || hasNativeMobileHost()) return Promise.resolve(true)
   const current = host()
-  const transports = current as unknown as CraftTransports | undefined
-  if (!current || !(transports?.craft || transports?.webkit?.messageHandlers?.craft))
+  if (!current || !(current.craft || current.webkit?.messageHandlers?.craft))
     return Promise.resolve(false)
 
   return new Promise<boolean>((resolve) => {
@@ -218,32 +307,6 @@ export function whenNativeMobile(timeoutMs = 2000): Promise<boolean> {
     }
     const timer = setTimeout(done, timeoutMs)
     current.addEventListener('craftReady', done, { once: true })
-  })
-}
-
-/**
- * Resolves once the bridge object (`window.craft`) is installed: `true` then,
- * `false` in a browser at once, or after `timeoutMs` in a host that never
- * installs it.
- *
- * Not whenNativeMobile(), which answers `true` as soon as the phone shell is
- * recognisable, before the bridge exists and before anything can be asked of it.
- */
-export function whenBridgeReady(timeoutMs = 15_000): Promise<boolean> {
-  const current = host()
-  if (current?.craft) return Promise.resolve(true)
-  const transports = current as unknown as CraftTransports | undefined
-  if (!current || !(hasNativeMobileHost() || transports?.webkit?.messageHandlers?.craft))
-    return Promise.resolve(false)
-
-  return new Promise<boolean>((resolve) => {
-    const done = (): void => {
-      clearTimeout(timer)
-      current.removeEventListener('craftReady', done)
-      resolve(Boolean(current.craft))
-    }
-    const timer = setTimeout(done, timeoutMs)
-    current.addEventListener('craftReady', done)
   })
 }
 
@@ -302,6 +365,22 @@ export const mobile: MobileApi = {
   health,
   liveActivities,
   watchConnectivity,
+  dialog,
+  contextMenu,
+  browser,
+  symbols,
+  statusBar,
+  chrome,
+  refresh,
+  background,
+  clipboard,
+  db,
+  files,
+  shortcuts,
+  widgets,
+  orientation,
+  auth,
+  storeKit,
   isNativeMobile,
   whenNative: whenNativeMobile,
   onReady: onMobileReady,
