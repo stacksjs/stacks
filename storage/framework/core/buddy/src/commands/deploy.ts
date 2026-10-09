@@ -5111,7 +5111,8 @@ export async function reconcileHetznerDns(sites: Record<string, any>, ip: string
   // every tenant already deployed; only the set of FQDNs under each base grew.
   const byBase = new Map<string, Set<string>>()
   for (const fqdn of hostnames) {
-    const base = fqdn.replace(/^www\./, '')
+    // A wildcard alias (`*.example.com`) belongs to its apex's zone, as `www.` does.
+    const base = fqdn.replace(/^(?:www|\*)\./, '')
     const group = byBase.get(base) ?? new Set<string>()
     group.add(fqdn)
     byBase.set(base, group)
