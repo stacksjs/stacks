@@ -157,15 +157,23 @@ export function mirrorTabBar(nav: HTMLElement, options: MirrorTabBarOptions = {}
     const link = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[data-native-tab]')).find(item => item.getAttribute('href') === id)
     link?.click()
   })
-  // A screen that hides the bar arrives with a navigation, not a change to the bar.
+  // A screen that hides the bar arrives with a navigation, not a change to the
+  // bar. A kept screen the router shows again fires stx:screen-shown, not
+  // stx:load, so both are heard.
   const onLoad = (): void => sync()
-  if (typeof window !== 'undefined') window.addEventListener('stx:load', onLoad)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('stx:load', onLoad)
+    window.addEventListener('stx:screen-shown', onLoad)
+  }
   sync()
 
   return () => {
     observer?.disconnect()
     stopSelect()
-    if (typeof window !== 'undefined') window.removeEventListener('stx:load', onLoad)
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('stx:load', onLoad)
+      window.removeEventListener('stx:screen-shown', onLoad)
+    }
     api.hide()
   }
 }

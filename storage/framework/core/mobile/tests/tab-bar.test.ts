@@ -68,6 +68,27 @@ describe('the native tab bar', () => {
     expect(calls).toEqual([['hide']])
   })
 
+  it('follows a kept screen the router shows again, which fires stx:screen-shown, not stx:load', () => {
+    const hadWindow = 'window' in globalThis
+    const saved = (globalThis as { window?: unknown }).window
+    ;(globalThis as { window?: unknown }).window = new EventTarget()
+    try {
+      const today = link('/m', 'Today', 'sun.max', { current: true })
+      const calendar = link('/m/calendar', 'Calendar', 'calendar')
+      const { api, calls } = fakeApi()
+      const stop = mirrorTabBar(nav([today, calendar]), { api })
+      today.setCurrent(false)
+      calendar.setCurrent(true)
+      ;(globalThis as { window: EventTarget }).window.dispatchEvent(new Event('stx:screen-shown'))
+      expect(calls.at(-1)).toEqual(['select', '/m/calendar'])
+      stop!()
+    }
+    finally {
+      if (hadWindow) (globalThis as { window?: unknown }).window = saved
+      else delete (globalThis as { window?: unknown }).window
+    }
+  })
+
   it('leaves a browser to the page\'s own bar', () => {
     const { api } = fakeApi()
     expect(mirrorTabBar(nav([]), { api: { ...api, isAvailable: () => false } })).toBeNull()
