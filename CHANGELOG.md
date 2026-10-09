@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.98...v0.75.99)
+
+## ✨ Features
+
+- **server**: domain routes in config/server.ts ([f5a20ec](https://github.com/stacksjs/stacks/commit/f5a20ec)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: file a wildcard alias's DNS record under its apex's zone ([a57c1fb](https://github.com/stacksjs/stacks/commit/a57c1fb)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: sheets cover the native tab bar and close with their screen; back labels follow the tab's own stack ([fd0d1dc](https://github.com/stacksjs/stacks/commit/fd0d1dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.97...v0.75.98)
 
 ## ✨ Features
