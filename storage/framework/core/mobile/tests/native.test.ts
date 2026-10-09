@@ -19,6 +19,7 @@ import {
   refresh,
   secureStorage,
   shortcuts,
+  snapshots,
   statusBar,
   storeKit,
   symbols,
@@ -43,6 +44,23 @@ afterEach(() => {
   symbols.clearCache()
   if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow)
   else Reflect.deleteProperty(globalThis, 'window')
+})
+
+describe('snapshots for native screens', () => {
+  it('hands the shell what a native screen draws first, and does nothing in a browser', () => {
+    install()
+    expect(snapshots.isAvailable()).toBe(false)
+    expect(snapshots.set('today', { a: 1 })).toBe(false)
+
+    const win = install()
+    const posted: unknown[] = []
+    win.webkit = { messageHandlers: { craftHybrid: { postMessage: (message: unknown) => posted.push(message) } } }
+    expect(snapshots.isAvailable()).toBe(true)
+    expect(snapshots.set('today', { fitness: 42 })).toBe(true)
+    expect(snapshots.clear()).toBe(true)
+    expect(posted).toEqual([{ type: 'snapshotSet', name: 'today', json: '{"fitness":42}' }, { type: 'snapshotClear' }])
+    expect(() => snapshots.set('../today', {})).toThrow()
+  })
 })
 
 describe('waiting for the bridge', () => {

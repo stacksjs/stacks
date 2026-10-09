@@ -33,6 +33,7 @@ import {
   secureStorage as craftSecureStorage,
   share as craftShare,
   speech as craftSpeech,
+  snapshots as craftSnapshots,
   splash as craftSplash,
   watchConnectivity as craftWatchConnectivity,
 } from 'craft-native/mobile'
@@ -47,6 +48,7 @@ import type {
   CraftMobileBridge,
   CraftReadyEvent,
   DeepLinksApi,
+  SnapshotsApi,
   DeviceApi,
   HapticsApi,
   HealthApi,
@@ -202,6 +204,17 @@ export const deepLinks: DeepLinksApi = {
       stop?.()
     }
   },
+}
+/**
+ * The page's side of native screens' first frame (see SnapshotsApi). The
+ * shell's message handler exists from the first byte of the page, so this
+ * needs no bridge: a call answers at once whether it was handed over.
+ */
+export const snapshots: SnapshotsApi = {
+  isAvailable: () => craftSnapshots.isAvailable(),
+  set: (name, value) => craftSnapshots.set(name, value),
+  remove: name => craftSnapshots.remove(name),
+  clear: () => craftSnapshots.clear(),
 }
 export const keepAwake: KeepAwakeApi = {
   enable: () => afterBridge(() => craftKeepAwake.enable()),

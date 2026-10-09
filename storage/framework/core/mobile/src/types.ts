@@ -317,6 +317,21 @@ export interface DeepLinksApi {
   onLink: (callback: (url: string, link?: { initial: boolean }) => void) => () => void
 }
 
+/**
+ * What the app's native screens draw before the page has loaded: JSON the
+ * page keeps under a name, which a native screen reads synchronously
+ * (`craft.snapshots.get(name)`) for its first frame. Outside an app with
+ * native screens, nothing is kept and every call answers false.
+ */
+export interface SnapshotsApi {
+  isAvailable: () => boolean
+  /** Keep `value` (anything JSON can hold) as `name`: letters, digits, `.`, `_` and `-`. */
+  set: (name: string, value: unknown) => boolean
+  remove: (name: string) => boolean
+  /** Forget every snapshot, as on signing out. */
+  clear: () => boolean
+}
+
 export interface NetworkStatus {
   type: 'wifi' | 'cellular' | 'ethernet' | 'none' | 'unknown'
   isConnected: boolean
