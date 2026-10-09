@@ -54,6 +54,29 @@ const staging = mkdtempSync(join(tmpdir(), 'stacks-dmg-'))
 // wholesale, so anything left there ships inside the DMG next to the app.
 const scratch = mkdtempSync(join(tmpdir(), 'stacks-dmg-work-'))
 
+/**
+ * Remove both temp directories, however this process ends
+ * (stacksjs/stacks#2885).
+ *
+ * They used to be removed only after `hdiutil create` succeeded, so every
+ * failed run left the staged bundle behind - about 90 MB a time. A repeatable
+ * imaging failure (stacksjs/stacks#2884) left 74 directories and 3.2 GB on one
+ * machine, noticed only because the app in question was a disk cleaner.
+ *
+ * Registered on `exit` rather than wrapped in try/finally around the imaging
+ * step, because the imaging step was never the only leaking path: this file is
+ * top-level module code with five throws and several `runBuildStep` calls after
+ * the directories exist, and every one of them leaked both. Reproduced from the
+ * `build:desktop did not produce` throw, which is 190 lines above the one the
+ * issue describes. Bun runs `exit` handlers after a top-level throw, verified
+ * before relying on it here.
+ *
+ * `rmSync` with `force` is idempotent, so the success path below still removes
+ * them early - ahead of signing and notarization, which can take minutes - and
+ * this runs harmlessly again afterwards.
+ */
+process.on('exit', () => {
+  rmSync(staging, { recursive: true, force: true })
   rmSync(scratch, { recursive: true, force: true })
 })
 const appDir = join(staging, `${appName}.app`)

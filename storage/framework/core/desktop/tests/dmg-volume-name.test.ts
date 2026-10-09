@@ -87,10 +87,10 @@ describe('dmgVolumeName', () => {
  * importing it would run a build. So the wiring is asserted against its source,
  * the way `routes-entrypoint.test.ts` does for the same reason.
  *
- * Verified by running the real command first: hdiutil imaged the staging
- * directory under the computed name and mounted it at
- * `/Volumes/SystemCleaner 0.3.5`, with `SystemCleaner.app` and the
- * `Applications` symlink intact inside.
+ * Both fixes were verified by running the real command first: the volume name
+ * end to end through hdiutil (mounted at `/Volumes/SystemCleaner 0.3.5`, bundle
+ * intact inside), and the leak by failing `buddy build:dmg` at the same throw
+ * before and after - two directories left behind, then none.
  */
 describe('build:dmg', () => {
   const dmg = readFileSync(
@@ -123,5 +123,47 @@ describe('build:dmg', () => {
   it('computes the name before invoking hdiutil', () => {
     expect(indexOfExisting('const volumeName = dmgVolumeName('))
       .toBeLessThan(indexOfExisting(`'hdiutil', 'create',`))
+  })
+
+  it('removes both temp directories however the process ends', () => {
+    // The imaging step was never the only leaking path: five throws and
+    // several build steps sit between the mkdtemp calls and the end of the
+    // file, and each one leaked both directories.
+    expect(dmg).toContain(`process.on('exit', () => {`)
+
+    // Bounded to the handler's own body. Sliced to end of file it also saw
+    // the success-path cleanup further down, so dropping a line from the
+    // handler left the assertion satisfied by the other copy.
+    // `\n})` at line start, not `})`: every `rmSync(x, { ... })` line ends in
+    // `})` too, so the loose needle cut the handler after its first statement
+    // and the second assertion failed against correct code.
+    const opens = indexOfExisting(`process.on('exit', () => {`)
+    const handler = dmg.slice(opens, indexOfExisting('\n})', opens) + 3)
+
+    expect(handler).toContain('rmSync(staging, { recursive: true, force: true })')
+    expect(handler).toContain('rmSync(scratch, { recursive: true, force: true })')
+  })
+
+  it('registers that cleanup before anything can throw', () => {
+    // Registered after the directories exist and before the first failure
+    // path, or it covers nothing.
+    const scratchCreated = indexOfExisting(`const scratch = mkdtempSync(`)
+    const registered = indexOfExisting(`process.on('exit', () => {`)
+    const firstThrow = dmg.indexOf('throw new Error(', registered)
+
+    expect(scratchCreated).toBeLessThan(registered)
+    expect(firstThrow, 'a throw must follow the registration').toBeGreaterThan(registered)
+  })
+
+  it('still frees the space early on the success path', () => {
+    // Ahead of signing and notarization, which can take minutes. `rmSync` with
+    // `force` is idempotent, so the exit handler running again is harmless.
+    const created = indexOfExisting('if (created.isErr)')
+    const earlyCleanup = indexOfExisting('rmSync(staging, { recursive: true, force: true })', created)
+
+    expect(earlyCleanup, 'the success path should not wait for exit').toBeGreaterThan(created)
+    // Searched FROM the cleanup: the signing block appears earlier too, for
+    // the app bundle rather than the image.
+    expect(earlyCleanup).toBeLessThan(indexOfExisting('if (signingIdentity) {', earlyCleanup))
   })
 })
