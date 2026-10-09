@@ -147,7 +147,31 @@ export type RewritesOptions = Record<string, string>
  * Answered by stx's own router (`serve({ domains })`, stx >= 0.2.410) under
  * both `buddy dev` and `buddy serve`; `buddy dev` prints the routes at boot.
  */
-export type DomainRoutes = Record<string, string>
+export type DomainRoutes = Record<string, string | DomainRouteTarget>
+
+/**
+ * A domain route that also says where the rest of the site lives.
+ *
+ * ```ts
+ * domains: {
+ *   '{username}.example.com': { to: '/{username}', elsewhere: 'https://example.com' },
+ * }
+ * ```
+ *
+ * The host's root is still the page. Any other page on it redirects to
+ * `elsewhere` (`chris.example.com/pricing` → `example.com/pricing`), while
+ * its assets, `/api` and `public/` files are answered in place for the page
+ * at the root. A browser keeps a session per origin, so without this a
+ * visitor who signs in from a profile's own domain is signed in to that
+ * domain alone, and goes on using the app under someone else's name.
+ * stx >= 0.2.411.
+ */
+export interface DomainRouteTarget {
+  /** The page the host's root renders, with `{name}` placeholders. */
+  to: string
+  /** Where the host's other pages live: an origin like `https://example.com`. */
+  elsewhere?: string
+}
 
 export interface ServerConfig {
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */

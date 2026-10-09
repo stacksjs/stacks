@@ -91,6 +91,10 @@ export default {
    * its own. Only the host's root is routed; its other paths are the site's
    * own. A `{name}` label matches one DNS label.
    *
+   * `{ to: '/{username}', elsewhere: 'https://example.com' }` keeps the root
+   * as the page and redirects the host's other pages to the main site, so a
+   * visitor browses and signs in on one origin.
+   *
    * The hostnames still have to reach the server: with ts-cloud, list
    * `*.example.com` in the site's `aliases` in `config/cloud.ts`.
    */
