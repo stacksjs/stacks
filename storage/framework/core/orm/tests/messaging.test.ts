@@ -10,6 +10,7 @@ const { db, acquireDbConfigLock, ensureDatabaseConfigLoaded, initializeDbConfig,
 const { createMessenger, MessagingError } = await import('../src/messaging')
 const { defineModel } = await import('../src/define-model')
 const { configureOrm } = await import('bun-query-builder')
+const { createBroadcastHub, getServer, stopServer } = await import('@stacksjs/realtime')
 let unlock: () => void
 let allowed = true
 const options = { scope: 'gym:1', authorize: (a: number, b: number) => allowed && [1, 2].includes(a) && [1, 2].includes(b), pageSize: 2 }
@@ -26,8 +27,25 @@ beforeAll(async () => {
   await db.unsafe('CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT)').execute()
   await db.unsafe("INSERT INTO people VALUES (1, 'Coach')").execute()
 })
-afterAll(() => unlock?.())
+afterAll(async () => { unlock?.(); await stopServer() })
 describe('persistent direct messaging', () => {
+  it('broadcasts private invalidations after persistence and suppresses duplicate retries', async () => {
+    createBroadcastHub()
+    const events: Array<{ channel: string, event: string, data: unknown }> = []
+    const remove = getServer()!.addBroadcastHook(event => { events.push(event) })
+    const thread = await coach.direct(2)
+    const saved = await coach.send(thread.id, 'Live question', 'live')
+    await coach.send(thread.id, 'Live question', 'live')
+    expect(events).toHaveLength(2)
+    expect(new Set(events.map(e => e.channel)).size).toBe(2)
+    expect(events.every(e => e.event === 'messaging.sent' && !JSON.stringify(e.data).includes('Live question'))).toBe(true)
+    await athlete.markRead(thread.id, saved.id)
+    expect(events).toHaveLength(4)
+    await athlete.markRead(thread.id, saved.id)
+    expect(events).toHaveLength(4)
+    remove()
+    await db.deleteFrom('chat_messages').where('id', '=', saved.id).execute()
+  })
   it('uses the same direct conversation from both participants and concurrent opens', async () => {
     const threads = await Promise.all([coach.direct(2), athlete.direct(1), coach.direct(2)])
     expect(new Set(threads.map(t => t.id)).size).toBe(1)

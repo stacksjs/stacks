@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { emit, getServer } from '@stacksjs/realtime'
 
 export class MessagingError extends Error {
   constructor(message: string, public status: number) { super(message) }
@@ -13,8 +14,15 @@ export interface MessagingOptions {
   enabled?: boolean
   maxLength?: number
   pageSize?: number
+  /** Private invalidation broadcasts through the native realtime engine. Default: true. */
+  broadcast?: boolean
   /** Required, and checked again on reads, sends and read receipts. */
   authorize: (actorId: number, recipientId: number) => boolean | Promise<boolean>
+}
+
+/** Private per-person inbox, isolated from other model participant types. */
+export function messagingChannel(participantType: string, userId: number): string {
+  return `private-messaging.${createHash('sha256').update(participantType).digest('hex')}.${positive(userId)}`
 }
 
 export interface DirectConversation {
@@ -113,20 +121,23 @@ export function createMessenger(options: MessagingOptions): Messenger {
     return { messages: rows.slice(0, pageSize).reverse().map(message), has_more: rows.length > pageSize }
   }
   async function send(id: string, body: string, clientKey: string): Promise<DirectMessage> {
-    await conversation(id)
+    const recipientId = await conversation(id)
     if (typeof body !== 'string' || !body.trim() || body.trim().length > maxLength) throw new MessagingError(`Write a message of 1 to ${maxLength} characters`, 422)
     if (typeof clientKey !== 'string' || !/^[\w-]{1,100}$/.test(clientKey)) throw new MessagingError('A valid message retry key is required', 422)
     const lookup = () => db.selectFrom('chat_messages').selectAll().where('conversation_id', '=', id).where('sender_id', '=', actorId).where('client_key', '=', clientKey).executeTakeFirst()
     let row = await lookup()
+    let inserted = false
     if (!row) {
       try {
         await db.insertInto('chat_messages').values({ conversation_id: id, sender_id: actorId, body: body.trim(), client_key: clientKey, created_at: sqlDateTime(), read_at: null }).execute()
+        inserted = true
       }
       catch (error) { if (!duplicate(error)) throw error }
       row = await lookup()
     }
     if (!row) throw new Error('Message could not be saved')
     if (row.body !== body.trim()) throw new MessagingError('This retry key belongs to a different message', 409)
+    if (inserted) notify(recipientId, id, 'messaging.sent')
     return message(row)
   }
   async function markRead(id: string, throughId: number) {
@@ -134,7 +145,14 @@ export function createMessenger(options: MessagingOptions): Messenger {
     positive(throughId)
     const seen = await db.selectFrom('chat_messages').select('id').where('conversation_id', '=', id).where('id', '=', throughId).executeTakeFirst()
     if (!seen) throw new MessagingError('Message not found', 404)
+    const unread = await db.selectFrom('chat_messages').select('id').where('conversation_id', '=', id).where('sender_id', '=', recipientId).where('id', '<=', throughId).whereNull('read_at').limit(1).executeTakeFirst()
     await db.updateTable('chat_messages').set({ read_at: sqlDateTime() }).where('conversation_id', '=', id).where('sender_id', '=', recipientId).where('id', '<=', throughId).whereNull('read_at').execute()
+    if (unread) notify(recipientId, id, 'messaging.read')
+  }
+  function notify(recipientId: number, id: string, event: string) {
+    if (options.broadcast === false || !getServer()) return
+    // No message text or identity data goes on the wire. Consumers re-read through their current policy.
+    for (const userId of [actorId, recipientId]) emit(messagingChannel(participantType, userId), event, { conversation_id: id })
   }
   return { direct, list, messages, send, markRead }
 }

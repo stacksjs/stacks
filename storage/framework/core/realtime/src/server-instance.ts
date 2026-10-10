@@ -1,5 +1,5 @@
 import type { BroadcastServer, ConnectionAuthorizationResult, ServerConfig, User } from 'ts-broadcasting'
-import { Broadcast } from 'ts-broadcasting'
+import { Broadcast, BroadcastServer as Server } from 'ts-broadcasting'
 import { recordBroadcast } from './replay-buffer'
 import { getWsAuthenticator } from './ws'
 
@@ -46,6 +46,14 @@ export function setServer(server: BroadcastServer | null): void {
  */
 export function getServer(): BroadcastServer | null {
   return serverInstance
+}
+
+/** Initialize the native broadcast engine for HTTP stream consumers, without binding a socket port. */
+export function createBroadcastHub(config: ServerConfig = {}): BroadcastServer {
+  if (serverInstance) return serverInstance
+  const server = new Server(config)
+  setServer(server)
+  return server
 }
 
 /**

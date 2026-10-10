@@ -12,7 +12,9 @@ export * from 'ts-broadcasting'
 // Aliases are provided below for convenience.
 
 // Server instance management
-export { getServer, setServer, createServer, stopServer } from './server-instance'
+export { getServer, setServer, createServer, createBroadcastHub, stopServer } from './server-instance'
+export { createBroadcastResponse } from './stream'
+export type { BroadcastStreamOptions } from './stream'
 
 // Stacks-specific exports
 export { emit, emitToUser, emitToUsers } from './emit'

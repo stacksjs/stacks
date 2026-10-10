@@ -504,3 +504,22 @@ Receipts acknowledge only messages through the id actually displayed.
 For the UI, STX ships `ChatInbox`, `ChatMessage`, and `ChatUnreadBadge` in
 `@stacksjs/components`. Browser stores import `createChat` from
 `@stacksjs/components/chat` and inject their authenticated HTTP transport.
+
+### Native broadcasting
+
+`createMessenger` emits `messaging.sent` after a new persisted message and
+`messaging.read` when acknowledged messages first become read. Retried sends and
+unchanged receipts emit nothing. Set `broadcast: false` to disable. Initialize
+Stacks realtime before delivery, using `createServer` for WebSockets or
+`createBroadcastHub` for authenticated HTTP streams.
+
+`messagingChannel(participantType, userId)` selects that person's private inbox.
+Authorize subscription using the authenticated person's server-owned ID. Events
+carry only `conversation_id`; always re-read message text through current
+relationship and tenant policy. This prevents a revoked relationship's old socket
+from receiving private message contents.
+
+The native STX controller accepts `broadcastEndpoint`. `chat.observe(active)`
+shares one stream across inboxes, launchers and unread badges, returns a cleanup,
+and reconciles after reconnect. Only an active visible inbox acknowledges reads.
+It clears account/tenant state and reconnects when the scope changes.

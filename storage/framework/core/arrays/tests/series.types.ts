@@ -1,4 +1,5 @@
 // Compile after building: checks the published declaration rather than source inference.
+// eslint-disable-next-line pickier/no-import-dist -- Validate the published declarations rather than source inference.
 import { summarizeSeries } from '../dist/series'
 const summary = summarizeSeries([{ date: '2026-01-01', value: 0 }])
 const count: number = summary.count

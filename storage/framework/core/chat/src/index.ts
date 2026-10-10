@@ -99,5 +99,5 @@ export type { DiscordConfig, DiscordMessage, DiscordEmbed } from './drivers/disc
 export type { TeamsConfig, TeamsMessage, TeamsAdaptiveCard, TeamsCardElement, TeamsCardAction } from './drivers/teams'
 
 /** Persistent first-party messaging between application users. */
-export { createMessenger, MessagingError } from '@stacksjs/orm'
+export { createMessenger, messagingChannel, MessagingError } from '@stacksjs/orm'
 export type { Messenger, MessagingOptions, DirectConversation, DirectMessage } from '@stacksjs/orm'

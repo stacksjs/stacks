@@ -375,3 +375,21 @@ private/presence channel authorization are separate checks. Replay is in-memory
 and per process, not durable recovery or a cluster-wide sequence.
 Retained tests: `core/realtime/tests/ws-auth.test.ts`,
 `websocket-options.test.ts`, and replay/exclusion tests in that directory.
+
+## Authenticated HTTP broadcast transport
+
+`createBroadcastHub()` initializes the same ts-broadcasting engine without opening
+an extra WebSocket listener. It reuses an existing server. This is an explicit
+single-process HTTP transport; it does not initialize Redis or a cluster.
+`emit()`, model broadcasts and private chat invalidations all reach its hooks.
+
+`createBroadcastResponse({ channels, authorize, signal })` returns an SSE Response.
+Select channel names on the server. Authorization is mandatory and runs before
+subscription, before each event, and at every heartbeat. Pass the request's abort
+signal. Cancellation, failed authorization and slow consumers remove the hook.
+Streams bound both queued events and pending authorization work (64 by default).
+
+STX's `useBroadcastStream({ request, endpoint, onMessage, onConnected })` makes
+fresh authenticated requests using the application's injected transport, reconnects
+with backoff, and cancels on `close()`. Re-read durable state in `onConnected`;
+this stream does not promise durable replay. Credentials stay in HTTP headers.
