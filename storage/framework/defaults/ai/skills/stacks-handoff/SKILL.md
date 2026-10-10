@@ -10,6 +10,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Handoff
 
+For an explicitly requested handoff to a new worker, first produce the same
+portable summary, then dispatch it through the harness's native agent or chat
+tool when available. Creating a document alone does not start another chat.
+Avoid shell interpolation of the summary; pass it as structured prompt data.
+Track the worker's status and retain the source artifacts. The upstream
+`claude-handoff` variant is covered by this harness-neutral mode. See
+[NOTICE.md](NOTICE.md) and [the Stacks adaptation rules](../stacks-flow/ENGINEERING.md).
+
 Write a handoff document summarising the current conversation so a fresh agent
 can continue the work. Save it to the OS temp directory, not the workspace: a
 handoff is scaffolding for one hop, and a stray `HANDOFF.md` in the repo is

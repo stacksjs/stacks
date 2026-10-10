@@ -1,6 +1,6 @@
 ---
 title: "Review skill"
-description: "Use when reviewing code changes in a Stacks project."
+description: "Use when reviewing code changes in a Stacks project - a PR, a branch, staged work, or the diff since a fixed point. Reviews on two axes, Standards (does it follow this repo's rules and avoid the smell baseline) and Spec (does it do what was asked), plus a test coverage audit and an auto-fix pass. Invoke with /stacks-review."
 ---
 # Review
 
@@ -59,3 +59,10 @@ matches, and you can also call it by name:
 Source: [`stacks-review/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-review/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-review/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

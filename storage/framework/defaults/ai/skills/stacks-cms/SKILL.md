@@ -1,6 +1,6 @@
 ---
 name: stacks-cms
-description: Use when working with the CMS in a Stacks application - posts, authors, pages, categories, tags, comments, blog configuration, RSS feeds, or sitemaps. Covers @stacksjs/cms, CMS models, routes, and actions.
+description: Use when working with Stacks CMS posts, authors, block-document pages, revisions, menus, redirects, scheduled publishing, blog feeds, or public page serving. Covers @stacksjs/cms, site-scoped CMS models, routes, and actions.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -19,7 +19,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Source Files
 ```
 cms/src/
-├── index.ts              # CmsNamespace — top-level API
+├── index.ts              # CmsNamespace - top-level API
 ├── posts/
 │   ├── fetch.ts          # fetchById, fetchAll, fetchByStatus, fetchByCategory, fetchByAuthor
 │   ├── store.ts          # store, attach, detach, sync (pivot tables)
@@ -41,6 +41,12 @@ cms/src/
 
 ## CMS Namespace
 
+Enable/install the CMS feature through its supported lifecycle, then generate
+and review migrations for changed models. The legacy posts/authors/pages
+namespace below coexists with the document-page exports described in
+[PAGES.md](PAGES.md). For a real page editor or public CMS fallback, start with
+the validated document APIs rather than raw `pages` column writes.
+
 ```typescript
 interface CmsNamespace {
   posts: PostsModule
@@ -61,14 +67,14 @@ interface CmsNamespace {
 
 | Field | Type | Validation | Default |
 |-------|------|------------|---------|
-| title | string | required, 3-255 chars | — |
-| content | string | required, 10-1000 chars | — |
-| excerpt | string | optional, 10-500 chars | — |
-| poster | string | optional, valid URL | — |
-| views | number | — | 0 |
-| publishedAt | timestamp | optional | — |
+| title | string | required, 3-255 chars | - |
+| content | string | required, 10-1000 chars | - |
+| excerpt | string | optional, 10-500 chars | - |
+| poster | string | optional, valid URL | - |
+| views | number | - | 0 |
+| publishedAt | timestamp | optional | - |
 | status | enum | published/draft/archived | draft |
-| isFeatured | number | 0 or 1 | — |
+| isFeatured | number | 0 or 1 | - |
 
 ### Author
 - **Table**: `authors`, **Relationships**: `hasMany(['Post'])`, `belongsTo(['User'])`
@@ -241,12 +247,18 @@ Tune the look with custom properties (`--me-radius`, `--me-gap`, `--me-block-spa
 | `categorizable_models` | Polymorphic pivot: category ↔ model |
 
 ## Gotchas
-- **Polymorphic relations** — categories, tags, and comments use `*_type` fields to support multiple model types
-- **Post `content` maps from `body`** — the model attribute is `content` but the DB column mapping comes from `body`
-- **Author uses findOrCreate** — `PostStoreAction` auto-creates authors if they don't exist
-- **Post store auto-attaches** — creating a post with category/tag data automatically calls `attach()` on pivot tables
-- **Post update uses sync** — updating categories/tags uses `sync()` (detaches removed, attaches new)
-- **Views increment is atomic** — `PATCH /cms/posts/{id}/views` increments by 1
-- **RSS returns 20 items** — hardcoded to 20 most recent published posts
-- **Sitemap priorities** — posts 0.8, categories 0.6, blog homepage 0.9
-- **Comment status flow** — starts `pending`, can be approved, rejected (→ spam), or trashed
+- CMS document pages are scoped to an explicit site id. Pair them with
+  `stacks-sites`; background work has no implicit request site.
+- CMS post categories use `categorizables`. The Post model's
+  `belongsToMany(Category)` currently resolves commerce `categories`, a separate
+  id space (tracked in #2584). Use the CMS categorization module for CMS ids;
+  do not treat that relationship as an interchangeable alias.
+- **Polymorphic relations** - categories, tags, and comments use `*_type` fields to support multiple model types
+- **Post `content` maps from `body`** - the model attribute is `content` but the DB column mapping comes from `body`
+- **Author uses findOrCreate** - `PostStoreAction` auto-creates authors if they don't exist
+- **Post store auto-attaches** - creating a post with category/tag data automatically calls `attach()` on pivot tables
+- **Post update uses sync** - updating categories/tags uses `sync()` (detaches removed, attaches new)
+- **Views increment is atomic** - `PATCH /cms/posts/{id}/views` increments by 1
+- **RSS returns 20 items** - hardcoded to 20 most recent published posts
+- **Sitemap priorities** - posts 0.8, categories 0.6, blog homepage 0.9
+- **Comment status flow** - starts `pending`, can be approved, rejected (→ spam), or trashed

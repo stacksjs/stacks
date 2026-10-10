@@ -385,3 +385,23 @@ await fcm.unsubscribeFromTopic(['token1'], 'news')
 - FCM v1 includes both Android and APNS-specific priority headers automatically
 - `badge` only works on iOS -- Android uses notification channels (set via `channelId` on Expo)
 - `sound: null` sends a silent notification
+
+
+## Browser Web Push
+
+The separate browser subscription API exports `generateVapidKeys`,
+`buildVapidHeaders`, `encryptPayload` and `sendWebPush`, plus
+VapidKeys, WebPushSubscription, SendWebPushOptions and WebPushResult types.
+Read `storage/framework/core/push/src/drivers/web-push.ts` before constructing
+the subscription/options. It performs VAPID authorization and payload encryption
+natively; it does not add a web-push value to `send(..., { driver })`, whose
+choices remain Expo and FCM. The browser must supply its actual subscription.
+
+Expo/FCM read credentials from `config/services.ts` when explicit configure
+calls have not overridden them. Inspect structured PushResult success; a resolved
+send does not imply final device receipt. Native notify's push fan-out defaults
+to Expo; explicit FCM selection uses this package's direct send API.
+
+Evidence: `core/push/tests/web-push.test.ts`,
+`config-credentials.test.ts` and `fcm.test.ts`. These tests do not prove
+live delivery to a registered physical device.

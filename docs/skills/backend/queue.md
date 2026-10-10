@@ -1,35 +1,18 @@
 ---
 title: "Queue skill"
-description: "Use when working with job queues in a Stacks application."
+description: "Use when working with job queues in a Stacks application - creating jobs, dispatching, workers, batches, failed jobs, queue events, health checks, testing, Redis/database/sync drivers, rate limiting, or scheduled jobs. Covers @stacksjs/queue, config/queue.ts, and app/Jobs/."
 ---
 # Queue
 
-`stacks-queue` · Backend and API · model-invoked
+`stacks-queue` · Native Stacks · model-invoked
 
-The queue system itself: workers, batches, failed jobs, queue events, health
-checks, testing, and the Redis, database and sync drivers.
+Use when working with job queues in a Stacks application - creating jobs, dispatching, workers, batches, failed jobs, queue events, health checks, testing, Redis/database/sync drivers, rate limiting, or scheduled jobs. Covers @stacksjs/queue, config/queue.ts, and app/Jobs/.
 
-## When to reach for it
-
-- Creating jobs
-- Dispatching
-- Workers
-- Batches
-- Failed jobs
-- Queue events
-- Health checks
-- Testing
-- Redis/database/sync drivers
-- Rate limiting
-- Scheduled jobs
-
-## Covers
-
-`@stacksjs/queue`, `config/queue.ts`, `app/Jobs/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -47,24 +30,23 @@ The sections an agent reads once the skill loads.
 - Creating a Job
 - config/queue.ts
 - Gotchas
+- Dispatch correctness and durable workflows
+- Driver evidence
 
-## Where the code lives
+## Supporting references
 
-- Queue package: `storage/framework/core/queue/src/`
-- Configuration: `config/queue.ts`
-- Application jobs: `app/Jobs/`
-- Job model: `storage/framework/defaults/app/Models/Job.ts`
-- Failed job model: `storage/framework/defaults/app/Models/FailedJob.ts`
+- [DURABLE-WORKFLOWS.md](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-queue/DURABLE-WORKFLOWS.md)
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-queue
 ```
 
 Source: [`stacks-queue/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-queue/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-queue/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-queue/SKILL.md`. See [Using skills](/skills/using).

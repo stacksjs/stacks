@@ -1,46 +1,35 @@
 ---
 title: "Objects skill"
-description: "Use when working with object manipulation in Stacks."
+description: "Use when working with object manipulation in Stacks - deep merging with type safety, object mapping/transformation, strict key checking, typed entries/keys, property picking, clearing undefined values, or the DeepMerge utility type. Covers @stacksjs/objects."
 ---
 # Objects
 
-`stacks-objects` · Utilities · model-invoked
+`stacks-objects` · Native Stacks · model-invoked
 
-Type-safe deep merging, object mapping, strict key checking, typed entries and
-keys, property picking, and clearing undefined values.
+Use when working with object manipulation in Stacks - deep merging with type safety, object mapping/transformation, strict key checking, typed entries/keys, property picking, clearing undefined values, or the DeepMerge utility type. Covers @stacksjs/objects.
 
-## When to reach for it
-
-- Deep merging with type safety
-- Object mapping/transformation
-- Strict key checking
-- Typed entries/keys
-- Property picking
-- Clearing undefined values
-- The DeepMerge utility type
-
-## Covers
-
-`@stacksjs/objects`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Path
 - Dependencies
 - Functions
-- Gotchas
+- Additional native transforms
+- Mutation and typing gotchas
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-objects
 ```
 
 Source: [`stacks-objects/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-objects/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-objects/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-objects/SKILL.md`. See [Using skills](/skills/using).

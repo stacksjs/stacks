@@ -25,9 +25,9 @@ export { format as dateFormat } from './format'  // convenience alias
 ```
 
 Three source files:
-- `now.ts` — `DateTime` class and `now()` helper
-- `format.ts` — standalone `format()` function with token-based formatting and timezone support
-- `parse.ts` — standalone `parse()` function with token-based parsing
+- `now.ts` - `DateTime` class and `now()` helper
+- `format.ts` - standalone `format()` function with token-based formatting and timezone support
+- `parse.ts` - standalone `parse()` function with token-based parsing
 
 ## DateTime Class (`now.ts`)
 
@@ -122,6 +122,9 @@ Implementation details:
 - `addSeconds/Minutes/Hours` use millisecond arithmetic on timestamp
 - `addDays` uses `Date.setDate()` (handles month boundaries correctly)
 - `addMonths` uses `Date.setMonth()` (handles year boundaries)
+- Month/year arithmetic inherits native overflow behavior. For a business
+  calendar month that must clamp January 31 to February's last day, use the
+  exported `addCalendarMonths(date, count, { utc? })` helper instead.
 - `addYears` uses `Date.setFullYear()`
 - All `sub*` methods delegate to `add*(-n)`
 
@@ -229,7 +232,9 @@ parse('2024-06-15 10:30 +0530', 'YYYY-MM-DD HH:mm Z') // Date with timezone offs
 **Without format string**:
 - Date-only ISO strings (YYYY-MM-DD) are parsed as LOCAL time, not UTC -- this is a deliberate fix for the native Date behavior where `new Date('2024-06-15')` treats it as UTC causing day shifts
 - All other strings use native `new Date()` parsing
-- Throws on invalid dates
+- Rejects unparseable native dates. Calendar fields can normalize through native
+  Date, so use validation for strict rejection of impossible dates such as
+  February 31 rather than treating this parser as a validation boundary.
 
 **With format string**:
 - Builds a regex from the format tokens and extracts named groups
@@ -240,7 +245,18 @@ parse('2024-06-15 10:30 +0530', 'YYYY-MM-DD HH:mm Z') // Date with timezone offs
 - Z token: parses +HHMM offset, constructs UTC time and adjusts
 - Throws if the format doesn't match the input string
 
-## `now()` Helper
+## Named-zone instants and calendar months
+
+The root additionally exports `zoneOffsetMinutes(instant, timeZone)`,
+`zonedTimeToUtc(wallClock, timeZone)`, `isoInZone(instant, timeZone)` and
+`addCalendarMonths(date, count, { utc? })`. A wall-clock string has no supplied
+offset; the named IANA zone converts it into an instant. `isoInZone` retains
+that zone's offset in serialized output rather than merely displaying a date.
+Review `zone.ts` and its DST behavior when ambiguous/gap local times matter.
+`addCalendarMonths` clones and clamps the day; ordinary `DateTime.addMonths`
+preserves native Date overflow instead. Do not interchange those contracts.
+
+## Current-time helper example
 
 ```typescript
 import { now } from '@stacksjs/datetime'

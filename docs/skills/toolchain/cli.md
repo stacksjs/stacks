@@ -1,31 +1,18 @@
 ---
 title: "CLI skill"
-description: "Use when building CLI commands or tools with Stacks."
+description: "Use when building CLI commands or tools with Stacks - the @stacksjs/cli package for creating commands with argument parsing, option handling, colored output, tables, progress indicators, prompts, or integrating with the buddy command system. Covers @stacksjs/cli and app/Commands/."
 ---
 # CLI
 
-`stacks-cli` · Toolchain · model-invoked
+`stacks-cli` · Native Stacks · model-invoked
 
-The package you build commands *with*: argument parsing, option handling, coloured
-output, tables, progress indicators and prompts.
+Use when building CLI commands or tools with Stacks - the @stacksjs/cli package for creating commands with argument parsing, option handling, colored output, tables, progress indicators, prompts, or integrating with the buddy command system. Covers @stacksjs/cli and app/Commands/.
 
-## When to reach for it
-
-- The @stacksjs/cli package for creating commands with argument parsing
-- Option handling
-- Colored output
-- Tables
-- Progress indicators
-- Prompts
-- Integrating with the buddy command system
-
-## Covers
-
-`@stacksjs/cli`, `app/Commands/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Creating Commands
@@ -35,23 +22,18 @@ The sections an agent reads once the skill loads.
 - CLI Commands
 - Compiled Binaries
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/cli/src/`
-- CLI configuration: `config/cli.ts`
-- Application commands: `app/Commands/`
-- Optional registry: `app/Commands.ts` (not needed - see below)
+- Native terminal primitives
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-cli
 ```
 
 Source: [`stacks-cli/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-cli/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-cli/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-cli/SKILL.md`. See [Using skills](/skills/using).

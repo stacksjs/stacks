@@ -624,6 +624,8 @@ buddy changelog              # generate CHANGELOG.md
   -d/--dry-run               # preview without writing
 buddy release                # release new version via GitHub Actions
   --dry-run                  # preview without releasing
+  --bump <type>              # non-interactive bump, including build, calendar, or x.y.z
+  --preid <identifier>       # prerelease channel, for example beta or rc
 buddy route                  # route management
 buddy share [type]           # share local dev server via public tunnel (localtunnel)
   -p/--port <port>           # local port

@@ -8,171 +8,80 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Types
 
-## Key Paths
-- Core types: `storage/framework/core/types/src/`
-- Generated types: `storage/framework/types/`
-- ORM globals: `storage/framework/types/orm-globals.d.ts`
-- Environment: `storage/framework/types/env.d.ts`
-- Actions: `storage/framework/types/actions.d.ts` (generated `ActionPath` union)
-- Model traits: `storage/framework/types/traits.d.ts`
-- Model attributes: `storage/framework/types/attributes.d.ts`
-- Events: `storage/framework/types/events.ts`
-- Attributes: `storage/framework/types/attributes.ts`
+Read the owning package's exported type before writing a parallel interface.
+`@stacksjs/types` contains shared config/model/request/provider contracts;
+`storage/framework/types/` contains app augmentations and generated registries.
+Ambient types are not proof of runtime globals.
 
-## Authentication Types (auth.ts)
+## Model and query types
 
-```typescript
-interface AuthConfig {
-  default: string
-  guards: { [key: string]: { driver: 'session' | 'token', provider: string } }
-  providers: { [key: string]: { driver: 'database', table: string } }
-  username: string
-  password: string
-  tokenExpiry: number           // 30 days
-  tokenRotation?: number        // deprecated; rotate explicitly
-  defaultAbilities: string[]
-  defaultTokenName: string
-}
-```
+~~~ts
+import type { ModelRow, NewModelData, UpdateModelData } from '@stacksjs/orm'
+import { User } from '@stacksjs/orm'
 
-## ORM Global Types (orm-globals.d.ts)
+type UserRow = ModelRow<typeof User>
+type UserInsert = NewModelData<typeof User>
+type UserUpdate = UpdateModelData<typeof User>
+~~~
 
-```typescript
-// Full database row — model attributes + system fields + FK columns
-type ModelRow<T> = { id: number, uuid: string, created_at: string, updated_at: string } & ModelAttributes<T>
+ModelRow derives attributes, trait fields and relationship foreign keys from
+the actual model. It is not a universal row with uuid/timestamps always present.
+Use that inferred row instead of a legacy UserModel interface when custom
+columns matter. NewModelData/UpdateModelData follow their real exported definitions;
+do not assume every field is optional. Global compatibility aliases delegate to
+those package types in orm-globals.d.ts; explicit imports keep modules portable.
 
-// Insertable data — all fields optional
-type NewModelData<T> = Partial<ModelAttributes<T>>
+DatabaseSchema augmentation and RowOf/TableName provide typed raw-table access.
+ModelRegistry/ModelNames derive model-name completion from the models barrel;
+empty registries may fall back to string until the app has generated its surface.
+See stacks-models/stacks-query-builder for relationships and query result kinds.
 
-// Updateable data — all fields optional
-type UpdateModelData<T> = Partial<ModelAttributes<T>>
+## Requests, actions and registries
 
-// Model-aware request — narrows field names to model's attributes
-interface RequestInstance<TModel> {
-  get(key: keyof TModel): any
-  all(): TModel
-  validate(): Promise<void>
-}
-```
+RequestInstance<TFields, TParams> from @stacksjs/types describes enhanced incoming
+requests, with typed field access and string route params. The ambient
+RequestInstance<typeof Model> compatibility alias maps a model to its ModelRow;
+that generic is different from the package type's field generic.
+Read core/types/src/request.ts before annotating all/validate/file/rawBody calls.
 
-## Environment Types (env.d.ts)
+ActionPath, listener/middleware/job names and payload maps are generated from
+the same discovered app/default resources their resolvers use. Route/action
+helpers infer literal params; a name map is not a separately maintained count.
+For custom registry augmentation use the owning package's interface. There are
+no UserRequest/UserRequestModel runtime globals or a Model-suffix global variant.
 
-```typescript
-// Application
-APP_NAME, APP_ENV: 'local' | 'dev' | 'stage' | 'prod', APP_KEY, APP_URL, PORT, DEBUG
+## Events and environment
 
-// Database
-DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'dynamodb'
-DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+AppEvents is augmented on @stacksjs/events; auth and model events carry typed
+payloads. Model before-events carry model objects, after-events carry rows;
+the map is derived from models, not Record<string, any> for all events. Read
+stacks-events for completion and cancellation semantics.
 
-// AWS
-AWS_ACCOUNT_ID, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION
+config/env.ts plus defineEnv is the schema and typing source for app variables.
+The env proxy is typed/coerced and values may be undefined. Bun.env/process.env
+hold raw environment strings; an old generated Bun.env augmentation is absent.
+Do not copy stale MAIL_MAILER/DB_CONNECTION enums into another declaration.
+Driver availability comes from config's capability registry, not a string union.
+Auth tokenExpiry is milliseconds; current configured defaults are in auth.ts,
+not a hard-coded thirty-day type comment. See stacks-env and stacks-auth.
 
-// Mail
-MAIL_MAILER: 'smtp' | 'mailgun' | 'ses' | 'postmark' | 'sendmail' | 'log'
-MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_NAME, MAIL_FROM_ADDRESS
+## Browser globals and component metadata
 
-// Search
-SEARCH_ENGINE_DRIVER: 'meilisearch' | 'algolia' | 'typesense'
-MEILISEARCH_HOST, MEILISEARCH_KEY
+STX runtime-attached names determine bare calls. The old browser manifest's
+ambient declaration can disagree with runtime; read stacks-auto-imports and
+stacks-composables. Imported modules need their own imports. Built-in names such
+as Error/Request are preserved; import conflicting models explicitly.
 
-// Frontend
-FRONTEND_APP_ENV: 'development' | 'staging' | 'production', FRONTEND_APP_URL
-```
+Components resolve by the STX component pipeline, not a fabricated components.d.ts
+global list. Editor web-types/custom-elements metadata is separate from runtime
+components and package discovery. buddy generate and its typed registry commands
+refresh declared resources; it cannot conjure a missing runtime export.
 
-## Event Types (events.ts)
+## Source and checks
 
-All model CRUD events: `model:created`, `model:updated`, `model:deleted`
-
-- **Content**: author, post, page
-- **Core**: user, activity, campaign, comment, email-list, notification, social-post, subscription, tag
-- **Commerce (37 models)**: cart, cart-item, category, coupon, customer, order, order-item, payment, product, product-variant, review, shipping-method, shipping-rate, tax-rate, transaction, gift-card, license-key, and more
-
-All payloads are `Record<string, any>`.
-
-## Billing Types (billing.ts)
-
-```typescript
-interface TransactionHistory {
-  id?, uuid?, name, description?, amount, type, provider_id?, user_id?, paymentmethod_id?, created_at, updated_at?
-}
-
-interface PaymentMethod {
-  id?, uuid?, type, last_four, brand, exp_month, exp_year, is_default?, provider_id?, user_id?
-}
-
-interface Product {
-  id?, uuid?, name, key, unit_price?, status?, image?, provider_id?
-}
-
-interface Subscription {
-  id?, uuid?, type, provider_id, provider_status, provider_type, unit_price?, quantity?, trial_ends_at?, ends_at?, user_id?
-}
-```
-
-## Attribute Types (attributes.ts)
-
-200+ attribute definitions covering all models:
-
-| Category | Fields |
-|----------|--------|
-| Basic | name, slug, description, title, subject, content, body |
-| Dates | created_at, updated_at, published_at, scheduled_at, expires_at |
-| Commerce | unit_price, price, amount, tax_amount, discount_amount, total, currency |
-| User | email, password, phone, avatar, author_name, author_email |
-| Shipping | delivery_address, delivery_fee, region, countries |
-| Loyalty | loyalty_points_earned, loyalty_points_redeemed, points_required |
-| Analytics | views, conversions, clicks, reach, likes, shares |
-
-## Request Types (traits.d.ts)
-
-Auto-generated per model:
-
-```typescript
-interface PasskeysRequestType extends Request {
-  get(key: 'id' | 'cred_public_key' | 'user_id' | 'counter' | ...): any
-}
-
-interface CommentablesRequestType extends Request {
-  get(key: 'title' | 'body' | 'status' | 'commentables_id' | ...): any
-}
-```
-
-## Auto-Imported Globals
-
-### Framework Modules
-`Action`, `response`, `route`, `Router`, `schema`, `validate`, `slug`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `path`, `storage`, `log`, `handleError`, `Auth`, `register`
-
-### 60+ ORM Models (globally available)
-User, Team, Post, Page, Author, Comment, Product, Order, Cart, Customer, Coupon, Category, Tag, Payment, Subscription, Driver, ShippingRate, GiftCard, LicenseKey, Job, FailedJob, Error, Log, Notification, and many more.
-
-### stx components
-Components under `resources/components/` are resolved by the stx plugin and used directly in templates (`<Card />`) - no import, no global registration step. Editor metadata is generated into `storage/framework/core/web-types.json` and `custom-elements.json` by `buddy generate:web-types` / `generate:custom-data`. There is no `components.d.ts`.
-
-### Actions Type
-```typescript
-type ActionPath = 'Actions/LogAction' | 'Actions/HealthAction' | 'Actions/ExampleAction' | (string & {})
-```
-
-## CLI Types (cli.ts)
-
-```typescript
-interface CliOptions {
-  verbose?: boolean, silent?: boolean, quiet?: boolean
-  cwd?: string, background?: boolean, timeoutMs?: number, project?: string
-}
-
-interface CleanOptions extends CliOptions {}
-interface CommitOptions extends CliOptions {}
-interface FreshOptions extends CliOptions { dryRun?: boolean }
-```
-
-## Gotchas
-- **Types are auto-generated** — many files in `storage/framework/types/` are generated from model definitions
-- **ORM globals are truly global** — `ModelRow<T>`, `NewModelData<T>` available without imports
-- **RequestInstance is model-aware** — `.get()` and `.all()` narrowed to model's fields when typed
-- **Event payloads are untyped** — all `Record<string, any>`, not strongly typed per-model
-- **Env types augment Bun.env** — `Bun.env.DB_CONNECTION` is typed
-- **Attributes is a shared type** — 200+ fields covering ALL models, not per-model
-- **Router types auto-generated** — 130+ typed route definitions, regenerated when routes change
-- **Components.d.ts has 150+ entries** — globally registered, no imports needed
+`storage/framework/core/types/src/index.ts` exports shared declarations;
+request.ts/model.ts/model-names.ts own those contracts.
+`storage/framework/types/orm-globals.d.ts`, env.d.ts, models.d.ts,
+model-events.d.ts and registries.d.ts connect application inference.
+Read stacks-auto-imports/stacks-build for generated-declaration and runtime-export
+checks. The types package no longer needs old Vite-only build/layout/SSG imports.

@@ -28,10 +28,10 @@ import {
 } from '@stacksjs/search-engine'
 
 const search = useSearchEngine()       // default driver
-const algolia = useAlgolia()            // Algolia client
-const meili = useMeilisearch()          // Meilisearch client
-const openSearch = useOpensearch()       // OpenSearch driver
-const typesense = useTypesense()         // Typesense driver
+const algolia = await useAlgolia()            // Algolia client
+const meili = await useMeilisearch()          // Meilisearch client
+const openSearch = await useOpensearch()       // OpenSearch driver
+const typesense = await useTypesense()         // Typesense driver
 ```
 
 ## Document Operations
@@ -96,7 +96,7 @@ buddy search-engine:settings --model Product  # settings for specific model
 |---------|-------------|---------|-----------|------------|
 | Self-hosted | Yes | No | Yes | Yes |
 | Managed option | Yes | Yes | Yes | Yes |
-| Model lifecycle indexing | Yes | Yes | Yes | Driver must implement the full contract |
+| Model lifecycle indexing | Yes | Yes | Yes | Yes |
 
 ## config/search-engine.ts
 
@@ -107,7 +107,7 @@ buddy search-engine:settings --model Product  # settings for specific model
 Environment variables: `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, `SEARCH_ENGINE_DRIVER`
 
 ## Gotchas
-- Default driver is `opensearch` — configure in config or env
+- Default driver is `opensearch` - configure in config or env
 - A selected driver must implement the complete `SearchEngineDriver` surface; never satisfy the type with an empty cast
 - `useSearch` trait determines which model fields are indexed
 - `displayable` controls which fields appear in search results
@@ -117,4 +117,25 @@ Environment variables: `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, `SEARCH_ENGINE_DRI
 - Use `buddy search-engine:update --flush` for full re-index
 - Meilisearch requires a running Meilisearch server
 - Algolia requires API keys from your Algolia dashboard
-- Settings updates don't re-index — run `search-engine:update` after changes
+- Settings updates don't re-index - run `search-engine:update` after changes
+
+
+## Readiness and driver boundaries
+
+`useSearchEngine()` returns a synchronous deferred proxy whose async methods
+wait for configuration and driver loading. The provider factories return promises
+and require await. Use `await searchEngineReady()` before reading synchronous
+client/resetClient members. This avoids capturing framework default config before
+overridesReady settles.
+
+Every driver implements SearchEngineDriver, but setting/collection schemas differ.
+Typesense needs explicit schema handling for model field types and settings;
+read its driver/schema tests before translating Meilisearch filters unchanged.
+Lifecycle indexing errors are surfaced through the framework's search handling;
+an external index is not a transactional substitute for the model database.
+Read the source path used by your write before assuming bulk raw SQL auto-indexes.
+
+Source: `storage/framework/core/search-engine/src/index.ts`,
+`documents.ts` and `drivers/`. Retained tests:
+`early-proxy.test.ts`, `driver-contract.test.ts`,
+`document-errors.test.ts` and `typesense-schema.test.ts`.

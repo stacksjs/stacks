@@ -38,7 +38,9 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 
 ### Commits
 - Use conventional commit messages (`fix:`, `feat:`, `chore:`, ...).
-- Only commit or push when asked. If on the default branch, branch first.
+- Publish completed work to `origin/main` as Chris (`chris@stacksjs.com`), without
+  coauthor trailers. Branch before editing on the default branch, integrate
+  current `origin/main`, and use a normal fast-forward push. Never force-push.
 
 ### Requirements
 - Bun >= 1.3.0, SQLite >= 3.47.2. TypeScript throughout.
@@ -51,7 +53,7 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 |---|---|
 | `app/` | Your application code (see the override model below): `Actions/`, `Jobs/`, `Listeners/`, `Middleware/`, `Mail/`, `Commands/`, `Models/`, `Skills/`, and top-level `Routes.ts`, `Events.ts`, `Gates.ts`, `Scheduler.ts`, `Middleware.ts`, `Listener.ts` |
 | `routes/` | Route files (`api.ts`, `web`, `v1.ts`, `users.ts`, ...), registered via `app/Routes.ts` |
-| `config/` | ~53 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `crosswind.ts`, ...) |
+| `config/` | ~53 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `css.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
 | `resources/` | stx frontend: `views/`, `components/`, `layouts/`, `partials/` |
 | `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 107 built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework |
@@ -75,6 +77,13 @@ Read the skill before building. The full list lives in `storage/framework/defaul
 `buddy setup:ai` to expose it to your agent, and add project-specific skills in `app/Skills/`.
 Every skill also has a docs page at https://stacksjs.com/docs/skills, one per skill, grouped by section
 (`docs/skills/` in the framework repository; a scaffolded app's `docs/` is its own).
+
+Start with `stacks-native` when choosing a framework capability. Its generated
+catalog maps every current core package to a skill and source entrypoint;
+`CAPABILITIES.md` records driver evidence and limits. Prefer native model-to-
+migration, CRUD, form, queue, CMS, storage and delivery APIs before inventing
+parallel infrastructure. `buddy docs:native-skills:check` catches missing native
+package coverage and stale references.
 
 ### Backend / API
 | Task | Skill |
@@ -148,9 +157,49 @@ it when you cannot remember which one fits.
 | Hand the work to another session, harness or person | `stacks-handoff` |
 | Improve the environment the next session runs in | `stacks-retro` |
 | Write a skill, an `AGENTS.md`, or any doc an agent reads | `stacks-writing-for-agents` |
+| Humanize prose with a broad editorial rewrite | `stacks-humanizer` |
+| Audit AI-sounding prose, suggest minimal edits, or learn and match a voice | `stacks-unslop` |
+| Persist design-interview decisions and domain terms | `stacks-grill-with-docs` |
+| Synthesize a spec and split it into dependency-linked tickets | `stacks-to-spec`, `stacks-to-tickets` |
+| Implement one ticket or an entire task graph | `stacks-implement`, `stacks-implement-spec` |
+| Triage incoming issues or plan a large unresolved effort | `stacks-triage`, `stacks-wayfinder` |
+| Find architecture improvements or enforce package entrypoints | `stacks-improve-codebase-architecture`, `stacks-setup-deep-modules` |
+| Gather primary-source research or write a PR description | `stacks-research`, `stacks-pr` |
+| Configure tracker conventions or improve typed test fixtures | `stacks-setup-engineering`, `stacks-test-fixtures` |
+| Build exercises or a learning workspace | `stacks-scaffold-exercises`, `stacks-teach` |
+| Capture writing fragments or shape an article | `stacks-writing-fragments`, `stacks-writing-shape`, `stacks-writing-beats` |
+| Draft a questionnaire, clarify a message, or specify a recurring workflow | `stacks-to-questionnaire`, `stacks-wait-what`, `stacks-loop` |
+| Coordinate an explicitly requested long-running effort | `stacks-chief-of-staff` |
 
 Several of these are adapted, with credit in each `SKILL.md`, from
 [mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
+The prose skills adapt [blader/humanizer](https://github.com/blader/humanizer)
+and [theclaymethod/unslop](https://github.com/theclaymethod/unslop), with source
+and license details in each skill's `NOTICE.md`.
+The complete reviewed source-to-Stacks mapping is in
+`storage/framework/defaults/ai/skills/stacks-flow/upstream-skills.json`.
+
+### Marketing
+
+Read `stacks-marketing` to choose among the 50 marketing playbooks ported from
+[coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills).
+The complete index is `stacks-marketing/CATALOG.md` beside its `SKILL.md`.
+Marketing workflows complement the framework package skills; for example,
+`stacks-marketing-analytics` plans measurement while `stacks-analytics` documents
+the application's analytics API.
+
+| Task | Skills |
+|---|---|
+| Positioning, customer research, strategy, or offers | `stacks-marketing-product-marketing`, `stacks-marketing-customer-research`, `stacks-marketing-plan`, `stacks-marketing-offers` |
+| Copywriting, editing, content, social, email, or SMS | `stacks-marketing-copywriting`, `stacks-marketing-copy-editing`, `stacks-marketing-content-strategy`, `stacks-marketing-social`, `stacks-marketing-emails`, `stacks-marketing-sms` |
+| SEO, AI discovery, structured data, or site architecture | `stacks-marketing-seo-audit`, `stacks-marketing-ai-seo`, `stacks-marketing-programmatic-seo`, `stacks-marketing-schema`, `stacks-marketing-site-architecture` |
+| Conversion, signup, onboarding, paywalls, or retention | `stacks-marketing-cro`, `stacks-marketing-signup`, `stacks-marketing-onboarding`, `stacks-marketing-paywalls`, `stacks-marketing-churn-prevention` |
+| Advertising, creative, experiments, measurement, or attribution | `stacks-marketing-ads`, `stacks-marketing-ad-creative`, `stacks-marketing-ab-testing`, `stacks-marketing-analytics`, `stacks-marketing-attribution` |
+| Launches, pricing, sales, prospecting, or partner growth | `stacks-marketing-launch`, `stacks-marketing-pricing`, `stacks-marketing-sales-enablement`, `stacks-marketing-prospecting`, `stacks-marketing-referrals` |
+
+Use the established product brief, verified claims, and the shared marketing
+workflow. Drafting does not authorize sending, spending, publishing, or
+scheduling. Existing explicit authorization carries forward.
 
 ---
 
@@ -162,19 +211,21 @@ Manifests: `storage/framework/{browser,server}-auto-imports.json`. Generated typ
 `storage/framework/types/*auto-imports.d.ts`. Regenerate with `buddy generate` (`--types` for the
 declarations). Full reference: `stacks-auto-imports`.
 
-**stx templates (browser)** - available with no import. What the stx runtime
-attaches to `window` is what decides whether a bare call resolves, and the list
-below is generated from it.
+**stx templates (browser)** - delivery has three paths: eager runtime bindings,
+compiler-provided bindings, and demand-inline composables emitted when a client
+script calls them. The marked list below is specifically the eager bare-window
+alias inventory. It is not the entire set a compiled client script can use.
 
 Do NOT use `storage/framework/browser-auto-imports.json` for this, despite its
 name and despite what this section used to say. Nothing reads it at build time;
 it feeds an ambient `.d.ts`, so it governs what `tsc` accepts and not what the
-browser has. The two now overlap by three names. It describes an injection
+browser has. It describes an injection
 `unplugin-auto-import` used to perform and no longer does, which is why it
 drifted this far without anyone noticing (stacksjs/stacks#2585).
 
-The practical consequence is that `buddy typecheck` cannot answer this question
-and currently disagrees with the browser in both directions.
+The practical consequence is that `buddy typecheck` alone cannot prove browser
+delivery. Inspect the installed stx runtime, compiler and demand registry;
+`stacks-composables/BROWSER.md` distinguishes their contracts.
 
 <!-- runtime-globals:begin - generated from the stx runtime and checked by
      core/composables/tests/skill-runtime-globals.test.ts. Every name between
@@ -215,14 +266,17 @@ and currently disagrees with the browser in both directions.
 
 <!-- runtime-globals:end -->
 
-- **NOT** `debounce`, `throttle`, `clamp`, `delay`, `dateFormat`, `format`, the
-  Stripe helpers (`loadCardElement`, `confirmPayment`, `confirmCardPayment`), or
-  `useStorage`, `useNow`, `useDateFormat`, `useForm`, `useAbs` and the `use*Store`
-  set. Every one of those is in the manifest and absent from the runtime, so it
-  typechecks and then throws a ReferenceError during setup - which takes the
-  whole page down rather than failing the one call. Import them.
-- **NOT** `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax` or
-  `usePreferredReducedMotion`, which are in neither.
+- Current stx also provides compiler/runtime bindings such as `useMediaQuery`
+  and `usePreferredReducedMotion`, and demand-inline `useForm`,
+  `useIntersectionObserver`, `useScroll`, `useMouse`, and `useParallax`.
+  Demand delivery depends on the installed stx version and authored calls.
+- Bare stx `useForm(schema, initialValues)` differs from an explicitly imported
+  Stacks `useForm({ initialValues, schema, onSubmit })`. Browser getter/subscription
+  helpers also differ from the module package's Refs. Do not mix their signatures.
+- Utilities and provider helpers listed by an ambient manifest still need
+  explicit imports unless the actual runtime/compiler/demand registry supplies
+  them. A manifest entry is not delivery evidence. Imported TypeScript modules
+  always declare their own dependencies.
 - Your components under `resources/components/` (write `<Card />` directly, resolved by the stx
   plugin) and your functions under `resources/functions/` (e.g. `increment`, `toggleDark`).
 
@@ -240,6 +294,11 @@ cannot be a runtime global and has to be imported; `UserRequest` and `UserReques
 not exist at all, under any name, anywhere in the framework. Prefer `ModelRow<typeof User>`
 over `UserModel` in any case - it follows the model you actually have, including columns
 you added.
+
+The definitions exist on disk, while feature selection decides the running
+app's loaded models. Use the native registry/boot lifecycle and explicit app
+model imports for exact inference rather than assuming every declared global
+is initialized in every process.
 
 A model whose name would shadow a built-in is skipped rather than injected. There are
 `Error` and `Request` models, and a global `Error` would mean `throw new Error(…)`

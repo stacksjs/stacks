@@ -1,38 +1,20 @@
 ---
 title: "Payments skill"
-description: "Use when implementing payment processing in Stacks."
+description: "Use when implementing Stacks payment drivers, charges, subscriptions, checkout, customer methods, Stripe billing/catalog/Connect, provider webhooks, or the Payment facade. Covers @stacksjs/payments and config/payment.ts."
 ---
 # Payments
 
-`stacks-payments` · Domain packages · model-invoked
+`stacks-payments` · Native Stacks · model-invoked
 
-Stripe, in depth: charges, subscriptions, checkout sessions, customers, payment
-methods, invoices, coupons, promo codes, products, prices and webhooks, behind the
-`Payment` facade.
+Use when implementing Stacks payment drivers, charges, subscriptions, checkout, customer methods, Stripe billing/catalog/Connect, provider webhooks, or the Payment facade. Covers @stacksjs/payments and config/payment.ts.
 
-## When to reach for it
-
-- Stripe charges
-- Subscriptions
-- Checkout sessions
-- Customer management
-- Payment methods
-- Invoices
-- Coupons
-- Promo codes
-- Products
-- Prices
-- Webhooks
-- The Payment facade
-
-## Covers
-
-`@stacksjs/payments`, `config/payment.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
+- Payment Drivers (provider-neutral)
 - Key Paths
 - Package Exports
 - Payment Facade
@@ -43,25 +25,16 @@ The sections an agent reads once the skill loads.
 - User Model Requirements
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/payments/src/`
-- Payment facade: `storage/framework/core/payments/src/payment.ts`
-- Stripe driver: `storage/framework/core/payments/src/drivers/stripe.ts`
-- Billable modules: `storage/framework/core/payments/src/billable/`
-- Configuration: `config/payment.ts`
-- SaaS config: `config/saas.ts`
-- Default billing functions: `storage/framework/defaults/functions/billing/payments.ts`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-payments
 ```
 
 Source: [`stacks-payments/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-payments/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-payments/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-payments/SKILL.md`. See [Using skills](/skills/using).

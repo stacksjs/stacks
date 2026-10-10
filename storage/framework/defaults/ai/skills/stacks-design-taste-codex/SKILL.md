@@ -156,7 +156,7 @@ Motion must be motivated (flagship Section: hierarchy, storytelling, feedback, o
 
 **Card stacking:** cards overlap and stack from the bottom as the user scrolls - a real sticky-stack, not a sequential reveal list (Section 5.A).
 
-The full canonical skeletons live in the flagship: **sticky-stack (Section 5.A), horizontal-pan (Section 5.B), scroll-reveal stagger with `useIntersectionObserver` (Section 5.C), pointer/magnetic via `useMouse()` -> CSS custom property inside an `effect` (Section 5.D), and Forbidden Animation Patterns (Section 5.E)**. Use them as written. This variant only adds the extra deterministic paradigms below.
+The full canonical skeletons live in the flagship: **sticky-stack (Section 5.A), horizontal-pan (Section 5.B), scroll-reveal stagger with `useIntersectionObserver` (Section 5.C), pointer/magnetic via `useMouse()` -> CSS custom property in its subscription callback (Section 5.D), and Forbidden Animation Patterns (Section 5.E)**. Use them as written. This variant only adds the extra deterministic paradigms below.
 
 ### 5.A Scale-and-fade on scroll - canonical skeleton (pure CSS `view()` timeline)
 
@@ -221,16 +221,16 @@ Split the paragraph into word `<span>`s (via a `@foreach` over pre-split words i
 
 Critical points: the words are split server-side, the reveal is a pure CSS `view()` timeline staggered by `--i`, and reduced motion shows all words immediately. No library, no scroll listener.
 
-For pointer / magnetic physics, drive a CSS custom property from `useMouse()` inside an `effect` exactly as the flagship Section 5.D skeleton shows. Never write signal state per pointer or scroll frame.
+For pointer / magnetic physics, drive a CSS custom property from `useMouse()` in its subscription callback exactly as the flagship Section 5.D skeleton shows. Never write signal state per pointer or scroll frame.
 
 ### 5.C Forbidden (hard bans, same as flagship 5.E)
 
 * `window.addEventListener('scroll', ...)` - banned. Use CSS scroll-driven animations or `useIntersectionObserver` / `useElementVisibility`.
-* Bare `window.*` / `document.*` / `var` in any stx `<script>` - banned. Use composables (`useEventListener`, `useWindow`, `useResizeObserver`, `useMouse`, `useScroll`, `useParallax`, `usePreferredReducedMotion`).
-* `requestAnimationFrame` loops that write signal state on every frame - banned. Drive one CSS custom property per frame from inside an `effect`, or let a CSS timeline do it.
+* Bare `window.*` / `document.*` / `var` in any stx `<script>` - banned. Use composables (`useEventListener`, `useWindowSize`, `useResizeObserver`, `useMouse`, `useScroll`, `useParallax`, `usePreferredReducedMotion`).
+* `requestAnimationFrame` loops that write signal state on every frame - banned. Drive one CSS custom property per frame from in its subscription callback, or let a CSS timeline do it.
 * Custom scroll-progress math written into signal state - banned. Use a `scroll()` timeline, or `useScroll()` reading into a CSS var.
 
-Allowed composables are the flagship's list PLUS `useScroll` (scroll progress), `useParallax` (parallax offset), and `usePreferredReducedMotion` (reduced-motion signal, the composable form of `useMediaQuery('(prefers-reduced-motion: reduce)')`). Do NOT invent any others; if you need something else, use plain CSS / a standard web API through a composable and defer to [stacks-composables](../stacks-composables).
+Allowed composables are the flagship's list PLUS `useScroll` (scroll state), `useParallax` (device-orientation parallax), and `usePreferredReducedMotion` (reduced-motion signal, the composable form of `useMediaQuery('(prefers-reduced-motion: reduce)')`). Do NOT invent any others; if you need something else, use plain CSS / a standard web API through a composable and defer to [stacks-composables](../stacks-composables).
 
 ---
 

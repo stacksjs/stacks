@@ -1,28 +1,24 @@
 ---
 name: stacks-composables
-description: Use when creating or using reactive composables in STX templates - 154 composables for state management, DOM interaction, sensors, animation, browser APIs, async operations, or the complete list of auto-imported composables. Covers @stacksjs/composables.
+description: Use when choosing or implementing reactive composables in STX, data queries, forms, consent, browser APIs, motion, or debugging client delivery. Covers @stacksjs/composables, STX eager and demand browser delivery, and the difference between callable signals and module Refs.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
 ---
 
-# Stacks Composables
+# Stacks composables
 
-154 reactive composables for STX templates. **A fixed set of them is available
-bare**, listed below; everything else needs an explicit import from
-`@stacksjs/composables`.
+Choose the execution surface before copying a composable signature. An STX
+client script, an explicitly imported `@stacksjs/composables` module, and a
+server script can expose similarly named functions with different contracts.
+Read [BROWSER.md](BROWSER.md) for template delivery, forms and motion examples.
 
-The stx runtime decides this, not `browser-auto-imports.json`. That manifest
-feeds an ambient `.d.ts` and nothing reads it at build time, so it says what the
-compiler accepts and not what the browser has; the two disagree in both
-directions (stacksjs/stacks#2585).
+## Eager window aliases
 
-This page said "All are auto-imported in STX templates", which is the mistake
-`AGENTS.md` carries a scar about under "200+ composables": an agent reaching for
-a name on that authority writes a template that does not run, and reads the
-failure as a framework bug.
-
-## What you can write bare in a template
+The following markers describe only explicit eager `window.name` aliases in
+`getCachedSignalsRuntime()`. They are checked by
+`core/composables/tests/skill-runtime-globals.test.ts`, and are not the whole
+compiler-delivered client surface.
 
 <!-- auto-imported:begin - checked against the stx runtime by
      core/composables/tests/skill-runtime-globals.test.ts. These are the names
@@ -39,176 +35,86 @@ failure as a framework bug.
 
 <!-- auto-imported:end -->
 
-Everything else needs an explicit import, and that is most of what the sections
-below list:
+Additional STX names are exposed through `window.stx` and compiler
+destructuring, or bundled from STX composables on demand. In current STX,
+`useMediaQuery` and `usePreferredReducedMotion` use the first path;
+`useForm`, `useScroll`, `useMouse`, `useParallax`, and
+`useIntersectionObserver` use the demand path. These client-script names do
+not come from the ambient `browser-auto-imports.json` manifest.
+
+## Explicit module imports
+
+The module surface lives in `core/composables/src/index.ts`. Import every
+binding in a TypeScript module even if a template entry can use it bare.
 
 ```ts
-import { useStorage } from '@stacksjs/composables'
+import { useCounter } from '@stacksjs/composables'
+
+const counter = useCounter(0, { min: 0, max: 10 })
+counter.inc()
+const value = counter.count.value
 ```
 
-**`buddy typecheck` will not tell you which is which, and currently disagrees
-with the browser in both directions** (stacksjs/stacks#2585).
-`storage/framework/browser-auto-imports.json` feeds an ambient `.d.ts`, so the
-compiler accepts every name it declares - and only five of its 27 `use*` are in
-the runtime. `useStorage`, `useNow`, `useDateFormat`, `useForm` and the `use*Store`
-composables typecheck and then throw a ReferenceError during setup, which takes
-the page down rather than failing the one call. In the other direction
-`useLocalStorage`, `useColorMode`, `useCounter` and `useMediaQuery` all work in
-a template and `tsc` rejects them.
+Module composables use object `Ref` values from STX: read/write `.value`,
+subscribe where provided, and use the exported cleanup/control functions.
+Template signals use `count()`, `.set()`, and `.update()`. Passing a callable
+signal into a module helper expecting a `Ref` is not an implicit conversion.
 
-The list above is the runtime's, so it is the one that predicts whether the page
-loads.
+| Task | Explicit module exports |
+|---|---|
+| State/storage | useCounter, useToggle, useStorage, useLocalStorage, history helpers |
+| Async/data | useFetch, createFetch, useQuery, useMutation, createQueryClient, useAsyncState |
+| Forms/consent | useForm, useCookieConsent |
+| DOM/input | useFocus, useEventListener, onClickOutside, observers, useScroll, useMouse |
+| Timing/watch | useIntervalFn, useTimeoutFn, useTimeoutPoll, watchDebounced, watchPausable |
+| Media/device | useMediaQuery, usePreferredReducedMotion, useGeolocation, useDeviceOrientation |
+| Browser facilities | clipboard, permissions, fullscreen, workers, virtual lists, sharing |
 
-## Key Path
-- Core package: `storage/framework/core/composables/src/`
+Inspect the barrel and the individual implementation for other exports rather
+than installing a second library for a feature Stacks already has.
 
-## Core Reactive Primitives
+## Module query cache
 
-```typescript
-// From _shared.ts
-type MaybeRef<T> = T | Ref<T>
-type MaybeRefOrGetter<T> = T | Ref<T> | (() => T)
-unref(val)           // unwrap Ref
-toValue(val)         // unwrap Ref or getter
-isRef(val)           // type guard
-```
+`useQuery({ queryKey, queryFn, staleTime, enabled, client })` provides Ref
+data/error/loading state, in-flight deduplication and `refetch()`.
+`queryFn` receives an AbortSignal. `createQueryClient({ gcTime })` provides
+scoped clients, `get`, `set`, `invalidate`, `gc`, and `clear`.
+Invalidation accepts prefix keys or a predicate matcher. Optional
+`refetchOnFocus` and `refetchOnReconnect` refetch stale data. Use
+`unsubscribe()` when the consumer ends. For template runtime queries read
+the STX contract in [BROWSER.md](BROWSER.md); their signatures differ.
 
-## State & Reactivity
-- `useToggle(initial?)` → `[Ref<boolean>, toggle]`
-- `useCounter(initial?)` → `{ count, increment, decrement, set, reset }`
-- `useStepper(steps, initial?)` → step navigation
-- `usePrevious(value)` → previous value
-- `useCycleList(list)` → cycle through items
+## Module forms and consent
 
-## Storage
-- `useStorage(key, defaultValue, storage?)` → persistent Ref
-- `useLocalStorage(key, defaultValue)` → localStorage-backed Ref
-- `useSessionStorage(key, defaultValue)` → sessionStorage-backed Ref
+Explicit `useForm({ initialValues, schema, onSubmit, validateOn })` accepts
+Stacks validators, exposes Ref values plus `field(name)` accessors, dirty/touched
+state, accessible `inputProps()`, `submitButtonProps()`, and server-error
+`setErrors()`. Apply a returned 422 map explicitly; fetching an error does
+not automatically attach it to a form. Field arrays and a progressive HTML
+fallback are not established by the primitive alone.
 
-## Time & Date
-- `useNow(options?)` → `Ref<Date>` (auto-updating)
-- `useDateFormat(date, format)` → `Ref<string>`
-- `useTimeAgo(date)` → relative time string
-- `useTimestamp(options?)` → `Ref<number>`
-- `useInterval(fn, ms)` → interval control
-- `useIntervalFn(fn, ms)` → interval with pause/resume
-- `useTimeout(ms)` → timeout control
-- `useTimeoutFn(fn, ms)` → delayed execution
-
-## DOM & Browser
-- `useWindowSize()` → `{ width, height }`
-- `useWindowScroll()` → `{ x, y }`
-- `useWindowFocus()` → `Ref<boolean>`
-- `useDocumentVisibility()` → `Ref<string>`
-- `useFullscreen(el?)` → `{ isFullscreen, enter, exit, toggle }`
-- `useTitle(title)` → document title binding
-- `useFavicon(url)` → favicon binding
-- `useCssVar(prop, el?)` → CSS variable binding
-- `useActiveElement()` → currently focused element
-- `useTextSelection()` → selected text
-- `useTextDirection()` → `Ref<'ltr' | 'rtl'>`
-- `useNavigatorLanguage()` → browser language
-
-## Mouse & Touch
-- `useMouse()` → `{ x, y, sourceType }`
-- `useMouseInElement(el)` → mouse position relative to element
-- `useMousePressed()` → `{ pressed, sourceType }`
-- `usePointer()` → pointer events
-- `useSwipe(el)` → swipe detection
-- `usePointerSwipe(el)` → pointer swipe
-- `useDraggable(el)` → make element draggable
-- `useDropZone(el)` → drop zone detection
-- `onLongPress(el, handler)` → long press detection
-- `onClickOutside(el, handler)` → click outside detection
-
-## Sensors
-- `useGeolocation()` → `{ coords, locatedAt, error }`
-- `useDeviceMotion()` → acceleration & rotation
-- `useDeviceOrientation()` → alpha, beta, gamma
-- `useBattery()` → `{ charging, chargingTime, level }`
-- `useDevicePixelRatio()` → `Ref<number>`
-- `useScreenSafeArea()` → safe area insets
-
-## Observers
-- `useIntersectionObserver(el, callback)` → visibility detection
-- `useResizeObserver(el, callback)` → size changes
-- `useMutationObserver(el, callback)` → DOM mutations
-- `useElementBounding(el)` → `{ top, left, width, height }`
-- `useElementVisibility(el)` → `Ref<boolean>`
-- `useElementHover(el)` → `Ref<boolean>`
-
-## Async
-- `useAsyncState(fn, initial)` → `{ state, isReady, isLoading, error, execute }`
-- `useAsyncQueue(tasks)` → sequential async execution
-- `computedAsync(fn)` → async computed value
-- `computedEager(fn)` → immediately evaluated computed
-
-## Network
-- `useFetch(url, options?)` → fetch wrapper with reactive state
-- `useWebSocket(url)` → WebSocket connection
-- `useEventSource(url)` → SSE connection
-- `useOnline()` → `Ref<boolean>` (network status)
-
-## Input & Focus
-- `useFocus(el)` → `{ focused, focus, blur }`
-- `useFocusWithin(el)` → any child focused
-- `useKeyModifier(key)` → modifier key state
-- `usePermission(name)` → permission state
-- `useShare(options)` → Web Share API
-
-## Utilities
-- `useDebounceFn(fn, ms)` → debounced function
-- `useThrottleFn(fn, ms)` → throttled function
-- `useDebouncedRef(ref, ms)` → debounced ref updates
-- `useThrottledRef(ref, ms)` → throttled ref updates
-- `watchDebounced(source, callback, ms)` → debounced watcher
-- `watchThrottled(source, callback, ms)` → throttled watcher
-- `watchOnce(source, callback)` → one-time watcher
-- `whenever(source, callback)` → watch for truthy
-- `until(source).toBe(value)` → wait for value
-- `syncRef(refA, refB)` → bidirectional sync
-
-## Dark Mode
-- `useDark()` → `Ref<boolean>`
-- `usePreferredDark()` → system preference
-- `usePreferredColorScheme()` → color scheme preference
-
-## Media
-- `useMediaQuery(query)` → `Ref<boolean>`
-- `usePreferredContrast()` → contrast preference
-- `usePreferredLanguages()` → language preferences
-- `usePreferredReducedMotion()` → reduce motion preference
-
-## State Patterns
-- `createEventHook()` → typed event hook
-- `createGlobalState(fn)` → shared state across components
-- `createSharedComposable(fn)` → shared composable instance
-- `refDefault(ref, defaultValue)` → ref with default
-- `refAutoReset(value, ms)` → auto-resetting ref
-- `makeDestructurable(obj, arr)` → support both destructuring styles
-- `useIdle(ms)` → user idle detection
-- `usePageLeave()` → detect page leave
-- `useFps()` → frames per second
-- `useMounted()` → `Ref<boolean>` mount state
-- `tryOnMounted(fn)` → safe onMounted
-- `useObjectUrl(blob)` → object URL with auto-cleanup
-
-## Script & Style Injection
-- `useScriptTag(src, onLoaded?)` → inject `<script>`
-- `useStyleTag(css)` → inject `<style>`
-
-## Math
-- `useAbs`, `useAverage`, `useCeil`, `useClamp`, `useFloor`, `useMax`, `useMin`, `usePrecision`, `useRound`, `useSum`, `useTrunc`
-- `and`, `or`, `logicNot`, `logicOr`
+`useCookieConsent({ policyVersion, storageKey, onChange })` stores a versioned
+decision. Necessary consent is always enabled; optional categories default to
+declined. `accept`, `acceptAll`, `declineAll`, and `withdraw` change it;
+`allows(category)` gates loading. A changed policy version asks again, blocked
+storage falls back to no stored decision, and returned visitor consent is
+independent of a signed-in session. Import this helper explicitly.
 
 ## Gotchas
-- Only the names listed above are available bare in an STX template, and they
-  come from the stx runtime, not from `browser-auto-imports.json` - that
-  manifest is compile-time only and disagrees with the runtime in both
-  directions (stacksjs/stacks#2585). Everything else needs
-  `import { … } from '@stacksjs/composables'`
-- NEVER use vanilla JS (`var`, `document.*`, `window.*`) in STX `<script>` tags
-- Only use stx-compatible code: signals, composables, directives
-- Auto-imports defined in `storage/framework/browser-auto-imports.json`
-- Many composables require a browser environment (won't work server-side)
-- `useStorage` persists to localStorage by default
+
+- Browser capability availability and permission denial are runtime states,
+  even when a helper imports successfully during SSR.
+- Client observers/listeners need teardown. Read the selected helper's return
+  shape; `stop`, `remove`, and `unsubscribe` are not interchangeable names.
+- Module `useTimeout(ms)` returns a Ref unless controls are requested; browser
+  runtime `useTimeout(callback, delay)` runs a callback. Module counter methods
+  are `inc`/`dec`, never `increment`/`decrement`.
+- Typechecking an ambient name proves neither its delivery nor its contract.
+  Exercise a rendered template with the installed STX version.
+
+## Source and evidence
+
+`core/composables/src/index.ts`, individual source files, and retained
+`tests/use-query.test.ts`, `tests/use-form.test.ts`,
+`tests/use-cookie-consent.test.ts` and `tests/skill-runtime-globals.test.ts`
+are authoritative (core paths relative to `storage/framework/`).

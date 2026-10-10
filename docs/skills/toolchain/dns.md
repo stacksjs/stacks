@@ -1,52 +1,34 @@
 ---
 title: "DNS skill"
-description: "Use when managing DNS in a Stacks application."
+description: "Use when managing DNS in a Stacks application - Route53 hosted zones, domain records, nameserver management, or DNS configuration. Covers @stacksjs/dns (AWS Route53 driver), @stacksjs/dnsx, and config/dns.ts."
 ---
 # DNS
 
-`stacks-dns` · Toolchain · model-invoked
+`stacks-dns` · Native Stacks · model-invoked
 
-DNS through Route53: hosted zones, records and nameserver management.
+Use when managing DNS in a Stacks application - Route53 hosted zones, domain records, nameserver management, or DNS configuration. Covers @stacksjs/dns (AWS Route53 driver), @stacksjs/dnsx, and config/dns.ts.
 
-## When to reach for it
-
-- Route53 hosted zones
-- Domain records
-- Nameserver management
-- DNS configuration
-
-## Covers
-
-`@stacksjs/dns` (AWS Route53 driver), `@stacksjs/dnsx`, `config/dns.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Paths
-- Source Files
-- AWS Route53 API
-- Configuration (config/dns.ts)
-- CLI Commands
-- Re-exports from @stacksjs/dnsx
-- Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/dns/src/`
-- AWS driver: `storage/framework/core/dns/src/drivers/aws.ts`
-- Config: `config/dns.ts`
-- Package: `@stacksjs/dns`
+- Declarative additive sync
+- Native config record shapes
+- Route53 zone and registrar helpers
+- Boundaries and evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-dns
 ```
 
 Source: [`stacks-dns/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-dns/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-dns/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-dns/SKILL.md`. See [Using skills](/skills/using).

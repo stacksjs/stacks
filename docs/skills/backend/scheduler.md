@@ -4,24 +4,15 @@ description: "Use when scheduling tasks in a Stacks application - defining sched
 ---
 # Scheduler
 
-`stacks-scheduler` · Backend and API · model-invoked
+`stacks-scheduler` · Native Stacks · model-invoked
 
-Scheduled tasks in `app/Scheduler.ts`, with a cron-like fluent surface over the
-low-level parsing in [Cron](/skills/backend/cron).
+Use when scheduling tasks in a Stacks application - defining scheduled tasks, cron-like scheduling, or task automation. Covers @stacksjs/scheduler, @stacksjs/cron, and app/Scheduler.ts.
 
-## When to reach for it
-
-- Defining scheduled tasks
-- Cron-like scheduling
-- Task automation
-
-## Covers
-
-`@stacksjs/scheduler`, `@stacksjs/cron`, `app/Scheduler.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -35,27 +26,18 @@ The sections an agent reads once the skill loads.
 - CLI Commands
 - Code Examples
 - Gotchas
-
-## Where the code lives
-
-- Scheduler package: `storage/framework/core/scheduler/src/`
-- Cron package: `storage/framework/core/cron/src/`
-- Application scheduler: `app/Scheduler.ts`
-- CLI command: `storage/framework/core/buddy/src/commands/schedule.ts`
-- Run action: `storage/framework/core/actions/src/schedule/run.ts`
-- Queue-based scheduler: `storage/framework/core/queue/src/scheduler.ts`
-- Job types / `Every` enum: `storage/framework/core/types/src/cron-jobs.ts`
-- Lock files: `storage/framework/locks/` (created at runtime)
+- Additional native scheduling operations
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-scheduler
 ```
 
 Source: [`stacks-scheduler/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-scheduler/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-scheduler/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-scheduler/SKILL.md`. See [Using skills](/skills/using).

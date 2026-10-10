@@ -1,63 +1,40 @@
 ---
 title: "Composables skill"
-description: "Use when creating or using reactive composables in STX templates."
+description: "Use when choosing or implementing reactive composables in STX, data queries, forms, consent, browser APIs, motion, or debugging client delivery. Covers @stacksjs/composables, STX eager and demand browser delivery, and the difference between callable signals and module Refs."
 ---
 # Composables
 
-`stacks-composables` · Frontend · model-invoked
+`stacks-composables` · Native Stacks · model-invoked
 
-The 90+ reactive composables auto-imported into stx templates: state, DOM
-interaction, sensors, animation, browser APIs and async operations. The
-authoritative list, which matters because the manifest and the runtime have
-disagreed before.
+Use when choosing or implementing reactive composables in STX, data queries, forms, consent, browser APIs, motion, or debugging client delivery. Covers @stacksjs/composables, STX eager and demand browser delivery, and the difference between callable signals and module Refs.
 
-## When to reach for it
-
-- 90+ composables for state management
-- DOM interaction
-- Sensors
-- Animation
-- Browser APIs
-- Async operations
-- The complete list of auto-imported composables
-
-## Covers
-
-`@stacksjs/composables`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Path
-- Core Reactive Primitives
-- State & Reactivity
-- Storage
-- Time & Date
-- DOM & Browser
-- Mouse & Touch
-- Sensors
-- Observers
-- Async
-- Network
-- Input & Focus
-- Utilities
-- Dark Mode
-- Media
-- State Patterns
-- Script & Style Injection
-- Math
+- Eager window aliases
+- Explicit module imports
+- Module query cache
+- Module forms and consent
 - Gotchas
+- Source and evidence
+
+## Supporting references
+
+- [BROWSER.md](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-composables/BROWSER.md)
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-composables
 ```
 
 Source: [`stacks-composables/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-composables/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-composables/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-composables/SKILL.md`. See [Using skills](/skills/using).

@@ -215,6 +215,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   // Docs freshness (framework-repo tooling; registrar in commands/docs.ts,
   // tooling under commands/docs/).
   'docs:buddy': { path: './commands/docs.ts', exportName: 'docs' },
+  'docs:native-skills': { path: './commands/docs.ts', exportName: 'docs' },
+  'docs:native-skills:check': { path: './commands/docs.ts', exportName: 'docs' },
   'docs:buddy:check': { path: './commands/docs.ts', exportName: 'docs' },
   'docs:artifacts': { path: './commands/docs.ts', exportName: 'docs' },
   'docs:artifacts:check': { path: './commands/docs.ts', exportName: 'docs' },

@@ -329,144 +329,22 @@ storeWebSocketEvent(type, socket, details): Promise<void> // no-op, kept for com
 
 ## config/realtime.ts
 
-Full configuration with all options and their defaults:
+Read the application file for host/port, app credentials, channel and provider
+settings. The Stacks public server is explicitly created through createServer
+with ts-broadcasting ServerConfig, including authorizeConnection, websocket and
+endpoint options. A config field is applied only when the chosen runtime passes
+it to that server or deployment layer.
 
-```typescript
-export default {
-  enabled: true,
+Legacy pusher/ably/reverb/socket names, serverless definitions, Redis topology and
+auto-scaling settings are not separate proved application broadcasting drivers
+in the capability registry. Its retained Stacks topology is a single-process
+WebSocket server, requiring application fan-out to scale out. Do not pass the
+whole Stacks realtime config to createServer as if both types were identical.
 
-  // Deployment mode
-  mode: 'server' as 'server' | 'serverless',
-  // 'server': ts-broadcasting (high-performance Bun WebSocket server)
-  // 'serverless': API Gateway WebSocket + Lambda + DynamoDB
-
-  // Legacy driver option (backward compat)
-  driver: 'bun' as 'socket' | 'pusher' | 'bun' | 'reverb' | 'ably',
-
-  // Server mode config (ts-broadcasting)
-  server: {
-    host: env.BROADCAST_HOST || '0.0.0.0',
-    port: Number(env.BROADCAST_PORT || 6001),
-    scheme: 'ws' as 'ws' | 'wss',
-    driver: 'bun',
-
-    redis: {
-      enabled: Boolean(env.BROADCAST_REDIS_ENABLED || false),
-      host: env.REDIS_HOST || 'localhost',
-      port: Number(env.REDIS_PORT || 6379),
-      password: env.REDIS_PASSWORD || '',
-      prefix: env.BROADCAST_REDIS_PREFIX || 'stacks:realtime:',
-    },
-
-    rateLimit: {
-      enabled: true,                    // env.BROADCAST_RATE_LIMIT_ENABLED
-      maxConnectionsPerIp: 100,
-      maxMessagesPerSecond: 50,
-      maxPayloadSize: 65536,            // 64KB
-      banDuration: 300,                 // seconds
-    },
-
-    loadManagement: {
-      maxConnections: 10000,
-      backpressureThreshold: 1000,
-      messageQueueSize: 10000,
-      gracefulShutdownTimeout: 30000,   // 30s
-    },
-
-    autoScaling: {
-      min: 1,
-      max: 10,
-      targetCPU: 70,                    // percentage
-    },
-
-    healthCheck: {
-      enabled: true,
-      path: '/health',
-      interval: 30,                     // seconds
-    },
-
-    metrics: {
-      enabled: Boolean(env.BROADCAST_METRICS_ENABLED || false),
-      port: 9090,
-      path: '/metrics',
-    },
-  },
-
-  // Serverless mode config (API Gateway WebSocket)
-  serverless: {
-    connectionTimeout: 3600,            // 1 hour
-    idleTimeout: 600,                   // 10 minutes
-    stageName: env.APP_ENV || 'production',
-    memorySize: 256,                    // MB
-    timeout: 30,                        // seconds
-  },
-
-  // Channel configuration
-  channels: {
-    public: true,
-    private: true,
-    presence: {
-      enabled: true,
-      maxMembersPerChannel: 100,
-      memberInfoTtl: 60,               // seconds
-    },
-  },
-
-  // App credentials (Pusher-compatible)
-  app: {
-    id: env.BROADCAST_APP_ID || 'stacks',
-    key: env.BROADCAST_APP_KEY || '',
-    secret: env.BROADCAST_APP_SECRET || '',
-  },
-
-  // Legacy socket config
-  socket: {
-    port: Number(env.BROADCAST_PORT || 6001),
-    host: env.BROADCAST_HOST || 'localhost',
-    cors: {
-      origin: env.BROADCAST_CORS_ORIGIN || env.APP_URL || 'http://localhost:3000',
-      methods: ['GET', 'POST'],
-    },
-  },
-
-  // Legacy Pusher config
-  pusher: {
-    appId: env.PUSHER_APP_ID || '',
-    key: env.PUSHER_APP_KEY || '',
-    secret: env.PUSHER_APP_SECRET || '',
-    cluster: env.PUSHER_APP_CLUSTER || 'mt1',
-    useTLS: Boolean(env.PUSHER_APP_USE_TLS ?? true),
-  },
-
-  debug: Boolean(env.BROADCAST_DEBUG || false),
-} satisfies RealtimeConfig
-```
-
-### Environment Variables
-| Variable | Default | Description |
-|---|---|---|
-| `REALTIME_MODE` | `server` | Deployment mode: server or serverless |
-| `BROADCAST_DRIVER` | `bun` | Broadcasting driver |
-| `BROADCAST_HOST` | `0.0.0.0` | Server bind host |
-| `BROADCAST_PORT` | `6001` | Server port |
-| `BROADCAST_SCHEME` | `ws` | WebSocket scheme (ws/wss) |
-| `BROADCAST_REDIS_ENABLED` | `false` | Enable Redis adapter |
-| `REDIS_HOST` | `localhost` | Redis host |
-| `REDIS_PORT` | `6379` | Redis port |
-| `REDIS_PASSWORD` | (empty) | Redis password |
-| `BROADCAST_REDIS_PREFIX` | `stacks:realtime:` | Redis key prefix |
-| `BROADCAST_RATE_LIMIT_ENABLED` | `true` | Enable rate limiting |
-| `BROADCAST_METRICS_ENABLED` | `false` | Enable metrics endpoint |
-| `BROADCAST_APP_ID` | `stacks` | App ID |
-| `BROADCAST_APP_KEY` | (empty) | App key |
-| `BROADCAST_APP_SECRET` | (empty) | App secret |
-| `BROADCAST_CORS_ORIGIN` | APP_URL | CORS origin |
-| `BROADCAST_DEBUG` | `false` | Debug mode |
-| `PUSHER_APP_ID` | (empty) | Pusher app ID |
-| `PUSHER_APP_KEY` | (empty) | Pusher app key |
-| `PUSHER_APP_SECRET` | (empty) | Pusher app secret |
-| `PUSHER_APP_CLUSTER` | `mt1` | Pusher cluster |
-| `PUSHER_APP_USE_TLS` | `true` | Pusher TLS |
+Environment values come from config/realtime.ts; browser clients receive only
+public connection configuration, never the secret. Connection auth and private
+channel authorizers apply independently. The HTTP application server has no
+automatic broadcast socket upgrade handler.
 
 ---
 
@@ -481,8 +359,19 @@ export default {
 - The `Broadcast` class is legacy -- new code should use `emit()` and `channel()` directly
 - There is no `handleWebSocketRequest()`: sockets upgraded on the app's own server were never part of the broadcast server, so they could not join channels. Clients connect to the broadcast server's `/ws`
 - There is no Stacks heartbeat or backpressure guard; use `createServer({ websocket: { idleTimeout, sendPings, backpressureLimit, closeOnBackpressureLimit } })`
-- Serverless mode uses API Gateway WebSocket for AWS Lambda with DynamoDB for connection management
+- Serverless/provider shapes in config describe cloud options; inspect their actual deploy/runtime wiring before claiming the Stacks broadcast APIs support that topology
 - Rate limiting defaults: 100 connections per IP, 50 messages/second, 64KB max payload, 300s ban duration
-- Redis adapter enables horizontal scaling across multiple server instances
+- The supported Stacks runtime contract is single-process WebSocket; scale-out requires an application-provided fan-out layer and separate provider evidence
 - Auto-scaling config (min/max/targetCPU) is for cloud deployment orchestration
 - The `satisfies RealtimeConfig` type annotation ensures the config matches the expected type from `@stacksjs/types`
+
+
+## Capability evidence
+
+`storage/framework/core/config/src/capabilities.ts` retains a single-process
+WebSocket contract. A redis/autoScaling/serverless config field is not proof that
+createServer wires it into the broadcast engine. Connection authorization and
+private/presence channel authorization are separate checks. Replay is in-memory
+and per process, not durable recovery or a cluster-wide sequence.
+Retained tests: `core/realtime/tests/ws-auth.test.ts`,
+`websocket-options.test.ts`, and replay/exclusion tests in that directory.

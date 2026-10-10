@@ -8,130 +8,77 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Error Handling
 
-Type-safe error handling with Result types, error pages, and structured logging.
+Use Result for recoverable operation outcomes, HttpError for HTTP boundary
+refusals, and the native reporter/rendering pipeline for failures.
 
-## Key Paths
-- Core package: `storage/framework/core/error-handling/src/`
-- Configuration: `config/errors.ts`
-- Error model: `storage/framework/defaults/app/Models/Error.ts`
+## Results
 
-## Result Type (from ts-error-handling)
-
-```typescript
+~~~ts
 import { ok, err, fromPromise } from '@stacksjs/error-handling'
-import type { Result, Ok, Err, ResultAsync } from '@stacksjs/error-handling'
 
-// Create results
-const success: Ok<string> = ok('data')
-const failure: Err<Error> = err(new Error('failed'))
-
-// From promises
-const result: ResultAsync<Data, Error> = fromPromise(fetchData())
-
-// Pattern matching
-if (result.isOk()) {
+const result = await fromPromise(Promise.resolve('ready'))
+if (result.isOk)
   console.log(result.value)
-} else {
+else
   console.error(result.error)
-}
-```
+~~~
 
-## Error Handler
+ok(value)/err(error), Result/Ok/Err and ResultAsync are re-exported from
+ts-error-handling. isOk/isErr are discriminant properties, not methods.
+fromPromise returns a Promise<Result>; await it before narrowing. Returning an
+Err does not throw, and an awaited Result does not imply success.
 
-```typescript
-import { handleError, ErrorHandler } from '@stacksjs/error-handling'
+## HTTP errors and rendering
 
-// Function-based
-handleError(error)
-handleError(error, { shouldExit: true })
+~~~ts
+import { HttpError, renderHttpError } from '@stacksjs/error-handling'
 
-// Class-based
-ErrorHandler.handle(error)
-ErrorHandler.handleError(error, { shouldExit: true })
-ErrorHandler.writeErrorToFile(error)
-ErrorHandler.writeErrorToConsole(error)
-```
+const error = new HttpError(422, 'Validation failed', { errors: { email: ['Required'] } })
+const response = await renderHttpError(error, undefined, { status: 422, isDevelopment: false })
+~~~
 
-## Log File Writing
+renderHttpError returns a Response and accepts optional request/options.
+createHttpErrorHandler offers setRequest/setRouting/addQuery and status helpers.
+The lower-level renderErrorPage(error, status?, config?) and renderError(error,
+status?) are async HTML renderers. renderProductionErrorPage(status) is the
+synchronous production HTML renderer, not a function taking error/request.
+errorResponse(error, status?, config?) returns Promise<Response>.
 
-```typescript
-import { writeToLogFile, setLogPath } from '@stacksjs/error-handling'
+createErrorHandler(config?) returns the ErrorPageHandler builder; set request,
+routing/user/framework context on it, then await render/handleError. Explicitly
+resolve development mode for a public entrypoint rather than assuming an env
+alias's default will protect details. Production pages omit source/trace detail;
+custom error pages and illustration selection use the renderer's own contracts.
 
-setLogPath('/custom/log/path')
-await writeToLogFile('Error message', { path: '/custom/path' })
-```
+HTTP_ERRORS is status metadata; exported HttpErrorInfo is its interface, distinct
+from the throwable HttpError class. ModelNotFoundException is the ORM failure
+type. isUniqueViolation recognizes provider uniqueness errors; map a business
+conflict deliberately rather than returning raw provider text.
 
-Default log path: `storage/logs/stacks.log`
+## Handling, reporting and shutdown
 
-## Error Page Rendering
+handleError(value, options?) returns an Error synchronously and schedules logging.
+ErrorHandler.handle preserves an existing Error's trace/cause when possible.
+writeErrorToFile is async; writeErrorToConsole is sync. shouldExit is a process
+policy, not appropriate inside a request action. A background file write cannot
+be assumed finished before process.exit.
 
-```typescript
-import { ErrorPageHandler, renderError, renderErrorPage, renderProductionErrorPage, createErrorHandler, errorResponse } from '@stacksjs/error-handling'
+writeToLogFile(message, { logFile? }) uses a file path; setLogPath changes its
+fallback. config/errors.ts holds validation messages, not all operational logging
+or monitoring configuration. An Error model definition does not itself persist
+every exception to its table.
 
-// Development: shows stack trace, source code, file paths
-const devPage = renderErrorPage(error, request)
+registerErrorReporter(reporter) returns a detach function; reporters() snapshots
+registered/configured reporters. captureError(error, context?) isolates reporter
+failure and deduplicates by Error object identity, not message text.
+flushErrorReporters drains buffers. Configured monitoring reporters and BugHQ
+use the shared environment gate; see stacks-env and config/monitoring.ts.
+The logging report() chokepoint filters ordinary 4xx from incident reporting.
 
-// Production: friendly error message, no internals
-const prodPage = renderProductionErrorPage(error, request)
+## Evidence
 
-// Auto-detect environment
-const page = renderError(error, request)
-
-// Create handler for routes
-const handler = createErrorHandler()
-const response = errorResponse(error, request)
-```
-
-## HTTP Error Mapping
-
-```typescript
-import { HTTP_ERRORS } from '@stacksjs/error-handling'
-
-// Maps status codes to error details
-HTTP_ERRORS[400]  // { title: 'Bad Request', ... }
-HTTP_ERRORS[401]  // { title: 'Unauthorized', ... }
-HTTP_ERRORS[403]  // { title: 'Forbidden', ... }
-HTTP_ERRORS[404]  // { title: 'Not Found', ... }
-HTTP_ERRORS[500]  // { title: 'Internal Server Error', ... }
-```
-
-## Custom Exceptions
-
-```typescript
-import { ModelNotFoundException } from '@stacksjs/error-handling'
-
-throw new ModelNotFoundException('User not found')
-```
-
-## Error Page Types
-
-```typescript
-interface HttpError { status: number, title: string, message: string }
-interface StackFrame { file: string, line: number, column: number, function?: string }
-interface CodeSnippet { line: number, code: string, isHighlighted: boolean }
-```
-
-## Error Model (storage/framework/defaults/app/Models/Error.ts)
-
-Fields: type, message, stack (stacktrace), status, additional_info
-Seeder: 10 records for testing
-
-## config/errors.ts
-
-Contains comprehensive validation error messages for all field types:
-- String validation: required, minLength, maxLength, email, url, uuid, etc.
-- Number validation: required, min, max, positive, negative, integer, etc.
-- Enum validation: invalid value messages
-- Date validation: format, before, after, etc.
-- File validation: size, type, dimensions, etc.
-
-## Gotchas
-- Use `Result<T, E>` types instead of try/catch for recoverable errors
-- `ok()` and `err()` are from `ts-error-handling` (neverthrow-compatible)
-- Error pages automatically detect environment (dev shows stack traces, prod doesn't)
-- `handleError()` logs to both console and file
-- `ModelNotFoundException` is thrown by `findOrFail()` and `firstOrFail()` ORM methods
-- The Error model persists errors to the database for tracking
-- `config/errors.ts` is a comprehensive i18n-ready error message catalog
-- `ErrorHandler.isTestEnvironment` prevents process exit during tests
-- `ERROR_PAGE_CSS` contains built-in styling for error pages
+Source: `storage/framework/core/error-handling/src/index.ts`, handler.ts,
+http.ts, error-page.ts, reporters.ts, bughq.ts and unique-violation.ts.
+Tests: result-type.test.ts, http-errors.test.ts, error-page-render.test.ts,
+custom-error-pages.test.ts and reporters.test.ts under core/error-handling/tests.
+Keep error payloads and credentials out of public responses and diagnostics.

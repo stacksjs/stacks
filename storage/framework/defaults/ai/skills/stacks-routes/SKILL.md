@@ -25,6 +25,18 @@ export default {
 } satisfies Record<string, string | RouteDefinition>
 ```
 
+`app/Routes.ts` is optional. Without a usable registry, `appRouteRegistry()`
+falls back to `{ api: 'api' }`. Keys supply the default prefix; `web` is
+root-mounted, and an explicit empty prefix mounts a route file at the root.
+Route files define paths relative to that prefix, so `/api` should not be
+repeated inside `routes/api.ts`.
+
+App route files load before framework bundles. Duplicate method/path
+registrations keep the first one, allowing an app route to override a default.
+Discovered packages can contribute route files and other resource roots;
+their registration does not automatically make components globally available.
+See `stacks-config` for package discovery.
+
 ## Creating a Route File
 
 ```typescript
@@ -50,7 +62,13 @@ route.group({ prefix: '/admin', middleware: ['auth'] }, () => {
 route.health()
 ```
 
-## Default API Routes (routes/api.ts)
+## Default route bundles
+
+Default bundles are selected by `STACKS_DEFAULT_ROUTES`, the route loader,
+and the relevant feature gates. The following endpoint families are discovery
+examples, not a guarantee they are mounted in every app. In particular,
+enabling auth models is separate from exposing the default authentication
+routes. Use `buddy route:list` to inspect this application's actual surface.
 
 ### Authentication
 - `POST /login` → LoginAction
@@ -97,9 +115,14 @@ route.get('/ping', (req) => Response.json({ pong: true }))
 - `buddy route:list` — list all registered routes
 
 ## Gotchas
-- Route files must be registered in `app/Routes.ts` to be loaded
+- Additional route files need registration; the optional manifest's fallback
+  already mounts `routes/api.ts` at `/api`.
 - String handlers (Actions/X) are dynamically imported at request time
 - Route order matters — first match wins
 - Use groups for shared middleware instead of repeating on each route
 - The `health()` helper registers `GET /health` automatically
 - For the router API (request helpers, middleware, responses), see the `stacks-router` skill
+
+Source: `core/router/src/route-loader.ts`, `appRouteRegistry`, and
+`app-route-registry`, `route-bundles-mounted`, `default-route-bundles`,
+`duplicate-route-registration`, and package-discovery tests.

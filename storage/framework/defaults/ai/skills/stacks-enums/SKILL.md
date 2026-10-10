@@ -8,93 +8,40 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Enums
 
-## Key Paths
-- Core package: `storage/framework/core/enums/src/`
-- Source: `storage/framework/core/enums/src/index.ts`
-- Package: `@stacksjs/enums`
+Use `@stacksjs/enums` for internal NpmScript and Action identifiers. Read their
+actual enum members rather than deriving command names from an old copied list.
 
-## NpmScript Enum (45 values)
+## Action paths
 
-Used by the CLI and build system to run specific npm scripts:
+Action values identify framework action source paths, for example BuildViews is
+build/views and QueueWork is queue/work. The enum's source links point at each
+handler; the action-source-links test verifies the member/path/file agreement.
+This is the framework's dispatch vocabulary, distinct from an application action
+path and from the public buddy CLI command registry.
 
-```typescript
-import { NpmScript } from '@stacksjs/enums'
-```
+Current members include component/library/native app builds, auth setup/pruning,
+generation/release, migration/seed, queue inspection/DLQ/quarantine/pause/resume,
+search, scheduling and upgrades. Read stacks-actions/stacks-buddy for dispatch
+and command invocation. Removed BuildVueComponentLib/MigrateDns/BuildComponents
+symbols should not be resurrected because an older skill lists them.
 
-### Build Scripts
-| Value | Script |
-|-------|--------|
-| `Build` | `'build'` |
-| `BuildComponents` | `'vite build --config ./src/vite-config/src/components.ts'` |
-| `BuildWebComponents` | `'build:web-components'` |
-| `BuildFunctions` | `'build:functions'` |
-| `BuildDocs` | `'build:docs'` |
-| `BuildStacks` | `'build:stacks'` |
+## Script values
 
-### Dev Scripts
-| Value | Script |
-|-------|--------|
-| `Dev` | `'dev'` |
-| `DevApi` | `'dev:api'` |
-| `DevDocs` | `'dev:docs'` |
-| `DevDesktop` | `'dev:desktop'` |
-| `DevFunctions` | `'dev:functions'` |
+NpmScript contains both script names and literal command strings. Some values
+invoke pickier or Bun tests directly; they are not all keys in package.json.
+Use ./buddy lint and the project's actual scripts for user workflows. Treat
+Clean/Fresh/Release as real operations, not harmless metadata probes.
 
-### Test Scripts
-| Value | Script |
-|-------|--------|
-| `Test` | `'test'` |
-| `TestUnit` | `'test:unit'` |
-| `TestFeature` | `'test:feature'` |
-| `TestUi` | `'test:ui'` |
-| `TestTypes` | `'test:types'` |
+## Scheduling constants
 
-### Maintenance Scripts
-`Clean`, `Fresh`, `Lint`, `LintFix`, `Upgrade`, `Generate`, `GenerateTypes`, `GenerateEntries`, `GenerateWebTypes`, `GenerateIdeHelpers`, `GenerateComponentMeta`, `Commit`, `Release`, `KeyGenerate`, `Preinstall`, `Prepublish`
+The Every enum lives in `@stacksjs/types` (core/types/src/cron-jobs.ts), not the
+enums entry. Its seconds forms need the appropriate scheduler layer; a six-field
+enum value does not make the low-level five-field parser accept arbitrary seconds.
+Read stacks-scheduler/stacks-cron for that distinction.
 
-## Action Enum (60+ values)
+## Source and verification
 
-Used to dispatch framework actions via the action runner:
-
-```typescript
-import { Action } from '@stacksjs/enums'
-```
-
-### Build Actions
-`BuildViews`, `BuildStacks`, `BuildComponentLibs`, `BuildVueComponentLib`, `BuildWebComponentLib`, `BuildFunctionLib`, `BuildCli`, `BuildCore`, `BuildDesktop`, `BuildDocs`, `BuildServer`
-
-### Dev Actions
-`DevComponents`, `DevDashboard`, `DevSystemTray`, `Dev`, `DevApi`, `DevDesktop`, `DevDocs`
-
-### Database Actions
-`Migrate`, `MigrateFresh`, `MigrateDns`, `Seed`
-
-### Queue Actions
-`QueueTable`, `QueueWork`, `QueueRetry`, `QueueFailed`, `QueueClear`, `QueueStatus`, `QueueFlush`, `QueueMonitor`, `QueueInspect`, `QueueSchedule`, `QueueScheduleList`
-
-### Domain Actions
-`DomainsAdd`, `DomainsPurchase`, `DomainsRemove`
-
-### Search Engine Actions
-`SearchEngineImport`, `SearchEngineFlush`, `SearchEngineListSettings`, `SearchEnginePushSettings`
-
-### Other Actions
-`Lint`, `LintFix`, `Test`, `TestUnit`, `TestFeature`, `TestUi`, `Typecheck`, `Deploy`, `ScheduleRun`, `Release`, `RouteList`, `Upgrade`, `UpgradeDeps`
-
-## Usage
-
-```typescript
-import { Action, NpmScript } from '@stacksjs/enums'
-
-// Used in buddy CLI commands
-runAction(Action.Migrate, options)
-
-// Used in build system
-runNpmScript(NpmScript.BuildComponents)
-```
-
-## Gotchas
-- **Action values use path format** — e.g., `Action.BuildViews = 'build/views'`, `Action.QueueWork = 'queue/work'`
-- **NpmScript values are actual script commands** — some are full vite commands, not just script names
-- **Used throughout the framework** — CLI, build system, and actions all reference these enums
-- **Adding new actions** — requires adding the enum value AND creating the action handler file
+`storage/framework/core/enums/src/index.ts` is the authoritative list.
+Retained tests: core/enums/tests/enums.test.ts and action-source-links.test.ts.
+When adding an internal action, add the enum member/source link and the handler,
+then verify its actual resolver and any public command registration separately.

@@ -1,50 +1,42 @@
 ---
 title: "Deploy skill"
-description: "Use when deploying a Stacks application."
+description: "Use when deploying a Stacks application - picking a deploy target (AWS, Hetzner, or a host you own over SSH), the deployment workflow (build → deploy), pre/post deploy hooks, server vs serverless mode selection, first-time deployment setup, rollback, deployment troubleshooting, or the buddy deploy command. For cloud infrastructure details (EC2, Lambda, CloudFormation, Route53, IAM, rpx, systemd), see stacks-cloud. Covers buddy deploy, config/cloud.ts, provider previews, release and rollback."
 ---
 # Deploy
 
-`stacks-deploy` · Toolchain · model-invoked
+`stacks-deploy` · Native Stacks · model-invoked
 
-The deploy workflow: build then deploy, the pre and post hooks, choosing server or
-serverless, first-time setup, and what to do when it fails. Infrastructure detail
-is in [Cloud](/skills/toolchain/cloud).
+Use when deploying a Stacks application - picking a deploy target (AWS, Hetzner, or a host you own over SSH), the deployment workflow (build → deploy), pre/post deploy hooks, server vs serverless mode selection, first-time deployment setup, rollback, deployment troubleshooting, or the buddy deploy command. For cloud infrastructure details (EC2, Lambda, CloudFormation, Route53, IAM, rpx, systemd), see stacks-cloud. Covers buddy deploy, config/cloud.ts, provider previews, release and rollback.
 
-## When to reach for it
-
-- The deployment workflow (build → deploy)
-- pre/post deploy hooks
-- Server vs serverless mode selection
-- First-time deployment setup
-- Deployment troubleshooting
-- The buddy deploy command
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
+- Deploy Targets
 - Quick Deploy
 - Deployment Prerequisites
+- Preview deployments (Hetzner and `ssh`)
 - Deployment Flow
+- The LAN rule (`provider: 'ssh'` only)
 - Deploy Hooks (cloud/deploy-script.ts)
 - Deployment Modes
 - First Deployment Checklist
 - CLI Commands
 - Gotchas
-
-## Related skills
-
-- [Cloud](/skills/toolchain/cloud)
+- Evidence and infrastructure contract
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-deploy
 ```
 
 Source: [`stacks-deploy/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-deploy/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-deploy/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-deploy/SKILL.md`. See [Using skills](/skills/using).

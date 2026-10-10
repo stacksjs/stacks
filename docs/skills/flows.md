@@ -45,6 +45,33 @@ then start fresh from its own ticket.
 
 ## On-ramps
 
+**Incoming issues or external PRs** go to [Triage](/skills/craft/triage) for
+verification and an agent-ready brief. Tickets synthesized from an agreed spec
+already have that detail and need no additional triage.
+
+**A large effort with unresolved decisions across sessions** goes to
+[Wayfinder](/skills/craft/wayfinder). Work through decision tickets, capture
+their evidence, and synthesize the result into a spec before building it.
+
+## Builds across sessions
+
+[Grill with docs](/skills/craft/grill-with-docs) persists resolved terms and
+decisions during an interview. [To spec](/skills/craft/to-spec) synthesizes
+that understanding, and [To tickets](/skills/craft/to-tickets) creates
+self-contained tracer bullets with genuine blocking edges.
+
+[Implement](/skills/craft/implement) works one ticket through the Stacks model,
+migration, action, route, and test path. [Implement spec](/skills/craft/implement-spec)
+works a dependency graph and validates the integrated result. Use
+[Research](/skills/craft/research) for cited primary-source findings and
+[PR](/skills/craft/pr) for a concise description with concrete evidence.
+
+[Setup engineering](/skills/craft/setup-engineering) records tracker conventions
+when needed. Local Markdown is a usable fallback. Shared guidance, source
+revisions, and tooling substitutes are documented in [Upstream ports](/skills/upstream).
+
+## Other starting points
+
 A starting situation that generates work, then merges onto the main flow.
 
 **Something is broken** goes to **[Investigate](/skills/craft/investigate)**. It

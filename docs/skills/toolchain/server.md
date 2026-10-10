@@ -4,24 +4,15 @@ description: "Use when working with the Stacks development or production server 
 ---
 # Server
 
-`stacks-server` · Toolchain · model-invoked
+`stacks-server` · Native Stacks · model-invoked
 
-The server itself, in development and production: configuration, middleware and
-startup.
+Use when working with the Stacks development or production server - server configuration, server middleware, or server startup. Covers @stacksjs/server and storage/framework/server/.
 
-## When to reach for it
-
-- Server configuration
-- Server middleware
-- Server startup
-
-## Covers
-
-`@stacksjs/server`, `storage/framework/server/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -39,25 +30,18 @@ The sections an agent reads once the skill loads.
 - Environment Variables
 - CLI Commands
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/server/src/` (published as `@stacksjs/server`)
-- Server runtime: `storage/framework/server/` (the actual Bun HTTP server + Docker build)
-- Server types: `storage/framework/core/types/src/server.ts`
-- Ports types: `storage/framework/core/types/src/ports.ts`
-- Package (core): `storage/framework/core/server/package.json`
-- Package (runtime): `storage/framework/server/package.json`
+- Runtime evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-server
 ```
 
 Source: [`stacks-server/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-server/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-server/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-server/SKILL.md`. See [Using skills](/skills/using).

@@ -1,6 +1,6 @@
 ---
 title: "Wizard skill"
-description: "Use when a procedure needs a human in the loop and the agent has hit a wall it cannot pass alone."
+description: "Use when a procedure needs a human in the loop and the agent has hit a wall it cannot pass alone - provisioning cloud credentials, verifying a sending domain, setting CI secrets, clicking through a registrar or third-party dashboard, or running a one-off cutover. Generates an interactive bash wizard that opens each URL, captures each value, and writes it into .env and GitHub secrets."
 ---
 # Wizard
 
@@ -54,3 +54,10 @@ matches, and you can also call it by name:
 Source: [`stacks-wizard/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-wizard/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-wizard/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

@@ -1,6 +1,6 @@
 ---
 title: "Migrations skill"
-description: "Use when working with database migrations in a Stacks application."
+description: "Use when working with database migrations in a Stacks application - creating migration files, running migrations, fresh migration (drop + recreate), seeding after migration, migration file naming conventions, or the 237 built-in migration files. For the database API itself (queries, connections, SQL helpers), see stacks-database."
 ---
 # Migrations
 
@@ -54,3 +54,10 @@ matches, and you can also call it by name:
 Source: [`stacks-migrations/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-migrations/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-migrations/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

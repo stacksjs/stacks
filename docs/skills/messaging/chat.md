@@ -1,33 +1,18 @@
 ---
 title: "Chat skill"
-description: "Use when implementing chat messaging in Stacks."
+description: "Use when implementing chat messaging in Stacks - sending messages to Slack (webhooks, bot tokens, block kit), Discord (webhooks, bot tokens, embeds), Microsoft Teams (adaptive cards, webhooks), the BaseChatDriver abstraction, retry logic, multi-channel chat routing, or READING a person's conversations from iMessage, WhatsApp, Slack and Discord and archiving them there (the inbox drivers). Covers @stacksjs/chat."
 ---
 # Chat
 
-`stacks-chat` · Messaging · model-invoked
+`stacks-chat` · Native Stacks · model-invoked
 
-Messages into Slack, Discord and Microsoft Teams, through webhooks or bot tokens,
-behind a shared driver abstraction with retry logic and multi-channel routing -
-and the other direction too: inbox drivers that read a person's iMessage,
-WhatsApp, Slack and Discord conversations and archive them in the real app.
+Use when implementing chat messaging in Stacks - sending messages to Slack (webhooks, bot tokens, block kit), Discord (webhooks, bot tokens, embeds), Microsoft Teams (adaptive cards, webhooks), the BaseChatDriver abstraction, retry logic, multi-channel chat routing, or READING a person's conversations from iMessage, WhatsApp, Slack and Discord and archiving them there (the inbox drivers). Covers @stacksjs/chat.
 
-## When to reach for it
-
-- Sending messages to Slack (webhooks, bot tokens, block kit)
-- Discord (webhooks, bot tokens, embeds)
-- Microsoft Teams (adaptive cards, webhooks)
-- The BaseChatDriver abstraction
-- Retry logic
-- Multi-channel chat routing
-- Reading conversations from iMessage, WhatsApp, Slack and Discord, and archiving them there
-
-## Covers
-
-`@stacksjs/chat`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -42,21 +27,18 @@ The sections an agent reads once the skill loads.
 - Retry Logic
 - Dependencies
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/chat/src/`
-- Types: `storage/framework/core/types/src/chat.ts`
+- Results and native notification integration
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-chat
 ```
 
 Source: [`stacks-chat/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-chat/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-chat/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-chat/SKILL.md`. See [Using skills](/skills/using).

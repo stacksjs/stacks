@@ -21,6 +21,14 @@ The Stacks admin dashboard provides a full-featured admin panel with 100+ route 
 
 ## Dashboard Sections
 
+Enable/install the dashboard feature before expecting its default route bundle
+and owned application scaffolds. Keep custom page/component overrides under
+`resources/` and custom Actions under `app/` at their matching relative paths.
+The sidebar registry determines navigation; a page existing on disk does not
+add a sidebar entry or authorize its data Action. Feature sections can be
+disabled independently in configuration. Pair new model views with
+`stacks-models`, `stacks-actions`, and the route registry actually mounted.
+
 Dashboard route views are mounted at the dashboard server root. Do not prefix
 page links with `/dashboard`. The `/api/dashboard/*` prefix is reserved for
 dashboard data Actions.

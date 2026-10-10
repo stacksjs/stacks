@@ -1,30 +1,18 @@
 ---
 title: "Build skill"
-description: "Use when working with the Stacks build system."
+description: "Use when working with the Stacks build system - building component libraries, CLI binaries, server Docker images, documentation, or the framework core. Covers @stacksjs/build, buddy build commands, build actions, and the server build pipeline."
 ---
 # Build
 
-`stacks-build` · Toolchain · model-invoked
+`stacks-build` · Native Stacks · model-invoked
 
-Building component and function libraries, CLI binaries, server images, docs and
-the framework core, plus the library packaging that publishes slices of
-`resources/` to npm.
+Use when working with the Stacks build system - building component libraries, CLI binaries, server Docker images, documentation, or the framework core. Covers @stacksjs/build, buddy build commands, build actions, and the server build pipeline.
 
-## When to reach for it
-
-- Building component libraries
-- CLI binaries
-- Server Docker images
-- Documentation
-- The framework core
-
-## Covers
-
-`@stacksjs/build`, buddy build commands, build actions, the server build pipeline.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -37,30 +25,18 @@ The sections an agent reads once the skill loads.
 - Build Action Enums
 - Build Tool Stack
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/build/`
-- Build actions: `storage/framework/core/actions/src/build/`
-- Main build action: `storage/framework/core/actions/src/build.ts`
-- Buddy commands: `storage/framework/core/buddy/src/commands/build.ts`
-- Server build: `storage/framework/server/build.ts`
-- Server Dockerfile: `storage/framework/server/Dockerfile`
-- Types: `storage/framework/core/types/src/cli.ts`
-
-## Related skills
-
-- [Server](/skills/toolchain/server)
+- Package build contracts
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-build
 ```
 
 Source: [`stacks-build/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-build/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-build/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-build/SKILL.md`. See [Using skills](/skills/using).

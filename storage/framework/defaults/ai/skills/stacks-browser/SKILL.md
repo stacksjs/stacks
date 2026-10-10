@@ -8,141 +8,85 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Browser
 
-Frontend/browser utilities for STX applications.
+Use `@stacksjs/browser` for client authentication, API transport, browser models,
+request error messages and imported billing/utilities. Imported availability is
+different from an STX runtime global.
 
-## Key Paths
-- Core package: `storage/framework/core/browser/src/`
-- Auto-imports: `storage/framework/browser-auto-imports.json`
+## Imports and runtime boundary
 
-## Authentication Composable (useAuth)
+Import useAuth/authGuard, initApi/Fetch and needed helpers explicitly. The package
+initializes browser API config as an import side effect, using public injected
+config or same-origin /api; initApi is an optional override. autoInit itself is
+internal, not a public entry export. window.StacksBrowser is a bag of utilities
+and registered models, not proof that each name is attached as a bare global.
+Read stacks-auto-imports for the actual STX runtime names.
 
-```typescript
-const { user, isAuthenticated, login, register, logout, token, errors, loading } = useAuth()
+The public query builder comes from bun-query-builder/browser, so client bundles
+avoid server SQLite/child_process dependencies. configureBrowser/getBrowserConfig,
+browserQuery/BrowserQueryBuilder/BrowserQueryError, browserAuth and
+createBrowserDb/createBrowserModel are native browser exports. API access remains
+subject to server routes, permissions and row scoping; a client model is not a
+direct SQL connection or authorization layer.
 
-// Login
-await login({ email: 'user@example.com', password: 'secret' })
+## Authentication and session recovery
 
-// Register
-await register({ email: 'new@example.com', password: 'secret', name: 'John' })
+~~~ts
+import { useAuth } from '@stacksjs/browser'
 
-// Logout
-await logout()
+const session = useAuth()
+const result = await session.login({ email: 'user@example.com', password: 'secret' })
+~~~
 
-// Auth guard (redirect if not authenticated)
-authGuard()              // redirect to /login
-authGuard({ guest: true })  // redirect if authenticated (for login page)
-```
+useAuth returns shared client refs and login/register/logout/session methods.
+Login returns a union including validation/refusal and a two-factor challenge;
+inspect the result, rather than assuming a resolved call means signed-in state.
+Browser state uses imported storage helpers, not direct document/window mutation
+inside STX scripts.
 
-## API Client (Fetch)
+refreshSession coalesces concurrent refresh attempts. A server refusal clears the
+session and returns false; a transport failure throws and keeps the existing
+credential. authFetch retries the eligible request after refresh using the native
+credential/CSRF flow. Cookie/session behavior and refresh-token availability
+depend on server browser-session policy. A fixed-lifetime login cannot be made
+renewable by keeping an old client refresh token.
 
-```typescript
-import { Fetch, initApi } from '@stacksjs/browser'
+completeSocialLogin applies the native handoff through the same storage refs and
+strips its URL fragment. Use socialHandoffRedirect on the server; a hand-built
+inline script writing token/user keys duplicates the encoding/security contract.
+authGuard controls client navigation; guard server pages/actions independently.
 
-initApi({ baseUrl: '/api', onUnauthorized: () => router.push('/login') })
+## API transports and errors
 
-const users = await Fetch.get('/users')
-await Fetch.post('/users', { name: 'John' })
-await Fetch.patch('/users/1', { name: 'Jane' })
-await Fetch.put('/users/1', data)
-await Fetch.destroy('/users/1')
-Fetch.setToken('bearer-token')
-```
+initApi configures the browser query builder. The older Fetch facade has its own
+baseURL/token/request path; do not assume initApi changes Fetch's baseURL.
+Fetch.get uses query parameters, post/patch/put JSON bodies, and destroy sends
+DELETE with query parameters. Non-2xx throws an error with status/data after
+body parsing. Its methods return parsed response data, not query-builder Results.
 
-## Stripe Billing (Browser-Side)
+For cookie writes prefer the native auth/composable request flow and
+readCsrfToken/withCsrfHeader. The low-level Fetch facade is not that complete
+session/CSRF abstraction. describeResponseError(status, body?) and
+describeThrownError(error) normalize useful client messages and field errors.
+Read request-error.ts before displaying raw server/provider data to a user.
 
-```typescript
-import { loadCardElement, loadPaymentElement, confirmCardSetup, confirmCardPayment, confirmPayment, createPaymentMethod } from '@stacksjs/browser'
+## Models, billing and utilities
 
-// Load Stripe Elements
-const cardElement = await loadCardElement(clientSecret)
-const paymentElement = await loadPaymentElement(clientSecret)
+registerModelModules or loadBrowserModels(modules?) registers bundled model
+definitions; loadBrowserModels is synchronous and does not dynamically scan
+server app/Models over HTTP. Only definitions with traits.useApi.uri become
+browser models, with server-only factories/validators stripped. getBrowserModel
+returns a model or null; getBrowserModelNames lists the registered model entries.
 
-// Confirm payment
-const { paymentIntent, error } = await confirmCardPayment(clientSecret, elements)
-const { setupIntent, error } = await confirmCardSetup(clientSecret, elements)
-const { paymentIntent, error } = await confirmPayment(elements)
-const { paymentIntent, error } = await createPaymentMethod(elements)
-```
+Stripe helpers (loadCardElement/loadPaymentElement/confirmCardSetup/
+confirmCardPayment/createPaymentMethod/confirmPayment) are imported exports;
+Stripe.js and the public key are prerequisites. Server payment actions retain
+authority over amounts, ownership and payment completion. Utility/composable
+re-exports have their own signatures in utils/ and composables/; read the native
+composable skill instead of copying another fixed inventory of globals.
 
-## Browser Model Loading
+## Source and evidence
 
-```typescript
-import { loadBrowserModels, getBrowserModel, getBrowserModelNames } from '@stacksjs/browser'
-
-await loadBrowserModels()               // loads all models from app/Models/
-const User = getBrowserModel('User')
-const names = getBrowserModelNames()     // ['User', 'Post', ...]
-```
-
-## Browser Query Builder
-
-```typescript
-import { browserQuery, BrowserQueryBuilder, browserAuth, createBrowserModel, createBrowserDb } from '@stacksjs/browser'
-
-const users = await browserQuery('users').where('active', true).get()
-const db = createBrowserDb({ baseUrl: '/api' })
-```
-
-## Utility Functions
-
-```typescript
-// API URLs: one canonical `/api` root, legacy-prefixed paths do not double it
-resolveApiBaseUrl() // https://app.example/api in a browser
-resolveApiUrl('/users', 'https://app.example/api') // https://app.example/api/users
-resolveApiUrl('/api/users', 'https://app.example/api') // same URL
-
-// Date
-useDateFormat(date, 'YYYY-MM-DD')
-useNow()
-
-// Formatting
-formatAreaSize(sqMeters)       // '1,234 sq ft' or 'X acres'
-formatDistance(miles)           // '1.5 mi' or '2,640 ft'
-formatElevation(feet)          // '1,234 ft'
-formatDuration(seconds)        // '2h 15m'
-getRelativeTime(dateString)    // '5 minutes ago'
-
-// Async
-fetchData(fetcher, { onError, fallback })
-
-// Random
-random(size?)                  // nanoid
-customAlphabet(alphabet, size) // custom nanoid
-
-
-// Retry
-retry(fn, { retries: 3, initialDelay: 100, backoffFactor: 2 })
-
-// Sleep
-sleep(ms), wait(ms), delay(ms)
-waitUntil(condition, { interval, timeout })
-waitWhile(condition, options)
-
-// Promise
-createSingletonPromise(fn)
-createControlledPromise()
-createPromiseLock()
-```
-
-## Guards
-- `notNullish(v)` — type guard for non-null/undefined
-- `noNull(v)` — excludes null
-- `notUndefined(v)` — excludes undefined
-- `isTruthy(v)` — excludes falsy values
-
-## Auto-Initialization
-```typescript
-autoInit()  // initializes all browser utilities, exposes on window.StacksBrowser
-```
-
-## Re-exports from Composables
-`useDark`, `useFetch`, `useOnline`, `useStorage`, `useToggle`, `useDateFormat`, `useNow`, `usePreferredDark`
-
-## Gotchas
-- All browser utilities are auto-imported in STX templates
-- `initApi()` must be called before using `Fetch`
-- `loadCardElement()` requires Stripe.js to be loaded
-- `publishableKey` must be set for Stripe integration
-- Browser models use a different query builder than server-side models
-- `autoInit()` exposes utilities on `window.StacksBrowser`
-- Do NOT use `document.*`, `window.*` directly in STX templates
+`storage/framework/core/browser/src/index.ts`, auto-init.ts, model-loader.ts,
+composables/useAuth.ts/useApi.ts/csrf.ts/request-error.ts and utils/fetch.ts.
+Tests: client-bundle-safety.test.ts, use-auth-refresh.test.ts, csrf.test.ts,
+request-error.test.ts and api-url.test.ts under core/browser/tests.

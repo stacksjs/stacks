@@ -30,12 +30,12 @@ export default new Action({
   method: 'POST',
   model: Widget,
 
-  async handle(request: RequestInstance) {
+  async handle(request) {
     await request.validate()
 
     const widget = await Widget.create(toSnakeCaseKeys(request.all()))
 
-    return response.json(widget, 201)
+    return response.created(widget)
   },
 })
 ```
@@ -44,6 +44,59 @@ Use the `Action` class, an explicit HTTP method, and `response` helpers. Store a
 update actions should set `model` and call `request.validate()` before persisting
 input. Import framework helpers explicitly, following the default actions.
 
+Let `handle(request)` infer its request type. An explicit broad annotation loses
+the model or validation field types that `Action` can derive. The typed Action
+contract lives in `core/actions/src/action.ts`; the execution pipeline lives in
+`core/router/src/stacks-router.ts`.
+
+## Validation, lifecycle, and typed clients
+
+An explicit `validations` object is inferred from its validators and runs
+automatically before `authorize`, `before`, and `handle`. A `model` supplies
+the rules used by an explicit `request.validate()` call; do not assume attaching
+a model means every custom handler has already validated all its input.
+
+```ts
+import { Action } from '@stacksjs/actions'
+import { schema } from '@stacksjs/validation'
+
+export default new Action({
+  method: 'POST',
+  validations: {
+    title: { rule: schema.string().min(1).max(120) },
+  },
+  async handle(request) {
+    return { title: request.get('title') }
+  },
+})
+```
+
+`authorize` can return true, false, or an exact Response; false short-circuits
+with 403. `before` can prepare context or return a Response early. Both run
+after declared validation. Directly registered actions and action strings use
+the same `wrapAction` pipeline. Register an imported action with
+`createTypedRouter` when its inferred request/response types should reach a
+`createTypedClient`; lazy strings do not carry that response inference.
+
+`responses`, `responseHeaders`, and `requestHeaders` enrich OpenAPI documentation.
+They describe the contract and do not validate the actual response at runtime.
+Test the endpoint's wire shape. `apiResponse` controls JSON formatting;
+returning a raw Response owns the wire format and yields unknown client output.
+
+`dependencies` lazily creates per-action dependencies exposed through
+`this.deps`. `overrideDependencies` and `resetDependencies` let a test replace
+external boundaries without module-wide mocking. They do not justify mocking
+every internal collaborator or replacing a real database test with a fake.
+
+`Precognition: true` or `?_validate=1` requests a validation-only probe.
+`Precognition-Validate-Only` narrows explicit validation fields. Probes stop
+before authorization/hooks/handler side effects, and do not magically run
+custom `request.validate()` calls inside `handle`.
+
+For event actions, declare `invocation: 'event'` and infer the payload from
+`validations` when supplied. Event discovery calls `handle(payload, event)`;
+it does not hand an HTTP Request to an event handler.
+
 ## Resource Action Contract
 
 Show, update, and destroy actions must distinguish malformed identifiers,
@@ -51,8 +104,9 @@ missing records, invalid input, and operational failures:
 
 1. Read resource identifiers from `request.getParam('id')`, never from the
    request body.
-2. Convert the value to a number and require a safe positive integer. Return
-   `422` when it is malformed.
+2. Validate its actual identifier contract. Numeric resource IDs require a safe
+   positive integer; UUIDs or string keys need their own validation. The built-in
+   Commerce contract returns `422` for malformed numeric IDs.
 3. Validate update input with the action model, then normalize persisted keys
    with `toSnakeCaseKeys(request.all())` when the service expects database
    column names.
@@ -71,7 +125,9 @@ copying the contract across every resource. The built-in Commerce actions use
 
 ## Auto-Generated API Actions (useApi Trait)
 
-When a model defines `useApi`, the framework auto-generates REST actions:
+When a model defines `useApi`, the runtime registers native CRUD routes and
+handlers from the merged model registry. It does not require generated action
+files or a separate model-class generation step:
 
 ```typescript
 defineModel({
@@ -92,7 +148,7 @@ This generates:
 - `PUT /api/products/{id}` → Update action
 - `DELETE /api/products/{id}` → Destroy action
 
-## Default Framework Actions (80+)
+## Default framework action families
 
 ### Authentication Actions
 - `LoginAction` — POST /login (validates email + password, returns token + user)
@@ -158,6 +214,8 @@ route.post('/users', 'Actions/CreateUser')
 - The `handle()` method is required — it receives the request object
 - Actions used as event listeners also have a `handle(event)` method
 - The `useApi` model trait auto-generates CRUD actions + routes
+- Custom actions retain their own domain contract; generic CRUD also applies
+  model middleware, ownership, dashboard roles and per-row policy checks.
 - Actions are resolved dynamically at runtime via string names
 - The HealthAction at `/health` is useful for container health checks
 - Login action returns `{ token: string, user: { id, email, name } }`

@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 Schema change management via migration files.
 
 ## Key Paths
-- Migration files: `database/migrations/` (96+ files)
+- Migration files: `database/migrations/`
 - Database config: `config/database.ts`
 - Model snapshot: `storage/framework/database/model-snapshot.<dialect>.json`
 
@@ -23,7 +23,6 @@ buddy migrate --diff                # show SQL without running
 buddy migrate --auth                # include auth tables
 buddy migrate:fresh                 # drop ALL tables and re-migrate
 buddy migrate:fresh --seed          # drop, migrate, then seed
-buddy dns:pull                      # live zone as a config/dns.ts block
 buddy make:migration <name>         # create new migration file
 buddy seed                          # seed database
 buddy generate:migrations           # generate migrations from model diffs
@@ -68,7 +67,7 @@ without changing application ignore rules or staging SQL contents. Review and
 stage migrations with their models and snapshot normally; do not add per-file
 `.gitignore` exceptions. Dry-run previews never change the Git index.
 
-## Built-in Migrations (96+)
+## Built-in migration families
 
 The framework includes migrations for all built-in models:
 
@@ -112,12 +111,37 @@ The framework includes migrations for all built-in models:
 
 ## Workflow
 
-1. Define/modify model in `storage/framework/defaults/app/Models/` or `app/Models/`
+1. Define/modify the app model under `app/Models/`; edit defaults only when working on the framework
 2. Run `buddy generate:migrations` to generate SQL diffs
 3. Review generated migration files
 4. Run `buddy generate:migrations` again and confirm there is no remaining diff
 5. Run `buddy migrate` to apply
-6. Commit the generated SQL and `storage/framework/database/model-snapshot.<dialect>.json`
+6. Review models, generated SQL, and `storage/framework/database/model-snapshot.<dialect>.json` together; commit when authorized
+
+## Native migration and schema tooling
+
+Models, named pivot schemas, indexes, foreign-key actions, auth/queue/notification
+support tables, and optional feature selection contribute to schema management.
+The model diff uses the dialect snapshot; live schema inspection is a separate
+drift check. A stable no-op generation is not proof that an independently edited
+production database matches the declaration.
+
+Inspect native schema, FK and unique-index audits through the database package:
+`auditSchemaDrift`, `auditForeignKeys`, `auditUniqueIndexes`, and their associated
+CLI commands. Read `buddy list` and each command's help for the current flags.
+Safe schema helpers include `addColumnSafely`, `renameColumnSafely`, and
+`backfillInBatches`; they have dialect-specific preconditions and are not a
+universal zero-downtime guarantee.
+
+The runner tracks applied migrations, locks concurrent runs, selects the active
+dialect corpus, and preserves application-owned tables when optional bundles
+are excluded. Removing a feature from generation is not permission to drop its
+live data. MySQL/PostgreSQL/Vitess/Turso require their own SQL and evidence
+checks; never run SQLite SQL on a different provider because its filename exists.
+
+Source: `core/database/src/{migrations,model-sources,migration-ledger,
+safe-migrations,schema-drift,fk-audit,unique-audit}.ts`, `config/query-builder.ts`,
+and their retained database tests.
 
 ## Gotchas
 - `migrate:fresh` drops ALL tables — only use in development

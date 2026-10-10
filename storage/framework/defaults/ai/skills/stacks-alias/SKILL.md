@@ -1,6 +1,6 @@
 ---
 name: stacks-alias
-description: Use when working with path aliases in a Stacks project - import resolution, module aliasing, or debugging import paths. Covers @stacksjs/alias which defines 260+ path mappings for the entire framework.
+description: Use when debugging source aliases, package/subpath resolution, or the boundary between checkout and published imports. Covers @stacksjs/alias and its active resolver consumers.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,87 +8,42 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Path Aliases
 
-## Key Paths
-- Core package: `storage/framework/core/alias/src/`
-- Source: `storage/framework/core/alias/src/index.ts`
-- Package: `@stacksjs/alias`
+Use `@stacksjs/alias` to inspect the framework's source alias map and debug a
+configured build resolver. The exported alias object is metadata; importing it
+does not install a universal module resolver.
 
-## API
+## Actual mappings
 
-```typescript
-import { alias } from '@stacksjs/alias'
+The map in `storage/framework/core/alias/src/index.ts` uses @stacksjs/path to
+resolve project-relative resources to concrete paths. Many packages have
+@stacksjs/name and stacks/name aliases plus wildcard subpaths, but only entries
+actually in the map are promised. Cli maps to core/cli, Buddy to core/buddy;
+they are separate packages.
 
-const alias: Record<string, string>  // 260+ entries
-```
+Configuration/resource aliases cover declared config paths and resources. Read
+that source and the active tsconfig/bun/build configuration for exact spellings;
+a fixed count or schematic wildcard table cannot establish runtime resolution.
+An application override changes the source root resolved by @stacksjs/path.
 
-## Alias Categories
+## Source versus published consumers
 
-### Framework Module Aliases
-Maps `@stacksjs/*` and `stacks/*` imports to their source files:
+Public @stacksjs package names and declared subpaths are the portable imports.
+Source aliases help the framework checkout and configured Stacks app build.
+A published consumer must resolve package exports without reaching outside its
+installed package. Do not invent a subpath merely because a matching source
+file exists behind a wildcard alias. Declaration and runtime export validation
+are separate checks.
 
-```typescript
-'@stacksjs/ai':          'storage/framework/core/ai/src/index.ts'
-'@stacksjs/auth':        'storage/framework/core/auth/src/index.ts'
-'@stacksjs/database':    'storage/framework/core/database/src/index.ts'
-'@stacksjs/router':      'storage/framework/core/router/src/index.ts'
-'@stacksjs/cache':       'storage/framework/core/cache/src/index.ts'
-'@stacksjs/cli':         'storage/framework/core/buddy/src/index.ts'
-'@stacksjs/config':      'storage/framework/core/config/src/index.ts'
-// ... all core packages
-```
+When adding a source alias, update the actual map and the consuming resolver;
+check its package's exports/build entries as well. Relative imports within a
+package are ordinary implementation imports; using a relative path that escapes
+into another package's unpublished types is the problem. Avoid the former rule
+that all relative imports are forbidden, since framework code itself uses them
+to keep internal modules and cycle boundaries explicit.
 
-Both `@stacksjs/` and `stacks/` prefixes are supported:
+## Verification
 
-```typescript
-'stacks/auth':            'storage/framework/core/auth/src/index.ts'
-'stacks/database':        'storage/framework/core/database/src/index.ts'
-```
-
-### Config Aliases
-Maps `~/config/*` to config files:
-
-```typescript
-'~/config/database':      'config/database.ts'
-'~/config/dns':           'config/dns.ts'
-'~/config/docs':          'config/docs.ts'
-'~/config/email':         'config/email.ts'
-// ... all 44 config files
-```
-
-### Resource Aliases
-Maps `~/` paths to project directories:
-
-```typescript
-'~/app/*':                'app/*'
-'~/components/*':         'resources/components/*'
-'~/functions/*':          'resources/functions/*'
-'~/views/*':              'resources/views/*'
-'~/lang/*':               'locales/*'
-'~/*':                    '*'
-```
-
-### Framework Aliases
-```typescript
-'framework/*':            'storage/framework/*'
-'@/*':                    '*'
-```
-
-## Usage
-
-Aliases are automatically resolved by Bun at runtime and by the build system for production:
-
-```typescript
-// These all work because of aliases
-import { db } from '@stacksjs/database'
-import { route } from '@stacksjs/router'
-import { auth } from 'stacks/auth'
-import dbConfig from '~/config/database'
-```
-
-## Gotchas
-- **260+ entries** — covers every core package, config file, and resource directory
-- **Dual prefixes** — both `@stacksjs/` and `stacks/` resolve to the same source files
-- **Runtime resolution** — Bun resolves these at runtime via `bunfig.toml` preloading
-- **Build-time resolution** — the build system resolves aliases to actual paths for production
-- **Always use aliases** — never use relative paths between packages in the monorepo
-- **Adding new packages** — requires adding alias entries for both `@stacksjs/` and `stacks/` prefixes
+Source: `core/alias/src/index.ts`, active tsconfig.json and the build/runtime
+consumer reading the map. Retained coverage: `core/alias/tests/alias.test.ts`.
+For missing globals, read stacks-auto-imports; aliases solve module resolution,
+not injection of ambient names into a browser or server request.

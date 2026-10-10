@@ -1,33 +1,18 @@
 ---
 title: "Models skill"
-description: "Use when working with data models in Stacks."
+description: "Use when defining or extending Stacks models, deriving migrations and CRUD, configuring attributes/relationships/traits/ownership, or preserving model inference. Covers defineModel, extendModel, model types, native data workflows, and the 107 built-in framework models."
 ---
 # Models
 
-`stacks-models` · Data layer · model-invoked
+`stacks-models` · Native Stacks · model-invoked
 
-The `defineModel()` surface in full: attributes with validation and factories,
-relationships, the behaviour traits, computed properties, and the 50+ models the
-framework ships. This is where you look before writing a model, because traits do
-real work and a hand-rolled version of one is wasted effort.
+Use when defining or extending Stacks models, deriving migrations and CRUD, configuring attributes/relationships/traits/ownership, or preserving model inference. Covers defineModel, extendModel, model types, native data workflows, and the 107 built-in framework models.
 
-## When to reach for it
-
-- The defineModel() API
-- Model attributes with validation and factories
-- Relationships (hasOne/hasMany/belongsTo/belongsToMany)
-- Traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe)
-- Computed properties (get/set)
-- Model generation
-- The 50+ built-in framework models
-
-## Covers
-
-model definitions, `storage/framework/defaults/app/Models/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Writing a model
@@ -38,22 +23,20 @@ The sections an agent reads once the skill loads.
 - CLI Commands
 - Gotchas
 
-## Where the code lives
+## Supporting references
 
-- Your models: `app/Models/` (create it; it does not exist in a fresh project)
-- Built-in models: `storage/framework/defaults/app/Models/` (62 files, grouped
-- `ModelOptions` / `Attribute` types: `storage/framework/core/types/src/model.ts`
-- Attribute presets: `storage/framework/types/attributes.ts`
+- [references/model-capabilities.md](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-models/references/model-capabilities.md)
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-models
 ```
 
 Source: [`stacks-models/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-models/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-models/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-models/SKILL.md`. See [Using skills](/skills/using).

@@ -119,13 +119,16 @@ faker.word.adjective() / .noun()
 Model attributes declare a `factory` function receiving `faker`:
 
 ```typescript
-{
+import { schema } from '@stacksjs/validation'
+
+// Attribute entries inside defineModel({ attributes: ... })
+const attributes = {
   name: {
-    validator: { rule: 'string', min: 3, max: 255 },
+    validation: { rule: schema.string().min(3).max(255) },
     factory: faker => faker.company.name(),
   },
   status: {
-    validator: { rule: 'enum', options: ['active', 'inactive'] },
+    validation: { rule: schema.enum(['active', 'inactive']) },
     factory: faker => faker.helpers.arrayElement(['active', 'inactive']),
   },
 }
@@ -133,14 +136,17 @@ Model attributes declare a `factory` function receiving `faker`:
 
 ### How Seeding Works
 1. Model needs `traits: { useSeeder: { count: N } }`
-2. `generateRecord()` calls `attr.factory(faker)` for each attribute
+2. `generateRecord()` calls `attr.factory(faker, generated)` for each attribute;
+   generated contains earlier declared attributes before password hashing
 3. Falls back to `attr.default` if factory fails
 4. Converts camelCase → snake_case for DB columns
 5. Auto-hashes password fields (bcrypt)
 6. Inserts in batches of 100
-7. Order: User (0), Team (1), Project (2), everything else (10)
+7. Model dependencies determine seeding order, so included parent models seed
+   before their dependents. Application Seeder classes additionally use static
+   order and tags; read `stacks-database` for that separate pass.
 
-### Smart Default Inference (no factory defined)
+### Smart Default Inference (when a factory throws and has no explicit default)
 - `is*`, `has*`, `*able` → `false`
 - `*count`, `*amount`, `*quantity` → `0`
 - `*url`, `*link` → `'https://example.com'`
@@ -148,11 +154,20 @@ Model attributes declare a `factory` function receiving `faker`:
 - `*name` → `faker.person.fullName()`
 - Unknown → `null`
 
+An attribute with neither factory nor default is skipped, not filled by this
+inference. App models override framework models even when opting out of model
+seeding. Auth/account models are protected from routine seeding; review the
+actual protected-model and includeDefaults/fresh/allowProtected behavior before
+choosing a destructive development reset. Seed records are fixture data, not
+random values suitable for real credentials or financial claims.
+
 ## Gotchas
-- **Not @faker-js/faker** — wrapper around `ts-mocker`. Most APIs compatible but not all
-- **Custom modules override base** — lorem, datatype, location, company, vehicle, helpers are custom
-- **Vehicle module is fully custom** — hardcoded manufacturer/model lists, not from ts-mocker
-- **Factory receives faker** — signature is `(faker: Faker) => value`, not `() => value`
-- **Password detection is heuristic** — by name pattern or `hidden: true` attribute
-- **Seeder batch size is 100** — records inserted in chunks
-- **Model seeding order matters** — User first, then Team, Project, everything else
+- **Not @faker-js/faker** - wrapper around `ts-mocker`. Most APIs compatible but not all
+- **Custom modules override base** - lorem, datatype, location, company, vehicle, helpers are custom
+- **Vehicle module is fully custom** - hardcoded manufacturer/model lists, not from ts-mocker
+- **Factory receives context** - `(faker, generated) => value` can use fields
+  declared earlier in the same model; do not depend on fields declared later.
+- **Password detection is heuristic** - by password-like names, or a hidden
+  attribute whose name also includes pass; hidden alone does not hash a field.
+- **Seeder batch size is 100** - records inserted in chunks
+- **Model seeding order matters** - the dependency graph drives parent ordering.

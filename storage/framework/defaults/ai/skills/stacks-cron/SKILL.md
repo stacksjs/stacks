@@ -30,10 +30,12 @@ cron/src/
 ```typescript
 import { parse } from '@stacksjs/cron'
 
-function parse(expression: string, relativeDate?: Date | number): Date | null
+function parse(expression: string, relativeDate?: Date | number, options?: { tz?: string }): Date | null
 ```
 
-Parses a cron expression and returns the next matching UTC date. Falls back to native `Bun.cron.parse()` if available.
+Parses a cron expression and returns the next matching Date as a UTC instant.
+Without tz it uses Bun.cron.parse when available, otherwise the built-in parser.
+With tz it always uses the built-in parser so the IANA timezone is honored.
 
 ```typescript
 parse('0 0 * * *')                   // Next midnight UTC
@@ -47,7 +49,7 @@ parse('0 0 1 * *', new Date())       // Next 1st of month from now
 ```typescript
 import { parseCron } from '@stacksjs/cron'
 
-function parseCron(expression: string, relativeDate?: Date | number): Date | null
+function parseCron(expression: string, relativeDate?: Date | number, options?: { tz?: string }): Date | null
 ```
 
 Full 5-field cron parser supporting:
@@ -80,9 +82,9 @@ async function register(path: string, schedule: string, title: string): Promise<
 
 Registers an OS-level cron job. Requires Bun.cron support.
 
-- `path` — path to the script (must export `scheduled(controller)` handler)
-- `schedule` — cron expression
-- `title` — job identifier (alphanumeric, hyphens, underscores only)
+- `path` - path to the script (must export `scheduled(controller)` handler)
+- `schedule` - cron expression
+- `title` - job identifier (alphanumeric, hyphens, underscores only)
 
 ### remove
 
@@ -114,10 +116,22 @@ parse('30 4 * * SUN')         // Sundays at 4:30 AM
 ```
 
 ## Gotchas
-- **Low-level primitive** — for most use cases, prefer `@stacksjs/scheduler` which provides `.daily()`, `.hourly()`, etc.
-- **UTC dates** — `parse()` returns UTC dates, not local time
-- **POSIX OR logic** — when both dayOfMonth and dayOfWeek are specified (not `*`), matches if EITHER matches
-- **Named values** — supports JAN-DEC and SUN-SAT (case-insensitive)
-- **Searches up to ~4 years** — parser iterates forward to find the next match, stops after ~4 years
-- **OS-level registration** — `register()` requires Bun.cron support (not available in all environments)
-- **`register()` scripts must export `scheduled()`** — the target file must have a `scheduled(controller)` handler
+- **Low-level primitive** - for most use cases, prefer `@stacksjs/scheduler` which provides `.daily()`, `.hourly()`, etc.
+- **UTC dates** - `parse()` returns UTC dates, not local time
+- **POSIX OR logic** - when both dayOfMonth and dayOfWeek are specified (not `*`), matches if EITHER matches
+- **Named values** - supports JAN-DEC and SUN-SAT (case-insensitive)
+- **Searches up to ~4 years** - parser iterates forward to find the next match, stops after ~4 years
+- **OS-level registration** - `register()` requires Bun.cron support (not available in all environments)
+- **`register()` scripts must export `scheduled()`** - the target file must have a `scheduled(controller)` handler
+
+## Timezone and verification
+
+Use `parse('0 9 * * *', new Date(), { tz: 'America/New_York' })` for a local
+9 AM schedule. DST transition hours can be skipped or repeated; the parser
+does not promise one business effect across that window. The high-level
+scheduler adds task policies and `.cron()` support for selected seconds forms;
+the low-level parser still accepts five fields only.
+
+Source: `storage/framework/core/cron/src/index.ts` and `parser.ts`.
+Retained parser tests are under `core/cron/tests/`; scheduler timezone and
+cron-expression coverage is under `core/scheduler/tests/`.

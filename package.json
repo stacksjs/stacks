@@ -95,7 +95,9 @@
     "bud": "./buddy",
     "stx": "./buddy",
     "docs:agent-counts": "./buddy docs:agent-counts",
-    "docs:agent-counts:check": "./buddy docs:agent-counts:check"
+    "docs:agent-counts:check": "./buddy docs:agent-counts:check",
+    "docs:native-skills": "./buddy docs:native-skills",
+    "docs:native-skills:check": "./buddy docs:native-skills:check"
   },
   "dependencies": {
     "stacks": "workspace:*",

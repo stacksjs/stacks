@@ -64,3 +64,9 @@ bar, and this skill only answers "which direction".
 > Answer in hand? Take it into `/stacks-plan-review` or `/stacks-new-feature`.
 > If the winning variant is the one you will build, `/stacks-design-taste` sets
 > the bar for the real implementation.
+
+## Upstream provenance
+
+The reviewed source revision and MIT notice are in [NOTICE.md](NOTICE.md) and
+[LICENSE](LICENSE). Read [the Stacks adaptation rules](../stacks-flow/ENGINEERING.md)
+with this workflow. Existing Stacks APIs and supporting helpers remain authoritative.

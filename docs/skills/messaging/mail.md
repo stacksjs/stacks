@@ -1,6 +1,6 @@
 ---
 title: "Mail skill"
-description: "Use when creating mail classes in app/Mail/."
+description: "Use when creating mail classes in app/Mail/ - defining email content and templates, using the template() function with STX or HTML templates, variable interpolation, email layouts, or the app-level mail sending pattern. For the email framework itself (drivers, Mail singleton, EmailSDK, inbox management), see stacks-email. Covers app/Mail, Mailable, resources/emails and mail previews."
 ---
 # Mail
 
@@ -53,3 +53,10 @@ matches, and you can also call it by name:
 Source: [`stacks-mail/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-mail/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-mail/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

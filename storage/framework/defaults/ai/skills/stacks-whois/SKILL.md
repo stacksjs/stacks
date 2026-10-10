@@ -64,7 +64,7 @@ async function batchWhois(
 - Sequential mode (`parallel=false`): processes domains one at a time
 - Parallel mode (`parallel=true`): processes in batches of `threads` size using `Promise.all`
 - If `threads > domains.length`, clamps to `domains.length`
-- Note: In parallel mode, only the last batch's results are returned (`response` is reassigned, not concatenated)
+- Parallel mode accumulates every batch result in input/batch order; use a positive integer thread count
 
 ### tcpWhois() -- Raw TCP Query
 ```typescript
@@ -89,7 +89,7 @@ async function tcpWhois(
 ```typescript
 async function findWhoIsServer(tld: string): Promise<string>
 ```
-Fetches `https://www.iana.org/whois?q=<tld>` and extracts server from `whois:\s+(\S+)` regex match. Returns empty string on failure.
+Fetches the IANA lookup and parses the start-of-line whois field through parseIanaWhoisServer. Returns empty string on lookup failure.
 
 ### getWhoIsServer() -- Local Lookup
 ```typescript
@@ -302,7 +302,7 @@ Types: `WhoIsResponse`, `WhoIsOptions`, `ProxyData`, `ProxyType`, `SocksClientOp
 
 ## Gotchas
 - `whois()` with `parse=false` still parses with default fields -- the `parse` flag controls whether custom `parseData` is used
-- `batchWhois()` in parallel mode has a bug: it reassigns `response` each batch instead of concatenating, so only the last batch's results are returned
+- batchWhois accumulates parallel batches; threads must be a positive integer to avoid a non-progressing loop
 - `ProxyType` enum values are `0` and `1`, not `4` and `5` -- they are mapped to SOCKS versions internally
 - `getWhoIsServer()` returns `undefined` for unknown TLDs, not an empty string
 - `findWhoIsServer()` returns empty string `''` on failure (not `undefined`)
@@ -313,3 +313,13 @@ Types: `WhoIsResponse`, `WhoIsOptions`, `ProxyData`, `ProxyType`, `SocksClientOp
 - TCP connections use `node:net` Socket, not `fetch` -- WHOIS is a raw TCP protocol on port 43
 - The SOCKS client uses callback-style API, not promises
 - Query options are prepended to the domain in the TCP query (e.g., `"-T dn,ace example.de\r\n"`)
+
+
+## Lookup evidence
+
+parseIanaWhoisServer(body) is exported for deterministic server discovery parsing.
+Read core/whois/src/index.ts and its TCP/proxy options before promising a total
+query deadline: server availability and registry-specific output vary. Parsed
+fields are best-effort registry data; an empty response is not proof a domain is
+available to register. Local parser/proxy tests do not exercise every live TLD.
+Evidence: core/whois/tests/fetch.test.ts, servers.test.ts, socks.test.ts and whois.test.ts.

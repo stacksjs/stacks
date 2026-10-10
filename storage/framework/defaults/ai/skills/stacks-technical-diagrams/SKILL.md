@@ -35,9 +35,9 @@ Every command below is one launcher invocation from the Stacks project root:
 .claude/skills/stacks-technical-diagrams/bin/diagrams doctor
 ```
 
-The launcher runs Bun against the skill's own empty `bunfig.toml` with `--no-env-file`, so a diagram
+The launcher runs Bun against the skill's own empty `runtime.toml` with `--no-env-file`, so a diagram
 render never inherits the application's `preload` chain or its `.env`. Never call the renderers with
-a bare `bun`; use the launcher (or `bun --config=<skill>/bunfig.toml --no-env-file
+a bare `bun`; use the launcher (or `bun --config=<skill>/runtime.toml --no-env-file
 <skill>/bin/technical-diagrams.mjs` if you need the explicit form).
 
 Commands: `render`, `validate`, `deliver`, `compare`, `preview`, `visual-check`, `check`, `inspect`,

@@ -8,7 +8,8 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Object Utilities
 
-Type-safe object manipulation helpers. All functions are exported from a single file.
+Type-safe object manipulation helpers, with core functions in index.ts and
+additional transforms re-exported from transform.ts.
 
 ## Key Path
 - Core package: `storage/framework/core/objects/src/index.ts` (single file, all functions)
@@ -22,10 +23,10 @@ Type-safe object manipulation helpers. All functions are exported from a single 
 
 ### objectMap -- Transform Object Key/Value Pairs
 ```typescript
-function objectMap<K extends string, V, NK = K, NV = V>(
+function objectMap<K extends string, V, NK extends PropertyKey = K, NV = V>(
   obj: Record<K, V>,
   fn: (key: K, value: V) => [NK, NV] | undefined,
-): Record<K, V>
+): Record<NK, NV>
 ```
 
 The callback receives `(key, value)` and must return either:
@@ -190,7 +191,20 @@ hasOwnProperty(null, 'a')          // false (no throw)
 hasOwnProperty(undefined, 'a')     // false (no throw)
 ```
 
-## Gotchas
+## Additional native transforms
+
+The root also exports `omit`, `pickBy`, `omitBy`, `mapValues`, `mapKeys`,
+`invert`, `isEmptyObject`, `getPath` and `setPath` from `transform.ts`.
+Use a path array such as `['items', 0, 'name']`, not an assumed dot-string
+parser. `getPath(source, path, fallback?)` reads a nested value;
+`setPath(source, path, value)` performs a persistent update by copying containers
+along the path and sharing unaffected siblings. Treat paths as application-owned
+inputs; this helper is not a path authorization boundary. Choose `objectPick` for key-based selection and
+`pickBy` for predicate selection. Read transform signatures for callback
+argument order; `objectMap`'s `(key, value)` is not a universal convention.
+Retained evidence: `core/objects/tests/transform.test.ts`.
+
+## Mutation and typing gotchas
 - `deepMerge` **mutates the target object** -- it does not create a new object. The return value is the same reference as `target`.
 - `clearUndefined` **mutates the input object** -- it deletes properties in place.
 - `objectPick` creates a NEW object -- original is not affected.

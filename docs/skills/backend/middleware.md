@@ -1,6 +1,6 @@
 ---
 title: "Middleware skill"
-description: "Use when working with middleware in a Stacks application."
+description: "Use when working with middleware in a Stacks application - defining middleware, applying to routes, middleware aliases, parameterized middleware, groups, or the middleware execution pipeline. Covers the Middleware class, app/Middleware.ts alias registry, and the default middleware files."
 ---
 # Middleware
 
@@ -63,3 +63,10 @@ matches, and you can also call it by name:
 Source: [`stacks-middleware/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-middleware/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-middleware/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

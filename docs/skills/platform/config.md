@@ -1,55 +1,36 @@
 ---
 title: "Config skill"
-description: "Use when working with Stacks configuration."
+description: "Use when working with Stacks configuration, asynchronous overrides, driver capability evidence, framework feature gates, package resource discovery, or request context. Covers @stacksjs/config and the config/ directory."
 ---
 # Config
 
-`stacks-config` · Platform · model-invoked
+`stacks-config` · Native Stacks · model-invoked
 
-The ~44 typed config files, the `defineX()` builder functions behind them, the
-defaults, and how environment-specific overrides resolve.
+Use when working with Stacks configuration, asynchronous overrides, driver capability evidence, framework feature gates, package resource discovery, or request context. Covers @stacksjs/config and the config/ directory.
 
-## When to reach for it
-
-- The 44 config files
-- Config helper functions
-- Default values
-- Environment-specific overrides
-- The defineApp/defineDatabase/etc builder functions
-
-## Covers
-
-`@stacksjs/config`, config/ directory.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Paths
-- Config API
-- Individual Config Exports
-- Config Builder Functions
-- Helper Functions
-- All 44 Config Files
-- Default Values (from defaults.ts)
-- Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/config/src/`
-- Configuration directory: `config/`
-- Defaults: `storage/framework/core/config/src/defaults.ts`
-- Overrides: `storage/framework/core/config/src/overrides.ts`
+- Loading and readiness
+- Driver capability evidence
+- Framework feature gates
+- Native resource discovery
+- Configuration paths
+- Sources and verification
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-config
 ```
 
 Source: [`stacks-config/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-config/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-config/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-config/SKILL.md`. See [Using skills](/skills/using).

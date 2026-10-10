@@ -1,32 +1,18 @@
 ---
 title: "Security skill"
-description: "Use when implementing security in Stacks."
+description: "Use when implementing security in Stacks - password hashing (bcrypt/argon2), app key generation, AES encryption/decryption, hash verification, rehashing detection, security configuration (firewall, rate limiting, IP allowlists), or GDPR data-subject requests (access export, erasure, retention, the processing register). Covers @stacksjs/security, config/security.ts and the GDPR layer in @stacksjs/orm."
 ---
 # Security
 
-`stacks-security` · Backend and API · model-invoked
+`stacks-security` · Native Stacks · model-invoked
 
-The primitives underneath auth: password hashing, app key generation, AES
-encryption, hash verification and rehashing, plus the firewall, rate limit and IP
-allowlist configuration.
+Use when implementing security in Stacks - password hashing (bcrypt/argon2), app key generation, AES encryption/decryption, hash verification, rehashing detection, security configuration (firewall, rate limiting, IP allowlists), or GDPR data-subject requests (access export, erasure, retention, the processing register). Covers @stacksjs/security, config/security.ts and the GDPR layer in @stacksjs/orm.
 
-## When to reach for it
-
-- Password hashing (bcrypt/argon2)
-- App key generation
-- AES encryption/decryption
-- Hash verification
-- Rehashing detection
-- Security configuration (firewall, rate limiting, IP allowlists)
-- GDPR data-subject requests: access export, erasure, retention, the processing register
-
-## Covers
-
-`@stacksjs/security`, `config/security.ts`, and the GDPR layer in `@stacksjs/orm` (see [Personal Data and GDPR](/guide/gdpr)).
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -38,22 +24,18 @@ The sections an agent reads once the skill loads.
 - config/security.ts
 - Personal data and GDPR
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/security/src/`
-- Security config: `config/security.ts`
-- Hashing config: `config/hashing.ts`
+- Encryption and webhook contracts
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-security
 ```
 
 Source: [`stacks-security/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-security/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-security/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-security/SKILL.md`. See [Using skills](/skills/using).

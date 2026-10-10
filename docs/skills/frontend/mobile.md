@@ -1,17 +1,18 @@
 ---
 title: "Mobile skill"
-description: "Use when building native iOS or Android applications from a Stacks and STX codebase with Craft, including mobile configuration, native capabilities, safe areas, haptics, sharing, and mobile build output."
+description: "Use when building native iOS or Android applications from Stacks and STX with Craft, mobile configuration, native capabilities, device search, health, route recording, safe areas, haptics, or mobile build output. Covers @stacksjs/mobile and the mobile build pipeline."
 ---
 # Mobile
 
-`stacks-mobile` · Frontend · model-invoked
+`stacks-mobile` · Native Stacks · model-invoked
 
-Native iOS and Android apps: the Craft bridge, mobile builds and the mobile
-component set. For the guide, see [Mobile Apps](/guide/mobile).
+Use when building native iOS or Android applications from Stacks and STX with Craft, mobile configuration, native capabilities, device search, health, route recording, safe areas, haptics, or mobile build output. Covers @stacksjs/mobile and the mobile build pipeline.
+
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key paths
 - Build
@@ -25,13 +26,14 @@ The sections an agent reads once the skill loads.
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-mobile
 ```
 
 Source: [`stacks-mobile/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-mobile/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-mobile/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-mobile/SKILL.md`. See [Using skills](/skills/using).

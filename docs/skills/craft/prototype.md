@@ -1,6 +1,6 @@
 ---
 title: "Prototype skill"
-description: "Use when a design question needs a runnable answer rather than an argument."
+description: "Use when a design question needs a runnable answer rather than an argument - does this state model hold up, what should this page look like, is this API shape right. Builds throwaway code that answers one question, either a single shareable HTML demo or several stx view variants."
 ---
 # Prototype
 
@@ -53,3 +53,10 @@ matches, and you can also call it by name:
 Source: [`stacks-prototype/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-prototype/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-prototype/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

@@ -101,6 +101,11 @@ whether a trait wants to be born.
 
 ## Principles
 
+A module may have internal seams used by its own implementation tests as well
+as an external seam used by callers. Keep that distinction explicit: a private
+test seam does not become part of the public interface merely because a test
+uses it. Confirm the intended test surface and preserve public-behavior tests.
+
 - **Depth is a property of the interface, not the implementation.** A deep module
   can be internally composed of small, swappable parts. They just are not part of
   the interface. A module can have **internal seams** (private, used by its own
@@ -174,6 +179,11 @@ per suite. See `stacks-tdd` for where that line sits.
   ways, then compares on depth, locality and seam placement.
 
 ## Downstream
+
+Current upstream provenance is in [NOTICE.md](NOTICE.md). Read
+[the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
+Use `stacks-improve-codebase-architecture` to find a concrete deepening
+candidate and `stacks-setup-deep-modules` when enforcing package entrypoints.
 
 > Reach for `stacks-tdd` to write the tests at the seam you chose, and
 > `stacks-domain-modeling` when the module needs a name the project does not

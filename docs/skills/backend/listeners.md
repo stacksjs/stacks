@@ -1,6 +1,6 @@
 ---
 title: "Listeners skill"
-description: "Use when creating event listeners in app/Listeners/."
+description: "Use when creating event listeners in app/Listeners/ - the listener file structure, registering listeners in app/Events.ts, the listener-to-action mapping pattern, CLI event listeners in Console.ts, or debugging listener execution. For the event system API (dispatch, listen, emitter, model events), see stacks-events. Covers app/Listeners, app/Events.ts and native listener discovery."
 ---
 # Listeners
 
@@ -52,3 +52,10 @@ matches, and you can also call it by name:
 Source: [`stacks-listeners/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-listeners/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-listeners/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

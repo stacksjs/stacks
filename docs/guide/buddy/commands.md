@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **354 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **356 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -29,7 +29,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 7 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 14 |
+| `docs` | 16 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1678,6 +1678,24 @@ Report internal documentation links
 Verify internal documentation links resolve
 
 - Usage: `$ buddy docs:links:check`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:native-skills`
+
+Regenerate native skill package coverage and driver evidence
+
+- Usage: `$ buddy docs:native-skills`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:native-skills:check`
+
+Verify native skills cover current packages and driver capabilities
+
+- Usage: `$ buddy docs:native-skills:check`
 - Namespace: `docs`
 - Aliases: none
 - Arguments: none

@@ -1,145 +1,87 @@
 ---
 name: stacks-auto-imports
-description: Use when working with the Stacks auto-import system - understanding how browser and server auto-imports work, configuring auto-imported functions/models/composables, the auto-import manifests, type generation, or how globals are injected. Covers the auto-import pipeline at storage/framework/auto-imports/.
+description: Use when checking browser/server binding delivery, model globals, registry generation, or the difference between ambient declarations and runtime imports. Covers Stacks auto-imports, stx client delivery, server boot and generated registries (107 models).
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
 ---
 
-# Stacks Auto-Import System
+# Auto-imports and runtime delivery
 
-Automatically makes functions, models, composables, and utilities available globally without explicit imports.
+A declaration, a delivered client binding, and an initialized server global are
+three different facts. Inspect the relevant runtime rather than inferring all
+three from an ambient type file.
 
-## Key Paths
-- Auto-import functions: `storage/framework/auto-imports/functions.ts`
-- Auto-import models: `storage/framework/auto-imports/models.ts`
-- Auto-import index: `storage/framework/auto-imports/index.ts`
-- Auto-import globals: `storage/framework/auto-imports/globals.ts`
-- Global type declarations: `storage/framework/auto-imports/globals.d.ts`
-- Browser manifest: `storage/framework/browser-auto-imports.json`
-- Server manifest: `storage/framework/server-auto-imports.json`
-- Browser type declarations: `storage/framework/types/browser-auto-imports.d.ts` (~80KB)
-- Server type declarations: `storage/framework/types/server-auto-imports.d.ts`
-- General auto-import types: `storage/framework/types/auto-imports.d.ts`
+## Browser paths
 
-## How Auto-Imports Work
+STX client scripts receive eager runtime bindings, compiler-provided bindings,
+and demand-inline composables emitted for supported authored calls. The eager
+bare-window alias list in AGENTS.md and stacks-composables is checked against
+getCachedSignalsRuntime. That list is one delivery path, not the entire API.
 
-### Browser Context (STX Templates)
-1. `storage/framework/browser-auto-imports.json` defines available imports (200+ entries)
-2. Types are declared in `storage/framework/types/browser-auto-imports.d.ts`
-3. STX plugin (`bun-plugin-stx`) resolves imports at build time
-4. Available in STX `<script>` tags without explicit `import` statements
+Current STX also supplies useMediaQuery/usePreferredReducedMotion through
+runtime/compiler bindings, and useForm/useIntersectionObserver/useScroll/
+useMouse/useParallax through demand delivery. Read
+[BROWSER.md](../stacks-composables/BROWSER.md) for exact signatures, supported
+installation versions, signal adapters and cleanup. Imported Stacks composables
+can have different Ref contracts from the same-name bare client helpers.
 
-Browser auto-import injection applies to the STX script entry being compiled.
-TypeScript modules imported by that script do not inherit its lexical bindings.
-Every imported module must explicitly import the functions, stores, and types it
-uses. A generated ambient declaration proves an identifier is available to an
-STX entry; it does not make that identifier global inside bundled dependencies.
+storage/framework/browser-auto-imports.json feeds ambient declarations; it
+is not a complete inventory of executable browser bindings. Utilities,
+provider SDK helpers, stores and custom modules need explicit imports unless
+the installed runtime/compiler/demand implementation actually supplies them.
 
-### Server Context (Routes, Actions, Jobs)
-1. `storage/framework/server-auto-imports.json` defines server-side imports (100+ entries)
-2. Types are declared in `storage/framework/types/server-auto-imports.d.ts`
-3. All 60+ ORM models are auto-imported as globals
-4. Available in any server-side TypeScript file
+Bindings injected into a script entry do not leak into an imported TypeScript
+module. Every module declares its own functions, stores and type dependencies.
+Component tag discovery is yet another pipeline; use resources/components or
+explicitly opted-in package component roots.
 
-### Runtime Injection
-`storage/framework/auto-imports/globals.ts` injects functions into `globalThis`:
-```typescript
-// Makes these available globally without imports:
-globalThis.increment = increment
-globalThis.count = count
-globalThis.isDark = isDark
-globalThis.toggleDark = toggleDark
-// ... geo functions, GPX functions, etc.
-```
+## Server paths
 
-## What Gets Auto-Imported
+Server boot resolves model, job, controller and function registries and injects
+eligible values into globalThis. Model definitions exist on disk, but optional
+features and initialization decide the loaded surface. Explicit app-model
+imports preserve inference from the model actually customized by the app.
 
-### Browser Auto-Imports (200+)
-- **Composables**: useStorage, useLocalStorage, useFetch, useToggle, useCounter, useDark, useNow, etc.
-- **Utilities**: debounce, throttle, retry, sleep, wait, delay, lazy, clamp, rand
-- **Authentication**: useAuth, authGuard, auth
-- **Formatting**: formatCurrency, formatDate, formatNumber, formatDuration
-- **Browser Query Builder**: browserQuery, BrowserQueryBuilder, browserAuth, createBrowserModel
-- **Payment**: confirmCardPayment, confirmPayment, createPaymentMethod, loadCardElement, loadPaymentElement
-- **Stripe**: stripe instance
-- **Custom Functions**: From `resources/functions/` (counter, dark mode, GPX, geo utilities)
+Only runtime model values are globals. ModelRow<typeof Model> and other type
+utilities are imported types; UserRequest/UserRequestModel are not generated
+runtime model variants. Names colliding with built-ins, such as Error/Request,
+need explicit imports and safe local aliases.
 
-### Server Auto-Imports (100+)
-- **All ORM Models**: User, Post, Author, Product, Order, Payment, Customer, etc. (107 models)
-- **Request Models**: UserRequest, PostRequest, OrderRequest, etc.
-- **Actions**: Action types and helpers
-- **Schema**: validation schema builder
-- **Router**: route, response helpers
-- **String Utilities**: slug, camelCase, pascalCase, snakeCase, kebabCase, titleCase
-- **Core**: path, storage, log, handleError, Auth, register
+Import Action, route, response, schema, path, storage, logging and Auth from their
+packages. An ambient helper declaration alone does not establish its global
+runtime initialization. Follow the built-in action's import pattern.
 
-## Auto-Import Type Declarations
+## Generation and project overrides
 
-### auto-imports.d.ts (general)
-```typescript
-declare global {
-  const Action: typeof import('@stacksjs/actions').Action
-  const response: typeof import('@stacksjs/router').response
-  const route: typeof import('@stacksjs/router').route
-  const schema: typeof import('@stacksjs/validation').schema
-  const slug: typeof import('@stacksjs/strings').slug
-  // ... all auto-imported identifiers
-}
-```
+The auto-import barrels under storage/framework/auto-imports are generated from
+app definitions, framework defaults and discovered package resources.
+app/ definitions override defaults at the relevant resolver boundary. Models
+also support additive extendModel rather than a complete copied override.
 
-### Adding Custom Auto-Imports
+Use buddy generate and its documented type-generation variants. Do not hand-
+maintain a second list of Action paths, middleware aliases or runtime model
+names. The registry types derive from resolver maps; stale maps can reject a
+new real file, while a typo in a fresh map is a real missing reference.
 
-1. Create function in `resources/functions/`:
-```typescript
-// resources/functions/myUtils.ts
-export function myHelper() { return 'hello' }
-```
+Application helpers belong in resources/functions and their normal exports.
+Inspect the current generation/discovery pipeline before modifying a generated
+barrel by hand. Components contributed by a package require explicit opt-in;
+views/models/jobs/migrations have their own discovery conventions.
 
-2. Export from `storage/framework/auto-imports/functions.ts`:
-```typescript
-export { myHelper } from '../../resources/functions/myUtils'
-```
+## Verification and gotchas
 
-3. Declare types in `storage/framework/auto-imports/globals.d.ts`:
-```typescript
-declare function myHelper(): string
-```
+- Check client delivery in the installed STX, not only with buddy typecheck.
+- Check server globals after boot or model readiness, not during a cyclic import.
+- Distinguish function values from type-only exports and unavailable feature models.
+- Keep imported browser modules self-contained and clean up observers/timers.
+- Use request snapshots for stx server rendering; an API AsyncLocalStorage scope
+  does not automatically span every render callback.
+- Generated declarations and registries are artifacts. Regenerate and inspect
+  differences rather than inventing globals to silence an error.
 
-4. Inject at runtime in `storage/framework/auto-imports/globals.ts`:
-```typescript
-globalThis.myHelper = myHelper
-```
-
-## Generation Commands
-
-```bash
-buddy generate                  # regenerate all auto-imports
-buddy generate --types          # regenerate type declarations
-buddy generate --ide-helpers    # regenerate IDE helpers
-buddy generate:component-meta   # regenerate component metadata
-```
-
-The `build:reset` script also regenerates auto-imports.
-
-## Server Auto-Import Initialization
-
-```typescript
-import { initiateImports, generateAutoImportFiles, injectGlobalAutoImports } from '@stacksjs/server'
-
-initiateImports()              // initialize auto-import plugin
-generateAutoImportFiles()      // generate runtime auto-import files
-injectGlobalAutoImports()      // inject models/functions globally
-```
-
-## Gotchas
-- Browser auto-imports are resolved at BUILD TIME by bun-plugin-stx — not runtime
-- Imported browser modules must declare their own imports; STX entry auto-imports do not leak into module scope
-- Server auto-imports are injected into globalThis at RUNTIME
-- The browser-auto-imports.d.ts file is ~80KB — it's auto-generated, don't edit manually
-- Custom functions must be exported from both the function file AND the auto-imports barrel
-- Type declarations must match the runtime globals for IDE support
-- All 60+ ORM models are auto-imported on the server — available as `User.find(1)` etc.
-- Request models (e.g., `UserRequest`) are also auto-imported for validated request access
-- Auto-imports are regenerated during `buddy generate` and `build:reset`
-- The discovered-packages.json file at `storage/framework/discovered-packages.json` is part of this system
+Source: core/server/src/imports.ts, core/orm/src/index.ts,
+core/config/src/discovered-resources.ts, generated resolver barrels and installed
+STX client/runtime/demand modules. Retained evidence includes
+core/server/tests/generated-declarations.test.ts, ORM auto-import contracts,
+composables/skill-runtime-globals.test.ts and STX delivery tests.

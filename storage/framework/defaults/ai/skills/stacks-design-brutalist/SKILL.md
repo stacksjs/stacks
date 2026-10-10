@@ -53,7 +53,7 @@ Typography is the primary structural and decorative infrastructure. Imagery is s
 ## 4. Color System
 The color architecture is uncompromising. Gradients, soft drop shadows, and modern translucency are strictly prohibited. Colors simulate physical media or primitive emissive displays.
 
-**CRITICAL: Choose ONE substrate palette per project and use it consistently. Never mix light and dark substrates within the same interface.** Expose these as Crosswind theme tokens in `config/ui.ts`.
+**CRITICAL: Choose ONE substrate palette per project and use it consistently. Never mix light and dark substrates within the same interface.** Expose these as Crosswind theme tokens in `config/css.ts`.
 
 ### If Swiss Industrial Print (Light)
 - **Background:** `#F4F4F0` or `#EAE8E3` (matte, unbleached documentation paper).

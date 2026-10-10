@@ -1,6 +1,6 @@
 ---
 title: "Investigate skill"
-description: "Use when debugging a Stacks issue."
+description: "Use when debugging a Stacks issue - something broken, throwing, failing, flaky or slow. Builds a tight feedback loop that goes red on the bug before any hypothesis is allowed, then minimises, tests hypotheses, fixes and locks it down with a regression test. Enforces no fixes without root cause. Invoke with /stacks-investigate."
 ---
 # Investigate
 
@@ -62,3 +62,10 @@ matches, and you can also call it by name:
 Source: [`stacks-investigate/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-investigate/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-investigate/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

@@ -1,29 +1,18 @@
 ---
 title: "Tunnel skill"
-description: "Use when setting up tunnels in Stacks."
+description: "Use when setting up tunnels in Stacks - local development tunnels for webhook testing, custom cloud tunnel deployment to AWS EC2, tunnel event callbacks (onConnect, onRequest, onResponse, onError), subdomain configuration, or the buddy share command. Covers @stacksjs/tunnel."
 ---
 # Tunnel
 
-`stacks-tunnel` · Toolchain · model-invoked
+`stacks-tunnel` · Native Stacks · model-invoked
 
-Tunnels for webhook testing locally, and custom tunnels deployed to your own EC2,
-with event callbacks and subdomain configuration.
+Use when setting up tunnels in Stacks - local development tunnels for webhook testing, custom cloud tunnel deployment to AWS EC2, tunnel event callbacks (onConnect, onRequest, onResponse, onError), subdomain configuration, or the buddy share command. Covers @stacksjs/tunnel.
 
-## When to reach for it
-
-- Local development tunnels for webhook testing
-- Custom cloud tunnel deployment to AWS EC2
-- Tunnel event callbacks (onConnect, onRequest, onResponse, onError)
-- Subdomain configuration
-- The buddy share command
-
-## Covers
-
-`@stacksjs/tunnel`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Local Tunnel (Quick)
@@ -32,21 +21,18 @@ The sections an agent reads once the skill loads.
 - CLI Command
 - TunnelOptions Interface
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/tunnel/src/`
-- External tool: ~/Code/Tools/localtunnels/
+- Lifecycle and evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-tunnel
 ```
 
 Source: [`stacks-tunnel/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-tunnel/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-tunnel/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-tunnel/SKILL.md`. See [Using skills](/skills/using).

@@ -28,6 +28,8 @@ guessing at answers you have not heard yet.
 
 Ask the whole frontier in one round. Number each question and give your
 recommended answer. Then wait for the user's answers before the next round.
+Word questions so a simple "yes" accepts the recommendation. Keep dependent
+questions for later rounds and do not re-ask decisions already settled.
 
 ```
 ❓ **Q1** - **<question title>**: <question body, possibly several paragraphs,
@@ -80,6 +82,11 @@ Where a question genuinely cannot be settled in conversation because it needs a
 runnable answer, reach for `stacks-prototype` and bring the result back.
 
 ## Downstream
+
+For an interview that persists its glossary and decisions, use
+`stacks-grill-with-docs`. For a decision too large for one session, use
+`stacks-wayfinder`. Current upstream provenance is in [NOTICE.md](NOTICE.md);
+read [the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
 
 > Frontier empty? `/stacks-plan-review` turns the understanding into an
 > implementation plan, or `/stacks-new-feature` slices it into tracer bullets.

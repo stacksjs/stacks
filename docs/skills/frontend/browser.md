@@ -1,58 +1,35 @@
 ---
 title: "Browser skill"
-description: "Use when working with browser/frontend functionality in Stacks."
+description: "Use when working with browser/frontend functionality in Stacks - the useAuth composable (login, register, logout, token management), Stripe billing utilities (loadCardElement, confirmPayment), the API fetch client, browser model loading, or auto-imported browser utilities. Covers @stacksjs/browser."
 ---
 # Browser
 
-`stacks-browser` · Frontend · model-invoked
+`stacks-browser` · Native Stacks · model-invoked
 
-The browser-side surface: the `useAuth` composable, canonical API URL
-resolution, the Stripe billing helpers, the API fetch client and browser model
-loading.
+Use when working with browser/frontend functionality in Stacks - the useAuth composable (login, register, logout, token management), Stripe billing utilities (loadCardElement, confirmPayment), the API fetch client, browser model loading, or auto-imported browser utilities. Covers @stacksjs/browser.
 
-## When to reach for it
-
-- The useAuth composable (login, register, logout, token management)
-- Stripe billing utilities (loadCardElement, confirmPayment)
-- The API fetch client
-- Canonical API URL resolution without doubled `/api` prefixes
-- Browser model loading
-- Auto-imported browser utilities
-
-## Covers
-
-`@stacksjs/browser`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Paths
-- Authentication Composable (useAuth)
-- API Client (Fetch)
-- Stripe Billing (Browser-Side)
-- Browser Model Loading
-- Browser Query Builder
-- Utility Functions
-- Guards
-- Auto-Initialization
-- Re-exports from Composables
-- Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/browser/src/`
-- Auto-imports: `storage/framework/browser-auto-imports.json`
+- Imports and runtime boundary
+- Authentication and session recovery
+- API transports and errors
+- Models, billing and utilities
+- Source and evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-browser
 ```
 
 Source: [`stacks-browser/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-browser/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-browser/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-browser/SKILL.md`. See [Using skills](/skills/using).

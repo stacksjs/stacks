@@ -14,7 +14,10 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Core package: `storage/framework/core/path/src/`
 
 ## Node.js Path Re-exports
-`basename`, `delimiter`, `dirname`, `extname`, `isAbsolute`, `join`, `normalize`, `parse`, `relative`, `resolve`, `sep`, `toNamespacedPath`
+`basename`, `delimiter`, `dirname`, `extname`, `isAbsolute`, `join`, `normalize`,
+`relative`, `resolve`, `sep`, `toNamespacedPath`. `parse` is available through
+the `path` facade, not a named root export. Named `sep`/`delimiter` are strings;
+their facade counterparts are functions.
 
 ## Framework Path Builders
 
@@ -24,9 +27,9 @@ All accept an optional relative path suffix and return absolute paths.
 ```typescript
 appPath('Models')                  // ~/app/Models
 userActionsPath()                  // ~/app/Actions
-userComponentsPath()               // ~/app/Components
-userViewsPath()                    // ~/app/Views
-userFunctionsPath()                // ~/app/Functions
+userComponentsPath()               // ~/resources/components (root components/ wins if present)
+userViewsPath()                    // ~/resources/views
+userFunctionsPath()                // ~/resources/functions (root functions/ wins if present)
 userJobsPath()                     // ~/app/Jobs
 userControllersPath()              // ~/app/Controllers
 userListenersPath()                // ~/app/Listeners
@@ -42,10 +45,11 @@ userEventsPath()                   // ~/app/Events.ts
 ```typescript
 actionsPath()                      // ~/storage/framework/core/actions
 buddyPath()                        // ~/storage/framework/core/buddy
-runtimePath()                      // ~/storage/framework/core/buddy
+runtimePath()                      // ~/storage/framework/buddy (Buddy output)
 buildPath()                        // ~/storage/framework/core/build
-cachePath()                        // ~/storage/framework/cache
-cloudPath()                        // ~/cloud
+cachePath()                        // ~/storage/framework/core/cache (package source, not cache data)
+cloudPath()                        // ~/storage/framework/core/cloud (package source)
+projectPath('cloud')               // ~/cloud (application infrastructure)
 frameworkCloudPath()               // ~/storage/framework/cloud
 libsPath()                         // ~/storage/framework/libs
 ```
@@ -57,19 +61,19 @@ arraysPath()     authPath()         browserPath()
 cliPath()        chatPath()         collectionsPath()
 configPath()     databasePath()     datetimePath()
 dnsPath()        docsPath()         emailPath()
-enumsPath()      envPath()          errorHandlingPath()
+enumsPath()      coreEnvPath()      errorHandlingPath()
 eventsPath()     fakerPath()        gitPath()
-healthPath()     httpPath()         i18nPath()
+healthPath()     paginationPath()   featuresPath()
 lintPath()       loggingPath()      notificationsPath()
 objectsPath()    ormPath()          pathPath()
-paymentsPath()   pluginsPath()      pushPath()
+paymentsPath()   modelMetaPath()    pushPath()
 queuePath()      realtimePath()     routerPath()
 schedulerPath()  searchEnginePath() securityPath()
 serverPath()     shellPath()        slugPath()
 smsPath()        socialsPath()      storagePath()
 stringsPath()    testingPath()      tinkerPath()
-tunnelPath()     typesPath()        uiPath()
-utilsPath()      validationPath()   whoisPath()
+skillsPath()     typesPath()        uiPath()
+utilsPath()      validationPath()   actionRunnerPath()
 ```
 
 ### Resource Paths
@@ -77,7 +81,7 @@ utilsPath()      validationPath()   whoisPath()
 assetsPath()                       // ~/resources/assets
 resourcesPath()                    // ~/resources
 publicPath()                       // ~/public
-localesPath()                      // ~/locales
+langPath()                         // ~/locales
 routesPath()                       // ~/routes
 ```
 
@@ -87,16 +91,17 @@ buildEnginePath()
 libsEntriesPath()
 frameworkPath()                    // ~/storage/framework
 corePath()                         // ~/storage/framework/core
-defaultsPath()                     // ~/storage/framework/defaults
+frameworkPath('defaults')          // ~/storage/framework/defaults
 defaultsAppPath()
 defaultsResourcesPath()
 ```
 
 ### Relative Path Variants
-Most paths have `relative*` variants:
+Only some helpers have relative modes. Inspect the selected signature rather
+than deriving a function name from another path helper:
 ```typescript
 relativeActionsPath()
-relativeAppPath()
+layoutsPath('main.stx', { relative: true })
 ```
 
 ## Path with Suffix
@@ -104,15 +109,30 @@ relativeAppPath()
 ```typescript
 appPath('Models/User.ts')           // ~/app/Models/User.ts
 databasePath('migrations')          // ~/storage/framework/core/database/migrations
-configPath('app.ts')                // ~/config/app.ts
+projectConfigPath('app.ts')         // ~/config/app.ts
+configPath('src/index.ts')          // ~/storage/framework/core/config/src/index.ts
 ```
 
 ## Gotchas
+- Distinguish application paths from package paths. `databasePath` and
+  `configPath` point to core package sources; `userDatabasePath`,
+  `userMigrationsPath` and `projectConfigPath` point to application files.
+- Runtime state has explicit helpers: `stxPath`, `frameworkRuntimePath` and
+  `cloudStatePath`. `cloudPath` points to the core package; use
+  `projectPath('cloud')` for the application's committed infrastructure.
+- `defaultsPackagePath` resolves bundled defaults in a packaged install;
+  `inspectDefaultsProvenance` reports version/source skew. Use these instead
+  of assuming every consumer vendors the entire framework source tree.
+- `runtimeDirectoryEnv`/`applyRuntimeDirectoryEnv` carry STX/cloud state roots
+  into subprocesses while preserving explicit environment overrides.
+- Path joining is not an authorization or root-containment check. Validate
+  an untrusted file path at the storage/request boundary before reading it.
 - Always use `@stacksjs/path` instead of Node's `path` for framework paths
 - All paths resolve to absolute paths by default
 - Most functions accept an optional relative path suffix
 - `relative*` variants return paths relative to project root
-- `user*Path()` functions point to application-level directories (app/)
+- `user*Path()` functions point to application files; frontend resources are
+  under resources, not an invented app/Components or app/Views directory.
 - `built*Path()` functions point to compiled output directories
 - Path is a dependency of almost every framework package
 - Some paths accept `options` with `relative` flag

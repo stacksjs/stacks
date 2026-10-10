@@ -18,17 +18,14 @@ URL-friendly slug generation with database uniqueness checking.
 ```typescript
 import { uniqueSlug } from '@stacksjs/slug'
 
-// Basic usage — checks 'slug' column in inferred table
+// No table/column supplied: plain slugification, no database collision check
 const slug = await uniqueSlug('My Blog Post Title')
 // → 'my-blog-post-title'
 
-// If 'my-blog-post-title' exists in DB:
-// → 'my-blog-post-title-2'
-
-// With options
+// Supply BOTH table and column to check collisions
 const slug = await uniqueSlug('Product Name', {
   table: 'products',     // database table to check
-  column: 'slug'         // column name (default: 'slug')
+  column: 'slug'         // required for database checking
 })
 ```
 
@@ -48,7 +45,7 @@ slugify('Ünïcödé Têxt')          // 'unicode-text'
 slugify('  Extra   Spaces  ')    // 'extra-spaces'
 ```
 
-Re-exported from `ts-slug` — handles Unicode transliteration.
+Re-exported from `ts-slug` - handles Unicode transliteration.
 
 ## Model Usage
 
@@ -62,7 +59,7 @@ defineModel({
     slug: {
       unique: true,
       validation: { rule: schema.string() },
-      // Auto-generated from title via uniqueSlug()
+      // Populate explicitly in the action using uniqueSlug(title, options)
     }
   }
 })
@@ -72,14 +69,20 @@ defineModel({
 
 ```typescript
 interface SlugifyOptions {
-  table?: string         // database table for uniqueness check
-  column?: string        // column name (default: 'slug')
+  table: TableNames      // database table for uniqueness check
+  column: string         // no implicit column default
 }
 ```
 
 ## Gotchas
-- `uniqueSlug()` is async — it queries the database
-- `slugify()` is sync — no database interaction
+- Omitting either table or column returns the base slug with no query.
+- The check and insert are separate: keep a UNIQUE index and handle/retry an
+  insert conflict. A helper cannot reserve the returned slug against a race.
+- Collision attempts are bounded; after repeated conflicts the helper returns
+  a cryptographically randomized suffix instead of looping forever.
+- Declaring a slug attribute does not itself populate it from the title.
+- `uniqueSlug()` is async - it queries the database
+- `slugify()` is sync - no database interaction
 - Collision detection appends `-2`, `-3`, etc. (not random suffixes)
 - Unicode characters are transliterated (u → u, e → e, etc.)
 - For string-only slugification without DB, use `slug()` from `@stacksjs/strings` instead

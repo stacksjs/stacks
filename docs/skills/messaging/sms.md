@@ -1,32 +1,18 @@
 ---
 title: "SMS skill"
-description: "Use when implementing SMS in Stacks."
+description: "Use when implementing SMS in Stacks - sending text messages, the SmsBuilder fluent API, SMS templates, phone verification (OTP/2FA), bulk sending, Twilio/Vonage drivers, E.164 formatting, or the SMS facade. Covers @stacksjs/sms and config/sms.ts."
 ---
 # SMS
 
-`stacks-sms` · Messaging · model-invoked
+`stacks-sms` · Native Stacks · model-invoked
 
-Text messages through Twilio or Vonage: the fluent builder, templates, phone
-verification with one-time codes, bulk sending and E.164 formatting.
+Use when implementing SMS in Stacks - sending text messages, the SmsBuilder fluent API, SMS templates, phone verification (OTP/2FA), bulk sending, Twilio/Vonage drivers, E.164 formatting, or the SMS facade. Covers @stacksjs/sms and config/sms.ts.
 
-## When to reach for it
-
-- Sending text messages
-- The SmsBuilder fluent API
-- SMS templates
-- Phone verification (OTP/2FA)
-- Bulk sending
-- Twilio/Vonage drivers
-- E.164 formatting
-- The SMS facade
-
-## Covers
-
-`@stacksjs/sms`, `config/sms.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Package Exports
@@ -43,25 +29,18 @@ The sections an agent reads once the skill loads.
 - config/sms.ts
 - Type Interfaces (from @stacksjs/types)
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/sms/src/`
-- SMS facade and builder: `storage/framework/core/sms/src/sms.ts`
-- Twilio driver: `storage/framework/core/sms/src/drivers/twilio.ts`
-- Vonage driver: `storage/framework/core/sms/src/drivers/vonage.ts`
-- Drivers index: `storage/framework/core/sms/src/drivers/index.ts`
-- Configuration: `config/sms.ts`
+- Native inbound compliance and helpers
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-sms
 ```
 
 Source: [`stacks-sms/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-sms/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-sms/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-sms/SKILL.md`. See [Using skills](/skills/using).

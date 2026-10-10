@@ -8,6 +8,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Wizard
 
+Current upstream provenance is in [NOTICE.md](NOTICE.md); read
+[the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
+The refreshed template preserves quoted values across re-runs, creates new
+environment files with mode 0600, writes through existing symlinks, and fails
+on EOF instead of accepting an absent answer. Keep stages inside `run_wizard`
+so Bash parses the whole procedure before the first prompt. Do not execute
+the sample procedure merely to validate the template.
+
 A **wizard** is a bash script that walks a human, step by step, through a manual
 procedure that is tedious to do by hand and tedious to re-explain to an agent
 every time. It opens each URL, says exactly what to click and copy, captures the

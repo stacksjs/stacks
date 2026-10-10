@@ -9,7 +9,7 @@ Config, env, dependencies, auto-imports, paths and types.
 The layer under the application: configuration, environment, dependency
 management, auto-imports, path resolution and generated types.
 
-9 skills.
+13 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -22,6 +22,10 @@ management, auto-imports, path resolution and generated types.
 | [Env](/skills/platform/env) | The typed env proxy with automatic coercion, `.env` loading, encryption and decryption of individual values, runtime and CI detection, and the `buddy env:*` commands. |
 | [Path](/skills/platform/path) | The 100+ framework-aware path builders, one per directory in the project, plus the standard path utilities. |
 | [Types](/skills/platform/types) | The generated and hand-written type definitions: model types, request types, environment variables, event types and the ambient globals. |
+| [Feature Flags](/skills/platform/feature-flags) | implementing per-user or per-team feature rollouts, persisted flag values, percentage experiments, or weighted variants.. |
+| [Features](/skills/platform/features) | installing or disabling optional Stacks bundles, understanding model/migration/view gates, or choosing default route bundles.. |
+| [Native](/skills/platform/native) | Choose a source-verified native Stacks capability and follow its model, API, feature and driver contracts. |
+| [Skills](/skills/platform/skills) | discovering, validating, overriding, or distributing Stacks agent skills.. |
 
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).

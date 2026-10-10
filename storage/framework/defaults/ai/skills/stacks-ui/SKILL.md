@@ -1,6 +1,6 @@
 ---
 name: stacks-ui
-description: Use when working with UI in a Stacks application - components, composables, reactivity (refs/watch/computed), Craft native components, Crosswind CSS, Crosswind utility framework, accessibility, or the STX templating engine. Covers @stacksjs/ui, @stacksjs/stx, and related UI tooling.
+description: Use when composing Stacks UI components, web fonts, pagination controls, accessibility, or choosing frontend primitives. Covers @stacksjs/ui, its components subpath, the STX component plugin, and native frontend skill discovery.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,239 +8,77 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks UI
 
-## Design & anti-slop skills
+Start with the package boundary. Templates use STX signals and Crosswind utilities;
+the CSS implementation in this checkout is `@stacksjs/ts-css/engine`. Read
+`stacks-stx` for template behavior, `stacks-composables` for browser delivery
+and reactive contracts, and `stacks-crosswind` for actual CSS configuration.
+For visually important work also read `stacks-design-taste` and the matching
+aesthetic skill. Native applications pair with `stacks-mobile` or
+`stacks-desktop`; admin pages pair with `stacks-dashboard`.
 
-For premium, non-templated UI (layout, typography, color, motion) built on stx + Crosswind, reach for the design-taste skill family:
-- `stacks-design-taste` - flagship anti-slop frontend skill (brief inference, the three dials, layout/type/color discipline, strict pre-flight check)
-- Aesthetic presets: `stacks-design-soft`, `stacks-design-minimalist`, `stacks-design-brutalist`
-- `stacks-redesign` - audit-first upgrade of an existing UI; `stacks-design-output` - full-output enforcement (no placeholder or truncated components)
-- Image-first: `stacks-image-to-code`, plus reference-image generators `stacks-imagegen-web`, `stacks-imagegen-mobile`, `stacks-brandkit`
+## Package and component resolution
 
-## Key Paths
-- Core package: `storage/framework/core/ui/src/`
-- Components: `storage/framework/core/ui/src/components/`
-- UI config: `config/ui.ts` (Crosswind)
-- STX config: `config/ui.ts`
-- STX engine: `node_modules/@stacksjs/stx/`
-- Crosswind: `node_modules/@cwcss/crosswind/`
-- Editor metadata: `storage/framework/core/web-types.json`, `storage/framework/core/custom-elements.json`
+- `@stacksjs/ui` exports `CssEngine`, `ui`, font helpers, and pagination
+  helpers. It does not re-export the STX engine or headless components.
+- Headless components are exported from `@stacksjs/ui/components`, forwarding
+  `@stacksjs/components`. Use that subpath for explicit TypeScript imports.
+- STX tags such as `<Button />` and `<Sidebar />` resolve through the plugin
+  in `config/ui.ts`, `storage/framework/defaults/stx-components-plugin.ts`.
+  Application `resources/components/` overrides are handled by STX. Plugin
+  roots contain the component library, framework defaults, then package roots.
+  Installed packages contribute additive roots through `packageComponentRoots()`;
+  inspect that resolver before changing precedence.
+- `STX_COMPONENTS_DIR` explicitly selects a library source directory. The
+  plugin otherwise tries a local STX development checkout and the installed
+  library. A missing component warning is a resolution problem, not proof
+  that a tag is a globally registered Vue component.
 
-## Source Files
-```
-ui/src/
-├── index.ts              # Re-exports from @stacksjs/stx
-├── components.ts         # Component re-exports
-└── components/
-    ├── autocomplete.ts   # Combobox, ComboboxInput, ComboboxOption, ComboboxOptions
-    ├── disclosure.ts     # Disclosure, DisclosureButton, DisclosurePanel
-    ├── menu.ts           # Menu, MenuButton, MenuItem, MenuItems
-    ├── modal.ts          # Dialog, DialogDescription, DialogPanel, DialogTitle
-    ├── popover.ts        # Popover, PopoverButton, PopoverPanel
-    ├── radio-group.ts    # RadioGroup, RadioGroupLabel, RadioGroupOption
-    ├── select.ts         # Combobox-based select
-    ├── tabs.ts           # Tab, TabGroup, TabList, TabPanel, TabPanels
-    ├── toggle.ts         # Switch
-    └── transition.ts     # TransitionChild, TransitionRoot
+```ts
+import { Dialog, DialogPanel, Switch, Tabs } from '@stacksjs/ui/components'
+import { renderFontHead, buildPageSequence, urlForPage } from '@stacksjs/ui'
 ```
 
-## Headless Components
+## Fonts
 
-```typescript
-import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@stacksjs/ui'
-import { Dialog, DialogDescription, DialogPanel, DialogTitle } from '@stacksjs/ui'
-import { Menu, MenuButton, MenuItem, MenuItems } from '@stacksjs/ui'
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@stacksjs/ui'
-import { Switch } from '@stacksjs/ui'
-import { TransitionChild, TransitionRoot } from '@stacksjs/ui'
-```
+`renderFontPreloads(fonts)`, `renderFontFaceCss(fonts)`, and
+`renderFontHead(fonts)` return HTML/CSS strings for a layout head.
+`FontEntry` carries family, src, format, weight, style, display, preload and
+unicodeRange. The default format is woff2, the default display is swap, and
+each entry preloads unless `preload: false` is set. Keep preload lists small.
+Own the list in application config; importing a helper does not load a font.
+Render these trusted helper outputs with STX raw HTML syntax, not escaped text.
 
-## Craft Native Components
+## Pagination controls
 
-Built-in components with native HTML fallbacks:
+Use the bundled `<Pagination>` component with canonical full, simple, or
+cursor paginator results. For a custom control:
 
-| Component | Fallback | Key Props |
-|-----------|----------|-----------|
-| `craft-button` | `<button>` | variant (primary/secondary/outline) |
-| `craft-text-input` | `<input>` | placeholder, value, type, disabled |
-| `craft-textarea` | `<textarea>` | placeholder, value, rows |
-| `craft-checkbox` | `<input type="checkbox">` | checked, disabled, label |
-| `craft-select` | `<select>` | value, options, placeholder |
-| `craft-modal` | `<dialog>` | open, title, closable, size |
-| `craft-tabs` | `<div>` | activeTab, tabs |
-| `craft-table` | `<table>` | columns, rows, sortable, selectable |
-| `craft-card` | `<div>` | title, subtitle, variant |
-| `craft-alert` | `<div>` | variant, title, dismissible |
-| `craft-toast` | `<div>` | variant, duration, position |
-| `craft-tooltip` | `<span>` | content, position |
-| `craft-pagination` | `<nav>` | total, page, pageSize |
-| `craft-code-editor` | `<textarea>` | value, language, theme, lineNumbers |
-| `craft-date-picker` | `<input type="date">` | value, min, max, format |
-| `craft-color-picker` | `<input type="color">` | value, format |
-| `craft-badge` | `<span>` | variant, size |
-| `craft-avatar` | `<div>` | src, alt, size, fallback |
-| `craft-progress` | `<div>` | value, max, variant |
-| `craft-spinner` | `<div>` | size |
-| `craft-accordion` | `<details>` | open, title |
-| `craft-divider` | `<hr>` | orientation, variant |
-| `craft-breadcrumb` | `<nav>` | items, separator |
-| `craft-menu` | `<nav>` | items, orientation |
-| `craft-tree` | `<div>` | nodes, expandable, selectable |
-| `craft-list` | `<ul>` | items, selectable |
-| `craft-slider` | `<input type="range">` | value, min, max, step |
-| `craft-radio` | `<input type="radio">` | checked, name, value, label |
-| `craft-file-browser` | `<div>` | path, showHidden, selectable |
+- `buildPageSequence(current, last, window?)` returns page numbers and ellipses.
+- `urlForPage(paginator, page)` preserves the existing URL's filter parameters.
+- `paginatorVariant(paginator)` selects full, simple, or cursor behavior.
 
-## Reactivity System
-
-```typescript
-import { ref, namedRef, computed, watch } from '@stacksjs/stx'
-
-const count = ref(0)
-count.value = 5
-
-const doubled = computed(() => count.value * 2)
-
-const stop = watch(
-  () => count.value,
-  (newVal, oldVal) => console.log(`${oldVal} → ${newVal}`),
-  { immediate: false }
-)
-stop()  // cleanup
-```
-
-### Types
-```typescript
-interface Ref<T> { value: T | null, readonly current: T | null }
-
-interface ComponentInstance {
-  id: string, element: Element | null
-  mountHooks: LifecycleHook[], destroyHooks: CleanupFn[], updateHooks: LifecycleHook[]
-  refs: Map<string, Ref<any>>, watchers: Array<{ stop: () => void }>
-  isMounted: boolean
-}
-```
-
-## Lifecycle Hooks
-
-```typescript
-import { onMount, onDestroy, onUpdate } from '@stacksjs/stx'
-// Aliases: onMounted, onUnmounted, onUpdated
-
-onMount(() => {
-  console.log('mounted')
-  return () => console.log('cleanup')  // optional
-})
-onDestroy(() => console.log('destroyed'))
-onUpdate(() => console.log('updated'))
-```
-
-## Dependency Injection
-
-```typescript
-import { provide, inject, createInjectionKey, withInjectionScope } from '@stacksjs/stx'
-
-const ThemeKey = createInjectionKey<string>('theme')
-provide(ThemeKey, 'dark')
-const theme = inject(ThemeKey)             // 'dark'
-const theme = inject(ThemeKey, 'light')    // with default
-```
-
-## Browser Composables
-
-```typescript
-import {
-  useLocalStorage, useSessionStorage, useEventListener,
-  useClickOutside, useWindowSize, useMediaQuery,
-  usePrefersDark, useOnline
-} from '@stacksjs/stx'
-
-const { value, remove } = useLocalStorage('key', defaultValue)
-const { width, height } = useWindowSize()
-const isDark = usePrefersDark()
-const isOnline = useOnline()
-const cleanup = useClickOutside(elementRef, handler)
-```
-
-## Crosswind Configuration (config/ui.ts)
-
-```typescript
-export default {
-  content: [
-    './resources/**/*.{html,js,ts,jsx,tsx,stx}',
-    './storage/framework/defaults/**/*.{html,js,ts,jsx,tsx,stx}',
-    './storage/framework/views/**/*.{html,js,ts,jsx,tsx,stx}',
-  ],
-  output: './storage/framework/assets/headwind.css',
-  minify: false,
-} satisfies CrosswindOptions
-```
-
-## STX Configuration (config/ui.ts)
-
-```typescript
-export default {
-  componentsDir: 'components',
-  layoutsDir: 'layouts',
-  partialsDir: 'partials',
-} satisfies StxOptions
-```
-
-### Full StxConfig
-```typescript
-interface StxConfig {
-  enabled: boolean, debug: boolean
-  templatesDir?, componentsDir, partialsDir, layoutsDir?, defaultLayout?
-  ssr?: boolean, cache?: boolean, cachePath: string
-  i18n?: Partial<I18nConfig>
-  webComponents?: Partial<WebComponentConfig>
-  streaming?: Partial<StreamingConfig>
-  hydration?: Partial<HydrationConfig>
-  a11y?: Partial<A11yConfig>
-  seo?: Partial<SeoFeatureConfig>
-  animation?: Partial<AnimationConfig>
-  markdown?: Partial<MarkdownConfig>
-  pwa?: Partial<PwaConfig>
-  strict?: boolean | StrictModeConfig
-}
-```
-
-## Accessibility
-
-```typescript
-import { checkA11y, autoFixA11y, scanA11yIssues } from '@stacksjs/stx'
-
-const violations = await checkA11y(html, filePath)
-const result = autoFixA11y(html, config)
-const issues = await scanA11yIssues('./resources', { recursive: true })
-```
-
-```typescript
-interface A11yConfig {
-  enabled: boolean, addSrOnlyStyles: boolean
-  level: 'AA' | 'AAA', ignoreChecks?: string[], autoFix: boolean
-}
-```
-
-## Crosswind CSS Framework
-
-Utility-first CSS (like Tailwind), built into Stacks:
-
-```typescript
-import { buildCrosswindCSS, extractClassNames, generateCrosswindCSS } from '@stacksjs/stx'
-
-const css = await buildCrosswindCSS(cwd)
-const classNames = extractClassNames(htmlContent)
-```
-
-Features: theme config, 40+ variant modifiers, custom rules, shortcuts, attributify mode, bracket syntax, presets.
+Full pagination provides counts and page jumps. Simple/cursor results do not
+have a last page; render previous/next controls using their URLs/cursors.
+Outside a request, missing URL context is normal rather than a broken query.
 
 ## Gotchas
-- **@stacksjs/ui re-exports from @stacksjs/stx** — the UI package is thin, the engine is in STX
-- **Craft components use native fallbacks** — `preferNative: true` renders plain HTML
-- **Refs are not Vue refs** — similar API but custom reactive implementation
-- **Lifecycle hooks require component context** — must be called within `setupComponent()`
-- **Crosswind is not Tailwind** — Stacks' own CSS utility implementation
-- **Crosswind is the utility engine** — handles class extraction, CSS generation, purging
-- **STX is the templating engine** — handles `.stx` files, SSR, streaming, hydration
-- **Two CSS systems coexist** — Crosswind (config) and Crosswind (engine)
-- **150+ globally registered Vue components** — no imports needed
+
+- `config/ui.ts` configures STX topology; `config/css.ts` configures utilities.
+- Module-level STX `Ref` helpers and browser callable signals are distinct.
+  Prefer `state`, `derived`, and `effect` in templates. Imported TypeScript
+  modules explicitly import every binding they use.
+- Native components can have web fallbacks; verify the relevant platform
+  implementation rather than promising native parity from a component name.
+- Resolve Iconify classes through the existing icon pipeline; use semantic
+  controls, associated labels, keyboard behavior and reduced-motion signals.
+- A typecheck does not verify client delivery. Render and exercise the page.
+
+## Source and evidence
+
+Public boundaries: `core/ui/src/index.ts`, `core/ui/src/components.ts`,
+`core/ui/package.json`. Component plugin:
+`storage/framework/defaults/stx-components-plugin.ts`. Helpers:
+`core/ui/src/fonts.ts`, `core/ui/src/pagination.ts`. Retained tests:
+`core/ui/tests/fonts.test.ts`, `core/ui/tests/modal.test.ts`, and
+`tests/unit/default-component-names.test.ts` (all core paths are relative
+to `storage/framework/`).

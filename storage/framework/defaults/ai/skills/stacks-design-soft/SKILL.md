@@ -113,13 +113,25 @@ Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `fra
 <script client>
   const card = useRef('reveal')
   const shown = state(false)
-  useIntersectionObserver(card, (entries) => {
-    if (entries[0].isIntersecting) shown.set(true)
-  }, { threshold: 0.2 })
+  const reduce = usePreferredReducedMotion()
+  let stopObserving: (() => void) | undefined
+  onMount(() => {
+    if (reduce()) {
+      shown.set(true)
+      return
+    }
+    const observer = useIntersectionObserver(
+      () => card.current,
+      entry => { if (entry.isIntersecting) shown.set(true) },
+      { threshold: 0.2, once: true },
+    )
+    stopObserving = () => observer.stop()
+  })
+  onDestroy(() => stopObserving?.())
 </script>
 
 <div ref="reveal"
-     :class="shown() ? 'translate-y-0 blur-0 opacity-100' : 'translate-y-16 blur-md opacity-0'"
+     :class="shown() || reduce() ? 'translate-y-0 blur-0 opacity-100' : 'translate-y-16 blur-md opacity-0'"
      class="duration-[800ms] ease-[cubic-bezier(0.32,0.72,0,1)] transition-all">
   <slot />
 </div>

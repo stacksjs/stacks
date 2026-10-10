@@ -1,27 +1,18 @@
 ---
 title: "Slug skill"
-description: "Use when generating URL slugs in Stacks."
+description: "Use when generating URL slugs in Stacks - creating unique slugs with database collision detection, the uniqueSlug function with table/column configuration, or basic slugification. Covers @stacksjs/slug."
 ---
 # Slug
 
-`stacks-slug` · Utilities · model-invoked
+`stacks-slug` · Native Stacks · model-invoked
 
-URL slugs, including unique ones that check the database for collisions before
-returning.
+Use when generating URL slugs in Stacks - creating unique slugs with database collision detection, the uniqueSlug function with table/column configuration, or basic slugification. Covers @stacksjs/slug.
 
-## When to reach for it
-
-- Creating unique slugs with database collision detection
-- The uniqueSlug function with table/column configuration
-- Basic slugification
-
-## Covers
-
-`@stacksjs/slug`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Unique Slug (with Database Check)
@@ -30,19 +21,16 @@ The sections an agent reads once the skill loads.
 - SlugifyOptions
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/slug/src/`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-slug
 ```
 
 Source: [`stacks-slug/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-slug/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-slug/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-slug/SKILL.md`. See [Using skills](/skills/using).

@@ -1,26 +1,22 @@
 ---
 title: "Auth skill"
-description: "Use when implementing authentication, authorization, passkeys, TOTP/2FA, RBAC, gates, policies, session auth, token management, email verification, password resets, or rate limiting in a Stacks application."
+description: "Use when implementing authentication, authorization, passkeys, TOTP/2FA, RBAC, gates, policies, session auth, token management, email verification, password resets, or rate limiting in a Stacks application. Covers the @stacksjs/auth package, config/auth.ts, app/Gates.ts, and app/Middleware/."
 ---
 # Auth
 
-`stacks-auth` · Backend and API · model-invoked
+`stacks-auth` · Native Stacks · model-invoked
 
-Authentication and authorization end to end: passkeys, TOTP and 2FA, RBAC, gates
-in `app/Gates.ts`, policies, sessions, tokens, email verification, password
-resets and rate limiting.
+Use when implementing authentication, authorization, passkeys, TOTP/2FA, RBAC, gates, policies, session auth, token management, email verification, password resets, or rate limiting in a Stacks application. Covers the @stacksjs/auth package, config/auth.ts, app/Gates.ts, and app/Middleware/.
 
-## Covers
-
-@stacksjs/auth package, `config/auth.ts`, `app/Gates.ts`, `app/Middleware/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
 - Key Paths
 - Source Files
-- Auth Class (authentication.ts) — Static Methods
+- Auth Class (authentication.ts) - Static Methods
 - Token System (tokens.ts)
 - Two-Factor Authentication (authenticator.ts)
 - Authorization Gates (gate.ts)
@@ -41,31 +37,23 @@ The sections an agent reads once the skill loads.
 - User Model Traits
 - Gotchas
 - Build
+- Native account workflows
+- Provider and entrypoint boundaries
 
-## Where the code lives
+## Supporting references
 
-- Core package source: `storage/framework/core/auth/src/`
-- Configuration: `config/auth.ts`
-- Security config: `config/security.ts`
-- Hashing config: `config/hashing.ts`
-- Application gates: `app/Gates.ts`
-- Application middleware: `app/Middleware/`
-- Middleware aliases: `app/Middleware.ts`
-- Auth types: `storage/framework/core/types/src/auth.ts`
-
-## Related skills
-
-- [Middleware](/skills/backend/middleware)
+- [ACCOUNT-WORKFLOWS.md](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-auth/ACCOUNT-WORKFLOWS.md)
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-auth
 ```
 
 Source: [`stacks-auth/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-auth/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-auth/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-auth/SKILL.md`. See [Using skills](/skills/using).

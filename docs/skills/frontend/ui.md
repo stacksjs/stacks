@@ -1,81 +1,35 @@
 ---
 title: "UI skill"
-description: "Use when working with UI in a Stacks application."
+description: "Use when composing Stacks UI components, web fonts, pagination controls, accessibility, or choosing frontend primitives. Covers @stacksjs/ui, its components subpath, the STX component plugin, and native frontend skill discovery."
 ---
 # UI
 
-`stacks-ui` · Frontend · model-invoked
+`stacks-ui` · Native Stacks · model-invoked
 
-The UI layer as a whole: components, composables, reactivity, Craft native
-components, Crosswind styling and accessibility, spanning `@stacksjs/ui` and
-`@stacksjs/stx`.
+Use when composing Stacks UI components, web fonts, pagination controls, accessibility, or choosing frontend primitives. Covers @stacksjs/ui, its components subpath, the STX component plugin, and native frontend skill discovery.
 
-## When to reach for it
-
-- Components
-- Composables
-- Reactivity (refs/watch/computed)
-- Craft native components
-- Crosswind CSS
-- Crosswind utility framework
-- Accessibility
-- The STX templating engine
-
-## Covers
-
-`@stacksjs/ui`, `@stacksjs/stx`, related UI tooling.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Design & anti-slop skills
-- Key Paths
-- Source Files
-- Headless Components
-- Craft Native Components
-- Reactivity System
-- Lifecycle Hooks
-- Dependency Injection
-- Browser Composables
-- Crosswind Configuration (config/ui.ts)
-- STX Configuration (config/ui.ts)
-- Accessibility
-- Crosswind CSS Framework
+- Package and component resolution
+- Fonts
+- Pagination controls
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/ui/src/`
-- Components: `storage/framework/core/ui/src/components/`
-- UI config: `config/ui.ts` (Crosswind)
-- STX config: `config/ui.ts`
-- STX engine: `node_modules/@stacksjs/stx/`
-- Crosswind: `node_modules/@cwcss/crosswind/`
-- Editor metadata: `storage/framework/core/web-types.json`, `storage/framework/core/custom-elements.json`
-
-## Related skills
-
-- [Brand kit](/skills/design/brandkit)
-- [Design: brutalist](/skills/design/design-brutalist)
-- [Design: minimalist](/skills/design/design-minimalist)
-- [Design: full output](/skills/design/design-output)
-- [Design: soft](/skills/design/design-soft)
-- [Design taste](/skills/design/design-taste)
-- [Image to code](/skills/design/image-to-code)
-- [Image generation: mobile](/skills/design/imagegen-mobile)
-- [Image generation: web](/skills/design/imagegen-web)
-- [Redesign](/skills/design/redesign)
+- Source and evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-ui
 ```
 
 Source: [`stacks-ui/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-ui/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-ui/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-ui/SKILL.md`. See [Using skills](/skills/using).

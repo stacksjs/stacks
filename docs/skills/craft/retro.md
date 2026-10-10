@@ -1,6 +1,6 @@
 ---
 title: "Retro skill"
-description: "Use for a retrospective on Stacks work."
+description: "Use for a retrospective on Stacks work - proposing concrete improvements to the agent's environment (navigation pointers, automated checks, AGENTS.md, skills, tool economy) from what actually went wrong, backed by git-derived session data. Invoke with /stacks-retro."
 ---
 # Retro
 
@@ -46,3 +46,10 @@ matches, and you can also call it by name:
 Source: [`stacks-retro/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-retro/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-retro/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

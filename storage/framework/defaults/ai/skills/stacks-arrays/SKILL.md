@@ -21,10 +21,11 @@ export * as arr from './arr'
 export * from './macro'
 ```
 
-The `arr.ts` re-exports from three submodules:
-- `contains.ts` — containment check functions
-- `helpers.ts` — array manipulation (toArray, flatten, partition, unique, shuffle, etc.)
-- `math.ts` — statistical functions (average, median, mode, variance, etc.)
+The `arr.ts` re-exports these submodules:
+- `contains.ts` - containment check functions
+- `helpers.ts` - array manipulation (toArray, flatten, partition, unique, shuffle, etc.)
+- `math.ts` - statistical functions (average, median, mode, variance, etc.)
+- `transform.ts` - typed grouping, selectors, ordering, sets and zip helpers
 
 The `macro.ts` provides the `Arr` and `arr` facade objects.
 
@@ -140,10 +141,10 @@ All containment functions work with `string[]`. The `contains` function checks i
 contains('foobar', ['foo', 'baz'])              // true  -- 'foobar'.includes('foo')
 contains('hello', ['foo', 'bar'])               // false
 
-containsAll(['foo', 'bar'], ['foobar', 'barx']) // true  -- all needles found
+containsAll(['foobar', 'barx'], ['foo', 'bar']) // true  -- each needle contains a haystack substring
 containsAll(['foo', 'qux'], ['foobar'])         // false -- 'qux' not found
 
-containsAny(['foo', 'qux'], ['foobar'])         // true  -- at least one found
+containsAny(['foobar', 'qux'], ['foo'])         // true  -- at least one needle contains a haystack substring
 containsAny(['baz', 'qux'], ['foobar'])         // false
 
 containsNone(['baz', 'qux'], ['foobar'])        // true  -- none found
@@ -153,7 +154,7 @@ containsOnly(['foo', 'bar'], ['foobar', 'barx']) // checks if haystack items onl
 // Implemented as: containsAll(haystack, needles) -- reversed args
 
 doesNotContain('qux', ['foo', 'bar'])           // true
-doesNotContain('foo', ['foobar'])               // false
+doesNotContain('foo', ['foobar'])               // true -- 'foo' does not contain 'foobar'
 ```
 
 **Important**: `contains` uses `needle.includes(hay)`, NOT `haystack.includes(needle)`. It checks if the needle string contains any of the haystack substrings. This is substring matching, not array membership.
@@ -211,7 +212,10 @@ covariance([1, 2, 3, 4], [4, 3, 2, 1])     // -1.25 -- negative correlation
 
 ## Arr Facade (`macro.ts`)
 
-Both `Arr` and `arr` are exported as equivalent facade objects.
+Use `Arr` for the facade. The root's lowercase `arr` is the namespace exported
+from `arr.ts`, with all standalone functions. It is not the same object as
+`Arr` and does not include the facade-only `random` method. A lowercase alias
+also exists in `macro.ts`, but the root namespace export wins.
 
 ```typescript
 import { Arr, arr } from '@stacksjs/arrays'
@@ -256,7 +260,29 @@ The facade adds one extra method not in the standalone functions:
 Arr.random(arr, count)   // like sample but filters null/undefined from results
 ```
 
-## Exported Types
+## Typed transformations
+
+These standalone functions are also available through the root `arr` namespace:
+
+- `groupBy`, `keyBy`, `countBy` use selector functions and return typed records.
+  Repeated keyBy keys overwrite earlier entries; groupBy accumulates them.
+- `sortBy(array, ...selectors)` copies before sorting, supports multiple keys,
+  and accepts `{ by, order: 'desc' }` selectors.
+- `sumBy`, `meanBy`, `minBy`, `maxBy` aggregate selected values. `meanBy` returns
+  undefined on an empty input; extrema return the selected element, not its value.
+- `zip`, `zipWith` stop at the shorter input; `unzip` splits pairs.
+- `difference` keeps first-input duplicates that are not excluded;
+  `intersection` and `union` deduplicate by Set identity.
+- `chunk` validates a positive integer size; `compact` removes only null and
+  undefined, preserving false, zero and empty strings.
+- `splitAt` supports negative indexes; `splitWhen` starts the second half at
+  the first match; `times` requires a non-negative integer count.
+
+Read `core/arrays/src/transform.ts` and `tests/transform.test.ts` for precise
+empty-input and selector behavior. These pure helpers are preferable to a new
+utility dependency for common native transformations.
+
+## Type example
 
 ```typescript
 type PartitionFilter<T> = (item: T, index: number, array: readonly T[]) => any

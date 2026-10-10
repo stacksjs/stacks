@@ -438,13 +438,29 @@ All three drivers implement `sendWithRetry()`:
 
 ## Gotchas
 - The default driver for `send()` is `'slack'`, not auto-detected
-- Each driver has two modes: webhook (simpler) and bot token (richer, returns message IDs)
+- Slack and Discord support webhook or bot-token sends; Teams uses its Workflows webhook
 - Slack bot token mode uses `https://slack.com/api/chat.postMessage`, not a webhook
 - Discord webhook returns `204` on success with no body -- this is handled as success
 - Discord bot token mode uses `message.to` as the channel ID
 - Teams accepts only Workflows webhook URLs; the retired `webhook.office.com` connectors are refused
 - Teams uses `message.to` as fallback webhook URL if `config.webhookUrl` is not set
-- All drivers set `mrkdwn: true` or equivalent by default
+- Slack supports mrkdwn; Discord embeds and Teams Adaptive Cards use their own provider payloads
+
+## Results and native notification integration
+
+Direct send returns ChatResult, with success false for a handled provider failure;
+inspect it before persisting sent state. Awaiting a send only proves the promise
+settled. Webhook configuration does not replace ChatMessage's to/content or
+template fields. The generic notify chat channel supplies a body-only shape and
+does not normalize every structured transport failure, so use this package's
+direct API when application behavior depends on valid chat delivery.
+
+Settings resolve per send after app config readiness, with explicit configure
+overrides taking precedence. Retained request/config coverage lives under
+`storage/framework/core/chat/tests/`; it is distinct from live workspace
+delivery evidence. Inbox reads/archive operations use separate provider grants
+and optional native controllers; sending credentials do not automatically grant
+those operations.
 - Block Kit blocks are only built when `message.template` is set (Slack) or when `message.subject`/`message.template` is set (Discord/Teams)
 - `validateMessage()` requires both `to` and either `content` or `template`
 - The `handle()` callback runs before `onSuccess()` -- both results are merged

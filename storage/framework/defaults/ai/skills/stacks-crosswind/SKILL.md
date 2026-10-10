@@ -1,190 +1,85 @@
 ---
 name: stacks-crosswind
-description: Use when styling components in a Stacks application - utility-first CSS classes, theming, responsive design, variants, custom rules, or CSS generation. Crosswind is the CSS utility engine powering Stacks' Crosswind config.
+description: Use when styling Stacks templates with Crosswind utilities, configuring the ts-css engine, responsive or dark variants, theme tokens, shortcuts, safelists, or debugging generated CSS. Covers config/css.ts and @stacksjs/ts-css/engine.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
 ---
 
-# Crosswind CSS Framework
+# Stacks utility CSS
 
-Crosswind (`@cwcss/crosswind`) is the utility-first CSS engine for Stacks — similar to Tailwind CSS but built for Bun.
+Use Crosswind utility classes in STX. The current framework implements this
+through `@stacksjs/ts-css/engine`, the successor package used by STX and
+`@stacksjs/ui`; do not copy an old `@cwcss/crosswind` import into this checkout.
+Pair visually important work with `stacks-design-taste`.
 
-## Design & anti-slop skills
+## Configuration and delivery
 
-For taste-level guidance on *which* utilities to reach for (layout variance, spacing rhythm, color calibration, motion), see the design-taste family: `stacks-design-taste` (flagship), the presets `stacks-design-soft` / `stacks-design-minimalist` / `stacks-design-brutalist`, `stacks-redesign`, `stacks-design-output`, and the image-first `stacks-image-to-code` / `stacks-imagegen-web` / `stacks-imagegen-mobile` / `stacks-brandkit`.
+`config/css.ts` is the authoritative application config, typed as
+`CssOptions` from `@stacksjs/ts-css/engine`. `config/ui.ts` instead configures
+STX, including its root and stateDir. STX's loader accepts a legacy crosswind
+config as a deprecated fallback; prefer the css name for new projects.
 
-## Key Paths
-- Package: `node_modules/@cwcss/crosswind/`
-- UI config: `config/ui.ts` (Crosswind options referencing Crosswind)
-- Default styles: `storage/framework/defaults/styles/`
-- Output: `storage/framework/stx/cache/cw-<hash>.css`, one file per page (stx's `stateDir`, set in `config/ui.ts`)
+```ts
+import type { CssOptions } from '@stacksjs/ts-css/engine'
 
-## Core API
-
-### CSSGenerator
-
-```typescript
-import { CSSGenerator } from '@cwcss/crosswind'
-
-const generator = new CSSGenerator(config: CrosswindConfig)
-generator.generate(className: string): void    // Process a single class
-generator.toCSS(includePreflight?, minify?): string  // Output CSS
-generator.reset(): void                        // Clear generated CSS
+export default {
+  content: ['./resources/**/*.{stx,html}'],
+  minify: false,
+} satisfies CssOptions
 ```
 
-### Parser
+The default config also includes framework component/view roots. Preserve those
+when replacing application content globs. The STX server generates CSS for
+the page's extracted classes and caches it under
+`storage/framework/stx/cache/cw-<hash>.css`. The historical cw prefix does not
+mean that the old package is loaded. Cache output is runtime state, not source.
 
-```typescript
-import { parseClass, expandBracketSyntax, extractClasses, extractAttributifyClasses } from '@cwcss/crosswind'
+For engine-level work, inspect the installed `CssOptions` and exports rather
+than copying a handwritten interface. The engine exposes `CSSGenerator`:
 
-parseClass('hover:bg-blue-500'): ParsedClass
-// { raw: 'hover:bg-blue-500', variants: ['hover'], utility: 'bg-blue-500', important: false, arbitrary: false }
+```ts
+import { CSSGenerator, defaultConfig } from '@stacksjs/ts-css/engine'
 
-extractClasses(htmlContent: string, options?): Set<string>
-expandBracketSyntax('text-[#1a1a1a]', config?): string[]
-extractAttributifyClasses(content, config?): Set<string>
+const generator = new CSSGenerator(defaultConfig)
+generator.generate('hover:bg-blue-600')
+const css = generator.toCSS()
 ```
 
-### Scanner
+## Template authoring
 
-```typescript
-import { Scanner } from '@cwcss/crosswind'
+Use static complete class names so extraction can find the selected utilities.
+For stateful classes use literal branches, for example
+`:class="active() ? 'bg-blue-600' : 'bg-gray-200'"`, rather than assembling
+`'bg-' + color`. If a class only exists in runtime data, deliberately safelist
+it in the engine config after checking the config's actual type.
 
-const scanner = new Scanner(patterns: string[], transformer?, extractOptions?)
-await scanner.scan(): Promise<ScanResult>
-await scanner.scanFile(filePath: string): Promise<Set<string>>
-scanner.scanContent(content: string): Set<string>
-```
-
-### Build Functions
-
-```typescript
-import { build, writeCSS, buildAndWrite } from '@cwcss/crosswind'
-
-const result = await build(config: CrosswindConfig): Promise<BuildResult>
-await writeCSS(css: string, outputPath: string): Promise<void>
-await buildAndWrite(config: CrosswindConfig): Promise<BuildResult>
-
-interface BuildResult {
-  css: string
-  classes: Set<string>
-  duration: number
-  compiledClasses?: Map<string, { className: string, utilities: string[] }>
-  transformedFiles?: Map<string, string>
-}
-```
-
-### Bun Plugin
-
-```typescript
-import { plugin } from '@cwcss/crosswind'
-
-const bunPlugin = plugin(options?: CrosswindPluginOptions): BunPlugin
-```
-
-## Configuration
-
-```typescript
-interface CrosswindConfig {
-  content: string[]                    // Glob patterns for source files
-  output: string                       // Output CSS file path
-  minify: boolean
-  watch: boolean
-  verbose?: boolean
-  theme: Theme
-  shortcuts: Record<string, string | string[]>
-  rules: CustomRule[]
-  variants: VariantConfig
-  safelist: string[]                   // Always include these classes
-  blocklist: string[]                  // Never include these classes
-  preflights: Preflight[]
-  presets: Preset[]
-  compileClass?: CompileClassConfig
-  attributify?: AttributifyConfig
-  bracketSyntax?: BracketSyntaxConfig
-  cssVariables?: boolean
-}
-```
-
-### Theme
-
-```typescript
-interface Theme {
-  colors: Record<string, string | Record<string, string>>
-  spacing: Record<string, string>
-  fontSize: Record<string, [string, { lineHeight: string }]>
-  fontFamily: Record<string, string[]>
-  screens: Record<string, string>
-  borderRadius: Record<string, string>
-  boxShadow: Record<string, string>
-  extend?: Partial<Omit<Theme, 'extend'>>
-}
-```
-
-### Variants (40+ built-in)
-
-```
-responsive, hover, focus, active, disabled, dark, group, peer,
-before, after, marker, first, last, odd, even, first-of-type,
-last-of-type, visited, checked, focus-within, focus-visible,
-placeholder, selection, file, required, valid, invalid, read-only,
-autofill, open, closed, empty, enabled, only, target, indeterminate,
-default, optional, print, rtl, ltr, motion-safe, motion-reduce,
-contrast-more, contrast-less
-```
-
-### Parsed Class Structure
-
-```typescript
-interface ParsedClass {
-  raw: string              // Original class string
-  variants: string[]       // Applied variants (hover, focus, etc.)
-  utility: string          // Core utility name
-  value?: string           // Arbitrary value if present
-  important: boolean       // Has ! prefix
-  arbitrary: boolean       // Uses [] brackets
-  typeHint?: string        // Type hint for arbitrary values
-}
-```
-
-## Usage in Templates
-
-```html
-<div class="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-  <h1 class="font-bold text-2xl text-gray-900">Title</h1>
-  <button class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded">
-    Click me
-  </button>
-</div>
-
-<!-- Arbitrary values -->
-<div class="grid-cols-[1fr_2fr] w-[calc(100%-2rem)] text-[#1a1a1a]">
-
-<!-- Dark mode -->
-<div class="text-black dark:text-white bg-white dark:bg-gray-900">
-
-<!-- Responsive -->
-<div class="w-full md:w-1/2 lg:w-1/3">
-```
-
-## Built-in Utility Categories
-- Display (flex, grid, block, hidden, container)
-- Flexbox (direction, wrap, justify, align, gap)
-- Spacing (margin, padding)
-- Sizing (width, height, min/max)
-- Typography (font-size, font-weight, line-height, text-align, text-color)
-- Colors (background, text, border, ring)
-- Borders (width, radius, style)
-- Effects (shadow, opacity)
-- Transitions & animations
+Responsive variants (`md:`, `lg:`), state variants (`hover:`, `focus-visible:`),
+`dark:`, arbitrary values and `motion-reduce:` are ordinary utilities. Theme,
+shortcut and custom-rule support belongs in css config. Validate an uncommon
+utility by checking emitted CSS in the installed engine; familiar Tailwind
+syntax alone does not establish support.
 
 ## Gotchas
-- **Not Tailwind** — Crosswind is a separate implementation with Tailwind-compatible syntax
-- **Stacks uses Crosswind config** — `config/ui.ts` defines Crosswind options which feed Crosswind
-- **Output is per-page, content-hashed** — `storage/framework/stx/cache/cw-<hash>.css`, generated on demand rather than one bundled stylesheet. The directory is gitignored and safe to delete; the next request regenerates it
-- **Bun plugin available** — can be used as a Bun build plugin for automatic CSS generation
-- **Attributify mode** — optional mode where utilities can be written as HTML attributes instead of classes
-- **Bracket syntax** — `text-[#custom]` for arbitrary values, same as Tailwind JIT
-- **Custom rules** — defined as `[RegExp, (match) => Record<string, string>]` tuples
-- **Presets** — extensible via presets for shared configurations
+
+- Preflight configuration uses `preflights` objects. A top-level boolean
+  `preflight` is not the engine option; the base reset already ships.
+- Dark utilities require the appropriate root appearance state. Use
+  `useColorMode()` and STX `@appearanceBootstrap` for persisted pre-paint setup.
+- Keep fonts and colors in application tokens/config; a utility does not
+  download a font or introduce an icon dependency.
+- Use CSS transitions/keyframes and scroll-driven CSS for motion. Browser
+  observation and reduced-motion helpers are documented in
+  `stacks-composables`, including cleanup and client-delivery boundaries.
+- Content hashes include config/class inputs. A cache file should never be
+  hand-edited to fix a source class or token.
+
+## Source and evidence
+
+`config/css.ts`, `config/ui.ts`, `core/ui/src/index.ts` and
+`core/ui/package.json` establish the framework boundary. The installed STX
+`dev-server/ts-css` module establishes loader precedence, class extraction
+and cache behavior. Relevant upstream tests include
+`test/dev-server/ts-css-extraction.test.ts` and
+`test/ts-css-shortcut-precedence.test.ts`. Core paths are relative to
+`storage/framework/`.

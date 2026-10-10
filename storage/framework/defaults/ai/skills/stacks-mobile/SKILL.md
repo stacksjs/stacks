@@ -1,6 +1,6 @@
 ---
 name: stacks-mobile
-description: Use when building native iOS or Android applications from a Stacks and STX codebase with Craft, including mobile configuration, native capabilities, safe areas, haptics, sharing, and mobile build output.
+description: Use when building native iOS or Android applications from Stacks and STX with Craft, mobile configuration, native capabilities, device search, health, route recording, safe areas, haptics, or mobile build output. Covers @stacksjs/mobile and the mobile build pipeline.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, Xcode for iOS project generation
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -101,7 +101,7 @@ what should differ: `swipeBack` (`'router'`, the stx router's interactive
 swipe, or `'webview'` for WebKit's history swipe), `keyboardAccessory` (off),
 `allowsLinkPreview` (off), `disableZoom` (on), `splashMaxSeconds` (3),
 `requestTimeoutSeconds` (10), `backgroundRefresh: { enabled, identifier?,
-minimumIntervalMinutes? }` and `associatedDomains` (universal links). Leave
+minimumIntervalMinutes? }`and`associatedDomains` (universal links). Leave
 `swipeNavigation` unset: WebKit's swipe alongside the router's fights it, and
 `buddy build:ios` warns. The Liquid Glass chrome needs iOS 26 at run time;
 the default `deploymentTarget` stays, older systems drawing classic bars.
@@ -128,7 +128,7 @@ export default {
 
 `slots` is a budget, not a guess. iOS indexes donated `NSUserActivity` objects
 and hands a tapped one back only for an activity type the build declares in
-`Info.plist`, a list fixed at build time — so a type per record id cannot be
+`Info.plist`, a list fixed at build time - so a type per record id cannot be
 declared at all. Each kind gets that many slots, each slot holds whichever
 record is currently in it, and the oldest donation makes room for the next.
 `buddy build:ios` writes the declarations; an entry the build did not declare
@@ -155,7 +155,7 @@ host predates the bridge, and where the index is turned off (`enabled: false`),
 so a page can donate unconditionally. `spotlight.routeFor(action)` answers a tap
 synchronously for an app that already routes Craft's shortcut events itself.
 
-Index what is the person's — saved, joined, entered — rather than what they
+Index what is the person's - saved, joined, entered - rather than what they
 looked at, wherever the page re-renders on that change: a page that donates on
 every render would put a record straight back the moment they left it. Donating
 the same record twice is free, so an effect over the record is the natural call
@@ -298,6 +298,27 @@ context without exposing `WCSession` to STX templates. Set
 `ios.watchDeploymentTarget` when the default watchOS 9.0 target is not suitable.
 
 ## Validation
+
+### Capability and lifecycle boundaries
+
+Named imports from `@stacksjs/mobile` are browser-safe and tree-shake the
+selected Craft services. Prefer them to reading a module namespace or reaching
+through global bridge internals. A native host can exist before its bridge is
+ready; service wrappers wait where appropriate, while haptics are deliberately
+best-effort so a late response never delays a tap. Check `whenNativeMobile`
+when selecting native-only chrome and preserve cleanup from subscriptions.
+
+Capability configuration generates platform entitlements/privacy descriptions;
+it does not grant the user permission or prove a capability works on every OS.
+Permission denial, revocation, unavailable hardware and web fallback behavior
+are ordinary states. Build evidence and a successful native API call on a real
+device are different validations. Health/watch, StoreKit, Spotlight, background
+refresh and live activity work need their specific device/environment checks.
+
+Route recordings can outlive the web page, so attach to an existing recording
+before starting a second. `indoorVerdict(fixes, elapsedS)` and
+`typedDistanceKm(input)` are small exported helpers for indoor-workout decisions
+and typed distance; they are not an indoor-positioning service.
 
 Before finishing mobile work:
 

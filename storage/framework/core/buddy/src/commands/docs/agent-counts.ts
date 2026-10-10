@@ -154,7 +154,6 @@ const CLAIMS: Claim[] = [
     measure: () => countFiles('storage/framework/defaults/app/Models/commerce', '.ts'),
     sites: [
       { file: `${SKILLS}/stacks-commerce/SKILL.md`, pattern: /and (\d+) models/ },
-      { file: `${SKILLS}/stacks-types/SKILL.md`, pattern: /Commerce \((\d+) models\)/ },
     ],
   },
   {
@@ -196,17 +195,9 @@ const CLAIMS: Claim[] = [
    * `core/server/tests/agents-md-auto-imports.test.ts` checks its list against
    * the runtime by name.
    */
-  {
-    what: 'composables',
-    measure: () => new Set(
-      readFileSync(abs('storage/framework/core/composables/src/index.ts'), 'utf-8')
-        .match(/\buse[A-Z][A-Za-z0-9]*/g) ?? [],
-    ).size,
-    sites: [
-      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) composables/ },
-      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) reactive composables for STX/ },
-    ],
-  },
+  // Composable delivery is checked by names and actual compiler/demand output,
+  // not a count of use* tokens in the module barrel. The native package catalog
+  // owns source-surface freshness without claiming browser runtime equivalence.
   /*
    * `auto-imported composables` used to live here, measuring the `use*` count
    * in `browser-auto-imports.json`. It measured the wrong thing: nothing reads

@@ -11,13 +11,15 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Key Paths
 - Core package: `storage/framework/core/query-builder/src/`
 - Configuration: `config/query-builder.ts`
-- QB state: `.qb/`
+- Migration snapshot: `storage/framework/database/model-snapshot.<dialect>.json`
 - External library: `bun-query-builder`
 - Package: `@stacksjs/query-builder`
 
 ## API
 
-The package re-exports everything from `bun-query-builder` plus a compatibility alias:
+The package wraps `bun-query-builder`, preserves its fluent surface, and adds
+Stacks configuration, persistent query hooks, SQLite bootstrap behavior, and
+identifier/operator validation. The `QueryBuilder` compatibility alias remains:
 
 ```typescript
 export * from 'bun-query-builder'
@@ -27,7 +29,7 @@ export { createQueryBuilder as QueryBuilder } from 'bun-query-builder'
 ## Usage
 
 ```typescript
-import { db } from '@stacksjs/database'
+import { db } from '@stacksjs/database/runtime'
 
 // Select
 const users = await db.selectFrom('users')
@@ -76,6 +78,7 @@ fork application code into a separate raw-query path for this optimization.
   verbose: true,
   dialect: env.DB_CONNECTION || 'sqlite',
   database: { database, username?, password?, host?, port? },
+  snapshotDir: 'storage/framework/database',
 
   timestamps: {
     createdAt: 'created_at',
@@ -124,11 +127,24 @@ fork application code into a separate raw-query path for this optimization.
 ```
 
 ## Gotchas
-- **Thin wrapper** — re-exports `bun-query-builder` with no additions
+- **Wrapped surface** - use `assertSafeIdentifier`, `assertSafeOperator`, and
+  allowlists when a request influences column, table, ordering or operator names.
+  Parameter binding protects values, not arbitrary SQL identifiers.
 - **One config file** — `config/query-builder.ts`. Its `dialect` and connection details are derived from `DB_CONNECTION` and the other `DB_*` env vars, so switching databases is an env change, not a config edit
-- **`.qb/` directory** — stores query builder state for migration diffing
+- **One committed snapshot** - Stacks config directs migration state to
+  `storage/framework/database`; a second `.qb` snapshot indicates the wrong configuration.
 - **Prefer ORM models** — query builder is the low-level interface; use models for most operations
 - **`db` proxy** — the `db` export from `@stacksjs/database` is a lazy proxy that auto-initializes the query builder on first access
 - **Soft deletes disabled by default** — must be explicitly enabled in config
 - **Transaction retries** — defaults to 2 retries with exponential backoff + jitter
 - **Dialect detection** — reads `DB_CONNECTION` env var, falls back to `sqlite`
+- **Turso/libSQL** - uses SQLite SQL with a remote transport selected by the
+  libSQL URL and credentials. Vitess maps to MySQL wire SQL with distinct DDL
+  and transaction constraints. Read the driver capability registry.
+- **Raw versus model queries** - raw `db` has no model definition and cannot
+  infer ownership, hidden fields, per-model casts, encryption or soft-delete traits.
+- **After commit** - `@stacksjs/database/runtime` exposes the native transaction
+  scope helpers; deferring side effects does not rebind model executors to `tx`.
+
+Source: `core/query-builder/src/index.ts`, `config/query-builder.ts`, and the
+database runtime, query-hook, pragma, identifier and transaction tests.

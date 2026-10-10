@@ -8,207 +8,122 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Notifications
 
-Multi-channel notification system with 5 channel types: email, SMS, chat, push, and database.
+Use `notify` for application fan-out and the channel packages for their
+provider-specific APIs. The database inbox and delivery log are different data.
 
-## Key Paths
-- Core package: `storage/framework/core/notifications/src/`
-- Main entry: `storage/framework/core/notifications/src/index.ts`
-- Drivers: `storage/framework/core/notifications/src/drivers/`
-- Database driver: `storage/framework/core/notifications/src/drivers/database.ts`
-- Configuration: `config/notification.ts`
-- Notification model: `storage/framework/defaults/app/Models/Notification.ts`
+## Application notification
 
-## Package Exports
+~~~ts
+import { notify } from '@stacksjs/notifications'
 
-```typescript
-import {
-  useChat,
-  useEmail,
-  useSMS,
-  useDatabase,
-  useNotification,
-  notification,
-  DatabaseNotificationDriver,
-} from '@stacksjs/notifications'
-
-// Types
-import type { CreateNotificationOptions, DatabaseNotification } from '@stacksjs/notifications'
-```
-
-## Channel Factories
-
-Each factory returns the underlying driver module for that channel.
-
-```typescript
-// Email -- defaults to 'mailtrap', returns @stacksjs/email driver
-const emailDriver = useEmail('ses')
-const emailDriver = useEmail('sendgrid')
-const emailDriver = useEmail('mailgun')
-const emailDriver = useEmail('mailtrap')
-const emailDriver = useEmail('smtp')
-
-// SMS -- defaults to 'twilio', returns @stacksjs/sms driver
-const smsDriver = useSMS('twilio')
-const smsDriver = useSMS('vonage')
-
-// Chat -- defaults to 'slack', returns @stacksjs/chat driver
-const chatDriver = useChat('slack')
-const chatDriver = useChat('discord')
-const chatDriver = useChat('teams')
-
-// Database -- returns DatabaseNotificationDriver object
-const dbDriver = useDatabase()
-
-// Auto-detect by type -- dispatches to the correct factory
-const driver = useNotification('email', 'ses')
-const driver = useNotification('sms', 'twilio')
-const driver = useNotification('chat', 'slack')
-const driver = useNotification('database')
-
-// Default (uses config.default, falls back to 'email' + 'mailtrap')
-const driver = notification()
-```
-
-`useNotification()` reads `config/notification.ts` for the default type. If no default is set, it throws `'No default notification type set in config/notification.ts'`.
-
-The channel drivers are re-exports from their respective packages:
-- `email` driver: `@stacksjs/email`
-- `sms` driver: `@stacksjs/sms`
-- `chat` driver: `@stacksjs/chat`
-- `push` driver: `@stacksjs/push`
-
-## Database Notification Driver
-
-The `DatabaseNotificationDriver` provides CRUD operations for notifications stored in the `notifications` database table using Kysely query builder.
-
-### Send a Notification
-
-```typescript
-const db = useDatabase()
-
-const notification = await db.send({
-  userId: 1,
-  type: 'order.shipped',
-  data: { orderId: 42, trackingNumber: 'ABC123' },
-})
-// Returns the created DatabaseNotification with auto-generated id, timestamps
-```
-
-`send()` inserts a row into the `notifications` table with:
-- `user_id` from `options.userId`
-- `type` from `options.type`
-- `data` -- JSON.stringify'd from `options.data`
-- `read_at` set to `null`
-- `created_at` and `updated_at` set to current ISO timestamp
-
-### Query Notifications
-
-```typescript
-// All notifications for a user, ordered by created_at desc
-const all = await db.getUserNotifications(userId)
-
-// Only unread (where read_at is null), ordered by created_at desc
-const unread = await db.getUnreadNotifications(userId)
-
-// Count of unread notifications
-const count = await db.unreadCount(userId)
-```
-
-### Mark as Read
-
-```typescript
-// Mark a single notification as read (sets read_at to current timestamp)
-await db.markAsRead(notificationId)
-
-// Mark all unread notifications for a user as read
-await db.markAllAsRead(userId)
-```
-
-`markAllAsRead()` only updates rows where `read_at` is null.
-
-### Delete Notifications
-
-```typescript
-// Delete a single notification by ID
-await db.deleteNotification(notificationId)
-
-// Delete all notifications for a user
-await db.deleteAllNotifications(userId)
-```
-
-### DatabaseNotification Interface
-
-```typescript
-interface DatabaseNotification {
-  id: number
-  user_id: number
-  type: string          // e.g., 'order.shipped', 'payment.received'
-  data: string          // JSON stringified -- parse with JSON.parse() when reading
-  read_at: string | null  // ISO timestamp or null if unread
-  created_at: string    // ISO timestamp
-  updated_at: string | null  // ISO timestamp
+const results = await notify(
+  { userId: 7, email: 'customer@example.com' },
+  { subject: 'Order shipped', body: 'Your order is on its way.', data: { orderId: 42 } },
+  ['email', 'database'],
+)
+for (const result of results) {
+  if (!result.success)
+    console.error(result.channel, result.error)
 }
-```
+~~~
 
-### CreateNotificationOptions Interface
+`notify(recipient, payload, channels = ['email'], options = {})` returns
+`Promise<NotifyResult[]>`. Channels run with `Promise.allSettled` so one
+failure does not block another. Each result has `channel`, `success` and an
+optional `error`. A resolved call does not imply every channel succeeded.
 
-```typescript
-interface CreateNotificationOptions {
-  userId: number
-  type: string
-  data: Record<string, any>
-}
-```
+| Channel | Required recipient data | Native package |
+|---|---|---|
+| email | email | `@stacksjs/email` |
+| sms | phone | `@stacksjs/sms` |
+| chat | configured channel transport | `@stacksjs/chat` |
+| database | userId | database notification inbox |
+| push | pushTokens, a string or string array | `@stacksjs/push`, default Expo |
+| broadcast | broadcastChannel or userId | `@stacksjs/realtime` |
 
-## Notification Model Fields
+Payload: `{ body, subject?, data?, action? }`. Email treats body as text and
+renders it through the framework layout. Use the exported `NotificationAction`
+type for an action link. The broadcast fallback is `private-user.{userId}` or
+public `notifications` when no user/channel is supplied. Its delivery is
+best-effort; a missing realtime server is not a durable notification queue.
+Read `stacks-chat` before choosing notify's chat channel: its generic body
+payload does not supply a provider's channel recipient or configure credentials.
 
-The Notification model at `storage/framework/defaults/app/Models/Notification.ts`
-maps the database notification inbox used by `DatabaseNotificationDriver`:
+Current notify result mapping marks a fulfilled channel call successful. Email
+explicitly checks EmailResult, but SMS/chat/push structured failures and a
+broadcast result with delivered false are not all normalized into failed
+NotifyResult entries. For provider-confirmed status, use the direct channel API
+and inspect its structured result. The generic chat body also differs from
+ChatMessage's to/content contract; use direct chat send with a valid message.
+Delivery logs inherit this result mapping and are not final receipt evidence.
 
-- `user_id` comes from the `belongsTo: ['User']` relationship
-- `type` is an application event name such as `order.shipped`
-- `data` is a JSON string containing the notification payload
-- `readAt` maps to the nullable `read_at` column
-- `created_at` and `updated_at` come from `useTimestamps`
+## Preferences and delivery tracking
 
-The model uses `useApi` for its CRUD API and seeds 30 records by default. It
-must stay aligned with `notificationsTableSql()` in
-`storage/framework/core/database/src/notification-tables.ts`. Outbound
-transport attempts belong in a separate delivery-log model and table. Do not
-add email, SMS, or provider-specific delivery columns to the inbox model.
+When userId exists, `notify` filters disabled channels using
+`notification_preferences`. An absent preference allows the channel.
+`options.category` selects category-specific preferences. Global opt-outs still
+disable a channel even when a category opts in; omitting a category reads only
+global preferences.
+`options.ignorePreferences: true` explicitly bypasses the filter for a
+required transactional send. A lookup failure logs and sends the unfiltered
+list, so this is not a fail-closed consent boundary.
 
-## CLI Commands
-- `buddy make:notification [name]` -- scaffold a new notification
+Use `getNotificationPreferences`, `setNotificationPreference` and
+`bulkSetPreferences` with their exported types. Writes use a transaction and
+lock the user row; a bulk save is atomic across its whole preference matrix.
+SMS also consults persistent
+phone opt-outs unless ignorePreferences is true. Ordinary direct SMS sends have
+their own contract; see `stacks-sms`.
 
-## config/notification.ts
+Every effective channel outcome is recorded through
+`recordNotificationDelivery(makeDeliveryRecord(...))`. The source distinguishes
+missing optional schema compatibility from real persistence failures. Apply
+model-driven migrations before relying on persistence. Inspect channel results
+and transport results rather than assuming a delivery log is provider proof.
 
-```typescript
-import type { NotificationConfig } from '@stacksjs/types'
+## Channel factories
 
-export default {
-  default: 'email',
-} satisfies NotificationConfig
-```
+- `useEmail(driver?)` returns a sendable transport. Without a driver it uses
+  the Mail singleton and `config/email.ts`. Unknown explicit drivers warn and
+  fall back to that singleton.
+- `useSMS(driver?)` and `useChat(driver?)` select their driver modules
+  (defaults Twilio and Slack); configure those packages before sending.
+- `useDatabase()` returns DatabaseNotificationDriver.
+- `usePush()` returns the push namespace, and `useBroadcast()` the broadcast driver.
+- `useNotification(type?, driver?)`/`notification()` select email, sms, chat
+  or database only. The default type comes from `config/notification.ts`,
+  falling back to email. Push/broadcast fan-out is through `notify` or their
+  dedicated factories, not this older type selector.
 
-The `default` field controls which channel type `useNotification()` and `notification()` use when no type is specified. Valid values: `'email'`, `'sms'`, `'chat'`, `'database'`.
+## Database inbox
 
-## Architecture
+~~~ts
+import { useDatabase } from '@stacksjs/notifications'
 
-The notifications package is a thin aggregation layer. Each channel delegates to its own dedicated package:
+const inbox = useDatabase()
+await inbox.send({ userId: 7, type: 'order.shipped', data: { orderId: 42 } })
+const unread = await inbox.getUnreadNotifications(7)
+const count = await inbox.unreadCount(7)
+await inbox.markAllAsRead(7)
+~~~
 
-- **Email channel** (`useEmail`) -- re-exports `@stacksjs/email` (configured via `config/email.ts`)
-- **SMS channel** (`useSMS`) -- re-exports `@stacksjs/sms` (configured via `config/sms.ts`)
-- **Chat channel** (`useChat`) -- re-exports `@stacksjs/chat` (configured via `config/services.ts`)
-- **Push channel** -- re-exports `@stacksjs/push`
-- **Database channel** (`useDatabase`) -- built-in driver using `@stacksjs/database`
+Also available: `getUserNotifications(userId)`, `markAsRead(id)`,
+`deleteNotification(id)` and `deleteAllNotifications(userId)`. These
+id-only mutation helpers do not enforce ownership themselves; scope access in
+the application's authenticated action before calling them.
 
-The driver modules (`drivers/email.ts`, `drivers/sms.ts`, etc.) are single-line re-exports: `export * as email from '@stacksjs/email'`, `export * as sms from '@stacksjs/sms'`, etc.
+Rows contain id, user_id, type, data (JSON string), read_at, created_at and
+updated_at. Parse data when reading; null read_at means unread. The native
+Notification model adds the User relation and timestamps; keep it aligned with
+`database/src/notification-tables.ts`. Provider attempts belong in the separate
+delivery log, not extra columns on the inbox.
 
-## Gotchas
-- The `data` field in database notifications is stored as a JSON string -- always `JSON.parse()` when reading
-- `read_at` is `null` for unread notifications -- use this to filter unread
-- The database driver uses Kysely's query builder with `as any` type casts on table/column names since the notifications table is dynamically referenced
-- Channel-specific configuration (SMTP credentials, Twilio keys, Slack tokens) lives in each channel's own config file, not in `config/notification.ts`
-- `useNotification()` throws if `config.default` is not set in `config/notification.ts`
-- The `notification()` function (without arguments) is a shorthand for `useNotification()` with defaults
-- The `nexmo` driver is a legacy alias for `vonage` in the SMS drivers index
+## Sources and evidence
+
+`storage/framework/core/notifications/src/index.ts` defines the real
+signatures. `preferences.ts`, `delivery.ts` and `drivers/database.ts`
+own their persistence; the query builder is bun-query-builder.
+`notifications.test.ts`, `delivery-tracking.test.ts`,
+`broadcast.test.ts` and `email-body.test.ts` cover retained behavior.
+For provider status, consult `config/src/capabilities.ts` and each channel
+skill; a constructed send request is not a live delivery assertion.

@@ -13,6 +13,11 @@ produce tests worth keeping: what a good test is, where tests go, the
 anti-patterns, and the rules of the loop. Every section applies on every cycle.
 Consult them before and during, not after.
 
+Use the project's established `CONTEXT.md` or `GLOSSARY.md` vocabulary in test
+names and interfaces, and respect existing ADRs. For each proposed test seam,
+state in one line what it catches and what it misses. Existing agreement on a
+seam carries forward; ask only when that decision remains unsettled.
+
 `stacks-testing` is the *mechanics*: `setupDatabase()`, `refreshDatabase()`,
 DynamoDB Local, `bunfig.toml` preload, the CLI flags. This skill is the
 *discipline*. Read that one for the API and this one for the decisions.
@@ -30,6 +35,8 @@ internal structure.
 
 See [EXAMPLES.md](EXAMPLES.md) for good and bad tests side by side, and for
 where mocking is legitimate.
+The refreshed upstream examples are [tests.md](tests.md) and
+[mocking.md](mocking.md). For fixture assertions, use `stacks-test-fixtures`.
 
 ## Seams: where tests go
 
@@ -120,6 +127,9 @@ environment. See `stacks-new-feature` for the full slice and
 `stacks-migrations` for the generation rules.
 
 ## Downstream
+
+Current upstream provenance is in [NOTICE.md](NOTICE.md); read
+[the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
 
 > Green? Run `/stacks-review` for the two-axis review, then `/stacks-browse` if
 > the slice has a UI.

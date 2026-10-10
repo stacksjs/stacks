@@ -1,6 +1,6 @@
 ---
 name: stacks-jobs
-description: Use when creating background job classes in app/Jobs/ - job structure, the handle method, job configuration (queue, tries, backoff, timeout, rate), dispatching patterns (dispatch, dispatchIf, dispatchAfter, dispatchNow), or the Every schedule constants. For the queue system internals (workers, batching, events, drivers, testing), see stacks-queue.
+description: Use when creating background job classes in app/Jobs/ - job structure, the handle method, job configuration (queue, tries, backoff, timeout, rate), dispatching patterns (dispatch, dispatchIf, dispatchAfter, dispatchNow), or the Every schedule constants. For the queue system internals (workers, batching, events, drivers, testing), see stacks-queue. Covers app/Jobs, the native Job class and typed by-name dispatch.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -45,7 +45,7 @@ export default new Job({
   description?: string       // human-readable description
   queue?: string             // queue name (default: 'default')
   tries?: number             // max retry attempts
-  backoff?: number           // seconds between retries
+  backoff?: number | number[] // seconds between retries
   backoffConfig?: {          // advanced backoff
     strategy: 'fixed' | 'exponential' | 'linear'
     initialDelay: number
@@ -54,7 +54,7 @@ export default new Job({
     jitter?: { enabled: boolean, factor: number }
   }
   timeout?: number           // max seconds per attempt
-  rate?: string              // cron schedule (e.g., Every.Hour)
+  rate?: string              // schedule, e.g. Every.Hour; use an explicit schedule for custom policy
   enabled?: boolean          // enable/disable job
   handle: (payload?) => any  // job logic
 }
@@ -99,7 +99,7 @@ await job('SendWelcomeEmail', { email, name })
 Use the `rate` property for automatic scheduling:
 
 ```typescript
-import { Every } from '@stacksjs/enums'
+import { Every } from '@stacksjs/types'
 
 export default new Job({
   name: 'CleanupExpiredTokens',
@@ -129,11 +129,32 @@ buddy queue                  # queue management
 ```
 
 ## Gotchas
-- Jobs must export `default new Job({...})` — not a plain object
+- Prefer `default new Job({...})` for dispatch methods. Discovery also supports default objects with handle and class exports with a handle method
 - The `handle()` method receives the payload passed to `dispatch()`
-- `dispatchNow()` runs immediately in the current process — no queue involved
-- Default queue driver is `sync` — jobs run immediately unless changed to `database` or `redis`
+- `dispatchNow()` runs immediately in the current process - no queue involved
+- Default queue driver is `sync` - jobs run immediately unless changed to `database` or `redis`
 - Jobs with `rate` are auto-discovered by the scheduler
 - Backoff array `[10, 30, 60]` means: retry after 10s, then 30s, then 60s
-- Jobs should be idempotent — safe to retry on failure
+- Jobs should be idempotent - safe to retry on failure
 - For queue workers, batching, events, and testing, see the `stacks-queue` skill
+
+
+## Durable dispatch and context
+
+The fluent `job(name, payload)` builder checks job names and payloads against
+the generated registry. `.withContext(context)` passes a second argument to
+the handler; JSON serialization applies to both payload and context on a durable
+driver. `.withIdempotencyKey(key)` claims a persistent dispatch key.
+Inside `db.transaction()` dispatch defers until commit by default;
+`.afterCommit()` states that intent, and `.withoutCommit()` explicitly opts
+out. Outside a transaction, afterCommit warns and dispatches immediately.
+See `stacks-queue` for the complete envelope and batch lifecycle.
+
+Scheduling a named job through `schedule.job()` runs it in the scheduler by
+default. Chain `.onQueue(name)` to dispatch it through the configured queue;
+durable drivers require a worker. The explicit Scheduler entry wins over a
+job's rate in runScheduler, so keep the policy in that explicit registration.
+Source: `core/queue/src/job.ts`,
+`action.ts`, `discovery.ts` and `core/scheduler/src/schedule.ts`.
+Tests: `core/queue/tests/job-context.test.ts`,
+`job-declared-retries.test.ts` and `job-payload.test-d.ts`.

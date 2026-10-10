@@ -1,6 +1,6 @@
 ---
 title: "Guard skill"
-description: "Use for safety rails in a Stacks project."
+description: "Use for safety rails in a Stacks project - detecting destructive commands (rm -rf, DROP TABLE, force-push, git reset --hard, migrate:fresh against production), installing a PreToolUse hook that blocks them before they run, freeze mode for focused debugging, and a pre-commit safety scan. Invoke with /stacks-guard."
 ---
 # Guard
 
@@ -53,3 +53,10 @@ matches, and you can also call it by name:
 Source: [`stacks-guard/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-guard/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-guard/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

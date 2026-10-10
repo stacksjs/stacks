@@ -9,7 +9,7 @@ stx templates, Crosswind, composables, desktop and mobile.
 stx is the only templating system in Stacks, and these cover it and everything
 that renders through it.
 
-7 skills.
+9 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -20,6 +20,8 @@ that renders through it.
 | [Mobile](/skills/frontend/mobile) | Native iOS and Android apps: the Craft bridge, mobile builds and the mobile component set. |
 | [stx](/skills/frontend/stx) | stx is the only templating system in Stacks. Single-file components with `<script>`, `<template>` and `<style>`, Blade-style directives, signals and filters, plus SSR, streaming and hydration. |
 | [UI](/skills/frontend/ui) | The UI layer as a whole: components, composables, reactivity, Craft native components, Crosswind styling and accessibility, spanning `@stacksjs/ui` and `@stacksjs/stx`. |
+| [Browser Extension](/skills/frontend/browser-extension) | scaffolding, building, packaging or preparing store submission for a native Stacks MV3 browser extension.. |
+| [Charts](/skills/frontend/charts) | rendering native dashboard charts, configuring scales or tooltips, or managing canvas chart lifecycle.. |
 
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).

@@ -27,6 +27,11 @@ Matt Pocock's `code-review` skill (MIT), <https://github.com/mattpocock/skills>.
 
 ## 1. Pin the scope
 
+Resolve the requested ref with `git rev-parse` and confirm the selected diff is
+non-empty before starting either review axis. Capture the same diff command
+and commit list for both axes. Include `CODING_STANDARDS.md` and
+`CONTRIBUTING.md` when discovering the project's standards.
+
 1. If the user gives a PR number, branch, tag or commit, that is the fixed point.
    Diff with `git diff <fixed-point>...HEAD` (three dots, so the comparison is
    against the merge base) and list the commits with
@@ -57,6 +62,12 @@ If nothing is found, ask. If the user says there is no spec, the Spec axis
 reports "no spec available" and you review Standards only.
 
 ## 3. Run both axes
+
+Keep the Standards and Spec passes independent. When an invoked review uses
+subagents and the harness supports them, give each the same fixed diff and only
+its own relevant sources. Otherwise perform separate passes. Report findings
+under their own axes so a standards pass cannot hide a spec failure. A missing
+spec is reported explicitly rather than invented from the implementation.
 
 Both axes run as **parallel sub-agents** so they do not pollute each other's
 context, then this skill aggregates. Give each the diff command, the commit list,
@@ -238,6 +249,10 @@ prevent.
   `storage/framework/core/` can reach 15+ downstream packages.
 
 ## Downstream
+
+Current upstream provenance is in [NOTICE.md](NOTICE.md); read
+[the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
+Use `stacks-pr` when writing the resulting PR description.
 
 > **Review complete.** Run `/stacks-browse` to QA in the browser, or
 > `/stacks-retro` to turn the findings into environment improvements.

@@ -13,13 +13,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Environment config: `config/env.ts`
 - Environment file: `.env`
 - Example: `.env.example`
-- Type definitions: `storage/framework/env.d.ts`
+- Type definitions: core/env/src/types.ts and storage/framework/types/env.d.ts
 
 ## Source Files
 ```
 env/src/
 ├── index.ts     # main exports
-├── utils.ts     # runtime/platform detection, StacksEnv proxy
+├── runtime.ts   # typed/coerced environment proxy
+├── utils.ts     # runtime/platform/environment detection
 ├── plugin.ts    # Bun plugin for auto .env loading
 ├── parser.ts    # .env file parser with encryption support
 ├── cli.ts       # CLI commands (get, set, encrypt, decrypt, rotate)
@@ -33,12 +34,12 @@ env/src/
 import { env } from '@stacksjs/env'
 
 env.APP_NAME        // string
-env.APP_ENV         // 'local' | 'dev' | 'stage' | 'prod'
+env.APP_ENV         // configured environment label, including long and short forms
 env.APP_KEY         // string
 env.APP_URL         // string
 env.DEBUG           // boolean (auto-coerced)
 env.PORT            // number (auto-coerced)
-env.DB_CONNECTION   // 'sqlite' | 'mysql' | 'postgres' | 'dynamodb'
+env.DB_CONNECTION   // declared connection name; availability comes from capabilityRegistry
 env.DB_HOST         // string
 env.DB_PORT         // number
 env.DB_DATABASE     // string
@@ -49,13 +50,18 @@ env.STRIPE_SECRET_KEY    // string
 env.MAIL_MAILER          // string
 env.QUEUE_DRIVER         // string
 env.REDIS_HOST           // string
-env[key]                 // any custom env var
 ```
 
-The `env` proxy auto-coerces: `'true'` → `true`, `'123'` → `123`, etc.
+All values may be undefined. The env proxy coerces true/false case-insensitively.
+Numeric variables declared by the framework or schema.number are numbers;
+recognized numeric-setting suffixes are also coerced. IDs/codes and values with
+leading zeros remain strings unless declared numeric. Arbitrary numeric-looking
+text is not always a number.
 
 ## StacksEnv Type (100+ typed variables)
-App, Ports, API, Database, AWS, Mail, Services (Stripe, Meilisearch), Frontend, Realtime, Redis, Pusher, Auth, Storage, Queue, plus `[key: string]` catch-all.
+The typed interface covers framework variables without a catch-all index
+signature. Declare an application variable in config/env.ts rather than reading
+undeclared names through a dynamic env key.
 
 ## Adding your own variables
 
@@ -63,6 +69,9 @@ Declare them in `config/env.ts`. That is the whole step:
 
 ```typescript
 // config/env.ts
+import { defineEnv } from '@stacksjs/env'
+import { schema } from '@stacksjs/validation/runtime'
+
 export default defineEnv({
   STRIPE_WEBHOOK_SECRET: { validation: schema.string(), default: '' },
   BILLING_RETRIES: { validation: schema.number(), default: 3 },
@@ -87,7 +96,7 @@ which is the failure `config/env.ts` exists to prevent.
 import { isBun, isNode, runtime, runtimeInfo, platform, isWindows, isMacOS, isLinux, hasTTY, hasWindow, isCI, isDebug, isMinimal, isColorSupported, provider, providerInfo } from '@stacksjs/env'
 
 isBun           // true
-isNode          // false
+isNode          // Node-compatible process detection; may also be true under Bun
 runtime         // 'bun'
 platform        // 'darwin'
 isWindows       // false
@@ -178,8 +187,8 @@ is not a security boundary.
 ```typescript
 import { loadEnv, autoLoadEnv, envPlugin } from '@stacksjs/env'
 
-await loadEnv({ path: '.env', override: false })
-autoLoadEnv()  // detects .env, .env.local, .env.{APP_ENV}
+const loaded = loadEnv({ path: '.env', overload: false }) // { loaded, errors }
+autoLoadEnv()  // .env, .env.local, .env.<effectiveEnv>, .env.<effectiveEnv>.local
 
 // Bun plugin (auto-loads .env before app starts)
 envPlugin()
@@ -190,8 +199,7 @@ envPlugin()
 ```typescript
 import { parse } from '@stacksjs/env'
 
-const vars = parse(envContent, {
-  encryption: true,       // decrypt encrypted values
+const { parsed, errors, skippedEncrypted } = parse(envContent, {
   privateKey: '...'       // decryption key
 })
 ```
@@ -281,12 +289,12 @@ calls or raw client-side `fetch`.
 - **A tenant's keys in your env file get shipped everywhere.** `buddy deploy`
   sends the entire env file as each site's `.env`. Declare `tenants` in
   `config/cloud.ts` so they are stripped, then delete them at source
-- Bun natively loads `.env` — no dotenv package needed
+- Bun natively loads `.env` - no dotenv package needed
 - The `env` proxy auto-coerces strings to booleans/numbers
-- `.env` should never be committed — use `.env.example` as template
+- `.env` should never be committed - use `.env.example` as template
 - New encrypted values use ephemeral-static X25519, HKDF-SHA-256, and
   AES-256-GCM. Legacy ciphertext remains readable for migration
-- `autoLoadEnv()` loads in order: `.env`, `.env.local`, `.env.{APP_ENV}`
+- autoLoadEnv loads least to most specific, including .env.<effectiveEnv>.local; effective env resolution is in plugin.ts and existing shell values are preserved unless overloaded
 - Runtime detection uses Bun globals and process properties
 - CI provider detection checks environment variables specific to each CI system
 - The `StacksEnv` type provides autocomplete for 100+ known variables

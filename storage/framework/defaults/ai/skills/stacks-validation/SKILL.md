@@ -182,7 +182,7 @@ schema.custom<T>(validationFn, message)  // CustomValidatorType<T>
 Schema validators are used in `defineModel()` attribute validation:
 
 ```typescript
-import { defineModel } from '@stacksjs/config'
+import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 export default defineModel({
@@ -290,13 +290,13 @@ isObjectNotEmpty(undefined)     // false
 
 ## Error Reporter (`reporter.ts`)
 
-Simple error accumulator for validation:
+Process-local latest-error reporter for validation:
 
 ```typescript
 import { reportError, getErrors } from '@stacksjs/validation'
 
 reportError([{ message: 'Invalid', value: '', field: 'email' }])
-const errors = getErrors()   // returns accumulated MessageObject[]
+const errors = getErrors()   // returns the latest MessageObject[]; reportError replaces it
 ```
 
 Interface: `{ message: string, value: string, field: string }`
@@ -366,6 +366,42 @@ type ValidationString = ValidationRule
 - `validateField` converts attribute names to snake_case using `snakeCase()` from `@stacksjs/strings`
 - `validateField` skips attributes with default values unless `isRequired` is explicitly set
 - Validation error messages are customizable per-rule in model definitions via the `message` object
-- The `schema` export is the `v` instance from `@stacksjs/ts-validation` -- they are the same object
+- The schema export is Stacks' proxy over the underlying validation instance, with typed object/array/enum inference, file validation and conditionals; it is not the same object as the upstream v export
 - Custom validators can be added with `schema.custom<T>(fn, message)` for types not covered by built-in validators
 - `customValidate` uses `schema.object().shape()` while `validateField` uses `schema.object(ruleObject)` -- slightly different API
+
+
+## Request, conditional and file validation
+
+The root validate(requestOrRecord, rules) is async, returns the validated payload
+and throws HttpError(422) with normalized field errors on failure. Rules are
+validators or { rule, message? }; enhanced request.all supplies native input,
+otherwise query/body/route data are merged by request-validator.ts. Do not
+substitute a boolean check or ignore the returned validated data at a boundary.
+
+Schema declarations can use the narrow `@stacksjs/validation/runtime` entry.
+The schema proxy adds typed object/array/enum inference and conditional rules:
+when(sibling, literalOrPredicate, refine) applies cross-field refinements through
+objectWithContext; sometimes has the underlying optional/empty-value semantics.
+Read object-with-context.ts before treating presence-only rules as stricter than
+they are. Inferred object shapes are native, not a hand-written request interface.
+
+schema.file().required().image().mimeTypes([...]).maxBytes(n).minBytes(n).
+extensions([...]).custom(fn) provides FileLike validation. Client MIME/extension
+checks do not prove the bytes; use stacks-storage's MIME verification where needed.
+
+registerRule/getCustomRule, unique(table,column,exceptId?), exists(table,column)
+and validateFieldAsync support application async validation. Current unique/exists
+helpers return allowed when the database cannot be queried, so they are advisory
+validation, not authorization or a replacement for database constraints. Validate
+uniqueness at the durable write boundary and handle a uniqueness violation there.
+
+The latest-error reporter is shared process state; do not use getErrors as
+request-local concurrent state. Read errors on the returned/raised validation
+result instead. Local is.ts helpers and legacy rules/type declarations are not
+automatically all public exports from the root.
+
+Source: `storage/framework/core/validation/src/index.ts`, runtime.ts,
+schema.ts, request-validator.ts, conditional.ts, file-validator.ts and validator.ts.
+Tests: conditional.test.ts, file-validator.test.ts, async-rules.test.ts,
+runtime-entry.test.ts and type-inference.test-d.ts under core/validation/tests.

@@ -1,31 +1,18 @@
 ---
 title: "Strings skill"
-description: "Use when working with string utilities in Stacks."
+description: "Use when working with string utilities in Stacks - case conversion (camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, Train-Case, etc.), pluralization, string validation (email, URL, UUID, credit card, etc.), slug generation, random strings, template interpolation, or the Str facade. Covers @stacksjs/strings."
 ---
 # Strings
 
-`stacks-strings` · Utilities · model-invoked
+`stacks-strings` · Native Stacks · model-invoked
 
-Case conversion in every direction, pluralization, validation helpers, slug
-generation, random strings and template interpolation, behind the `Str` facade.
+Use when working with string utilities in Stacks - case conversion (camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, Train-Case, etc.), pluralization, string validation (email, URL, UUID, credit card, etc.), slug generation, random strings, template interpolation, or the Str facade. Covers @stacksjs/strings.
 
-## When to reach for it
-
-- Case conversion (camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, Train-Case, etc.)
-- Pluralization
-- String validation (email, URL, UUID, credit card, etc.)
-- Slug generation
-- Random strings
-- Template interpolation
-- The Str facade
-
-## Covers
-
-`@stacksjs/strings`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Architecture
@@ -40,21 +27,16 @@ The sections an agent reads once the skill loads.
 - Exported Types
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/strings/src/`
-- Package: `@stacksjs/strings`
-- Entry: `storage/framework/core/strings/src/string.ts` (re-exports all submodules)
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-strings
 ```
 
 Source: [`stacks-strings/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-strings/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-strings/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-strings/SKILL.md`. See [Using skills](/skills/using).

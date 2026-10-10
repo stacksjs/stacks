@@ -1,6 +1,6 @@
 ---
 name: stacks-config
-description: Use when working with Stacks configuration - the 44 config files, config helper functions, default values, environment-specific overrides, or the defineApp/defineDatabase/etc builder functions. Covers @stacksjs/config and the config/ directory.
+description: Use when working with Stacks configuration, asynchronous overrides, driver capability evidence, framework feature gates, package resource discovery, or request context. Covers @stacksjs/config and the config/ directory.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,164 +8,110 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Configuration
 
-## Key Paths
-- Core package: `storage/framework/core/config/src/`
-- Configuration directory: `config/`
-- Defaults: `storage/framework/core/config/src/defaults.ts`
-- Overrides: `storage/framework/core/config/src/overrides.ts`
+Read the application's `config/*.ts` and exported types before proposing a
+setting. Config is typed executable code; a copied options inventory can drift.
 
-## Config API
+## Loading and readiness
 
-```typescript
-import { config, getConfig } from '@stacksjs/config'
+~~~ts
+import { config, overridesReady } from '@stacksjs/config'
 
-config.app.name       // 'Stacks'
-config.database       // full database config
-config.auth           // auth config
-getConfig()           // returns full StacksOptions
-```
+await overridesReady
+const applicationName = config.app.name
+~~~
 
-## Individual Config Exports
+The config proxy merges framework defaults with asynchronous application
+overrides. Read it after overridesReady when initializing a driver or caching a
+scalar setting. Destructuring before readiness can capture a default forever.
+The readiness promise and override storage are shared across installed copies.
+Compiled server builds have a separate minimal env config and may deliberately
+set `SKIP_CONFIG_LOADING=true`; see `stacks-server`.
 
-```typescript
-import { ai, analytics, app, auth, cache, cloud, cli, database, dns, docs, email, errors, git, hashing, library, logging, notification, payment, ports, queue, realtime, security, saas, searchEngine, services, filesystems, team, ui } from '@stacksjs/config'
-```
+Individual exports (app, auth, database, queue, filesystems and others) are also
+available. Use the matching `satisfies ...Config` type or define helper.
+`defineModel` belongs to `@stacksjs/orm`. App registries are owned by their
+packages: defineEvents/defineListener by events, defineMiddleware by router,
+defineGates by auth and defineCommand by cli.
 
-## Config Builder Functions
+## Driver capability evidence
 
-```typescript
-import { defineApp, defineDatabase, defineCache, defineEmail } from '@stacksjs/config'
+`capabilityRegistry`, `capabilityDrivers(category)`,
+`findCapability(category, name)` and `assertCapabilityAvailable` are
+exported by `@stacksjs/config`. Read status, topology, prerequisites,
+limitations and testEvidence before promising provider support.
 
-// Used in config files:
-export default defineApp({
-  name: 'My App',
-  env: 'production',
-  url: 'https://myapp.com'
-}) satisfies AppConfig
-```
+- Supported local drivers have retained local tests. Supported remote drivers
+  name a version and CI workflow in liveServiceContract.
+- Partial drivers have an implementation with narrower retained evidence.
+  For S3/Azure and external mail this includes request/signature/config checks,
+  without a live object round-trip or delivery assertion.
+- Experimental drivers are usable within their documented limitations, without
+  the supported conformance claim.
+- Unsupported and unknown drivers throw through assertCapabilityAvailable.
+  A config-shaped entry alone is not an implemented runtime driver.
 
-All builders: `defineApp`, `defineCache`, `defineCdn`, `defineChat`, `defineCli`, `defineDatabase`, `defineDependencies`, `defineDns`, `defineEmailConfig`, `defineEmail`, `defineGit`, `defineHashing`, `defineLibrary`, `defineNotification`, `definePayment`, `defineQueue`, `defineSearchEngine`, `defineSecurity`, `defineServices`, `defineSms`, `defineFilesystems`, `defineUi`, `defineEvents`
+`validateConfig(snapshot)` returns path/message issues; `reportConfigIssues`
+prints them. Boot validation checks important known fields, not every possible
+option. Read `validators.ts` before treating it as a complete schema validator.
 
-`defineModel` is NOT among them: it comes from `@stacksjs/orm`, and it builds a
-model rather than returning a config object. `@stacksjs/config` used to export a
-second one typed `(config: Model) => Model`, which widened every literal a model
-declared - its table name, its attribute names - so a model that imported the
-wrong one silently lost the typing the ORM version exists to provide.
+## Framework feature gates
 
-The app-level registries have their own helpers, in the packages that own what
-they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
-`defineMiddleware` from `@stacksjs/router`, `defineGates` from `@stacksjs/auth`.
+`feature(name)` reads a bundle's `config/<name>.ts`. Explicit runtime
+enableFeature/disableFeature overrides win, then config enabled and its optional
+env allowlist, then framework fallback (dashboard is on when config is absent).
+resetFeature removes a runtime override; listFeatures snapshots the known set.
 
-## Helper Functions
-- `determineAppEnv(): 'dev' | 'stage' | 'prod' | string`
-- `localUrl(): string` — local development URL
+Use `buddy features` and the bundle's install/uninstall commands to inspect
+and change installed feature resources. Runtime config gates and installation
+are related but not interchangeable. The `auth` gate controls account-family
+model loading; default auth routes are selected by STACKS_DEFAULT_ROUTES.
+The `email` gate controls the implicit email webhook route bundle.
 
-## Feature Flags
-`feature(name)` from `@stacksjs/config` reads `enabled` on `config/<name>.ts`.
-It accepts the installable bundles (`dashboard`, `commerce`, `cms`, `forms`,
-`marketing`, `monitoring`, `realtime`, `queue`) plus two config gates: `auth`
-(whether the ORM loads Team, Referral, Subscriber, Site and the other account
-models; it does not mount the auth routes, `STACKS_DEFAULT_ROUTES` does) and
-`email` (the email webhook route bundle). `./buddy features` lists both groups.
+Application config flags augment AppFeatureFlags. Runtime targeting,
+experiments and persisted user flags belong to the separate native
+`@stacksjs/feature-flags` package. Read its exports/config before using it;
+`feature()` is not an A/B allocation API.
 
-Any other name is a compile error, so a typo cannot silently read `false`. An
-app's own flags are declared first:
+## Native resource discovery
 
-```ts
-declare module '@stacksjs/config' {
-  interface AppFeatureFlags { 'new-checkout': true }
-}
-```
+Discovered packages can contribute routes, models, jobs, migrations, views and
+explicitly opted-in components through their package Stacks metadata.
+`packageModelRoots/packageJobRoots/packageMigrationRoots/packageViewRoots/
+packageComponentRoots`read`storage/framework/discovered-packages.json`.
+Missing manifests mean no package resources. Component directories are opt-in
+because bare tag names enter a global template namespace. Package migration
+sources are copied before any preprocessing; installed package files are read
+as resources, not rewritten in place. See `stacks-plugins`.
 
-## All 44 Config Files
+Default view selection uses `resolveViewPatterns` and the exported bundle
+metadata. Request-local configuration context lives in `request-context.ts`:
+`useRequestEvent()` reads the scoped request snapshot, while entrypoints
+install scopes. Request context must be established per request; globals or
+cached snapshots cannot represent concurrent users.
 
-### Core App
-| File | Type | Key Settings |
-|------|------|-------------|
-| `app.ts` | AppConfig | name, env, url, debug, key, timezone, locale, seo (sitemap.xml / robots.txt) |
-| `auth.ts` | AuthConfig | guards, providers, token and browser-session lifetimes, passwordReset |
-| `database.ts` | DatabaseConfig | default driver, connections (sqlite/mysql/postgres/dynamodb), queryLogging |
-| `cache.ts` | CacheConfig | driver('memory'), ttl(3600), maxKeys(-1), redis config |
-| `env.ts` | EnvConfig | validation schemas for env vars |
-| `stacks.ts` | StackExtensionRegistry | extension definitions |
+## Configuration paths
 
-### Services
-| File | Type | Key Settings |
-|------|------|-------------|
-| `email.ts` | EmailConfig | from, domain, mailboxes, server config, ports, categorization, default('ses') |
-| `sms.ts` | SmsConfig | enabled(false), provider('twilio'), drivers (twilio/vonage/pinpoint) |
-| `notification.ts` | NotificationConfig | default('email') |
-| `payment.ts` | PaymentConfig | driver('stripe'), stripe keys |
-| `ai.ts` | AiConfig | default model, AWS Bedrock models |
-| `analytics.ts` | AnalyticsConfig | driver('fathom'), tracking settings |
+| Concern | Read |
+|---|---|
+| application, SEO, launch | app.ts |
+| model connection and SQL behavior | database.ts, query-builder.ts |
+| credentials, sessions, cookies, OAuth, magic links | auth.ts, hashing.ts |
+| model API exposure and row ownership | security.ts |
+| background work and cache | queue.ts, cache.ts |
+| uploads and disks | filesystems.ts, default local disk |
+| mail, SMS and notifications | email.ts, sms.ts, notification.ts, services.ts |
+| deployment | cloud.ts, its named tsCloud export and default wrapper |
+| frontend | stx.ts, crosswind.ts, ui.ts |
+| agent installation | app/Skills/, defaults/ai/, stacks-skills package |
 
-### Infrastructure
-| File | Type | Key Settings |
-|------|------|-------------|
-| `cloud.ts` | CloudConfig | project, mode(server/serverless), environments, infrastructure |
-| `dns.ts` | DnsConfig | a, aaaa, cname, mx, txt records, nameservers |
-| `queue.ts` | QueueConfig | default('sync'), connections (sync/database/redis/sqs/memory) |
-| `realtime.ts` | RealtimeConfig | enabled(true), mode, driver, channels, WebSocket config |
-| `search-engine.ts` | SearchEngineConfig | driver('opensearch') |
+Use `stacks-env` for validated/coerced environment variables, encrypted files
+and shared-box tenant isolation. Config files hold expressions referencing env;
+editing a nested live object is not the same as persisting that source file.
 
-### Development
-| File | Type | Key Settings |
-|------|------|-------------|
-| `ports.ts` | Ports | frontend:3000, backend:3001, admin:3002, ... api:3008 |
-| `lint.ts` | PickierOptions | format rules, indent, quotes, semi |
-| `git.ts` | GitConfig | hooks, scopes, commit types |
-| `commit.ts` | UserConfig | cz-git conventional commit config |
-| `logging.ts` | LoggingConfig | logsPath, deploymentsPath |
-| `docs.ts` | BunPressOptions | docsDir, outDir, nav, sitemap |
+## Sources and verification
 
-### Security
-| File | Type | Key Settings |
-|------|------|-------------|
-| `security.ts` | SecurityConfig | api.rowScoping('deny'), api.models('all' / 'own' / 'none' / names; `STACKS_MODEL_APIS` overrides), firewall (enabled, countryCodes, rateLimitPerMinute) |
-| `hashing.ts` | HashingConfig | driver('bcrypt'), bcrypt.rounds(12), argon2 config |
-
-### Features
-| File | Type | Key Settings |
-|------|------|-------------|
-| `blog.ts` | BlogConfig | subdomain, postsPerPage, enableRss/enableSitemap (enableComments and enableSearch are declared but not yet honoured) |
-| `cms.ts` | CmsConfig | content management settings |
-| `saas.ts` | SaasConfig | plans (Hobby/Pro/Lifetime with pricing), webhook, currencies |
-| `ui.ts` | HeadwindOptions | content, output, minify |
-| `stx.ts` | StxOptions | componentsDir, layoutsDir, partialsDir |
-
-### Data & Storage
-| File | Type | Key Settings |
-|------|------|-------------|
-| `filesystems.ts` | FilesystemsConfig | driver('bun'), root, s3 config, defaultVisibility('private') |
-| `file-systems.ts` | — | re-exports from filesystems.ts |
-| `query-builder.ts` | — | re-exports from qb.ts |
-| `qb.ts` | QueryBuilderConfig | dialect, timestamps, pagination, softDeletes, transactions |
-
-### Other
-| File | Type | Key Settings |
-|------|------|-------------|
-| `buddy-bot.ts` | BuddyConfig (`@buddysh/buddy`) | repository, dashboard, workflows |
-| `cli.ts` | BinaryConfig | name, command, description |
-| `deps.ts` | PantryConfig | system dependencies (bun, sqlite, redis, etc.) |
-| `errors.ts` | ErrorConfig | comprehensive validation error messages |
-| `library.ts` | LibraryConfig | name, owner, webComponents, functions |
-| `phone.ts` | PhoneConfig | enabled, provider, businessHours |
-| `services.ts` | ServicesConfig | API keys for 20+ services |
-| `team.ts` | Team | name, members |
-
-## Default Values (from defaults.ts)
-- App name: `'Stacks'`
-- Cache driver: `'memory'`
-- Database: SQLite at `database/stacks.sqlite`
-- Hashing: bcrypt, 12 rounds
-- Auth token expiry: 30 days
-- Ports: frontend 3000, backend 3001, admin 3002, api 3008
-
-## Gotchas
-- Config files are TypeScript with `satisfies` for type checking
-- All configs support environment variable overrides via `env.*`
-- Framework provides defaults — user overrides in `~/config/*.ts`
-- Two duplicate file pairs: `file-systems.ts`/`filesystems.ts` and `query-builder.ts`/`qb.ts`
-- Config changes may require dev server restart
-- The `services.ts` file contains API keys for AWS, Stripe, Slack, Discord, OpenAI, Anthropic, etc.
-- Lazy loading is used in config to avoid circular dependencies
+Public contract: `storage/framework/core/config/src/index.ts`,
+`config.ts`, `overrides.ts`, `capabilities.ts`,
+`features.ts`, `discovered-resources.ts` and `request-context.ts`.
+Retained tests are under `core/config/tests/`; driver readiness also has
+`core/search-engine/tests/early-proxy.test.ts`.

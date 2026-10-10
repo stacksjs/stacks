@@ -1,6 +1,6 @@
 ---
 name: stacks-models
-description: Use when working with data models in Stacks - the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 107 built-in framework models. Covers model definitions and storage/framework/defaults/app/Models/.
+description: Use when defining or extending Stacks models, deriving migrations and CRUD, configuring attributes/relationships/traits/ownership, or preserving model inference. Covers defineModel, extendModel, model types, native data workflows, and the 107 built-in framework models.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -10,14 +10,20 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 ## Key Paths
 - Your models: `app/Models/` (create it; it does not exist in a fresh project)
-- Built-in models: `storage/framework/defaults/app/Models/` (62 files, grouped
+- Built-in models: `storage/framework/defaults/app/Models/` (grouped
   into `commerce/`, `Content/`, `realtime/` and a flat top level)
-- `ModelOptions` / `Attribute` types: `storage/framework/core/types/src/model.ts`
+- Actual `defineModel` contract: `storage/framework/core/orm/src/define-model.ts`
+- Compatibility `ModelOptions` / `Attribute` types: `storage/framework/core/types/src/model.ts`
 - Attribute presets: `storage/framework/types/attributes.ts`
 
 To customize a built-in model, create the same filename under `app/Models/` -
 `app/Models/User.ts` wins over the default. `buddy publish:model User` copies the
 default across as a starting point.
+
+For an additive override, use `extendModel` rather than copying the full built-in
+definition. Read [references/model-capabilities.md](references/model-capabilities.md)
+for merge rules, casts, encryption, ownership, validation, lifecycle, search,
+pagination, sharding, and the native type utilities.
 
 ## Writing a model
 
@@ -31,8 +37,8 @@ import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 export default defineModel({
-  name: 'Product',        // defaults to the file name
-  table: 'products',      // defaults to lowercase plural of `name`
+  name: 'Product',        // declare the model identity explicitly
+  table: 'products',      // declare the database table explicitly
   primaryKey: 'id',       // default
   autoIncrement: true,    // default
 
@@ -74,7 +80,11 @@ generated model types stay precise.
 
 ### Attribute fields
 
-`validation.rule` is the only required key on an attribute.
+The modern `defineModel` contract accepts attributes inferred from an explicit
+type, validation rule, factory, or default. A validator is recommended for
+request-facing values, but is not mandatory for every internal attribute.
+An unclassified value can infer `unknown`; declare the intended type instead
+of forcing a cast. See `orm/tests/inference-attributes.test-d.ts`.
 
 | Field | Effect |
 |---|---|
@@ -90,7 +100,8 @@ generated model types stay precise.
 | `foreignKey` | Disable, infer, or configure the FK constraint |
 | `personal` | Personal data: exported by `gdpr:export`, anonymized by erasure and retention. `true`, or `{ anonymize?, export? }`. See "Personal data (GDPR)" below |
 | `factory` | `(faker, attributes) => value`, used by seeders and tests. `attributes` holds what this record's earlier-declared factories produced, so one value can depend on another: `(faker, { discountType }) => ...` |
-| `validation` | `{ rule, message? }` - `rule` from `schema`, `message` keyed by rule name |
+| `validation` | `{ rule, message? }` - declared rules are enforced on direct ORM writes and generated CRUD |
+| `encrypted` | Encrypt persisted values and decrypt model reads; raw queries still see stored ciphertext |
 
 ### Traits
 
@@ -126,6 +137,13 @@ useApi: {
   middleware: ['auth'],
 }
 ```
+
+`security.api.models` and `STACKS_MODEL_APIS` select which `useApi` definitions
+publish routes. The environment setting wins; `all`, `own`, `none`, or named
+models can narrow the surface. An app override counts as its own model.
+Selection does not add the trait or replace middleware/ownership checks, and
+it is separate from feature bundle and database migration selection. See
+`orm/tests/model-api-selection.test.ts` before configuring a restricted API.
 
 Dashboard-specific endpoints may still use scoped Actions when their transport
 shape, authorization boundary, or aggregation differs from generic CRUD. Do
@@ -280,7 +298,7 @@ get: {
   fullName: (model) => `${model.firstName} ${model.lastName}`,
 },
 set: {
-  password: (value) => makeHash(value),
+  password: (attributes) => makeHash(attributes.password),
 },
 scopes: {
   published: (query) => query.where('status', 'published'),
@@ -387,8 +405,9 @@ maintained by hand, drifts the moment anyone adds a bullet, and is the same
 habit that produced the "All 62". The total above is pinned by
 `buddy docs:agent-counts`.
 
-Run `find storage/framework/defaults/app/Models -name '*.ts'` for the full
-list, or `buddy list` for what a given project resolves.
+Run `rg --files storage/framework/defaults/app/Models app/Models` for definitions
+and inspect the model registry for the runtime selection. `buddy list` lists
+commands, not a project's resolved models.
 
 ### Users & Auth
 - **User** — name, email, password | traits: useAuth(passkey), useUuid, useTimestamps, useSocials(github) | hasOne: Subscriber, Driver, Author | hasMany: PersonalAccessToken, Customer
@@ -465,12 +484,13 @@ list, or `buddy list` for what a given project resolves.
   will be overwritten by the next diff.
 - **`commentable`, not `commentables`.** `define-model` only checks the singular
   key. The plural spelling used to type check while leaving the trait inert.
-- **Seeding is model-declared.** `useSeeder` sets the count and fixtures; the
-  per-attribute `factory` functions produce the values. There are no seeder
-  files to write or register.
+- **Seeding can be model-declared.** `useSeeder` sets the count and fixtures;
+  attribute factories produce values. Application `Seeder` classes under
+  `database/seeders` are also supported for ordered bootstrap work.
 - **`hidden` is serialization, `guarded` is mass assignment.** They are different
   protections; a password wants both `hidden` and no `fillable`.
-- **`validation.rule` is mandatory** on every attribute - it drives both request
-  validation and the inferred column type.
+- **Declared validation is enforced on ORM writes**, including quiet writes.
+  Type inference also accepts explicit types, factories, and defaults; absence
+  of a validator is not a promise that an arbitrary request body is safe.
 - Dashboard-highlighted models (`dashboard: { highlight: true }`) appear
   prominently in the admin UI.

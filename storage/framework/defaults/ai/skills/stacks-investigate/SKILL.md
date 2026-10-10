@@ -245,3 +245,9 @@ Required before declaring done:
 
 > **Fix applied.** Run `/stacks-review` to review it, and `/stacks-retro` when
 > the real lesson is that the environment let the bug hide.
+
+## Upstream provenance
+
+The reviewed source revision and MIT notice are in [NOTICE.md](NOTICE.md) and
+[LICENSE](LICENSE). Read [the Stacks adaptation rules](../stacks-flow/ENGINEERING.md)
+with this workflow. Existing Stacks APIs and supporting helpers remain authoritative.

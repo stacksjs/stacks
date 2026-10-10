@@ -1,6 +1,6 @@
 ---
 title: "Routes skill"
-description: "Use when defining or organizing route files in a Stacks application."
+description: "Use when defining or organizing route files in a Stacks application - creating route files in routes/, registering them in app/Routes.ts, using route prefixes and middleware groups, or the default API routes structure. For the router API itself (request helpers, response helpers, middleware classes), see stacks-router."
 ---
 # Routes
 
@@ -51,3 +51,10 @@ matches, and you can also call it by name:
 Source: [`stacks-routes/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-routes/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-routes/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

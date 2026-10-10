@@ -70,7 +70,7 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 ```
 
 ### Handler Types
-- Function: `(req) => …` — return a `Response`, or any value `formatResult`
+- Function: `(req) => ...` - return a `Response`, or any value `formatResult`
   handles: an object/array becomes JSON, a string becomes text, `null` becomes
   204, a `ReadableStream` streams. `req.params` is narrowed to the path's own
   placeholders, so `req.params.slugTypo` is a compile error rather than
@@ -186,6 +186,34 @@ export default {
 } satisfies Record<string, string | RouteDefinition>
 ```
 
+The registry is optional; `appRouteRegistry()` falls back to the API file
+mounted at `/api`. App registrations precede default bundles and the first
+duplicate method/path wins. Default bundles are selected explicitly or through
+their feature gates; see `stacks-routes` for `STACKS_DEFAULT_ROUTES` and prefix
+rules. Do not hard-code an assumption that every built-in route is mounted.
+
+## Binding, signed access, and request lifecycle
+
+`defineRouteModelBinding(param, resolver)` resolves a raw path value for policy
+middleware. Explicit bindings take precedence over the optional fallback.
+Unclaimed parameters stay raw; a claimed missing model is different from an
+unclaimed parameter. Binding does not remove the need to validate a path key.
+
+`signedUrl`, `signUrl`, `verifySignedUrl`, and `verifySignedUrlMiddleware`
+support temporary signed access. Signing requires `APP_KEY` or the dedicated
+secret. Verify method/URL/expiry according to the helper contract; changing a
+signed URL is not equivalent to authorizing a row. Storage signatures are a
+separate provider/delivery contract.
+
+Native request context carries typed model/user data, query tracking, trace
+IDs, route params, and hooks. `safePathParam`/`sanitizePathParam` protect path
+segments, while numeric IDs need numeric validation as well. `stream` preserves
+backpressure; do not eagerly collect a stream merely to attach JSON metadata.
+
+Read `health`, `signed-url`, `route-model-binding`, `precognition`,
+`request-context`, `after-response`, and `stream-backpressure` tests before
+depending on the corresponding lifecycle behavior.
+
 ## Enhanced Request (Laravel-style)
 
 ### Input Methods
@@ -299,7 +327,10 @@ clearTrackedQueries()
 clearMiddlewareCache()
 ```
 
-## Default API Routes (routes/api.ts)
+## Default API route families
+
+These are examples of available bundles. The app's registry, selected default
+bundles, and feature gates decide the mounted surface; inspect `buddy route:list`.
 
 ### Auth
 - `POST /login`, `POST /register`, `POST /auth/refresh`, `POST /auth/token`

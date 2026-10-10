@@ -14,10 +14,9 @@
  * only five of the 27 `use*` it declares are in the runtime. The list it
  * validated was 22 names that typecheck and then throw.
  *
- * So this generates the runtime that actually gets served and reads the globals
- * off it. `getCachedSignalsRuntime` is what the dev server and the compile path
- * both go through, and a name resolves in a template if and only if that output
- * attaches it to `window`.
+ * This checks the eager bare-window alias inventory, not every binding delivered
+ * to a compiled client script. The compiler also binds window.stx members and
+ * emits demand composables. Those paths have their own delivery contracts.
  *
  * Lives here rather than in `@stacksjs/server` because this package depends on
  * `@stacksjs/stx` and that one does not.
@@ -110,3 +109,25 @@ for (const doc of documents) {
     })
   })
 }
+
+describe('additional compiled client delivery', () => {
+  it('binds media-query and reduced-motion helpers from the stx runtime', async () => {
+    const { buildRuntimeGlobalsDestructure, getCachedSignalsRuntime } = await import('@stacksjs/stx')
+    const binding = buildRuntimeGlobalsDestructure('const', [], 'useMediaQuery(); usePreferredReducedMotion()')
+    const runtime = await getCachedSignalsRuntime(false)
+    expect(binding).toContain('useMediaQuery')
+    expect(binding).toContain('usePreferredReducedMotion')
+    expect(binding).toContain('window.stx')
+    expect(runtime).toContain('useMediaQuery')
+    expect(runtime).toContain('usePreferredReducedMotion')
+  })
+
+  it('delivers the documented demand composables when a client script calls them', async () => {
+    const { getFrameworkComposableScript } = await import('@stacksjs/stx/framework-composables')
+    for (const name of ['useForm', 'useIntersectionObserver', 'useScroll', 'useMouse', 'useParallax']) {
+      const source = await getFrameworkComposableScript(`${name}()`)
+      expect(source.length).toBeGreaterThan(100)
+      expect(source).toContain(name)
+    }
+  })
+})

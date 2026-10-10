@@ -1,6 +1,6 @@
 ---
 name: stacks-payments
-description: Use when implementing payment processing in Stacks - Stripe charges, subscriptions, checkout sessions, customer management, payment methods, invoices, coupons, promo codes, products, prices, webhooks, or the Payment facade. Covers @stacksjs/payments and config/payment.ts.
+description: Use when implementing Stacks payment drivers, charges, subscriptions, checkout, customer methods, Stripe billing/catalog/Connect, provider webhooks, or the Payment facade. Covers @stacksjs/payments and config/payment.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -553,6 +553,14 @@ The instance methods are exactly the keys of `createBillableMethods` in
   `transactionHistory()`.
 
 ## Gotchas
+- A provider name in config is not a claim that every operation or live
+  environment is supported. Check the selected driver implementation and
+  retained provider tests, and test sandbox completion/webhook behavior for
+  the configured account. Unsupported operations must remain explicit errors.
+- Payment records, provider state and entitlement state are distinct. Use
+  `subscriptionGrantsAccess` and `subscriptionPeriod` rather than inferring
+  access from a catalog price id alone. A webhook signature is verified against
+  its original raw payload before applying domain events.
 - Stripe API keys MUST be in `.env` as `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` -- never hardcode them in config files
 - The Stripe client is created lazily, on first use: importing `@stacksjs/payments` without `STRIPE_SECRET_KEY` (or without the opt-in `stripe` package) is fine, and the first Stripe call throws naming what is missing
 - All amounts are in cents -- use `toCents()` and `toDollars()` for conversion

@@ -14,7 +14,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 When applied to an existing Stacks project, follow this sequence:
 
-1. **Scan** - Read the codebase. Confirm the stack is stx + Crosswind + composables. Locate `resources/views/*.stx`, `resources/components/*.stx`, `resources/layouts/*.stx`, `config/ui.ts`, `config/crosswind.ts`, and the `fonts` config. Note current design patterns.
+1. **Scan** - Read the codebase. Confirm the stack is stx + Crosswind + composables. Locate `resources/views/*.stx`, `resources/components/*.stx`, `resources/layouts/*.stx`, `config/ui.ts`, `config/css.ts`, and the `fonts` config. Note current design patterns.
 2. **Diagnose** - Run through the audit below. List every generic pattern, weak point, and missing state you find.
 3. **Fix** - Apply targeted upgrades working with the existing stx + Crosswind stack. Do not rewrite from scratch and do not migrate frameworks. Improve what is there.
 

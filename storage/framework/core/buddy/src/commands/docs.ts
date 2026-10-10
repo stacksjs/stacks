@@ -6,6 +6,7 @@ import { run as runCapabilities } from './docs/capabilities'
 import { run as runSnippets } from './docs/snippets'
 import { run as runDesktopMatrix } from './docs/desktop-matrix'
 import { run as runLinks } from './docs/links'
+import { run as runNativeSkills } from './docs/native-skills'
 import { runTool } from './run-tool'
 
 /**
@@ -14,6 +15,18 @@ import { runTool } from './run-tool'
  * generated API artifacts (OpenAPI + types), and internal link checking.
  */
 export function docs(buddy: CLI): void {
+  buddy
+    .command('docs:native-skills', 'Regenerate native skill package coverage and driver evidence')
+    .action(async () => {
+      await runTool(runNativeSkills, '--write')
+    })
+
+  buddy
+    .command('docs:native-skills:check', 'Verify native skills cover current packages and driver capabilities')
+    .action(async () => {
+      await runTool(runNativeSkills, '--check')
+    })
+
   buddy
     .command('docs:buddy', 'Regenerate the buddy command reference doc')
     .action(async () => {

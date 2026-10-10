@@ -27,7 +27,7 @@ security/src/
 ```typescript
 import { generateAppKey } from '@stacksjs/security'
 
-const key = generateAppKey()  // 32-character random string
+const key = generateAppKey()  // base64: followed by 32 random bytes encoded as base64
 // Run via CLI: buddy key:generate
 ```
 
@@ -74,9 +74,8 @@ const algo = detectAlgorithm(hash)  // 'bcrypt' | 'argon2' | 'argon2id' | ...
 ### Algorithm-Specific Functions
 ```typescript
 bcryptEncode(value, rounds?)     // bcrypt hash
-bcryptVerify(value, hash)        // bcrypt verify
 argon2Encode(value, options?)    // argon2 hash
-argon2Verify(value, hash)        // argon2 verify
+check(value, hash)               // verifies supported bcrypt/argon2 hashes
 base64Encode(value)               // base64
 ```
 
@@ -144,12 +143,29 @@ import { eraseSubject, exportSubjectData, pruneRetainedData } from '@stacksjs/or
   `log`, which writes to disk in production.
 
 ## Gotchas
-- Default hashing is bcrypt with 12 rounds — sufficient for most applications
-- `needsRehash()` compares current hash options against provided options — useful after config changes
-- APP_KEY is used for `encrypt()`/`decrypt()` — generate via `buddy key:generate`
+- Default hashing is bcrypt with 12 rounds - sufficient for most applications
+- `needsRehash()` compares current hash options against provided options - useful after config changes
+- APP_KEY is used for `encrypt()`/`decrypt()` - generate via `buddy key:generate`
 - APP_KEY format is colon-separated (validated during deployment)
 - Argon2 requires more memory/time but is more resistant to GPU attacks
 - Base64 is encoding, not hashing. Never use `base64Encode()` for credentials.
 - MD5 and base64 password verification are intentionally absent from the main security API.
 - The firewall config is used by cloud deployment for WAF rules
 - Rate limiting is per-minute per-IP (500 default)
+
+
+## Encryption and webhook contracts
+
+New `encrypt()` ciphertext uses the versioned AES-256-GCM envelope and
+PBKDF2-SHA-256 derivation in `core/security/src/crypt.ts`; decrypt retains
+legacy formats for upgrades. The base64: APP_KEY prefix is normalized by that
+implementation. Encryption/hashing/encoding are distinct APIs; use the exported
+webhook helpers from `core/security/src/webhook.ts` for signed callback
+validation rather than inventing a string comparison.
+
+Generated model API exposure and ownership live under `config/security.ts`
+api settings. Read `stacks-models`/`stacks-router` before opening generated
+endpoints; a cloud WAF setting does not implement model row authorization.
+Capability/config validation and credential recovery have separate tests and
+failure contracts; propagate their real errors rather than interpreting an
+awaited call as proof that a security state transition persisted.

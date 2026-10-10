@@ -238,7 +238,31 @@ await Payment.charge(customer, { amount: order.totalAmount, currency: 'usd' }, p
 The provider's webhook reaches orders through `POST /webhooks/payments` (see `stacks-payments`).
 
 ## Dashboard Routes
-All commerce models have dashboard views at `/dashboard/commerce/*`.
+Commerce dashboard pages use `/commerce/*` on the dashboard server, for example
+`/commerce/products` and `/commerce/orders`. Their data Actions use
+`/api/dashboard/*`. Verify the actual page registry instead of assuming that
+every commerce model has an automatically generated dashboard view.
+
+## Enable the feature and choose the native seam
+
+Read `config/commerce.ts` and the feature lifecycle before adding a parallel
+cart or checkout library. `buddy commerce:install` enables the feature and
+copies its owned scaffold paths without overwriting existing application work
+by default. The `@stacksjs/features` manifest owns its tables and the migration
+runner gates disabled feature migrations. Changing `enabled` alone does not
+prove that a route bundle or view has been mounted.
+
+The namespace's helpers, model methods and provider APIs are separate seams.
+Use the existing checkout guards, order state transitions, idempotency and
+provider webhook Actions for an order flow; creating a local payment row does
+not establish that a provider collected money. Public storefront data should
+carry the product/customer/site scope chosen at its boundary.
+
+For variant selection, shipping zones/rates, auctions, digital deliveries or
+loyalty rules, inspect the selected submodule's exported operations and its
+tests rather than extrapolating a generic CRUD interface. Native models cover
+more domain features than the short table here lists. Feature-specific routes
+and jobs also need their enabled feature, tables and worker prerequisites.
 
 ## Gotchas
 

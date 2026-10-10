@@ -1,27 +1,18 @@
 ---
 title: "Cron skill"
-description: "Use when working with cron expressions in a Stacks application."
+description: "Use when working with cron expressions in a Stacks application - parsing cron syntax, registering OS-level cron jobs, or low-level scheduling. Covers @stacksjs/cron. For higher-level scheduling, see stacks-scheduler."
 ---
 # Cron
 
-`stacks-cron` · Backend and API · model-invoked
+`stacks-cron` · Native Stacks · model-invoked
 
-Cron expression parsing and OS-level job registration. The layer under
-[Scheduler](/skills/backend/scheduler), and rarely what you want directly.
+Use when working with cron expressions in a Stacks application - parsing cron syntax, registering OS-level cron jobs, or low-level scheduling. Covers @stacksjs/cron. For higher-level scheduling, see stacks-scheduler.
 
-## When to reach for it
-
-- Parsing cron syntax
-- Registering OS-level cron jobs
-- Low-level scheduling
-
-## Covers
-
-`@stacksjs/cron`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -29,25 +20,18 @@ The sections an agent reads once the skill loads.
 - Types
 - Cron Expression Examples
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/cron/src/`
-- Package: `@stacksjs/cron`
-
-## Related skills
-
-- [Scheduler](/skills/backend/scheduler)
+- Timezone and verification
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-cron
 ```
 
 Source: [`stacks-cron/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-cron/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-cron/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-cron/SKILL.md`. See [Using skills](/skills/using).

@@ -9,7 +9,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 # Stacks Development
 
 ## Key Paths
-- Development package: `storage/framework/core/development/` (stub — exports `{}`)
+- Development package: `storage/framework/core/development/` (stub - exports `{}`)
 - Dev server entry: `storage/framework/server/src/index.ts`
 - Dev server utils: `storage/framework/server/src/utils.ts`
 - Server build script: `storage/framework/server/build.ts`
@@ -32,13 +32,13 @@ actions/src/dev/
 ├── dashboard.ts        # Dashboard dev server (STX + native Craft window + config API)
 ├── dashboard-utils.ts  # Model discovery, sidebar config, icon map, waitForServer()
 ├── docs.ts             # Docs dev server (@stacksjs/bunpress, watch mode)
-├── components.ts       # Components dev server (runs `bun run dev` in libs/components/vue)
+├── components.ts       # Components dev server (native stx component playground)
 ├── desktop.ts          # Desktop dev server (runs `bun run dev` in framework/views/desktop)
 └── system-tray.ts      # System tray dev server (runs `bun run dev` in framework/system-tray)
 
 server/
 ├── src/
-│   ├── index.ts        # Production server entry (Bun.serve, WebSocket, queue worker mode)
+│   ├── index.ts        # Production HTTP server entry (Bun.serve, one-shot queue worker mode)
 │   └── utils.ts        # cleanCopy(), useCustomOrDefaultServerConfig(), buildDockerImage()
 ├── build.ts            # Server build script (Bun.build for ESM, Docker image)
 ├── dev                 # Shell script for running server via Docker with volume mounts
@@ -86,7 +86,7 @@ buddy/src/commands/
 - `buddy dev:api` -- API server only
 - `buddy dev:dashboard` (alias: `dev:admin`) -- Dashboard with native Craft window
 - `buddy dev:docs` -- Documentation server only
-- `buddy dev:components` -- Vue component library dev server
+- `buddy dev:components` -- stx component playground
 - `buddy dev:desktop` -- Desktop app dev server
 - `buddy dev:native` -- Equivalent native app development flow
 - `buddy dev:system-tray` (alias: `dev:tray`) -- System tray dev server
@@ -184,7 +184,7 @@ When `APP_URL` is set to a custom domain (not `localhost`):
 - **Frontend (STX)**: `bun-plugin-stx/serve` has its own built-in watch/HMR for `.stx` templates
 - **API server**: Runs via `bun --watch`, restarts on route or handler changes
 - **Docs**: `@stacksjs/bunpress` runs with `watch: true` for live documentation updates
-- **Components**: Delegates to the component library's own `bun run dev` (typically Vite-based HMR)
+- **Components**: Uses the native component development workflow; inspect core/actions/src/dev/components.ts for the selected entry
 
 ## Preloader (preloader.ts)
 
@@ -226,7 +226,7 @@ linker = "hoisted"
 
 - **Queue worker mode**: When `QUEUE_WORKER` env var is set, imports and runs the job from `app/Jobs/<JOB>.ts` with retry support (configurable via `JOB_RETRIES`, `JOB_BACKOFF_FACTOR`, `JOB_INITIAL_DELAY`, `JOB_JITTER`)
 - **HTTP server**: `Bun.serve()` on `PORT` (default 3000), delegates to `serverResponse()` from `@stacksjs/router`
-- **WebSocket**: Built-in WebSocket upgrade support (open/message/close handlers as stubs)
+- **Realtime**: Separate authenticated broadcast server; the HTTP entry does not upgrade WebSocket requests
 - **Development mode**: Auto-enabled when `APP_ENV` is not `production` or `prod`
 - **Docker**: Multi-stage build with `oven/bun:1.3.10`, runs as non-root `bun` user, exposes port 3000, includes curl for healthchecks
 
@@ -269,13 +269,13 @@ Default configurations provided at `storage/framework/defaults/ide/`:
 ## Doctor Health Checks
 
 `buddy doctor` verifies:
-- Bun runtime version (pass if v1.0+, warn otherwise, fail if missing)
+- Bun runtime version against the installed framework minimum (Bun >= 1.3.0)
 - Node.js version (pass if v18+, warn otherwise)
 - package.json existence and project name
 - `.env` file presence (warn if missing, not a failure)
 - `APP_KEY` is set (warn if not, suggests `buddy key:generate`)
 
-## STX Configuration (config/ui.ts)
+## STX Configuration (config/stx.ts)
 
 ```typescript
 {
@@ -303,3 +303,14 @@ Note: Dashboard mode overrides these settings via its own `serve()` options.
 - The `bun-plugin-stx` serve plugin is resolved with a fallback: first tries normal `import('bun-plugin-stx/serve')`, then falls back to `pantry/bun-plugin-stx/dist/serve.js`
 - `buddy fresh` is NOT the same as `buddy clean` -- `fresh` cleans AND reinstalls dependencies, while `clean` only removes artifacts
 - The Craft native window for the dashboard uses `http://localhost:<port>` directly (not HTTPS) even when a custom domain proxy is running
+
+
+## Verify the selected entrypoint
+
+Use `core/actions/src/dev.ts` and `dev/views.ts` for the actual launch and STX
+request pipeline. Page middleware, API forwarding, request scopes and SEO are
+installed there and in `core/buddy/src/production-server.ts`, not by copying an
+example Bun.serve into a page. Native launch, marketing-site launch and browser
+launch are distinct options; read config/app.ts and buddy dev --help.
+A preloader skip does not mean the selected server never initializes model
+globals: server entrypoints invoke their own runtime boot.

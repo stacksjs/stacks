@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DEFAULTS_SYNC_MARKER, installedDefaultsVersion } from '@stacksjs/path'
@@ -73,6 +73,32 @@ describe('package project manifest migration', () => {
 })
 
 describe('package project file sync', () => {
+  it('delivers bundled skills and references to package-based apps', () => {
+    const bundled = join(import.meta.dir, '../../../defaults/ai/skills')
+    const skills = ['stacks-humanizer', 'stacks-unslop', 'stacks-marketing-copywriting', 'stacks-implement-spec', 'stacks-marketing', 'stacks-flow', 'stacks-native', 'stacks-forms', 'stacks-models']
+
+    for (const name of skills)
+      cpSync(join(bundled, name), join(defaultsRoot, 'ai/skills', name), { recursive: true })
+
+    syncPackageProjectFiles(root, defaultsRoot)
+
+    const installed = join(root, 'storage/framework/defaults/ai/skills')
+    for (const name of skills) {
+      for (const file of ['SKILL.md', ...(existsSync(join(bundled, name, 'NOTICE.md')) ? ['NOTICE.md'] : [])]) {
+        expect(readFileSync(join(installed, name, file), 'utf8'))
+          .toBe(readFileSync(join(bundled, name, file), 'utf8'))
+      }
+    }
+    expect(readFileSync(join(installed, 'stacks-humanizer/LICENSE'), 'utf8')).toContain('MIT License')
+    for (const file of ['core-contract.md', 'voice.md', 'presets.md']) {
+      expect(readFileSync(join(installed, 'stacks-unslop/references', file), 'utf8'))
+        .toBe(readFileSync(join(bundled, 'stacks-unslop/references', file), 'utf8'))
+    }
+    for (const path of ['stacks-marketing-copywriting/PLAYBOOK.md', 'stacks-implement-spec/PLAYBOOK.md', 'stacks-flow/upstream-skills.json', 'stacks-flow/ENGINEERING.md', 'stacks-marketing/WORKFLOW.md', 'stacks-native/CATALOG.md', 'stacks-native/CAPABILITIES.md', 'stacks-native/RECIPES.md', 'stacks-models/references/model-capabilities.md']) {
+      expect(readFileSync(join(installed, path), 'utf8')).toBe(readFileSync(join(bundled, path), 'utf8'))
+    }
+  })
+
   it('refreshes defaults, removes stale managed files, and installs support files', () => {
     write('storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md', 'old skill')
     write('storage/framework/defaults/ai/skills/removed/SKILL.md', 'stale skill')

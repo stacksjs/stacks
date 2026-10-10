@@ -1,6 +1,6 @@
 ---
 name: stacks-desktop
-description: Use when building or publishing desktop applications with Stacks - Craft native windows, system tray, desktop packaging, or Mac App Store delivery.
+description: Use when building or publishing desktop applications with Stacks - Craft native windows, local launchers, helper processes, packaging, capability probes, or Mac App Store delivery. Covers @stacksjs/desktop-build and the browser bridge boundary.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -13,7 +13,8 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Source: `storage/framework/core/desktop/src/index.ts`
 - System tray views: `storage/framework/defaults/views/system-tray/`
 - System tray layouts: `storage/framework/defaults/resources/layouts/`
-- Package: `@stacksjs/desktop`
+- Build/host package: `@stacksjs/desktop-build`
+- Browser bridge package: `@stacksjs/desktop/browser` (from the STX ecosystem)
 
 ## Runtime
 
@@ -86,7 +87,7 @@ interface Desktop {
 
 The launcher Stacks compiles opens a Craft window on the URL in `desktop.json`,
 which is what a hosted Stacks application wants. An app whose subject is the
-machine it runs on — a disk cleaner, a log viewer, a device tool — has no such
+machine it runs on - a disk cleaner, a log viewer, a device tool - has no such
 URL: it starts something locally and opens a window on that, on a port it does
 not know until launch.
 
@@ -95,7 +96,7 @@ same way anything under `app/` overrides its framework default. `DESKTOP_URL`
 and `APP_URL` then become optional, because the launcher decides what to open.
 
 ```ts
-// app/Desktop/launcher.ts — compiled to Contents/MacOS/<AppName>
+// app/Desktop/launcher.ts - compiled to Contents/MacOS/<AppName>
 import { dirname, join } from 'node:path'
 
 const macos = dirname(process.execPath)          // siblings live here
@@ -117,7 +118,7 @@ Two things follow from declaring your own launcher:
   copied into `Contents/MacOS`.** Compile the sibling binaries your launcher
   spawns into that directory and they ship with it.
 - **`app/Desktop/Resources/` is copied into `Contents/Resources`.** A
-  prerendered UI, a schema, seed data — a local-first app has a payload, and
+  prerendered UI, a schema, seed data - a local-first app has a payload, and
   this is where it goes.
 
 `build:dmg` also narrows App Transport Security for these bundles: an exception
@@ -127,7 +128,7 @@ permit every unencrypted host on the internet.
 ### Info.plist entries
 
 `app/Desktop/Info.plist.json` is merged into the generated `Info.plist`. The
-entries that matter most are the `NS*UsageDescription` strings — they are the
+entries that matter most are the `NS*UsageDescription` strings - they are the
 sentences a person reads when macOS asks whether your app may look in their
 Downloads folder or drive Finder, and without them the prompt is generic or the
 request is refused outright.
@@ -144,38 +145,38 @@ JSON, not XML: a malformed plist produces a bundle macOS silently refuses to
 launch, which surfaces long after the build reported success. Strings, numbers,
 booleans, arrays, and nested objects all render.
 
-Keys the bundle must own — `CFBundleIdentifier`, `CFBundleExecutable`,
-`CFBundleVersion`, and the rest of the identity — are ignored with a note.
+Keys the bundle must own - `CFBundleIdentifier`, `CFBundleExecutable`,
+`CFBundleVersion`, and the rest of the identity - are ignored with a note.
 Rewriting those produces a bundle that does not match what was signed.
 
 Inside the bundle the launcher is named after the app, not `stacks-desktop`.
 macOS names the *process* in every permission prompt, so a launcher keeping the
 framework's build name asks "stacks-desktop would like to access files in your
-Downloads folder" — which reads like something to refuse.
+Downloads folder" - which reads like something to refuse.
 
 Application data belongs in `~/Library/Application Support/<AppName>`, never
-inside the bundle — `/Applications` is not writable by the user, and the bundle
+inside the bundle - `/Applications` is not writable by the user, and the bundle
 is replaced wholesale on update.
 
 ## Helper processes: one binary, not three
 
-An app that owns its launcher usually needs more than the launcher — an agent
+An app that owns its launcher usually needs more than the launcher - an agent
 serving on loopback, a worker doing something slow out of process. Compile each
 as its own binary and the bundle gets very large very quietly.
 
 `bun build --compile` embeds the entire Bun runtime in **every** executable it
 writes. `console.log("hi")` measures **60.5 MB**. So three binaries means three
-copies of the same runtime, and nothing says so — the bundle is simply big, and
+copies of the same runtime, and nothing says so - the bundle is simply big, and
 a big desktop app looks unremarkable. One real app shipped 230 MB this way, of
 which about 180 MB was the runtime repeated; its own code plus the native Craft
 runtime came to under 40 MB.
 
 Compile **one** binary and dispatch on a subcommand. The helpers stay separate
-*processes* — which is what actually matters for isolation and for killing one
-that wedges — they just stop being separate *files*.
+*processes* - which is what actually matters for isolation and for killing one
+that wedges - they just stop being separate *files*.
 
 ```ts
-// app/Desktop/launcher.ts — before anything else at module scope
+// app/Desktop/launcher.ts - before anything else at module scope
 const subcommand = process.argv[2]
 
 if (subcommand === 'agent' || subcommand === 'scan') {
@@ -205,7 +206,7 @@ Two things that bite, both silently:
 - **The dispatch must come first.** A launcher's body is top-level code that
   starts a server and opens a window as a side effect of loading.
 - **Do not `process.exit()` after starting a server.** A `runAgent()` that
-  returns once `Bun.serve` is listening has not finished — `Bun.serve` is what
+  returns once `Bun.serve` is listening has not finished - `Bun.serve` is what
   holds the process open. Exiting after it kills the agent one line after it
   printed the port the launcher is still waiting for, and the launcher reports
   a timeout that says nothing about the cause.
@@ -287,6 +288,11 @@ Repository secrets:
 - `APP_STORE_CONNECT_API_ISSUER_ID`
 
 ## Gotchas
+- Configure build identity and browser UI separately; the host build package is
+  not a browser-safe native API import. Verify bridge readiness inside the
+  actual Craft window before enabling native-only flows.
+- Probe results describe the recorded host/runtime version. A successful
+  packaging command is not evidence of input/audio/graphics capability parity.
 - App Store packaging runs on macOS with Xcode command-line tools.
 - The embedded Craft runtime must inherit the parent App Sandbox.
 - A Mac App Distribution identity and Mac Installer Distribution identity serve different signing steps.

@@ -8,51 +8,23 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Registry
 
-## Key Paths
-- Core package: `storage/framework/core/registry/src/`
-- Config: `config/stacks.ts`
-- Package: `@stacksjs/registry`
+`@stacksjs/registry` exports the named/default registry array and Registry type.
+The array derives from the central stackExtensionRegistry in `@stacksjs/types`,
+not from a hard-coded core Stacks URL entry or the app's installed dependencies.
+Each generated object carries name, github, optional package and description.
 
-## Source Files
-```
-registry/src/
-└── index.ts              # Registry definition and exports
-```
+Registry aliases StackExtensionRegistry, which also permits string shorthand
+names. Narrow an entry before accessing its object fields. config/stacks.ts is
+the application's extension configuration, separate from this known-extension
+catalog. A catalog entry does not mean that extension is installed.
 
-## API
+Use stacks-plugins for stack install/uninstall, package discovery, resource
+precedence and the lock/checksum contract. The central metadata links project-
+shaped GitHub source and optional npm package; discovery reads a package's actual
+stacks metadata. An umbrella extension can provide core and UI packages without
+manually copying all resources into app/.
 
-```typescript
-import { registry } from '@stacksjs/registry'
-import type { Registry } from '@stacksjs/registry'
-
-type Registry = StackExtensionRegistry
-
-const registry: Registry = [
-  {
-    name: 'stacks',
-    url: 'stacksjs.com',
-    github: 'stacksjs/stacks',
-  },
-]
-
-export default registry
-```
-
-The registry is a simple array of `StackExtensionRegistry` entries containing framework extension metadata — name, URL, and GitHub repository.
-
-## Usage
-
-```typescript
-import { registry } from '@stacksjs/registry'
-
-// Access extension metadata
-registry.forEach(ext => {
-  console.log(ext.name, ext.url, ext.github)
-})
-```
-
-## Gotchas
-- **Minimal package** — currently just a static array with the core Stacks framework entry
-- **Type comes from `@stacksjs/types`** — `StackExtensionRegistry` is defined in the types package
-- **Used for framework metadata** — not a package manager or dependency registry
-- **Config in `config/stacks.ts`** — the `StackExtensionRegistry` config is defined there
+Source: `storage/framework/core/registry/src/index.ts` and
+`core/types/src/stack-extensions.ts`. Evidence:
+`core/registry/tests/registry.test.ts`. Read the registry at runtime rather than
+duplicating its entries or a fixed package count in documentation.

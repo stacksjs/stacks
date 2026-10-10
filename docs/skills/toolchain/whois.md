@@ -1,31 +1,18 @@
 ---
 title: "WHOIS skill"
-description: "Use when performing WHOIS lookups in Stacks."
+description: "Use when performing WHOIS lookups in Stacks - domain queries, batch lookups, SOCKS proxy support, TLD server discovery, response parsing, the WhoIsParser class, or the built-in SocksClient. Covers @stacksjs/whois."
 ---
 # WHOIS
 
-`stacks-whois` · Toolchain · model-invoked
+`stacks-whois` · Native Stacks · model-invoked
 
-WHOIS lookups: single and batch queries, TLD server discovery, response parsing
-and SOCKS proxy support.
+Use when performing WHOIS lookups in Stacks - domain queries, batch lookups, SOCKS proxy support, TLD server discovery, response parsing, the WhoIsParser class, or the built-in SocksClient. Covers @stacksjs/whois.
 
-## When to reach for it
-
-- Domain queries
-- Batch lookups
-- SOCKS proxy support
-- TLD server discovery
-- Response parsing
-- The WhoIsParser class
-- The built-in SocksClient
-
-## Covers
-
-`@stacksjs/whois`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -40,20 +27,18 @@ The sections an agent reads once the skill loads.
 - Exports from index.ts
 - Dependencies
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/whois/src/`
+- Lookup evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-whois
 ```
 
 Source: [`stacks-whois/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-whois/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-whois/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-whois/SKILL.md`. See [Using skills](/skills/using).

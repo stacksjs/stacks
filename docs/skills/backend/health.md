@@ -4,24 +4,15 @@ description: "Use when implementing health checks in a Stacks application - serv
 ---
 # Health
 
-`stacks-health` · Backend and API · model-invoked
+`stacks-health` · Native Stacks · model-invoked
 
-Health checks and service monitoring. Currently a work in progress, with an Oh
-Dear integration planned.
+Use when implementing health checks in a Stacks application - service monitoring, health endpoints, or diagnostic checks. Covers @stacksjs/health (currently WIP - Oh Dear integration planned).
 
-## When to reach for it
-
-- Service monitoring
-- Health endpoints
-- Diagnostic checks
-
-## Covers
-
-`@stacksjs/health` (currently WIP - Oh Dear integration planned).
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -31,22 +22,16 @@ The sections an agent reads once the skill loads.
 - Planned Features
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/health/src/`
-- Drivers: `storage/framework/core/health/src/drivers/`
-- Notifications: `storage/framework/core/health/src/notifications/`
-- Package: `@stacksjs/health`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-health
 ```
 
 Source: [`stacks-health/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-health/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-health/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-health/SKILL.md`. See [Using skills](/skills/using).

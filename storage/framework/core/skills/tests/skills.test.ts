@@ -36,6 +36,8 @@ describe('listSkills', () => {
     expect(skills.length).toBeGreaterThan(0)
     expect(skills.every(name => typeof name === 'string')).toBe(true)
     expect(skills).toContain('stacks-orm')
+    expect(skills).toContain('stacks-humanizer')
+    expect(skills).toContain('stacks-unslop')
   })
 
   test('returns names sorted and free of duplicates', async () => {

@@ -1,33 +1,18 @@
 ---
 title: "CMS skill"
-description: "Use when working with the CMS in a Stacks application."
+description: "Use when working with Stacks CMS posts, authors, block-document pages, revisions, menus, redirects, scheduled publishing, blog feeds, or public page serving. Covers @stacksjs/cms, site-scoped CMS models, routes, and actions."
 ---
 # CMS
 
-`stacks-cms` · Domain packages · model-invoked
+`stacks-cms` · Native Stacks · model-invoked
 
-The content layer: posts, authors, pages, categories, tags and comments, plus the
-RSS and sitemap generation that hangs off them.
+Use when working with Stacks CMS posts, authors, block-document pages, revisions, menus, redirects, scheduled publishing, blog feeds, or public page serving. Covers @stacksjs/cms, site-scoped CMS models, routes, and actions.
 
-## When to reach for it
-
-- Posts
-- Authors
-- Pages
-- Categories
-- Tags
-- Comments
-- Blog configuration
-- RSS feeds
-- Sitemaps
-
-## Covers
-
-`@stacksjs/cms`, CMS models, routes, actions.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -38,28 +23,25 @@ The sections an agent reads once the skill loads.
 - Tags API
 - Comments API
 - Routes
+- Post Bodies: Images, Grids, Zoom and Embeds
 - Blog Configuration (config/blog.ts)
 - Database Tables
 - Gotchas
 
-## Where the code lives
+## Supporting references
 
-- Core package: `storage/framework/core/cms/src/`
-- Models: `storage/framework/defaults/app/Models/Content/` (Post, Author, Page)
-- Models: `storage/framework/defaults/app/Models/` (Comment, Tag)
-- Actions: `storage/framework/defaults/app/Actions/Cms/`
-- Routes: `routes/api.ts` (CMS and blog endpoints)
-- Config: `config/blog.ts`
+- [PAGES.md](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-cms/PAGES.md)
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-cms
 ```
 
 Source: [`stacks-cms/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-cms/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-cms/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-cms/SKILL.md`. See [Using skills](/skills/using).

@@ -18,9 +18,9 @@ Comprehensive AI/LLM integration with 4 provider drivers, image generation, visi
 ```
 ai/src/
 ├── drivers/
-│   ├── anthropic.ts      # Claude driver
-│   ├── openai.ts         # GPT + DALL-E + Whisper + TTS
-│   ├── ollama.ts         # Local LLM driver
+│   ├── anthropic/index.ts # Claude driver
+│   ├── openai/index.ts    # GPT + image + transcription + TTS
+│   ├── ollama/index.ts    # Local LLM driver
 │   └── bedrock/          # Amazon Bedrock, through the Converse API
 ├── image.ts              # Image generation & vision
 ├── speech.ts             # Provider-neutral text-to-speech & speech-to-text
@@ -210,7 +210,7 @@ const index = await indexText(text, { chunkSize: 500 })
 const answer = await rag('What is X?', index, { model: 'claude-sonnet-4-20250514', maxTokens: 1000 })
 
 // VectorIndex class
-const idx = new VectorIndex({ dimensions: 1536 })
+const idx = new VectorIndex({ provider: 'openai', model: 'text-embedding-3-small' })
 await idx.add([{ id: '1', content: 'Hello', metadata: {} }])
 const results = await idx.search('greeting', 5)
 const results2 = await idx.searchByVector(queryEmbedding, 5)
@@ -239,9 +239,9 @@ const openaiTools = client.toOpenAITools()
 
 // Multiple servers
 const manager = new MCPManager()
-manager.addServer({ name: 'server1', transport: 'stdio', command: '...' })
-manager.addServer({ name: 'server2', transport: 'streamable-http', url: '...' })
-const allTools = await manager.getAllTools()
+await manager.addServer({ name: 'server1', transport: 'stdio', command: '...' })
+await manager.addServer({ name: 'server2', transport: 'streamable-http', url: '...' })
+const allTools = manager.getAllTools() // cached tools from connected servers
 await manager.callTool('server1/tool-name', args)
 await manager.disconnectAll()
 
@@ -356,14 +356,40 @@ await driver.resumeSession(sessionId, 'Add validation')
 ```
 
 ## Gotchas
-- API keys should be in `.env` — `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
+- API keys should be in `.env` - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
 - Ollama requires a local server running on port 11434
 - Image generation uses OpenAI DALL-E by default
 - Vision supports both GPT-4V and Claude models
-- VectorIndex is in-memory — not persisted between restarts
+- VectorIndex is in-memory - not persisted between restarts
 - RAG combines chunking + embedding + vector search + LLM generation
 - MCP supports stdio (subprocess), SSE, and HTTP transports
 - The buddy assistant has git integration (commit, push, apply changes)
 - Claude Agent SDK wraps the Claude Code CLI for agentic workflows
 - A Bedrock id as `default` selects the Bedrock driver; it never reaches api.anthropic.com
-- Sentiment/classification use AI models — they're not rule-based
+- Sentiment/classification use AI models - they're not rule-based
+
+
+## Usage, retries and multimodal messages
+
+The public package also exposes `onUsage/recordUsage/listUsageReporters`
+(and clearUsageReporters for teardown), `estimateTokens/estimateMessageTokens`,
+`sanitizePrompt`, `fetchWithRetry`, and
+`buildMessageWithImages/normalizeMessagesForProvider`. Use the exported
+types and their `utils/` implementations before composing a provider-neutral
+message or reporting costs. Token estimates are heuristic, usage callback data
+comes from provider results, and sanitizing a prompt is not authorization for
+executing a suggested tool.
+
+Provider capabilities differ: embeddings currently use OpenAI/Ollama; RAG supports
+Anthropic/OpenAI/Ollama; speech uses OpenAI only. The shared chat client and
+tool-turn helpers support the four chat providers but do not imply those other
+features are implemented by Bedrock. VectorIndex is memory-only; its constructor
+accepts EmbeddingOptions (provider/model), not an arbitrary vector dimensions
+setting. Runtime credentials come from env/provider configuration, never a
+browser-exported config response.
+
+Tests: `storage/framework/core/ai/tests/usage-and-tokens.test.ts`,
+`vision.test.ts`, `retry.test.ts`, `driver-retry.test.ts`,
+`tool-calls.test.ts` and `client.test.ts`. Verify chosen model/provider
+capabilities from config and registry rather than assuming a marketing model name
+is usable for every API.

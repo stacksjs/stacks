@@ -1,40 +1,25 @@
 ---
 title: "Cloud skill"
-description: "Use when deploying or managing cloud infrastructure for Stacks."
+description: "Use when deploying or managing cloud infrastructure for Stacks - choosing between the AWS, Hetzner and SSH targets, AWS deployment via CloudFormation/CDK, server mode (EC2, ALB, VPC), serverless mode (Lambda, API Gateway, CloudFront), jump boxes, domain management (Route53), S3 storage, SES email, edge computing, security groups, IAM, the rpx gateway and systemd units on an SSH box, or the cloud configuration. Covers @stacksjs/cloud, @stacksjs/deploy, storage/framework/cloud/, and cloud/."
 ---
 # Cloud
 
-`stacks-cloud` · Toolchain · model-invoked
+`stacks-cloud` · Native Stacks · model-invoked
 
-The AWS infrastructure: CloudFormation and CDK, server mode on EC2 behind an ALB,
-serverless mode on Lambda, jump boxes, Route53, S3, SES, edge computing, security
-groups and IAM.
+Use when deploying or managing cloud infrastructure for Stacks - choosing between the AWS, Hetzner and SSH targets, AWS deployment via CloudFormation/CDK, server mode (EC2, ALB, VPC), serverless mode (Lambda, API Gateway, CloudFront), jump boxes, domain management (Route53), S3 storage, SES email, edge computing, security groups, IAM, the rpx gateway and systemd units on an SSH box, or the cloud configuration. Covers @stacksjs/cloud, @stacksjs/deploy, storage/framework/cloud/, and cloud/.
 
-## When to reach for it
-
-- AWS deployment via CloudFormation/CDK
-- Server mode (EC2, ALB, VPC)
-- Serverless mode (Lambda, API Gateway, CloudFront)
-- Jump boxes
-- Domain management (Route53)
-- S3 storage
-- SES email
-- Edge computing
-- Security groups
-- IAM
-- The cloud configuration
-
-## Covers
-
-`@stacksjs/cloud`, `@stacksjs/deploy`, `storage/framework/cloud/`, `cloud/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
+- Targets
 - Key Paths
-- Deployment Modes
-- Deployment Flow
+- Deployment Modes (AWS)
+- Deployment Flow (AWS)
+- CloudFront origin failover (AWS)
+- Hetzner and SSH targets
 - Cloud Helper Functions
 - DNS Functions (AWS Route53)
 - Server Configuration (cloud/servers.ts)
@@ -43,25 +28,18 @@ The sections an agent reads once the skill loads.
 - config/cloud.ts
 - Infrastructure Stack (storage/framework/cloud/)
 - Gotchas
-
-## Where the code lives
-
-- Cloud package: `storage/framework/core/cloud/src/`
-- Deploy package: `storage/framework/core/deploy/`
-- CDK stacks: `storage/framework/cloud/` (deploy.ts, cdk.json, package.json)
-- Cloud config: `cloud/` (serverless.ts, servers.ts, deploy-script.ts)
-- Cloud driver state: `storage/cloud/` (ts-cloud's `stateDir`, set in `config/cloud.ts`)
-- Configuration: `config/cloud.ts`
+- Configuration and provider evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-cloud
 ```
 
 Source: [`stacks-cloud/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-cloud/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-cloud/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-cloud/SKILL.md`. See [Using skills](/skills/using).

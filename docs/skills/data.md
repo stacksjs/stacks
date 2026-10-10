@@ -10,7 +10,7 @@ Stacks derives migrations from your models rather than the other way round, so
 the model is the source of truth for the schema. These cover that loop end to
 end, plus the query surface and the search indexing that hangs off it.
 
-7 skills.
+8 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -21,6 +21,7 @@ end, plus the query surface and the search indexing that hangs off it.
 | [ORM](/skills/data/orm) | The ORM itself: how `defineModel()` becomes a queryable model, how relationships resolve, what the traits attach, which system fields appear on their own, and the naming conventions the rest of the framework infers from. |
 | [Query builder](/skills/data/query-builder) | The fluent query surface, backed by `bun-query-builder`. Chainable conditions, ordering, eager loading, pagination and transactions, plus the configuration in `config/query-builder.ts`. |
 | [Search engine](/skills/data/search-engine) | Full-text search over Meilisearch or Algolia, and the `useSearch` trait that keeps a model indexed without a line of glue code. |
+| [Pagination](/skills/data/pagination) | returning database pages, simple or cursor feeds, building pagination links, or adapting upstream paginator results.. |
 
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).

@@ -1,6 +1,6 @@
 ---
 title: "Auto-imports skill"
-description: "Use when working with the Stacks auto-import system."
+description: "Use when checking browser/server binding delivery, model globals, registry generation, or the difference between ambient declarations and runtime imports. Covers Stacks auto-imports, stx client delivery, server boot and generated registries (107 models)."
 ---
 # Auto-imports
 
@@ -59,3 +59,10 @@ matches, and you can also call it by name:
 Source: [`stacks-auto-imports/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-auto-imports/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-auto-imports/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

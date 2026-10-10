@@ -1,71 +1,37 @@
 ---
 title: "ORM skill"
-description: "Use when working with the Stacks ORM."
+description: "Use when querying or writing Stacks models, using transactions and relationships, preserving inferred model types, or enabling native model traits. Covers @stacksjs/orm, the model runtime, and 107 built-in models."
 ---
 # ORM
 
-`stacks-orm` · Data layer · model-invoked
+`stacks-orm` · Native Stacks · model-invoked
 
-The ORM itself: how `defineModel()` becomes a queryable model, how relationships
-resolve, what the traits attach, which system fields appear on their own, and the
-naming conventions the rest of the framework infers from.
+Use when querying or writing Stacks models, using transactions and relationships, preserving inferred model types, or enabling native model traits. Covers @stacksjs/orm, the model runtime, and 107 built-in models.
 
-## When to reach for it
-
-- Defining models with defineModel()
-- Model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough)
-- Attributes
-- Traits
-- Factories
-- Computed properties
-- Query building
-- Transactions
-- The 50+ built-in models
-
-## Covers
-
-`@stacksjs/orm`, `storage/framework/orm/`, `storage/framework/defaults/app/Models/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Paths
-- Source Files
-- defineModel() API (define-model.ts)
-- Transactions (transaction.ts)
-- Trait Methods (traits/)
-- Auto-Generated System Fields
-- Naming Conventions
-- ORM Utility Types (model-types.ts)
-- ORM Utility Functions (utils.ts)
-- Relationship Processing (utils.ts)
-- Model Events (when `traits.observe: true`)
-- Stub Types in index.ts
-- All 50+ Framework Models
-- CLI Commands
-- Gotchas
-
-## Where the code lives
-
-- Core ORM package: `storage/framework/core/orm/src/`
-- ORM implementation: `storage/framework/orm/`
-- Model definitions: `storage/framework/defaults/app/Models/` (50+ models)
-- Application models: `app/Models/`
-- Default model templates: `storage/framework/defaults/app/Models/`
-- ORM type globals: `storage/framework/types/orm-globals.d.ts`
-- Attribute types: `storage/framework/types/attributes.ts` (240+ attributes)
-- Model events: `storage/framework/types/events.ts`
+- Definitions and typed rows
+- Write behavior
+- Relationships and model instance methods
+- Transactions
+- Native pagination and search
+- Runtime and schema boundaries
+- Source and retained evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-orm
 ```
 
 Source: [`stacks-orm/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-orm/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-orm/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-orm/SKILL.md`. See [Using skills](/skills/using).

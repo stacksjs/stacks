@@ -1,30 +1,18 @@
 ---
 title: "Collections skill"
-description: "Use when working with collection data structures in Stacks."
+description: "Use when working with collection data structures in Stacks - chaining array operations, Laravel-style collection methods, mapping, filtering, reducing, or grouping. Covers @stacksjs/collections which wraps ts-collect."
 ---
 # Collections
 
-`stacks-collections` · Utilities · model-invoked
+`stacks-collections` · Native Stacks · model-invoked
 
-Laravel-style chainable collections over arrays: map, filter, reduce and group,
-wrapping `ts-collect`.
+Use when working with collection data structures in Stacks - chaining array operations, Laravel-style collection methods, mapping, filtering, reducing, or grouping. Covers @stacksjs/collections which wraps ts-collect.
 
-## When to reach for it
-
-- Chaining array operations
-- Laravel-style collection methods
-- Mapping
-- Filtering
-- Reducing
-- Grouping
-
-## Covers
-
-@stacksjs/collections which wraps ts-collect.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - API
@@ -32,21 +20,16 @@ The sections an agent reads once the skill loads.
 - Laravel-Style Methods
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/collections/src/`
-- Source: `storage/framework/core/collections/src/index.ts`
-- Package: `@stacksjs/collections`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-collections
 ```
 
 Source: [`stacks-collections/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-collections/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-collections/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-collections/SKILL.md`. See [Using skills](/skills/using).

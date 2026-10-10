@@ -1,6 +1,6 @@
 ---
 name: stacks-mail
-description: Use when creating mail classes in app/Mail/ - defining email content and templates, using the template() function with STX or HTML templates, variable interpolation, email layouts, or the app-level mail sending pattern. For the email framework itself (drivers, Mail singleton, EmailSDK, inbox management), see stacks-email.
+description: Use when creating mail classes in app/Mail/ - defining email content and templates, using the template() function with STX or HTML templates, variable interpolation, email layouts, or the app-level mail sending pattern. For the email framework itself (drivers, Mail singleton, EmailSDK, inbox management), see stacks-email. Covers app/Mail, Mailable, resources/emails and mail previews.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -30,10 +30,10 @@ interface WelcomeEmailOptions {
 export async function sendWelcomeEmail({ to, name }: WelcomeEmailOptions) {
   const { html, text } = await template('welcome', {
     variables: { name, appName: config.app.name },
-    layout: 'default'
+    layout: 'base'
   })
 
-  await mail.send({
+  await mail.sendOrFail({
     from: { name: config.app.name, address: config.email.from.address },
     to,
     subject: `Welcome to ${config.app.name}!`,
@@ -51,7 +51,7 @@ import { template, renderHtml, templateExists, listTemplates } from '@stacksjs/e
 // From template file (welcome.stx or welcome.html)
 const { html, text } = await template('welcome', {
   variables: { name: 'John', url: 'https://app.com/verify' },
-  layout: 'default',     // wrap in layout (or false to skip)
+  layout: 'base',     // HTML layout (or false); STX templates own their layout
   subject: 'Welcome'
 })
 
@@ -148,9 +148,48 @@ raw string (`{!! css !!}`) rather than a style element, which stx lifts out as c
 - Layouts: base HTML wrapping templates (header, footer, styles)
 
 ## Gotchas
-- Mail classes are plain functions, not classes — no inheritance needed
-- Templates support both `.stx` (reactive) and `.html` (static) formats
-- Variable interpolation uses `{{ }}` — not `${}`
+- Plain sending functions and typed Mailable classes are both native. Prefer Mailable for reusable email types and preview/scaffold integration
+- Templates support server-rendered .stx and interpolated .html; email recipients do not execute a reactive browser runtime
+- Variable interpolation uses `{{ }}` - not `${}`
 - `text` output is auto-generated from HTML via `htmlToText()`
 - Layouts wrap the template content with shared structure (header/footer)
 - For the email driver system (SES, SendGrid, etc.), see the `stacks-email` skill
+
+
+## Typed Mailable and previews
+
+~~~ts
+import { Mailable } from '@stacksjs/email'
+
+export default class WelcomeMail extends Mailable<{ name: string }> {
+  constructor(private recipient: { name: string, email: string }) {
+    super()
+  }
+
+  build() {
+    return this.to(this.recipient.email)
+      .subject('Welcome')
+      .template('welcome', { name: this.recipient.name })
+  }
+}
+~~~
+
+`new WelcomeMail(recipient).send({ driver? })` returns EmailResult; inspect
+success and throw when the caller relies on delivery. `Mailable.send()`
+does not use sendOrFail internally. Setters also support cc/bcc/from/replyTo,
+text/html, attach(path, name?) and attachData(bytes, name, mime?).
+`inspect()` exposes the built preview state. Typed props are required at
+template(), and template names are derived by buddy generate from app/default
+email directories. Read the exported EmailTemplateReference type for extensions.
+
+`buddy make:mail Name` creates a Mailable and its template. Native
+`buddy mail:preview` discovers these without delivery; sample constructor
+props live in `resources/emails/_previews/<kebab-name>.ts`. Preview routes are
+development-only. Verify rendered HTML/text and attachments rather than sending
+test mail to a real recipient as an automatic review step.
+
+Source: `storage/framework/core/email/src/mailable.ts`,
+`preview.ts`, `mime-preview.ts`; tests `mailable-types.test.ts`,
+`preview.test.ts`, `template-resolution.test.ts` under
+`core/email/tests/`. For provider failures, suppression, unsubscribe and
+idempotency, read `stacks-email`.

@@ -1,59 +1,35 @@
 ---
 title: "Socials skill"
-description: "Use when implementing social authentication in Stacks."
+description: "Use when implementing social sign-in, Apple callbacks, PKCE/session handoff, named publishing identities, or publishing through native platform drivers. Covers @stacksjs/socials and config/socials.ts."
 ---
 # Socials
 
-`stacks-socials` · Backend and API · model-invoked
+`stacks-socials` · Native Stacks · model-invoked
 
-OAuth2 sign-in with GitHub, Google, Facebook and Twitter. Covers the provider
-base class, PKCE, state handling, scopes and the social profile shape.
+Use when implementing social sign-in, Apple callbacks, PKCE/session handoff, named publishing identities, or publishing through native platform drivers. Covers @stacksjs/socials and config/socials.ts.
 
-## When to reach for it
-
-- OAuth2 flows with GitHub/Google/Facebook/Twitter providers
-- The AbstractProvider base class
-- PKCE support
-- State management
-- Scope configuration
-- Social user profiles
-- Token handling
-
-## Covers
-
-`@stacksjs/socials`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Paths
-- Source Files
-- AbstractProvider Base Class
-- Provider Implementations
-- SocialUser Interface
-- ProviderInterface
-- Token Class
-- Provider-Specific Types
-- Exceptions
-- OAuth2 Flow
-- Configuration Source
-- Dependencies
-- Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/socials/src/`
+- Social sign-in
+- Session handoff
+- Named publishing identities
+- Authorization and operational limits
+- Source and evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-socials
 ```
 
 Source: [`stacks-socials/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-socials/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-socials/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-socials/SKILL.md`. See [Using skills](/skills/using).

@@ -1,36 +1,18 @@
 ---
 title: "Utils skill"
-description: "Use when needing general utility functions in Stacks."
+description: "Use when needing general utility functions in Stacks - deep merge, debounce/throttle, color output, byte formatting, markdown tables, YAML parsing, Pipeline class, ResizeObserver, Macroable, project initialization, indentation detection, or the comprehensive utility toolkit. Covers @stacksjs/utils."
 ---
 # Utils
 
-`stacks-utils` · Utilities · model-invoked
+`stacks-utils` · Native Stacks · model-invoked
 
-The general toolkit: deep merge, debounce and throttle, byte formatting, markdown
-tables, YAML parsing, the `Pipeline` class and a good deal more.
+Use when needing general utility functions in Stacks - deep merge, debounce/throttle, color output, byte formatting, markdown tables, YAML parsing, Pipeline class, ResizeObserver, Macroable, project initialization, indentation detection, or the comprehensive utility toolkit. Covers @stacksjs/utils.
 
-## When to reach for it
-
-- Deep merge
-- debounce/throttle
-- Color output
-- Byte formatting
-- Markdown tables
-- YAML parsing
-- Pipeline class
-- ResizeObserver
-- Macroable
-- Project initialization
-- Indentation detection
-- The comprehensive utility toolkit
-
-## Covers
-
-`@stacksjs/utils`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Architecture
@@ -53,23 +35,20 @@ The sections an agent reads once the skill loads.
 - Clean Project (`clean.ts`)
 - Config Builders (re-exported from `@stacksjs/config`)
 - Hash Utilities (`hash.ts`)
-- Glob (re-export)
+- Glob boundary
+- Safe serialization and typed composition
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/utils/src/`
-- Package: `@stacksjs/utils`
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-utils
 ```
 
 Source: [`stacks-utils/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-utils/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-utils/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-utils/SKILL.md`. See [Using skills](/skills/using).

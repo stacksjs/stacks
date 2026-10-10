@@ -8,8 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Analytics
 
-Privacy-friendly analytics with four drivers: Fathom, Plausible, Google Analytics
-and self-hosted.
+Analytics drivers: AnalyticsHQ, Fathom, Plausible, Google Analytics and self-hosted.
 
 ## Key Paths
 - Core package: `storage/framework/core/analytics/src/`
@@ -46,7 +45,7 @@ that should carry it.
 ## Drivers
 
 ### Fathom
-Hosted, cookie-free, GDPR-compliant. Requires a Fathom account.
+Hosted tracker script. Requires a Fathom account; compliance depends on the complete application and provider setup.
 `scriptUrl` points the tag at your own origin so a content blocker does not drop it.
 
 ```typescript
@@ -178,3 +177,24 @@ Analytics dashboard at `/dashboard/analytics` displays:
 - `trackOutboundLinks` adds click handlers to external `<a>` tags
 - `capturePageviews` is server-side and independent of `driver`
 - AnalyticsHQ custom events need no script: `data-analyticshq-event="Ticket click"` on any element, with other `data-analyticshq-*` attributes as properties
+
+
+## Environment and capture boundaries
+
+enabled:false returns no tags. When environments is explicitly supplied,
+getAnalyticsHead runs the shared integration gate and forwards the resolved label
+to AnalyticsHQ. If environments is absent, the current registry preserves its
+older ungated behavior; the shipped config explicitly lists production/staging.
+Do not assume every caller gets that allowlist when constructing config itself.
+
+First-party capturePageviews is separate from script injection and the remote
+driver gate. recordPageview(req) writes qualifying GET page requests to
+analytics_events; isPageviewRequest filters assets/API/internal paths and obvious
+bots/monitors. classifyAgent/referrerHost are coarse helpers, not unique visitor
+identification. Capture failures are swallowed so a statistic cannot break a
+page. Apply the table/model migration before relying on the dashboard data.
+
+Source: `storage/framework/core/analytics/src/registry.ts`, capture.ts and
+drivers/. Tests: environment-gate.test.ts, capture.test.ts and drivers.test.ts.
+A configured script does not certify analytics consent/privacy compliance or
+prove a provider received an event. Read stacks-env for the shared gate.

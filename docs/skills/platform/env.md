@@ -1,32 +1,18 @@
 ---
 title: "Env skill"
-description: "Use when working with environment variables in Stacks."
+description: "Use when working with environment variables in Stacks - the typed env proxy with auto-coercion, .env file loading, X25519 and AES-256-GCM encryption/decryption of env values, runtime/platform detection, CI provider detection, or the env CLI commands. Covers @stacksjs/env, config/env.ts, and .env files."
 ---
 # Env
 
-`stacks-env` · Platform · model-invoked
+`stacks-env` · Native Stacks · model-invoked
 
-The typed env proxy with automatic coercion, `.env` loading, encryption and
-decryption of individual values, runtime and CI detection, and the `buddy env:*`
-commands.
+Use when working with environment variables in Stacks - the typed env proxy with auto-coercion, .env file loading, X25519 and AES-256-GCM encryption/decryption of env values, runtime/platform detection, CI provider detection, or the env CLI commands. Covers @stacksjs/env, config/env.ts, and .env files.
 
-## When to reach for it
-
-- The typed env proxy with auto-coercion
-- .env file loading
-- X25519 and AES-256-GCM encryption/decryption of env values
-- runtime/platform detection
-- CI provider detection
-- Environment gating for integrations that transmit off the box
-- The env CLI commands
-
-## Covers
-
-`@stacksjs/env`, `config/env.ts`, .env files.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -44,23 +30,16 @@ The sections an agent reads once the skill loads.
 - Dashboard environment editor
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/env/src/`
-- Environment config: `config/env.ts`
-- Environment file: `.env`
-- Example: `.env.example`
-- Type definitions: `storage/framework/env.d.ts`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-env
 ```
 
 Source: [`stacks-env/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-env/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-env/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-env/SKILL.md`. See [Using skills](/skills/using).

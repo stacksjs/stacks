@@ -1,42 +1,25 @@
 ---
 title: "AI skill"
-description: "Use when integrating AI capabilities into a Stacks application."
+description: "Use when integrating AI capabilities into a Stacks application - using Anthropic/OpenAI/Ollama/AWS Bedrock drivers, image generation (DALL-E), vision analysis, RAG/vector search, embeddings, text-to-speech and speech-to-text, MCP (Model Context Protocol) clients, text summarization, sentiment analysis, content classification, personalization, or the buddy AI assistant. Covers @stacksjs/ai and config/ai.ts."
 ---
 # AI
 
-`stacks-ai` · Backend and API · model-invoked
+`stacks-ai` · Native Stacks · model-invoked
 
-The AI layer: Anthropic, OpenAI, Ollama and AWS Bedrock drivers, image generation,
-vision, RAG and embeddings, MCP clients, and the higher-level helpers for
-summarization, sentiment and classification.
+Use when integrating AI capabilities into a Stacks application - using Anthropic/OpenAI/Ollama/AWS Bedrock drivers, image generation (DALL-E), vision analysis, RAG/vector search, embeddings, text-to-speech and speech-to-text, MCP (Model Context Protocol) clients, text summarization, sentiment analysis, content classification, personalization, or the buddy AI assistant. Covers @stacksjs/ai and config/ai.ts.
 
-## When to reach for it
-
-- Using Anthropic/OpenAI/Ollama/AWS Bedrock drivers
-- Image generation (DALL-E)
-- Vision analysis
-- RAG/vector search
-- Embeddings
-- Text-to-speech and speech-to-text
-- MCP (Model Context Protocol) clients
-- Text summarization
-- Sentiment analysis
-- Content classification
-- Personalization
-- The buddy AI assistant
-
-## Covers
-
-`@stacksjs/ai`, `config/ai.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
 - Anthropic Driver
 - OpenAI Driver
+- Bedrock Driver
+- Tool Calls
 - Provider-Neutral Client
 - Speech (Text-to-Speech, Speech-to-Text)
 - Ollama Driver (Local LLMs)
@@ -50,21 +33,18 @@ The sections an agent reads once the skill loads.
 - Claude Agent SDK
 - config/ai.ts
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/ai/src/`
-- Configuration: `config/ai.ts`
+- Usage, retries and multimodal messages
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-ai
 ```
 
 Source: [`stacks-ai/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-ai/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-ai/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-ai/SKILL.md`. See [Using skills](/skills/using).

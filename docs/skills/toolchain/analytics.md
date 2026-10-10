@@ -1,29 +1,18 @@
 ---
 title: "Analytics skill"
-description: "Use when adding analytics to a Stacks application."
+description: "Use when adding analytics to a Stacks application - configuring Fathom, Plausible, Google Analytics or self-hosted analytics, generating tracking scripts, privacy-friendly analytics setup, or the analytics configuration. Covers @stacksjs/analytics and config/analytics.ts."
 ---
 # Analytics
 
-`stacks-analytics` · Toolchain · model-invoked
+`stacks-analytics` · Native Stacks · model-invoked
 
-Privacy-friendly analytics through Fathom, Plausible, Google Analytics or a
-self-hosted backend, and the tracking script generation behind it.
+Use when adding analytics to a Stacks application - configuring Fathom, Plausible, Google Analytics or self-hosted analytics, generating tracking scripts, privacy-friendly analytics setup, or the analytics configuration. Covers @stacksjs/analytics and config/analytics.ts.
 
-## When to reach for it
-
-- Configuring Fathom, Plausible or Google Analytics
-- Self-hosted analytics
-- Generating tracking scripts
-- Privacy-friendly analytics setup
-- The analytics configuration
-
-## Covers
-
-`@stacksjs/analytics`, `config/analytics.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Driver registry
@@ -33,23 +22,18 @@ The sections an agent reads once the skill loads.
 - First-party pageview capture
 - Dashboard Integration
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/analytics/src/`
-- Drivers: `storage/framework/core/analytics/src/drivers/`
-- Registry: `storage/framework/core/analytics/src/registry.ts`
-- Configuration: `config/analytics.ts`
+- Environment and capture boundaries
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-analytics
 ```
 
 Source: [`stacks-analytics/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-analytics/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-analytics/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-analytics/SKILL.md`. See [Using skills](/skills/using).

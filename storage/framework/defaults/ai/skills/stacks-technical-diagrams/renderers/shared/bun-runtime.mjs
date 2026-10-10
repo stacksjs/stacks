@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const skillRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 export const RUNTIME_FLAGS = Object.freeze([
-  `--config=${path.join(skillRoot, 'bunfig.toml')}`,
+  `--config=${path.join(skillRoot, 'runtime.toml')}`,
   '--no-env-file',
 ]);
 

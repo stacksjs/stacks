@@ -41,7 +41,7 @@ collect([10, 20, 30]).max()     // 30
 
 // Grouping
 collect(users).groupBy('role')
-// { admin: [...], user: [...] }
+// Map<role, CollectionOperations<User>>; use groups.get('admin')?.toArray()
 
 // Sorting
 collect(items).sortBy('price').toArray()
@@ -70,13 +70,30 @@ collect([1, 2, 3]).reduce((sum, n) => sum + n, 0)  // 6
 
 ## Laravel-Style Methods
 
-The `ts-collect` library provides a comprehensive Laravel Collection-compatible API including:
+The API is inspired by Laravel, but the installed TypeScript implementation is
+the authority. Its method names, argument order, return types and mutation
+semantics are not an assertion of complete Laravel compatibility. Use the
+exported `CollectionOperations<T>` type to check a method before using it.
 
-`all`, `avg`, `chunk`, `collapse`, `combine`, `concat`, `contains`, `count`, `countBy`, `crossJoin`, `dd`, `diff`, `diffAssoc`, `diffKeys`, `dump`, `duplicates`, `each`, `every`, `except`, `filter`, `first`, `firstOrFail`, `firstWhere`, `flatMap`, `flatten`, `flip`, `forget`, `forPage`, `get`, `groupBy`, `has`, `implode`, `intersect`, `intersectByKeys`, `isEmpty`, `isNotEmpty`, `join`, `keyBy`, `keys`, `last`, `macro`, `map`, `mapInto`, `mapSpread`, `mapToGroups`, `mapWithKeys`, `max`, `median`, `merge`, `mergeRecursive`, `min`, `mode`, `nth`, `only`, `pad`, `partition`, `pipe`, `pluck`, `pop`, `prepend`, `pull`, `push`, `put`, `random`, `reduce`, `reject`, `replace`, `replaceRecursive`, `reverse`, `search`, `shift`, `shuffle`, `skip`, `skipUntil`, `skipWhile`, `slice`, `sole`, `some`, `sort`, `sortBy`, `sortByDesc`, `sortDesc`, `sortKeys`, `sortKeysDesc`, `splice`, `split`, `sum`, `take`, `takeUntil`, `takeWhile`, `tap`, `times`, `toArray`, `toJson`, `transform`, `union`, `unique`, `uniqueStrict`, `unless`, `unlessEmpty`, `unlessNotEmpty`, `unwrap`, `values`, `when`, `whenEmpty`, `whenNotEmpty`, `where`, `whereBetween`, `whereIn`, `whereInstanceOf`, `whereNotBetween`, `whereNotIn`, `whereNotNull`, `whereNull`, `wrap`, `zip`
+Verified common operations include `map`, `filter`, `reduce`, `flatMap`,
+`chunk`, `groupBy`, `keyBy`, `countBy`, `pluck`, `sortBy`, `sortByDesc`,
+`unique`, `sum`, `avg`, `min`, `max`, `first`, `last`, `partition`,
+`where`, `whereIn`, `intersect`, `union`, and `toArray`. The installed release
+uses `toJSON`, not the assumed `toJson` spelling. `groupBy` returns a Map of
+collections; `keyBy` and `countBy` also return Maps. Read their types when
+serializing or passing them across a package boundary.
+
+The wrapper exports `Collection`, `CollectionOperations`, `CollectionMetrics`,
+`LazyCollectionOperations`, `PaginationResult`, `StandardDeviationResult` and
+`ValidationSchema`. Annotate exported collection values with a named type to
+keep declaration generation from degrading an inferred re-export to unknown.
 
 ## Gotchas
-- **Thin wrapper** — re-exports `collect` from `ts-collect`, no custom additions
-- **Collections are immutable** — operations return new collection instances
-- **For simple array operations** — `@stacksjs/arrays` may be more appropriate
-- **Laravel API compatibility** — method names and behavior match Laravel's Collection class
-- **Not used for ORM results** — ORM queries return plain arrays, not collections. Wrap with `collect()` if needed
+- **Thin wrapper** - re-exports `collect` and collection types from `ts-collect`
+- **Mutation is method-specific** - map/filter return new collections, while
+  pop/shift mutate the collection's shared backing array. Clone input if later
+  operations must not change the caller's array.
+- **For simple array operations** - `@stacksjs/arrays` may be more appropriate
+- **Map results are not JSON objects** - convert them deliberately; JSON.stringify
+  on a Map does not serialize its entries.
+- **Not used for ORM results** - ORM queries return plain arrays, not collections. Wrap with `collect()` if needed

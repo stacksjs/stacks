@@ -1,61 +1,34 @@
 ---
 title: "Error handling skill"
-description: "Use when implementing error handling in Stacks."
+description: "Use when implementing error handling in Stacks - the Result type (Ok/Err), handleError function, error page rendering (development with stack traces, production with friendly messages), ErrorHandler class, ModelNotFoundException, HTTP error mapping, log file writing, or error configuration. Covers @stacksjs/error-handling and config/errors.ts."
 ---
 # Error handling
 
-`stacks-error-handling` · Backend and API · model-invoked
+`stacks-error-handling` · Native Stacks · model-invoked
 
-The `Result` type, the central error handler, and how errors render: stack traces
-in development, friendly pages in production. Also covers HTTP error mapping and
-where the log files land.
+Use when implementing error handling in Stacks - the Result type (Ok/Err), handleError function, error page rendering (development with stack traces, production with friendly messages), ErrorHandler class, ModelNotFoundException, HTTP error mapping, log file writing, or error configuration. Covers @stacksjs/error-handling and config/errors.ts.
 
-## When to reach for it
-
-- The Result type (Ok/Err)
-- handleError function
-- Error page rendering (development with stack traces, production with friendly messages)
-- ErrorHandler class
-- ModelNotFoundException
-- HTTP error mapping
-- Log file writing
-- Error configuration
-
-## Covers
-
-`@stacksjs/error-handling`, `config/errors.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
-- Key Paths
-- Result Type (from ts-error-handling)
-- Error Handler
-- Log File Writing
-- Error Page Rendering
-- HTTP Error Mapping
-- Custom Exceptions
-- Error Page Types
-- Error Model (storage/framework/defaults/app/Models/Error.ts)
-- config/errors.ts
-- Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/error-handling/src/`
-- Configuration: `config/errors.ts`
-- Error model: `storage/framework/defaults/app/Models/Error.ts`
+- Results
+- HTTP errors and rendering
+- Handling, reporting and shutdown
+- Evidence
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-error-handling
 ```
 
 Source: [`stacks-error-handling/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-error-handling/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-error-handling/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-error-handling/SKILL.md`. See [Using skills](/skills/using).

@@ -10,6 +10,8 @@ allowed-tools: Read Edit Write Bash Grep Glob
 # Stacks flow
 
 Stacks ships more than a hundred skills. You do not remember them all, so ask.
+Read a selected skill before saying what it does or recommending a step be
+skipped. The summaries here are orientation, not a substitute for its entrypoint.
 
 Two kinds live in that set, and they are reached differently:
 
@@ -55,6 +57,14 @@ has the ordered tree.
 
 ## On-ramps
 
+- **Incoming issues or external PRs need sorting** goes to
+  **`/stacks-triage`**, which verifies the report and produces an agent-ready
+  brief. Tickets created from an agreed spec are already ready and need no
+  extra triage.
+- **A large effort still has unresolved decisions across sessions** goes to
+  **`/stacks-wayfinder`**. Resolve decision tickets, then synthesize their
+  answers through `stacks-to-spec` before implementing the result.
+
 A starting situation that generates work, then merges onto the main flow.
 
 - **Something is broken** goes to **`/stacks-investigate`**. It refuses to
@@ -68,6 +78,9 @@ A starting situation that generates work, then merges onto the main flow.
   aesthetic presets and the image-first pipeline.
 - **Something needs a human's hands** goes to **`/stacks-wizard`**, which turns
   the manual procedure into a script the human runs once.
+- **Prose sounds generated** goes to **`/stacks-humanizer`** for a broad
+  editorial rewrite, or **`/stacks-unslop`** for an audit, minimal edits, or
+  learning and matching a writer's voice. Review requests stay read-only.
 
 ## Codebase health
 
@@ -77,6 +90,9 @@ Not feature work, upkeep.
   module, interface, depth, seam, adapter, leverage, locality. Reach for it when
   the argument is about where a seam goes or how much a trait should hide.
 - **`/stacks-security-audit`** for OWASP, STRIDE and attack-surface work.
+- **`/stacks-improve-codebase-architecture`** surveys concrete deepening
+  opportunities, weighted toward code that changes often. Pick a candidate
+  before designing its interface with `stacks-codebase-design`.
 - **`/stacks-registry`** and the other subsystem skills for the auditing patterns
   specific to one part of the framework.
 
@@ -94,6 +110,19 @@ not the process, are the problem.
   *shape*. `stacks-tdd` and `stacks-plan-review` both speak it.
 
 ## Standalone
+
+For a multi-session build, use `stacks-grill-with-docs` to retain domain
+decisions, `stacks-to-spec` to synthesize the agreed behavior, and
+`stacks-to-tickets` to create self-contained slices with blocking edges.
+`stacks-implement` works one ticket; `stacks-implement-spec` works the task graph
+and verifies the integrated result. `stacks-pr` writes a reviewable PR body.
+`stacks-setup-engineering` configures tracker conventions when needed; local
+Markdown is a usable fallback without a setup ceremony.
+
+`stacks-research` captures cited primary-source findings. `stacks-to-questionnaire`
+drafts questions for knowledge another person holds; `stacks-wait-what`
+re-explains a message that did not land. `stacks-teach` keeps a learning workspace.
+For marketing tasks, use `stacks-marketing` to find the relevant channel workflow.
 
 - **`/stacks-grilling`** is the interview primitive: rounds, the frontier, facts
   are the agent's job and decisions are yours. Reach for it directly when you
@@ -115,3 +144,6 @@ not the process, are the problem.
 
 Nothing to run first. `buddy setup:ai <agent>` links these into your agent's
 directory, and `app/Skills/<name>/SKILL.md` shadows any of them per project.
+The current upstream source and license are in [NOTICE.md](NOTICE.md) and
+[LICENSE](LICENSE). Read [the Stacks adaptation rules](ENGINEERING.md)
+with the engineering workflows.

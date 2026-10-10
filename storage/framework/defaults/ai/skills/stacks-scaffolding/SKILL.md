@@ -15,6 +15,12 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 ## CLI Make Commands
 
+Use `buddy list` and the selected command's `--help` for the current generator
+surface. Model, action, job, middleware, policy, resource, command and mail
+generators are available as well as the examples below. A new model belongs in
+`app/Models`; schema changes normally use `generate:migrations`, not a
+handwritten `make:migration`. Read `stacks-new-feature` for that tracer bullet.
+
 ```bash
 buddy make:component <name>     # Create a new STX component
 buddy make:function <name>      # Create a new function/composable
@@ -34,6 +40,11 @@ import { createProject, addComponent, addPage, addStore, addLayout } from '@stac
 ```
 
 ### Create Project
+
+This is the standalone STX generator contract. For a Stacks application prefer
+Buddy scaffolding and its existing Bun/better-dx/STX/Crosswind setup. The legacy
+tailwind option adds a separate Tailwind dependency and is not the Stacks
+styling workflow.
 
 ```typescript
 async function createProject(name: string, options?: CreateProjectOptions): Promise<ScaffoldResult>
@@ -137,7 +148,7 @@ interface ScaffoldResult {
 | Language files | `locales/` |
 | Layouts | `resources/layouts/` |
 | Pages | `resources/views/` |
-| Stores | `storage/framework/defaults/stores/` |
+| Stores | Check the selected STX generator's configured store directory |
 | Partials | `resources/partials/` |
 
 Browser-extension scaffolding also follows this resource layout: popup pages
@@ -148,15 +159,20 @@ container app alongside the web-extension starter.
 ## Default Templates
 
 Templates for generated code are in `storage/framework/defaults/`:
-- `defaults/components/` — component templates
-- `defaults/models/` — model templates
-- `defaults/app/Middleware/` — middleware templates
-- `defaults/layouts/` — layout templates
-- `defaults/views/` — view templates
+- `defaults/components/` - component templates
+- `defaults/models/` - model templates
+- `defaults/app/Middleware/` - middleware templates
+- `defaults/layouts/` - layout templates
+- `defaults/views/` - view templates
 
 ## Gotchas
-- **Always use make commands** — ensures consistent file structure and naming
-- **Templates are customizable** — modify files in `storage/framework/defaults/` to change scaffolding output
-- **Run pickier after generating** — `bunx --bun pickier . --fix` to format generated code
-- **`force` flag overwrites** — without it, existing files are not overwritten
-- **STX scaffolding vs buddy make** — `addComponent()` is the programmatic API, `buddy make:component` is the CLI equivalent
+- **Always use make commands** - ensures consistent file structure and naming
+- **Framework templates are reference defaults** - keep application-owned
+  overrides in application paths; editing a bundled framework template affects
+  the framework distribution and is not a durable per-app customization.
+- **Run pickier after generating** - `bunx --bun pickier . --fix` to format generated code
+- **`force` flag overwrites** - without it, existing files are not overwritten
+- **STX scaffolding and buddy make differ** - STX project scaffolding targets a
+  standalone STX layout, while Buddy generators target Stacks application paths.
+  Verify generated destinations/options rather than assuming one is a wrapper
+  around the other. Keep components/layouts/views under resources in a Stacks app.

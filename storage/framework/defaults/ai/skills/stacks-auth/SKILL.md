@@ -44,14 +44,14 @@ auth/src/
 └── session-auth.ts        # Session-based SPA auth
 ```
 
-## Auth Class (authentication.ts) — Static Methods
+## Auth Class (authentication.ts) - Static Methods
 
 ### Login & Authentication
-- `Auth.attempt(credentials: AuthCredentials): Promise<boolean>` — validate credentials without creating token
-- `Auth.validate(credentials: AuthCredentials): Promise<boolean>` — alias for attempt
-- `Auth.login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<{ user, token } | null>` — login and create token
-- `Auth.loginUsingId(userId: number, options?: TokenCreateOptions): Promise<{ user, token } | null>` — login by user ID
-- `Auth.logout(): Promise<void>` — revoke current token
+- `Auth.attempt(credentials: AuthCredentials): Promise<boolean>` - validate credentials without creating token
+- `Auth.validate(credentials: AuthCredentials): Promise<boolean>` - checks credentials without setting the request's authenticated user
+- `Auth.login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<{ user, token } | null>` - login and create token
+- `Auth.loginUsingId(userId: number, options?: TokenCreateOptions): Promise<{ user, token } | null>` - login by user ID
+- `Auth.logout(): Promise<void>` - revoke current token
 
 ### Personal access tokens (Sanctum-shaped)
 
@@ -59,38 +59,38 @@ auth/src/
 name (`users`, `authors`) and `tokenable_id` its id there, so any model
 declaring `useAuth` can hold tokens - not only `User`.
 
-- `createToken(id, name, scopes, { tokenableType })` — mint one. Returns the
+- `createToken(id, name, scopes, { tokenableType })` - mint one. Returns the
   plaintext ONCE (`plainTextToken`); the table stores a hash and nothing can
   recover it afterwards. `tokenableType` defaults to `users`.
-- `tokens(id, tokenableType?)` — list an owner's live tokens.
-- `tokenCan(scope)` / `tokenCanAll` / `tokenCanAny` / `tokenAbilities` — check
+- `tokens(id, tokenableType?)` - list an owner's live tokens.
+- `tokenCan(scope)` / `tokenCanAll` / `tokenCanAny` / `tokenAbilities` - check
   the current request's token.
 - `revokeToken`, `revokeTokenById`, `revokeAllTokens(id, type?)`,
-  `revokeOtherTokens(id, type?)` — revocation also revokes the paired refresh
+  `revokeOtherTokens(id, type?)` - revocation also revokes the paired refresh
   token, which a raw row delete does not.
-- `setTrailActor(id)` — attribute writes in a queue job or CLI run that has no
+- `setTrailActor(id)` - attribute writes in a queue job or CLI run that has no
   request to read a user from.
 
 The `PersonalAccessToken` model maps the same table, so `owner.with('tokenable')`
 lists exactly what `createToken` minted. It deliberately generates no CRUD
 routes: minting and revoking both carry semantics a generic route does not.
-- `Auth.once(credentials: AuthCredentials): Promise<boolean>` — one-time auth without token
+- `Auth.once(credentials: AuthCredentials): Promise<boolean>` - one-time auth without token
 - `Auth.requestUserTokenWithClient(credentials, clientId, clientSecret): Promise<{ token } | null>` authenticates both a legacy OAuth client and an end user password, then issues a user token. It is not the client credentials grant.
 - `Auth.requestToken(...)` is the deprecated compatibility alias for that same legacy exchange. New delegated integrations use the authorization-code provider.
 
 ### User State
-- `Auth.user(): Promise<UserModel | undefined>` — get authenticated user from bearer token
-- `Auth.check(): Promise<boolean>` — is user authenticated?
-- `Auth.guest(): Promise<boolean>` — is user a guest?
-- `Auth.id(): Promise<number | undefined>` — get authenticated user ID
-- `Auth.setUser(user: UserModel): void` — manually set user
+- `Auth.user(): Promise<UserModel | undefined>` - resolve the current request user through bearer/token-cookie state
+- `Auth.check(): Promise<boolean>` - is user authenticated?
+- `Auth.guest(): Promise<boolean>` - is user a guest?
+- `Auth.id(): Promise<number | undefined>` - get authenticated user ID
+- `Auth.setUser(user: UserModel | undefined): void` - set or clear the current request user
 
 ### Token Creation
 - `Auth.createTokenForUser(user, options?: TokenCreateOptions): Promise<NewAccessToken>`
 - `Auth.createToken(user, name?, abilities?): Promise<AuthToken>`
 
 ### Token Validation
-- `Auth.validateToken(token: string): Promise<boolean>` — validate bearer token
+- `Auth.validateToken(token: string): Promise<boolean>` - validate bearer token
 - `Auth.getUserFromToken(token: string): Promise<UserModel | undefined>`
 - `Auth.currentAccessToken(): Promise<PersonalAccessToken | undefined>`
 
@@ -113,9 +113,9 @@ routes: minting and revoking both carry semantics a generic route does not.
 - `Auth.findToken(tokenId: number): Promise<PersonalAccessToken | null>`
 
 ### Utility
-- `Auth.guard(name?: string): typeof Auth` — select guard (returns self)
-- `Auth.viaRemember(): boolean` — always false currently
-- `Auth.clearState(): void` — clear cached user/token
+- `Auth.guard(name?: string): typeof Auth` - select guard (returns self)
+- `Auth.viaRemember(): boolean` - always false currently
+- `Auth.clearState(): void` - clear cached user/token
 
 ## Token System (tokens.ts)
 
@@ -215,8 +215,8 @@ authenticated and CSRF protected.
 ### Gate Functions
 - `define<T>(ability: string, callback: GateCallback<T>): void`
 - `policy(model: string | { name }, policyClass: new () => Policy): void`
-- `before(callback): void` — run before any gate check
-- `after(callback): void` — run after any gate check
+- `before(callback): void` - run before any gate check
+- `after(callback): void` - run after any gate check
 - `allows(ability, user, ...args): Promise<boolean>`
 - `denies(ability, user, ...args): Promise<boolean>`
 - `can(ability, user, ...args): Promise<boolean>`
@@ -224,21 +224,21 @@ authenticated and CSRF protected.
 - `any(abilities[], user, ...args): Promise<boolean>`
 - `all(abilities[], user, ...args): Promise<boolean>`
 - `none(abilities[], user, ...args): Promise<boolean>`
-- `authorize(ability, user, ...args): Promise<AuthorizationResponse>` — throws on deny
-- `inspect(ability, user, ...args): Promise<AuthorizationResponse>` — never throws
+- `authorize(ability, user, ...args): Promise<AuthorizationResponse>` - throws on deny
+- `inspect(ability, user, ...args): Promise<AuthorizationResponse>` - never throws
 - `has(ability): boolean`
 - `hasPolicy(model): boolean`
 - `abilities(): string[]`
 - `getPolicyFor<T>(model: T): Policy<T> | null`
-- `flush(): void` — clear all gates
+- `flush(): void` - clear all gates
 
-### Gate Facade — `Gate.define()`, `Gate.can()`, etc
+### Gate Facade - `Gate.define()`, `Gate.can()`, etc
 
 ### AuthorizationResponse Class
 - `static allow(message?): AuthorizationResponse`
 - `static deny(message?, code?): AuthorizationResponse`
 - `allowed(): boolean`, `denied(): boolean`
-- `authorize(): void` — throws AuthorizationException if denied
+- `authorize(): void` - throws AuthorizationException if denied
 
 ### Policy Interface
 Methods: `before?`, `viewAny?`, `view?`, `create?`, `update?`, `delete?`, `restore?`, `forceDelete?`
@@ -287,7 +287,7 @@ Protected helpers: `allow(message?)`, `deny(message?, code?)`, `denyIf(condition
 - `Rbac.syncRolePermissions(roleName, permissionNames[], guardName?): Promise<void>`
 
 ### withRbac Mixin
-`withRbac(user)` — adds `hasRole()`, `hasPermission()`, `assignRole()`, `givePermission()`, etc. to any user object
+`withRbac(user)` - adds `hasRole()`, `hasPermission()`, `assignRole()`, `givePermission()`, etc. to any user object
 
 ### RBAC Types
 ```typescript
@@ -299,10 +299,10 @@ interface RbacStore { findRoleByName, createRole, deleteRole, getAllRoles, findP
 ## Session Auth (session-auth.ts)
 
 - `SessionAuth.login(email, password): Promise<{ user, sessionId }>`
-- `SessionAuth.logout(sessionId): void`
+- `SessionAuth.logout(sessionId): Promise<void>`
 - `SessionAuth.user(sessionId): Promise<UserModel | undefined>`
-- `SessionAuth.check(sessionId): boolean`
-- `SessionAuth.refresh(sessionId, ttlMs?): boolean`, rejects non-positive or non-finite TTLs without changing the session
+- `SessionAuth.check(sessionId): Promise<boolean>`
+- `SessionAuth.refresh(sessionId, ttlMs?): Promise<boolean>`, rejects non-positive or non-finite TTLs without changing the session
 
 Internal: database-backed `sessions` rows with expiry, optional IP/User-Agent fingerprint checks, transactional logout and refresh, and timing-safe password comparison with a dummy bcrypt hash. Sessions survive process restarts and are shared by workers through the configured database.
 
@@ -359,21 +359,27 @@ export const authMiddlewareHandler = {
 }
 ```
 
+
 ## Rate Limiter (rate-limiter.ts)
 
-```typescript
-class RateLimiter {
-  static MAX_ATTEMPTS = 5
-  static LOCKOUT_DURATION = 15 * 60 * 1000  // 15 minutes
-  static MAX_STORE_SIZE = 10_000
-  static EVICTION_INTERVAL = 5 * 60 * 1000  // 5 minutes
+Every check/update is async, including when the backing store is memory:
 
-  static isRateLimited(email): boolean
-  static recordFailedAttempt(email): void
-  static resetAttempts(email): void
-  static validateAttempt(email): void  // throws HttpError 429
-}
-```
+~~~ts
+import { RateLimiter } from '@stacksjs/auth'
+
+await RateLimiter.validateAttempt(email)
+await RateLimiter.recordFailedAttempt(email)
+const locked = await RateLimiter.isRateLimited(email)
+await RateLimiter.resetAttempts(email)
+~~~
+
+Five failed attempts lock an email for fifteen minutes. The configured store
+selects atomic Redis when the cache config selects Redis, otherwise process-local
+memory. `useSharedStore(options?)` explicitly chooses Redis;
+`useStore(custom)` installs a store with atomic recordFailedAttempt;
+`useMemoryStore()` and `useConfiguredStore()` reset that choice.
+Shared deployments need a shared atomic store. Partial counters expire, and
+cleanup thresholds are not hard capacities that evict live lockouts.
 
 ## Authorizable Mixin (authorizable.ts)
 
@@ -390,7 +396,8 @@ await authUser.authorize('edit-post', post)  // throws if denied
 
 ### config/auth.ts
 ```typescript
-{
+const tokenExpiry = 60 * 60 * 1000
+const authOptions = {
   default: 'api',
   guards: { api: { driver: 'token', provider: 'users' } },
   providers: { users: { driver: 'database', table: 'users' } },
@@ -399,8 +406,8 @@ await authUser.authorize('edit-post', post)  // throws if denied
   tokenExpiry: 60 * 60 * 1000, // milliseconds, 1 hour
   refreshTokenExpiry: 30 * 24 * 60 * 60 * 1000, // milliseconds
   browserSession: {
-    baselineLifetime: 7 * 24 * 60 * 60 * 1000, // absolute milliseconds
-    rememberedLifetime: 30 * 24 * 60 * 60 * 1000,
+    baselineLifetime: tokenExpiry, // absolute milliseconds, default one hour
+    rememberedLifetime: tokenExpiry, // customize explicitly for a longer remembered tier
     withRefreshToken: false, // fixed browser lifetime, no unused refresh token
     logoutRedirect: '/login?logged_out=1', // local path for HTML logout only
   },
@@ -451,7 +458,7 @@ Retain application-specific onboarding and event hooks.
 Auth-relevant aliases: `auth`, `guest`, `verified` (EnsureEmailIsVerified),
 `abilities`, `can`, `role`, `permission`, `team`, `signed`, `throttle`. The
 environment aliases are `env`, `env:local`, `env:development` / `env:dev`,
-`env:staging`, `env:production` / `env:prod` — with a COLON, not a dot; an
+`env:staging`, `env:production` / `env:prod` - with a COLON, not a dot; an
 earlier version of this list wrote `env.local` and those never existed. See
 `stacks-middleware` for the full set and for the `!alias` and `alias:params`
 forms.
@@ -474,7 +481,7 @@ export default defineGates({
 ```
 
 Registered at boot by `initializeAuthorization()`, from
-`injectGlobalAutoImports()` — the one place every entry point comes through, so
+`injectGlobalAutoImports()` - the one place every entry point comes through, so
 HTTP, `buddy seed`, a scheduled job and a console command all get the same
 gates.
 
@@ -518,17 +525,17 @@ traits: {
 - New personal and delegated access tokens are opaque 40-byte hex bearers hashed at rest. Legacy `jwt:encryptedId` bearers remain readable during migration.
 - Token validation hashes the bearer directly. Do not parse or expose token contents, and never log plaintext bearer values.
 - Bearer tokens come from the `Authorization: Bearer <token>` header
-- `Auth.user()` internally calls `getBearerToken()` and resolves the bearer through a hashed token lookup
-- RBAC has an internal cache (`userRoles`, `userPermissions`, `rolePermissions`) — call `Rbac.flushCache()` after direct DB changes
+- Auth resolves the parsed bearer first and falls back to the configured token cookie; request user state is scoped rather than shared globally
+- RBAC has an internal cache (`userRoles`, `userPermissions`, `rolePermissions`) - call `Rbac.flushCache()` after direct DB changes
 - `syncRoles()` and `syncPermissions()` are guard-scoped replacements: they preserve assignments belonging to other guards
-- Gate `before` callbacks can short-circuit — return `true` to allow, `null` to continue checking
-- An ability with no gate and no policy method **denies**. That is the right default, and it means a gate that was never registered is indistinguishable from one that says no — which is how `initializeAuthorization()` went unnoticed while nothing called it
+- Gate `before` callbacks can short-circuit - return `true` to allow, `null` to continue checking
+- An ability with no gate and no policy method **denies**. That is the right default, and it means a gate that was never registered is indistinguishable from one that says no - which is how `initializeAuthorization()` went unnoticed while nothing called it
 - `allows()` and friends take `Ability`, which is open (`GateName | PolicyAbility | (string & {})`). A `/can/:ability` route passes an ability straight through, so narrowing it would reject correct code; the union is for completions
 - `withRbac()` and `withAuthorization()` return new objects with methods mixed in
-- The `RbacStore` interface must be implemented and set via `Rbac.setStore()` for RBAC to work
+- RBAC lazily creates its SQL store. `Rbac.setStore()` is the optional override for a custom store; apply the role/permission model migrations before using it
 - Password reset tokens expire after 60 minutes by default
-- Default token abilities are `['*']` — wildcard access
-- Token expiry defaults to 30 days
+- Default token abilities are `['*']` - wildcard access
+- Token expiry defaults to one hour; inspect config/auth.ts and browserSession before choosing a lifetime
 - Session auth uses timing-safe bcrypt comparison even for failed lookups (dummy hash prevents timing attacks)
 
 ## Build
@@ -536,3 +543,29 @@ traits: {
 ```bash
 cd storage/framework/core/auth && bun build.ts
 ```
+
+
+## Native account workflows
+
+Read [ACCOUNT-WORKFLOWS.md](ACCOUNT-WORKFLOWS.md) when implementing magic links,
+completed two-factor login, active teams, social account linking, role seeding,
+referrals, cookie authentication or session idle/fingerprint policy. These are
+native APIs with complete workflows, beyond the low-level TOTP/passkey helpers.
+
+## Provider and entrypoint boundaries
+
+Default auth routes require the selected auth route bundle. `feature('auth')`
+controls account-family model loading and does not itself mount login/register.
+Opaque access tokens, OAuth grants, token cookies and database session IDs are
+different credentials with different issuance and expiry rules.
+`Auth.guard()` currently returns Auth rather than providing independent
+guard implementations. `viaRemember()` is a compatibility false result;
+browserSession's remember choice is the actual cookie lifetime policy.
+
+Session and token user state are bound to the current request. Entry points
+install that scope; application code must not cache a user globally for later
+requests. Revocation-sensitive reads use the primary DB path. Retained evidence:
+`auth/tests/auth-middleware-entrypoints.test.ts`,
+`request-token.test.ts`, `session-read-routing.test.ts`,
+`rbac-default-store.test.ts` and `browser-session-policy.test.ts` under
+`storage/framework/core/`.

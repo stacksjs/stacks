@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import process from 'node:process'
 import { frameworkPath, join } from '@stacksjs/path'
@@ -115,6 +115,68 @@ describe('AI defaults', () => {
 
   it('ships the cursor rules the cursor provider links to', () => {
     expect(existsSync(frameworkPath('defaults/ide/cursor/rules'))).toBeTrue()
+  })
+})
+
+describe('bundled prose skills in a fresh app', () => {
+  const defaults = frameworkPath('defaults/ai')
+  const resources = [
+    'stacks-native/SKILL.md',
+    'stacks-native/CATALOG.md',
+    'stacks-native/CAPABILITIES.md',
+    'stacks-native/RECIPES.md',
+    'stacks-models/references/model-capabilities.md',
+    'stacks-forms/SKILL.md',
+    'stacks-humanizer/SKILL.md',
+    'stacks-humanizer/references/patterns.md',
+    'stacks-humanizer/LICENSE',
+    'stacks-humanizer/NOTICE.md',
+    'stacks-unslop/SKILL.md',
+    'stacks-unslop/references/core-contract.md',
+    'stacks-unslop/references/patterns.md',
+    'stacks-unslop/references/voice.md',
+    'stacks-unslop/references/presets.md',
+    'stacks-unslop/NOTICE.md',
+    'stacks-marketing/SKILL.md',
+    'stacks-marketing/CATALOG.md',
+    'stacks-marketing/WORKFLOW.md',
+    'stacks-marketing-analytics/PLAYBOOK.md',
+    'stacks-marketing-ad-creative/assets/creative-review-template.html',
+    'stacks-marketing-council/references/advisors/seth-godin.md',
+    'stacks-implement-spec/PLAYBOOK.md',
+    'stacks-to-tickets/PLAYBOOK.md',
+    'stacks-flow/ENGINEERING.md',
+    'stacks-flow/upstream-skills.json',
+  ]
+
+  it.each([false, true])('installs complete skill directories with copy=%s', (copy) => {
+    const scratch = mkdtempSync(join(tmpdir(), 'stacks-prose-skills-'))
+    const previousCwd = process.cwd()
+
+    try {
+      cpSync(defaults, join(scratch, 'storage/framework/defaults/ai'), { recursive: true })
+      process.chdir(scratch)
+      setupAiProvider('claude', { copy })
+
+      const agents = readFileSync(join(scratch, 'AGENTS.md'), 'utf8')
+      for (const name of ['stacks-humanizer', 'stacks-unslop']) {
+        expect(agents).toContain(`\`${name}\``)
+        expect(lstatSync(join(scratch, '.claude/skills', name)).isSymbolicLink()).toBe(!copy)
+      }
+
+      for (const resource of resources) {
+        expect(readFileSync(join(scratch, '.claude/skills', resource), 'utf8'))
+          .toBe(readFileSync(join(defaults, 'skills', resource), 'utf8'))
+      }
+      expect(readFileSync(join(scratch, '.claude/skills/stacks-implement-spec/../stacks-flow/ENGINEERING.md'), 'utf8'))
+        .toContain('tracer bullet')
+      expect(readFileSync(join(scratch, '.claude/skills/stacks-marketing-analytics/../stacks-marketing/WORKFLOW.md'), 'utf8'))
+        .toContain('stacks-analytics')
+    }
+    finally {
+      process.chdir(previousCwd)
+      rmSync(scratch, { recursive: true, force: true })
+    }
   })
 })
 

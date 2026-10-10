@@ -1,10 +1,10 @@
 ---
 title: Skills
-description: "The 115 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
+description: "The 203 agent skills Stacks ships, what each one is for, and how to wire them into your AI coding agent."
 ---
 # Skills
 
-Stacks ships **115 agent skills**. Each one is a `SKILL.md` that documents part
+Stacks ships **203 agent skills**. Each one is a `SKILL.md` that documents part
 of the framework, or part of the craft of working in it, authoritatively enough
 that an agent reads it instead of guessing at an API.
 
@@ -35,20 +35,29 @@ seam, how to debug without guessing, how to review a diff on two axes, when to
 hand a session off. [Flow](/skills/craft/flow) is the router over them, and
 [Flows](/skills/flows) walks the routes they form.
 
+## Native discovery
+
+[Native capabilities](/skills/platform/native) maps all current core packages
+to their skill and source entrypoint. Its generated driver reference states
+support evidence and limitations. CI runs `docs:native-skills:check` so a new
+package cannot silently lack guidance.
+
 ## Sections
 
 | Section | What is in it |
 |---|---|
-| [Engineering craft](/skills/craft) | How the work happens: planning, building, debugging, reviewing, handing off. 18 skills. |
-| [Data layer](/skills/data) | Models, the ORM, queries, migrations, seeding and search. 7 skills. |
+| [Engineering craft](/skills/craft) | How the work happens: planning, building, debugging, reviewing, handing off, and editing prose. 34 skills. |
+| [Marketing](/skills/marketing) | Positioning, channels, conversion, retention, and measurement. 51 skills. |
+| [Productivity and writing](/skills/productivity) | Writing, learning, workflow design, and coordination. 8 skills. |
+| [Data layer](/skills/data) | Models, the ORM, queries, migrations, seeding and search. 8 skills. |
 | [Backend and API](/skills/backend) | Routes, actions, auth, jobs, events, caching and storage. 23 skills. |
-| [Messaging](/skills/messaging) | Email, SMS, push, chat, notifications and calendars. 7 skills. |
-| [Frontend](/skills/frontend) | stx templates, Crosswind, composables, desktop and mobile. 7 skills. |
+| [Messaging](/skills/messaging) | Email, SMS, push, chat, notifications and calendars. 8 skills. |
+| [Frontend](/skills/frontend) | stx templates, Crosswind, composables, desktop and mobile. 9 skills. |
 | [Design](/skills/design) | Premium UI work, aesthetic presets, image-first pipelines and diagrams. 12 skills. |
-| [Domain packages](/skills/domain) | Commerce, payments, CMS, dashboard and i18n. 5 skills. |
+| [Domain packages](/skills/domain) | Commerce, payments, CMS, dashboard and i18n. 7 skills. |
 | [Toolchain](/skills/toolchain) | The buddy CLI, building, serving, deploying, testing and linting. 20 skills. |
-| [Platform](/skills/platform) | Config, env, dependencies, auto-imports, paths and types. 9 skills. |
-| [Utilities](/skills/utilities) | Strings, arrays, collections, objects, dates and slugs. 7 skills. |
+| [Platform](/skills/platform) | Config, env, dependencies, auto-imports, paths and types. 13 skills. |
+| [Utilities](/skills/utilities) | Strings, arrays, collections, objects, dates and slugs. 10 skills. |
 
 ## Why they are files
 
@@ -74,3 +83,15 @@ since which agent you use is a personal choice.
 Several of the engineering craft skills are adapted from
 [mattpocock/skills](https://github.com/mattpocock/skills), MIT licensed, with
 credit in each `SKILL.md`. The originals are worth reading on their own.
+
+[Humanizer](/skills/craft/humanizer) adapts
+[blader/humanizer](https://github.com/blader/humanizer), and
+[Unslop](/skills/craft/unslop) adapts
+[theclaymethod/unslop](https://github.com/theclaymethod/unslop). Their bundled
+notices record upstream revisions, license details, and the Stacks adaptations.
+
+The marketing collection ports all 50 skills from
+[coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills).
+The Matt Pocock refresh accounts for all 38 skills in its recorded snapshot,
+including merged workflows and Stacks-native tooling substitutes. See
+[Upstream ports](/skills/upstream) for the source revisions and mapping.

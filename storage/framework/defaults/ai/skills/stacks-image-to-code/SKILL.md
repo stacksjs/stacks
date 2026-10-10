@@ -310,7 +310,10 @@ Crosswind utility syntax is identical to Tailwind: `grid grid-cols-1 md:grid-col
 
 One system per project = the Stacks stack. Do NOT tell the user to `npm install` Fluent, Carbon, Material, Radix, or shadcn into a Stacks app.
 
-- **Stacks UI** (`@stacksjs/ui`): headless components (Combobox, Dialog/Modal, Menu, Tabs, Switch, RadioGroup, Popover, Disclosure, Transition) plus Craft native components (`craft-button`, `craft-text-input`, `craft-textarea`, `craft-checkbox`, `craft-select`, `craft-modal`).
+- **Stacks UI** (`@stacksjs/ui/components`): installed typed component exports;
+  STX component tags resolve through the configured plugin. Use native mobile
+  or desktop components through their host-specific bridge guidance rather than
+  assuming a tag proves a native implementation exists.
 - Style with Crosswind, icon with Iconify.
 
 Keep the honesty principle: use the real official thing, do not hand-recreate tokens. In Stacks the real official thing is Stacks UI + Crosswind. Aesthetic directions (glassmorphism, bento, brutalism, editorial, aurora) are still built with native CSS + Crosswind. See **stacks-ui**.
@@ -329,7 +332,9 @@ Use standard `<img>` with explicit `width`/`height` to reserve space and avoid C
 
 ### 12.H Dark mode
 
-Crosswind `dark:` variant (`bg-white dark:bg-neutral-900`). Runtime toggle via `useColorMode()` / `useDark()`. Config in `config/ui.ts`.
+Crosswind `dark:` variant (`bg-white dark:bg-neutral-900`). Runtime toggle via
+`useColorMode()` / `useDark()`. Utility theme config lives in `config/css.ts`;
+STX topology lives in `config/ui.ts`.
 
 ### 12.I Motion: CSS + composables (no GSAP / Motion / Framer)
 
@@ -338,15 +343,15 @@ Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `fra
 - **Transitions / hover / micro-interactions:** Crosswind `transition`, `duration-*`, `ease-*`, `hover:` / `active:` states, and CSS keyframes in `<style>`. Animate ONLY `transform` and `opacity`.
 - **Scroll-reveal / enter-on-scroll:** composables `useIntersectionObserver(target, cb, opts)`, `useElementVisibility(target)`, `useLazyLoad`, `useInfiniteScroll`. Toggle a Crosswind class when visible. This replaces Motion `whileInView` and simple scroll triggers.
 - **Scroll-driven / pinned / horizontal-pan:** prefer CSS scroll-driven animations (`animation-timeline: view()` / `scroll()`). Use `position: sticky` + `top: 0` for sticky-stack layouts. This replaces GSAP ScrollTrigger sticky-stack and horizontal-pan.
-- **Pointer / magnetic / parallax:** `useMouse()`, mouse-in-element style tracking, and `useDeviceOrientation()` for parallax. Drive a CSS custom property (`el.style.setProperty('--x', ...)` inside an `effect`), never signal state per frame.
+- **Pointer / magnetic / parallax:** `useMouse()`, mouse-in-element style tracking, and `useDeviceOrientation()` for parallax. Drive a CSS custom property (`el.style.setProperty('--x', ...)` in its subscription callback), never signal state per frame.
 - **Reduced motion (mandatory when MOTION_INTENSITY > 3):** gate with CSS `@media (prefers-reduced-motion: reduce)` AND/OR `useMediaQuery('(prefers-reduced-motion: reduce)')`.
-- **Sizing:** `useResizeObserver()`, `useWindow()`.
+- **Sizing:** `useResizeObserver()`, `useWindowSize()`.
 
 FORBIDDEN (hard bans): `window.addEventListener('scroll', ...)`, `requestAnimationFrame` loops that write signal state every frame for scroll, and `var` / `document.*` / `window.*` in stx scripts. Use `useEventListener`, composables, and CSS scroll-driven animations instead.
 
 **Allowed composables (do not invent others):**
 Reactive: `state` `derived` `effect` `computed` `watch` `useRef` `useToggle` `useCounter`.
-UI/scroll/motion: `useIntersectionObserver` `useElementVisibility` `useLazyLoad` `useInfiniteScroll` `useMouse` `useDeviceOrientation` `useResizeObserver` `useWindow` `useMediaQuery` `useColorMode` `useDark` `useEventListener` `useKeyboard` `useClickOutside` `useFullscreen` `useIdle`.
+UI/scroll/motion: `useIntersectionObserver` `useElementVisibility` `useLazyLoad` `useInfiniteScroll` `useMouse` `useDeviceOrientation` `useResizeObserver` `useWindowSize` `useMediaQuery` `useColorMode` `useDark` `useEventListener` `useKeyboard` `useClickOutside` `useFullscreen` `useIdle`.
 Data/util: `useFetch` `useQuery` `useMutation` `useStorage`/`useLocalStorage`/`useSessionStorage` `useCookie` `useDebounce`/`useDebouncedValue` `useThrottle` `useInterval` `useTimeout` `useAsync` `useHead` `useSeoMeta` `useRoute`/`useRouter` `useWebSocket`/`useChannel`.
 
 If the design needs something not in this list, use plain CSS or a standard DOM API inside `<script client>` (still no bare `window.*` / `document.*`; use `useEventListener` / composables), or defer to **stacks-composables**.
@@ -359,7 +364,7 @@ Build the matching stx components with Crosswind utilities. Reference patterns:
 - **Sticky-stack cards:** each card `class="sticky top-0"` inside a tall container; offset with incremental `top` values via inline style or Crosswind arbitrary `top-[...]`. No GSAP pin.
 - **Scroll-reveal float-up:** target starts `class="opacity-0 duration-700 ease-out transition translate-y-6"`; a `useIntersectionObserver` toggles `opacity-100 translate-y-0` when visible.
 - **Horizontal-pan strip:** a track with `class="flex gap-8"` inside `overflow-x-auto`, or CSS scroll-driven `animation-timeline: scroll()` for auto-pan. No GSAP.
-- **Magnetic button / parallax:** in an `effect`, read `useMouse()` and set `--x` / `--y` custom properties the CSS `transform` consumes. Never per-frame signal writes.
+- **Magnetic button / parallax:** in its subscription callback, read `useMouse()` and set `--x` / `--y` custom properties the CSS `transform` consumes. Never per-frame signal writes.
 - **Glass panel:** `class="bg-white/60 dark:bg-neutral-900/50 border border-white/20 backdrop-blur-md"`. Use sparingly and with reason.
 
 Do not leave any React/JSX/`motion`/`gsap`/`next` in the implementation.

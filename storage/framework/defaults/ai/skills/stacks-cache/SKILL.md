@@ -8,118 +8,78 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Cache
 
-## Key Paths
-- Core package: `storage/framework/core/cache/src/`
-- Configuration: `config/cache.ts`
-- Cache storage: `storage/framework/cache/`
+Use `@stacksjs/cache` for cache-aside reads, explicit TTLs and invalidation.
+Read `config/cache.ts` and the selected factory before assuming shared state.
 
-## Cache API (StacksCache)
+## API and TTL
 
-```typescript
-import { cache, memory } from '@stacksjs/cache'
+~~~ts
+import { cache } from '@stacksjs/cache'
 
-// Get/Set
-await cache.get<string>('key')                    // T | undefined
-await cache.set('key', 'value', 3600)             // TTL in seconds
-await cache.setForever('key', 'value')            // no expiry
-await cache.mget<string>(['key1', 'key2'])        // T[]
-await cache.mset([{ key: 'k1', value: 'v1', ttl: 60 }, ...])
+await cache.set('product:42', { name: 'Widget' }, 60)
+const product = await cache.get<{ name: string }>('product:42')
+const products = await cache.mget<{ name: string }>(['product:42', 'product:43'])
+// mget returns a record keyed by cache key, not an array.
+~~~
 
-// Cache-aside pattern
-const value = await cache.getOrSet('expensive-key', async () => {
-  return await computeExpensiveValue()
-}, 3600)
+- TTL is in seconds. Zero means forever; omitted TTL uses the factory's
+  stdTTL, which defaults to zero. The exported cache/memory singleton is a
+  memory instance with no default expiry. Config's ttl value does not silently
+  turn that singleton into a configured Redis instance.
+- `setForever` stores without expiry; `getTtl` reads remaining TTL and
+  `ttl(key, seconds)` updates it. Missing values are undefined.
+- `mset([{ key, value, ttl? }])` writes entries. `del(keyOrKeys)` and
+  `deleteMany(keys)` return counts; `remove(key)` returns void.
+- `has/missing/take`, `keys(pattern?)`, `getStats`,
+  `clear/flush` and `close/disconnect` provide the remaining facade API.
+  Consult the driver before relying on take for a distributed atomic claim.
 
-// Delete
-await cache.del('key')
-await cache.del(['key1', 'key2'])
-await cache.deleteMany(['key1', 'key2'])
-await cache.remove('key')
+## Cache-aside and concurrent misses
 
-// Existence
-await cache.has('key')          // boolean
-await cache.missing('key')     // boolean
+`getOrSet(key, fetcher, ttl?)` computes and stores only on a miss.
+`remember(key, ttl, callback)` is its Laravel-style argument order;
+`rememberForever(key, callback)` uses TTL zero.
 
-// Take (get and delete)
-const value = await cache.take<string>('key')
+Concurrent misses share a promise within one StacksCache instance. Its bounded
+inflight timeout rejects every joined caller and frees that slot for retry.
+The underlying fetcher continues running after timeout; this is not cancellation
+or a lock shared across worker processes. For a distributed lock, inspect the
+re-exported CacheLock contract and selected driver separately.
 
-// TTL management
-await cache.getTtl('key')              // remaining TTL
-await cache.ttl('key', 7200)           // update TTL
+## Drivers
 
-// Clear
-await cache.clear()
-await cache.flush()
+`createMemoryCache(options?)` accepts stdTTL, checkPeriod, maxKeys, useClones
+and prefix. Clone-on-read/write is enabled by default.
+`createRedisCache(options?)` accepts URL or host/port/credentials/database/TLS
+plus TTL/prefix options. `createSingleStoreCache(options?)` exposes the
+experimental SQL-backed cache. `createCache(driver, options?)` selects one
+of memory, redis or singlestore.
 
-// Stats
-const stats = await cache.getStats()
-// { hits, misses, keys, size, hitRate }
+The `cache` export is the same memory instance as `memory`. Use an explicit
+Redis instance for application data that must be shared across processes.
+The capability registry proves memory and a versioned Redis core/TTL contract;
+TLS/authenticated Redis deployments need separate provider evidence. SingleStore
+has no dedicated service conformance matrix. Source:
+`storage/framework/core/config/src/capabilities.ts`.
 
-// Keys
-const keys = await cache.keys('user:*')  // pattern matching
+## Tag invalidation and advanced patterns
 
-// Cleanup
-await cache.close()
-await cache.disconnect()
-```
+`StacksCache.tags(['products', 'tenant-7'])` creates a TaggedCache supporting
+put/set/setForever, remember/rememberForever, get/has and flush. Its tag index
+uses the same backend; process persistence depends on that backend. Tags label
+shared keys rather than granting tenant authorization. Construct an explicit
+tenant key/prefix as well when isolation matters.
 
-## Factory Functions
+The package also re-exports CacheAsidePattern, MultiLevelPattern,
+RefreshAheadPattern, WriteThroughPattern, BatchOperations, CacheInvalidation,
+CacheLock, CircuitBreaker, memoize and RateLimiter from ts-cache. Read the
+installed upstream types before using these advanced classes; their signatures
+are distinct from StacksCache and auth's RateLimiter.
 
-```typescript
-import { createMemoryCache, createRedisCache, createCache } from '@stacksjs/cache'
+## Source and verification
 
-const memCache = createMemoryCache({
-  stdTTL: 3600,       // default TTL (seconds)
-  checkPeriod: 120,   // eviction check interval
-  maxKeys: -1,        // -1 = unlimited
-  useClones: true,    // clone on get/set
-  prefix: 'app:'      // key prefix
-})
-
-const redisCache = createRedisCache({
-  url: 'redis://localhost:6379',
-  // or individual:
-  host: 'localhost',
-  port: 6379,
-  username: undefined,
-  password: undefined,
-  database: 0,
-  tls: false,
-  stdTTL: 3600,
-  prefix: 'app:'
-})
-
-// Auto-detect from config
-const cache = createCache('memory')
-const cache = createCache('redis', { host: 'localhost' })
-```
-
-## config/cache.ts
-```typescript
-{
-  driver: 'memory',     // 'memory' | 'redis'
-  prefix: 'stacks',
-  ttl: 3600,            // 1 hour default
-  maxKeys: -1,          // unlimited
-  useClones: true,
-  drivers: {
-    redis: { host: 'localhost', port: 6379 },
-    memory: {}
-  }
-}
-```
-
-## Default Instance
-- `cache` — default memory cache (pre-configured)
-- `memory` — alias for `cache`
-
-## Gotchas
-- Default driver is `memory` — data lost on restart
-- Redis driver requires a running Redis server
-- `getOrSet()` is the cache-aside pattern — fetches only on miss
-- `useClones: true` means mutations to retrieved objects don't affect cache
-- `take()` atomically gets and deletes — useful for one-time tokens
-- Cache stats track hits, misses, and hit rate — useful for tuning
-- `keys()` supports glob patterns for key listing
-- Framework caches (auto-imports, discovered packages) are in `storage/framework/cache/`
-- Use `buddy clean` or `buddy fresh` to clear framework caches
+`storage/framework/core/cache/src/drivers/index.ts` is the facade/factory
+contract. `drivers/singlestore.ts` owns the experimental backend.
+Retained tests: `ttl.test.ts`, `getorset-timeout.test.ts`,
+`tagged-flush-race.test.ts`, `redis-contract.test.ts` and
+`cache-factory.test.ts` under `core/cache/tests/`.

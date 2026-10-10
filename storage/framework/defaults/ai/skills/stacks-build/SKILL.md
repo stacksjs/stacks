@@ -20,7 +20,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Source Files
 ```
 build/src/
-├── index.ts              # intro() and outro() — build logging and timing
+├── index.ts              # intro() and outro() - build logging and timing
 ├── web-types.ts          # Web types generation for IDE support
 └── build.ts              # Package build config (Bun.build)
 
@@ -163,7 +163,7 @@ generated and gitignored.
 ### Release flow
 
 `buddy release` runs `generate/lib-entries`, which stages sources and writes
-each manifest without compiling — so a broken library config fails before a tag
+each manifest without compiling - so a broken library config fails before a tag
 exists rather than after. Versions follow the project version unless a package
 pins its own, which is why the build (not the generate) is what CI runs after
 the bump, and `buddy libs:publish` after that.
@@ -214,24 +214,40 @@ enum Action {
 | Tool | Usage |
 |------|-------|
 | **Bun** | Primary bundler (`target: 'bun'`, `format: 'esm'`) |
-| **Vite** | Component library builds |
+| **stx** | Component library builds |
 | **bun-plugin-dtsx** | TypeScript declaration generation |
 | **Docker** | Server containerization |
 | **@babel/traverse** | AST traversal for export cleanup |
 
 ## Gotchas
-- **Two result formats** — `outro()` must handle both Bun.build and esbuild formats
-- **Server build mutates import paths** — stage 5 rewrites references in compiled output
-- **Core build is sequential** — packages built one at a time, failures collected and reported
-- **Docker build requires cloud config** — only builds if cloud deployment is enabled
+- **Two result formats** - `outro()` must handle both Bun.build and esbuild formats
+- **Server build mutates import paths** - stage 5 rewrites references in compiled output
+- **Core build is sequential** - packages built one at a time, failures collected and reported
+- **Docker build requires cloud config** - only builds if cloud deployment is enabled
 - **Component libraries compile through stx**, not Vite. `buildComponentLibrary`
   emits its own index and each generated component registers its custom element
   on import, which is why a `web-components` package needs no entry file of its
-  own — it publishes `bundle.js` instead of `index.js`.
+  own - it publishes `bundle.js` instead of `index.js`.
 - **A library barrel is generated with `.ts` specifiers on purpose.**
   `transpilePackage` rewrites relative `.ts` to `.js` on the way into `dist`. An
   extensionless specifier survives as-is and only resolves under Bun, so the
   package installs cleanly and fails on first import from Node or Vite.
-- **`build:stacks` builds CLI first** — Buddy binary compiled before core packages
-- **Server build cleans aggressively** — deletes app, config, dist, docs, storage before rebuild
-- **The build package has @babel deps** — uses Babel for AST traversal during export cleanup
+- **`build:stacks` builds CLI first** - Buddy binary compiled before core packages
+- **Server build cleans aggressively** - deletes app, config, dist, docs, storage before rebuild
+- **The build package has @babel deps** - uses Babel for AST traversal during export cleanup
+
+
+## Package build contracts
+
+`@stacksjs/build` exports `transpilePackage` and
+`frameworkExternal(extras?)` alongside intro/outro. Inspect a neighboring
+core build.ts before configuring declaration roots or external dependencies;
+the source example is a pattern, not a universal package manifest. Type-only
+dependencies that escape the package degrade consumers even when local paths
+resolve.
+
+`validateDeclarations(dir)` and `validateRuntimeExports(dir)` are native
+checks used by the build contract. A type declaration export without a matching
+runtime file is a package failure, not a successful build. The current public
+implementation is `storage/framework/core/build/src/index.ts`. Use Bun/TS
+for supporting build scripts and pickier for lint.

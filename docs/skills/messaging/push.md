@@ -1,33 +1,18 @@
 ---
 title: "Push skill"
-description: "Use when implementing push notifications in Stacks."
+description: "Use when implementing push notifications in Stacks - sending via Expo Push Service or Firebase Cloud Messaging (FCM v1 API), configuring push drivers, batch sending, multicast, topic subscriptions, push notification payloads, token validation, or receipt checking. Covers @stacksjs/push."
 ---
 # Push
 
-`stacks-push` · Messaging · model-invoked
+`stacks-push` · Native Stacks · model-invoked
 
-Push notifications through Expo or Firebase Cloud Messaging: payloads, batch and
-multicast sending, topic subscriptions, token validation and receipt checking.
+Use when implementing push notifications in Stacks - sending via Expo Push Service or Firebase Cloud Messaging (FCM v1 API), configuring push drivers, batch sending, multicast, topic subscriptions, push notification payloads, token validation, or receipt checking. Covers @stacksjs/push.
 
-## When to reach for it
-
-- Sending via Expo Push Service
-- Firebase Cloud Messaging (FCM legacy and v1 APIs)
-- Configuring push drivers
-- Batch sending
-- Multicast
-- Topic subscriptions
-- Push notification payloads
-- Token validation
-- Receipt checking
-
-## Covers
-
-`@stacksjs/push`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -41,21 +26,18 @@ The sections an agent reads once the skill loads.
 - Usage Examples
 - Dependencies
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/push/src/`
-- Types: `storage/framework/core/types/src/push.ts`
+- Browser Web Push
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-push
 ```
 
 Source: [`stacks-push/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-push/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-push/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-push/SKILL.md`. See [Using skills](/skills/using).

@@ -1,32 +1,18 @@
 ---
 title: "API skill"
-description: "Use when building, modifying, or debugging API endpoints in a Stacks application."
+description: "Use when building, modifying, or debugging API endpoints in a Stacks application - defining routes, handling requests, API middleware, working with the API server, HTTP client (fetcher), API resources, or OpenAPI generation. Covers both @stacksjs/api utilities and the stacks-api server implementation."
 ---
 # API
 
-`stacks-api` · Backend and API · model-invoked
+`stacks-api` · Native Stacks · model-invoked
 
-Everything about the API surface: defining endpoints, handling requests and
-responses, API middleware, the outbound HTTP client, API resources, and OpenAPI
-generation. Covers both the utilities and the server that runs them.
+Use when building, modifying, or debugging API endpoints in a Stacks application - defining routes, handling requests, API middleware, working with the API server, HTTP client (fetcher), API resources, or OpenAPI generation. Covers both @stacksjs/api utilities and the stacks-api server implementation.
 
-## When to reach for it
-
-- Defining routes
-- Handling requests
-- API middleware
-- Working with the API server
-- HTTP client (fetcher)
-- API resources
-- OpenAPI generation
-
-## Covers
-
-both @stacksjs/api utilities, stacks-api server implementation.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Source Files
@@ -49,35 +35,16 @@ The sections an agent reads once the skill loads.
 - CLI Commands
 - Gotchas
 
-## Where the code lives
-
-- Core utilities (package): `storage/framework/core/api/src/`
-- API server: `storage/framework/api/`
-- Router package: `storage/framework/core/router/src/`
-- Route definitions: `routes/`
-- Route registry: `app/Routes.ts` (re-exports `storage/framework/defaults/app/Routes.ts`)
-- Port configuration: `config/ports.ts`
-- Generated OpenAPI spec: `storage/framework/api/openapi.json`
-- Generated API types: `storage/framework/api/api-types.ts`
-- Actions directory: `app/Actions/`
-- Controllers directory: `app/Controllers/`
-- Middleware directory: `app/Middleware/`
-- Middleware alias map: `app/Middleware.ts`
-- Package: `@stacksjs/api`
-
-## Related skills
-
-- [Router](/skills/backend/router)
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-api
 ```
 
 Source: [`stacks-api/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-api/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-api/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-api/SKILL.md`. See [Using skills](/skills/using).

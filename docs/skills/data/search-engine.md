@@ -1,31 +1,18 @@
 ---
 title: "Search engine skill"
-description: "Use when implementing search in Stacks."
+description: "Use when implementing search in Stacks - full-text search with Meilisearch or Algolia backends, document indexing, search settings management, the useSearch model trait for automatic indexing, or search driver configuration. Covers @stacksjs/search-engine and config/search-engine.ts."
 ---
 # Search engine
 
-`stacks-search-engine` · Data layer · model-invoked
+`stacks-search-engine` · Native Stacks · model-invoked
 
-Full-text search over Meilisearch or Algolia, and the `useSearch` trait that keeps
-a model indexed without a line of glue code. Covers indexing, search settings and
-driver configuration.
+Use when implementing search in Stacks - full-text search with Meilisearch or Algolia backends, document indexing, search settings management, the useSearch model trait for automatic indexing, or search driver configuration. Covers @stacksjs/search-engine and config/search-engine.ts.
 
-## When to reach for it
-
-- Full-text search with Meilisearch
-- Algolia backends
-- Document indexing
-- Search settings management
-- The useSearch model trait for automatic indexing
-- Search driver configuration
-
-## Covers
-
-`@stacksjs/search-engine`, `config/search-engine.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Search Driver Factory
@@ -35,21 +22,18 @@ The sections an agent reads once the skill loads.
 - Driver Comparison
 - config/search-engine.ts
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/search-engine/src/`
-- Configuration: `config/search-engine.ts`
+- Readiness and driver boundaries
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-search-engine
 ```
 
 Source: [`stacks-search-engine/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-search-engine/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-search-engine/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-search-engine/SKILL.md`. See [Using skills](/skills/using).

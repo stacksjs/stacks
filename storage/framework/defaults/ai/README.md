@@ -38,7 +38,14 @@ reference for a task instead of guessing at an API.
 symlinks by default so skills stay in sync when you upgrade the framework. Pass
 `--copy` if you would rather edit them per project.
 
-### Two kinds
+### Collections
+
+`stacks-native` is the starting point for native implementation. Its catalog
+maps every core package to a subsystem skill and source entrypoint. Its recipes
+cover model-driven migrations and protected CRUD; its capability reference
+records current driver evidence and limitations. The framework repository
+regenerates these references with `buddy docs:native-skills` and verifies them
+in CI with `buddy docs:native-skills:check`.
 
 Most bundled skills are **subsystem reference**: one per part of the framework,
 model-invoked, found by the agent from the task at hand. A smaller set are
@@ -49,6 +56,37 @@ package it touches: `stacks-flow` routes between them, and `stacks-grilling`,
 `stacks-writing-for-agents` are the rest. Several are adapted from
 [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), with credit in
 each `SKILL.md`.
+
+The current Matt Pocock refresh includes specs, dependency-linked tickets,
+implementation graphs, triage, wayfinding, research, PR writing, and optional
+productivity workflows. All 38 upstream skills have a recorded destination or
+Stacks-native substitute. Hooks stay on pickier and bun-git-hooks; imported
+workflows do not commit, publish, or start schedules without authorization.
+
+**Marketing** is a third collection: `stacks-marketing` routes over all 50
+playbooks from [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills).
+Each keeps its supporting references, templates, and original MIT notice.
+Names are distinct from runtime package skills. The shared workflow explains
+product context, verified claims, Stacks implementation, and optional connectors.
+
+`skills/stacks-flow/upstream-skills.json` records both source revisions and
+every source-to-Stacks mapping. Shared engineering rules, marketing guidance,
+and source manifests live inside skill directories so both symlink and `--copy`
+agent setups retain them. The docs site has matching marketing, engineering,
+and productivity pages plus an upstream-porting report.
+
+The prose skills are `stacks-humanizer` for broad editorial rewrites and
+`stacks-unslop` for contextual audits, minimal edits, and voice matching. They
+adapt [blader/humanizer](https://github.com/blader/humanizer) and
+[theclaymethod/unslop](https://github.com/theclaymethod/unslop), with attribution
+and revision details in each skill's `NOTICE.md`. They require no runtime
+scripts or extra dependencies.
+
+The `@stacksjs/defaults` build includes this entire `ai/` directory. New
+package-based apps and framework upgrades receive the skills through the
+managed defaults sync; vendored apps carry them directly. `buddy setup:ai`
+then exposes them through the existing agent setup mechanism. No remote skill
+installation is needed.
 
 Each skill also has a page in the documentation site, under `docs/skills/`, one
 per skill with a landing page per section. `tests/unit/skills-docs-contract.test.ts`

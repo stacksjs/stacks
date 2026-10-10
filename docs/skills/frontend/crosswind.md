@@ -1,6 +1,6 @@
 ---
 title: "Crosswind skill"
-description: "Use when styling components in a Stacks application."
+description: "Use when styling Stacks templates with Crosswind utilities, configuring the ts-css engine, responsive or dark variants, theme tokens, shortcuts, safelists, or debugging generated CSS. Covers config/css.ts and @stacksjs/ts-css/engine."
 ---
 # Crosswind
 
@@ -62,3 +62,10 @@ matches, and you can also call it by name:
 Source: [`stacks-crosswind/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-crosswind/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-crosswind/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

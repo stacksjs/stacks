@@ -12,7 +12,7 @@ Local and cloud-deployed development tunnels for exposing local servers.
 
 ## Key Paths
 - Core package: `storage/framework/core/tunnel/src/`
-- External tool: ~/Code/Tools/localtunnels/
+- Runtime dependency: localtunnels; cloud helpers use localtunnels/cloud
 
 ## Local Tunnel (Quick)
 
@@ -20,7 +20,7 @@ Local and cloud-deployed development tunnels for exposing local servers.
 import { createLocalTunnel } from '@stacksjs/tunnel'
 
 const url = await createLocalTunnel(3000)
-// Returns: 'https://abc123.loca.lt'
+// Returns the URL assigned by the configured/shared relay
 console.log(`Share this URL: ${url}`)
 ```
 
@@ -31,18 +31,18 @@ import { localTunnel } from '@stacksjs/tunnel'
 
 const tunnel = await localTunnel({
   port: 3000,                          // required
-  server: 'https://localtunnel.me',   // tunnel server
+  server: 'https://api.localtunnel.dev',   // tunnel server
   subdomain: 'my-app',                // request specific subdomain
   verbose: true,
   timeout: 30000,                      // connection timeout (ms)
   maxReconnectAttempts: 5,
 
   // Event callbacks
-  onConnect: (url) => {
-    console.log(`Tunnel connected: ${url}`)
+  onConnect: (info) => {
+    console.log(`Tunnel connected: ${info.url}`)
   },
   onRequest: (info) => {
-    console.log(`Request: ${info.method} ${info.path}`)
+    console.log(`Request: ${info.method} ${info.url}`)
   },
   onResponse: (info) => {
     console.log(`Response: ${info.status}`)
@@ -50,8 +50,8 @@ const tunnel = await localTunnel({
   onError: (error) => {
     console.error('Tunnel error:', error)
   },
-  onReconnecting: (attempt) => {
-    console.log(`Reconnecting... attempt ${attempt}`)
+  onReconnecting: (info) => {
+    console.log(`Reconnecting... attempt ${info.attempt}`)
   }
 })
 
@@ -60,7 +60,7 @@ console.log(tunnel.url)          // public URL
 console.log(tunnel.subdomain)   // assigned subdomain
 
 // Close tunnel
-tunnel.close()
+await tunnel.close()
 ```
 
 ## Cloud Tunnel Deployment (AWS)
@@ -98,28 +98,38 @@ interface TunnelOptions {
   timeout?: number                    // connection timeout (ms)
   maxReconnectAttempts?: number       // retry limit
 
-  onConnect?: (url: string) => void
-  onRequest?: (info: RequestInfo) => void
-  onResponse?: (info: ResponseInfo) => void
+  onConnect?: (info: { url: string, subdomain: string }) => void
+  onRequest?: (info: { method: string, url: string }) => void
+  onResponse?: (info: { status: number, size: number, duration?: number }) => void
   onError?: (error: Error) => void
-  onReconnecting?: (attempt: number) => void
+  onReconnecting?: (info: { attempt: number, delay: number }) => void
 }
 
 interface LocalTunnel {
   url: string                         // public tunnel URL
   subdomain: string                   // assigned subdomain
   client: TunnelClient               // underlying client
-  close: () => void                   // close tunnel
+  close: () => Promise<void>                   // close tunnel
 }
 ```
 
 ## Gotchas
-- Tunnels are for development only — not production use
-- `createLocalTunnel()` is the simple version — returns just the URL
+- Tunnels are for development only - not production use
+- `createLocalTunnel()` is the simple version - returns just the URL
 - `localTunnel()` is the full version with callbacks and control
-- Cloud deployment creates an EC2 instance — incurs AWS costs
-- Tunnel URLs are temporary — change between sessions unless subdomain is configured
+- Cloud deployment creates an EC2 instance - incurs AWS costs
+- Tunnel URLs are temporary - change between sessions unless subdomain is configured
 - Ensure dev server is running before starting the tunnel
 - `maxReconnectAttempts` prevents infinite reconnection loops
-- The underlying tool is from ~/Code/Tools/localtunnels/
+- The underlying tool is the declared localtunnels dependency, not a machine-specific source checkout
 - `buddy share` wraps `createLocalTunnel()` for the configured dev port
+
+
+## Lifecycle and evidence
+
+The simple createLocalTunnel returns only a URL and discards the close handle;
+use localTunnel when the application needs deterministic cleanup. Relay defaults
+come from the installed localtunnels client. Starting a tunnel exposes the chosen
+service externally; choose that service within the task scope. Cloud provisioning
+and destruction are real provider mutations, separate from request callback tests.
+Source: core/tunnel/src/index.ts and tunnel.ts; evidence: core/tunnel/tests/tunnel.test.ts.

@@ -13,7 +13,7 @@ project `AGENTS.md`, a doc reached by a pointer. The packaging differs, the
 writing does not. The same levers make each one predictable, because the agent
 takes the same *process* every run rather than producing the same output.
 
-Stacks ships 115 skills and expects projects to add their own under
+Stacks ships 203 skills and expects projects to add their own under
 `app/Skills/`, so this is the skill that keeps that set from turning to sludge.
 The Stacks-specific mechanics (frontmatter, invocation, the override model,
 what `buddy setup:ai` does with the result) are in
@@ -216,3 +216,9 @@ positive target so attention lands on what to do.
 > Reach for `stacks-retro` after a session to find which documents actually
 > failed, and `stacks-flow` when the problem is that nobody remembers a skill
 > exists.
+
+## Upstream provenance
+
+The reviewed source revision and MIT notice are in [NOTICE.md](NOTICE.md) and
+[LICENSE](LICENSE). Read [the Stacks adaptation rules](../stacks-flow/ENGINEERING.md)
+with this workflow. Existing Stacks APIs and supporting helpers remain authoritative.

@@ -1,51 +1,38 @@
 ---
 title: "DateTime skill"
-description: "Use when working with dates and times in Stacks."
+description: "Use when working with dates and times in Stacks - the DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year), date parsing, format tokens, or timezone handling. Covers @stacksjs/datetime."
 ---
 # DateTime
 
-`stacks-datetime` · Utilities · model-invoked
+`stacks-datetime` · Native Stacks · model-invoked
 
-A Carbon-like `DateTime` class: add and subtract, compare, format, start and end
-of day, month and year, parsing and timezones.
+Use when working with dates and times in Stacks - the DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year), date parsing, format tokens, or timezone handling. Covers @stacksjs/datetime.
 
-## When to reach for it
-
-- The DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year)
-- Date parsing
-- Format tokens
-- Timezone handling
-
-## Covers
-
-`@stacksjs/datetime`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Architecture
 - DateTime Class (`now.ts`)
 - Standalone `format()` Function (`format.ts`)
 - Standalone `parse()` Function (`parse.ts`)
-- `now()` Helper
+- Named-zone instants and calendar months
+- Current-time helper example
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/datetime/src/`
-- Package: `@stacksjs/datetime`
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-datetime
 ```
 
 Source: [`stacks-datetime/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-datetime/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-datetime/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-datetime/SKILL.md`. See [Using skills](/skills/using).

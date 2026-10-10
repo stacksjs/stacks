@@ -30,6 +30,13 @@ logs on this machine. Work from what actually happened, not from a summary.
 
 ### Look for candidates in these categories
 
+Inspect the project's actual quality commands and CI before proposing a new
+check. An existing check that is unwired or broken is the finding to repair.
+Missing lint/typecheck/test enforcement in hooks and CI is a concrete gap.
+Mechanical mistakes belong in deterministic pickier rules or Bun checks;
+reserve prose standards for judgments tooling cannot enforce. Stay within the
+requested retrospective scope when proposing or applying improvements.
+
 - **Navigation.** How easy was it to find the right file? Are there hidden
   dependencies between files? Would a **navigation pointer** in `AGENTS.md`, or a
   `Key paths` block in the relevant skill, have shortened it? *Use when* the
@@ -72,6 +79,9 @@ candidate. "Add a contract test in `tests/unit/` that fails when
 Ask before writing any of them.
 
 ## Pass 2: the data
+
+Current upstream provenance is in [NOTICE.md](NOTICE.md). Read
+[the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
 
 Back the observations with git rather than impressions.
 

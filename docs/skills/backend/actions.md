@@ -1,57 +1,40 @@
 ---
 title: "Actions skill"
-description: "Use when working with Stacks server actions."
+description: "Use when working with Stacks server actions - creating actions in app/Actions/, auto-generated API actions from the useApi model trait, the 663 default framework actions (auth, dashboard, commerce, content, deployment, jobs), action request/response handling, or action registration. Covers @stacksjs/actions and storage/framework/defaults/app/Actions/."
 ---
 # Actions
 
-`stacks-actions` · Backend and API · model-invoked
+`stacks-actions` · Native Stacks · model-invoked
 
-Actions are the unit of work behind a route. This covers writing them in
-`app/Actions/`, the ones the `useApi` trait generates for free, and the 80+
-default actions the framework ships that you can call or override.
+Use when working with Stacks server actions - creating actions in app/Actions/, auto-generated API actions from the useApi model trait, the 663 default framework actions (auth, dashboard, commerce, content, deployment, jobs), action request/response handling, or action registration. Covers @stacksjs/actions and storage/framework/defaults/app/Actions/.
 
-## When to reach for it
-
-- Creating actions in app/Actions/
-- Auto-generated API actions from the useApi model trait
-- The 80+ default framework actions (auth, dashboard, commerce, content, deployment, jobs)
-- Action request/response handling
-- Action registration
-
-## Covers
-
-`@stacksjs/actions`, `storage/framework/defaults/app/Actions/`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
 
-The sections an agent reads once the skill loads.
-
 - Key Paths
 - Creating an Action
+- Validation, lifecycle, and typed clients
 - Resource Action Contract
 - Auto-Generated API Actions (useApi Trait)
-- Default Framework Actions (80+)
+- Default framework action families
 - Action Handler Pattern
 - Using Actions in Routes
 - CLI Commands
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/actions/src/`
-- Application actions: `app/Actions/`
-- Default framework actions: `storage/framework/defaults/app/Actions/`
-- Framework actions (generated): `storage/framework/actions/`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-actions
 ```
 
 Source: [`stacks-actions/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-actions/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-actions/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-actions/SKILL.md`. See [Using skills](/skills/using).

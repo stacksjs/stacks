@@ -43,7 +43,7 @@ Color is a scarce resource, used only for semantic meaning or subtle accents.
   - Pale Green: `#EDF3EC` (Text: `#346538`)
   - Pale Yellow: `#FBF3DB` (Text: `#956400`)
 
-Expose these as Crosswind theme tokens or CSS custom properties in `config/ui.ts` so dark mode (`dark:` + `useColorMode()` / `useDark()`) stays consistent.
+Expose these as Crosswind theme tokens or CSS custom properties in `config/css.ts` so dark mode (`dark:` + `useColorMode()` / `useDark()`) stays consistent.
 
 ## 5. Component Specifications
 - Bento Box Feature Grids:
@@ -94,11 +94,25 @@ Motion should feel invisible: present but never distracting. Quiet sophisticatio
 <script client>
   const block = useRef('block')
   const shown = state(false)
-  useIntersectionObserver(block, (e) => { if (e[0].isIntersecting) shown.set(true) }, { threshold: 0.2 })
+  const reduce = usePreferredReducedMotion()
+  let stopObserving: (() => void) | undefined
+  onMount(() => {
+    if (reduce()) {
+      shown.set(true)
+      return
+    }
+    const observer = useIntersectionObserver(
+      () => block.current,
+      entry => { if (entry.isIntersecting) shown.set(true) },
+      { threshold: 0.2, once: true },
+    )
+    stopObserving = () => observer.stop()
+  })
+  onDestroy(() => stopObserving?.())
 </script>
 
 <section ref="block"
-         :class="shown() ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
+         :class="shown() || reduce() ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
          class="duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] transition-all">
   <slot />
 </section>

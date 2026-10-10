@@ -10,7 +10,7 @@ Everything that leaves the app and reaches a person. Each of these is
 driver-based, so the skill covers both the sending surface and the drivers
 behind it.
 
-7 skills.
+8 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -21,6 +21,7 @@ behind it.
 | [Notifications](/skills/messaging/notifications) | One notification, many channels: email, SMS, push, chat and database. |
 | [Push](/skills/messaging/push) | Push notifications through Expo or Firebase Cloud Messaging: payloads, batch and multicast sending, topic subscriptions, token validation and receipt checking. |
 | [SMS](/skills/messaging/sms) | Text messages through Twilio or Vonage: the fluent builder, templates, phone verification with one-time codes, bulk sending and E.164 formatting. |
+| [Newsletter](/skills/messaging/newsletter) | managing native subscriber lists, opt-in/unsubscribe, campaigns, scheduled delivery, variants, idempotency, or delivery usage.. |
 
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).

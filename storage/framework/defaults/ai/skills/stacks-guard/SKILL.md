@@ -171,3 +171,9 @@ have `buddy setup:ai` users point their hook at that path.
 > Guard installed? `/stacks-retro` is where a near-miss becomes a permanent
 > check, and `/stacks-wizard` is for the production steps a human should be
 > doing by hand anyway.
+
+## Upstream provenance
+
+The reviewed source revision and MIT notice are in [NOTICE.md](NOTICE.md) and
+[LICENSE](LICENSE). Read [the Stacks adaptation rules](../stacks-flow/ENGINEERING.md)
+with this workflow. Existing Stacks APIs and supporting helpers remain authoritative.

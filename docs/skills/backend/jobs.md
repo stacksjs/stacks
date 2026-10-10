@@ -1,6 +1,6 @@
 ---
 title: "Jobs skill"
-description: "Use when creating background job classes in app/Jobs/."
+description: "Use when creating background job classes in app/Jobs/ - job structure, the handle method, job configuration (queue, tries, backoff, timeout, rate), dispatching patterns (dispatch, dispatchIf, dispatchAfter, dispatchNow), or the Every schedule constants. For the queue system internals (workers, batching, events, drivers, testing), see stacks-queue. Covers app/Jobs, the native Job class and typed by-name dispatch."
 ---
 # Jobs
 
@@ -52,3 +52,10 @@ matches, and you can also call it by name:
 Source: [`stacks-jobs/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-jobs/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-jobs/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

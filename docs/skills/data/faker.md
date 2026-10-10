@@ -1,29 +1,18 @@
 ---
 title: "Faker skill"
-description: "Use when working with fake data generation in a Stacks application."
+description: "Use when working with fake data generation in a Stacks application - seeding databases, generating test data, model factories, or using faker utilities. Covers @stacksjs/faker (wrapper around ts-mocker) and its integration with the database seeder."
 ---
 # Faker
 
-`stacks-faker` · Data layer · model-invoked
+`stacks-faker` · Native Stacks · model-invoked
 
-Fake data generation for seeders and tests, wrapping `ts-mocker`. The per-attribute
-`factory` functions in a model definition are driven from here, which is what
-makes `buddy seed` produce realistic rows.
+Use when working with fake data generation in a Stacks application - seeding databases, generating test data, model factories, or using faker utilities. Covers @stacksjs/faker (wrapper around ts-mocker) and its integration with the database seeder.
 
-## When to reach for it
-
-- Seeding databases
-- Generating test data
-- Model factories
-- Using faker utilities
-
-## Covers
-
-`@stacksjs/faker` (wrapper around ts-mocker), its integration with the database seeder.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Usage
@@ -31,22 +20,16 @@ The sections an agent reads once the skill loads.
 - Seeder Integration
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/faker/src/`
-- Source: `storage/framework/core/faker/src/index.ts`
-- Tests: `storage/framework/core/faker/tests/faker.test.ts`
-- Seeder integration: `storage/framework/core/database/src/seeder.ts`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-faker
 ```
 
 Source: [`stacks-faker/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-faker/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-faker/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-faker/SKILL.md`. See [Using skills](/skills/using).

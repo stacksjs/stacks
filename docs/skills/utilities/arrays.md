@@ -1,29 +1,18 @@
 ---
 title: "Arrays skill"
-description: "Use when working with array utilities in Stacks."
+description: "Use when working with array utilities in Stacks - statistical operations (average, median, mode, standard deviation, z-score, percentile, covariance), array manipulation (unique, flatten, partition, shuffle, sample, move), containment checks, or the Arr facade. Covers @stacksjs/arrays."
 ---
 # Arrays
 
-`stacks-arrays` · Utilities · model-invoked
+`stacks-arrays` · Native Stacks · model-invoked
 
-Statistical operations (average, median, mode, standard deviation, z-score,
-percentile, covariance) and array manipulation (unique, flatten, partition,
-shuffle, sample, move), behind the `Arr` facade.
+Use when working with array utilities in Stacks - statistical operations (average, median, mode, standard deviation, z-score, percentile, covariance), array manipulation (unique, flatten, partition, shuffle, sample, move), containment checks, or the Arr facade. Covers @stacksjs/arrays.
 
-## When to reach for it
-
-- Statistical operations (average, median, mode, standard deviation, z-score, percentile, covariance)
-- Array manipulation (unique, flatten, partition, shuffle, sample, move)
-- Containment checks
-- The Arr facade
-
-## Covers
-
-`@stacksjs/arrays`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Architecture
@@ -31,23 +20,20 @@ The sections an agent reads once the skill loads.
 - Containment Checks (`contains.ts`)
 - Statistical Functions (`math.ts`)
 - Arr Facade (`macro.ts`)
-- Exported Types
+- Typed transformations
+- Type example
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/arrays/src/`
-- Package: `@stacksjs/arrays`
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-arrays
 ```
 
 Source: [`stacks-arrays/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-arrays/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-arrays/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-arrays/SKILL.md`. See [Using skills](/skills/using).

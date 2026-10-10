@@ -24,21 +24,28 @@ before deciding what to test, and this one for how.
 ## Test Setup
 
 ```typescript
-import { setupTestEnvironment, setupDatabase, refreshDatabase } from '@stacksjs/testing'
+import { setupTestEnvironment } from '@stacksjs/testing'
+import { refreshDatabase, setupDatabase, truncateMysql, truncateSqlite } from '@stacksjs/testing/database'
 
 // Set NODE_ENV and APP_ENV to 'test'
 setupTestEnvironment()
 
-// Create testing database (SQLite: database/stacks_testing.sqlite)
+// MySQL database setup; this helper does not initialize SQLite
 await setupDatabase()
 
-// Refresh database (drop and re-migrate)
+// Reset the configured test database, including the SQLite reset path
 await refreshDatabase()
 
 // Truncate tables
 await truncateSqlite()   // for SQLite
 await truncateMysql()    // for MySQL
 ```
+
+The database subpath is intentional. Importing its fixtures from the root
+would eagerly load the database graph during test preload and can deadlock
+module loading. Set the test environment before database work and confirm the
+configured database points at disposable test data. `refreshDatabase()` follows
+the active configured driver; it is not a generic PostgreSQL reset utility.
 
 ## DynamoDB Testing
 
@@ -64,10 +71,11 @@ friends have never existed): the `DynamoDBClient` in `@stacksjs/ts-cloud` covers
 
 ```typescript
 import { describe, test, it, expect, beforeAll, afterAll, beforeEach } from 'bun:test'
+import { refreshDatabase } from '@stacksjs/testing/database'
 
 describe('User Model', () => {
   beforeAll(async () => {
-    await setupDatabase()
+    await refreshDatabase()
   })
 
   afterAll(async () => {
@@ -80,6 +88,7 @@ describe('User Model', () => {
   })
 
   test('validates email uniqueness', async () => {
+    await User.create({ name: 'First', email: 'duplicate@test.com' })
     await expect(User.create({ email: 'duplicate@test.com' }))
       .rejects.toThrow()
   })
@@ -98,6 +107,70 @@ test('dispatches welcome email job', async () => {
   restore()
 })
 ```
+
+## HTTP, identity and boundary assertions
+
+`http` is a stateless client that calls the real in-process router pipeline.
+Wrap request bodies in its options. `featureTest()` returns a fluent client
+whose verb helpers instead accept a bare body. Both return response wrappers
+with status/headers, reusable JSON reads, `assertStatus`, `assertHeader` and
+`assertJson` (a top-level partial-object comparison).
+
+```ts
+import { http, actingAs } from '@stacksjs/testing'
+
+const response = await http.post('/api/posts', {
+  body: { title: 'Hello' },
+  actingAs: user,
+})
+response.assertStatus(201)
+await response.assertJson({ title: 'Hello' })
+
+const client = actingAs(user)
+await client.post('/api/posts', { title: 'Another post' })
+```
+
+`actingAs` requires a persisted user with a numeric id. It mints a real token
+through `Auth.loginUsingId`; it does not use a test-only authentication header.
+An explicit Authorization header wins over the acting identity. `http` supports
+query objects, repeated array query values, and multipart `formData`. A request
+has either JSON `body` or `formData`, never both.
+
+Database assertions and factory/transaction setup are imported from
+`@stacksjs/testing/database`: `assertDatabaseHas`, `assertDatabaseMissing`,
+`assertDatabaseCount`, `assertSoftDeleted`, `assertNotSoftDeleted`, `factory`,
+`useTransaction` and `useTransactionalTests`. Read their driver conditions
+before choosing transaction isolation for a suite. Database reset and clock
+state are process-wide boundaries; avoid parallel tests that share them.
+
+## Fakes, time and CLI tests
+
+The lightweight root also exports:
+
+- `eventFake`, `getDispatchedEvents`, `hasDispatchedEvent`, `restoreEvents`.
+  Event faking suppresses real listeners and automatically restores after each
+  test. Use separate listener tests for its side effects.
+- `mailFake`, `sentEmails`, `lastEmail`, `emailsTo`, `restoreMail`. These route
+  the real mail singleton through the capture driver and restore automatically.
+- `freezeTime`, `travelTo`, `useRealTime`. Explicitly register
+  `afterEach(useRealTime)`; frozen time is not restored implicitly.
+- `command(args)` returns an awaitable child-process builder with `withInput`,
+  `withEnv`, `withCwd` and `withTimeout`. Assert exitCode/output/timedOut. Run
+  file-writing commands in a disposable fixture project using `withCwd`.
+
+```ts
+import { afterEach, freezeTime, useRealTime, command } from '@stacksjs/testing'
+
+afterEach(useRealTime)
+freezeTime('2026-01-15T10:00:00Z')
+const result = await command(['list']).withTimeout(10_000)
+expect(result.exitCode).toBe(0)
+```
+
+Retained implementation evidence lives under `core/testing/tests/`:
+`http-client`, `acting-as`, `database-assertions`, `events`, `mail`, `time`
+and `console` test files. Fixture mechanics live in `core/testing/src/`;
+`package.json` declares the root and database/DynamoDB export boundaries.
 
 ## CLI Commands
 

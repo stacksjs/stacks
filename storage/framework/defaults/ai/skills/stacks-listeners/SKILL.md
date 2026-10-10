@@ -1,6 +1,6 @@
 ---
 name: stacks-listeners
-description: Use when creating event listeners in app/Listeners/ - the listener file structure, registering listeners in app/Events.ts, the listener-to-action mapping pattern, CLI event listeners in Console.ts, or debugging listener execution. For the event system API (dispatch, listen, emitter, model events), see stacks-events.
+description: Use when creating event listeners in app/Listeners/ - the listener file structure, registering listeners in app/Events.ts, the listener-to-action mapping pattern, CLI event listeners in Console.ts, or debugging listener execution. For the event system API (dispatch, listen, emitter, model events), see stacks-events. Covers app/Listeners, app/Events.ts and native listener discovery.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -118,12 +118,20 @@ export default function(cli: CLI) {
 }
 ```
 
-Listeners execute sequentially (not in parallel) — each awaits completion.
+Handlers are invoked in registration order. `dispatch()` does not await async completion. Use `dispatchAsync()` to wait sequentially or `dispatchAndCollect()` to observe each failure.
 
 ## Gotchas
-- Listeners are Action names, not file paths — `'SendWelcomeEmail'` resolves to `app/Actions/SendWelcomeEmail.ts`
+- Map values are listener names, resolved in app/Listeners before app/Actions, then framework defaults
 - The action must have a `handle(event)` method
-- Listeners run sequentially per event — order in the array matters
-- Action modules are cached after first load — no hot-reload for listeners
+- Listener invocation follows registration order; awaiting completion depends on the dispatch API. Read stacks-events before chaining side effects
+- Action modules are cached after first load - no hot-reload for listeners
 - CLI listeners are separate from HTTP event listeners
 - For the event API (dispatch, listen, emitter), see the `stacks-events` skill
+
+
+## Source and evidence
+
+`storage/framework/core/events/src/discover.ts` owns discovery, map registration
+and handler adaptation. Retained tests: `core/events/tests/register.test.ts`,
+`listener.test.ts` and `boot.test.ts`. A standalone defineListener handle takes
+`(payload, eventName)`; a raw bus glob handler takes `(eventName, payload)`.

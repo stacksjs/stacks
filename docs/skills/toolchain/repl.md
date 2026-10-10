@@ -4,25 +4,15 @@ description: "Use when working with the Stacks REPL - interactive TypeScript ses
 ---
 # REPL
 
-`stacks-repl` · Toolchain · model-invoked
+`stacks-repl` · Native Stacks · model-invoked
 
-Interactive TypeScript sessions against the running app. The fastest loop for
-poking at a model, a relationship or a config value.
+Use when working with the Stacks REPL - interactive TypeScript sessions, tinker sessions, debugging, or exploring the framework interactively. Covers @stacksjs/repl and @stacksjs/tinker.
 
-## When to reach for it
-
-- Interactive TypeScript sessions
-- Tinker sessions
-- Debugging
-- Exploring the framework interactively
-
-## Covers
-
-`@stacksjs/repl`, `@stacksjs/tinker`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - API
@@ -30,22 +20,18 @@ The sections an agent reads once the skill loads.
 - CLI Commands
 - Usage
 - Gotchas
-
-## Where the code lives
-
-- REPL package: `storage/framework/core/repl/src/`
-- Tinker package: `storage/framework/core/tinker/src/`
-- Packages: `@stacksjs/repl`, `@stacksjs/tinker`
+- Native options and bootstrap limits
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-repl
 ```
 
 Source: [`stacks-repl/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-repl/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-repl/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-repl/SKILL.md`. See [Using skills](/skills/using).

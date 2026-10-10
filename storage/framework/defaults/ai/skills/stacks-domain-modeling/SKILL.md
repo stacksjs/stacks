@@ -24,6 +24,13 @@ Credit: adapted from Matt Pocock's `domain-modeling` skill (MIT),
 
 ## File structure
 
+Honor the existing domain source. A project using `GLOSSARY.md` or
+`GLOSSARY-MAP.md` keeps that layout; a project using `CONTEXT.md` keeps this
+skill's existing layout. Follow map pointers to the relevant context rather
+than putting every bounded context into one glossary. Keep definitions about
+domain meaning; specs and ADRs hold implementation decisions. The updated
+glossary-only template is [GLOSSARY-FORMAT.md](GLOSSARY-FORMAT.md).
+
 Most repos have a single context:
 
 ```
@@ -103,6 +110,10 @@ Only offer to record a decision when all three are true:
 If any of the three is missing, skip it.
 
 ## Downstream
+
+`stacks-grill-with-docs` combines this discipline with `stacks-grilling`.
+Current upstream provenance is in [NOTICE.md](NOTICE.md); read
+[the Stacks adaptation rules](../stacks-flow/ENGINEERING.md) with this workflow.
 
 > Reach for `stacks-codebase-design` when the argument is about a module's
 > shape rather than its name, and `stacks-grilling` when the term will not

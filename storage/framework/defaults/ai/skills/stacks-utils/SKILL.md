@@ -17,25 +17,25 @@ Umbrella package providing utility functions plus re-exports from specialized pa
 ## Architecture
 
 The `index.ts` re-exports from these local modules:
-- `clean.ts` — project cleanup (`cleanProject()`)
-- `config.ts` — config builder re-exports from `@stacksjs/config`
-- `equal.ts` — deep equality
-- `export-size.ts` — re-exports from `size.ts`
-- `find.ts` — find Stacks projects on filesystem
-- `git.ts` — git status check
-- `hash.ts` — path hashing for cloud deploy
-- `helpers.ts` — project helpers (env, YAML, version, npm scripts, etc.)
-- `macroable.ts` — dynamic method registration on classes
-- `versions.ts` — semver comparison via `Bun.semver`
-- `merge.ts` — deep object merge (defu replacement)
-- `detect.ts` — indentation and newline detection
-- `debounce.ts` — debounce, throttle, delay
-- `bytes.ts` — byte formatting and parsing
-- `colors.ts` — ANSI terminal color output
-- `markdown.ts` — markdown table generation
-- `size.ts` — file/export size calculation
-- `observer.ts` — ResizeObserver polyfill
-- `pipeline.ts` — Pipeline class for data transformation chains
+- `clean.ts` - project cleanup (`cleanProject()`)
+- `config.ts` - config builder re-exports from `@stacksjs/config`
+- `equal.ts` - deep equality
+- `export-size.ts` - re-exports from `size.ts`
+- `find.ts` - find Stacks projects on filesystem
+- `git.ts` - git status check
+- `hash.ts` - path hashing for cloud deploy
+- `helpers.ts` - project helpers (env, YAML, version, npm scripts, etc.)
+- `macroable.ts` - dynamic method registration on classes
+- `versions.ts` - semver comparison via `Bun.semver`
+- `merge.ts` - deep object merge (defu replacement)
+- `detect.ts` - indentation and newline detection
+- `debounce.ts` - debounce, throttle, delay
+- `bytes.ts` - byte formatting and parsing
+- `colors.ts` - ANSI terminal color output
+- `markdown.ts` - markdown table generation
+- `size.ts` - file/export size calculation
+- `observer.ts` - ResizeObserver polyfill
+- `pipeline.ts` - Pipeline class for data transformation chains
 
 Also re-exports from `@stacksjs/browser`:
 ```typescript
@@ -355,15 +355,14 @@ countNewlines(text): { crlf, lf, cr, total }
 ```typescript
 await packageManager()                    // reads from framework package.json
 await frameworkVersion()                  // reads version from framework package.json
-await isAppKeySet()                       // checks .env for APP_KEY with length > 16
-await initProject()                       // generates application key via Action.KeyGenerate
+await isAppKeySet()                       // checks process APP_KEY first, then .env
 await ensureProjectIsInitialized()        // copies .env.example if needed, checks app key
 await installIfVersionMismatch()          // currently a no-op (placeholder)
 await setEnvValue('KEY', 'value')         // set/update value in .env file
 await runNpmScript('build', options?)     // run npm script via bun, validates script exists
 hasScript(manifest, 'test')              // check if script exists in package.json manifest
 determineDebugLevel(options?)             // returns true if --verbose or app.debug === true
-determineResetPreset(preset?)             // returns CSS reset import array for UnoCSS
+determineResetPreset(preset?)             // legacy reset-array helper; prefer the actual css config contract
 isManifest(obj)                          // type guard for package.json manifest
 isOptionalString(value)                  // type guard for string | null | undefined
 isIpv6(address)                          // check if AddressInfo is IPv6 (handles node >=18 quirks)
@@ -424,17 +423,38 @@ websiteSourceHash()           // hash of website/docs source (depends on docMode
 docsSourceHash()              // hash of docs source
 ```
 
-## Glob (re-export)
+## Glob boundary
 
 ```typescript
-export { glob } from '@stacksjs/storage'
+import { glob } from '@stacksjs/storage'
 ```
+
+Glob belongs to `@stacksjs/storage`; it is not re-exported from the utils root.
+
+## Safe serialization and typed composition
+
+`safeJsonParse(text, fallback?)`, `safeJsonParseResult`, and
+`safeJsonStringify(value, space?)` make parse failure behavior explicit. Their
+generic result type is a caller annotation, not validation of untrusted JSON.
+Validate decoded objects at the request boundary before treating them as a
+model, config, or provider payload.
+
+`pipe(value, ...steps)` applies ordinary typed unary functions left to right.
+`piped(...steps)` returns the composed function and `tap(effect)` returns a
+pass-through step. These differ from middleware-style `Pipeline`, whose pipes
+receive a next function. Choose the simple function seam for data transforms.
+
+`isDeepEqual` now compares Date, RegExp, Map, Set, typed arrays and ArrayBuffers
+by value and tracks circular pairs. Host objects and Errors remain identity
+comparisons. Read retained equal tests for a non-plain object rather than
+assuming every object with similar printable fields is equal.
 
 ## Gotchas
 - `merge()` concatenates arrays instead of replacing them -- this differs from spread/Object.assign behavior
 - `mergeDefaults()`/`defu()` gives precedence to the FIRST argument (the object), not the defaults
 - Color functions only work in terminal environments -- check `supportsColor()` first
-- `debounce` does NOT support `maxWait` -- use throttle if you need guaranteed maximum delay
+- `debounce` does NOT support `maxWait`; choose throttle when the desired
+  behavior is a bounded invocation rate, not a guaranteed execution deadline.
 - `throttle.cancel()` exists but there is no `throttle.flush()`
 - Pipeline uses `reduceRight` internally so pipes execute in array order, not reverse
 - YAML operations use `Bun.YAML` -- `dumpYaml` falls back to `JSON.stringify` if `Bun.YAML.stringify` is unavailable

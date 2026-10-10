@@ -9,7 +9,7 @@ Commerce, payments, CMS, dashboard and i18n.
 Whole product surfaces the framework ships ready to use, each with its own
 models, actions, routes and dashboard views.
 
-5 skills.
+7 skills.
 
 | Skill | What it is for |
 |---|---|
@@ -18,6 +18,8 @@ models, actions, routes and dashboard views.
 | [Dashboard](/skills/domain/dashboard) | The admin dashboard: pages, model management views, analytics widgets, commerce and content surfaces, deployment and queue monitoring, and the 250+ built-in components behind them. |
 | [i18n](/skills/domain/i18n) | Translations, locale management, pluralization and date, number and currency formatting, plus how translation files are loaded. |
 | [Payments](/skills/domain/payments) | Stripe, in depth: charges, subscriptions, checkout sessions, customers, payment methods, invoices, coupons, promo codes, products, prices and webhooks, behind the `Payment` facade. |
+| [Forms](/skills/domain/forms) | building persisted form definitions, conditional fields, uploads, payments, submissions, or CSV exports.. |
+| [Sites](/skills/domain/sites) | resolving multi-site tenants by host, provisioning sites, scoping queries, or authorizing site-owned content.. |
 
 Every page here describes one `SKILL.md` under
 [`storage/framework/defaults/ai/skills`](https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills).

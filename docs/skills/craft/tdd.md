@@ -1,6 +1,6 @@
 ---
 title: "TDD skill"
-description: "Use when building a feature or fixing a bug test-first in a Stacks project, when the user mentions red-green-refactor or vertical slices, or when deciding which seam a test belongs at."
+description: "Use when building a feature or fixing a bug test-first in a Stacks project, when the user mentions red-green-refactor or vertical slices, or when deciding which seam a test belongs at. Covers the red-green loop over bun test and @stacksjs/testing, seam selection, and the test anti-patterns."
 ---
 # TDD
 
@@ -54,3 +54,10 @@ matches, and you can also call it by name:
 Source: [`stacks-tdd/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-tdd/SKILL.md).
 Shadow it for one project with `app/Skills/stacks-tdd/SKILL.md`, then re-run
 `buddy setup:ai`. See [Writing your own](/skills/writing).
+
+## Native source verification
+
+The skill has been checked against current source and retained tests. Read its
+entrypoint and linked references for the actual contract; summaries here are
+discovery pointers. [Native capabilities](/skills/platform/native) maps every
+core package and records driver evidence without claiming universal parity.

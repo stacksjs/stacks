@@ -22,7 +22,7 @@ Multi-driver SMS system with verification (OTP), templates, bulk sending, and a 
 
 ```typescript
 // Main facade and functions
-import SMS, { sms, send, sendSms, sendBulk, sendTemplate } from '@stacksjs/sms'
+import { SMS, sms, send, sendSms, sendBulk, sendTemplate } from '@stacksjs/sms'
 import { startVerification, checkVerification, cancelVerification } from '@stacksjs/sms'
 import { formatE164, isValidPhoneNumber, isEnabled, getConfig, configure, getDriver, init } from '@stacksjs/sms'
 import { SmsBuilder } from '@stacksjs/sms'
@@ -34,7 +34,7 @@ import { VonageDriver, createVonageDriver } from '@stacksjs/sms'
 
 ## SMS Facade Object
 
-The `SMS` default export aggregates all functions:
+The named `SMS` export aggregates the SMS facade functions:
 
 ```typescript
 SMS.init()                    // Load config from config/sms.ts
@@ -190,7 +190,7 @@ Returns a failed result (without throwing) if the template is not found.
 import { formatE164, isValidPhoneNumber } from '@stacksjs/sms'
 
 // Normalize to E.164 format
-formatE164('+1 (234) 567-890')        // '+12345678900'
+formatE164('+1 (234) 567-8900')       // '+12345678900'
 formatE164('2345678900', '1')          // '+12345678900'
 formatE164('002345678900')             // '+2345678900' (00 prefix stripped)
 
@@ -371,15 +371,42 @@ interface VerificationResult {
 ```
 
 ## Gotchas
-- SMS is **disabled by default** (`enabled: false`) -- must set to `true` in `config/sms.ts`
+- SMS config defaults disabled, but low-level send does not enforce isEnabled; application entrypoints must honor that gate before dispatch
 - Provider API keys go in `.env`, not config files
 - Config is loaded lazily via dynamic import on first `send()`/operation -- `init()` pre-loads it
 - Only Twilio and Vonage drivers are fully implemented; other drivers (gupshup, plivo, sns, telnyx, etc.) are commented-out placeholders
 - `pinpoint` appears in config but has no driver implementation in `getDriver()` -- using it throws `'Unsupported SMS provider: pinpoint'`
 - `defaultCountryCode` is a numeric dialing prefix such as `'1'` for the US or `'44'` for the UK
 - Template variables use single-brace syntax `{variableName}`, NOT double-brace
-- `sendBulk()` sends all messages in parallel via `Promise.all` -- no rate limiting
-- Twilio verification requires a `verifyServiceSid` passed to the driver constructor, which is not part of the standard config structure
+- Facade sendBulk uses config.bulk.concurrency (default 10) and delayMs between chunks; provider driver sendBulk still sends its chunk concurrently
+- Twilio verification uses drivers.twilio.verifyServiceSid from TWILIO_VERIFY_SERVICE_SID, forwarded by getDriver to the constructor
 - Vonage JWT authentication is a simplified placeholder -- real RS256 signing is not fully implemented
 - `getDriver()` creates a new driver instance each time unless accessed through the cached `getDefaultDriver()`
 - `sendTemplate()` returns a failed result (not an exception) if the template name is not found
+
+
+## Native inbound compliance and helpers
+
+`handleInboundSms({ from, body }, { appName?, helpContact? })` classifies
+STOP/START/HELP, persists opt-out or opt-in, and returns the reply an inbound
+webhook should send. `optOutPhone`, `optInPhone`,
+`isPhoneOptedOut` and `normalizePhone` use the persistent
+`sms_opt_outs` table. Apply its model migration first. Sending through the
+generic notification SMS channel checks opt-outs; inspect the selected direct
+send path before assuming a low-level provider call applies that policy.
+
+For Twilio webhooks, `verifyTwilioWebhook(url, fields, signature, authToken)`
+validates the exact external URL and submitted fields. `parseTwilioInbound`
+normalizes its payload. `classifySmsIntent/smsComplianceReply` are pure helpers;
+they do not themselves persist consent. Use the persistent handleInboundSms
+workflow when consent state must affect future sends.
+
+`estimateSmsSegments(body)` reports GSM-7/UCS-2 estimates; provider billing is
+authoritative. `isWithinSmsQuietHours(date, { startHour, endHour, timezone? })`
+is a policy helper, not an automatic send gate. Config keys such as spend caps
+or quiet hours must be traced to their consumers before promising enforcement.
+
+Sources: `storage/framework/core/sms/src/opt-out.ts` and `compliance.ts`.
+Tests: `opt-out.test.ts` and `compliance.test.ts` under core/sms/tests.
+Twilio/Vonage implementations do not imply a live provider delivery contract;
+credentials, registration and provider account configuration remain prerequisites.

@@ -1,29 +1,18 @@
 ---
 title: "Commerce skill"
-description: "Use when building e-commerce features in Stacks."
+description: "Use when building e-commerce features in Stacks - the commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), 20+ commerce models, checkout and redemption logic, or the commerce configuration. Covers @stacksjs/commerce."
 ---
 # Commerce
 
-`stacks-commerce` · Domain packages · model-invoked
+`stacks-commerce` · Native Stacks · model-invoked
 
-The e-commerce layer: thirteen sub-modules and more than twenty models covering
-products, orders, customers, coupons, payments, shipping, tax, gift cards,
-waitlists, devices, receipts and restaurant features.
+Use when building e-commerce features in Stacks - the commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), 20+ commerce models, checkout and redemption logic, or the commerce configuration. Covers @stacksjs/commerce.
 
-## When to reach for it
-
-- The commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors)
-- 20+ commerce models
-- Checkout and redemption logic
-- The commerce configuration
-
-## Covers
-
-`@stacksjs/commerce`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - Commerce Namespace
@@ -34,29 +23,20 @@ The sections an agent reads once the skill loads.
 - Live Delivery Tracking
 - Integration with Payments
 - Dashboard Routes
+- Enable the feature and choose the native seam
 - Gotchas
-
-## Where the code lives
-
-- Core package: `storage/framework/core/commerce/src/`
-- Default functions: `storage/framework/defaults/functions/commerce/`
-- Default models: `storage/framework/defaults/app/Models/commerce/`
-
-## Related skills
-
-- [Payments](/skills/domain/payments)
-- [Review](/skills/craft/review)
-- [TDD](/skills/craft/tdd)
+- Downstream
 
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-commerce
 ```
 
 Source: [`stacks-commerce/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-commerce/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-commerce/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-commerce/SKILL.md`. See [Using skills](/skills/using).

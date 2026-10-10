@@ -1,28 +1,18 @@
 ---
 title: "Query builder skill"
-description: "Use when building database queries in a Stacks application."
+description: "Use when building database queries in a Stacks application - constructing SQL queries, using the fluent query API, or configuring the query builder. Covers @stacksjs/query-builder which wraps bun-query-builder, and config/query-builder.ts."
 ---
 # Query builder
 
-`stacks-query-builder` · Data layer · model-invoked
+`stacks-query-builder` · Native Stacks · model-invoked
 
-The fluent query surface, backed by `bun-query-builder`. Chainable conditions,
-ordering, eager loading, pagination and transactions, plus the configuration in
-`config/query-builder.ts`.
+Use when building database queries in a Stacks application - constructing SQL queries, using the fluent query API, or configuring the query builder. Covers @stacksjs/query-builder which wraps bun-query-builder, and config/query-builder.ts.
 
-## When to reach for it
-
-- Constructing SQL queries
-- Using the fluent query API
-- Configuring the query builder
-
-## Covers
-
-@stacksjs/query-builder which wraps bun-query-builder, `config/query-builder.ts`.
+Read the skill for the implementation workflow and its current signatures. The
+[Native capabilities](/skills/platform/native) catalog maps the package to
+source and retained evidence; driver limits are explicit.
 
 ## Inside the skill
-
-The sections an agent reads once the skill loads.
 
 - Key Paths
 - API
@@ -30,23 +20,16 @@ The sections an agent reads once the skill loads.
 - Configuration (config/query-builder.ts)
 - Gotchas
 
-## Where the code lives
-
-- Core package: `storage/framework/core/query-builder/src/`
-- Configuration: `config/query-builder.ts`
-- QB state: `.qb/`
-- External library: `bun-query-builder`
-- Package: `@stacksjs/query-builder`
-
 ## Using it
 
-This one is **model-invoked**. Your agent reaches for it on its own when the task
-matches, and you can also call it by name:
+This skill is **model-invoked**. Your agent can select it for matching tasks, and you can call it directly.
 
-```
+```text
 /stacks-query-builder
 ```
 
 Source: [`stacks-query-builder/SKILL.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-query-builder/SKILL.md).
-Shadow it for one project with `app/Skills/stacks-query-builder/SKILL.md`, then re-run
-`buddy setup:ai`. See [Writing your own](/skills/writing).
+
+It ships in `@stacksjs/defaults` with its supporting files. Run
+`buddy setup:ai` to refresh the agent setup. Override it per project with
+`app/Skills/stacks-query-builder/SKILL.md`. See [Using skills](/skills/using).

@@ -94,7 +94,7 @@ The React skill's "reach for Fluent / Carbon / Material / shadcn" advice does **
 
 | Layer | What to use | Notes |
 |---|---|---|
-| Components | **Stacks UI** (`@stacksjs/ui`) | Headless primitives (Combobox, Dialog/Modal, Menu, Tabs, Switch, RadioGroup, Popover, Disclosure, Transition) plus **Craft native components** (`craft-button`, `craft-text-input`, `craft-textarea`, `craft-checkbox`, `craft-select`, `craft-modal`). See [stacks-ui](../stacks-ui). |
+| Components | **Stacks UI** (`@stacksjs/ui/components`) | Typed component exports backed by `@stacksjs/components`; STX tags resolve through the configured component plugin. Native applications use the mobile/desktop bridges and components appropriate to their host. See [stacks-ui](../stacks-ui). |
 | Styling | **Crosswind** utilities | Tailwind-compatible syntax, `dark:` variant, arbitrary values. See [stacks-crosswind](../stacks-crosswind). |
 | Icons | **Iconify** `i-{collection}-{name}` | hugeicons default. See Section 3.C. |
 | Templating | **stx** SFC | `<script>` / `<template>` / `<style>`. See [stacks-stx](../stacks-stx). |
@@ -137,7 +137,7 @@ Unless the design read pulls in an aesthetic-specific companion, these are the d
 ### 3.B State & Reactivity
 * Local reactive state uses signals: `state(initial)` (read `count()`, write `count.set(v)` / `count.update(n => n + 1)`), `derived(() => ...)` for computed, `effect(() => ...)` for side effects. Element refs use `useRef('name')`.
 * Translation from React if you are porting: `useState` -> `state`, `useMemo` -> `derived`, `useEffect` -> `effect`, `useRef` -> `useRef`.
-* **NEVER drive continuous values (mouse position, scroll progress, pointer physics, magnetic hover) through a signal you re-read every frame.** Writing signal state on every pointer or scroll frame re-runs reactive effects and collapses on mobile. Instead drive a **CSS custom property** from inside an `effect` (Section 5.D) or let CSS scroll-driven animations do the work with no script at all.
+* **NEVER drive continuous values (mouse position, scroll progress, pointer physics, magnetic hover) through a signal you re-read every frame.** Writing signal state on every pointer or scroll frame re-runs reactive effects and collapses on mobile. Instead drive a **CSS custom property** from in its subscription callback (Section 5.D) or let CSS scroll-driven animations do the work with no script at all.
 
 ### 3.C Icons
 * **Use Iconify utility classes.** stx ships 200K+ Iconify icons as classes: `<i class="i-hugeicons-{name}"></i>`, or any collection `i-{collection}-{name}` (`i-ph-arrow-right`, `i-tabler-check`). Size and color with Crosswind: `class="h-6 w-6 text-gray-500 i-hugeicons-book-open"`.
@@ -335,11 +335,11 @@ These are tools, not defaults. Use them when the design read calls for them. **N
 
 **Stacks ships NO motion library.** There is no `motion/react`, no `framer-motion`, no `gsap`. All motion is built from three sources only:
 1. **Crosswind transitions + CSS keyframes** in a `<style>` block (hover, micro-interactions, load-ins). Animate ONLY `transform` and `opacity`.
-2. **stx composables** for observing state (`useIntersectionObserver`, `useElementVisibility`, `useMouse`, `useMediaQuery`, `useResizeObserver`, `useWindow`, `useDeviceOrientation`) - toggle a Crosswind class or set a CSS custom property.
+2. **stx composables** for observing state (`useIntersectionObserver`, `useElementVisibility`, `useMouse`, `useMediaQuery`, `useResizeObserver`, `useWindowSize`, `useDeviceOrientation`) - toggle a Crosswind class or set a CSS custom property.
 3. **CSS scroll-driven animations** (`animation-timeline: view()` / `scroll()`) for pinned, stacked, and horizontal-pan effects - no script needed.
 
 * **Glassmorphism:** Appropriate for premium consumer, Apple-adjacent, luxury, or media-overlay vibes. Inappropriate for dashboards, public-sector, "boring B2B." When used, go beyond `backdrop-blur`: add a 1px inner border (`border-white/10`) and a subtle inner shadow for physical edge refraction. Provide a solid-fill fallback under `prefers-reduced-transparency` (Appendix C).
-* **Magnetic Micro-physics:** Use when `MOTION_INTENSITY > 5` AND the brief reads premium / playful / agency. Implement by driving a **CSS custom property** from `useMouse()` inside an `effect` (Section 5.D). Never through per-frame signal state. See Section 3.B.
+* **Magnetic Micro-physics:** Use when `MOTION_INTENSITY > 5` AND the brief reads premium / playful / agency. Implement by driving a **CSS custom property** from `useMouse()` in its subscription callback (Section 5.D). Never through per-frame signal state. See Section 3.B.
 * **Perpetual Micro-Interactions** (Pulse, Typewriter, Float, Shimmer, Carousel): Use when `MOTION_INTENSITY > 5` AND the section actively benefits from motion (status indicators, live feeds). **Not every card needs an infinite loop.** If a section is informational, leave it still. Prefer spring-like `cubic-bezier` easing over linear.
 * **"Motion claimed, motion shown."** If `MOTION_INTENSITY > 4`, the page must actually move: entry transitions on hero, scroll-reveal on key sections, hover feedback on CTAs, at minimum. A static page that claims `MOTION_INTENSITY: 7` is broken. Conversely, if you cannot ship working motion in scope, drop the dial to 3 and ship a clean static page. Never half-build motion that breaks (jumpy enters, missing observer cleanups).
 * **MOTION MUST BE MOTIVATED (mandatory).** Before adding any animation, ask: "what does this communicate?" Valid answers: hierarchy, storytelling (sequenced reveal matching a narrative), feedback (acknowledging an action), state transition. Invalid answer: "it looked cool." Each scroll-driven section, each marquee, each pinned section needs a reason. If you cannot articulate it in one sentence, drop the animation.
@@ -444,14 +444,23 @@ For simple "items appear as they enter viewport" (no pinning), use `useIntersect
   const listRef = useRef('reveal-list')
   const reduce = useMediaQuery('(prefers-reduced-motion: reduce)')
 
-  // reveal each child when the container enters the viewport
-  const { isVisible } = useIntersectionObserver(listRef, { threshold: 0.3 })
-
-  // toggle the class once, on enter (never write signal state per scroll frame)
-  effect(() => {
-    if (reduce() || isVisible())
-      listRef.value?.classList.add('is-revealed')
+  let stopObserving: (() => void) | undefined
+  onMount(() => {
+    if (reduce()) {
+      listRef.current?.classList.add('is-revealed')
+      return
+    }
+    const observer = useIntersectionObserver(
+      () => listRef.current,
+      entry => {
+        if (entry.isIntersecting)
+          listRef.current?.classList.add('is-revealed')
+      },
+      { threshold: 0.3, once: true },
+    )
+    stopObserving = () => observer.stop()
   })
+  onDestroy(() => stopObserving?.())
 </script>
 
 <template>
@@ -485,28 +494,36 @@ For simple "items appear as they enter viewport" (no pinning), use `useIntersect
 
 Use this for: feature lists, testimonial grids, logo walls, anything that just needs "enter on scroll." The observer flips ONE class; the stagger is pure CSS via `--i`. Under reduced motion items are visible immediately.
 
-### 5.D Pointer / Magnetic - Canonical Skeleton (useMouse -> CSS custom property inside an effect)
+### 5.D Pointer / Magnetic - Canonical Skeleton (useMouse subscription -> CSS custom property)
 
-Track the pointer with `useMouse()` and write the offset to a **CSS custom property** inside an `effect`. The property drives a `transform` in CSS. Signal state is read, never written per frame; the reactive tree does not re-run on every pointer move.
+The STX demand-delivered `useMouse()` returns get/subscribe/stop, not callable
+x/y signals. Subscribe to pointer state and write a CSS custom property. CSS
+applies the transform; the template reactive tree does not rerun on each move.
 
 ```html
 <!-- resources/components/magnetic.stx -->
 <script client>
   const btnRef = useRef('magnet')
-  const { x, y } = useMouse()
   const reduce = useMediaQuery('(prefers-reduced-motion: reduce)')
+  let stopTracking: (() => void) | undefined
 
-  effect(() => {
-    const el = btnRef.value
-    if (!el || reduce())
+  onMount(() => {
+    if (reduce())
       return
-    const r = el.getBoundingClientRect()
-    // pull toward cursor, damped; write to a CSS var, do NOT set signal state
-    const dx = (x() - (r.left + r.width / 2)) * 0.2
-    const dy = (y() - (r.top + r.height / 2)) * 0.2
-    el.style.setProperty('--mx', `${dx}px`)
-    el.style.setProperty('--my', `${dy}px`)
+    const mouse = useMouse()
+    const unsubscribe = mouse.subscribe(({ x, y }) => {
+      const el = btnRef.current
+      if (!el || reduce())
+        return
+      const rect = el.getBoundingClientRect()
+      const dx = (x - (rect.left + rect.width / 2)) * 0.2
+      const dy = (y - (rect.top + rect.height / 2)) * 0.2
+      el.style.setProperty('--mx', `${dx}px`)
+      el.style.setProperty('--my', `${dy}px`)
+    })
+    stopTracking = () => { unsubscribe(); mouse.stop() }
   })
+  onDestroy(() => stopTracking?.())
 </script>
 
 <template>
@@ -527,14 +544,17 @@ Track the pointer with `useMouse()` and write the offset to a **CSS custom prope
 </style>
 ```
 
-Critical points: `useMouse()` values are read inside `effect`, the effect sets a CSS custom property, and CSS applies the `transform`. No per-frame signal writes, no `window` listeners, no `requestAnimationFrame` loop touching state.
+Critical points: subscribe to the delivered mouse contract, update CSS custom
+properties, and clean up the tracker. Imported `@stacksjs/composables` mouse
+helpers have a different Ref contract; read stacks-composables/BROWSER.md before
+substituting one. No per-frame template signal writes or global listeners.
 
 ### 5.E Forbidden Animation Patterns
 
 * **`window.addEventListener('scroll', ...)`** is banned. It runs on every scroll frame, jank-prone, no batching. Use `useIntersectionObserver` / `useElementVisibility`, or CSS scroll-driven animations (`animation-timeline: view()` / `scroll()`).
-* **Any bare `window.*` or `document.*` access in an stx `<script>`** is banned (CLAUDE.md rule). Use composables (`useEventListener`, `useWindow`, `useResizeObserver`, `useMouse`) instead. Also banned: `var`.
-* **Custom scroll-progress calculations written into signal state.** Re-runs reactive effects on every frame. Drive a CSS custom property inside an `effect` (Section 5.D) or use a CSS `scroll()` timeline instead.
-* **`requestAnimationFrame` loops that write signal state.** Same reason. Prefer CSS-driven animation or a single CSS custom property write per frame from within an `effect`.
+* **Any bare `window.*` or `document.*` access in an stx `<script>`** is banned (CLAUDE.md rule). Use composables (`useEventListener`, `useWindowSize`, `useResizeObserver`, `useMouse`) instead. Also banned: `var`.
+* **Custom scroll-progress calculations written into signal state.** Re-runs reactive effects on every frame. Drive a CSS custom property in its subscription callback (Section 5.D) or use a CSS `scroll()` timeline instead.
+* **`requestAnimationFrame` loops that write signal state.** Same reason. Prefer CSS-driven animation or a single CSS custom property write per frame from within its subscription callback.
 * **Staggered orchestration:** use the CSS cascade (`transition-delay: calc(var(--i) * 60ms)` / `animation-delay`) for reveal sequence, as in Section 5.C. Do not spin up a JS timer per item.
 
 ---
@@ -669,7 +689,7 @@ These patterns came out of real LLM-generated landing-page tests. Treat them as 
 * **NO decorative colored status dots on every list/nav/badge.** A colored dot before "ONE Q4 SLOT OPEN" or before every nav link is banned by default. Acceptable only when the dot conveys actual semantic state (server status, availability flag) and is used sparingly.
 
 **Em-dashes & typography flourishes**
-* **NO em-dash (`—`) as a design element OR anywhere else.** See Section 9.G below for the complete, non-negotiable ban. The em-dash character is forbidden in headlines, eyebrows, pills, body copy, quotes, attribution, captions, button text, and alt text. Use the regular hyphen (`-`).
+* **NO em-dash (`-`) as a design element OR anywhere else.** See Section 9.G below for the complete, non-negotiable ban. The em-dash character is forbidden in headlines, eyebrows, pills, body copy, quotes, attribution, captions, button text, and alt text. Use the regular hyphen (`-`).
 * **NO `<br>`-broken-and-italicized headlines** as a default "design move." Headlines should read naturally first, get clever only when the brief demands it.
 * **NO vertical rotated text** ("INDEX OF WORK" rotated 90 degrees). Agency-portfolio cliche. Use it only when the brief is explicitly agency / Awwwards / experimental AND it serves a real composition purpose.
 * **NO crosshair / hairline grid lines as decoration.** Vertical and horizontal lines drawn just to make the page "feel designed" are banned. Use them only when they organize real content.
@@ -707,19 +727,19 @@ These patterns came out of real LLM-generated landing-page tests. Treat them as 
 
 ### 9.G EM-DASH BAN (the single most-violated Tell)
 
-**Em-dash (`—`) is COMPLETELY banned.** It is the LLM's signature stylistic crutch and the #1 visual Tell in production tests. There is no "limited use" allowance, no "natural language frequency" allowance, no "in body copy is fine" allowance. None.
+**Em-dash (`-`) is COMPLETELY banned.** It is the LLM's signature stylistic crutch and the #1 visual Tell in production tests. There is no "limited use" allowance, no "natural language frequency" allowance, no "in body copy is fine" allowance. None.
 
 * **Banned in headlines.** Use a period or a comma.
 * **Banned in eyebrows / labels / pills / button text / image captions / nav items.** Replace with line breaks, columns, or hairlines.
 * **Banned in body copy.** Restructure the sentence: two sentences with a period, OR a comma, OR parentheses, OR a colon.
 * **Banned in quote attribution.** Use a normal hyphen with spaces (`-`) or a line break + smaller-weight name.
-* **Banned in en-dash form too (`–`) when used as a separator.** Date ranges (`2018-2026`) use a hyphen. Number ranges (`40-80k`) use a hyphen.
+* **Banned in en-dash form too (`-`) when used as a separator.** Date ranges (`2018-2026`) use a hyphen. Number ranges (`40-80k`) use a hyphen.
 
 The ONLY permitted dash characters on the page are:
 * Regular hyphen `-` (for compound words, ranges, line dividers in markup)
 * Minus sign in math (`-5C`)
 
-If your output contains a single `—` or `–` anywhere visible to the user, the output fails the Pre-Flight Check and must be rewritten.
+If your output contains a single `-` or `-` anywhere visible to the user, the output fails the Pre-Flight Check and must be rewritten.
 
 This rule is non-negotiable. The agent has historically ignored em-dash limits when phrased as "use sparingly." The phrasing here is binary: zero em-dashes.
 
@@ -773,7 +793,7 @@ This is a vocabulary. Know these pattern names to communicate about them and rea
 * **Crosswind transitions + CSS keyframes** - default for hover, micro-interactions, load-ins.
 * **`useIntersectionObserver` / `useElementVisibility`** - enter-on-scroll, toggle a class (Section 5.C).
 * **CSS scroll-driven animations** (`animation-timeline: view()` / `scroll()`) - pinned, stacked, horizontal-pan (Sections 5.A, 5.B).
-* **`useMouse()` -> CSS custom property in an `effect`** - pointer / magnetic / tilt (Section 5.D).
+* **`useMouse()` -> CSS custom property in its subscription callback** - pointer / magnetic / tilt (Section 5.D).
 * **NEVER import `motion/react`, `framer-motion`, or `gsap`.** Stacks ships none of them, and per-frame signal state fights the reactive system.
 
 ---
@@ -863,7 +883,7 @@ Run this matrix before outputting code. This is the last filter.
 - [ ] **Dial values** explicit and reasoned from the brief, not silently using baseline?
 - [ ] **Foundation** is the Stacks stack (Stacks UI + Crosswind + Iconify), no `npm install` of an external design system or icon package?
 - [ ] **Redesign mode** detected and audit performed (if applicable, Section 11)?
-- [ ] **ZERO em-dashes (`—`) anywhere on the page.** Headlines, eyebrows, pills, body, quotes, attribution, captions, buttons, alt text. Zero. (Section 9.G - non-negotiable.)
+- [ ] **ZERO em-dashes (`-`) anywhere on the page.** Headlines, eyebrows, pills, body, quotes, attribution, captions, buttons, alt text. Zero. (Section 9.G - non-negotiable.)
 - [ ] **No `var`, no bare `document.*` / `window.*`** in any stx `<script>` block?
 - [ ] **Page Theme Lock**: ONE theme (light, dark, or auto) for the whole page, no section flips mid-page (Section 4.11)?
 - [ ] **Color Consistency Lock**: one accent color used identically across all sections (Section 4.2)?
@@ -911,7 +931,7 @@ Run this matrix before outputting code. This is the last filter.
 - [ ] **Motion claimed = motion shown**: if `MOTION_INTENSITY > 4`, page actually animates?
 - [ ] **Sticky-stack / horizontal-pan** implemented per Section 5.A / 5.B (`position: sticky; top: 0` pin + CSS `view()` / `scroll()` timeline, reduced-motion gated)?
 - [ ] **No `window.addEventListener('scroll')`**, no per-frame signal-state scroll math - using `useIntersectionObserver` / CSS scroll-driven animations only (Section 5.E)?
-- [ ] **Pointer / magnetic** effects drive a CSS custom property from `useMouse()` inside an `effect`, never per-frame signal state (Section 5.D)?
+- [ ] **Pointer / magnetic** effects drive a CSS custom property from `useMouse()` in its subscription callback, never per-frame signal state (Section 5.D)?
 - [ ] **Reduced motion** gated for everything `MOTION_INTENSITY > 3` (CSS media block AND/OR `useMediaQuery('(prefers-reduced-motion: reduce)')`)?
 - [ ] **Dark mode** tokens defined and tested in both modes (Crosswind `dark:` or CSS vars + `useColorMode()`)?
 - [ ] **Mobile collapse** explicit (`w-full`, `px-4`, `max-w-7xl mx-auto`) for high-variance layouts?
@@ -935,7 +955,7 @@ If a single checkbox cannot be honestly ticked, the page is not done. Fix it bef
 
 There is no external-design-system install matrix for a Stacks app. The foundation is already in the project:
 
-* **Components:** `@stacksjs/ui` (Stacks UI). Headless primitives + Craft native components + `Transition`. See [stacks-ui](../stacks-ui).
+* **Components:** `@stacksjs/ui/components` and plugin-resolved STX tags. Check the installed exports and native host capabilities. See [stacks-ui](../stacks-ui).
 * **Styling:** Crosswind utilities + `dark:` variant. See [stacks-crosswind](../stacks-crosswind).
 * **Icons:** Iconify `i-{collection}-{name}` classes (hugeicons default). No install needed.
 * **Templating / reactivity / motion composables:** stx (see [stacks-stx](../stacks-stx)) and [stacks-composables](../stacks-composables).

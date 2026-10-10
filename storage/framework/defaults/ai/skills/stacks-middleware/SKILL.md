@@ -1,6 +1,6 @@
 ---
 name: stacks-middleware
-description: Use when working with middleware in a Stacks application - defining middleware, applying to routes, middleware aliases, parameterized middleware, groups, or the middleware execution pipeline. Covers the Middleware class, app/Middleware.ts alias registry, and all 22 default middleware files.
+description: Use when working with middleware in a Stacks application - defining middleware, applying to routes, middleware aliases, parameterized middleware, groups, or the middleware execution pipeline. Covers the Middleware class, app/Middleware.ts alias registry, and the default middleware files.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -14,7 +14,7 @@ Built into `@stacksjs/router`. Middleware intercepts requests before they reach 
 - Middleware class: `storage/framework/core/router/src/middleware.ts`
 - Execution engine: `storage/framework/core/router/src/stacks-router.ts`
 - Alias registry: `app/Middleware.ts`
-- Default middleware: `storage/framework/defaults/app/Middleware/` (22 files)
+- Default middleware: `storage/framework/defaults/app/Middleware/`
 - Auth middleware (standalone): `storage/framework/core/auth/src/middleware.ts`
 - Tests: `storage/framework/core/router/tests/middleware.test.ts`
 
@@ -61,9 +61,9 @@ export default new Middleware({
 ### Short-Circuiting
 
 Middleware can stop request processing by:
-1. **Throwing an Error with `statusCode`** — converted to HTTP error response
-2. **Throwing a Response** — returned directly to client
-3. **Returning void** — continues to next middleware
+1. **Throwing an Error with `statusCode`** - converted to HTTP error response
+2. **Throwing a Response** - returned directly to client
+3. **Returning void** - continues to next middleware
 
 ```typescript
 // Error with status code
@@ -178,7 +178,7 @@ calling `handle`, sorts the combined page chain by priority, writes parameters
 to `request._middlewareParams`, supports exact aliases containing colons and
 `!alias` inversion, and fails closed when an alias is missing.
 
-Group middleware is prepended to all routes inside the callback. Groups can be nested — middleware accumulates.
+Group middleware is prepended to all routes inside the callback. Groups can be nested - middleware accumulates.
 
 ### Parameterized Middleware
 
@@ -198,7 +198,7 @@ Parameters are stored on `request._middlewareParams[middlewareName]` and parsed 
 | Alias | Class | Priority | Description |
 |-------|-------|----------|-------------|
 | `maintenance` | Maintenance | 0 | Checks maintenance mode, supports secret bypass URL and IP allowlist |
-| `auth` | Auth | 1 | Validates bearer token, sets authenticated user on request |
+| `auth` | Auth | 1 | Resolves bearer/token cookie/session and stamps the authenticated user |
 | `api` | Api | 1 | Validates request accepts JSON |
 | `guest` | Guest | 1 | Ensures user is NOT authenticated (for login/register pages) |
 | `env` | Env | 1 | Checks current environment |
@@ -209,11 +209,11 @@ Parameters are stored on `request._middlewareParams[middlewareName]` and parsed 
 | `permission` | Permission | 3 | Checks user permissions (parameterized: `permission:edit-posts`) |
 | `team` | Team | 3 | Ensures user belongs to a team (parameterized: `team:teamId`) |
 | `verified` | EnsureEmailIsVerified | 4 | Verifies email is confirmed |
-| `throttle` | Throttle | — | Rate limiting (parameterized: `throttle:60,1` or `throttle:100,5m`) |
-| `env:local` | EnvLocal | — | Only allows local environment |
-| `env:development` / `env:dev` | EnvDevelopment | — | Only allows development |
-| `env:staging` | EnvStaging | — | Only allows staging |
-| `env:production` / `env:prod` | EnvProduction | — | Only allows production |
+| `throttle` | Throttle | - | Rate limiting (parameterized: `throttle:60,1` or `throttle:100,5m`) |
+| `env:local` | EnvLocal | - | Only allows local environment |
+| `env:development` / `env:dev` | EnvDevelopment | - | Only allows development |
+| `env:staging` | EnvStaging | - | Only allows staging |
+| `env:production` / `env:prod` | EnvProduction | - | Only allows production |
 
 ### Environment Negation Variants
 
@@ -242,6 +242,12 @@ User middleware in `app/Middleware/` always takes precedence over framework defa
 ## Representative Implementations
 
 ### Auth Middleware
+
+The default `defaults/app/Middleware/Auth.ts` resolves a parsed bearer first,
+then the configured token cookie, then `session_id`. It loads the user, calls
+`Auth.setUser`, stamps `_authenticatedUser`, and stamps `_currentAccessToken`
+for token authentication. The following is only a minimal custom bearer guard:
+
 ```typescript
 export default new Middleware({
   name: 'Auth',
@@ -299,12 +305,22 @@ import { authMiddleware, authMiddlewareHandler } from '@stacksjs/auth'
 ```
 
 ## Gotchas
-- **Priority DOES order the chain** — entries are sorted by `priority` (lower first, default 10) before execution, so CORS can precede auth regardless of the order they were attached in. An earlier version of this file said otherwise. A non-finite or negative value is clamped to the default and warned about once
-- **`terminate()` doesn't exist** — some docs reference it, but it's not in the actual `MiddlewareConfig` interface
-- **Two auth middleware implementations** — defaults version (basic token check) and `@stacksjs/auth` version (full user loading)
-- **EnvNot* files have no aliases** — reachable by class name, or as `'!env:production'` and friends
-- **The alias map merges over the defaults** — an app's `app/Middleware.ts` adds to and overrides them rather than replacing the set
-- **Middleware is cached after first load** — changes require server restart
-- **User overrides take precedence** — `app/Middleware/Auth.ts` replaces the framework default completely
-- **Group middleware accumulates** — nested groups combine all parent middleware
-- **Request body parsed before middleware** — Laravel-style methods (`.input()`, `.query`, `.file()`) are available in middleware
+- **Priority DOES order the chain** - entries are sorted by `priority` (lower first, default 10) before execution, so CORS can precede auth regardless of the order they were attached in. An earlier version of this file said otherwise. A non-finite or negative value is clamped to the default and warned about once
+- **`terminate()` doesn't exist** - some docs reference it, but it's not in the actual `MiddlewareConfig` interface
+- **Auth entrypoints** - default Auth also loads/stamps the user and current token; inspect its cookie/session branches before replacing it
+- **EnvNot* files have no aliases** - reachable by class name, or as `'!env:production'` and friends
+- **The alias map merges over the defaults** - an app's `app/Middleware.ts` adds to and overrides them rather than replacing the set
+- **Middleware is cached after first load** - changes require server restart
+- **User overrides take precedence** - `app/Middleware/Auth.ts` replaces the framework default completely
+- **Group middleware accumulates** - nested groups combine all parent middleware
+- **Request body parsed before middleware** - Laravel-style methods (`.input()`, `.query`, `.file()`) are available in middleware
+
+
+## Source verification
+
+Use `storage/framework/defaults/app/Middleware/Auth.ts` for the complete
+native authentication guard and `core/auth/tests/auth-middleware-entrypoints.test.ts`
+for HTTP entrypoint coverage. Shared page middleware wiring is in
+`core/actions/src/dev/views.ts` and `core/buddy/src/production-server.ts`;
+consult their loadMiddlewareHandlers wiring for page redirects and
+Response handling before assuming an API refusal behaves identically in HTML.
