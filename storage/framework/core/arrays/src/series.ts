@@ -47,8 +47,15 @@ export function mergeDailySeries(rows: readonly DailyObservation[], priority: re
 }
 
 export interface NumericSeriesPoint { date: string, value: number, source?: string }
+export interface NumericSeriesSummary {
+  count: number
+  latest: NumericSeriesPoint | null
+  average: number | null
+  lowest: number | null
+  highest: number | null
+}
 /** Statistics over valid observations, including zero; latest is by date rather than input order. */
-export function summarizeSeries(points: readonly NumericSeriesPoint[]) {
+export function summarizeSeries(points: readonly NumericSeriesPoint[]): NumericSeriesSummary {
   const valid = points.filter(point => Number.isFinite(point.value)).sort((a, b) => a.date.localeCompare(b.date))
   let sum = 0
   let lowest = Infinity
