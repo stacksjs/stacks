@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.106...v0.75.107)
+
+## 🐛 Bug Fixes
+
+- make commerce workflows atomic and preserve billing state ([3221278](https://github.com/stacksjs/stacks/commit/3221278)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- upgrade stx packages to 0.2.422 ([56ef6a2](https://github.com/stacksjs/stacks/commit/56ef6a2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.105...v0.75.106)
 
 ## 🐛 Bug Fixes
