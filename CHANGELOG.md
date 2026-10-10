@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.104...v0.75.105)
+
+## ✨ Features
+
+- **buddy**: release:ios tags the build number TestFlight will show, and retires the builds it supersedes ([da06c6c](https://github.com/stacksjs/stacks/commit/da06c6c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: the command reference, with release:ios --keep-builds ([e6f3bd0](https://github.com/stacksjs/stacks/commit/e6f3bd0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.103...v0.75.104)
 
 ## 🐛 Bug Fixes
