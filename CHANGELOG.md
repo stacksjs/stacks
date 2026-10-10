@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.118...v0.75.119)
+
+## ✨ Features
+
+- add daily series provenance and spreadsheet-safe CSV exports ([aa42b57](https://github.com/stacksjs/stacks/commit/aa42b57)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.115...v0.75.118)
 
 ## ✨ Features
