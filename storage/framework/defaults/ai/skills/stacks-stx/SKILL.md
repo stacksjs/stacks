@@ -195,6 +195,19 @@ For account-persisted initial UI use `keptState` or `cachedQuery`, establish
 sign-out. Use `clearServerData(key?)` after mutations invalidate hydration
 data. Ordinary localStorage is a different persistence boundary.
 
+### Live API state and offline caching
+
+An enabled offline worker may answer API reads from its saved copy while it
+refreshes in the background. For live job progress, connection status and
+other reads whose stale answer could end a running operation, use
+`fetch(url, { cache: 'no-store' })` and return
+`Cache-Control: private, no-store` from the endpoint. STX >= 0.2.428 forwards
+no-store requests directly to the network without reading, writing or falling
+back to its offline cache; no-store responses also remove earlier saved copies.
+A failed network read must remain a failed read, rather than appearing to
+confirm that a background operation finished. Keep ordinary offline-capable
+calendar and workout reads on their configured cache strategy.
+
 ## STX capability discovery
 
 ### Core
