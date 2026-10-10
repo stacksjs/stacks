@@ -42,7 +42,7 @@ await rowToken({ ...owner, action: 'disable' })
 assert.equal(await rowToken({ ...owner, action: 'read' }), null)
 await assert.rejects(() => rowToken({ ...owner, scope: { id: 1, tenant_id: 8 }, action: 'enable' }), RowTokenNotFoundError)
 assert.equal((await db.selectFrom('locked_records').selectAll().where('id', '=', 2).executeTakeFirst())!.token, null)
-await db.unsafe('CREATE TABLE timeless_tokens (id TEXT PRIMARY KEY, tenant_id INTEGER, token TEXT, changed_at TEXT)').execute()
+await db.unsafe('CREATE TABLE timeless_tokens (id VARCHAR(255) PRIMARY KEY, tenant_id INTEGER, token TEXT, changed_at TEXT)').execute()
 await db.insertInto('timeless_tokens').values([{ id: 'one', tenant_id: null, token: null }, { id: 'two', tenant_id: null, token: null }]).execute()
 const timeless = { table: 'timeless_tokens', scope: { id: 'one', tenant_id: null }, column: 'token', timestampColumn: false as const }
 const noTimestamp = await rowToken({ ...timeless, action: 'enable' })

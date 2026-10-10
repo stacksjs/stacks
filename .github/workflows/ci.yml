@@ -236,27 +236,17 @@ jobs:
         id: install
         run: bun install --frozen-lockfile
 
-      # Bun resolves a workspace package's ROOT export from source when its
-      # `dist` is missing, but it does NOT do that for subpath patterns like
-      # `./composables/*`. `dist` is gitignored and nothing here builds, so the
-      # moment `storage/framework/defaults/functions/*` moved from
-      # `@stacksjs/browser` to `@stacksjs/browser/composables/csrf` (80090bbe7a,
-      # for tree-shaking) the suite could no longer resolve it and this job went
-      # red. It stayed green on developer machines because a stale `dist` was
-      # already sitting there.
-      #
-      # Both packages 80090bbe7a touched, in dependency order: browser's built
-      # `composables/useStorage.js` imports `@stacksjs/composables/useStorage`,
-      # so composables has to exist first or the same error just moves one
-      # level down. Under half a second for the pair.
-      #
-      # If another package starts being imported by subpath and the suite
-      # cannot resolve it, add it here, or import its root instead.
-      - name: Build packages imported by subpath
+      # Published-entrypoint probes execute compiled packages without source
+      # aliases. Build their runtime dependencies as well as subpath targets,
+      # so a clean checkout resolves roots such as strings and model-meta.
+      - name: Build framework runtime packages
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
-            echo "::group::build @stacksjs/$pkg"
-            (cd "storage/framework/core/$pkg" && bun run build)
+          for dir in storage/framework/core/*/; do
+            manifest="${dir%/}/package.json"
+            [ -f "$manifest" ] || continue
+            bun -e 'const p=await Bun.file(process.argv[1]).json();process.exit(p.private || !p.scripts?.build ? 1 : 0)' "$manifest" || continue
+            echo "::group::build ${dir%/}"
+            (cd "${dir%/}" && bun run build)
             echo "::endgroup::"
           done
 

@@ -263,7 +263,8 @@ describe('Native components feel native', () => {
     // is-open follows `shown`, which present() sets only after the lifted
     // sheet's closed style is worked out in the body.
     expect(sheet).toContain("const sheetClass = derived(() => `${shown() ? 'is-open' : ''}")
-    expect(sheet).toContain('getComputedStyle(sheetPanel).transform')
+    expect(sheet).toContain('sheetPanel.getBoundingClientRect()')
+    expect(sheet.indexOf('sheetPanel.getBoundingClientRect()')).toBeLessThan(sheet.indexOf('shown.set(true)'))
     expect(sheet.indexOf('putBack ??= liftToBody(element)')).toBeLessThan(sheet.indexOf('shown.set(true)'))
   })
 
