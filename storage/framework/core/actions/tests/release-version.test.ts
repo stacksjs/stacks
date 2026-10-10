@@ -46,3 +46,42 @@ test('consumer release dry runs use Bumpx prerelease, build and stable promotion
   }
   finally { rmSync(directory, { recursive: true, force: true }) }
 }, 30000)
+
+test('a conflicting remote release tag cannot publish the version commit without its tag', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'stacks-release-atomic-'))
+  const app = join(directory, 'app')
+  const remote = join(directory, 'remote.git')
+  const run = async (args: string[], cwd = directory) => {
+    const child = Bun.spawn(args, { cwd, env: { ...process.env, APP_ENV: 'test' }, stdout: 'pipe', stderr: 'pipe' })
+    const timeout = setTimeout(() => child.kill(), 10000)
+    try {
+      const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      return { code, stdout: stdout.trim(), stderr }
+    }
+    finally { clearTimeout(timeout); child.kill() }
+  }
+  const git = async (args: string[], cwd = directory) => {
+    const result = await run(['git', ...args], cwd)
+    expect(result.code, result.stderr).toBe(0)
+    return result.stdout
+  }
+  try {
+    await git(['init', '--bare', '-q', remote])
+    await git(['init', '-q', '-b', 'main', app])
+    await git(['config', 'user.name', 'Release Test'], app)
+    await git(['config', 'user.email', 'release@test.local'], app)
+    writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'atomic-release-check', version: '1.0.0' }))
+    writeFileSync(join(app, 'bunfig.toml'), 'preload = []\n')
+    await git(['add', 'package.json', 'bunfig.toml'], app)
+    await git(['commit', '-qm', 'chore: start'], app)
+    await git(['remote', 'add', 'origin', remote], app)
+    await git(['push', '-qu', 'origin', 'main'], app)
+    const before = await git(['rev-parse', 'refs/heads/main'], remote)
+    await git(['tag', 'v1.0.1', before], remote)
+    const result = await run([process.execPath, `--config=${join(app, 'bunfig.toml')}`, '--no-env-file', join(import.meta.dir, '../src/bump.ts'), '--bump', 'patch'], app)
+    expect(result.code, `${result.stdout}\n${result.stderr}`).not.toBe(0)
+    expect(await git(['rev-parse', 'refs/heads/main'], remote)).toBe(before)
+    expect(await git(['rev-parse', 'refs/tags/v1.0.1'], remote)).toBe(before)
+  }
+  finally { rmSync(directory, { recursive: true, force: true }) }
+}, 30000)

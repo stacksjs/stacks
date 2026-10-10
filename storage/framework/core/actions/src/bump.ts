@@ -601,6 +601,6 @@ if (!isDryRun) {
   await stageReleaseArtifacts()
   await git(['commit', '-m', `chore: release v${nextVersion}`])
   await git(['tag', `v${nextVersion}`])
-  await git(['push'])
-  await git(['push', 'origin', `v${nextVersion}`])
+  const branch = (await git(['symbolic-ref', '--short', 'HEAD'])).trim()
+  await git(['push', '--atomic', 'origin', `HEAD:refs/heads/${branch}`, `refs/tags/v${nextVersion}`])
 }
