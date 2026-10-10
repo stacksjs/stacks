@@ -123,7 +123,6 @@
     "Team": true,
     "TeamInvitation": true,
     "TeamMember": true,
-    "TmpEmitRelated": true,
     "Transaction": true,
     "TranscodeStorageVideoJob": true,
     "UsageEvent": true,
