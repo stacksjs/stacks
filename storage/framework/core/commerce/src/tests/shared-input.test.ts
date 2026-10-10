@@ -59,4 +59,7 @@ test('opposite cart item orders reserve stock atomically without a lock-order cy
   const ids = [Number(first.id), Number(second.id)]
   const results = await Promise.all([adjustInventoryMany(ids.map(id => ({ id, delta: -1 }))), adjustInventoryMany([...ids].reverse().map(id => ({ id, delta: -1 })))])
   expect(results.every(result => result.ok)).toBe(true)
+  const { db } = await import('@stacksjs/database/runtime')
+  const stock = await db.selectFrom('products').select(['id', 'inventory_count']).where('id', 'in', ids).execute()
+  expect(stock.map(row => Number(row.inventory_count))).toEqual([8, 8])
 })

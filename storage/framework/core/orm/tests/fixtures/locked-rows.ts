@@ -54,12 +54,14 @@ await assert.rejects(() => rowToken({ ...timeless, scope: { tenant_id: null }, a
 const mixed = await Promise.all([rowToken({ ...owner, action: 'enable' }), rowToken({ ...owner, action: 'rotate' }), rowToken({ ...owner, action: 'disable' })])
 const finalToken = await rowToken({ ...owner, action: 'read' })
 assert(mixed.includes(finalToken), 'the final state belongs to a completed serialized operation')
-await Promise.all([[1, 2], ['02', '01']].map(ids => transaction(async (tx) => {
+await db.insertInto('locked_records').values({ id: 10, tenant_id: 8, quantity: 30 }).execute()
+await Promise.all([[2, 10], ['02', '10']].map(ids => transaction(async (tx) => {
   const records = await lockRows(tx, 'locked_records', ids)
-  assert.equal(records.size, 2)
+  assert.deepEqual([...records.keys()], ['10', '2'], 'numeric aliases retain the same physical lock order')
   for (const id of ids) await tx.updateTable('locked_records').set({ quantity: Number(records.get(String(Number(id)))!.quantity) + 1 }).where('id', '=', id).execute()
 })))
-assert.equal(Number((await db.selectFrom('locked_records').selectAll().where('id', '=', 1).executeTakeFirst())!.quantity), 20)
+assert.equal(Number((await db.selectFrom('locked_records').selectAll().where('id', '=', 2).executeTakeFirst())!.quantity), 22)
+assert.equal(Number((await db.selectFrom('locked_records').selectAll().where('id', '=', 10).executeTakeFirst())!.quantity), 32)
 await transaction(async (tx) => {
   const scoped = await lockRows(tx, 'locked_records', [1, 2], { scope: { tenant_id: 7 } })
   assert.equal(scoped.get('2'), undefined)
