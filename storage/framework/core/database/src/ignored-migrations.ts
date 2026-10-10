@@ -1,7 +1,8 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
-import { basename, dirname, join } from 'node:path'
+import { basename } from 'node:path'
 import { path } from '@stacksjs/path'
+import { isGeneratedMigration } from './generated-migration-marker'
 
 /**
  * Migrations git will never commit.
@@ -31,9 +32,9 @@ export function findIgnoredMigrations(migrationsDir: string = path.userMigration
     return []
 
   try {
-    const result = spawnSync('git', ['check-ignore', '--stdin'], {
+    const result = spawnSync('git', ['check-ignore', '--stdin', '-z'], {
       cwd: migrationsDir,
-      input: files.join('\n'),
+      input: `${files.join('\0')}\0`,
       encoding: 'utf8',
       timeout: 5000,
     })
@@ -41,11 +42,34 @@ export function findIgnoredMigrations(migrationsDir: string = path.userMigration
     // failed — either way, not something to report.
     if (result.status !== 0 || typeof result.stdout !== 'string')
       return []
-    return result.stdout.split('\n').map(line => basename(line.trim())).filter(Boolean).sort()
+    return result.stdout.split('\0').filter(Boolean).map(file => basename(file)).sort()
   }
   catch {
     return []
   }
+}
+
+/**
+ * Keep generator-owned schema history visible even under a global SQL ignore.
+ * Intent-to-add registers the paths without staging their contents: ordinary
+ * git diff / git add still let the developer review SQL with its model change.
+ * Existing staged files, unmarked SQL, and repositories' ignore rules stay as
+ * they are. Outside a checkout, findIgnoredMigrations returns no candidates.
+ */
+export function trackIgnoredGeneratedMigrations(migrationsDir: string = path.userMigrationsPath()): string[] {
+  const files = findIgnoredMigrations(migrationsDir).filter(file => isGeneratedMigration(migrationsDir, file))
+  if (!files.length)
+    return []
+  const result = spawnSync('git', ['add', '--intent-to-add', '--force', '--', ...files], {
+    cwd: migrationsDir,
+    encoding: 'utf8',
+    timeout: 5000,
+  })
+  if (result.status !== 0) {
+    const reason = result.error?.message || result.stderr.trim() || 'git add failed'
+    throw new Error(`Could not make generated migrations visible to Git: ${reason}. Resolve the Git error and rerun buddy generate:migrations.`)
+  }
+  return files
 }
 
 /** Where the ignore comes from, when git can say: `~/.gitignore_global:26:*.sql`. */
@@ -67,12 +91,12 @@ export function formatIgnoredMigrations(files: string[], migrationsDir: string =
   if (files.length > 5)
     shown.push(`  - …and ${files.length - 5} more`)
   const rule = files[0] ? describeIgnoreRule(migrationsDir, files[0]) : null
-  const gitignore = join(dirname(dirname(migrationsDir)), '.gitignore')
   return [
     `${files.length === 1 ? 'A migration is' : `${files.length} migrations are`} ignored by git and will never be committed:`,
     ...shown,
     rule ? `The rule matching them: ${rule}` : 'A gitignore rule (often a global `*.sql`) matches them.',
     'They run here, but CI and the deploy will build a database without them.',
-    `Fix: add \`!database/migrations/*.sql\` to ${gitignore}, then \`git add database/migrations\`.`,
+    'Run `buddy generate:migrations` to register ignored generated migrations for normal Git staging.',
+    'For an existing unmarked migration, use `git add --force -- <migration-path>` after reviewing it.',
   ].join('\n')
 }

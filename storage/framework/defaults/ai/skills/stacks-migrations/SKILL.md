@@ -29,13 +29,15 @@ buddy seed                          # seed database
 buddy generate:migrations           # generate migrations from model diffs
 ```
 
-## Creating a Migration
+## Creating a Schema Migration
 
 ```bash
-buddy make:migration create_orders_table
+buddy generate:migrations
 ```
 
-Creates a timestamped migration file in `database/migrations/`.
+Define or update the model first, then let the generator write the SQL in
+`database/migrations/`. Do not hand-write a model's schema changes or edit a
+generated migration to compensate for a missing model declaration.
 
 ## Migration Generation from Models
 
@@ -59,6 +61,12 @@ The snapshot is part of the schema history and must be committed with the
 generated migration. It lives under `storage/framework/database/`, not `.qb/`.
 Run the generator a second time before committing. A stable change reports
 `Nothing to migrate` and `Model snapshot unchanged`.
+
+Generation also makes ignored, generator-marked SQL visible to Git using
+intent-to-add, including on a no-op rerun. This handles global `*.sql` ignores
+without changing application ignore rules or staging SQL contents. Review and
+stage migrations with their models and snapshot normally; do not add per-file
+`.gitignore` exceptions. Dry-run previews never change the Git index.
 
 ## Built-in Migrations (96+)
 

@@ -108,6 +108,13 @@ Diff your models against the current schema and emit SQL migration files into `d
 buddy generate:migrations
 ```
 
+Generated migrations and their model snapshot are schema history to commit together.
+If Git ignores generated SQL (for example, through a global `*.sql` rule), Stacks
+registers those files with intent-to-add. Their contents remain unstaged for
+review, and ordinary `git add` includes them. No application `.gitignore`
+exceptions are needed. This also repairs ignored generated files on a no-op rerun.
+Migration previews leave the Git index alone.
+
 ### Vitess VSchema
 
 Derive a [Vitess](https://vitess.io/) keyspace VSchema from your models and write it to `database/vschema.json`:

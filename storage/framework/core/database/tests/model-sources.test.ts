@@ -14,9 +14,9 @@
 //     orders.
 
 import { afterEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { prepareMigrationModelsDir, withoutProtectedTableDropSql } from '../src/migrations'
+import { withoutProtectedTableDropSql } from '../src/migrations'
 import { cleanupModelStaging, resolveModelSources } from '../src/model-sources'
 
 const TMP = join(import.meta.dir, '.tmp-model-sources')
@@ -221,28 +221,18 @@ describe('withoutProtectedTableDropSql', () => {
 })
 
 describe('resolveModelSources against the real framework defaults', () => {
-  it('finds every shipped model, nested ones included', () => {
-    const resolved = resolveModelSources()
-
-    expect(resolved).not.toBeNull()
-    // If this drops sharply, the nested-model regression is back.
-    expect(resolved!.models.length).toBeGreaterThan(55)
-    expect(resolved!.models.some(m => m.name === 'PrintDevice')).toBe(true)
-  })
-
-  it('exposes a directory that exists and is flat', () => {
-    const resolved = resolveModelSources()!
-    expect(existsSync(resolved.dir)).toBe(true)
-
-    const staged = readdirSync(resolved.dir).filter(f => f.endsWith('.ts'))
-    expect(staged.length).toBe(resolved.models.length)
-  })
-
-  it('feeds framework defaults to migration generation without app/Models', () => {
-    const prepared = prepareMigrationModelsDir()
-
-    expect(prepared.skip).toBe(false)
-    expect(existsSync(prepared.modelsDir)).toBe(true)
-    expect(readdirSync(prepared.modelsDir).some(file => file === 'User.ts')).toBe(true)
+  it('discovers and flattens shipped models for a project without app/Models', async () => {
+    // A contributor may have app/Models locally. Exercise the fallback in an
+    // isolated empty app rather than assuming the framework checkout is empty.
+    const root = join(TMP, 'default-project')
+    mkdirSync(join(root, 'storage/framework'), { recursive: true })
+    symlinkSync(join(import.meta.dir, '../../../defaults'), join(root, 'storage/framework/defaults'), 'dir')
+    writeFileSync(join(root, 'bunfig.toml'), 'preload = []\n')
+    const child = Bun.spawn([process.execPath, `--config=${join(root, 'bunfig.toml')}`, '--no-env-file', join(import.meta.dir, 'fixtures/default-model-discovery.ts')], {
+      cwd: root, env: { ...process.env, APP_ENV: 'test' }, stdout: 'pipe', stderr: 'pipe',
+    })
+    const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    expect(code, `${stdout}\n${stderr}`).toBe(0)
+    expect(stdout).toContain('default model discovery OK')
   })
 })
