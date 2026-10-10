@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.110...v0.75.111)
+
+## 🐛 Bug Fixes
+
+- keep native sheets mounted for transitions and media playback ([c0f0342](https://github.com/stacksjs/stacks/commit/c0f0342)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.109...v0.75.110)
 
 ## 🐛 Bug Fixes
