@@ -8,9 +8,36 @@
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { meaningfulNpmError, publishables } from './promote-latest'
+import { confirmPublications, meaningfulNpmError, publishables } from './promote-latest'
 
 const root = new URL('../../', import.meta.url).pathname
+
+describe('registry publication confirmation', () => {
+  it('waits for the exact accepted package to become visible', async () => {
+    const requested: string[] = []
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch(request) {
+      requested.push(new URL(request.url).pathname)
+      if (requested.length === 1) return new Response('pending', { status: 404 })
+      return Response.json({ name: '@stacksjs/buddy', version: '0.75.115', dist: { tarball: 'https://registry.npmjs.org/buddy.tgz' } })
+    } })
+    try {
+      await confirmPublications([{ name: '@stacksjs/buddy', version: '0.75.115', dir: 'buddy' }], server.url.href, 2, 0)
+      expect(requested).toEqual(['/%40stacksjs%2Fbuddy/0.75.115', '/%40stacksjs%2Fbuddy/0.75.115'])
+    }
+    finally { server.stop(true) }
+  })
+
+  it('refuses a missing or mismatched artifact before promotion', async () => {
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch(request) {
+      if (request.url.includes('missing')) return new Response('missing', { status: 404 })
+      return Response.json({ name: '@stacksjs/buddy', version: '0.75.114', dist: { tarball: 'https://registry.npmjs.org/buddy.tgz' } })
+    } })
+    try {
+      await expect(confirmPublications([{ name: 'missing', version: '1.0.0', dir: '' }, { name: '@stacksjs/buddy', version: '0.75.115', dir: '' }], server.url.href, 1, 0)).rejects.toThrow('missing@1.0.0, @stacksjs/buddy@0.75.115; no latest tags were changed')
+    }
+    finally { server.stop(true) }
+  })
+})
 
 describe('publishables', () => {
   it('finds the scoped framework packages but not the separately published meta-package', async () => {

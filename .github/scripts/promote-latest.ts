@@ -28,6 +28,32 @@ export interface Publishable {
   dir: string
 }
 
+/** A successful upload or dist-tag write does not prove an asynchronous publish landed. */
+export async function confirmPublications(
+  packages: Publishable[],
+  registry = 'https://registry.npmjs.org',
+  attempts = 30,
+  retryDelayMs = 10_000,
+): Promise<void> {
+  if (!Number.isInteger(attempts) || attempts < 1) throw new Error('Publication confirmation requires at least one attempt')
+  let pending = packages
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const results = await Promise.all(pending.map(async (pkg) => {
+      try {
+        const result = await fetch(`${registry.replace(/\/$/, '')}/${encodeURIComponent(pkg.name)}/${encodeURIComponent(pkg.version)}`, { signal: AbortSignal.timeout(20_000), cache: 'no-store' })
+        if (!result.ok) return pkg
+        const manifest = await result.json() as { name?: string, version?: string, dist?: { tarball?: string } }
+        return manifest.name === pkg.name && manifest.version === pkg.version && typeof manifest.dist?.tarball === 'string' ? null : pkg
+      }
+      catch { return pkg }
+    }))
+    pending = results.filter((pkg): pkg is Publishable => pkg !== null)
+    if (!pending.length) return
+    if (attempt < attempts) await Bun.sleep(retryDelayMs)
+  }
+  throw new Error(`Registry did not confirm publication of ${pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}; no latest tags were changed`)
+}
+
 /**
  * Every scoped workspace package the release publishes under the holding tag.
  * The unscoped `stacks` meta-package is deliberately excluded: npm trusted
@@ -128,6 +154,11 @@ async function main(): Promise<void> {
       console.log(`  would promote ${pkg.name}@${pkg.version}`)
     return
   }
+
+  // Check the whole set before moving any tag or publishing the meta-package.
+  // npm accepted Buddy 0.75.115 and allowed its tag write, but never exposed
+  // that version. Advancing stacks first left clean installs impossible.
+  await confirmPublications(packages)
 
   const failures: string[] = []
   let promoted = 0
