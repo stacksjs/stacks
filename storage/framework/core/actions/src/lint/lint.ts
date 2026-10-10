@@ -64,9 +64,14 @@ function walkLintableFiles(cwd: string): string[] {
  * pickier auto-discovers its own config (pickier.config.ts, .config/pickier.ts,
  * …), so we don't pass one.
  */
-export async function lintProject(options: { cwd?: string, fix?: boolean } = {}): Promise<{ ok: boolean }> {
+export async function lintProject(options: { cwd?: string, fix?: boolean, maxWarnings?: number } = {}): Promise<{ ok: boolean }> {
   const cwd = options.cwd ?? process.cwd()
   log.info(options.fix ? 'Ensuring Code Style...' : 'Checking Code Style...')
+  const maxWarnings = options.maxWarnings ?? 9999
+  if (!Number.isInteger(maxWarnings) || maxWarnings < -1) {
+    await log.error('maxWarnings must be an integer of -1 or greater')
+    return { ok: false }
+  }
 
   let files: string[]
   try {
@@ -82,8 +87,8 @@ export async function lintProject(options: { cwd?: string, fix?: boolean } = {})
   }
 
   // runLint prints its own scan summary and returns 0 on success. A generous
-  // max-warnings keeps warnings non-fatal (only errors fail the build).
-  const code = await runLint(files, { maxWarnings: 9999, fix: options.fix })
+  // max-warnings keeps warnings non-fatal unless the caller sets a stricter budget.
+  const code = await runLint(files, { maxWarnings, fix: options.fix })
   const ok = code === 0
   if (ok)
     log.success('Linted')
@@ -92,7 +97,7 @@ export async function lintProject(options: { cwd?: string, fix?: boolean } = {})
 }
 
 /** Auto-fix the project's code style — `lintProject` with fixing enabled. */
-export function lintFix(options: { cwd?: string } = {}): Promise<{ ok: boolean }> {
+export function lintFix(options: { cwd?: string, maxWarnings?: number } = {}): Promise<{ ok: boolean }> {
   return lintProject({ ...options, fix: true })
 }
 

@@ -1,5 +1,40 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.118...v0.75.122)
+
+## ✨ Features
+
+- add strict lint budgets and synchronous command output ([79755f3](https://github.com/stacksjs/stacks/commit/79755f3)) _(by Chris <chris@stacksjs.com>)_
+- broadcast persisted chat changes through native authenticated streams ([b274ae6](https://github.com/stacksjs/stacks/commit/b274ae6)) _(by Chris Breuer <chris@stacksjs.com>)_
+- add persistent authorized direct messaging model trait ([bc37e7a](https://github.com/stacksjs/stacks/commit/bc37e7a)) _(by Chris Breuer <chris@stacksjs.com>)_
+- add daily series provenance and spreadsheet-safe CSV exports ([aa42b57](https://github.com/stacksjs/stacks/commit/aa42b57)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **arrays**: preserve the public series summary type ([d9ed0e3](https://github.com/stacksjs/stacks/commit/d9ed0e3)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh lint command and native skill references ([bc312a0](https://github.com/stacksjs/stacks/commit/bc312a0)) _(by Chris <chris@stacksjs.com>)_
+- register native authenticated broadcast transport ([0ac5681](https://github.com/stacksjs/stacks/commit/0ac5681)) _(by Chris Breuer <chris@stacksjs.com>)_
+- refresh native messaging capability catalog ([4ae9cae](https://github.com/stacksjs/stacks/commit/4ae9cae)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.121 ([911dbb5](https://github.com/stacksjs/stacks/commit/911dbb5)) _(by Chris Breuer <chris@stacksjs.com>)_
+- release v0.75.120 ([3d9f576](https://github.com/stacksjs/stacks/commit/3d9f576)) _(by Chris <chris@stacksjs.com>)_
+- release v0.75.119 ([5110467](https://github.com/stacksjs/stacks/commit/5110467)) _(by Chris <chris@stacksjs.com>)_
+- release v0.75.119 ([c3374cf](https://github.com/stacksjs/stacks/commit/c3374cf)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge tag 'v0.75.120' into codex/native-messaging ([dc66a14](https://github.com/stacksjs/stacks/commit/dc66a14)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.120...v0.75.121)
 
 ## ✨ Features
@@ -897,7 +932,7 @@
 - **storage**: download and sandbox signed files that can run script, instead of rendering them on the app's origin ([6370c7d](https://github.com/stacksjs/stacks/commit/6370c7d)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **router**: stream() pulls from its source only as fast as the client reads ([d07e5ed](https://github.com/stacksjs/stacks/commit/d07e5ed)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **router**: keep every value of a repeated form field, and read media types case-insensitively ([f740190](https://github.com/stacksjs/stacks/commit/f740190)) _(by Chris <chrisbreuer93@gmail.com>)_
-- **router**: validate the input the handler reads, and keep __proto__ a plain key ([9f34bf9](https://github.com/stacksjs/stacks/commit/9f34bf9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: validate the input the handler reads, and keep `__proto__` a plain key ([9f34bf9](https://github.com/stacksjs/stacks/commit/9f34bf9)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **csrf**: recognise the CSRF cookie by its exact name ([5427f19](https://github.com/stacksjs/stacks/commit/5427f19)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **cloud**: name and find the stack where buddy deploy puts it, on every path that reads it ([13ddc8d](https://github.com/stacksjs/stacks/commit/13ddc8d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2862](https://github.com/stacksjs/stacks/issues/2862))
 - **cors**: a wildcard origin policy with credentials allows no origin, instead of every one ([625d6fc](https://github.com/stacksjs/stacks/commit/625d6fc)) _(by Chris <chrisbreuer93@gmail.com>)_

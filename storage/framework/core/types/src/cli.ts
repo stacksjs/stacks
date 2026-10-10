@@ -319,7 +319,7 @@ export type GeneratorOptions = {
 export type LintOption = 'fix'
 export type LintOptions = {
   [key in LintOption]: boolean
-} & CliOptions
+} & { maxWarnings?: string | number, 'max-warnings'?: string | number } & CliOptions
 
 export type MakeStringOption = 'name' | 'chat' | 'sms' | 'env'
 export type MakeBooleanOption =

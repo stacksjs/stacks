@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/lint",
   "type": "module",
-  "version": "0.75.121",
+  "version": "0.75.122",
   "description": "The Stacks way to lint.",
   "author": "Chris Breuer",
   "contributors": [
@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "pickier": "^0.1.68"
+    "pickier": "^0.1.70"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
