@@ -873,3 +873,5 @@ export interface TaggableTable {
   created_at?: string
   updated_at?: string
 }
+
+export * from './messaging'

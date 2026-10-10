@@ -343,6 +343,7 @@ const castModelInstanceProxyHandlers = new WeakMap<object, ProxyHandler<any>>()
  * (`Model._likeable.likedBy(userId)`).
  */
 const TRAIT_INSTANCE_METHOD_BINDINGS: Record<string, { bag: keyof TraitMethods, mode: 'id' | 'model' }> = {
+  messenger: { bag: '_messaging', mode: 'id' },
   tags: { bag: '_taggable', mode: 'id' },
   tagCount: { bag: '_taggable', mode: 'id' },
   addTag: { bag: '_taggable', mode: 'id' },
@@ -2248,6 +2249,7 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
      * model simply had no `created_at`, which is the kind of thing you find
      * from a column that is missing rather than from an error that says so.
      */
+    useMessaging?: boolean
     commentable?: boolean | object
     /**
      * Whose data the rows are, what erasure does to them, and how long they
@@ -2326,6 +2328,7 @@ type QueryModel<TDef extends ModelDefinition> = OrmModelStatic<QueryDefinition<T
 type ModelWriteData<TDef extends ModelDefinition> = Parameters<QueryModel<TDef>['create']>[0]
 type ModelForceWriteData<TDef extends ModelDefinition> = Parameters<ReturnType<QueryModel<TDef>['make']>['forceFill']>[0]
   & Partial<BelongsToForeignKeys<QueryDefinition<TDef>>>
+import { createMessagingMethods } from './messaging'
 import { createTaggableMethods } from './traits/taggable'
 import { createCategorizableMethods } from './traits/categorizable'
 import { createCommentableMethods } from './traits/commentable'
@@ -2449,6 +2452,7 @@ const KNOWN_TRAITS: ReadonlySet<string> = new Set([
   'likeable',
   'taggable',
   'categorizable',
+  'useMessaging',
   'commentable',
   'commentables',
   'broadcastOn',
@@ -3137,6 +3141,7 @@ async function removeInline(indexName: string, id: number, modelName: string): P
 }
 
 export interface TraitMethods {
+  _messaging?: ReturnType<typeof createMessagingMethods>
   _taggable?: ReturnType<typeof createTaggableMethods>
   _categorizable?: ReturnType<typeof createCategorizableMethods>
   _commentable?: ReturnType<typeof createCommentableMethods>
@@ -3152,6 +3157,9 @@ function buildTraitMethods(definition: BQBModelDefinition): TraitMethods {
   const traits = definition.traits
 
   if (!traits) return methods
+
+  if ((traits as StacksModelDefinition['traits'])?.useMessaging)
+    methods._messaging = createMessagingMethods(tableName)
 
   if (traits.taggable) {
     methods._taggable = createTaggableMethods(tableName)

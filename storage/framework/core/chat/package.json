@@ -58,6 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/orm": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*"
   },

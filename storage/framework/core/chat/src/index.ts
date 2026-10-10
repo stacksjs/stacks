@@ -97,3 +97,7 @@ export function configureTeams(config: teams.TeamsConfig): void {
 export type { SlackConfig, SlackMessage, SlackBlock, SlackAttachment } from './drivers/slack'
 export type { DiscordConfig, DiscordMessage, DiscordEmbed } from './drivers/discord'
 export type { TeamsConfig, TeamsMessage, TeamsAdaptiveCard, TeamsCardElement, TeamsCardAction } from './drivers/teams'
+
+/** Persistent first-party messaging between application users. */
+export { createMessenger, MessagingError } from '@stacksjs/orm'
+export type { Messenger, MessagingOptions, DirectConversation, DirectMessage } from '@stacksjs/orm'

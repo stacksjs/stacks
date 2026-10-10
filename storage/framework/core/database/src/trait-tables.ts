@@ -81,6 +81,8 @@ function updatedAt(sql: SqlHelpers): string {
  */
 export function traitTableNames(): TraitTableName[] {
   return [
+    'chat_messages',
+    'chat_conversations',
     'commentables',
     'taggables',
     'categorizables',
@@ -304,6 +306,9 @@ export function traitTableColumnGuarantees(sql: SqlHelpers): { table: string, co
 
 export function traitTableIndexSql(): string[] {
   return [
+    'CREATE INDEX IF NOT EXISTS chat_messages_thread_index ON chat_messages (conversation_id, id)',
+    'CREATE INDEX IF NOT EXISTS chat_conversations_first_index ON chat_conversations (scope, participant_type, first_id)',
+    'CREATE INDEX IF NOT EXISTS chat_conversations_second_index ON chat_conversations (scope, participant_type, second_id)',
     `CREATE INDEX IF NOT EXISTS commentables_owner_index ON commentables (commentables_type, commentables_id)`,
     `CREATE INDEX IF NOT EXISTS commentables_status_index ON commentables (status)`,
     // Scoped by owner, not just by type. A catalogue row uses
@@ -378,6 +383,30 @@ export async function likeableTargets(): Promise<Array<{ table: string, foreignK
   return [...targets.values()]
 }
 
+/** Persistent direct messaging. Owned by migrations, never created during requests. */
+export function messagingTableSql(sql: SqlHelpers): string[] {
+  return [
+    `CREATE TABLE IF NOT EXISTS chat_conversations (
+      id VARCHAR(64) PRIMARY KEY,
+      scope VARCHAR(255) NOT NULL,
+      participant_type VARCHAR(255) NOT NULL,
+      first_id BIGINT NOT NULL,
+      second_id BIGINT NOT NULL,
+      created_at ${sql.datetime} NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS chat_messages (
+      ${sql.pkColumn},
+      conversation_id VARCHAR(64) NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+      sender_id BIGINT NOT NULL,
+      body TEXT NOT NULL,
+      client_key VARCHAR(100) NOT NULL,
+      created_at ${sql.datetime} NOT NULL,
+      read_at ${sql.nullableTimestamp},
+      UNIQUE (conversation_id, sender_id, client_key)
+    )`,
+  ]
+}
+
 /**
  * Create the polymorphic trait tables. Idempotent (`IF NOT EXISTS`), so it's
  * safe to run on every `buddy migrate`.
@@ -395,6 +424,9 @@ export async function migrateTraitTables(options: { verbose?: boolean } = {}): P
     log.info(`Creating polymorphic trait tables for ${dbDriver}...`)
 
   try {
+    for (const statement of messagingTableSql(sql))
+      await db.unsafe(statement).execute()
+
     if (options.verbose) log.info('Creating commentables table...')
     await db.unsafe(commentablesTableSql(sql)).execute()
 

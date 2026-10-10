@@ -23,6 +23,8 @@ export interface TableRegistry {}
  * cannot drift apart without a compile error.
  */
 export type TraitTableName =
+  | 'chat_conversations'
+  | 'chat_messages'
   | 'commentables'
   | 'taggables'
   | 'categorizables'

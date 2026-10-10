@@ -468,3 +468,39 @@ those operations.
 - Each driver module exports a pre-instantiated `driver` singleton and both class-based and function-based APIs
 - Discord embed default color is `0x5865F2` (Discord blurple), not customizable via the auto-build path
 - Teams Adaptive Cards use version `1.4` with the official JSON schema URL
+
+
+## Persistent direct messaging
+
+`@stacksjs/orm` and `@stacksjs/chat` export `createMessenger`. Enable
+`traits: { useMessaging: true }` to bind `record.messenger(options)` to a
+hydrated model's identity. Trait migrations create `chat_conversations` and
+`chat_messages` with a cascading conversation foreign key and a unique send key.
+
+```ts
+import { createMessenger } from '@stacksjs/chat'
+
+const messenger = createMessenger({
+  actorId: authenticatedUser.id,
+  scope: `gym:${authorizedGym.id}`,
+  authorize: (actorId, recipientId) => canMessage(actorId, recipientId),
+  maxLength: 4000,
+  pageSize: 50,
+  enabled: true,
+})
+const thread = await messenger.direct(recipient.id)
+await messenger.send(thread.id, 'How did the session feel?', retryKey)
+const page = await messenger.messages(thread.id)
+await messenger.markRead(thread.id, page.messages.at(-1)!.id)
+```
+
+Select actor and scope on the server. Authorization is required and is checked
+for every inbox, history, send and read receipt operation. Use a stable retry
+key for one attempted message; a different body with the same key returns 409.
+History is chronological, with `has_more` and a `before` message-id cursor.
+Receipts acknowledge only messages through the id actually displayed.
+`MessagingError.status` provides safe HTTP statuses for application handlers.
+
+For the UI, STX ships `ChatInbox`, `ChatMessage`, and `ChatUnreadBadge` in
+`@stacksjs/components`. Browser stores import `createChat` from
+`@stacksjs/components/chat` and inject their authenticated HTTP transport.
