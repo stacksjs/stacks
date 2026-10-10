@@ -60,8 +60,8 @@ function percentile(values: number[], share: number): number {
  * is not mistaken for a treadmill: wandering only counts with a vague signal.
  */
 export function indoorVerdict(fixes: IndoorFix[], elapsedS: number): IndoorVerdict {
-  const usable = (fixes || []).filter(fix => Number.isFinite(fix?.latitude) && Number.isFinite(fix?.longitude))
-  const accuracies = usable.map(fix => Number(fix.accuracy)).filter(value => Number.isFinite(value) && value >= 0)
+  const usable = (fixes || []).filter(fix => Number.isFinite(fix?.latitude) && Number.isFinite(fix?.longitude) && Math.abs(fix.latitude) <= 90 && Math.abs(fix.longitude) <= 180)
+  const accuracies = usable.filter(fix => fix.accuracy != null).map(fix => Number(fix.accuracy)).filter(value => Number.isFinite(value) && value >= 0)
   const accuracy = accuracies.length ? percentile(accuracies, 0.5) : Number.POSITIVE_INFINITY
   let spread = 0
   if (usable.length) {
@@ -80,13 +80,13 @@ export function indoorVerdict(fixes: IndoorFix[], elapsedS: number): IndoorVerdi
 }
 
 /** A distance typed off a treadmill's display, as kilometres: "8.4", "8,4", "8400 m". */
-export function typedDistanceKm(input: string): number | null {
+export function typedDistanceKm(input: string, options: { defaultUnit?: 'km' | 'm' } = {}): number | null {
   const text = String(input || '').trim().toLowerCase().replace(',', '.')
-  const match = text.match(/^(\d+(?:\.\d+)?)\s*(km|k|m|mi)?$/)
+  const match = text.match(/^(\d+(?:\.\d*)?|\.\d+)\s*(km|k|m|mi)?$/)
   if (!match)
     return null
   const value = Number(match[1])
-  const unit = match[2] || (value > 100 ? 'm' : 'km')
+  const unit = match[2] || options.defaultUnit || (value > 100 ? 'm' : 'km')
   const km = unit === 'm' ? value / 1000 : unit === 'mi' ? value * 1.609344 : value
-  return km > 0 && km < 1000 ? Math.round(km * 1000) / 1000 : null
+  return Number.isFinite(km) && km >= 0 && km <= 2000 ? Math.round(km * 1000) / 1000 : null
 }

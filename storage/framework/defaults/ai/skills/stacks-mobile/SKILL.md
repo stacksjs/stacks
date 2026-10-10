@@ -208,6 +208,17 @@ For a run or ride, `createRouteRecorder({ location, onUpdate })` starts, pauses,
 resumes and stops the native recording, re-attaches to one that outlived the
 app (`attach()`), and reports live distance and pace from `routeStats(fixes)`,
 which ignores GPS drift, inaccurate fixes and the ground crossed during a pause.
+Recorder operations serialize; repeated `stop()` returns the same recording.
+Call `dispose()` when the owning page is destroyed to stop polling without
+stopping the native recording. Refreshes coalesce and cannot overwrite a final
+recording with a stale read.
+
+For timestamp-based timers use `startSessionClock(now)`,
+`pauseSessionClock(clock, now)`, `resumeSessionClock(clock, now)` and
+`sessionClockElapsed(clock, now)`; elapsed seconds exclude pauses across sleep.
+`typedDistanceKm(text, { defaultUnit: 'km' })` honors labelled kilometre fields,
+including zero, decimal commas and explicit `m`/`mi` suffixes. Without the
+option the original metres heuristic remains for unlabelled inputs.
 
 ## STX components
 

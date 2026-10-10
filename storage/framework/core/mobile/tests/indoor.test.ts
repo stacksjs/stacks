@@ -67,3 +67,17 @@ describe('typedDistanceKm', () => {
     expect(typedDistanceKm('far')).toBeNull()
   })
 })
+
+it('honors labelled kilometre fields, zero, and leading decimal fractions', () => {
+  expect(typedDistanceKm('120', { defaultUnit: 'km' })).toBe(120)
+  expect(typedDistanceKm('8400 m', { defaultUnit: 'km' })).toBe(8.4)
+  expect(typedDistanceKm('.5', { defaultUnit: 'km' })).toBe(0.5)
+  expect(typedDistanceKm('8.', { defaultUnit: 'km' })).toBe(8)
+  expect(typedDistanceKm('0', { defaultUnit: 'km' })).toBe(0)
+  expect(typedDistanceKm('2001', { defaultUnit: 'km' })).toBeNull()
+})
+
+it('never treats missing accuracy as a sharp signal proving an outdoor run', () => {
+  const fixes = Array.from({ length: 40 }, (_, i) => ({ ...fix(i * 20, 0, 6, i * 3), accuracy: null }))
+  expect(indoorVerdict(fixes, 120)).toBe('unsure')
+})

@@ -61,7 +61,7 @@ export function usableFixes<T extends RouteFix>(fixes: readonly T[], maxAccuracy
   const seen = new Set<number>()
   return fixes
     .filter(fix => Number.isFinite(fix.latitude) && Number.isFinite(fix.longitude) && Number.isFinite(fix.timestamp)
-      && fix.accuracy >= 0 && fix.accuracy <= maxAccuracyM)
+      && Math.abs(fix.latitude) <= 90 && Math.abs(fix.longitude) <= 180 && Number.isFinite(fix.accuracy) && fix.accuracy >= 0 && fix.accuracy <= maxAccuracyM)
     .sort((a, b) => a.timestamp - b.timestamp)
     .filter((fix) => {
       if (seen.has(fix.timestamp))
@@ -117,7 +117,7 @@ export function routeStats(fixes: readonly RouteFix[], options: RouteStatsOption
   const latest = anchors[anchors.length - 1]
   let paceSPerKm: number | null = null
   let speedMps: number | null = null
-  if (latest) {
+  if (latest && usable.at(-1)!.timestamp - latest.fix.timestamp <= windowS * 1000) {
     const since = latest.fix.timestamp - windowS * 1000
     const start = anchors.find(anchor => anchor.fix.timestamp >= since) ?? latest
     const metres = latest.cumM - start.cumM
@@ -141,7 +141,7 @@ export function routeStats(fixes: readonly RouteFix[], options: RouteStatsOption
 
 /** "5:12" per kilometre, or "–" without a pace. */
 export function paceLabel(secondsPerKm: number | null | undefined): string {
-  if (!secondsPerKm || !Number.isFinite(secondsPerKm) || secondsPerKm > 60 * 60)
+  if (secondsPerKm == null || secondsPerKm <= 0 || !Number.isFinite(secondsPerKm) || secondsPerKm > 60 * 60)
     return '–'
   const total = Math.round(secondsPerKm)
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
@@ -149,7 +149,7 @@ export function paceLabel(secondsPerKm: number | null | undefined): string {
 
 /** "24.3" kilometres per hour. */
 export function speedLabel(metresPerSecond: number | null | undefined): string {
-  return metresPerSecond && Number.isFinite(metresPerSecond) ? (metresPerSecond * 3.6).toFixed(1) : '–'
+  return metresPerSecond != null && metresPerSecond > 0 && Number.isFinite(metresPerSecond) ? (metresPerSecond * 3.6).toFixed(1) : '–'
 }
 
 export interface RouteRecorderOptions extends RouteStatsOptions {
@@ -176,6 +176,8 @@ export interface RouteRecorder {
   stop: () => Promise<RouteFix[]>
   /** Reads the recording now. */
   refresh: () => Promise<RouteStats>
+  /** Detaches polling from a page without ending its native recording. */
+  dispose: () => void
   readonly stats: RouteStats
 }
 
@@ -194,15 +196,35 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
 
   const hidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden'
 
-  async function refresh(): Promise<RouteStats> {
-    const fixes = await location.readRecording() as RouteFix[]
-    stats = routeStats(fixes, options)
-    options.onUpdate?.(stats)
-    return stats
+  let generation = 0
+  let read: Promise<RouteStats> | null = null
+  let commands = Promise.resolve()
+  let ending: Promise<RouteFix[]> | null = null
+  let disposed = false
+
+  function serialize<T>(run: () => Promise<T>): Promise<T> {
+    const result = commands.then(run)
+    commands = result.then(() => {}, () => {})
+    return result
+  }
+
+  function refresh(): Promise<RouteStats> {
+    if (read) return read
+    const version = generation
+    read = (async () => {
+      const fixes = await location.readRecording() as RouteFix[]
+      if (version === generation && !disposed) {
+        stats = routeStats(fixes, options)
+        options.onUpdate?.(stats)
+      }
+      return stats
+    })().finally(() => { read = null })
+    return read
   }
 
   function poll(): void {
     stopPolling()
+    if (disposed) return
     timer = setInterval(() => {
       if (!hidden())
         void refresh().catch(() => {})
@@ -217,38 +239,56 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
 
   return {
     get stats() { return stats },
-    async start() {
-      await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions })
-      stats = EMPTY_STATS
-      options.onUpdate?.(stats)
-      poll()
-      return stats
-    },
-    async attach() {
-      const state = await location.getRecordingState().catch(() => null)
-      if (!state?.active)
-        return null
-      await refresh().catch(() => {})
-      if (!state.paused)
+    start() {
+      ending = null
+      return serialize(async () => {
+        await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions })
+        generation++
+        stats = { ...EMPTY_STATS }
+        if (!disposed) options.onUpdate?.(stats)
         poll()
-      return state
+        return stats
+      })
     },
-    async pause() {
+    attach() {
+      return serialize(async () => {
+        const state = await location.getRecordingState()
+        if (!state?.active) return null
+        await refresh().catch(() => {})
+        if (!state.paused) poll()
+        return state
+      })
+    },
+    pause() {
+      return serialize(async () => {
+        await location.pauseRecording()
+        stopPolling()
+        await refresh().catch(() => {})
+      })
+    },
+    resume() {
+      return serialize(async () => {
+        await location.resumeRecording()
+        poll()
+      })
+    },
+    stop() {
+      if (ending) return ending
+      ending = serialize(async () => {
+        stopPolling()
+        generation++
+        const result = await location.stopRecording()
+        const fixes = (result?.locations ?? []) as RouteFix[]
+        stats = routeStats(fixes, options)
+        if (!disposed) options.onUpdate?.(stats)
+        return fixes
+      }).catch((error) => { ending = null; throw error })
+      return ending
+    },
+    dispose() {
+      disposed = true
+      generation++
       stopPolling()
-      await location.pauseRecording()
-      await refresh().catch(() => {})
-    },
-    async resume() {
-      await location.resumeRecording()
-      poll()
-    },
-    async stop() {
-      stopPolling()
-      const result = await location.stopRecording()
-      const fixes = (result?.locations ?? []) as RouteFix[]
-      stats = routeStats(fixes, options)
-      options.onUpdate?.(stats)
-      return fixes
     },
     refresh,
   }

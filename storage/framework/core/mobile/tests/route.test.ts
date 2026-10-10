@@ -115,3 +115,63 @@ describe('createRouteRecorder', () => {
     expect(await createRouteRecorder({ location: fakeLocation([]).api }).attach()).toBeNull()
   })
 })
+
+describe('recorder lifecycle', () => {
+  it('coalesces reads, ignores a late poll after stop, and detaches without stopping native GPS', async () => {
+    let release!: (fixes: RouteFix[]) => void
+    let reads = 0
+    let stops = 0
+    const api = {
+      startRecording: async () => ({}),
+      readRecording: () => { reads++; return new Promise<RouteFix[]>(resolve => { release = resolve }) },
+      stopRecording: async () => { stops++; return { locations: run(60, 3) } },
+    } as unknown as LocationApi
+    const recorder = createRouteRecorder({ location: api, intervalMs: 10 })
+    await recorder.start()
+    const first = recorder.refresh()
+    const second = recorder.refresh()
+    expect(reads).toBe(1)
+    const [a, b] = await Promise.all([recorder.stop(), recorder.stop()])
+    expect(a).toEqual(b)
+    expect(stops).toBe(1)
+    release([])
+    await Promise.all([first, second])
+    expect(recorder.stats.distanceM).toBeGreaterThan(170)
+    recorder.dispose()
+    await new Promise(resolve => setTimeout(resolve, 25))
+    expect(reads).toBe(1)
+    expect(stops).toBe(1)
+  })
+
+  it('orders native commands even when callers overlap', async () => {
+    const calls: string[] = []
+    const api = {
+      startRecording: async () => { await new Promise(resolve => setTimeout(resolve, 10)); calls.push('start') },
+      pauseRecording: async () => { calls.push('pause') },
+      readRecording: async () => [],
+      resumeRecording: async () => { calls.push('resume') },
+      stopRecording: async () => { calls.push('stop'); return { locations: [] } },
+    } as unknown as LocationApi
+    const recorder = createRouteRecorder({ location: api })
+    await Promise.all([recorder.start(), recorder.pause(), recorder.resume(), recorder.stop()])
+    expect(calls).toEqual(['start', 'pause', 'resume', 'stop'])
+  })
+
+  it('retries a failed stop instead of returning an empty route', async () => {
+    let calls = 0
+    const api = { stopRecording: async () => { if (++calls === 1) throw new Error('bridge unavailable'); return { locations: run(60, 3) } } } as unknown as LocationApi
+    const recorder = createRouteRecorder({ location: api })
+    await expect(recorder.stop()).rejects.toThrow('bridge unavailable')
+    expect(await recorder.stop()).toHaveLength(61)
+  })
+})
+
+it('rejects impossible coordinates and missing accuracy, and clears stale pace when stationary', () => {
+  const good = run(60, 3)
+  expect(usableFixes([{ ...good[0]!, latitude: 100 }, { ...good[1]!, accuracy: null as any }])).toEqual([])
+  const last = good.at(-1)!
+  const still = Array.from({ length: 60 }, (_, i) => ({ ...last, timestamp: last.timestamp + (i + 1) * 1000 }))
+  expect(routeStats([...good, ...still]).paceSPerKm).toBeNull()
+  expect(paceLabel(-60)).toBe('–')
+  expect(speedLabel(-3)).toBe('–')
+})
