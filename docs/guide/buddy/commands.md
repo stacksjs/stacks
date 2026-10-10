@@ -4683,6 +4683,7 @@ Ship the iOS app: regenerate its project for production, commit, tag and push
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--bump` | Raise the app version first: patch \| minor \| major \| x.y.z (default: a new build of the current version) | value, required | - |
+| `--keep-builds` | TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key) | value, required | `1` |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 
 ### `route:list`
