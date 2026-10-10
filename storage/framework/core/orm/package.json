@@ -59,7 +59,7 @@
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
-    "typecheck:inference": "bun run build && (cd ../faker && bun run build) && (cd ../query-builder && bun run build) && (cd ../types && bun run build) && (cd ../validation && bun run build) && bun tsc -p tsconfig.type-tests.json",
+    "typecheck:inference": "(cd ../validation && bun run build) && bun run build && (cd ../faker && bun run build) && (cd ../query-builder && bun run build) && (cd ../types && bun run build) && bun tsc -p tsconfig.type-tests.json",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

@@ -9,9 +9,8 @@
  * and production logged "model useApi endpoints are unavailable" and served
  * none of them. Confirmed in a live app's journal before this was fixed.
  *
- * These are file-shape assertions rather than a boot: importing the generator
- * registers routes and opens a database, and what went wrong was never the
- * generator — it was where the pieces pointed.
+ * Build and import the published barrel as well as checking the route pointers.
+ * Source-only assertions missed a minifier emitting an undeclared export.
  */
 
 import { describe, expect, it } from 'bun:test'
@@ -26,11 +25,27 @@ describe('the ORM routes entrypoint', () => {
     expect(existsSync(join(orm, 'src', 'routes.ts'))).toBe(true)
   })
 
-  it('is built as its own entrypoint', () => {
+  it('builds an importable barrel and publishes routes, registry, and trait subpaths', () => {
     // Without this there is nothing behind `@stacksjs/orm/routes`, and every
     // importer below resolves to a 404 the callers swallow.
-    expect(readFileSync(join(orm, 'build.ts'), 'utf8')).toContain('./src/routes.ts')
-  })
+    const validation = Bun.spawnSync({ cmd: [process.execPath, 'build.ts'], cwd: join(orm, '../validation'), stdout: 'pipe', stderr: 'pipe' })
+    expect(validation.exitCode, validation.stderr.toString()).toBe(0)
+    const build = Bun.spawnSync({ cmd: [process.execPath, 'build.ts'], cwd: orm, stdout: 'pipe', stderr: 'pipe' })
+    expect(build.exitCode, build.stderr.toString()).toBe(0)
+    for (const entry of ['index', 'routes', 'model-registry', 'traits/billable']) {
+      expect(existsSync(join(orm, 'dist', `${entry}.js`))).toBe(true)
+      expect(existsSync(join(orm, 'dist', `${entry}.d.ts`))).toBe(true)
+    }
+    const probe = Bun.spawnSync({
+      cmd: [process.execPath, '-e', "const orm = await import('./dist/index.js'); if (typeof orm.defineModel !== 'function' || typeof orm.toPaginator !== 'function' || typeof orm.createAuditMethods !== 'function') throw new Error('Published ORM exports are missing')"],
+      cwd: orm,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    expect(probe.exitCode, probe.stderr.toString()).toBe(0)
+    expect(readFileSync(join(orm, 'dist/index.d.ts'), 'utf8')).toContain("./models/User")
+    expect(readFileSync(join(orm, 'dist/index.d.ts'), 'utf8')).not.toContain('../../../defaults/app/Models/')
+  }, 30000)
 
   it('is what the vendored shim re-exports', () => {
     // The file the router loads first, in an app that has no core/ directory.

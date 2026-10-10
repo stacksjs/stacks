@@ -86,23 +86,26 @@ buddy build --server --verbose --project [name]
 
 ## Standard Build Pattern
 
-Every core package follows this pattern:
+For a library barrel or a package with public subpaths, preserve the module
+graph with the shared transpiler. Identifier-minifying bundles have produced
+invalid re-export bindings on supported Bun versions. Separate bundles also
+duplicate shared objects across entrypoints, such as validation's schema proxy.
 
 ```typescript
-import { dts } from 'bun-plugin-dtsx'
-import { intro, outro } from '../build/src'
+import { rm } from 'node:fs/promises'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({ dir: import.meta.dir })
-const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  minify: true,
-  plugins: [dts({ root: '.', outdir: './dist' })],
-})
-await outro({ dir: import.meta.dir, startTime, result })
+await rm('./dist', { recursive: true, force: true })
+await transpilePackage({ dir: import.meta.dir, external: frameworkExternal() })
+await outro({ dir: import.meta.dir, startTime, result: { errors: [], warnings: [] } })
 ```
+
+The helper emits every source module and its declaration with whitespace-only
+minification. Keep package-specific assets, declaration rewriting, and runtime
+probes around this call. Use Bun.build for intentional executable bundles and
+verify the emitted artifact. ORM inference builds validation before ORM because
+the published ORM imports validation's narrow runtime entry.
 
 ## Releasing libraries out of `resources/`
 
