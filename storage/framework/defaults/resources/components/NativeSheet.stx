@@ -34,6 +34,10 @@ const detents = derived<SheetDetent[]>(() => {
 })
 const hasDetents = derived(() => Boolean(detentsProp()) && detentsProp().length > 0)
 const detent = state<SheetDetent>('large')
+// Whether the sheet is drawn up. It follows `open`, but only once the sheet
+// sits in the body with its closed position worked out there (present()), so
+// it has somewhere to slide up from.
+const shown = state(false)
 
 const sheetRoot = useRef('nativeSheet')
 const panel = useRef('nativeSheetPanel')
@@ -69,10 +73,18 @@ function present(): void {
   releaseBackground = lockBackground(element)
   openedOn = currentPath()
   coverTabBar(element, true)
+  // A node moved in the document starts over with no style to transition
+  // from, so a sheet lifted and marked open in one go appears already up.
+  // Work its closed style out where it now is, then open it: the panel
+  // slides from there.
+  const sheetPanel = panel.current as HTMLElement | null
+  if (sheetPanel) void element.ownerDocument.defaultView?.getComputedStyle(sheetPanel).transform
+  shown.set(true)
   void nextTick(() => (panel.current as HTMLElement | null)?.focus())
 }
 
 function dismissed(): void {
+  shown.set(false)
   const element = root()
   if (element) coverTabBar(element, false)
   releaseBackground?.()
@@ -153,7 +165,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   else if (panel.current) trapFocus(panel.current as HTMLElement, event)
 })
 
-const sheetClass = derived(() => `${open() ? 'is-open' : ''}${hasDetents() ? ' has-detents' : ''}${detent() === 'medium' ? ' is-medium' : ''}`.trim())
+const sheetClass = derived(() => `${shown() ? 'is-open' : ''}${hasDetents() ? ' has-detents' : ''}${detent() === 'medium' ? ' is-medium' : ''}`.trim())
 </script>
 
 <div ref="nativeSheet" class="native-sheet" :class="sheetClass()" :aria-hidden="open() ? 'false' : 'true'" data-native-sheet>

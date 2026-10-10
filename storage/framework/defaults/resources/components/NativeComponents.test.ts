@@ -258,6 +258,15 @@ describe('Native components feel native', () => {
     expect(sheet).toContain('putBack ??= liftToBody(element)')
   })
 
+  it('slides a sheet up from where it was lifted to, rather than appearing up', () => {
+    const sheet = read('NativeSheet')
+    // is-open follows `shown`, which present() sets only after the lifted
+    // sheet's closed style is worked out in the body.
+    expect(sheet).toContain("const sheetClass = derived(() => `${shown() ? 'is-open' : ''}")
+    expect(sheet).toContain('getComputedStyle(sheetPanel).transform')
+    expect(sheet.indexOf('putBack ??= liftToBody(element)')).toBeLessThan(sheet.indexOf('shown.set(true)'))
+  })
+
   it('presses the page back into a card behind a large sheet, unless motion is reduced', () => {
     const sheet = read('NativeSheet')
     expect(sheet).toContain('presentPageAsCard(element.ownerDocument, want)')
