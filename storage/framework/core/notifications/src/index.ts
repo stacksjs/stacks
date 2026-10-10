@@ -225,12 +225,12 @@ export async function notify(
 ): Promise<NotifyResult[]> {
   // Filter channels by user preferences when we have a userId to look up.
   // Default-allow: channels with no preference row recorded pass through.
-  let effectiveChannels = channels
+  let effectiveChannels = [...new Set(channels)]
   if (recipient.userId && !options.ignorePreferences) {
     try {
       effectiveChannels = await filterChannelsByPreferences(
         recipient.userId,
-        channels,
+        effectiveChannels,
         options.category,
       )
     }

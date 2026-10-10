@@ -63,6 +63,13 @@ export function parseEnumInput<const T extends readonly string[]>(value: unknown
   return value as T[number]
 }
 
+/** Validate a bounded enum list as an ordered set, without silently dropping invalid entries. */
+export function parseEnumListInput<const T extends readonly string[]>(value: unknown, field: string, choices: T, minItems = 1, maxItems = 100): T[number][] {
+  if (!Number.isSafeInteger(minItems) || !Number.isSafeInteger(maxItems) || minItems < 0 || maxItems < minItems) throw new RangeError('Invalid enum list bounds')
+  if (!Array.isArray(value) || value.length < minItems || value.length > maxItems) throw new InputValidationError(`${field} must contain ${minItems} to ${maxItems} entries`)
+  return [...new Set(value.map(item => parseEnumInput(item, field, choices)))]
+}
+
 /** Decode SQL/form booleans. The caller explicitly chooses the fallback for absent or corrupt data. */
 export function storedBoolean(value: unknown, fallback: boolean): boolean {
   if (value == null) return fallback

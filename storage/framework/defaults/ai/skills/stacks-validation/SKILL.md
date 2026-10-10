@@ -8,6 +8,11 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Validation
 
+`parseEnumListInput(value, field, choices, minItems = 1, maxItems = 100)` from
+`@stacksjs/validation/input` validates every entry and returns unique values in
+input order. Invalid entries reject the whole list; optional empty lists require
+an explicit zero minimum. Use it for channel, role and capability selections.
+
 ## Key Paths
 - Core package: `storage/framework/core/validation/src/`
 - Package: `@stacksjs/validation`

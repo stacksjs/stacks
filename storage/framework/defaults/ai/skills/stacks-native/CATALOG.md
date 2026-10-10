@@ -94,7 +94,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/types` | [`stacks-types`](../stacks-types/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/types/src/index.ts) | 2 |
 | `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 5 |
 | `@stacksjs/utils` | [`stacks-utils`](../stacks-utils/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/utils/src/index.ts) | 15 |
-| `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 15 |
+| `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 16 |
 | `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 3 |
 | `@stacksjs/whois` | [`stacks-whois`](../stacks-whois/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/whois/src/index.ts) | 4 |
 
@@ -907,7 +907,7 @@ Declared runtime exports: `applyConditionals`, `isArray`, `isBoolean`, `isFuncti
 
 Local source modules: [src/input.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/input.ts), [src/reporter.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/reporter.ts), [src/schema.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/schema.ts), [src/validator.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/validator.ts).
 
-Evidence directory: [15 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [16 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/video
 

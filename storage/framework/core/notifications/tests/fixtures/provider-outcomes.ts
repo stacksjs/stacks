@@ -22,7 +22,7 @@ globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) =>
 
 const recipient = { phone: '+15555550100', chatRecipient: 'Cfixture', pushTokens: 'ExponentPushToken[fixture]' }
 const payload = { subject: 'Update', body: 'Training starts soon' }
-const sent = await notify(recipient, payload, ['sms', 'chat', 'push'], { ignorePreferences: true })
+const sent = await notify(recipient, payload, ['sms', 'chat', 'push', 'sms'], { ignorePreferences: true })
 assert(sent.every(result => result.success), JSON.stringify(sent))
 ensureSuccessfulNotificationResults(sent)
 assert.equal(requests.length, 3)
