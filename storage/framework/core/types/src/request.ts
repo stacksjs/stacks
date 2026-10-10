@@ -327,6 +327,8 @@ export interface RequestInstance<
   url: string
   method: string
   headers: Headers
+  /** The native request cancellation signal, including client disconnects during streamed responses. */
+  readonly signal: AbortSignal
 
   // Raw data access (always untyped — use get()/input() for typed access)
   query: RequestData
