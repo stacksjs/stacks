@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.113...v0.75.115)
+
+## 🐛 Bug Fixes
+
+- validate enum selections and deliver each notification channel once ([09f1a81](https://github.com/stacksjs/stacks/commit/09f1a81)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: preserve recording lifecycle and labelled distances ([b9678ae](https://github.com/stacksjs/stacks/commit/b9678ae)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- register mobile session clock APIs ([b5cbc13](https://github.com/stacksjs/stacks/commit/b5cbc13)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.114 ([67babbd](https://github.com/stacksjs/stacks/commit/67babbd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.113...v0.75.114)
 
 ## 🐛 Bug Fixes
