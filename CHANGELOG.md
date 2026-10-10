@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.122...v0.75.123)
+
+## 🐛 Bug Fixes
+
+- expose native request cancellation to streamed actions ([1a89e53](https://github.com/stacksjs/stacks/commit/1a89e53)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/native-messaging ([2c9e65b](https://github.com/stacksjs/stacks/commit/2c9e65b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.118...v0.75.122)
 
 ## ✨ Features
