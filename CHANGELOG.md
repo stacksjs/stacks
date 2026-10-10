@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.120...v0.75.121)
+
+## ✨ Features
+
+- add persistent authorized direct messaging model trait ([bc37e7a](https://github.com/stacksjs/stacks/commit/bc37e7a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native messaging capability catalog ([4ae9cae](https://github.com/stacksjs/stacks/commit/4ae9cae)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge tag 'v0.75.120' into codex/native-messaging ([dc66a14](https://github.com/stacksjs/stacks/commit/dc66a14)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.119...v0.75.120)
 
 ## 🐛 Bug Fixes
