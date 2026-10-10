@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.110...v0.75.113)
+
+## ✨ Features
+
+- share locked mutations and strict input rules across Stacks ([4364116](https://github.com/stacksjs/stacks/commit/4364116)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- remove stale scratch model auto-imports ([df87a44](https://github.com/stacksjs/stacks/commit/df87a44)) _(by Chris <chris@stacksjs.com>)_
+- use native notification transports and scoped inbox mutations ([0049108](https://github.com/stacksjs/stacks/commit/0049108)) _(by Chris <chris@stacksjs.com>)_
+- keep mounted sheets available for nested presentation ([4bce017](https://github.com/stacksjs/stacks/commit/4bce017)) _(by Chris <chrisbreuer93@gmail.com>)_
+- keep native sheets mounted for transitions and media playback ([c0f0342](https://github.com/stacksjs/stacks/commit/c0f0342)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- register shared notification APIs in native catalog ([d57b084](https://github.com/stacksjs/stacks/commit/d57b084)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.112 ([fae1b61](https://github.com/stacksjs/stacks/commit/fae1b61)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.75.111 ([66448aa](https://github.com/stacksjs/stacks/commit/66448aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.111...v0.75.112)
 
 ## 🐛 Bug Fixes
