@@ -420,3 +420,13 @@ interface PluralizeOptions { count?, inclusive? }
 - `helpers.ts` exports `toString()` (Object.prototype.toString, not ordinary
   string coercion) and `mask(value, character, index, length?)`. Mask supports
   a negative starting index and uses the first character of its mask string.
+
+## CSV exports
+
+Import `csvCell` and `toCsv` from `@stacksjs/strings/csv` for RFC 4180 exports.
+`toCsv(headers, rows, { bom: true })` adds a UTF-8 BOM and writes CRLF lines.
+Quotes, commas, carriage returns and newlines are escaped. Text beginning
+with a spreadsheet formula operator (including leading whitespace) is
+prefixed with an apostrophe by default; numbers, including negatives, retain
+their numeric value. `{ spreadsheetSafe: false }` explicitly disables that
+policy for machine-oriented exports.

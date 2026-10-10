@@ -301,3 +301,14 @@ type PartitionFilter<T> = (item: T, index: number, array: readonly T[]) => any
 - `mode` returns the first most-frequent value when there's a tie
 - For complex collection operations with chaining, consider `@stacksjs/collections`
 - The `Arr` facade wraps most but not all standalone functions -- advanced stats need direct imports
+
+## Daily series with provenance
+
+`@stacksjs/arrays/series` is a browser-safe entrypoint. `mergeDailySeries(rows,
+sourcePriority)` selects one finite numeric value per calendar day and field,
+falling back per field when a preferred source lacks it. Rows carry `day`,
+`source`, `values` and optional `updatedAt`; outputs carry `date`, `values`
+and `sources`. Source priority is application policy. Same-source ties prefer
+newer updates; invalid dates, blank values, booleans and nonfinite values are
+ignored. Zero is preserved. `summarizeSeries(points)` reports count, latest,
+average and extrema over `{ date, value, source? }` points without rounding.
