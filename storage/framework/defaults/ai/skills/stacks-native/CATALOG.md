@@ -63,7 +63,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/mobile` | [`stacks-mobile`](../stacks-mobile/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/mobile/src/index.ts) | 11 |
 | `@stacksjs/model-meta` | [`stacks-models`](../stacks-models/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/model-meta/src/index.ts) | 1 |
 | `@stacksjs/newsletter` | [`stacks-newsletter`](../stacks-newsletter/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/newsletter/src/index.ts) | 7 |
-| `@stacksjs/notifications` | [`stacks-notifications`](../stacks-notifications/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/index.ts) | 10 |
+| `@stacksjs/notifications` | [`stacks-notifications`](../stacks-notifications/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/index.ts) | 11 |
 | `@stacksjs/objects` | [`stacks-objects`](../stacks-objects/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/objects/src/index.ts) | 4 |
 | `@stacksjs/orm` | [`stacks-orm`](../stacks-orm/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/orm/src/index.ts) | 60 |
 | `@stacksjs/pagination` | [`stacks-pagination`](../stacks-pagination/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/pagination/src/index.ts) | 0 |
@@ -607,11 +607,11 @@ Evidence directory: [7 retained tests](https://github.com/stacksjs/stacks/blob/m
 
 Guidance: [`stacks-notifications`](../stacks-notifications/SKILL.md). Source: [storage/framework/core/notifications/src/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/index.ts).
 
-Declared runtime exports: `BroadcastNotificationDriver`, `DatabaseNotificationDriver`, `bulkSetPreferences`, `emailParagraphs`, `ensureSuccessfulEmailResult`, `filterChannelsByPreferences`, `getNotificationPreferences`, `makeDeliveryRecord`, `notification`, `notificationEmailHtml`, `notificationEmailText`, `notify`, `recordNotificationDelivery`, `resolveDeliveryRecipient`, `setNotificationPreference`, `useBroadcast`, `useChat`, `useDatabase`, `useEmail`, `useNotification`, `usePush`, `useSMS`, `wherePreferenceCategory`.
+Declared runtime exports: `BroadcastNotificationDriver`, `DatabaseNotificationDriver`, `bulkSetPreferences`, `emailParagraphs`, `ensureSuccessfulEmailResult`, `ensureSuccessfulNotificationResults`, `filterChannelsByPreferences`, `getNotificationPreferences`, `makeDeliveryRecord`, `notification`, `notificationEmailHtml`, `notificationEmailText`, `notify`, `recordNotificationDelivery`, `resolveDeliveryRecipient`, `setNotificationPreference`, `useBroadcast`, `useChat`, `useDatabase`, `useEmail`, `useNotification`, `usePush`, `useSMS`, `wherePreferenceCategory`.
 
 Local source modules: [src/delivery.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/delivery.ts), [src/drivers/broadcast.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/drivers/broadcast.ts), [src/drivers/database.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/drivers/database.ts), [src/drivers/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/drivers/index.ts), [src/email-body.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/email-body.ts), [src/preferences.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/src/preferences.ts).
 
-Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [11 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/notifications/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/objects
 
