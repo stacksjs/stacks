@@ -40,6 +40,20 @@
       }
     },
     {
+      "id": "automation",
+      "name": "Automation",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "automation-run",
+      "name": "AutomationRun",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "bid",
       "name": "Bid",
       "icon": "i-hugeicons-hand-pointing-right-01",
@@ -85,6 +99,13 @@
       "category": "data"
     },
     {
+      "id": "campaign-variant",
+      "name": "CampaignVariant",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "card",
       "name": "Card",
       "icon": "tablecells.fill",
@@ -125,6 +146,13 @@
       }
     },
     {
+      "id": "categorizable",
+      "name": "Categorizable",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "content"
+    },
+    {
       "id": "category",
       "name": "Category",
       "icon": "tag.fill",
@@ -142,6 +170,20 @@
       "category": "content"
     },
     {
+      "id": "communication-suppression",
+      "name": "CommunicationSuppression",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "consent-event",
+      "name": "ConsentEvent",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "coupon",
       "name": "Coupon",
       "icon": "ticket.fill",
@@ -154,7 +196,7 @@
     {
       "id": "courier",
       "name": "Courier",
-      "icon": "car.fill",
+      "icon": "tablecells.fill",
       "hasDedicatedPage": false,
       "category": "commerce",
       "dashboard": {
@@ -263,6 +305,34 @@
       }
     },
     {
+      "id": "form",
+      "name": "Form",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "form-field",
+      "name": "FormField",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "form-submission",
+      "name": "FormSubmission",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "gdpr-request",
+      "name": "GdprRequest",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "gift-card",
       "name": "GiftCard",
       "icon": "giftcard.fill",
@@ -327,6 +397,13 @@
       }
     },
     {
+      "id": "magic-link-token",
+      "name": "MagicLinkToken",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "mail-preference",
       "name": "MailPreference",
       "icon": "tablecells.fill",
@@ -342,6 +419,20 @@
       "dashboard": {
         "highlight": true
       }
+    },
+    {
+      "id": "menu",
+      "name": "Menu",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "content"
+    },
+    {
+      "id": "menu-item",
+      "name": "MenuItem",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "content"
     },
     {
       "id": "notification",
@@ -392,6 +483,13 @@
       "category": "content"
     },
     {
+      "id": "page-revision",
+      "name": "PageRevision",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "content"
+    },
+    {
       "id": "payment",
       "name": "Payment",
       "icon": "creditcard.fill",
@@ -421,6 +519,23 @@
       "icon": "creditcard.fill",
       "hasDedicatedPage": false,
       "category": "commerce"
+    },
+    {
+      "id": "payment-webhook-event",
+      "name": "PaymentWebhookEvent",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "personal-access-token",
+      "name": "PersonalAccessToken",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
     },
     {
       "id": "pledge",
@@ -498,6 +613,27 @@
       }
     },
     {
+      "id": "redirect",
+      "name": "Redirect",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "content"
+    },
+    {
+      "id": "referral",
+      "name": "Referral",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "referral-code",
+      "name": "ReferralCode",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "release",
       "name": "Release",
       "icon": "tablecells.fill",
@@ -516,6 +652,13 @@
       "dashboard": {
         "highlight": true
       }
+    },
+    {
+      "id": "sender-domain",
+      "name": "SenderDomain",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
     },
     {
       "id": "shipping-method",
@@ -548,6 +691,30 @@
       }
     },
     {
+      "id": "site",
+      "name": "Site",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "highlight": true
+      }
+    },
+    {
+      "id": "site-domain",
+      "name": "SiteDomain",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
+      "id": "sms-opt-out",
+      "name": "SmsOptOut",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "social-account",
       "name": "SocialAccount",
       "icon": "tablecells.fill",
@@ -560,6 +727,26 @@
       "icon": "bubble.left.and.bubble.right.fill",
       "hasDedicatedPage": false,
       "category": "marketing"
+    },
+    {
+      "id": "storage-item",
+      "name": "StorageItem",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "storage-item-task",
+      "name": "StorageItemTask",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
     },
     {
       "id": "subscriber",
@@ -638,6 +825,13 @@
       "dashboard": {
         "highlight": true
       }
+    },
+    {
+      "id": "usage-event",
+      "name": "UsageEvent",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
     },
     {
       "id": "user",

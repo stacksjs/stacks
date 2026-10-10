@@ -27,6 +27,9 @@ describe('register', () => {
     expect(shelfLeft(tee, basket)).toBeNull()
     expect(canAdd(tee, basket)).toBe(true)
   })
+  it('counts every duplicate line when checking remaining inventory', () => {
+    expect(shelfLeft({ id: 1, inventory: 5 }, [{ productId: 1, quantity: 3 }, { productId: 1, quantity: 2 }])).toBe(0)
+  })
 
   it('sets, caps and removes lines, and totals them', () => {
     let basket = setQuantity([], tee, 3)

@@ -111,3 +111,33 @@ describe('build module', () => {
     }
   })
 })
+
+
+test('built packages do not inherit checkout source aliases', async () => {
+  const { outro } = await import('../src/index')
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const root = mkdtempSync(join(tmpdir(), 'stacks-build-resolution-'))
+  const packageDir = join(root, 'packages', 'consumer')
+  mkdirSync(join(packageDir, 'dist'), { recursive: true })
+  mkdirSync(join(packageDir, 'src'), { recursive: true })
+  mkdirSync(join(root, 'node_modules', '@fixture', 'database'), { recursive: true })
+  writeFileSync(join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: { paths: { '@fixture/database': ['./database-source.ts'] } } }))
+  writeFileSync(join(root, 'database-source.ts'), "export const db = { graph: 'source' }")
+  writeFileSync(join(root, 'node_modules', '@fixture', 'database', 'package.json'), JSON.stringify({ name: '@fixture/database', type: 'module', exports: './index.js' }))
+  writeFileSync(join(root, 'node_modules', '@fixture', 'database', 'index.js'), "export const db = { graph: 'published' }")
+  writeFileSync(join(packageDir, 'src', 'index.ts'), "export { db } from '@fixture/database'")
+  writeFileSync(join(packageDir, 'dist', 'index.js'), "export { db } from '@fixture/database'")
+  writeFileSync(join(root, 'bunfig.toml'), '')
+  try {
+    await outro({ dir: packageDir, startTime: Date.now(), result: { errors: [] } })
+    const probe = Bun.spawnSync({
+      cmd: [process.execPath, '-e', "const source = await import('./packages/consumer/src/index.ts'); const built = await import('./packages/consumer/dist/index.js'); if (source.db.graph !== 'source' || built.db.graph !== 'published') throw new Error('Built dependency resolved through source aliases')"],
+      cwd: root, stdout: 'pipe', stderr: 'pipe',
+    })
+    expect(new TextDecoder().decode(probe.stderr)).toBe('')
+    expect(probe.exitCode).toBe(0)
+  }
+  finally { rmSync(root, { recursive: true, force: true }) }
+})

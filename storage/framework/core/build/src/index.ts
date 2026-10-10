@@ -92,6 +92,13 @@ export async function outro(options: {
     throw new Error(`Build failed: ${firstLog}`)
   }
 
+  // Bun also reads tsconfig paths when executing JavaScript. A linked dist
+  // inside this checkout must not inherit our source aliases: that creates
+  // a second database runtime beside the consumer's published dependency and
+  // breaks transaction binding. Ship a standalone resolution boundary with
+  // every build, while leaving source aliases available to source development.
+  await Bun.write(p.resolve(options.dir, 'dist', 'tsconfig.json'), `${JSON.stringify({ compilerOptions: { paths: {} } }, null, 2)}\n`)
+
   await validateDeclarations(options.dir)
   await validateRuntimeExports(options.dir)
 

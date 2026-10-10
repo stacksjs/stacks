@@ -11,7 +11,7 @@ const result = await Bun.build({
   // imports the database) cannot be (stacksjs/stacks#2851). The register,
   // catalog, release and sales-tax rules are pure for the same reason: a shop's screens
   // run them in the browser.
-  entrypoints: ['./src/index.ts', './src/money.ts', './src/register.ts', './src/catalog.ts', './src/releases.ts', './src/sales-tax.ts'],
+  entrypoints: ['./src/index.ts', './src/money.ts', './src/register.ts', './src/catalog.ts', './src/releases.ts', './src/sales-tax.ts', './src/refund-allocation.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

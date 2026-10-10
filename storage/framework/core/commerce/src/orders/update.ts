@@ -1,12 +1,15 @@
 import type { ModelRow, Order, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database/runtime'
-// Import dependencies
 import { formatDate } from '@stacksjs/orm'
+// Import dependencies
+
 type OrderJsonResponse = ModelRow<typeof Order>
 type OrderUpdate = UpdateModelData<typeof Order>
 import { fetchById } from './fetch'
 import type { OrderStatus } from './events'
-import { canTransition, emitForStatus } from './events'
+import { canTransition } from './events'
+export { transitionStatus } from './transition'
+import { transitionStatus } from './transition'
 
 /**
  * Update an order by ID
@@ -26,9 +29,9 @@ export async function update(id: number, data: Omit<OrderUpdate, 'id'>): Promise
     await db
       .updateTable('orders')
       .set({
-        ...data,
-        updated_at: formatDate(new Date()),
-      })
+      ...data,
+      updated_at: formatDate(new Date()),
+    })
       .where('id', '=', id)
       .execute()
 
@@ -73,28 +76,8 @@ export async function updateStatus(
   }
 
   try {
-    // Update the order status
-    await db
-      .updateTable('orders')
-      .set({
-        status,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .execute()
-
-    // Fetch the updated order
-    const updated = await fetchById(id)
-
-    // Emit the status-specific event (stacksjs/stacks#1879 Co-18).
-    // Fire-and-forget — emission failures don't undo the write. The
-    // event payload carries the updated order so subscribers don't
-    // need to re-fetch.
-    if (updated) {
-      void emitForStatus(status, updated as unknown as Record<string, unknown>)
-    }
-
-    return updated
+    await transitionStatus(id, currentStatus, status)
+    return await fetchById(id)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -140,25 +123,25 @@ export async function updateDeliveryInfo(
 
   // If no delivery fields to update, just return the existing order
   if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return order
+  return order
+}
+
+try {
+  // Update the order
+  await db
+    .updateTable('orders')
+    .set(updateData)
+    .where('id', '=', id)
+    .execute()
+
+  // Fetch the updated order
+  return await fetchById(id)
+}
+catch (error) {
+  if (error instanceof Error) {
+    throw new TypeError(`Failed to update delivery information: ${error.message}`)
   }
 
-  try {
-    // Update the order
-    await db
-      .updateTable('orders')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
-
-    // Fetch the updated order
-    return await fetchById(id)
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update delivery information: ${error.message}`)
-    }
-
-    throw error
-  }
+  throw error
+}
 }

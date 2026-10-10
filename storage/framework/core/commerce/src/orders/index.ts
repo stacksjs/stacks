@@ -30,6 +30,8 @@ export {
 // single transaction so any failure rolls back the rest.
 export { findOrderByIdempotencyKey, placeOrder } from './place-order'
 export type { PlaceOrderInput, PlaceOrderLineItem, PlaceOrderResult } from './place-order'
+export { transitionStatus } from './transition'
+export type { OrderTransitionOptions } from './transition'
 
 // Event bus integration + status-transition state machine
 // (stacksjs/stacks#1879 Co-18, Co-4). Emit helpers fire

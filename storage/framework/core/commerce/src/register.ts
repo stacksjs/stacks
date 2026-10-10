@@ -48,11 +48,24 @@ function stockOf(product: Product, fields: RegisterFields): number | null {
   return value === null || value === undefined || value === '' ? null : Number(value)
 }
 
+/** Combine repeated products into one validated line before checking or writing stock. */
+export function normalizeBasket(basket: readonly BasketLine[]): BasketLine[] {
+  const quantities = new Map<number, number>()
+  for (const { productId, quantity } of basket) {
+    if (!Number.isSafeInteger(productId) || productId < 1 || !Number.isSafeInteger(quantity) || quantity < 1)
+      throw new Error('Basket products and quantities must be positive safe integers')
+    const total = (quantities.get(productId) || 0) + quantity
+    if (!Number.isSafeInteger(total)) throw new Error('Basket quantity exceeds the safe integer range')
+    quantities.set(productId, total)
+  }
+  return [...quantities].map(([productId, quantity]) => ({ productId, quantity }))
+}
+
 /** Units still on the shelf once the basket is taken off it; null when stock is not counted. */
 export function shelfLeft(product: Product, basket: BasketLine[], fields: RegisterFields = DEFAULT_FIELDS): number | null {
   const stock = stockOf(product, fields)
   if (stock === null) return null
-  const inBasket = basket.find(line => line.productId === idOf(product, fields))?.quantity || 0
+  const inBasket = basket.filter(line => line.productId === idOf(product, fields)).reduce((sum, line) => sum + line.quantity, 0)
   return Math.max(0, stock - inBasket)
 }
 
@@ -64,7 +77,9 @@ export function canAdd(product: Product, basket: BasketLine[], fields: RegisterF
 
 /** One more of a product, when there is one to sell; the basket unchanged otherwise. */
 export function addToBasket(basket: BasketLine[], product: Product, fields: RegisterFields = DEFAULT_FIELDS): BasketLine[] {
-  if (!canAdd(product, basket, fields)) return basket
+  const normalized = normalizeBasket(basket)
+  if (!canAdd(product, normalized, fields)) return basket
+  basket = normalized
   const id = idOf(product, fields)
   return basket.some(line => line.productId === id)
     ? basket.map(line => line.productId === id ? { ...line, quantity: line.quantity + 1 } : line)
@@ -75,6 +90,7 @@ export function addToBasket(basket: BasketLine[], product: Product, fields: Regi
 export function setQuantity(basket: BasketLine[], product: Product, quantity: number, fields: RegisterFields = DEFAULT_FIELDS): BasketLine[] {
   const id = idOf(product, fields)
   const stock = stockOf(product, fields)
+  basket = normalizeBasket(basket)
   const wanted = Math.min(Math.max(0, Math.floor(Number(quantity) || 0)), stock === null ? Number.POSITIVE_INFINITY : stock)
   if (wanted === 0) return basket.filter(line => line.productId !== id)
   return basket.some(line => line.productId === id)
@@ -84,7 +100,7 @@ export function setQuantity(basket: BasketLine[], product: Product, quantity: nu
 
 /** The basket's lines with their products, leaving out any no longer in the catalog. */
 export function basketLines<T extends Product>(basket: BasketLine[], products: T[], fields: RegisterFields = DEFAULT_FIELDS): Array<BasketLine & { product: T }> {
-  return basket
+  return normalizeBasket(basket)
     .map(line => ({ ...line, product: products.find(product => idOf(product, fields) === line.productId) }))
     .filter((line): line is BasketLine & { product: T } => !!line.product)
 }

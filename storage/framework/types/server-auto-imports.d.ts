@@ -58,6 +58,7 @@ declare global {
   const usePreferredDark: typeof import('@stacksjs/browser')['usePreferredDark']
   const useToggle: typeof import('@stacksjs/browser')['useToggle']
   const useStorage: typeof import('@stacksjs/browser')['useStorage']
+  const TmpEmitRelated: typeof import('../../../app/Models/TmpEmitRelated')['default']
   const Activity: typeof import('../defaults/app/Models/Activity')['default']
   const AnalyticsEvent: typeof import('../defaults/app/Models/AnalyticsEvent')['default']
   const Automation: typeof import('../defaults/app/Models/Automation')['default']
