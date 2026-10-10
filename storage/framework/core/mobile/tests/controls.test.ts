@@ -106,6 +106,27 @@ describe('holding the page behind a sheet', () => {
     expect(sheet.parentElement.id).toBe('page')
     expect(sheet.nextElementSibling.id).toBe('after')
   })
+
+  it('keeps a mounted closed sheet available for a nested presentation', () => {
+    const win = install()
+    const doc = win.document
+    doc.body.innerHTML = '<main id="page"></main><section id="first" data-native-sheet aria-hidden="false"></section><section id="second" data-native-sheet aria-hidden="true"></section>'
+    const first = doc.getElementById('first')
+    const second = doc.getElementById('second')
+    const page = doc.getElementById('page')
+    const release = lockBackground(first)
+    expect(page.hasAttribute('inert')).toBe(true)
+    expect(second.hasAttribute('inert')).toBe(false)
+    second.setAttribute('aria-hidden', 'false')
+    const releaseNested = lockBackground(second)
+    expect(first.hasAttribute('inert')).toBe(true)
+    expect(second.hasAttribute('inert')).toBe(false)
+    releaseNested()
+    expect(first.hasAttribute('inert')).toBe(false)
+    expect(page.hasAttribute('inert')).toBe(true)
+    release()
+    expect(page.hasAttribute('inert')).toBe(false)
+  })
 })
 
 describe('large titles', () => {

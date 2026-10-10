@@ -167,6 +167,9 @@ export function lockBackground(keep: HTMLElement): () => void {
     for (const sibling of Array.from(node.parentElement.children)) {
       if (sibling === node || sibling.hasAttribute('inert') || sibling.hasAttribute('data-native-dialog')) continue
       if (['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK'].includes(sibling.tagName)) continue
+      // Closed sheets are mounted in the body before their media loads. They
+      // are already hidden, and must remain available to open above this one.
+      if (sibling.hasAttribute('data-native-sheet') && sibling.getAttribute('aria-hidden') === 'true') continue
       sibling.setAttribute('inert', '')
       madeInert.push(sibling)
     }
