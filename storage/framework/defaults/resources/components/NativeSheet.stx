@@ -46,7 +46,6 @@ const header = useRef('nativeSheetHeader')
 
 let releaseBackground: (() => void) | null = null
 let putBack: (() => void) | null = null
-let putBackTimer: ReturnType<typeof setTimeout> | null = null
 let previousFocus: HTMLElement | null = null
 let carded = false
 let stopDrag: (() => void) | null = null
@@ -63,8 +62,6 @@ function root(): HTMLElement | null {
 function present(): void {
   const element = root()
   if (!element || releaseBackground) return
-  if (putBackTimer) clearTimeout(putBackTimer)
-  putBackTimer = null
   detent.set(detents()[0] ?? 'large')
   previousFocus = element.ownerDocument.activeElement as HTMLElement | null
   // Out of the page's stacking contexts and transforms (the card below
@@ -78,7 +75,7 @@ function present(): void {
   // Work its closed style out where it now is, then open it: the panel
   // slides from there.
   const sheetPanel = panel.current as HTMLElement | null
-  if (sheetPanel) void element.ownerDocument.defaultView?.getComputedStyle(sheetPanel).transform
+  if (sheetPanel) void sheetPanel.getBoundingClientRect()
   shown.set(true)
   void nextTick(() => (panel.current as HTMLElement | null)?.focus())
 }
@@ -91,12 +88,6 @@ function dismissed(): void {
   releaseBackground = null
   previousFocus?.focus?.()
   previousFocus = null
-  // Back where it was written once it has slid away.
-  putBackTimer = setTimeout(() => {
-    putBackTimer = null
-    putBack?.()
-    putBack = null
-  }, 420)
 }
 
 let wasOpen = false
@@ -124,6 +115,10 @@ function close(): void {
 }
 
 onMount(() => {
+  // Give the sheet its permanent presentation parent before its slot loads
+  // media. Reparenting an already loading iframe or video interrupts playback.
+  const element = root()
+  if (element) putBack ??= liftToBody(element)
   const sheetPanel = panel.current as HTMLElement | null
   if (!sheetPanel) return
   const handles = [grabber.current, header.current].filter(Boolean) as HTMLElement[]
@@ -146,7 +141,6 @@ onDestroy(() => {
   const element = root()
   if (element && open()) coverTabBar(element, false)
   if (carded && element) presentPageAsCard(element.ownerDocument, false)
-  if (putBackTimer) clearTimeout(putBackTimer)
   putBack?.()
 })
 
@@ -190,12 +184,13 @@ const sheetClass = derived(() => `${shown() ? 'is-open' : ''}${hasDetents() ? ' 
     inset: 0;
     z-index: 70;
     visibility: hidden;
+    transition: visibility 0s 380ms;
     pointer-events: none;
     font-size: var(--native-font-size, 17px);
     -webkit-tap-highlight-color: transparent;
   }
 
-  .native-sheet.is-open { visibility: visible; pointer-events: auto; }
+  .native-sheet.is-open { visibility: visible; pointer-events: auto; transition-delay: 0s; }
 
   .native-sheet-backdrop {
     position: absolute;
