@@ -70,6 +70,29 @@ export function parseEnumListInput<const T extends readonly string[]>(value: unk
   return [...new Set(value.map(item => parseEnumInput(item, field, choices)))]
 }
 
+/** A JSON record boundary for nested action input, without accepting arrays or class instances. */
+export function parseObjectInput(value: unknown, field: string): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value))) throw new InputValidationError(`${field} must be a JSON object`)
+  return value as Record<string, unknown>
+}
+
+/** Validate the entire collection before callers inspect or persist any item. */
+export function parseArrayInput(value: unknown, field: string, minItems = 0, maxItems = 100): unknown[] {
+  if (!Number.isSafeInteger(minItems) || !Number.isSafeInteger(maxItems) || minItems < 0 || maxItems < minItems) throw new RangeError('Invalid array bounds')
+  if (!Array.isArray(value) || value.length < minItems || value.length > maxItems) throw new InputValidationError(`${field} must contain ${minItems} to ${maxItems} entries`)
+  return value
+}
+
+/** Bounded recipient/resource selections retain unique safe IDs in their input order. */
+export function parsePositiveIdListInput(value: unknown, field: string, minItems = 1, maxItems = 100): number[] {
+  const items = parseArrayInput(value, field, minItems, maxItems)
+  try { return [...new Set(items.map(parsePositiveId))] }
+  catch (error) {
+    if (error instanceof InputValidationError) throw new InputValidationError(`${field} contains an invalid identifier`)
+    throw error
+  }
+}
+
 /** Decode SQL/form booleans. The caller explicitly chooses the fallback for absent or corrupt data. */
 export function storedBoolean(value: unknown, fallback: boolean): boolean {
   if (value == null) return fallback

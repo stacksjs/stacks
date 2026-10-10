@@ -13,6 +13,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 input order. Invalid entries reject the whole list; optional empty lists require
 an explicit zero minimum. Use it for channel, role and capability selections.
 
+`parseObjectInput(value, field)` accepts plain JSON records, including null
+prototype records, and rejects arrays and class instances. `parseArrayInput`
+validates an actual array and its length (`minItems = 0`, `maxItems = 100`).
+`parsePositiveIdListInput(value, field, minItems = 1, maxItems = 100)` validates
+every resource ID and returns unique IDs in input order. Bounds apply before
+deduplication; no malformed entry is silently removed. These dependency-free
+helpers are available from `@stacksjs/validation/input` and the root export.
+
 ## Key Paths
 - Core package: `storage/framework/core/validation/src/`
 - Package: `@stacksjs/validation`
