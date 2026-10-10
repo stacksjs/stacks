@@ -73,3 +73,16 @@ booleans, non-finite values and unsafe integers. Optional text and numbers retur
 null; omitted booleans return undefined. Explicit false and zero are preserved.
 Model validation checks supplied fields against their declared rules; the action
 still selects writable fields and enforces required fields and relationships.
+
+## Reusable boundary and stored-value rules
+
+`parseTextInput(value, field, required?, maxLength?)` rejects overlong text
+rather than truncating it. `parseEnumInput(value, field, choices)` requires
+exact string membership; it never stringifies an object or boolean.
+`storedBoolean(value, fallback)` decodes SQL/form 0/1 and false/true; the
+caller explicitly chooses the fallback for missing or corrupt stored data.
+Partial model validation accepts attribute names and their snake-case column
+spelling, including camel-case definitions.
+
+`positiveIdOrNull(value)` is the nullable adapter for optional identifiers and
+record serializers; it uses the same safe-integer and type rules as parsePositiveId.

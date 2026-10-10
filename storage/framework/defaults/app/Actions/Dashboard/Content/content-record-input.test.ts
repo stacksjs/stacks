@@ -1,5 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { describe, expect, test } from 'bun:test'
+import { rowId } from './content-input'
 import { parseAuthorInput } from './author-input'
 import { parsePageInput, parsePublished } from './page-input'
 
@@ -42,4 +43,10 @@ describe('dashboard content record input', () => {
     expect(parsePublished('1')).toBe(true)
     expect(parsePublished(false)).toBe(false)
   })
+})
+
+
+test('content identifiers use the shared safe-integer contract', () => {
+  for (const value of [true, {}, [], Number.MAX_SAFE_INTEGER + 1]) expect(rowId({ getParam: () => value } as unknown as RequestInstance)).toBe(0)
+  expect(rowId({ getParam: () => '42' } as unknown as RequestInstance)).toBe(42)
 })

@@ -15,6 +15,7 @@ describe('team records', () => {
     expect(parsePositiveId('42')).toBe(42)
     expect(parsePositiveId('0')).toBeNull()
     expect(parsePositiveId('4.2')).toBeNull()
+    for (const value of [true, false, {}, [], Number.MAX_SAFE_INTEGER + 1]) expect(parsePositiveId(value)).toBeNull()
     expect(normalizeInvitationEmail('  Teammate@Example.COM ')).toBe('teammate@example.com')
     expect(normalizeInvitationEmail('not-an-email')).toBeNull()
     expect(normalizeInvitationRole(' ADMIN ')).toBe('admin')

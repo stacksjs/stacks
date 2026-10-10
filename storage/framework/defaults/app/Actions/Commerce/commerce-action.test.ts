@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { describe, expect, test } from 'bun:test'
 import { commerceIdentifier, commerceMinorAmountError, commerceNotFound } from './commerce-action'
 
-function request(id: string): RequestInstance {
+function request(id: unknown): RequestInstance {
   return {
     getParam: () => id,
   } as unknown as RequestInstance
@@ -11,6 +11,7 @@ function request(id: string): RequestInstance {
 describe('commerce action responses', () => {
   test('accepts safe positive route identifiers', () => {
     expect(commerceIdentifier(request('42'), 'Courier')).toEqual({ id: 42 })
+    for (const value of [true, {}, [], Number.MAX_SAFE_INTEGER + 1]) expect(commerceIdentifier(request(value), 'Courier').error?.status).toBe(422)
   })
 
   test('returns 422 for invalid identifiers', async () => {

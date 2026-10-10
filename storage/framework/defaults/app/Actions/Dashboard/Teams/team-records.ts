@@ -1,3 +1,4 @@
+import { positiveIdOrNull } from '@stacksjs/validation/input'
 import { createHash, randomBytes } from 'node:crypto'
 
 export const TEAM_MEMBER_ROLES = ['owner', 'admin', 'member', 'viewer'] as const
@@ -9,8 +10,7 @@ export type TeamInvitationRole = typeof TEAM_INVITATION_ROLES[number]
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function parsePositiveId(value: unknown): number | null {
-  const id = Number(value)
-  return Number.isInteger(id) && id > 0 ? id : null
+  return positiveIdOrNull(value)
 }
 
 export function changedRows(result: unknown): number {

@@ -1,7 +1,9 @@
 import type { ModelRow, Product, UpdateModelData } from '@stacksjs/orm'
 import { db, matchedRows } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
-import { formatDate } from '@stacksjs/orm'
+import { parseNumberInput, parsePositiveId } from '@stacksjs/validation/input'
+import { restockedQuantity } from '../../inventory'
+import { formatDate, withLockedRow } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
 type ProductUpdate = UpdateModelData<typeof Product>
 import { adjustInventoryOnConnection } from '../../utils/inventory-adjustment'
@@ -255,43 +257,28 @@ export async function updateInventory(
   id: number,
   inventoryCount?: number,
 ): Promise<ProductJsonResponse | undefined> {
-  // Check if product item exists
-  const productItem = await fetchById(id)
+  const productId = parsePositiveId(id)
+  const quantity = inventoryCount === undefined ? undefined : parseNumberInput(inventoryCount, 'inventoryCount', 0, 2_147_483_647, true)
+  const product = await withLockedRow('products', { id: productId }, async (row, tx) => {
+    if (quantity === undefined) return asModelRow<ProductJsonResponse>(row)
+    await tx.updateTable('products').set({ inventory_count: quantity, updated_at: formatDate(new Date()) }).where('id', '=', productId).execute()
+    const updated = await tx.selectFrom('products').selectAll().where('id', '=', productId).executeTakeFirst()
+    if (!updated) throw new Error('Updated product disappeared')
+    return asModelRow<ProductJsonResponse>(updated)
+  })
+  if (!product) throw new Error(`Product item with ID ${id} not found`)
+  return product
+}
 
-  if (!productItem) {
-    throw new Error(`Product item with ID ${id} not found`)
-  }
-
-  // Create update data with only provided fields
-  const updateData: Record<string, any> = {
-    updated_at: formatDate(new Date()),
-  }
-
-  if (inventoryCount !== undefined) {
-    updateData.inventory_count = inventoryCount
-  }
-
-  // If no inventory fields to update, just return the existing product item
-  if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return productItem
-  }
-
-  try {
-    // Update the product item
-    await db
-      .updateTable('products')
-      .set(updateData)
-      .where('id', '=', id)
-      .execute()
-
-    // Fetch the updated product item
-    return await fetchById(id)
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update inventory information: ${error.message}`)
-    }
-
-    throw error
-  }
+/** Atomically add a delivery to the current inventory and return the committed quantity. */
+export async function restock(id: number, units: number): Promise<ProductJsonResponse | undefined> {
+  const productId = parsePositiveId(id)
+  const product = await withLockedRow('products', { id: productId }, async (row, tx) => {
+    const quantity = restockedQuantity(row.inventory_count, units)
+    await tx.updateTable('products').set({ inventory_count: quantity, updated_at: formatDate(new Date()) }).where('id', '=', productId).execute()
+    const updated = await tx.selectFrom('products').selectAll().where('id', '=', productId).executeTakeFirst()
+    if (!updated) throw new Error('Restocked product disappeared')
+    return asModelRow<ProductJsonResponse>(updated)
+  })
+  return product ?? undefined
 }

@@ -57,3 +57,13 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+## Representation-aware keys
+
+`cacheKey(namespace, dependencies)` creates a deterministic key from named
+primitive dependencies. Include owner/tenant scope, content version and every
+setting affecting the result (for example privacy, locale or theme). Property
+order does not change it; delimiter-containing strings cannot collide. Null
+and undefined remain distinct. This constructs identity; it does not observe
+settings, grant authorization or invalidate already issued public URLs.
+The narrow `@stacksjs/cache/key` entry is pure and browser-bundleable.

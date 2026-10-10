@@ -283,3 +283,11 @@ now().startOfMonth().toDateString()    // first of current month
 - `endOfMonth()` uses the `new Date(year, month + 1, 0)` trick to find the last day
 - Application timezone should be configured in `config/app.ts`
 - Prefer `@stacksjs/datetime` over raw `Date` for framework consistency
+
+## Site and organization clocks
+
+`localDateTime(instant, ...timeZones)` resolves the first valid named zone, then
+UTC, and returns `{ date, time, timeZone }` from one instant. Supply site and
+organization zones in that order. Missing/invalid zones fall through; an
+invalid instant throws. The output uses YYYY-MM-DD and HH:mm and is suitable
+for comparing local schedule dates and end times, not for elapsed durations.

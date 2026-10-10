@@ -1,4 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
+import { positiveIdOrNull } from '@stacksjs/validation/input'
 import { db } from '@stacksjs/database/runtime'
 
 /**
@@ -28,9 +29,7 @@ export function insertedId(result: unknown): number {
 
 /** The `{id}` route param, or 0 when it is not a usable row id. */
 export function rowId(request: RequestInstance): number {
-  const id = Number(request.getParam('id'))
-
-  return Number.isInteger(id) && id > 0 ? id : 0
+  return positiveIdOrNull(request.getParam('id')) ?? 0
 }
 
 /** Matches the slug the dashboard dialogs generate client-side. */

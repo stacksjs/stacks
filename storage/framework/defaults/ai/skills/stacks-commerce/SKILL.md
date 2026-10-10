@@ -313,3 +313,18 @@ is the helper for when the count is genuinely what you want.
 
 > Touching a money path? `/stacks-tdd` for the seam to test it at, and
 > `/stacks-review` before it merges. `/stacks-payments` covers the Stripe side.
+
+## Input and inventory abstractions
+
+`parseSalesTaxSetup(body, { maxRate?, maxRates? })` requires an explicit rates
+array, rejects coerced prices/text and duplicate normalized component codes,
+and accepts [] only as deliberate removal. HQ-style stores can set maxRate
+to 30; the general default is 100. This validates configuration, not the legal
+rate applicable to a sale. `parseTaxRateWriteData` is also used by native tax
+store/update/bulk operations so false form booleans cannot select a default.
+
+`restockedQuantity(current, units, maximum?)` adds positive whole units,
+refusing untracked stock and overflow. `commerce.products.items.restock(id, units)`
+uses that rule under a row lock and reads back on its own connection;
+`updateInventory` validates absolute quantities through the same boundary.
+Pure narrow entries are commerce/inventory and commerce/tax-input.

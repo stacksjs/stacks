@@ -17,3 +17,5 @@ export { format as dateFormat } from './format'
 // Wall-clock time in a named zone <-> the real instant (event feeds, schema.org).
 export { isoInZone, zonedTimeToUtc, zoneOffsetMinutes } from './zone'
 export { addCalendarMonths } from './calendar'
+
+export { localDateTime } from './local'

@@ -432,3 +432,16 @@ booleans and the explicit form values `true`, `false`, `1`, `0` and their string
 The action still selects writable fields, requires creation fields and validates
 relationships. Use the transaction callback executor for all atomic persistence.
 Root and narrow input imports share the same error constructor.
+
+## Reusable boundary and stored-value rules
+
+`parseTextInput(value, field, required?, maxLength?)` rejects overlong text
+rather than truncating it. `parseEnumInput(value, field, choices)` requires
+exact string membership; it never stringifies an object or boolean.
+`storedBoolean(value, fallback)` decodes SQL/form 0/1 and false/true; the
+caller explicitly chooses the fallback for missing or corrupt stored data.
+Partial model validation accepts attribute names and their snake-case column
+spelling, including camel-case definitions.
+
+`positiveIdOrNull(value)` is the nullable adapter for optional identifiers and
+record serializers; it uses the same safe-integer and type rules as parsePositiveId.

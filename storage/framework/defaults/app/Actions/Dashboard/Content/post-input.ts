@@ -1,4 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
+import { positiveIdOrNull, storedBoolean } from '@stacksjs/validation/input'
 import { db } from '@stacksjs/database/runtime'
 import { insertedId, str, timestamp } from './content-input'
 
@@ -49,17 +50,16 @@ export async function findPost(id: number, database: typeof db = db): Promise<un
 function ids(value: unknown): number[] {
   const values = Array.isArray(value) ? value : value === undefined || value === null ? [] : [value]
   return [...new Set(values
-    .map(item => Number(item))
-    .filter(item => Number.isInteger(item) && item > 0))]
+    .map(positiveIdOrNull)
+    .filter((item): item is number => item !== null))]
 }
 
 function optionalId(value: unknown): number | null {
-  const id = Number(value)
-  return Number.isInteger(id) && id > 0 ? id : null
+  return positiveIdOrNull(value)
 }
 
 function booleanValue(value: unknown): boolean {
-  return value === true || value === 1 || value === '1' || value === 'true' || value === 'on'
+  return storedBoolean(value === 'on' ? true : value, false)
 }
 
 export function invalidPostContent(payload: PostPayload): string | null {

@@ -135,3 +135,7 @@ export type { MoneyInputOptions } from './money'
 // charges. Browser code imports it from `@stacksjs/commerce/sales-tax`.
 export { breakdownFor, multiplierOf } from './sales-tax'
 export type { TaxRateRow } from './sales-tax'
+
+export { restockedQuantity } from './inventory'
+export { parseSalesTaxSetup, parseTaxRateWriteData } from './tax-input'
+export type { SalesTaxSetup, SalesTaxInputOptions } from './tax-input'

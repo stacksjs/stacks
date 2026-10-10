@@ -1,33 +1,10 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { rm } from 'node:fs/promises'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
-const { startTime } = await intro({
-  dir: import.meta.dir,
-})
-
-const result = await Bun.build({
-  // `money` is its own entrypoint so `@stacksjs/commerce/money` has a runtime
-  // file: the dashboard bundles it into the browser, which the barrel (it
-  // imports the database) cannot be (stacksjs/stacks#2851). The register,
-  // catalog, release and sales-tax rules are pure for the same reason: a shop's screens
-  // run them in the browser.
-  entrypoints: ['./src/index.ts', './src/money.ts', './src/register.ts', './src/catalog.ts', './src/releases.ts', './src/sales-tax.ts', './src/refund-allocation.ts'],
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  // sourcemap: 'linked',
-  minify: true,
-  external: frameworkExternal(),
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
-})
-
-await outro({
-  dir: import.meta.dir,
-  startTime,
-  result,
-})
+const { startTime } = await intro({ dir: import.meta.dir })
+await rm('./dist', { recursive: true, force: true })
+// Every declared narrow entry must ship runtime code as well as declarations.
+// Multi-entry bundling dropped reused inventory/tax-input exports from the
+// standalone artifacts. One module per source file preserves that contract.
+await transpilePackage({ dir: import.meta.dir, external: frameworkExternal() })
+await outro({ dir: import.meta.dir, startTime, result: { errors: [], warnings: [] } })

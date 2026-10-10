@@ -83,3 +83,13 @@ contract. `drivers/singlestore.ts` owns the experimental backend.
 Retained tests: `ttl.test.ts`, `getorset-timeout.test.ts`,
 `tagged-flush-race.test.ts`, `redis-contract.test.ts` and
 `cache-factory.test.ts` under `core/cache/tests/`.
+
+## Representation-aware keys
+
+`cacheKey(namespace, dependencies)` creates a deterministic key from named
+primitive dependencies. Include owner/tenant scope, content version and every
+setting affecting the result (for example privacy, locale or theme). Property
+order does not change it; delimiter-containing strings cannot collide. Null
+and undefined remain distinct. This constructs identity; it does not observe
+settings, grant authorization or invalidate already issued public URLs.
+The narrow `@stacksjs/cache/key` entry is pure and browser-bundleable.

@@ -1,4 +1,6 @@
 import type { ModelRow, TaxRate } from '@stacksjs/orm'
+import { parseTaxRateWriteData } from '../tax-input'
+import { storedBoolean } from '@stacksjs/validation/input'
 import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
@@ -13,6 +15,7 @@ type TaxRateJsonResponse = ModelRow<typeof TaxRate>
  * @returns The updated tax rate record
  */
 export async function update(id: number, data: TaxRateWriteData): Promise<TaxRateJsonResponse | undefined> {
+  data = parseTaxRateWriteData(data)
   try {
     if (!id)
       throw new Error('Tax rate ID is required for update')
@@ -27,7 +30,7 @@ export async function update(id: number, data: TaxRateWriteData): Promise<TaxRat
       if (!current)
         return undefined
 
-      const isDefault = data.is_default ?? Boolean(current.is_default)
+      const isDefault = data.is_default ?? storedBoolean(current.is_default, false)
       const updatedAt = formatDate(new Date())
       if (isDefault) {
         await trx
@@ -73,6 +76,7 @@ export async function updateStatus(
   id: number,
   status: 'active' | 'inactive',
 ): Promise<TaxRateJsonResponse> {
+  status = parseTaxRateWriteData({ status }).status!
   try {
     const result = await db
       .updateTable('tax_rates')
@@ -109,6 +113,7 @@ export async function updateRate(
   id: number,
   rate: number,
 ): Promise<TaxRateJsonResponse> {
+  rate = parseTaxRateWriteData({ rate }).rate!
   try {
     const result = await db
       .updateTable('tax_rates')
@@ -142,6 +147,7 @@ export async function updateRate(
  * @returns True when the tax rate exists and was updated
  */
 export async function updateDefaultStatus(id: number, isDefault: boolean): Promise<boolean> {
+  isDefault = parseTaxRateWriteData({ is_default: isDefault }).is_default!
   try {
     return await db.transaction(async (trx: any) => {
       const existing = await trx

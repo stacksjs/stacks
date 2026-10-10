@@ -1,6 +1,7 @@
 import type { ModelRow, TaxRate } from '@stacksjs/orm'
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
 import { randomUUIDv7 } from 'bun'
+import { parseTaxRateWriteData } from '../tax-input'
 import { db } from '@stacksjs/database/runtime'
 import { asModelRow } from '../utils/model-row'
 import type { TaxRateWriteData } from './types'
@@ -12,6 +13,7 @@ import type { TaxRateWriteData } from './types'
  * @returns The newly created tax rate record
  */
 export async function store(data: TaxRateWriteData): Promise<TaxRateJsonResponse> {
+  data = parseTaxRateWriteData(data)
   try {
     return await db.transaction(async (trx: any) => {
       const taxData = {
@@ -54,6 +56,7 @@ export async function store(data: TaxRateWriteData): Promise<TaxRateJsonResponse
  * @returns Number of tax rates created
  */
 export async function bulkStore(data: TaxRateWriteData[]): Promise<number> {
+  data = data.map(parseTaxRateWriteData)
   if (!data.length)
     return 0
 

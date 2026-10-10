@@ -57,6 +57,8 @@ export * from './batch-loader'
 export * from './db'
 export * from './subquery'
 export * from './transaction'
+export * from './locked-row'
+export * from './row-token'
 // Data-subject access, erasure and retention, plus the processing register,
 // read off each model's `personal` attributes and `gdpr` trait
 // (stacksjs/stacks#365).

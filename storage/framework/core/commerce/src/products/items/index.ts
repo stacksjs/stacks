@@ -23,4 +23,5 @@ export {
   update,
   updateAvailability,
   updateInventory,
+  restock,
 } from './update'

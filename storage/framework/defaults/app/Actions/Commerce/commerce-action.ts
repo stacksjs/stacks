@@ -1,4 +1,5 @@
 import type { RequestInstance } from '@stacksjs/types'
+import { positiveIdOrNull } from '@stacksjs/validation/input'
 import { response } from '@stacksjs/router'
 
 export type CommerceIdentifierResult =
@@ -9,8 +10,8 @@ export function commerceIdentifier(
   request: RequestInstance,
   resource: string,
 ): CommerceIdentifierResult {
-  const id = Number(request.getParam('id'))
-  if (!Number.isSafeInteger(id) || id < 1) {
+  const id = positiveIdOrNull(request.getParam('id'))
+  if (id === null) {
     return {
       error: response.json({ message: `${resource} id must be a positive integer.` }, 422),
     }

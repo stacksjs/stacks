@@ -24,3 +24,5 @@
  */
 
 export * from './drivers'
+
+export * from './key'

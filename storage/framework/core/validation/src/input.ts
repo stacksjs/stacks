@@ -18,10 +18,11 @@ export function parsePositiveId(value: unknown): number {
   return id
 }
 
-export function parseTextInput(value: unknown, field: string, required = false): string | null {
+export function parseTextInput(value: unknown, field: string, required = false, maxLength?: number): string | null {
   if (value == null && !required) return null
   if (typeof value !== 'string') throw new InputValidationError(`${field} must be text`)
   const text = value.trim()
+  if (maxLength !== undefined && text.length > maxLength) throw new InputValidationError(`${field} is too long`)
   if (!text && required) throw new InputValidationError(`${field} is required`)
   return text || null
 }
@@ -48,8 +49,35 @@ export interface InputValidatableModel {
 
 /** Validate supplied fields only, so partial updates use the model's own rules. */
 export function validateModelInput(model: InputValidatableModel, values: Record<string, unknown>): void {
+  const attributes = model.getDefinition().attributes ?? {}
   for (const [field, value] of Object.entries(values)) {
-    const rule = model.getDefinition().attributes?.[field]?.validation?.rule
+    const attribute = Object.prototype.hasOwnProperty.call(attributes, field) ? field : Object.keys(attributes).find(key => key === field || key.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase() === field)
+    const rule = attribute ? attributes[attribute]?.validation?.rule : undefined
     if (rule && !rule.validate(value).valid) throw new InputValidationError(`Invalid ${field.replaceAll('_', ' ')}`)
+  }
+}
+
+/** Exact enum membership without turning objects or numbers into text. */
+export function parseEnumInput<const T extends readonly string[]>(value: unknown, field: string, choices: T): T[number] {
+  if (typeof value !== 'string' || !choices.includes(value)) throw new InputValidationError(`${field} must be ${choices.join(', ')}`)
+  return value as T[number]
+}
+
+/** Decode SQL/form booleans. The caller explicitly chooses the fallback for absent or corrupt data. */
+export function storedBoolean(value: unknown, fallback: boolean): boolean {
+  if (value == null) return fallback
+  try { return parseBooleanInput(value, 'Stored value') ?? fallback }
+  catch (error) {
+    if (error instanceof InputValidationError) return fallback
+    throw error
+  }
+}
+
+/** The nullable adapter for record serializers and optional identifiers. */
+export function positiveIdOrNull(value: unknown): number | null {
+  try { return parsePositiveId(value) }
+  catch (error) {
+    if (error instanceof InputValidationError) return null
+    throw error
   }
 }
