@@ -405,3 +405,30 @@ Source: `storage/framework/core/validation/src/index.ts`, runtime.ts,
 schema.ts, request-validator.ts, conditional.ts, file-validator.ts and validator.ts.
 Tests: conditional.test.ts, file-validator.test.ts, async-rules.test.ts,
 runtime-entry.test.ts and type-inference.test-d.ts under core/validation/tests.
+
+## Custom action input
+
+`@stacksjs/validation/input` is a dependency-free boundary for custom actions:
+
+```ts
+import { readJsonObject, parsePositiveId, parseTextInput, parseNumberInput,
+  parseBooleanInput, validateModelInput } from '@stacksjs/validation/input'
+
+const body = await readJsonObject(request)
+const id = parsePositiveId(request.params.id)
+const title = parseTextInput(body.title, 'title', true)
+const amount = parseNumberInput(body.amount, 'amount', 0, 100000, true)
+const enabled = parseBooleanInput(body.enabled, 'enabled')
+validateModelInput(MyModel, { title })
+```
+
+Failures throw `InputValidationError` with `status: 422`. JSON must be an object;
+text never coerces objects or silently truncates; numeric input rejects booleans,
+non-finite values and unsafe whole numbers. Optional text/number input returns
+null, and absent boolean input returns undefined. Boolean input accepts JSON
+booleans and the explicit form values `true`, `false`, `1`, `0` and their strings.
+
+`validateModelInput` checks only supplied fields using `getDefinition()` rules.
+The action still selects writable fields, requires creation fields and validates
+relationships. Use the transaction callback executor for all atomic persistence.
+Root and narrow input imports share the same error constructor.

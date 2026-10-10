@@ -92,9 +92,8 @@ const tmpModelsDir = mkdtempSync(join(tmpdir(), 'stacks-emitted-migrations-'))
 const cacheModelsDir = stacksPath.frameworkPath('cache/models')
 const cacheCopies = ['TmpEmitMysql.ts', 'TmpEmitPostgres.ts', 'TmpEmitAlter.ts']
 // belongsToMany resolves the related model BY NAME from userModelsPath, so
-// the related side must be a real file there. A plain temp object keeps the
-// test self-contained — importing a defineModel-based core model (e.g. User)
-// drags the orm/security/validation graph into the test.
+// the related side must be a real model file there. Use the same definition
+// contract as application models, so parallel ORM checks can inspect it safely.
 const relatedModelPath = stacksPath.userModelsPath('TmpEmitRelated.ts')
 
 // Every model file is written HERE, before any test runs, and never from
@@ -114,12 +113,13 @@ const relatedModelPath = stacksPath.userModelsPath('TmpEmitRelated.ts')
 mkdirSync(stacksPath.userModelsPath(''), { recursive: true })
 mkdirSync(cacheModelsDir, { recursive: true })
 
-writeFileSync(relatedModelPath, `export default {
+writeFileSync(relatedModelPath, `import { defineModel } from '@stacksjs/orm'
+export default defineModel({
   name: 'TmpEmitRelated',
   table: 'tmp_emit_relateds',
   primaryKey: 'id',
   attributes: {},
-}
+} as const)
 `)
 
 writeFileSync(join(tmpModelsDir, 'TmpEmitMysql.ts'), `export default {

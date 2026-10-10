@@ -33,6 +33,7 @@ export type {
 export * from '@stacksjs/ts-validation'
 
 // Export local validation helpers
+export * from './input'
 export * from './reporter'
 export * from './validator'
 
