@@ -14,7 +14,7 @@ import { ExitCode } from '@stacksjs/types'
 async function runStyleAction(
   entry: 'lintProject' | 'lintFix' | 'formatProject',
   label: string,
-  options?: { write?: boolean, check?: boolean },
+  options?: { write?: boolean, check?: boolean, maxWarnings?: number },
 ): Promise<void> {
   const actions = await import('@stacksjs/actions')
   const { ok } = await actions[entry](options as never)
@@ -95,6 +95,7 @@ export function lint(buddy: CLI): void {
     .command('lint', descriptions.lint)
     .option('-f, --fix', descriptions.lintFix, { default: false })
     .option('--stx', descriptions.stx, { default: false })
+    .option('--max-warnings <count>', 'Fail when warnings exceed this count')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions & { stx?: boolean }) => {
       log.debug('Running `buddy lint` ...', options)
@@ -106,13 +107,15 @@ export function lint(buddy: CLI): void {
         return
       }
 
-      await runStyleAction(options.fix ? 'lintFix' : 'lintProject', 'lint')
+      const budget = options.maxWarnings ?? options['max-warnings']
+      await runStyleAction(options.fix ? 'lintFix' : 'lintProject', 'lint', { maxWarnings: budget === undefined ? undefined : Number(budget) })
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })
 
   buddy
     .command('lint:fix', descriptions.lintFix)
+    .option('--max-warnings <count>', 'Fail when warnings exceed this count')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: LintOptions) => {
       log.debug('Running `buddy lint:fix` ...', options)
@@ -120,7 +123,8 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint:fix')
 
       log.info('Fixing lint errors...')
-      await runStyleAction('lintFix', 'lint:fix')
+      const budget = options.maxWarnings ?? options['max-warnings']
+      await runStyleAction('lintFix', 'lint:fix', { maxWarnings: budget === undefined ? undefined : Number(budget) })
 
       await outro('Fixed lint errors', { startTime, useSeconds: true })
     })

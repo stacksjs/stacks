@@ -107,7 +107,7 @@ export default defineCommands({
 // app/Listeners/Console.ts
 export default function(cli: CLI) {
   cli.on('custom:command', () => {
-    console.log('Custom command executed!')
+    log.info('Custom command executed!')
   })
 
   cli.on('my:*', () => {
@@ -120,14 +120,23 @@ export default function(cli: CLI) {
 }
 ```
 
+## Plain command output
+
+Import `print` and `printError` from `@stacksjs/cli/output` for command results,
+test tallies and diagnostics that must be visible even when logging is filtered.
+They write synchronously to stdout and stderr, preserve Node formatting and
+inspection, append a newline, and complete before an immediate `process.exit()`.
+The narrow import needs no application configuration. Use `log` for application
+logging with levels, context and transports.
+
 ## Output Formatting
 
 Via `@stacksjs/utils` color functions (available in CLI context):
 ```typescript
 import { bold, green, red, yellow, dim, underline } from '@stacksjs/utils'
 
-console.log(green('✓ Success'))
-console.log(red('✗ Error'))
+print(green('✓ Success'))
+printError(red('✗ Error'))
 console.log(yellow('⚠ Warning'))
 console.log(bold('Important'))
 console.log(dim('Subtle info'))

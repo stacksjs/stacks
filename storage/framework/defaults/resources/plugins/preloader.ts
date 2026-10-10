@@ -308,7 +308,8 @@ export async function loadAutoImports() {
           Reflect.set(globalThis, name, value)
         }
       }
-    } catch {
+    }
+    catch {
       // Package might not exist or not be built yet
     }
   }
@@ -328,7 +329,8 @@ export async function loadAutoImports() {
           Reflect.set(globalThis, name, value)
         }
       }
-    } catch {
+    }
+    catch {
       // Some files may have client-side dependencies, skip them
     }
   }
@@ -361,11 +363,13 @@ export async function loadAutoImports() {
             Reflect.set(globalThis, modelName, module.default)
             loadedModels.add(modelName)
           }
-        } catch {
+        }
+        catch {
           // Model may have unresolved dependencies during bootstrap
         }
       }
-    } catch {
+    }
+    catch {
       // Directory may not exist
     }
   }
@@ -392,11 +396,13 @@ export async function loadAutoImports() {
           Reflect.set(globalThis, jobName, module.default)
           loadedJobs.add(jobName)
         }
-      } catch {
+      }
+      catch {
         // Job may have unresolved dependencies during bootstrap
       }
     }
-  } catch {
+  }
+  catch {
     // Directory may not exist
   }
 
@@ -427,11 +433,13 @@ export async function loadAutoImports() {
             Reflect.set(globalThis, controllerName, module.default)
             loadedControllers.add(controllerName)
           }
-        } catch {
+        }
+        catch {
           // Controller may have unresolved dependencies during bootstrap
         }
       }
-    } catch {
+    }
+    catch {
       // Directory may not exist
     }
   }

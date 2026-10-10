@@ -897,7 +897,7 @@
 - **storage**: download and sandbox signed files that can run script, instead of rendering them on the app's origin ([6370c7d](https://github.com/stacksjs/stacks/commit/6370c7d)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **router**: stream() pulls from its source only as fast as the client reads ([d07e5ed](https://github.com/stacksjs/stacks/commit/d07e5ed)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **router**: keep every value of a repeated form field, and read media types case-insensitively ([f740190](https://github.com/stacksjs/stacks/commit/f740190)) _(by Chris <chrisbreuer93@gmail.com>)_
-- **router**: validate the input the handler reads, and keep __proto__ a plain key ([9f34bf9](https://github.com/stacksjs/stacks/commit/9f34bf9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: validate the input the handler reads, and keep `__proto__` a plain key ([9f34bf9](https://github.com/stacksjs/stacks/commit/9f34bf9)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **csrf**: recognise the CSRF cookie by its exact name ([5427f19](https://github.com/stacksjs/stacks/commit/5427f19)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **cloud**: name and find the stack where buddy deploy puts it, on every path that reads it ([13ddc8d](https://github.com/stacksjs/stacks/commit/13ddc8d)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2862](https://github.com/stacksjs/stacks/issues/2862))
 - **cors**: a wildcard origin policy with credentials allows no origin, instead of every one ([625d6fc](https://github.com/stacksjs/stacks/commit/625d6fc)) _(by Chris <chrisbreuer93@gmail.com>)_

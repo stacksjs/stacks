@@ -5,7 +5,7 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "pickier": "^0.1.68",
+        "pickier": "^0.1.70",
         "stacks": "workspace:*"
       },
       "devDependencies": {
@@ -844,7 +844,7 @@
       "name": "@stacksjs/lint",
       "version": "0.75.121",
       "dependencies": {
-        "pickier": "^0.1.68"
+        "pickier": "^0.1.70"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -2171,12 +2171,12 @@
       "source": "pantry",
       "resolved": "registry:perl.org@5.44.0"
     },
-    "pickier@0.1.68": {
+    "pickier@0.1.70": {
       "name": "pickier",
-      "version": "0.1.68",
+      "version": "0.1.70",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/pickier/-/pickier-0.1.68.tgz",
-      "integrity": "sha512-YxxWEap9AorD0FZYtgNMpf0k38WPZPgGXOhznzW6tEt/9aCuSKw6rXPIweFFi0MHr7gB1kRTRxHK+4piv3+/NQ==",
+      "resolved": "https://registry.npmjs.org/pickier/-/pickier-0.1.70.tgz",
+      "integrity": "sha512-XfDztqWiqffvNO26r2YP8rf/gx/TKjobKmhXMOQFvFRmdktCrDgIUZ6jk6hP7pCIP9CBu5Y3UbH8UKlzqC6Zfw==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.3",
         "@stacksjs/clarity": "^0.3.24"

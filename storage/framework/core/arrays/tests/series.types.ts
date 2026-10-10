@@ -1,6 +1,5 @@
-// Compile after building: checks the published declaration rather than source inference.
-// eslint-disable-next-line pickier/no-import-dist -- Validate the published declarations rather than source inference.
-import { summarizeSeries } from '../dist/series'
+// Compile after building with standalone tsc: resolves the public package export and its published declarations.
+import { summarizeSeries } from '@stacksjs/arrays'
 const summary = summarizeSeries([{ date: '2026-01-01', value: 0 }])
 const count: number = summary.count
 const latest: number | undefined = summary.latest?.value
