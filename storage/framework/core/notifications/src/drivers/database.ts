@@ -24,6 +24,7 @@ export interface CreateNotificationOptions {
 
 /** Shape of a row-insert result across the supported drivers. */
 interface InsertResultLike {
+  id?: number | bigint
   insertId?: number | bigint
   lastInsertRowid?: number | bigint
   lastInsertId?: number | bigint
@@ -43,6 +44,7 @@ export const DatabaseNotificationDriver = {
         created_at: now,
         updated_at: now,
       })
+      .returning('id')
       .execute()
 
     // Driver-aware insertId extraction. MySQL exposes
@@ -55,12 +57,15 @@ export const DatabaseNotificationDriver = {
     const r = result as unknown as InsertResultLike | [InsertResultLike]
     const arr = Array.isArray(r) ? r[0] : r
     const insertId = Number(
-      arr?.insertId
+      arr?.id
+      ?? arr?.insertId
       ?? arr?.lastInsertRowid
       ?? arr?.lastInsertId
       ?? 0,
     )
 
+    if (!Number.isSafeInteger(insertId) || insertId <= 0)
+      throw new Error('Database notification did not return a generated id')
     log.info(`Database notification sent to user ${options.userId}: ${options.type}`)
 
     return {
@@ -82,7 +87,7 @@ export const DatabaseNotificationDriver = {
       .orderBy('created_at', 'desc')
       .execute()
 
-    return notifications as unknown as DatabaseNotification[]
+    return notifications.map(notification => ({ ...notification, id: Number(notification.id), user_id: Number(notification.user_id) })) as unknown as DatabaseNotification[]
   },
 
   async getUnreadNotifications(userId: number): Promise<DatabaseNotification[]> {
@@ -94,7 +99,7 @@ export const DatabaseNotificationDriver = {
       .orderBy('created_at', 'desc')
       .execute()
 
-    return notifications as unknown as DatabaseNotification[]
+    return notifications.map(notification => ({ ...notification, id: Number(notification.id), user_id: Number(notification.user_id) })) as unknown as DatabaseNotification[]
   },
 
   async markAsRead(id: number): Promise<void> {
@@ -102,6 +107,7 @@ export const DatabaseNotificationDriver = {
       .updateTable('notifications')
       .set({ read_at: sqlDateTime() })
       .where('id', '=', id)
+      .whereNull('read_at')
       .execute()
   },
 

@@ -3,13 +3,22 @@
  * from the git and build steps so they can be tested on their own.
  *
  * A release is a tag. `v1.0.0-build.3` ships the third TestFlight build of
- * 1.0.0; `--bump patch|minor|major|x.y.z` moves the version first and starts
- * its builds again at 1. A CI that builds tags (Xcode Cloud's start condition
+ * 1.0.0; `--bump build` (also the default) keeps the marketing version.
+ * `--bump patch|minor|major|x.y.z` moves that version deliberately.
+ * A CI that builds tags (Xcode Cloud's start condition
  * "Tag Changes" with prefix `v`) turns each one into a build. The store's
- * build number is the CI's own counter, so the tag only has to be unique.
+ * build number is the CI's own counter; allocation considers existing tags
+ * and every Xcode Cloud run, including failed or in-flight runs.
  */
 
-const SEMVER = /^\d+\.\d+\.\d+$/
+import { incrementVersion, nextBuildNumber, SemVer } from '@stacksjs/bumpx'
+
+function marketingVersion(version: string): string {
+  const parsed = new SemVer(version)
+  if (parsed.prerelease.length || parsed.build.length || parsed.toString() !== version)
+    throw new Error('An iOS marketing version must be a stable version such as 1.0.0')
+  return parsed.toString()
+}
 
 /** The `ios: { ... }` part of config/mobile.ts, as offsets into the source. */
 function iosBlock(source: string): { start: number, end: number } | null {
@@ -32,6 +41,7 @@ export function iosVersionIn(source: string): string | null {
 
 /** config/mobile.ts with the iOS app version replaced, everything else as written. */
 export function withIosVersion(source: string, version: string): string {
+  marketingVersion(version)
   const block = iosBlock(source)
   if (!block || !VERSION_ENTRY.test(source.slice(block.start, block.end)))
     throw new Error('config/mobile.ts declares no iOS `version`')
@@ -41,24 +51,22 @@ export function withIosVersion(source: string, version: string): string {
 
 /** The version a bump leads to, or the one given outright. */
 export function bumpedVersion(current: string, bump: string): string {
-  if (SEMVER.test(bump))
-    return bump
-  const [major = 0, minor = 0, patch = 0] = current.split('.').map(Number)
-  if (bump === 'major')
-    return `${major + 1}.0.0`
-  if (bump === 'minor')
-    return `${major}.${minor + 1}.0`
-  if (bump === 'patch')
-    return `${major}.${minor}.${patch + 1}`
-  throw new Error(`"${bump}" is not patch, minor, major or a version like 1.2.0`)
+  marketingVersion(current)
+  if (bump === 'build') return current
+  if (['patch', 'minor', 'major'].includes(bump))
+    return marketingVersion(incrementVersion(current, bump))
+  return marketingVersion(bump)
 }
 
 /** The next build's tag for `version`, after the tags that already exist. */
-export function nextBuildTag(version: string, tags: string[]): string {
+export function nextBuildTag(version: string, tags: string[], latestRun = 0): string {
+  marketingVersion(version)
   const prefix = `v${version}-build.`
   const builds = tags
     .filter(tag => tag.startsWith(prefix))
-    .map(tag => Number(tag.slice(prefix.length)))
-    .filter(n => Number.isInteger(n) && n > 0)
-  return `${prefix}${Math.max(0, ...builds) + 1}`
+    .map(tag => tag.slice(prefix.length))
+    .filter(number => /^[1-9]\d*$/.test(number))
+    .map(Number)
+    .filter(Number.isSafeInteger)
+  return `${prefix}${nextBuildNumber(latestRun, builds)}`
 }

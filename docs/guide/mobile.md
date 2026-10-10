@@ -4,6 +4,18 @@ description: "Ship the same STX application as a native iOS and Android app with
 ---
 # Mobile Apps
 
+## TestFlight versioning
+
+Keep an unreleased app on its intended marketing version, such as `1.0.0`.
+Ship another test build with `buddy release:ios` or the explicit
+`buddy release:ios --bump build`. Both retain the marketing version and
+allocate the next build number with Bumpx, accounting for release tags and
+previous Xcode Cloud runs, including failures and builds still in flight.
+
+Use `--bump patch`, `minor`, `major`, or an explicit stable version only when
+deliberately changing the marketing version. Semantic prerelease identifiers
+and build metadata belong to package versions, not the iOS marketing field.
+
 A Stacks application becomes an iOS and Android app without a second
 codebase. [Craft](https://github.com/stacksjs/craft) wraps the same STX views,
 routes and API in a native shell, and Stacks supplies two things on top of it:

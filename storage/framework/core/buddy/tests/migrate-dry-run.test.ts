@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -36,6 +36,14 @@ describe('buddy migrate --dry-run', () => {
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), 'migrate-dry-run-'))
+    // This exercises the default schema in an empty consumer project. A real
+    // app/Models override in the framework checkout must not change its subject.
+    mkdirSync(join(dir, 'storage/framework'), { recursive: true })
+    symlinkSync(join(root, 'storage/framework/defaults'), join(dir, 'storage/framework/defaults'), 'dir')
+    symlinkSync(join(root, 'node_modules'), join(dir, 'node_modules'), 'dir')
+    cpSync(join(root, 'database/migrations'), join(dir, 'database/migrations'), { recursive: true })
+    writeFileSync(join(dir, 'package.json'), '{}\n')
+    writeFileSync(join(dir, 'bunfig.toml'), 'preload = []\n')
     // A snapshot one model behind, so a real run would have something to write.
     const stored = JSON.parse(readFileSync(join(root, 'storage/framework/database/model-snapshot.sqlite.json'), 'utf8'))
     stored.plan.tables = stored.plan.tables.filter((table: { table: string }) => table.table !== 'referrals')
@@ -46,8 +54,8 @@ describe('buddy migrate --dry-run', () => {
   afterEach(() => rmSync(dir, { recursive: true, force: true }))
 
   function run(...args: string[]): { exitCode: number, output: string } {
-    const result = Bun.spawnSync([process.execPath, cli, ...args], {
-      cwd: root,
+    const result = Bun.spawnSync([process.execPath, `--config=${join(dir, 'bunfig.toml')}`, '--no-env-file', cli, ...args], {
+      cwd: dir,
       env: { ...process.env, DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(dir, 'db.sqlite'), DB_SNAPSHOT_PATH: dir, CI: '1' },
       stdout: 'pipe',
       stderr: 'pipe',
@@ -56,7 +64,7 @@ describe('buddy migrate --dry-run', () => {
   }
 
   function corpus(): string[] {
-    return readdirSync(join(root, 'database/migrations')).sort()
+    return readdirSync(join(dir, 'database/migrations')).sort()
   }
 
   it('previews the pending change and writes neither files nor the snapshot', () => {

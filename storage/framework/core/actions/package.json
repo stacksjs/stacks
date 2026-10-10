@@ -72,7 +72,7 @@
     "@stacksjs/api": "workspace:*",
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/build": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.18",
+    "@stacksjs/bumpx": "^0.2.20",
     "@stacksjs/bunpress": "^0.2.15",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/cloud": "workspace:*",

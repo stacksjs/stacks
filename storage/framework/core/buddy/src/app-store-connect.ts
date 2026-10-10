@@ -14,6 +14,7 @@
  * Without one, releases work as before and say what they cannot do.
  */
 import { existsSync, readFileSync } from 'node:fs'
+import { nextBuildNumber } from '@stacksjs/bumpx'
 
 const API = 'https://api.appstoreconnect.apple.com'
 
@@ -107,7 +108,7 @@ export class AppStoreConnect {
       return null
     const runs = await this.request(`/v1/ciProducts/${productId}/buildRuns?sort=-number&limit=1&fields[ciBuildRuns]=number`)
     const number = Number(runs?.data?.[0]?.attributes?.number)
-    return Number.isInteger(number) ? number : null
+    return Number.isSafeInteger(number) && number >= 0 ? number : null
   }
 
   /** The app's TestFlight builds, newest first. */
@@ -144,5 +145,5 @@ export function buildsToExpire(builds: TestFlightBuild[], keep = 1): TestFlightB
 
 /** The tag for the build Xcode Cloud is about to number, given its newest run. */
 export function tagForXcodeCloudRun(version: string, latestRun: number): string {
-  return `v${version}-build.${latestRun + 1}`
+  return `v${version}-build.${nextBuildNumber(latestRun)}`
 }

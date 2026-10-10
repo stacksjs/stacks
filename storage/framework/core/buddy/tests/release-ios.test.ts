@@ -40,4 +40,21 @@ describe('buddy release:ios', () => {
     expect(nextBuildTag('1.0.0', ['v1.0.0-build.1', 'v1.0.0-build.3', 'v1.0.0-build.x', 'v0.9.0-build.7'])).toBe('v1.0.0-build.4')
     expect(nextBuildTag('1.1.0', ['v1.0.0-build.4'])).toBe('v1.1.0-build.1')
   })
+
+  it('preserves the marketing version for build-only releases and validates versions', () => {
+    expect(bumpedVersion('1.0.0', 'build')).toBe('1.0.0')
+    for (const version of ['01.0.0', '1.0.0-beta.1', '1.0.0+build.1', '9007199254740992.0.0']) {
+      expect(() => bumpedVersion(version, 'build')).toThrow()
+      expect(() => withIosVersion(CONFIG, version)).toThrow()
+    }
+    expect(() => bumpedVersion('1.0.0', '01.0.0')).toThrow()
+    expect(() => bumpedVersion('1.0.0', '9007199254740992.0.0')).toThrow()
+  })
+
+  it('allocates after both tags and failed or in-flight Xcode Cloud runs', () => {
+    expect(nextBuildTag('1.0.0', ['v1.0.0-build.13'], 12)).toBe('v1.0.0-build.14')
+    expect(nextBuildTag('1.0.0', ['v1.0.0-build.12'], 16)).toBe('v1.0.0-build.17')
+    expect(nextBuildTag('1.0.0', ['v1.0.0-build.9007199254740992', 'v1.0.0-build.1.5'], 12)).toBe('v1.0.0-build.13')
+    expect(() => nextBuildTag('1.0.0', [], Number.MAX_SAFE_INTEGER)).toThrow()
+  })
 })

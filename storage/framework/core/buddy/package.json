@@ -95,6 +95,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/bumpx": "^0.2.20",
     "@stacksjs/actions": "^0.75.108",
     "@stacksjs/ai": "^0.75.108",
     "@stacksjs/alias": "^0.75.108",

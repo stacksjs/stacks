@@ -1,25 +1,24 @@
 #!/usr/bin/env bun
 import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import { versionBump } from '@stacksjs/bumpx'
+import { incrementVersion, isReleaseType, isValidVersion, versionBump } from '@stacksjs/bumpx'
 import { isCalendarBump, nextCalendarVersion } from './calendar-version'
 import { pantryLockViolations } from './pantry-lock'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-const options = parseOptions() as { dryRun?: boolean, bump?: string, verbose?: boolean } | undefined
+const options = parseOptions() as { dryRun?: boolean, bump?: string, preid?: string, verbose?: boolean } | undefined
 
 // Accept --bump patch|minor|major|<explicit-version>; without it, bumpx prompts
 // interactively. The `release:patch` / `release:minor` / `release:major` npm
 // shortcuts at the project root pipe through to here non-interactively.
-const allowedBumps = new Set(['patch', 'minor', 'major', 'prepatch', 'preminor', 'premajor', 'prerelease'])
 const rawBump = options?.bump?.toString()
 const bumpArg = rawBump
-  ? (allowedBumps.has(rawBump) || isCalendarBump(rawBump) || /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(rawBump) ? rawBump : null)
+  ? (isReleaseType(rawBump) || isCalendarBump(rawBump) || isValidVersion(rawBump) ? rawBump : null)
   : null
 if (rawBump && !bumpArg)
-  log.warn(`Ignoring invalid --bump "${rawBump}"; expected patch|minor|major, calendar, or x.y.z`)
+  throw new Error(`Invalid --bump "${rawBump}"; expected a Bumpx release type, calendar, or semantic version`)
 
 const isDryRun = options?.dryRun === true
 const isVerbose = (options as { verbose?: boolean })?.verbose === true
@@ -49,7 +48,7 @@ const bumpCwd = isFrameworkRelease ? p.frameworkPath('core') : p.projectPath()
 const primaryManifest = isFrameworkRelease ? p.frameworkPath('core/package.json') : rootManifest
 
 async function resolveBumpArg(bump: string | null): Promise<string | null> {
-  if (!bump || /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(bump))
+  if (!bump)
     return bump
 
   // Calendar versioning (stacksjs/stacks#475). Resolved to an explicit
@@ -61,25 +60,10 @@ async function resolveBumpArg(bump: string | null): Promise<string | null> {
     return nextCalendarVersion(pkg?.version)
   }
 
-  if (!['patch', 'minor', 'major'].includes(bump))
-    return bump
-
   const pkg = await readPackage(primaryManifest)
-  const match = pkg?.version?.match(/^(\d+)\.(\d+)\.(\d+)$/)
-
-  if (!match)
-    return bump
-
-  const major = Number(match[1])
-  const minor = Number(match[2])
-  const patch = Number(match[3])
-  if (bump === 'major')
-    return `${major + 1}.0.0`
-
-  if (bump === 'minor')
-    return `${major}.${minor + 1}.0`
-
-  return `${major}.${minor}.${patch + 1}`
+  if (!pkg?.version)
+    throw new Error(`${primaryManifest} declares no version`)
+  return incrementVersion(pkg.version, bump, options?.preid)
 }
 
 const resolvedBumpArg = await resolveBumpArg(bumpArg)
@@ -193,6 +177,7 @@ log.debug(`Bumping ${bumpFiles.length} package manifest(s) in ${bumpCwd}`)
 // non-interactively implies `yes`; omitting it lets bumpx prompt for the bump.
 await versionBump({
   release: resolvedBumpArg ?? undefined,
+  preid: options?.preid,
   files: bumpFiles,
   cwd: bumpCwd,
   recursive: false,
@@ -210,7 +195,7 @@ await versionBump({
 
 // On a dry run bumpx doesn't write the manifest, so trust the resolved arg for
 // the next version; otherwise read it back from the freshly bumped manifest.
-const nextVersion = isDryRun && resolvedBumpArg && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(resolvedBumpArg)
+const nextVersion = isDryRun && resolvedBumpArg && isValidVersion(resolvedBumpArg)
   ? resolvedBumpArg
   : await readVersion(primaryManifest)
 
@@ -247,7 +232,7 @@ async function writeChangelog(): Promise<void> {
     return
 
   let content = readFileSync(changelogPath, 'utf-8')
-  const versionSeen = new RegExp(`\\bv?${nextVersion.replace(/\./g, '\\.')}\\b`)
+  const versionSeen = new RegExp(`\\bv?${nextVersion.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
 
   if (/\/compare\/[^)\s]+\.\.\.HEAD\)/.test(content)) {
     // Subsequent release: point the compare link at the new tag.

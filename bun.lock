@@ -127,7 +127,7 @@
         "@stacksjs/api": "workspace:*",
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/build": "workspace:*",
-        "@stacksjs/bumpx": "^0.2.18",
+        "@stacksjs/bumpx": "^0.2.20",
         "@stacksjs/bunpress": "^0.2.15",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/cloud": "workspace:*",
@@ -342,6 +342,7 @@
         "@stacksjs/auth": "^0.75.108",
         "@stacksjs/browser-extension": "^0.75.108",
         "@stacksjs/build": "^0.75.108",
+        "@stacksjs/bumpx": "^0.2.20",
         "@stacksjs/cache": "^0.75.108",
         "@stacksjs/chat": "^0.75.108",
         "@stacksjs/clapp": "^0.2.16",
@@ -1576,7 +1577,7 @@
 
     "@stacksjs/build": ["@stacksjs/build@workspace:storage/framework/core/build"],
 
-    "@stacksjs/bumpx": ["@stacksjs/bumpx@0.2.18", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/logsmith": "^0.2.6", "bunfig": "^0.15.6" }, "bin": { "bumpx": "./dist/bin/cli.js" } }, "sha512-3jBBdmgqRd4agAFsfRtzLSxrFKFQakI1nw44rWZSWszpGee0ZSRIUz9vTi+7jEVUj4gvTDBlt2AkG9kCbNT28A=="],
+    "@stacksjs/bumpx": ["@stacksjs/bumpx@0.2.20", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/logsmith": "^0.2.6", "bunfig": "^0.15.6" }, "bin": { "bumpx": "./dist/bin/cli.js" } }, "sha512-CPNiOj32ee0n4gJYEtfaCwjw3CnP4r/1a+nAZh3VOxNFHvXR83qlAq/WNut3K9VHcPxbaT6+jDRW/hIghFjk7g=="],
 
     "@stacksjs/bun-queue": ["@stacksjs/bun-queue@0.1.8", "", {}, "sha512-4nrKGXksRW/57VJqpLQmnX5SI9yE4OsRKp60jE8MoZI4vzH45MJQrBzFgAiGITzmjnbmxHN1c5a9kG+kbp94rw=="],
 

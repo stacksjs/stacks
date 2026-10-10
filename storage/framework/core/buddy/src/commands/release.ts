@@ -8,7 +8,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire, tagForXcodeCloudRun } from '../app-store-connect'
+import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire } from '../app-store-connect'
 import { bumpedVersion, iosVersionIn, nextBuildTag, withIosVersion } from '../release-ios'
 import { resultFailed } from '../result'
 
@@ -16,7 +16,7 @@ const descriptions = {
   release: 'Release a new version of your libraries/packages',
   project: 'Target a specific project',
   dryRun: 'Run the release without actually releasing',
-  bump: 'Non-interactive bump: patch | minor | major | prepatch | preminor | premajor | prerelease | calendar | x.y.z',
+  bump: 'Non-interactive bump: patch | minor | major | prepatch | preminor | premajor | prerelease | pre | release | build | calendar | x.y.z',
   verbose: 'Enable verbose output',
 }
 
@@ -26,6 +26,7 @@ export function release(buddy: CLI): void {
     .option('--dry-run', descriptions.dryRun, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--bump <type>', descriptions.bump)
+    .option('--preid <identifier>', 'Prerelease channel, for example beta or rc')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
       log.debug('Running `buddy release` ...', options)
@@ -58,7 +59,7 @@ export function release(buddy: CLI): void {
 
   buddy
     .command('release:ios', 'Ship the iOS app: regenerate its project for production, commit, tag and push')
-    .option('--bump <type>', 'Raise the app version first: patch | minor | major | x.y.z (default: a new build of the current version)')
+    .option('--bump <type>', 'build | patch | minor | major | x.y.z (default: a new build of the current marketing version)')
     .option('--keep-builds <n>', 'TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key)', { default: 1 })
     .option('--dry-run', descriptions.dryRun, { default: false })
     .action(async (options: { bump?: string, dryRun?: boolean, keepBuilds?: number | string }) => {
@@ -124,10 +125,7 @@ async function releaseIos(options: { bump?: string, dryRun?: boolean, keepBuilds
     store = { api, appId: await api.appId(bundleId) }
     const latestRun = await api.latestXcodeCloudRun(store.appId)
     if (latestRun !== null) {
-      const fromStore = tagForXcodeCloudRun(version, latestRun)
-      // Never reuse a tag that exists; a run in flight can make that happen.
-      if (!existingTags.includes(fromStore))
-        tag = fromStore
+      tag = nextBuildTag(version, existingTags, latestRun)
     }
   }
   else {

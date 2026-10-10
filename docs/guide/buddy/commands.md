@@ -4668,7 +4668,8 @@ Release a new version of your libraries/packages
 | --- | --- | --- | --- |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| calendar \| x.y.z | value, required | - |
+| `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| pre \| release \| build \| calendar \| x.y.z | value, required | - |
+| `--preid` | Prerelease channel, for example beta or rc | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `release:ios`
@@ -4682,7 +4683,7 @@ Ship the iOS app: regenerate its project for production, commit, tag and push
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--bump` | Raise the app version first: patch \| minor \| major \| x.y.z (default: a new build of the current version) | value, required | - |
+| `--bump` | build \| patch \| minor \| major \| x.y.z (default: a new build of the current marketing version) | value, required | - |
 | `--keep-builds` | TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key) | value, required | `1` |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 

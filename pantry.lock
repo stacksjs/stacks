@@ -133,7 +133,7 @@
         "@stacksjs/api": "workspace:*",
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/build": "workspace:*",
-        "@stacksjs/bumpx": "^0.2.18",
+        "@stacksjs/bumpx": "^0.2.20",
         "@stacksjs/bunpress": "^0.2.15",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/cloud": "workspace:*",
@@ -311,6 +311,7 @@
         "@stacksjs/auth": "^0.75.108",
         "@stacksjs/browser-extension": "^0.75.108",
         "@stacksjs/build": "^0.75.108",
+        "@stacksjs/bumpx": "^0.2.20",
         "@stacksjs/cache": "^0.75.108",
         "@stacksjs/chat": "^0.75.108",
         "@stacksjs/clapp": "^0.2.16",
@@ -1451,12 +1452,12 @@
       "resolved": "https://registry.npmjs.org/@loghq/stacks/-/stacks-0.2.6.tgz",
       "integrity": "sha512-7E4v4nWUDgKuuyFZwa5VZxuRGewMGwAcclCAcm+fm36rGdWnLx6TTdRwMhADlzAYw3nCRyljpnVrViiExQ0UDg=="
     },
-    "@stacksjs/bumpx@0.2.18": {
+    "@stacksjs/bumpx@0.2.20": {
       "name": "@stacksjs/bumpx",
-      "version": "0.2.18",
+      "version": "0.2.20",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/bumpx/-/bumpx-0.2.18.tgz",
-      "integrity": "sha512-3jBBdmgqRd4agAFsfRtzLSxrFKFQakI1nw44rWZSWszpGee0ZSRIUz9vTi+7jEVUj4gvTDBlt2AkG9kCbNT28A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/bumpx/-/bumpx-0.2.20.tgz",
+      "integrity": "sha512-CPNiOj32ee0n4gJYEtfaCwjw3CnP4r/1a+nAZh3VOxNFHvXR83qlAq/WNut3K9VHcPxbaT6+jDRW/hIghFjk7g==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "@stacksjs/logsmith": "^0.2.6",

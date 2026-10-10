@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, lockRow, sqlDateTime } from '@stacksjs/database/runtime'
 import type { NotificationChannel } from './index'
 
 /**
@@ -64,6 +64,8 @@ export function wherePreferenceCategory<T extends PreferenceCategoryQuery<T>>(qu
 
 /**
  * Load all notification preferences for a user as a Map keyed by channel.
+ * Without a category, returns global preferences only. Category-specific
+ * preferences are read only when that category is explicitly requested.
  * Returns `Map<channel, enabled>` — channels with no row recorded are
  * absent from the Map (callers should treat absent = enabled by default).
  *
@@ -86,14 +88,10 @@ export async function getNotificationPreferences(
   try {
     // Table is now part of `DatabaseSchema` via
     // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
-    let q = db.selectFrom(TABLE).select(['channel', 'enabled', 'category']).where('user_id', '=', userId)
-    if (category !== undefined)
-      q = q.where('category', '=', category)
+    const q = wherePreferenceCategory(db.selectFrom(TABLE).select(['channel', 'enabled', 'category']).where('user_id', '=', userId), category ?? null)
     const rows = await q.execute() as Array<Pick<NotificationPreferenceRow, 'channel' | 'enabled' | 'category'>>
     for (const row of rows) {
-      // Category-specific rows shouldn't override a global preference if
-      // the caller didn't ask for that category — but since we filter by
-      // category above, all rows here are relevant.
+      // Every row belongs to the requested category (or the global scope).
       map.set(row.channel, row.enabled === true || row.enabled === 1)
     }
   }
@@ -122,12 +120,21 @@ export async function setNotificationPreference(
   enabled: boolean,
   category?: string,
 ): Promise<void> {
+  await db.transaction(async (trx) => {
+    await lockRow(trx, 'users', { id: userId })
+    await writeNotificationPreference(userId, channel, enabled, category)
+  })
+}
+
+async function writeNotificationPreference(userId: number, channel: PreferenceChannel, enabled: boolean, category?: string): Promise<void> {
+  if (!Number.isSafeInteger(userId) || userId <= 0 || typeof enabled !== 'boolean')
+    throw new Error('A notification preference needs a valid user id and enabled boolean')
   const now = sqlDateTime()
   const cat = category ?? null
 
-  // Look up an existing row for this (user, channel, category) — cheaper
-  // than a dialect-specific ON CONFLICT clause and works the same on
-  // SQLite/MySQL/Postgres. Table is now declared via
+  // The caller holds the user's lock, making this portable upsert safe even
+  // for global categories where SQL UNIQUE permits multiple NULL values.
+  // Table is now declared via
   // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
   const baseQuery = db
     .selectFrom(TABLE)
@@ -163,6 +170,7 @@ export async function setNotificationPreference(
  * Bulk upsert preferences for a user — convenient for "save preferences"
  * forms that submit the user's full opt-in/out matrix in one POST.
  *
+ * Saves the entire matrix inside one transaction and one user lock.
  * Iterates one upsert per entry rather than one mega-query because the
  * underlying conflict logic is keyed on `(user_id, channel, category)`
  * and a single SQL statement can't express that across N rows portably.
@@ -180,8 +188,11 @@ export async function bulkSetPreferences(
   userId: number,
   prefs: Array<{ channel: PreferenceChannel, enabled: boolean, category?: string }>,
 ): Promise<void> {
-  for (const p of prefs)
-    await setNotificationPreference(userId, p.channel, p.enabled, p.category)
+  await db.transaction(async (trx) => {
+    await lockRow(trx, 'users', { id: userId })
+    for (const p of prefs)
+      await writeNotificationPreference(userId, p.channel, p.enabled, p.category)
+  })
 }
 
 /**
@@ -211,7 +222,7 @@ export async function filterChannelsByPreferences<T extends PreferenceChannel>(
   if (category !== undefined) {
     const global = await getNotificationPreferences(userId, undefined)
     for (const [k, v] of global) {
-      if (!prefs.has(k)) prefs.set(k, v)
+      if (!v || !prefs.has(k)) prefs.set(k, v)
     }
   }
   return channels.filter((ch) => {
