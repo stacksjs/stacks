@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.113...v0.75.114)
+
+## 🐛 Bug Fixes
+
+- **mobile**: preserve recording lifecycle and labelled distances ([b9678ae](https://github.com/stacksjs/stacks/commit/b9678ae)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- register mobile session clock APIs ([b5cbc13](https://github.com/stacksjs/stacks/commit/b5cbc13)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.110...v0.75.113)
 
 ## ✨ Features
