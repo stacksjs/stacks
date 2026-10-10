@@ -102,7 +102,7 @@ export function portablePaths<T>(value: T, projectDir: string, appRoot: string):
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {}
     for (const [key, item] of Object.entries(value))
-      out[key] = typeof item === 'string' && !/(?:path|bundle)$/i.test(key) ? item : portablePaths(item, projectDir, appRoot)
+      out[key] = typeof item === 'string' && !/(?:path(?:dark)?|bundle)$/i.test(key) ? item : portablePaths(item, projectDir, appRoot)
     return out as T
   }
   return value

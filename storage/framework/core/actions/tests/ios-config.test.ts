@@ -404,6 +404,7 @@ describe('the generated project\'s records', () => {
     const records = portablePaths({
       appIconPath: '/Users/a/app/public/icon.png',
       splashImagePath: '/Users/a/app/public/splash.svg',
+      splashImagePathDark: '/Users/a/app/public/splash-dark.svg',
       nativeBundle: '/Users/a/app/storage/framework/mobile/ios/native-screens.js',
       devServerURL: 'https://hq.training/m',
       source: { kind: 'bundled', path: '/Users/a/app/dist/mobile' },
@@ -412,6 +413,7 @@ describe('the generated project\'s records', () => {
     }, '/Users/a/app/storage/framework/mobile/ios', '/Users/a/app')
     expect(records.appIconPath).toBe('../../../../public/icon.png')
     expect(records.splashImagePath).toBe('../../../../public/splash.svg')
+    expect(records.splashImagePathDark).toBe('../../../../public/splash-dark.svg')
     expect(records.nativeBundle).toBe('native-screens.js')
     expect(records.source.path).toBe('../../../../dist/mobile')
     expect(records.devServerURL).toBe('https://hq.training/m')
