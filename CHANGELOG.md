@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.108...v0.75.109)
+
+## 🐛 Bug Fixes
+
+- adopt bumpx build versioning and make notification preferences atomic ([131d957](https://github.com/stacksjs/stacks/commit/131d957)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.107...v0.75.108)
 
 ## 🐛 Bug Fixes
