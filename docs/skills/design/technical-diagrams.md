@@ -44,7 +44,7 @@ Reference, renderers and scripts the skill reaches for on demand, rather than lo
 - [`bin/preview.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/preview.mjs)
 - [`bin/visual-check.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/visual-check.mjs)
 - [`brand-marks/README.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/brand-marks/README.md)
-- [`bunfig.toml`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml)
+- [`runtime.toml`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/runtime.toml)
 - [`delta/architecture-delta.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/delta/architecture-delta.mjs)
 - [`examples`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples)
 - [`migrations/workflow-v2.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/migrations/workflow-v2.mjs)
