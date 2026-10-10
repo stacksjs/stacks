@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { route, warnOnMultipleRouterInstances } from '../src/stacks-router'
 
 // stacksjs/stacks#1975 / #1982 — a dist-only app that also vendors
@@ -29,10 +32,20 @@ describe('router split-instance handling (#1975/#1982)', () => {
   })
 
   test('warnOnMultipleRouterInstances returns false (and never throws) for a single instance', () => {
-    expect(instances.size).toBeGreaterThanOrEqual(1)
-    let detected: boolean | undefined
-    expect(() => { detected = warnOnMultipleRouterInstances() }).not.toThrow()
-    expect(detected).toBe(false)
+    // Other tests deliberately load source and dist. A clean consumer process
+    // establishes the single-instance precondition without resetting their registry.
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-single-router-'))
+    try {
+      const entry = new URL('../dist/stacks-router.js', import.meta.url).pathname
+      const child = Bun.spawnSync({ cmd: [process.execPath, '-e', `
+        const { warnOnMultipleRouterInstances } = await import(${JSON.stringify(entry)})
+        const instances = globalThis[Symbol.for('@stacksjs/router:loaded-instances')]
+        if (instances.size !== 1) throw new Error('Single-instance fixture loaded multiple routers')
+        if (warnOnMultipleRouterInstances() !== false) throw new Error('A single router was reported as duplicated')
+      `], cwd: directory, env: { ...process.env, APP_ENV: 'test' }, stdout: 'pipe', stderr: 'pipe' })
+      expect(child.exitCode, child.stderr.toString()).toBe(0)
+    }
+    finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
   test('detects a second distinct instance but still does NOT throw (routing works via the shared table)', () => {

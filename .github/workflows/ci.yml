@@ -241,12 +241,9 @@ jobs:
       # so a clean checkout resolves roots such as strings and model-meta.
       - name: Build framework runtime packages
         run: |
-          for dir in storage/framework/core/*/; do
-            manifest="${dir%/}/package.json"
-            [ -f "$manifest" ] || continue
-            bun -e 'const p=await Bun.file(process.argv[1]).json();process.exit(p.private || !p.scripts?.build ? 1 : 0)' "$manifest" || continue
-            echo "::group::build ${dir%/}"
-            (cd "${dir%/}" && bun run build)
+          for pkg in $(bun .github/scripts/subpath-packages.ts --runtime); do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
           done
 

@@ -138,7 +138,14 @@ describe('subpath imports', () => {
 
     expect(loops.length).toBeGreaterThan(0)
     for (const loop of loops)
-      expect(loop).toBe('$(bun .github/scripts/subpath-packages.ts)')
+      expect(loop).toMatch(/^\$\(bun \.github\/scripts\/subpath-packages\.ts(?: --runtime)?\)$/)
+  })
+
+  it('prepares root dependencies used by published runtime probes', () => {
+    const child = Bun.spawnSync({ cmd: [process.execPath, join(root, '.github/scripts/subpath-packages.ts'), '--runtime'], cwd: root, stdout: 'pipe', stderr: 'pipe' })
+    expect(child.exitCode, child.stderr.toString()).toBe(0)
+    const built = new Set(child.stdout.toString().trim().split('\n'))
+    for (const name of ['strings', 'model-meta', 'validation', 'cloud', 'orm']) expect(built.has(name)).toBe(true)
   })
 
   /**

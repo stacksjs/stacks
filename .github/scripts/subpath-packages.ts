@@ -123,5 +123,13 @@ export function subpathBuildTargets(): string[] {
   return [...needed].sort()
 }
 
+/** Runtime probes use published roots without source aliases, so prepare every buildable package. */
+export function runtimeBuildTargets(): string[] {
+  return [...workspacePackages().values()].filter((dir) => {
+    const manifest = JSON.parse(readFileSync(join(coreDir, dir, 'package.json'), 'utf8'))
+    return !manifest.private && typeof manifest.scripts?.build === 'string'
+  }).sort()
+}
+
 if (import.meta.main)
-  console.log(subpathBuildTargets().join('\n'))
+  console.log((process.argv.includes('--runtime') ? runtimeBuildTargets() : subpathBuildTargets()).join('\n'))
