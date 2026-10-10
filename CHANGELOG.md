@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.107...v0.75.108)
+
+## 🐛 Bug Fixes
+
+- keep generated migrations visible to git ([38b8926](https://github.com/stacksjs/stacks/commit/38b8926)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.106...v0.75.107)
 
 ## 🐛 Bug Fixes
