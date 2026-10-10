@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.122...v0.75.124)
+
+## 🐛 Bug Fixes
+
+- allow npm automated validation before release promotion ([ab535fd](https://github.com/stacksjs/stacks/commit/ab535fd)) _(by Chris <chris@stacksjs.com>)_
+- expose native request cancellation to streamed actions ([1a89e53](https://github.com/stacksjs/stacks/commit/1a89e53)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.123 ([6c3b2a5](https://github.com/stacksjs/stacks/commit/6c3b2a5)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/native-messaging ([2c9e65b](https://github.com/stacksjs/stacks/commit/2c9e65b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.122...v0.75.123)
 
 ## 🐛 Bug Fixes
