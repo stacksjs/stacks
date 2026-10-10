@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-stx",
   "type": "module",
-  "version": "0.75.117",
+  "version": "0.75.118",
   "description": "Your STX component library description",
   "author": "Chris Breuer",
   "contributors": [

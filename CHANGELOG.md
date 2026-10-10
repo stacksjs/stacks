@@ -1,5 +1,36 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.115...v0.75.118)
+
+## ✨ Features
+
+- validate nested action records and bounded resource selections ([b3e2c4e](https://github.com/stacksjs/stacks/commit/b3e2c4e)) _(by Chris <chris@stacksjs.com>)_
+- share strict scheduling and ordered transaction locks ([d73978a](https://github.com/stacksjs/stacks/commit/d73978a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **mail**: preserve user passwords across deployments ([dc000f4](https://github.com/stacksjs/stacks/commit/dc000f4)) _(by Chris <chris@stacksjs.com>)_
+- confirm framework publications before promoting release tags ([e9c011f](https://github.com/stacksjs/stacks/commit/e9c011f)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **stx**: require fresh reads for live sync progress ([2924436](https://github.com/stacksjs/stacks/commit/2924436)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- prepare full runtime graphs and isolate router instance probes ([8a09e0f](https://github.com/stacksjs/stacks/commit/8a09e0f)) _(by Chris <chris@stacksjs.com>)_
+- prepare published imports and portable database fixtures in CI ([369c927](https://github.com/stacksjs/stacks/commit/369c927)) _(by Chris <chris@stacksjs.com>)_
+- assert canonical lock order and persisted batch stock ([42f6102](https://github.com/stacksjs/stacks/commit/42f6102)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.75.117 ([ea272b7](https://github.com/stacksjs/stacks/commit/ea272b7)) _(by Chris <chris@stacksjs.com>)_
+- release v0.75.116 ([ba2c801](https://github.com/stacksjs/stacks/commit/ba2c801)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.116...v0.75.117)
 
 ## 🐛 Bug Fixes
