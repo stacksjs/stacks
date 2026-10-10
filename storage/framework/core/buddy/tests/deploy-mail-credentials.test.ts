@@ -10,7 +10,7 @@
  *   - a password from config/email.ts or the environment is never printed;
  *   - a generated one is printed only to an interactive terminal outside CI,
  *     and otherwise the log says where the encrypted copy went;
- *   - rotating MAIL_PASSWORD_<LOCALPART> actually reaches an existing mailbox.
+ *   - rotating managed MAIL_PASSWORD_<LOCALPART> reaches an existing mailbox.
  *     The reconcile used to report an existing mailbox as current without
  *     looking, so rotating a leaked password changed the env file and nothing
  *     else.
@@ -44,8 +44,8 @@ describe('canRevealSecrets', () => {
 })
 
 describe('reportMailboxCredentials', () => {
-  const declared = { address: 'hello@example.com', localPart: 'HELLO', password: 'declared-secret-1', generated: false }
-  const generated = { address: 'ops.team@example.com', localPart: 'OPS.TEAM', password: 'generated-secret-2', generated: true }
+  const declared = { address: 'hello@example.com', localPart: 'HELLO', password: 'declared-secret-1', generated: false, passwordPolicy: 'initial' as const }
+  const generated = { address: 'ops.team@example.com', localPart: 'OPS.TEAM', password: 'generated-secret-2', generated: true, passwordPolicy: 'initial' as const }
 
   function report(options: { interactive: boolean, persisted: boolean }): string {
     const lines: string[] = []
@@ -177,7 +177,7 @@ exit 0
 
 interface Seed { password: string, enabled?: boolean }
 
-function runMailboxes(seed: Record<string, Seed>, declared: Record<string, string>) {
+function runMailboxes(seed: Record<string, Seed>, declared: Record<string, string>, policy: 'initial' | 'managed' = 'initial') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stacks-mailboxes-'))
   try {
     fs.mkdirSync(path.join(dir, 'users'))
@@ -187,7 +187,7 @@ function runMailboxes(seed: Record<string, Seed>, declared: Record<string, strin
     const ms = path.join(dir, 'mail-server')
     fs.writeFileSync(ms, FAKE_MS, { mode: 0o755 })
 
-    const boxes = Object.entries(declared).map(([addr, pw]) => `${addr}\t${pw}`).join('\n')
+    const boxes = Object.entries(declared).map(([addr, pw]) => `${addr}\t${pw}\t${policy}`).join('\n')
     const script = [
       'set -e',
       `BOXES_B64='${Buffer.from(`${boxes}\n`).toString('base64')}'`,
@@ -211,14 +211,22 @@ function runMailboxes(seed: Record<string, Seed>, declared: Record<string, strin
 }
 
 describe('the mailbox reconcile on the server', () => {
+  it('preserves a user password change despite a different configured initial password', () => {
+    const run = runMailboxes({ 'pawel@example.com': { password: 'user-changed-password' } }, { 'pawel@example.com': 'initial-password' })
+    expect(run.stdout).toContain('EXISTS:pawel@example.com')
+    expect(run.passwordOf('pawel@example.com')).toBe('user-changed-password')
+    expect(run.argv).not.toContain('change-password')
+    expect(run.argv).not.toContain('verify')
+  })
+
   it('sets a rotated password on an existing mailbox', () => {
-    const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' })
+    const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' }, 'managed')
     expect(run.stdout).toContain('UPDATED:hello@example.com')
     expect(run.passwordOf('hello@example.com')).toBe('rotated-new')
   })
 
   it('passes the new password on stdin, not the command line', () => {
-    const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' })
+    const run = runMailboxes({ 'hello@example.com': { password: 'leaked-old' } }, { 'hello@example.com': 'rotated-new' }, 'managed')
     const change = run.argv.split('\n').filter(line => line.includes('change-password'))
     expect(change.length).toBe(1)
     expect(change[0]).not.toContain('rotated-new')
@@ -245,6 +253,19 @@ describe('the mailbox reconcile on the server', () => {
 })
 
 describe('resolveMailboxesWithSkipped', () => {
+  it('defaults mixed user mailboxes to initial and preserves explicit service management', () => {
+    const { boxes } = resolveMailboxesWithSkipped([
+      { email: 'user@example.com', password: 'user-initial' },
+      { email: 'service@example.com', password: 'service-secret', passwordPolicy: 'managed' },
+      { email: 'generated@example.com', generate: true },
+    ], 'example.com')
+    expect(boxes.map(box => [box.address, box.passwordPolicy])).toEqual([
+      ['user@example.com', 'initial'],
+      ['service@example.com', 'managed'],
+      ['generated@example.com', 'initial'],
+    ])
+  })
+
   const KEY = 'MAIL_PASSWORD_CIPHERTEXTCHECK'
 
   function withEnv(value: string | undefined, fn: () => void): void {

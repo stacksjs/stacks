@@ -3243,6 +3243,8 @@ interface ResolvedMailbox {
   password: string
   /** True when the password was generated here (so the caller reports it). */
   generated: boolean
+  /** User passwords are initial; service credentials may opt into management. */
+  passwordPolicy: 'initial' | 'managed'
 }
 
 /**
@@ -3286,11 +3288,13 @@ export function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, 
   for (const entry of mailboxes) {
     let raw: string | undefined
     let explicitPw: string | undefined
+    let passwordPolicy: 'initial' | 'managed' = 'initial'
     if (typeof entry === 'string')
       raw = entry
     else if (entry && typeof entry === 'object') {
       raw = (entry).email ?? (entry).username
       explicitPw = (entry).password
+      if ((entry).passwordPolicy === 'managed') passwordPolicy = 'managed'
       if ((entry).generate === true)
         generatePassword = true
     }
@@ -3327,13 +3331,14 @@ export function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, 
           localPart: localPart.toUpperCase(),
           password: generateMailboxPassword(),
           generated: true,
+          passwordPolicy,
         })
         continue
       }
       skipped.push(address)
       continue
     }
-    out.push({ address, localPart: localPart.toUpperCase(), password: envPw, generated: false })
+    out.push({ address, localPart: localPart.toUpperCase(), password: envPw, generated: false, passwordPolicy })
   }
   return { boxes: out, skipped }
 }
@@ -3771,7 +3776,7 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   // line with no terminator and leaves the loop before the body runs, so the
   // LAST mailbox in config/email.ts was silently never created. It reported
   // success either way, because the caller only counts the MADE lines.
-  const boxesB64 = boxes.length ? Buffer.from(`${boxes.map(b => `${b.address}\t${b.password}`).join('\n')}\n`).toString('base64') : ''
+  const boxesB64 = boxes.length ? Buffer.from(`${boxes.map(b => `${b.address}\t${b.password}\t${b.passwordPolicy}`).join('\n')}\n`).toString('base64') : ''
 
   // One idempotent, merge-based reconcile script. Emits keyed lines the caller
   // parses: MAILHOST:, DKIMPUB:, MADE:<addr>, and a final MAILTENANT:<state>.
@@ -3889,10 +3894,10 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   echo "DKIMSEL:$SEL"
   echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
 fi
-# 3) Create the configured mailboxes as per-domain isolated users, and bring an
-# existing one's password in line with the declared one.
+# 3) Create the configured mailboxes as per-domain isolated users, and
+# preserve existing user passwords unless management was explicitly requested.
 if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
-  echo "$BOXES_B64" | base64 -d | while IFS=$'\t' read -r addr pw; do
+  echo "$BOXES_B64" | base64 -d | while IFS=$'\t' read -r addr pw password_policy; do
     [ -z "$addr" ] && continue
     # NOTE: 'user:local info' exits 0 even when the user is absent (it only
     # prints "not found"), so existence is decided from the OUTPUT, not $?.
@@ -3924,8 +3929,10 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
           mv -- "/opt/mail/mail/$legacy" "/opt/mail/mail/$addr"
           chown -R mail-server:mail-server "/opt/mail/mail/$addr"
         fi
-        # The declared config password becomes authoritative after migration.
-        SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" "$pw" >/dev/null 2>&1 || true
+        # A username migration does not rotate a person's password.
+        if [ "$password_policy" = managed ]; then
+          printf '%s\\n' "$pw" | SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" --password-stdin >/dev/null 2>&1 || true
+        fi
       else
         # The CLI action historically returned zero even when an internal
         # create failed. Pin the live DB for both calls and verify the row.
@@ -3941,6 +3948,9 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
     elif SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local info "$addr" 2>&1 | grep -qi 'enabled: false'; then
       # A disabled account never verifies, so it would be rewritten on every
       # deploy. Leave it alone: disabling it was somebody's decision.
+      echo "EXISTS:$addr"
+    elif [ "$password_policy" != managed ]; then
+      # A user's password change must survive the next application deploy.
       echo "EXISTS:$addr"
     elif SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local verify "$addr" "$pw" 2>&1 | grep -q '^Credentials valid'; then
       echo "EXISTS:$addr"

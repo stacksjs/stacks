@@ -98,6 +98,21 @@ export default {
 
 ## Deployment
 
+On the self-hosted mail server, configured passwords initialize new mailboxes.
+Existing mailbox passwords are preserved on deployment, including passwords
+changed in webmail. For service accounts whose credentials should follow the
+configuration on every deployment, opt into management explicitly:
+
+```typescript
+mailboxes: [
+  'user@yourdomain.com',
+  { email: 'service@yourdomain.com', passwordPolicy: 'managed' },
+]
+```
+
+Set initial or managed credentials with `MAIL_PASSWORD_<LOCALPART>` in the
+encrypted environment. User mailboxes default to `passwordPolicy: 'initial'`.
+
 Deploy your email infrastructure with:
 
 ```bash

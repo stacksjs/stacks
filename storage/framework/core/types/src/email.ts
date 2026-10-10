@@ -36,6 +36,9 @@ export interface MailboxConfig {
    * Passwords are stored in AWS Secrets Manager after first deploy.
    */
   password?: string
+  /** Initial credentials preserve user password changes on redeploy. Managed
+   * credentials are reconciled with the configured value on every deploy. */
+  passwordPolicy?: 'initial' | 'managed'
   forwardTo?: string[]
   autoResponder?: AutoResponderConfig
   filters?: EmailFilterRule[]
@@ -343,7 +346,7 @@ export interface EmailOptions {
     address: string
   }
 
-  mailboxes: string[] | MailboxConfig[]
+  mailboxes: Array<string | MailboxConfig>
 
   /**
    * Auto-forwarding rules for received mail, provisioned to the mail server's
