@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.105...v0.75.106)
+
+## 🐛 Bug Fixes
+
+- **components**: NativeSheet slides up instead of appearing up ([825efd6](https://github.com/stacksjs/stacks/commit/825efd6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.104...v0.75.105)
 
 ## ✨ Features
