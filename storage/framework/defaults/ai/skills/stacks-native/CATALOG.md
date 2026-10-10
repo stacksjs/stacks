@@ -28,7 +28,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
 | `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 5 |
 | `@stacksjs/cli` | [`stacks-cli`](../stacks-cli/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/index.ts) | 9 |
-| `@stacksjs/cloud` | [`stacks-cloud`](../stacks-cloud/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/index.ts) | 9 |
+| `@stacksjs/cloud` | [`stacks-cloud`](../stacks-cloud/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/index.ts) | 10 |
 | `@stacksjs/cms` | [`stacks-cms`](../stacks-cms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cms/src/index.ts) | 5 |
 | `@stacksjs/collections` | [`stacks-collections`](../stacks-collections/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/collections/src/index.ts) | 2 |
 | `@stacksjs/commerce` | [`stacks-commerce`](../stacks-commerce/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/commerce/src/index.ts) | 12 |
@@ -283,7 +283,7 @@ Declared runtime exports: `AWSClient`, `S3Client`, `SecretsManagerClient`, `buil
 
 Local source modules: [src/cloud/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/cloud/index.ts), [src/helpers.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/helpers.ts), [src/imap/smtp-server.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/imap/smtp-server.ts).
 
-Evidence directory: [9 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/cms
 

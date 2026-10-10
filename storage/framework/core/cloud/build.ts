@@ -1,27 +1,19 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { rm } from 'node:fs/promises'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  target: 'bun',
-  // sourcemap: 'linked',
-  minify: true,
-  external: frameworkExternal(),
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
-})
+await rm('./dist', { recursive: true, force: true })
+
+// Preserve named re-exports from ts-cloud. Bun's bundled barrel can drop the
+// imported binding even without minification, breaking cloud and its consumers.
+// Emitting each module also makes the declared mail server subpaths available.
+await transpilePackage({ dir: import.meta.dir, external: frameworkExternal() })
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })

@@ -15,9 +15,9 @@ export type * from './types'
 /**
  * The mail servers, and the AWS clients `@stacksjs/buddy`'s mail commands use.
  *
- * Exported from here because this package builds to one bundled
- * `dist/index.js`: a `@stacksjs/cloud/imap/s3` subpath resolves, per the `./*`
- * export, to a `dist/imap/s3.js` that the build never writes.
+ * Keep the clients available from the root. Module-preserving builds also
+ * publish the local mail server subpaths, but the removed `imap/s3` wrapper
+ * has no source module. Import the client from here or from ts-cloud.
  *
  * The clients are ts-cloud's own, under the names this package has always
  * exported. They used to be vendored copies under `imap/` that drifted: the
