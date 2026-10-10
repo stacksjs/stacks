@@ -1,271 +1,79 @@
 # Stacks Notifications
 
-Stacks Notifications is a unified driver system for sending messages/notifications. It supports sending emails, SMS messages, and chat messages.
-
-## ☘️ Features
-
-- 📦 Send Emails
-- 🎨 Email Styling
-- 📱 Send SMS messages
-- 💬 Send Chat messages
-
-## TODO
-
-- [ ] Driver: SNS (Push)
-- [ ] Driver: Pushwoosh
-
-## 🤖 Usage
-
-```bash
-bun install -d @stacksjs/notifications
-```
-
-Set these variables in your env:
-
-```bash
-NOTIFICATION_TYPE=email
-NOTIFICATION_DRIVER=sendgrid
-```
-
-You may now use it in your project:
+Send email, SMS, chat, push, database inbox messages and realtime broadcasts
+through `@stacksjs/notifications`.
 
 ```ts
-import { notification } from '@stacksjs/notifications'
+import { ensureSuccessfulNotificationResults, notify } from '@stacksjs/notifications'
 
-notification.send(options)
+const results = await notify(
+  { userId: 7, email: 'athlete@example.com', phone: '+15555550100' },
+  { subject: 'Training reminder', body: 'Your session starts soon.' },
+  ['email', 'sms'],
+  { category: 'training' },
+)
+ensureSuccessfulNotificationResults(results)
 ```
 
-## 🏎️ Drivers
+Channels run independently. A provider's structured failure is returned as
+`success: false` even when its send promise resolves. Broadcast also reports
+failure when no realtime server is running. Success means provider acceptance,
+not a final device or mailbox receipt. The result checker rejects empty results
+and partial failure; with several failures it throws an `AggregateError`.
 
-There are different option types for Chat, Email, and SMS drivers. To use any driver, simply configure the notification `options` object.
+## Transports
+
+| Channel | Recipient | Configuration |
+| --- | --- | --- |
+| email | `email` | `config/email.ts`, Mail singleton |
+| sms | `phone` | `config/sms.ts`, Twilio or Vonage |
+| chat | `chatRecipient` (channel/user id or array) | `config/services.ts`, Slack by default |
+| push | `pushTokens` (token or array) | Expo by default, `config/services.ts` |
+| database | `userId` | Apply notification model migrations |
+| broadcast | `broadcastChannel` or `userId` | Running realtime server |
+
+`useEmail()`, `useSMS()`, `useChat()`, `usePush()`, `useDatabase()` and
+`useBroadcast()` expose native transports. `useSMS()` honors the configured
+provider; `useSMS('twilio')` or `useSMS('vonage')` overrides it. Runtime SMS
+configuration survives lazy initialization. Chat maps `body` to the transport's
+`content` and `chatRecipient` to `to`; delivery tracking records that destination.
+Use `useChat('discord')` or `useChat('teams')` for direct alternative transports.
+Unknown SMS/chat driver names throw.
+
+## Preferences and tracking
+
+Absent preferences allow a channel. A global opt-out wins over a category
+opt-in. `getNotificationPreferences`, `setNotificationPreference` and
+`bulkSetPreferences` provide persistent preferences; writes serialize on the
+user row, and bulk changes are atomic. `options.ignorePreferences: true`
+explicitly bypasses preferences and SMS opt-outs. Preference lookup failures
+currently log and allow sends, so this filter is not a fail-closed consent gate.
+
+The database inbox and `notification_deliveries` tracking log are separate.
+Apply their model-driven migrations before relying on persistence. Inspect the
+returned channel results; the tracking log is not a final receipt.
+
+## Inbox ownership
 
 ```ts
-interface ChatOptions {
-  providerName?: 'discord' | 'slack'
-  webhookUrl: string
-  content: string
-}
+import { useDatabase } from '@stacksjs/notifications'
 
-interface EmailOptions {
-  providerName?: 'sendgrid' | 'emailjs' | 'mailjet' | 'mandrill' | 'netcore' | 'nodemailer' | 'postmark' | 'ses'
-  to: string | string[]
-  subject: string
-  html: string
-  from?: string
-  text?: string
-  attachments?: AttachmentOptions[]
-  id?: string
-}
-
-interface SMSOptions {
-  providerName?: 'gupshup' | 'nexmo' | 'plivo' | 'sms77' | 'sns' | 'telnyx' | 'termii' | 'twilio'
-  to: string
-  content: string
-  from?: string
-  attachments?: AttachmentOptions[]
-  id?: string
-}
+const inbox = useDatabase()
+await inbox.send({ userId: 7, type: 'training.reminder', data: { body: 'See you soon' } })
+const messages = await inbox.getUnreadNotifications(7)
+await inbox.markAsRead(messages[0]!.id, 7)
+await inbox.deleteNotification(messages[0]!.id, 7)
 ```
 
-Available drivers are listed below, with the proper variables needed to get started.
+Supply the authenticated user ID to single-row mutations to enforce ownership in
+the update/delete statement. Id-only calls remain available for trusted internal
+use. `markAllAsRead(userId)`, `deleteAllNotifications(userId)` and
+`unreadCount(userId)` are already scoped. Repeated reads preserve `read_at`.
 
-### Email
+## Verification
 
-Email drivers are configured with the following environment variables:
-
-#### Sendgrid
-
-```bash
-SENDGRID_API_KEY=SG123
-SENDGRID_FROM=from@example.com
-SENDGRID_SENDER_NAME=Sender
-```
-
-#### Mailgun
-
-```bash
-MAILGUN_API_KEY=MG123
-MAILGUN_DOMAIN=example.com
-MAILGUN_USERNAME=username
-MAILGUN_FROM=from@example.com
-```
-
-#### Mailjet
-
-```bash
-MAILJET_API_KEY=MJ123
-MAILJET_API_SECRET=MJTESTSECRET
-MAILJET_FROM_EMAIL=from@example.com
-```
-
-#### Netcore
-
-```bash
-NETCORE_API_KEY=NC123
-NETCORE_FROM=from@example.com
-```
-
-#### Nodemailer
-
-```bash
-NODEMAILER_FROM_EMAIL=from@example.com
-NODEMAILER_HOST=example.com
-NODEMAILER_USERNAME=username
-NODEMAILER_PASSWORD=password
-NODEMAILER_PORT=25
-NODEMAILER_SECURE=true
-```
-
-#### Postmark
-
-```bash
-POSTMARK_API_KEY=PM123
-POSTMARK_FROM=from@example.com
-```
-
-#### AWS SES
-
-```bash
-SES_REGION=US
-SES_ACCESS_KEY_ID=testkey123
-SES_SECRET_ACCESS_KEY=testaccesskey123
-SES_FROM=from@example.com
-```
-
-#### Mandrill
-
-```bash
-MANDRILL_API_KEY=Ma123
-MANDRILL_EMAIL=from@example.com
-```
-
-#### EmailJS
-
-```bash
-MAIL_FROM_ADDRESS=from@example.com
-EMAILJS_HOST=example.com
-EMAILJS_USERNAME=username
-EMAILJS_PASSWORD=password
-EMAILJS_PORT=25
-EMAILJS_SECURE=true
-```
-
-### SMS
-
-SMS drivers are configured with the following environment variables:
-
-#### Twilio
-
-```bash
-TWILIO_ACCOUNT_SID=ACtest
-TWILIO_AUTH_TOKEN=testtoken
-TWILIO_FROM_NUMBER=+112345
-TWILIO_TO_NUMBER=+145678
-```
-
-#### Nexmo
-
-```bash
-VONAGE_API_KEY=VN123
-VONAGE_API_SECRET=testkey
-VONAGE_FROM_NUMBER=+112345
-```
-
-#### Gupshup
-
-```bash
-GUPSHUP_USER_ID=GU123
-GUPSHUP_PASSWORD=password
-```
-
-#### Plivo
-
-```bash
-PLIVO_ACCOUNT_ID=PA123
-PLIVO_AUTH_TOKEN=testtoken
-PLIVO_FROM_NUMBER=+112345
-```
-
-#### SMS77
-
-```bash
-SMS77_API_KEY=SA123
-SMS77_FROM=from@example.com
-```
-
-#### SNS
-
-```bash
-SMS77_API_KEY=SA123
-SMS77_FROM=from@example.com
-```
-
-#### Telnyx
-
-```bash
-TELNYX_API_KEY=TA123
-TELNYX_MESSAGE_PROFILE_ID=testprofileid
-TELNYX_FROM=from@example.com
-```
-
-#### Termii
-
-```bash
-TERMII_API_KEY=TermA123
-TERMII_SENDER=from@example.com
-```
-
-### Chat
-
-Chat drivers are configured with the following environment variables:
-
-#### Discord
-
-- None
-
-#### Slack
-
-```
-SLACK_APPLICATION_ID=SAID123
-SLACK_CLIENT_ID=SCID123
-SLACK_SECRET_KEY=SSK123
-```
-
-Learn more in the docs.
-
-## 🧪 Testing
-
-```bash
-bun test
-```
-
-## 📈 Changelog
-
-Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
-
-## 🚜 Contributing
-
-Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
-
-## 🏝 Community
-
-For help, discussion about best practices, or any other conversation that would benefit from being searchable:
-
-[Discussions on GitHub](https://github.com/stacksjs/stacks/discussions)
-
-For casual chit-chat with others using this package:
-
-[Join the Stacks Discord Server](https://stacksjs.com/discord)
-
-## 🙏🏼 Credits
-
-Many thanks to the following core technologies & people who have contributed to this package:
-
-- [Chris Breuer](https://github.com/chrisbbreuer)
-- [All Contributors](../../contributors)
-
-## 📄 License
-
-The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
-
-Made with 💙
+`tests/provider-outcomes.test.ts` exercises the real SMS, chat and push drivers
+with only external HTTP replaced, including acceptance and rejection.
+`tests/preferences-runtime.test.ts` verifies persistence, atomic preference
+changes, ownership and read timestamp preservation on SQLite and optional local
+PostgreSQL (`STACKS_PREFERENCE_TEST_POSTGRES_URL`).

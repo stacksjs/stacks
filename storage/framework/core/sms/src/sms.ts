@@ -22,6 +22,7 @@ import { VonageDriver } from './drivers/vonage'
 let defaultDriver: SmsDriver | null = null
 let verificationDriver: SmsVerificationDriver | null = null
 let smsConfig: Partial<SmsOptions> = {}
+let configuredOverrides: Partial<SmsOptions> = {}
 let _configPromise: Promise<void> | null = null
 
 /**
@@ -32,7 +33,7 @@ async function loadConfig(): Promise<void> {
     // Dynamic import to avoid circular dependencies
     const configModule = await import('../../../../../config/sms')
     const config = configModule.default
-    smsConfig = config as Partial<SmsOptions>
+    smsConfig = { ...config as Partial<SmsOptions>, ...configuredOverrides }
   }
   catch {
     // Config not available, use defaults
@@ -53,6 +54,7 @@ async function ensureConfig(): Promise<void> {
  * Configure the SMS system
  */
 export function configure(config: Partial<SmsOptions>): void {
+  configuredOverrides = { ...configuredOverrides, ...config }
   smsConfig = { ...smsConfig, ...config }
   defaultDriver = null
   verificationDriver = null

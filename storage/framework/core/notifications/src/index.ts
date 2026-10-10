@@ -1,6 +1,6 @@
 import { log } from '@stacksjs/cli'
 import { notification as _notification } from '@stacksjs/config'
-import type { EmailMessage, EmailResult, NotificationOptions } from '@stacksjs/types'
+import type { ChatMessage, ChatResult, EmailMessage, EmailResult, NotificationOptions, SmsMessage, SmsSendResult } from '@stacksjs/types'
 import { mail } from '@stacksjs/email'
 import { chat, email, push, sms } from './drivers'
 import { BroadcastNotificationDriver } from './drivers/broadcast'
@@ -47,6 +47,8 @@ export interface NotificationPayload {
 export interface NotificationRecipient {
   email?: string
   phone?: string
+  /** Channel/user identifier accepted by the configured chat transport. */
+  chatRecipient?: string | string[]
   userId?: number
   /**
    * Device token(s) for the push channel — Expo tokens
@@ -77,9 +79,29 @@ export function ensureSuccessfulEmailResult(result: EmailResult): void {
     throw new Error(result.message || `Email delivery failed through ${result.provider || 'the configured provider'}.`)
 }
 
-export function useChat(driver?: string): typeof chat[keyof typeof chat] {
+/** Require at least one delivered channel and surface partial fan-out failure. */
+export function ensureSuccessfulNotificationResults(results: readonly NotifyResult[]): void {
+  if (!results.length) throw new Error('No notification channels were delivered')
+  const failures = results.filter(result => !result.success)
+  if (failures.length) {
+    const errors = failures.map(result => result.error instanceof Error ? result.error : new Error(`Notification delivery failed through ${result.channel}`))
+    if (errors.length === 1) throw errors[0]
+    throw new AggregateError(errors, errors.map(error => error.message).join('; '))
+  }
+}
+
+function ensureSuccessfulProviderResult(result: { success: boolean, message?: string, error?: string }): void {
+  if (!result.success) throw new Error(result.error || result.message || 'Notification provider rejected delivery')
+}
+
+export interface ChatTransport {
+  send: (message: ChatMessage) => Promise<ChatResult>
+}
+
+export function useChat(driver?: string): ChatTransport {
   const resolvedDriver = driver || 'slack'
-  return chat[resolvedDriver as keyof typeof chat]
+  if (!['slack', 'discord', 'teams'].includes(resolvedDriver)) throw new Error(`Unsupported chat driver: ${resolvedDriver}`)
+  return chat[resolvedDriver as 'slack' | 'discord' | 'teams']
 }
 
 /**
@@ -107,9 +129,18 @@ export function useEmail(driver?: string): EmailTransport {
   return mail as unknown as EmailTransport
 }
 
-export function useSMS(driver?: string): typeof sms[keyof typeof sms] {
-  const resolvedDriver = driver || 'twilio'
-  return sms[resolvedDriver as keyof typeof sms]
+export interface SmsTransport {
+  send: (message: SmsMessage) => Promise<SmsSendResult>
+}
+
+export function useSMS(driver?: string): SmsTransport {
+  if (!driver) return sms
+  if (driver !== 'twilio' && driver !== 'vonage') throw new Error(`Unsupported SMS driver: ${driver}`)
+  const provider = driver
+  return { send: async (message) => {
+    await sms.init()
+    return sms.getDriver(provider).send(message)
+  } }
 }
 
 /**
@@ -186,24 +217,6 @@ export function useNotification(typeParam?: string, driverParam?: string): Retur
  * await notify({ userId: 7, email: 'a@x' }, { body: 'Sale!' }, ['email'], { category: 'marketing' })
  * ```
  */
-/** A driver that can deliver a message (sms/chat transports). */
-interface SendableDriver {
-  send: (message: Record<string, unknown>) => Promise<unknown>
-}
-
-/**
- * Whether a resolved driver can actually deliver (stacksjs/stacks#1936).
- * The sms/chat channels previously guarded on this but then silently
- * `break`'d when it was false — recording a success for an
- * undeliverable channel. Now the channel throws on a falsy result.
- */
-function isSendableDriver(driver: unknown): driver is SendableDriver {
-  return !!driver
-    && typeof driver === 'object'
-    && 'send' in driver
-    && typeof (driver as { send?: unknown }).send === 'function'
-}
-
 export async function notify(
   recipient: NotificationRecipient,
   payload: NotificationPayload,
@@ -272,18 +285,15 @@ export async function notify(
             }
           }
           const driver = useSMS()
-          if (!isSendableDriver(driver)) {
-            throw new Error('[notify] sms channel is not configured: no usable SMS driver with a send() method')
-          }
-          await driver.send({ to: recipient.phone, body: payload.body })
+          ensureSuccessfulProviderResult(await driver.send({ to: recipient.phone, body: payload.body }))
           break
         }
         case 'chat': {
-          const driver = useChat()
-          if (!isSendableDriver(driver)) {
-            throw new Error('[notify] chat channel is not configured: no usable chat driver with a send() method')
+          if (!recipient.chatRecipient || (Array.isArray(recipient.chatRecipient) && !recipient.chatRecipient.length)) {
+            throw new Error('[notify] chat channel requires recipient.chatRecipient')
           }
-          await driver.send({ body: payload.body })
+          const driver = useChat()
+          ensureSuccessfulProviderResult(await driver.send({ to: recipient.chatRecipient, content: payload.body, subject: payload.subject, data: payload.data }))
           break
         }
         case 'database': {
@@ -306,24 +316,21 @@ export async function notify(
             throw new Error('[notify] push channel requires recipient.pushTokens')
           }
           const driver = usePush()
-          await driver.send(recipient.pushTokens, {
+          ensureSuccessfulProviderResult(await driver.send(recipient.pushTokens, {
             title: payload.subject,
             body: payload.body,
             data: payload.data,
-          })
+          }))
           break
         }
         case 'broadcast': {
-          // Realtime WS fanout (stacksjs/stacks#669). Best-effort:
-          // missing realtime server returns `delivered: false` rather
-          // than throwing, so a broadcast misconfig doesn't break the
-          // rest of the multi-channel dispatch.
-          await BroadcastNotificationDriver.send({
+          const result = await BroadcastNotificationDriver.send({
             channel: recipient.broadcastChannel,
             userId: recipient.userId,
             event: payload.subject ?? 'notification',
             data: { body: payload.body, ...payload.data },
           })
+          if (!result.delivered) throw new Error(result.reason || 'Broadcast notification was not delivered')
           break
         }
         default:
@@ -346,7 +353,7 @@ export async function notify(
     return {
       channel,
       success: result.status === 'fulfilled',
-      error: result.status === 'rejected' ? result.reason : undefined,
+      error: result.status === 'rejected' ? result.reason instanceof Error ? result.reason : new Error(String(result.reason)) : undefined,
     }
   })
 

@@ -36,7 +36,7 @@ optional `error`. A resolved call does not imply every channel succeeded.
 |---|---|---|
 | email | email | `@stacksjs/email` |
 | sms | phone | `@stacksjs/sms` |
-| chat | configured channel transport | `@stacksjs/chat` |
+| chat | chatRecipient, a channel/user id or array | `@stacksjs/chat` |
 | database | userId | database notification inbox |
 | push | pushTokens, a string or string array | `@stacksjs/push`, default Expo |
 | broadcast | broadcastChannel or userId | `@stacksjs/realtime` |
@@ -46,16 +46,13 @@ renders it through the framework layout. Use the exported `NotificationAction`
 type for an action link. The broadcast fallback is `private-user.{userId}` or
 public `notifications` when no user/channel is supplied. Its delivery is
 best-effort; a missing realtime server is not a durable notification queue.
-Read `stacks-chat` before choosing notify's chat channel: its generic body
-payload does not supply a provider's channel recipient or configure credentials.
-
-Current notify result mapping marks a fulfilled channel call successful. Email
-explicitly checks EmailResult, but SMS/chat/push structured failures and a
-broadcast result with delivered false are not all normalized into failed
-NotifyResult entries. For provider-confirmed status, use the direct channel API
-and inspect its structured result. The generic chat body also differs from
-ChatMessage's to/content contract; use direct chat send with a valid message.
-Delivery logs inherit this result mapping and are not final receipt evidence.
+Read `stacks-chat` to configure transport credentials. Notify maps body to
+ChatMessage.content and chatRecipient to ChatMessage.to. Email, SMS, chat and
+push structured failures and broadcast delivered:false produce failed
+NotifyResult entries. Provider acceptance is not a final delivery receipt.
+`ensureSuccessfulNotificationResults(results)` throws for an empty result list
+or any failed channel, and accepts only a non-empty list of successes. Use it
+when a queued worker must retry partial fan-out instead of marking it sent.
 
 ## Preferences and delivery tracking
 
@@ -86,8 +83,10 @@ and transport results rather than assuming a delivery log is provider proof.
 - `useEmail(driver?)` returns a sendable transport. Without a driver it uses
   the Mail singleton and `config/email.ts`. Unknown explicit drivers warn and
   fall back to that singleton.
-- `useSMS(driver?)` and `useChat(driver?)` select their driver modules
-  (defaults Twilio and Slack); configure those packages before sending.
+- `useSMS()` uses the configured SMS facade; `useSMS('twilio' | 'vonage')`
+  explicitly selects a provider after loading configuration. `useChat(driver?)`
+  selects Slack (default), Discord or Teams. Unknown drivers throw. Configure
+  those packages before sending.
 - `useDatabase()` returns DatabaseNotificationDriver.
 - `usePush()` returns the push namespace, and `useBroadcast()` the broadcast driver.
 - `useNotification(type?, driver?)`/`notification()` select email, sms, chat
@@ -107,10 +106,11 @@ const count = await inbox.unreadCount(7)
 await inbox.markAllAsRead(7)
 ~~~
 
-Also available: `getUserNotifications(userId)`, `markAsRead(id)`,
-`deleteNotification(id)` and `deleteAllNotifications(userId)`. These
-id-only mutation helpers do not enforce ownership themselves; scope access in
-the application's authenticated action before calling them.
+Also available: `getUserNotifications(userId)`, `markAsRead(id, userId?)`,
+`deleteNotification(id, userId?)` and `deleteAllNotifications(userId)`. These
+single-row mutations accept an optional authenticated userId. Supply it to
+enforce ownership in the mutation statement; id-only calls retain their trusted
+internal-use behavior. Reads and mark-all/delete-all already require userId.
 
 Rows contain id, user_id, type, data (JSON string), read_at, created_at and
 updated_at. Parse data when reading; null read_at means unread. The native

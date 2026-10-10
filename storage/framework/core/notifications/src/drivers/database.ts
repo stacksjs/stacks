@@ -102,13 +102,15 @@ export const DatabaseNotificationDriver = {
     return notifications.map(notification => ({ ...notification, id: Number(notification.id), user_id: Number(notification.user_id) })) as unknown as DatabaseNotification[]
   },
 
-  async markAsRead(id: number): Promise<void> {
-    await db
+  /** Supply the authenticated user id to scope the mutation in the same statement. */
+  async markAsRead(id: number, userId?: number): Promise<void> {
+    let query = db
       .updateTable('notifications')
       .set({ read_at: sqlDateTime() })
       .where('id', '=', id)
       .whereNull('read_at')
-      .execute()
+    if (userId !== undefined) query = query.where('user_id', '=', userId)
+    await query.execute()
   },
 
   async markAllAsRead(userId: number): Promise<void> {
@@ -131,11 +133,13 @@ export const DatabaseNotificationDriver = {
     return Number((result as unknown as { count?: number | string } | undefined)?.count ?? 0)
   },
 
-  async deleteNotification(id: number): Promise<void> {
-    await db
+  /** Supply the authenticated user id to scope the mutation in the same statement. */
+  async deleteNotification(id: number, userId?: number): Promise<void> {
+    let query = db
       .deleteFrom('notifications')
       .where('id', '=', id)
-      .execute()
+    if (userId !== undefined) query = query.where('user_id', '=', userId)
+    await query.execute()
   },
 
   async deleteAllNotifications(userId: number): Promise<void> {

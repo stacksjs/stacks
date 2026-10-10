@@ -118,6 +118,8 @@ await sendBulk([msg1, msg2, msg3])  // returns SmsSendResult[]
 ```
 
 `send()` and all sending functions call `ensureConfig()` first, which lazily loads `config/sms.ts` via dynamic import.
+Runtime `configure()` overrides survive that lazy load and subsequent `init()`
+calls, including credentials supplied before the first send.
 
 ## Message Status & Info
 

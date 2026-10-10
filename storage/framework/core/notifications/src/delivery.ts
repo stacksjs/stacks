@@ -34,7 +34,7 @@ export function resolveDeliveryRecipient(recipient: NotificationRecipient, chann
     case 'database':
       return recipient.userId ? `User #${recipient.userId}` : ''
     case 'chat':
-      return 'Configured chat destination'
+      return Array.isArray(recipient.chatRecipient) ? recipient.chatRecipient.join(', ') : recipient.chatRecipient || ''
   }
 }
 
