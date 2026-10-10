@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.119...v0.75.120)
+
+## 🐛 Bug Fixes
+
+- **arrays**: preserve the public series summary type ([d9ed0e3](https://github.com/stacksjs/stacks/commit/d9ed0e3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.118...v0.75.119)
 
 ## ✨ Features
