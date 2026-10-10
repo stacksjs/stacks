@@ -1,5 +1,77 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.114...v0.75.116)
+
+## ✨ Features
+
+- share strict scheduling and ordered transaction locks ([d73978a](https://github.com/stacksjs/stacks/commit/d73978a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- validate enum selections and deliver each notification channel once ([09f1a81](https://github.com/stacksjs/stacks/commit/09f1a81)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.115 ([ac82c26](https://github.com/stacksjs/stacks/commit/ac82c26)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.114...v0.75.116)
+
+## ✨ Features
+
+- share strict scheduling and ordered transaction locks ([d73978a](https://github.com/stacksjs/stacks/commit/d73978a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- validate enum selections and deliver each notification channel once ([09f1a81](https://github.com/stacksjs/stacks/commit/09f1a81)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.115 ([ac82c26](https://github.com/stacksjs/stacks/commit/ac82c26)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.114...v0.75.116)
+
+## ✨ Features
+
+- share strict scheduling and ordered transaction locks ([d73978a](https://github.com/stacksjs/stacks/commit/d73978a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- validate enum selections and deliver each notification channel once ([09f1a81](https://github.com/stacksjs/stacks/commit/09f1a81)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.115 ([ac82c26](https://github.com/stacksjs/stacks/commit/ac82c26)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.114...v0.75.116)
+
+## ✨ Features
+
+- share strict scheduling and ordered transaction locks ([d73978a](https://github.com/stacksjs/stacks/commit/d73978a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- validate enum selections and deliver each notification channel once ([09f1a81](https://github.com/stacksjs/stacks/commit/09f1a81)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.75.115 ([ac82c26](https://github.com/stacksjs/stacks/commit/ac82c26)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.113...v0.75.115)
 
 ## 🐛 Bug Fixes
