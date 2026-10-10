@@ -165,7 +165,9 @@ jobs:
     name: npm
     needs: release-gate
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Publication can wait up to thirty minutes for npm automated review,
+    # in addition to package builds, uploads, clean-install checks and binaries.
+    timeout-minutes: 60
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:

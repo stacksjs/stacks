@@ -28,11 +28,16 @@ export interface Publishable {
   dir: string
 }
 
-/** A successful upload or dist-tag write does not prove an asynchronous publish landed. */
+/**
+ * An accepted upload can remain unavailable during npm's automated review.
+ * Defaults 0.75.122 was still Validating when the old five-minute budget ran
+ * out. Allow thirty minutes for that review while keeping the exact manifest
+ * check: neither a successful upload nor a dist-tag write proves availability.
+ */
 export async function confirmPublications(
   packages: Publishable[],
   registry = 'https://registry.npmjs.org',
-  attempts = 30,
+  attempts = 180,
   retryDelayMs = 10_000,
 ): Promise<void> {
   if (!Number.isInteger(attempts) || attempts < 1) throw new Error('Publication confirmation requires at least one attempt')
@@ -51,7 +56,7 @@ export async function confirmPublications(
     if (!pending.length) return
     if (attempt < attempts) await Bun.sleep(retryDelayMs)
   }
-  throw new Error(`Registry did not confirm publication of ${pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}; no latest tags were changed`)
+  throw new Error(`Registry did not confirm publication of ${pending.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')}; no latest tags were changed. Accepted uploads may still be awaiting npm automated review.`)
 }
 
 /**
