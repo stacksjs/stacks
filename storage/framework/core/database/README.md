@@ -57,3 +57,12 @@ For casual chit-chat with others using this package:
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
 
 Made with 💙
+
+## Group row locks
+
+lockRows(tx, table, ids, { key?, scope? }) from database/runtime acquires
+unique numeric primary keys in deterministic order and returns a map keyed by their
+canonical numeric string value, so padded numeric inputs cannot reverse lock order. Missing scoped rows map to undefined. The caller must supply a
+transaction handle and choose ownership filters; reads, writes and validation
+remain on that handle. This prevents opposite input order from creating a
+lock-order cycle during a transfer, merge or multi-item stock reservation.

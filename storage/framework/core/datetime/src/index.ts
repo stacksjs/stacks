@@ -19,3 +19,5 @@ export { isoInZone, zonedTimeToUtc, zoneOffsetMinutes } from './zone'
 export { addCalendarMonths } from './calendar'
 
 export { localDateTime } from './local'
+
+export * from './schedule'

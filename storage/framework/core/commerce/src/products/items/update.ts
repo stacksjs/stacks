@@ -1,5 +1,5 @@
 import type { ModelRow, Product, UpdateModelData } from '@stacksjs/orm'
-import { db, matchedRows } from '@stacksjs/database/runtime'
+import { db, lockRows, matchedRows } from '@stacksjs/database/runtime'
 import { asModelRow } from '../../utils/model-row'
 import { parseNumberInput, parsePositiveId } from '@stacksjs/validation/input'
 import { restockedQuantity } from '../../inventory'
@@ -201,6 +201,8 @@ export async function adjustInventoryMany(
 
   try {
     const products = await db.transaction(async (trx: any) => {
+      // Opposite cart item orders must acquire their shared stock locks in the same order.
+      await lockRows(trx, 'products', updates.map(update => update.id))
       const out: ProductJsonResponse[] = []
       for (let i = 0; i < updates.length; i++) {
         const { id, delta } = updates[i]!

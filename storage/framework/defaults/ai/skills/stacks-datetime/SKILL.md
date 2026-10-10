@@ -291,3 +291,23 @@ UTC, and returns `{ date, time, timeZone }` from one instant. Supply site and
 organization zones in that order. Missing/invalid zones fall through; an
 invalid instant throws. The output uses YYYY-MM-DD and HH:mm and is suitable
 for comparing local schedule dates and end times, not for elapsed durations.
+
+## Recurrences, coverage and local reporting periods
+
+The pure schedule entry exports parseWeeklySchedule, expandWeeklySchedule,
+clockMinutes, addClockMinutes and timeWindowsCover. Recurrence validation
+rejects invalid weekday entries; expansion refuses excessive ranges and
+midnight-crossing durations instead of silently truncating them. Adjacent
+windows can cover one continuous slot. ScheduleInputError carries status 422.
+
+localDateRange(from, to, ...zones) converts inclusive calendar days to an
+exclusive-end UTC instant range in a selected valid zone, including DST days.
+Its supported reporting dates are 0101-01-01 through 9999-12-30; unsupported
+boundaries raise ScheduleInputError rather than normalizing to another year.
+netHoursBetween(start, end, breaks) retains full precision; apply display or
+monetary rounding at the final boundary. It performs duration arithmetic,
+not jurisdiction-specific compensation or overtime decisions.
+
+localTimeSpan(date, start, end, ...zones) converts a clock interval, including
+next-day ends, to actual instants for cross-site/overnight overlap checks.
+Equal endpoints and non-positive DST-normalized intervals are rejected.

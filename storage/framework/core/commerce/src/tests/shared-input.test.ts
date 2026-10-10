@@ -47,3 +47,16 @@ test('native tax writes preserve optional empty codes and false booleans', async
   expect(cleared!.code).toBe('')
   expect(cleared!.is_default === false || Number(cleared!.is_default) === 0).toBe(true)
 })
+
+
+test('opposite cart item orders reserve stock atomically without a lock-order cycle', async () => {
+  const { refreshDatabase } = await import('./setup')
+  await refreshDatabase()
+  const { store } = await import('../products/items/store')
+  const { adjustInventoryMany } = await import('../products/items/update')
+  const first = await store({ name: 'One', price: 100, inventory_count: 10, preparation_time: 1 })
+  const second = await store({ name: 'Two', price: 100, inventory_count: 10, preparation_time: 1 })
+  const ids = [Number(first.id), Number(second.id)]
+  const results = await Promise.all([adjustInventoryMany(ids.map(id => ({ id, delta: -1 }))), adjustInventoryMany([...ids].reverse().map(id => ({ id, delta: -1 })))])
+  expect(results.every(result => result.ok)).toBe(true)
+})

@@ -36,7 +36,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/config` | [`stacks-config`](../stacks-config/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/index.ts) | 15 |
 | `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 4 |
 | `@stacksjs/database` | [`stacks-database`](../stacks-database/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/database/src/index.ts) | 106 |
-| `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 11 |
+| `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 12 |
 | `@stacksjs/defaults` | [`stacks-build`](../stacks-build/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/defaults/package.json) | 1 |
 | `@stacksjs/deploy` | [`stacks-deploy`](../stacks-deploy/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/deploy/package.json) | 1 |
 | `@stacksjs/desktop-build` | [`stacks-desktop`](../stacks-desktop/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/desktop/src/index.ts) | 11 |
@@ -359,9 +359,9 @@ Guidance: [`stacks-datetime`](../stacks-datetime/SKILL.md). Source: [storage/fra
 
 Declared runtime exports: `DateTime`, `addCalendarMonths`, `dateFormat`, `format`, `isoInZone`, `localDateTime`, `now`, `parse`, `zoneOffsetMinutes`, `zonedTimeToUtc`.
 
-Local source modules: [src/calendar.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/calendar.ts), [src/format.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/format.ts), [src/local.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/local.ts), [src/now.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/now.ts), [src/parse.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/parse.ts), [src/zone.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/zone.ts).
+Local source modules: [src/calendar.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/calendar.ts), [src/format.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/format.ts), [src/local.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/local.ts), [src/now.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/now.ts), [src/parse.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/parse.ts), [src/schedule.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/schedule.ts), [src/zone.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/zone.ts).
 
-Evidence directory: [11 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [12 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/defaults
 

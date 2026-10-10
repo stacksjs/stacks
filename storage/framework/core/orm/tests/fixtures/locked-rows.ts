@@ -10,6 +10,7 @@ try {
   }, queryLogging: { enabled: false } } })
 }
 finally { release() }
+const { lockRows } = await import('@stacksjs/database/runtime')
 const { withLockedRow } = await import('../../src/locked-row')
 const { rowToken, RowTokenNotFoundError } = await import('../../src/row-token')
 const { transaction } = await import('../../src/transaction')
@@ -53,5 +54,15 @@ await assert.rejects(() => rowToken({ ...timeless, scope: { tenant_id: null }, a
 const mixed = await Promise.all([rowToken({ ...owner, action: 'enable' }), rowToken({ ...owner, action: 'rotate' }), rowToken({ ...owner, action: 'disable' })])
 const finalToken = await rowToken({ ...owner, action: 'read' })
 assert(mixed.includes(finalToken), 'the final state belongs to a completed serialized operation')
+await Promise.all([[1, 2], ['02', '01']].map(ids => transaction(async (tx) => {
+  const records = await lockRows(tx, 'locked_records', ids)
+  assert.equal(records.size, 2)
+  for (const id of ids) await tx.updateTable('locked_records').set({ quantity: Number(records.get(String(Number(id)))!.quantity) + 1 }).where('id', '=', id).execute()
+})))
+assert.equal(Number((await db.selectFrom('locked_records').selectAll().where('id', '=', 1).executeTakeFirst())!.quantity), 20)
+await transaction(async (tx) => {
+  const scoped = await lockRows(tx, 'locked_records', [1, 2], { scope: { tenant_id: 7 } })
+  assert.equal(scoped.get('2'), undefined)
+})
 resetDatabaseConnection()
 console.log('locked rows OK')
