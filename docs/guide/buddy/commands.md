@@ -2953,6 +2953,7 @@ Automagically lints your project codebase
 | --- | --- | --- | --- |
 | `-f`, `--fix` | Automagically fixes all lint errors | boolean, optional | `false` |
 | `--stx` | Run the stx conformance checks instead of code style | boolean, optional | `false` |
+| `--max-warnings` | Fail when warnings exceed this count | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `lint:fix`
@@ -2966,6 +2967,7 @@ Automagically fixes all lint errors
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--max-warnings` | Fail when warnings exceed this count | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `list`
