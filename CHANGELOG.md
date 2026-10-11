@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.125...v0.75.126)
+
+## 🐛 Bug Fixes
+
+- preserve exact framework dependencies during release bumps ([69d6ad2](https://github.com/stacksjs/stacks/commit/69d6ad2)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.124...v0.75.125)
 
 ## 🐛 Bug Fixes
