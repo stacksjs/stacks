@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.127...v0.75.128)
+
+## 🐛 Bug Fixes
+
+- require corrected native STX bindings for mobile apps ([b485be1](https://github.com/stacksjs/stacks/commit/b485be1)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.126...v0.75.127)
 
 ## ✨ Features
