@@ -1338,6 +1338,36 @@ export function asRow<TRow>(row: Record<string, unknown> | undefined): TRow | un
 export type KnownKeys<T> = string extends keyof T ? never : keyof T
 
 /**
+ * A value a write may put in a column besides its own type: SQL NULL, a
+ * `Date` (bound as a timestamp), or a raw SQL fragment (`sql.raw(...)`,
+ * `db.fn.now()`). A numeric column also takes a boolean: generated schemas type
+ * a boolean column as `number` where the dialect stores it as 0/1, and every
+ * driver binds `true`/`false` correctly.
+ */
+export type WriteValue = null | Date | { toSQL: unknown } | { readonly sql: unknown } | { raw: string }
+
+/**
+ * The row a write to `T` takes.
+ *
+ * One of the application's own tables - in the `DatabaseSchema` that
+ * `buddy generate:db-types` writes from `app/Models` - takes its own columns,
+ * each optional, each of its own type or a {@link WriteValue}. A misspelt or
+ * removed column, or a string where the column is a number, then fails to
+ * compile instead of failing at runtime (or succeeding against a database
+ * whose column happens to be text).
+ *
+ * Any other table takes any object: tables outside every model, apps that
+ * have not generated types, and the framework's own tables, whose generated
+ * `FrameworkSchema` is not yet exact enough to hold writes to. `object` rather
+ * than `Record<string, unknown>`, because an *interface* has no index signature
+ * and is not assignable to the latter, and callers declaring their own row
+ * shape pass exactly that.
+ */
+export type WriteOf<T extends TableName> = T extends keyof DatabaseSchema
+  ? { [K in keyof Shape<DatabaseSchema[T]>]?: Shape<DatabaseSchema[T]>[K] | WriteValue | (Shape<DatabaseSchema[T]>[K] extends number | null ? boolean : never) }
+  : object
+
+/**
  * Which verb started a chain, so its terminals can answer the right thing.
  *
  * `returning` is its own kind rather than a flag on the others: a mutation with
@@ -1386,7 +1416,7 @@ export type FirstOf<TRow, TKind extends ChainKind> = TKind extends 'select' | 'r
       ? { numUpdatedRows: number }
       : { numDeletedRows: number }
 
-export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select'> {
+export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select', TWrite = object> {
   where(callback: (eb: import('./types').StacksExpressionBuilder) => unknown): FluentChain<TRow, TKind>
   where(...args: unknown[]): FluentChain<TRow, TKind>
   whereNull: (...args: unknown[]) => FluentChain<TRow, TKind>
@@ -1455,17 +1485,14 @@ export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends C
   union: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
   unionAll: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
   /**
-   * `values()` takes what the table holds, and keeps the row type for
-   * `returning()`.
-   *
-   * `object` rather than `Record<string, unknown>` as the loose branch, because
-   * an *interface* is not assignable to `Record<string, unknown>` - it has no
-   * index signature - and every caller that has declared a row shape of its own
-   * passes exactly that. Rejecting those would be a type error about a value
-   * that is right.
+   * `values()` and `set()` take what the table holds, and keep the row type for
+   * `returning()`. Straight after `insertInto()` / `updateTable()` on one of the
+   * application's own tables that is checked: a column the table does not have,
+   * or a value of the wrong type, is a type error (see {@link WriteOf}). Any
+   * other table takes any object.
    */
-  values: (values: Partial<TRow> | ReadonlyArray<Partial<TRow>> | object | readonly object[]) => FluentChain<TRow, TKind>
-  set: (values: Partial<TRow> | object) => FluentChain<TRow, TKind>
+  values: (values: TWrite | ReadonlyArray<TWrite>) => FluentChain<TRow, TKind>
+  set: (values: TWrite) => FluentChain<TRow, TKind>
   /*
    * `RETURNING` turns a mutation into something that answers rows, which is
    * why it changes the chain's kind rather than only its row type: the whole
@@ -1636,8 +1663,8 @@ export type DynamicWhereMethods<TRow, TKind extends ChainKind = 'select'> = {
  * type over `TRow`, and an interface can only extend members TypeScript knows
  * statically.
  */
-export type FluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select'>
-  = BaseFluentChain<TRow, TKind> & DynamicWhereMethods<TRow, TKind>
+export type FluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select', TWrite = object>
+  = BaseFluentChain<TRow, TKind, TWrite> & DynamicWhereMethods<TRow, TKind>
 
 /**
  * Top-level surface of the lazy `db` proxy. Methods that return a chainable
@@ -1744,8 +1771,8 @@ type Shape<T> = T extends { columns: infer C } ? C : T
 interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
   fn: import('./types').ExpressionFunctions
   selectFrom: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'select'>
-  insertInto: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'insert'>
-  updateTable: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'update'>
+  insertInto: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'insert', WriteOf<T>>
+  updateTable: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'update', WriteOf<T>>
   deleteFrom: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'delete'>
   table: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'select'>
   /*
