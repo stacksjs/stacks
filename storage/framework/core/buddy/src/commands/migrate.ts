@@ -1671,7 +1671,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       }
 
       if (!planned.supported) {
-        log.info(`migrate:align is not supported for "${planned.dialect}" yet - only PostgreSQL. Nothing was compared.`)
+        await log.info(`migrate:align is not supported for "${planned.dialect}" yet - only PostgreSQL. Nothing was compared.`)
         await outro('Skipped.', { startTime: perf!, useSeconds: true })
         process.exit(ExitCode.Success)
       }
@@ -1722,17 +1722,17 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         // Planned again rather than replaying the plan above: the database may
         // have moved while the prompt waited.
         const applied = await alignSchema({ apply: true, widenIntegers: options.widenIntegers })
-        log.success(`Applied ${applied.applied.length} repair(s).`)
+        await log.success(`Applied ${applied.applied.length} repair(s).`)
         for (const action of applied.plan.refused)
-          log.warn(`Refused: ${action.detail}: ${action.reason}`)
+          await log.warn(`Refused: ${action.detail}: ${action.reason}`)
       }
       catch (error) {
         log.syncError(`Nothing was changed - the repairs run as one transaction and it failed: ${error instanceof Error ? error.message : String(error)}`)
         process.exit(ExitCode.FatalError)
       }
 
-      log.info('Migrations whose every table, index and type now exists can be recorded without running:')
-      log.info('  ./buddy migrate:status --reconcile')
+      await log.info('Migrations whose every table, index and type now exists can be recorded without running:')
+      await log.info('  ./buddy migrate:status --reconcile')
       await outro('Aligned.', { startTime: perf!, useSeconds: true })
       process.exit(ExitCode.Success)
     })
