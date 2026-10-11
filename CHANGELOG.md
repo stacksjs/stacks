@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.145...v0.75.146)
+
+## ✨ Features
+
+- **sms**: German STOP, START and HELP keywords ([0797bb0](https://github.com/stacksjs/stacks/commit/0797bb0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **notifications**: send the email and SMS frame in the reader's language ([4c699b2](https://github.com/stacksjs/stacks/commit/4c699b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: regenerate table types on upgrade so new default columns compile ([4fb31da](https://github.com/stacksjs/stacks/commit/4fb31da)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **docs**: count the generated-schema type test in the native skill catalog ([4c34d41](https://github.com/stacksjs/stacks/commit/4c34d41)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.143...v0.75.145)
 
 ## 🐛 Bug Fixes
