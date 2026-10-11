@@ -113,6 +113,32 @@ mailboxes: [
 Set initial or managed credentials with `MAIL_PASSWORD_<LOCALPART>` in the
 encrypted environment. User mailboxes default to `passwordPolicy: 'initial'`.
 
+### Recovery addresses
+
+Give a mailbox a recovery address and its owner can reset a forgotten password
+from webmail: "Forgot password?" mails a single-use link, valid for 30 minutes,
+to that address. Without one, only an operator can reset the password.
+
+```typescript
+mailboxes: [
+  { email: 'pawel', recovery: 'pawel@outlook.de' },
+  { email: 'chris', recovery: 'chris@gmail.com', recoveryPolicy: 'managed' },
+]
+```
+
+Every deploy reconciles the address, whether or not it carries the mailbox's
+password. `recoveryPolicy` works like `passwordPolicy`:
+
+- `'initial'` (default) sets the configured address until the owner changes or
+  removes it in webmail (Account, which asks for the mailbox password). After
+  that, deploys leave their choice alone.
+- `'managed'` reapplies the configured address on every deploy.
+
+The address must be outside the mailbox itself. The deploy log names the
+mailboxes whose recovery address changed, never the addresses. A mail server
+that predates recovery addresses is reported, not treated as a failure: upgrade
+it and deploy again.
+
 Deploy your email infrastructure with:
 
 ```bash

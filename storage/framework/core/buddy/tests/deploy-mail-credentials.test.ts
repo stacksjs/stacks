@@ -20,7 +20,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
-import { canRevealSecrets, reportMailboxCredentials, resolveMailboxesWithSkipped } from '../src/commands/deploy'
+import { canRevealSecrets, reportMailboxCredentials, reportRecoveryReconcile, resolveMailboxesWithSkipped, resolveMailboxRecoveries } from '../src/commands/deploy'
 
 const SOURCE = path.resolve(import.meta.dir, '../src/commands/deploy.ts')
 
@@ -171,6 +171,15 @@ case "$cmd" in
     IFS= read -r pw
     enabled="$(sed -n 2p "$f")"
     printf '%s\\n%s\\n' "$pw" "$enabled" > "$f" ;;
+  recovery)
+    # A server from before recovery addresses: zig-cli rejects the option.
+    if [ -f "$DB/old-server" ]; then echo "Error: Unknown option '--policy'" >&2; exit 1; fi
+    [ -f "$f" ] || { echo "Error: user '$user' not found" >&2; exit 1; }
+    [ "$5" = "--policy" ] || exit 4
+    r="$DB/recovery/$user"; mkdir -p "$DB/recovery"
+    if [ -f "$r" ] && [ "$(sed -n 1p "$r")" = "$4" ]; then echo "Recovery: unchanged" >&2
+    elif [ "$6" = initial ] && [ -f "$r" ] && [ "$(sed -n 2p "$r")" = user ]; then echo "Recovery: kept (the mailbox owner set their own)" >&2
+    else printf '%s\\noperator\\n' "$4" > "$r"; echo "Recovery: updated" >&2; fi ;;
 esac
 exit 0
 `
@@ -303,5 +312,133 @@ describe('resolveMailboxesWithSkipped', () => {
       const { boxes } = resolveMailboxesWithSkipped(['ciphertextcheck'], 'example.com')
       expect(boxes.map(b => [b.address, b.password])).toEqual([['ciphertextcheck@example.com', 'real-password']])
     })
+  })
+})
+
+interface RecoverySeed { address: string, setBy: 'user' | 'operator' }
+
+function runRecoveries(options: { users: string[], current?: Record<string, RecoverySeed>, declared: Array<[string, string, 'initial' | 'managed']>, oldServer?: boolean }) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stacks-recovery-'))
+  try {
+    fs.mkdirSync(path.join(dir, 'users'))
+    fs.mkdirSync(path.join(dir, 'recovery'))
+    for (const user of options.users)
+      fs.writeFileSync(path.join(dir, 'users', user), 'pw\ntrue\n')
+    for (const [user, r] of Object.entries(options.current ?? {}))
+      fs.writeFileSync(path.join(dir, 'recovery', user), `${r.address}\n${r.setBy}\n`)
+    if (options.oldServer)
+      fs.writeFileSync(path.join(dir, 'old-server'), '')
+
+    const ms = path.join(dir, 'mail-server')
+    fs.writeFileSync(ms, FAKE_MS, { mode: 0o755 })
+    const lines = options.declared.map(([addr, recovery, policy]) => `${addr}\t${recovery}\t${policy}`).join('\n')
+    const script = [
+      'set -e',
+      `RECOVERY_B64='${Buffer.from(`${lines}\n`).toString('base64')}'`,
+      `MS='${ms}'`,
+      `MAIL_DB_PATH='${dir}'`,
+      BLOCK,
+    ].join('\n')
+
+    const out = Bun.spawnSync(['bash', '-c', script])
+    expect(out.exitCode).toBe(0)
+    const stored = Object.fromEntries(fs.readdirSync(path.join(dir, 'recovery')).map(user => [user, fs.readFileSync(path.join(dir, 'recovery', user), 'utf8').split('\n')[0] ?? '']))
+    const recoveryOf = (user: string): string | undefined => stored[user]
+    return { stdout: out.stdout.toString(), recoveryOf }
+  }
+  finally {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+describe('the recovery address reconcile on the server', () => {
+  it('sets a declared recovery address on an existing mailbox, then leaves it be', () => {
+    const run = runRecoveries({ users: ['pawel@example.com'], declared: [['pawel@example.com', 'pawel@elsewhere.test', 'initial']] })
+    expect(run.stdout).toContain('RECOVERY_SET:pawel@example.com')
+    expect(run.recoveryOf('pawel@example.com')).toBe('pawel@elsewhere.test')
+
+    const again = runRecoveries({ users: ['pawel@example.com'], current: { 'pawel@example.com': { address: 'pawel@elsewhere.test', setBy: 'operator' } }, declared: [['pawel@example.com', 'pawel@elsewhere.test', 'initial']] })
+    expect(again.stdout).toContain('RECOVERY_SAME:pawel@example.com')
+  })
+
+  it("keeps the owner's own choice under 'initial' and replaces it under 'managed'", () => {
+    const current = { 'chris@example.com': { address: 'own@choice.test', setBy: 'user' as const } }
+    const initial = runRecoveries({ users: ['chris@example.com'], current, declared: [['chris@example.com', 'chris@config.test', 'initial']] })
+    expect(initial.stdout).toContain('RECOVERY_KEPT:chris@example.com')
+    expect(initial.recoveryOf('chris@example.com')).toBe('own@choice.test')
+
+    const managed = runRecoveries({ users: ['chris@example.com'], current, declared: [['chris@example.com', 'chris@config.test', 'managed']] })
+    expect(managed.stdout).toContain('RECOVERY_SET:chris@example.com')
+    expect(managed.recoveryOf('chris@example.com')).toBe('chris@config.test')
+  })
+
+  it('reconciles every line, including the last, and reports a missing mailbox', () => {
+    const run = runRecoveries({
+      users: ['a@example.com', 'b@example.com'],
+      declared: [['a@example.com', 'a@elsewhere.test', 'initial'], ['ghost@example.com', 'g@elsewhere.test', 'initial'], ['b@example.com', 'b@elsewhere.test', 'initial']],
+    })
+    expect(run.stdout).toContain('RECOVERY_SET:a@example.com')
+    expect(run.stdout).toContain('RECOVERY_NOBOX:ghost@example.com')
+    expect(run.stdout).toContain('RECOVERY_SET:b@example.com')
+  })
+
+  it('names an old mail server instead of failing the deploy', () => {
+    const run = runRecoveries({ users: ['pawel@example.com'], oldServer: true, declared: [['pawel@example.com', 'pawel@elsewhere.test', 'initial']] })
+    expect(run.stdout).toContain('RECOVERY_OLDSERVER:pawel@example.com')
+  })
+
+  it('emits no keys the mailbox step parses', () => {
+    const run = runRecoveries({ users: ['pawel@example.com'], declared: [['pawel@example.com', 'pawel@elsewhere.test', 'initial']] })
+    expect(run.stdout).not.toMatch(/(?:^|[^_])(?:MADE|EXISTS|MIGRATED):/m)
+    expect(run.stdout).not.toMatch(/^(?:UPDATED|UPDATEFAIL|FAIL):/m)
+  })
+})
+
+describe('resolveMailboxRecoveries', () => {
+  it('reads recovery and recoveryPolicy from object entries, independent of passwords', () => {
+    const { recoveries, invalid } = resolveMailboxRecoveries([
+      { email: 'hello', passwordPolicy: 'managed' },
+      'chris',
+      { email: 'pawel', recovery: ' pawel@outlook.test ' },
+      { email: 'chris@other-domain.test', recovery: 'chris@gmail.test', recoveryPolicy: 'managed' },
+    ], 'hq.test')
+    expect(invalid).toEqual([])
+    expect(recoveries).toEqual([
+      { address: 'pawel@hq.test', recovery: 'pawel@outlook.test', policy: 'initial' },
+      { address: 'chris@hq.test', recovery: 'chris@gmail.test', policy: 'managed' },
+    ])
+  })
+
+  it('refuses the mailbox itself and anything that is not a plain address', () => {
+    const { recoveries, invalid } = resolveMailboxRecoveries([
+      { email: 'self', recovery: 'SELF@hq.test' },
+      { email: 'nodot', recovery: 'x@localhost' },
+      { email: 'shell', recovery: "x@y.test'; rm -rf /" },
+      { email: 'header', recovery: 'x@y.test\nBcc: z@w.test' },
+      { email: 'blank', recovery: '' },
+    ], 'hq.test')
+    expect(recoveries).toEqual([])
+    expect(invalid).toEqual(['self@hq.test', 'nodot@hq.test', 'shell@hq.test', 'header@hq.test'])
+  })
+})
+
+describe('reportRecoveryReconcile', () => {
+  function report(out: string, declared: string[]): string {
+    const lines: string[] = []
+    const logger = { info: (m: string) => { lines.push(m) }, warn: (m: string) => { lines.push(`WARN ${m}`) }, success: (m: string) => { lines.push(m) } } as any
+    reportRecoveryReconcile(logger, out, declared.map(address => ({ address })))
+    return lines.join('\n')
+  }
+
+  it('says what changed without printing the recovery addresses', () => {
+    const out = report('RECOVERY_SET:pawel@hq.test\nRECOVERY_KEPT:chris@hq.test\nRECOVERY_OLDSERVER:glenn@hq.test\n', ['pawel@hq.test', 'chris@hq.test', 'glenn@hq.test', 'lost@hq.test'])
+    expect(out).toContain('set the recovery address of pawel@hq.test')
+    expect(out).toContain('kept the recovery address the owner chose in webmail for chris@hq.test')
+    expect(out).toContain('WARN Mail: the mail server is too old for recovery addresses, so none was set for glenn@hq.test')
+    expect(out).toContain('WARN Mail: the recovery address of lost@hq.test was not reconciled')
+  })
+
+  it('is quiet when nothing changed', () => {
+    expect(report('RECOVERY_SAME:pawel@hq.test\n', ['pawel@hq.test'])).toBe('')
   })
 })

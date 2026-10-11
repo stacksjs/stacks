@@ -39,6 +39,24 @@ export interface MailboxConfig {
   /** Initial credentials preserve user password changes on redeploy. Managed
    * credentials are reconciled with the configured value on every deploy. */
   passwordPolicy?: 'initial' | 'managed'
+  /**
+   * Recovery address: where the mail server's webmail "Forgot password?"
+   * sends a single-use reset link for this mailbox. It must be outside the
+   * mailbox itself, e.g. a personal address at another provider.
+   *
+   * Without it, a forgotten password can only be reset by an operator.
+   * @example 'pawel@outlook.de'
+   */
+  recovery?: string
+  /**
+   * How deploys treat `recovery`, mirroring `passwordPolicy`.
+   *
+   * - `'initial'` (default): set on every deploy until the mailbox owner
+   *   changes or removes it in webmail; from then on their choice stands.
+   * - `'managed'`: the configured address is reapplied on every deploy,
+   *   replacing whatever the owner set.
+   */
+  recoveryPolicy?: 'initial' | 'managed'
   forwardTo?: string[]
   autoResponder?: AutoResponderConfig
   filters?: EmailFilterRule[]

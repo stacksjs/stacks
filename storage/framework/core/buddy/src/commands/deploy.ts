@@ -3343,6 +3343,58 @@ export function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, 
   return { boxes: out, skipped }
 }
 
+/** A declared recovery address for one mailbox (see MailboxConfig.recovery). */
+export interface ResolvedMailboxRecovery {
+  /** Full mailbox address, `<local-part>@<domain>`. */
+  address: string
+  /** Where the mail server sends this mailbox's password reset links. */
+  recovery: string
+  policy: 'initial' | 'managed'
+}
+
+/**
+ * The recovery addresses declared in `config.email.mailboxes`.
+ *
+ * Independent of passwords on purpose: a mailbox that already exists on the
+ * server keeps its recovery address current even on a deploy that carries no
+ * password for it (`resolveMailboxesWithSkipped` skips such a mailbox for
+ * creation, and that must not also drop its recovery address).
+ *
+ * `invalid` names the entries left out: an address that is not an address,
+ * or that points back at the mailbox itself, which would send the reset link
+ * somewhere only the password can open. The mail server refuses both too;
+ * catching them here says so in the deploy log, with the config key.
+ */
+export function resolveMailboxRecoveries(mailboxes: unknown, domain: string): { recoveries: ResolvedMailboxRecovery[], invalid: string[] } {
+  const recoveries: ResolvedMailboxRecovery[] = []
+  const invalid: string[] = []
+  if (!Array.isArray(mailboxes))
+    return { recoveries, invalid }
+  for (const entry of mailboxes) {
+    if (!entry || typeof entry !== 'object')
+      continue
+    const raw = (entry as { email?: unknown, username?: unknown }).email ?? (entry as { username?: unknown }).username
+    const declared = (entry as { recovery?: unknown }).recovery
+    if (typeof raw !== 'string' || declared === undefined || declared === null || declared === '')
+      continue
+    const localPart = (raw.includes('@') ? raw.split('@')[0] ?? '' : raw).trim()
+    if (!localPart)
+      continue
+    const address = `${localPart}@${domain}`
+    const recovery = typeof declared === 'string' ? declared.trim() : ''
+    // The same shape the mail server accepts: one @, a dotted domain, nothing
+    // that could break out of a header or a shell word.
+    const wellFormed = /^[^\s@,;:"<>\\/'`$]+@[^\s@,;:"<>\\/'`$]+\.[^\s@,;:"<>\\/'`$]+$/.test(recovery) && recovery.length <= 254
+    if (!wellFormed || recovery.toLowerCase() === address.toLowerCase()) {
+      invalid.push(address)
+      continue
+    }
+    const policy = (entry as { recoveryPolicy?: unknown }).recoveryPolicy === 'managed' ? 'managed' : 'initial'
+    recoveries.push({ address, recovery, policy })
+  }
+  return { recoveries, invalid }
+}
+
 /** What a mail-tenant reconcile resolved + provisioned, for the DNS step. */
 export interface MailTenantResult {
   domain: string
@@ -3600,6 +3652,40 @@ export function canRevealSecrets(env: Record<string, string | undefined> = proce
   return Boolean(stdout.isTTY)
 }
 
+/**
+ * Log what the recovery step (3a) did. Addresses only: the recovery address
+ * itself is personal data and stays out of CI logs.
+ */
+export function reportRecoveryReconcile(
+  logger: Pick<typeof log, 'info' | 'warn' | 'success'>,
+  out: string,
+  declared: Array<Pick<ResolvedMailboxRecovery, 'address'>>,
+): void {
+  const pick = (key: string): string[] => [...out.matchAll(new RegExp(`^${key}:([^\\n]+)`, 'gm'))].flatMap(m => m[1] ? [m[1].trim()] : [])
+  const set = pick('RECOVERY_SET')
+  const same = pick('RECOVERY_SAME')
+  const kept = pick('RECOVERY_KEPT')
+  const nobox = pick('RECOVERY_NOBOX')
+  const old = pick('RECOVERY_OLDSERVER')
+  const failed = pick('RECOVERY_FAIL')
+
+  if (set.length)
+    logger.success(`Mail: set the recovery address of ${set.join(', ')}`)
+  if (kept.length)
+    logger.info(`Mail: kept the recovery address the owner chose in webmail for ${kept.join(', ')} (recoveryPolicy: 'managed' overrides it)`)
+  if (nobox.length)
+    logger.warn(`Mail: no recovery address set for ${nobox.join(', ')}: the mailbox does not exist on the mail server yet`)
+  if (old.length)
+    logger.warn(`Mail: the mail server is too old for recovery addresses, so none was set for ${old.join(', ')}. Upgrade it (mail upgrade) and deploy again.`)
+  if (failed.length)
+    logger.warn(`Mail: the mail server refused the recovery address of ${failed.join(', ')}`)
+
+  const seen = new Set([...set, ...same, ...kept, ...nobox, ...old, ...failed])
+  const missing = declared.map(r => r.address).filter(address => !seen.has(address))
+  if (missing.length)
+    logger.warn(`Mail: the recovery address of ${missing.join(', ')} was not reconciled`)
+}
+
 /** The env var a mailbox's password lives in: `MAIL_PASSWORD_<LOCALPART>`. */
 function mailboxPasswordKey(box: Pick<ResolvedMailbox, 'localPart'>): string {
   return `MAIL_PASSWORD_${box.localPart.replace(/[^A-Z0-9]/g, '_')}`
@@ -3755,6 +3841,12 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
     logger.info(`Set MAIL_PASSWORD_<LOCALPART> in the target environment (e.g. ${resolved.skipped[0]?.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')}) and run this again.`)
   }
 
+  // Recovery addresses are reconciled whether or not this deploy carries the
+  // mailbox's password; see resolveMailboxRecoveries.
+  const declaredRecoveries = domain ? resolveMailboxRecoveries(cfg.mailboxes, domain) : { recoveries: [], invalid: [] }
+  if (declaredRecoveries.invalid.length > 0)
+    logger.warn(`Mail: ignored the recovery address of ${declaredRecoveries.invalid.join(', ')} in config/email.ts: it must be a valid address outside the mailbox itself`)
+
   // Nothing declarative to reconcile — skip silently (most apps).
   if (!domain && !hasForwards)
     return null
@@ -3777,6 +3869,9 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   // LAST mailbox in config/email.ts was silently never created. It reported
   // success either way, because the caller only counts the MADE lines.
   const boxesB64 = boxes.length ? Buffer.from(`${boxes.map(b => `${b.address}\t${b.password}\t${b.passwordPolicy}`).join('\n')}\n`).toString('base64') : ''
+  // address<TAB>recovery<TAB>policy, same encoding and the same trailing newline.
+  const recoveries = declaredRecoveries.recoveries
+  const recoveriesB64 = recoveries.length ? Buffer.from(`${recoveries.map(r => `${r.address}\t${r.recovery}\t${r.policy}`).join('\n')}\n`).toString('base64') : ''
 
   // One idempotent, merge-based reconcile script. Emits keyed lines the caller
   // parses: MAILHOST:, DKIMPUB:, MADE:<addr>, and a final MAILTENANT:<state>.
@@ -3785,6 +3880,7 @@ DOMAIN=${domain ? `'${domain}'` : "''"}
 FWD_B64='${forwardsB64}'
 README_B64='${readmeB64}'
 BOXES_B64='${boxesB64}'
+RECOVERY_B64='${recoveriesB64}'
 ENVF=/etc/mail/mail.env
 FJSON=/opt/mail/forwards.json
 DKIMDIR=/opt/mail/dkim
@@ -3966,6 +4062,27 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
         echo "UPDATEFAIL:$addr"
       fi
     fi
+  done
+fi
+# 3a) Recovery addresses: where the mail server's "Forgot password?" sends a
+# mailbox's reset link. The CLI applies the policy itself: 'initial' leaves an
+# address the owner set (or removed) in webmail alone, 'managed' always sets
+# it. It prints one "Recovery: <outcome>" line. A server binary from before
+# recovery addresses rejects the subcommand's arguments, which is reported as
+# such rather than as a failure: the next mail server upgrade fixes it.
+# The keys avoid MADE:/EXISTS:/UPDATED:, which the mailbox step above owns.
+if [ -n "$RECOVERY_B64" ] && [ -x "$MS" ]; then
+  echo "$RECOVERY_B64" | base64 -d | while IFS=$'\t' read -r addr recovery recovery_policy; do
+    [ -z "$addr" ] && continue
+    out=$(SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local recovery "$addr" "$recovery" --policy "$recovery_policy" 2>&1 || true)
+    case "$out" in
+      *"Recovery: updated"*) echo "RECOVERY_SET:$addr" ;;
+      *"Recovery: unchanged"*) echo "RECOVERY_SAME:$addr" ;;
+      *"Recovery: kept"*) echo "RECOVERY_KEPT:$addr" ;;
+      *"not found"*) echo "RECOVERY_NOBOX:$addr" ;;
+      *"Unknown option"*|*"Too many arguments"*|*"Unknown command"*|*"UnknownCommand"*) echo "RECOVERY_OLDSERVER:$addr" ;;
+      *) echo "RECOVERY_FAIL:$addr" ;;
+    esac
   done
 fi
 # 3b) Put the tenant's own mail hostname on the mail certificate.
@@ -4240,6 +4357,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       logger.warn(`Mail: could not set the declared password on ${updateFailed.length} existing mailbox(es) - they still accept the old one: ${updateFailed.join(', ')}`)
     if (migratedAddrs.size)
       logger.success(`Mail: migrated ${migratedAddrs.size} legacy mailbox username(s) to isolated full addresses`)
+    reportRecoveryReconcile(logger, out, recoveries)
 
     return domain ? { domain, mailHost, dkimPubB64, dkimSelector, created } : null
   }
