@@ -399,4 +399,6 @@ export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listU
 export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationUnsubscribe } from './email-body'
 export { notificationUnsubscribeLinks, notificationUnsubscribeToken, parseNotificationUnsubscribeToken, unsubscribeTokenFromRequest, unsubscribeWithToken } from './unsubscribe'
 export type { ParsedUnsubscribeToken, UnsubscribeChannel, UnsubscribeLinkOptions } from './unsubscribe'
+export { accountNotificationTemplates, commerceNotificationTemplates, createNotificationTemplates, defineNotificationTemplates, interpolateNotificationText, notificationTemplateVariables, renderNotificationTemplate, resolveNotificationLocale, subscriptionNotificationTemplates } from './templates'
+export type { AccountNotificationPaths, AccountNotificationTemplateName, CommerceNotificationPaths, CommerceNotificationTemplateName, NotificationTemplateAction, NotificationTemplateCatalog, NotificationTemplateCatalogOptions, NotificationTemplateCopy, NotificationTemplateDefinition, NotificationTemplateVariables, RenderedNotificationTemplate, RenderNotificationTemplateOptions, SubscriptionNotificationPaths, SubscriptionNotificationTemplateName } from './templates'
 

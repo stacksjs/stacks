@@ -62,6 +62,47 @@ ends with "Reply STOP to opt out." unless `payload.smsOptOut` says otherwise.
 The signed token turns off one channel + category preference; handle the
 app's route with `unsubscribeWithToken(await unsubscribeTokenFromRequest(request))`.
 
+## Templates
+
+`@stacksjs/notifications/templates` (also re-exported from the package root)
+keeps an app's messages in one catalog: each named message has its copy per
+language and, optionally, the email's button. It is pure and browser-safe.
+
+```ts
+import { accountNotificationTemplates, createNotificationTemplates, defineNotificationTemplates } from '@stacksjs/notifications/templates'
+
+const templates = createNotificationTemplates({
+  ...accountNotificationTemplates({ resetPassword: '/forgot-password' }),
+  ...defineNotificationTemplates({
+    class_booked: {
+      copy: {
+        en: { subject: 'You’re booked at {{gym}}', body: 'See you at {{class_name}} on {{date}}.' },
+        de: { subject: 'Gebucht bei {{gym}}', body: 'Bis {{date}} bei {{class_name}}.' },
+      },
+      action: { path: '/schedule', label: { en: 'View your schedule', de: 'Zum Stundenplan' } },
+    },
+  }),
+}, { baseUrl: () => process.env.APP_URL || '' })
+
+await notify({ email }, templates.render('class_booked', { gym, class_name, date }, user.locale), ['email'])
+```
+
+`{{name}}` is replaced by that variable, a missing one by nothing. A button
+whose path needs a variable that was not given is left out. A path that renders
+to an absolute URL (a one-time link) is used as it is; any other is joined to
+`baseUrl`. `de-AT` falls back to `de`, then to `fallbackLocale` (`en`).
+
+Built-in catalogs, in English and German, take the paths their buttons lead to:
+
+| Catalog | Messages |
+| --- | --- |
+| `accountNotificationTemplates()` | `password_changed`, `email_changed` (send to both addresses), `account_deleted`, `account_created` (someone made the account; set-password link) |
+| `commerceNotificationTemplates()` | `order_receipt`, `order_refunded`, `new_sale` (to the seller), `account_credit_added` |
+| `subscriptionNotificationTemplates()` | `subscription_trial_ending`, `subscription_payment_failed`, `subscription_ended` |
+
+Each documents its variables. Format amounts first: `receiptLinesText()` from
+`@stacksjs/commerce/receipt-text` builds the receipt's `lines`.
+
 ## Inbox ownership
 
 ```ts

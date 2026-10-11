@@ -28,14 +28,15 @@ import * as commerce from '@stacksjs/commerce'
 
 ### Shop rules in the browser
 
-Four modules are pure and import nothing, so a page bundles them on its own
-instead of the barrel (which imports the database):
+Five modules are pure and import nothing outside commerce, so a page bundles
+them on its own instead of the barrel (which imports the database):
 
 ```ts
 import { formatCurrency, parseMoneyInput } from '@stacksjs/commerce/money'
 import { addToBasket, basketTotal, stockLabel, CENTS_FIELDS } from '@stacksjs/commerce/register'
 import { compareCatalog, matchesSearch, isLowStock } from '@stacksjs/commerce/catalog'
 import { releaseSchedule, rolloutFromProduct, describeRollout } from '@stacksjs/commerce/releases'
+import { receiptLinesText } from '@stacksjs/commerce/receipt-text'
 
 // A front desk's basket, held to the stock on the shelf
 let basket = addToBasket([], gatorade, CENTS_FIELDS)
@@ -46,6 +47,9 @@ products.sort(compareCatalog(['Drinks', 'Apparel']))
 
 // When each video or week of a digital product opens for a buyer
 releaseSchedule(rolloutFromProduct(product), weeks, purchasedAt, new Date())
+
+// A receipt email's lines (pairs with the `order_receipt` notification template)
+receiptLinesText([{ name: 'Day pass', quantity: 2, amountMinor: 2000 }], 'EUR', 'en-US') // "2 × Day pass: €20.00"
 ```
 
 Learn more in the docs.

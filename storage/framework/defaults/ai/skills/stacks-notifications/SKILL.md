@@ -116,6 +116,41 @@ A `marketing` text ends with "Reply STOP to opt out." (`notificationSmsBody`).
 `false` leaves it out. STOP only becomes an opt-out the app sees when inbound
 SMS is wired up; see `stacks-sms`.
 
+## Templates: one catalog of localized messages
+
+`@stacksjs/notifications/templates` (pure, browser-safe; also exported from the
+root) holds named messages with copy per language and an optional button:
+
+```ts
+import { accountNotificationTemplates, commerceNotificationTemplates, createNotificationTemplates, defineNotificationTemplates, subscriptionNotificationTemplates } from '@stacksjs/notifications/templates'
+
+const templates = createNotificationTemplates({
+  ...accountNotificationTemplates({ resetPassword: '/forgot-password' }),
+  ...commerceNotificationTemplates({ orders: '/purchases' }),
+  ...subscriptionNotificationTemplates({ billing: '/billing' }),
+  ...defineNotificationTemplates({ /* the app's own: { copy: { en, de }, action?: { path, label: { en, de } } } */ }),
+}, { baseUrl: () => process.env.APP_URL || '' })
+
+const { subject, body, action } = templates.render('password_changed', { app: 'HQ', support_email }, locale)
+```
+
+- `{{name}}` placeholders; a missing variable renders empty, and a button whose
+  path needs a missing variable is dropped rather than sent broken. A path that
+  renders absolute (`{{set_password_url}}`) is used as is.
+- Locale: exact, then the base language (`de-AT` → `de`), then `fallbackLocale`.
+- `templates.names` / `templates.has()` validate input (e.g. a staff API that
+  sends a named template).
+- Built-ins: account (`password_changed`, `email_changed`, `account_deleted`,
+  `account_created`), commerce (`order_receipt`, `order_refunded`, `new_sale`,
+  `account_credit_added`), subscription (`subscription_trial_ending`,
+  `subscription_payment_failed`, `subscription_ended`). Every one has English
+  and German copy with the same variables (a test checks this). They are
+  transactional: send them with `ignorePreferences: true`.
+- Receipts: build `lines` with `receiptLinesText(lines, currency, locale)` from
+  `@stacksjs/commerce/receipt-text` so amounts carry their currency.
+- `account_created` carries a credential link: send it directly, not through a
+  stored queue that keeps the body.
+
 ## Channel factories
 
 - `useEmail(driver?)` returns a sendable transport. Without a driver it uses

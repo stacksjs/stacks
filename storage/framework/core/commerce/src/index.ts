@@ -137,5 +137,6 @@ export { breakdownFor, multiplierOf } from './sales-tax'
 export type { TaxRateRow } from './sales-tax'
 
 export { restockedQuantity } from './inventory'
+export { receiptLinesText, type ReceiptTextLine } from './receipt-text'
 export { parseSalesTaxSetup, parseTaxRateWriteData } from './tax-input'
 export type { SalesTaxSetup, SalesTaxInputOptions } from './tax-input'
