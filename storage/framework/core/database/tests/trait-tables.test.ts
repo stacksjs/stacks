@@ -13,6 +13,7 @@ import {
   taggableModelsTableSql,
   categorizableModelsTableSql,
   likesTableSql,
+  messagingTableSql,
   UNSCOPED_OWNER_ID,
 } from '../src/trait-tables'
 import { commonTableNames } from '../src/drivers/defaults/traits'
@@ -49,6 +50,7 @@ function ddlFor(driver: string): { tables: string[], indexes: string[] } {
       commentableUpvotesTableSql(sql),
       taggableModelsTableSql(sql),
       categorizableModelsTableSql(sql),
+      ...messagingTableSql(sql),
     ],
     indexes: traitTableIndexSql().map(s => indexSqlForDialect(s, driver)),
   }
@@ -84,8 +86,17 @@ describe('trait table DDL - cross-dialect', () => {
         const tables = ddlFor(driver).tables
         for (const ddl of tables.slice(0, 4))
           expect(ddl).toContain(sql.pkColumn)
-        for (const ddl of tables.slice(4))
+        for (const ddl of tables.slice(4, TRAIT_TABLES.length))
           expect(ddl).toContain(sql.bigPkColumn)
+      })
+
+      test('messaging distinguishes stable conversation IDs from message sequence IDs', () => {
+        const [conversations, messages] = messagingTableSql(sql)
+        expect(conversations).toContain('id VARCHAR(64) PRIMARY KEY')
+        expect(messages).toContain(sql.pkColumn)
+        expect(messages).toContain('conversation_id VARCHAR(64) NOT NULL REFERENCES chat_conversations(id)')
+        for (const ddl of [conversations, messages])
+          expect(ddl).toContain(`created_at ${sql.datetime} NOT NULL`)
       })
 
       test('commentables carries the polymorphic owner columns the trait filters on', () => {
@@ -118,7 +129,7 @@ describe('trait table DDL - cross-dialect', () => {
         // auth/RBAC/notifications now — DATETIME on MySQL, TIMESTAMP elsewhere.
         expect(commentablesTableSql(sql)).toContain(`created_at ${sql.datetime}`)
         expect(commentablesTableSql(sql)).toContain(`updated_at ${sql.nullableTimestamp}`)
-        for (const ddl of ddlFor(driver).tables)
+        for (const ddl of ddlFor(driver).tables.slice(0, TRAIT_TABLES.length))
           expect(ddl).not.toContain('VARCHAR(64)')
       })
 

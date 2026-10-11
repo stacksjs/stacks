@@ -106,6 +106,46 @@ minimumIntervalMinutes? }`and`associatedDomains` (universal links). Leave
 `buddy build:ios` warns. The Liquid Glass chrome needs iOS 26 at run time;
 the default `deploymentTarget` stays, older systems drawing classic bars.
 
+## Native screen bindings
+
+Screens under `resources/native/` use the same STX client syntax as web views.
+Declare reactive data in `<script client>` and bind text with `:text`, props
+with `:prop`, and native presses with `@click`. Pull-to-refresh uses `@refresh`
+and a boolean `:refreshing` signal. Bare signals auto-unwrap in bindings;
+read them with `signal()` and update them with `signal.set()` inside scripts.
+Imported helpers used only in bindings are retained in the client setup.
+
+```stx
+<script client>
+const title = state('Today')
+const refreshing = state(false)
+async function refresh() {
+  refreshing.set(true)
+  try {
+    const response = await fetch('https://example.com/api/title')
+    if (!response.ok) throw new Error('Could not refresh')
+    title.set((await response.json()).title)
+  }
+  finally {
+    refreshing.set(false)
+  }
+}
+</script>
+<ScrollView @refresh="refresh()" :refreshing="refreshing">
+  <Text :text="title" />
+</ScrollView>
+```
+
+A single-brace JSX expression such as `{title}` is plain text in STX. Keep
+startup requests and timers in `onMount()`, returning a cleanup for timers so
+leaving a native screen releases them. Test the minified `compileNativeBundle`
+output with the native bridge, including refresh, keyed rows, conditions and
+navigation; compiling a plausible tree alone does not prove it updates.
+
+While an app is in TestFlight before its first public release, keep the iOS
+marketing version at `1.0.0` and run `buddy release:ios --bump build`. Each
+upload needs a new build number, not a patch to the marketing version.
+
 ## Device search index
 
 `spotlight` says what of the application's own content a device may index, so
