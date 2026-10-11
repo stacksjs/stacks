@@ -22,7 +22,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { dmgVolumeName } from '../src'
+import { desktopAppVersion, dmgVolumeName } from '../src'
 
 describe('dmgVolumeName', () => {
   it('appends the version, which is the macOS convention anyway', () => {
@@ -36,7 +36,7 @@ describe('dmgVolumeName', () => {
   })
 
   it('still differs from the app name when there is no version to append', () => {
-    // `DESKTOP_APP_VERSION` defaults to `0.0.0` upstream, so this is defensive
+    // `desktopAppVersion` never returns an empty string, so this is defensive
     // rather than reachable - but falling back to the bare app name would put
     // the collision back, and a fallback that reintroduces the bug is worse
     // than no fallback.
@@ -196,5 +196,59 @@ describe('build:dmg', () => {
     // Searched FROM the cleanup: the signing block appears earlier too, for
     // the app bundle rather than the image.
     expect(earlyCleanup).toBeLessThan(indexOfExisting('if (signingIdentity) {', earlyCleanup))
+  })
+})
+
+/**
+ * Which version the bundle declares (stacksjs/stacks#2884 follow-up).
+ *
+ * `build:dmg` resolved this as `process.env.DESKTOP_APP_VERSION || '0.0.0'`,
+ * and nothing in the framework ever set that variable, so an app that did not
+ * export it itself shipped `CFBundleShortVersionString` of `0.0.0`. That is the
+ * version Finder displays and the one an updater compares, so every release
+ * looked like the same release, and `MyApp-0.0.0.dmg` overwrote the last one.
+ *
+ * Reproduced by building a real DMG in this repository, whose `package.json`
+ * says 0.70.52, mounting it and reading the plist back: `0.0.0`. The app had no
+ * way to fix it except to compute its own version and inject it, which is
+ * exactly the kind of thing an app should not have to do.
+ */
+describe('desktopAppVersion', () => {
+  it("carries the version the project declares, which is the whole point", () => {
+    expect(desktopAppVersion({ declared: '0.70.52' })).toBe('0.70.52')
+  })
+
+  it('lets a release pipeline stamp a build over the declared version', () => {
+    // A build number or a release candidate is something package.json does not know.
+    expect(desktopAppVersion({ override: '2.1.0-rc.3', declared: '0.70.52' })).toBe('2.1.0-rc.3')
+  })
+
+  it('ignores an override that is only whitespace', () => {
+    // An unset variable in CI commonly arrives as the empty string.
+    for (const override of ['', '   ', undefined])
+      expect(desktopAppVersion({ override, declared: '0.70.52' }), JSON.stringify(override)).toBe('0.70.52')
+  })
+
+  it('falls back to 0.0.0 only when the project declares no usable version', () => {
+    for (const declared of [undefined, '', '  ', 42, null, {}, []])
+      expect(desktopAppVersion({ declared }), JSON.stringify(declared)).toBe('0.0.0')
+    expect(desktopAppVersion()).toBe('0.0.0')
+  })
+
+  it('trims, because a version with a newline would reach the plist and the filename', () => {
+    expect(desktopAppVersion({ declared: ' 1.2.3\n' })).toBe('1.2.3')
+    expect(desktopAppVersion({ override: '  2.0.0  ' })).toBe('2.0.0')
+  })
+
+  it('carries a prerelease verbatim rather than rounding it to a release', () => {
+    // Apple documents CFBundleShortVersionString as three integers, but
+    // publishing 1.4.0-rc.2 as "1.4.0" would make a candidate indistinguishable
+    // from the release an updater is deciding between.
+    expect(desktopAppVersion({ declared: '1.4.0-rc.2' })).toBe('1.4.0-rc.2')
+  })
+
+  it('reaches the volume name, so the mounted image says which version it is', () => {
+    const version = desktopAppVersion({ declared: '0.70.52' })
+    expect(dmgVolumeName({ appName: 'SystemCleaner', version })).toBe('SystemCleaner 0.70.52')
   })
 })

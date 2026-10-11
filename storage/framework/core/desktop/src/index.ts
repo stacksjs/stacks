@@ -479,9 +479,46 @@ export function bundleDirectoryFor(path: string): 'MacOS' | 'Resources' {
   return isMachO(path) ? 'MacOS' : 'Resources'
 }
 
+export interface DesktopAppVersionOptions {
+  /** `DESKTOP_APP_VERSION`, which a release pipeline sets to stamp a build. */
+  override?: string
+  /** `version` from the application's own `package.json`. */
+  declared?: unknown
+}
+
+/**
+ * The version the packaged app declares.
+ *
+ * This used to be `process.env.DESKTOP_APP_VERSION || '0.0.0'`, and nothing in
+ * the framework set that variable, so every app that did not export it itself
+ * shipped `CFBundleShortVersionString` of `0.0.0` - the version Finder shows,
+ * and the one a Sparkle-style updater compares to decide whether an update is
+ * an update. Every build looked like the same build. The DMG's filename and
+ * volume name carried it too, so `MyApp-0.0.0.dmg` overwrote the last release.
+ *
+ * The application states its version in `package.json`, which is where the
+ * framework reads every other thing about it, so reading it here is the whole
+ * fix. An explicit `DESKTOP_APP_VERSION` still wins: a pipeline stamping a
+ * build number or a release candidate is naming something `package.json` does
+ * not know.
+ *
+ * It is used verbatim rather than normalised. Apple documents
+ * `CFBundleShortVersionString` as three integers, and a semver prerelease such
+ * as `1.4.0-rc.2` is not that, but silently publishing an app as `1.4.0` when
+ * its project says `1.4.0-rc.2` would be the worse surprise: the two are
+ * different builds and an updater has to be able to tell them apart.
+ */
+export function desktopAppVersion(options: DesktopAppVersionOptions = {}): string {
+  const override = options.override?.trim()
+  if (override) return override
+
+  const declared = typeof options.declared === 'string' ? options.declared.trim() : ''
+  return declared || '0.0.0'
+}
+
 export interface DmgVolumeOptions {
   appName: string
-  /** `DESKTOP_APP_VERSION`, which defaults to `0.0.0` upstream. */
+  /** The resolved version, from `desktopAppVersion`. Never empty in practice. */
   version?: string
   /** `DESKTOP_VOLUME_NAME`, for a consumer that needs a fixed name. */
   override?: string

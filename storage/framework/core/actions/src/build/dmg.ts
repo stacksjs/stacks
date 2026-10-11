@@ -4,7 +4,7 @@ import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, dmgVolumeName, looksLikeBunExecutable, renderInfoPlist } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, desktopAppVersion, dmgVolumeName, looksLikeBunExecutable, renderInfoPlist } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -62,7 +62,32 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
 const ownsLauncher = manifest.launcher === 'userland'
 const appName = process.env.DESKTOP_APP_NAME || manifest.title || process.env.APP_NAME || 'Stacks'
 const bundleId = process.env.DESKTOP_BUNDLE_ID || `sh.stacks.${appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
-const version = process.env.DESKTOP_APP_VERSION || '0.0.0'
+
+/**
+ * The version this application declares for itself.
+ *
+ * `build/component-library.ts` reads the project manifest the same way. In a
+ * consumer app this is the app's own `package.json`; in a vendored checkout it
+ * is this repository's, which is the right answer in both.
+ */
+function declaredProjectVersion(): unknown {
+  const manifest = projectPath('package.json')
+  if (!existsSync(manifest)) return undefined
+
+  try {
+    return (JSON.parse(readFileSync(manifest, 'utf8')) as { version?: unknown }).version
+  }
+  catch {
+    // A project whose package.json does not parse has a larger problem than its
+    // DMG's version string, and it will surface somewhere more useful than here.
+    return undefined
+  }
+}
+
+const version = desktopAppVersion({
+  override: process.env.DESKTOP_APP_VERSION,
+  declared: declaredProjectVersion(),
+})
 const signingIdentity = process.env.DESKTOP_SIGNING_IDENTITY
 const notaryProfile = process.env.DESKTOP_NOTARY_PROFILE
 
