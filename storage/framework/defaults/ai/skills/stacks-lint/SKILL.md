@@ -32,8 +32,9 @@ selects that file. Keep the command and CI on the same policy.
 
 Buddy discovers tracked files plus untracked files allowed by `.gitignore`.
 Its extension and path predicate lives in `@stacksjs/actions/lint/files`;
-code-style discovery currently includes ts, js, json, md, yaml and yml.
-Use Pickier directly to include stx and shell sources. Generated framework
+Code-style discovery includes ts, js, stx, json, md, yaml and yml, including
+Crosswind checks in tracked and newly created STX templates. Use Pickier directly
+to include shell sources. Generated framework
 assets belong to the upstream framework's checks, not application edits.
 
 ## Conventions
