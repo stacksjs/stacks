@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.129...v0.75.130)
+
+## 📝 Documentation
+
+- align lint guidance with Buddy STX discovery ([26b4ae6](https://github.com/stacksjs/stacks/commit/26b4ae6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.128...v0.75.129)
 
 ## 🐛 Bug Fixes
