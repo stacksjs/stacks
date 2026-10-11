@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.124...v0.75.125)
+
+## 🐛 Bug Fixes
+
+- keep published framework dependency sets on one release ([b0c0891](https://github.com/stacksjs/stacks/commit/b0c0891)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.122...v0.75.124)
 
 ## 🐛 Bug Fixes
