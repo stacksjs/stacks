@@ -246,6 +246,26 @@ export interface DatabaseOptions {
      * @default 'allow' in local/dev, 'disabled' when APP_ENV is production
      */
     migrateFresh?: 'allow' | 'confirm' | 'disabled'
+
+    /**
+     * Migration files that carry no `-- qb:generated` marker - written by hand
+     * rather than generated from the models - are listed by
+     * `buddy migrate:status` and fail `buddy migrate --strict`. Every schema
+     * change is meant to come from `app/Models`, so a hand-written one is
+     * drift waiting to happen: the models stop describing the database, and a
+     * regeneration has to keep the file because nothing can recreate it.
+     *
+     * `true` allows them all (a corpus written before the marker existed).
+     * A list allows those files only, by filename or by name without the
+     * ordinal (`'seed-plans'` for `0000000070-seed-plans.sql`) - for reference
+     * data no model can describe. Package migrations are never counted.
+     *
+     * Env override: `DB_ALLOW_HAND_WRITTEN_MIGRATIONS` (`1` for all, or a
+     * comma-separated list).
+     *
+     * @default false
+     */
+    allowHandWrittenMigrations?: boolean | string[]
   }
 
   // Query logging configuration

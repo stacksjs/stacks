@@ -166,6 +166,12 @@ function migrationDirectory(dialect: string = getQbDialect()): string {
 /**
  * Configure bun-query-builder with stacks database settings
  */
+/** The corpus `buddy migrate` runs for the configured connection. */
+export async function activeMigrationDirectory(): Promise<string> {
+  await ensureDatabaseConfigLoaded()
+  return migrationDirectory(getDialect())
+}
+
 function configureQueryBuilder(
   targetDialect: 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres' = getQbDialect(),
   vitessSharded?: boolean,

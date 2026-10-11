@@ -165,6 +165,7 @@ export * from './migration-path'
 // and the ledger keys on the filename.
 export * from './migration-ledger'
 export * from './schema-align'
+export * from './hand-written-migrations'
 export { comparableIndexKey, postgresIndexStatement } from './index-shape'
 
 // Model resolution for the generator: userland + framework defaults, flattened

@@ -308,6 +308,30 @@ async function reportIgnoredMigrations(): Promise<boolean> {
 }
 
 /**
+ * Migration files no generator wrote. Every schema change is meant to come
+ * from the models; a hand-written file is drift the models cannot see. Listed
+ * in full by `migrate:status`; here, one line. Returns whether there are none.
+ */
+async function reportHandWrittenMigrations(options: { list?: boolean } = {}): Promise<boolean> {
+  try {
+    const { handWrittenMigrations } = await import('@stacksjs/database')
+    const { files } = await handWrittenMigrations()
+    if (files.length === 0)
+      return true
+    log.warn(
+      `${files.length} hand-written migration${files.length === 1 ? '' : 's'} - no \`-- qb:generated\` marker, so the models do not describe ${files.length === 1 ? 'it' : 'them'}`
+      + `${options.list ? `:\n${files.slice(0, 20).map(file => `  • ${file}`).join('\n')}${files.length > 20 ? `\n  • … +${files.length - 20} more` : ''}` : ' (`./buddy migrate:status` lists them).'}`,
+    )
+    log.info('  Move the change into app/Models and regenerate (`./buddy migrate:regenerate`), or allow the file in database.safety.allowHandWrittenMigrations.')
+    return false
+  }
+  catch (err) {
+    log.debug(`[migrate] hand-written migration check skipped: ${err instanceof Error ? err.message : String(err)}`)
+    return true
+  }
+}
+
+/**
  * `--strict` (or STACKS_MIGRATE_STRICT=1): drift and ignored migrations fail
  * the command instead of warning. For CI, where a missing table is a build
  * to stop rather than a message to scroll past. Deploys keep the warning:
@@ -955,9 +979,15 @@ export function migrate(buddy: CLI): void {
 
       // Migrations git ignores run here and nowhere else.
       const allCommittable = await reportIgnoredMigrations()
+      const allGenerated = await reportHandWrittenMigrations({ list: strictMode(options) })
 
-      if (strictMode(options) && (!schemaMatches || !allCommittable)) {
-        console.error(`\n❌ --strict: ${!allCommittable ? 'a migration is git-ignored' : 'the live schema does not match the models'} (see above).\n`)
+      if (strictMode(options) && (!schemaMatches || !allCommittable || !allGenerated)) {
+        const why = !allCommittable
+          ? 'a migration is git-ignored'
+          : !allGenerated
+              ? 'a migration was written by hand rather than generated from the models'
+              : 'the live schema does not match the models'
+        console.error(`\n❌ --strict: ${why} (see above).\n`)
         process.exit(ExitCode.FatalError)
       }
 
@@ -1722,16 +1752,20 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
     .option('--include-partial', 'With --reconcile, also record half-applied migrations', { default: false })
     .option('--requeue-reverted', 'With --reconcile, un-record the migrations of a table that is missing so the next migrate rebuilds it', { default: false })
     .option('--json', 'Emit the audit as JSON', { default: false })
-    .action(async (options: { reconcile?: boolean, includePartial?: boolean, requeueReverted?: boolean, json?: boolean }) => {
+    .option('--strict', 'Also fail when a migration was written by hand rather than generated from the models', { default: false })
+    .action(async (options: { reconcile?: boolean, includePartial?: boolean, requeueReverted?: boolean, json?: boolean, strict?: boolean }) => {
       const perf = options.json ? undefined : await intro('buddy migrate:status')
 
-      const { auditMigrationLedger, reconcileMigrationLedger } = await import('@stacksjs/database')
+      const { auditMigrationLedger, handWrittenMigrations, reconcileMigrationLedger } = await import('@stacksjs/database')
       const audit = await auditMigrationLedger()
+      const handWritten = (await handWrittenMigrations()).files
+      const strict = strictMode(options)
+      const handWrittenFails = strict && handWritten.length > 0
 
       if (options.json) {
         // eslint-disable-next-line no-console
-        console.log(JSON.stringify(audit, (_k, v) => (v instanceof Set ? [...v] : v), 2))
-        process.exit(audit.drift ? ExitCode.FatalError : ExitCode.Success)
+        console.log(JSON.stringify({ ...audit, handWritten }, (_k, v) => (v instanceof Set ? [...v] : v), 2))
+        process.exit(audit.drift || handWrittenFails ? ExitCode.FatalError : ExitCode.Success)
       }
 
       if (!audit.supported) {
@@ -1792,10 +1826,20 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         )
       }
 
+      if (handWritten.length > 0) {
+        section(`${handWritten.length} hand-written - no \`-- qb:generated\` marker, so no model describes ${handWritten.length === 1 ? 'it' : 'them'}${strict ? ' (fails --strict)' : ''}:`, handWritten)
+        report.push('  Move each change into app/Models and regenerate, or allow the file in')
+        report.push('  database.safety.allowHandWrittenMigrations (reference data no model can describe).', '')
+      }
+
       // eslint-disable-next-line no-console
       console.log(report.join('\n'))
 
       if (!audit.drift) {
+        if (handWrittenFails) {
+          await outro('--strict: hand-written migrations (see above).', { startTime: perf!, useSeconds: true, type: 'error' })
+          process.exit(ExitCode.FatalError)
+        }
         await outro('Ledger matches the corpus and the schema.', { startTime: perf!, useSeconds: true })
         process.exit(ExitCode.Success)
       }
@@ -1859,7 +1903,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       }
 
       await outro('Reconciled.', { startTime: perf!, useSeconds: true })
-      process.exit(ExitCode.Success)
+      process.exit(handWrittenFails ? ExitCode.FatalError : ExitCode.Success)
     })
 
   onUnknownSubcommand(buddy, "migrate")
