@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-const { emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody } = await import('../src/email-body')
+const { emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody, smsSenderPrefix } = await import('../src/email-body')
 
 describe('emailParagraphs', () => {
   test('splits paragraphs on blank lines and keeps single line breaks', () => {
@@ -113,5 +113,24 @@ describe('notificationSmsBody', () => {
 
   test('does not repeat a line the body already has', () => {
     expect(notificationSmsBody({ body: 'Sale. Reply STOP to opt out.' }, 'marketing')).toBe('Sale. Reply STOP to opt out.')
+  })
+})
+
+describe('SMS sender prefix', () => {
+  test('starts the text with who it is from, before the opt-out line', () => {
+    expect(notificationSmsBody({ body: 'Pool closed Friday.', smsSender: 'TriFit Gym' }, 'marketing')).toBe('TriFit Gym: Pool closed Friday.\n\nReply STOP to opt out.')
+    expect(notificationSmsBody({ body: '  Your class is confirmed.', smsSender: 'TriFit Gym' }, 'transactional')).toBe('TriFit Gym: Your class is confirmed.')
+  })
+
+  test('does not repeat a name the body already starts with, and adds nothing without one', () => {
+    expect(notificationSmsBody({ body: 'TriFit Gym: Pool closed.', smsSender: 'TriFit Gym' })).toBe('TriFit Gym: Pool closed.')
+    expect(notificationSmsBody({ body: 'Pool closed.', smsSender: '  ' })).toBe('Pool closed.')
+    expect(notificationSmsBody({ body: 'Pool closed.' })).toBe('Pool closed.')
+  })
+
+  test('collapses whitespace and cuts a long name at 30 characters, without an ellipsis', () => {
+    expect(smsSenderPrefix('  North   Shore  Strength ')).toBe('North Shore Strength: ')
+    expect(smsSenderPrefix('The Extremely Long Strength and Conditioning Collective')).toBe('The Extremely Long Strength an: ')
+    expect(smsSenderPrefix(undefined)).toBe('')
   })
 })

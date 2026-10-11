@@ -113,7 +113,10 @@ link scanner opening the URL changes nothing.
 
 A `marketing` text ends with "Reply STOP to opt out." (`notificationSmsBody`).
 `payload.smsOptOut` replaces the line (and adds it to other categories), and
-`false` leaves it out. STOP only becomes an opt-out the app sees when inbound
+`false` leaves it out. `payload.smsSender` starts every text with
+`{sender}: ` (whitespace collapsed, cut to 30 characters, not repeated when the
+body already starts with it); pass it whenever several businesses share one
+sending number, so the person can tell who wrote. STOP only becomes an opt-out the app sees when inbound
 SMS is wired up; see `stacks-sms`.
 
 ## Templates: one catalog of localized messages

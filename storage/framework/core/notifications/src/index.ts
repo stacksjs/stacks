@@ -58,6 +58,12 @@ export interface NotificationPayload {
    * other categories), `false` leaves it out.
    */
   smsOptOut?: string | false
+  /**
+   * Who a text is from, put first as `{smsSender}: `. Use it whenever several
+   * businesses share one sending number (a platform texting for its tenants),
+   * so the person can tell them apart. Cut to 30 characters.
+   */
+  smsSender?: string
 }
 
 export interface NotificationRecipient {
@@ -395,7 +401,7 @@ export {
   wherePreferenceCategory,
 } from './preferences'
 export type { NotificationPreferenceRow, PreferenceChannel } from './preferences'
-export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody } from './email-body'
+export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody, SMS_SENDER_MAX_LENGTH, smsSenderPrefix } from './email-body'
 export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationUnsubscribe } from './email-body'
 export { notificationUnsubscribeLinks, notificationUnsubscribeToken, parseNotificationUnsubscribeToken, unsubscribeTokenFromRequest, unsubscribeWithToken } from './unsubscribe'
 export type { ParsedUnsubscribeToken, UnsubscribeChannel, UnsubscribeLinkOptions } from './unsubscribe'

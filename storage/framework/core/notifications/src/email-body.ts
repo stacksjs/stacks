@@ -172,14 +172,33 @@ export async function notificationEmailMessage(to: string, payload: Notification
   }
 }
 
+/** The longest sender name a text starts with; a longer one is cut. */
+export const SMS_SENDER_MAX_LENGTH = 30
+
 /**
- * What a notification texts. A `marketing` text ends with
+ * The name a text starts with, as `{sender}: `: whitespace collapsed, and cut
+ * to {@link SMS_SENDER_MAX_LENGTH} characters so a long name cannot eat the
+ * message (no ellipsis: one character outside GSM-7 doubles the cost of the
+ * whole text). Empty when there is no name.
+ */
+export function smsSenderPrefix(sender?: string): string {
+  const name = String(sender ?? '').replace(/\s+/g, ' ').trim().slice(0, SMS_SENDER_MAX_LENGTH).trim()
+  return name ? `${name}: ` : ''
+}
+
+/**
+ * What a notification texts. With `smsSender` it starts with the sender's
+ * name, so a text from a shared number says who it is from (carriers expect
+ * the brand in every message). A `marketing` text ends with
  * {@link DEFAULT_SMS_OPT_OUT} on its own line; `smsOptOut` replaces that line
  * (and adds it to any category), and `false` leaves it out. A body that
- * already contains the line is left alone.
+ * already starts with the name, or already contains the line, is left alone.
  */
-export function notificationSmsBody(payload: { body: string, smsOptOut?: string | false }, category?: string): string {
-  const body = String(payload.body ?? '')
+export function notificationSmsBody(payload: { body: string, smsSender?: string, smsOptOut?: string | false }, category?: string): string {
+  let body = String(payload.body ?? '')
+  const prefix = smsSenderPrefix(payload.smsSender)
+  if (prefix && !body.trimStart().toLowerCase().startsWith(prefix.trim().toLowerCase()))
+    body = `${prefix}${body.trimStart()}`
   if (payload.smsOptOut === false)
     return body
   const line = typeof payload.smsOptOut === 'string' ? payload.smsOptOut.trim() : category === 'marketing' ? DEFAULT_SMS_OPT_OUT : ''
