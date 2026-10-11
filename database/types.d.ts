@@ -1017,6 +1017,12 @@ declare module '@stacksjs/database' {
       expires_at: string
       user_agent: string
       ip_address: string
+      user_id: number
+      oauth_client_id: number
+      oauth_grant_id: string
+      resources: string
+      audiences: string
+      workspace_id: string
     }
     order_idempotency: {
       // columns

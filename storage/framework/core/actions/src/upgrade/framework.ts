@@ -39,6 +39,7 @@ import {
   detectDependencyInstaller,
   resolveDependencyRefreshCommand,
   resolvePantryExecutable,
+  runPostSyncDatabaseTypesRefresh,
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
@@ -494,6 +495,8 @@ async function runDryRunPreview(): Promise<void> {
     })
     if (corePkgChanged)
       console.log('    - run `bun install` to refresh dependencies')
+    if (existsSync(join(projectRoot, 'database', 'types.d.ts')))
+      console.log('    - regenerate database/types.d.ts')
     if (existsSync(join(projectRoot, 'database', 'migrations')))
       console.log('    - run pending migrations')
   }
@@ -781,7 +784,25 @@ async function runPostSyncHooks(args: {
     }
   }
 
-  // 3) Run pending migrations. Idempotent — Stacks tracks applied migrations
+  // 3) Generated table types. `database/types.d.ts` covers the framework's
+  //    default models as well as the app's, so a synced `defaults/` can add
+  //    columns the committed copy does not know. Non-fatal: the app runs
+  //    either way and `buddy generate:db-types` repairs it by hand.
+  try {
+    const refreshed = await runPostSyncDatabaseTypesRefresh({
+      cmd: [process.argv[0] || 'bun', p.frameworkPath('core/buddy/src/cli.ts'), 'generate:db-types'],
+      projectRoot,
+      spawn: spawnOptions => Bun.spawn(spawnOptions),
+      exists: existsSync,
+    })
+    if (refreshed)
+      console.log('Regenerated database/types.d.ts')
+  }
+  catch (err) {
+    console.warn(`  database/types.d.ts was not regenerated (non-fatal): ${(err as Error)?.message || err}`)
+  }
+
+  // 4) Run pending migrations. Idempotent — Stacks tracks applied migrations
   //    in the migrations table, so re-running on a fully-migrated DB is a
   //    no-op. Skip if no migration files exist (fresh app, no DB yet).
   const migrationsDir = join(projectRoot, 'database', 'migrations')

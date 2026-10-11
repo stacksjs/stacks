@@ -3,6 +3,7 @@ import {
   detectDependencyInstaller,
   resolveDependencyRefreshCommand,
   resolvePantryExecutable,
+  runPostSyncDatabaseTypesRefresh,
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
@@ -140,5 +141,58 @@ describe('vendored upgrade post-sync migration', () => {
     })
 
     await expect(migration).rejects.toThrow('Post-upgrade migration exited with code 7.')
+  })
+})
+
+describe('upgrade post-sync database types refresh', () => {
+  it('regenerates an app\'s committed database/types.d.ts', async () => {
+    let received: Parameters<Parameters<typeof runPostSyncDatabaseTypesRefresh>[0]['spawn']>[0] | undefined
+
+    const refreshed = await runPostSyncDatabaseTypesRefresh({
+      cmd: ['/app/buddy', 'generate:db-types'],
+      projectRoot: '/app',
+      exists: path => path === '/app/database/types.d.ts',
+      spawn: (options) => {
+        received = options
+        return { exited: Promise.resolve(0) }
+      },
+    })
+
+    expect(refreshed).toBe(true)
+    expect(received).toEqual({
+      cmd: ['/app/buddy', 'generate:db-types'],
+      cwd: '/app',
+      stdin: 'ignore',
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+  })
+
+  it('leaves an app that never generated types alone', async () => {
+    let spawned = false
+
+    const refreshed = await runPostSyncDatabaseTypesRefresh({
+      cmd: ['/app/buddy', 'generate:db-types'],
+      projectRoot: '/app',
+      exists: () => false,
+      spawn: () => {
+        spawned = true
+        return { exited: Promise.resolve(0) }
+      },
+    })
+
+    expect(refreshed).toBe(false)
+    expect(spawned).toBe(false)
+  })
+
+  it('reports a failed regeneration to the caller', async () => {
+    const refresh = runPostSyncDatabaseTypesRefresh({
+      cmd: ['/app/buddy', 'generate:db-types'],
+      projectRoot: '/app',
+      exists: () => true,
+      spawn: () => ({ exited: Promise.resolve(3) }),
+    })
+
+    await expect(refresh).rejects.toThrow('`buddy generate:db-types` exited with code 3.')
   })
 })

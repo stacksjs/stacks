@@ -261,3 +261,57 @@ describe('a multi-word column', () => {
     expect(widgets.columns).not.toHaveProperty('updatedAt')
   })
 })
+
+describe('a guarded or hidden attribute', () => {
+  /*
+   * `guarded` keeps a column out of mass assignment through the model API and
+   * `hidden` keeps it out of serialised responses. Neither says the column is
+   * not on the table, and the generated schema types the raw query builder -
+   * where `@stacksjs/auth` writes exactly these columns. Dropping them would
+   * make `insertInto('oauth_access_tokens').values({ user_id })` fail to
+   * compile in every app that checks its writes.
+   */
+  test('is still a column', async () => {
+    const dir = join(import.meta.dir, `fixtures-guarded-${Math.random().toString(16).slice(2)}`)
+
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'Key.ts'), `
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation/runtime'
+
+export default defineModel({
+  name: 'Key',
+  table: 'keys',
+  attributes: {
+    label: { fillable: true, validation: { rule: schema.string() } },
+    ownerId: { guarded: true, validation: { rule: schema.number() } },
+    secret: { guarded: true, hidden: true, validation: { rule: schema.string() } },
+  },
+})
+`)
+
+    try {
+      const result = await buildDatabaseSchema({ modelsDir: dir, defaultsDir: join(dir, 'none'), dryRun: true })
+      const keys = result.tables.find(one => one.table === 'keys')!
+
+      expect(keys.columns.label).toBe('string')
+      expect(keys.columns.owner_id).toBe('number')
+      expect(keys.columns.secret).toBe('string')
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('PersonalAccessToken types every column ensureAuthTables() creates', async () => {
+    const empty = join(import.meta.dir, `fixtures-pat-${Math.random().toString(16).slice(2)}`)
+    const defaults = join(import.meta.dir, '../../../defaults/app/Models')
+
+    const result = await buildDatabaseSchema({ modelsDir: empty, defaultsDir: defaults, dryRun: true, migrationsDir: false })
+    const tokens = result.tables.find(one => one.table === 'oauth_access_tokens')!
+
+    expect(tokens).toBeTruthy()
+    for (const column of ['tokenable_type', 'tokenable_id', 'token', 'user_id', 'oauth_client_id', 'oauth_grant_id', 'resources', 'audiences', 'workspace_id'])
+      expect(tokens.columns[column]).toBeDefined()
+  })
+})

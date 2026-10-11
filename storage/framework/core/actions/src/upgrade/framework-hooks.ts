@@ -138,3 +138,46 @@ export async function runPostSyncMigration(options: PostSyncMigrationOptions): P
   if (code !== 0)
     throw new Error(`Post-upgrade migration exited with code ${code}.`)
 }
+
+interface PostSyncDatabaseTypesOptions {
+  /** argv that runs `buddy generate:db-types` for this project. */
+  cmd: string[]
+  projectRoot: string
+  spawn: PostSyncSpawn
+  exists: (path: string) => boolean
+}
+
+/**
+ * Rewrite the app's `database/types.d.ts` against the models it now has.
+ *
+ * That file is generated from the app's models AND the framework's default
+ * ones, so it describes the framework version it was generated under. An
+ * upgrade that adds a column to a default model - `PersonalAccessToken`
+ * declaring `user_id` - left an app's committed copy one version behind, and a
+ * typed `insertInto('oauth_access_tokens').values({ user_id })` stopped
+ * compiling the moment the app upgraded, though nothing in the app changed.
+ *
+ * Only an app that already keeps the file gets it rewritten: one that never
+ * generated types has opted out, and an upgrade should not opt it in.
+ *
+ * Returns whether the file was regenerated. A nonzero exit throws; the caller
+ * treats that as non-fatal, since the next `buddy generate:db-types` repairs it.
+ */
+export async function runPostSyncDatabaseTypesRefresh(options: PostSyncDatabaseTypesOptions): Promise<boolean> {
+  if (!options.exists(`${options.projectRoot}/database/types.d.ts`))
+    return false
+
+  const process = options.spawn({
+    cmd: options.cmd,
+    cwd: options.projectRoot,
+    stdin: 'ignore',
+    stdout: 'inherit',
+    stderr: 'inherit',
+  })
+
+  const code = await process.exited
+  if (code !== 0)
+    throw new Error(`\`buddy generate:db-types\` exited with code ${code}.`)
+
+  return true
+}

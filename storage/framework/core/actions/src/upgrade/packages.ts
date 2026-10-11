@@ -10,6 +10,7 @@ import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { installedDefaultsVersion } from '@stacksjs/path'
+import { runPostSyncDatabaseTypesRefresh } from './framework-hooks'
 import {
   detectProjectAiProviders,
   measureDefaultsDrift,
@@ -333,6 +334,13 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (structureChanges.length > 0)
     await regenerateAutoImports(projectRoot)
 
+  // The generated table types cover the framework's default models too, so a
+  // new framework version can change them without the app touching a model.
+  // Rewritten whenever the framework moved, in a child process for the same
+  // reason as the auto-imports: this one may still hold the pre-install ORM.
+  if (changes.length > 0 || dependenciesNeedInstall || structureChanges.length > 0 || options.force)
+    await regenerateDatabaseTypes(projectRoot)
+
   for (const provider of detectProjectAiProviders(projectRoot)) {
     const result = await runCommand(`./buddy setup:ai ${provider} --force`, { cwd: projectRoot })
     if (result.isErr) {
@@ -400,6 +408,30 @@ async function regenerateAutoImports(projectRoot: string): Promise<void> {
   }
 
   console.log('  Regenerated auto-imports')
+}
+
+/**
+ * Rewrite `database/types.d.ts` against the upgraded models. Not fatal: the
+ * app still runs, and `buddy generate:db-types` repairs it by hand.
+ */
+async function regenerateDatabaseTypes(projectRoot: string): Promise<void> {
+  const buddy = join(projectRoot, 'buddy')
+  if (!existsSync(buddy))
+    return
+
+  try {
+    const refreshed = await runPostSyncDatabaseTypesRefresh({
+      cmd: [buddy, 'generate:db-types'],
+      projectRoot,
+      spawn: spawnOptions => Bun.spawn(spawnOptions),
+      exists: existsSync,
+    })
+    if (refreshed)
+      console.log('  Regenerated database/types.d.ts')
+  }
+  catch (err) {
+    console.warn(`  database/types.d.ts was not regenerated (non-fatal): ${(err as Error).message} Run \`./buddy generate:db-types\`.`)
+  }
 }
 
 /** One manifest the reconcile rewrote, for reporting. */
