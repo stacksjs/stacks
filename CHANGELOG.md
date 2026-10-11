@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.141...v0.75.142)
+
+## ✨ Features
+
+- **database**: adopt the bun-query-builder 0.3.7 migration API ([301ba70](https://github.com/stacksjs/stacks/commit/301ba70)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: flag hand-written migrations; --strict fails on them ([b486468](https://github.com/stacksjs/stacks/commit/b486468)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: add migrate:align to repair a drifted live schema ([eef89d9](https://github.com/stacksjs/stacks/commit/eef89d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: regenerate replaces obsolete type, drop and data files ([7858951](https://github.com/stacksjs/stacks/commit/7858951)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: reconcile mailbox recovery addresses on deploy ([37f1631](https://github.com/stacksjs/stacks/commit/37f1631)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: check writes to the app's own tables against their columns ([9ea7cb4](https://github.com/stacksjs/stacks/commit/9ea7cb4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: await migrate:align output before it exits ([10f1cf0](https://github.com/stacksjs/stacks/commit/10f1cf0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: repoint the ledger after regenerating a live database ([891a6ca](https://github.com/stacksjs/stacks/commit/891a6ca)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **database**: document migrate:align and hand-written migrations ([6a94ca2](https://github.com/stacksjs/stacks/commit/6a94ca2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bump bun-query-builder to 0.3.8 ([340ee94](https://github.com/stacksjs/stacks/commit/340ee94)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: bump bun-query-builder to 0.3.7 ([32478ad](https://github.com/stacksjs/stacks/commit/32478ad)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: regenerate the native skill catalog for the new database test ([b8b2550](https://github.com/stacksjs/stacks/commit/b8b2550)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.140...v0.75.141)
 
 ## ✨ Features
