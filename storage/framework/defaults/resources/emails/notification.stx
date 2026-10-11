@@ -4,7 +4,8 @@
 // breaks kept, addresses as links) and, when the notification names one, a
 // button to where it happened. Same <EmailLayout> as the other prebaked
 // mailers (stacksjs/stacks#1901); an app's own resources/emails/notification
-// wins over this one.
+// wins over this one. A notification with `unsubscribe` (marketing) says why
+// it came and links to Unsubscribe in the footer instead of "do not reply".
 const appName = props.appName || 'Stacks'
 const primaryColor = props.primaryColor || '#3451b2'
 const subject = props.subject || appName
@@ -12,6 +13,9 @@ const paragraphs = Array.isArray(props.paragraphs) ? props.paragraphs : []
 const actionUrl = props.actionUrl || ''
 const actionLabel = props.actionLabel || 'Open'
 const preheader = props.preheader || ''
+const unsubscribeUrl = props.unsubscribeUrl || ''
+const unsubscribeNotice = props.unsubscribeNotice || 'You are receiving this because these emails are turned on in your settings.'
+const preferencesUrl = props.preferencesUrl || ''
 const year = props.year || new Date().getFullYear()
 </script>
 
@@ -36,7 +40,12 @@ const year = props.year || new Date().getFullYear()
   <template #footer>
     <tr>
       <td style="padding:20px 40px;background-color:#f9fafb;border-top:1px solid #e5e7eb;">
-        <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">This is an automated message from {{ appName }}. Please do not reply to this email.</p>
+        @if(unsubscribeUrl)
+          <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">{{ unsubscribeNotice }}</p>
+          <p style="margin:8px 0 0 0;color:#6b7280;font-size:12px;text-align:center;"><a href="{{ unsubscribeUrl }}" style="color:#6b7280;text-decoration:underline;">Unsubscribe</a>@if(preferencesUrl) &middot; <a href="{{ preferencesUrl }}" style="color:#6b7280;text-decoration:underline;">Email preferences</a>@endif</p>
+        @else
+          <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">This is an automated message from {{ appName }}. Please do not reply to this email.</p>
+        @endif
         <p style="margin:10px 0 0 0;color:#9ca3af;font-size:11px;text-align:center;">&copy; {{ year }} {{ appName }}. All rights reserved.</p>
       </td>
     </tr>

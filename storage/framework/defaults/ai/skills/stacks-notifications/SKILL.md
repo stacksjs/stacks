@@ -78,6 +78,44 @@ missing optional schema compatibility from real persistence failures. Apply
 model-driven migrations before relying on persistence. Inspect channel results
 and transport results rather than assuming a delivery log is provider proof.
 
+## Marketing: unsubscribe links and opt-out lines
+
+Give a marketing notification `payload.unsubscribe`, built per person with
+`notificationUnsubscribeLinks(userId, { notice })`:
+
+```ts
+await notify(
+  { userId, email },
+  { subject, body, unsubscribe: notificationUnsubscribeLinks(userId, { notice: 'You get these because marketing email is on.' }) },
+  ['email'],
+  { category: 'marketing' },
+)
+```
+
+The email's footer then shows the notice, **Unsubscribe** (`url`, default
+`{APP_URL}/unsubscribe?token=`) and **Email preferences** (`/settings`) instead
+of "do not reply"; the text part spells the link out; and the message carries
+`List-Unsubscribe: <oneClickUrl>` plus `List-Unsubscribe-Post:
+List-Unsubscribe=One-Click` (RFC 8058, default
+`{APP_URL}/api/notifications/unsubscribe?token=`). `payload.headers` adds
+other headers. The pure builders are `notificationEmailMessage`,
+`notificationEmailHtml`, `notificationEmailText` and `listUnsubscribeHeaders`.
+
+The token (`notificationUnsubscribeToken`, `parseNotificationUnsubscribeToken`)
+is `base64url("{userId}:{channel}:{category}:{hmac}")` signed with `APP_KEY`,
+which must be set in production. It does not expire. It turns off one
+preference (channel + category), unlike `@stacksjs/email`'s tokens, which
+suppress an address for good. The app owns the page and the route; the route's
+handler is `unsubscribeWithToken(await unsubscribeTokenFromRequest(request))`,
+which reads the query string (one-click form POSTs) before a JSON body, and
+answers 422 when it returns null. Ask before unsubscribing on the page, so a
+link scanner opening the URL changes nothing.
+
+A `marketing` text ends with "Reply STOP to opt out." (`notificationSmsBody`).
+`payload.smsOptOut` replaces the line (and adds it to other categories), and
+`false` leaves it out. STOP only becomes an opt-out the app sees when inbound
+SMS is wired up; see `stacks-sms`.
+
 ## Channel factories
 
 - `useEmail(driver?)` returns a sendable transport. Without a driver it uses

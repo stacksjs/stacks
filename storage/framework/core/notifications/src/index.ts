@@ -6,7 +6,7 @@ import { chat, email, push, sms } from './drivers'
 import { BroadcastNotificationDriver } from './drivers/broadcast'
 import { DatabaseNotificationDriver } from './drivers/database'
 import { makeDeliveryRecord, recordNotificationDelivery } from './delivery'
-import { type NotificationAction, notificationEmailHtml, notificationEmailText } from './email-body'
+import { type NotificationAction, type NotificationUnsubscribe, notificationEmailMessage, notificationSmsBody } from './email-body'
 import { filterChannelsByPreferences } from './preferences'
 
 const config = _notification as NotificationOptions | undefined
@@ -42,6 +42,22 @@ export interface NotificationPayload {
   data?: Record<string, unknown>
   /** Where the notification leads. Emailed as a button under the body. */
   action?: NotificationAction
+  /**
+   * Unsubscribe links for a marketing notification. The email's footer says
+   * why it came and links to `url` (and `preferencesUrl`), the text part
+   * spells the link out, and the email carries `List-Unsubscribe` (plus
+   * `List-Unsubscribe-Post` when `oneClickUrl` is set). Build one per person
+   * with `notificationUnsubscribeLinks(userId)`.
+   */
+  unsubscribe?: NotificationUnsubscribe
+  /** Extra email headers. Values with line breaks are dropped by the mailer. */
+  headers?: Record<string, string>
+  /**
+   * The opt-out line a text ends with. A `marketing` text gets
+   * "Reply STOP to opt out." by default; a string replaces it (and adds it to
+   * other categories), `false` leaves it out.
+   */
+  smsOptOut?: string | false
 }
 
 export interface NotificationRecipient {
@@ -258,12 +274,7 @@ export async function notify(
           // the framework's email layout (notificationEmailHtml), since the
           // SES/SendGrid drivers only render `html`/`text` and a body in a
           // bare <p> reached people as unstyled text.
-          const result = await driver.send({
-            to: recipient.email,
-            subject: payload.subject ?? '',
-            text: notificationEmailText(payload),
-            html: await notificationEmailHtml(payload),
-          })
+          const result = await driver.send(await notificationEmailMessage(recipient.email, payload))
           ensureSuccessfulEmailResult(result)
           break
         }
@@ -287,7 +298,7 @@ export async function notify(
             }
           }
           const driver = useSMS()
-          ensureSuccessfulProviderResult(await driver.send({ to: recipient.phone, body: payload.body }))
+          ensureSuccessfulProviderResult(await driver.send({ to: recipient.phone, body: notificationSmsBody(payload, options.category) }))
           break
         }
         case 'chat': {
@@ -384,6 +395,8 @@ export {
   wherePreferenceCategory,
 } from './preferences'
 export type { NotificationPreferenceRow, PreferenceChannel } from './preferences'
-export { emailParagraphs, notificationEmailHtml, notificationEmailText } from './email-body'
-export type { EmailBodyPart, NotificationAction } from './email-body'
+export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody } from './email-body'
+export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationUnsubscribe } from './email-body'
+export { notificationUnsubscribeLinks, notificationUnsubscribeToken, parseNotificationUnsubscribeToken, unsubscribeTokenFromRequest, unsubscribeWithToken } from './unsubscribe'
+export type { ParsedUnsubscribeToken, UnsubscribeChannel, UnsubscribeLinkOptions } from './unsubscribe'
 

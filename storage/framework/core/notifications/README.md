@@ -53,6 +53,15 @@ The database inbox and `notification_deliveries` tracking log are separate.
 Apply their model-driven migrations before relying on persistence. Inspect the
 returned channel results; the tracking log is not a final receipt.
 
+## Marketing unsubscribe
+
+`payload.unsubscribe` (build it with `notificationUnsubscribeLinks(userId)`)
+puts an Unsubscribe link in the email footer and text part and sets
+`List-Unsubscribe` / `List-Unsubscribe-Post` (RFC 8058). A `marketing` text
+ends with "Reply STOP to opt out." unless `payload.smsOptOut` says otherwise.
+The signed token turns off one channel + category preference; handle the
+app's route with `unsubscribeWithToken(await unsubscribeTokenFromRequest(request))`.
+
 ## Inbox ownership
 
 ```ts

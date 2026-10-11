@@ -1,3 +1,4 @@
+import type { EmailMessage } from '@stacksjs/types'
 import { templateByName } from '@stacksjs/email'
 
 /**
@@ -16,6 +17,46 @@ export type EmailBodyPart = {
 export interface NotificationAction {
   label: string
   url: string
+}
+
+/**
+ * The two ways out a marketing notification carries (see `notify()`'s
+ * `payload.unsubscribe`).
+ */
+export interface NotificationUnsubscribe {
+  /** The footer link: usually a page that asks before it unsubscribes. */
+  url: string
+  /**
+   * An endpoint that unsubscribes on a POST with no further interaction
+   * (RFC 8058). When set, it becomes the `List-Unsubscribe` URL and the
+   * email also carries `List-Unsubscribe-Post: List-Unsubscribe=One-Click`,
+   * which is what Gmail and Apple Mail need to show their own button.
+   * Without it, `List-Unsubscribe` points at `url`.
+   */
+  oneClickUrl?: string
+  /** Where the person manages every preference, linked beside Unsubscribe. */
+  preferencesUrl?: string
+  /** The footer sentence. Defaults to {@link DEFAULT_UNSUBSCRIBE_NOTICE}. */
+  notice?: string
+}
+
+/** The footer sentence of an email with an unsubscribe link, unless the payload names its own. */
+export const DEFAULT_UNSUBSCRIBE_NOTICE = 'You are receiving this because these emails are turned on in your settings.'
+
+/**
+ * The line a marketing text ends with, unless the payload names its own
+ * (`smsOptOut`). Carriers expect opt-out instructions on marketing texts, and
+ * STOP is the keyword every provider and `@stacksjs/sms` honour.
+ */
+export const DEFAULT_SMS_OPT_OUT = 'Reply STOP to opt out.'
+
+/** What the email builders read from a notification payload. */
+export interface NotificationEmailPayload {
+  subject?: string
+  body: string
+  action?: NotificationAction
+  unsubscribe?: NotificationUnsubscribe
+  headers?: Record<string, string>
 }
 
 const URL_PATTERN = /https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/g
@@ -60,8 +101,12 @@ function escapeHtml(s: string): string {
  * the same layout as every other Stacks email. It used to be the body in a
  * bare `<p>`, which mail clients showed as unstyled text with dead links.
  * Falls back to that only if the template cannot be rendered.
+ *
+ * With `unsubscribe`, the footer says why the email came and links to
+ * Unsubscribe (and the preferences page) instead of "do not reply".
  */
-export async function notificationEmailHtml(payload: { subject?: string, body: string, action?: NotificationAction }): Promise<string> {
+export async function notificationEmailHtml(payload: NotificationEmailPayload): Promise<string> {
+  const unsubscribe = payload.unsubscribe?.url ? payload.unsubscribe : undefined
   try {
     const { html } = await templateByName('notification', {
       subject: payload.subject ?? '',
@@ -70,6 +115,13 @@ export async function notificationEmailHtml(payload: { subject?: string, body: s
         paragraphs: emailParagraphs(payload.body),
         preheader: String(payload.body ?? '').replace(/\s+/g, ' ').trim().slice(0, 140),
         ...(payload.action?.url ? { actionUrl: payload.action.url, actionLabel: payload.action.label || 'Open' } : {}),
+        ...(unsubscribe
+          ? {
+              unsubscribeUrl: unsubscribe.url,
+              unsubscribeNotice: unsubscribe.notice || DEFAULT_UNSUBSCRIBE_NOTICE,
+              ...(unsubscribe.preferencesUrl ? { preferencesUrl: unsubscribe.preferencesUrl } : {}),
+            }
+          : {}),
       },
     })
     if (html)
@@ -79,10 +131,59 @@ export async function notificationEmailHtml(payload: { subject?: string, body: s
     // The fallback below still carries the message.
   }
   const action = payload.action?.url ? `<p><a href="${escapeHtml(payload.action.url)}">${escapeHtml(payload.action.label || payload.action.url)}</a></p>` : ''
-  return `<p>${escapeHtml(payload.body)}</p>${action}`
+  const footer = unsubscribe ? `<p>${escapeHtml(unsubscribe.notice || DEFAULT_UNSUBSCRIBE_NOTICE)} <a href="${escapeHtml(unsubscribe.url)}">Unsubscribe</a></p>` : ''
+  return `<p>${escapeHtml(payload.body)}</p>${action}${footer}`
 }
 
-/** The plain-text part, with the action's link spelled out. */
-export function notificationEmailText(payload: { body: string, action?: NotificationAction }): string {
-  return payload.action?.url ? `${payload.body}\n\n${payload.action.label || 'Open'}: ${payload.action.url}` : payload.body
+/** The plain-text part, with the action's link and any unsubscribe link spelled out. */
+export function notificationEmailText(payload: { body: string, action?: NotificationAction, unsubscribe?: NotificationUnsubscribe }): string {
+  let text = payload.action?.url ? `${payload.body}\n\n${payload.action.label || 'Open'}: ${payload.action.url}` : payload.body
+  if (payload.unsubscribe?.url)
+    text += `\n\n${payload.unsubscribe.notice || DEFAULT_UNSUBSCRIBE_NOTICE}\nUnsubscribe: ${payload.unsubscribe.url}`
+  return text
+}
+
+/**
+ * `List-Unsubscribe` for a payload's unsubscribe links (RFC 2369), plus
+ * `List-Unsubscribe-Post` when there is a one-click endpoint (RFC 8058).
+ * Empty without `unsubscribe`.
+ */
+export function listUnsubscribeHeaders(unsubscribe?: NotificationUnsubscribe): Record<string, string> {
+  if (!unsubscribe?.url)
+    return {}
+  return {
+    'List-Unsubscribe': `<${unsubscribe.oneClickUrl || unsubscribe.url}>`,
+    ...(unsubscribe.oneClickUrl ? { 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } : {}),
+  }
+}
+
+/**
+ * Everything `notify()` hands the mailer for one email: the text and HTML
+ * parts, and the payload's own headers with the unsubscribe ones on top.
+ */
+export async function notificationEmailMessage(to: string, payload: NotificationEmailPayload): Promise<EmailMessage> {
+  const headers = { ...payload.headers, ...listUnsubscribeHeaders(payload.unsubscribe) }
+  return {
+    to,
+    subject: payload.subject ?? '',
+    text: notificationEmailText(payload),
+    html: await notificationEmailHtml(payload),
+    ...(Object.keys(headers).length ? { headers } : {}),
+  }
+}
+
+/**
+ * What a notification texts. A `marketing` text ends with
+ * {@link DEFAULT_SMS_OPT_OUT} on its own line; `smsOptOut` replaces that line
+ * (and adds it to any category), and `false` leaves it out. A body that
+ * already contains the line is left alone.
+ */
+export function notificationSmsBody(payload: { body: string, smsOptOut?: string | false }, category?: string): string {
+  const body = String(payload.body ?? '')
+  if (payload.smsOptOut === false)
+    return body
+  const line = typeof payload.smsOptOut === 'string' ? payload.smsOptOut.trim() : category === 'marketing' ? DEFAULT_SMS_OPT_OUT : ''
+  if (!line || body.toLowerCase().includes(line.toLowerCase()))
+    return body
+  return `${body.trimEnd()}\n\n${line}`
 }
