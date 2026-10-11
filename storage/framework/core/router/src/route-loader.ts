@@ -469,7 +469,31 @@ async function importRouteFile(routeName: string): Promise<void> {
   // (`storage/framework/core/router/`) or from `node_modules/@stacksjs/router/`.
   // The relative-path version `../../../../../routes/${cleanPath}` only
   // resolved correctly under the workspace layout.
-  const { projectPath } = await import('@stacksjs/path')
+  const { isCompiledBinary, projectPath } = await import('@stacksjs/path')
+
+  // A compiled binary cannot do this at all, and says so here rather than
+  // through whatever the resolver happens to complain about
+  // (stacksjs/stacks#2888).
+  //
+  // A route file loaded off disk resolves its own `import { route } from
+  // '@stacksjs/router'` from disk, and inside a `bun build --compile` bundle
+  // that fails: measured against this repository, the identical code loads
+  // 1178 routes as a script and 0 as a binary, with
+  // `Cannot find package '@stacksjs/router' imported from <project>/routes/api.ts`
+  // - which reads as a broken install rather than the real cause. It fails the
+  // same way from a directory that is no project at all, so there is nothing
+  // to fix by moving the binary.
+  //
+  // Not a guard against reading a foreign project, which was the suspicion
+  // this came from: the import cannot succeed, so it cannot succeed against
+  // somebody else's routes either. Routes reach a binary by being imported
+  // statically, which is what puts them in the bundle.
+  if (isCompiledBinary()) {
+    throw new Error(
+      `[route-loader] Cannot load routes/${cleanPath} from a compiled binary: route files are read from disk at runtime, and a disk file cannot resolve the framework packages it imports from inside the bundle. Import the route file statically (\`import '../routes/${cleanPath}'\`) so it is bundled, or run the app with \`bun\` instead of compiling it.`,
+    )
+  }
+
   await import(projectPath(`routes/${cleanPath}`))
 }
 
