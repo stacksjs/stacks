@@ -15,7 +15,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { projectPath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { FEATURE_NAMES, type FeatureName } from './names'
 
 // Re-exported, so the package's surface is unchanged. They live in their own
@@ -277,10 +277,28 @@ export function migrationFeature(filename: string): FeatureName | null {
  * True when an application-owned, top-level model explicitly declares a table.
  * This lets apps intentionally use generic names such as `payments` without
  * their migrations being mistaken for disabled framework-feature scaffolding.
- * Root models listed in FEATURE_FILES remain feature-owned and do not override
- * the gate.
+ *
+ * A root model listed in FEATURE_FILES is feature scaffolding while it is
+ * byte-identical to the template the feature published (`templateRoot`, the
+ * framework defaults) - the same rule `feature:uninstall` uses to decide what
+ * it may delete. Once it differs, the app wrote or rewrote it and owns the
+ * table: an app with its own `Subscription` model over `subscriptions`, and
+ * the commerce feature off, still gets the table the model declares. Before,
+ * its generated `create-subscriptions-table` was hidden and a fresh database
+ * was built without it.
  */
-export function appModelClaimsTable(table: string, root: string = projectPath()): boolean {
+/** Whether a project file is still the unmodified copy of its template. */
+function isPublishedTemplate(file: string, template: string): boolean {
+  if (!existsSync(template)) return false
+  try {
+    return readFileSync(file).equals(readFileSync(template))
+  }
+  catch {
+    return false
+  }
+}
+
+export function appModelClaimsTable(table: string, root: string = projectPath(), templateRoot: string = frameworkPath('defaults')): boolean {
   const modelsDir = join(root, 'app/Models')
   if (!existsSync(modelsDir)) return false
   const featureModelFiles = new Set(
@@ -291,7 +309,8 @@ export function appModelClaimsTable(table: string, root: string = projectPath())
   const declaration = new RegExp(`\\btable\\s*:\\s*['"]${escaped}['"]`)
   for (const entry of readdirSync(modelsDir, { withFileTypes: true })) {
     if (!entry.isFile() || !/\.[cm]?[jt]s$/.test(entry.name)) continue
-    if (featureModelFiles.has(`app/Models/${entry.name}`)) continue
+    const rel = `app/Models/${entry.name}`
+    if (featureModelFiles.has(rel) && isPublishedTemplate(join(modelsDir, entry.name), join(templateRoot, rel))) continue
     if (declaration.test(readFileSync(join(modelsDir, entry.name), 'utf8'))) return true
   }
   return false

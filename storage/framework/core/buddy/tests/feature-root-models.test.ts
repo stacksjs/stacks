@@ -47,7 +47,7 @@ for (const [feature, model, table] of rootModels) {
     const installed = await copyFeatureFiles(feature, { source, target })
     expect(installed.copied).toContain(rel)
     expect(readFileSync(join(target, rel), 'utf8')).toBe(content)
-    expect(appModelClaimsTable(table, target)).toBe(false)
+    expect(appModelClaimsTable(table, target, source)).toBe(false)
 
     const removed = await deleteFeatureFiles(feature, target, { source })
     expect(removed.removed).toContain(rel)
@@ -66,6 +66,8 @@ for (const [feature, model, table] of rootModels) {
     const removed = await deleteFeatureFiles(feature, target, { source })
     expect(removed.preserved).toContain(rel)
     expect(readFileSync(join(target, rel), 'utf8')).toBe(customised)
+    // Customised, it is the app's model, so the feature gate leaves its table alone.
+    expect(appModelClaimsTable(table, target, source)).toBe(true)
   })
 }
 

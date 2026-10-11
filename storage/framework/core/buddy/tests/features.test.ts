@@ -395,10 +395,23 @@ describe('appModelClaimsTable()', () => {
     expect(appModelClaimsTable('payments', root)).toBe(true)
   })
 
-  it('does not treat manifest-owned root models as app overrides', async () => {
+  it('does not treat a published, untouched manifest root model as an app override', async () => {
+    const templates = join(root, 'templates')
+    const template = "export default { table: 'tags' }\n"
+    await mkdir(join(templates, 'app/Models'), { recursive: true })
+    await writeFile(join(templates, 'app/Models/Tag.ts'), template)
     await touch('app/Models/Tag.ts')
-    await writeFile(join(root, 'app/Models/Tag.ts'), "export default { table: 'tags' }\n")
-    expect(appModelClaimsTable('tags', root)).toBe(false)
+    await writeFile(join(root, 'app/Models/Tag.ts'), template)
+    expect(appModelClaimsTable('tags', root, templates)).toBe(false)
+  })
+
+  it('lets a manifest root model the app rewrote claim its table', async () => {
+    const templates = join(root, 'templates')
+    await mkdir(join(templates, 'app/Models'), { recursive: true })
+    await writeFile(join(templates, 'app/Models/Tag.ts'), "export default { table: 'tags' }\n")
+    await touch('app/Models/Tag.ts')
+    await writeFile(join(root, 'app/Models/Tag.ts'), "export default { table: 'tags', attributes: { label: {} } }\n")
+    expect(appModelClaimsTable('tags', root, templates)).toBe(true)
   })
 })
 
