@@ -423,7 +423,7 @@
     ]
   },
   "devDependencies": {
-    "@stacksjs/stx-vscode": "^0.2.359",
+    "@stacksjs/stx-vscode": "^0.2.432",
     "@types/vscode": "~1.109.0",
     "@vscode/vsce": "^4.0.0"
   }
