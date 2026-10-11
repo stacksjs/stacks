@@ -113,6 +113,8 @@ export function fakeVscode(options: { folders: string[], settings?: Record<strin
   const inputs: any[] = []
   const output: string[] = []
   const applied: WorkspaceEdit[] = []
+  const codeActionSelectors: unknown[] = []
+  const formattingSelectors: unknown[] = []
   const clipboard: string[] = []
   const opened = emitter<FakeDocument>()
   const changed = emitter<{ document: FakeDocument }>()
@@ -159,11 +161,13 @@ export function fakeVscode(options: { folders: string[], settings?: Record<strin
         clear: () => diagnostics.clear(),
         dispose: () => {},
       }),
-      registerCodeActionsProvider: (_selector: unknown, provider: unknown) => {
+      registerCodeActionsProvider: (selector: unknown, provider: unknown) => {
+        codeActionSelectors.push(selector)
         codeActionProviders.push(provider)
         return { dispose: () => {} }
       },
-      registerDocumentFormattingEditProvider: (_selector: unknown, provider: unknown) => {
+      registerDocumentFormattingEditProvider: (selector: unknown, provider: unknown) => {
+        formattingSelectors.push(selector)
         formatters.push(provider)
         return { dispose: () => {} }
       },
@@ -212,6 +216,8 @@ export function fakeVscode(options: { folders: string[], settings?: Record<strin
     diagnostics,
     handlers,
     codeActionProviders,
+    codeActionSelectors,
+    formattingSelectors,
     formatters,
     hovers,
     messages,

@@ -40,7 +40,7 @@ export const PICKIER_COMMANDS = {
 } as const
 
 /** The language ids of the files `buddy lint` covers (core/actions/src/lint/files.ts). */
-export const PICKIER_LANGUAGES = ['typescript', 'javascript', 'json', 'jsonc', 'markdown', 'yaml'] as const
+export const PICKIER_LANGUAGES = ['typescript', 'javascript', 'stx', 'json', 'jsonc', 'markdown', 'yaml'] as const
 
 /** Comment syntax for `pickier-disable-next-line`, where the language has line comments. */
 const LINE_COMMENT: Record<string, string> = { typescript: '//', javascript: '//', jsonc: '//' }

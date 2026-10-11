@@ -20,6 +20,10 @@ function componentSource(path: string): string {
   return readFileSync(resolve(dashboardComponents, path), 'utf8')
 }
 
+function staticClassLists(source: string): string[][] {
+  return Array.from(source.matchAll(/(?:^|\s)class="([^"]*)"/g), match => match[1]!.split(/\s+/).filter(Boolean))
+}
+
 interface TestSignal<T> {
   (): T
   set: (value: T) => void
@@ -252,8 +256,8 @@ describe('dashboard native STX bindings', () => {
     expect(taxonomy).toContain('<TaxonomyEditorDialog')
     expect(taxonomy).toContain('<ConfirmDialog')
     expect(taxonomy).not.toContain('fixed inset-y-0')
-    expect(taxonomy).toContain('class="min-w-0 max-w-full space-y-6"')
-    expect(taxonomy).toContain('class="overflow-x-auto max-w-full w-full"')
+    expect(staticClassLists(taxonomy)).toContainEqual(expect.arrayContaining(['min-w-0', 'max-w-full', 'space-y-6']))
+    expect(staticClassLists(taxonomy)).toContainEqual(expect.arrayContaining(['overflow-x-auto', 'max-w-full', 'w-full']))
     expect(taxonomyEditor).toContain(".normalize('NFKD')")
     expect(taxonomyEditor).toContain('@input="markSlugTouched"')
     expect(taxonomyEditor).toContain('@blur="normalizeSlug"')
@@ -266,8 +270,8 @@ describe('dashboard native STX bindings', () => {
     const blog = componentSource('Content/BlogDashboard.stx')
     expect(blogView).toContain('<BlogDashboard />')
     expect(blogView).not.toContain('<script')
-    expect(blog).toContain('mx-auto min-w-0 max-w-7xl w-full')
-    expect(blog).toContain('class="overflow-x-auto max-w-full w-full"')
+    expect(staticClassLists(blog)).toContainEqual(expect.arrayContaining(['mx-auto', 'min-w-0', 'max-w-7xl', 'w-full']))
+    expect(staticClassLists(blog)).toContainEqual(expect.arrayContaining(['overflow-x-auto', 'max-w-full', 'w-full']))
     expect(blog).toContain("publicApplicationUrl('/blog')")
     expect(blog).toContain('href="{{ blogUrl }}"')
     expect(blog).toContain(':href="publicPostUrl(post.slug)"')

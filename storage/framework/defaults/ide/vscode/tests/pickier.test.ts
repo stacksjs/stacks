@@ -71,7 +71,9 @@ describe('helpers', () => {
     expect(isLintedFile(ROOT, `${ROOT}/README.md`)).toBeTrue()
     expect(isLintedFile(ROOT, `${ROOT}/node_modules/x/index.ts`)).toBeFalse()
     expect(isLintedFile(ROOT, `${ROOT}/dist/index.js`)).toBeFalse()
-    expect(isLintedFile(ROOT, `${ROOT}/resources/views/index.stx`)).toBeFalse()
+    expect(isLintedFile(ROOT, `${ROOT}/resources/views/index.stx`)).toBeTrue()
+    expect(isLintedFile(ROOT, `${ROOT}/resources/components/Card.STX`)).toBeTrue()
+    expect(isLintedFile(ROOT, `${ROOT}/dist/views/index.stx`)).toBeFalse()
     expect(isLintedFile(ROOT, '/elsewhere/a.ts')).toBeFalse()
   })
 
@@ -88,6 +90,20 @@ describe('helpers', () => {
 })
 
 describe('diagnostics', () => {
+  it('reports STX template issues through the same worker as Buddy lint', async () => {
+    const file = document(`${ROOT}/resources/views/index.stx`, '<div class="text-red-500 flex">Hello</div>\n', 'stx')
+    const { diagnostics, spawned } = setup({
+      documents: [file],
+      worker: {
+        answer: () => ({ op: 'lint', issues: [{ line: 1, column: 6, ruleId: 'crosswind/class-order', message: 'Classes are not sorted', severity: 'warning' }] }),
+      },
+    })
+    await flush()
+
+    expect(spawned[0]!.requests[0]).toMatchObject({ op: 'lint', file: file.uri.fsPath })
+    expect(diagnostics.get(file.uri.toString())![0]).toMatchObject({ source: 'pickier', code: 'crosswind/class-order', severity: 1 })
+  })
+
   it('reports the project pickier\'s issues on an open file, in editor coordinates', async () => {
     const file = document(`${ROOT}/app/x.ts`, 'import { a } from \'b\'\nlet x = 1\n')
     const { diagnostics, spawned } = setup({
@@ -146,6 +162,21 @@ describe('diagnostics', () => {
 
 describe('fixing and formatting', () => {
   const FIXED = 'const x = 1\n'
+
+  it('offers fixes and formatting for STX without suggesting a JavaScript line comment', async () => {
+    const file = document(`${ROOT}/resources/views/index.stx`, '<div class="text-red-500 flex">Hello</div>\n', 'stx')
+    const fixed = '<div class="flex text-red-500">Hello</div>\n'
+    const { codeActionProviders, codeActionSelectors, formatters, formattingSelectors } = setup({
+      worker: { answer: request => request.op === 'lint' ? { op: 'lint', issues: [] } : { op: request.op, text: fixed } },
+    })
+    expect(codeActionSelectors[0]).toContainEqual({ language: 'stx', scheme: 'file' })
+    expect(formattingSelectors[0]).toContainEqual({ language: 'stx', scheme: 'file' })
+    const diagnostic = { source: 'pickier', code: 'crosswind/class-order', range: { start: { line: 0, character: 5 } } }
+    const actions = await codeActionProviders[0].provideCodeActions(file, undefined, { diagnostics: [diagnostic] })
+    expect(actions.map((action: any) => action.title)).toEqual(['Fix all pickier problems'])
+    expect(actions[0].edit.edits[0].text).toBe(fixed)
+    expect((await formatters[0].provideDocumentFormattingEdits(file))[0].newText).toBe(fixed)
+  })
 
   it('offers source.fixAll.pickier, the code action codeActionsOnSave asks for', async () => {
     const file = document(`${ROOT}/x.ts`, 'let x = 1\n')
