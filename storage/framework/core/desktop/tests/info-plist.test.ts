@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import { plistValue, RESERVED_PLIST_KEYS, renderUserlandPlistEntries, xmlEscape } from '../src/index'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { plistValue, RESERVED_PLIST_KEYS, renderInfoPlist, renderUserlandPlistEntries, xmlEscape } from '../src/index'
 
 /**
  * Extra `Info.plist` entries an application declares for its bundle.
@@ -103,5 +106,132 @@ describe('renderUserlandPlistEntries', () => {
 describe('xmlEscape', () => {
   test('escapes every character that terminates a plist string', () => {
     expect(xmlEscape(`& < > " '`)).toBe('&amp; &lt; &gt; &quot; &apos;')
+  })
+})
+
+/**
+ * The whole `Info.plist` the packaged `.app` carries.
+ *
+ * The keys below are the ones every build writes, as opposed to the ones an app
+ * declares, and they were interpolated into the document raw: an app named
+ * `Repro & Co` wrote `<string>Repro & Co</string>` and produced a plist macOS
+ * cannot parse. `build:dmg` reported success, signed the bundle and would have
+ * notarized it, so the only symptom was an app that would not open. Reproduced
+ * by building a real DMG, mounting it and running `plutil -lint` on what was
+ * inside, which is why the parse test below shells out to `plutil` rather than
+ * asserting a shape: the question is what macOS accepts, not what looks right.
+ */
+
+/** What macOS itself makes of the document, rather than what we think of it. */
+function plutilAccepts(xml: string): { ok: boolean, output: string } {
+  const directory = mkdtempSync(join(tmpdir(), 'stacks-plist-lint-'))
+  try {
+    const file = join(directory, 'Info.plist')
+    writeFileSync(file, xml)
+    const linted = Bun.spawnSync(['plutil', '-lint', file], { stdout: 'pipe', stderr: 'pipe' })
+    return { ok: linted.exitCode === 0, output: `${linted.stdout.toString()}${linted.stderr.toString()}`.trim() }
+  }
+  finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+}
+
+/** `<key>NAME</key>` occurrences — a plist with a key twice is malformed. */
+function keyCount(xml: string, key: string): number {
+  return xml.split(`<key>${key}</key>`).length - 1
+}
+
+const BASE = {
+  appName: 'Repro App',
+  bundleId: 'sh.stacks.repro-app',
+  version: '1.2.3',
+  executable: 'Repro App',
+  ownsLauncher: false,
+} as const
+
+describe('renderInfoPlist', () => {
+  test('the plain bundle is a document macOS can read', () => {
+    const { ok, output } = plutilAccepts(renderInfoPlist(BASE).xml)
+    expect(ok, output).toBe(true)
+  })
+
+  test.each([
+    ['an ampersand', 'Repro & Co'],
+    ['angle brackets', 'Repro <Beta>'],
+    ['a quote', 'Repro "Nightly"'],
+    ['an apostrophe', 'Glenn\'s Repro'],
+  ])('stays readable with %s in the app name', (_label, appName) => {
+    const { xml } = renderInfoPlist({ ...BASE, appName, executable: appName })
+    const { ok, output } = plutilAccepts(xml)
+    expect(ok, output).toBe(true)
+    // Escaped, so the raw character cannot appear between the tags.
+    expect(xml).not.toContain(`<string>${appName}</string>`)
+  })
+
+  test('escapes the bundle id and version, which come straight from the environment', () => {
+    // DESKTOP_BUNDLE_ID and DESKTOP_APP_VERSION are unvalidated env values.
+    const { xml } = renderInfoPlist({ ...BASE, bundleId: 'sh.stacks.a&b', version: '1.0<rc1>' })
+    const { ok, output } = plutilAccepts(xml)
+    expect(ok, output).toBe(true)
+    expect(xml).toContain('<string>sh.stacks.a&amp;b</string>')
+    expect(xml).toContain('<string>1.0&lt;rc1&gt;</string>')
+  })
+
+  test('carries the name, id and version it was given', () => {
+    const { xml } = renderInfoPlist(BASE)
+    expect(xml).toContain('<key>CFBundleName</key><string>Repro App</string>')
+    expect(xml).toContain('<key>CFBundleIdentifier</key><string>sh.stacks.repro-app</string>')
+    expect(xml).toContain('<key>CFBundleVersion</key><string>1.2.3</string>')
+    expect(xml).toContain('<key>CFBundleShortVersionString</key><string>1.2.3</string>')
+  })
+
+  test('an app serving its own window gets a loopback exception, not the open internet', () => {
+    const { xml } = renderInfoPlist({ ...BASE, ownsLauncher: true })
+    expect(xml).toContain('<key>NSAllowsLocalNetworking</key>')
+    expect(xml).toContain('<key>127.0.0.1</key>')
+    // The KEY, not the word: the comment beside the exception mentions
+    // NSAllowsArbitraryLoads to say why it is not being used.
+    expect(keyCount(xml, 'NSAllowsArbitraryLoads')).toBe(0)
+    expect(plutilAccepts(xml).ok).toBe(true)
+  })
+
+  test('an app loading a remote URL is allowed to reach it', () => {
+    const { xml } = renderInfoPlist({ ...BASE, ownsLauncher: false })
+    expect(xml).toContain('<key>NSAllowsArbitraryLoads</key>')
+    expect(xml).not.toContain('<key>127.0.0.1</key>')
+  })
+
+  test.each([
+    ['LSMinimumSystemVersion', { LSMinimumSystemVersion: '13.0' }],
+    ['NSHighResolutionCapable', { NSHighResolutionCapable: false }],
+    ['NSAppTransportSecurity', { NSAppTransportSecurity: { NSAllowsLocalNetworking: true } }],
+  ])('an app overriding %s gets its value once, not twice', (key, declared) => {
+    const { xml } = renderInfoPlist({ ...BASE, declared })
+    expect(keyCount(xml, key)).toBe(1)
+    const { ok, output } = plutilAccepts(xml)
+    expect(ok, output).toBe(true)
+  })
+
+  test("the app's override is the value that survives", () => {
+    const { xml } = renderInfoPlist({ ...BASE, declared: { LSMinimumSystemVersion: '13.0' } })
+    expect(xml).toContain('<string>13.0</string>')
+    expect(xml).not.toContain('<string>11.0</string>')
+  })
+
+  test('declared extras are carried, and reserved keys reported rather than emitted twice', () => {
+    const { xml, ignored } = renderInfoPlist({
+      ...BASE,
+      declared: { NSCameraUsageDescription: 'Scan a receipt', CFBundleName: 'Hijacked' },
+    })
+    expect(xml).toContain('<key>NSCameraUsageDescription</key><string>Scan a receipt</string>')
+    expect(ignored).toContain('CFBundleName')
+    expect(keyCount(xml, 'CFBundleName')).toBe(1)
+    expect(xml).not.toContain('Hijacked')
+  })
+
+  test('names an icon only when one was built', () => {
+    expect(renderInfoPlist({ ...BASE, iconFile: 'AppIcon' }).xml)
+      .toContain('<key>CFBundleIconFile</key><string>AppIcon</string>')
+    expect(renderInfoPlist(BASE).xml).not.toContain('CFBundleIconFile')
   })
 })

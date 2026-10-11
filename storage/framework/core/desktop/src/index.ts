@@ -251,6 +251,98 @@ export function renderUserlandPlistEntries(
   return { xml, ignored }
 }
 
+export interface InfoPlistOptions {
+  /** `CFBundleName` and `CFBundleDisplayName`: the name a person sees. */
+  appName: string
+  /** `CFBundleIdentifier`, which may come straight from `DESKTOP_BUNDLE_ID`. */
+  bundleId: string
+  /** `CFBundleVersion` and `CFBundleShortVersionString`. */
+  version: string
+  /** `CFBundleExecutable`: the launcher's filename inside `Contents/MacOS`. */
+  executable: string
+  /** `AppIcon`, or nothing when the project supplied no square PNG. */
+  iconFile?: string
+  /**
+   * Whether the window opens something this application started on loopback,
+   * which is what decides its App Transport Security exception.
+   */
+  ownsLauncher: boolean
+  /** `app/Desktop/Info.plist.json`, already parsed. */
+  declared?: Record<string, unknown>
+}
+
+/**
+ * Render the `Info.plist` for the packaged `.app`.
+ *
+ * Every value an application chooses is escaped on the way in. It used to be
+ * interpolated raw, which made an app name as ordinary as `Repro & Co` emit
+ * `<string>Repro & Co</string>` - not well-formed XML, so macOS could not read
+ * the bundle's `Info.plist` at all and the app would not launch. `build:dmg`
+ * reported success either way, because nothing read back the file it had just
+ * written; the corruption first showed up as an app that silently refused to
+ * open. The entries an app declares in `app/Desktop/Info.plist.json` were
+ * already escaped by `renderUserlandPlistEntries`. The keys every build writes,
+ * which are the ones carrying a name and a version, were not.
+ *
+ * It lives here, rather than inline in the packaging script, so the output can
+ * be asserted directly instead of by building a DMG and mounting it.
+ */
+export function renderInfoPlist(options: InfoPlistOptions): { xml: string, ignored: string[] } {
+  const declared = options.declared ?? {}
+  const { xml: extra, ignored } = renderUserlandPlistEntries(declared)
+
+  // A plist with the same key twice is malformed, and these three are exactly
+  // the ones an app has reason to set: a utility raising its minimum macOS, an
+  // app needing transport rules of its own. The app's value wins and the
+  // default is left out, rather than both being emitted.
+  const overridden = (key: string): boolean => Object.hasOwn(declared, key)
+
+  const loopbackTransportSecurity = `  <!-- The window talks to something this app started on loopback, so an
+       exception for 127.0.0.1 is all it needs. NSAllowsArbitraryLoads would
+       additionally permit every unencrypted host on the internet. -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key><true/>
+    <key>NSExceptionDomains</key>
+    <dict>
+      <key>127.0.0.1</key>
+      <dict><key>NSExceptionAllowsInsecureHTTPLoads</key><true/></dict>
+    </dict>
+  </dict>`
+
+  const remoteTransportSecurity = `  <!-- The window loads a remote URL, so the app has to be allowed to reach it. -->
+  <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>`
+
+  const minimumSystem = overridden('LSMinimumSystemVersion') ? '' : '  <key>LSMinimumSystemVersion</key><string>11.0</string>\n'
+  const highResolution = overridden('NSHighResolutionCapable') ? '' : '  <key>NSHighResolutionCapable</key><true/>\n'
+  const transportSecurity = overridden('NSAppTransportSecurity')
+    ? ''
+    : (options.ownsLauncher ? loopbackTransportSecurity : remoteTransportSecurity)
+  const icon = options.iconFile ? `\n  <key>CFBundleIconFile</key><string>${xmlEscape(options.iconFile)}</string>` : ''
+
+  const name = xmlEscape(options.appName)
+  const version = xmlEscape(options.version)
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>${name}</string>
+  <key>CFBundleDisplayName</key><string>${name}</string>
+  <key>CFBundleIdentifier</key><string>${xmlEscape(options.bundleId)}</string>
+  <key>CFBundleVersion</key><string>${version}</string>
+  <key>CFBundleShortVersionString</key><string>${version}</string>
+  <key>CFBundleExecutable</key><string>${xmlEscape(options.executable)}</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+${minimumSystem}${highResolution}${transportSecurity}${icon}${extra}
+</dict>
+</plist>
+`
+
+  return { xml, ignored }
+}
+
 export function resolveDevWindowUrl(port: number, options: OpenDevWindowOptions = {}): string {
   if (!Number.isInteger(port) || port < 1 || port > 65_535)
     throw new RangeError(`Invalid desktop development port: ${port}`)

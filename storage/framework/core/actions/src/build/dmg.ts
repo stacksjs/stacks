@@ -4,7 +4,7 @@ import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, dmgVolumeName, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, dmgVolumeName, looksLikeBunExecutable, renderInfoPlist } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -215,55 +215,36 @@ function readUserlandPlist(): Record<string, unknown> {
 }
 
 const declaredPlist = readUserlandPlist()
-const { xml: extraPlistEntries, ignored: ignoredPlistKeys } = renderUserlandPlistEntries(declaredPlist)
+const { xml: infoPlist, ignored: ignoredPlistKeys } = renderInfoPlist({
+  appName,
+  bundleId,
+  version,
+  executable: launcherName,
+  iconFile,
+  ownsLauncher,
+  declared: declaredPlist,
+})
 if (ignoredPlistKeys.length > 0)
   log.info(`Ignoring reserved Info.plist keys from app/Desktop/Info.plist.json: ${ignoredPlistKeys.join(', ')}`)
 
-/**
- * Keys below that the application has taken over.
- *
- * A plist with the same key twice is malformed, and these are exactly the ones
- * an app has reason to set: a utility raising its minimum macOS, or an app
- * needing transport rules of its own. The app's value wins and the default is
- * left out, rather than both being emitted.
- */
-function overriddenByApp(key: string): boolean {
-  return Object.hasOwn(declaredPlist, key)
-}
+const infoPlistPath = join(appDir, 'Contents/Info.plist')
+writeFileSync(infoPlistPath, infoPlist)
 
-writeFileSync(join(appDir, 'Contents/Info.plist'), `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key><string>${appName}</string>
-  <key>CFBundleDisplayName</key><string>${appName}</string>
-  <key>CFBundleIdentifier</key><string>${bundleId}</string>
-  <key>CFBundleVersion</key><string>${version}</string>
-  <key>CFBundleShortVersionString</key><string>${version}</string>
-  <key>CFBundleExecutable</key><string>${launcherName}</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-${overriddenByApp('LSMinimumSystemVersion') ? '' : '  <key>LSMinimumSystemVersion</key><string>11.0</string>\n'}${overriddenByApp('NSHighResolutionCapable') ? '' : '  <key>NSHighResolutionCapable</key><true/>\n'}${overriddenByApp('NSAppTransportSecurity')
-  ? ''
-  : `${ownsLauncher
-  ? `  <!-- The window talks to something this app started on loopback, so an
-       exception for 127.0.0.1 is all it needs. NSAllowsArbitraryLoads would
-       additionally permit every unencrypted host on the internet. -->
-  <key>NSAppTransportSecurity</key>
-  <dict>
-    <key>NSAllowsLocalNetworking</key><true/>
-    <key>NSExceptionDomains</key>
-    <dict>
-      <key>127.0.0.1</key>
-      <dict><key>NSExceptionAllowsInsecureHTTPLoads</key><true/></dict>
-    </dict>
-  </dict>`
-  : `  <!-- The window loads a remote URL, so the app has to be allowed to reach it. -->
-  <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>`}`}${iconFile ? `
-  <key>CFBundleIconFile</key><string>${iconFile}</string>` : ''}${extraPlistEntries}
-</dict>
-</plist>
-`)
+/*
+ * Read back the file that was just written.
+ *
+ * An `Info.plist` macOS cannot parse yields an app that will not launch, and
+ * nothing else here notices: the bundle is signed, the image is built, Apple
+ * notarizes it, and `build:dmg` reports success. The first report is a user
+ * double-clicking an app that does nothing. One unescaped `&` in an app's name
+ * was enough (fixed in `renderInfoPlist`, which escapes), so the point of
+ * checking is the next way it happens rather than that one.
+ *
+ * `plutil` ships with macOS and this file already refuses to run anywhere else.
+ */
+const linted = Bun.spawnSync(['plutil', '-lint', infoPlistPath], { stdout: 'pipe', stderr: 'pipe' })
+if (linted.exitCode !== 0)
+  throw new Error(`Generated an Info.plist that macOS cannot read: ${`${linted.stdout.toString()}${linted.stderr.toString()}`.trim()}`)
 
 if (signingIdentity) {
   // Inside-out: every nested executable, then the launcher, then the bundle.
