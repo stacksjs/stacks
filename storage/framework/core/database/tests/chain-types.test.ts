@@ -99,10 +99,13 @@ describe('the framework\'s own tables', () => {
      */
     assertType<Same<RowOf<'reviews'>['id'], number>>(true)
 
-    // camelCase aliases too, because that is what a row actually carries: a
-    // schema listing only one spelling is *almost* right, which typechecks until
-    // somebody reads the other one.
-    assertType<Same<RowOf<'pages'>['meta_description'], RowOf<'pages'>['metaDescription']>>(true)
+    // Spelled the way the database spells it, and only that way: a raw row
+    // carries the column names the table has. The schema used to list a
+    // camelCase alias of every column as well, which typechecked and read
+    // `undefined` - the ORM's accessor proxy adds those spellings, a
+    // query-builder row does not (see dcc76a62d0).
+    assertType<Same<RowOf<'pages'>['meta_description'], string>>(true)
+    assertType<Same<Extract<keyof RowOf<'pages'>, 'metaDescription'>, never>>(true)
 
     // And an enum column is the union it allows, so a comparison against a
     // misspelling does not compile.

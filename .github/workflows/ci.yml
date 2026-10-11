@@ -143,6 +143,13 @@ jobs:
       - name: Typecheck framework
         run: bun run typecheck
 
+      # The framework config excludes tests, and `bun test` strips types, so
+      # the `assertType<...>` and `@ts-expect-error` lines in the
+      # `core/*/tests/*-types.test.ts` suites were never enforced - one in
+      # chain-types had gone stale and still passed.
+      - name: Typecheck type tests
+        run: bun run typecheck:type-tests
+
       - name: Typecheck app
         run: bun run typecheck:app
 

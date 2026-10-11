@@ -1,0 +1,19 @@
+{
+  // Compiles the type-level tests - `core/*/tests/*-types.test.ts` - which the
+  // framework config excludes along with every other test. `bun test` runs
+  // them, but Bun strips types, so their `assertType<...>` and
+  // `// @ts-expect-error` lines only mean something when tsc reads them.
+  // Nothing did: an assertion in chain-types went stale for weeks and still
+  // passed.
+  //
+  // Run it with: bun run typecheck:type-tests
+  "extends": "./tsconfig.framework.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // Its own build info, so this check and the framework one do not keep
+    // invalidating each other's incremental cache.
+    "tsBuildInfoFile": "./.cache/typescript/type-tests.tsbuildinfo"
+  },
+  "include": ["./core/*/tests/*-types.test.ts"],
+  "exclude": []
+}
