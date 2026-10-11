@@ -28,8 +28,31 @@ if (process.platform !== 'darwin')
 
 const desktopDist = storagePath('framework/desktop-dist')
 const manifestPath = join(desktopDist, 'desktop.json')
+
+// Build the pieces rather than refusing to.
+//
+// This used to throw `Run \`buddy build:desktop\` before packaging a DMG`,
+// which made shipping a desktop app two commands in a particular order and left
+// every app to orchestrate that itself. Nothing is gained by the refusal: the
+// only thing a caller can do with it is run the command it names.
+//
+// `desktop.ts` is a top-level script module that takes no arguments and reads
+// its inputs from the environment (`DESKTOP_URL`, `APP_NAME`,
+// `DESKTOP_RELEASE_CHANNEL`, `DESKTOP_MINIFY`), so importing it here produces
+// exactly what `buddy build:desktop` produces, in this process, with this
+// environment. It has no `process.exit`, so it returns rather than taking the
+// packaging run with it.
+//
+// Only when the manifest is ABSENT, which is precisely the case that used to
+// fail. A present manifest is left alone: deciding on an app's behalf that its
+// existing build is stale would be the surprising half.
+if (!existsSync(manifestPath)) {
+  log.info('No desktop build found. Building it first (`build:desktop`).')
+  await import('./desktop')
+}
+
 if (!existsSync(manifestPath))
-  throw new Error('Run `buddy build:desktop` before packaging a DMG')
+  throw new Error(`build:desktop ran but left no manifest at ${manifestPath}`)
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
   title?: string

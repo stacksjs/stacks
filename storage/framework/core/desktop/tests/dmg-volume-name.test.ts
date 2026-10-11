@@ -112,6 +112,37 @@ describe('build:dmg', () => {
     return index
   }
 
+  /**
+   * One command, not two in an order you have to know.
+   *
+   * `build:dmg` used to throw "Run `buddy build:desktop` before packaging a
+   * DMG", which bought nothing: the only thing a caller could do with that
+   * error was run the command it named. Every app shipping a desktop build
+   * therefore wrote its own orchestration script, and one of those turned up in
+   * review working around the volume-name collision and the staging leak as
+   * well. The abstraction belonged here.
+   */
+  it('builds the desktop output itself when there is none', () => {
+    expect(dmg).toContain(`await import('./desktop')`)
+    // The refusal it replaces.
+    expect(dmg).not.toContain('Run `buddy build:desktop` before packaging a DMG')
+  })
+
+  it('only builds when the manifest is absent, never over an existing build', () => {
+    // Deciding on an app's behalf that its current build is stale would be the
+    // surprising half. This only fires where the command used to fail outright.
+    const guard = indexOfExisting('if (!existsSync(manifestPath)) {')
+    const builds = indexOfExisting(`await import('./desktop')`, guard)
+    const closes = indexOfExisting('\n}', builds)
+
+    expect(builds).toBeLessThan(closes)
+  })
+
+  it('still fails if the build it ran produced nothing', () => {
+    // Composing the two does not mean trusting the first one silently.
+    expect(dmg).toContain('build:desktop ran but left no manifest at')
+  })
+
   it('names the volume through the helper, never after the app', () => {
     // `-volname appName` is the bug: it stages the bundle at
     // /Volumes/<App>/<App>.app, which macOS refuses when the app is installed.
