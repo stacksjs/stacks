@@ -114,6 +114,13 @@ Every API action still authorizes its own request; hiding a dashboard is not
 authorization. Preserve independent profile and roster data when correcting a
 mistaken membership, and protect tenant ownership in the same transaction.
 
+The same freshness rule applies to settings profiles and tenant configuration
+that include roles, capabilities or edit permissions. Use `cache: 'no-store'`
+for these reads and `Cache-Control: private, no-store` for their responses.
+Otherwise a corrected account can show the right navigation while a saved
+profile still labels it Admin or enables tenant settings. Gate tenant editors
+on the freshly resolved profile as well as the configuration's edit flag.
+
 Source: `src/rbac.ts`, `rbac-store-bqb.ts`, `rbac-seed.ts` and `team.ts`.
 Evidence: `tests/rbac-default-store.test.ts`, `rbac-guard-sync.test.ts`,
 `rbac-seed.test.ts` and `active-team.test.ts`.

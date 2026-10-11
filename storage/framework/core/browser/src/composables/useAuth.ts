@@ -255,7 +255,8 @@ export function useAuth(): AuthComposable {
       // response cleared state, which made a one-hour-old token and a revoked
       // one indistinguishable — every session died at the access token's
       // lifetime (stacksjs/stacks#2235).
-      const response = await authFetch(ME_PATH)
+      // Current identity and permissions must never come from an offline copy.
+      const response = await authFetch(ME_PATH, { cache: 'no-store' })
 
       if (!response.ok) {
         clearSession()

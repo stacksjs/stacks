@@ -69,6 +69,25 @@ describe('useAuth response envelope', () => {
     expect(result).toEqual({ id: 3, email: 'e@example.com', name: 'E' })
     expect(user.value).toEqual({ id: 3, email: 'e@example.com', name: 'E' })
   })
+
+  it('fetchAuthUser() verifies changed permissions instead of accepting a saved admin identity', async () => {
+    const fresh = { id: 3, email: 'e@example.com', name: 'E', role: 'coach' }
+    globalThis.fetch = (async (input, init) => {
+      expect(input.toString()).toContain('/me')
+      return jsonResponse(init?.cache === 'no-store' ? fresh : { ...fresh, role: 'admin' })
+    }) as typeof fetch
+
+    const { fetchAuthUser, user } = useAuth()
+    expect(await fetchAuthUser()).toEqual(fresh)
+    expect(user.value).toEqual(fresh)
+  })
+
+  it('the default identity action prevents offline storage of roles', async () => {
+    const action = (await import('../../../defaults/app/Actions/Auth/AuthUserAction')).default
+    const result = await action.handle({ user: async () => ({ id: 3, role: 'coach' }) } as any)
+    expect(result.headers.get('Cache-Control')).toBe('private, no-store')
+    expect(await result.json()).toEqual({ id: 3, role: 'coach' })
+  })
 })
 
 // `storage/framework/defaults/functions/auth.ts` is userland-copied into

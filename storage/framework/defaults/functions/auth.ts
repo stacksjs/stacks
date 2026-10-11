@@ -91,6 +91,7 @@ export function useAuth(): AuthComposable {
   async function fetchAuthUser(): Promise<UserData | null> {
     try {
       const response = await fetch(`${baseUrl}/me`, {
+        cache: 'no-store',
         credentials: 'same-origin',
         headers: {
           ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
