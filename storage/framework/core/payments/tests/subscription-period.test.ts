@@ -123,4 +123,30 @@ describe('manageSubscription.cancelAtPeriodEnd', () => {
     expect(updates).toHaveLength(1)
     expect(writes).toEqual([])
   })
+
+  // A key fixed per subscription made Stripe replay the first cancel's answer
+  // for 24 hours, so cancelling again soon after a resume never reached it.
+  it('reaches Stripe again after a resume: each attempt has its own key', async () => {
+    subscriptionReturned = subscription({ itemEnd: 1790000000 })
+
+    await manageSubscription.cancelAtPeriodEnd('sub_1')
+    await manageSubscription.resume('sub_1')
+    await manageSubscription.cancelAtPeriodEnd('sub_1')
+
+    const keys = updates.map(update => (update.options as { idempotencyKey: string }).idempotencyKey)
+    expect(new Set(keys).size).toBe(3)
+  })
+})
+
+describe('manageSubscription.resume', () => {
+  it('renews again with an idempotency key, and clears the recorded end', async () => {
+    subscriptionReturned = subscription({ itemEnd: 1790000000 })
+
+    await manageSubscription.resume('sub_1')
+
+    expect(updates).toHaveLength(1)
+    expect(updates[0]).toMatchObject({ id: 'sub_1', params: { cancel_at_period_end: false } })
+    expect((updates[0]!.options as { idempotencyKey?: string }).idempotencyKey).toBeString()
+    expect(writes).toEqual([{ table: 'subscriptions', values: { ends_at: null }, where: ['provider_id', 'sub_1'] }])
+  })
 })

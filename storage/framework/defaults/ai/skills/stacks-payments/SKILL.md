@@ -117,7 +117,7 @@ const changed = await Payment.changeSubscription(user, 'enterprise-monthly')
 
 `isValid()` returns `true` if the subscription status is `'active'` or `'trialing'`. `isIncomplete()` checks for `'incomplete'` status.
 
-`cancelSubscription(id, immediately)` is gone: its `false` also cancelled at once, only with a proration. For Stripe's `prorate` / `invoice_now`, call `manageSubscription.cancel(id, params)`.
+`cancelSubscription(id, immediately)` is gone: its `false` also cancelled at once, only with a proration. For Stripe's `prorate` / `invoice_now`, call `manageSubscription.cancel(id, params)`. To undo a cancel at period end before the period ends, call `manageSubscription.resume(id)`: Stripe renews again and the stored `ends_at` is cleared. Both use a fresh idempotency key per attempt, so cancel → resume → cancel within Stripe's 24-hour key window still reaches Stripe each time.
 
 ### Customers
 

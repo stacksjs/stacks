@@ -351,18 +351,8 @@ async function cancelAtPeriodEnd(user: UserModel) {
 
   if (!subscription) throw new Error('No subscription found')
 
-  await stripe.subscriptions.update(subscription.provider_id, {
-    cancel_at_period_end: true,
-  })
-
-  // Store cancellation date
-  const stripeSubscription = await stripe.subscriptions.retrieve(
-    subscription.provider_id
-  )
-
-  await subscription.update({
-    ends_at: new Date(stripeSubscription.current_period_end _ 1000).toISOString(),
-  })
+  // Stops renewal and stores `ends_at` from the current period's end
+  await manageSubscription.cancelAtPeriodEnd(subscription.provider_id)
 }
 ```
 
@@ -390,11 +380,8 @@ async function resumeSubscription(user: UserModel) {
 
   if (!subscription) throw new Error('No subscription found')
 
-  await stripe.subscriptions.update(subscription.provider_id, {
-    cancel_at_period_end: false,
-  })
-
-  await subscription.update({ ends_at: null })
+  // Renews again and clears `ends_at`
+  await manageSubscription.resume(subscription.provider_id)
 }
 ```
 

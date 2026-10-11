@@ -10,7 +10,7 @@ import { stripe } from '../drivers/stripe'
 import { manageCustomer } from './customer'
 import { managePrice } from './price'
 import { subscriptionPeriodEnd } from '../driver/stripe'
-import { stacksIdempotencyKey } from '../idempotency'
+import { freshIdempotencyKey, stacksIdempotencyKey } from '../idempotency'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
@@ -29,6 +29,11 @@ export interface SubscriptionManager {
    * entitles - and records when access ends in `ends_at`.
    */
   cancelAtPeriodEnd: (subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
+  /**
+   * Undo `cancelAtPeriodEnd` before the period ends: Stripe renews the
+   * subscription again, and the stored row's `ends_at` is cleared.
+   */
+  resume: (subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   retrieve: (user: UserModel, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>
@@ -202,13 +207,27 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function cancelAtPeriodEnd(subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
+    // A key per attempt, not per subscription. Setting the flag is safe to
+    // repeat, but a fixed key made Stripe replay its first answer for 24 hours:
+    // cancel, resume, cancel again within a day, and the second cancel never
+    // reached Stripe, so the subscription kept renewing.
     const subscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true }, {
-      idempotencyKey: stacksIdempotencyKey('subscription.cancel_at_period_end', subscriptionId),
+      idempotencyKey: freshIdempotencyKey('subscription.cancel_at_period_end', subscriptionId),
     })
 
     const endsAt = stripeTimestamp(subscriptionPeriodEnd(subscription))
     if (endsAt)
       await db.updateTable('subscriptions').set({ ends_at: endsAt }).where('provider_id', '=', subscriptionId).executeTakeFirst()
+
+    return subscription
+  }
+
+  async function resume(subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
+    const subscription = await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: false }, {
+      idempotencyKey: freshIdempotencyKey('subscription.resume', subscriptionId),
+    })
+
+    await db.updateTable('subscriptions').set({ ends_at: null }).where('provider_id', '=', subscriptionId).executeTakeFirst()
 
     return subscription
   }
@@ -337,5 +356,5 @@ export const manageSubscription: SubscriptionManager = (() => {
     ) as Partial<T>
   }
 
-  return { create, update, isValid, isIncomplete, cancel, cancelAtPeriodEnd, retrieve }
+  return { create, update, isValid, isIncomplete, cancel, cancelAtPeriodEnd, resume, retrieve }
 })()
