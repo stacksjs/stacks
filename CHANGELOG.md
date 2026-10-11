@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.134...v0.75.135)
+
+## 🐛 Bug Fixes
+
+- require shared hydration and compiler runtime corrections ([aaf7b85](https://github.com/stacksjs/stacks/commit/aaf7b85)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.133...v0.75.134)
 
 ## 🐛 Bug Fixes
