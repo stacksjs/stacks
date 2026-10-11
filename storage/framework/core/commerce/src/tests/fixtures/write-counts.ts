@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
@@ -41,19 +40,8 @@ for (const table of plan.tables) {
   for (const column of table.columns)
     delete column.references
 }
-// generateSql also writes migration files under the working directory.
-const scratch = mkdtempSync(join(tmpdir(), 'stacks-commerce-write-counts-sql-'))
-writeFileSync(join(scratch, 'package.json'), '{}')
-const cwd = process.cwd()
-let statements: string[]
-try {
-  process.chdir(scratch)
-  statements = generateSql(plan)
-}
-finally {
-  process.chdir(cwd)
-  rmSync(scratch, { recursive: true, force: true })
-}
+// Pure since bun-query-builder 0.3.7: rendering the SQL writes no files.
+const statements = generateSql(plan)
 
 const { deactivate, deactivateChildCategories } = await import('../../products/categories/destroy')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')

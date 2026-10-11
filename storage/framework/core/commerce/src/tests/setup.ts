@@ -27,7 +27,7 @@
  * env pin always lands before any test file's own imports evaluate.
  */
 
-import { existsSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -113,24 +113,8 @@ for (const table of plan.tables) {
     delete column.references
 }
 
-// `generateSql()` also writes one `.sql` migration file per statement
-// into `<nearest package.json dir>/database/migrations` (resolved off
-// `process.cwd()`) as a side effect — from this package's cwd that
-// would litter storage/framework/core/commerce/database/. Point the
-// side effect at a disposable temp workspace for the duration of the
-// call. The stub package.json makes its workspace-root walk stop there.
-const scratchDir = mkdtempSync(join(tmpdir(), 'stacks-commerce-migrations-'))
-writeFileSync(join(scratchDir, 'package.json'), '{}')
-const originalCwd = process.cwd()
-let statements: string[]
-try {
-  process.chdir(scratchDir)
-  statements = generateSql(plan)
-}
-finally {
-  process.chdir(originalCwd)
-  rmSync(scratchDir, { recursive: true, force: true })
-}
+// Pure since bun-query-builder 0.3.7: rendering the SQL writes no files.
+const statements = generateSql(plan)
 
 for (const statement of statements) {
   await db.unsafe(statement).execute()

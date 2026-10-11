@@ -1,6 +1,4 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
 
@@ -45,18 +43,8 @@ plan.tables = plan.tables.filter(table => table.table === 'query_logs')
 assert.equal(plan.tables.length, 1)
 for (const column of plan.tables[0]!.columns)
   delete column.references
-const scratch = mkdtempSync(join(tmpdir(), 'stacks-query-log-bindings-sql-'))
-writeFileSync(join(scratch, 'package.json'), '{}')
-const cwd = process.cwd()
-let statements: string[]
-try {
-  process.chdir(scratch)
-  statements = generateSql(plan)
-}
-finally {
-  process.chdir(cwd)
-  rmSync(scratch, { recursive: true, force: true })
-}
+// Pure since bun-query-builder 0.3.7: rendering the SQL writes no files.
+const statements = generateSql(plan)
 
 // Only the capture policy is under test, so everything else is pinned.
 // captureBindings is left as the application config resolved it, unless the
