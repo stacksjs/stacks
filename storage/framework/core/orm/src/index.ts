@@ -13,7 +13,7 @@
 // which made it the reason narrowing the server's injection alone saved
 // nothing.
 import '@stacksjs/validation/runtime'
-import { isCompiledBinary } from './utils/compiled-binary'
+import { isCompiledBinary } from '@stacksjs/path'
 
 export * from './utils/prunable'
 export type { PrunableOptions } from './utils/prunable'

@@ -23,7 +23,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { isCompiledBinary } from '../src/utils/compiled-binary'
+import { isCompiledBinary } from '../src/project'
 
 describe('isCompiledBinary', () => {
   it('recognises the virtual root a compiled binary runs from', () => {
@@ -88,7 +88,7 @@ describe('isCompiledBinary', () => {
  * guard and 0 with it, from the same build command.
  */
 describe('the model probe', () => {
-  const index = readFileSync(join(import.meta.dir, '..', 'src', 'index.ts'), 'utf8')
+  const index = readFileSync(join(import.meta.dir, '..', '..', 'orm', 'src', 'index.ts'), 'utf8')
 
   /** The index of `needle`, asserting it is there. */
   function indexOfExisting(needle: string, from = 0): number {
@@ -133,6 +133,6 @@ describe('the model probe', () => {
     // That import has to evaluate first or user models see `schema` in TDZ;
     // its own comment explains why. Anything added above it breaks that.
     expect(indexOfExisting(`import '@stacksjs/validation/runtime'`))
-      .toBeLessThan(indexOfExisting(`import { isCompiledBinary } from './utils/compiled-binary'`))
+      .toBeLessThan(indexOfExisting(`import { isCompiledBinary } from '@stacksjs/path'`))
   })
 })
