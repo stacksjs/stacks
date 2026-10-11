@@ -40,6 +40,18 @@ describe('registry publication confirmation', () => {
 })
 
 describe('publishables', () => {
+  it('keeps an installed framework release from selecting newer held versions', async () => {
+    const meta = JSON.parse(readFileSync(`${root}storage/framework/core/package.json`, 'utf-8'))
+    const parts = meta.version.split('.').map(Number)
+    const newer = `${parts[0]}.${parts[1]}.${parts[2] + 1}`
+    for (const pkg of await publishables(root)) {
+      const range = meta.dependencies[pkg.name]
+      if (!range || pkg.version !== meta.version) continue
+      expect(Bun.semver.satisfies(meta.version, range), pkg.name).toBe(true)
+      expect(Bun.semver.satisfies(newer, range), pkg.name).toBe(false)
+    }
+  })
+
   it('finds the scoped framework packages but not the separately published meta-package', async () => {
     const found = await publishables(root)
     const names = found.map(pkg => pkg.name)
