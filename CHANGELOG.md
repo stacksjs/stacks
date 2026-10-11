@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.131...v0.75.133)
+
+## 🐛 Bug Fixes
+
+- require shared runtime and release tooling fixes ([86ab22d](https://github.com/stacksjs/stacks/commit/86ab22d)) _(by Chris <chris@stacksjs.com>)_
+- support parent row locks compatible with foreign key inserts ([2e6ca6f](https://github.com/stacksjs/stacks/commit/2e6ca6f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.75.132 ([6a83287](https://github.com/stacksjs/stacks/commit/6a83287)) _(by Chris <chrisbreuer93@gmail.com>)_
+- refresh native capability references for row lock modes ([a30e6c1](https://github.com/stacksjs/stacks/commit/a30e6c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.128...v0.75.132)
 
 ## 🐛 Bug Fixes
