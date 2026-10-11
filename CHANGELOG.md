@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.143...v0.75.144)
+
+## 🐛 Bug Fixes
+
+- **features**: a root model the app rewrote claims its table ([e708060](https://github.com/stacksjs/stacks/commit/e708060)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.141...v0.75.143)
 
 ## ✨ Features
