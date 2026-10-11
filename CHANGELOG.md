@@ -1,5 +1,41 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.135...v0.75.136)
+
+## ✨ Features
+
+- **cms**: load markdown blog posts for stx pages ([91f4d39](https://github.com/stacksjs/stacks/commit/91f4d39)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: build:dmg takes a flag for every packaging input ([bd92969](https://github.com/stacksjs/stacks/commit/bd92969)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2884](https://github.com/stacksjs/stacks/issues/2884), [#2885](https://github.com/stacksjs/stacks/issues/2885), [#2889](https://github.com/stacksjs/stacks/issues/2889), [#2890](https://github.com/stacksjs/stacks/issues/2890))
+- **desktop**: build:dmg builds its own prerequisite ([b269232](https://github.com/stacksjs/stacks/commit/b269232)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2884](https://github.com/stacksjs/stacks/issues/2884), [#2884](https://github.com/stacksjs/stacks/issues/2884), [#2885](https://github.com/stacksjs/stacks/issues/2885), [stacksjs/stacks#2885](https://github.com/stacksjs/stacks/issues/2885))
+
+## 🐛 Bug Fixes
+
+- **desktop**: the bundle carries the version the project declares ([a6215ef](https://github.com/stacksjs/stacks/commit/a6215ef)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **desktop**: Info.plist escapes the name and version an app chose ([3663033](https://github.com/stacksjs/stacks/commit/3663033)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **router**: say why a compiled binary cannot load a route file ([a716d25](https://github.com/stacksjs/stacks/commit/a716d25)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2888](https://github.com/stacksjs/stacks/issues/2888), [#2888](https://github.com/stacksjs/stacks/issues/2888), [#2886](https://github.com/stacksjs/stacks/issues/2886))
+- **server**: a compiled binary does not adopt a foreign project's maintenance mode ([88ea5b7](https://github.com/stacksjs/stacks/commit/88ea5b7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2888](https://github.com/stacksjs/stacks/issues/2888), [#2886](https://github.com/stacksjs/stacks/issues/2886))
+
+## ♻️ Code Refactoring
+
+- **path**: isCompiledBinary belongs beside projectPath ([291c883](https://github.com/stacksjs/stacks/commit/291c883)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2888](https://github.com/stacksjs/stacks/issues/2888), [#2886](https://github.com/stacksjs/stacks/issues/2886))
+
+## 📝 Documentation
+
+- **server**: why the compiled-binary maintenance skip is safe today ([95380af](https://github.com/stacksjs/stacks/commit/95380af)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2888](https://github.com/stacksjs/stacks/issues/2888))
+
+## ✅ Tests
+
+- pin every outbound integration's API version ([36fbbce](https://github.com/stacksjs/stacks/commit/36fbbce)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859))
+
+## 🔧 Chores
+
+- **ai**: refresh the native catalog after this session's export changes ([9d814d5](https://github.com/stacksjs/stacks/commit/9d814d5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.134...v0.75.135)
 
 ## 🐛 Bug Fixes
