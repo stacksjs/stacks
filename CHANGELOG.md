@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.128...v0.75.129)
+
+## 🐛 Bug Fixes
+
+- lint STX templates through Buddy and clear template warnings ([6818550](https://github.com/stacksjs/stacks/commit/6818550)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- refresh registry metadata during forced framework upgrades ([66fbcdf](https://github.com/stacksjs/stacks/commit/66fbcdf)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- consume published bumpx release manifest improvements ([a387232](https://github.com/stacksjs/stacks/commit/a387232)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.127...v0.75.128)
 
 ## 🐛 Bug Fixes
