@@ -67,7 +67,7 @@ function submit(): void {
   <form id="file-upload-form" @submit.prevent="submit">
     <label class="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-stone-300 rounded-xl dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer" @dragover.prevent @drop.prevent="handleDrop($event)">
       <span class="h-10 w-10 text-stone-400 i-hugeicons-upload-01"></span>
-      <span class="mt-3 font-semibold text-stone-800 text-sm dark:text-white">Choose files or drop them here</span>
+      <span class="mt-3 font-semibold text-sm text-stone-800 dark:text-white">Choose files or drop them here</span>
       <span class="mt-1 text-stone-500 text-xs dark:text-neutral-400">{{ selectedFilesLabel() }}</span>
       <input ref="dashboardFileUploadInput" name="files" type="file" class="sr-only" multiple @change="handleFileSelection($event)" />
     </label>

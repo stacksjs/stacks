@@ -84,12 +84,12 @@ function submit(): void {
     </div>
 
     <details :if="provider() !== 'aws_backup'" class="p-4 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">
-      <summary class="font-medium text-gray-900 text-sm cursor-pointer dark:text-white">Static credentials, optional</summary>
+      <summary class="font-medium text-gray-900 text-sm dark:text-white cursor-pointer">Static credentials, optional</summary>
       <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave blank to use the runtime's AWS credential chain. Submitted credentials are encrypted in the control plane.</p>
-      <div class="grid gap-4 mt-4 sm:grid-cols-2">
+      <div class="grid gap-4 sm:grid-cols-2 mt-4">
         <input x-model.trim="accessKeyId" autocomplete="off" placeholder="Access key id" aria-label="Access key id" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
         <input x-model="secretAccessKey" type="password" autocomplete="new-password" placeholder="Secret access key" aria-label="Secret access key" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
-        <input x-model="sessionToken" type="password" autocomplete="new-password" placeholder="Session token, optional" aria-label="Session token" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700 sm:col-span-2" />
+        <input x-model="sessionToken" type="password" autocomplete="new-password" placeholder="Session token, optional" aria-label="Session token" class="sm:col-span-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
       </div>
     </details>
 

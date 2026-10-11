@@ -75,7 +75,7 @@ function failedJobs(runId: number) {
 
   <div :if="loading() && runs().length === 0" class="px-5 py-12 text-center">
     <span aria-hidden="true" class="mx-auto h-6 w-6 text-violet-500 animate-spin i-hugeicons-loading-03"></span>
-    <p class="mt-2 text-zinc-500 text-xs">Fetching recent runs...</p>
+    <p class="mt-2 text-xs text-zinc-500">Fetching recent runs...</p>
   </div>
 
   <ul :if="runs().length > 0" class="px-5 py-3">
@@ -87,7 +87,7 @@ function failedJobs(runId: number) {
               <span :class="`px-1.5 py-0.5 text-[10px] font-medium rounded ${runStatusBadge(run.conclusion, run.status).cls}`" :text="runStatusBadge(run.conclusion, run.status).label"></span>
               <span class="font-medium text-sm text-zinc-800 truncate dark:text-zinc-200" :text="run.name"></span>
             </div>
-            <p :if="run.commitMessage" class="mt-1 text-zinc-500 text-xs truncate" :text="truncate(run.commitMessage, 80)"></p>
+            <p :if="run.commitMessage" class="mt-1 text-xs text-zinc-500 truncate" :text="truncate(run.commitMessage, 80)"></p>
             <div class="flex gap-2 items-center mt-1 text-[10px] text-zinc-400">
               <span class="font-mono" :text="run.headShaShort"></span>
               <span :if="run.headBranch" :text="run.headBranch"></span>
@@ -104,8 +104,8 @@ function failedJobs(runId: number) {
       </div>
 
       <div :if="expandedRunId() === run.id" class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-900">
-        <div :if="loadingJobsRunId() === run.id" class="py-2 text-zinc-500 text-xs">Loading jobs...</div>
-        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length === 0" class="py-1 italic text-zinc-400 text-xs">No job detail.</div>
+        <div :if="loadingJobsRunId() === run.id" class="py-2 text-xs text-zinc-500">Loading jobs...</div>
+        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length === 0" class="py-1 italic text-xs text-zinc-400">No job detail.</div>
         <div :if="loadingJobsRunId() !== run.id && failedJobs(run.id).length > 0" class="space-y-1.5">
           <p class="text-[10px] text-zinc-500 tracking-wide uppercase">Failed jobs</p>
           <a :for="job in failedJobs(run.id)" :href="job.url" target="_blank" rel="noreferrer" @click.stop class="flex gap-1.5 items-center no-underline text-red-700 text-xs dark:text-red-400 hover:underline">
@@ -114,7 +114,7 @@ function failedJobs(runId: number) {
             <span :if="job.durationMs" class="text-zinc-400" :text="'(' + formatDuration(job.durationMs) + ')'"></span>
           </a>
         </div>
-        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length > 0 && failedJobs(run.id).length === 0" class="py-1 text-zinc-500 text-xs">
+        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length > 0 && failedJobs(run.id).length === 0" class="py-1 text-xs text-zinc-500">
           All <span :text="jobsForRun(run.id).length"></span> jobs passed.
         </div>
       </div>
@@ -122,6 +122,6 @@ function failedJobs(runId: number) {
   </ul>
 
   <div :if="!loading() && !error() && runs().length === 0" class="px-5 py-12 text-center">
-    <p class="text-zinc-500 text-sm">No recent runs.</p>
+    <p class="text-sm text-zinc-500">No recent runs.</p>
   </div>
 </Drawer>

@@ -6,7 +6,7 @@
  * files the command does, instead of a second list that drifts.
  */
 
-const lintableFile = /\.(?:ts|js|json|md|yaml|yml)$/i
+const lintableFile = /\.(?:ts|js|stx|json|md|yaml|yml)$/i
 const ignoredPath = /(?:^|\/)(?:node_modules|dist|pantry|storage\/framework\/cache|\.git|\.stx|\.stx-serve)(?:\/|$)/
 
 /** Whether `buddy lint` lints `file`, a path relative to the project root with `/` separators. */

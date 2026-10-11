@@ -1,4 +1,4 @@
 {{-- Rich text block. `props.html` is sanitized by the render pipeline before it gets here. --}}
-<div class="cms-rich-text mx-auto max-w-3xl px-6 py-8 leading-relaxed">
+<div class="mx-auto px-6 py-8 max-w-3xl leading-relaxed cms-rich-text">
   {!! props.html !!}
 </div>

@@ -30,8 +30,8 @@ function icon(operation: DeploymentPreviewOperation): string {
   contentClassName="p-0"
   @close="emit('close')"
 >
-  <div :if="plan()" class="max-h-[65vh] overflow-y-auto">
-    <div class="grid gap-px grid-cols-2 md:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 border-neutral-200 border-b dark:border-neutral-700">
+  <div :if="plan()" class="overflow-y-auto max-h-[65vh]">
+    <div class="grid gap-px grid-cols-2 md:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 border-b border-neutral-200 dark:border-neutral-700">
       <div class="p-4 bg-white dark:bg-neutral-900">
         <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Environment</p>
         <p class="mt-1 capitalize font-semibold text-neutral-900 text-sm dark:text-white">{{ plan()?.environment }}</p>
@@ -76,10 +76,10 @@ function icon(operation: DeploymentPreviewOperation): string {
         </div>
         <ol class="mt-4 space-y-3">
           <li :for="operation, index in plan()?.operations || []" class="flex gap-4 items-start p-4 bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200 rounded-xl dark:border-neutral-700">
-            <div class="flex shrink-0 items-center justify-center h-9 w-9 text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/60 rounded-lg">
+            <div class="flex items-center justify-center shrink-0 h-9 w-9 text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/60 rounded-lg">
               <span aria-hidden="true" class="h-5 w-5 {{ icon(operation) }}"></span>
             </div>
-            <div class="min-w-0 flex-1">
+            <div class="flex-1 min-w-0">
               <div class="flex gap-2 items-center">
                 <span class="font-mono text-neutral-400 text-xs">{{ index + 1 }}</span>
                 <h5 class="font-semibold text-neutral-900 text-sm dark:text-white">{{ operation.label }}</h5>
@@ -97,7 +97,7 @@ function icon(operation: DeploymentPreviewOperation): string {
           <article :for="site in plan()?.sites || []" class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
             <div class="flex gap-3 items-center justify-between">
               <h5 class="font-semibold text-neutral-900 text-sm dark:text-white">{{ site.name }}</h5>
-              <span class="px-2 py-1 font-mono text-neutral-600 text-[11px] dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-md">{{ site.kind }}</span>
+              <span class="px-2 py-1 font-mono text-[11px] text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-md">{{ site.kind }}</span>
             </div>
             <p class="mt-2 text-neutral-500 text-xs dark:text-neutral-400">{{ site.domains.join(', ') || 'Private service' }}{{ site.path !== '/' ? site.path : '' }}</p>
           </article>

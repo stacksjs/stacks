@@ -39,25 +39,25 @@ const nextSteps = [
       <link rel="canonical" href="{{ canonicalUrl }}">
     @endif
   </head>
-  <body class="min-h-screen bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
-    <main class="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">Your app is running</p>
-      <h1 class="mt-2 text-4xl font-semibold tracking-tight">{{ appName }}</h1>
+  <body class="min-h-screen antialiased text-neutral-900 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+    <main class="flex flex-col justify-center mx-auto px-6 py-16 max-w-2xl min-h-screen">
+      <p class="font-medium text-neutral-500 text-sm dark:text-neutral-400">Your app is running</p>
+      <h1 class="mt-2 font-semibold text-4xl tracking-tight">{{ appName }}</h1>
       <p class="mt-4 text-neutral-600 dark:text-neutral-300">
-        Start with <code class="rounded bg-neutral-200 px-1.5 py-0.5 text-sm dark:bg-neutral-800">./buddy dev</code>, then make it yours.
+        Start with <code class="px-1.5 py-0.5 text-sm bg-neutral-200 dark:bg-neutral-800 rounded">./buddy dev</code>, then make it yours.
       </p>
 
-      <ul class="mt-10 divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+      <ul class="mt-10 border-neutral-200 border-y divide-neutral-200 divide-y dark:border-neutral-800 dark:divide-neutral-800">
         @foreach(nextSteps as step)
-          <li class="flex items-center gap-4 py-4">
+          <li class="flex gap-4 items-center py-4">
             <span class="{{ step.icon }} size-5 text-neutral-500 dark:text-neutral-400" aria-hidden="true"></span>
             <span class="font-medium">{{ step.title }}</span>
-            <code class="ml-auto text-sm text-neutral-500 dark:text-neutral-400">{{ step.path }}</code>
+            <code class="ml-auto text-neutral-500 text-sm dark:text-neutral-400">{{ step.path }}</code>
           </li>
         @endforeach
       </ul>
 
-      <p class="mt-10 text-sm text-neutral-500 dark:text-neutral-400">
+      <p class="mt-10 text-neutral-500 text-sm dark:text-neutral-400">
         <a class="underline underline-offset-4 hover:text-neutral-900 dark:hover:text-neutral-100" href="https://stacksjs.com/docs">Read the Stacks docs</a>
       </p>
     </main>

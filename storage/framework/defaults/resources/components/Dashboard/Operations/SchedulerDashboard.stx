@@ -97,7 +97,7 @@ onMount(() => {
 
   <OperationsNavigation active="scheduler" />
 
-  <div :if="loadError()" role="alert" class="flex flex-col gap-3 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900 sm:flex-row sm:items-center sm:justify-between">
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
     <Button size="sm" variant="secondary" @click="loadOperations">Try again</Button>
   </div>

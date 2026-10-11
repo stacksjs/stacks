@@ -106,8 +106,8 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
           Outbound messages recorded by the local log driver. Active mailer: {{ activeDriver() || 'log' }}.
         </p>
-        <div :if="unreadable().length > 0" class="mt-2 flex gap-2 items-start px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-xs dark:bg-amber-900/20 dark:border-amber-800/40 dark:text-amber-200">
-          <span class="mt-0.5 h-3.5 w-3.5 shrink-0 i-hugeicons-alert-02"></span>
+        <div :if="unreadable().length > 0" class="flex gap-2 items-start mt-2 px-3 py-2 text-amber-800 text-xs dark:text-amber-200 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 rounded-md dark:border-amber-800/40">
+          <span class="shrink-0 mt-0.5 h-3.5 w-3.5 i-hugeicons-alert-02"></span>
           <div>
             <p class="font-medium">
               {{ unreadable().length }} capture{{ unreadable().length === 1 ? '' : 's' }} could not be read and {{ unreadable().length === 1 ? 'was' : 'were' }} left out of this list.

@@ -327,7 +327,7 @@ onMount(() => {
               <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ rollbackPlan()?.site || 'All sites' }} in {{ rollbackPlan()?.environment }}</p>
             </div>
           </div>
-          <pre class="mt-4 p-3 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-neutral-600 text-xs dark:text-neutral-300 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">{{ rollbackPlan()?.output }}</pre>
+          <pre class="overflow-auto mt-4 p-3 max-h-40 font-mono text-neutral-600 text-xs whitespace-pre-wrap dark:text-neutral-300 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">{{ rollbackPlan()?.output }}</pre>
         </div>
         <div :for="warning in rollbackPlan()?.warnings || []" class="flex gap-2 items-start text-orange-800 text-sm dark:text-orange-200">
           <span aria-hidden="true" class="shrink-0 mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>

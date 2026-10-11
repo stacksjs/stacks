@@ -1,5 +1,5 @@
 {{-- Columns block: 1-4 sanitized HTML columns on a responsive grid. --}}
-<div class="cms-columns mx-auto max-w-6xl px-6 py-8">
+<div class="mx-auto px-6 py-8 max-w-6xl cms-columns">
   {{-- Literal class names, not `md:grid-cols-{{ n }}`: Crosswind extracts
        classes from template SOURCE, so a composed name generates no CSS. --}}
   <div class="grid grid-cols-1 gap-8 {{ props.columns.length === 4 ? 'md:grid-cols-4' : (props.columns.length === 3 ? 'md:grid-cols-3' : (props.columns.length === 2 ? 'md:grid-cols-2' : '')) }}">

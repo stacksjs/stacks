@@ -54,6 +54,19 @@ describe('lintableFiles', () => {
     expect(lintableFiles(repo)).toContain('src/committed.ts')
   })
 
+  test('includes both tracked and newly written STX templates', () => {
+    write('resources/views/tracked.stx', '<div class="px-4 text-sm">Tracked</div>\n')
+    git('add -A')
+    git('commit -qm templates')
+    write('resources/components/fresh.stx', '<div class="px-4 text-sm">New</div>\n')
+    write('dist/generated.stx', '<div>Build output</div>\n')
+
+    const files = lintableFiles(repo)
+    expect(files).toContain('resources/views/tracked.stx')
+    expect(files).toContain('resources/components/fresh.stx')
+    expect(files).not.toContain('dist/generated.stx')
+  })
+
   test('lists a tracked file exactly once', () => {
     // `--cached --others` must not report a staged-and-modified file twice, or
     // pickier lints it twice and every finding in it is duplicated.
@@ -105,10 +118,11 @@ describe('lintableFiles', () => {
       mkdirSync(join(bare, 'src'), { recursive: true })
       mkdirSync(join(bare, 'node_modules/pkg'), { recursive: true })
       writeFileSync(join(bare, 'src/real.ts'), 'export const x = 1\n')
+      writeFileSync(join(bare, 'src/template.stx'), '<div>Template</div>\n')
       writeFileSync(join(bare, 'node_modules/pkg/index.ts'), 'export const x = 1\n')
       writeFileSync(join(bare, 'src/image.png'), 'not really a png')
 
-      expect(lintableFiles(bare)).toEqual(['src/real.ts'])
+      expect(lintableFiles(bare)).toEqual(['src/real.ts', 'src/template.stx'])
     }
     finally {
       rmSync(bare, { recursive: true, force: true })

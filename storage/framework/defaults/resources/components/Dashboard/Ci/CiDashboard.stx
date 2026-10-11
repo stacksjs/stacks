@@ -220,7 +220,7 @@
         <path :d="sparklinePath()" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
       </svg>
     </div>
-    <div :if="loadingHistory() && !hasHistory()" role="status" class="flex gap-2 items-center mb-5 text-zinc-500 text-xs dark:text-zinc-400">
+    <div :if="loadingHistory() && !hasHistory()" role="status" class="flex gap-2 items-center mb-5 text-xs text-zinc-500 dark:text-zinc-400">
       <span aria-hidden="true" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
       <span>Loading runner history</span>
     </div>

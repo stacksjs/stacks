@@ -160,14 +160,14 @@ function submit(): void {
       </label>
 
       <label class="flex flex-col gap-2 sm:col-span-2">
-        <span class="flex items-center justify-between gap-3">
+        <span class="flex gap-3 items-center justify-between">
           <span class="font-medium text-sm">Content</span>
           <span :if="bodyLoading()" role="status" class="inline-flex gap-1.5 items-center text-neutral-500 text-xs dark:text-neutral-400">
             <span class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
             Loading content
           </span>
         </span>
-        <textarea x-model="body" name="body" rows="14" :disabled="bodyLoading() || bodyLoadFailed()" class="px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md disabled:opacity-60 dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 resize-y"></textarea>
+        <textarea x-model="body" name="body" rows="14" :disabled="bodyLoading() || bodyLoadFailed()" class="px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 disabled:opacity-60 resize-y"></textarea>
         <span class="text-neutral-500 text-xs dark:text-neutral-400">Markdown. {{ wordCount() }} words, about {{ readingTime() }} min read.</span>
       </label>
     </div>

@@ -5,7 +5,7 @@
   and submits through useMutation, which repeats the page's CSRF cookie in
   the header the submit route checks.
 --}}
-<div class="cms-form mx-auto max-w-xl px-6 py-8" data-form-uuid="{{ props.formUuid }}">
+<div class="mx-auto px-6 py-8 max-w-xl cms-form" data-form-uuid="{{ props.formUuid }}">
   <script client>
   import type { PublicFormDefinition, PublicFormField, SubmissionErrors } from '@stacksjs/forms'
   import { moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
@@ -225,29 +225,29 @@
   </script>
 
   <div ref="host" data-form-uuid="{{ props.formUuid }}">
-    <div :if="done()" class="rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-[15px] text-green-900">{{ done() }}</div>
+    <div :if="done()" class="px-5 py-4 text-[15px] text-green-900 bg-green-50 border border-green-200 rounded-lg">{{ done() }}</div>
     <form :else-if="definition()" @submit="submit" novalidate>
-      <h2 class="text-2xl font-semibold tracking-tight">{{ definition()?.name }}</h2>
-      <p :if="errors()._form" class="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-800">{{ errors()._form }}</p>
+      <h2 class="font-semibold text-2xl tracking-tight">{{ definition()?.name }}</h2>
+      <p :if="errors()._form" class="mt-3 px-4 py-3 text-[14px] text-red-800 bg-red-50 border border-red-200 rounded-lg">{{ errors()._form }}</p>
 
-      <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-6">
         <template :for="field in definition()?.fields ?? []">
           <div :if="fieldVisible(field)" class="{{ field.width === 'half' ? '' : 'sm:col-span-2' }}">
-            <h3 :if="field.type === 'section_break'" class="mt-2 border-t border-gray-200 pt-4 text-lg font-medium">{{ field.label }}</h3>
+            <h3 :if="field.type === 'section_break'" class="mt-2 pt-4 font-medium text-lg border-gray-200 border-t">{{ field.label }}</h3>
             <template :else>
-              <label class="block text-[14px] font-medium text-gray-800">{{ field.label }}<span :if="field.required" aria-hidden="true" class="text-red-500"> *</span></label>
-              <textarea :if="field.type === 'textarea'" rows="4" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" @input="values[field.name] = $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]"></textarea>
-              <select :else-if="field.type === 'select'" :required="field.required" @change="values[field.name] = $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px] bg-white">
+              <label class="block font-medium text-[14px] text-gray-800">{{ field.label }}<span :if="field.required" aria-hidden="true" class="text-red-500"> *</span></label>
+              <textarea :if="field.type === 'textarea'" rows="4" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" @input="values[field.name] = $event.target.value" class="mt-1.5 px-3.5 py-2.5 w-full text-[15px] border border-gray-300 rounded-lg"></textarea>
+              <select :else-if="field.type === 'select'" :required="field.required" @change="values[field.name] = $event.target.value" class="mt-1.5 px-3.5 py-2.5 w-full text-[15px] bg-white border border-gray-300 rounded-lg">
                 <option value="">Choose...</option>
                 <option :for="choice in field.options.choices ?? []" value="{{ choice.value }}">{{ choice.label }}</option>
               </select>
               <div :else-if="field.type === 'radio'" class="mt-2 space-y-2">
-                <label :for="choice in field.options.choices ?? []" class="flex items-center gap-2.5 text-[15px]">
+                <label :for="choice in field.options.choices ?? []" class="flex gap-2.5 items-center text-[15px]">
                   <input type="radio" name="{{ field.name }}" value="{{ choice.value }}" @change="values[field.name] = $event.target.value" class="h-4 w-4">
                   {{ choice.label }}
                 </label>
               </div>
-              <label :else-if="field.type === 'checkbox'" class="mt-2 flex items-center gap-2.5 text-[15px]">
+              <label :else-if="field.type === 'checkbox'" class="flex gap-2.5 items-center mt-2 text-[15px]">
                 <input type="checkbox" @change="values[field.name] = $event.target.checked" class="h-4 w-4 rounded">
                 {{ field.options.placeholder ?? 'Yes' }}
               </label>
@@ -255,11 +255,11 @@
                    a person typed prose into what should have been a picker and
                    the submission could never satisfy it. --}}
               <div :else-if="field.type === 'file'" class="mt-1.5">
-                <input type="file" :required="field.required && !values[field.name]" :disabled="uploading[field.name]" accept="{{ acceptAttr(field) }}" @change="uploadFile(field, $event)" class="block w-full text-[15px] file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3.5 file:py-2 file:text-[14px] file:font-medium">
+                <input type="file" :required="field.required && !values[field.name]" :disabled="uploading[field.name]" accept="{{ acceptAttr(field) }}" @change="uploadFile(field, $event)" class="block file:mr-3 file:px-3.5 file:py-2 w-full text-[15px] file:font-medium file:text-[14px] file:bg-gray-100 file:border-0 file:rounded-lg">
                 <p :if="uploading[field.name]" class="mt-1.5 text-[13px] text-gray-500">Uploading...</p>
                 <p :else-if="attached[field.name]" class="mt-1.5 text-[13px] text-green-700">Attached {{ attached[field.name] }}</p>
               </div>
-              <input :else type="{{ field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : (field.type === 'date' ? 'date' : (field.type === 'currency' ? 'number' : 'text'))) }}" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" :step="field.type === 'currency' ? moneyInputStep(formCurrency()) : null" @input="setInput(field, $event.target.value)" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]">
+              <input :else type="{{ field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : (field.type === 'date' ? 'date' : (field.type === 'currency' ? 'number' : 'text'))) }}" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" :step="field.type === 'currency' ? moneyInputStep(formCurrency()) : null" @input="setInput(field, $event.target.value)" class="mt-1.5 px-3.5 py-2.5 w-full text-[15px] border border-gray-300 rounded-lg">
               <p :if="errors()[field.name]" class="mt-1.5 text-[13px] text-red-600">{{ errors()[field.name] }}</p>
             </template>
           </div>
@@ -268,7 +268,7 @@
 
       <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" @input="values._hp = $event.target.value">
 
-      <button type="submit" :disabled="sending() || anyUploading()" class="mt-7 rounded-lg px-6 py-3 font-medium bg-gray-900 text-white transition-transform active:scale-[0.98] disabled:opacity-60">
+      <button type="submit" :disabled="sending() || anyUploading()" class="mt-7 px-6 py-3 font-medium text-white bg-gray-900 rounded-lg disabled:opacity-60 transition-transform active:scale-[0.98]">
         {{ sending() ? 'Sending...' : (definition()?.submitLabel ?? 'Submit') }}
       </button>
     </form>

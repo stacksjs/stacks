@@ -92,7 +92,7 @@ function tapBack(event: MouseEvent): void {
       <slot name="leading" />
     </div>
     <p class="native-nav-title" aria-hidden="{{ large ? 'true' : 'false' }}">{{ navTitle() }}</p>
-    <div class="native-nav-side native-nav-actions">
+    <div class="native-nav-actions native-nav-side">
       <slot name="actions" />
     </div>
   </header>

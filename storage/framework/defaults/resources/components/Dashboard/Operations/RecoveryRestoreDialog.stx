@@ -59,7 +59,7 @@ function execute(): void { emit('execute', input(true)) }
       </div>
     </div>
     <label :if="mode() === 'isolated'" class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="drill" type="checkbox" /> Run as a recovery drill and clean the isolated target after health validation</label>
-    <div :if="mode() === 'in_place'" class="space-y-4 p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+    <div :if="mode() === 'in_place'" class="p-4 space-y-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
       <p class="font-medium text-sm">In-place restore replaces live data and requires a distinct verified safety point.</p>
       <div>
         <label for="restore-safety" class="block mb-1.5 font-medium text-sm">Safety recovery point</label>

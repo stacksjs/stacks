@@ -89,7 +89,7 @@ onMount(() => void load())
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
-    <div class="flex flex-col gap-3 px-4 py-4 border-b border-gray-200 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-4 border-b border-gray-200 dark:border-neutral-800">
       <div>
         <h2 class="font-semibold text-gray-900 dark:text-white">Schema plan</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ data()?.dialect || 'database' }} in {{ data()?.environment || 'current environment' }}. The plan revision is rechecked at execution.</p>
@@ -101,8 +101,8 @@ onMount(() => void load())
       <p class="mt-3 font-medium text-gray-900 dark:text-white">Schema is current</p>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Models and the connected database have no pending structural changes.</p>
     </div>
-    <div :if="data()?.operations.length" class="divide-y divide-gray-100 dark:divide-neutral-800">
-      <div :for="operation in data()?.operations || []" class="flex items-start justify-between gap-4 px-4 py-3">
+    <div :if="data()?.operations.length" class="divide-gray-100 divide-y dark:divide-neutral-800">
+      <div :for="operation in data()?.operations || []" class="flex gap-4 items-start justify-between px-4 py-3">
         <div>
           <p class="font-medium text-gray-900 text-sm dark:text-white">{{ operation.kind.replaceAll('_', ' ') }}</p>
           <p class="mt-0.5 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ operation.table }}{{ operation.column ? '.' + operation.column : '' }}</p>
@@ -113,16 +113,16 @@ onMount(() => void load())
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
-    <div class="flex items-center justify-between gap-3 px-4 py-4 border-b border-gray-200 dark:border-neutral-800">
+    <div class="flex gap-3 items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-neutral-800">
       <div>
         <h2 class="font-semibold text-gray-900 dark:text-white">Migration ledger</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Compared with both migration files and live schema effects.</p>
       </div>
       <Button variant="secondary" :disabled="!data()?.summary.drift" @click="openDialog('reconcile')">Reconcile provable drift</Button>
     </div>
-    <div class="max-h-96 overflow-auto divide-y divide-gray-100 dark:divide-neutral-800">
-      <div :for="entry in data()?.ledger.entries || []" class="flex items-center justify-between gap-4 px-4 py-3">
-        <span class="min-w-0 truncate font-mono text-gray-700 text-xs dark:text-neutral-300">{{ entry.file }}</span>
+    <div class="overflow-auto max-h-96 divide-gray-100 divide-y dark:divide-neutral-800">
+      <div :for="entry in data()?.ledger.entries || []" class="flex gap-4 items-center justify-between px-4 py-3">
+        <span class="min-w-0 font-mono text-gray-700 text-xs truncate dark:text-neutral-300">{{ entry.file }}</span>
         <span :class="'shrink-0 px-2 py-1 font-medium text-xs rounded-md ' + statusClass(entry.status)">{{ entry.status }}</span>
       </div>
     </div>

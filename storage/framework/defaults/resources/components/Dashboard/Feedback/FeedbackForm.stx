@@ -176,7 +176,7 @@ function another() {
         <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-full">
           <span class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
         </div>
-        <h1 class="mb-2 font-semibold text-xl text-neutral-900 tracking-tight dark:text-white">This feedback link is not valid</h1>
+        <h1 class="mb-2 font-semibold text-neutral-900 text-xl tracking-tight dark:text-white">This feedback link is not valid</h1>
         <p class="text-[15px] text-neutral-500 dark:text-neutral-400">
           It may have been turned off, or it may have expired. Ask whoever sent it for a fresh one.
         </p>
@@ -186,9 +186,9 @@ function another() {
         <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full">
           <span class="h-6 w-6 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02"></span>
         </div>
-        <h1 class="mb-2 font-semibold text-xl text-neutral-900 tracking-tight dark:text-white">Thank you</h1>
+        <h1 class="mb-2 font-semibold text-neutral-900 text-xl tracking-tight dark:text-white">Thank you</h1>
         <p class="mb-6 text-[15px] text-neutral-500 dark:text-neutral-400">Your feedback is on the board.</p>
-        <button type="button" @click="another" class="px-5 py-2.5 font-medium text-sm text-white bg-neutral-900 rounded-lg transition-transform dark:bg-white dark:text-neutral-900 active:scale-[0.98]">
+        <button type="button" @click="another" class="px-5 py-2.5 font-medium text-sm text-white dark:text-neutral-900 bg-neutral-900 dark:bg-white rounded-lg transition-transform active:scale-[0.98]">
           Send another
         </button>
       </div>
@@ -203,7 +203,7 @@ function another() {
 
         <form @submit.prevent="submit" @paste="paste($event)" class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-sm">
           <div :if="error()" role="alert" class="flex gap-2 items-center mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
-            <span class="h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
+            <span class="flex-shrink-0 h-4 w-4 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
             <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
           </div>
 
@@ -216,7 +216,7 @@ function another() {
               :disabled="status() === 'sending'"
               required
               placeholder="A short summary"
-              class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg transition-colors dark:border-neutral-600 placeholder:text-neutral-400 hover:border-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 hover:border-neutral-400 transition-colors"
             />
           </label>
 
@@ -228,7 +228,7 @@ function another() {
               :maxlength="maxDescription()"
               :disabled="status() === 'sending'"
               placeholder="Where you were, what you expected, and what you got instead"
-              class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg resize-y transition-colors dark:border-neutral-600 placeholder:text-neutral-400 hover:border-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              class="block px-3 py-2.5 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 hover:border-neutral-400 transition-colors resize-y"
             ></textarea>
           </label>
 
@@ -236,14 +236,14 @@ function another() {
             <span class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">Screenshot <span class="font-normal text-neutral-400">(optional)</span></span>
 
             <div :if="screenshot()" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 rounded-lg dark:border-neutral-700">
-              <img :src="preview()" alt="The screenshot you chose" class="h-14 w-14 bg-white dark:bg-neutral-900 border border-neutral-200 rounded object-cover dark:border-neutral-700" />
+              <img :src="preview()" alt="The screenshot you chose" class="object-cover h-14 w-14 bg-white dark:bg-neutral-900 border border-neutral-200 rounded dark:border-neutral-700" />
               <span class="flex-1 min-w-0 text-neutral-600 text-sm truncate dark:text-neutral-300">{{ screenshot()?.name || 'Pasted image' }}</span>
-              <button type="button" @click="clear" class="flex-shrink-0 px-2.5 py-1.5 font-medium text-neutral-600 text-xs dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700">
+              <button type="button" @click="clear" class="flex-shrink-0 px-2.5 py-1.5 font-medium text-neutral-600 text-xs dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md">
                 Remove
               </button>
             </div>
 
-            <label :else class="flex flex-col items-center justify-center px-4 py-6 text-center border border-neutral-300 border-dashed rounded-lg cursor-pointer transition-colors dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600" @dragover.prevent @drop.prevent="drop($event)">
+            <label :else class="flex flex-col items-center justify-center px-4 py-6 text-center border border-dashed border-neutral-300 rounded-lg dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600 transition-colors cursor-pointer" @dragover.prevent @drop.prevent="drop($event)">
               <span class="h-6 w-6 text-neutral-400 i-hugeicons-image-upload"></span>
               <span class="mt-2 font-medium text-neutral-700 text-sm dark:text-neutral-200">Choose an image, drop it here, or paste it</span>
               <span class="mt-1 text-neutral-400 text-xs">PNG, JPEG, WebP or GIF, up to {{ megabytes(sizeLimit()) }}</span>
@@ -262,7 +262,7 @@ function another() {
           <button
             type="submit"
             :disabled="!canSubmit()"
-            class="flex gap-2 items-center justify-center px-5 py-2.5 w-full font-medium text-sm text-white bg-neutral-900 rounded-lg transition-transform dark:bg-white dark:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.99]"
+            class="flex gap-2 items-center justify-center px-5 py-2.5 w-full font-medium text-sm text-white dark:text-neutral-900 bg-neutral-900 dark:bg-white rounded-lg disabled:opacity-50 transition-transform active:scale-[0.99] disabled:cursor-not-allowed"
           >
             <span :if="status() === 'sending'" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
             <span>{{ status() === 'sending' ? 'Sending' : 'Send feedback' }}</span>

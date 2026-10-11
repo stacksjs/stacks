@@ -80,7 +80,7 @@ function stateClass(record: AbandonedCartRecord): string {
               <p class="text-gray-900 text-sm dark:text-white">{{ contents(record) }}</p>
               <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Cart #{{ record.id }}</p>
             </td>
-            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm tabular-nums dark:text-white">{{ money(record.value, record.currency) }}</p></td>
+            <td class="px-4 py-4"><p class="font-medium tabular-nums text-gray-900 text-sm dark:text-white">{{ money(record.value, record.currency) }}</p></td>
             <td class="px-4 py-4"><p class="text-gray-900 text-sm dark:text-white">{{ idle(record.idleHours) }}</p></td>
             <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + stateClass(record)">{{ stateLabel(record) }}</span></td>
           </tr>

@@ -1,5 +1,5 @@
 {{-- Embed block: sandboxed iframe, never inline third-party markup. --}}
-<div class="cms-embed mx-auto max-w-4xl px-6 py-8">
+<div class="mx-auto px-6 py-8 max-w-4xl cms-embed">
   <div class="relative w-full overflow-hidden rounded-lg {{ props.aspect === '4:3' ? 'aspect-[4/3]' : (props.aspect === '1:1' ? 'aspect-square' : 'aspect-video') }}">
     <iframe
       src="{{ props.src }}"

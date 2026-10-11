@@ -178,9 +178,9 @@ onMount(() => { void loadRecovery() })
   </PageHeader>
   <OperationsNavigation active="recovery" />
 
-  <div :if="loadError()" role="alert" class="flex flex-col gap-3 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900 sm:flex-row sm:items-center sm:justify-between"><span>{{ loadError() }}</span><Button size="sm" variant="secondary" @click="loadRecovery">Try again</Button></div>
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button size="sm" variant="secondary" @click="loadRecovery">Try again</Button></div>
 
-  <div :if="!isLoading() && (data()?.destinations.length || 0) === 0" class="flex flex-col gap-4 p-5 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900 sm:flex-row sm:items-center sm:justify-between">
+  <div :if="!isLoading() && (data()?.destinations.length || 0) === 0" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-5 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900">
     <div><p class="font-semibold">No recovery destination is connected</p><p class="mt-1 text-sm">Nothing is protected yet. Connect object storage or AWS Backup, then run its health test before creating policies.</p></div>
     <Button @click="showDestination.set(true)">Connect destination</Button>
   </div>
@@ -194,7 +194,7 @@ onMount(() => { void loadRecovery() })
   </section>
 
   <section>
-    <div class="flex flex-col gap-3 mb-3 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-3">
       <div><h2 class="font-semibold text-gray-900 dark:text-white">Destinations and policies</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Coverage is healthy only when a destination is healthy and the latest point meets its RPO.</p></div>
       <Button size="sm" variant="outline" :loading="busyId() === 'retention'" :disabled="busyId() !== ''" @click="retention">Run retention</Button>
     </div>
