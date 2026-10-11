@@ -33,6 +33,19 @@ describe('generated migration grouping', () => {
     ])
   })
 
+  it('gives a label added to an existing enum type its own file, before the change that uses it', () => {
+    // Postgres refuses a new label in the transaction that added it, and the
+    // runner wraps each file in one.
+    const groups = groupGeneratedStatements([
+      'ALTER TABLE "orders" ALTER COLUMN "state" SET DEFAULT \'refunded\';',
+      'ALTER TYPE "orders_state_type" ADD VALUE IF NOT EXISTS \'refunded\';',
+      'CREATE TYPE "orders_channel_type" AS ENUM (\'web\', \'pos\');',
+    ])
+
+    expect(groups.map(group => group.label)).toEqual(['create-database-types', 'add-enum-values', 'auto-misc'])
+    expect(groups[1]?.statements).toEqual(['ALTER TYPE "orders_state_type" ADD VALUE IF NOT EXISTS \'refunded\';'])
+  })
+
   it('keeps a new model table and its indexes in one create migration', () => {
     const groups = groupGeneratedStatements([
       'CREATE TABLE IF NOT EXISTS "packages" ("id" BIGSERIAL PRIMARY KEY);',

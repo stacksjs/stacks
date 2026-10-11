@@ -518,6 +518,13 @@ export interface Attribute {
   /** Explicit database nullability override. */
   nullable?: boolean
   type?: string
+  /**
+   * Total significant digits of a decimal column, as in `decimal(precision, scale)`.
+   * bun-query-builder also reads `type: 'decimal(10,2)'`.
+   */
+  precision?: number
+  /** Digits after the decimal point of a decimal column. */
+  scale?: number
   default?: string | number | boolean | Date
   unique?: boolean
   order?: number

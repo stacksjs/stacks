@@ -38,13 +38,13 @@ describe('the migration corpus handed to bun-query-builder', () => {
     const body = runDatabaseMigrationBody()
 
     expect(body).toContain('migrationDirectory(dialect)')
-    expect(body).toContain('qbExecuteMigration(corpusDir)')
+    expect(body).toContain('qbExecuteMigrationWithReport(corpusDir')
   })
 
   test('is never the models directory', () => {
     const body = runDatabaseMigrationBody()
 
-    expect(body).not.toContain('qbExecuteMigration(modelsDir)')
+    expect(body).not.toContain('qbExecuteMigrationWithReport(modelsDir')
     expect(body).not.toContain('userModelsPath()')
   })
 

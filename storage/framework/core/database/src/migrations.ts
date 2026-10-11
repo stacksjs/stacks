@@ -30,7 +30,7 @@ import { defaultModelsPath } from './seeder'
 import type { MigrationOperation, MigrationPlan } from '@stacksjs/query-builder'
 import {
   createQueryBuilder,
-  executeMigration as qbExecuteMigration,
+  executeMigrationWithReport as qbExecuteMigrationWithReport,
   generateDiffOperations,
   generateMigration as qbGenerateMigration,
   resetDatabase as qbResetDatabase,
@@ -2001,7 +2001,16 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
 
     // Execute existing migration files
     log.debug(`[migration] Running migrations from: ${corpusDir}`)
-    await qbExecuteMigration(corpusDir)
+    //
+    // bun-query-builder audits the live schema against the model snapshot
+    // after a batch, and warns. `buddy migrate` already reports drift itself
+    // once the run is over - against the app's models, alongside the tables
+    // the ledger says should exist - so the library's copy is switched off
+    // rather than printed twice. Under --strict it stays on and strict: a
+    // batch that leaves the schema short of the models fails here, with the
+    // library's report as the error.
+    const strict = process.env.STACKS_MIGRATE_STRICT === '1'
+    await qbExecuteMigrationWithReport(corpusDir, strict ? { strict: true } : { auditDrift: false })
 
     const appliedAfter = await countAppliedMigrations()
     // A fresh corpus may have just created the same quoted-index shape. Add
@@ -4639,6 +4648,14 @@ export function groupGeneratedStatements(sqlStatements: string[], previousPlan?:
     const createType = stmt.match(/^\s*CREATE\s+TYPE\s+/i)
     if (createType) { push('create-database-types', stmt); continue }
 
+    // A label added to an existing enum type (bun-query-builder's
+    // `add_enum_value`) gets a file of its own, right after the type
+    // declarations. Postgres refuses to use a new label in the transaction
+    // that added it ("unsafe use of new value"), and the runner wraps each
+    // file in one - so an ADD VALUE sharing `auto-misc` with the ALTER COLUMN
+    // or default that uses the label failed the whole file.
+    if (/^\s*ALTER\s+TYPE\s+\S+\s+ADD\s+VALUE\b/i.test(stmt)) { push('add-enum-values', stmt); continue }
+
     const alter = stmt.match(/^\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+(?:ADD\s+COLUMN\s+["`]?(\w+)["`]?|DROP\s+COLUMN\s+["`]?(\w+)["`]?|ADD\s+CONSTRAINT)/i)
     const alterTable = alter?.[1]
     if (alter && alterTable) {
@@ -4674,9 +4691,12 @@ export function groupGeneratedStatements(sqlStatements: string[], previousPlan?:
     push('auto-misc', stmt)
   }
 
+  // Types first, then labels added to existing types, then everything else in
+  // emission order (the sort is stable).
+  const priority = (label: string): number => label === 'create-database-types' ? 0 : label === 'add-enum-values' ? 1 : 2
   const ordered = [...groups.entries()]
     .map(([label, statements]) => ({ label, statements }))
-    .sort((a, b) => Number(b.label === 'create-database-types') - Number(a.label === 'create-database-types'))
+    .sort((a, b) => priority(a.label) - priority(b.label))
 
   return withTableDropsLast(ordered, previousPlan)
 }

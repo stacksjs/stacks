@@ -426,6 +426,12 @@ interface MigrationOpLike {
   from?: string
   to?: string
   destructive: boolean
+  /**
+   * What the generator changed from what the model asked for, and why - for
+   * now, a NOT NULL column with no default added to an existing table, which
+   * is emitted nullable because the rows already there have no value for it.
+   */
+  warning?: string
 }
 
 /** Human-readable one-liner for a pending operation. */
@@ -449,6 +455,10 @@ function describeOp(op: MigrationOpLike): string {
       return `rename "${op.table}"."${op.from}" → "${op.to}"`
     case 'rename_table':
       return `rename table "${op.from}" → "${op.to}"`
+    case 'add_enum_value':
+      return `add value(s) to the enum type of "${op.table}"."${op.column}"`
+    case 'create_enum':
+      return `create the enum type for "${op.table}"${op.column ? `."${op.column}"` : ''}`
     default:
       return `${op.kind} on "${op.table}"${op.column ? `."${op.column}"` : ''}`
   }
@@ -506,6 +516,11 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
   const renames = operations.filter(o => o.kind === 'rename_column' || o.kind === 'rename_table')
   for (const r of renames)
     log.info(`Detected ${describeOp(r)} - applying as a rename (data preserved). Use --no-rename to drop + add instead.`)
+
+  // Where the generated SQL differs from what the model asked for - a NOT NULL
+  // column added nullable - say so before it is written, not after.
+  for (const op of operations.filter(o => o.warning))
+    log.warn(`${describeOp(op)}: ${op.warning}`)
 
   const destructive = operations.filter(o => o.destructive)
   if (destructive.length === 0)
@@ -681,6 +696,10 @@ export function migrate(buddy: CLI): void {
       // looked at — and a production database is the wrong place to find out.
       if (options.generate === false)
         process.env.STACKS_MIGRATE_NO_GENERATE = '1'
+      // The runner in the action subprocess fails a batch that leaves the
+      // schema short of the models (bun-query-builder's post-migrate audit).
+      if (options.strict)
+        process.env.STACKS_MIGRATE_STRICT = '1'
 
       // --diff: dry-run only. Preview the pending operations + SQL and exit
       // without writing files or applying anything. `--dry-run` and
@@ -720,8 +739,11 @@ export function migrate(buddy: CLI): void {
         }
         if (ops.length > 0) {
           log.info(`${ops.length} model change${ops.length === 1 ? '' : 's'} not in a migration file yet:`)
-          for (const op of ops)
+          for (const op of ops) {
             log.info(`  • ${describeOp(op)}${op.destructive ? '  [destructive]' : ''}`)
+            if (op.warning)
+              log.warn(`    ${op.warning}`)
+          }
         }
 
         const drift = await auditSchemaDrift()

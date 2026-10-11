@@ -22,7 +22,7 @@ if (step === 'migrate-skipping') {
   Bun.plugin({
     setup(build) {
       build.module('@stacksjs/query-builder', () => ({
-        exports: { ...real, executeMigration: async () => true },
+        exports: { ...real, executeMigration: async () => true, executeMigrationWithReport: async () => ({ ok: true, executed: [] }) },
         loader: 'object',
       }))
     },
