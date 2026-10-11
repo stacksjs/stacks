@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.137...v0.75.138)
+
+## ✨ Features
+
+- **notifications**: unsubscribe links and opt-out lines for marketing ([841b67f](https://github.com/stacksjs/stacks/commit/841b67f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: require bun-query-builder 0.3.6 for where(col, 'is', null) ([4dfdb43](https://github.com/stacksjs/stacks/commit/4dfdb43)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.136...v0.75.137)
 
 ## ✨ Features
