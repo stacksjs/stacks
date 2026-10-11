@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.133...v0.75.134)
+
+## 🐛 Bug Fixes
+
+- require cloud cache concurrency correction ([9b5da17](https://github.com/stacksjs/stacks/commit/9b5da17)) _(by Chris <chris@stacksjs.com>)_
+- keep current account identity out of offline caches ([46776ed](https://github.com/stacksjs/stacks/commit/46776ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.131...v0.75.133)
 
 ## 🐛 Bug Fixes
