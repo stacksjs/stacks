@@ -4,6 +4,7 @@ import { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnec
 import { notificationPreferencesTableSql, notificationsTableSql } from '../../../database/src/notification-tables'
 import { bulkSetPreferences, filterChannelsByPreferences, getNotificationPreferences, setNotificationPreference } from '../../src/preferences'
 import { DatabaseNotificationDriver } from '../../src/drivers/database'
+import { createBroadcastHub, getServer, stopServer } from '@stacksjs/realtime'
 
 const directory = process.env.STACKS_PREFERENCE_TEST_DIRECTORY!
 const dialect = process.env.DB_CONNECTION === 'postgres' ? 'postgres' : 'sqlite'
@@ -39,5 +40,24 @@ const read = (await DatabaseNotificationDriver.getUserNotifications(1))[0]?.read
 assert.equal(read instanceof Date ? read.toISOString() : String(read), dialect === 'postgres' ? '2026-01-01T00:00:00.000Z' : '2026-01-01 00:00:00')
 await DatabaseNotificationDriver.deleteNotification(notification.id, 1)
 assert.equal((await DatabaseNotificationDriver.getUserNotifications(1)).length, 0)
+createBroadcastHub()
+const events: Array<{ event: string, data: unknown }> = []
+const remove = getServer()!.addBroadcastHook(frame => { events.push(frame) })
+const retries = await Promise.all([
+  DatabaseNotificationDriver.send({ userId: 1, type: 'chat_message', idempotencyKey: 'message:7', data: { body: 'Hello' } }),
+  DatabaseNotificationDriver.send({ userId: 1, type: 'chat_message', idempotencyKey: 'message:7', data: { body: 'Hello' } }),
+])
+assert.equal(retries[0].id, retries[1].id, 'concurrent chat notification retries return the same native inbox row')
+assert.equal((await DatabaseNotificationDriver.getUserNotifications(1)).length, 1)
+assert.equal(events.length, 1, 'one private invalidation for a concurrently retried notification')
+assert.equal(events[0].event, 'notifications.created')
+assert(!JSON.stringify(events[0]).includes('Hello'), 'notification contents never appear in the broadcast')
+await assert.rejects(db.transaction(async () => {
+  await DatabaseNotificationDriver.send({ userId: 1, type: 'chat_message', idempotencyKey: 'rollback', data: { body: 'Rolled back' } })
+  throw new Error('rollback')
+}))
+assert.equal(events.length, 1, 'rolled-back notifications never broadcast')
+remove()
+await stopServer()
 await resetDatabaseConnection()
 process.stdout.write('preference runtime OK\n')

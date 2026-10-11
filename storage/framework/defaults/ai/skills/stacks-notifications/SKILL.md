@@ -127,3 +127,17 @@ own their persistence; the query builder is bun-query-builder.
 `broadcast.test.ts` and `email-body.test.ts` cover retained behavior.
 For provider status, consult `config/src/capabilities.ts` and each channel
 skill; a constructed send request is not a live delivery assertion.
+
+## Live, retry-safe database notifications
+
+`useDatabase().send()` accepts an optional `idempotencyKey` (1–255 characters).
+Retries for the same user, notification type and producer key return the
+original inbox row, including concurrent retries. It uses the existing uuid
+column and a recipient row lock. Use a stable message/event identifier.
+
+New inbox rows broadcast `notifications.created` with `{ id }` on
+`notificationChannel(userId)` (`private-user.{id}`) when the native realtime
+engine is initialized. Delivery waits for transaction commit and carries no
+message body. Duplicated keys do not emit again. Set `broadcast: false` to
+suppress this invalidation. Serve an authenticated native broadcast stream for
+the server-selected user channel and reconcile the durable inbox on reconnect.

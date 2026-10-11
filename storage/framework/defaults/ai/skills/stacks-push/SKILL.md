@@ -405,3 +405,25 @@ to Expo; explicit FCM selection uses this package's direct send API.
 Evidence: `core/push/tests/web-push.test.ts`,
 `config-credentials.test.ts` and `fcm.test.ts`. These tests do not prove
 live delivery to a registered physical device.
+
+## Native Apple Push Notification Service (APNs)
+
+Use `send(deviceToken, notification, { driver: 'apns' })` for the hexadecimal
+Apple device tokens registered by Craft's iOS bridge. These are not FCM or
+Expo tokens. TestFlight uses production APNs; development builds use sandbox.
+
+`config/services.ts` supports `apns: { teamId, keyId, privateKey, topic,
+sandbox }`, or call `configureAPNS()` with the same fields. Framework defaults
+read APNS_TEAM_ID, APNS_KEY_ID, APNS_PRIVATE_KEY, APNS_TOPIC and
+APNS_ENVIRONMENT (`production` or `sandbox`). Use a key enabled for APNs, not
+an App Store Connect or Sign in with Apple key.
+
+The driver uses HTTP/2, ES256 P-256 provider tokens, raw JOSE signatures and a
+50-minute token cache. Payloads are limited to 4096 bytes. A collapseId can
+coalesce retries of one notification. Structured per-device results include
+Apple's status, reason and request identifier. Success means Apple accepted
+the request; it does not prove an alert appeared on a physical phone.
+
+`notify` accepts `recipient.pushDriver` for explicit native APNs/FCM selection.
+Evidence: `core/push/tests/apns.test.ts` exercises signatures, payloads and
+HTTP/2 success/rejection responses against a local server.

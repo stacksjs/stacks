@@ -59,6 +59,8 @@ export interface NotificationRecipient {
    * same way `email` / `phone` are required for their channels.
    */
   pushTokens?: string | string[]
+  /** Match the token issuer; native Apple tokens require apns. Defaults to Expo. */
+  pushDriver?: import('@stacksjs/push').PushDriver
   /**
    * WebSocket channel name for the `broadcast` notification channel
    * (stacksjs/stacks#669). When omitted, the driver derives a default:
@@ -320,7 +322,7 @@ export async function notify(
             title: payload.subject,
             body: payload.body,
             data: payload.data,
-          }))
+          }, { driver: recipient.pushDriver }))
           break
         }
         case 'broadcast': {
@@ -372,7 +374,7 @@ export { BroadcastNotificationDriver } from './drivers/broadcast'
 export type { BroadcastNotificationOptions, BroadcastNotificationResult } from './drivers/broadcast'
 export { makeDeliveryRecord, recordNotificationDelivery, resolveDeliveryRecipient } from './delivery'
 export type { NotificationDeliveryRecord } from './delivery'
-export { DatabaseNotificationDriver } from './drivers/database'
+export { DatabaseNotificationDriver, notificationChannel } from './drivers/database'
 export type { CreateNotificationOptions, DatabaseNotification } from './drivers/database'
 export {
   bulkSetPreferences,

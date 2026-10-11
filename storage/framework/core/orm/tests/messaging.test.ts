@@ -29,6 +29,21 @@ beforeAll(async () => {
 })
 afterAll(async () => { unlock?.(); await stopServer() })
 describe('persistent direct messaging', () => {
+  it('runs notification integration only for new committed messages', async () => {
+    const delivered: number[] = []
+    const messenger = createMessenger({ ...options, actorId: 1, onMessageSent: ({ message }) => { delivered.push(message.id) } })
+    const thread = await messenger.direct(2)
+    await expect(db.transaction(async () => {
+      await messenger.send(thread.id, 'Rolled back', 'rollback-notification')
+      throw new Error('rollback')
+    })).rejects.toThrow('rollback')
+    expect(delivered).toEqual([])
+    const saved = await messenger.send(thread.id, 'Committed', 'committed-notification')
+    await messenger.send(thread.id, 'Committed', 'committed-notification')
+    expect(delivered).toEqual([saved.id])
+    await db.deleteFrom('chat_messages').where('id', '=', saved.id).execute()
+  })
+
   it('broadcasts private invalidations after persistence and suppresses duplicate retries', async () => {
     createBroadcastHub()
     const events: Array<{ channel: string, event: string, data: unknown }> = []

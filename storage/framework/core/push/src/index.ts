@@ -1,6 +1,7 @@
 import type { PushResult } from '@stacksjs/types'
 import * as expo from './drivers/expo'
 import * as fcm from './drivers/fcm'
+import * as apns from './drivers/apns'
 
 export * from './drivers'
 
@@ -34,9 +35,11 @@ export interface PushNotification {
   badge?: number
   sound?: 'default' | null
   priority?: 'high' | 'normal' | 'default'
+  /** Coalesce retried Apple alerts using the same notification identity. */
+  collapseId?: string
 }
 
-export type PushDriver = 'expo' | 'fcm'
+export type PushDriver = 'expo' | 'fcm' | 'apns'
 
 export interface SendOptions {
   driver?: PushDriver
@@ -51,6 +54,8 @@ export async function send(
   options: SendOptions = {},
 ): Promise<PushResult> {
   const driver = options.driver ?? 'expo'
+
+  if (driver === 'apns') return apns.send(to, notification)
 
   if (driver === 'expo') {
     return expo.send({
@@ -119,4 +124,6 @@ export function configureExpo(config: expo.ExpoConfig): void {
   expo.configure(config)
 }
 
-export { expo, fcm }
+export function configureAPNS(config: apns.APNSConfig): void { apns.configure(config) }
+export type { APNSConfig, APNSMessage } from './drivers/apns'
+export { expo, fcm, apns }

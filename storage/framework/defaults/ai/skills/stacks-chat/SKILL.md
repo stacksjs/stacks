@@ -8,6 +8,13 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Chat
 
+Native direct messaging accepts an optional `onMessageSent` callback in its
+messenger options. It receives `{ message, actorId, recipientId, scope,
+participantType }` once for each newly saved message, after an enclosing
+transaction commits. Duplicate send retries and rolled-back messages do not
+run it. Connect notification jobs there; a callback failure is logged without
+turning a saved message into a failed send.
+
 Multi-driver chat messaging with Slack, Discord, and Microsoft Teams support. Each driver supports both webhook and bot token modes, with retry logic and structured message formats.
 
 ## Key Paths

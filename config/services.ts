@@ -9,6 +9,13 @@ import { env } from '@stacksjs/env'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  apns: {
+    teamId: String(env.APNS_TEAM_ID || ''),
+    keyId: String(env.APNS_KEY_ID || ''),
+    privateKey: String(env.APNS_PRIVATE_KEY || ''),
+    topic: String(env.APNS_TOPIC || ''),
+    sandbox: String(env.APNS_ENVIRONMENT || 'production') === 'sandbox',
+  },
   algolia: {
     appId: '',
     apiKey: '',

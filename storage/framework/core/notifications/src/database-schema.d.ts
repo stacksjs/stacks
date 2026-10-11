@@ -17,6 +17,7 @@ declare module '@stacksjs/database' {
       id: number
       user_id: number
       type: string
+      uuid: string | null
       data: string
       read_at: string | null
       created_at: string

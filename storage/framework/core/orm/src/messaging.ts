@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import { db, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { db, enqueueAfterCommit, parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
+import { log } from '@stacksjs/logging'
 import { emit, getServer } from '@stacksjs/realtime'
 
 export class MessagingError extends Error {
@@ -16,6 +17,8 @@ export interface MessagingOptions {
   pageSize?: number
   /** Private invalidation broadcasts through the native realtime engine. Default: true. */
   broadcast?: boolean
+  /** Notification/queue integration, once per new persisted message, after commit. */
+  onMessageSent?: (event: { message: DirectMessage, actorId: number, recipientId: number, scope: string, participantType: string }) => void | Promise<void>
   /** Required, and checked again on reads, sends and read receipts. */
   authorize: (actorId: number, recipientId: number) => boolean | Promise<boolean>
 }
@@ -137,8 +140,16 @@ export function createMessenger(options: MessagingOptions): Messenger {
     }
     if (!row) throw new Error('Message could not be saved')
     if (row.body !== body.trim()) throw new MessagingError('This retry key belongs to a different message', 409)
-    if (inserted) notify(recipientId, id, 'messaging.sent')
-    return message(row)
+    const saved = message(row)
+    if (inserted) {
+      const deliver = async () => {
+        notify(recipientId, id, 'messaging.sent')
+        try { await options.onMessageSent?.({ message: saved, actorId, recipientId, scope: options.scope, participantType }) }
+        catch (error) { log.warn(`Messaging notification failed: ${error instanceof Error ? error.message : 'Unknown error'}`) }
+      }
+      if (!enqueueAfterCommit(deliver)) await deliver()
+    }
+    return saved
   }
   async function markRead(id: string, throughId: number) {
     const recipientId = await conversation(id)

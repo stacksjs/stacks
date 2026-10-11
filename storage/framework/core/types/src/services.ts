@@ -154,6 +154,13 @@ export interface ServicesOptions {
   }
 
   // Push Notification Services
+  apns?: {
+    teamId?: string
+    keyId?: string
+    privateKey?: string
+    topic?: string
+    sandbox?: boolean
+  }
   expo?: {
     accessToken?: string
   }
