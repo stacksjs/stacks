@@ -254,9 +254,9 @@ await writeChangelog()
 // ranges frozen at whatever floor they were last written with (e.g.
 // `^0.70.53`). That floor lets a consumer's stale lockfile keep old framework
 // versions forever — `stacks@X` would happily resolve `@stacksjs/*` to a much
-// older release. Re-pinning to `^<nextVersion>` makes a published package
-// deterministically require the matching core versions, so a plain `bun
-// install` upgrades the whole framework together.
+// older release. Use an exact version so neither an older release nor a newer
+// package still undergoing publication can enter this framework's dependency
+// set. A plain `bun install` then upgrades the whole framework together.
 //
 // This covers every core manifest, not just the `stacks` meta. A floor left in
 // `@stacksjs/buddy` is the same bug one level down: buddy@0.70.234 asking for
@@ -487,7 +487,7 @@ function lockstepPackages(version: string): Set<string> {
 
 function pinLockstepDeps(version: string): void {
   const lockstep = lockstepPackages(version)
-  const next = `^${version}`
+  const next = version
 
   const manifests = [
     p.frameworkPath('core/package.json'),
@@ -528,7 +528,7 @@ function pinLockstepDeps(version: string): void {
   }
 
   if (pinned > 0)
-    log.debug(`Pinned ${pinned} lockstep core dep(s) to ^${version}`)
+    log.debug(`Pinned ${pinned} lockstep core dep(s) to ${version}`)
 }
 
 /**
