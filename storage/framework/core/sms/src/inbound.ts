@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { verifyTwilioWebhook } from './compliance'
-import { classifyInboundSms, type InboundSmsKind, inboundSmsReply, normalizePhone, optInPhone, optOutPhone } from './opt-out'
+import { type InboundSmsKind, inboundSmsReply, matchSmsKeyword, PROVIDER_HANDLED_LOCALE, type SmsKeywordMatch } from './keywords'
+import { normalizePhone, optInPhone, optOutPhone } from './opt-out'
 
 /**
  * A Twilio "a message comes in" webhook, end to end: verify Twilio's
@@ -22,6 +23,8 @@ export interface InboundConsentChange {
   /** The sender, normalized to E.164 the way `sms_opt_outs` stores it. */
   phone: string
   kind: 'stop' | 'start'
+  /** The language of the keyword (`de` for STOPP), when known. */
+  locale?: string
 }
 
 export interface InboundSmsMessage {
@@ -30,6 +33,8 @@ export interface InboundSmsMessage {
   body: string
   messageId?: string
   kind: InboundSmsKind
+  /** The language of the keyword, when the message was one. */
+  locale?: string
 }
 
 export interface TwilioInboundOptions {
@@ -42,13 +47,15 @@ export interface TwilioInboundOptions {
    */
   publicUrl?: string
   /**
-   * Answer STOP, START and HELP with a compliance message. Off by default:
-   * Twilio's own opt-out handling already replies to those keywords on
-   * long codes, toll-free numbers and messaging services, and a second reply
-   * from the app reaches the person twice. Turn it on only where Twilio's
-   * handling is disabled.
+   * Answer STOP, START and HELP with a compliance message, in the keyword's
+   * language. Off by default: Twilio's own opt-out handling already replies
+   * to the English keywords on long codes, toll-free numbers and messaging
+   * services, and a second reply reaches the person twice. `'unhandled'`
+   * replies only to the keywords Twilio does not know (the German STOPP,
+   * say), so every keyword gets exactly one confirmation. `true` replies to
+   * all of them, for where Twilio's handling is disabled.
    */
-  reply?: boolean
+  reply?: boolean | 'unhandled'
   appName?: string
   helpContact?: string
   /** STOP or START was recorded for `phone`. Update the app's own consent here. */
@@ -72,16 +79,26 @@ function signedUrl(request: Request, publicUrl?: string): string {
 }
 
 /**
- * Which keyword a message is. Twilio's Advanced Opt-Out names it in
- * `OptOutType` (and knows any custom keywords configured there); otherwise
- * the standard CTIA keywords decide.
+ * Which keyword a message is, and whether Twilio handles it itself. Twilio's
+ * Advanced Opt-Out names it in `OptOutType` (and knows any custom keywords
+ * configured there); otherwise `SMS_KEYWORDS` decides, in every language it
+ * has, and only the English ones are Twilio's.
  */
-export function inboundSmsKind(fields: Record<string, string | undefined>): InboundSmsKind {
+export function inboundSmsKind(fields: Record<string, string | undefined>): SmsKeywordMatch & { providerHandled: boolean } {
   const optOutType = String(fields.OptOutType || '').toUpperCase()
-  if (optOutType === 'STOP') return 'stop'
-  if (optOutType === 'START') return 'start'
-  if (optOutType === 'HELP') return 'help'
-  return classifyInboundSms(fields.Body ?? '')
+  const match = matchSmsKeyword(fields.Body ?? '')
+  if (optOutType === 'STOP' || optOutType === 'START' || optOutType === 'HELP') {
+    const kind = optOutType.toLowerCase() as InboundSmsKind
+    // Twilio recognised it, so Twilio has confirmed it, whatever the word.
+    return { ...(match.kind === kind ? match : { keyword: match.keyword }), kind, providerHandled: true }
+  }
+  return { ...match, providerHandled: match.locale === PROVIDER_HANDLED_LOCALE }
+}
+
+function shouldReply(match: { kind: InboundSmsKind, providerHandled: boolean }, reply: TwilioInboundOptions['reply']): boolean {
+  if (match.kind === 'message' || !reply)
+    return false
+  return reply === true || !match.providerHandled
 }
 
 export async function handleTwilioInbound(request: Request, options: TwilioInboundOptions = {}): Promise<Response> {
@@ -101,14 +118,15 @@ export async function handleTwilioInbound(request: Request, options: TwilioInbou
   if (!from)
     return twiml()
 
-  const kind = inboundSmsKind(fields)
+  const match = inboundSmsKind(fields)
+  const { kind } = match
   if (kind === 'stop')
     await optOutPhone(from)
   if (kind === 'start')
     await optInPhone(from)
   if (kind === 'stop' || kind === 'start')
-    await options.onConsentChange?.({ phone: from, kind })
-  await options.onMessage?.({ from, to: fields.To ?? '', body: fields.Body ?? '', messageId: fields.MessageSid ?? fields.SmsSid, kind })
+    await options.onConsentChange?.({ phone: from, kind, ...(match.locale ? { locale: match.locale } : {}) })
+  await options.onMessage?.({ from, to: fields.To ?? '', body: fields.Body ?? '', messageId: fields.MessageSid ?? fields.SmsSid, kind, ...(match.locale ? { locale: match.locale } : {}) })
 
-  return twiml(options.reply ? inboundSmsReply(kind, options) : undefined)
+  return twiml(shouldReply(match, options.reply) ? inboundSmsReply(kind, { ...options, locale: match.locale }) : undefined)
 }

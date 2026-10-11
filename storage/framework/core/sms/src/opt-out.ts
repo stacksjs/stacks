@@ -1,4 +1,5 @@
 import { db, sqlDateTime } from '@stacksjs/database/runtime'
+import { type InboundSmsKind, inboundSmsReply, matchSmsKeyword } from './keywords'
 
 /**
  * US SMS compliance: STOP must stop, START must restart, HELP must answer.
@@ -13,12 +14,6 @@ import { db, sqlDateTime } from '@stacksjs/database/runtime'
  * Table: `sms_opt_outs` (phone unique, opted_out_at, reason).
  */
 
-/** The exact keyword set carriers recognize, per CTIA guidelines. */
-const STOP_WORDS = new Set(['stop', 'stopall', 'unsubscribe', 'cancel', 'end', 'quit'])
-const START_WORDS = new Set(['start', 'yes', 'unstop'])
-const HELP_WORDS = new Set(['help', 'info'])
-
-export type InboundSmsKind = 'stop' | 'start' | 'help' | 'message'
 
 export interface InboundSmsResult {
   kind: InboundSmsKind
@@ -37,15 +32,13 @@ export function normalizePhone(raw: string): string {
   return digits
 }
 
+/**
+ * Which keyword a message is, in any language `SMS_KEYWORDS` knows
+ * (`STOP` and the German `STOPP` alike). See `matchSmsKeyword` for the
+ * language that matched.
+ */
 export function classifyInboundSms(body: string): InboundSmsKind {
-  const word = body.trim().toLowerCase().split(/\s+/)[0] ?? ''
-  if (STOP_WORDS.has(word))
-    return 'stop'
-  if (START_WORDS.has(word))
-    return 'start'
-  if (HELP_WORDS.has(word))
-    return 'help'
-  return 'message'
+  return matchSmsKeyword(body).kind
 }
 
 /**
@@ -100,30 +93,19 @@ export async function isPhoneOptedOut(phone: string): Promise<boolean> {
   return !!row
 }
 
-/** The compliance reply to a keyword, or undefined for an ordinary message. */
-export function inboundSmsReply(kind: InboundSmsKind, options: { appName?: string, helpContact?: string } = {}): string | undefined {
-  const name = options.appName ?? 'this service'
-  if (kind === 'stop')
-    return `You are unsubscribed from ${name} texts. No more messages will be sent. Reply START to resubscribe.`
-  if (kind === 'start')
-    return `You are resubscribed to ${name} texts. Reply STOP to unsubscribe.`
-  if (kind === 'help')
-    return `${name}: reply STOP to unsubscribe, START to resubscribe.${options.helpContact ? ` Contact: ${options.helpContact}` : ''}`
-  return undefined
-}
-
 /**
  * Process one inbound SMS (a provider webhook's job): record STOP/START,
  * return the compliance reply to send. Ordinary messages pass through as
  * `kind: 'message'` for the app to route (or ignore). For Twilio,
- * `handleTwilioInbound` does this and the signature check in one call.
+ * `handleTwilioInbound` does this and the signature check in one call. The
+ * reply is in the language of the keyword (STOPP gets German).
  */
 export async function handleInboundSms(input: { from: string, body: string }, options: { appName?: string, helpContact?: string } = {}): Promise<InboundSmsResult> {
-  const kind = classifyInboundSms(input.body)
+  const { kind, locale } = matchSmsKeyword(input.body)
   if (kind === 'stop')
     await optOutPhone(input.from)
   if (kind === 'start')
     await optInPhone(input.from)
-  const reply = inboundSmsReply(kind, options)
+  const reply = inboundSmsReply(kind, { ...options, locale })
   return reply ? { kind, reply } : { kind }
 }

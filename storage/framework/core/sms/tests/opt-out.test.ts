@@ -155,7 +155,7 @@ describe('handleTwilioInbound', () => {
     expect(response.headers.get('content-type')).toContain('text/xml')
     expect(await response.text()).toBe('<?xml version="1.0" encoding="UTF-8"?><Response></Response>')
     expect(await isPhoneOptedOut('+13105550199')).toBe(true)
-    expect(changes).toEqual([{ phone: '+13105550199', kind: 'stop' }])
+    expect(changes).toEqual([{ phone: '+13105550199', kind: 'stop', locale: 'en' }])
   })
 
   test('START clears it, and replies only when asked to', async () => {
@@ -164,7 +164,7 @@ describe('handleTwilioInbound', () => {
     const response = await handleTwilioInbound(twilioRequest({ From: '+13105550199', Body: 'START' }), { authToken: token, publicUrl: url, reply: true, appName: 'HQ', onConsentChange: change => changes.push(change) })
     expect(await response.text()).toContain('<Message>You are resubscribed to HQ texts. Reply STOP to unsubscribe.</Message>')
     expect(await isPhoneOptedOut('+13105550199')).toBe(false)
-    expect(changes).toEqual([{ phone: '+13105550199', kind: 'start' }])
+    expect(changes).toEqual([{ phone: '+13105550199', kind: 'start', locale: 'en' }])
   })
 
   test('refuses a bad signature and an unconfigured token, changing nothing', async () => {
@@ -196,8 +196,44 @@ describe('handleTwilioInbound', () => {
   })
 
   test('honours Twilio Advanced Opt-Out\'s OptOutType for custom keywords', () => {
-    expect(inboundSmsKind({ Body: 'ARRET', OptOutType: 'STOP' })).toBe('stop')
-    expect(inboundSmsKind({ Body: 'stop' })).toBe('stop')
-    expect(inboundSmsKind({ Body: 'hello' })).toBe('message')
+    expect(inboundSmsKind({ Body: 'ARRET', OptOutType: 'STOP' }).kind).toBe('stop')
+    expect(inboundSmsKind({ Body: 'stop' })).toEqual({ kind: 'stop', locale: 'en', keyword: 'stop', providerHandled: true })
+    expect(inboundSmsKind({ Body: 'stopp' })).toEqual({ kind: 'stop', locale: 'de', keyword: 'stopp', providerHandled: false })
+    expect(inboundSmsKind({ Body: 'hello' }).kind).toBe('message')
+  })
+})
+
+describe('German keywords', () => {
+  const token = 'twilio-auth-token'
+  const url = 'https://app.test/api/sms/inbound'
+  const signedRequest = (fields: Record<string, string>): Request => {
+    const signed = Object.keys(fields).sort().reduce((value, key) => `${value}${key}${fields[key]}`, url)
+    return new Request(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Twilio-Signature': createHmac('sha1', token).update(signed).digest('base64') }, body: new URLSearchParams(fields).toString() })
+  }
+
+  test('STOPP, ABMELDEN and STARTEN count like STOP and START', async () => {
+    expect(classifyInboundSms('STOPP')).toBe('stop')
+    expect(classifyInboundSms('abmelden bitte')).toBe('stop')
+    expect(classifyInboundSms('Starten')).toBe('start')
+    expect(classifyInboundSms('Hilfe')).toBe('help')
+    await handleInboundSms({ from: '+491701234567', body: 'Stopp' })
+    expect(await isPhoneOptedOut('+49 170 1234567')).toBe(true)
+  })
+
+  test('answers in German', async () => {
+    expect((await handleInboundSms({ from: '+491701234567', body: 'STOPP' }, { appName: 'TriFit' })).reply).toBe('Du bist von den SMS von TriFit abgemeldet und bekommst keine weiteren. Antworte STARTEN, um sie wieder zu erhalten.')
+    expect((await handleInboundSms({ from: '+491701234567', body: 'STOP' }, { appName: 'TriFit' })).reply).toContain('You are unsubscribed')
+  })
+
+  test('reply: unhandled confirms only what Twilio does not, so each keyword gets one reply', async () => {
+    const changes: unknown[] = []
+    const stopp = await handleTwilioInbound(signedRequest({ From: '+491701234567', Body: 'STOPP' }), { authToken: token, publicUrl: url, reply: 'unhandled', appName: 'TriFit', onConsentChange: c => changes.push(c) })
+    expect(await stopp.text()).toContain('<Message>Du bist von den SMS von TriFit abgemeldet')
+    expect(changes).toEqual([{ phone: '+491701234567', kind: 'stop', locale: 'de' }])
+    const stop = await handleTwilioInbound(signedRequest({ From: '+491701234567', Body: 'STOP' }), { authToken: token, publicUrl: url, reply: 'unhandled' })
+    expect(await stop.text()).toBe('<?xml version="1.0" encoding="UTF-8"?><Response></Response>')
+    // Twilio named it, so Twilio confirmed it, whatever the word.
+    const advanced = await handleTwilioInbound(signedRequest({ From: '+491701234567', Body: 'STOPP', OptOutType: 'STOP' }), { authToken: token, publicUrl: url, reply: 'unhandled' })
+    expect(await advanced.text()).not.toContain('<Message>')
   })
 })

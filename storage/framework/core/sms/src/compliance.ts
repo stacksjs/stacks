@@ -1,9 +1,12 @@
 import type { SmsInboundIntent, SmsInboundMessage, SmsSegmentEstimate } from '@stacksjs/types'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { SMS_KEYWORDS } from './keywords'
 
-const DEFAULT_OPT_OUT = ['STOP', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT']
-const DEFAULT_OPT_IN = ['START', 'UNSTOP', 'YES']
-const DEFAULT_HELP = ['HELP', 'INFO']
+// Every language's keywords, the same lists the persistent handlers use.
+const allKeywords = (kind: 'stop' | 'start' | 'help'): string[] => Object.values(SMS_KEYWORDS).flatMap(set => set[kind].map(word => word.toUpperCase()))
+const DEFAULT_OPT_OUT = allKeywords('stop')
+const DEFAULT_OPT_IN = allKeywords('start')
+const DEFAULT_HELP = allKeywords('help')
 
 const GSM_7_BASIC = new Set(`@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà`)
 const GSM_7_EXTENDED = new Set('^{}\\[~]|€')
