@@ -16,8 +16,8 @@ export interface AccountNotificationPaths {
  *   old one is how the owner learns of a change they did not make;
  * - `account_deleted`: `date`. Send it before the address is erased;
  * - `account_created`: `inviter` (who created it), `set_password_url` (a
- *   one-time link, so send it outside any stored queue) and `minutes` (how long
- *   that link works).
+ *   one-time link, so send it outside any stored queue) and `days` (how long
+ *   that link works; two or more).
  */
 /** The names this catalog defines. */
 export type AccountNotificationTemplateName = 'password_changed' | 'email_changed' | 'account_deleted' | 'account_created'
@@ -46,8 +46,8 @@ export function accountNotificationTemplates(paths: AccountNotificationPaths = {
     },
     account_created: {
       copy: {
-        en: { subject: '{{inviter}} added you to {{app}}', body: '{{inviter}} created an {{app}} account for you with this email address.\n\nSet a password to sign in. The link works for {{minutes}} minutes; after that, use “Forgot password” on the sign-in page.' },
-        de: { subject: '{{inviter}} hat dich zu {{app}} hinzugefügt', body: '{{inviter}} hat für dich ein {{app}}-Konto mit dieser E-Mail-Adresse angelegt.\n\nLege ein Passwort fest, um dich anzumelden. Der Link gilt {{minutes}} Minuten; danach nutze „Passwort vergessen“ auf der Anmeldeseite.' },
+        en: { subject: '{{inviter}} added you to {{app}}', body: '{{inviter}} created an {{app}} account for you with this email address.\n\nSet a password to sign in. The link works for {{days}} days; after that, use “Forgot password” on the sign-in page.' },
+        de: { subject: '{{inviter}} hat dich zu {{app}} hinzugefügt', body: '{{inviter}} hat für dich ein {{app}}-Konto mit dieser E-Mail-Adresse angelegt.\n\nLege ein Passwort fest, um dich anzumelden. Der Link gilt {{days}} Tage; danach nutze „Passwort vergessen“ auf der Anmeldeseite.' },
       },
       action: { path: '{{set_password_url}}', label: { en: 'Set your password', de: 'Passwort festlegen' } },
     },

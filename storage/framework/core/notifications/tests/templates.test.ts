@@ -47,7 +47,7 @@ describe('notification templates', () => {
 
   test('uses a path that renders to an absolute URL as it is', () => {
     const created = accountNotificationTemplates().account_created
-    const rendered = renderNotificationTemplate(created, { app: 'Gym', inviter: 'Front desk', minutes: 60, set_password_url: 'https://app.test/reset-password?token=abc' }, { baseUrl: 'https://ignored.test' })
+    const rendered = renderNotificationTemplate(created, { app: 'Gym', inviter: 'Front desk', days: 7, set_password_url: 'https://app.test/reset-password?token=abc' }, { baseUrl: 'https://ignored.test' })
     expect(rendered.action).toEqual({ label: 'Set your password', url: 'https://app.test/reset-password?token=abc' })
   })
 
