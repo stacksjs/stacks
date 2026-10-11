@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.128...v0.75.132)
+
+## 🐛 Bug Fixes
+
+- support parent row locks compatible with foreign key inserts ([2e6ca6f](https://github.com/stacksjs/stacks/commit/2e6ca6f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- align STX editor tooling and layout regression checks ([d78c686](https://github.com/stacksjs/stacks/commit/d78c686)) _(by Chris <chris@stacksjs.com>)_
+- lint STX templates through Buddy and clear template warnings ([6818550](https://github.com/stacksjs/stacks/commit/6818550)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- refresh registry metadata during forced framework upgrades ([66fbcdf](https://github.com/stacksjs/stacks/commit/66fbcdf)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- align lint guidance with Buddy STX discovery ([26b4ae6](https://github.com/stacksjs/stacks/commit/26b4ae6)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh native capability references for row lock modes ([a30e6c1](https://github.com/stacksjs/stacks/commit/a30e6c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.75.131 ([18ed213](https://github.com/stacksjs/stacks/commit/18ed213)) _(by Chris <chris@stacksjs.com>)_
+- release v0.75.130 ([f3ce8de](https://github.com/stacksjs/stacks/commit/f3ce8de)) _(by Chris <chris@stacksjs.com>)_
+- release v0.75.129 ([211c972](https://github.com/stacksjs/stacks/commit/211c972)) _(by Chris <chris@stacksjs.com>)_
+- consume published bumpx release manifest improvements ([a387232](https://github.com/stacksjs/stacks/commit/a387232)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.130...v0.75.131)
 
 ## 🐛 Bug Fixes
