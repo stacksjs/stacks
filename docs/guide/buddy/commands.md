@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **356 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **357 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -48,7 +48,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `mail` | 32 |
 | `make` | 20 |
 | `marketing` | 2 |
-| `migrate` | 5 |
+| `migrate` | 6 |
 | `monitoring` | 2 |
 | `package` | 1 |
 | `phone` | 4 |
@@ -3920,6 +3920,22 @@ Migrates your database
 | `--strict` | Fail when the schema has drifted from the models or a migration is git-ignored (for CI) | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+### `migrate:align`
+
+Repair a live database that drifted from the models, without writing migrations (PostgreSQL)
+
+- Usage: `$ buddy migrate:align`
+- Namespace: `migrate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--apply` | Run the safe repairs, in one transaction | boolean, optional | `false` |
+| `--widen-integers` | Also widen integer columns the models declare as bigint (rewrites those tables) | boolean, optional | `false` |
+| `-f`, `--force` | With --apply, skip the confirmation | boolean, optional | `false` |
+| `--json` | Emit the plan as JSON | boolean, optional | `false` |
+
 ### `migrate:fresh`
 
 Drop all tables and re-run every migration (destroys all data)
@@ -3989,6 +4005,7 @@ Compare database/migrations, the migrations ledger, and the live schema
 | `--include-partial` | With --reconcile, also record half-applied migrations | boolean, optional | `false` |
 | `--requeue-reverted` | With --reconcile, un-record the migrations of a table that is missing so the next migrate rebuilds it | boolean, optional | `false` |
 | `--json` | Emit the audit as JSON | boolean, optional | `false` |
+| `--strict` | Also fail when a migration was written by hand rather than generated from the models | boolean, optional | `false` |
 
 ### `migrate:switch`
 

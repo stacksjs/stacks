@@ -30,7 +30,7 @@ buddy migrate:fresh [options]
 | `-d, --diff` | Show the SQL that would be run without executing |
 | `-p, --project [project]` | Target a specific project |
 | `-a, --auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, etc.) |
-| `--strict` | Exit non-zero when the database has drifted from its migrations or models (for CI) |
+| `--strict` | Exit non-zero when the database has drifted from its migrations or models, or a migration was written by hand (for CI) |
 | `--verbose` | Enable verbose output |
 
 ### Options for `migrate:fresh`
@@ -335,6 +335,56 @@ fails to apply is never silently skipped either: if any file the runner could
 see is still unrecorded after a run, `migrate` fails and names it.
 
 As a last resort, `buddy migrate:fresh` rebuilds everything and drops all data.
+
+### A Database That Drifted From Its Models
+
+A database built from hand-written migrations can hold the right tables in the
+wrong shape: indexes under names the models do not use, foreign keys the
+models declare and the migrations left out, columns narrower than the model.
+Regenerating the corpus does not repair that - `CREATE ... IF NOT EXISTS` is a
+no-op against a name that is already taken - and neither does `migrate`.
+
+```bash
+# Rebuild database/migrations from the models (review the plan first)
+buddy migrate:regenerate postgres --replace-unmarked --dry-run
+buddy migrate:regenerate postgres --replace-unmarked --force
+
+# Compare the live schema with the models, then repair what is safe
+buddy migrate:align
+buddy migrate:align --apply
+
+# Record the regenerated files the schema now satisfies, then migrate
+buddy migrate:status --reconcile
+buddy migrate
+```
+
+`migrate:regenerate` replaces enum type files the new corpus re-declares, drops
+of indexes it never builds, and `DELETE`/`UPDATE`-only data fixes (no-ops on a
+database the corpus builds). It never removes a file that inserts rows
+(`INSERT ... VALUES`, `COPY`): that is kept, and moved after the corpus when it
+fills a table the corpus now creates. Against a database with history, it
+retires the ledger rows of the files it removed and records each regenerated
+file whose every table, index and type already exists - an index counts under
+any name, including one Postgres truncated at 63 characters.
+
+`migrate:align` (PostgreSQL) prints a plan by default. `--apply` runs, in one
+transaction: renames of indexes that match a declared index in everything but
+name, missing indexes, missing foreign keys, missing columns, lossless widening
+(`varchar(n)` to `text` or a longer `varchar`; `integer` to `bigint` only with
+`--widen-integers`, since it rewrites the table) and new enum labels. A foreign
+key with orphan rows, or a unique index over duplicate values, is refused with
+a count. Extra columns, narrowing, nullability and default changes are only
+reported.
+
+### Hand-Written Migrations
+
+Every migration is meant to be generated from `app/Models`. `migrate:status`
+lists the files that carry no `-- qb:generated` marker, and
+`migrate --strict` / `migrate:status --strict` fail on them. Package migrations
+are not counted. Allow specific files - reference data no model can describe -
+with `database.safety.allowHandWrittenMigrations` (a list of filenames, or of
+names without the ordinal; `true` allows all), or for one run with
+`DB_ALLOW_HAND_WRITTEN_MIGRATIONS`.
 
 ## Best Practices
 

@@ -26,6 +26,10 @@ buddy migrate:fresh --seed          # drop, migrate, then seed
 buddy make:migration <name>         # create new migration file
 buddy seed                          # seed database
 buddy generate:migrations           # generate migrations from model diffs
+buddy migrate:regenerate <dialect>  # rebuild the whole corpus from the models
+buddy migrate:status                # corpus vs ledger vs live schema; lists hand-written files
+buddy migrate:align                 # plan repairs of a database that drifted from the models
+buddy migrate:align --apply         # rename legacy indexes, add missing indexes/FKs/columns, widen losslessly
 ```
 
 ## Creating a Schema Migration
@@ -142,6 +146,20 @@ checks; never run SQLite SQL on a different provider because its filename exists
 Source: `core/database/src/{migrations,model-sources,migration-ledger,
 safe-migrations,schema-drift,fk-audit,unique-audit}.ts`, `config/query-builder.ts`,
 and their retained database tests.
+
+## Drifted databases and hand-written migrations
+
+Every migration should carry the generator's `-- qb:generated` marker.
+`migrate:status` lists files without it and `--strict` fails on them; allow
+reference-data files in `database.safety.allowHandWrittenMigrations`.
+
+To bring a database built from hand-written history under the models:
+`migrate:regenerate <dialect> --replace-unmarked --force` (replaces obsolete enum
+type files, index drops and DELETE/UPDATE-only data fixes; never INSERT/COPY
+files), then `migrate:align --apply` (Postgres: renames legacy-named indexes,
+adds missing indexes, foreign keys after an orphan check, missing columns, and
+lossless widenings; reports everything destructive), then
+`migrate:status --reconcile` and `migrate`.
 
 ## Gotchas
 - `migrate:fresh` drops ALL tables — only use in development
