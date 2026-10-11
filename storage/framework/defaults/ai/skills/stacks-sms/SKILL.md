@@ -393,7 +393,10 @@ interface VerificationResult {
 STOP/START/HELP, persists opt-out or opt-in, and returns the reply an inbound
 webhook should send. `optOutPhone`, `optInPhone`,
 `isPhoneOptedOut` and `normalizePhone` use the persistent
-`sms_opt_outs` table. Apply its model migration first. Sending through the
+`sms_opt_outs` table. Apply its model migration first. `optOutPhone` is one
+insert-or-ignore on the unique `phone` (`ON CONFLICT DO NOTHING`, `INSERT
+IGNORE` on MySQL), so repeated or concurrent STOPs leave one row and keep the
+first opt-out's time and reason. Sending through the
 generic notification SMS channel checks opt-outs; inspect the selected direct
 send path before assuming a low-level provider call applies that policy.
 

@@ -63,6 +63,21 @@ and `payload.smsSender` starts every text with `{sender}: `.
 The signed token turns off one channel + category preference; handle the
 app's route with `unsubscribeWithToken(await unsubscribeTokenFromRequest(request))`.
 
+## The frame's language
+
+Every email's footer, copyright line, unsubscribe notice and link labels, the
+default button label and a marketing text's opt-out line are the frame's, not
+the message's. `payload.locale` renders them in the reader's language (English
+and German built in, `de-AT` → `de` → `en`) and sets `<html lang>`:
+
+```ts
+await notify({ userId, email }, { ...templates.render('order_receipt', variables, language), locale: language }, ['email'])
+```
+
+Another language: pass every `NotificationFrameStrings` key as
+`payload.strings` (`{app}` and `{year}` are filled in); a partial set overrides
+only what it names. Without a locale the frame is the English it always was.
+
 ## Templates
 
 `@stacksjs/notifications/templates` (also re-exported from the package root)

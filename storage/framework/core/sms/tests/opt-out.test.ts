@@ -123,6 +123,15 @@ describe('handleInboundSms', () => {
     await handleInboundSms({ from: '+13105550199', body: 'STOP' })
     expect(await isPhoneOptedOut('+13105550199')).toBe(true)
   })
+
+  test('concurrent STOPs for one number leave one row, without an error, and keep the first', async () => {
+    await optOutPhone('(310) 555-0177', 'first')
+    await Promise.all(Array.from({ length: 8 }, () => optOutPhone('+13105550177', 'retry')))
+    const rows = await db.selectFrom('sms_opt_outs').selectAll().where('phone', '=', '+13105550177').execute()
+    expect(rows.length).toBe(1)
+    expect((rows[0] as { reason: string }).reason).toBe('first')
+    expect(await isPhoneOptedOut('3105550177')).toBe(true)
+  })
 })
 
 describe('handleTwilioInbound', () => {

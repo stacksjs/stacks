@@ -41,8 +41,9 @@ optional `error`. A resolved call does not imply every channel succeeded.
 | push | pushTokens, a string or string array | `@stacksjs/push`, default Expo |
 | broadcast | broadcastChannel or userId | `@stacksjs/realtime` |
 
-Payload: `{ body, subject?, data?, action? }`. Email treats body as text and
-renders it through the framework layout. Use the exported `NotificationAction`
+Payload: `{ body, subject?, data?, action?, locale?, strings? }`. Email treats
+body as text and renders it through the framework layout (see "The frame's
+language" for `locale`). Use the exported `NotificationAction`
 type for an action link. The broadcast fallback is `private-user.{userId}` or
 public `notifications` when no user/channel is supplied. Its delivery is
 best-effort; a missing realtime server is not a durable notification queue.
@@ -118,6 +119,37 @@ A `marketing` text ends with "Reply STOP to opt out." (`notificationSmsBody`).
 body already starts with it); pass it whenever several businesses share one
 sending number, so the person can tell who wrote. STOP only becomes an opt-out the app sees when inbound
 SMS is wired up; see `stacks-sms`.
+
+## The frame's language
+
+The subject, body and button label are the caller's. The words around them
+are the frame's: the transactional footer ("This is an automated message from
+{app}. Please do not reply to this email."), the copyright line, the marketing
+notice, the **Unsubscribe** / **Email preferences** labels (also in the text
+part), the button label when the action has none ("Open") and a marketing
+text's opt-out line. `payload.locale` puts all of them in the reader's
+language and sets the email's `<html lang>`:
+
+```ts
+const language = user.locale // 'de', 'de-AT', 'en', ...
+await notify({ userId, email }, { ...templates.render('order_receipt', variables, language), locale: language }, ['email'])
+```
+
+- Built in: `en` and `de` (`NOTIFICATION_FRAME_STRINGS`). Fallback like the
+  templates: `de-AT` → `de` → `en`. No locale renders exactly the English the
+  frame always had (a fixture test holds it byte for byte).
+- Another language: pass the whole set as `payload.strings`
+  (`NotificationFrameStrings`: `automatedNotice`, `copyright`,
+  `unsubscribeNotice`, `unsubscribe`, `preferences`, `action`, `smsOptOut`). A
+  partial set overrides only what it names. `{app}` and `{year}` are filled in.
+- Precedence: `unsubscribe.notice` and `payload.smsOptOut` still win over the
+  frame's notice and opt-out line.
+- The builders take the same fields: `notificationEmailMessage`,
+  `notificationEmailHtml`, `notificationEmailText`, `notificationSmsBody`;
+  `notificationFrameStrings(locale, overrides)` resolves a set.
+- An app's own `resources/emails/notification.stx` must read the new props
+  (`lang`, `automatedNotice`, `copyrightNotice`, `unsubscribeLabel`,
+  `preferencesLabel`) to be localized; `<EmailLayout lang>` sets `<html lang>`.
 
 ## Templates: one catalog of localized messages
 
@@ -200,7 +232,8 @@ delivery log, not extra columns on the inbox.
 signatures. `preferences.ts`, `delivery.ts` and `drivers/database.ts`
 own their persistence; the query builder is bun-query-builder.
 `notifications.test.ts`, `delivery-tracking.test.ts`,
-`broadcast.test.ts` and `email-body.test.ts` cover retained behavior.
+`broadcast.test.ts`, `email-body.test.ts` and `frame-locale.test.ts` cover
+retained behavior; `frame-strings.ts` holds the frame's languages.
 For provider status, consult `config/src/capabilities.ts` and each channel
 skill; a constructed send request is not a live delivery assertion.
 

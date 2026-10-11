@@ -48,26 +48,30 @@ export function classifyInboundSms(body: string): InboundSmsKind {
   return 'message'
 }
 
+/**
+ * Record that a number replied STOP. Idempotent, and safe under concurrency:
+ * one insert that does nothing when the number is already there (`phone` is
+ * unique), so a provider retrying its webhook, or two STOPs handled at once,
+ * leave exactly one row. The first opt-out's time and reason are kept.
+ *
+ * It used to delete and re-insert, and two webhooks racing between those two
+ * statements made the second insert fail on the unique index: the webhook
+ * answered 500 and the provider retried a STOP that had already been recorded.
+ */
 export async function optOutPhone(phone: string, reason = 'stop-keyword'): Promise<void> {
   const normalized = normalizePhone(phone)
   if (!normalized)
     return
 
-  await db
-    .deleteFrom('sms_opt_outs')
-    .where('phone', '=', normalized)
-    .execute()
-
-  await db
-    .insertInto('sms_opt_outs')
-    .values({
-      phone: normalized,
-      reason,
-      opted_out_at: sqlDateTime(new Date()),
-      created_at: sqlDateTime(new Date()),
-      updated_at: sqlDateTime(new Date()),
-    } as never)
-    .execute()
+  const now = sqlDateTime(new Date())
+  // `ON CONFLICT DO NOTHING` on SQLite and Postgres, `INSERT IGNORE` on MySQL.
+  await db.insertOrIgnore('sms_opt_outs', {
+    phone: normalized,
+    reason,
+    opted_out_at: now,
+    created_at: now,
+    updated_at: now,
+  } as never)
 }
 
 export async function optInPhone(phone: string): Promise<void> {

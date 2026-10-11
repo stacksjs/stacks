@@ -6,6 +6,8 @@
 // mailers (stacksjs/stacks#1901); an app's own resources/emails/notification
 // wins over this one. A notification with `unsubscribe` (marketing) says why
 // it came and links to Unsubscribe in the footer instead of "do not reply".
+// Every fixed word of the frame comes in as a prop, so a `locale` passed to
+// notify() makes the whole email that language.
 const appName = props.appName || 'Stacks'
 const primaryColor = props.primaryColor || '#3451b2'
 const subject = props.subject || appName
@@ -17,9 +19,19 @@ const unsubscribeUrl = props.unsubscribeUrl || ''
 const unsubscribeNotice = props.unsubscribeNotice || 'You are receiving this because these emails are turned on in your settings.'
 const preferencesUrl = props.preferencesUrl || ''
 const year = props.year || new Date().getFullYear()
+// The frame's fixed words, in the reader's language when notify() was given
+// a `locale` (see NotificationFrameStrings in @stacksjs/notifications). The
+// English here is only for a render without them. `{app}` and `{year}` are
+// filled in below.
+const lang = props.lang || 'en'
+const fill = text => String(text).split('{app}').join(appName).split('{year}').join(String(year))
+const automatedNotice = fill(props.automatedNotice || 'This is an automated message from {app}. Please do not reply to this email.')
+const copyrightNotice = fill(props.copyrightNotice || '{year} {app}. All rights reserved.')
+const unsubscribeLabel = props.unsubscribeLabel || 'Unsubscribe'
+const preferencesLabel = props.preferencesLabel || 'Email preferences'
 </script>
 
-<EmailLayout title="{{ subject }}" preheader="{{ preheader }}">
+<EmailLayout title="{{ subject }}" preheader="{{ preheader }}" lang="{{ lang }}">
   <template #header>
     <tr>
       <td style="background-color:{{ primaryColor }};padding:30px 40px;text-align:center;">
@@ -42,11 +54,11 @@ const year = props.year || new Date().getFullYear()
       <td style="padding:20px 40px;background-color:#f9fafb;border-top:1px solid #e5e7eb;">
         @if(unsubscribeUrl)
           <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">{{ unsubscribeNotice }}</p>
-          <p style="margin:8px 0 0 0;color:#6b7280;font-size:12px;text-align:center;"><a href="{{ unsubscribeUrl }}" style="color:#6b7280;text-decoration:underline;">Unsubscribe</a>@if(preferencesUrl) &middot; <a href="{{ preferencesUrl }}" style="color:#6b7280;text-decoration:underline;">Email preferences</a>@endif</p>
+          <p style="margin:8px 0 0 0;color:#6b7280;font-size:12px;text-align:center;"><a href="{{ unsubscribeUrl }}" style="color:#6b7280;text-decoration:underline;">{{ unsubscribeLabel }}</a>@if(preferencesUrl) &middot; <a href="{{ preferencesUrl }}" style="color:#6b7280;text-decoration:underline;">{{ preferencesLabel }}</a>@endif</p>
         @else
-          <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">This is an automated message from {{ appName }}. Please do not reply to this email.</p>
+          <p style="margin:0;color:#6b7280;font-size:12px;text-align:center;">{{ automatedNotice }}</p>
         @endif
-        <p style="margin:10px 0 0 0;color:#9ca3af;font-size:11px;text-align:center;">&copy; {{ year }} {{ appName }}. All rights reserved.</p>
+        <p style="margin:10px 0 0 0;color:#9ca3af;font-size:11px;text-align:center;">&copy; {{ copyrightNotice }}</p>
       </td>
     </tr>
   </template>

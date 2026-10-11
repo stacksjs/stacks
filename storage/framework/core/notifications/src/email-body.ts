@@ -1,5 +1,6 @@
 import type { EmailMessage } from '@stacksjs/types'
 import { templateByName } from '@stacksjs/email'
+import { NOTIFICATION_FRAME_STRINGS, type NotificationFrameStrings, notificationFrameStrings, notificationLanguageTag } from './frame-strings'
 
 /**
  * One run of a notification email paragraph: text, a link, or a line break.
@@ -36,22 +37,42 @@ export interface NotificationUnsubscribe {
   oneClickUrl?: string
   /** Where the person manages every preference, linked beside Unsubscribe. */
   preferencesUrl?: string
-  /** The footer sentence. Defaults to {@link DEFAULT_UNSUBSCRIBE_NOTICE}. */
+  /**
+   * The footer sentence. Defaults to the frame's `unsubscribeNotice` in the
+   * payload's `locale` ({@link DEFAULT_UNSUBSCRIBE_NOTICE} in English).
+   */
   notice?: string
 }
 
-/** The footer sentence of an email with an unsubscribe link, unless the payload names its own. */
-export const DEFAULT_UNSUBSCRIBE_NOTICE = 'You are receiving this because these emails are turned on in your settings.'
+/**
+ * The language of the frame a notification is sent in: its fixed footer,
+ * link and button words (see `NotificationFrameStrings`). Without either, the
+ * frame is English, exactly as before it could be localized.
+ */
+export interface NotificationFrameLocale {
+  /**
+   * The reader's language (`de`, `de-AT`, `en-GB`). Picks the built-in frame
+   * strings, falling back `de-AT` → `de` → `en`, and becomes the email's
+   * `<html lang>`.
+   */
+  locale?: string | null
+  /** Frame strings that replace the built-in ones: a few, or a whole language Stacks does not ship. */
+  strings?: Partial<NotificationFrameStrings>
+}
+
+/** The footer sentence of an email with an unsubscribe link, unless the payload names its own (English). */
+export const DEFAULT_UNSUBSCRIBE_NOTICE: string = NOTIFICATION_FRAME_STRINGS.en.unsubscribeNotice
 
 /**
  * The line a marketing text ends with, unless the payload names its own
- * (`smsOptOut`). Carriers expect opt-out instructions on marketing texts, and
- * STOP is the keyword every provider and `@stacksjs/sms` honour.
+ * (`smsOptOut`) or another language (`locale`). Carriers expect opt-out
+ * instructions on marketing texts, and STOP is the keyword every provider and
+ * `@stacksjs/sms` honour.
  */
-export const DEFAULT_SMS_OPT_OUT = 'Reply STOP to opt out.'
+export const DEFAULT_SMS_OPT_OUT: string = NOTIFICATION_FRAME_STRINGS.en.smsOptOut
 
 /** What the email builders read from a notification payload. */
-export interface NotificationEmailPayload {
+export interface NotificationEmailPayload extends NotificationFrameLocale {
   subject?: string
   body: string
   action?: NotificationAction
@@ -104,9 +125,13 @@ function escapeHtml(s: string): string {
  *
  * With `unsubscribe`, the footer says why the email came and links to
  * Unsubscribe (and the preferences page) instead of "do not reply".
+ *
+ * The footer, link and default button words are the frame's, in the
+ * payload's `locale` (see {@link NotificationFrameLocale}); English without one.
  */
 export async function notificationEmailHtml(payload: NotificationEmailPayload): Promise<string> {
   const unsubscribe = payload.unsubscribe?.url ? payload.unsubscribe : undefined
+  const strings = notificationFrameStrings(payload.locale, payload.strings)
   try {
     const { html } = await templateByName('notification', {
       subject: payload.subject ?? '',
@@ -114,11 +139,16 @@ export async function notificationEmailHtml(payload: NotificationEmailPayload): 
         subject: payload.subject ?? '',
         paragraphs: emailParagraphs(payload.body),
         preheader: String(payload.body ?? '').replace(/\s+/g, ' ').trim().slice(0, 140),
-        ...(payload.action?.url ? { actionUrl: payload.action.url, actionLabel: payload.action.label || 'Open' } : {}),
+        lang: notificationLanguageTag(payload.locale),
+        automatedNotice: strings.automatedNotice,
+        copyrightNotice: strings.copyright,
+        unsubscribeLabel: strings.unsubscribe,
+        preferencesLabel: strings.preferences,
+        ...(payload.action?.url ? { actionUrl: payload.action.url, actionLabel: payload.action.label || strings.action } : {}),
         ...(unsubscribe
           ? {
               unsubscribeUrl: unsubscribe.url,
-              unsubscribeNotice: unsubscribe.notice || DEFAULT_UNSUBSCRIBE_NOTICE,
+              unsubscribeNotice: unsubscribe.notice || strings.unsubscribeNotice,
               ...(unsubscribe.preferencesUrl ? { preferencesUrl: unsubscribe.preferencesUrl } : {}),
             }
           : {}),
@@ -131,15 +161,16 @@ export async function notificationEmailHtml(payload: NotificationEmailPayload): 
     // The fallback below still carries the message.
   }
   const action = payload.action?.url ? `<p><a href="${escapeHtml(payload.action.url)}">${escapeHtml(payload.action.label || payload.action.url)}</a></p>` : ''
-  const footer = unsubscribe ? `<p>${escapeHtml(unsubscribe.notice || DEFAULT_UNSUBSCRIBE_NOTICE)} <a href="${escapeHtml(unsubscribe.url)}">Unsubscribe</a></p>` : ''
+  const footer = unsubscribe ? `<p>${escapeHtml(unsubscribe.notice || strings.unsubscribeNotice)} <a href="${escapeHtml(unsubscribe.url)}">${escapeHtml(strings.unsubscribe)}</a></p>` : ''
   return `<p>${escapeHtml(payload.body)}</p>${action}${footer}`
 }
 
-/** The plain-text part, with the action's link and any unsubscribe link spelled out. */
-export function notificationEmailText(payload: { body: string, action?: NotificationAction, unsubscribe?: NotificationUnsubscribe }): string {
-  let text = payload.action?.url ? `${payload.body}\n\n${payload.action.label || 'Open'}: ${payload.action.url}` : payload.body
+/** The plain-text part, with the action's link and any unsubscribe link spelled out, in the payload's `locale`. */
+export function notificationEmailText(payload: { body: string, action?: NotificationAction, unsubscribe?: NotificationUnsubscribe } & NotificationFrameLocale): string {
+  const strings = notificationFrameStrings(payload.locale, payload.strings)
+  let text = payload.action?.url ? `${payload.body}\n\n${payload.action.label || strings.action}: ${payload.action.url}` : payload.body
   if (payload.unsubscribe?.url)
-    text += `\n\n${payload.unsubscribe.notice || DEFAULT_UNSUBSCRIBE_NOTICE}\nUnsubscribe: ${payload.unsubscribe.url}`
+    text += `\n\n${payload.unsubscribe.notice || strings.unsubscribeNotice}\n${strings.unsubscribe}: ${payload.unsubscribe.url}`
   return text
 }
 
@@ -189,19 +220,20 @@ export function smsSenderPrefix(sender?: string): string {
 /**
  * What a notification texts. With `smsSender` it starts with the sender's
  * name, so a text from a shared number says who it is from (carriers expect
- * the brand in every message). A `marketing` text ends with
- * {@link DEFAULT_SMS_OPT_OUT} on its own line; `smsOptOut` replaces that line
- * (and adds it to any category), and `false` leaves it out. A body that
- * already starts with the name, or already contains the line, is left alone.
+ * the brand in every message). A `marketing` text ends with the frame's
+ * `smsOptOut` line in the payload's `locale` ({@link DEFAULT_SMS_OPT_OUT} in
+ * English) on its own line; `smsOptOut` replaces that line (and adds it to any
+ * category), and `false` leaves it out. A body that already starts with the
+ * name, or already contains the line, is left alone.
  */
-export function notificationSmsBody(payload: { body: string, smsSender?: string, smsOptOut?: string | false }, category?: string): string {
+export function notificationSmsBody(payload: { body: string, smsSender?: string, smsOptOut?: string | false } & NotificationFrameLocale, category?: string): string {
   let body = String(payload.body ?? '')
   const prefix = smsSenderPrefix(payload.smsSender)
   if (prefix && !body.trimStart().toLowerCase().startsWith(prefix.trim().toLowerCase()))
     body = `${prefix}${body.trimStart()}`
   if (payload.smsOptOut === false)
     return body
-  const line = typeof payload.smsOptOut === 'string' ? payload.smsOptOut.trim() : category === 'marketing' ? DEFAULT_SMS_OPT_OUT : ''
+  const line = typeof payload.smsOptOut === 'string' ? payload.smsOptOut.trim() : category === 'marketing' ? notificationFrameStrings(payload.locale, payload.strings).smsOptOut : ''
   if (!line || body.toLowerCase().includes(line.toLowerCase()))
     return body
   return `${body.trimEnd()}\n\n${line}`

@@ -6,7 +6,7 @@ import { chat, email, push, sms } from './drivers'
 import { BroadcastNotificationDriver } from './drivers/broadcast'
 import { DatabaseNotificationDriver } from './drivers/database'
 import { makeDeliveryRecord, recordNotificationDelivery } from './delivery'
-import { type NotificationAction, type NotificationUnsubscribe, notificationEmailMessage, notificationSmsBody } from './email-body'
+import { type NotificationAction, type NotificationFrameLocale, type NotificationUnsubscribe, notificationEmailMessage, notificationSmsBody } from './email-body'
 import { filterChannelsByPreferences } from './preferences'
 
 const config = _notification as NotificationOptions | undefined
@@ -36,7 +36,13 @@ export interface EmailTransport {
   send: (message: EmailMessage) => Promise<EmailResult>
 }
 
-export interface NotificationPayload {
+/**
+ * What `notify()` sends. `locale` (and `strings`, from
+ * {@link NotificationFrameLocale}) put the frame in the reader's language: the
+ * email's footer, unsubscribe links and default button label, and a marketing
+ * text's opt-out line. The subject and body are sent as given.
+ */
+export interface NotificationPayload extends NotificationFrameLocale {
   subject?: string
   body: string
   data?: Record<string, unknown>
@@ -54,8 +60,8 @@ export interface NotificationPayload {
   headers?: Record<string, string>
   /**
    * The opt-out line a text ends with. A `marketing` text gets
-   * "Reply STOP to opt out." by default; a string replaces it (and adds it to
-   * other categories), `false` leaves it out.
+   * "Reply STOP to opt out." by default (in the payload's `locale`); a string
+   * replaces it (and adds it to other categories), `false` leaves it out.
    */
   smsOptOut?: string | false
   /**
@@ -402,7 +408,9 @@ export {
 } from './preferences'
 export type { NotificationPreferenceRow, PreferenceChannel } from './preferences'
 export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listUnsubscribeHeaders, notificationEmailHtml, notificationEmailMessage, notificationEmailText, notificationSmsBody, SMS_SENDER_MAX_LENGTH, smsSenderPrefix } from './email-body'
-export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationUnsubscribe } from './email-body'
+export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationFrameLocale, NotificationUnsubscribe } from './email-body'
+export { NOTIFICATION_FRAME_STRINGS, notificationFrameStrings, notificationLanguageTag } from './frame-strings'
+export type { NotificationFrameStrings } from './frame-strings'
 export { notificationUnsubscribeLinks, notificationUnsubscribeToken, parseNotificationUnsubscribeToken, unsubscribeTokenFromRequest, unsubscribeWithToken } from './unsubscribe'
 export type { ParsedUnsubscribeToken, UnsubscribeChannel, UnsubscribeLinkOptions } from './unsubscribe'
 export { accountNotificationTemplates, commerceNotificationTemplates, createNotificationTemplates, defineNotificationTemplates, interpolateNotificationText, notificationTemplateVariables, renderNotificationTemplate, resolveNotificationLocale, subscriptionNotificationTemplates } from './templates'
