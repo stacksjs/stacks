@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.143...v0.75.145)
+
+## 🐛 Bug Fixes
+
+- **database**: stop rewriting migration files on every migrate ([f887c86](https://github.com/stacksjs/stacks/commit/f887c86)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **features**: a root model the app rewrote claims its table ([e708060](https://github.com/stacksjs/stacks/commit/e708060)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.75.144 ([fb6a909](https://github.com/stacksjs/stacks/commit/fb6a909)) _(by Chris <chris@stacksjs.com>)_
+- **docs**: regenerate the native skill catalog ([395fa87](https://github.com/stacksjs/stacks/commit/395fa87)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.143...v0.75.144)
 
 ## 🐛 Bug Fixes
