@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.139...v0.75.140)
+
+## 🐛 Bug Fixes
+
+- **notifications**: an unsubscribe link for a deleted account succeeds ([78aafe7](https://github.com/stacksjs/stacks/commit/78aafe7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.138...v0.75.139)
 
 ## ✨ Features
