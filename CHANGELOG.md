@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.126...v0.75.127)
+
+## ✨ Features
+
+- deliver native chat inbox notifications and Apple push alerts ([f3b3e27](https://github.com/stacksjs/stacks/commit/f3b3e27)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.125...v0.75.126)
 
 ## 🐛 Bug Fixes
