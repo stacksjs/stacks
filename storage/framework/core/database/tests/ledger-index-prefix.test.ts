@@ -5,6 +5,7 @@ const schema = (indexes: string[]) => ({
   tables: new Set<string>(),
   columns: new Map<string, Set<string>>(),
   indexes: new Set(indexes),
+  indexShapes: new Set<string>(),
   constraints: new Set<string>(),
   enums: new Set<string>(),
 }) as any

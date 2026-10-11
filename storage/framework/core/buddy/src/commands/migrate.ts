@@ -1544,7 +1544,11 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         }
       }
 
-      const result = await regenerateMigrationCorpus({ dialect: target, replaceUnmarked: options.replaceUnmarked })
+      const result = await regenerateMigrationCorpus({
+        dialect: target,
+        replaceUnmarked: options.replaceUnmarked,
+        onlyExistingTables: options.onlyExistingTables,
+      })
       if (resultFailed(result)) {
         log.syncError(result.error.message)
         process.exit(ExitCode.FatalError)
@@ -1559,18 +1563,42 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       // guard above, i.e. an empty ledger or an explicit --force, and it is
       // strictly safer than leaving the rows pointing at files that no longer
       // exist.
-      if (applied > 0) {
+      //
+      // Counted again rather than trusting the count taken before: regenerating
+      // loads the app's database config, and a ledger read before that may have
+      // been a different database's.
+      const recordedNow = applied > 0 ? applied : await countAppliedMigrations().catch(() => 0)
+      if (recordedNow > 0) {
         const { reconcileMigrationLedger } = await import('@stacksjs/database')
-        const fixed = await reconcileMigrationLedger()
+        const fixed = await reconcileMigrationLedger({
+          regenerated: { removed: result.value.removed, written: result.value.files.map(file => file.name) },
+        })
         if (fixed.remapped.length > 0)
           log.info(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
         if (fixed.recorded.length > 0)
-          log.info(`Recorded ${fixed.recorded.length} migration(s) already present in the schema.`)
+          log.info(`Recorded ${fixed.recorded.length} regenerated migration(s) whose every table, index and type the schema already has - they will not run.`)
+        if (fixed.retired.length > 0)
+          log.info(`Retired ${fixed.retired.length} ledger row(s) for migrations the regenerated corpus replaced.`)
         if (fixed.pruned.length > 0)
           log.info(`Pruned ${fixed.pruned.length} duplicate ledger row(s).`)
         if (fixed.skipped.length > 0) {
-          log.warn(`${fixed.skipped.length} ledger entr(ies) need a look - run \`./buddy migrate:status\`.`)
+          log.warn(`${fixed.skipped.length} ledger entr(ies) need a look:`)
+          for (const entry of fixed.skipped.slice(0, 10))
+            log.info(`      ${entry.file} - ${entry.reason}`)
+          if (fixed.skipped.length > 10)
+            log.info(`      … +${fixed.skipped.length - 10} more - run \`./buddy migrate:status\``)
         }
+
+        // A regenerated file is recorded only when the database already has
+        // everything it creates. One that is still pending will run, and its
+        // `CREATE ... IF NOT EXISTS` matches by NAME: an index the database
+        // holds under an older name gets built a second time. Aligning first
+        // renames those, adds what is genuinely missing, and leaves the rest
+        // provably present, so the reconcile after it records them.
+        log.info('This database has history. Before `./buddy migrate`, bring its schema in line with the models:')
+        log.info('  ./buddy migrate:align            # what differs, and what can be repaired safely')
+        log.info('  ./buddy migrate:align --apply    # rename legacy indexes, add missing indexes and foreign keys')
+        log.info('  ./buddy migrate:status --reconcile   # record the regenerated files the schema now satisfies')
       }
 
       log.info('Review the change with `git diff`, then run `./buddy migrate`.')
@@ -1789,6 +1817,8 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       }
 
       const fixed = await reconcileMigrationLedger({ includePartial: options.includePartial, requeueReverted: options.requeueReverted })
+      if (fixed.retired.length > 0)
+        log.success(`Retired ${fixed.retired.length} ledger row(s) for migrations a regeneration replaced.`)
       if (fixed.remapped.length > 0)
         log.success(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
       if (fixed.requeued.length > 0) {

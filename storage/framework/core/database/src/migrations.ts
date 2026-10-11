@@ -1512,6 +1512,13 @@ async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden:
  * `DELETE FROM oauth_access_tokens`, so a careless renumber re-runs a data wipe.
  */
 export async function countAppliedMigrations(): Promise<number> {
+  // The app's config/database.ts first. Without it this counted the ledger of
+  // whatever database the environment alone describes, which is not the one
+  // the app uses whenever the two disagree - and `migrate:regenerate` decides
+  // from this count whether the database has history its ledger repair must
+  // carry over. Reading 0 there skipped the repair, and the next `migrate`
+  // re-ran the whole regenerated corpus.
+  await ensureDatabaseConfigLoaded()
   try {
     // Plain SQL on purpose. This was a Kysely-style `select(eb => eb.fn.count())`,
     // which bun-query-builder rejects ("unsupported column"), and the catch below

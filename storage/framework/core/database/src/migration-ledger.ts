@@ -33,7 +33,9 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import { join } from 'node:path'
+import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
+import { sqlStatementsOf } from './sql-statements'
 
 export type LedgerDialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -50,6 +52,13 @@ export interface MigrationEffect {
   table?: string
   /** Table / column / index / constraint / enum type name. */
   name: string
+  /**
+   * For an index: what it builds, whatever it is called (see
+   * `comparableIndexKey`). Lets an index that exists under another name - an
+   * older generator's spelling, or one Postgres truncated at 63 characters -
+   * count as present.
+   */
+  shape?: string
 }
 
 export type MigrationStatus =
@@ -306,6 +315,17 @@ export function migrationEffects(sql: string): MigrationEffect[] {
     effects.push(effect)
   }
 
+  // Read from the raw statements rather than the stripped ones below: a
+  // partial index's predicate can hold a literal, and blanking it would make
+  // `WHERE status = 'a'` and `WHERE status = 'b'` the same index.
+  const shapes = new Map<string, string>()
+  for (const statement of sqlStatementsOf(sql)) {
+    const match = /^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+NOT\s+EXISTS\s+)?["`[]?([\w$]+)/i.exec(statement)
+    const key = match?.[1] ? comparableIndexKey(statement) : undefined
+    if (match?.[1] && key)
+      shapes.set(match[1].toLowerCase(), key)
+  }
+
   for (const statement of statementsOf(sql)) {
     const create = new RegExp(String.raw`^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
     if (create?.[1]) {
@@ -326,7 +346,13 @@ export function migrationEffects(sql: string): MigrationEffect[] {
     if (index?.[1]) {
       // The owning table is captured so `effectPresent` can recognise the
       // legacy `<table>_<name>` spelling of the same index.
-      push(index[2] ? { kind: 'index', name: index[1], table: index[2] } : { kind: 'index', name: index[1] })
+      const shape = shapes.get(index[1].toLowerCase())
+      push({
+        kind: 'index',
+        name: index[1],
+        ...(index[2] ? { table: index[2] } : {}),
+        ...(shape ? { shape } : {}),
+      })
       continue
     }
 
@@ -418,12 +444,14 @@ export interface LiveSchema {
   /** table (lower) → set of column names (lower). */
   columns: Map<string, Set<string>>
   indexes: Set<string>
+  /** `comparableIndexKey` of every index whose definition could be read. */
+  indexShapes: Set<string>
   constraints: Set<string>
   enums: Set<string>
 }
 
 function emptySchema(): LiveSchema {
-  return { tables: new Set(), columns: new Map(), indexes: new Set(), constraints: new Set(), enums: new Set() }
+  return { tables: new Set(), columns: new Map(), indexes: new Set(), indexShapes: new Set(), constraints: new Set(), enums: new Set() }
 }
 
 function rowsOf(result: unknown): any[] {
@@ -464,9 +492,12 @@ export async function readLiveSchema(dialect: LedgerDialect, runner?: SqlRunner)
       const name = pick(row, 'name')
       if (name) schema.tables.add(name.toLowerCase())
     }
-    for (const row of await run(`SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'`)) {
+    for (const row of await run(`SELECT name, sql FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'`)) {
       const name = pick(row, 'name')
       if (name) schema.indexes.add(name.toLowerCase())
+      // The statement as it was written, so it reads exactly like the corpus.
+      const key = comparableIndexKey(pick(row, 'sql'))
+      if (key) schema.indexShapes.add(key)
     }
     for (const table of schema.tables) {
       // Identifier interpolation — bounded by the charset check, same guard the
@@ -516,9 +547,11 @@ export async function readLiveSchema(dialect: LedgerDialect, runner?: SqlRunner)
     if (!schema.columns.has(table)) schema.columns.set(table, new Set())
     schema.columns.get(table)!.add(column)
   }
-  for (const row of await run(`SELECT indexname AS name FROM pg_indexes WHERE schemaname = 'public'`)) {
+  for (const row of await run(`SELECT indexname AS name, indexdef AS definition FROM pg_indexes WHERE schemaname = 'public'`)) {
     const name = pick(row, 'name', 'indexname')
     if (name) schema.indexes.add(name.toLowerCase())
+    const key = comparableIndexKey(postgresIndexStatement(pick(row, 'definition', 'indexdef')))
+    if (key) schema.indexShapes.add(key)
   }
   for (const row of await run(`SELECT c.conname AS name FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace WHERE n.nspname = 'public'`)) {
     const name = pick(row, 'name', 'conname')
@@ -541,6 +574,19 @@ export function effectPresent(effect: MigrationEffect, schema: LiveSchema): bool
       return schema.columns.get((effect.table ?? '').toLowerCase())?.has(name) ?? false
     case 'index': {
       if (schema.indexes.has(name))
+        return true
+
+      /*
+       * The same index under any name. Matching names alone - even with the
+       * legacy spelling below - misses every index an older generator named
+       * past Postgres's 63-character limit: the server kept the first 63
+       * characters, the current generator hashes the tail instead, and the
+       * two never meet. Regenerating a corpus against such a database left
+       * every file that declared one PARTIAL, so none of them were recorded
+       * and the next migrate re-ran them all - creating a second copy of each
+       * index beside the first.
+       */
+      if (effect.shape && schema.indexShapes.has(effect.shape))
         return true
 
       /*
@@ -935,6 +981,12 @@ export interface ReconcileResult {
    * rebuild a table the database is missing (only with `requeueReverted`).
    */
   requeued: string[]
+  /**
+   * Ledger rows deleted because `migrate:regenerate` removed their file on
+   * purpose (only with `regenerated`). The regenerated corpus describes what
+   * they did; the row has nothing left to protect.
+   */
+  retired: string[]
   /** Things the reconciler refused to touch, with why. */
   skipped: Array<{ file: string, reason: string }>
 }
@@ -1287,26 +1339,55 @@ export async function reconcileMigrationLedger(options: {
   dialect?: LedgerDialect
   /** Reconcile a database other than the process-wide one. */
   run?: SqlRunner
+  /**
+   * What `migrate:regenerate` just did to the corpus.
+   *
+   * A regenerated file shares its logical name with the file it replaced but
+   * not its contents - the new `create-users-table` may declare an index or a
+   * column the old one never had - so repointing the old row at it by name
+   * would record SQL that never ran. Regenerated files are judged on their own
+   * effects instead (recorded when the schema already has everything they
+   * create, left pending otherwise), and the rows of the files the
+   * regeneration deleted are retired rather than left as orphans forever.
+   */
+  regenerated?: { removed: readonly string[], written: readonly string[] }
 } = {}): Promise<ReconcileResult> {
   const run = options.run ?? await defaultRunner()
   const gate = await resolveGate(options, migrationsDir(options.dir))
   const audit = await auditMigrationLedger({ dir: options.dir, dialect: options.dialect, run, gate })
-  const result: ReconcileResult = { remapped: [], recorded: [], pruned: [], requeued: [], skipped: [] }
+  const result: ReconcileResult = { remapped: [], recorded: [], pruned: [], requeued: [], retired: [], skipped: [] }
   if (!audit.supported) {
     result.skipped.push({ file: '*', reason: `dialect "${audit.dialect}" is not audited` })
     return result
   }
 
-  const plan = audit.remapPlan
+  const written = new Set(options.regenerated?.written ?? [])
+  const removedByRegeneration = new Set(options.regenerated?.removed ?? [])
+  const onDisk = new Set([...audit.entries.map(entry => entry.file), ...audit.gated])
+  const plan: LedgerRemapPlan = {
+    ...audit.remapPlan,
+    remap: audit.remapPlan.remap.filter(r => !written.has(r.to)),
+  }
+  // Rows of files the regeneration deleted: retired, never remapped, never
+  // reported as a lost migration. Only rows whose file really is gone.
+  const retirable = [
+    ...audit.remapPlan.remap.filter(r => written.has(r.to)).map(r => r.from),
+    ...audit.remapPlan.dropped,
+    ...audit.remapPlan.superseded,
+    ...audit.remapPlan.ambiguous,
+  ].filter(row => removedByRegeneration.has(row) && !onDisk.has(row) && SAFE_MIGRATION_FILE.test(row))
+  const retiring = new Set(retirable)
 
-  for (const row of plan.ambiguous)
+  for (const row of plan.ambiguous.filter(row => !retiring.has(row)))
     result.skipped.push({ file: row, reason: 'ledger row matches more than one file by logical name' })
-  for (const row of plan.dropped)
+  for (const row of plan.dropped.filter(row => !retiring.has(row)))
     result.skipped.push({ file: row, reason: 'recorded migration no longer exists on disk' })
+  for (const { from } of audit.remapPlan.remap.filter(r => written.has(r.to) && !retiring.has(r.from)))
+    result.skipped.push({ file: from, reason: 'its file was replaced by a regenerated one; not repointed, because the contents differ' })
 
   // Safe because the migration remains recorded under its current filename:
   // this deletes the stale spelling, never the last record of a migration.
-  const prunable = plan.superseded.filter(row => SAFE_MIGRATION_FILE.test(row))
+  const prunable = plan.superseded.filter(row => SAFE_MIGRATION_FILE.test(row) && !retiring.has(row))
   for (const row of plan.superseded.filter(row => !SAFE_MIGRATION_FILE.test(row)))
     result.skipped.push({ file: row, reason: 'ledger row is not safe to write to the ledger' })
 
@@ -1324,7 +1405,9 @@ export async function reconcileMigrationLedger(options: {
       }
       result.skipped.push({
         file: entry.file,
-        reason: `${entry.present.length}/${entry.effects.length} effects present - resolve by hand, or pass --include-partial`,
+        reason: written.has(entry.file)
+          ? `${entry.present.length}/${entry.effects.length} effects present - left pending; run \`buddy migrate:align\` first so the next migrate does not duplicate what exists under another name`
+          : `${entry.present.length}/${entry.effects.length} effects present - resolve by hand, or pass --include-partial`,
       })
       continue
     }
@@ -1355,6 +1438,13 @@ export async function reconcileMigrationLedger(options: {
   // Reported after the requeue plan, so a file it is about to re-run is not
   // also listed as left alone.
   for (const entry of revertedEntries.filter(entry => !toRequeue.includes(entry.file))) {
+    if (written.has(entry.file)) {
+      result.skipped.push({
+        file: entry.file,
+        reason: `recorded under the same name as the file it replaced, but ${entry.absent.length} effect(s) of the regenerated file are missing - \`buddy migrate:align\` creates them`,
+      })
+      continue
+    }
     result.skipped.push({
       file: entry.file,
       reason: options.requeueReverted
@@ -1389,6 +1479,7 @@ export async function reconcileMigrationLedger(options: {
     result.recorded = recordable
     result.pruned = prunable
     result.requeued = requeueable
+    result.retired = retirable
     return result
   }
 
@@ -1428,6 +1519,13 @@ export async function reconcileMigrationLedger(options: {
     }
     await run(`DELETE FROM migrations WHERE migration = '${row}'`)
     result.pruned.push(row)
+  }
+
+  // The file is gone on purpose and the regenerated corpus stands in for it,
+  // so the row cannot make anything run again - there is nothing to run.
+  for (const row of retirable) {
+    await run(`DELETE FROM migrations WHERE migration = '${row}'`)
+    result.retired.push(row)
   }
 
   // Last, and only rows the audit classified a moment ago: deleting one is
