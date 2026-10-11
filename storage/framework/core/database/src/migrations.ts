@@ -1600,7 +1600,21 @@ export function idempotentSql(sql: string): string {
    * re-running the file failed with "already exists" on its own opening line.
    */
   const header = /^(?:[^\S\n]*--[^\n]*\n)+/.exec(sql)?.[0] ?? ''
-  const stmts = sql.slice(header.length).split(';').map(s => s.trim()).filter(Boolean)
+  /*
+   * A dollar-quoted body is one statement, whatever `;` it contains.
+   *
+   * The enum guard is `DO $stacks$ BEGIN CREATE TYPE …; EXCEPTION …; END
+   * $stacks$`, and splitting it on every `;` re-joined it across three lines.
+   * guardPostgresEnumTypes() writes it on one, so the file on disk flipped
+   * between the two shapes on alternate runs - a tracked file rewritten by
+   * every `buddy migrate`, on every machine. Masked here and restored per
+   * statement, so the transform is a no-op on its own output.
+   */
+  const bodies: string[] = []
+  const masked = sql.slice(header.length).replace(/\$([A-Za-z_]*)\$[\s\S]*?\$\1\$/g, body => `\u0000${bodies.push(body) - 1}\u0000`)
+  const stmts = masked.split(';')
+    .map(s => s.trim().replace(/\u0000(\d+)\u0000/g, (_m, index: string) => bodies[Number(index)]!))
+    .filter(Boolean)
   if (stmts.length === 0)
     return sql
   const out: string[] = []
@@ -1667,6 +1681,25 @@ export function idempotentSql(sql: string): string {
  * under the migration lock so concurrent runners can't race the disk. Skips files
  * with no ADD COLUMN/CONSTRAINT and files that are already idempotent.
  */
+/**
+ * The form a Postgres migration file is kept in: ALTERs idempotent, enum types
+ * guarded and their members asserted, type changes ordered.
+ *
+ * `buddy migrate` puts every file through this before running it and writes
+ * the result back, so a file not already in this form is rewritten - a
+ * working-tree change in a tracked file. The writers (`generate:migrations`,
+ * `migrate:regenerate`) therefore write through it too, and the transform is a
+ * fixed point: a committed file stays exactly as it was committed.
+ */
+export function normalizePostgresMigrationSql(sql: string): string {
+  const touchable = /\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql)
+    || /\bCREATE\s+TYPE\b/i.test(sql)
+    || /\bALTER\s+COLUMN\b[^\n]*\bTYPE\b/i.test(sql)
+  if (!touchable)
+    return sql
+  return orderPostgresColumnTypeChanges(guardPostgresEnumTypes(idempotentSql(sql)))
+}
+
 function makeMigrationsIdempotent(): void {
   const rewritten: string[] = []
   const migrationsDir = migrationDirectory('postgres')
@@ -1686,11 +1719,6 @@ function makeMigrationsIdempotent(): void {
     catch {
       continue
     }
-    const touchable = /\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql)
-      || /\bCREATE\s+TYPE\b/i.test(sql)
-      || /\bALTER\s+COLUMN\b[^\n]*\bTYPE\b/i.test(sql)
-    if (!touchable)
-      continue
 
     // `CREATE TYPE` has no `IF NOT EXISTS`, so a corpus containing one could
     // only ever be applied to a database that had never seen it. Anything that
@@ -1698,7 +1726,7 @@ function makeMigrationsIdempotent(): void {
     // dump, a database built before the ledger existed - stopped `buddy
     // migrate` dead on the first enum, with an error naming a type that was
     // already exactly right.
-    const next = orderPostgresColumnTypeChanges(guardPostgresEnumTypes(idempotentSql(sql)))
+    const next = normalizePostgresMigrationSql(sql)
     if (next !== sql) {
       try {
         writeFileSync(p, next)
@@ -4291,7 +4319,8 @@ export async function regenerateMigrationCorpus(options: {
 
     writableGroups.forEach((group, index) => {
       const body = `${group.statements.map(s => s.trim().replace(/;\s*$/, '')).join(';\n')};\n`
-      writeFileSync(join(dir, files[index]!.name), `${GENERATED_MIGRATION_MARKER}\n${body}`)
+      const content = `${GENERATED_MIGRATION_MARKER}\n${body}`
+      writeFileSync(join(dir, files[index]!.name), (options.dialect ?? getDialect()) === 'postgres' ? normalizePostgresMigrationSql(content) : content)
     })
 
     for (const { from, to } of relocated)
@@ -4484,7 +4513,8 @@ function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: Migr
     // marker it would be preserved as if hand-authored and end up duplicated
     // alongside the regenerated corpus (stacksjs/stacks#2234). The dedup above
     // compares normalized SQL statements, so a leading comment cannot match one.
-    writeFileSync(filePath, `${GENERATED_MIGRATION_MARKER}\n${body}`)
+    const content = `${GENERATED_MIGRATION_MARKER}\n${body}`
+    writeFileSync(filePath, getDialect() === 'postgres' ? normalizePostgresMigrationSql(content) : content)
     log.debug(`[migration] Wrote ${filename} (${fresh.length} stmt${fresh.length === 1 ? '' : 's'})`)
     written += 1
     cursor += 1

@@ -96,6 +96,26 @@ describe('index alignment', () => {
     }
   })
 
+  it('renames the twin that already carries the model\'s name, not another owner\'s', () => {
+    // The framework's auth setup owns idx_users_stripe_id and recreates it if
+    // it goes missing; users_users_stripe_id_unique is the old spelling of the
+    // model's own index.
+    const [desired, live] = schemas(
+      { indexes: [desiredIndex('CREATE UNIQUE INDEX IF NOT EXISTS "users_stripe_id_unique" ON "users" ("stripe_id")')] },
+      {
+        tables: users,
+        indexes: [
+          liveIndex('CREATE UNIQUE INDEX idx_users_stripe_id ON public.users USING btree (stripe_id)'),
+          liveIndex('CREATE UNIQUE INDEX users_users_stripe_id_unique ON public.users USING btree (stripe_id)'),
+        ],
+      },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual(['ALTER INDEX "users_users_stripe_id_unique" RENAME TO "users_stripe_id_unique"'])
+    expect(plan.reports.map(r => `${r.kind} ${r.name}`)).toEqual(['duplicate-index idx_users_stripe_id'])
+  })
+
   it('reports duplicate twins and a taken name, and never drops anything', () => {
     const [desired, live] = schemas(
       { indexes: [desiredIndex('CREATE UNIQUE INDEX "users_email_unique" ON "users" ("email")')] },

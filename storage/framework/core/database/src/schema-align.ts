@@ -555,7 +555,16 @@ export function planSchemaAlignment(
       && !desiredNames.has(candidate.name)
       && !claimed.has(candidate.name))
     if (twins.length > 0) {
-      const [twin, ...extra] = twins
+      /*
+       * Of several identical indexes, rename the one that was this index all
+       * along. A history that prefixed names twice left `users_users_stripe_id
+       * _unique` beside the framework's own `idx_users_stripe_id`; renaming the
+       * framework's one took it away from the auth setup, which recreated it on
+       * the next migrate, and the old name stayed behind as a third copy. The
+       * candidate whose name already contains the model's is the old spelling
+       * of the same index; the others are someone else's.
+       */
+      const [twin, ...extra] = [...twins].sort((a, b) => Number(b.name.includes(index.name)) - Number(a.name.includes(index.name)))
       claimed.add(twin!.name)
       if (live.names.has(index.name)) {
         reports.push({ kind: 'name-conflict', table: index.table, name: index.name, detail: `cannot rename ${twin!.name} to ${index.name}: that name is taken by another object` })
