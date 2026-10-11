@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { db } from '@stacksjs/database/runtime'
 import type { NotificationUnsubscribe } from './email-body'
 import { setNotificationPreference } from './preferences'
 
@@ -128,11 +129,17 @@ export async function unsubscribeTokenFromRequest(request: { url: string, json?:
 /**
  * Verify a token and turn its preference off. Returns what was turned off,
  * or null for an invalid token (answer 422).
+ *
+ * A valid token for an account that no longer exists succeeds without
+ * writing anything: nothing is sent to a deleted account, so the link has
+ * done its job, and a preference row for it would break the foreign key.
  */
 export async function unsubscribeWithToken(token: string): Promise<ParsedUnsubscribeToken | null> {
   const parsed = parseNotificationUnsubscribeToken(token)
   if (!parsed)
     return null
-  await setNotificationPreference(parsed.userId, parsed.channel, false, parsed.category)
+  const user = await db.selectFrom('users').select(['id']).where('id', '=', parsed.userId).executeTakeFirst()
+  if (user)
+    await setNotificationPreference(parsed.userId, parsed.channel, false, parsed.category)
   return parsed
 }

@@ -4,6 +4,7 @@ import { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnec
 import { notificationPreferencesTableSql, notificationsTableSql } from '../../../database/src/notification-tables'
 import { bulkSetPreferences, filterChannelsByPreferences, getNotificationPreferences, setNotificationPreference } from '../../src/preferences'
 import { DatabaseNotificationDriver } from '../../src/drivers/database'
+import { notificationUnsubscribeToken, unsubscribeWithToken } from '../../src/unsubscribe'
 import { createBroadcastHub, getServer, stopServer } from '@stacksjs/realtime'
 
 const directory = process.env.STACKS_PREFERENCE_TEST_DIRECTORY!
@@ -27,6 +28,14 @@ await Promise.all([setNotificationPreference(1, 'sms', false), setNotificationPr
 assert.equal((await db.selectFrom('notification_preferences').selectAll().where('channel', '=', 'sms').execute()).length, 1, 'nullable global categories must not permit duplicate rows')
 await assert.rejects(() => bulkSetPreferences(1, [{ channel: 'email', enabled: true }, { channel: 'sms', enabled: null as any }]))
 assert.equal((await getNotificationPreferences(1)).get('email'), false, 'a failed bulk write must not partially save earlier preferences')
+process.env.APP_KEY = 'test-key-0123456789abcdef'
+await db.insertInto('users').values({ id: 2 }).execute()
+assert.deepEqual(await unsubscribeWithToken(notificationUnsubscribeToken(2, 'email', 'news')), { userId: 2, channel: 'email', category: 'news' })
+assert.deepEqual(await filterChannelsByPreferences(2, ['email', 'sms'], 'news'), ['sms'], 'an unsubscribe link turns off only its own channel and category')
+assert.deepEqual(await filterChannelsByPreferences(2, ['email'], 'transactional'), ['email'])
+assert.equal(await unsubscribeWithToken('not-a-token'), null)
+assert.deepEqual(await unsubscribeWithToken(notificationUnsubscribeToken(99, 'email')), { userId: 99, channel: 'email', category: 'marketing' }, 'an old link for a deleted account succeeds')
+assert.equal((await db.selectFrom('notification_preferences').selectAll().where('user_id', '=', 99).execute()).length, 0, 'and writes nothing for it')
 const notification = await DatabaseNotificationDriver.send({ userId: 1, type: 'workout_comment', data: { body: 'Well done' } })
 assert(notification.id > 0, 'the database driver returns a generated notification id on every dialect')
 assert.equal((await DatabaseNotificationDriver.getUserNotifications(1))[0]?.id, notification.id)
