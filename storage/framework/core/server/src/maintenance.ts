@@ -146,6 +146,18 @@ function readSiteModePayload(mode: SiteMode): Promise<MaintenancePayload | null>
   // `APP_COMING_SOON`, which `envSiteModePayload()` below still honours -
   // returning null here falls through to exactly that, so the capability
   // survives and only the foreign-project read goes away.
+  //
+  // `buddy down` is unaffected today because nothing deploys a compiled
+  // SERVER: `STACKS_SERVER_TARGETS` is set nowhere, nothing references
+  // `dist/server`, and a deployed app runs `buddy serve` as a script, where
+  // this check is false and the file is read exactly as before. Every compiled
+  // binary in play is a desktop app, which has no project and must not borrow
+  // one.
+  //
+  // If a compiled server ever ships, it inverts: deployed INTO its project and
+  // run from it, it should read the file again, and `isCompiledBinary()` cannot
+  // tell the two apart. That wants a narrower signal (the desktop build
+  // stamping its own manifest, say) rather than widening this one.
   if (p.isCompiledBinary())
     return null
 
