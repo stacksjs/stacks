@@ -130,6 +130,25 @@ export async function comingSoonPayload(): Promise<MaintenancePayload | null> {
 }
 
 function readSiteModePayload(mode: SiteMode): Promise<MaintenancePayload | null> | null {
+  // A compiled binary has no project of its own, so the file it would read is
+  // somebody else's (stacksjs/stacks#2888).
+  //
+  // `siteModeFilePath()` resolves through `projectPath()`, which walks up from
+  // the CWD. Launch a compiled server or desktop binary from inside a Stacks
+  // project that is in maintenance mode and it adopts that project's state:
+  // reproduced with a real binary, which answered every request with the
+  // unrelated project's 503 holding page from inside it and served normally
+  // from anywhere else. Worse than the noise #2886 made, because it changes
+  // what the app DOES.
+  //
+  // The file is a deployment signal, written by `buddy down` on the host it
+  // applies to. A binary that wants maintenance mode has `APP_MAINTENANCE` /
+  // `APP_COMING_SOON`, which `envSiteModePayload()` below still honours -
+  // returning null here falls through to exactly that, so the capability
+  // survives and only the foreign-project read goes away.
+  if (p.isCompiledBinary())
+    return null
+
   try {
     const filePath = siteModeFilePath(mode)
 
