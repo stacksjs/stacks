@@ -29,10 +29,11 @@
  *   - `buildBlog({ outDir, baseUrl })` — static, used at deploy time to emit
  *     `dist/blog/**` (see config/cloud.ts), the same way /docs builds.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { articleCss, articleScript, renderPostHtml } from '@stacksjs/cms/article'
+import { loadPosts } from '@stacksjs/cms/blog'
 import { usableOrigin } from './site-origin'
 
 // Re-exported: it lived here first, and callers import it from this module.
@@ -221,26 +222,6 @@ ${urls}
 </urlset>`
 }
 
-/** Minimal single-line `key: value` frontmatter parser (sufficient for posts). */
-function parseFrontmatter(md: string): { data: Record<string, string>, body: string } {
-  const m = md.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
-  if (!m)
-    return { data: {}, body: md }
-  const data: Record<string, string> = {}
-  const frontmatter = m[1] ?? ''
-  for (const line of frontmatter.split('\n')) {
-    const i = line.indexOf(':')
-    if (i === -1)
-      continue
-    const key = line.slice(0, i).trim()
-    let val = line.slice(i + 1).trim()
-    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith('\'') && val.endsWith('\'')))
-      val = val.slice(1, -1)
-    data[key] = val
-  }
-  return { data, body: m[2] ?? '' }
-}
-
 function formatDate(d?: string): string {
   if (!d)
     return ''
@@ -364,28 +345,15 @@ export function blogSitemapPaths(contentDir: string = CONTENT_DIR): string[] {
   return ['/blog', ...posts.map(post => `/blog/${post.slug}`)]
 }
 
+/**
+ * The published posts, featured first and then newest first, read by
+ * `@stacksjs/cms/blog`: the same reader stx-native blog pages use, so the
+ * pages, the feed and the sitemap agree on what is published. A real post
+ * needs a title and a date, which skips docs like STRATEGY.md; `draft: true`
+ * (set by the dashboard) holds one back from all of them.
+ */
 function listPosts(contentDir: string = CONTENT_DIR): { slug: string, fm: Record<string, string> }[] {
-  if (!existsSync(contentDir))
-    return []
-  return readdirSync(contentDir)
-    .filter(f => f.endsWith('.md'))
-    .map((f) => {
-      const { data } = parseFrontmatter(readFileSync(join(contentDir, f), 'utf-8'))
-      return { slug: f.replace(/\.md$/, ''), fm: data }
-    })
-    // A real post needs a title + date; this skips docs like STRATEGY.md
-    // (and matches what BunPress's RSS collector requires). `draft: true` is
-    // set by the dashboard to hold a post back from the listing, feed, and
-    // sitemap; a post with no `draft` key is published.
-    .filter(p => !!p.fm.title && !!p.fm.date && p.fm.draft !== 'true')
-    .sort((a, b) => {
-      // Featured first, then newest date first.
-      const fa = a.fm.featured === 'true' ? 1 : 0
-      const fb = b.fm.featured === 'true' ? 1 : 0
-      if (fa !== fb)
-        return fb - fa
-      return (b.fm.date || '').localeCompare(a.fm.date || '')
-    })
+  return loadPosts({ dir: contentDir }).map(post => ({ slug: post.slug, fm: post.frontmatter }))
 }
 
 // ── HTML/XML builders (shared by the dynamic + static paths) ─────────────────
@@ -419,7 +387,7 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
   // (e.g. STRATEGY.md) are not addressable as posts. `draft: true` 404s here as
   // well as hiding from the listing, so an unpublished post has no public URL.
   // BunPress parses YAML, so `draft` arrives as a boolean, not the string the
-  // single-line parser in `listPosts` sees.
+  // single-line parser behind `listPosts` sees.
   if (!fm.title || !fm.date || fm.draft === true || fm.draft === 'true')
     return null
 

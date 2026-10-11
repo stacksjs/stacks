@@ -20,6 +20,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ```
 cms/src/
 ├── index.ts              # CmsNamespace - top-level API
+├── blog.ts               # Markdown posts in content/blog: loadPosts, loadPost, renderPostBody, bylines
 ├── posts/
 │   ├── fetch.ts          # fetchById, fetchAll, fetchByStatus, fetchByCategory, fetchByAuthor
 │   ├── store.ts          # store, attach, detach, sync (pivot tables)
@@ -197,6 +198,27 @@ email. Moderate without a dashboard with `buddy comments:list [--status] [--type
 | GET | `/blog/sitemap.xml` | XML sitemap for SEO |
 
 The site-wide `/sitemap.xml` merges the published posts in, so crawlers find them from the root sitemap too (see `stacks-server`, "Sitemap and robots.txt").
+
+## Markdown Blog (content/blog, `@stacksjs/cms/blog`)
+
+The simplest blog has no tables: each post is `content/blog/<slug>.md`, shipped with the commit that adds it. Add `resources/views/blog.stx` (index) and `resources/views/blog/[slug].stx` (post); once `blog.stx` exists the views server serves only `/blog/feed.xml` and `/blog/sitemap.xml` itself and leaves the pages to stx, and `/sitemap.xml` lists the posts. Pages, feed and sitemap all read posts through `@stacksjs/cms/blog`, so they agree on what is published.
+
+```ts
+import { articleHead } from '@stacksjs/cms/article'
+import { bylineOf, createAuthorResolver, formatPostDate, loadPost, loadPosts, renderPostBody } from '@stacksjs/cms/blog'
+
+const posts = loadPosts()                       // published, featured first then newest; no bodies
+const post = loadPost(useRoute().params?.slug)  // null for a draft, unknown or path-like slug -> notFound()
+const html = renderPostBody(post.body)          // Bun markdown + renderPostHtml; {!! html !!} plus {!! articleHead() !!}
+
+// Bylines: create once at module scope (it caches lookups for ten minutes).
+export const resolveAuthors = createAuthorResolver({
+  lookup: async username => /* the app's profile */ ({ name, avatar, bio, url: `/${username}` }),
+})
+const byline = bylineOf(await resolveAuthors(post)) // [{ name, initials, avatar, bio, url, joiner, avatarStyle }]
+```
+
+Frontmatter is one `key: value` per line: `title` and `date` (YYYY-MM-DD) are required, `draft: true` hides a post everywhere, `featured: true` lists it first, `description` is the excerpt and the feed text, `author` is the feed's plain-text byline, `image`/`imageAlt` the preview picture. Several authors: `authors: ada, grace` plus flat fallbacks `author.ada.name`, `author.ada.avatar`, `author.ada.bio` (a frontmatter bio wins over the profile's). One author may use `authorUsername`/`authorAvatar`/`authorBio`. Every key is also on `post.frontmatter`. Also exported: `parseFrontmatter`, `isPublished`, `authorsOf`, `readingMinutes` (`post.minutes`), `formatPostDate`, `joinNames`, `initialsOf`, `sortPosts`, `isPostSlug`, `blogContentDir`.
 
 ## Post Bodies: Images, Grids, Zoom and Embeds
 
