@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.130...v0.75.131)
+
+## 🐛 Bug Fixes
+
+- align STX editor tooling and layout regression checks ([d78c686](https://github.com/stacksjs/stacks/commit/d78c686)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.129...v0.75.130)
 
 ## 📝 Documentation

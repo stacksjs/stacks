@@ -2,7 +2,7 @@
   "name": "@stacksjs/video",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.130",
+  "version": "0.75.131",
   "description": "Native video delivery planning for Stacks.",
   "author": "Chris Breuer",
   "license": "MIT",
