@@ -1578,6 +1578,107 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       process.exit(ExitCode.Success)
     })
 
+  // `buddy migrate:align` — make a live database match the models without
+  // writing a migration file.
+  //
+  // For the database that drifted from its history: hand-written migrations
+  // that named indexes their own way, skipped foreign keys, or sized columns
+  // smaller than the models now say. Neither `migrate` (it only runs files the
+  // ledger lacks) nor a regenerated corpus (`CREATE ... IF NOT EXISTS` is a
+  // no-op against a taken name) can repair that. Plans by default; `--apply`
+  // runs the safe repairs as one transaction. See schema-align.ts.
+  buddy
+    .command('migrate:align', 'Repair a live database that drifted from the models, without writing migrations (PostgreSQL)')
+    .option('--apply', 'Run the safe repairs, in one transaction', { default: false })
+    .option('--widen-integers', 'Also widen integer columns the models declare as bigint (rewrites those tables)', { default: false })
+    .option('-f, --force', 'With --apply, skip the confirmation', { default: false })
+    .option('--json', 'Emit the plan as JSON', { default: false })
+    .action(async (options: { apply?: boolean, widenIntegers?: boolean, force?: boolean, json?: boolean }) => {
+      const perf = options.json ? undefined : await intro('buddy migrate:align')
+      const { alignSchema } = await import('@stacksjs/database')
+
+      let planned: Awaited<ReturnType<typeof alignSchema>>
+      try {
+        planned = await alignSchema({ widenIntegers: options.widenIntegers })
+      }
+      catch (error) {
+        log.syncError(`Could not compare the database with the models: ${error instanceof Error ? error.message : String(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      if (options.json) {
+        // eslint-disable-next-line no-console
+        console.log(JSON.stringify(planned, null, 2))
+        process.exit(ExitCode.Success)
+      }
+
+      if (!planned.supported) {
+        log.info(`migrate:align is not supported for "${planned.dialect}" yet - only PostgreSQL. Nothing was compared.`)
+        await outro('Skipped.', { startTime: perf!, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      const { actions, reports, refused } = planned.plan
+      const report: string[] = ['', `  Align plan: ${planned.dialect}`, '  ─────────────────────────────────────────────']
+      if (actions.length > 0) {
+        report.push(`  ${actions.length} safe repair(s)${options.apply ? '' : ' - run with --apply to make them, in one transaction'}:`)
+        for (const action of actions)
+          report.push(`      • ${action.detail}`, `          ${action.sql};`)
+        report.push('')
+      }
+      if (refused.length > 0) {
+        report.push(`  ${refused.length} repair(s) REFUSED - the data would violate them:`)
+        for (const action of refused)
+          report.push(`      • ${action.detail}: ${action.reason}`)
+        report.push('')
+      }
+      if (reports.length > 0) {
+        report.push(`  ${reports.length} difference(s) left for you to decide - destructive or ambiguous, never applied:`)
+        for (const item of reports.slice(0, 40))
+          report.push(`      • [${item.kind}] ${item.detail}`)
+        if (reports.length > 40)
+          report.push(`      … +${reports.length - 40} more (--json lists all)`)
+        report.push('')
+      }
+      if (actions.length === 0 && refused.length === 0 && reports.length === 0)
+        report.push('  The database matches the models.', '')
+
+      // eslint-disable-next-line no-console
+      console.log(report.join('\n'))
+
+      if (!options.apply || actions.length === 0) {
+        await outro(options.apply ? 'Nothing to repair.' : 'Plan only. Nothing was changed.', { startTime: perf!, useSeconds: true })
+        process.exit(refused.length > 0 ? ExitCode.FatalError : ExitCode.Success)
+      }
+
+      if (!options.force && !isCI && hasTTY && process.stdin.isTTY) {
+        await log.flush()
+        const proceed = await confirm({ message: `Apply ${actions.length} repair(s) to the ${process.env.APP_ENV || 'local'} database "${currentDatabaseLabel()}"?`, initial: false })
+        if (!proceed) {
+          await outro('Cancelled. Nothing was changed.', { startTime: perf!, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+      }
+
+      try {
+        // Planned again rather than replaying the plan above: the database may
+        // have moved while the prompt waited.
+        const applied = await alignSchema({ apply: true, widenIntegers: options.widenIntegers })
+        log.success(`Applied ${applied.applied.length} repair(s).`)
+        for (const action of applied.plan.refused)
+          log.warn(`Refused: ${action.detail}: ${action.reason}`)
+      }
+      catch (error) {
+        log.syncError(`Nothing was changed - the repairs run as one transaction and it failed: ${error instanceof Error ? error.message : String(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      log.info('Migrations whose every table, index and type now exists can be recorded without running:')
+      log.info('  ./buddy migrate:status --reconcile')
+      await outro('Aligned.', { startTime: perf!, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
   // `buddy migrate:status` — compare the corpus on disk, the `migrations`
   // ledger, and the live schema.
   //

@@ -1,0 +1,275 @@
+import type { DesiredColumn, DesiredSchema, LiveAlignSchema, LiveColumn, LiveIndex } from '../src/schema-align'
+import { describe, expect, it } from 'bun:test'
+import { comparableIndexKey, postgresIndexStatement } from '../src/index-shape'
+import { columnDefinitionsOf, comparableDefault, desiredSchemaFrom, planSchemaAlignment, postgresIdentifier } from '../src/schema-align'
+
+/**
+ * `buddy migrate:align`'s planner, without a database. The rules under test are
+ * the ones that decide between "repair", "refuse" and "only report", so each
+ * repair has a case next to the near miss it must not touch.
+ */
+
+const column = (name: string, overrides: Partial<DesiredColumn> = {}): DesiredColumn => ({
+  name,
+  type: 'string',
+  isPrimaryKey: false,
+  isNullable: true,
+  hasDefault: false,
+  ...overrides,
+})
+
+const liveColumn = (name: string, dataType: string, overrides: Partial<LiveColumn> = {}): LiveColumn => ({
+  name,
+  dataType,
+  udtName: dataType,
+  nullable: true,
+  ...overrides,
+})
+
+const desiredIndex = (statement: string) => desiredSchemaFrom({ dialect: 'postgres', tables: [] }, [statement]).indexes[0]!
+
+const liveIndex = (definition: string, overrides: Partial<LiveIndex> = {}): LiveIndex => {
+  const name = /INDEX\s+(\S+)/.exec(definition)![1]!
+  const table = /ON\s+(?:public\.)?(\w+)/.exec(definition)![1]!
+  return {
+    name,
+    table,
+    unique: /UNIQUE/.test(definition),
+    primary: false,
+    key: comparableIndexKey(postgresIndexStatement(definition)),
+    definition,
+    ...overrides,
+  }
+}
+
+function schemas(desired: Partial<DesiredSchema>, live: Partial<LiveAlignSchema>): [DesiredSchema, LiveAlignSchema] {
+  return [
+    { tables: new Map(), indexes: [], enums: new Map(), ...desired },
+    { tables: new Map(), indexes: [], foreignKeys: [], enums: new Map(), names: new Set(), populated: new Set(), ...live },
+  ]
+}
+
+describe('postgresIdentifier', () => {
+  it('names long identifiers the way the generator does', () => {
+    expect(postgresIdentifier('trainer_client_assignments_organization_id_member_user_id_trainer_user_id_unique'))
+      .toBe('trainer_client_assignments_organization_id_member_user__186exwq')
+    expect(postgresIdentifier('teams_name_unique')).toBe('teams_name_unique')
+  })
+})
+
+describe('index alignment', () => {
+  const users = new Map([['users', new Map([['email', liveColumn('email', 'character varying', { maxLength: 255 })]])]])
+
+  it('renames a legacy-named twin instead of creating a second index', () => {
+    const [desired, live] = schemas(
+      { indexes: [desiredIndex('CREATE UNIQUE INDEX IF NOT EXISTS "users_email_unique" ON "users" ("email")')] },
+      { tables: users, indexes: [liveIndex('CREATE UNIQUE INDEX users_users_email_unique ON public.users USING btree (email)')], names: new Set(['users_users_email_unique']) },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual(['ALTER INDEX "users_users_email_unique" RENAME TO "users_email_unique"'])
+  })
+
+  it('renames a twin Postgres truncated at 63 characters', () => {
+    const truncated = 'trainer_client_assignments_trainer_client_assignments_organizat'
+    const [desired, live] = schemas(
+      { indexes: [desiredIndex('CREATE UNIQUE INDEX "trainer_client_assignments_organization_id_member_user__186exwq" ON "trainer_client_assignments" ("team_id", "member_user_id")')] },
+      {
+        tables: new Map([['trainer_client_assignments', new Map([['team_id', liveColumn('team_id', 'bigint')], ['member_user_id', liveColumn('member_user_id', 'integer')]])]]),
+        indexes: [liveIndex(`CREATE UNIQUE INDEX ${truncated} ON public.trainer_client_assignments USING btree (team_id, member_user_id)`)],
+      },
+    )
+
+    expect(planSchemaAlignment(desired, live).actions[0]!.sql).toBe(`ALTER INDEX "${truncated}" RENAME TO "trainer_client_assignments_organization_id_member_user__186exwq"`)
+  })
+
+  it('does not rename across uniqueness, column order or predicate', () => {
+    for (const definition of [
+      'CREATE INDEX users_legacy ON public.users USING btree (email)',
+      'CREATE UNIQUE INDEX users_legacy ON public.users USING btree (email) WHERE (email IS NOT NULL)',
+    ]) {
+      const [desired, live] = schemas(
+        { indexes: [desiredIndex('CREATE UNIQUE INDEX "users_email_unique" ON "users" ("email")')] },
+        { tables: users, indexes: [liveIndex(definition)] },
+      )
+      expect(planSchemaAlignment(desired, live).actions.map(a => a.kind)).toEqual(['create-index'])
+    }
+  })
+
+  it('reports duplicate twins and a taken name, and never drops anything', () => {
+    const [desired, live] = schemas(
+      { indexes: [desiredIndex('CREATE UNIQUE INDEX "users_email_unique" ON "users" ("email")')] },
+      {
+        tables: users,
+        indexes: [
+          liveIndex('CREATE UNIQUE INDEX users_a ON public.users USING btree (email)'),
+          liveIndex('CREATE UNIQUE INDEX users_b ON public.users USING btree (email)'),
+        ],
+      },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.kind)).toEqual(['rename-index'])
+    expect(plan.reports.map(r => `${r.kind} ${r.name}`)).toEqual(['duplicate-index users_b'])
+
+    live.names = new Set(['users_email_unique'])
+    expect(planSchemaAlignment(desired, live).reports.map(r => r.kind)).toContain('name-conflict')
+  })
+
+  it('reports an index whose definition differs from its name\'s', () => {
+    const [desired, live] = schemas(
+      { indexes: [desiredIndex('CREATE UNIQUE INDEX "users_email_unique" ON "users" ("email")')] },
+      { tables: users, indexes: [liveIndex('CREATE INDEX users_email_unique ON public.users USING btree (email)')] },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions).toEqual([])
+    expect(plan.reports.map(r => r.kind)).toEqual(['index-definition'])
+  })
+
+  it('creates a missing unique index behind a duplicates check', () => {
+    const [desired, live] = schemas(
+      { indexes: [desiredIndex('CREATE UNIQUE INDEX "users_email_unique" ON "users" ("email") WHERE "deleted_at" IS NULL')] },
+      { tables: users },
+    )
+    const [action] = planSchemaAlignment(desired, live).actions
+
+    expect(action!.sql).toBe('CREATE UNIQUE INDEX IF NOT EXISTS "users_email_unique" ON "users" ("email") WHERE "deleted_at" IS NULL')
+    expect(action!.check).toEqual({
+      kind: 'duplicates',
+      sql: 'SELECT COUNT(*) AS n FROM (SELECT 1 FROM "users" WHERE "email" IS NOT NULL AND ("deleted_at" IS NULL) GROUP BY "email" HAVING COUNT(*) > 1) AS duplicates',
+    })
+  })
+})
+
+describe('foreign key alignment', () => {
+  const tables = new Map([
+    ['posts', new Map([['team_id', liveColumn('team_id', 'bigint')]])],
+    ['teams', new Map([['id', liveColumn('id', 'bigint')]])],
+  ])
+  const desiredTables = new Map([['posts', [column('team_id', { type: 'bigint', references: { table: 'teams', column: 'id', onDelete: 'cascade' } })]]])
+
+  it('adds a missing foreign key behind an orphan check', () => {
+    const [desired, live] = schemas({ tables: desiredTables }, { tables })
+    const [action] = planSchemaAlignment(desired, live).actions
+
+    expect(action!.sql).toBe('ALTER TABLE "posts" ADD CONSTRAINT "posts_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON DELETE CASCADE')
+    expect(action!.check?.kind).toBe('orphans')
+  })
+
+  it('leaves a present one alone and reports a different action', () => {
+    const [desired, live] = schemas({ tables: desiredTables }, {
+      tables,
+      foreignKeys: [{ name: 'posts_team_id_fkey', table: 'posts', column: 'team_id', refTable: 'teams', refColumn: 'id', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' }],
+    })
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions).toEqual([])
+    expect(plan.reports.map(r => r.kind)).toEqual(['foreign-key'])
+  })
+})
+
+describe('column alignment', () => {
+  const plan = (declared: DesiredColumn, live: LiveColumn, options: Parameters<typeof planSchemaAlignment>[2] = {}) => {
+    const [desired, schema] = schemas(
+      { tables: new Map([['t', [declared]]]) },
+      { tables: new Map([['t', new Map([[live.name, live]])]]) },
+    )
+    return planSchemaAlignment(desired, schema, options)
+  }
+
+  it('widens varchar losslessly and reports narrowing', () => {
+    expect(plan(column('a', { maxLength: 100 }), liveColumn('a', 'character varying', { maxLength: 20 })).actions[0]!.sql)
+      .toBe('ALTER TABLE "t" ALTER COLUMN "a" TYPE varchar(100)')
+    expect(plan(column('a', { type: 'text' }), liveColumn('a', 'character varying', { maxLength: 20 })).actions[0]!.sql)
+      .toBe('ALTER TABLE "t" ALTER COLUMN "a" TYPE text')
+
+    const narrowing = plan(column('a', { maxLength: 10 }), liveColumn('a', 'character varying', { maxLength: 20 }))
+    expect(narrowing.actions).toEqual([])
+    expect(narrowing.reports.map(r => r.kind)).toEqual(['type'])
+  })
+
+  it('widens integer to bigint only on request', () => {
+    const declared = column('n', { type: 'bigint' })
+    const live = liveColumn('n', 'integer')
+
+    expect(plan(declared, live).reports.map(r => r.kind)).toEqual(['optional-widening'])
+    expect(plan(declared, live, { widenIntegers: true }).actions[0]!.sql).toBe('ALTER TABLE "t" ALTER COLUMN "n" TYPE bigint')
+  })
+
+  it('reports nullability and defaults, never changes them', () => {
+    const result = plan(
+      column('s', { isNullable: false, hasDefault: true, defaultValue: 'active' }),
+      liveColumn('s', 'character varying', { maxLength: 255, default: '\'draft\'::character varying' }),
+    )
+
+    expect(result.actions).toEqual([])
+    expect(result.reports.map(r => r.kind).sort()).toEqual(['default', 'nullability'])
+  })
+
+  it('reads a default the way both sides spell it', () => {
+    expect(comparableDefault('\'active\'::teams_status_type')).toBe('active')
+    expect(comparableDefault('timezone(\'utc\'::text, now())')).toBe('clock')
+    expect(comparableDefault('(now() AT TIME ZONE \'utc\')')).toBe('clock')
+    expect(comparableDefault('nextval(\'t_id_seq\'::regclass)')).toBeUndefined()
+  })
+
+  it('adds a missing column, nullable when the table has rows and no default', () => {
+    const create = 'CREATE TABLE IF NOT EXISTS "t" ("id" BIGSERIAL PRIMARY KEY, "a" varchar(10) not null, "b" text default (\'x\'))'
+    const definitions = columnDefinitionsOf(create)
+    const [desired, live] = schemas(
+      { tables: new Map([['t', [column('a', { definition: definitions.get('a')!, isNullable: false }), column('b', { type: 'text', definition: definitions.get('b')!, hasDefault: true, defaultValue: 'x' })]]]) },
+      { tables: new Map([['t', new Map()]]), populated: new Set(['t']) },
+    )
+    const result = planSchemaAlignment(desired, live)
+
+    expect(result.actions.map(a => a.sql)).toEqual([
+      'ALTER TABLE "t" ADD COLUMN IF NOT EXISTS "a" varchar(10)',
+      'ALTER TABLE "t" ADD COLUMN IF NOT EXISTS "b" text default (\'x\')',
+    ])
+    expect(result.reports.map(r => `${r.kind} ${r.name}`)).toEqual(['nullability a'])
+  })
+
+  it('reports extra columns and missing tables', () => {
+    const [desired, live] = schemas(
+      { tables: new Map([['t', [column('a')]], ['gone', [column('a')]]]) },
+      { tables: new Map([['t', new Map([['a', liveColumn('a', 'character varying', { maxLength: 255 })], ['legacy', liveColumn('legacy', 'text')]])]]) },
+    )
+
+    expect(planSchemaAlignment(desired, live).reports.map(r => `${r.kind} ${r.table}`).sort()).toEqual(['extra-column t', 'missing-table gone'])
+  })
+})
+
+describe('enum alignment', () => {
+  it('adds labels the model declares and reports ones it does not', () => {
+    const [desired, live] = schemas(
+      { enums: new Map([['teams_status_type', ['active', 'paused']]]) },
+      { enums: new Map([['teams_status_type', ['active', 'legacy']]]) },
+    )
+    const plan = planSchemaAlignment(desired, live)
+
+    expect(plan.actions.map(a => a.sql)).toEqual(['ALTER TYPE "teams_status_type" ADD VALUE IF NOT EXISTS \'paused\''])
+    expect(plan.reports.map(r => r.kind)).toEqual(['enum'])
+  })
+})
+
+describe('desiredSchemaFrom', () => {
+  it('reads tables, indexes and enum types off the generator\'s SQL', () => {
+    const desired = desiredSchemaFrom(
+      { dialect: 'postgres', tables: [{ table: 'teams', indexes: [], columns: [{ name: 'name', type: 'string', maxLength: 100, isPrimaryKey: false, isUnique: true, isNullable: false, hasDefault: false }] }] },
+      [
+        `CREATE TYPE "teams_status_type" AS ENUM ('active', 'it''s')`,
+        'CREATE TABLE IF NOT EXISTS "teams" (\n  "id" BIGSERIAL PRIMARY KEY,\n  "name" varchar(100) not null\n)',
+        'CREATE UNIQUE INDEX IF NOT EXISTS "teams_name_unique" ON "teams" ("name")',
+        'CREATE INDEX "teams_lower_name" ON "teams" (lower("name"))',
+      ],
+    )
+
+    expect(desired.enums.get('teams_status_type')).toEqual(['active', 'it\'s'])
+    expect(desired.tables.get('teams')![0]!.definition).toBe('"name" varchar(100) not null')
+    expect(desired.indexes.map(index => [index.name, index.unique, index.columns])).toEqual([
+      ['teams_name_unique', true, ['name']],
+      ['teams_lower_name', false, undefined],
+    ])
+  })
+})

@@ -164,6 +164,8 @@ export * from './migration-path'
 // `migrations` table, and the live schema, because regeneration renumbers files
 // and the ledger keys on the filename.
 export * from './migration-ledger'
+export * from './schema-align'
+export { comparableIndexKey, postgresIndexStatement } from './index-shape'
 
 // Model resolution for the generator: userland + framework defaults, flattened
 // because bun-query-builder's loadModels reads only the top level of a dir.
