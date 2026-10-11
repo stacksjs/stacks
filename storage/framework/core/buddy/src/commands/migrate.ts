@@ -1428,17 +1428,21 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const { files, removed, preserved, preservedOutOfScope, models, modelRoots, unrebuildable } = plan.value
+      const { files, removed, removedObsolete, removedDataOnly, preserved, preservedOutOfScope, preservedData, relocated, models, modelRoots, unrebuildable } = plan.value
 
       // Preserved files are the ones no rerun can recreate, so they are the
       // only part of this plan a user cannot undo by running the command
       // again. List them by name rather than as a count (stacksjs/stacks#2234),
-      // and split the two reasons. A protected history file either predates
+      // and split the reasons. A protected history file either predates
       // the marker or follows a CREATE migration that must retain its original
       // chronology. An out-of-scope file describes a table this app's models
-      // no longer describe (stacksjs/stacks#2255).
+      // no longer describe (stacksjs/stacks#2255). A data file inserts rows no
+      // model describes.
+      const dataKept = new Set(preservedData)
       const outOfScope = new Set(preservedOutOfScope)
-      const protectedHistory = preserved.filter(f => !outOfScope.has(f))
+      const protectedHistory = preserved.filter(f => !outOfScope.has(f) && !dataKept.has(f))
+      const outOfScopeKept = preservedOutOfScope.filter(f => !dataKept.has(f))
+      const movedTo = new Map(relocated.map(r => [r.from, r.to]))
 
       const protectedHistoryBlock = protectedHistory.length === 0
         ? ''
@@ -1449,16 +1453,44 @@ ${protectedHistory.map(f => `      ${f}`).join('\n')}
     CREATE migration whose chronology must remain stable. --replace-unmarked
     only replaces files that genuinely lack the @generated marker.`
 
+      // Named, because each is someone's decision being reversed: worth
+      // reading before agreeing, even though none of them changes what a
+      // database built from the new corpus looks like.
+      const obsoleteBlock = removedObsolete.length === 0
+        ? ''
+        : `
+  • ${removedObsolete.length} of those describe nothing the regenerated corpus lacks (enum types it declares, drops of indexes it never builds):
+${removedObsolete.map(f => `      ${f}`).join('\n')}`
+
+      const dataOnlyBlock = removedDataOnly.length === 0
+        ? ''
+        : `
+  • ${removedDataOnly.length} of those are data-only migrations, no-ops on a fresh database:
+${removedDataOnly.map(f => `      ${f}`).join('\n')}
+    They only DELETE or UPDATE rows, and every table the corpus builds starts
+    empty. A database that already ran them keeps their effect.`
+
+      const dataBlock = preservedData.length === 0
+        ? ''
+        : `
+  • ${preservedData.length} data migration(s) insert rows (INSERT ... VALUES / COPY) and will be KEPT:
+${preservedData.map(f => `      ${f}${movedTo.has(f) ? `  -> renumbered to ${movedTo.get(f)}` : ''}`).join('\n')}
+    That can be reference data no model describes, so no flag removes it.${relocated.length > 0
+      ? `
+    Renumbered ones fill a table the corpus now creates, so they move after it;
+    their logical name is unchanged, so a database that ran them will not again.`
+      : ''}`
+
       // Capped, unlike the unmarked list: an app that narrowed its model scope
       // can have seventy of these, and scrolling the confirmation prompt off
       // the screen is its own kind of unreadable.
       const OUT_OF_SCOPE_SHOWN = 20
-      const outOfScopeMore = preservedOutOfScope.length - OUT_OF_SCOPE_SHOWN
-      const outOfScopeBlock = preservedOutOfScope.length === 0
+      const outOfScopeMore = outOfScopeKept.length - OUT_OF_SCOPE_SHOWN
+      const outOfScopeBlock = outOfScopeKept.length === 0
         ? ''
         : `
-  • ${preservedOutOfScope.length} file(s) describe tables this corpus does not rebuild, and will be KEPT:
-${preservedOutOfScope.slice(0, OUT_OF_SCOPE_SHOWN).map(f => `      ${f}`).join('\n')}${outOfScopeMore > 0 ? `\n      ... and ${outOfScopeMore} more` : ''}
+  • ${outOfScopeKept.length} file(s) describe tables this corpus does not rebuild, and will be KEPT:
+${outOfScopeKept.slice(0, OUT_OF_SCOPE_SHOWN).map(f => `      ${f}`).join('\n')}${outOfScopeMore > 0 ? `\n      ... and ${outOfScopeMore} more` : ''}
     Nothing in scope regenerates these, so removing them would leave the app
     with no definition for those tables at all. If they belong to framework
     models your app relies on without declaring (users, jobs, payments, ...),
@@ -1493,7 +1525,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
   ─────────────────────────────────────────────
   • ${models} model(s) read from ${rootList}
   • ${files.length} migration file(s) will be written
-  • ${removed.length} existing file(s) will be removed${protectedHistoryBlock}${outOfScopeBlock}${unrebuildableBlock}
+  • ${removed.length} existing file(s) will be removed${obsoleteBlock}${dataOnlyBlock}${dataBlock}${protectedHistoryBlock}${outOfScopeBlock}${unrebuildableBlock}
   • These files are tracked in git, so review with \`git diff\` afterwards
   ─────────────────────────────────────────────
 `)

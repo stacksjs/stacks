@@ -7,6 +7,7 @@
 
 import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
+import type { IndexShape } from './index-shape'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { isPackageMigration, stagePackageMigrations } from './package-migrations'
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
@@ -59,6 +60,7 @@ import { ensureNotificationForeignKeys, migrateNotificationTables, notificationT
 import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
 import { sqlStatementsOf } from './sql-statements'
+import { indexShape } from './index-shape'
 import { corpusUniqueIndexes, hasIndex, restorableMissingUniqueIndexes, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
 import { ensureUuidColumns } from './uuid-columns'
 import { sqlHelpers } from './sql-helpers'
@@ -3198,6 +3200,199 @@ export function tablesOperatedOn(sql: string): string[] {
 }
 
 /**
+ * What a migration file does, in the terms `regenerateMigrationCorpus` needs to
+ * decide whether a regenerated corpus can stand in for it.
+ *
+ * `tablesOperatedOn` answers that for files that create or alter tables. It
+ * says nothing about the three shapes a long-lived corpus accumulates around
+ * them, and "names no table" used to mean "keep, because nothing proves it is
+ * ours" for all three:
+ *
+ *   - a types-only file (`CREATE TYPE ... AS ENUM` behind a `DO` guard,
+ *     `ALTER TYPE ... ADD VALUE`), which is obsolete once the regenerated
+ *     corpus declares every one of those types itself;
+ *   - a file that only drops indexes, which is history: a database built from
+ *     the regenerated corpus never had them;
+ *   - a data-only file (`DELETE` / `UPDATE`), which is a no-op on a database
+ *     the regenerated corpus has just built, because every table starts empty.
+ *
+ * `seedTables` is the one shape that is never obsolete: `INSERT ... VALUES` and
+ * `COPY` can be reference data no model describes.
+ */
+export interface MigrationContent {
+  /** Enum types the file creates or extends, lowercased. */
+  types: string[]
+  /** Enum types the file drops, lowercased. */
+  droppedTypes: string[]
+  /** Indexes the file drops, lowercased. */
+  droppedIndexes: string[]
+  /** Indexes the file creates, lowercased. */
+  createdIndexes: string[]
+  /** Tables a `DELETE` / `UPDATE` / `TRUNCATE` targets, lowercased. */
+  dataTables: string[]
+  /** Tables an `INSERT ... VALUES` / `COPY ... FROM` fills, lowercased. */
+  seedTables: string[]
+  /** Tables the file creates, lowercased. */
+  createdTables: string[]
+  /**
+   * Whether anything else is in the file: table DDL, an `INSERT ... SELECT`
+   * copying between tables, or a statement this does not recognise.
+   */
+  other: boolean
+}
+
+const IDENTIFIER = String.raw`(?:["'\`[]?[\w$]+["'\`\]]?\.)?["'\`[]?([\w$]+)["'\`\]]?`
+const NEUTRAL_STATEMENT = /^(?:BEGIN|COMMIT|END|PRAGMA|SET|SELECT\s+1\s*$|COMMENT\s+ON)\b/i
+
+/** The statements inside a `DO $tag$ BEGIN ... EXCEPTION ... END $tag$` guard, or undefined. */
+function guardedBlockStatements(statement: string): string[] | undefined {
+  const block = /^\s*DO\s+\$(\w*)\$([\s\S]*)\$\1\$\s*;?\s*$/i.exec(statement)
+  if (!block)
+    return undefined
+  const body = /^\s*BEGIN\b([\s\S]*?)(?:\bEXCEPTION\b[\s\S]*)?\bEND\s*;?\s*$/i.exec(block[2] ?? '')
+  return body ? sqlStatementsOf(body[1] ?? '') : undefined
+}
+
+export function describeMigrationContent(sql: string): MigrationContent {
+  const content: MigrationContent = {
+    types: [],
+    droppedTypes: [],
+    droppedIndexes: [],
+    createdIndexes: [],
+    dataTables: [],
+    seedTables: [],
+    createdTables: [],
+    other: false,
+  }
+  const add = (list: string[], name: string | undefined): void => {
+    const lower = name?.toLowerCase()
+    if (lower && !list.includes(lower))
+      list.push(lower)
+  }
+
+  const visit = (statement: string): void => {
+    const stmt = statement.trim().replace(/;\s*$/, '')
+    if (!stmt || NEUTRAL_STATEMENT.test(stmt))
+      return
+
+    const guarded = guardedBlockStatements(stmt)
+    if (guarded) {
+      for (const inner of guarded)
+        visit(inner)
+      return
+    }
+
+    let m = new RegExp(String.raw`^CREATE\s+TYPE\s+${IDENTIFIER}\s+AS\s+ENUM\b`, 'i').exec(stmt)
+      ?? new RegExp(String.raw`^ALTER\s+TYPE\s+${IDENTIFIER}\s+ADD\s+VALUE\b`, 'i').exec(stmt)
+    if (m) {
+      add(content.types, m[1])
+      return
+    }
+
+    m = new RegExp(String.raw`^DROP\s+TYPE\s+(?:IF\s+EXISTS\s+)?${IDENTIFIER}`, 'i').exec(stmt)
+    if (m) {
+      add(content.droppedTypes, m[1])
+      return
+    }
+
+    m = new RegExp(String.raw`^DROP\s+INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+EXISTS\s+)?${IDENTIFIER}`, 'i').exec(stmt)
+    if (m) {
+      add(content.droppedIndexes, m[1])
+      return
+    }
+
+    m = new RegExp(String.raw`^(?:DELETE\s+FROM|UPDATE|TRUNCATE(?:\s+TABLE)?)\s+(?:ONLY\s+)?${IDENTIFIER}`, 'i').exec(stmt)
+    if (m) {
+      add(content.dataTables, m[1])
+      return
+    }
+
+    m = new RegExp(String.raw`^COPY\s+${IDENTIFIER}[\s\S]*\bFROM\b`, 'i').exec(stmt)
+    if (m) {
+      add(content.seedTables, m[1])
+      return
+    }
+
+    m = new RegExp(String.raw`^INSERT\s+(?:OR\s+\w+\s+)?INTO\s+${IDENTIFIER}`, 'i').exec(stmt)
+    if (m) {
+      // `INSERT ... SELECT ... FROM other` moves rows that already exist - a
+      // SQLite table rebuild is the common case - so it is not reference data.
+      // Anything that brings its own values is.
+      const copiesRows = /\bSELECT\b[\s\S]*\bFROM\b/i.test(stmt) && !/\bVALUES\b/i.test(stmt)
+      if (copiesRows)
+        content.other = true
+      else
+        add(content.seedTables, m[1])
+      return
+    }
+
+    const shape = indexShape(stmt)
+    if (shape) {
+      add(content.createdIndexes, shape.name)
+      content.other = true
+      return
+    }
+
+    const created = createdTableName(stmt)
+    if (created)
+      add(content.createdTables, created)
+
+    content.other = true
+  }
+
+  for (const statement of sqlStatementsOf(sql))
+    visit(statement)
+
+  return content
+}
+
+/** The enum types a set of generated statements creates, lowercased. */
+export function enumTypesCreatedBy(statements: readonly string[]): Set<string> {
+  const types = new Set<string>()
+  for (const statement of statements) {
+    for (const match of statement.matchAll(new RegExp(String.raw`\bCREATE\s+TYPE\s+${IDENTIFIER}\s+AS\s+ENUM\b`, 'gi'))) {
+      if (match[1])
+        types.add(match[1].toLowerCase())
+    }
+  }
+  return types
+}
+
+/**
+ * Why a regeneration may replace a file that names no table, or undefined
+ * when it may not. See {@link describeMigrationContent}.
+ *
+ * `keptIndexes` / `keptSeedTables` describe the files that will survive the
+ * regeneration whatever happens: dropping an index one of them creates, or
+ * clearing a table one of them fills, is not history and stays.
+ */
+export function obsoleteMigrationReason(
+  content: MigrationContent,
+  context: { emittedTypes: ReadonlySet<string>, keptIndexes: ReadonlySet<string>, keptSeedTables: ReadonlySet<string> },
+): 'types' | 'drop-index' | 'data' | undefined {
+  if (content.other || content.seedTables.length > 0)
+    return undefined
+
+  const hasTypes = content.types.length > 0 || content.droppedTypes.length > 0
+  const hasDrops = content.droppedIndexes.length > 0
+  const hasData = content.dataTables.length > 0
+  const kinds = [hasTypes, hasDrops, hasData].filter(Boolean).length
+  if (kinds !== 1)
+    return undefined
+
+  if (hasTypes) {
+    // Every type it declares is declared again by the corpus. A type it drops
+    // is history either way: the corpus declares the types it wants.
+    return content.types.every(type => context.emittedTypes.has(type)) ? 'types' : undefined
+  }
+
+  if (hasDrops)
+    return content.droppedIndexes.every(index => !context.keptIndexes.has(index)) ? 'drop-index' : undefined
+
+  return content.dataTables.every(table => !context.keptSeedTables.has(table)) ? 'data' : undefined
+}
+
+/**
  * The columns a CREATE TABLE statement defines, in order.
  *
  * Splits on top-level commas only, so `DECIMAL(10, 2)` and a multi-column
@@ -3534,116 +3729,29 @@ function migrationOrdinal(file: string): number {
   return match ? Number(match[1]) : 0
 }
 
-export interface RegeneratedCorpus {
+export interface FullModelMigration {
   dialect: string
-  /** How many model definitions fed the generation. */
-  models: number
-  /**
-   * The model roots that actually contributed, absolute.
-   *
-   * Reported because the plan used to claim it had read "app/Models and the
-   * framework defaults" unconditionally, which since #2220 is false whenever an
-   * app has models of its own — and the count sitting next to that sentence was
-   * the only hint that the defaults had contributed nothing
-   * (stacksjs/stacks#2255).
-   */
-  modelRoots: string[]
-  /** Files that would be (or were) written, in order. */
-  files: Array<{ name: string, statements: number }>
-  /** Existing .sql files that would be (or were) removed. */
-  removed: string[]
-  /**
-   * Existing .sql files kept because nothing here can recreate them — for
-   * either reason: they carry no `@generated` marker (hand-authored, or
-   * emitted before the marker existed), or they describe a table outside this
-   * corpus. Callers should show these to the user; a corpus written before the
-   * marker shipped will list every file here.
-   */
-  preserved: string[]
-  /**
-   * Tables the corpus defines that no model describes, so `onlyExistingTables`
-   * could not re-emit them and left their files alone.
-   *
-   * Named rather than silently skipped: their migrations stay in the previous
-   * dialect, which is exactly the condition the caller was trying to clear, and
-   * a corpus that is 90% converted looks converted.
-   *
-   * Always present, empty for every other mode. `Result` is invariant through
-   * `mapErr`, so an optional field here would not match the returned object.
-   */
-  unrebuildable: string[]
-  /**
-   * The subset of {@link preserved} kept for the second reason: the corpus
-   * does not rebuild the tables these files describe.
-   *
-   * Worth separating in the UI, because the two mean opposite things. An
-   * unmarked file is someone's work the generator must not touch; an
-   * out-of-scope file is the framework's own schema going unregenerated, and
-   * that usually means the model that owned it is no longer in scope
-   * (stacksjs/stacks#2255).
-   */
-  preservedOutOfScope: string[]
-  /** The directory operated on. */
-  dir: string
+  /** Every statement a database built from nothing would need, in order. */
+  statements: string[]
+  /** The model plan those statements were generated from. */
+  plan: MigrationPlan
+  sources: NonNullable<ReturnType<typeof resolveModelSources>>
 }
 
 /**
- * Rebuild the whole migration corpus for one dialect, from the models.
+ * The complete SQL the models describe for one dialect, as if no database
+ * existed yet.
  *
- * This is the fix for a corpus that cannot run on the configured database.
- * Translating the committed SQLite DDL was never viable: the emission threw
- * away varchar lengths, numeric scale and every foreign key (40 of them are
- * `SELECT 1;` stubs). All of that still exists in the model definitions, so
- * regenerating recovers the intent instead of guessing at it.
- *
- * Unlike `persistGeneratedMigrations`, which appends a diff on top of what is
- * already committed, this produces a COMPLETE corpus numbered from 1 and
- * replaces what is there. Callers are responsible for confirming that with the
- * user, and for refusing when the target database already has migrations
- * recorded against the old filenames.
- *
- * It replaces only files it can recreate — those carrying
- * {@link GENERATED_MIGRATION_MARKER}. Anything else is returned in
- * `preserved` and left on disk. That rule is not advisory: a hand-authored
- * migration has no model behind it, so a rerun can never re-emit it, and
- * deleting one is unrecoverable. Callers wanting the old indiscriminate sweep
- * pass `replaceUnmarked`.
+ * Shared by `migrate:regenerate`, which writes it out as a corpus, and
+ * `migrate:align`, which compares it with a live database - so the index names,
+ * enum type names and foreign keys the two reason about are the generator's
+ * own, not a second derivation of them.
  */
-export async function regenerateMigrationCorpus(options: {
+export async function generateFullModelMigration(options: {
   dialect?: string
-  dir?: string
-  dryRun?: boolean
-  /**
-   * Also delete files carrying no `@generated` marker.
-   *
-   * For a corpus written before the marker existed and known to be entirely
-   * generator output — otherwise the first run after upgrading preserves
-   * everything and writes the new corpus alongside it. Never the default: it
-   * is the behaviour that lost hand-authored migrations.
-   */
-  replaceUnmarked?: boolean
-  /**
-   * Rebuild exactly the tables the corpus already defines, and nothing else.
-   *
-   * For changing DIALECT rather than schema. Neither existing route can do it
-   * (stacksjs/stacks#2346): the default preserves unmarked files, so
-   * wrong-dialect CREATEs survive, and `replaceUnmarked` deletes them but the
-   * generator only emits tables whose models the app declares, so a framework
-   * table the app relies on without declaring is left behind in the old dialect.
-   * Turning on `includeFrameworkDefaults` fixes the dialect by writing the
-   * framework's entire schema into the app: measured at 80 files from 78 models
-   * for an app that declares five.
-   *
-   * This is the intersection those two miss. Every model is available to the
-   * generator, so any table in the corpus can be emitted correctly, but only the
-   * tables already present are written. No new tables, none dropped.
-   *
-   * A table no model describes cannot be regenerated, so its file is preserved
-   * and named in `preserved`. Deleting it would drop a schema nothing can
-   * rebuild.
-   */
+  /** See `regenerateMigrationCorpus`: widen the model scope to every model. */
   onlyExistingTables?: boolean
-} = {}): Promise<Result<RegeneratedCorpus, Error>> {
+} = {}): Promise<Result<FullModelMigration, Error>> {
   // The app's config/database.ts, before anything reads the connection (see `dbConfig`).
   await ensureDatabaseConfigLoaded()
   try {
@@ -3667,7 +3775,6 @@ export async function regenerateMigrationCorpus(options: {
       dialect as 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres',
       requestedVitessSharded,
     )
-    const dir = options.dir ?? migrationDirectory(dialect)
 
     // `forceStage` because of the sentinel written just below: it goes into
     // `sources.dir`, and that has to be a directory this call owns rather than
@@ -3765,6 +3872,152 @@ export async function regenerateMigrationCorpus(options: {
       ))
     }
 
+    return ok({ dialect, statements, plan: result.plan as MigrationPlan, sources })
+  }
+  catch (error) {
+    return err(handleError('Migration generation failed', error))
+  }
+}
+
+export interface RegeneratedCorpus {
+  dialect: string
+  /** How many model definitions fed the generation. */
+  models: number
+  /**
+   * The model roots that actually contributed, absolute.
+   *
+   * Reported because the plan used to claim it had read "app/Models and the
+   * framework defaults" unconditionally, which since #2220 is false whenever an
+   * app has models of its own — and the count sitting next to that sentence was
+   * the only hint that the defaults had contributed nothing
+   * (stacksjs/stacks#2255).
+   */
+  modelRoots: string[]
+  /** Files that would be (or were) written, in order. */
+  files: Array<{ name: string, statements: number }>
+  /** Existing .sql files that would be (or were) removed. */
+  removed: string[]
+  /**
+   * The subset of {@link removed} that names no table: enum type declarations
+   * the corpus re-declares, and drops of indexes no surviving file builds.
+   */
+  removedObsolete: string[]
+  /**
+   * The subset of {@link removed} that only changes data (`DELETE`, `UPDATE`).
+   * A no-op on a database the regenerated corpus builds, since every table
+   * starts empty; on a database that ran it, it has already done its work.
+   */
+  removedDataOnly: string[]
+  /**
+   * Existing .sql files kept because nothing here can recreate them — for
+   * either reason: they carry no `@generated` marker (hand-authored, or
+   * emitted before the marker existed), or they describe a table outside this
+   * corpus. Callers should show these to the user; a corpus written before the
+   * marker shipped will list every file here.
+   */
+  preserved: string[]
+  /**
+   * Tables the corpus defines that no model describes, so `onlyExistingTables`
+   * could not re-emit them and left their files alone.
+   *
+   * Named rather than silently skipped: their migrations stay in the previous
+   * dialect, which is exactly the condition the caller was trying to clear, and
+   * a corpus that is 90% converted looks converted.
+   *
+   * Always present, empty for every other mode. `Result` is invariant through
+   * `mapErr`, so an optional field here would not match the returned object.
+   */
+  unrebuildable: string[]
+  /**
+   * The subset of {@link preserved} kept for the second reason: the corpus
+   * does not rebuild the tables these files describe.
+   *
+   * Worth separating in the UI, because the two mean opposite things. An
+   * unmarked file is someone's work the generator must not touch; an
+   * out-of-scope file is the framework's own schema going unregenerated, and
+   * that usually means the model that owned it is no longer in scope
+   * (stacksjs/stacks#2255).
+   */
+  preservedOutOfScope: string[]
+  /**
+   * The subset of {@link preserved} kept because it inserts or copies rows
+   * (`INSERT ... VALUES`, `COPY`). That can be reference data no model
+   * describes, so no flag deletes it.
+   */
+  preservedData: string[]
+  /**
+   * Kept data files renumbered to run after the corpus, because they fill a
+   * table the corpus now creates. The logical name is unchanged.
+   */
+  relocated: Array<{ from: string, to: string }>
+  /** The directory operated on. */
+  dir: string
+}
+
+/**
+ * Rebuild the whole migration corpus for one dialect, from the models.
+ *
+ * This is the fix for a corpus that cannot run on the configured database.
+ * Translating the committed SQLite DDL was never viable: the emission threw
+ * away varchar lengths, numeric scale and every foreign key (40 of them are
+ * `SELECT 1;` stubs). All of that still exists in the model definitions, so
+ * regenerating recovers the intent instead of guessing at it.
+ *
+ * Unlike `persistGeneratedMigrations`, which appends a diff on top of what is
+ * already committed, this produces a COMPLETE corpus numbered from 1 and
+ * replaces what is there. Callers are responsible for confirming that with the
+ * user, and for refusing when the target database already has migrations
+ * recorded against the old filenames.
+ *
+ * It replaces only files it can recreate — those carrying
+ * {@link GENERATED_MIGRATION_MARKER}. Anything else is returned in
+ * `preserved` and left on disk. That rule is not advisory: a hand-authored
+ * migration has no model behind it, so a rerun can never re-emit it, and
+ * deleting one is unrecoverable. Callers wanting the old indiscriminate sweep
+ * pass `replaceUnmarked`.
+ */
+export async function regenerateMigrationCorpus(options: {
+  dialect?: string
+  dir?: string
+  dryRun?: boolean
+  /**
+   * Also delete files carrying no `@generated` marker.
+   *
+   * For a corpus written before the marker existed and known to be entirely
+   * generator output — otherwise the first run after upgrading preserves
+   * everything and writes the new corpus alongside it. Never the default: it
+   * is the behaviour that lost hand-authored migrations.
+   */
+  replaceUnmarked?: boolean
+  /**
+   * Rebuild exactly the tables the corpus already defines, and nothing else.
+   *
+   * For changing DIALECT rather than schema. Neither existing route can do it
+   * (stacksjs/stacks#2346): the default preserves unmarked files, so
+   * wrong-dialect CREATEs survive, and `replaceUnmarked` deletes them but the
+   * generator only emits tables whose models the app declares, so a framework
+   * table the app relies on without declaring is left behind in the old dialect.
+   * Turning on `includeFrameworkDefaults` fixes the dialect by writing the
+   * framework's entire schema into the app: measured at 80 files from 78 models
+   * for an app that declares five.
+   *
+   * This is the intersection those two miss. Every model is available to the
+   * generator, so any table in the corpus can be emitted correctly, but only the
+   * tables already present are written. No new tables, none dropped.
+   *
+   * A table no model describes cannot be regenerated, so its file is preserved
+   * and named in `preserved`. Deleting it would drop a schema nothing can
+   * rebuild.
+   */
+  onlyExistingTables?: boolean
+} = {}): Promise<Result<RegeneratedCorpus, Error>> {
+  try {
+    const generated = await generateFullModelMigration({ dialect: options.dialect, onlyExistingTables: options.onlyExistingTables })
+    if (!generated.isOk)
+      return err(generated.error)
+    const { dialect, statements, plan, sources } = generated.value
+    const dir = options.dir ?? migrationDirectory(dialect)
+
     let groups = groupGeneratedStatements(statements)
 
     let existing: string[] = []
@@ -3824,24 +4077,91 @@ export async function regenerateMigrationCorpus(options: {
     // has to be replaced: preserving them is what leaves wrong-dialect CREATEs
     // on disk. It is safe here in a way `replaceUnmarked` is not, because every
     // table being deleted is one this run has just re-emitted.
+    //
+    // Files naming no table at all used to be kept by reason 2 ("nothing proves
+    // the corpus rebuilds them"), which kept three kinds of file a regenerated
+    // corpus does replace: enum type declarations it re-declares, drops of
+    // indexes it never builds, and DELETE/UPDATE-only data fixes, which are
+    // no-ops on the database the corpus builds. See describeMigrationContent.
+    //
+    // One kind is never replaced, whatever the flags: reference data. An
+    // INSERT ... VALUES or COPY has no model behind it.
+    const contents = new Map<string, MigrationContent>()
+    const contentOf = (file: string): MigrationContent => {
+      let content = contents.get(file)
+      if (!content) {
+        try {
+          content = describeMigrationContent(readFileSync(join(dir, file), 'utf8'))
+        }
+        catch {
+          // Unreadable: cannot prove anything about it, so treat it as opaque.
+          content = { types: [], droppedTypes: [], droppedIndexes: [], createdIndexes: [], dataTables: [], seedTables: [], createdTables: [], other: true }
+        }
+        contents.set(file, content)
+      }
+      return content
+    }
+    const namesNoTable = new Set(existing.filter((file) => {
+      try {
+        return tablesOperatedOn(readFileSync(join(dir, file), 'utf8')).length === 0
+      }
+      catch {
+        return false
+      }
+    }))
+
+    const seedFiles = new Set(existing.filter(file => contentOf(file).seedTables.length > 0))
+    // In replace mode the roots are no longer protected, except a table a kept
+    // seed file creates for itself: its rows go in right after its CREATE, and
+    // that file is staying.
+    const seedRootedTables = options.replaceUnmarked && !options.onlyExistingTables
+      ? [...seedFiles].flatMap(file => contentOf(file).createdTables)
+      : []
     const rootedTables = new Set(
-      options.replaceUnmarked || options.onlyExistingTables ? [] : historicallyRootedTables(dir, existing),
+      options.replaceUnmarked || options.onlyExistingTables ? seedRootedTables : historicallyRootedTables(dir, existing),
     )
-    const outOfScope = new Set(migrationsOutsideCorpus(dir, existing, createdTablesOf(statements)))
+    const outOfScopeByTable = new Set(migrationsOutsideCorpus(dir, existing, createdTablesOf(statements)))
     // `replaceUnmarked` and `onlyExistingTables` delete every file regardless
     // of marker. A package's migrations are not this corpus's to rewrite, and
     // the package would not put them back: it ships them, it does not generate
     // them. Excluded from the deletable set rather than rescued afterwards, so
     // no later filter can put them back in.
-    const deletable = (options.replaceUnmarked || options.onlyExistingTables
+    const markerDeletable = (options.replaceUnmarked || options.onlyExistingTables
       ? existing
       : existing.filter(file => isGeneratedMigration(dir, file)))
       .filter(file => !isPackageMigration(file))
+
+    // What survives whatever happens to the nameless files, so a drop of an
+    // index one of them builds, or a DELETE from a table one of them fills, is
+    // not mistaken for history.
+    const certainlyKept = existing.filter(file =>
+      !markerDeletable.includes(file)
+      || seedFiles.has(file)
+      || (outOfScopeByTable.has(file) && !namesNoTable.has(file)))
+    const emittedTypes = enumTypesCreatedBy(statements)
+    const keptIndexes = new Set(certainlyKept.flatMap(file => contentOf(file).createdIndexes))
+    const obsolete = new Map<string, 'types' | 'drop-index' | 'data'>()
+    for (const file of namesNoTable) {
+      // Only rows a kept file inserted EARLIER could be what a data fix was
+      // written to clear.
+      const keptSeedTables = new Set(certainlyKept
+        .filter(kept => migrationOrdinal(kept) < migrationOrdinal(file))
+        .flatMap(kept => contentOf(kept).seedTables))
+      const reason = obsoleteMigrationReason(contentOf(file), { emittedTypes, keptIndexes, keptSeedTables })
+      if (reason)
+        obsolete.set(file, reason)
+    }
+
+    const outOfScope = new Set([...outOfScopeByTable].filter(file => !obsolete.has(file) && !seedFiles.has(file)))
+    const deletable = markerDeletable.filter(file => !seedFiles.has(file))
     const removed = deletable.filter(file => {
       return !outOfScope.has(file) && !migrationTouchesRootedTable(dir, file, rootedTables)
     })
     const preserved = existing.filter(file => !removed.includes(file))
     const preservedOutOfScope = preserved.filter(file => outOfScope.has(file))
+    const preservedData = preserved.filter(file => seedFiles.has(file))
+    const removedObsolete = removed.filter(file => obsolete.get(file) === 'types' || obsolete.get(file) === 'drop-index')
+    const removedDataOnly = removed.filter(file => obsolete.get(file) === 'data')
 
     // A full emit for a historically rooted table would be numbered after the
     // preserved history, so any authored backfill between the old CREATE and
@@ -3889,24 +4209,56 @@ export async function regenerateMigrationCorpus(options: {
     // Package files are unmarked and preserved, so both of these would other-
     // wise take their maximum from the reserved band and number the whole
     // regenerated application corpus above them.
+    // A kept seed file that fills a table this corpus now CREATEs would run
+    // before that CREATE on a database built from nothing, so it moves to just
+    // after the corpus. Its logical name is unchanged, which is what the
+    // ledger reconciler matches a renumbered file by, so a database that
+    // already ran it does not run it again.
+    const writtenTables = new Set(createdTablesOf(writableGroups.flatMap(group => group.statements)))
+    const relocating = preservedData.filter((file) => {
+      const content = contentOf(file)
+      return content.seedTables.some(table => writtenTables.has(table) && !content.createdTables.includes(table))
+    })
+    const staying = preserved.filter(file => !relocating.includes(file))
+
     const historicalBoundary = existing
-      .filter(file => !isGeneratedMigration(dir, file) && !isPackageMigration(file))
+      .filter(file => !isGeneratedMigration(dir, file) && !isPackageMigration(file) && !relocating.includes(file))
       .reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0)
     const startAt = rootedTables.size > 0
       ? historicalBoundary + 1
-      : preserved
+      : staying
           .filter(file => !isPackageMigration(file))
           .reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0) + 1
-    const reservedOrdinals = new Set(preserved.map(migrationOrdinal))
-    const ordinals = allocateMigrationOrdinals(writableGroups.length, startAt, reservedOrdinals)
+    const reservedOrdinals = new Set(staying.map(migrationOrdinal))
+    const ordinals = allocateMigrationOrdinals(writableGroups.length + relocating.length, startAt, reservedOrdinals)
 
     const files = writableGroups.map((group, index) => ({
       name: `${String(ordinals[index]!).padStart(10, '0')}-${group.label}.sql`,
       statements: group.statements.length,
     }))
+    const relocated = relocating.map((file, index) => ({
+      from: file,
+      to: `${String(ordinals[writableGroups.length + index]!).padStart(10, '0')}-${file.replace(/^\d+[-_]/, '')}`,
+    }))
+
+    const corpus: RegeneratedCorpus = {
+      dialect,
+      models: sources.models.length,
+      modelRoots: sources.roots,
+      files,
+      removed,
+      removedObsolete,
+      removedDataOnly,
+      preserved,
+      preservedOutOfScope,
+      preservedData,
+      relocated,
+      unrebuildable,
+      dir,
+    }
 
     if (options.dryRun)
-      return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, unrebuildable, dir })
+      return ok(corpus)
 
     mkdirSync(dir, { recursive: true })
 
@@ -3920,15 +4272,18 @@ export async function regenerateMigrationCorpus(options: {
       writeFileSync(join(dir, files[index]!.name), `${GENERATED_MIGRATION_MARKER}\n${body}`)
     })
 
+    for (const { from, to } of relocated)
+      renameSync(join(dir, from), join(dir, to))
+
     trackIgnoredGeneratedMigrations(dir)
 
     // The regenerated SQL and its model snapshot are one source-of-truth
     // update. Persist the snapshot only after every migration file succeeds,
     // matching the ordinary generation path and keeping dialect-specific
     // follow-up generation at a true zero diff.
-    saveMigrationSnapshot(result.plan, { dialect: dialect as MigrationPlan['dialect'] })
+    saveMigrationSnapshot(plan, { dialect: dialect as MigrationPlan['dialect'] })
 
-    return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, unrebuildable, dir })
+    return ok(corpus)
   }
   catch (error) {
     return err(handleError('Migration regeneration failed', error))
@@ -3946,51 +4301,8 @@ export function createdTableName(statement: string): string | undefined {
   return match?.[1]?.toLowerCase()
 }
 
-/**
- * What a `CREATE INDEX` builds, apart from what it calls it.
- *
- * `key` is the table, whether the index is unique, its column list (with any
- * sort order) and its `WHERE` clause, normalized - everything that decides what
- * the index does, and nothing that only names it. Two statements with the same
- * key build the same index.
- */
-export interface IndexShape {
-  name: string
-  table: string
-  key: string
-}
-
-const unquoteIdentifiers = (sql: string): string => sql.replace(/["'`[\]]/g, '')
-
-export function indexShape(statement: string): IndexShape | undefined {
-  const head = /^\s*CREATE\s+(UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`[]?([\w$]+)["'`\]]?\s+ON\s+["'`[]?([\w$]+)["'`\]]?\s*\(/i.exec(statement)
-  if (!head?.[2] || !head[3])
-    return undefined
-
-  // The column list ends at the bracket that closes the one `head` opened, not
-  // at the first `)`: an expression column like `lower(email)` has its own.
-  let depth = 1
-  let end = head[0].length
-  for (; end < statement.length && depth > 0; end++) {
-    if (statement[end] === '(')
-      depth++
-    else if (statement[end] === ')')
-      depth--
-  }
-  if (depth > 0)
-    return undefined
-
-  const columns = statement.slice(head[0].length, end - 1).split(',')
-    .map(column => normalizeSqlForComparison(unquoteIdentifiers(column)).toLowerCase().replace(/\s+asc$/, ''))
-  const where = normalizeSqlForComparison(unquoteIdentifiers(statement.slice(end)).replace(/;\s*$/, '')).toLowerCase()
-  const table = head[3].toLowerCase()
-
-  return {
-    name: head[2].toLowerCase(),
-    table,
-    key: `${head[1] ? 'unique' : 'index'} ${table} (${columns.join(', ')})${where ? ` ${where}` : ''}`,
-  }
-}
+export { indexShape }
+export type { IndexShape }
 
 /** The index a `DROP INDEX` removes, lowercased, or undefined. */
 export function droppedIndexName(statement: string): string | undefined {

@@ -30,16 +30,20 @@ describe('Database Migrations', () => {
 
   test('corpus regeneration requests a full model emit', () => {
     const source = readFileSync(join(import.meta.dir, '..', 'src', 'migrations.ts'), 'utf8')
+    // The emit lives in `generateFullModelMigration`, which regeneration and
+    // `migrate:align` share.
+    const generation = source.slice(source.indexOf('export async function generateFullModelMigration'), source.indexOf('export interface RegeneratedCorpus'))
     const regeneration = source.slice(source.indexOf('export async function regenerateMigrationCorpus'))
 
-    expect(regeneration).toContain('full: true')
+    expect(generation).toContain('full: true')
+    expect(regeneration).toContain('generateFullModelMigration(')
   })
 
   test('corpus regeneration persists its dialect snapshot after SQL files', () => {
     const source = readFileSync(join(import.meta.dir, '..', 'src', 'migrations.ts'), 'utf8')
     const regeneration = source.slice(source.indexOf('export async function regenerateMigrationCorpus'))
     const writes = regeneration.indexOf('writableGroups.forEach')
-    const snapshot = regeneration.indexOf('saveMigrationSnapshot(result.plan')
+    const snapshot = regeneration.indexOf('saveMigrationSnapshot(plan')
 
     expect(writes).toBeGreaterThan(-1)
     expect(snapshot).toBeGreaterThan(writes)
