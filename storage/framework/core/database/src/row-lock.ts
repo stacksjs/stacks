@@ -6,8 +6,13 @@ export function assertSqlIdentifier(name: string): void {
   if (!/^[a-z_][a-z_0-9]*$/i.test(name)) throw new Error(`Invalid SQL identifier: ${name}`)
 }
 
+export interface RowLockOptions {
+  /** PostgreSQL non-key parent updates can coexist with child inserts' FK key-share locks. */
+  mode?: 'update' | 'no_key_update'
+}
+
 /** Lock a scoped row until the caller's transaction commits. SQLite transactions serialize writers. */
-export async function lockRow(connection: { unsafe?: (query: string, params?: unknown[]) => PromiseLike<Record<string, unknown>[]> }, table: string, filters: Record<string, string | number | null>): Promise<Record<string, unknown> | undefined> {
+export async function lockRow(connection: { unsafe?: (query: string, params?: unknown[]) => PromiseLike<Record<string, unknown>[]> }, table: string, filters: Record<string, string | number | null>, options: RowLockOptions = {}): Promise<Record<string, unknown> | undefined> {
   const dialect = sqlHelpers(getDatabaseDialect())
   const quote = dialect.isMysql ? '`' : '"'
   const identifier = (name: string) => {
@@ -21,7 +26,9 @@ export async function lockRow(connection: { unsafe?: (query: string, params?: un
     return `${identifier(name)} = ${dialect.param(values.length)}`
   })
   if (!conditions.length) throw new Error('A row lock requires a scope')
-  const suffix = dialect.isPostgres || dialect.isMysql ? ' FOR UPDATE' : ''
+  const mode = options.mode ?? 'update'
+  if (mode !== 'update' && mode !== 'no_key_update') throw new Error('Unsupported row lock mode')
+  const suffix = dialect.isPostgres && mode === 'no_key_update' ? ' FOR NO KEY UPDATE' : dialect.isPostgres || dialect.isMysql ? ' FOR UPDATE' : ''
   if (!connection.unsafe) throw new Error('Row locks require a database connection')
   const rows = await connection.unsafe(`SELECT * FROM ${identifier(table)} WHERE ${conditions.join(' AND ')}${suffix}`, values)
   if (rows.length > 1) throw new Error('A row lock requires a unique scope')
@@ -29,7 +36,7 @@ export async function lockRow(connection: { unsafe?: (query: string, params?: un
 }
 
 
-export interface RowLockGroupOptions {
+export interface RowLockGroupOptions extends RowLockOptions {
   /** One application-selected numeric primary key column. */
   key?: string
   /** Shared ownership filters, applied to every row. */
@@ -51,7 +58,7 @@ export async function lockRows(connection: Parameters<typeof lockRow>[0], table:
   }
   const rows = new Map<string, Record<string, unknown> | undefined>()
   for (const name of [...unique.keys()].sort()) {
-    rows.set(name, await lockRow(connection, table, { ...options.scope, [key]: unique.get(name)! }))
+    rows.set(name, await lockRow(connection, table, { ...options.scope, [key]: unique.get(name)! }, { mode: options.mode }))
   }
   return rows
 }

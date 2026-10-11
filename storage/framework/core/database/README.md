@@ -66,3 +66,12 @@ canonical numeric string value, so padded numeric inputs cannot reverse lock ord
 transaction handle and choose ownership filters; reads, writes and validation
 remain on that handle. This prevents opposite input order from creating a
 lock-order cycle during a transfer, merge or multi-item stock reservation.
+
+`lockRow(tx, table, scope, { mode: 'no_key_update' })` uses PostgreSQL's
+`FOR NO KEY UPDATE` for parent rows whose key will stay fixed. It serializes
+other non-key updates while allowing child inserts to acquire foreign-key
+key-share locks. Acquire the parent before child locks consistently; a strong
+`FOR UPDATE` parent lock can deadlock with a child-first insert. MySQL retains
+its stronger `FOR UPDATE` lock, and SQLite relies on the surrounding transaction.
+The default remains `update`; changing or deleting the parent key needs that
+stronger lock. Group locks accept the same mode.

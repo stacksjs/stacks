@@ -90,6 +90,30 @@ An active-team cookie is a preference, not proof of membership; the resolver
 checks the authenticated user's active membership. An operator override is
 application policy and must remain server-owned.
 
+### Profiles and role-specific workspaces
+
+An optional product profile (coach, athlete, creator) is separate from a role
+in an organization. Creating or importing that profile must not create a tenant
+or grant ownership, employment, billing or point-of-sale permissions. Require
+an explicit tenant and role when provisioning organization access; never use
+an administrative role as an implicit onboarding default.
+
+Resolve profiles and active organization memberships on the server, then expose
+the capabilities and permission names the application needs for navigation.
+Keep the dashboard destination and link rules in one display policy. An account
+may have several profiles, so preserve explicit access to its other workspaces.
+The permission for each visible action must match its API endpoint, rather than
+being inferred from another widget's presence or a broad persona label.
+
+Client-cached identity is only a display hint. Refresh it before choosing a
+role-dependent landing page, including phone redirection. Otherwise a revoked
+staff role can continue sending a personal account to a staff shell, or an old
+athlete hint can send a coach to a phone-only training view. Use STX signals and
+composables for that gate, and provide a retry state when verification fails.
+Every API action still authorizes its own request; hiding a dashboard is not
+authorization. Preserve independent profile and roster data when correcting a
+mistaken membership, and protect tenant ownership in the same transaction.
+
 Source: `src/rbac.ts`, `rbac-store-bqb.ts`, `rbac-seed.ts` and `team.ts`.
 Evidence: `tests/rbac-default-store.test.ts`, `rbac-guard-sync.test.ts`,
 `rbac-seed.test.ts` and `active-team.test.ts`.
