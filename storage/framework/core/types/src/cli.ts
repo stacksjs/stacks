@@ -249,6 +249,24 @@ export type BuildOptions = {
   [key in BuildOption]: boolean
 } & CliOptions
 
+/**
+ * `build:dmg`, which names and signs a bundle rather than only choosing what
+ * to build.
+ *
+ * Each of these also has a `DESKTOP_*` environment variable and the flag wins;
+ * the resolution chain is `resolveDmgPackaging` in `@stacksjs/desktop-build`.
+ * It mirrors `desktop:apple`, the Mac App Store command, which has taken flags
+ * for the same values all along.
+ */
+export type DmgOptions = {
+  appName?: string
+  appVersion?: string
+  bundleId?: string
+  signingIdentity?: string
+  notaryProfile?: string
+  volumeName?: string
+} & BuildOptions
+
 export type AddOption = 'table' | 'calendar' | 'all'
 export type AddOptions = {
   [key in AddOption]?: boolean

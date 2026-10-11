@@ -1,4 +1,4 @@
-import type { BuildOptions, CLI } from '@stacksjs/types'
+import type { BuildOptions, CLI, DmgOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, log, multiselect, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
@@ -372,9 +372,15 @@ export function build(buddy: CLI): void {
 
   buddy
     .command('build:dmg', descriptions.dmg)
+    .option('--app-name <name>', 'Bundle display name (or DESKTOP_APP_NAME / APP_NAME)')
+    .option('--app-version <version>', "Bundle version (or DESKTOP_APP_VERSION; defaults to the project's package.json)")
+    .option('--bundle-id <id>', 'Reverse-DNS bundle identifier (or DESKTOP_BUNDLE_ID)')
+    .option('--signing-identity <identity>', 'Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY)')
+    .option('--notary-profile <profile>', 'notarytool keychain profile to notarize and staple with (or DESKTOP_NOTARY_PROFILE)')
+    .option('--volume-name <name>', 'Name the mounted image shows (or DESKTOP_VOLUME_NAME)')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
+    .action(async (options: DmgOptions) => {
       log.debug('Running `buddy build:dmg` ...', options)
 
       const perf = await intro('buddy build:dmg')

@@ -143,16 +143,25 @@ describe('build:dmg', () => {
     expect(dmg).toContain('build:desktop ran but left no manifest at')
   })
 
-  it('names the volume through the helper, never after the app', () => {
+  it('names the volume through the resolver, never after the app', () => {
     // `-volname appName` is the bug: it stages the bundle at
     // /Volumes/<App>/<App>.app, which macOS refuses when the app is installed.
     expect(dmg).toContain(`'-volname', volumeName`)
     expect(dmg).not.toContain(`'-volname', appName`)
-    expect(dmg).toContain('dmgVolumeName({ appName, version, override: process.env.DESKTOP_VOLUME_NAME })')
+
+    // Every packaging input arrives from one chain, so a flag and a variable
+    // cannot disagree about which one a given value honours. What that chain
+    // resolves to is asserted directly in dmg-packaging.test.ts.
+    expect(dmg).toContain('const { appName, bundleId, version, volumeName, signingIdentity, notaryProfile } = resolveDmgPackaging({')
+
+    // `process.env.` included deliberately: these names also appear in prose
+    // above, and a needle that matches a comment pins nothing.
+    for (const read of ['DESKTOP_VOLUME_NAME', 'DESKTOP_APP_VERSION', 'DESKTOP_APP_NAME', 'DESKTOP_SIGNING_IDENTITY'])
+      expect(dmg, read).not.toContain(`process.env.${read}`)
   })
 
-  it('computes the name before invoking hdiutil', () => {
-    expect(indexOfExisting('const volumeName = dmgVolumeName('))
+  it('resolves the name before invoking hdiutil', () => {
+    expect(indexOfExisting('} = resolveDmgPackaging({'))
       .toBeLessThan(indexOfExisting(`'hdiutil', 'create',`))
   })
 

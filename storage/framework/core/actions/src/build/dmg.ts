@@ -2,9 +2,9 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, 
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log, parseOptions, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, desktopAppVersion, dmgVolumeName, looksLikeBunExecutable, renderInfoPlist } from '@stacksjs/desktop-build'
+import { bundleDirectoryFor, codesignArgs, describeRuntimeDuplication, looksLikeBunExecutable, renderInfoPlist, resolveDmgPackaging } from '@stacksjs/desktop-build'
 import { runBuildStep } from './run-build-step'
 
 /**
@@ -14,13 +14,20 @@ import { runBuildStep } from './run-build-step'
  * pieces, not something a person can double-click. This wraps them in a real
  * bundle and a mountable disk image.
  *
+ * Every input takes a flag or an environment variable, flag first:
+ * `--app-name`, `--app-version`, `--bundle-id`, `--signing-identity`,
+ * `--notary-profile`, `--volume-name`, or the matching `DESKTOP_*`. The chain
+ * is `resolveDmgPackaging`. A flag suits a terminal and a variable suits CI,
+ * where these arrive as secrets; with neither, the app's own `package.json` and
+ * the `build:desktop` manifest answer.
+ *
  * The result is UNSIGNED unless a Developer ID identity is supplied, so
- * Gatekeeper will refuse it on first open (right-click → Open, once). Set
- * `DESKTOP_SIGNING_IDENTITY` to sign (a certificate name, or its SHA-1 when two
- * share a name), and `DESKTOP_NOTARY_PROFILE` - a `xcrun notarytool
- * store-credentials` keychain profile - to notarize and staple the DMG so it
- * opens without a warning on other Macs. `app/Desktop/Entitlements.plist`, if
- * present, is applied to every executable.
+ * Gatekeeper will refuse it on first open (right-click → Open, once). Pass
+ * `--signing-identity` to sign (a certificate name, or its SHA-1 when two share
+ * a name), and `--notary-profile` - a `xcrun notarytool store-credentials`
+ * keychain profile - to notarize and staple the DMG so it opens without a
+ * warning on other Macs. `app/Desktop/Entitlements.plist`, if present, is
+ * applied to every executable.
  */
 
 if (process.platform !== 'darwin')
@@ -60,8 +67,6 @@ const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
   launcher?: 'framework' | 'userland'
 }
 const ownsLauncher = manifest.launcher === 'userland'
-const appName = process.env.DESKTOP_APP_NAME || manifest.title || process.env.APP_NAME || 'Stacks'
-const bundleId = process.env.DESKTOP_BUNDLE_ID || `sh.stacks.${appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 
 /**
  * The version this application declares for itself.
@@ -71,11 +76,11 @@ const bundleId = process.env.DESKTOP_BUNDLE_ID || `sh.stacks.${appName.toLowerCa
  * is this repository's, which is the right answer in both.
  */
 function declaredProjectVersion(): unknown {
-  const manifest = projectPath('package.json')
-  if (!existsSync(manifest)) return undefined
+  const packageJson = projectPath('package.json')
+  if (!existsSync(packageJson)) return undefined
 
   try {
-    return (JSON.parse(readFileSync(manifest, 'utf8')) as { version?: unknown }).version
+    return (JSON.parse(readFileSync(packageJson, 'utf8')) as { version?: unknown }).version
   }
   catch {
     // A project whose package.json does not parse has a larger problem than its
@@ -84,12 +89,15 @@ function declaredProjectVersion(): unknown {
   }
 }
 
-const version = desktopAppVersion({
-  override: process.env.DESKTOP_APP_VERSION,
-  declared: declaredProjectVersion(),
+// Flags first, environment second: `--app-version 1.2.3` at a terminal,
+// `DESKTOP_APP_VERSION` in CI where it arrives as a secret. The chain itself
+// lives in @stacksjs/desktop-build so it can be asserted without a build.
+const { appName, bundleId, version, volumeName, signingIdentity, notaryProfile } = resolveDmgPackaging({
+  flags: parseOptions(),
+  env: process.env,
+  manifestTitle: manifest.title,
+  declaredVersion: declaredProjectVersion(),
 })
-const signingIdentity = process.env.DESKTOP_SIGNING_IDENTITY
-const notaryProfile = process.env.DESKTOP_NOTARY_PROFILE
 
 const outputDir = storagePath('framework/desktop-dmg')
 if (existsSync(outputDir)) rmSync(outputDir, { recursive: true })
@@ -305,7 +313,7 @@ if (signingIdentity) {
  */
 async function notarize(target: string, what: string): Promise<void> {
   if (!signingIdentity)
-    throw new Error('DESKTOP_NOTARY_PROFILE needs DESKTOP_SIGNING_IDENTITY: Apple only notarizes signed code.')
+    throw new Error('A notary profile needs a signing identity (--signing-identity or DESKTOP_SIGNING_IDENTITY): Apple only notarizes signed code.')
   // notarytool takes a zip, dmg or pkg, not a bare .app.
   const upload = target.endsWith('.app') ? join(scratch, `${basename(target)}.zip`) : target
   if (upload !== target)
@@ -335,9 +343,8 @@ const dmgPath = join(outputDir, `${appName}-${version}.dmg`)
 // so the bundle staged at `/Volumes/<App>/<App>.app` - a path macOS refuses on
 // any Mac where that app is installed and TCC-managed, failing the build at the
 // last step with "Operation not permitted" (stacksjs/stacks#2884).
-const volumeName = dmgVolumeName({ appName, version, override: process.env.DESKTOP_VOLUME_NAME })
 if (volumeName === appName) {
-  log.warn(`DESKTOP_VOLUME_NAME is the app's own name, so the bundle stages at /Volumes/${appName}/${appName}.app. That path is refused on a Mac where ${appName} is already installed; drop the variable to get "${appName} ${version}".`)
+  log.warn(`The volume name is the app's own name, so the bundle stages at /Volumes/${appName}/${appName}.app. That path is refused on a Mac where ${appName} is already installed; drop --volume-name / DESKTOP_VOLUME_NAME to get "${appName} ${version}".`)
 }
 
 const created = await runCommand([
@@ -370,8 +377,8 @@ if (notaryProfile) {
 
 log.success(`Built ${dmgPath}`)
 if (!signingIdentity) {
-  log.info('Unsigned build: Gatekeeper blocks the first launch. Right-click the app and choose Open, or set DESKTOP_SIGNING_IDENTITY and DESKTOP_NOTARY_PROFILE before distributing.')
+  log.info('Unsigned build: Gatekeeper blocks the first launch. Right-click the app and choose Open, or pass --signing-identity and --notary-profile before distributing.')
 }
 else if (!notaryProfile) {
-  log.info('Signed but not notarized: other Macs still warn on first open. Set DESKTOP_NOTARY_PROFILE to notarize.')
+  log.info('Signed but not notarized: other Macs still warn on first open. Pass --notary-profile to notarize.')
 }

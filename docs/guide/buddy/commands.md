@@ -341,6 +341,12 @@ Package the desktop build as a macOS .app inside a .dmg
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--app-name` | Bundle display name (or DESKTOP_APP_NAME / APP_NAME) | value, required | - |
+| `--app-version` | Bundle version (or DESKTOP_APP_VERSION; defaults to the project's package.json) | value, required | - |
+| `--bundle-id` | Reverse-DNS bundle identifier (or DESKTOP_BUNDLE_ID) | value, required | - |
+| `--signing-identity` | Developer ID identity to sign with (or DESKTOP_SIGNING_IDENTITY) | value, required | - |
+| `--notary-profile` | notarytool keychain profile to notarize and staple with (or DESKTOP_NOTARY_PROFILE) | value, required | - |
+| `--volume-name` | Name the mounted image shows (or DESKTOP_VOLUME_NAME) | value, required | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

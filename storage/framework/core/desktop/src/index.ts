@@ -563,6 +563,118 @@ export function dmgVolumeName(options: DmgVolumeOptions): string {
   return version ? `${appName} ${version}` : `${appName} Installer`
 }
 
+/**
+ * The flags `build:dmg` accepts, as `parseOptions()` hands them over.
+ *
+ * Every value is `unknown` rather than `string` because these have not been
+ * validated yet: a flag declared but passed without an argument arrives as
+ * boolean `true`, which is the case `supplied` exists to reject.
+ *
+ * The index signature is what `parseOptions()` actually returns - every flag on
+ * the command line, including `--verbose` and the rest of `CliOptions`, not
+ * only the six read here. Narrowing it to just these six would describe a
+ * value this is never passed.
+ */
+export interface DmgPackagingFlags {
+  appName?: unknown
+  appVersion?: unknown
+  bundleId?: unknown
+  signingIdentity?: unknown
+  notaryProfile?: unknown
+  volumeName?: unknown
+  [flag: string]: unknown
+}
+
+export interface DmgPackagingInputs {
+  /** Command-line flags, which win over the environment. */
+  flags?: DmgPackagingFlags
+  /** Usually `process.env`. */
+  env?: Record<string, string | undefined>
+  /** `title` from the `build:desktop` manifest. */
+  manifestTitle?: string
+  /** `version` from the application's own `package.json`. */
+  declaredVersion?: unknown
+}
+
+export interface DmgPackaging {
+  appName: string
+  bundleId: string
+  version: string
+  volumeName: string
+  signingIdentity?: string
+  notaryProfile?: string
+}
+
+/**
+ * A value supplied on purpose, or nothing.
+ *
+ * A flag declared but passed without an argument arrives as `true`, and an
+ * unset variable in CI commonly arrives as the empty string rather than
+ * absent, so neither a non-string nor a blank counts as an answer.
+ */
+function supplied(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed || undefined
+}
+
+/**
+ * Everything `build:dmg` needs to name and sign a bundle, from flags first and
+ * the environment second.
+ *
+ * `build:dmg` took no flags at all: every one of these values could only be
+ * given as a `DESKTOP_*` environment variable, so packaging a signed release
+ * from a terminal meant exporting four of them, and anything scripted around
+ * that became a wrapper whose only job was to set variables and call `buddy`.
+ * Which is how an application ends up owning a build script (see
+ * stacksjs/stacks#2884, #2885, #2889, #2890 for what that script was working
+ * around).
+ *
+ * The sibling command for the Mac App Store, `desktop:apple`, already resolved
+ * its inputs this way - `options.appVersion || env('APPLE_APP_VERSION') ||
+ * metadata.version` - with a flag for each. This brings direct distribution to
+ * the same shape, so the two commands no longer disagree about how a Mac build
+ * is configured.
+ *
+ * The environment remains the right answer in CI, where these arrive as
+ * secrets; a flag is the right answer at a terminal. Neither is privileged over
+ * the application's own `package.json` by accident: a flag and a variable are
+ * both something a person stated for this build, so they win, and the manifest
+ * and `package.json` answer when nobody did.
+ */
+export function resolveDmgPackaging(inputs: DmgPackagingInputs = {}): DmgPackaging {
+  const flags = inputs.flags ?? {}
+  const env = inputs.env ?? {}
+
+  const appName = supplied(flags.appName)
+    ?? supplied(env.DESKTOP_APP_NAME)
+    ?? supplied(inputs.manifestTitle)
+    ?? supplied(env.APP_NAME)
+    ?? 'Stacks'
+
+  const version = desktopAppVersion({
+    override: supplied(flags.appVersion) ?? supplied(env.DESKTOP_APP_VERSION),
+    declared: inputs.declaredVersion,
+  })
+
+  const bundleId = supplied(flags.bundleId)
+    ?? supplied(env.DESKTOP_BUNDLE_ID)
+    ?? `sh.stacks.${appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+
+  return {
+    appName,
+    bundleId,
+    version,
+    volumeName: dmgVolumeName({
+      appName,
+      version,
+      override: supplied(flags.volumeName) ?? supplied(env.DESKTOP_VOLUME_NAME),
+    }),
+    signingIdentity: supplied(flags.signingIdentity) ?? supplied(env.DESKTOP_SIGNING_IDENTITY),
+    notaryProfile: supplied(flags.notaryProfile) ?? supplied(env.DESKTOP_NOTARY_PROFILE),
+  }
+}
+
 export interface CodesignOptions {
   identity: string
   target: string
