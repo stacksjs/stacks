@@ -11,6 +11,8 @@ process.env.APP_ENV = 'testing'
 
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { classifyInboundSms, handleInboundSms, isPhoneOptedOut, normalizePhone, optOutPhone } = await import('../src/opt-out')
+const { handleTwilioInbound, inboundSmsKind } = await import('../src/inbound')
+const { createHmac } = await import('node:crypto')
 
 
 async function forceConfig(): Promise<void> {
@@ -120,5 +122,73 @@ describe('handleInboundSms', () => {
     await handleInboundSms({ from: '+13105550199', body: 'STOP' })
     await handleInboundSms({ from: '+13105550199', body: 'STOP' })
     expect(await isPhoneOptedOut('+13105550199')).toBe(true)
+  })
+})
+
+describe('handleTwilioInbound', () => {
+  const token = 'twilio-auth-token'
+  const url = 'https://app.test/api/sms/inbound'
+
+  function twilioRequest(fields: Record<string, string>, options: { signWith?: string, signUrl?: string, requestUrl?: string } = {}): Request {
+    const signed = Object.keys(fields).sort().reduce((value, key) => `${value}${key}${fields[key]}`, options.signUrl ?? url)
+    const signature = createHmac('sha1', options.signWith ?? token).update(signed).digest('base64')
+    return new Request(options.requestUrl ?? url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Twilio-Signature': signature },
+      body: new URLSearchParams(fields).toString(),
+    })
+  }
+
+  test('STOP records the opt-out, tells the app, and answers empty TwiML', async () => {
+    const changes: unknown[] = []
+    const response = await handleTwilioInbound(twilioRequest({ From: '+13105550199', To: '+15550000000', Body: 'Stop', MessageSid: 'SM1' }), { authToken: token, publicUrl: url, onConsentChange: change => changes.push(change) })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/xml')
+    expect(await response.text()).toBe('<?xml version="1.0" encoding="UTF-8"?><Response></Response>')
+    expect(await isPhoneOptedOut('+13105550199')).toBe(true)
+    expect(changes).toEqual([{ phone: '+13105550199', kind: 'stop' }])
+  })
+
+  test('START clears it, and replies only when asked to', async () => {
+    await optOutPhone('+13105550199')
+    const changes: unknown[] = []
+    const response = await handleTwilioInbound(twilioRequest({ From: '+13105550199', Body: 'START' }), { authToken: token, publicUrl: url, reply: true, appName: 'HQ', onConsentChange: change => changes.push(change) })
+    expect(await response.text()).toContain('<Message>You are resubscribed to HQ texts. Reply STOP to unsubscribe.</Message>')
+    expect(await isPhoneOptedOut('+13105550199')).toBe(false)
+    expect(changes).toEqual([{ phone: '+13105550199', kind: 'start' }])
+  })
+
+  test('refuses a bad signature and an unconfigured token, changing nothing', async () => {
+    expect((await handleTwilioInbound(twilioRequest({ From: '+13105550199', Body: 'STOP' }, { signWith: 'other' }), { authToken: token, publicUrl: url })).status).toBe(403)
+    expect((await handleTwilioInbound(twilioRequest({ From: '+13105550199', Body: 'STOP' }), { authToken: '', publicUrl: url })).status).toBe(503)
+    expect(await isPhoneOptedOut('+13105550199')).toBe(false)
+  })
+
+  test('checks the signature against APP_URL, not the proxied request URL', async () => {
+    const appUrl = process.env.APP_URL
+    process.env.APP_URL = 'https://app.test/'
+    try {
+      const request = twilioRequest({ From: '+13105550199', Body: 'STOP' }, { requestUrl: 'http://127.0.0.1:3008/api/sms/inbound' })
+      expect((await handleTwilioInbound(request, { authToken: token })).status).toBe(200)
+    }
+    finally {
+      if (appUrl === undefined) delete process.env.APP_URL
+      else process.env.APP_URL = appUrl
+    }
+  })
+
+  test('passes ordinary messages to the app without touching consent', async () => {
+    const messages: unknown[] = []
+    const changes: unknown[] = []
+    await handleTwilioInbound(twilioRequest({ From: '+13105550101', To: '+15550000000', Body: 'Can I stop by at 6?', MessageSid: 'SM2' }), { authToken: token, publicUrl: url, onMessage: m => messages.push(m), onConsentChange: c => changes.push(c) })
+    expect(messages).toEqual([{ from: '+13105550101', to: '+15550000000', body: 'Can I stop by at 6?', messageId: 'SM2', kind: 'message' }])
+    expect(changes).toEqual([])
+    expect(await isPhoneOptedOut('+13105550101')).toBe(false)
+  })
+
+  test('honours Twilio Advanced Opt-Out\'s OptOutType for custom keywords', () => {
+    expect(inboundSmsKind({ Body: 'ARRET', OptOutType: 'STOP' })).toBe('stop')
+    expect(inboundSmsKind({ Body: 'stop' })).toBe('stop')
+    expect(inboundSmsKind({ Body: 'hello' })).toBe('message')
   })
 })

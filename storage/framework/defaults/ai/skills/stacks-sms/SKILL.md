@@ -403,6 +403,21 @@ normalizes its payload. `classifySmsIntent/smsComplianceReply` are pure helpers;
 they do not themselves persist consent. Use the persistent handleInboundSms
 workflow when consent state must affect future sends.
 
+For a Twilio incoming-message webhook, `handleTwilioInbound(request, options)`
+does the whole job and returns the TwiML `Response`: it reads the form body,
+verifies `X-Twilio-Signature` with `TWILIO_AUTH_TOKEN` against `APP_URL` plus
+the request path (`publicUrl` overrides it; behind a proxy the request's own
+URL is not what Twilio signed), records STOP/START in `sms_opt_outs`, then
+calls `onConsentChange({ phone, kind })` so the app can switch its own
+preferences, and `onMessage(message)` for every verified text. Without a token
+it answers 503, and a bad signature 403, changing nothing. It does not reply to
+keywords unless `reply: true`, because Twilio's own opt-out handling already
+answers STOP/START/HELP and a second reply arrives twice. Twilio Advanced
+Opt-Out's `OptOutType` field wins over the keyword list (`inboundSmsKind`), so
+custom keywords configured there count. `inboundSmsReply(kind)` is the reply
+copy `handleInboundSms` uses. Route it with `skipCsrf()` and point the number's
+incoming-message webhook (HTTP POST) at it.
+
 `estimateSmsSegments(body)` reports GSM-7/UCS-2 estimates; provider billing is
 authoritative. `isWithinSmsQuietHours(date, { startHour, endHour, timezone? })`
 is a policy helper, not an automatic send gate. Config keys such as spend caps

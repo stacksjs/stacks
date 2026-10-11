@@ -96,25 +96,30 @@ export async function isPhoneOptedOut(phone: string): Promise<boolean> {
   return !!row
 }
 
+/** The compliance reply to a keyword, or undefined for an ordinary message. */
+export function inboundSmsReply(kind: InboundSmsKind, options: { appName?: string, helpContact?: string } = {}): string | undefined {
+  const name = options.appName ?? 'this service'
+  if (kind === 'stop')
+    return `You are unsubscribed from ${name} texts. No more messages will be sent. Reply START to resubscribe.`
+  if (kind === 'start')
+    return `You are resubscribed to ${name} texts. Reply STOP to unsubscribe.`
+  if (kind === 'help')
+    return `${name}: reply STOP to unsubscribe, START to resubscribe.${options.helpContact ? ` Contact: ${options.helpContact}` : ''}`
+  return undefined
+}
+
 /**
  * Process one inbound SMS (a provider webhook's job): record STOP/START,
  * return the compliance reply to send. Ordinary messages pass through as
- * `kind: 'message'` for the app to route (or ignore).
+ * `kind: 'message'` for the app to route (or ignore). For Twilio,
+ * `handleTwilioInbound` does this and the signature check in one call.
  */
 export async function handleInboundSms(input: { from: string, body: string }, options: { appName?: string, helpContact?: string } = {}): Promise<InboundSmsResult> {
   const kind = classifyInboundSms(input.body)
-  const name = options.appName ?? 'this service'
-
-  switch (kind) {
-    case 'stop':
-      await optOutPhone(input.from)
-      return { kind, reply: `You are unsubscribed from ${name} texts. No more messages will be sent. Reply START to resubscribe.` }
-    case 'start':
-      await optInPhone(input.from)
-      return { kind, reply: `You are resubscribed to ${name} texts. Reply STOP to unsubscribe.` }
-    case 'help':
-      return { kind, reply: `${name}: reply STOP to unsubscribe, START to resubscribe.${options.helpContact ? ` Contact: ${options.helpContact}` : ''}` }
-    default:
-      return { kind }
-  }
+  if (kind === 'stop')
+    await optOutPhone(input.from)
+  if (kind === 'start')
+    await optInPhone(input.from)
+  const reply = inboundSmsReply(kind, options)
+  return reply ? { kind, reply } : { kind }
 }
