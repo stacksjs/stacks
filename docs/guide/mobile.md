@@ -226,6 +226,17 @@ rounded ends that animates to its value. `<NativeNetworkBanner>`,
 `<NativeAccountButton>` cover connectivity, sharing, permissions, Apple
 Health and the account button.
 
+`<NativeBarButton>` is a round button for the top right of a web screen,
+drawn exactly as Craft's native bar draws its buttons: a 44pt tinted circle,
+a 36pt photo inset in it, a count badge or a red dot. It takes the same SF
+Symbol names as the native bar (`symbol="bubble.left"`), so an app whose
+native and web screens share one list of buttons shows the same set on both.
+
+```html
+<NativeBarButton href="/m/messages" label="Messages" symbol="bubble.left" variant="accent" :badge="unread" />
+<NativeBarButton href="/m/me" label="Me" symbol="person.crop.circle" badgeStyle="dot" :title="initials" :image="avatar" />
+```
+
 ## The runtime
 
 Everything is imported by name from `@stacksjs/mobile`. Every call reaches the

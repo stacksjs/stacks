@@ -39,6 +39,19 @@ describe('Native components', () => {
     expect(button).not.toContain('<img')
   })
 
+  it('draws bar buttons as the native bar does, from the same SF Symbol names', () => {
+    const button = read('NativeBarButton')
+    // Craft's accountNavigationButton: a 44pt tinted circle, a 36pt photo inset.
+    expect(button).toContain('width: 2.75rem;')
+    expect(button).toContain('background: rgb(38 99 235 / 0.08);')
+    expect(button).toContain('width: 2.25rem;')
+    expect(button).toContain("'bubble.left': 'i-lucide-message-square'")
+    expect(button).toContain("useReactiveProp<string | number>('badge', '')")
+    expect(button).toContain('data-stx-link data-stx-prefetch="eager"')
+    // A photo is a background, not an <img>: apps check that every image goes through their delivery.
+    expect(button).not.toContain('<img')
+  })
+
   it('lifts the launch splash once the first screen has painted', () => {
     expect(read('NativeAppShell')).toContain('requestAnimationFrame(() => requestAnimationFrame(() => splash.hide()))')
   })

@@ -1,0 +1,169 @@
+<script server>
+interface NativeBarButtonProps {
+  /** Where the button goes, such as `/m/messages`. */
+  href: string
+  /** What a screen reader calls the button. */
+  label: string
+  /** The SF Symbol the native bar draws for it (`bubble.left`), drawn here with its Iconify stand-in. */
+  symbol?: string
+  /** An Iconify class for a symbol the stand-ins below don't cover. */
+  icon?: string
+  /** A picture (the account's own photo), drawn round inside the button. */
+  image?: string
+  /** A short title instead of the symbol: an account's initials. */
+  title?: string
+  /** A count on the button. Zero and empty draw nothing. */
+  badge?: string | number
+  /** `count` draws the number, `dot` a red dot (unread notifications). */
+  badgeStyle?: 'count' | 'dot'
+  /** `accent` sits a shade stronger in dark mode (chat); `account` is the default. */
+  variant?: 'accent' | 'account'
+}
+
+const { symbol = '', icon = '' } = defineProps<NativeBarButtonProps>()
+
+// The same names the native bar takes (mobileHeaderOptions-style rightButtons),
+// so one list of buttons describes both. Written out so the stylesheet
+// generator sees every class.
+const standIns: Record<string, string> = {
+  'bubble.left': 'i-lucide-message-square',
+  'bubble.left.and.bubble.right': 'i-lucide-messages-square',
+  'person.crop.circle': 'i-lucide-circle-user-round',
+  'bell': 'i-lucide-bell',
+  'gearshape': 'i-lucide-settings',
+  'plus': 'i-lucide-plus',
+  'magnifyingglass': 'i-lucide-search',
+  'square.and.arrow.up': 'i-lucide-share',
+}
+
+export const glyphClass = `${icon || standIns[symbol] || 'i-lucide-circle-user-round'} native-bar-glyph`
+</script>
+
+<script client>
+import { haptics } from '@stacksjs/mobile'
+
+// A round button at the top right of a phone screen, drawn exactly as the
+// app's native bar draws its buttons (Craft's accountNavigationButton in
+// CraftNativeScreen.swift): a 44pt circle tinted with the accent, a 20pt
+// glyph, a 36pt photo inset in the circle, a count badge or a red dot at its
+// top right. The native screens (Today, Calendar) and the web screens of the
+// same app then show one set of buttons, not two that almost match.
+//
+// Every prop through useReactiveProp, under names of its own: read as plain
+// {{ label }}, a host's client signal of the same name would be shown instead.
+// What shows (picture, title or glyph) is written in the template itself: a
+// derived only the template reads is dropped by the bundler's tree-shake.
+const barHref = useReactiveProp<string>('href', '')
+const barLabel = useReactiveProp<string>('label', '')
+const barImage = useReactiveProp<string>('image', '')
+const barTitle = useReactiveProp<string>('title', '')
+const barBadge = useReactiveProp<string | number>('badge', '')
+const barBadgeStyle = useReactiveProp<string>('badgeStyle', 'count')
+const barVariant = useReactiveProp<string>('variant', 'account')
+
+const barCount = derived(() => {
+  const value = barBadge()
+  return value === '' || value === 0 || value === '0' || value == null ? '' : Number(value) > 99 ? '99+' : String(value)
+})
+const barDot = derived(() => barBadgeStyle() === 'dot')
+const barPhoto = derived(() => (barImage() ? `background-image: url("${String(barImage()).replace(/"/g, '%22')}")` : ''))
+
+function tapBarButton(): void {
+  void haptics.selection()
+}
+</script>
+
+<a :href="barHref()" class="native-bar-button" :class="barVariant() === 'accent' ? 'native-bar-accent' : ''" draggable="false" data-stx-link data-stx-prefetch="eager" @click="tapBarButton()">
+  <span class="native-bar-label">{{ barLabel() }}<span :if="barCount()">, {{ barCount() }} unread</span></span>
+  <span :if="barImage()" aria-hidden="true" class="native-bar-photo" :style="barPhoto()"></span>
+  <span :if="!barImage() && barTitle()" aria-hidden="true" class="native-bar-title">{{ barTitle() }}</span>
+  <!-- :show, not :if: an :if branch is re-rendered in the browser, where the
+       server's glyphClass doesn't exist, and the glyph silently never drew. -->
+  <i :show="!barImage() && !barTitle()" aria-hidden="true" class="{{ glyphClass }}"></i>
+  <span :if="barCount() && !barDot()" aria-hidden="true" class="native-bar-count">{{ barCount() }}</span>
+  <span :if="barCount() && barDot()" aria-hidden="true" class="native-bar-dot"></span>
+</a>
+
+<style>
+  /* The values are Craft's (CraftNativeScreen.swift, accountNavigationButton):
+     keep them in step, or the web and native screens drift apart again. */
+  .native-bar-button {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    color: rgb(28 77 217);
+    background: rgb(38 99 235 / 0.08);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    transition: transform 120ms ease, opacity 120ms ease;
+  }
+
+  .native-bar-button:active { transform: scale(0.94); opacity: 0.85; }
+
+  .native-bar-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .native-bar-glyph { width: 1.25rem; height: 1.25rem; }
+
+  .native-bar-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .native-bar-photo {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: center / cover no-repeat;
+  }
+
+  .native-bar-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    color: white;
+    background: rgb(0 122 255);
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1.125rem;
+    text-align: center;
+  }
+
+  .native-bar-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0.5625rem;
+    height: 0.5625rem;
+    border-radius: 999px;
+    background: rgb(255 59 48);
+  }
+
+  .dark .native-bar-button {
+    color: rgb(148 196 252);
+    background: rgb(38 99 235 / 0.12);
+  }
+
+  .dark .native-bar-accent { background: rgb(38 99 235 / 0.24); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .native-bar-button { transition: none; }
+  }
+</style>
