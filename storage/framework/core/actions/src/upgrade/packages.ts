@@ -57,8 +57,8 @@ export function standalonePackageUpdateCommand(): string {
  * already-declared `stacks` package refreshes its dependency graph without
  * rewriting the application's ownership boundary.
  */
-export function frameworkPackageUpdateCommand(): string {
-  return 'bun update stacks'
+export function frameworkPackageUpdateCommand(force = false): string {
+  return force ? 'bun update stacks --force' : 'bun update stacks'
 }
 
 /** The installed meta-package version, or null when dependencies are absent/incomplete. */
@@ -299,7 +299,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || options.force) {
     console.log('  Installing…\n')
-    const result = await runCommand(frameworkPackageUpdateCommand(), { cwd: projectRoot })
+    const result = await runCommand(frameworkPackageUpdateCommand(options.force), { cwd: projectRoot })
 
     if (result.isErr) {
       console.error('\n✗ The install step failed. Your package.json was updated - resolve the error and re-run `bun update`.\n')
