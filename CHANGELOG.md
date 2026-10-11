@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.138...v0.75.139)
+
+## ✨ Features
+
+- **notifications**: localized templates and built-in account, commerce and subscription messages ([b0a3ce9](https://github.com/stacksjs/stacks/commit/b0a3ce9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **notifications**: give account_created's link a lifetime in days ([a9e8a63](https://github.com/stacksjs/stacks/commit/a9e8a63)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.137...v0.75.138)
 
 ## ✨ Features
