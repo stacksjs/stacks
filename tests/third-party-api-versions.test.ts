@@ -184,6 +184,16 @@ const RETIRED: RetiredPin[] = [
  */
 const PROBE_SOURCE = 'buddy/src/commands/integrations-probe.ts'
 
+/**
+ * Every source file the framework ships, excluding its tests.
+ *
+ * Tests are excluded because the tables here record what the framework
+ * *calls*, and a URL in a test is not a call. Skipping the test directories
+ * was not enough: plenty of test files sit beside the source they cover, and
+ * `core/defaults/functions/api-url.test.ts` asserting `https://app.test/v1`
+ * is read as an unpinned provider on a reserved local hostname. It turned
+ * main red for a URL nothing dials.
+ */
 function sourceFiles(dir: string, out: string[] = []): string[] {
   if (!existsSync(dir))
     return out
@@ -196,7 +206,7 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
         continue
       sourceFiles(path, out)
     }
-    else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) {
+    else if (entry.name.endsWith('.ts') && !/\.(?:test|spec|bench)\.ts$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
       out.push(path)
     }
   }
