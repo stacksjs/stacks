@@ -87,6 +87,9 @@ describe('Native components', () => {
     expect(bar).toContain('[data-stx-scope]:has(> .native-nav),')
     // A header component wrapping the bar adds a wrapper of its own.
     expect(bar).toContain('[data-stx-scope]:has(> [data-stx-scope] > .native-nav) { display: contents; }')
+    // The actions keep their buttons' width; a long title truncates instead of running under them.
+    expect(bar).toContain('grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);')
+    expect(bar).toContain('.native-nav-actions { justify-content: flex-end; container-type: normal; }')
     expect(bar).toContain("useReactiveProp<string>('title', '')")
   })
 

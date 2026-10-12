@@ -117,7 +117,11 @@ function tapBack(event: MouseEvent): void {
     top: env(safe-area-inset-top, 0px);
     z-index: 30;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    /* The actions never shrink below their buttons: three of them (a
+       workout's keep-awake, messages, account) ran under a long title. The
+       title gives way and truncates instead; the back side keeps at least
+       its chevron. */
+    grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
     gap: 0.5rem;
     align-items: center;
     min-height: 2.75rem;
@@ -164,7 +168,9 @@ function tapBack(event: MouseEvent): void {
      too narrow for its word and keep only the chevron, as iOS does, rather
      than running into the title. */
   .native-nav-side { display: flex; gap: 0.25rem; align-items: center; min-width: 0; container-type: inline-size; }
-  .native-nav-actions { justify-content: flex-end; }
+  .native-nav-bar:has(.native-nav-back) { grid-template-columns: minmax(2.75rem, 1fr) auto minmax(max-content, 1fr); }
+  /* Sized by its buttons, so not a size container (that made its minimum 0). */
+  .native-nav-actions { justify-content: flex-end; container-type: normal; }
 
   .native-nav-title {
     max-width: 60vw;
