@@ -15,6 +15,13 @@ export interface AppleProviderConfig extends ProviderConfig {
   teamId?: string
   keyId?: string
   privateKey?: string
+  /**
+   * Redeem codes from an app's own Sign in with Apple sheet
+   * (ASAuthorizationController) rather than the web flow: `clientId` is the
+   * app's bundle ID, there is no authorize URL, and the token request
+   * carries no `redirect_uri`, since the app's request had none.
+   */
+  native?: boolean
 }
 
 /**
@@ -51,12 +58,14 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
   protected teamId: string = ''
   protected keyId: string = ''
   protected privateKey: string = ''
+  protected native: boolean = false
 
   constructor(providerConfig: AppleProviderConfig) {
     super(providerConfig)
     this.teamId = providerConfig.teamId ?? ''
     this.keyId = providerConfig.keyId ?? ''
     this.privateKey = providerConfig.privateKey ?? ''
+    this.native = providerConfig.native === true
   }
 
   private getConfig() {
@@ -70,7 +79,8 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
       // .p8 keys pasted into env files often arrive with literal \n —
       // normalize so createPrivateKey can parse the PEM.
       privateKey: (this.privateKey || (config.services.apple?.privateKey ?? '')).replace(/\\n/g, '\n'),
-      redirectUrl: this.redirectUrl || (config.services.apple?.redirectUrl ?? ''),
+      // An app's code was issued without a redirect, so it is redeemed without one.
+      redirectUrl: this.native ? '' : this.redirectUrl || (config.services.apple?.redirectUrl ?? ''),
       scopes: this._scopes.length > 0
         ? this._scopes
         : (config.services.apple?.scopes ?? ['name', 'email']),
@@ -83,6 +93,8 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
    * Get the authentication URL for Apple.
    */
   public async getAuthUrl(): Promise<string> {
+    if (this.native)
+      throw new ConfigException('A native Apple provider redeems the app\'s codes; the web flow needs the Service ID')
     const state = this.resolveState()
     const { clientId, redirectUrl, scopes } = this.getConfig()
     this.validateConfig()
@@ -121,7 +133,7 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: redirectUrl,
+        ...(this.native ? {} : { redirect_uri: redirectUrl }),
         client_id: clientId,
         client_secret: this.generateClientSecret(),
       }),
@@ -230,7 +242,7 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
     const { clientId, teamId, keyId, privateKey, redirectUrl } = this.getConfig()
 
     if (!clientId)
-      throw new ConfigException('Apple client ID (Service ID) not provided')
+      throw new ConfigException(this.native ? 'Apple client ID (the app\'s bundle ID) not provided' : 'Apple client ID (Service ID) not provided')
 
     if (!teamId)
       throw new ConfigException('Apple team ID not provided')
@@ -241,7 +253,7 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
     if (!privateKey)
       throw new ConfigException('Apple private key not provided')
 
-    if (!redirectUrl)
+    if (!redirectUrl && !this.native)
       throw new ConfigException('Apple redirect URL not provided')
   }
 

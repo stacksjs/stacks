@@ -167,6 +167,46 @@ describe('AppleProvider', () => {
   })
 })
 
+describe('AppleProvider for an app\'s own sheet', () => {
+  function nativeProvider() {
+    return new InspectableAppleProvider({
+      clientId: 'org.example.app', clientSecret: '', redirectUrl: '', native: true,
+      teamId: 'TEAM123456', keyId: 'KEY1234567', privateKey: privateKeyPem,
+    })
+  }
+
+  test('redeems the code as the app, with no redirect_uri', async () => {
+    const originalFetch = globalThis.fetch
+    let sent: URLSearchParams | null = null
+    globalThis.fetch = (async (_url: string, init: RequestInit) => {
+      sent = init.body as URLSearchParams
+      return new Response(JSON.stringify({ id_token: 'id.token.here' }), { status: 200 })
+    }) as unknown as typeof fetch
+    try {
+      expect(await nativeProvider().getAccessToken('app-code')).toBe('id.token.here')
+    }
+    finally {
+      globalThis.fetch = originalFetch
+    }
+    expect(sent!.get('client_id')).toBe('org.example.app')
+    expect(sent!.get('code')).toBe('app-code')
+    expect(sent!.has('redirect_uri')).toBe(false)
+    // The client secret names the app as its subject.
+    const payload = JSON.parse(Buffer.from(sent!.get('client_secret')!.split('.')[1]!, 'base64url').toString('utf8'))
+    expect(payload.sub).toBe('org.example.app')
+  })
+
+  test('takes only tokens issued to the app', async () => {
+    const claims = { iss: 'https://appleid.apple.com', exp: Math.floor(Date.now() / 1000) + 300, sub: 'apple-sub-002' }
+    expect((await nativeProvider().getUserByToken(fakeIdToken({ ...claims, aud: 'org.example.app' }))).id).toBe('apple-sub-002')
+    await expect(nativeProvider().getUserByToken(fakeIdToken({ ...claims, aud: 'org.example.web' }))).rejects.toThrow('iss/aud/exp')
+  })
+
+  test('has no web flow', async () => {
+    await expect(nativeProvider().getAuthUrl()).rejects.toThrow(ConfigException)
+  })
+})
+
 describe('AbstractProvider.withState', () => {
   test('rejects empty state', () => {
     expect(() => makeProvider().withState('')).toThrow('non-empty')
