@@ -338,7 +338,11 @@ Enable `healthKit` on iOS or `healthConnect` on Android, then use the shared
 `health` service to request only the record types the product needs. On iOS,
 `health.getWorkouts()` lists Apple Health workouts (keyed on HealthKit's UUID)
 and `health.getDailyStatistics(type)` returns one value per day for steps,
-energy, distance, heart rate, resting heart rate, HRV, weight and sleep. Completed
+energy, distance, heart rate, resting heart rate, HRV, weight and sleep.
+`health.getHeartRateSamples(range)` returns every heart-rate reading (bpm,
+start/end, source and device) and `health.getSleepIntervals(range)` the night's
+in-bed, awake and asleep stages; check `health.supports(method)` first, since an
+app build that predates a read resolves `[]` for it. Completed
 recordings can be written back with `health.saveWorkout(...)`; treat permission
 revocation as a normal runtime state and never block saving the application's
 own activity when a health write fails.

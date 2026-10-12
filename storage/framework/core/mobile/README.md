@@ -100,6 +100,22 @@ const hrv = await health.getDailyStatistics('heartRateVariability', { startDate:
 
 Both are iOS only for now; on Android they reject as unavailable.
 
+For a day chart, `health.getHeartRateSamples({ startDate, endDate })` returns
+every heart-rate reading in the range, oldest first (bpm, start and end, the
+source app and the device), and `health.getSleepIntervals({ startDate, endDate })`
+returns the night as the sources wrote it: in bed, awake, and each asleep stage
+with `asleep` set. Both read under the `heartRate` and `sleep` grants. An app
+installed before these reads existed cannot answer them, so they resolve `[]`
+there and in a browser; `health.supports('getHeartRateSamples')` says whether
+the running build can, so a page can hide what needs it.
+
+```ts
+if (health.supports('getHeartRateSamples')) {
+  const readings = await health.getHeartRateSamples({ startDate: Date.now() - 86400000 })
+  const nights = await health.getSleepIntervals({ startDate: Date.now() - 86400000 })
+}
+```
+
 ## Recording a route
 
 Craft records the route natively: fixes go to disk, keep coming with the screen

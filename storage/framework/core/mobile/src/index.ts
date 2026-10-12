@@ -41,7 +41,7 @@ import {
 
 import type { CraftHost } from './bridge'
 import { auth, background, browser, chrome, clipboard, contextMenu, db, dialog, files, orientation, refresh, shortcuts, statusBar, storeKit, symbols, widgets } from './native'
-import { afterBridge, craftHost, hasNativeMobileHost, nativeFunctionNow, subscribeWhenReady, whenBridgeReady } from './bridge'
+import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunctionNow, subscribeWhenReady, whenBridgeReady } from './bridge'
 import type {
   AppReviewApi,
   BiometricsApi,
@@ -53,6 +53,8 @@ import type {
   DeviceApi,
   HapticsApi,
   HealthApi,
+  HealthHeartRateSample,
+  HealthSleepInterval,
   KeepAwakeApi,
   LifecycleApi,
   LiveActivitiesApi,
@@ -272,6 +274,11 @@ export const health: HealthApi = {
   saveWorkout: workout => afterBridge(() => craftHealth.saveWorkout(workout)),
   getWorkouts: options => afterBridge(() => craftHealth.getWorkouts(options)),
   getDailyStatistics: (type, options) => afterBridge(() => craftHealth.getDailyStatistics(type, options)),
+  // Straight to the bridge rather than through craft-native, so an app that
+  // resolves an older craft-native still reaches a shell that has the read.
+  getHeartRateSamples: options => callNative<HealthHeartRateSample[]>('health.getHeartRateSamples', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
+  getSleepIntervals: options => callNative<HealthSleepInterval[]>('health.getSleepIntervals', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
+  supports: method => nativeFunctionNow(`health.${method}`) !== null,
 }
 export const liveActivities: LiveActivitiesApi = {
   start: options => afterBridge(() => craftLiveActivities.start(options)),

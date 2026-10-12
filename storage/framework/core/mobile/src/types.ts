@@ -450,6 +450,57 @@ export interface HealthDailyValue {
   unit: string
 }
 
+export interface HealthSampleQuery {
+  /** Epoch milliseconds. Defaults to a day before `endDate`. */
+  startDate?: number
+  /** Epoch milliseconds. Defaults to now. */
+  endDate?: number
+}
+
+export interface HealthHeartRateQuery extends HealthSampleQuery {
+  /** At most this many, oldest first. Defaults to 10000, capped at 50000. */
+  limit?: number
+}
+
+/** One heart-rate reading from Apple Health, in beats per minute. */
+export interface HealthHeartRateSample {
+  bpm: number
+  /** Epoch milliseconds. */
+  startDate: number
+  /** Epoch milliseconds; the same as `startDate` for a single reading. */
+  endDate: number
+  /** The app that wrote it, e.g. the watch's own name. */
+  sourceName: string
+  /** The device that measured it, when the source says ("Apple Watch"). */
+  deviceName?: string
+  deviceModel?: string
+  /** A series of readings (a watch workout) also carries its count, lowest and highest. */
+  count?: number
+  min?: number
+  max?: number
+  /** What the wearer was doing, when the watch says. */
+  motionContext?: 'sedentary' | 'active'
+}
+
+/** A sleep analysis stage: in bed, awake, or asleep (staged or not). */
+export type HealthSleepStage = 'inBed' | 'awake' | 'asleep' | 'core' | 'deep' | 'rem'
+
+/** One stretch of a night as a source recorded it. */
+export interface HealthSleepInterval {
+  /** Epoch milliseconds. */
+  startDate: number
+  /** Epoch milliseconds. */
+  endDate: number
+  stage: HealthSleepStage
+  /** Every asleep stage; false for time in bed and time awake. */
+  asleep: boolean
+  sourceName: string
+  deviceName?: string
+}
+
+/** The health reads an installed app build may or may not answer. */
+export type HealthReadMethod = 'getWorkouts' | 'getDailyStatistics' | 'getHeartRateSamples' | 'getSleepIntervals'
+
 export interface HealthAuthorizationOptions {
   /** `false` asks to read only, for an app that never writes back. */
   write?: boolean
@@ -463,6 +514,24 @@ export interface HealthApi {
   getWorkouts: (options?: HealthWorkoutQuery) => Promise<HealthWorkoutSample[]>
   /** One value per local day between two dates. iOS only for now. */
   getDailyStatistics: (type: HealthDailyType, options?: HealthDataOptions) => Promise<HealthDailyValue[]>
+  /**
+   * Every heart-rate reading between two instants, oldest first: bpm, start
+   * and end, and the app and device that took it. iOS only for now; resolves
+   * `[]` in a browser or an app build that predates it (see `supports`).
+   */
+  getHeartRateSamples: (options?: HealthHeartRateQuery) => Promise<HealthHeartRateSample[]>
+  /**
+   * Sleep between two instants, oldest first: time in bed, and each asleep or
+   * awake stretch with its stage. iOS only for now; resolves `[]` in a browser
+   * or an app build that predates it (see `supports`).
+   */
+  getSleepIntervals: (options?: HealthSampleQuery) => Promise<HealthSleepInterval[]>
+  /**
+   * Whether the running app build answers `method`, right now. An app
+   * installed before a read existed has none, so a page checks before offering
+   * what needs it. False in a browser and before the bridge has arrived.
+   */
+  supports: (method: HealthReadMethod) => boolean
 }
 
 export interface LiveActivityState {
