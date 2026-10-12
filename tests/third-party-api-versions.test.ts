@@ -171,6 +171,19 @@ const RETIRED: RetiredPin[] = [
   },
 ]
 
+/**
+ * The probe's own registry, which is deliberately not scanned as calling code.
+ *
+ * It names a URL for every integration worth probing, including ones whose
+ * version is template-built rather than literal, and one withdrawn endpoint it
+ * uses as a control. Read as a caller it would demand a pin for each of those
+ * and would trip the retired-endpoint ban with the very URL that proves the
+ * ban is enforceable. What is asserted about it instead is the relationship
+ * that matters, under "the scheduled probe" below: every API host pinned here
+ * has a target there.
+ */
+const PROBE_SOURCE = 'buddy/src/commands/integrations-probe.ts'
+
 function sourceFiles(dir: string, out: string[] = []): string[] {
   if (!existsSync(dir))
     return out
@@ -196,8 +209,12 @@ function codeByFile(): Map<string, string> {
   const code = new Map<string, string>()
 
   for (const file of sourceFiles(coreDir)) {
+    const relative = file.replace(`${coreDir}/`, '')
+    if (relative === PROBE_SOURCE)
+      continue
+
     try {
-      code.set(file.replace(`${coreDir}/`, ''), transpiler.transformSync(readFileSync(file, 'utf8')))
+      code.set(relative, transpiler.transformSync(readFileSync(file, 'utf8')))
     }
     catch {
       // A file bun cannot transpile is one nothing imports either.
@@ -350,6 +367,45 @@ describe('third-party API versions (#2859)', () => {
       expect(blocked.length).toBeGreaterThan(0)
       for (const pin of blocked)
         expect(pin.blockedOn!.length, pin.integration).toBeGreaterThan(40)
+    })
+  })
+
+  describe('the scheduled probe', () => {
+    // `buddy integrations:probe`, #2859's fourth acceptance item. It answers
+    // the one question this file cannot: an endpoint can be withdrawn with our
+    // source unchanged, and no amount of pinning sees that. The two are kept
+    // from drifting apart here, because a pin added without a probe target is
+    // an integration nothing will notice the death of.
+    const path = join(coreDir, PROBE_SOURCE)
+    const probe = existsSync(path) ? transpiler.transformSync(readFileSync(path, 'utf8')) : undefined
+
+    it('exists where this expects it', () => {
+      expect(probe, `${PROBE_SOURCE} is missing`).toBeDefined()
+    })
+
+    it('probes every host pinned here as an API', () => {
+      // Only `api` hosts: an asset URL, a dashboard link shown to a person and
+      // our own schema URL are not endpoints whose death breaks a call.
+      const missing = URL_PINS
+        .filter(pin => pin.kind === 'api')
+        .filter(pin => !probe!.includes(pin.host))
+        .map(pin => pin.host)
+
+      expect(missing.sort()).toEqual([])
+    })
+
+    it('keeps its controls, which are what make a clean run mean anything', () => {
+      // Without a path that must read as gone, every target reads as alive
+      // behind a captive portal and the probe reports confidently nothing.
+      expect(probe).toContain('PROBE_CONTROLS')
+      expect(probe).toContain('does-not-exist')
+    })
+
+    it('sends no credential, which is what makes the signal readable', () => {
+      // An endpoint that exists rejects an unauthenticated request; one that is
+      // gone answers 404. A probe carrying a key would get 200s and learn less,
+      // and would put a secret in a URL and a provider's access log.
+      expect(probe).not.toMatch(/Authorization|x-api-key|Bearer /)
     })
   })
 

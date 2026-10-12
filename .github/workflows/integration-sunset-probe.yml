@@ -1,0 +1,95 @@
+# Ask every third-party endpoint this framework calls whether it is still
+# there (stacksjs/stacks#2859).
+#
+# Scheduled rather than per pull request, deliberately. The companion guard,
+# `tests/third-party-api-versions.test.ts`, pins the version surface and runs
+# on every PR because it needs no network and cannot flake. This one talks to
+# eighteen providers, so on a PR it would fail for someone else's outage or
+# rate limit, and a check that fails for reasons the author cannot fix is a
+# check that gets disabled.
+#
+# It sends no credentials, which is what makes the result readable: an endpoint
+# that exists rejects an unauthenticated request, and one that is gone answers
+# 404. That also means none of the requests can have an effect.
+name: Integration sunset probe
+
+on:
+  schedule:
+    # Weekly. Eighteen requests, so the cost is nothing and the detection
+    # window for a withdrawn endpoint is days rather than a user's bug report.
+    - cron: '29 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Only to report a withdrawal. Nothing here writes to the repository.
+  issues: write
+
+concurrency:
+  group: integration-sunset-probe
+  cancel-in-progress: false
+
+env:
+  BUN_VERSION: '1.4.2'
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        with:
+          version: '0.11.75'
+          install: 'false'
+          packages: 'bun@${{ env.BUN_VERSION }}'
+
+      - name: Install frozen dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Probe the endpoints
+        id: probe
+        run: |
+          set +e
+          bun run probe:integrations > "$RUNNER_TEMP/probe.md" 2>"$RUNNER_TEMP/probe.err"
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          set -e
+          cat "$RUNNER_TEMP/probe.md" >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/probe.md"
+          # Exit 2 is "ask again": a provider outage, or controls that say the
+          # run proved nothing. Worth reading in the summary, not worth an
+          # issue, and not a failure of this workflow.
+          if [ -s "$RUNNER_TEMP/probe.err" ]; then cat "$RUNNER_TEMP/probe.err"; fi
+
+      # Exit 1 means an endpoint we call answered 404 where it used to answer,
+      # and the controls confirmed the probe can tell the difference.
+      - name: Report a withdrawn endpoint
+        if: steps.probe.outputs.exit_code == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: 'An endpoint the framework calls has been withdrawn'
+        run: |
+          {
+            echo "\`buddy integrations:probe\` found an endpoint answering 404 where it previously answered. The controls passed, so the probe could tell a withdrawal from an outage."
+            echo
+            cat "$RUNNER_TEMP/probe.md"
+            echo
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > "$RUNNER_TEMP/issue.md"
+
+          # Comment on the open report rather than filing a new one each week,
+          # so a withdrawal nobody has got to yet does not become a pile.
+          existing=$(gh issue list --state open --search "in:title \"$TITLE\"" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$RUNNER_TEMP/issue.md"
+          else
+            gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/issue.md"
+          fi
+
+      - name: Fail on a withdrawn endpoint
+        if: steps.probe.outputs.exit_code == '1'
+        run: exit 1

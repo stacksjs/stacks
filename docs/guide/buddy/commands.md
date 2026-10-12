@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **357 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **358 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -41,6 +41,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `general` | 51 |
 | `generate` | 17 |
 | `inspire` | 1 |
+| `integrations` | 1 |
 | `key` | 1 |
 | `libs` | 2 |
 | `link` | 1 |
@@ -2838,6 +2839,20 @@ Install your dependencies
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-v`, `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `integrations:probe`
+
+Check whether the third-party endpoints this framework calls still exist (sends no credentials)
+
+- Usage: `$ buddy integrations:probe`
+- Namespace: `integrations`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--timeout` | How long to wait for each endpoint | value, required | `"12000"` |
+| `--json` | Print the results as JSON instead of a report | boolean, optional | `false` |
 
 ### `key:generate`
 
