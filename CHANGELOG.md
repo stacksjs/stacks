@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.153...v0.75.154)
+
+## ✨ Features
+
+- **mobile**: music shows and steers what Apple Music is playing ([650881f](https://github.com/stacksjs/stacks/commit/650881f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.152...v0.75.153)
 
 ## ✨ Features
