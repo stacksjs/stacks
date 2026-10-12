@@ -1619,7 +1619,26 @@ export function idempotentSql(sql: string): string {
     return sql
   const out: string[] = []
   for (const raw of stmts) {
-    const stmt = raw.replace(/\bADD\s+COLUMN\s+(?!IF\s+NOT\s+EXISTS\b)/gi, 'ADD COLUMN IF NOT EXISTS ')
+    /*
+     * The mirror of the line below, which was missing (stacksjs/stacks#2895).
+     *
+     * The generator guarded the column it adds and not the column it drops, in
+     * the same pass: `ADD COLUMN IF NOT EXISTS` beside a bare `DROP COLUMN`. A
+     * generated drop therefore only ever applied to the one database that
+     * happened to still have the column, and these files are committed, so it
+     * failed for everyone else and kept failing - a corpus is replayed from
+     * empty in CI, in a container entrypoint, and on any rebuild. Worse, it was
+     * written during `migrate --force` on the machine where it did apply, so it
+     * was green for its author and red for everyone else.
+     *
+     * Postgres only, which is what this transform runs on. SQLite accepts
+     * neither `DROP COLUMN IF EXISTS` nor `ADD COLUMN IF NOT EXISTS` (3.51
+     * answers both with a syntax error), so its corpus is reconciled against
+     * the live schema instead, in `preprocessSqliteMigrations`.
+     */
+    const stmt = raw
+      .replace(/\bADD\s+COLUMN\s+(?!IF\s+NOT\s+EXISTS\b)/gi, 'ADD COLUMN IF NOT EXISTS ')
+      .replace(/\bDROP\s+COLUMN\s+(?!IF\s+EXISTS\b)/gi, 'DROP COLUMN IF EXISTS ')
     const m = /^ALTER\s+TABLE\s+("?\w+"?)\s+ADD\s+CONSTRAINT\s+("?\w+"?)/i.exec(stmt)
     if (m) {
       const drops = [`ALTER TABLE ${m[1]} DROP CONSTRAINT IF EXISTS ${m[2]}`]
@@ -1692,7 +1711,12 @@ export function idempotentSql(sql: string): string {
  * fixed point: a committed file stays exactly as it was committed.
  */
 export function normalizePostgresMigrationSql(sql: string): string {
+  // `DROP COLUMN` is in here because the generator writes a drop on its own,
+  // in its own file, with nothing else in it. Without it such a file was not
+  // "touchable", returned unchanged, and never guarded, which is the half of
+  // stacksjs/stacks#2895 that the rewrite alone would not have fixed.
   const touchable = /\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql)
+    || /\bDROP\s+COLUMN\b/i.test(sql)
     || /\bCREATE\s+TYPE\b/i.test(sql)
     || /\bALTER\s+COLUMN\b[^\n]*\bTYPE\b/i.test(sql)
   if (!touchable)
