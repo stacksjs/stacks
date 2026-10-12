@@ -29,14 +29,26 @@ const authResult = await migrateAuthTables()
 if (!authResult.success)
   log.error(`Failed to migrate auth tables: ${authResult.error}`)
 
-// Historical normalization migrations rebuild both notifications and
-// notification_deliveries before the model corpus creates their final shapes.
-// Bootstrap those two tables so an empty database can replay the append-only
-// history. The later model migrations rebuild them, then the full guarantee
-// below checks every notification table after the schema is complete.
-const notificationBootstrap = await migrateNotificationTables({ tables: ['notifications', 'notification_deliveries'] })
-if (!notificationBootstrap.success)
-  log.error(`Failed to bootstrap notification tables: ${notificationBootstrap.error}`)
+// No notification bootstrap here. `runDatabaseMigration()` below already does
+// it, and does it corpus-aware: it reads the committed migrations and
+// pre-creates only the notification tables the corpus does not declare itself,
+// so a model-owned CREATE stays authoritative over its own shape.
+//
+// This step used to pre-create `notifications` and `notification_deliveries`
+// unconditionally, a few lines before that. In an app that overrides
+// `NotificationDelivery` to add columns, the framework's narrower table was
+// therefore already standing when the corpus reached its own
+// `CREATE TABLE IF NOT EXISTS`, which then succeeded as a silent no-op, and the
+// first index on an app-only column failed with "column does not exist"
+// (stacksjs/stacks#2894). Nothing reported the shape: the guarantee's own check
+// compares against the framework's REQUIRED_COLUMNS, which the narrow table
+// satisfies, so an app whose extra columns are not indexed got a quietly wrong
+// table instead of an error.
+//
+// Deleting it strands nothing. Where the corpus has no CREATE for these tables
+// - this framework checkout included, where migrations 133 and 134 update and
+// rebuild `notification_deliveries` without ever creating it - the corpus-aware
+// pass pre-creates them anyway, and it covers all three tables rather than two.
 
 // Then migrate the model-owned database schema.
 const migrateResult = await runDatabaseMigration()
