@@ -32,6 +32,9 @@
  *     being served as before.
  *   - Instances of dynamic routes come from config: `seo.sitemap.include` or
  *     `seo.sitemap.entries()`.
+ *   - A page in several languages declares its versions with
+ *     `seo.sitemap.alternates(path)` or an entry's own `alternates`, written as
+ *     `<xhtml:link rel="alternate" hreflang>` on its one `<url>`.
  *
  * The framework's own default views (`/login`, `/register`, ...) are never
  * listed: they are served from the defaults tree, not `resources/views`, and
@@ -445,7 +448,31 @@ export async function collectSitemapEntries(inputs: SitemapInputs): Promise<SeoS
       byPath.set(path, { ...byPath.get(path), ...entry })
   }
 
-  return [...byPath.values()].sort((a, b) => locPath(a.loc).localeCompare(locPath(b.loc)))
+  const entries = [...byPath.values()].sort((a, b) => locPath(a.loc).localeCompare(locPath(b.loc)))
+  return withAlternates(entries, options)
+}
+
+/**
+ * Each entry with its language versions: its own `alternates`, else what
+ * `seo.sitemap.alternates(path)` returns for it. A hook that throws costs the
+ * sitemap its alternates, not the sitemap.
+ */
+function withAlternates(entries: SeoSitemapEntry[], options: SeoSitemapOptions): SeoSitemapEntry[] {
+  const hook = options.alternates
+  if (!hook)
+    return entries
+  try {
+    return entries.map((entry) => {
+      if (entry.alternates)
+        return entry
+      const alternates = hook(locPath(entry.loc))
+      return alternates?.length ? { ...entry, alternates } : entry
+    })
+  }
+  catch (error) {
+    console.warn(`[seo] seo.sitemap.alternates() failed; serving the sitemap without language alternates: ${(error as Error).message}`)
+    return entries
+  }
 }
 
 /** `/sitemap.xml` for the app. */

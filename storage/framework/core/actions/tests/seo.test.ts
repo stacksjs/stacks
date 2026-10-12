@@ -192,6 +192,40 @@ describe('collectSitemapEntries', () => {
   it('is empty when the sitemap is turned off', async () => {
     expect(await collectSitemapEntries({ root, origin: '', seo: { sitemap: false } })).toEqual([])
   })
+
+  it('gives each entry its language versions from seo.sitemap.alternates(path)', async () => {
+    const asked: string[] = []
+    const entries = await collectSitemapEntries({
+      root,
+      origin: 'https://example.com',
+      seo: {
+        sitemap: {
+          include: ['https://example.com/extra', { loc: '/docs', alternates: [] }],
+          alternates: (path) => {
+            asked.push(path)
+            return path.startsWith('/blog') ? undefined : [{ hreflang: 'en', href: path }, { hreflang: 'de', href: `${path}?locale=de` }]
+          },
+        },
+      },
+    })
+    const byLoc = Object.fromEntries(entries.map(entry => [entry.loc, entry]))
+    expect(byLoc['/pricing']!.alternates).toEqual([{ hreflang: 'en', href: '/pricing' }, { hreflang: 'de', href: '/pricing?locale=de' }])
+    // The hook is asked by path, also for an absolute loc.
+    expect(asked).toContain('/extra')
+    // Nothing returned: no alternates. An entry's own [] wins over the hook.
+    expect(byLoc['/blog/hello']!.alternates).toBeUndefined()
+    expect(byLoc['/docs']!.alternates).toEqual([])
+  })
+
+  it('serves the sitemap without alternates when the hook throws', async () => {
+    const entries = await collectSitemapEntries({
+      root,
+      origin: '',
+      seo: { sitemap: { alternates: () => { throw new Error('no locales') } } },
+    })
+    expect(entries.map(entry => entry.loc)).toContain('/pricing')
+    expect(entries.every(entry => !entry.alternates)).toBe(true)
+  })
 })
 
 describe('the generated files', () => {
@@ -202,6 +236,27 @@ describe('the generated files', () => {
     // The blog post has no file date to offer, so it carries none rather than today's.
     const post = xml.slice(xml.indexOf('https://example.com/blog/hello'))
     expect(post.slice(0, post.indexOf('</url>'))).not.toContain('<lastmod>')
+  })
+
+  it('writes language alternates as xhtml:link on each <url>', async () => {
+    const xml = await buildSitemapXml({
+      root,
+      origin: 'https://example.com',
+      seo: { sitemap: { alternates: path => [{ hreflang: 'en', href: path }, { hreflang: 'de', href: `${path}?locale=de` }, { hreflang: 'x-default', href: path }] } },
+    })
+    expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">')
+    const pricing = xml.slice(xml.indexOf('<loc>https://example.com/pricing</loc>'))
+    expect(pricing.slice(0, pricing.indexOf('</url>'))).toContain([
+      '<xhtml:link rel="alternate" hreflang="en" href="https://example.com/pricing"/>',
+      '    <xhtml:link rel="alternate" hreflang="de" href="https://example.com/pricing?locale=de"/>',
+      '    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/pricing"/>',
+    ].join('\n'))
+    // Still one <url> per page: the German address is an alternate, not an entry.
+    expect(sitemapLocs(xml).filter(loc => loc.includes('locale=de'))).toEqual([])
+  })
+
+  it('declares no xhtml namespace without alternates', async () => {
+    expect(await buildSitemapXml({ root, origin: 'https://example.com' })).not.toContain('xhtml')
   })
 
   it('robots.txt disallows the API and the app\'s paths, and names the sitemap', () => {

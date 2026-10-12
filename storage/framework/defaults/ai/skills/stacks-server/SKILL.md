@@ -337,6 +337,9 @@ seo: {
     include: ['/products/blue-mug'],            // instances of dynamic routes
     entries: async () => (await Product.all()).map(p => `/products/${p.slug}`),
     exclude: ['/styleguide', '/internal/'],     // trailing / or * = subtree
+    // language versions, written as <xhtml:link rel="alternate" hreflang> on each <url>;
+    // an entry's own `alternates` wins, [] or nothing = one language only
+    alternates: path => [{ hreflang: 'en', href: path }, { hreflang: 'de', href: `/de${path}` }, { hreflang: 'x-default', href: path }],
   },
   robots: { disallow: ['/checkout/', '/thanks'], rules: [{ userAgent: 'GPTBot', disallow: ['/'] }] },
   // sitemap: false / robots: false turn either off

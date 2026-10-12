@@ -50,6 +50,21 @@ export interface SeoSitemapEntry {
   changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
   /** 0.0 to 1.0. */
   priority?: number
+  /**
+   * The page in other languages, written as `<xhtml:link rel="alternate"
+   * hreflang>` on its `<url>`. List every version, this one included, and an
+   * `x-default` if there is one: Google ignores a set that is not reciprocal.
+   * Set here, it wins over `seo.sitemap.alternates`; `[]` lists none.
+   */
+  alternates?: SeoSitemapAlternate[]
+}
+
+/** One language version of a sitemap entry. */
+export interface SeoSitemapAlternate {
+  /** A language (`de`), a language and region (`en-GB`), or `x-default`. */
+  hreflang: string
+  /** A path (`/de/pricing`) or an absolute URL. */
+  href: string
 }
 
 export interface SeoSitemapOptions {
@@ -77,6 +92,19 @@ export interface SeoSitemapOptions {
    * @example ['/styleguide', '/internal/']
    */
   exclude?: string[]
+
+  /**
+   * The language versions of a listed page, by its path, for every entry
+   * that does not set `alternates` itself. Return nothing (or `[]`) for a
+   * page that exists in one language only.
+   *
+   * @example (path) => [
+   *   { hreflang: 'en', href: path },
+   *   { hreflang: 'de', href: `/de${path}` },
+   *   { hreflang: 'x-default', href: path },
+   * ]
+   */
+  alternates?: (path: string) => SeoSitemapAlternate[] | undefined | null
 }
 
 export interface SeoRobotsRule {
