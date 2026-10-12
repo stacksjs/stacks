@@ -25,7 +25,7 @@ import type { QueryBuilderDialect } from './dialect'
 import type { FrameworkSchema } from './framework-schema'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
-import { isLibsqlDriver, isMysqlWire, isPostgresWire, isVitessSharded, normalizeDatabaseDriver, toQueryBuilderDialect } from './dialect'
+import { isLibsqlDriver, isMysqlWire, isPostgresWire, isVitessSharded, normalizeDatabaseDriver, setConfiguredDatabaseDriver, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
 import { configureDatabaseRoutingContext, contextInTransaction, markContextWrote, replicaConnectionKey, resolveReplicaConnection, runInDatabaseRoutingContext, selectReplica, shouldRouteToReplica, withDatabaseRoutingContext, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
@@ -187,8 +187,12 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
   if (config?.app?.env)
     appEnv = config.app.env
 
-  if (config?.database?.default)
+  if (config?.database?.default) {
     dbDriver = normalizeDatabaseDriver(config.database.default)
+    // So every pass that renders DDL resolves the configured driver rather
+    // than `DB_CONNECTION`. See `resolvedDatabaseDriver` in ./dialect.
+    setConfiguredDatabaseDriver(dbDriver)
+  }
   queryBuilderDialect = toQueryBuilderDialect(dbDriver)
 
   // Merged over the environment's baseline, per connection and per field,

@@ -270,6 +270,52 @@ export function normalizeDatabaseDriver(driver: string): string {
   return driver === 'libsql' ? 'turso' : driver
 }
 
+/** The driver an application configured, or null while the environment decides. */
+let configuredDriver: string | null = null
+
+/**
+ * Record the driver an application configured, or clear it with null.
+ *
+ * `initializeDbConfig` owns the config lifecycle and is the only caller.
+ */
+export function setConfiguredDatabaseDriver(driver: string | null | undefined): void {
+  const named = driver?.trim()
+  configuredDriver = named ? normalizeDatabaseDriver(named) : null
+}
+
+/**
+ * The driver the SQL being generated is for: `database.default` when an
+ * application configured one, and otherwise `DB_CONNECTION`.
+ *
+ * Every pass that renders DDL by hand asks this, because each one picks
+ * placeholders, quoting, boolean literals and timestamp defaults per dialect:
+ * the notification, auth, RBAC and trait table guarantees, the datetime and
+ * uuid column repairs, the UTC defaults, the safe-migration helpers, and the
+ * schema audits choosing a catalogue to introspect. So does everything that
+ * picks a migration corpus directory by dialect.
+ *
+ * Thirteen modules used to answer it privately, each reading `DB_CONNECTION`
+ * and nothing else, so an application that configured `database.default` got
+ * the connection it configured and DDL for whatever its environment said. On
+ * a sqlite file with `DB_CONNECTION=postgres` still in `.env`, the first
+ * guarantee failed on `near "AT": syntax error` from `AT TIME ZONE`
+ * (stacksjs/stacks#2897).
+ *
+ * It lives here, in the module that already decides what a dialect is, rather
+ * than beside the connection, because the modules that ask are deliberately
+ * light. The schema audits take a connection as an argument and the migration
+ * ledger only reads files, so neither can import the connection layer merely
+ * to learn which dialect it speaks.
+ *
+ * The environment is read on every call rather than captured at import,
+ * because setting `DB_CONNECTION` around a call is how this repository's own
+ * tooling and tests select a dialect, and a value frozen at import would
+ * quietly ignore them.
+ */
+export function resolvedDatabaseDriver(): string {
+  return configuredDriver ?? normalizeDatabaseDriver(process.env.DB_CONNECTION || 'sqlite')
+}
+
 /**
  * Whether a driver is SQLite reached over the network (Turso / libSQL).
  *
