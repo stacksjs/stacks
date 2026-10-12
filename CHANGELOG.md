@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.149...v0.75.150)
+
+## ✨ Features
+
+- **socials**: redeem codes from an app's own Sign in with Apple sheet ([6ccfd1a](https://github.com/stacksjs/stacks/commit/6ccfd1a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: sign in with Apple takes a nonce and answers with the server's code ([3186bf6](https://github.com/stacksjs/stacks/commit/3186bf6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 ## v0.75.149
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.147...v0.75.148)
