@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.152...v0.75.153)
+
+## ✨ Features
+
+- **image**: a social card's mark can be an SVG ([cdb59d0](https://github.com/stacksjs/stacks/commit/cdb59d0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: the DDL passes follow the configured driver, not DB_CONNECTION ([44723bf](https://github.com/stacksjs/stacks/commit/44723bf)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2897](https://github.com/stacksjs/stacks/issues/2897))
+
+## ♻️ Code Refactoring
+
+- **database**: one place answers which driver the SQL is for ([e33ba78](https://github.com/stacksjs/stacks/commit/e33ba78)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ✅ Tests
+
+- the API version guard reads sources, not the tests beside them ([b7b56e2](https://github.com/stacksjs/stacks/commit/b7b56e2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **desktop**: the Info.plist parse checks skip where plutil does not exist ([b4405c4](https://github.com/stacksjs/stacks/commit/b4405c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.151...v0.75.152)
 
 ## ✨ Features
