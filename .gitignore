@@ -181,3 +181,13 @@ database/migrations/*.sql.ungated
 # generated artifacts each carry a CI freshness check to avoid. An application
 # that wants it in review can un-ignore it and add its own check.
 docs/erd.md
+
+# bun-query-builder's default snapshot directory. `buddy migrate` never writes
+# here - it configures `storage/framework/database` instead, where the tracked
+# `model-snapshot.<dialect>.json` baseline lives, overridable with
+# DB_SNAPSHOT_PATH. This appears when the generator is driven directly, which
+# is what debugging it looks like, and it lands at whatever cwd that ran from:
+# the repository root. Derived state, so committing it would hand the next
+# person a previous-schema plan for a dialect and a database that are not
+# theirs.
+.qb/
