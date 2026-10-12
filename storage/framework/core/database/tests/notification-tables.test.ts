@@ -1,10 +1,13 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   migrateNotificationTables,
   notificationDeliveriesTableSql,
   notificationPreferencesTableSql,
-  notificationTablesMissingCreateStatements,
+  notificationTablePreflight,
   notificationsTableSql,
+  preflightShapeWarning,
 } from '../src/notification-tables'
 import { sqlHelpers } from '../src/sql-helpers'
 import { indexSqlForDialect, isDuplicateIndexError } from '../src/dialect'
@@ -90,10 +93,10 @@ describe('notification table DDL - cross-dialect (stacksjs/stacks#1937)', () => 
       UPDATE notification_deliveries SET user_id = NULL;
     `
 
-    expect(notificationTablesMissingCreateStatements(sql)).toEqual([
-      'notifications',
-      'notification_preferences',
-      'notification_deliveries',
+    expect(notificationTablePreflight(sql)).toEqual([
+      { table: 'notifications', reason: 'no-create-statement' },
+      { table: 'notification_preferences', reason: 'no-create-statement' },
+      { table: 'notification_deliveries', reason: 'no-create-statement' },
     ])
   })
 
@@ -103,20 +106,75 @@ describe('notification table DDL - cross-dialect (stacksjs/stacks#1937)', () => 
       CREATE TABLE \`notification_deliveries\` (\`id\` BIGINT PRIMARY KEY, \`user_id\` BIGINT);
     `
 
-    expect(notificationTablesMissingCreateStatements(sql)).toEqual(['notification_preferences'])
+    expect(notificationTablePreflight(sql)).toEqual([
+      { table: 'notification_preferences', reason: 'no-create-statement' },
+    ])
   })
 
-  test('preflights a notification table referenced before its generated create', () => {
+  test('tells a table referenced before its own create apart from one the corpus never creates', () => {
     const sql = `
       UPDATE notification_deliveries SET user_id = NULL;
       CREATE TABLE "notification_deliveries" ("id" INTEGER PRIMARY KEY, "user_id" INTEGER);
     `
 
-    expect(notificationTablesMissingCreateStatements(sql)).toEqual([
-      'notifications',
-      'notification_preferences',
-      'notification_deliveries',
+    /*
+     * All three still have to be created before the batch runs, which is why
+     * the old names-only return value could not distinguish them. Only the
+     * third has a shape of its own that the framework's create is about to
+     * shadow, and that distinction is the whole of stacksjs/stacks#2896: it is
+     * knowable here, from the corpus, and nowhere downstream.
+     */
+    expect(notificationTablePreflight(sql)).toEqual([
+      { table: 'notifications', reason: 'no-create-statement' },
+      { table: 'notification_preferences', reason: 'no-create-statement' },
+      { table: 'notification_deliveries', reason: 'referenced-before-create' },
     ])
+  })
+})
+
+/**
+ * The warning an application gets when its own CREATE cannot win.
+ *
+ * `warnOnShapeMismatch` compares the live table against the framework's
+ * REQUIRED_COLUMNS, and the framework's own table satisfies those by
+ * construction, so no column an application adds can ever come back missing.
+ * An app that overrode `NotificationDelivery` therefore got a quietly narrow
+ * table and a migrate that reported success. The reason recorded by
+ * `notificationTablePreflight` is what closes that, because it is read off the
+ * corpus, where the application's shape is still visible.
+ */
+describe('preflightShapeWarning (stacksjs/stacks#2896)', () => {
+  test('names the table, the no-op and the symptom when the corpus owns the shape', () => {
+    const warning = preflightShapeWarning({ table: 'notification_deliveries', reason: 'referenced-before-create' })
+
+    expect(warning).toContain('"notification_deliveries"')
+    expect(warning).toContain('created by your own migrations')
+    expect(warning).toContain('CREATE TABLE IF NOT EXISTS')
+    expect(warning).toContain('column does not exist')
+  })
+
+  test('says nothing about a table the framework owns outright', () => {
+    // The ordinary preflight. The corpus has no create for this table, so the
+    // framework's shape is the only shape anyone declared.
+    expect(preflightShapeWarning({ table: 'notifications', reason: 'no-create-statement' })).toBeNull()
+  })
+
+  test('stays silent on the framework corpus, which creates none of these tables', () => {
+    const root = new URL('../../../../../', import.meta.url).pathname
+    const dir = join(root, 'database/migrations')
+    const corpus = readdirSync(dir)
+      .filter(file => file.endsWith('.sql'))
+      .sort()
+      .map(file => readFileSync(join(dir, file), 'utf8'))
+      .join('\n')
+
+    // Measured rather than assumed: all three are `no-create-statement` here,
+    // so a stock application sees the preflight and no warning. Should this go
+    // red, the generated corpus has started creating a notification table
+    // after reading it and the framework is now warning at itself.
+    const noisy = notificationTablePreflight(corpus).filter(entry => preflightShapeWarning(entry) !== null)
+
+    expect(noisy, 'the framework corpus now trips its own ordering warning').toEqual([])
   })
 })
 

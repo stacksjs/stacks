@@ -71,7 +71,7 @@ describe('migrate:fresh bootstrap order', () => {
     // create stays authoritative, and before the batch, so a corpus that reads
     // one of these tables without creating it can still replay from empty.
     const migrations = code(...MIGRATIONS)
-    const gate = indexOfExisting(migrations, 'notificationTablesMissingCreateStatements(migrationSql)')
+    const gate = indexOfExisting(migrations, 'notificationTablePreflight(migrationSql)')
     const batch = indexOfExisting(migrations, 'await countAppliedMigrations()')
 
     expect(gate).toBeLessThan(batch)

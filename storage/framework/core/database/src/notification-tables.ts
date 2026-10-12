@@ -119,17 +119,44 @@ export const notificationTableNames = [
 export type NotificationTableName = typeof notificationTableNames[number]
 
 /**
- * Return framework notification tables that a migration corpus does not
- * create itself.
+ * Why a framework notification table has to be created before the corpus runs.
+ *
+ * `no-create-statement`: the corpus never creates it, so the framework owns
+ * the table outright and pre-creating it is simply correct.
+ *
+ * `referenced-before-create`: the corpus does create it, but only after an
+ * earlier statement reads it, so a fresh database cannot replay the history
+ * unless the table is already standing. Pre-creating it is still necessary and
+ * also lossy, because the corpus's own `CREATE TABLE IF NOT EXISTS` then runs
+ * against a table that exists and does nothing at all.
+ */
+export type NotificationTablePreflightReason = 'no-create-statement' | 'referenced-before-create'
+
+export interface NotificationTablePreflight {
+  table: NotificationTableName
+  reason: NotificationTablePreflightReason
+}
+
+/**
+ * Return the framework notification tables a migration corpus needs created
+ * before it runs, each with the reason it is in the list.
  *
  * Old generated corpora can contain UPDATE or SQLite rebuild statements for
  * these tables without containing their original CREATE TABLE migrations. A
  * fresh database therefore needs the framework guarantee before that corpus
  * runs. When the corpus does declare a table, the model-owned CREATE remains
  * authoritative and the framework must not pre-create a narrower shape.
+ *
+ * Carrying the reason out of here is the point. Both branches below mean
+ * "create this one now", but only the second means the corpus has a shape of
+ * its own that is about to lose, and this is the only place that fact is
+ * known: by the time the guarantee is executing DDL, a narrow table and a
+ * table nobody else wanted look identical (stacksjs/stacks#2896).
  */
-export function notificationTablesMissingCreateStatements(sql: string): NotificationTableName[] {
-  return notificationTableNames.filter((table) => {
+export function notificationTablePreflight(sql: string): NotificationTablePreflight[] {
+  const preflight: NotificationTablePreflight[] = []
+
+  for (const table of notificationTableNames) {
     const escaped = table.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const createPattern = new RegExp(
       `\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?["\\x60\\[]?${escaped}["\\x60\\]]?\\s*\\(`,
@@ -137,8 +164,10 @@ export function notificationTablesMissingCreateStatements(sql: string): Notifica
     )
     const create = createPattern.exec(sql)
 
-    if (!create)
-      return true
+    if (!create) {
+      preflight.push({ table, reason: 'no-create-statement' })
+      continue
+    }
 
     // A corpus may contain the generated CREATE, but only after an older
     // normalization or SQLite rebuild already reads the table. Treat that as
@@ -147,8 +176,29 @@ export function notificationTablesMissingCreateStatements(sql: string): Notifica
     const referencePattern = new RegExp(`\\b${escaped}\\b`, 'i')
     const beforeCreate = sql.slice(0, create.index)
 
-    return referencePattern.test(beforeCreate)
-  })
+    if (referencePattern.test(beforeCreate))
+      preflight.push({ table, reason: 'referenced-before-create' })
+  }
+
+  return preflight
+}
+
+/**
+ * What to tell an application whose own migrations create a table the
+ * framework is about to create first, or null when the create is routine.
+ *
+ * Pure, so the condition and the wording are both testable without a database,
+ * and so the decision lives beside the classification that produces it.
+ */
+export function preflightShapeWarning(entry: NotificationTablePreflight): string | null {
+  if (entry.reason !== 'referenced-before-create')
+    return null
+
+  return `[notifications] "${entry.table}" is created by your own migrations, but an earlier migration reads it `
+    + `first, so the framework has to create it before the batch runs. Your CREATE TABLE IF NOT EXISTS then finds `
+    + `the table already there and does nothing, leaving it with the framework's columns rather than the ones your `
+    + `model declares, so the first index or insert on a column only you declare fails with "column does not `
+    + `exist". Move whatever reads "${entry.table}" after the migration that creates it.`
 }
 
 /**
@@ -167,8 +217,16 @@ export function notificationTablesMissingCreateStatements(sql: string): Notifica
  * application that deliberately owns one of these names should not be unable to
  * migrate anything; it should be told, once, in words that name the table and
  * the missing columns.
+ *
+ * The comparison has a floor it cannot see past: {@link REQUIRED_COLUMNS} lists
+ * the framework's own columns, which the framework's own table satisfies by
+ * construction, so no column an application adds can ever come back missing.
+ * That is why the ordering case is answered from `entry.reason` instead, which
+ * {@link notificationTablePreflight} established by reading the corpus, where
+ * the application's shape is still visible.
  */
-async function warnOnShapeMismatch(table: string): Promise<void> {
+async function warnOnShapeMismatch(entry: NotificationTablePreflight): Promise<void> {
+  const table = entry.table
   const required = REQUIRED_COLUMNS[table]
   if (!required)
     return
@@ -209,40 +267,62 @@ async function warnOnShapeMismatch(table: string): Promise<void> {
   }
   catch {
     // The table does not exist yet, which is the ordinary case: the CREATE
-    // below is about to make it. Nothing to warn about.
+    // below is about to make it. There is no shape to compare, and that is
+    // exactly when the ordering case matters, because the table the framework
+    // is about to create is the one the corpus will fail to widen.
+    const warning = preflightShapeWarning(entry)
+    if (warning)
+      log.warn(warning)
   }
 }
 
 /**
  * Create the notification + notification_preferences tables. Idempotent
  * (`IF NOT EXISTS`), so it's safe to run on every `buddy migrate`.
+ *
+ * `tables` narrows the work to a subset. Pass {@link NotificationTablePreflight}
+ * entries rather than bare names when the corpus has already been read: the
+ * reason travels with the name and the shape check can then say what it knows.
  */
-export async function migrateNotificationTables(options: { verbose?: boolean, tables?: readonly NotificationTableName[] } = {}): Promise<{ success: boolean, error?: string }> {
+export async function migrateNotificationTables(options: { verbose?: boolean, tables?: readonly (NotificationTableName | NotificationTablePreflight)[] } = {}): Promise<{ success: boolean, error?: string }> {
   const dbDriver = getDbDriver()
   const sql = sqlHelpers(dbDriver)
-  const tables = new Set(options.tables ?? notificationTableNames)
+
+  // A bare name carries no reason, so it is read as a table the framework owns
+  // outright: the column comparison below, and no ordering warning. Only the
+  // preflight caller knows better, and it passes entries.
+  const requested = new Map<NotificationTableName, NotificationTablePreflight>()
+  for (const entry of options.tables ?? notificationTableNames) {
+    const normalized: NotificationTablePreflight = typeof entry === 'string'
+      ? { table: entry, reason: 'no-create-statement' }
+      : entry
+    requested.set(normalized.table, normalized)
+  }
 
   if (options.verbose)
     log.info(`Creating notification tables for ${dbDriver}...`)
 
   try {
-    if (tables.has('notifications')) {
+    const notifications = requested.get('notifications')
+    if (notifications) {
       if (options.verbose) log.info('Creating notifications table...')
-      await warnOnShapeMismatch('notifications')
+      await warnOnShapeMismatch(notifications)
       await db.unsafe(notificationsTableSql(sql)).execute()
       await createIndex(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id)`, dbDriver)
     }
 
-    if (tables.has('notification_preferences')) {
+    const preferences = requested.get('notification_preferences')
+    if (preferences) {
       if (options.verbose) log.info('Creating notification_preferences table...')
-      await warnOnShapeMismatch('notification_preferences')
+      await warnOnShapeMismatch(preferences)
       await db.unsafe(notificationPreferencesTableSql(sql)).execute()
       await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`, dbDriver)
     }
 
-    if (tables.has('notification_deliveries')) {
+    const deliveries = requested.get('notification_deliveries')
+    if (deliveries) {
       if (options.verbose) log.info('Creating notification deliveries table...')
-      await warnOnShapeMismatch('notification_deliveries')
+      await warnOnShapeMismatch(deliveries)
       await db.unsafe(notificationDeliveriesTableSql(sql)).execute()
       await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`, dbDriver)
       await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`, dbDriver)

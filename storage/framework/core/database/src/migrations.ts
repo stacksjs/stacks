@@ -56,7 +56,7 @@ import { acquireLibsqlMigrationLock, acquireMigrationLock } from './migration-lo
 import type { CorpusGate } from './migration-ledger'
 import { auditMissingTables } from './migration-ledger'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
-import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablesMissingCreateStatements } from './notification-tables'
+import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablePreflight } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
 import { sqlStatementsOf } from './sql-statements'
@@ -2008,6 +2008,12 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
      * fresh database those statements fail before the post-batch guarantee can
      * run. Pre-create only the tables the corpus does not declare itself, so a
      * model-owned CREATE remains authoritative over its full schema and keys.
+     *
+     * A corpus that does declare one of these tables, but reads it before
+     * creating it, still needs the table standing and therefore still loses
+     * its own shape to the framework's. Nothing can be done about that here,
+     * so the reason travels with the table and the guarantee says so out loud
+     * (stacksjs/stacks#2896).
      */
     const migrationsDir = migrationDirectory()
     let migrationSql = ''
@@ -2024,11 +2030,11 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     }
 
     if (migrationSql) {
-      const preflightTables = notificationTablesMissingCreateStatements(migrationSql)
-      if (preflightTables.length > 0) {
-        const preflight = await migrateNotificationTables({ tables: preflightTables })
-        if (!preflight.success)
-          throw new Error(preflight.error || 'Failed to prepare notification tables before migrations')
+      const preflight = notificationTablePreflight(migrationSql)
+      if (preflight.length > 0) {
+        const prepared = await migrateNotificationTables({ tables: preflight })
+        if (!prepared.success)
+          throw new Error(prepared.error || 'Failed to prepare notification tables before migrations')
       }
     }
 
