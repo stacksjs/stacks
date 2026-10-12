@@ -34,6 +34,52 @@ describe('native skill discovery coverage', () => {
     }
   })
 
+  /**
+   * The catalog records a retained-test count per package, so adding or
+   * removing ANY test file in a core package makes it stale.
+   *
+   * That is not obvious from anything: the count is a number in a table nobody
+   * reads, the check that enforces it lives in this file, and the failure below
+   * is a byte comparison of a 1500-line markdown file. Adding one test to
+   * `core/database` therefore turns up as a multi-thousand-line diff in
+   * `core/buddy`'s suite, with no indication that the fix is one command. It
+   * cost a diagnosis cycle twice in one day (15d9f8f948 and dde735f115, both
+   * followed by a catalog-only commit) before this existed.
+   *
+   * So this runs first and says which package drifted, in which direction, and
+   * what to run. It is deliberately narrower than the comparison below rather
+   * than a replacement for it: this one knows the common cause, and that one
+   * catches everything else.
+   */
+  it('names the package whose retained-test count drifted, and the fix', () => {
+    const catalog = readFileSync(join(skillRoot, 'stacks-native/CATALOG.md'), 'utf8')
+
+    /** The count in the committed table row for `pkg`, or null when it has no row. */
+    const committedCount = (pkg: string): number | null => {
+      const escaped = pkg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const row = new RegExp(`^\\| \`${escaped}\` \\|.*\\| (\\d+) \\|$`, 'm').exec(catalog)
+      return row?.[1] === undefined ? null : Number(row[1])
+    }
+
+    const packages = nativePackageCatalog()
+
+    // A package the generator knows and the committed table does not. The other
+    // way a test-file change shows up: a brand-new package arrives with its
+    // tests already written.
+    const absent = packages.filter(entry => committedCount(entry.name) === null).map(entry => entry.name)
+    expect(absent, 'missing from CATALOG.md; run `./buddy docs:native-skills`').toEqual([])
+
+    const drifted = packages
+      .map(entry => ({ name: entry.name, actual: entry.tests.length, committed: committedCount(entry.name) }))
+      .filter(entry => entry.committed !== null && entry.committed !== entry.actual)
+      .map(entry => `${entry.name}: CATALOG.md says ${entry.committed}, the package has ${entry.actual}`)
+
+    expect(
+      drifted,
+      'a test file was added or removed in a core package, which changes its retained-test count. Run `./buddy docs:native-skills` and commit CATALOG.md with it',
+    ).toEqual([])
+  })
+
   it('keeps generated guidance current with real source exports and driver evidence', () => {
     expect(readFileSync(join(skillRoot, 'stacks-native/CATALOG.md'), 'utf8')).toBe(renderNativeCatalog())
     const drivers = renderDriverCapabilities()
