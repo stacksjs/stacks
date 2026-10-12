@@ -24,15 +24,11 @@
  */
 
 import { log } from '@stacksjs/logging'
-import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
+import { resolvedDatabaseDriver } from './dialect'
 import { sqlHelpers } from './sql-helpers'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
-
-function getDbDriver(): string {
-  return envVars.DB_CONNECTION || 'sqlite'
-}
 
 /** `roles` table — id + name + guard + timestamps with UNIQUE(name, guard_name). */
 export function rolesTableSql(sql: SqlHelpers): string {
@@ -100,7 +96,7 @@ export function rolePermissionsTableSql(sql: SqlHelpers): string {
  * safe to run on every `buddy migrate`.
  */
 export async function migrateRbacTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
-  const dbDriver = getDbDriver()
+  const dbDriver = resolvedDatabaseDriver()
   const sql = sqlHelpers(dbDriver)
 
   if (options.verbose)

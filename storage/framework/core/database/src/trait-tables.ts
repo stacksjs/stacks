@@ -47,18 +47,14 @@
 
 import type { TraitTableName } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
-import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
+import { resolvedDatabaseDriver } from './dialect'
 import { sqlHelpers } from './sql-helpers'
 import { indexSqlForDialect, isDuplicateColumnError, isDuplicateIndexError } from './dialect'
 
 export { indexSqlForDialect } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
-
-function getDbDriver(): string {
-  return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
-}
 
 /**
  * The timestamp columns these tables share — same type as every other
@@ -417,7 +413,7 @@ export function messagingTableSql(sql: SqlHelpers): string[] {
  * its generated migration.
  */
 export async function migrateTraitTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
-  const dbDriver = getDbDriver()
+  const dbDriver = resolvedDatabaseDriver()
   const sql = sqlHelpers(dbDriver)
 
   if (options.verbose)

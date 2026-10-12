@@ -8,14 +8,11 @@ import Database from 'bun:sqlite'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
+import { resolvedDatabaseDriver } from '../dialect'
 import { resolveMigrationDirectory } from '../migration-path'
 
-function getDriver(): string {
-  return envVars.DB_CONNECTION || 'sqlite'
-}
-
 function getMigrationsPath(): string {
-  return resolveMigrationDirectory(getDriver())
+  return resolveMigrationDirectory(resolvedDatabaseDriver())
 }
 
 function hasJobsMigrationBeenCreated(): boolean {
@@ -46,7 +43,7 @@ async function jobBatchesTableExists(): Promise<boolean> {
     }
   }
 
-  const driver = getDriver()
+  const driver = resolvedDatabaseDriver()
   if (driver !== 'sqlite') {
     try {
       const { db } = await import('../utils')
@@ -68,7 +65,7 @@ function getDatabasePath(): string {
 }
 
 async function jobsTableExists(): Promise<boolean> {
-  const driver = getDriver()
+  const driver = resolvedDatabaseDriver()
 
   // Always check SQLite if the database file exists (common dev setup)
   const sqlitePath = getDatabasePath()
@@ -237,7 +234,7 @@ async function ensureQueueSupportTables(driver: string): Promise<void> {
 
 export async function createJobsMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
-    const driver = getDriver()
+    const driver = resolvedDatabaseDriver()
     if (['sqlite', 'mysql', 'postgres'].includes(driver)) {
       const hasBeenMigrated = hasJobsMigrationBeenCreated()
 

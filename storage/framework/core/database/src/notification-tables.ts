@@ -16,16 +16,11 @@
  */
 
 import { log } from '@stacksjs/logging'
-import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { dialectCapabilities, indexSqlForDialect, isDuplicateIndexError } from './dialect'
+import { dialectCapabilities, indexSqlForDialect, isDuplicateIndexError, resolvedDatabaseDriver } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
-
-function getDbDriver(): string {
-  return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
-}
 
 /**
  * `CREATE TABLE IF NOT EXISTS notifications` for the given dialect.
@@ -285,7 +280,7 @@ async function warnOnShapeMismatch(entry: NotificationTablePreflight): Promise<v
  * reason travels with the name and the shape check can then say what it knows.
  */
 export async function migrateNotificationTables(options: { verbose?: boolean, tables?: readonly (NotificationTableName | NotificationTablePreflight)[] } = {}): Promise<{ success: boolean, error?: string }> {
-  const dbDriver = getDbDriver()
+  const dbDriver = resolvedDatabaseDriver()
   const sql = sqlHelpers(dbDriver)
 
   // A bare name carries no reason, so it is read as a table the framework owns
@@ -368,7 +363,7 @@ export async function migrateNotificationTables(options: { verbose?: boolean, ta
  * every disagreement.
  */
 export async function ensureNotificationForeignKeys(options: { verbose?: boolean } = {}): Promise<void> {
-  const dbDriver = getDbDriver()
+  const dbDriver = resolvedDatabaseDriver()
 
   // SQLite cannot add a foreign key to an existing table at all - it needs a
   // twelve-step rebuild - and the corpus creates these tables with the key

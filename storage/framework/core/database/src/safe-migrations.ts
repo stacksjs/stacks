@@ -16,11 +16,10 @@
  * just call them from inside the `up()` of a migration file.
  */
 
-import process from 'node:process'
-import { env as envVars } from '@stacksjs/env'
 import { mutationCount } from './affected-rows'
 import { dialectCapabilities, isKnownDialect } from './dialect'
 import { db } from './utils'
+import { resolvedDatabaseDriver } from './dialect'
 
 type Database = typeof db
 
@@ -274,7 +273,7 @@ export async function renameColumnSafely(
  * Vitess collapse onto `mysql`, which is what their DDL wants too.
  */
 function wireProtocol(): 'sqlite' | 'mysql' | 'postgres' {
-  const driver = String(process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite').toLowerCase()
+  const driver = resolvedDatabaseDriver().toLowerCase()
   return isKnownDialect(driver) ? dialectCapabilities(driver).wire : 'sqlite'
 }
 

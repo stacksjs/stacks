@@ -1,7 +1,7 @@
 import type { Model } from '@stacksjs/types'
 import { path } from '@stacksjs/path'
 import { plural, snakeCase } from '@stacksjs/strings'
-import { toSqlIntrospectionDialect } from './dialect'
+import { resolvedDatabaseDriver, toSqlIntrospectionDialect } from './dialect'
 import { safeGlob } from './fk-audit'
 
 // stacksjs/stacks#1952 — Unique-index drift audit. Compares each
@@ -116,7 +116,7 @@ export async function getDeclaredUniques(): Promise<DeclaredUnique[]> {
  */
 export async function getLiveUniqueIndexes(dialect?: Dialect): Promise<LiveUniqueIndex[]> {
   const { db } = await import('./utils')
-  const d = dialect ?? await currentDialect()
+  const d = dialect ?? currentDialect()
 
   if (d === 'sqlite')
     return getSqliteLiveUniques(db)
@@ -137,7 +137,7 @@ export async function getLiveUniqueIndexes(dialect?: Dialect): Promise<LiveUniqu
  * rather than `missing`.
  */
 export async function auditUniqueIndexes(dialect?: Dialect): Promise<UniqueAuditResult> {
-  const d = dialect ?? await currentDialect()
+  const d = dialect ?? currentDialect()
   if (d !== 'sqlite' && d !== 'mysql' && d !== 'postgres')
     return { supported: false, declared: [], live: [], missing: [], skippedTables: [] }
 
@@ -204,10 +204,8 @@ function columnSetKey(columns: string[]): string {
   return [...columns].map(c => c.toLowerCase()).sort().join(',')
 }
 
-async function currentDialect(): Promise<Dialect> {
-  const env = await import('@stacksjs/env')
-  const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
-  return toSqlIntrospectionDialect(driver)
+function currentDialect(): Dialect {
+  return toSqlIntrospectionDialect(resolvedDatabaseDriver().toLowerCase())
 }
 
 async function getSqliteLiveUniques(db: any): Promise<LiveUniqueIndex[]> {

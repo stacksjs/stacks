@@ -38,16 +38,10 @@
  * it).
  */
 
-import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
-import { dialectCapabilities } from './dialect'
+import { dialectCapabilities, resolvedDatabaseDriver } from './dialect'
 import { traitTableNames } from './trait-tables'
-
-function getDbDriver(): string {
-  return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
-}
 
 /**
  * The framework-owned tables whose datetime columns this guarantee covers.
@@ -171,7 +165,7 @@ export function modifyToDatetimeSql(column: TimestampColumn): string {
  * SELECT.
  */
 export async function ensureUtcDatetimeColumns(options: { verbose?: boolean } = {}): Promise<{ success: boolean, converted: number, error?: string }> {
-  const driver = getDbDriver()
+  const driver = resolvedDatabaseDriver()
 
   // Only MySQL-wire dialects convert on read; SQLite stores text and Postgres'
   // `timestamp without time zone` is already naive.

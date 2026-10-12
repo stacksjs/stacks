@@ -27,19 +27,15 @@
  */
 
 import type { Model } from '@stacksjs/types'
-import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { getTableName } from '@stacksjs/model-meta'
 import { fs } from '@stacksjs/storage'
 import { db } from './utils'
+import { resolvedDatabaseDriver } from './dialect'
 import { sqlHelpers } from './sql-helpers'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
-
-function getDbDriver(): string {
-  return process.env.DB_CONNECTION || 'sqlite'
-}
 
 /**
  * Dialect-specific `uuid` column type — matches what `createTableMigration`
@@ -164,5 +160,5 @@ async function reindexAfterAddingUuid(table: string): Promise<void> {
 
 /** Convenience wrapper resolving dialect helpers from `DB_CONNECTION`, for call sites that don't already have a `SqlHelpers` instance. */
 export async function ensureUuidColumnsForCurrentDriver(options: { verbose?: boolean } = {}): Promise<void> {
-  await ensureUuidColumns(sqlHelpers(getDbDriver()), options)
+  await ensureUuidColumns(sqlHelpers(resolvedDatabaseDriver()), options)
 }

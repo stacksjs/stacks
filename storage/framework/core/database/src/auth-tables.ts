@@ -20,17 +20,12 @@
 
 import { randomBytes } from 'node:crypto'
 import { log } from '@stacksjs/logging'
-import { env as envVars } from '@stacksjs/env'
 import { makeHash } from '@stacksjs/security'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { indexSqlForDialect, isDuplicateColumnError, isDuplicateIndexError } from './dialect'
+import { indexSqlForDialect, isDuplicateColumnError, isDuplicateIndexError, resolvedDatabaseDriver } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
-
-function getDbDriver(): string {
-  return envVars.DB_CONNECTION || 'sqlite'
-}
 
 /**
  * Every table {@link migrateAuthTables} creates. The auth layer owns these: their
@@ -288,7 +283,7 @@ export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose
   }
 
   try {
-    await db.unsafe(indexSqlForDialect(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_id ON users(stripe_id)`, getDbDriver())).execute()
+    await db.unsafe(indexSqlForDialect(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_id ON users(stripe_id)`, resolvedDatabaseDriver())).execute()
   }
   catch {
     if (options.verbose) log.debug(`[auth-tables] Skipped users.stripe_id unique index (already applied or users missing)`)
@@ -299,7 +294,7 @@ export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose
  * Create all authentication tables
  */
 export async function migrateAuthTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
-  const dbDriver = getDbDriver()
+  const dbDriver = resolvedDatabaseDriver()
   const sql = sqlHelpers(dbDriver)
   const { isPostgres, boolTrue, now, pkColumn, nullableTimestamp, datetime, utcNow } = sql
 
@@ -844,7 +839,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
  * configured index type).
  */
 async function createTokenIndex(indexName: string, tableName: string, column: string): Promise<void> {
-  const dbDriver = getDbDriver()
+  const dbDriver = resolvedDatabaseDriver()
   try {
     await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${column}(255))`, dbDriver)).execute()
   }

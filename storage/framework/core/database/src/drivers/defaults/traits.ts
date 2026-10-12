@@ -24,15 +24,11 @@
  */
 
 import { db } from '../../utils'
+import { resolvedDatabaseDriver } from '../../dialect'
 import { dialectCapabilities } from '../../dialect'
 // Leaf module (utils/sql-helpers/dialect only), so importing it here adds no
 // cycle back through the drivers barrel.
 import { traitTableNames } from '../../trait-tables'
-import { env as envVars } from '@stacksjs/env'
-
-function getDbDriver(): string {
-  return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
-}
 
 /**
  * Every framework-owned table a database reset must drop on top of the
@@ -67,7 +63,7 @@ export function commonTableNames(): string[] {
  * way. Every name here is a hard-coded literal, never user input.
  */
 export async function dropCommonTables(): Promise<void> {
-  const { identifierQuote: q, wire } = dialectCapabilities(getDbDriver())
+  const { identifierQuote: q, wire } = dialectCapabilities(resolvedDatabaseDriver())
   const cascade = wire === 'postgres' ? ' CASCADE' : ''
 
   for (const table of commonTableNames())
@@ -76,7 +72,7 @@ export async function dropCommonTables(): Promise<void> {
 
 /** Drop the migration ledger tables, so the next migrate starts from zero. */
 export async function dropMigrationTables(): Promise<void> {
-  const { identifierQuote: q, wire } = dialectCapabilities(getDbDriver())
+  const { identifierQuote: q, wire } = dialectCapabilities(resolvedDatabaseDriver())
   const cascade = wire === 'postgres' ? ' CASCADE' : ''
 
   for (const table of ['migrations', 'migration_locks'])

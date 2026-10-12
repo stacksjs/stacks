@@ -39,17 +39,11 @@
  * way.
  */
 
-import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
-import { dialectCapabilities } from './dialect'
+import { dialectCapabilities, resolvedDatabaseDriver } from './dialect'
 import { frameworkDatetimeTables } from './datetime-columns'
 import { sqlHelpers } from './sql-helpers'
-
-function getDbDriver(): string {
-  return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
-}
 
 /** One column whose default is the session's clock rather than UTC. */
 export interface SessionClockDefault {
@@ -80,7 +74,7 @@ export function utcDefaultTables(): string[] {
  * pinned reads as `(now() AT TIME ZONE 'utc'::text)` or `utc_timestamp()`, and
  * is left alone, as is a column with no default at all.
  */
-export async function findSessionClockDefaults(driver: string = getDbDriver()): Promise<SessionClockDefault[]> {
+export async function findSessionClockDefaults(driver: string = resolvedDatabaseDriver()): Promise<SessionClockDefault[]> {
   const schema = dialectCapabilities(driver).wire === 'mysql' ? 'DATABASE()' : 'current_schema()'
 
   /*
@@ -131,7 +125,7 @@ export async function findSessionClockDefaults(driver: string = getDbDriver()): 
  * being spliced into DDL, which cannot take a placeholder - the same rule
  * `modifyToDatetimeSql` follows next door.
  */
-export function utcDefaultSql(target: SessionClockDefault, driver: string = getDbDriver()): string {
+export function utcDefaultSql(target: SessionClockDefault, driver: string = resolvedDatabaseDriver()): string {
   const safe = /^[a-z_]\w*$/i
 
   if (!safe.test(target.table) || !safe.test(target.column))
@@ -150,7 +144,7 @@ export function utcDefaultSql(target: SessionClockDefault, driver: string = getD
 export async function ensureUtcTimestampDefaults(
   options: { verbose?: boolean } = {},
 ): Promise<{ success: boolean, pinned: number, error?: string }> {
-  const driver = getDbDriver()
+  const driver = resolvedDatabaseDriver()
 
   if (dialectCapabilities(driver).wire === 'sqlite')
     return { success: true, pinned: 0 }

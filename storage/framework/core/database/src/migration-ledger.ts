@@ -31,8 +31,8 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import process from 'node:process'
 import { join } from 'node:path'
+import { resolvedDatabaseDriver } from './dialect'
 import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
 import { sqlStatementsOf } from './sql-statements'
@@ -654,7 +654,7 @@ export function classifyMigration(
 
 function migrationsDir(dir?: string): string {
   if (dir) return dir
-  const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+  const driver = resolvedDatabaseDriver().toLowerCase()
   return resolveMigrationDirectory(driver === 'singlestore' ? 'singlestore' : driver)
 }
 
@@ -668,9 +668,8 @@ function listMigrationFiles(dir: string): string[] {
   }
 }
 
-async function currentDialect(): Promise<LedgerDialect | 'other'> {
-  const env = await import('@stacksjs/env')
-  const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
+function currentDialect(): LedgerDialect | 'other' {
+  const driver = resolvedDatabaseDriver().toLowerCase()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
   if (driver === 'vitess' || driver === 'singlestore') return 'mysql'
   // Turso / libSQL keeps its ledger in SQLite's shape.
@@ -796,7 +795,7 @@ export async function auditMigrationLedger(options: {
   gate?: CorpusGate
 } = {}): Promise<MigrationLedgerAudit> {
   const dir = migrationsDir(options.dir)
-  const dialect = options.dialect ?? await currentDialect()
+  const dialect = options.dialect ?? currentDialect()
   const files = listMigrationFiles(dir)
 
   const counts: Record<MigrationStatus, number> = {
@@ -1272,7 +1271,7 @@ export async function auditMissingTables(options: {
   run?: SqlRunner
   gate?: CorpusGate
 } = {}): Promise<{ supported: boolean, missing: string[], live: Set<string> }> {
-  const dialect = options.dialect ?? await currentDialect()
+  const dialect = options.dialect ?? currentDialect()
   if (dialect === 'other')
     return { supported: false, missing: [], live: new Set() }
 

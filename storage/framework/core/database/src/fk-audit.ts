@@ -4,7 +4,7 @@ import { dirname } from 'node:path'
 import { plural, snakeCase } from '@stacksjs/strings'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
-import { dialectCapabilities, isKnownDialect, toSqlIntrospectionDialect } from './dialect'
+import { dialectCapabilities, isKnownDialect, resolvedDatabaseDriver, toSqlIntrospectionDialect } from './dialect'
 
 /**
  * Glob, but resilient to "directory doesn't exist yet" (the userland
@@ -249,7 +249,7 @@ export async function getDeclaredFKs(): Promise<DeclaredFK[]> {
  */
 export async function getLiveFKs(): Promise<LiveFK[]> {
   const { db } = await import('./utils')
-  const dialect = await currentDialect()
+  const dialect = currentDialect()
 
   if (dialect === 'sqlite')
     return getSqliteLiveFKs(db)
@@ -269,7 +269,7 @@ export async function getLiveFKs(): Promise<LiveFK[]> {
  */
 export async function getLiveTables(): Promise<Set<string>> {
   const { db } = await import('./utils')
-  const dialect = await currentDialect()
+  const dialect = currentDialect()
 
   const query = dialect === 'sqlite'
     ? `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`
@@ -395,7 +395,7 @@ export interface FkOrphanReport {
  * reported `fkid` against `PRAGMA foreign_key_list(table)`.
  */
 export async function findFkOrphans(dialect?: 'sqlite' | 'mysql' | 'postgres' | 'other'): Promise<FkOrphanReport> {
-  const d = dialect ?? await currentDialect()
+  const d = dialect ?? currentDialect()
   if (d !== 'sqlite')
     return { supported: false, total: 0, orphans: [] }
 
@@ -452,9 +452,8 @@ export async function findFkOrphans(dialect?: 'sqlite' | 'mysql' | 'postgres' | 
   return { supported: true, total, orphans }
 }
 
-async function currentDialect(): Promise<'sqlite' | 'mysql' | 'postgres' | 'other'> {
-  const env = await import('@stacksjs/env')
-  const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
+function currentDialect(): 'sqlite' | 'mysql' | 'postgres' | 'other' {
+  const driver = resolvedDatabaseDriver().toLowerCase()
   if (!isKnownDialect(driver) || !dialectCapabilities(driver).supportsForeignKeys)
     return 'other'
   return toSqlIntrospectionDialect(driver)
