@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.146...v0.75.147)
+
+## 🐛 Bug Fixes
+
+- **native**: keep the nav bar sticky inside an app's header component ([e80b897](https://github.com/stacksjs/stacks/commit/e80b897)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.145...v0.75.146)
 
 ## ✨ Features
