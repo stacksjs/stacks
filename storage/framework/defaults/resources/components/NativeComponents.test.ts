@@ -90,6 +90,10 @@ describe('Native components', () => {
     // The actions keep their buttons' width; a long title truncates instead of running under them.
     expect(bar).toContain('grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);')
     expect(bar).toContain('.native-nav-actions { justify-content: flex-end; container-type: normal; }')
+    // The back link follows a parent path known only in the browser.
+    expect(bar).toContain("const navBack = useReactiveProp<string>('back', '')")
+    expect(bar).toContain(':href="navBack()" :show="navBack()"')
+    expect(bar).not.toContain('@if(back)')
     expect(bar).toContain("useReactiveProp<string>('title', '')")
   })
 
