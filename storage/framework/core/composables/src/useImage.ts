@@ -6,8 +6,19 @@ export interface UseImageOptions {
   srcset?: string
   sizes?: string
   alt?: string
-  crossorigin?: string
-  referrerpolicy?: string
+  /**
+   * The DOM's own unions rather than `string`.
+   *
+   * `img.crossOrigin` accepts `'anonymous' | 'use-credentials' | null` and
+   * `img.referrerPolicy` a `ReferrerPolicy`, so declaring these as `string`
+   * only moved the problem to the assignment: `referrerpolicy` was cast to get
+   * past it and `crossorigin` was not, which is why a newer `tsc` fails on one
+   * line and not its neighbour. Narrowing here types the caller too, and any
+   * other value was never going to reach the image: the DOM ignores one it does
+   * not recognise.
+   */
+  crossorigin?: 'anonymous' | 'use-credentials'
+  referrerpolicy?: ReferrerPolicy
 }
 
 export interface UseImageReturn {
@@ -52,7 +63,7 @@ export function useImage(options: UseImageOptions): UseImageReturn {
   if (options.crossorigin)
     img.crossOrigin = options.crossorigin
   if (options.referrerpolicy)
-    img.referrerPolicy = options.referrerpolicy as ReferrerPolicy
+    img.referrerPolicy = options.referrerpolicy
   if (options.sizes)
     img.sizes = options.sizes
   if (options.srcset)
