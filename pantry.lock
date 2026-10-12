@@ -833,6 +833,7 @@
       "name": "@stacksjs/image",
       "version": "0.75.152",
       "dependencies": {
+        "@stacksjs/ts-svg": "^0.1.5",
         "@stacksjs/types": "workspace:*",
         "ts-images": "^0.2.23"
       },
@@ -1773,6 +1774,20 @@
       "integrity": "sha512-kvsSg7S3vHq65fnHIRggTLudN4n1sjkos86xLB62V6PVRa8iosYAmFKVDTGaJk+0MdsIoRwQbJ2vLWVcNQsgGw==",
       "bin": {
         "md": "./bin/cli.ts"
+      }
+    },
+    "@stacksjs/ts-svg@0.1.5": {
+      "name": "@stacksjs/ts-svg",
+      "version": "0.1.5",
+      "source": "npm",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-svg/-/ts-svg-0.1.5.tgz",
+      "integrity": "sha512-XH6N3+l6NPerascxFO3yDCH6EctIgVaKHGF6UWlFe1mh4IMGFGn+k82+i1bNPtqnNO6JVOIOPG4E4zufFPVW6w==",
+      "dependencies": {
+        "@stacksjs/ts-css": "^0.3.8",
+        "@stacksjs/ts-png": "^0.1.2"
+      },
+      "bin": {
+        "svg": "./dist/cli.js"
       }
     },
     "@stacksjs/ts-validation@0.5.6": {

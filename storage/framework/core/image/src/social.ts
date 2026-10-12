@@ -61,7 +61,7 @@ export function socialCardName(path: string): string {
 async function socialCardTheme(images: ImagesConfig, root: string) {
   const social = themed(images, images.social)
   const fonts = await loadFonts(images.fonts, root)
-  const mark = await markPainter(social.mark, root)
+  const mark = await markPainter(social.mark, root, { colorScheme: social.markColorScheme })
   // One card by default. The square and portrait crops are for URLs you
   // reference directly; putting them in `og:image` is what made Discord
   // collage the preview, so generating them unasked only invites that.

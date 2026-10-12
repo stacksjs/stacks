@@ -11,7 +11,7 @@ import { resolveFontPath } from '../src/fonts'
 import { drawsGlyphs } from '../src/fonts'
 import { renderOnDemandSocialCard, socialCardName, socialMetaTags, textSizes } from '../src/social'
 import { generateSocialCardSet } from '../src/social'
-import { background, color, device, themed, trimTransparentEdges } from '../src/theme'
+import { background, color, device, markPainter, themed, trimTransparentEdges } from '../src/theme'
 
 describe('theme translation', () => {
   test('reads colours out of configuration strings', () => {
@@ -80,6 +80,44 @@ describe('theme translation', () => {
 
   test('falls back to the shared plate when a section says nothing', () => {
     expect(themed({ markPlate: '#ffffff' }, { enabled: true }).markPlate).toBe('#ffffff')
+  })
+})
+
+describe('an SVG mark', () => {
+  // A 2:1 wordmark inside a padded viewBox, ink that turns white in dark mode.
+  const logo = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 20">
+    <style>.ink { fill: #102030 } @media (prefers-color-scheme: dark) { .ink { fill: #ffffff } }</style>
+    <rect class="ink" x="10" y="5" width="20" height="10" />
+  </svg>`
+  const root = resolve(import.meta.dir, '.svg-mark-fixture')
+  beforeAll(async () => {
+    await mkdir(root, { recursive: true })
+    await writeFile(resolve(root, 'logo.svg'), logo)
+  })
+  afterAll(() => rm(root, { recursive: true, force: true }))
+
+  const drawn = async (colorScheme?: 'light' | 'dark') => {
+    const mark = (await markPainter('logo.svg', root, { colorScheme }))!
+    const canvas = createImageData(200, 100)
+    mark.draw(canvas, { x: 0, y: 0, size: 100, width: 200 })
+    return { mark, canvas }
+  }
+
+  test('keeps the drawing\'s own proportions, without the viewBox\'s padding', async () => {
+    const { mark } = await drawn()
+    expect(mark.aspect).toBeCloseTo(2, 1)
+  })
+
+  test('fills the box it is given, drawn at that size', async () => {
+    const { canvas } = await drawn()
+    const at = (x: number, y: number) => Array.from(canvas.data.slice((y * 200 + x) * 4, (y * 200 + x) * 4 + 4))
+    expect(at(100, 50)).toEqual([0x10, 0x20, 0x30, 255])
+    expect(at(4, 4)[3]).toBe(255)
+  })
+
+  test('draws its dark rules for a dark card', async () => {
+    const { canvas } = await drawn('dark')
+    expect(Array.from(canvas.data.slice((50 * 200 + 100) * 4, (50 * 200 + 100) * 4 + 4))).toEqual([255, 255, 255, 255])
   })
 })
 

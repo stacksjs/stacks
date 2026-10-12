@@ -109,8 +109,13 @@ export interface SocialCardsConfig {
   quality?: number
   /** Wordmark drawn on every card. Defaults to `app.name`. */
   brand?: string
-  /** Logo mark, drawn beside the wordmark. Project-relative image path. */
+  /** Logo mark, drawn beside the wordmark. Project-relative path to a PNG, JPEG, WebP or SVG. */
   mark?: string
+  /**
+   * For an SVG mark, the colour scheme its own `@media (prefers-color-scheme)`
+   * rules are drawn for: `'dark'` on a dark card. @default 'light'
+   */
+  markColorScheme?: 'light' | 'dark'
   /** Plate painted behind the mark. Set `false` to draw it bare. */
   markPlate?: false | ImageColor
   /** Product shot placed opposite the copy on every card. */

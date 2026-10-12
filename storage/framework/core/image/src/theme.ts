@@ -4,7 +4,8 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
-import { crop, decode, drawImage, parseColor } from 'ts-images'
+import { parseSVG, rasterize } from '@stacksjs/ts-svg'
+import { createImageData, crop, decode, drawImage, parseColor } from 'ts-images'
 
 /**
  * Turn the declarative half of `config/images.ts` into the shapes ts-images
@@ -94,14 +95,61 @@ export interface MarkPainter {
   aspect: number
 }
 
+export interface MarkPainterOptions {
+  /**
+   * For an SVG mark: draw its `@media (prefers-color-scheme: dark)` rules, as
+   * a browser would on a dark page, so a logo whose ink turns white in dark
+   * mode stays visible on a dark card. @default 'light'
+   */
+  colorScheme?: 'light' | 'dark'
+}
+
+/**
+ * An SVG mark, drawn by ts-svg at the size each card asks for rather than
+ * scaled from one bitmap, so its edges stay sharp at any size. Its
+ * proportions come from a render with the viewBox's padding trimmed, the
+ * same as a raster mark's.
+ */
+function svgMark(source: string, colorScheme: 'light' | 'dark'): { render: (height: number) => ImageData, aspect: number } {
+  const root = parseSVG(source, { colorScheme })
+  const draw = (height: number): ImageData => {
+    const frame = rasterize(root, { height: Math.max(1, Math.round(height)) })
+    const image = createImageData(frame.width, frame.height)
+    image.data.set(frame.data)
+    return trimTransparentEdges(image)
+  }
+  const SAMPLE = 512
+  const sample = draw(SAMPLE)
+  // How much of the viewBox's height the drawing itself takes up.
+  const fill = sample.height > 0 ? sample.height / SAMPLE : 1
+  return {
+    // Rendered so the drawing, padding trimmed, is `height` tall: no resampling.
+    render: height => draw(height / fill),
+    aspect: sample.height > 0 ? sample.width / sample.height : 1,
+  }
+}
+
 export async function markPainter(
   path: string | undefined,
   root: string = process.cwd(),
+  options: MarkPainterOptions = {},
 ): Promise<MarkPainter | undefined> {
   if (!path)
     return undefined
 
-  const mark = trimTransparentEdges(await decode(new Uint8Array(await readFile(projectFile(path, root)))))
+  const file = projectFile(path, root)
+  if (/\.svg$/i.test(file)) {
+    const { render, aspect } = svgMark(await readFile(file, 'utf8'), options.colorScheme ?? 'light')
+    return {
+      aspect,
+      draw: (canvas, box) => {
+        const mark = render(box.size)
+        drawImage(canvas, mark, { x: box.x, y: box.y, width: box.width ?? box.size * aspect, height: box.size, fit: 'contain' })
+      },
+    }
+  }
+
+  const mark = trimTransparentEdges(await decode(new Uint8Array(await readFile(file))))
 
   /*
    * Keep the mark's own proportions rather than fitting it inside a square.
