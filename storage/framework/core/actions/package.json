@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.148",
+  "version": "0.75.149",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -116,7 +116,7 @@
     "bun-plugin-stx": "^0.2.445"
   },
   "peerDependencies": {
-    "craft-native": ">=0.0.127",
+    "craft-native": ">=0.0.135",
     "pickier": "^0.1.70"
   },
   "peerDependenciesMeta": {

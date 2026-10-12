@@ -70,6 +70,7 @@ export interface MobileApi {
   appReview: AppReviewApi
   deepLinks: DeepLinksApi
   keepAwake: KeepAwakeApi
+  brightness: BrightnessApi
   speech: SpeechApi
   network: NetworkApi
   pushNotifications: PushNotificationsApi
@@ -292,6 +293,16 @@ export interface NotificationsApi {
 export interface KeepAwakeApi {
   enable: () => Promise<void>
   disable: () => Promise<void>
+}
+
+export interface BrightnessApi {
+  isAvailable: () => boolean
+  /** The screen's brightness, 0 to 1, or null where there is none to read. */
+  get: () => Promise<number | null>
+  /** Set it, 0 to 1 (clamped); resolves with what the screen reports, or null off a phone. */
+  set: (level: number) => Promise<number | null>
+  /** Put the person's own brightness back. Safe to call when nothing was set. */
+  restore: () => Promise<void>
 }
 
 export interface SpeechOptions {

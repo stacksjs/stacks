@@ -17,6 +17,7 @@
 import {
   appReview as craftAppReview,
   biometrics as craftBiometrics,
+  brightness as craftBrightness,
   camera as craftCamera,
   deepLinks as craftDeepLinks,
   device as craftDevice,
@@ -64,6 +65,7 @@ import type {
   SecureStorageApi,
   ShareApi,
   SpeechApi,
+  BrightnessApi,
   WatchConnectivityApi,
 } from './types'
 
@@ -222,6 +224,21 @@ export const keepAwake: KeepAwakeApi = {
   disable: () => afterBridge(() => craftKeepAwake.disable()),
 }
 /**
+ * The screen's brightness, 0 to 1, for a page that shows little for a long
+ * time - a workout's big timer - and dims the backlight while it does. `set`
+ * remembers the person's own level and `restore` puts it back; the page going
+ * out of view (the app sent to the background, the phone locked) puts it back
+ * too, and coming back re-applies the page's level. Off a phone there is no
+ * backlight to set: `isAvailable()` is false and the calls resolve `null`.
+ */
+export const brightness: BrightnessApi = {
+  isAvailable: () => craftBrightness.isAvailable(),
+  get: () => afterBridge(() => craftBrightness.get()),
+  set: level => afterBridge(() => craftBrightness.set(level)),
+  restore: () => afterBridge(() => craftBrightness.restore()),
+}
+
+/**
  * Short spoken cues ("Rest, 15 seconds"). In the app the voice ducks the
  * user's music and plays with the silent switch on; in a browser it falls back
  * to the Web Speech API.
@@ -374,6 +391,7 @@ export const mobile: MobileApi = {
   appReview,
   deepLinks,
   keepAwake,
+  brightness,
   speech,
   network,
   pushNotifications,

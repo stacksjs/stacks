@@ -129,6 +129,37 @@ export function previousScreenPath(): string | null | undefined {
   return pathOf(below.reduce((nearest, screen) => (screen.depth > nearest.depth ? screen : nearest)).url)
 }
 
+/** The part of the window `goBackToTabRoot` reads and drives. */
+export interface TabRootHost {
+  stxRouter?: { screens?: () => RouterScreen[] }
+  history?: { go: (delta: number) => void }
+}
+
+/**
+ * Back to the first screen of the current tab, in one move, the way a task
+ * that is finished closes: a workout saved from Today (Today, the workout, its
+ * player) lands on Today with the router's back transition, not on the
+ * workout's page a back button would show, and not at the top of a list
+ * scrolled away from.
+ *
+ * Answers `false` when there is nothing below in this tab (a screen opened on a
+ * deep link, or already the first), or no STX router to ask, and the caller
+ * then follows its own link. `history.go` rewinds every entry between, so Back
+ * afterwards does not return to the finished screens.
+ */
+export function goBackToTabRoot(host: TabRootHost | undefined = typeof window === 'undefined' ? undefined : window as unknown as TabRootHost): boolean {
+  const router = host?.stxRouter
+  if (typeof router?.screens !== 'function' || typeof host?.history?.go !== 'function') return false
+  const screens = router.screens()
+  const active = screens.find(screen => screen.active)
+  if (!active) return false
+  const below = screens.filter(screen => screen.tab === active.tab && screen.depth < active.depth)
+  if (!below.length) return false
+  const root = below.reduce((first, screen) => (screen.depth < first.depth ? screen : first))
+  host.history.go(root.depth - active.depth)
+  return true
+}
+
 /** The latest trail entry for `path`, which carries that screen's name. */
 export function trailEntryFor(trail: NavTrailEntry[], path: string): NavTrailEntry | null {
   for (let index = trail.length - 1; index >= 0; index--) {

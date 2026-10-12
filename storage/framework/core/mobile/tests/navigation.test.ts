@@ -144,3 +144,27 @@ describe('the back label', () => {
     expect(previousScreenPath()).toBeUndefined()
   })
 })
+
+describe('closing a finished task', () => {
+  it('rewinds to the first screen of the current tab in one move', async () => {
+    const { goBackToTabRoot } = await import('../src/navigation')
+    const went: number[] = []
+    const screens = [
+      { url: '/m', tab: '/m', depth: 0, active: false },
+      { url: '/m/workout/5', tab: '/m', depth: 1, active: false },
+      { url: '/m/go/5', tab: '/m', depth: 2, active: true },
+      { url: '/m/calendar', tab: '/m/calendar', depth: 0, active: false },
+    ]
+    const host = { stxRouter: { screens: () => screens }, history: { go: (delta: number) => { went.push(delta) } } }
+    expect(goBackToTabRoot(host)).toBe(true)
+    expect(went).toEqual([-2])
+  })
+
+  it('declines where there is nothing below, or no router, so the caller follows its link', async () => {
+    const { goBackToTabRoot } = await import('../src/navigation')
+    const go = () => { throw new Error('must not navigate') }
+    expect(goBackToTabRoot({ stxRouter: { screens: () => [{ url: '/m/go/5', tab: '/m/go', depth: 0, active: true }] }, history: { go } })).toBe(false)
+    expect(goBackToTabRoot({ history: { go } })).toBe(false)
+    expect(goBackToTabRoot(undefined)).toBe(false)
+  })
+})
