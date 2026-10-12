@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.147...v0.75.148)
+
+## 🐛 Bug Fixes
+
+- **native**: show the nav bar's back link for a parent known only in the browser ([1d2ba20](https://github.com/stacksjs/stacks/commit/1d2ba20)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **native**: keep the nav bar's actions clear of a long title ([c4b4a09](https://github.com/stacksjs/stacks/commit/c4b4a09)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.146...v0.75.147)
 
 ## 🐛 Bug Fixes
