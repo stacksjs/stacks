@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.150...v0.75.151)
+
+## ✨ Features
+
+- **mobile**: heart-rate samples and sleep intervals from Apple Health ([95b476a](https://github.com/stacksjs/stacks/commit/95b476a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.149...v0.75.150)
 
 ## ✨ Features
