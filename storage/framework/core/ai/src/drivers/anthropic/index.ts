@@ -28,6 +28,25 @@ const BASE_URL = 'https://api.anthropic.com/v1'
 let globalConfig: AnthropicDriverConfig | null = null
 
 /**
+ * The `anthropic-version` header a request to Anthropic sends.
+ *
+ * Every Anthropic request in this package has to agree on this, and five of
+ * them did not: `search.ts`, `image.ts` (twice), `buddy.ts` and
+ * `personalization.ts` each wrote the date inline and none of them had heard of
+ * `anthropicVersion`. So an application that configured a version got it on
+ * chat and streaming, through this driver, and was silently ignored on RAG,
+ * vision, buddy and personalization. One API answering two versions, with one
+ * of them unconfigurable, is the same shape as the Facebook and Instagram
+ * drivers disagreeing by three years (stacksjs/stacks#2859).
+ *
+ * `override` is for a caller that has its own config in hand; with none, an
+ * application's `configure({ anthropicVersion })` wins, and the default is last.
+ */
+export function anthropicApiVersion(override?: string): string {
+  return override || globalConfig?.anthropicVersion || DEFAULT_VERSION
+}
+
+/**
  * Configure Anthropic globally
  */
 export function configure(config: AnthropicDriverConfig): void {
@@ -203,7 +222,7 @@ function postMessages(body: Record<string, unknown>): Promise<Response> {
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': config.apiKey,
-      'anthropic-version': config.anthropicVersion || DEFAULT_VERSION,
+      'anthropic-version': anthropicApiVersion(config.anthropicVersion),
     },
     body: JSON.stringify(body),
   })

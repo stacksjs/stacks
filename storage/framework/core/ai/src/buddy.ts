@@ -20,7 +20,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { claudeAgent } from './agents'
-import { createAnthropicDriver, createClaudeAgentSDKDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
+import { anthropicApiVersion, createAnthropicDriver, createClaudeAgentSDKDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
 import { buildProjectContext } from './context'
 import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
@@ -529,7 +529,7 @@ Be concise but thorough. If the user asks about coding or their project specific
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': apiKeys.anthropic!,
-            'anthropic-version': '2023-06-01',
+            'anthropic-version': anthropicApiVersion(),
           },
           body: JSON.stringify({
             model: DEFAULT_ANTHROPIC_MODEL,

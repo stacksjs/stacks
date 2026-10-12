@@ -10,6 +10,16 @@ import type {
   TimelineResult,
 } from '../types'
 
+/**
+ * `x-restli-protocol-version`: the Rest.li wire protocol LinkedIn's API speaks.
+ *
+ * Not its API version. `linkedin-version` is the dated one, it is configurable
+ * per driver, and it is the one in question in stacksjs/stacks#2859. This has
+ * been 2.0.0 throughout and goes on every request, so it is defined once rather
+ * than at each of the three call sites.
+ */
+const RESTLI_PROTOCOL_VERSION = '2.0.0'
+
 export class LinkedInApiError extends Error {
   constructor(
     message: string,
@@ -180,7 +190,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
         'authorization': `Bearer ${identity.accessToken}`,
         'content-type': 'application/json',
         'linkedin-version': this.apiVersion,
-        'x-restli-protocol-version': '2.0.0',
+        'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
       },
       body: JSON.stringify(record),
     })
@@ -242,7 +252,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
         headers: {
           'authorization': `Bearer ${identity.accessToken}`,
           'linkedin-version': this.apiVersion,
-          'x-restli-protocol-version': '2.0.0',
+          'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
         },
       })
     }
@@ -285,7 +295,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
       headers: {
         'authorization': `Bearer ${identity.accessToken}`,
         'linkedin-version': this.apiVersion,
-        'x-restli-protocol-version': '2.0.0',
+        'x-restli-protocol-version': RESTLI_PROTOCOL_VERSION,
       },
     })
 

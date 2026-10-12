@@ -6,6 +6,7 @@
  */
 
 import type { AIResult } from './types'
+import { anthropicApiVersion } from './drivers/anthropic'
 import { DEFAULT_ANTHROPIC_MODEL } from './models'
 
 // ============================================================================
@@ -356,7 +357,7 @@ async function ragWithAnthropic(
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
+      'anthropic-version': anthropicApiVersion(),
     },
     body: JSON.stringify({
       model,

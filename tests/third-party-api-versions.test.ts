@@ -74,17 +74,21 @@ const URL_PINS: UrlPin[] = [
 interface HeaderPin {
   header: string
   value: string
-  /** Call sites naming it literally. More than one fails #2859's second item. */
-  sites: number
+  /** Why this one is written at a call site rather than named once. */
   why: string
 }
 
-/** Versions named in a request header, which no URL scan can see. */
-const HEADER_PINS: HeaderPin[] = [
-  { header: 'anthropic-version', value: '2023-06-01', sites: 5, why: "Anthropic's current version header. Hardcoded at five call sites, so #2859's second acceptance item is not met for it" },
-  { header: 'x-github-api-version', value: '2022-11-28', sites: 2, why: "GitHub's current pinned version. Two call sites" },
-  { header: 'x-restli-protocol-version', value: '2.0.0', sites: 3, why: "LinkedIn's Rest.li protocol version, which is not its API version. Three call sites" },
-]
+/**
+ * Versions written literally into a request header, which no URL scan sees.
+ *
+ * Empty, and that is the assertion. `anthropic-version` was at five call sites,
+ * `x-restli-protocol-version` at three and `x-github-api-version` at two; all
+ * three are now named once and live in DEFAULT_PINS below. #2859's second
+ * acceptance item asks for exactly this, so the rule is that a version header
+ * is not a literal at a call site, and an entry here is an exception that has
+ * to argue for itself.
+ */
+const HEADER_PINS: HeaderPin[] = []
 
 interface DefaultPin {
   integration: string
@@ -98,6 +102,8 @@ interface DefaultPin {
    * consumed in others. Relative to `storage/framework/core`.
    */
   structurePinnedBy?: string
+  /** Why this one is a single constant with no application override. */
+  notConfigurable?: string
   blockedOn?: string
 }
 
@@ -121,6 +127,22 @@ const DEFAULT_PINS: DefaultPin[] = [
     version: '202405',
     overridableVia: 'options.apiVersion',
     blockedOn: 'LinkedIn answers 401 for every version, valid or not, so no probe can confirm it. May 2024, so it looks stale, but a wrong guess breaks posting. Needs a real credential',
+  },
+  // Was at five call sites, none of which had heard of `anthropicVersion`, so
+  // an application configuring a version got it on chat and streaming and was
+  // silently ignored on RAG, vision, buddy and personalization.
+  { integration: 'Anthropic', file: 'ai/src/drivers/anthropic/index.ts', version: '2023-06-01', overridableVia: 'globalConfig?.anthropicVersion' },
+  {
+    integration: 'GitHub REST',
+    file: 'github/src/client.ts',
+    version: '2022-11-28',
+    notConfigurable: 'GitHub keeps a dated version serving for at least 24 months after its successor ships, so this is a review item rather than a break risk, and neither header builder takes an options object to thread an override through. Exported as GITHUB_API_VERSION',
+  },
+  {
+    integration: 'LinkedIn Rest.li protocol',
+    file: 'socials/src/drivers/linkedin.ts',
+    version: '2.0.0',
+    notConfigurable: 'the wire protocol the API speaks, not a dated API version: it has been 2.0.0 throughout and nothing an application does should change it. The dated LinkedIn version is the separate pin above',
   },
 ]
 
@@ -249,20 +271,27 @@ describe('third-party API versions (#2859)', () => {
       }
     }
 
-    it('names no version header that is not pinned here', () => {
+    it('writes no version into a header at a call site', () => {
+      // #2859's second acceptance item, as a rule rather than a count. Every
+      // version header is named once now, so anything appearing here is a new
+      // literal and has to either be named once too or argue for itself in
+      // HEADER_PINS. A failure prints the header and value, which is enough to
+      // find it.
       const pinned = new Set(HEADER_PINS.map(pin => pin.header))
-      expect([...live.keys()].filter(header => !pinned.has(header)).sort()).toEqual([])
+      const literals = [...live.entries()]
+        .filter(([header]) => !pinned.has(header))
+        .flatMap(([header, values]) => [...values.entries()].map(([value, sites]) => `${header}: ${value} (${sites})`))
+
+      expect(literals.sort()).toEqual([])
     })
 
-    it.each(HEADER_PINS.map(pin => [pin.header, pin] as const))('%s sends exactly its pinned value', (header, pin) => {
-      expect([...(live.get(header)?.keys() ?? [])]).toEqual([pin.value])
-    })
-
-    it.each(HEADER_PINS.map(pin => [pin.header, pin] as const))('%s is sent from exactly its pinned number of call sites', (header, pin) => {
-      // Pinned rather than required to be one: three of these are hardcoded at
-      // several sites today. The count failing is the signal that a fourth
-      // appeared, or that someone consolidated them and should update this.
-      expect(live.get(header)?.get(pin.value)).toBe(pin.sites)
+    it('still accounts for every header it pins', () => {
+      // Empty today. A pin for a literal that no longer exists would otherwise
+      // sit here excusing something gone, which is how this table would rot.
+      for (const pin of HEADER_PINS) {
+        expect([...(live.get(pin.header)?.keys() ?? [])], pin.header).toEqual([pin.value])
+        expect(pin.why.length, pin.header).toBeGreaterThan(30)
+      }
     })
   })
 
@@ -282,12 +311,35 @@ describe('third-party API versions (#2859)', () => {
         return
       }
 
+      if (pin.notConfigurable) {
+        // Deliberately one constant with no override, so what is asserted is
+        // that it is exported or named rather than inlined: the value appearing
+        // exactly once is pinned by the test above.
+        expect(CODE.get(pin.file)).toMatch(/(?:export )?const [A-Z_]+ = /)
+        return
+      }
+
       // Defined in one file and consumed in others, so the override is pinned
       // by the named test rather than visible here. Asserted to exist and to
       // actually be about the override, so a deleted guard fails this one.
       const guard = join(coreDir, pin.structurePinnedBy!)
       expect(existsSync(guard), `${pin.integration}: ${pin.structurePinnedBy} is missing`).toBe(true)
       expect(readFileSync(guard, 'utf8')).toContain('graphVersion')
+    })
+
+    it('says for each one how its value can be changed', () => {
+      // Exactly one of the three, so a pin cannot be added with no story: an
+      // override expression, a test that pins the override for a shared
+      // constant, or a reason there is deliberately no override.
+      for (const pin of DEFAULT_PINS) {
+        const stories = [pin.overridableVia, pin.structurePinnedBy, pin.notConfigurable].filter(Boolean)
+        expect(stories, pin.integration).toHaveLength(1)
+      }
+    })
+
+    it('argues for every version it declares unconfigurable', () => {
+      for (const pin of DEFAULT_PINS.filter(entry => entry.notConfigurable))
+        expect(pin.notConfigurable!.length, pin.integration).toBeGreaterThan(60)
     })
 
     it('records what blocks each version it cannot settle', () => {

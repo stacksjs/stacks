@@ -1,5 +1,15 @@
 export const GITHUB_API = 'https://api.github.com'
 
+/**
+ * `X-GitHub-Api-Version`.
+ *
+ * GitHub dates its REST API versions and keeps a version serving for at least
+ * 24 months after its successor ships, so this is a value to review rather than
+ * one that breaks without notice. It was written at both header builders below
+ * (stacksjs/stacks#2859).
+ */
+export const GITHUB_API_VERSION = '2022-11-28'
+
 export interface GitHubClientOptions {
   token?: string
   apiUrl?: string
@@ -20,18 +30,17 @@ function resolveToken(token?: string): string {
 }
 
 export function ghHeaders(): Record<string, string> {
-  return {
-    'Authorization': `Bearer ${getToken()}`,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  }
+  // Identical to `githubHeaders()` with no argument, because
+  // `resolveToken(undefined)` is `getToken()`. It was a second copy of the same
+  // object, which is how the API version came to be written twice.
+  return githubHeaders()
 }
 
 export function githubHeaders(token?: string): Record<string, string> {
   return {
     'Authorization': `Bearer ${resolveToken(token)}`,
     'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
+    'X-GitHub-Api-Version': GITHUB_API_VERSION,
   }
 }
 

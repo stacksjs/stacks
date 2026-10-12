@@ -4,7 +4,7 @@
  * Export all available AI drivers.
  */
 
-export { createAnthropicDriver, anthropicDriver, anthropic, estimateTokens } from './anthropic'
+export { createAnthropicDriver, anthropicDriver, anthropic, anthropicApiVersion, estimateTokens } from './anthropic'
 export type { AnthropicDriverConfig } from './anthropic'
 export { createOpenAIDriver, openaiDriver, openai } from './openai'
 export type { OpenAIDriverConfig } from './openai'
