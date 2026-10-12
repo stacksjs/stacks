@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { Window } from 'very-happy-dom'
 import {
+  auth,
   background,
   browser,
   callNative,
@@ -235,6 +236,29 @@ describe('the in-app browser', () => {
     install({ craft: { openURL } })
     await browser.open('https://example.org')
     expect(openURL).toHaveBeenCalledWith('https://example.org')
+  })
+})
+
+describe('Sign in with Apple', () => {
+  it('hands the page\'s nonce to the sheet and answers with the code for the server', async () => {
+    const signInWithApple = mock(async (_options?: unknown) => ({ userId: 'apple-1', identityToken: 'jwt', authorizationCode: 'c0de' }))
+    install({ craft: { signInWithApple } })
+    expect(await auth.signInWithApple({ nonce: 'abc123' })).toEqual({ userId: 'apple-1', identityToken: 'jwt', authorizationCode: 'c0de' })
+    expect(signInWithApple).toHaveBeenCalledWith({ nonce: 'abc123' })
+  })
+
+  it('asks without a nonce when none is given', async () => {
+    const signInWithApple = mock(async (..._args: unknown[]) => ({ userId: 'apple-1' }))
+    install({ craft: { signInWithApple } })
+    await auth.signInWithApple()
+    expect(signInWithApple.mock.calls[0]).toEqual([])
+  })
+
+  it('answers null on the web and for an answer without an Apple user', async () => {
+    install()
+    expect(await auth.signInWithApple({ nonce: 'abc' })).toBeNull()
+    install({ craft: { signInWithApple: async () => ({}) } })
+    expect(await auth.signInWithApple()).toBeNull()
   })
 })
 

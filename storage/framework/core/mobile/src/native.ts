@@ -524,16 +524,31 @@ export interface AppleSignInResult {
   name?: string
   /** The JWT to verify on the server. */
   identityToken?: string
+  /** Apple's one-use code (five minutes) for the server to redeem at its token endpoint. */
   authorizationCode?: string
 }
 
+export interface AppleSignInOptions {
+  /**
+   * The SHA-256 (hex) of a one-time value the page keeps. Apple writes it
+   * into the identity token's `nonce` claim, so the server can check that
+   * the sign-in is the one this page asked for.
+   */
+  nonce?: string
+}
+
 export interface AuthApi {
-  /** Null on the web, where the app should offer Apple's JS flow instead. */
-  signInWithApple: () => Promise<AppleSignInResult | null>
+  /**
+   * The system's Sign in with Apple sheet. Send `authorizationCode` (with
+   * the raw nonce) to the server, which redeems it at Apple's token
+   * endpoint. Null on the web, where the app should offer Apple's JS flow
+   * instead, and when the person closes the sheet.
+   */
+  signInWithApple: (options?: AppleSignInOptions) => Promise<AppleSignInResult | null>
 }
 
 export const auth: AuthApi = {
-  signInWithApple: () => callNative<unknown>('signInWithApple', [], nothing).then((value) => {
+  signInWithApple: (options = {}) => callNative<unknown>('signInWithApple', options.nonce ? [{ nonce: options.nonce }] : [], nothing).then((value) => {
     if (!value || typeof value !== 'object' || typeof (value as { userId?: unknown }).userId !== 'string') return null
     return value as AppleSignInResult
   }),
