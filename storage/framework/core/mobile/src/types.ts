@@ -22,6 +22,8 @@ export interface CraftMobileCapabilities {
   orientationLock?: boolean
   deepLinks?: boolean
   flashlight?: boolean
+  /** The Music app's song and transport (`music`), iOS with `capabilities.appleMusic`. */
+  music?: boolean
   network?: boolean
   deviceInfo?: boolean
   badge?: boolean
@@ -71,6 +73,7 @@ export interface MobileApi {
   deepLinks: DeepLinksApi
   keepAwake: KeepAwakeApi
   brightness: BrightnessApi
+  music: MusicApi
   speech: SpeechApi
   network: NetworkApi
   pushNotifications: PushNotificationsApi
@@ -320,6 +323,68 @@ export interface SpeechApi {
   /** Speaks, and settles when it ends: true when spoken, false when stopped. */
   speak: (text: string, options?: SpeechOptions) => Promise<boolean>
   stop: () => Promise<void>
+}
+
+/** Whether the person has let the app see their music. `unavailable` off a phone. */
+export type MusicAuthorization = 'authorized' | 'denied' | 'restricted' | 'notDetermined' | 'unavailable'
+
+export type MusicPlaybackState = 'stopped' | 'playing' | 'paused' | 'interrupted' | 'seekingForward' | 'seekingBackward' | 'unknown'
+
+/**
+ * What the Music app is playing. The song fields are null without access,
+ * with nothing queued, and while another app (Spotify, a podcast) plays; then
+ * `otherAudioPlaying` is true.
+ */
+export interface NowPlaying {
+  /** False where there is no Music app to ask: a browser, Android, an app built without `capabilities.appleMusic`. */
+  available: boolean
+  authorization: MusicAuthorization
+  /** `appleMusic`, or `simulated` for the simulator's stand-in; null without access. */
+  source: 'appleMusic' | 'simulated' | null
+  playbackState: MusicPlaybackState
+  isPlaying: boolean
+  itemId: string | null
+  title: string | null
+  artist: string | null
+  album: string | null
+  /** Seconds. */
+  duration: number | null
+  /** Seconds into the song at `timestamp`. */
+  position: number | null
+  /** A small square JPEG (120 px) as a data URL, when the song has artwork. */
+  artworkDataURL: string | null
+  /** Some app is playing audio, Apple Music included: read it beside `isPlaying`. */
+  otherAudioPlaying: boolean
+  /** When the snapshot was taken, in ms since the epoch. */
+  timestamp: number
+}
+
+export interface MusicSkipOptions {
+  /** Past this many seconds into a song, restart it instead (the Music app's 3 by default); 0 always goes back. */
+  restartAfter?: number
+}
+
+export type MusicMethod = 'getAuthorizationStatus' | 'requestAuthorization' | 'getNowPlaying' | 'play' | 'pause' | 'togglePlayPause' | 'skipToNext' | 'skipToPrevious' | 'observe'
+
+export interface MusicApi {
+  /** Whether this app can show and steer the Music app (false until the bridge has arrived). */
+  isAvailable: () => boolean
+  /** Whether this app build answers `method`; an older build may lack one. */
+  supports: (method: MusicMethod) => boolean
+  /** Where access stands, without asking. */
+  getAuthorizationStatus: () => Promise<MusicAuthorization>
+  /** iOS's media library prompt the first time, its remembered answer after. Call it from a tap. */
+  requestAuthorization: () => Promise<MusicAuthorization>
+  /** The song, its artwork and the playback state; `{ available: false }` off a phone. */
+  getNowPlaying: () => Promise<NowPlaying>
+  play: () => Promise<NowPlaying>
+  pause: () => Promise<NowPlaying>
+  togglePlayPause: () => Promise<NowPlaying>
+  skipToNext: () => Promise<NowPlaying>
+  /** Like the Music app's own button: a few seconds in, it restarts the song. */
+  skipToPrevious: (options?: MusicSkipOptions) => Promise<NowPlaying>
+  /** Every change of song or playback state, pushed by native; never fires off a phone. */
+  onChange: (callback: (nowPlaying: NowPlaying) => void) => () => void
 }
 
 export interface DeepLinksApi {

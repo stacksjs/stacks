@@ -38,6 +38,7 @@ export interface CraftIosConfig {
   splashImagePath?: string
   splashImagePathDark?: string
   privacy?: IosMobileConfig['privacy']
+  usageDescriptions?: Record<string, string>
   orientations?: IosMobileConfig['orientations']
   deviceFamilies?: IosMobileConfig['deviceFamilies']
 }
@@ -72,6 +73,7 @@ const CAPABILITY_KEYS = {
   bluetooth: 'enableBluetooth',
   nfc: 'enableNFC',
   healthKit: 'enableHealthKit',
+  appleMusic: 'enableAppleMusic',
   liveActivities: 'enableLiveActivities',
   watchApp: 'enableWatchApp',
   backgroundTasks: 'enableBackgroundTasks',
@@ -174,6 +176,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     appGroups: config.appGroups,
     appIconPath: config.appIcon,
     privacy: config.privacy,
+    usageDescriptions: config.usageDescriptions,
     orientations: config.orientations,
     deviceFamilies: config.deviceFamilies,
   }

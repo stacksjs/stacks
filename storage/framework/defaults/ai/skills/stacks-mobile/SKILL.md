@@ -201,6 +201,37 @@ every render would put a record straight back the moment they left it. Donating
 the same record twice is free, so an effect over the record is the natural call
 site.
 
+## Apple Music (now playing)
+
+`music` shows what the Music app is playing (title, artist, album, a small
+artwork data URL, duration, position, playback state) and steers it: `play`,
+`pause`, `togglePlayPause`, `skipToNext` and `skipToPrevious`, which restarts
+the song a few seconds in, like the Music app's own button. Changes arrive
+from native as they happen, so a page never polls. iOS only, behind
+`capabilities.appleMusic`; music control is local to the phone, so it works
+offline.
+
+```ts
+import { music } from '@stacksjs/mobile'
+
+// From the person's tap, never on load: iOS shows its prompt the first time.
+if (await music.requestAuthorization() === 'authorized') {
+  render(await music.getNowPlaying())
+  const stop = music.onChange(render) // observes while anyone listens
+  await music.togglePlayPause()
+}
+```
+
+Only Apple Music: iOS gives no app the controls of another player, Spotify
+included, so while one plays the song fields are null and `otherAudioPlaying`
+is true; say so rather than show controls that do nothing. Nothing is read
+before access is allowed (`authorization` is `notDetermined`, `denied` or
+`restricted` until then). In a browser and on Android `isAvailable()` is false,
+every call answers `{ available: false }` and `onChange` never fires. Word the
+prompt with `ios.usageDescriptions.NSAppleMusicUsageDescription`. The
+simulator's Music app has nothing to play; launch a simulator build with
+`-CraftFakeMusicPlayer YES` for three made-up songs that play and skip.
+
 ## Runtime API
 
 ```ts

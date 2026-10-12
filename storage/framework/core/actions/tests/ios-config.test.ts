@@ -62,6 +62,21 @@ describe('iOS mobile build configuration', () => {
     expect(config.deviceFamilies).toEqual(['iphone'])
   })
 
+  it('turns Apple Music on and carries the app\'s own purpose strings', () => {
+    const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' }
+    const craft = toCraftIosConfig({
+      ...base,
+      usageDescriptions: { NSAppleMusicUsageDescription: 'Shows the song playing during a workout.' },
+      capabilities: { appleMusic: true },
+    })
+    expect(craft.enableAppleMusic).toBe(true)
+    expect(craft.usageDescriptions).toEqual({ NSAppleMusicUsageDescription: 'Shows the song playing during a workout.' })
+    // Unset, Craft's defaults stand: no key at all.
+    const plain = toCraftIosConfig(base)
+    expect('enableAppleMusic' in plain).toBe(false)
+    expect('usageDescriptions' in plain).toBe(false)
+  })
+
   it('passes native screens, the first-frame tabs and shared storage through to Craft', () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

@@ -33,6 +33,12 @@ export interface MobileCapabilities {
   nfc?: boolean
   healthKit?: boolean
   healthConnect?: boolean
+  /**
+   * iOS: show and steer what the Music app is playing (`music` from
+   * @stacksjs/mobile). Apple Music only; iOS asks for media library access
+   * the first time the page calls `music.requestAuthorization()`.
+   */
+  appleMusic?: boolean
   liveActivities?: boolean
   watchApp?: boolean
   backgroundTasks?: boolean
@@ -201,6 +207,12 @@ export interface IosMobileConfig {
     imageDark?: string
   }
   privacy?: MobilePrivacyManifest
+  /**
+   * Purpose strings in the app's own words, by Info.plist key, e.g.
+   * `{ NSAppleMusicUsageDescription: 'Shows the song playing during a workout.' }`.
+   * Each replaces the generic sentence Craft writes for that key.
+   */
+  usageDescriptions?: Record<string, string>
   orientations?: MobileOrientation[]
   deviceFamilies?: IosDeviceFamily[]
   capabilities?: MobileCapabilities

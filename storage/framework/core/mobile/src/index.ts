@@ -27,6 +27,7 @@ import {
   lifecycle as craftLifecycle,
   liveActivities as craftLiveActivities,
   location as craftLocation,
+  music as craftMusic,
   network as craftNetwork,
   notifications as craftNotifications,
   permissions as craftPermissions,
@@ -68,6 +69,7 @@ import type {
   ShareApi,
   SpeechApi,
   BrightnessApi,
+  MusicApi,
   WatchConnectivityApi,
 } from './types'
 
@@ -241,6 +243,31 @@ export const brightness: BrightnessApi = {
 }
 
 /**
+ * What the Music app is playing, and its play/pause/skip, for a screen the
+ * person trains with. iOS only, and only Apple Music: iOS gives no app another
+ * player's controls (Spotify included), so then the song fields are null and
+ * `otherAudioPlaying` is true. Nothing is read until `requestAuthorization()`,
+ * which shows iOS's prompt once; call it from the person's tap. In a browser
+ * and on Android every call answers `{ available: false }` and changes never
+ * fire. Music control is local to the phone, so it works offline.
+ */
+export const music: MusicApi = {
+  isAvailable: () => craftMusic.isAvailable(),
+  supports: method => craftMusic.supports(method),
+  getAuthorizationStatus: () => afterBridge(() => craftMusic.getAuthorizationStatus()),
+  requestAuthorization: () => afterBridge(() => craftMusic.requestAuthorization()),
+  getNowPlaying: () => afterBridge(() => craftMusic.getNowPlaying()),
+  play: () => afterBridge(() => craftMusic.play()),
+  pause: () => afterBridge(() => craftMusic.pause()),
+  togglePlayPause: () => afterBridge(() => craftMusic.togglePlayPause()),
+  skipToNext: () => afterBridge(() => craftMusic.skipToNext()),
+  skipToPrevious: options => afterBridge(() => craftMusic.skipToPrevious(options)),
+  // Subscribed once the bridge is there: earlier, craft.music did not exist
+  // yet and the subscription would have been the browser's no-op for good.
+  onChange: callback => subscribeWhenReady(() => craftMusic.onChange(callback)),
+}
+
+/**
  * Short spoken cues ("Rest, 15 seconds"). In the app the voice ducks the
  * user's music and plays with the silent switch on; in a browser it falls back
  * to the Web Speech API.
@@ -399,6 +426,7 @@ export const mobile: MobileApi = {
   deepLinks,
   keepAwake,
   brightness,
+  music,
   speech,
   network,
   pushNotifications,
