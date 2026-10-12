@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.151...v0.75.152)
+
+## ✨ Features
+
+- **seo**: the generated sitemap lists each page's language versions ([4d672b7](https://github.com/stacksjs/stacks/commit/4d672b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: integrations:probe asks whether our endpoints still exist ([1e7eaec](https://github.com/stacksjs/stacks/commit/1e7eaec)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859), [#2856](https://github.com/stacksjs/stacks/issues/2856))
+
+## 🐛 Bug Fixes
+
+- **database**: say when a pre-created notification table will shadow the corpus ([11fbb61](https://github.com/stacksjs/stacks/commit/11fbb61)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2896](https://github.com/stacksjs/stacks/issues/2896))
+- **migrate**: a generated DROP COLUMN is guarded like the ADD COLUMN beside it ([dde735f](https://github.com/stacksjs/stacks/commit/dde735f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2895](https://github.com/stacksjs/stacks/issues/2895), [#100](https://github.com/stacksjs/stacks/issues/100))
+- **migrate**: migrate:fresh stops pre-creating tables the corpus owns ([15d9f8f](https://github.com/stacksjs/stacks/commit/15d9f8f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2894](https://github.com/stacksjs/stacks/issues/2894))
+- **composables**: useImage declares the DOM's own unions for its two enum options ([442a4a5](https://github.com/stacksjs/stacks/commit/442a4a5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **ai,github,socials**: name each API version once, and honour it everywhere ([6f89bda](https://github.com/stacksjs/stacks/commit/6f89bda)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859))
+
+## ✅ Tests
+
+- **buddy**: say which package made the native catalog stale, and how to fix it ([3bc863c](https://github.com/stacksjs/stacks/commit/3bc863c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **ai**: refresh the native catalog for the new database test ([7ac7375](https://github.com/stacksjs/stacks/commit/7ac7375)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- ignore bun-query-builder's default snapshot directory ([5d2f635](https://github.com/stacksjs/stacks/commit/5d2f635)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2895](https://github.com/stacksjs/stacks/issues/2895))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.150...v0.75.151)
 
 ## ✨ Features
