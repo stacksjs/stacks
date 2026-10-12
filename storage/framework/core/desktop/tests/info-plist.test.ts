@@ -148,22 +148,25 @@ const BASE = {
   executable: 'Repro App',
   ownsLauncher: false,
 } as const
+/** App names whose characters XML would otherwise swallow. */
+const AWKWARD_NAMES = [
+  ['an ampersand', 'Repro & Co'],
+  ['angle brackets', 'Repro <Beta>'],
+  ['a quote', 'Repro "Nightly"'],
+  ['an apostrophe', 'Glenn\'s Repro'],
+] as const
+
+/** Keys an app may set for itself, which the framework also sets. */
+const OVERRIDES = [
+  ['LSMinimumSystemVersion', { LSMinimumSystemVersion: '13.0' }],
+  ['NSHighResolutionCapable', { NSHighResolutionCapable: false }],
+  ['NSAppTransportSecurity', { NSAppTransportSecurity: { NSAllowsLocalNetworking: true } }],
+] as const
 
 describe('renderInfoPlist', () => {
-  test('the plain bundle is a document macOS can read', () => {
-    const { ok, output } = plutilAccepts(renderInfoPlist(BASE).xml)
-    expect(ok, output).toBe(true)
-  })
-
-  test.each([
-    ['an ampersand', 'Repro & Co'],
-    ['angle brackets', 'Repro <Beta>'],
-    ['a quote', 'Repro "Nightly"'],
-    ['an apostrophe', 'Glenn\'s Repro'],
-  ])('stays readable with %s in the app name', (_label, appName) => {
+  test.each(AWKWARD_NAMES)('escapes %s in the app name', (_label, appName) => {
     const { xml } = renderInfoPlist({ ...BASE, appName, executable: appName })
-    const { ok, output } = plutilAccepts(xml)
-    expect(ok, output).toBe(true)
+
     // Escaped, so the raw character cannot appear between the tags.
     expect(xml).not.toContain(`<string>${appName}</string>`)
   })
@@ -171,8 +174,7 @@ describe('renderInfoPlist', () => {
   test('escapes the bundle id and version, which come straight from the environment', () => {
     // DESKTOP_BUNDLE_ID and DESKTOP_APP_VERSION are unvalidated env values.
     const { xml } = renderInfoPlist({ ...BASE, bundleId: 'sh.stacks.a&b', version: '1.0<rc1>' })
-    const { ok, output } = plutilAccepts(xml)
-    expect(ok, output).toBe(true)
+
     expect(xml).toContain('<string>sh.stacks.a&amp;b</string>')
     expect(xml).toContain('<string>1.0&lt;rc1&gt;</string>')
   })
@@ -192,7 +194,6 @@ describe('renderInfoPlist', () => {
     // The KEY, not the word: the comment beside the exception mentions
     // NSAllowsArbitraryLoads to say why it is not being used.
     expect(keyCount(xml, 'NSAllowsArbitraryLoads')).toBe(0)
-    expect(plutilAccepts(xml).ok).toBe(true)
   })
 
   test('an app loading a remote URL is allowed to reach it', () => {
@@ -201,15 +202,8 @@ describe('renderInfoPlist', () => {
     expect(xml).not.toContain('<key>127.0.0.1</key>')
   })
 
-  test.each([
-    ['LSMinimumSystemVersion', { LSMinimumSystemVersion: '13.0' }],
-    ['NSHighResolutionCapable', { NSHighResolutionCapable: false }],
-    ['NSAppTransportSecurity', { NSAppTransportSecurity: { NSAllowsLocalNetworking: true } }],
-  ])('an app overriding %s gets its value once, not twice', (key, declared) => {
-    const { xml } = renderInfoPlist({ ...BASE, declared })
-    expect(keyCount(xml, key)).toBe(1)
-    const { ok, output } = plutilAccepts(xml)
-    expect(ok, output).toBe(true)
+  test.each(OVERRIDES)('an app overriding %s gets its value once, not twice', (key, declared) => {
+    expect(keyCount(renderInfoPlist({ ...BASE, declared }).xml, key)).toBe(1)
   })
 
   test("the app's override is the value that survives", () => {
@@ -233,5 +227,40 @@ describe('renderInfoPlist', () => {
     expect(renderInfoPlist({ ...BASE, iconFile: 'AppIcon' }).xml)
       .toContain('<key>CFBundleIconFile</key><string>AppIcon</string>')
     expect(renderInfoPlist(BASE).xml).not.toContain('CFBundleIconFile')
+  })
+})
+
+/**
+ * What macOS itself makes of every document the suite builds.
+ *
+ * This is the question that found the bug: a `<dict>` closed twice reads as
+ * fine and is a document macOS will not open. It needs `plutil`, which ships
+ * with macOS and exists nowhere else, so the Linux runner reports these as
+ * skipped rather than failing - it has no opinion to offer about what macOS
+ * parses. Every assertion above is a shape assertion and runs everywhere.
+ *
+ * Gated on the tool rather than on `process.platform`, because a macOS
+ * runner with a trimmed PATH should skip rather than fail for the same
+ * reason. The inputs come from the tables the assertions above use, so a
+ * document cannot be asserted about in one place and left unlinted here.
+ */
+describe.if(Bun.which('plutil') !== null)('what macOS accepts', () => {
+  const documents: Array<[string, string]> = [
+    ['the plain bundle', renderInfoPlist(BASE).xml],
+    ['an app serving its own window', renderInfoPlist({ ...BASE, ownsLauncher: true }).xml],
+    ['an escaped bundle id and version', renderInfoPlist({ ...BASE, bundleId: 'sh.stacks.a&b', version: '1.0<rc1>' }).xml],
+    ...AWKWARD_NAMES.map(([label, appName]): [string, string] => [
+      `${label} in the app name`,
+      renderInfoPlist({ ...BASE, appName, executable: appName }).xml,
+    ]),
+    ...OVERRIDES.map(([key, declared]): [string, string] => [
+      `an overridden ${key}`,
+      renderInfoPlist({ ...BASE, declared }).xml,
+    ]),
+  ]
+
+  test.each(documents)('parses %s', (_label, xml) => {
+    const { ok, output } = plutilAccepts(xml)
+    expect(ok, output).toBe(true)
   })
 })
