@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.161...v0.75.162)
+
+## ✨ Features
+
+- **storage**: zipEntries() builds a ZIP in memory ([7a1c9e6](https://github.com/stacksjs/stacks/commit/7a1c9e6)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.160...v0.75.161)
 
 ## ✨ Features
