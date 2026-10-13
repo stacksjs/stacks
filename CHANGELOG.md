@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.154...v0.75.155)
+
+## ✨ Features
+
+- **mobile**: heartRate reads a Bluetooth heart-rate strap ([b37783f](https://github.com/stacksjs/stacks/commit/b37783f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.153...v0.75.154)
 
 ## ✨ Features
