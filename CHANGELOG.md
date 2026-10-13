@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.164...v0.75.165)
+
+## ✨ Features
+
+- **mobile**: mindful minutes in Apple Health, and sound that plays on with the screen locked ([7380dcd](https://github.com/stacksjs/stacks/commit/7380dcd)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.163...v0.75.164)
 
 ## ✨ Features
