@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@stacksjs/types": "workspace:*",
-    "craft-native": ">=0.0.155"
+    "craft-native": ">=0.0.158"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
