@@ -35,7 +35,7 @@ import { join } from 'node:path'
 import { resolvedDatabaseDriver } from './dialect'
 import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
-import { enumTypesCreatedBy, sqlStatementsOf } from './sql-statements'
+import { enumTypesCreatedBy, enumTypesDroppedBy, sqlStatementsOf } from './sql-statements'
 
 export type LedgerDialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -265,9 +265,16 @@ export function migrationRemovals(sql: string): MigrationEffect[] {
       continue
     }
 
-    const enumType = new RegExp(String.raw`^DROP\s+TYPE\s+(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
-    if (enumType?.[1]) {
-      push({ kind: 'enum', name: enumType[1] })
+    // Unanchored, through the shared scanner, for the same reason the create
+    // side is: `statementsOf` splits on `;`, so a drop inside a
+    // `DO $$ BEGIN ... EXCEPTION ... END $$` guard arrives as a fragment
+    // beginning `DO $$ BEGIN DROP TYPE ...`. Nothing generates that today, but
+    // guarding a drop is the idiomatic way to hand-write an idempotent one,
+    // and this reads an application's corpus too (stacksjs/stacks#2901).
+    const droppedTypes = enumTypesDroppedBy([statement])
+    if (droppedTypes.size > 0) {
+      for (const name of droppedTypes)
+        push({ kind: 'enum', name })
       continue
     }
 

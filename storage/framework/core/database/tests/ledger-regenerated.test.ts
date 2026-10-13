@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { comparableIndexKey, postgresIndexStatement } from '../src/index-shape'
-import { classifyMigration, effectPresent, migrationEffects, reconcileMigrationLedger } from '../src/migration-ledger'
+import { classifyMigration, effectPresent, migrationEffects, migrationRemovals, reconcileMigrationLedger } from '../src/migration-ledger'
 
 /**
  * `migrate:regenerate --force` against a database with history left the next
@@ -93,6 +93,23 @@ describe('a guarded enum create is still an effect', () => {
     const effects = migrationEffects(`CREATE TYPE "teams_status_type" AS ENUM ('active');`)
 
     expect(effects).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+  })
+
+  it('reads a dropped type out of a guard as well', () => {
+    /*
+     * The mirror of the create. A removal is what keeps an earlier migration
+     * from reading as REVERTED once a later one deliberately undoes it, so a
+     * drop the ledger cannot see means the migration that created the type is
+     * reported as drifted away from history, forever.
+     *
+     * Nothing in the framework generates a guarded drop. An application's own
+     * migration is where this comes from: the guard is the idiomatic way to
+     * write an idempotent `DROP TYPE` in Postgres.
+     */
+    const guarded = migrationRemovals(`DO $stacks$ BEGIN DROP TYPE IF EXISTS "teams_status_type"; EXCEPTION WHEN undefined_object THEN null; END $stacks$;`)
+
+    expect(guarded).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+    expect(migrationRemovals(`DROP TYPE IF EXISTS "teams_status_type";`)).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
   })
 
   it('leaves the file verifiable, so it can be recorded rather than vanish', () => {

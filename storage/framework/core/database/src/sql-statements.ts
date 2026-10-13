@@ -126,3 +126,26 @@ export function enumTypesCreatedBy(statements: readonly string[]): Set<string> {
   }
   return types
 }
+
+/**
+ * The enum types a set of statements drops, lowercased.
+ *
+ * Unanchored for the same reason as {@link enumTypesCreatedBy}, and it is not
+ * only the generator that puts one in a guard: wrapping a drop in
+ * `DO $$ BEGIN ... EXCEPTION WHEN undefined_object THEN null; END $$` is how a
+ * hand-written Postgres migration makes it idempotent, and the ledger reads an
+ * application's own corpus as readily as a generated one.
+ *
+ * A comma list (`DROP TYPE a, b`) still yields only the first name, which is
+ * what the anchored pattern this replaces did.
+ */
+export function enumTypesDroppedBy(statements: readonly string[]): Set<string> {
+  const types = new Set<string>()
+  for (const statement of statements) {
+    for (const match of statement.matchAll(new RegExp(String.raw`\bDROP\s+TYPE\s+(?:IF\s+EXISTS\s+)?${SQL_IDENTIFIER}`, 'gi'))) {
+      if (match[1])
+        types.add(match[1].toLowerCase())
+    }
+  }
+  return types
+}
