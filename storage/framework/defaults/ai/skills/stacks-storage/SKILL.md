@@ -63,7 +63,8 @@ import { readJsonFile, readPackageJson, readTextFile, writeFile, writeJsonFile, 
 import { isFolder, isDir, doesFolderExist, createFolder, getFolders } from '@stacksjs/storage'
 import { glob, globSync } from '@stacksjs/storage'
 import { hashDirectory, hashPath, hashPaths } from '@stacksjs/storage'
-import { zip, unzip, archive, unarchive, compress, decompress, gzipSync, gunzipSync, deflateSync, inflateSync } from '@stacksjs/storage'
+import { zip, unzip, archive, unarchive, compress, decompress, gzipSync, gunzipSync, deflateSync, inflateSync, zipEntries } from '@stacksjs/storage'
+import type { ZipEntriesOptions, ZipEntry } from '@stacksjs/storage'
 import * as storage from '@stacksjs/storage'
 ```
 
@@ -460,6 +461,35 @@ const deflated = deflateSync(data)         // Bun.deflateSync
 const inflated = inflateSync(deflated)     // Bun.inflateSync
 ```
 
+### In-memory ZIP (`zipEntries`)
+
+`zip()` needs files on disk and the `zip` binary. To answer a request with an
+archive built from data you already hold (an export, a bundle of generated
+CSVs), use `zipEntries()`: it returns the archive's bytes and touches nothing on
+disk.
+
+```typescript
+import { zipEntries } from '@stacksjs/storage'
+
+const bytes = zipEntries([
+  { name: 'members.csv', data: membersCsv },                 // string -> UTF-8
+  { name: 'photos/logo.png', data: pngBytes },               // Uint8Array as is
+  { name: 'README.txt', data: readme, date: exportedAt },    // per-entry timestamp
+], { level: 6, date: new Date() })                           // both optional
+
+return new Response(bytes, {
+  headers: {
+    'Content-Type': 'application/zip',
+    'Content-Disposition': 'attachment; filename="export.zip"',
+  },
+})
+```
+
+- Each entry is deflated with Bun's raw DEFLATE when that is smaller, else stored; `level: 0` stores everything. CRC-32 per entry, UTF-8 names (flag bit 11), DOS timestamps (local time, 2-second steps, clamped to 1980-2107), files marked `-rw-r--r--`.
+- `options.date` is the timestamp for entries without their own `date` (default now); fix it for byte-identical archives.
+- Entry order is kept. It throws on a repeated name, a name that is empty, absolute (`/x`, `C:/x`), or has an empty, `.` or `..` part; backslashes become `/`. No directory entries: folders come from the paths.
+- No ZIP64: more than 65,535 entries, or any entry, offset or the archive past 4 GB, throws. Everything is held in memory, so it is for downloads, not backups (use `zip()` there).
+
 ### Folder Utilities
 
 ```typescript
@@ -629,6 +659,7 @@ const config = configFromEnv({ default: 'local' })
 - `UploadedFile.hashName()` is cached -- calling it multiple times returns the same hash
 - Low-level operations (`copy`, `move`, `delete*`, etc.) use synchronous `fs` methods, while the Storage facade uses async operations
 - `zip()` and `unzip()` shell out to the `zip`/`unzip` commands -- they require these tools to be installed on the system
+- `zipEntries()` is the in-memory alternative: no binary, no disk, returns a `Uint8Array` (no ZIP64, so it refuses 65,535+ entries or 4 GB)
 - `STORAGE_DRIVER` env var controls the driver selection in `config/filesystems.ts`
 
 
