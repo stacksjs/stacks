@@ -77,6 +77,19 @@ describe('iOS mobile build configuration', () => {
     expect('usageDescriptions' in plain).toBe(false)
   })
 
+  it('turns the heart-rate strap on, in the app\'s own words', () => {
+    const craft = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training/m',
+      usageDescriptions: { NSBluetoothAlwaysUsageDescription: 'Shows your heart rate from your strap during a workout.' },
+      capabilities: { heartRate: true },
+    })
+    expect(craft.enableHeartRate).toBe(true)
+    expect(craft.usageDescriptions).toEqual({ NSBluetoothAlwaysUsageDescription: 'Shows your heart rate from your strap during a workout.' })
+    expect('enableHeartRate' in toCraftIosConfig({ appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' })).toBe(false)
+  })
+
   it('passes native screens, the first-frame tabs and shared storage through to Craft', () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

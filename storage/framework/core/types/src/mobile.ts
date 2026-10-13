@@ -39,6 +39,13 @@ export interface MobileCapabilities {
    * the first time the page calls `music.requestAuthorization()`.
    */
   appleMusic?: boolean
+  /**
+   * iOS: read a Bluetooth heart-rate strap, or a watch broadcasting its heart
+   * rate (`heartRate` from @stacksjs/mobile). Adds the `bluetooth-central`
+   * background mode so a workout keeps reading it with the screen locked; iOS
+   * asks for Bluetooth the first time the page scans or connects.
+   */
+  heartRate?: boolean
   liveActivities?: boolean
   watchApp?: boolean
   backgroundTasks?: boolean

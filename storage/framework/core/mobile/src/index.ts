@@ -23,6 +23,7 @@ import {
   device as craftDevice,
   haptics as craftHaptics,
   health as craftHealth,
+  heartRate as craftHeartRate,
   keepAwake as craftKeepAwake,
   lifecycle as craftLifecycle,
   liveActivities as craftLiveActivities,
@@ -56,6 +57,7 @@ import type {
   HealthApi,
   HealthHeartRateSample,
   HealthSleepInterval,
+  HeartRateApi,
   KeepAwakeApi,
   LifecycleApi,
   LiveActivitiesApi,
@@ -268,6 +270,41 @@ export const music: MusicApi = {
 }
 
 /**
+ * A Bluetooth heart-rate strap (Polar, Garmin, Wahoo...), or a watch
+ * broadcasting its heart rate, through the standard Heart Rate Service. iOS
+ * only, in an app built with `capabilities.heartRate`: scan, connect (the
+ * strap is remembered; `reconnect()` finds it next time without a scan), a
+ * reading about once a second with its RR intervals, and a recording kept
+ * natively, so a workout's heart rate survives the screen being locked and the
+ * app being closed. Pass it to `createRouteRecorder({ heartRate })` to record
+ * it with a route. In a browser and on Android it is unavailable: the state
+ * says `available: false` and nothing fires. Bluetooth works offline.
+ */
+export const heartRate: HeartRateApi = {
+  isAvailable: () => craftHeartRate.isAvailable(),
+  supports: method => craftHeartRate.supports(method),
+  getState: () => afterBridge(() => craftHeartRate.getState()),
+  requestAuthorization: () => afterBridge(() => craftHeartRate.requestAuthorization()),
+  scan: options => afterBridge(() => craftHeartRate.scan(options)),
+  stopScan: () => afterBridge(() => craftHeartRate.stopScan()),
+  getDevices: () => afterBridge(() => craftHeartRate.getDevices()),
+  connect: id => afterBridge(() => craftHeartRate.connect(id)),
+  reconnect: () => afterBridge(() => craftHeartRate.reconnect()),
+  disconnect: options => afterBridge(() => craftHeartRate.disconnect(options)),
+  startRecording: () => afterBridge(() => craftHeartRate.startRecording()),
+  pauseRecording: () => afterBridge(() => craftHeartRate.pauseRecording()),
+  resumeRecording: () => afterBridge(() => craftHeartRate.resumeRecording()),
+  stopRecording: () => afterBridge(() => craftHeartRate.stopRecording()),
+  getRecordingState: () => afterBridge(() => craftHeartRate.getRecordingState()),
+  readRecording: options => afterBridge(() => craftHeartRate.readRecording(options)),
+  // Subscribed once the bridge is there: earlier, craft.heartRate did not
+  // exist yet and the subscription would have been the browser's no-op.
+  onReading: callback => subscribeWhenReady(() => craftHeartRate.onReading(callback)),
+  onDevice: callback => subscribeWhenReady(() => craftHeartRate.onDevice(callback)),
+  onState: callback => subscribeWhenReady(() => craftHeartRate.onState(callback)),
+}
+
+/**
  * Short spoken cues ("Rest, 15 seconds"). In the app the voice ducks the
  * user's music and plays with the silent switch on; in a browser it falls back
  * to the Web Speech API.
@@ -427,6 +464,7 @@ export const mobile: MobileApi = {
   keepAwake,
   brightness,
   music,
+  heartRate,
   speech,
   network,
   pushNotifications,

@@ -74,6 +74,7 @@ export interface MobileApi {
   keepAwake: KeepAwakeApi
   brightness: BrightnessApi
   music: MusicApi
+  heartRate: HeartRateApi
   speech: SpeechApi
   network: NetworkApi
   pushNotifications: PushNotificationsApi
@@ -365,6 +366,117 @@ export interface MusicSkipOptions {
 }
 
 export type MusicMethod = 'getAuthorizationStatus' | 'requestAuthorization' | 'getNowPlaying' | 'play' | 'pause' | 'togglePlayPause' | 'skipToNext' | 'skipToPrevious' | 'observe'
+
+/** Whether the person has let the app use Bluetooth. `unavailable` off a phone. */
+export type HeartRateAuthorization = 'authorized' | 'denied' | 'restricted' | 'notDetermined' | 'unavailable'
+
+/** The phone's Bluetooth radio; `unknown` until something has asked for it. */
+export type BluetoothState = 'poweredOn' | 'poweredOff' | 'unauthorized' | 'unsupported' | 'resetting' | 'unknown'
+
+/** A strap that drops out is asked for again (`reconnecting`) until `disconnect()`. */
+export type HeartRateConnection = 'disconnected' | 'connecting' | 'connected' | 'reconnecting'
+
+/** A heart-rate strap, or a watch broadcasting its heart rate. */
+export interface HeartRateDevice {
+  /** The phone's own id for it: what `connect` takes. */
+  id: string
+  name: string
+  /** Signal strength, dBm, from the scan; 0 for a strap already connected to the phone. */
+  rssi: number | null
+}
+
+export interface HeartRateRecordingState {
+  id: string | null
+  active: boolean
+  paused: boolean
+  /** ms since the epoch. */
+  startedAt: number | null
+  sampleCount: number | null
+}
+
+export interface HeartRateState {
+  /** False off a phone, in an app built without `capabilities.heartRate`, or on a phone without Bluetooth. */
+  available: boolean
+  bluetooth: BluetoothState
+  authorization: HeartRateAuthorization
+  scanning: boolean
+  connection: HeartRateConnection
+  /** The strap connected, or being connected to. */
+  device: HeartRateDevice | null
+  /** The strap `reconnect()` asks for: the last one connected on this phone. */
+  lastDevice: HeartRateDevice | null
+  /** The latest reading while it is fresh (ten seconds), else null. */
+  bpm: number | null
+  lastReadingAt: number | null
+  recording: HeartRateRecordingState
+}
+
+export interface HeartRateReading {
+  bpm: number
+  /** Milliseconds between beats, oldest first; empty when the strap sends none. */
+  rrIntervals: number[]
+  /** Whether the strap touches skin; null when it cannot tell. */
+  contact: boolean | null
+  energyExpended: number | null
+  /** ms since the epoch. */
+  timestamp: number
+  deviceId: string | null
+}
+
+/** A reading as a recording keeps it. */
+export interface HeartRateSample {
+  /** ms since the epoch. */
+  timestamp: number
+  bpm: number
+  /** Milliseconds between beats, when the strap sent them. */
+  rr?: number[]
+}
+
+export type HeartRateMethod = 'getState' | 'requestAuthorization' | 'scan' | 'stopScan' | 'getDevices' | 'connect' | 'reconnect' | 'disconnect'
+  | 'startRecording' | 'pauseRecording' | 'resumeRecording' | 'stopRecording' | 'getRecordingState' | 'readRecording'
+
+/** The recording half of HeartRateApi: what a route recorder drives. */
+export interface HeartRateRecordingApi {
+  isAvailable: () => boolean
+  startRecording: () => Promise<HeartRateRecordingState>
+  pauseRecording: () => Promise<HeartRateRecordingState>
+  resumeRecording: () => Promise<HeartRateRecordingState>
+  stopRecording: () => Promise<HeartRateRecordingState & { samples: HeartRateSample[] }>
+  getRecordingState: () => Promise<HeartRateRecordingState>
+  readRecording: (options?: { since?: number }) => Promise<HeartRateSample[]>
+}
+
+export interface HeartRateApi extends HeartRateRecordingApi {
+  /** Whether this app can read a heart-rate strap (false until the bridge has arrived). */
+  isAvailable: () => boolean
+  /** Whether this app build answers `method`; an older build may lack one. */
+  supports: (method: HeartRateMethod) => boolean
+  /** Bluetooth, the connection, the strap and its latest reading, without asking anything. */
+  getState: () => Promise<HeartRateState>
+  /** iOS's Bluetooth prompt the first time, its remembered answer after. Call it from a tap. */
+  requestAuthorization: () => Promise<HeartRateAuthorization>
+  /** Look for straps for `timeout` seconds (15); `onDevice` hears each one. Can ask for Bluetooth. */
+  scan: (options?: { timeout?: number }) => Promise<HeartRateState>
+  stopScan: () => Promise<HeartRateState>
+  /** What the last scan found, strongest signal first. */
+  getDevices: () => Promise<HeartRateDevice[]>
+  /**
+   * Connect and subscribe to its readings; the strap is remembered. Rejects
+   * with code TIMEOUT after 15 s while still asking for it (a strap wakes when
+   * worn), BLUETOOTH_OFF, NOT_AUTHORIZED or NOT_FOUND.
+   */
+  connect: (id: string) => Promise<HeartRateState>
+  /** Ask for the remembered strap again without waiting for it; no-op without one. */
+  reconnect: () => Promise<HeartRateState>
+  /** Stop asking for the strap; `forget` also drops it from memory. */
+  disconnect: (options?: { forget?: boolean }) => Promise<HeartRateState>
+  /** Each reading, about once a second; never fires off a phone. */
+  onReading: (callback: (reading: HeartRateReading) => void) => () => void
+  /** Each strap a scan finds. */
+  onDevice: (callback: (device: HeartRateDevice) => void) => () => void
+  /** Bluetooth, scanning or the connection changed. */
+  onState: (callback: (state: HeartRateState) => void) => () => void
+}
 
 export interface MusicApi {
   /** Whether this app can show and steer the Music app (false until the bridge has arrived). */

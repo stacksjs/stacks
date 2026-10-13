@@ -201,6 +201,39 @@ every render would put a record straight back the moment they left it. Donating
 the same record twice is free, so an effect over the record is the natural call
 site.
 
+## Heart-rate strap (Bluetooth)
+
+`heartRate` reads a Bluetooth heart-rate strap (Polar, Garmin, Wahoo), or a
+watch broadcasting its heart rate, through the standard Heart Rate Service.
+`scan` finds straps nearby (`onDevice` hears each), `connect(id)` subscribes
+to its readings (`onReading`: bpm and RR intervals, about once a second) and
+remembers it, so `reconnect()` finds it next time without a scan; a strap that
+drops out is asked for again until `disconnect()`. `startRecording()` keeps
+every reading natively, screen locked or app closed, until `stopRecording()`
+hands them back. iOS only, behind `capabilities.heartRate` (which adds the
+`bluetooth-central` background mode); Bluetooth needs no network.
+
+```ts
+import { createRouteRecorder, heartRate, location } from '@stacksjs/mobile'
+
+const stop = heartRate.onDevice(device => list.push(device)) // { id, name, rssi }
+await heartRate.scan({ timeout: 15 })        // can show iOS's Bluetooth prompt
+await heartRate.connect(list[0].id)          // rejects TIMEOUT while still asking
+heartRate.onReading(reading => show(reading.bpm))
+
+// With a route: the strap records with it, and each fix gets its heart rate.
+const recorder = createRouteRecorder({ location, heartRate })
+await recorder.start()
+const fixes = await recorder.stop()          // fixes[i].heartRate
+const samples = recorder.heartRate           // every reading: { timestamp, bpm, rr? }
+```
+
+Without a route, record it on its own (`heartRate.startRecording()` /
+`stopRecording()`), and `attachHeartRate(fixes, samples)` pairs readings
+with fixes recorded separately. In a browser and on Android `isAvailable()` is
+false, the state says `available: false` and nothing fires. Word iOS's prompt
+with `ios.usageDescriptions.NSBluetoothAlwaysUsageDescription`.
+
 ## Apple Music (now playing)
 
 `music` shows what the Music app is playing (title, artist, album, a small

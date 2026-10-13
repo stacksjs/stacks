@@ -74,6 +74,7 @@ const CAPABILITY_KEYS = {
   nfc: 'enableNFC',
   healthKit: 'enableHealthKit',
   appleMusic: 'enableAppleMusic',
+  heartRate: 'enableHeartRate',
   liveActivities: 'enableLiveActivities',
   watchApp: 'enableWatchApp',
   backgroundTasks: 'enableBackgroundTasks',

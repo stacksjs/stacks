@@ -9,12 +9,46 @@
  * the fixes at the end can do the careful arithmetic (smoothed climb, moving
  * time) once.
  */
-import type { Location, LocationApi, LocationOptions, LocationRecordingState } from './types'
+import type { HeartRateRecordingApi, HeartRateSample, Location, LocationApi, LocationOptions, LocationRecordingState } from './types'
 
 /** A fix as Craft records it. */
 export interface RouteFix extends Location {
   /** Metres; negative when the altitude is unknown. */
   altitudeAccuracy?: number
+  /** Beats per minute from a heart-rate strap at about this moment (`attachHeartRate`). */
+  heartRate?: number
+}
+
+/** A fix and a strap's reading further apart than this, ms, do not belong together. */
+export const HEART_RATE_MATCH_MS = 5000
+
+/**
+ * The fixes with the heart rate of the reading nearest each one, when there
+ * is one within `maxGapMs`: a strap reads about once a second, a phone fixes
+ * about once a second, and neither waits for the other. A fix with no reading
+ * near it (the strap off, or not worn yet) keeps none.
+ */
+export function attachHeartRate<T extends RouteFix>(fixes: readonly T[], samples: readonly HeartRateSample[], maxGapMs = HEART_RATE_MATCH_MS): T[] {
+  const readings = samples
+    .filter(sample => Number.isFinite(sample.timestamp) && Number.isFinite(sample.bpm) && sample.bpm > 0)
+    .slice()
+    .sort((a, b) => a.timestamp - b.timestamp)
+  if (!readings.length) return fixes.slice()
+  return fixes.map((fix) => {
+    // The first reading at or after the fix, and the one before it.
+    let low = 0
+    let high = readings.length
+    while (low < high) {
+      const middle = (low + high) >> 1
+      if (readings[middle]!.timestamp < fix.timestamp) low = middle + 1
+      else high = middle
+    }
+    const after = readings[low]
+    const before = readings[low - 1]
+    const nearest = !after ? before : !before ? after : fix.timestamp - before.timestamp <= after.timestamp - fix.timestamp ? before : after
+    if (!nearest || Math.abs(nearest.timestamp - fix.timestamp) > maxGapMs) return fix
+    return { ...fix, heartRate: Math.round(nearest.bpm) }
+  })
 }
 
 export interface RouteStats {
@@ -160,6 +194,13 @@ export interface RouteRecorderOptions extends RouteStatsOptions {
   /** The location service; `location` from @stacksjs/mobile by default. */
   location: LocationApi
   locationOptions?: LocationOptions
+  /**
+   * `heartRate` from @stacksjs/mobile, to record a strap's readings with the
+   * route: started, paused, resumed and stopped with it (natively, so they
+   * keep coming with the screen locked), and attached to the fixes `stop()`
+   * hands back. Recording goes on whether or not a strap is connected yet.
+   */
+  heartRate?: HeartRateRecordingApi
 }
 
 export interface RouteRecorder {
@@ -172,13 +213,15 @@ export interface RouteRecorder {
   attach: () => Promise<LocationRecordingState | null>
   pause: () => Promise<void>
   resume: () => Promise<void>
-  /** Ends the recording and hands back every fix it made. */
+  /** Ends the recording and hands back every fix it made, each with the heart rate near it when one was recorded. */
   stop: () => Promise<RouteFix[]>
   /** Reads the recording now. */
   refresh: () => Promise<RouteStats>
   /** Detaches polling from a page without ending its native recording. */
   dispose: () => void
   readonly stats: RouteStats
+  /** Every strap reading the last stopped recording kept, oldest first; empty without `heartRate`. */
+  readonly heartRate: HeartRateSample[]
 }
 
 const EMPTY_STATS: RouteStats = { distanceM: 0, movingS: 0, paceSPerKm: null, averagePaceSPerKm: null, speedMps: null, accuracyM: null, fixes: 0 }
@@ -193,6 +236,9 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
   const every = options.intervalMs ?? 3000
   let stats: RouteStats = EMPTY_STATS
   let timer: ReturnType<typeof setInterval> | null = null
+  const strap = options.heartRate
+  let strapRecording = false
+  let heartRateSamples: HeartRateSample[] = []
 
   const hidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden'
 
@@ -237,12 +283,23 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     timer = null
   }
 
+  // The strap's recording follows the route's. A strap that cannot record
+  // (no Bluetooth, an older app) never stops the route.
+  async function strapDo(run: (api: HeartRateRecordingApi) => Promise<unknown>): Promise<void> {
+    if (!strap || !strapRecording) return
+    await run(strap).catch(() => {})
+  }
+
   return {
     get stats() { return stats },
+    get heartRate() { return heartRateSamples },
     start() {
       ending = null
       return serialize(async () => {
         await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions })
+        heartRateSamples = []
+        strapRecording = !!strap?.isAvailable()
+        await strapDo(api => api.startRecording())
         generation++
         stats = { ...EMPTY_STATS }
         if (!disposed) options.onUpdate?.(stats)
@@ -254,6 +311,8 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
       return serialize(async () => {
         const state = await location.getRecordingState()
         if (!state?.active) return null
+        // A strap recording that outlived the page with the route is this one's.
+        if (strap?.isAvailable()) strapRecording = !!(await strap.getRecordingState().catch(() => null))?.active
         await refresh().catch(() => {})
         if (!state.paused) poll()
         return state
@@ -262,6 +321,7 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     pause() {
       return serialize(async () => {
         await location.pauseRecording()
+        await strapDo(api => api.pauseRecording())
         stopPolling()
         await refresh().catch(() => {})
       })
@@ -269,6 +329,7 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     resume() {
       return serialize(async () => {
         await location.resumeRecording()
+        await strapDo(api => api.resumeRecording())
         poll()
       })
     },
@@ -278,7 +339,13 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
         stopPolling()
         generation++
         const result = await location.stopRecording()
-        const fixes = (result?.locations ?? []) as RouteFix[]
+        let fixes = (result?.locations ?? []) as RouteFix[]
+        if (strap && strapRecording) {
+          const recorded = await strap.stopRecording().catch(() => null)
+          strapRecording = false
+          heartRateSamples = recorded?.samples ?? []
+          fixes = attachHeartRate(fixes, heartRateSamples)
+        }
         stats = routeStats(fixes, options)
         if (!disposed) options.onUpdate?.(stats)
         return fixes
