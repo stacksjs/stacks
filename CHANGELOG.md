@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.158...v0.75.159)
+
+## 🐛 Bug Fixes
+
+- **typecheck**: resolve composable and path subpaths from app source ([98dc44f](https://github.com/stacksjs/stacks/commit/98dc44f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **types**: retain campaign states and queue write expression types ([a3cde98](https://github.com/stacksjs/stacks/commit/a3cde98)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **orm**: preserve validated enum values when factories return strings ([95d8634](https://github.com/stacksjs/stacks/commit/95d8634)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.157...v0.75.158)
 
 ## ✨ Features
