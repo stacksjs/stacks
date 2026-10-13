@@ -14,3 +14,13 @@ const result = await Bun.build({
 })
 
 await outro({ dir: import.meta.dir, startTime, result })
+
+const testing = await Bun.build({
+  entrypoints: ['./src/testing.ts'],
+  outdir: './dist',
+  format: 'esm',
+  target: 'bun',
+  external: frameworkExternal(),
+  plugins: [dts({ root: './src', outdir: './dist', bundle: true })],
+})
+if (!testing.success) throw new Error(`Mobile testing build failed: ${testing.logs.join('\n')}`)

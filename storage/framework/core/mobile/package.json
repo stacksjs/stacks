@@ -18,6 +18,12 @@
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./testing": {
+      "browser": null,
+      "types": "./dist/testing.d.ts",
+      "bun": "./dist/testing.js",
+      "import": "./dist/testing.js"
     }
   },
   "module": "dist/index.js",
@@ -32,7 +38,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "craft-native": ">=0.0.152"
+    "@stacksjs/types": "workspace:*",
+    "craft-native": ">=0.0.155"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

@@ -101,6 +101,19 @@ export interface IosMobileConfig {
   webAssets?: string
   fallbackWebAssets?: string
   output?: string
+  /** Package-owned Swift is generated into the build directory and restored after Xcode Cloud clones the project. */
+  shell?: {
+    /** Bun version installed by ci_post_clone when Bun is unavailable. Defaults to the version generating the project. */
+    bunVersion?: string
+  }
+  /** Reusable simulator test host, configured in TypeScript rather than app-owned Swift. */
+  simulator?: {
+    output?: string
+    projectName?: string
+    bundleIdPrefix?: string
+    deploymentTarget?: string
+    controlUrl?: string
+  }
   /** Pins the interface to Dark (`true`) or Light (`false`). See `appearance`. */
   darkMode?: boolean
   /**
