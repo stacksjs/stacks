@@ -308,6 +308,38 @@ async function reportIgnoredMigrations(): Promise<boolean> {
 }
 
 /**
+ * Migration files that share an ordinal. `--strict` refuses any; otherwise a
+ * group with a generated file in it is a warning, since that is two branches
+ * that each generated the same number, and the runner will order them by the
+ * alphabet rather than by intent. Returns whether the command may go on.
+ */
+async function reportDuplicateMigrationNumbers(options: { strict: boolean }): Promise<boolean> {
+  try {
+    const { activeMigrationDirectory, duplicateMigrationOrdinalsIn } = await import('@stacksjs/database')
+    const groups = duplicateMigrationOrdinalsIn(await activeMigrationDirectory())
+    const reported = options.strict ? groups : groups.filter(group => group.generated)
+    if (reported.length === 0)
+      return true
+    const lines = reported.slice(0, 10).map(group => `  • ${group.ordinal}: ${group.files.join(', ')}`)
+    if (reported.length > 10)
+      lines.push(`  • … +${reported.length - 10} more`)
+    const message = `${reported.length} migration number${reported.length === 1 ? ' is' : 's are'} used by more than one file:\n${lines.join('\n')}`
+    const remedy = '  The runner orders same-numbered files alphabetically, not by intent. Renumber the file(s) nothing has applied yet past the highest number, or regenerate them with `./buddy generate:migrations`.'
+    if (options.strict) {
+      log.syncError(`--strict: ${message}\n${remedy}`)
+      return false
+    }
+    log.warn(message)
+    log.info(remedy)
+    return true
+  }
+  catch (err) {
+    log.debug(`[migrate] duplicate migration number check skipped: ${err instanceof Error ? err.message : String(err)}`)
+    return true
+  }
+}
+
+/**
  * Migration files no generator wrote. Every schema change is meant to come
  * from the models; a hand-written file is drift the models cannot see. Listed
  * in full by `migrate:status`; here, one line. Returns whether there are none.
@@ -332,8 +364,9 @@ async function reportHandWrittenMigrations(options: { list?: boolean } = {}): Pr
 }
 
 /**
- * `--strict` (or STACKS_MIGRATE_STRICT=1): drift and ignored migrations fail
- * the command instead of warning. For CI, where a missing table is a build
+ * `--strict` (or STACKS_MIGRATE_STRICT=1): drift, ignored or hand-written
+ * migrations, and two files sharing a number fail the command instead of
+ * warning. For CI, where a missing table is a build
  * to stop rather than a message to scroll past. Deploys keep the warning:
  * repairing drift is the operator's to schedule.
  */
@@ -656,7 +689,7 @@ export function migrate(buddy: CLI): void {
     .option('--from-db', descriptions.fromDb, { default: false })
     .option('--no-rename', descriptions.noRename)
     .option('--no-generate', descriptions.noGenerate)
-    .option('--strict', 'Fail when the schema has drifted from the models or a migration is git-ignored (for CI)', { default: false })
+    .option('--strict', 'Fail when the schema has drifted from the models, a migration is git-ignored or hand-written, or two migrations share a number (for CI)', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean, strict?: boolean, dryRun?: boolean, pretend?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
@@ -678,6 +711,11 @@ export function migrate(buddy: CLI): void {
         console.error(`\n❌ Error: ${dialectCheck.error!}\n`)
         process.exit(ExitCode.FatalError)
       }
+
+      // Before anything runs: under --strict a corpus whose order is decided by
+      // the alphabet is refused outright, not after it has been applied.
+      if (!(await reportDuplicateMigrationNumbers({ strict: strictMode(options) })))
+        process.exit(ExitCode.FatalError)
 
       // Thread the rename / from-db decisions across the action subprocess
       // boundary via env (the child inherits process.env). cac maps

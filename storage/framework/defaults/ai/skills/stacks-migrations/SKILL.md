@@ -71,6 +71,31 @@ without changing application ignore rules or staging SQL contents. Review and
 stage migrations with their models and snapshot normally; do not add per-file
 `.gitignore` exceptions. Dry-run previews never change the Git index.
 
+## How generated files are numbered
+
+The `migrations` ledger keys on the filename and stores nothing else (no
+checksum), and `migrate` skips every file whose name it lists. A new file that
+reuses a recorded name is therefore never applied, silently. That happens after
+`migrate:regenerate` restarts the corpus at 1 while older databases still hold
+the old corpus's rows.
+
+So `generate:migrations` numbers past three sources, not just the files on
+disk: the ledger of the configured database (when it can be read; a missing
+SQLite file is not created), and every filename the migrations directory has
+dropped in git history (`retiredMigrationNames`, renames included), which
+stands in for production ledgers this machine cannot see. Numbering continues
+after the highest sequential ordinal among them and skips any ordinal they use.
+Timestamp ordinals (`make:migration` names, >= 1e9) found only in the ledger or
+history are skipped but do not raise the floor; package band files are ignored.
+Expect a gap after a regeneration; it is intended. In a shallow clone with no
+database the guard falls back to the files on disk, so generate locally.
+
+Do not rename a generated file to close a gap or reuse a number, and do not
+renumber a file that any database has run. `buddy migrate` warns when two
+generated files share a number (two branches each generated it), and
+`buddy migrate --strict` refuses any duplicated number before running anything.
+Renumber the unapplied file past the highest number.
+
 ## Built-in migration families
 
 The framework includes migrations for all built-in models:
@@ -163,7 +188,8 @@ lossless widenings; reports everything destructive), then
 
 ## Gotchas
 - `migrate:fresh` drops ALL tables — only use in development
-- Migrations run in filename order (timestamps ensure correct sequence)
+- Migrations run in filename order; two files with one number run alphabetically, which `--strict` refuses
+- Never reuse a migration filename: the ledger keys on the name only, so a reused name is skipped, not run
 - Never edit a migration that's been run in production — create a new one
 - Keep the committed model snapshot in sync with every generated migration
 - Do not commit a second snapshot under `.qb/`; that indicates a missing `snapshotDir` configuration

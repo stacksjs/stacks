@@ -166,6 +166,8 @@ export * from './migration-path'
 export * from './migration-ledger'
 export * from './schema-align'
 export * from './hand-written-migrations'
+// Generated names never reuse one a ledger or the corpus's history holds.
+export * from './migration-names'
 export { comparableIndexKey, postgresIndexStatement } from './index-shape'
 
 // Model resolution for the generator: userland + framework defaults, flattened

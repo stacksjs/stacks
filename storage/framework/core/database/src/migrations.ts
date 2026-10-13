@@ -10,6 +10,7 @@ import type { Result } from '@stacksjs/error-handling'
 import type { IndexShape } from './index-shape'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { isPackageMigration, stagePackageMigrations } from './package-migrations'
+import { nextFreeMigrationOrdinal, nextMigrationOrdinal, reservedMigrationOrdinals, retiredMigrationNames } from './migration-names'
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
@@ -3034,7 +3035,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     }
 
     if (result.hasChanges) {
-      const written = persistGeneratedMigrations(sqlStatements, storedPlan)
+      const written = persistGeneratedMigrations(sqlStatements, storedPlan, await claimedMigrationNames(migrationDirectory()))
       // Only announce when we actually wrote files. `hasChanges` can be
       // true while `written === 0` if the qb diff restated statements
       // already covered by committed migrations — that's a no-op from
@@ -4472,7 +4473,75 @@ export function persistedGroupLabel(label: string, statements: readonly string[]
   return only ? `create-${only.name}-index-in-${table}` : `create-${table}-indexes`
 }
 
-function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: MigrationPlan): number {
+/**
+ * Every migration filename a database may already have recorded, beyond the
+ * files on disk: the ledger of the database at hand, when it can be read, and
+ * the names the corpus has dropped over its git history. See
+ * `migration-names.ts` for why both, and why the generator must avoid them.
+ *
+ * Never throws and never blocks for long. With no database (a fresh clone, CI
+ * before `migrate`, a server that is down) the git history still covers every
+ * name that could have reached a deployed ledger; with neither, numbering
+ * falls back to the files on disk, which is what it always was.
+ */
+export async function claimedMigrationNames(dir: string = migrationDirectory()): Promise<string[]> {
+  const ledger = await ledgerNamesForNumbering()
+  if (ledger === null)
+    log.debug('[migration] Could not read the migrations table; numbering from the corpus and its git history')
+  return [...new Set([...(ledger ?? []), ...retiredMigrationNames(dir)])].sort()
+}
+
+/**
+ * The ledger's filenames, `[]` when there is no ledger yet, or `null` when the
+ * database could not be asked. Reading must not create anything: on SQLite a
+ * missing file stays missing rather than being opened (which creates it).
+ */
+async function ledgerNamesForNumbering(timeoutMs = 5000): Promise<string[] | null> {
+  try {
+    if (getDialect() === 'sqlite' && !usesLibsql()) {
+      const file = sqliteDatabasePath()
+      if (file.includes(':memory:') || !existsSync(file))
+        return null
+    }
+  }
+  catch {
+    return null
+  }
+
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    const query = Promise.resolve(db.unsafe('SELECT migration FROM migrations').execute() as unknown)
+    const timeout = new Promise<'timeout'>((done) => {
+      timer = setTimeout(() => done('timeout'), timeoutMs)
+    })
+    const rows = await Promise.race([query, timeout])
+    if (rows === 'timeout') {
+      query.catch(() => {})
+      return null
+    }
+    return (Array.isArray(rows) ? rows : [])
+      .map(row => String((row as { migration?: unknown }).migration ?? ''))
+      .filter(name => name.length > 0)
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return /no such table|does not exist|doesn't exist/i.test(message) ? [] : null
+  }
+  finally {
+    if (timer)
+      clearTimeout(timer)
+  }
+}
+
+/**
+ * Write generated SQL to the corpus, one file per group.
+ *
+ * `claimed` is every name some database may already have recorded (see
+ * {@link claimedMigrationNames}). No file is written under one of those names,
+ * or under one of their ordinals: the ledger keys on the filename alone, so a
+ * reused name is a migration `migrate` silently skips.
+ */
+export function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: MigrationPlan, claimed: readonly string[] = []): number {
   if (!sqlStatements?.length)
     return 0
 
@@ -4494,7 +4563,12 @@ function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: Migr
 
   const groups = groupGeneratedStatements(sqlStatements, previousPlan)
   let written = 0
-  let cursor = nextMigrationNumber(migrationsDir)
+  let diskFiles: string[] = []
+  try { diskFiles = readdirSync(migrationsDir) }
+  catch { /* directory missing - start at 1 */ }
+  const reserved = reservedMigrationOrdinals(claimed)
+  const taken = new Set([...diskFiles, ...claimed])
+  let cursor = nextMigrationOrdinal(diskFiles, claimed)
 
   for (const group of groups) {
     const fresh = group.statements.filter((stmt) => {
@@ -4514,7 +4588,12 @@ function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: Migr
     if (fresh.length === 0)
       continue
 
-    const filename = `${String(cursor).padStart(10, '0')}-${persistedGroupLabel(group.label, fresh)}.sql`
+    const label = persistedGroupLabel(group.label, fresh)
+    // Belt and braces: the ordinal already avoids every claimed one, so this
+    // only matters for a name the ordinal scan could not read.
+    while (taken.has(`${String(cursor).padStart(10, '0')}-${label}.sql`))
+      cursor = nextFreeMigrationOrdinal(cursor + 1, reserved)
+    const filename = `${String(cursor).padStart(10, '0')}-${label}.sql`
     const filePath = join(migrationsDir, filename)
     const body = `${fresh.map(s => s.trim().replace(/;\s*$/, '')).join(';\n')};\n`
     // Stamped for the same reason regeneration stamps: this file came from the
@@ -4525,8 +4604,9 @@ function persistGeneratedMigrations(sqlStatements: string[], previousPlan?: Migr
     const content = `${GENERATED_MIGRATION_MARKER}\n${body}`
     writeFileSync(filePath, getDialect() === 'postgres' ? normalizePostgresMigrationSql(content) : content)
     log.debug(`[migration] Wrote ${filename} (${fresh.length} stmt${fresh.length === 1 ? '' : 's'})`)
+    taken.add(filename)
     written += 1
-    cursor += 1
+    cursor = nextFreeMigrationOrdinal(cursor + 1, reserved)
   }
 
   return written
@@ -4806,23 +4886,6 @@ export function withTableDropsLast(groups: GeneratedGroup[], previousPlan?: Migr
     visit(group)
 
   return [...rest, ...sorted]
-}
-
-function nextMigrationNumber(migrationsDir: string): number {
-  let max = 0
-  try {
-    for (const f of readdirSync(migrationsDir)) {
-      // A package's migrations sit in a reserved high band. Counting them here
-      // would push the application's next ordinal into that band, and every
-      // application migration after it would then run AFTER the package's.
-      if (isPackageMigration(f))
-        continue
-      const m = f.match(/^(\d+)-/)
-      if (m?.[1]) max = Math.max(max, Number.parseInt(m[1], 10))
-    }
-  }
-  catch { /* directory missing — start at 1 */ }
-  return max + 1
 }
 
 /**
