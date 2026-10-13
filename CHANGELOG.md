@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.156...v0.75.157)
+
+## ✨ Features
+
+- **ios**: restore generated Swift after cloud clones ([1c222b3](https://github.com/stacksjs/stacks/commit/1c222b3)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: configure package-owned native test shells in TypeScript ([98fd2c9](https://github.com/stacksjs/stacks/commit/98fd2c9)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **ios**: link the Xcode Cloud hook contract ([ce307a2](https://github.com/stacksjs/stacks/commit/ce307a2)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: document zero Swift applications and shared native shells ([7cc15f1](https://github.com/stacksjs/stacks/commit/7cc15f1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.155...v0.75.156)
 
 ## 🐛 Bug Fixes
