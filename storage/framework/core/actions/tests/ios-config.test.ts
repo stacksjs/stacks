@@ -90,6 +90,12 @@ describe('iOS mobile build configuration', () => {
     expect('enableHeartRate' in toCraftIosConfig({ appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' })).toBe(false)
   })
 
+  it('keeps sound playing with the screen locked only when the app asks', () => {
+    const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' }
+    expect(toCraftIosConfig({ ...base, capabilities: { backgroundAudio: true } }).enableBackgroundAudio).toBe(true)
+    expect('enableBackgroundAudio' in toCraftIosConfig(base)).toBe(false)
+  })
+
   it('passes native screens, the first-frame tabs and shared storage through to Craft', () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

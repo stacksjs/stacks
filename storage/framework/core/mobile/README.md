@@ -119,6 +119,21 @@ if (health.supports('getHeartRateSamples')) {
 }
 ```
 
+Mindful minutes: ask for `mindful` with writing allowed, then
+`health.saveMindfulSession({ id, startDate, endDate })` records a meditation or
+breathing session. The id is kept as the sample's external UUID, so saving it
+again keeps the first sample (`existing: true`). `health.getMindfulSessions(range)`
+reads every app's sessions back, oldest first, with `ownApp` set on the ones this
+app wrote, so an import can skip its own. Both are iOS only for now and need
+Craft 0.0.161; an older build resolves `null` and `[]`.
+
+```ts
+await health.requestAuthorization(['mindful'], { write: true })
+if (health.supports('saveMindfulSession'))
+  await health.saveMindfulSession({ id: session.id, startDate: started, endDate: Date.now() })
+const others = (await health.getMindfulSessions({ startDate: Date.now() - 7 * 86400000 })).filter(row => !row.ownApp)
+```
+
 ## Heart-rate strap
 
 `heartRate` reads a Bluetooth heart-rate strap (Polar, Garmin, Wahoo), or a
@@ -130,6 +145,12 @@ drops out is asked for again until `disconnect()`. `startRecording()` keeps
 every reading natively, screen locked or app closed, until `stopRecording()`
 hands them back. iOS only, behind `capabilities.heartRate` (which adds the
 `bluetooth-central` background mode); Bluetooth needs no network.
+
+`capabilities.backgroundAudio` (iOS) adds the `audio` background mode, so a
+soundscape played with Web Audio keeps going with the screen locked: a sleep
+timer built on stx's `useAmbientSound().fadeOut(seconds, after)` then fades it
+out on the audio clock. App Review expects audible content from an app that
+asks for it.
 
 ```ts
 import { createRouteRecorder, heartRate, location } from '@stacksjs/mobile'

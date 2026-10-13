@@ -46,6 +46,12 @@ export interface MobileCapabilities {
    * asks for Bluetooth the first time the page scans or connects.
    */
   heartRate?: boolean
+  /**
+   * iOS: keep sound playing with the screen locked (a sleep soundscape, a
+   * meditation's ambience). Adds the `audio` background mode; App Review
+   * expects an app that asks for it to play audible content.
+   */
+  backgroundAudio?: boolean
   liveActivities?: boolean
   watchApp?: boolean
   backgroundTasks?: boolean

@@ -229,6 +229,12 @@ every reading natively, screen locked or app closed, until `stopRecording()`
 hands them back. iOS only, behind `capabilities.heartRate` (which adds the
 `bluetooth-central` background mode); Bluetooth needs no network.
 
+`capabilities.backgroundAudio` (iOS) adds the `audio` background mode, so a
+soundscape played with Web Audio keeps going with the screen locked: a sleep
+timer built on stx's `useAmbientSound().fadeOut(seconds, after)` then fades it
+out on the audio clock. App Review expects audible content from an app that
+asks for it.
+
 ```ts
 import { createRouteRecorder, heartRate, location } from '@stacksjs/mobile'
 
@@ -422,7 +428,10 @@ energy, distance, heart rate, resting heart rate, HRV, weight and sleep.
 `health.getHeartRateSamples(range)` returns every heart-rate reading (bpm,
 start/end, source and device) and `health.getSleepIntervals(range)` the night's
 in-bed, awake and asleep stages; check `health.supports(method)` first, since an
-app build that predates a read resolves `[]` for it. Completed
+app build that predates a read resolves `[]` for it. Mindful minutes go through
+`health.saveMindfulSession({ id, startDate, endDate })` (the `mindful` grant;
+the id is the sample's external UUID, so a repeat save keeps the first) and come
+back from `health.getMindfulSessions(range)` with `ownApp` on this app's own. Completed
 recordings can be written back with `health.saveWorkout(...)`; treat permission
 revocation as a normal runtime state and never block saving the application's
 own activity when a health write fails.

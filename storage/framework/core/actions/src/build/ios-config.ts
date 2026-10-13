@@ -81,6 +81,7 @@ const CAPABILITY_KEYS = {
   healthKit: 'enableHealthKit',
   appleMusic: 'enableAppleMusic',
   heartRate: 'enableHeartRate',
+  backgroundAudio: 'enableBackgroundAudio',
   liveActivities: 'enableLiveActivities',
   watchApp: 'enableWatchApp',
   backgroundTasks: 'enableBackgroundTasks',

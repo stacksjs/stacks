@@ -56,6 +56,8 @@ import type {
   HapticsApi,
   HealthApi,
   HealthHeartRateSample,
+  HealthMindfulSample,
+  HealthMindfulSessionResult,
   HealthSleepInterval,
   HeartRateApi,
   KeepAwakeApi,
@@ -342,6 +344,8 @@ export const health: HealthApi = {
   // resolves an older craft-native still reaches a shell that has the read.
   getHeartRateSamples: options => callNative<HealthHeartRateSample[]>('health.getHeartRateSamples', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
   getSleepIntervals: options => callNative<HealthSleepInterval[]>('health.getSleepIntervals', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
+  saveMindfulSession: session => callNative<HealthMindfulSessionResult | null>('health.saveMindfulSession', [session], () => null).then(saved => saved ?? null),
+  getMindfulSessions: options => callNative<HealthMindfulSample[]>('health.getMindfulSessions', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
   supports: method => nativeFunctionNow(`health.${method}`) !== null,
 }
 export const liveActivities: LiveActivitiesApi = {

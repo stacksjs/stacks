@@ -54,3 +54,38 @@ describe('health heart rate and sleep', () => {
     expect(await health.getSleepIntervals()).toEqual([])
   })
 })
+
+describe('health mindful sessions', () => {
+  const sample = { id: 'HK-1', startDate: 0, endDate: 300_000, durationSeconds: 300, sourceName: 'HQ.training', sourceBundleId: 'training.hq.app', ownApp: true, externalId: 'hq-1' }
+
+  it('saves and reads them through the shell', async () => {
+    const calls: unknown[][] = []
+    install({
+      platform: 'ios',
+      health: {
+        saveMindfulSession: async (session: unknown) => { calls.push(['save', session]); return { id: 'HK-1', externalId: 'hq-1', existing: false } },
+        getMindfulSessions: async (options: unknown) => { calls.push(['read', options]); return [sample] },
+      },
+    })
+    expect(health.supports('saveMindfulSession')).toBe(true)
+    expect(health.supports('getMindfulSessions')).toBe(true)
+    expect(await health.saveMindfulSession({ id: 'hq-1', startDate: 0, endDate: 300_000 })).toEqual({ id: 'HK-1', externalId: 'hq-1', existing: false })
+    expect(await health.getMindfulSessions({ startDate: 0 })).toEqual([sample] as any)
+    expect(calls).toEqual([['save', { id: 'hq-1', startDate: 0, endDate: 300_000 }], ['read', { startDate: 0 }]])
+  })
+
+  it('answers null and [] in a browser or on an older build', async () => {
+    install()
+    expect(health.supports('saveMindfulSession')).toBe(false)
+    expect(await health.saveMindfulSession({ id: 'hq-1', startDate: 0, endDate: 1 })).toBeNull()
+    expect(await health.getMindfulSessions()).toEqual([])
+    install({ platform: 'ios', health: {} })
+    expect(await health.saveMindfulSession({ id: 'hq-1', startDate: 0, endDate: 1 })).toBeNull()
+  })
+
+  it('passes a refused write on', async () => {
+    install({ platform: 'ios', health: { saveMindfulSession: async () => { throw new Error('Not authorized') }, getMindfulSessions: async () => null } })
+    await expect(health.saveMindfulSession({ id: 'hq-1', startDate: 0, endDate: 1 })).rejects.toThrow('Not authorized')
+    expect(await health.getMindfulSessions()).toEqual([])
+  })
+})

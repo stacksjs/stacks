@@ -555,9 +555,11 @@ export type HealthDataType =
   | 'dietaryProtein'
   | 'dietaryCarbohydrates'
   | 'dietaryFat'
+  /** Mindful minutes (meditation, breathing): `saveMindfulSession` writes, `getMindfulSessions` reads (Craft 0.0.161). */
+  | 'mindful'
 
 /** The types with one value per day. `sleep` is hours asleep, counted on the day you woke. */
-export type HealthDailyType = Exclude<HealthDataType, 'workouts'>
+export type HealthDailyType = Exclude<HealthDataType, 'workouts' | 'mindful'>
 
 export interface HealthDataOptions {
   startDate?: number
@@ -680,8 +682,53 @@ export interface HealthSleepInterval {
   deviceName?: string
 }
 
-/** The health reads an installed app build may or may not answer. */
-export type HealthReadMethod = 'getWorkouts' | 'getDailyStatistics' | 'getHeartRateSamples' | 'getSleepIntervals'
+/** A meditation or breathing session to record as mindful minutes. */
+export interface HealthMindfulSession {
+  /**
+   * The app's own id for the session (up to 128 characters), kept as the
+   * sample's external UUID: saving the same id again keeps the first sample.
+   */
+  id: string
+  /** Epoch milliseconds. */
+  startDate: number
+  /** Epoch milliseconds, after `startDate` and at most a day later. */
+  endDate: number
+}
+
+export interface HealthMindfulSessionResult {
+  /** HealthKit's UUID for the sample. */
+  id: string
+  /** The id it was saved with. */
+  externalId: string
+  /** True when this id had been saved before and that sample was kept. */
+  existing: boolean
+}
+
+export interface HealthMindfulSessionQuery extends HealthSampleQuery {
+  /** At most this many, oldest first. Defaults to 1000, capped at 5000. */
+  limit?: number
+}
+
+/** A mindful session in Apple Health, written by any app (the Mindfulness app, Calm, this one). */
+export interface HealthMindfulSample {
+  /** HealthKit's UUID. */
+  id: string
+  /** Epoch milliseconds. */
+  startDate: number
+  /** Epoch milliseconds. */
+  endDate: number
+  durationSeconds: number
+  sourceName: string
+  sourceBundleId: string
+  /** True when this app wrote it: skip these when importing, they are your own. */
+  ownApp: boolean
+  /** The id the writing app saved it with, when it gave one. */
+  externalId?: string
+  deviceName?: string
+}
+
+/** The health reads and writes an installed app build may or may not answer. */
+export type HealthReadMethod = 'getWorkouts' | 'getDailyStatistics' | 'getHeartRateSamples' | 'getSleepIntervals' | 'saveMindfulSession' | 'getMindfulSessions'
 
 export interface HealthAuthorizationOptions {
   /** `false` asks to read only, for an app that never writes back. */
@@ -708,6 +755,20 @@ export interface HealthApi {
    * or an app build that predates it (see `supports`).
    */
   getSleepIntervals: (options?: HealthSampleQuery) => Promise<HealthSleepInterval[]>
+  /**
+   * Record a meditation or breathing session as mindful minutes (the
+   * `mindful` grant, with writing allowed). Saving the same `id` twice keeps
+   * the first sample. iOS only for now; resolves `null` in a browser or an app
+   * build that predates it (see `supports`), and rejects when HealthKit
+   * refuses (writing not allowed).
+   */
+  saveMindfulSession: (session: HealthMindfulSession) => Promise<HealthMindfulSessionResult | null>
+  /**
+   * Every app's mindful sessions between two instants, oldest first, each
+   * marked `ownApp` when this app wrote it. iOS only for now; resolves `[]` in
+   * a browser or an app build that predates it.
+   */
+  getMindfulSessions: (options?: HealthMindfulSessionQuery) => Promise<HealthMindfulSample[]>
   /**
    * Whether the running app build answers `method`, right now. An app
    * installed before a read existed has none, so a page checks before offering
