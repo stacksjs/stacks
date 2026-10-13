@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.171...v0.75.172)
+
+## 🐛 Bug Fixes
+
+- **commerce**: declare the fiskaly client's and receipt schema's types ([4a92a90](https://github.com/stacksjs/stacks/commit/4a92a90)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.170...v0.75.171)
 
 ## 🐛 Bug Fixes
