@@ -176,6 +176,30 @@ const mandate = await retrieveDebitMandate(stripe, debit.mandateId!) // { refere
 - `CheckoutRequest.paymentMethods` (Stripe's names) limits a neutral checkout's methods: Stripe's `allowed_payment_method_types` (Stripe API 2026-01-28.clover has no `payment_method_types`, and only offers methods enabled in the Dashboard); Adyen maps `card` and `sepa_debit` to `allowedPaymentMethods`; Paddle and Lemon Squeezy refuse it.
 - Connect: a destination charge without `on_behalf_of` debits under the platform's creditor ID and mandate, so enable SEPA on the platform account.
 
+### Card-present payments (Stripe Terminal)
+
+`src/terminal.ts` (also `@stacksjs/payments/terminal`) is the server-driven Terminal flow: a smart reader (WisePOS E, S700, simulated) collects the card while the server holds the PaymentIntent.
+
+```typescript
+import { stripeTerminal, terminalChargeState, cardPresentDetails, latestChargeId } from '@stacksjs/payments/terminal'
+
+const terminal = stripeTerminal({ secretKey: env.STRIPE_SECRET_KEY, apiBase: env.STRIPE_API_BASE }) // apiBase: an HTTP double in tests
+const place = await terminal.createLocation({ displayName: 'Studio Mitte', address: { line1: 'Torstraße 1', city: 'Berlin', postal_code: '10119', country: 'DE' } }, 'location:12')
+const reader = await terminal.registerReader({ registrationCode: 'simulated-wpe', label: 'Front desk', location: place.id })
+const intent = await terminal.createPaymentIntent({ amount: 2000, currency: 'eur', onBehalfOf: acct, transferDestination: acct }, 'sale:91')
+await terminal.processPaymentIntent(reader.id, intent.id)
+// poll (or take terminal.reader.action_succeeded / action_failed):
+const outcome = terminalChargeState(await terminal.retrievePaymentIntent(intent.id), await terminal.retrieveReader(reader.id))
+// outcome.state: 'waiting' | 'succeeded' | 'failed' (retry on the same PaymentIntent) | 'canceled'
+```
+
+- A REST client (form encoding, `Idempotency-Key`, Stripe's error object as `StripeApiError`) rather than the `stripe` SDK: no optional dependency, and `apiBase` lets tests use an HTTP fake.
+- It pins `Stripe-Version` to `STRIPE_TERMINAL_API_VERSION` (`2026-09-30.endive`), where a PaymentIntent names its method with `allowed_payment_method_types` (`payment_method_types` is refused). Pass `apiVersion: null` for the account default.
+- A declined card leaves the PaymentIntent `requires_payment_method`; process it on the reader again. `cancelReaderAction` takes it off the screen; cancel the PaymentIntent too when the sale is abandoned.
+- Refunds of card-present charges are ordinary refunds (`terminal.refund`), except Interac, which needs the card at the reader.
+- `cardPresentDetails` reads what a card receipt prints (brand, last four, AID, application name, authorisation code); `latestChargeId` the charge behind a PaymentIntent.
+- Simulated readers (`SIMULATED_READER_CODES`, test keys only: `isTestKey`) and `presentPaymentMethod` with a test card number exercise declines.
+
 ### Customers
 
 ```typescript

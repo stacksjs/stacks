@@ -34,3 +34,7 @@ export { subscriptionGrantsAccess, subscriptionPeriod } from './subscription-sta
 // Bank debits (SEPA Direct Debit, Bacs, ACH, BECS): methods per currency,
 // debit webhook outcomes and mandates. Pure; also `@stacksjs/payments/direct-debit`.
 export * from './direct-debit'
+
+// Card-present payments with Stripe Terminal: locations, readers, charges on a
+// reader, refunds to the card. Also `@stacksjs/payments/terminal`.
+export * from './terminal'

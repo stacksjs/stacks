@@ -264,6 +264,28 @@ tests rather than extrapolating a generic CRUD interface. Native models cover
 more domain features than the short table here lists. Feature-specific routes
 and jobs also need their enabled feature, tables and worker prerequisites.
 
+## German tills: TSE signing and the DSFinV-K export
+
+Three pure modules for a till in Germany (KassenSichV, § 146a AO). They hold the rules, not a certification: whether a till is compliant depends on the whole system and its operator.
+
+- `@stacksjs/commerce/fiskaly`: a client for fiskaly SIGN DE v2, a cloud TSE. `fiskalySignDe({ apiKey, apiSecret, baseUrl?, fetch? })` caches and refreshes its token; `provisionTss(api, { tssId, clientId, clientSerialNumber, adminPin, adminPuk? })` takes a TSS from nothing (or from where an earlier attempt stopped; keep the PUK it answers) to INITIALIZED with a client; `startTransaction` / `finishTransaction` sign a sale (revisions 1 and 2). `FiskalyError.outage` says when a sale should go on unsigned and be marked.
+- `@stacksjs/commerce/kassensichv`: the VAT keys (`DE_VAT_KEYS`: 1 = 19%, 2 = 7%, 5/6/7 = 0%), `processData` (`Beleg^75.33_7.99_0.00_0.00_0.00^10.00:Bar_64.30:Unbar`), `fiskalyReceiptFor` (amounts per VAT rate and payment type), `receiptQrCode` (the twelve-field `V0;…` QR content of DSFinV-K Anhang I), `receiptVatLines` and `TSE_FAILURE_NOTICE`.
+- `@stacksjs/commerce/dsfinvk`: the export. `DSFINVK_TABLES` are the twenty tables of the official index.xml (DSFinV-K 2.4: files, columns, order, types, lengths, decimals); `dsfinvkExport(closings)` builds every CSV plus `index.xml` and `gdpdu-01-09-2004.dtd` from a till's cash point closings, totals per business case and payment type included. Rows are validated (mandatory columns, lengths, enumerations, time formats); a broken export throws `DsfinvkError` instead of being written. Zip the files yourself (`zipEntries` in `@stacksjs/storage`).
+
+```typescript
+import { fiskalyReceiptFor, processData, receiptQrCode } from '@stacksjs/commerce/kassensichv'
+import { fiskalySignDe } from '@stacksjs/commerce/fiskaly'
+
+const vat = [{ key: 1, grossCents: 1500 }, { key: 2, grossCents: 500 }]
+const payments = [{ kind: 'Unbar', cents: 2000 }]
+const api = fiskalySignDe({ apiKey, apiSecret })
+await api.startTransaction(tssId, txId, clientId)
+const tx = await api.finishTransaction(tssId, txId, clientId, fiskalyReceiptFor({ vat, payments }))
+const qr = receiptQrCode({ clientSerialNumber, processType: 'Kassenbeleg-V1', processData: processData({ vat, payments }), transactionNumber: tx.number, signatureCounter: Number(tx.signature!.counter), start: tx.time_start, end: tx.time_end!, signatureAlgorithm: tx.signature!.algorithm, logTimeFormat: tx.log!.timestamp_format, signature: tx.signature!.value, publicKey: tx.signature!.public_key })
+```
+
+Traps: amounts are gross cents (German prices include VAT). A refund is a new receipt with negative amounts, referenced to the sale (`references`, REF_TYP `Transaktion`); AVBelegstorno is not for TSE tills. A transaction the TSE could not sign still goes into the export, with `tse.error` (TSE_TA_FEHLER) and no signature. fiskaly client serials (and KASSE_SERIENNR) may not contain `_` or `/` (`isClientSerialNumber`).
+
 ## Gotchas
 
 ### Writing raw SQL here
