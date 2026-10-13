@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.168...v0.75.169)
+
+## ✨ Features
+
+- **payments**: bank debits next to cards (SEPA Direct Debit, mandates, debit outcomes) ([1d0c628](https://github.com/stacksjs/stacks/commit/1d0c628)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.167...v0.75.168)
 
 ## 🐛 Bug Fixes
