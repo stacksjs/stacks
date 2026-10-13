@@ -10,6 +10,12 @@ const composablesPackageJson = JSON.parse(
 )
 
 describe('browser package contract', () => {
+  test('resolves imported composable and project-path helpers to source from app code', () => {
+    expect(Bun.resolveSync('@stacksjs/composables/useStorage', resolve('.')))
+      .toBe(resolve('storage/framework/core/composables/src/useStorage.ts'))
+    expect(Bun.resolveSync('@stacksjs/path/project', resolve('.')))
+      .toBe(resolve('storage/framework/core/path/src/project.ts'))
+  })
   // No `development` condition: it resolved to ./src/*, which is not published
   // (files is README + dist), so any consumer bundling these subpaths failed to
   // resolve them. Source resolution inside this repo comes from @stacksjs/alias.

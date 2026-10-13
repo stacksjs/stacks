@@ -54,11 +54,13 @@
       // missed there, so the whole functions barrel failed to load and the
       // login and password forms shipped unbundled scripts.
       "@stacksjs/browser/*": ["./core/browser/src/*"],
+      "@stacksjs/composables/*": ["./core/composables/src/*"],
       "@stacksjs/commerce/*": ["./core/commerce/src/*"],
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/error-handling/*": ["./core/error-handling/src/*"],
       "@stacksjs/logging/*": ["./core/logging/src/*"],
+      "@stacksjs/path/*": ["./core/path/src/*"],
       "@stacksjs/router/*": ["./core/router/src/*"],
       "@stacksjs/storage/*": ["./core/storage/src/*"],
       "@stacksjs/validation/*": ["./core/validation/src/*"],
