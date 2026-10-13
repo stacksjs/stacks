@@ -175,7 +175,7 @@
         "better-dx": "^0.2.24",
       },
       "peerDependencies": {
-        "craft-native": ">=0.0.135",
+        "craft-native": ">=0.0.163",
         "pickier": "^0.1.70",
       },
       "optionalPeers": [
@@ -911,7 +911,7 @@
       "version": "0.75.170",
       "dependencies": {
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.162",
+        "craft-native": ">=0.0.163",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",

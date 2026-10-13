@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { craftBuilderSpecifier } from '../src/build/craft-entry'
+import { craftBuilderSpecifier, craftBuilderVersion } from '../src/build/craft-entry'
 
 const root = mkdtempSync(join(tmpdir(), 'craft-entry-'))
 afterAll(() => rmSync(root, { recursive: true, force: true }))
@@ -35,6 +35,50 @@ describe('the Craft builder an app is generated with', () => {
     const bare = mkdtempSync(join(tmpdir(), 'craft-entry-bare-'))
     try {
       expect(craftBuilderSpecifier('ios', bare)).toBe('craft-native/ios')
+    }
+    finally {
+      rmSync(bare, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('the version of the Craft an app is generated with', () => {
+  it('is read from the copy @stacksjs/mobile resolves', () => {
+    const app = mkdtempSync(join(tmpdir(), 'craft-version-'))
+    try {
+      const hoisted = craft('0.0.164')
+      pkg(join(app, 'node_modules/craft-native'), hoisted.manifest, hoisted.files)
+      pkg(join(app, 'node_modules/@stacksjs/mobile'), { name: '@stacksjs/mobile', version: '1.0.0' })
+      const nested = craft('0.0.162')
+      pkg(join(app, 'node_modules/@stacksjs/mobile/node_modules/craft-native'), nested.manifest, nested.files)
+
+      const found = craftBuilderVersion(craftBuilderSpecifier('ios', app), app)
+      expect(found?.version).toBe('0.0.162')
+      expect(found?.manifest).toContain('/@stacksjs/mobile/node_modules/craft-native/package.json')
+    }
+    finally {
+      rmSync(app, { recursive: true, force: true })
+    }
+  })
+
+  it('walks up from a Craft checkout\'s builder source to its package', () => {
+    const checkout = mkdtempSync(join(tmpdir(), 'craft-checkout-'))
+    try {
+      pkg(join(checkout, 'packages/ios'), { name: '@craft-native/ios', version: '0.0.165' })
+      mkdirSync(join(checkout, 'packages/ios/src'), { recursive: true })
+      writeFileSync(join(checkout, 'packages/ios/src/index.ts'), 'export {}')
+
+      expect(craftBuilderVersion(join(checkout, 'packages/ios/src/index.ts'), checkout)?.version).toBe('0.0.165')
+    }
+    finally {
+      rmSync(checkout, { recursive: true, force: true })
+    }
+  })
+
+  it('is unknown when no Craft package encloses the entry', () => {
+    const bare = mkdtempSync(join(tmpdir(), 'craft-version-bare-'))
+    try {
+      expect(craftBuilderVersion('craft-native/ios', bare)).toBeUndefined()
     }
     finally {
       rmSync(bare, { recursive: true, force: true })

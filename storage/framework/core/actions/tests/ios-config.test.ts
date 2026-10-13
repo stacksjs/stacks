@@ -4,7 +4,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { compileNativeScreens, nativeScreenFiles } from '../src/build/native-screens'
-import { normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
+import { assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 /** The shape Craft's template emits: nested dicts, the root dict last. */
 const CRAFT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
@@ -504,5 +504,23 @@ describe('the generated project\'s records', () => {
     expect(records.devServerURL).toBe('https://hq.training/m')
     expect(records.outsidePath).toBe('/opt/elsewhere/file.png')
     expect(records.name).toBe('/Users/a/app/not-a-path-key')
+  })
+})
+
+describe('a capability the installed Craft cannot build', () => {
+  it('is named with the version that first supports it', () => {
+    expect(unsupportedCraftCapabilities({ scheduledWorkouts: true, healthKit: true }, '0.0.162')).toEqual([
+      { capability: 'scheduledWorkouts', needs: '0.0.163' },
+    ])
+    expect(unsupportedCraftCapabilities({ scheduledWorkouts: true }, '0.0.163')).toEqual([])
+    expect(unsupportedCraftCapabilities({ scheduledWorkouts: false }, '0.0.150')).toEqual([])
+    expect(unsupportedCraftCapabilities(undefined, '0.0.100')).toEqual([])
+  })
+
+  it('fails the build instead of leaving it out of the app', () => {
+    const source = '/app/node_modules/@stacksjs/mobile/node_modules/craft-native/package.json'
+    expect(() => assertCraftSupportsCapabilities({ scheduledWorkouts: true, backgroundAudio: true, heartRate: true }, '0.0.161', source))
+      .toThrow('craft-native 0.0.161 (/app/node_modules/@stacksjs/mobile/node_modules/craft-native/package.json), which would build the app without ios.capabilities.backgroundAudio (needs >= 0.0.162), ios.capabilities.scheduledWorkouts (needs >= 0.0.163). Install craft-native >= 0.0.163')
+    expect(() => assertCraftSupportsCapabilities({ scheduledWorkouts: true }, '0.0.164', source)).not.toThrow()
   })
 })

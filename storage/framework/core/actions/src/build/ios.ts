@@ -4,9 +4,9 @@ import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { craftBuilderSpecifier } from './craft-entry'
+import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { assertCraftSupportsCapabilities, portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
 
@@ -31,11 +31,15 @@ interface CraftIosBuilder {
   }): Promise<void>
 }
 
-async function loadCraftIosBuilder(): Promise<CraftIosBuilder> {
+/** The Craft iOS builder entry: `CRAFT_IOS_SRC`, else the copy @stacksjs/mobile resolves. */
+function craftIosEntry(): string {
   const explicit = process.env.CRAFT_IOS_SRC
+  return explicit ? pathToFileURL(explicit).href : craftBuilderSpecifier('ios', projectPath())
+}
+
+async function loadCraftIosBuilder(): Promise<CraftIosBuilder> {
   try {
-    if (explicit) return await import(pathToFileURL(explicit).href) as CraftIosBuilder
-    return await import(craftBuilderSpecifier('ios', projectPath())) as CraftIosBuilder
+    return await import(craftIosEntry()) as CraftIosBuilder
   }
   catch (error) {
     throw new Error(
@@ -76,6 +80,14 @@ if (nativeBundle) {
 }
 
 const builder = await loadCraftIosBuilder()
+
+// An older Craft drops a capability it has no template for without a word,
+// so the build fails here rather than ship an app that lacks it.
+const craftVersion = craftBuilderVersion(craftIosEntry(), projectPath())
+if (craftVersion)
+  assertCraftSupportsCapabilities(config.capabilities, craftVersion.version, craftVersion.manifest)
+else
+  log.warn(`Could not read the craft-native version behind ${craftIosEntry()}, so the build cannot check that it supports every capability config/mobile.ts turns on.`)
 
 await builder.init({
   name: config.appName,

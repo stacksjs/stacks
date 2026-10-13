@@ -1,5 +1,6 @@
-import { dirname } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 /**
  * Where a Craft builder (`craft-native/ios`, `craft-native/android`) is
@@ -23,5 +24,40 @@ export function craftBuilderSpecifier(builder: 'ios' | 'android', root: string):
   }
   catch {
     return `craft-native/${builder}`
+  }
+}
+
+/** The Craft package names a builder entry can sit in: the npm SDK, or a checkout's own package. */
+const CRAFT_PACKAGES = new Set(['craft-native', '@craft-native/ios', '@craft-native/android'])
+
+/**
+ * The version of the Craft a builder entry belongs to, read from the nearest
+ * enclosing `package.json` that is Craft's own.
+ *
+ * Takes the builder's file path or `file:` URL (what `craftBuilderSpecifier`
+ * returns, or `CRAFT_IOS_SRC`); a bare specifier is resolved from `root`.
+ * `craft-native` does not export its `package.json`, so the manifest is found
+ * by walking up from the entry rather than resolved by name. Returns
+ * undefined when no Craft manifest encloses the entry.
+ */
+export function craftBuilderVersion(entry: string, root: string): { version: string, manifest: string } | undefined {
+  let file: string
+  try {
+    file = entry.startsWith('file:') ? fileURLToPath(entry) : entry.startsWith('/') ? entry : Bun.resolveSync(entry, root)
+  }
+  catch {
+    return undefined
+  }
+
+  for (let dir = dirname(file); ; dir = dirname(dir)) {
+    const manifest = join(dir, 'package.json')
+    if (existsSync(manifest)) {
+      try {
+        const pkg = JSON.parse(readFileSync(manifest, 'utf8')) as { name?: string, version?: string }
+        if (pkg.name && CRAFT_PACKAGES.has(pkg.name) && pkg.version) return { version: pkg.version, manifest }
+      }
+      catch {}
+    }
+    if (dirname(dir) === dir) return undefined
   }
 }

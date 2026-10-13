@@ -92,6 +92,57 @@ const CAPABILITY_KEYS = {
   machineLearning: 'enableMLKit',
 } as const
 
+/**
+ * The first craft-native release whose iOS template honours a capability.
+ *
+ * Craft copies every `enable…` key into craft.config.json, and an older
+ * template simply has no Swift reading the new one: the build succeeds and
+ * the app ships without the entitlement, the Info.plist keys and the bridge,
+ * while the pages still call it. HQ.training's Apple Watch workouts went
+ * missing that way, built by a craft-native 0.0.162 nested under
+ * @stacksjs/mobile. Capabilities older than every craft-native Stacks has
+ * accepted are not listed.
+ */
+export const CRAFT_CAPABILITY_FLOORS = {
+  appleMusic: '0.0.144',
+  heartRate: '0.0.152',
+  backgroundAudio: '0.0.162',
+  scheduledWorkouts: '0.0.163',
+} as const satisfies Partial<Record<keyof typeof CAPABILITY_KEYS, string>>
+
+export interface UnsupportedCraftCapability {
+  capability: keyof typeof CRAFT_CAPABILITY_FLOORS
+  needs: string
+}
+
+/** The capabilities `config/mobile.ts` turns on that a Craft of `version` would leave out of the app. */
+export function unsupportedCraftCapabilities(capabilities: IosMobileConfig['capabilities'], version: string): UnsupportedCraftCapability[] {
+  const missing: UnsupportedCraftCapability[] = []
+  for (const [capability, needs] of Object.entries(CRAFT_CAPABILITY_FLOORS) as [keyof typeof CRAFT_CAPABILITY_FLOORS, string][]) {
+    if (capabilities?.[capability] && !Bun.semver.satisfies(version, `>=${needs}`)) missing.push({ capability, needs })
+  }
+  return missing
+}
+
+/**
+ * Refuse to generate an app that would silently lack a capability it asks for.
+ *
+ * `version` is the craft-native the builder came from and `source` where it
+ * was found, both named in the error so the stale copy can be traced in the
+ * lockfile.
+ */
+export function assertCraftSupportsCapabilities(capabilities: IosMobileConfig['capabilities'], version: string, source: string): void {
+  const missing = unsupportedCraftCapabilities(capabilities, version)
+  if (missing.length === 0) return
+  const needed = missing.reduce((max, { needs }) => (Bun.semver.order(needs, max) > 0 ? needs : max), '0.0.0')
+  throw new Error(
+    `The Craft iOS builder is craft-native ${version} (${source}), which would build the app without `
+    + `${missing.map(({ capability, needs }) => `ios.capabilities.${capability} (needs >= ${needs})`).join(', ')}. `
+    + `Install craft-native >= ${needed}: look for an older copy nested under @stacksjs/mobile in bun.lock, `
+    + 'or raise the app\'s own craft-native pin.',
+  )
+}
+
 export function normalizeMobileUrl(value: string | undefined): string | undefined {
   const input = value?.trim()
   if (!input) return undefined
