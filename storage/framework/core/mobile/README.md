@@ -134,6 +134,25 @@ if (health.supports('saveMindfulSession'))
 const others = (await health.getMindfulSessions({ startDate: Date.now() - 7 * 86400000 })).filter(row => !row.ownApp)
 ```
 
+Heart rate as it arrives: `health.startHeartRateUpdates({ since })` streams
+Apple Health's heart rate (an HKAnchoredObjectQuery) from `since` (two minutes
+ago by default): what is there, then each batch the watch syncs, every reading
+once, to `health.onHeartRate(samples => …)` in `getHeartRateSamples`' shape.
+HealthKit only has what the watch has synced: every few seconds while the
+watch runs a workout or a Mindfulness session, every few minutes otherwise.
+One stream at a time; `stopHeartRateUpdates()` ends it. Needs the `heartRate`
+grant and Craft 0.0.166; an older build resolves `false` (poll
+`getData('heartRate', …)` instead), and a simulator build can stand in a watch
+with the `CraftFakeHealthHeartRate` default.
+
+```ts
+const stop = health.onHeartRate(samples => samples.forEach(sample => draw(sample.bpm, sample.endDate)))
+if (!await health.startHeartRateUpdates({ since: Date.now() - 120_000 })) stop()
+// later
+stop()
+await health.stopHeartRateUpdates()
+```
+
 ## Heart-rate strap
 
 `heartRate` reads a Bluetooth heart-rate strap (Polar, Garmin, Wahoo), or a

@@ -732,6 +732,12 @@ export interface HealthMindfulSample {
 
 /** The health reads and writes an installed app build may or may not answer. */
 export type HealthReadMethod = 'getWorkouts' | 'getDailyStatistics' | 'getHeartRateSamples' | 'getSleepIntervals' | 'saveMindfulSession' | 'getMindfulSessions'
+  | 'startHeartRateUpdates' | 'stopHeartRateUpdates'
+
+export interface HealthHeartRateUpdatesOptions {
+  /** Epoch ms: readings from here on. Defaults to two minutes ago. */
+  since?: number
+}
 
 export interface HealthAuthorizationOptions {
   /** `false` asks to read only, for an app that never writes back. */
@@ -772,6 +778,20 @@ export interface HealthApi {
    * a browser or an app build that predates it.
    */
   getMindfulSessions: (options?: HealthMindfulSessionQuery) => Promise<HealthMindfulSample[]>
+  /**
+   * Heart rate as Apple Health receives it (Craft 0.0.166, an
+   * HKAnchoredObjectQuery): what is there from `since`, then every batch the
+   * watch syncs, each reading once, to `onHeartRate`. A watch syncs every few
+   * seconds while it runs a workout or a Mindfulness session, every few
+   * minutes otherwise. One stream at a time; starting again replaces it.
+   * Needs the `heartRate` grant. Resolves false in a browser or an app build
+   * that predates it (see `supports`), and rejects when HealthKit refuses.
+   */
+  startHeartRateUpdates: (options?: HealthHeartRateUpdatesOptions) => Promise<boolean>
+  /** Stops the stream; true also when none ran. */
+  stopHeartRateUpdates: () => Promise<boolean>
+  /** Each batch of readings the stream delivers, oldest first. Returns the way to stop listening. */
+  onHeartRate: (callback: (samples: HealthHeartRateSample[]) => void) => () => void
   /**
    * Whether the running app build answers `method`, right now. An app
    * installed before a read existed has none, so a page checks before offering

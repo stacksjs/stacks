@@ -89,3 +89,56 @@ describe('health mindful sessions', () => {
     expect(await health.getMindfulSessions()).toEqual([])
   })
 })
+
+describe('health heart rate as it arrives', () => {
+  /** A window with a shell and the listeners a page registers on it. */
+  function installWithEvents(craft?: Record<string, unknown>) {
+    const listeners = new Map<string, Set<(event: any) => void>>()
+    const host = {
+      ...(craft ? { craft } : {}),
+      addEventListener: (name: string, listener: (event: any) => void) => { (listeners.get(name) ?? listeners.set(name, new Set()).get(name)!).add(listener) },
+      removeEventListener: (name: string, listener: (event: any) => void) => { listeners.get(name)?.delete(listener) },
+    }
+    Object.defineProperty(globalThis, 'window', { configurable: true, value: host })
+    return { fire: (name: string, detail: unknown) => listeners.get(name)?.forEach(listener => listener({ detail })), count: (name: string) => listeners.get(name)?.size ?? 0 }
+  }
+
+  it('starts and stops the stream through the shell, and hands each batch on', async () => {
+    const calls: unknown[][] = []
+    const host = installWithEvents({
+      platform: 'ios',
+      health: {
+        startHeartRateUpdates: async (options: unknown) => { calls.push(['start', options]); return true },
+        stopHeartRateUpdates: async () => { calls.push(['stop']); return true },
+      },
+    })
+    expect(health.supports('startHeartRateUpdates')).toBe(true)
+    expect(health.supports('stopHeartRateUpdates')).toBe(true)
+    const heard: unknown[] = []
+    const stop = health.onHeartRate(samples => heard.push(samples))
+    expect(await health.startHeartRateUpdates({ since: 1_000 })).toBe(true)
+    host.fire('craftHealthHeartRate', { samples: [reading] })
+    host.fire('craftHealthHeartRate', { samples: [] })
+    host.fire('craftHealthHeartRate', {})
+    expect(heard).toEqual([[reading]])
+    stop()
+    expect(host.count('craftHealthHeartRate')).toBe(0)
+    expect(await health.stopHeartRateUpdates()).toBe(true)
+    expect(calls).toEqual([['start', { since: 1_000 }], ['stop']])
+  })
+
+  it('says it did not start in a browser or on an older build', async () => {
+    installWithEvents()
+    expect(health.supports('startHeartRateUpdates')).toBe(false)
+    expect(await health.startHeartRateUpdates()).toBe(false)
+    expect(await health.stopHeartRateUpdates()).toBe(true)
+    expect(typeof health.onHeartRate(() => {})).toBe('function')
+    install({ platform: 'ios', health: {} })
+    expect(await health.startHeartRateUpdates()).toBe(false)
+  })
+
+  it('passes a refusal from HealthKit on', async () => {
+    install({ platform: 'ios', health: { startHeartRateUpdates: async () => { throw new Error('Authorization not determined') } } })
+    await expect(health.startHeartRateUpdates()).rejects.toThrow('Authorization not determined')
+  })
+})

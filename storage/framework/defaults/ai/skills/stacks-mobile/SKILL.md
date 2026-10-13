@@ -476,7 +476,13 @@ in-bed, awake and asleep stages; check `health.supports(method)` first, since an
 app build that predates a read resolves `[]` for it. Mindful minutes go through
 `health.saveMindfulSession({ id, startDate, endDate })` (the `mindful` grant;
 the id is the sample's external UUID, so a repeat save keeps the first) and come
-back from `health.getMindfulSessions(range)` with `ownApp` on this app's own. Completed
+back from `health.getMindfulSessions(range)` with `ownApp` on this app's own.
+`health.startHeartRateUpdates({ since })` streams Apple Health's heart rate as
+the watch syncs it (Craft 0.0.166, HKAnchoredObjectQuery) to
+`health.onHeartRate(samples => …)`; it resolves `false` on an older build, so
+fall back to polling `getData('heartRate')`, and `stopHeartRateUpdates()` ends
+it. Readings come every few seconds only while the watch runs a workout or a
+Mindfulness session. Completed
 recordings can be written back with `health.saveWorkout(...)`; treat permission
 revocation as a normal runtime state and never block saving the application's
 own activity when a health write fails.

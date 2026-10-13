@@ -43,7 +43,7 @@ import {
 
 import type { CraftHost } from './bridge'
 import { auth, background, browser, chrome, clipboard, contextMenu, db, dialog, files, orientation, refresh, shortcuts, statusBar, storeKit, symbols, widgets } from './native'
-import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunctionNow, subscribeWhenReady, whenBridgeReady } from './bridge'
+import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunctionNow, onCraftEvent, subscribeWhenReady, whenBridgeReady } from './bridge'
 import { scheduledWorkouts } from './scheduled-workouts'
 import type {
   AppReviewApi,
@@ -348,6 +348,11 @@ export const health: HealthApi = {
   getSleepIntervals: options => callNative<HealthSleepInterval[]>('health.getSleepIntervals', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
   saveMindfulSession: session => callNative<HealthMindfulSessionResult | null>('health.saveMindfulSession', [session], () => null).then(saved => saved ?? null),
   getMindfulSessions: options => callNative<HealthMindfulSample[]>('health.getMindfulSessions', [options ?? {}], () => []).then(rows => Array.isArray(rows) ? rows : []),
+  startHeartRateUpdates: options => callNative<boolean>('health.startHeartRateUpdates', [options ?? {}], () => false).then(started => started !== false),
+  stopHeartRateUpdates: () => callNative<boolean>('health.stopHeartRateUpdates', [], () => true).then(() => true),
+  onHeartRate: callback => onCraftEvent<{ samples?: unknown }>('craftHealthHeartRate', (detail) => {
+    if (Array.isArray(detail.samples) && detail.samples.length) callback(detail.samples as HealthHeartRateSample[])
+  }),
   supports: method => nativeFunctionNow(`health.${method}`) !== null,
 }
 export const liveActivities: LiveActivitiesApi = {
