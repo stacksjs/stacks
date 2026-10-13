@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.160...v0.75.161)
+
+## ✨ Features
+
+- **mobile**: read the day's food from Apple Health (dietaryEnergy, Protein, Carbohydrates, Fat) ([80cc3a6](https://github.com/stacksjs/stacks/commit/80cc3a6)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.159...v0.75.160)
 
 ## ✨ Features
