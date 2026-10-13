@@ -24,7 +24,7 @@ const year = props.year || new Date().getFullYear()
 // English here is only for a render without them. `{app}` and `{year}` are
 // filled in below.
 const lang = props.lang || 'en'
-const fill = text => String(text).split('{app}').join(appName).split('{year}').join(String(year))
+const fill = (text: unknown) => String(text).split('{app}').join(appName).split('{year}').join(String(year))
 const automatedNotice = fill(props.automatedNotice || 'This is an automated message from {app}. Please do not reply to this email.')
 const copyrightNotice = fill(props.copyrightNotice || '{year} {app}. All rights reserved.')
 const unsubscribeLabel = props.unsubscribeLabel || 'Unsubscribe'
