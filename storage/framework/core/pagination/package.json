@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/pagination",
   "type": "module",
-  "version": "0.75.155",
+  "version": "0.75.156",
   "description": "The paginator shapes the ORM produces and the router serializes.",
   "author": "Chris Breuer",
   "contributors": [

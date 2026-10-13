@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.155...v0.75.156)
+
+## 🐛 Bug Fixes
+
+- **database**: a missing query_logs table costs one failed insert, not one per query ([8d1712c](https://github.com/stacksjs/stacks/commit/8d1712c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.154...v0.75.155)
 
 ## ✨ Features
