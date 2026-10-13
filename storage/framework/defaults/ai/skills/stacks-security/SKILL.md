@@ -161,7 +161,12 @@ PBKDF2-SHA-256 derivation in `core/security/src/crypt.ts`; decrypt retains
 legacy formats for upgrades. The base64: APP_KEY prefix is normalized by that
 implementation. Encryption/hashing/encoding are distinct APIs; use the exported
 webhook helpers from `core/security/src/webhook.ts` for signed callback
-validation rather than inventing a string comparison.
+validation rather than inventing a string comparison. To SEND signed webhooks,
+`signWebhook(secret | secrets[], body, { timestamp? })` returns the
+`t=<unix>,v1=<hex>` header (HMAC-SHA256 of `${t}.${body}`, one `v1` per secret
+while rotating) and `verifySignedWebhook` / `verifyWebhook('signed', ...)` is
+the receiver's check (tolerance applies both ways). `generateWebhookSecret()`
+mints a `whsec_` secret; store it encrypted, since signing needs the plaintext.
 
 Generated model API exposure and ownership live under `config/security.ts`
 api settings. Read `stacks-models`/`stacks-router` before opening generated

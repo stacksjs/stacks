@@ -78,7 +78,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/router` | [`stacks-router`](../stacks-router/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/router/src/index.ts) | 87 |
 | `@stacksjs/scheduler` | [`stacks-scheduler`](../stacks-scheduler/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/scheduler/src/index.ts) | 13 |
 | `@stacksjs/search-engine` | [`stacks-search-engine`](../stacks-search-engine/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/search-engine/src/index.ts) | 10 |
-| `@stacksjs/security` | [`stacks-security`](../stacks-security/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/index.ts) | 5 |
+| `@stacksjs/security` | [`stacks-security`](../stacks-security/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/index.ts) | 6 |
 | `@stacksjs/server` | [`stacks-server`](../stacks-server/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/server/src/index.ts) | 21 |
 | `@stacksjs/shell` | [`stacks-shell`](../stacks-shell/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/shell/src/index.ts) | 1 |
 | `@stacksjs/sites` | [`stacks-sites`](../stacks-sites/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/sites/src/index.ts) | 3 |
@@ -751,7 +751,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/crypt.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/crypt.ts), [src/hash.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/hash.ts), [src/key.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/key.ts), [src/webhook.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/src/webhook.ts).
 
-Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/security/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/server
 

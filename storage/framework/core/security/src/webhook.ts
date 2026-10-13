@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 
 /**
  * Thrown when a webhook signature fails verification.
@@ -21,7 +21,7 @@ export class InvalidWebhookSignature extends Error {
 /**
  * Supported webhook providers with built-in signature schemes.
  */
-export type WebhookProvider = 'stripe' | 'github' | 'generic'
+export type WebhookProvider = 'stripe' | 'github' | 'generic' | 'signed'
 
 /**
  * Options controlling webhook verification behavior.
@@ -80,15 +80,16 @@ function hmac(secret: string, payload: string | Buffer, algorithm: string): Buff
 }
 
 /**
- * Parse a Stripe-Signature header value.
+ * Parse a timestamped signature header value (Stripe's `Stripe-Signature`,
+ * and what {@link signWebhook} writes).
  *
  * Format: `t=1712345678,v1=abc...,v1=def...,v0=...`
  *
- * Stripe rotates secrets by emitting multiple v1 entries — we accept the
+ * A sender rotating secrets emits multiple v1 entries — we accept the
  * webhook if ANY v1 entry matches the recomputed signature (still in
  * constant time per entry).
  */
-function parseStripeSignature(header: string): { timestamp: number, signatures: string[] } {
+function parseTimestampedSignature(header: string, label: string): { timestamp: number, signatures: string[] } {
   const parts = header.split(',')
   let timestamp = Number.NaN
   const signatures: string[] = []
@@ -106,9 +107,55 @@ function parseStripeSignature(header: string): { timestamp: number, signatures: 
   }
 
   if (!Number.isFinite(timestamp) || signatures.length === 0)
-    throw new InvalidWebhookSignature('Stripe-Signature header is malformed', 'malformed')
+    throw new InvalidWebhookSignature(`${label} header is malformed`, 'malformed')
 
   return { timestamp, signatures }
+}
+
+/**
+ * Check a timestamped `t=<unix>,v1=<hex>` signature header: HMAC-SHA256 of
+ * `${t}.${body}`, any `v1` entry may match (a sender rotating its secret
+ * signs with both), and `t` must be within `toleranceSeconds` of now.
+ * `label` names the sender and its header in error messages.
+ */
+function verifyTimestampedSignature(
+  secret: string,
+  signatureHeader: string,
+  body: string | Buffer,
+  options: VerifyWebhookOptions,
+  label: { name: string, header: string },
+): true {
+  if (!secret)
+    throw new InvalidWebhookSignature(`${label.name} secret is empty`, 'missing')
+  if (!signatureHeader)
+    throw new InvalidWebhookSignature(`${label.header} header is missing`, 'missing')
+
+  const { timestamp, signatures } = parseTimestampedSignature(signatureHeader, label.header)
+
+  const tolerance = options.toleranceSeconds ?? 300
+  const nowSec = Math.floor((options.now ?? Date.now()) / 1000)
+  // Both directions: a timestamp from the future is as replayable as an old one.
+  if (Math.abs(nowSec - timestamp) > tolerance)
+    throw new InvalidWebhookSignature(`${label.name} timestamp is outside tolerance window`, 'expired')
+
+  const bodyStr = typeof body === 'string' ? body : body.toString('utf8')
+  // The signed payload is `${timestamp}.${payload}` — exact concatenation matters.
+  const expected = hmac(secret, `${timestamp}.${bodyStr}`, 'sha256')
+
+  for (const sig of signatures) {
+    let candidate: Buffer
+    try {
+      candidate = hexToBuffer(sig)
+    }
+    catch {
+      // Skip a malformed v1 entry — there may be several, and another may match.
+      continue
+    }
+    if (bufferEquals(expected, candidate))
+      return true
+  }
+
+  throw new InvalidWebhookSignature(`${label.name} signature did not match`, 'mismatch')
 }
 
 /**
@@ -120,7 +167,7 @@ function parseStripeSignature(header: string): { timestamp: number, signatures: 
  *   1. Parse `t` and `v1=` from the header.
  *   2. Compute HMAC-SHA256(`${t}.${body}`, secret).
  *   3. Compare in constant time against any v1 entry.
- *   4. Reject if `t` is older than `toleranceSeconds` to thwart replay.
+ *   4. Reject if `t` is further than `toleranceSeconds` from now, to thwart replay.
  *
  * @example
  * ```ts
@@ -133,36 +180,82 @@ export function verifyStripe(
   body: string | Buffer,
   options: VerifyWebhookOptions = {},
 ): true {
-  if (!secret)
-    throw new InvalidWebhookSignature('Stripe webhook secret is empty', 'missing')
-  if (!signatureHeader)
-    throw new InvalidWebhookSignature('Stripe-Signature header is missing', 'missing')
+  return verifyTimestampedSignature(secret, signatureHeader, body, options, { name: 'Stripe webhook', header: 'Stripe-Signature' })
+}
 
-  const { timestamp, signatures } = parseStripeSignature(signatureHeader)
+/**
+ * Verify a webhook signed by {@link signWebhook} (or any sender using the same
+ * `t=<unix>,v1=<hex>` scheme over `${t}.${body}`).
+ *
+ * @example
+ * ```ts
+ * verifySignedWebhook(secret, request.headers.get('x-signature')!, rawBody)
+ * ```
+ */
+export function verifySignedWebhook(
+  secret: string,
+  signatureHeader: string,
+  body: string | Buffer,
+  options: VerifyWebhookOptions = {},
+): true {
+  return verifyTimestampedSignature(secret, signatureHeader, body, options, { name: 'Webhook', header: 'Signature' })
+}
 
-  const tolerance = options.toleranceSeconds ?? 300
-  const nowSec = Math.floor((options.now ?? Date.now()) / 1000)
-  if (nowSec - timestamp > tolerance)
-    throw new InvalidWebhookSignature('Stripe webhook timestamp is outside tolerance window', 'expired')
+/**
+ * The signature a sender attaches to an outgoing webhook.
+ */
+export interface SignedWebhook {
+  /** Unix seconds the signature was made at (the `t` part). */
+  timestamp: number
+  /** Hex HMAC-SHA256 of `${timestamp}.${body}`, one per secret, in order. */
+  signatures: string[]
+  /** The header value: `t=<timestamp>,v1=<hex>[,v1=<hex>...]`. */
+  header: string
+}
 
+/**
+ * Sign an outgoing webhook body, for the receiver to check with
+ * {@link verifySignedWebhook} (or {@link verifyStripe}, which accepts the
+ * same scheme).
+ *
+ * The signed payload is `${timestamp}.${body}`, so a captured request cannot
+ * be replayed later with a fresh timestamp. Pass several secrets while
+ * rotating one: the header carries a `v1` entry for each, and a receiver that
+ * knows either secret accepts it.
+ *
+ * Sign the exact string you send: re-serializing the JSON on either side
+ * breaks the signature.
+ *
+ * @example
+ * ```ts
+ * const body = JSON.stringify(event)
+ * const { header } = signWebhook(endpoint.secret, body)
+ * await fetch(endpoint.url, { method: 'POST', body, headers: { 'Content-Type': 'application/json', 'X-Signature': header } })
+ * ```
+ */
+export function signWebhook(
+  secret: string | string[],
+  body: string | Buffer,
+  options: { timestamp?: number } = {},
+): SignedWebhook {
+  const secrets = (Array.isArray(secret) ? secret : [secret]).filter(value => typeof value === 'string' && value.length > 0)
+  if (!secrets.length)
+    throw new InvalidWebhookSignature('Webhook signing secret is empty', 'missing')
+  const timestamp = options.timestamp ?? Math.floor(Date.now() / 1000)
+  if (!Number.isInteger(timestamp) || timestamp < 0)
+    throw new InvalidWebhookSignature('Webhook timestamp must be whole unix seconds', 'malformed')
   const bodyStr = typeof body === 'string' ? body : body.toString('utf8')
-  // Stripe signs `${timestamp}.${payload}` — exact concatenation matters.
-  const expected = hmac(secret, `${timestamp}.${bodyStr}`, 'sha256')
+  const signatures = secrets.map(value => hmac(value, `${timestamp}.${bodyStr}`, 'sha256').toString('hex'))
+  return { timestamp, signatures, header: [`t=${timestamp}`, ...signatures.map(sig => `v1=${sig}`)].join(',') }
+}
 
-  for (const sig of signatures) {
-    let candidate: Buffer
-    try {
-      candidate = hexToBuffer(sig)
-    }
-    catch {
-      // Skip a malformed v1 entry — Stripe may include multiple, others may match.
-      continue
-    }
-    if (bufferEquals(expected, candidate))
-      return true
-  }
-
-  throw new InvalidWebhookSignature('Stripe webhook signature did not match', 'mismatch')
+/**
+ * A new random webhook signing secret: `prefix` + 32 random bytes, base64url.
+ * Show it to its owner once; store it encrypted (the sender needs the
+ * plaintext to sign), never hashed.
+ */
+export function generateWebhookSecret(prefix = 'whsec_'): string {
+  return `${prefix}${randomBytes(32).toString('base64url')}`
 }
 
 /**
@@ -248,7 +341,7 @@ export function verifyHmac(
  * {@link InvalidWebhookSignature} on any failure (malformed header, expired
  * timestamp, mismatched HMAC, or missing input).
  *
- * @param provider  'stripe' | 'github' | 'generic'
+ * @param provider  'stripe' | 'github' | 'generic' | 'signed' ({@link signWebhook}'s scheme)
  * @param secret    Provider's signing secret (`whsec_...` for Stripe, etc.)
  * @param signature Raw header value as received from the request
  * @param body      Raw request body — must be the bytes-on-the-wire, not parsed JSON
@@ -282,6 +375,8 @@ export function verifyWebhook(
       return verifyGithub(secret, signature, body)
     case 'generic':
       return verifyHmac(secret, body, signature, options.algorithm ?? 'sha256')
+    case 'signed':
+      return verifySignedWebhook(secret, signature, body, options)
     default:
       // Exhaustiveness guard — surfacing an unknown provider as a typed error
       // rather than a TypeScript-only check makes the failure obvious at runtime.
