@@ -59,6 +59,7 @@ export const PROBE_TARGETS: ProbeTarget[] = [
   // listed would read as a sunset the day it is taken down.
   { name: 'Mozilla add-ons v5', url: 'https://addons.mozilla.org/api/v5/addons/search/?q=test', method: 'GET', observed: 200 },
   { name: 'Hetzner Cloud', url: 'https://api.hetzner.cloud/v1/servers', method: 'GET', observed: 401 },
+  { name: 'fiskaly SIGN DE v2', url: 'https://kassensichv-middleware.fiskaly.com/api/v2/tss', method: 'GET', observed: 401 },
   { name: 'Lemon Squeezy', url: 'https://api.lemonsqueezy.com/v1/products', method: 'GET', observed: 401 },
   { name: 'Vonage Messages v1', url: 'https://api.nexmo.com/v1/messages', method: 'POST', observed: 401 },
   { name: 'Vonage Verify v2', url: 'https://api.nexmo.com/v2/verify', method: 'POST', observed: 422 },

@@ -65,6 +65,7 @@ const URL_PINS: UrlPin[] = [
   { host: 'discord.com', versions: ['api/v10', 'api/v9'], kind: 'api', why: 'deliberate and overridable: v10 for bot accounts, v9 for the user-account surface' },
   { host: 'exp.host', versions: ['--/api/v2'], kind: 'api', why: 'current Expo push API' },
   { host: 'fcm.googleapis.com', versions: ['v1'], kind: 'api', why: 'HTTP v1; the legacy API it replaced is in RETIRED below' },
+  { host: 'kassensichv-middleware.fiskaly.com', versions: ['api/v2'], kind: 'api', why: 'SIGN DE v2, the cloud TSE (@stacksjs/commerce/fiskaly); one host for test and live keys' },
   { host: 'lookups.twilio.com', versions: ['v2'], kind: 'api', why: 'current; v1 is the retired one' },
   { host: 'postmaster.google.com', versions: ['v2'], kind: 'link', why: "a dashboard URL inside a hint a person reads, not a call" },
   { host: 'stacksjs.com', versions: ['schemas/ai-project-context/v1'], kind: 'ours', why: 'our own schema URL' },
@@ -132,6 +133,9 @@ const DEFAULT_PINS: DefaultPin[] = [
   // an application configuring a version got it on chat and streaming and was
   // silently ignored on RAG, vision, buddy and personalization.
   { integration: 'Anthropic', file: 'ai/src/drivers/anthropic/index.ts', version: '2023-06-01', overridableVia: 'globalConfig?.anthropicVersion' },
+  // Stripe Terminal's REST client (@stacksjs/payments/terminal), pinned so an
+  // account's default version cannot change the shapes it reads.
+  { integration: 'Stripe Terminal', file: 'payments/src/terminal.ts', version: '2026-09-30.endive', overridableVia: 'options.apiVersion' },
   {
     integration: 'GitHub REST',
     file: 'github/src/client.ts',
