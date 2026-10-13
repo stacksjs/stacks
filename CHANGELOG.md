@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.167...v0.75.168)
+
+## 🐛 Bug Fixes
+
+- **database**: generated migrations never reuse a name a ledger has recorded ([31259dd](https://github.com/stacksjs/stacks/commit/31259dd)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.166...v0.75.167)
 
 ## ✨ Features
