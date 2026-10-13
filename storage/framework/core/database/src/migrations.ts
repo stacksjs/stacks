@@ -59,7 +59,7 @@ import { relativeMigrationDirectory, resolveMigrationDirectory } from './migrati
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablePreflight } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
-import { enumTypesCreatedBy, SQL_IDENTIFIER, sqlStatementsOf } from './sql-statements'
+import { enumTypesCreatedBy, guardedBlockStatements, SQL_IDENTIFIER, sqlStatementsOf } from './sql-statements'
 import { indexShape } from './index-shape'
 import { corpusUniqueIndexes, hasIndex, restorableMissingUniqueIndexes, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
 import { ensureUuidColumns } from './uuid-columns'
@@ -3323,15 +3323,6 @@ export interface MigrationContent {
 
 const IDENTIFIER = SQL_IDENTIFIER
 const NEUTRAL_STATEMENT = /^(?:BEGIN|COMMIT|END|PRAGMA|SET|SELECT\s+1\s*$|COMMENT\s+ON)\b/i
-
-/** The statements inside a `DO $tag$ BEGIN ... EXCEPTION ... END $tag$` guard, or undefined. */
-function guardedBlockStatements(statement: string): string[] | undefined {
-  const block = /^\s*DO\s+\$(\w*)\$([\s\S]*)\$\1\$\s*;?\s*$/i.exec(statement)
-  if (!block)
-    return undefined
-  const body = /^\s*BEGIN\b([\s\S]*?)(?:\bEXCEPTION\b[\s\S]*)?\bEND\s*;?\s*$/i.exec(block[2] ?? '')
-  return body ? sqlStatementsOf(body[1] ?? '') : undefined
-}
 
 export function describeMigrationContent(sql: string): MigrationContent {
   const content: MigrationContent = {

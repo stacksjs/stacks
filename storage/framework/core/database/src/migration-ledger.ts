@@ -35,7 +35,7 @@ import { join } from 'node:path'
 import { resolvedDatabaseDriver } from './dialect'
 import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
-import { enumTypesCreatedBy, enumTypesDroppedBy, sqlStatementsOf } from './sql-statements'
+import { guardedBlockStatements, sqlStatementsOf } from './sql-statements'
 
 export type LedgerDialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -208,10 +208,36 @@ export function stripForEffects(sql: string): string {
   return out
 }
 
-/** Split cleaned SQL into statements. */
+/**
+ * `statement`, or the statements inside it when it is a `DO $$ ... $$` guard.
+ *
+ * Recursive, so a guard inside a guard unwraps too. Each unwrap returns a
+ * strictly shorter body, so it terminates.
+ */
+function withoutGuard(statement: string): string[] {
+  const inner = guardedBlockStatements(statement)
+  return inner ? inner.flatMap(withoutGuard) : [statement]
+}
+
+/**
+ * The statements a file executes, as written.
+ *
+ * Split with the dollar-quote-aware splitter rather than on `;`, because a
+ * `DO $$ BEGIN ... END $$` body holds semicolons of its own: splitting on
+ * them tore every guard into three fragments, the first beginning
+ * `DO $$ BEGIN`, so no pattern anchored at the start of a statement could see
+ * the statement inside it. A guarded CREATE INDEX - the idiomatic idempotent
+ * form in a hand-written Postgres migration - therefore registered no effect
+ * at all, and the migration that built the index read as never applied
+ * (stacksjs/stacks#2901).
+ */
+function rawStatementsOf(sql: string): string[] {
+  return sqlStatementsOf(sql).flatMap(withoutGuard)
+}
+
+/** The same, stripped of comments and literals, ready to match against. */
 function statementsOf(sql: string): string[] {
-  return stripForEffects(sql)
-    .split(';')
+  return rawStatementsOf(stripForEffects(sql))
     .map(s => s.trim())
     .filter(s => s.length > 0)
 }
@@ -265,16 +291,9 @@ export function migrationRemovals(sql: string): MigrationEffect[] {
       continue
     }
 
-    // Unanchored, through the shared scanner, for the same reason the create
-    // side is: `statementsOf` splits on `;`, so a drop inside a
-    // `DO $$ BEGIN ... EXCEPTION ... END $$` guard arrives as a fragment
-    // beginning `DO $$ BEGIN DROP TYPE ...`. Nothing generates that today, but
-    // guarding a drop is the idiomatic way to hand-write an idempotent one,
-    // and this reads an application's corpus too (stacksjs/stacks#2901).
-    const droppedTypes = enumTypesDroppedBy([statement])
-    if (droppedTypes.size > 0) {
-      for (const name of droppedTypes)
-        push({ kind: 'enum', name })
+    const enumType = new RegExp(String.raw`^DROP\s+TYPE\s+(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
+    if (enumType?.[1]) {
+      push({ kind: 'enum', name: enumType[1] })
       continue
     }
 
@@ -326,7 +345,7 @@ export function migrationEffects(sql: string): MigrationEffect[] {
   // partial index's predicate can hold a literal, and blanking it would make
   // `WHERE status = 'a'` and `WHERE status = 'b'` the same index.
   const shapes = new Map<string, string>()
-  for (const statement of sqlStatementsOf(sql)) {
+  for (const statement of rawStatementsOf(sql)) {
     const match = /^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+NOT\s+EXISTS\s+)?["`[]?([\w$]+)/i.exec(statement)
     const key = match?.[1] ? comparableIndexKey(statement) : undefined
     if (match?.[1] && key)
@@ -363,16 +382,9 @@ export function migrationEffects(sql: string): MigrationEffect[] {
       continue
     }
 
-    // Through the shared scanner, which is unanchored: the generator wraps the
-    // create in a `DO $stacks$ BEGIN ... EXCEPTION ... END` guard, so the
-    // statement does not begin with `CREATE TYPE` and an anchored pattern
-    // found nothing. A regenerated types file then had no verifiable effects
-    // at all, which is neither "already applied" nor "pending" - it fell out
-    // of the report entirely (stacksjs/stacks#2900).
-    const enumTypes = enumTypesCreatedBy([statement])
-    if (enumTypes.size > 0) {
-      for (const name of enumTypes)
-        push({ kind: 'enum', name })
+    const enumType = new RegExp(String.raw`^CREATE\s+TYPE\s+${IDENT}\s+AS\s+ENUM`, 'i').exec(statement)
+    if (enumType?.[1]) {
+      push({ kind: 'enum', name: enumType[1] })
       continue
     }
 

@@ -128,24 +128,22 @@ export function enumTypesCreatedBy(statements: readonly string[]): Set<string> {
 }
 
 /**
- * The enum types a set of statements drops, lowercased.
+ * The statements inside a `DO $tag$ BEGIN ... EXCEPTION ... END $tag$` guard,
+ * or undefined when the statement is not one.
  *
- * Unanchored for the same reason as {@link enumTypesCreatedBy}, and it is not
- * only the generator that puts one in a guard: wrapping a drop in
- * `DO $$ BEGIN ... EXCEPTION WHEN undefined_object THEN null; END $$` is how a
- * hand-written Postgres migration makes it idempotent, and the ledger reads an
- * application's own corpus as readily as a generated one.
+ * The guard is how both the generator and a hand-written Postgres migration
+ * make a `CREATE TYPE` or a `CREATE INDEX` idempotent, and the statements that
+ * matter are inside it. Anything reading a corpus has to look in there, or a
+ * pattern anchored at the start of a statement sees only `DO $tag$ BEGIN`.
  *
- * A comma list (`DROP TYPE a, b`) still yields only the first name, which is
- * what the anchored pattern this replaces did.
+ * Requires the body to open with `BEGIN`, so a block with a `DECLARE` section
+ * is left whole: that shape has never been generated, and treating an
+ * unrecognised block as one opaque statement is the safe direction.
  */
-export function enumTypesDroppedBy(statements: readonly string[]): Set<string> {
-  const types = new Set<string>()
-  for (const statement of statements) {
-    for (const match of statement.matchAll(new RegExp(String.raw`\bDROP\s+TYPE\s+(?:IF\s+EXISTS\s+)?${SQL_IDENTIFIER}`, 'gi'))) {
-      if (match[1])
-        types.add(match[1].toLowerCase())
-    }
-  }
-  return types
+export function guardedBlockStatements(statement: string): string[] | undefined {
+  const block = /^\s*DO\s+\$(\w*)\$([\s\S]*)\$\1\$\s*;?\s*$/i.exec(statement)
+  if (!block)
+    return undefined
+  const body = /^\s*BEGIN\b([\s\S]*?)(?:\bEXCEPTION\b[\s\S]*)?\bEND\s*;?\s*$/i.exec(block[2] ?? '')
+  return body ? sqlStatementsOf(body[1] ?? '') : undefined
 }

@@ -61,18 +61,20 @@ describe('index effects match by shape', () => {
 })
 
 /**
- * A generated types file is a guarded create, so the `CREATE TYPE` sits inside
- * a `DO $stacks$ BEGIN ... EXCEPTION WHEN duplicate_object THEN null; END`
- * block rather than at the start of the statement.
+ * A `DO $tag$ BEGIN ... EXCEPTION ... END $tag$` guard is how both the
+ * generator and a hand-written Postgres migration make a statement
+ * idempotent, and everything that matters is inside it.
  *
- * The ledger used to look for it with an anchored pattern, so a regenerated
- * `create-database-types.sql` produced no effects at all. With nothing to
- * verify it classified as `unverifiable`, which is neither recorded as already
- * applied nor reported as pending: the file fell out of the reconciler's
- * output entirely, and the next migrate re-ran a create whose type already
- * existed (stacksjs/stacks#2900).
+ * The ledger used to split statements on `;`, which tore every guard into
+ * three fragments beginning `DO $tag$ BEGIN`, so no pattern anchored at the
+ * start of a statement could see in. A guarded create registered no effect at
+ * all, and no effects is `unverifiable`: deliberately not "every effect
+ * present", because a file with nothing to check must not be recorded as
+ * applied on the strength of having nothing to check. But an unverifiable file
+ * is reported nowhere, so it neither recorded nor showed up as pending
+ * (stacksjs/stacks#2900, stacksjs/stacks#2901).
  */
-describe('a guarded enum create is still an effect', () => {
+describe('statements inside a DO guard', () => {
   const live = {
     tables: new Set<string>(),
     columns: new Map<string, Set<string>>(),
@@ -82,45 +84,67 @@ describe('a guarded enum create is still an effect', () => {
     enums: new Set(['teams_status_type']),
   }
 
-  it('reads the type out of the guard the generator writes', () => {
-    const effects = migrationEffects(`DO $stacks$ BEGIN CREATE TYPE "teams_status_type" AS ENUM ('active', 'paused'); EXCEPTION WHEN duplicate_object THEN null; END $stacks$;`)
+  const guard = (body: string): string => `DO $stacks$ BEGIN ${body} EXCEPTION WHEN duplicate_object THEN null; END $stacks$;`
+
+  it('reads a type out of the guard the generator writes', () => {
+    const effects = migrationEffects(guard(`CREATE TYPE "teams_status_type" AS ENUM ('active', 'paused');`))
 
     expect(effects).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
     expect(effectPresent(effects[0]!, live)).toBe(true)
   })
 
   it('still reads a bare create, which older corpora hold', () => {
-    const effects = migrationEffects(`CREATE TYPE "teams_status_type" AS ENUM ('active');`)
-
-    expect(effects).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
-  })
-
-  it('reads a dropped type out of a guard as well', () => {
-    /*
-     * The mirror of the create. A removal is what keeps an earlier migration
-     * from reading as REVERTED once a later one deliberately undoes it, so a
-     * drop the ledger cannot see means the migration that created the type is
-     * reported as drifted away from history, forever.
-     *
-     * Nothing in the framework generates a guarded drop. An application's own
-     * migration is where this comes from: the guard is the idiomatic way to
-     * write an idempotent `DROP TYPE` in Postgres.
-     */
-    const guarded = migrationRemovals(`DO $stacks$ BEGIN DROP TYPE IF EXISTS "teams_status_type"; EXCEPTION WHEN undefined_object THEN null; END $stacks$;`)
-
-    expect(guarded).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
-    expect(migrationRemovals(`DROP TYPE IF EXISTS "teams_status_type";`)).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+    expect(migrationEffects(`CREATE TYPE "teams_status_type" AS ENUM ('active');`))
+      .toEqual([{ kind: 'enum', name: 'teams_status_type' }])
   })
 
   it('leaves the file verifiable, so it can be recorded rather than vanish', () => {
     // The distinction that matters: an effect the live schema has means
     // `stranded` (record it), while no effects at all means `unverifiable`,
     // and an unverifiable file is reported nowhere.
-    const effects = migrationEffects(`DO $stacks$ BEGIN CREATE TYPE "teams_status_type" AS ENUM ('active'); EXCEPTION WHEN duplicate_object THEN null; END $stacks$;`)
+    const effects = migrationEffects(guard(`CREATE TYPE "teams_status_type" AS ENUM ('active');`))
     const present = effects.filter(effect => effectPresent(effect, live))
+    const absent = effects.filter(effect => !effectPresent(effect, live))
 
     expect(effects.length).toBeGreaterThan(0)
-    expect(classifyMigration(false, present, effects.filter(effect => !effectPresent(effect, live)))).toBe('stranded')
+    expect(classifyMigration(false, present, absent)).toBe('stranded')
+  })
+
+  it('reads an index, with the shape that matches it under another name', () => {
+    // The shape comes from the RAW statement stream, which is read separately
+    // from the stripped one so an index predicate keeps its literals. Both
+    // streams have to look inside the guard or the effect arrives shapeless,
+    // and a shapeless index only ever matches by name.
+    expect(migrationEffects(guard(`CREATE UNIQUE INDEX "teams_name_unique" ON "teams" ("name");`)))
+      .toEqual([{ kind: 'index', name: 'teams_name_unique', table: 'teams', shape: 'unique teams name' }])
+  })
+
+  it('reads a created table and an added column', () => {
+    expect(migrationEffects(guard(`CREATE TABLE "teams" ("id" BIGSERIAL PRIMARY KEY);`)))
+      .toEqual([{ kind: 'table', name: 'teams' }])
+    expect(migrationEffects(guard(`ALTER TABLE "teams" ADD COLUMN "status" text;`)))
+      .toEqual([{ kind: 'column', table: 'teams', name: 'status' }])
+  })
+
+  it('reads a removal, so a later undo still cancels an earlier effect', () => {
+    /*
+     * A removal is what keeps an earlier migration from reading as REVERTED
+     * once a later one deliberately undoes it, so a drop the ledger cannot see
+     * means the migration that created the object is reported as drifted away
+     * from history, forever.
+     */
+    expect(migrationRemovals(guard(`DROP TYPE IF EXISTS "teams_status_type";`)))
+      .toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+    expect(migrationRemovals(guard(`DROP INDEX IF EXISTS "teams_name_unique";`)))
+      .toEqual([{ kind: 'index', name: 'teams_name_unique' }])
+    expect(migrationRemovals(`DROP TYPE IF EXISTS "teams_status_type";`))
+      .toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+  })
+
+  it('keeps a literal that merely mentions DDL from counting as an effect', () => {
+    // Why the matching stream is stripped, and why it stays anchored: a data
+    // migration carrying DDL in its payload must not register as doing it.
+    expect(migrationEffects(`INSERT INTO "notes" ("body") VALUES ('CREATE TABLE "x" ("id" int)');`)).toEqual([])
   })
 })
 
