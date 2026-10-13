@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.166...v0.75.167)
+
+## ✨ Features
+
+- **database**: pool.preparedStatements, so a migration does not break a running app ([aaf7901](https://github.com/stacksjs/stacks/commit/aaf7901)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.165...v0.75.166)
 
 ## ✨ Features
