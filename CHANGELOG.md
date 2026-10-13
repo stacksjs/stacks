@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.165...v0.75.166)
+
+## ✨ Features
+
+- **notifications**: a sequence timing engine with quiet hours, and the forms spam check on its own ([0688fc3](https://github.com/stacksjs/stacks/commit/0688fc3)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: scheduledWorkouts puts structured workouts on the Apple Watch ([7351e72](https://github.com/stacksjs/stacks/commit/7351e72)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.164...v0.75.165)
 
 ## ✨ Features
