@@ -96,6 +96,17 @@ describe('iOS mobile build configuration', () => {
     expect('enableBackgroundAudio' in toCraftIosConfig(base)).toBe(false)
   })
 
+  it('turns Apple Watch workout scheduling on', () => {
+    const craft = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training/m',
+      capabilities: { scheduledWorkouts: true },
+    })
+    expect(craft.enableScheduledWorkouts).toBe(true)
+    expect('enableScheduledWorkouts' in toCraftIosConfig({ appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m' })).toBe(false)
+  })
+
   it('passes native screens, the first-frame tabs and shared storage through to Craft', () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

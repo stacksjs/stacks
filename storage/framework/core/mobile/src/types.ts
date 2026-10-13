@@ -24,6 +24,8 @@ export interface CraftMobileCapabilities {
   flashlight?: boolean
   /** The Music app's song and transport (`music`), iOS with `capabilities.appleMusic`. */
   music?: boolean
+  /** Workouts scheduled onto the paired Apple Watch (`scheduledWorkouts`), iOS with `capabilities.scheduledWorkouts`. */
+  scheduledWorkouts?: boolean
   network?: boolean
   deviceInfo?: boolean
   badge?: boolean
@@ -75,6 +77,7 @@ export interface MobileApi {
   brightness: BrightnessApi
   music: MusicApi
   heartRate: HeartRateApi
+  scheduledWorkouts: import('./scheduled-workouts').ScheduledWorkoutsApi
   speech: SpeechApi
   network: NetworkApi
   pushNotifications: PushNotificationsApi

@@ -256,6 +256,51 @@ with fixes recorded separately. In a browser and on Android `isAvailable()` is
 false, the state says `available: false` and nothing fires. Word iOS's prompt
 with `ios.usageDescriptions.NSBluetoothAlwaysUsageDescription`.
 
+## Apple Watch scheduled workouts
+
+`scheduledWorkouts` puts structured workouts on the paired Apple Watch through
+WorkoutKit's scheduler (iOS 17+): each appears in the watch's Workout app on
+its day, with its warmup, repeated blocks, cooldown, goals and alerts. iOS
+only, behind `capabilities.scheduledWorkouts`; only an app with it compiles in
+and links WorkoutKit. The calls work on the page and on native stx screens.
+A plan is plain JSON in SI units, its `id` a UUID the app keeps for it.
+
+```ts
+import { scheduledWorkouts } from '@stacksjs/mobile'
+
+if (await scheduledWorkouts.isSupported()) {           // false off an iPhone, never rejects
+  await scheduledWorkouts.requestAuthorization()       // iOS's prompt, once; call it from a tap
+  const kept = await scheduledWorkouts.list()          // [{ id, date, hour, minute, complete }]
+  await scheduledWorkouts.schedule({
+    id: '6f1c2b8e-5a7d-4c3e-9b1a-2d4e6f8a0b1c',
+    date: '2026-10-20', hour: 6, minute: 30,           // local; 07:00 without a time
+    workout: {
+      activity: 'running', location: 'outdoor', displayName: '4 x 1 km',
+      warmup: { goal: { type: 'time', seconds: 600 } },
+      blocks: [{ iterations: 4, steps: [
+        { purpose: 'work', step: { goal: { type: 'distance', meters: 1000 }, alert: { type: 'speed', min: 4.1, max: 4.4 } } },
+        { purpose: 'recovery', step: { goal: { type: 'time', seconds: 120 } } },
+      ] }],
+    },
+  })
+  await scheduledWorkouts.remove(kept[0].id)          // every day it is on
+}
+```
+
+Goals are `open`, `time` (seconds), `distance` (meters) and `energy`
+(kilocalories); alerts `heartRate`, `power`, `speed` (m/s), `cadence` ranges and
+`heartRateZone` / `powerZone`. An activity or goal WorkoutKit refuses rejects
+the call with a message naming it; an alert it refuses is left out and named
+in the result's `droppedAlerts`. `schedule` also rejects LIMIT_REACHED (the
+watch holds 15) and NOT_SCHEDULED when nothing kept the plan, as without a
+paired watch. In a browser and on Android `isSupported()` is false and every
+other call rejects `unsupported`.
+
+For tests, `createScheduledWorkoutsFake()` from `@stacksjs/mobile/testing` is a
+`craft.scheduledWorkouts` that answers like the shell. On the iOS simulator,
+which never has a watch, the app's `CraftFakeWorkoutScheduler` default makes
+the shell keep plans itself (`xcrun simctl spawn <device> defaults write <bundle id> CraftFakeWorkoutScheduler -bool YES`).
+
 ## Apple Music (now playing)
 
 `music` shows what the Music app is playing (title, artist, album, a small

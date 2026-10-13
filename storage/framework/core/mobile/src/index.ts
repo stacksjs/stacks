@@ -44,6 +44,7 @@ import {
 import type { CraftHost } from './bridge'
 import { auth, background, browser, chrome, clipboard, contextMenu, db, dialog, files, orientation, refresh, shortcuts, statusBar, storeKit, symbols, widgets } from './native'
 import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunctionNow, subscribeWhenReady, whenBridgeReady } from './bridge'
+import { scheduledWorkouts } from './scheduled-workouts'
 import type {
   AppReviewApi,
   BiometricsApi,
@@ -83,6 +84,7 @@ export * from './events'
 export * from './gestures'
 export * from './navigation'
 export * from './route'
+export * from './scheduled-workouts'
 export * from './session-clock'
 export * from './indoor'
 export * from './native'
@@ -469,6 +471,7 @@ export const mobile: MobileApi = {
   brightness,
   music,
   heartRate,
+  scheduledWorkouts,
   speech,
   network,
   pushNotifications,

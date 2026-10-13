@@ -82,6 +82,7 @@ const CAPABILITY_KEYS = {
   appleMusic: 'enableAppleMusic',
   heartRate: 'enableHeartRate',
   backgroundAudio: 'enableBackgroundAudio',
+  scheduledWorkouts: 'enableScheduledWorkouts',
   liveActivities: 'enableLiveActivities',
   watchApp: 'enableWatchApp',
   backgroundTasks: 'enableBackgroundTasks',

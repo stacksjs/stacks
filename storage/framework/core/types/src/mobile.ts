@@ -52,6 +52,14 @@ export interface MobileCapabilities {
    * expects an app that asks for it to play audible content.
    */
   backgroundAudio?: boolean
+  /**
+   * iOS 17+: schedule structured workouts onto the paired Apple Watch
+   * (`scheduledWorkouts` from @stacksjs/mobile, WorkoutKit's
+   * WorkoutScheduler). Only an app with it compiles in and links WorkoutKit;
+   * iOS asks the person the first time the page calls
+   * `scheduledWorkouts.requestAuthorization()`.
+   */
+  scheduledWorkouts?: boolean
   liveActivities?: boolean
   watchApp?: boolean
   backgroundTasks?: boolean
