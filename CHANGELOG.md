@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.170...v0.75.171)
+
+## 🐛 Bug Fixes
+
+- **mobile**: require craft-native 0.0.163 and fail build:ios on a Craft too old for a capability ([653c5f8](https://github.com/stacksjs/stacks/commit/653c5f8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.169...v0.75.170)
 
 ## ✨ Features
