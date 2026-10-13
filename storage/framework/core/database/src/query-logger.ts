@@ -83,6 +83,11 @@ const QUERY_LOG_BATCH_DELAY_MS = 5
 const pendingQueryLogs: PendingQueryLog[] = []
 let queryLogFlushScheduled = false
 let queryLogFlushInFlight = false
+// Set when an INSERT reports that query_logs does not exist. Until a probe
+// finds the table, flushes ask the catalog instead of inserting: a missing
+// table otherwise cost one failed INSERT per batch plus one per record in the
+// retry, each an ERROR line in the database server's own log.
+let queryLogTableMissing = false
 
 /** Persist query diagnostics in bounded multi-row inserts. */
 function enqueueQueryLog(record: QueryLogRecord): Promise<void> {
@@ -116,11 +121,17 @@ async function flushQueuedQueryLogs(): Promise<void> {
         batch.map(item => item.record),
         record => Object.keys(record).join('\0'),
       )
+      if (queryLogTableMissing)
+        queryLogTableMissing = !await queryLogContext.run(true, queryLogTableExists)
       for (const records of recordsByShape.values()) {
+        if (queryLogTableMissing)
+          break
         const stored = await queryLogContext.run(true, () => storeQueryLogs(records, records.length === 1))
-        if (!stored) {
-          for (const record of records)
-            await queryLogContext.run(true, () => storeQueryLogs([record]))
+        if (stored === 'failed') {
+          for (const record of records) {
+            if (await queryLogContext.run(true, () => storeQueryLogs([record])) === 'missing')
+              break
+          }
         }
       }
       for (const item of batch)
@@ -635,9 +646,29 @@ function generateOptimizationSuggestions(explainResult: any, logRecord: QueryLog
 }
 
 /**
+ * Whether query_logs exists, asked of the catalog so a missing table is an
+ * empty answer rather than a failed statement.
+ */
+async function queryLogTableExists(): Promise<boolean> {
+  try {
+    const dialect = getDatabaseDialect()
+    const sql = dialect === 'postgres'
+      ? `SELECT 1 AS present WHERE to_regclass('query_logs') IS NOT NULL`
+      : dialect === 'mysql'
+        ? `SELECT 1 AS present FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'query_logs'`
+        : `SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'query_logs'`
+    const rows = await db.unsafe(sql).execute() as unknown[]
+    return rows.length > 0
+  }
+  catch {
+    return false
+  }
+}
+
+/**
  * Store the query log in the database
  */
-async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true): Promise<boolean> {
+async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true): Promise<'stored' | 'failed' | 'missing'> {
   try {
     const values = logRecords as unknown as Record<string, unknown>[]
     const libsql = isLibsqlDriver(config.database?.default)
@@ -687,16 +718,18 @@ async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true
       // per-row retry store those rows again.
       await db.insertInto('query_logs').values(values).execute()
     }
-    return true
+    return 'stored'
   }
   catch (error) {
-    if (reportFailure) {
-      const message = error instanceof Error ? error.message : String(error)
-      if (/no such table|does not exist|doesn't exist/i.test(message) && /query_logs/i.test(message))
+    const message = error instanceof Error ? error.message : String(error)
+    if (/no such table|does not exist|doesn't exist/i.test(message) && /query_logs/i.test(message)) {
+      if (!queryLogTableMissing)
         log.debug('Query logging will start after the query_logs table is migrated.')
-      else
-        log.error('Failed to store query log:', error)
+      queryLogTableMissing = true
+      return 'missing'
     }
-    return false
+    if (reportFailure)
+      log.error('Failed to store query log:', error)
+    return 'failed'
   }
 }
