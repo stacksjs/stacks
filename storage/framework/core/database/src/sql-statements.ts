@@ -91,3 +91,38 @@ export function sqlStatementsOf(content: string): string[] {
 
   return statements
 }
+
+/**
+ * An optionally schema-qualified, optionally quoted identifier, capturing the
+ * name itself. `$` is legal in a Postgres identifier after the first
+ * character, and a generated enum type can carry one.
+ */
+export const SQL_IDENTIFIER = String.raw`(?:["'\`[]?[\w$]+["'\`\]]?\.)?["'\`[]?([\w$]+)["'\`\]]?`
+
+/**
+ * The enum types a set of statements creates, lowercased.
+ *
+ * Unanchored on purpose. The generator wraps the create in a guard, so the
+ * statement begins with `DO $stacks$ BEGIN` and the `CREATE TYPE` is in the
+ * middle of it:
+ *
+ * ```sql
+ * DO $stacks$ BEGIN CREATE TYPE "teams_status_type" AS ENUM ('active');
+ *   EXCEPTION WHEN duplicate_object THEN null; END $stacks$;
+ * ```
+ *
+ * A pattern anchored at the start of the statement sees nothing there, which
+ * is how the migration ledger came to treat a regenerated types file as
+ * having no verifiable effects: unclassifiable, so neither recorded as already
+ * applied nor reported as pending (stacksjs/stacks#2900).
+ */
+export function enumTypesCreatedBy(statements: readonly string[]): Set<string> {
+  const types = new Set<string>()
+  for (const statement of statements) {
+    for (const match of statement.matchAll(new RegExp(String.raw`\bCREATE\s+TYPE\s+${SQL_IDENTIFIER}\s+AS\s+ENUM\b`, 'gi'))) {
+      if (match[1])
+        types.add(match[1].toLowerCase())
+    }
+  }
+  return types
+}

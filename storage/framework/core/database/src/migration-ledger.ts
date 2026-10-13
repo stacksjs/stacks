@@ -35,7 +35,7 @@ import { join } from 'node:path'
 import { resolvedDatabaseDriver } from './dialect'
 import { comparableIndexKey, postgresIndexStatement } from './index-shape'
 import { resolveMigrationDirectory } from './migration-path'
-import { sqlStatementsOf } from './sql-statements'
+import { enumTypesCreatedBy, sqlStatementsOf } from './sql-statements'
 
 export type LedgerDialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -356,9 +356,16 @@ export function migrationEffects(sql: string): MigrationEffect[] {
       continue
     }
 
-    const enumType = new RegExp(String.raw`^CREATE\s+TYPE\s+${IDENT}\s+AS\s+ENUM`, 'i').exec(statement)
-    if (enumType?.[1]) {
-      push({ kind: 'enum', name: enumType[1] })
+    // Through the shared scanner, which is unanchored: the generator wraps the
+    // create in a `DO $stacks$ BEGIN ... EXCEPTION ... END` guard, so the
+    // statement does not begin with `CREATE TYPE` and an anchored pattern
+    // found nothing. A regenerated types file then had no verifiable effects
+    // at all, which is neither "already applied" nor "pending" - it fell out
+    // of the report entirely (stacksjs/stacks#2900).
+    const enumTypes = enumTypesCreatedBy([statement])
+    if (enumTypes.size > 0) {
+      for (const name of enumTypes)
+        push({ kind: 'enum', name })
       continue
     }
 

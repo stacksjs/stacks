@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { comparableIndexKey, postgresIndexStatement } from '../src/index-shape'
-import { effectPresent, migrationEffects, reconcileMigrationLedger } from '../src/migration-ledger'
+import { classifyMigration, effectPresent, migrationEffects, reconcileMigrationLedger } from '../src/migration-ledger'
 
 /**
  * `migrate:regenerate --force` against a database with history left the next
@@ -57,6 +57,53 @@ describe('index effects match by shape', () => {
 
     expect(catalog).toBe(written)
     expect(other).not.toBe(written)
+  })
+})
+
+/**
+ * A generated types file is a guarded create, so the `CREATE TYPE` sits inside
+ * a `DO $stacks$ BEGIN ... EXCEPTION WHEN duplicate_object THEN null; END`
+ * block rather than at the start of the statement.
+ *
+ * The ledger used to look for it with an anchored pattern, so a regenerated
+ * `create-database-types.sql` produced no effects at all. With nothing to
+ * verify it classified as `unverifiable`, which is neither recorded as already
+ * applied nor reported as pending: the file fell out of the reconciler's
+ * output entirely, and the next migrate re-ran a create whose type already
+ * existed (stacksjs/stacks#2900).
+ */
+describe('a guarded enum create is still an effect', () => {
+  const live = {
+    tables: new Set<string>(),
+    columns: new Map<string, Set<string>>(),
+    indexes: new Set<string>(),
+    indexShapes: new Set<string>(),
+    constraints: new Set<string>(),
+    enums: new Set(['teams_status_type']),
+  }
+
+  it('reads the type out of the guard the generator writes', () => {
+    const effects = migrationEffects(`DO $stacks$ BEGIN CREATE TYPE "teams_status_type" AS ENUM ('active', 'paused'); EXCEPTION WHEN duplicate_object THEN null; END $stacks$;`)
+
+    expect(effects).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+    expect(effectPresent(effects[0]!, live)).toBe(true)
+  })
+
+  it('still reads a bare create, which older corpora hold', () => {
+    const effects = migrationEffects(`CREATE TYPE "teams_status_type" AS ENUM ('active');`)
+
+    expect(effects).toEqual([{ kind: 'enum', name: 'teams_status_type' }])
+  })
+
+  it('leaves the file verifiable, so it can be recorded rather than vanish', () => {
+    // The distinction that matters: an effect the live schema has means
+    // `stranded` (record it), while no effects at all means `unverifiable`,
+    // and an unverifiable file is reported nowhere.
+    const effects = migrationEffects(`DO $stacks$ BEGIN CREATE TYPE "teams_status_type" AS ENUM ('active'); EXCEPTION WHEN duplicate_object THEN null; END $stacks$;`)
+    const present = effects.filter(effect => effectPresent(effect, live))
+
+    expect(effects.length).toBeGreaterThan(0)
+    expect(classifyMigration(false, present, effects.filter(effect => !effectPresent(effect, live)))).toBe('stranded')
   })
 })
 

@@ -59,7 +59,7 @@ import { relativeMigrationDirectory, resolveMigrationDirectory } from './migrati
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablePreflight } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
-import { sqlStatementsOf } from './sql-statements'
+import { enumTypesCreatedBy, SQL_IDENTIFIER, sqlStatementsOf } from './sql-statements'
 import { indexShape } from './index-shape'
 import { corpusUniqueIndexes, hasIndex, restorableMissingUniqueIndexes, restoreDroppedUniqueIndexes, uniqueIndexIsRestorable } from './declared-unique-indexes'
 import { ensureUuidColumns } from './uuid-columns'
@@ -67,7 +67,7 @@ import { sqlHelpers } from './sql-helpers'
 import { GENERATED_MIGRATION_MARKER, isGeneratedMigration } from './generated-migration-marker'
 import { trackIgnoredGeneratedMigrations } from './ignored-migrations'
 
-export { sqlStatementsOf } from './sql-statements'
+export { enumTypesCreatedBy, sqlStatementsOf } from './sql-statements'
 
 import { isLibsqlDriver, isVitessSharded, toSqlIntrospectionDialect } from './dialect'
 
@@ -3321,7 +3321,7 @@ export interface MigrationContent {
   other: boolean
 }
 
-const IDENTIFIER = String.raw`(?:["'\`[]?[\w$]+["'\`\]]?\.)?["'\`[]?([\w$]+)["'\`\]]?`
+const IDENTIFIER = SQL_IDENTIFIER
 const NEUTRAL_STATEMENT = /^(?:BEGIN|COMMIT|END|PRAGMA|SET|SELECT\s+1\s*$|COMMENT\s+ON)\b/i
 
 /** The statements inside a `DO $tag$ BEGIN ... EXCEPTION ... END $tag$` guard, or undefined. */
@@ -3424,18 +3424,6 @@ export function describeMigrationContent(sql: string): MigrationContent {
     visit(statement)
 
   return content
-}
-
-/** The enum types a set of generated statements creates, lowercased. */
-export function enumTypesCreatedBy(statements: readonly string[]): Set<string> {
-  const types = new Set<string>()
-  for (const statement of statements) {
-    for (const match of statement.matchAll(new RegExp(String.raw`\bCREATE\s+TYPE\s+${IDENTIFIER}\s+AS\s+ENUM\b`, 'gi'))) {
-      if (match[1])
-        types.add(match[1].toLowerCase())
-    }
-  }
-  return types
 }
 
 /**
