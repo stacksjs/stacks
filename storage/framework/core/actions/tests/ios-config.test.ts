@@ -131,6 +131,46 @@ describe('iOS mobile build configuration', () => {
     expect(() => nativeScreenFiles({ nativeScreens: { '/m/calendar': 'Calendar' } }, root)).toThrow('Calendar')
   })
 
+  it('builds an all-native app: its renderer, and the app script compiled beside the screens', async () => {
+    const config = toCraftIosConfig({
+      appName: 'HQ.training',
+      bundleId: 'training.hq.app',
+      url: 'https://hq.training/m',
+      renderer: 'native',
+      nativeScreens: { '/m': 'Today' },
+      nativeApp: 'resources/native/app.ts',
+    })
+    expect(config.renderer).toBe('native')
+    // Craft runs the bundle's app script under stx's route name.
+    expect(config.nativeApp).toBe('__app')
+    // The site stays: the start path and the API come from it.
+    expect(config.devServerURL).toBe('https://hq.training/m')
+    const web = toCraftIosConfig({ appName: 'Web', bundleId: 'org.example.web', url: 'https://example.org' })
+    expect('renderer' in web).toBe(false)
+    expect('nativeApp' in web).toBe(false)
+
+    const root = await mkdtemp(join(tmpdir(), 'stacks-native-app-'))
+    await Bun.write(join(root, 'resources/native/Today.stx'), '<View />')
+    await Bun.write(join(root, 'resources/native/app.ts'), 'export default () => {}\n')
+    const calls: Array<Record<string, unknown>> = []
+    await compileNativeScreens({ nativeScreens: { '/m': 'Today' }, nativeApp: 'resources/native/app.ts' }, root, join(root, 'out'), async (options) => {
+      calls.push(options)
+      return { outFile: options.outFile }
+    })
+    expect(calls[0]!.app).toBe(join(root, 'resources/native/app.ts'))
+    await expect(compileNativeScreens({ nativeScreens: { '/m': 'Today' }, nativeApp: 'resources/native/missing.ts' }, root, join(root, 'out'), async options => ({ outFile: options.outFile }))).rejects.toThrow('missing.ts')
+    await expect(compileNativeScreens({ nativeApp: 'resources/native/app.ts' }, root, join(root, 'out'), async options => ({ outFile: options.outFile }))).rejects.toThrow('nativeScreens')
+  })
+
+  it('refuses an all-native app with no screens, or with a web view\'s assets', () => {
+    const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m', renderer: 'native' as const }
+    expect(() => validateIosMobileConfig(base)).toThrow('nativeScreens')
+    expect(() => validateIosMobileConfig({ ...base, nativeScreens: { '/m': 'Today' } })).not.toThrow()
+    expect(() => validateIosMobileConfig({ ...base, url: undefined, webAssets: 'dist', nativeScreens: { '/m': 'Today' } })).toThrow('webAssets')
+    expect(() => validateIosMobileConfig({ ...base, nativeScreens: { '/m': 'Today' }, fallbackWebAssets: 'offline' })).toThrow('fallbackWebAssets')
+    expect(() => validateIosMobileConfig({ ...base, renderer: 'flutter' as any })).toThrow('renderer')
+  })
+
   it('passes the appearance and the dark background through to Craft', () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

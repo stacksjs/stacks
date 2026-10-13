@@ -25,6 +25,7 @@ interface CraftIosBuilder {
   build(options: {
     htmlPath?: string
     devServer?: string
+    nativeBundlePath?: string
     output: string
     generateProject?: boolean
   }): Promise<void>
@@ -84,12 +85,19 @@ await builder.init({
   config: craftConfig,
 })
 
-await builder.build({
-  output,
-  htmlPath: webAssets ?? fallbackWebAssets,
-  devServer: craftConfig.devServerURL as string | undefined,
-  generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1',
-})
+// A native-renderer app has no web view to point at a page or a dev server:
+// its screens are the bundle, and `url` is only its site (craft.config.json's
+// devServerURL), which Craft reads for the start path and the API.
+const native = config.renderer === 'native'
+if (native && !nativeBundle) throw new Error('ios.renderer \'native\' needs native screens to draw: list them in ios.nativeScreens')
+await builder.build(native
+  ? { output, nativeBundlePath: nativeBundle!.outFile, generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1' }
+  : {
+      output,
+      htmlPath: webAssets ?? fallbackWebAssets,
+      devServer: craftConfig.devServerURL as string | undefined,
+      generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1',
+    })
 
 writeIosShellSupport(output, config)
 
@@ -107,7 +115,7 @@ writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify(portablePaths({
   schemaVersion: '1.0.0',
   platform: 'ios',
   sourceRevision,
-  source: webAssets ? { kind: 'bundled', path: webAssets } : {
+  source: native ? { kind: 'native', site: craftConfig.devServerURL } : webAssets ? { kind: 'bundled', path: webAssets } : {
     kind: 'remote',
     url: craftConfig.devServerURL,
     fallback: fallbackWebAssets ? { kind: 'bundled', path: fallbackWebAssets } : undefined,

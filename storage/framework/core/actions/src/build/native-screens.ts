@@ -14,6 +14,8 @@ type CompileNativeBundle = (options: {
   minify?: boolean
   outFile: string
   root?: string
+  /** The app script, run once beside the screens (stx 0.2.504 and later). */
+  app?: string
 }) => Promise<NativeBundleResult>
 
 /**
@@ -34,6 +36,15 @@ export function nativeScreenFiles(config: Pick<IosMobileConfig, 'nativeScreens' 
   return files
 }
 
+/** The app script's file (`nativeApp`), or null when the app has none. */
+export function nativeAppFile(config: Pick<IosMobileConfig, 'nativeApp'>, root: string): string | null {
+  if (!config.nativeApp) return null
+  const file = resolve(root, config.nativeApp)
+  if (!existsSync(file))
+    throw new Error(`ios.nativeApp names ${config.nativeApp}, but ${file} does not exist.`)
+  return file
+}
+
 /**
  * Compiles the app's native screens into the one bundle Craft runs them from,
  * and answers its path; nothing when the app has none. The bundle goes in the
@@ -41,18 +52,22 @@ export function nativeScreenFiles(config: Pick<IosMobileConfig, 'nativeScreens' 
  * it.
  */
 export async function compileNativeScreens(
-  config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir'>,
+  config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir' | 'nativeApp'>,
   root: string,
   output: string,
   compile?: CompileNativeBundle,
 ): Promise<{ outFile: string, diagnostics: NativeBundleResult['diagnostics'] } | null> {
   const screens = nativeScreenFiles(config, root)
   const names = Object.keys(screens)
-  if (!names.length) return null
+  const app = nativeAppFile(config, root)
+  if (!names.length) {
+    if (app) throw new Error('ios.nativeApp runs beside native screens: list them in ios.nativeScreens')
+    return null
+  }
 
   const compileBundle = compile ?? (await import('@stacksjs/stx/native') as { compileNativeBundle: CompileNativeBundle }).compileNativeBundle
   mkdirSync(output, { recursive: true })
   const outFile = join(output, 'native-screens.js')
-  const result = await compileBundle({ screens, initialScreen: names[0], minify: true, outFile, root })
+  const result = await compileBundle({ screens, initialScreen: names[0], minify: true, outFile, root, ...(app ? { app } : {}) })
   return { outFile: result.outFile || outFile, diagnostics: result.diagnostics ?? [] }
 }

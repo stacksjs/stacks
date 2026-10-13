@@ -29,8 +29,11 @@ export interface CraftIosConfig {
   appBoundDomains?: string[]
   limitNavigationsToAppBoundDomains?: boolean
   associatedDomains?: string[]
+  renderer?: IosMobileConfig['renderer']
   nativeScreens?: Record<string, string>
   nativeBundle?: string
+  /** The bundle route the app script runs under (stx's `__app`). */
+  nativeApp?: string
   tabs?: IosMobileConfig['tabs']
   shareStorage?: Record<string, string>
   appGroups?: string[]
@@ -42,6 +45,9 @@ export interface CraftIosConfig {
   orientations?: IosMobileConfig['orientations']
   deviceFamilies?: IosMobileConfig['deviceFamilies']
 }
+
+/** The route stx's bundle runs the app script under (`compileNativeBundle`'s `app`). */
+export const NATIVE_APP_ROUTE = '__app'
 
 const CAPABILITY_KEYS = {
   speechRecognition: 'enableSpeechRecognition',
@@ -171,7 +177,9 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     appBoundDomains: config.appBoundDomains,
     limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains ?? (declaresAppBoundDomains || undefined),
     associatedDomains: config.associatedDomains,
+    renderer: config.renderer,
     nativeScreens: config.nativeScreens,
+    nativeApp: config.nativeApp ? NATIVE_APP_ROUTE : undefined,
     tabs: config.tabs,
     shareStorage: config.shareStorage,
     appGroups: config.appGroups,
@@ -208,6 +216,18 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
   }
   if (!config.url && !config.webAssets) {
     throw new Error('config/mobile.ts must define ios.url or ios.webAssets')
+  }
+  if (config.renderer !== undefined && config.renderer !== 'web' && config.renderer !== 'native')
+    throw new Error(`ios.renderer must be 'web' or 'native', not ${String(config.renderer)}`)
+  if (config.renderer === 'native') {
+    // No web view: every path is a screen, and the site is only where the
+    // API and the pages opened in the in-app browser live.
+    if (!Object.keys(config.nativeScreens ?? {}).length)
+      throw new Error('ios.renderer \'native\' draws every screen natively: list them in ios.nativeScreens')
+    if (config.webAssets)
+      throw new Error('ios.renderer \'native\' has no web view to show ios.webAssets in: set ios.url to the app\'s site instead')
+    if (config.fallbackWebAssets)
+      throw new Error('ios.fallbackWebAssets is the web view\'s offline page; ios.renderer \'native\' has no web view')
   }
   if (config.fallbackWebAssets && !config.url) {
     throw new Error('ios.fallbackWebAssets requires ios.url')

@@ -201,6 +201,25 @@ export interface IosMobileConfig {
   /** Where the native screens' `.stx` files live. Default `resources/native`. */
   nativeScreensDir?: string
   /**
+   * What draws the app. `web` (the default) is a web view, with the paths in
+   * `nativeScreens` drawn natively over it. `native` is no web view at all:
+   * every path the app opens is a native screen from `nativeScreens`, the
+   * tabs are `tabs`, and a path no screen draws opens in the in-app browser
+   * against `url`, which stays the app's site (its path is the start screen).
+   * The page's services then belong in `nativeApp`.
+   */
+  renderer?: 'web' | 'native'
+  /**
+   * The app script (relative to the project): a module whose default export
+   * runs once, for the app's life, beside the native screens, with the same
+   * `craft` bridge (stx's `compileNativeBundle` `app`). What does not belong
+   * to one screen lives there: push registration and a tapped notification,
+   * background refresh, keeping the account fresh. With it, the app's
+   * notification taps, silent pushes and background refreshes reach it
+   * instead of the page.
+   */
+  nativeApp?: string
+  /**
    * The native tab bar from the first frame, before the page has loaded and
    * described its own: each tab's root path, title and SF Symbol. The page's
    * NativeTabBar replaces it once it mounts. An app with native screens needs
