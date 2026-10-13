@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.169...v0.75.170)
+
+## ✨ Features
+
+- **commerce,payments**: German till signing (fiskaly TSE), DSFinV-K export, Stripe Terminal ([e96a4c3](https://github.com/stacksjs/stacks/commit/e96a4c3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.168...v0.75.169)
 
 ## ✨ Features
