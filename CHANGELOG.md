@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.157...v0.75.158)
+
+## ✨ Features
+
+- **mobile**: an all-native iOS app, and an app script beside its screens ([f25f326](https://github.com/stacksjs/stacks/commit/f25f326)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **ios**: clarify cloud metadata ignore rules ([4f12085](https://github.com/stacksjs/stacks/commit/4f12085)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **mobile**: craft-native 0.0.158 or later, for the all-native app and its app script ([7fad403](https://github.com/stacksjs/stacks/commit/7fad403)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.156...v0.75.157)
 
 ## ✨ Features
