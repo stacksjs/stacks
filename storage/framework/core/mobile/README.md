@@ -88,7 +88,10 @@ heart rate and elevation, keyed on HealthKit's UUID so an import can be run
 again without duplicating. `health.getDailyStatistics(type)` returns one value
 per local day: a sum for `steps`, `activeEnergy` and `distance`, an average for
 `heartRate`, `restingHeartRate` and `heartRateVariability`, the latest
-`bodyMass`, and hours asleep for `sleep`, counted on the day you woke.
+`bodyMass`, and hours asleep for `sleep`, counted on the day you woke. What a
+food log (MyFitnessPal, Lose It!, Cronometer) writes there comes in as a day's
+sum too: kcal for `dietaryEnergy`, grams for `dietaryProtein`,
+`dietaryCarbohydrates` and `dietaryFat`. Those four are read only.
 
 ```ts
 import { health } from '@stacksjs/mobile'
