@@ -413,6 +413,8 @@ export class PaddleDriver implements PaymentDriver {
   async checkout(payer: Payer, request: CheckoutRequest): Promise<CheckoutSession> {
     if (request.mode === 'setup')
       throw new PaymentUnsupportedError('paddle', 'setup checkout', 'Paddle saves a payment method while taking a payment, never on its own')
+    if (request.paymentMethods?.length)
+      throw new PaymentUnsupportedError('paddle', 'choosing payment methods', 'Paddle shows the methods its checkout settings allow')
     if (request.cancelUrl && request.cancelUrl !== request.successUrl)
       throw new PaymentUnsupportedError('paddle', 'a separate cancelUrl', 'Paddle checkout opens over your page, and closing it leaves the payer there')
     if (request.allowPromotionCodes)

@@ -125,6 +125,13 @@ export interface CheckoutRequest {
   allowPromotionCodes?: boolean
   /** Have the provider calculate tax. Stripe only (Stripe Tax). */
   automaticTax?: boolean
+  /**
+   * The payment methods the payer may choose from, in Stripe's names
+   * (`card`, `sepa_debit`, `bacs_debit`...; see `paymentMethodsFor` in
+   * `@stacksjs/payments/direct-debit`). Left out, the provider decides.
+   * Stripe and Adyen (`card` and `sepa_debit` only).
+   */
+  paymentMethods?: string[]
 }
 
 export interface CheckoutSession {

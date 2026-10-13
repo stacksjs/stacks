@@ -297,6 +297,7 @@ export class StripeDriver implements PaymentDriver {
       ...(hasCarried && request.mode === 'setup' ? { setup_intent_data: { metadata: carried } } : {}),
       ...(request.allowPromotionCodes ? { allow_promotion_codes: true } : {}),
       ...(request.automaticTax ? { automatic_tax: { enabled: true } } : {}),
+      ...(request.paymentMethods?.length ? { allowed_payment_method_types: [...request.paymentMethods] as Stripe.Checkout.SessionCreateParams.AllowedPaymentMethodType[] } : {}),
     })
 
     if (!session.url)

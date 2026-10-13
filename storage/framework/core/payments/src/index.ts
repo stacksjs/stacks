@@ -30,3 +30,7 @@ export type { default as Stripe } from 'stripe'
 export { freshIdempotencyKey, stacksIdempotencyKey } from './idempotency'
 
 export { subscriptionGrantsAccess, subscriptionPeriod } from './subscription-state'
+
+// Bank debits (SEPA Direct Debit, Bacs, ACH, BECS): methods per currency,
+// debit webhook outcomes and mandates. Pure; also `@stacksjs/payments/direct-debit`.
+export * from './direct-debit'

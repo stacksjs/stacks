@@ -182,6 +182,13 @@ describe('Adyen payments', () => {
     })
   })
 
+  it('limits a hosted checkout to the payment methods asked for, in Adyen\'s names', async () => {
+    const { driver, sent } = adyen({ body: { id: 'CS3', url: 'https://checkout-test.adyen.com/checkoutshopper/pay/CS3' } })
+    await driver.checkout(payer, { mode: 'payment', currency: 'eur', lines: [{ name: 'Seat', unitAmount: 1200, quantity: 1 }], successUrl: 'https://app.test/done', paymentMethods: ['card', 'sepa_debit'] })
+    expect(sent[0]!.body.allowedPaymentMethods).toEqual(['scheme', 'sepadirectdebit'])
+    await expect(adyen().driver.checkout(payer, { mode: 'payment', currency: 'gbp', lines: [], successUrl: 'https://app.test/done', paymentMethods: ['bacs_debit'] })).rejects.toThrow('bacs_debit')
+  })
+
   it('refuses what Adyen does not have, naming the driver and the operation', async () => {
     const { driver } = adyen()
     const base = { currency: 'eur', successUrl: 'https://app.test/done' }
@@ -386,6 +393,15 @@ describe('the Stripe driver', () => {
       allow_promotion_codes: true,
       automatic_tax: { enabled: true },
     })
+  })
+
+  it('offers the payment methods asked for, and leaves the choice to Stripe otherwise', async () => {
+    const { driver, calls } = stripeDriver()
+    await driver.checkout(payer, { mode: 'subscription', lines: [{ price: 'price_pro', quantity: 1 }], successUrl: 'https://app.test/welcome', paymentMethods: ['card', 'sepa_debit'] })
+    expect(calls.find(([name]) => name === 'createCheckout')![1][1]).toMatchObject({ allowed_payment_method_types: ['card', 'sepa_debit'] })
+    const plain = stripeDriver()
+    await plain.driver.checkout(payer, { mode: 'payment', lines: [{ price: 'price_pro', quantity: 1 }], successUrl: 'https://app.test/welcome' })
+    expect(plain.calls.find(([name]) => name === 'createCheckout')![1][1].allowed_payment_method_types).toBeUndefined()
   })
 
   it('lists cards with the customer\'s default marked', async () => {

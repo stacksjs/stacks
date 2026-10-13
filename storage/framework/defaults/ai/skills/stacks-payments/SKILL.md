@@ -151,6 +151,31 @@ const session = await manageDestinationSubscription.checkout(user, {
 - Cancel, resume and read it with `manageSubscription` (`cancelAtPeriodEnd`, `resume`, `cancel`); entitlement from `subscriptionGrantsAccess(status)` and dates from `subscriptionPeriod(subscription)`.
 - Events about a connected account itself (`account.updated`, `payout.*`) come to the Connect endpoint with `event.account`; read it with `getConnectedAccountId(event)`.
 
+### Bank debits (SEPA Direct Debit, Bacs, ACH, BECS)
+
+`src/direct-debit.ts` (also `@stacksjs/payments/direct-debit`, pure and browser-safe) holds what a debit needs next to cards:
+
+```typescript
+import { currencyForCountry, debitEventOf, paymentMethodsFor, retrieveDebitMandate, stripe } from '@stacksjs/payments'
+
+paymentMethodsFor('card,sepa_debit', 'eur') // ['card', 'sepa_debit'] -> Checkout's allowed_payment_method_types
+paymentMethodsFor('card,sepa_debit', 'usd') // ['card']: SEPA is euros only
+currencyForCountry('AT', ['usd', 'eur'], 'usd') // 'eur'
+
+const debit = debitEventOf(event) // null unless the event is a step in a debit's life
+// debit.outcome: 'processing' | 'succeeded' | 'failed' | 'returned' | 'mandate_inactive'
+const mandate = await retrieveDebitMandate(stripe, debit.mandateId!) // { reference, url, status }
+```
+
+- `PAYMENT_METHODS` says per method which currencies it takes, whether it is delayed, whether it has a mandate, and `noticeDays` (SEPA: 2, what Stripe's mandate text agrees to; the rulebook's default is 14).
+- A debit is a delayed-notification payment. Checkout completes with `payment_status: 'unpaid'` (`processing`); only `checkout.session.async_payment_succeeded`, `invoice.paid` or `charge.succeeded` mean the money arrived. **A subscription can turn `active` while its first debit is still processing**, so never grant access from the subscription status alone.
+- A bank can take a SEPA debit back for eight weeks with no questions asked (13 months if unauthorised). Stripe reports it as `charge.dispute.created`; `debitEventOf` reads it as `returned` unless the dispute is a card's. SEPA disputes are final.
+- `debitDetailsOf(charge | paymentMethod)` gives the method, the mandate id, the last four digits and the expected debit date. Store the mandate reference and last four, never an IBAN: the payer types it into Stripe Checkout or the Payment Element.
+- `debitFailureNextStep(code)` turns Stripe's failure code into `retry` (insufficient funds), `update` (new bank details or mandate) or `contact`.
+- `isDebitNoticeDue({ debitDate, today, leadDays, method })` and `isDebitNoticeTimely` plan the pre-notification each SEPA debit needs (amount, date, mandate reference, last four digits, creditor). Stripe sends its own debit emails while you use Stripe's creditor ID.
+- `CheckoutRequest.paymentMethods` (Stripe's names) limits a neutral checkout's methods: Stripe's `allowed_payment_method_types` (Stripe API 2026-01-28.clover has no `payment_method_types`, and only offers methods enabled in the Dashboard); Adyen maps `card` and `sepa_debit` to `allowedPaymentMethods`; Paddle and Lemon Squeezy refuse it.
+- Connect: a destination charge without `on_behalf_of` debits under the platform's creditor ID and mandate, so enable SEPA on the platform account.
+
 ### Customers
 
 ```typescript

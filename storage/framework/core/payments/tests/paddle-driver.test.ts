@@ -218,6 +218,7 @@ describe('Paddle driver - checkout', () => {
     await expect(driver.checkout(payer, { ...base, mode: 'setup' })).rejects.toThrow('setup checkout')
     await expect(driver.checkout(payer, { ...base, mode: 'payment', cancelUrl: 'https://app.test/back' })).rejects.toThrow('separate cancelUrl')
     await expect(driver.checkout(payer, { ...base, mode: 'payment', allowPromotionCodes: true })).rejects.toThrow('promotion codes')
+    await expect(driver.checkout(payer, { ...base, mode: 'payment', paymentMethods: ['sepa_debit'] })).rejects.toThrow('choosing payment methods')
     await expect(driver.checkout(payer, { ...base, mode: 'subscription', trialDays: 14 })).rejects.toThrow('trial')
     await expect(driver.checkout(payer, { mode: 'subscription', currency: 'usd', lines: [{ name: 'Pro', unitAmount: 900, quantity: 1 }], successUrl: 'https://app.test/done' }))
       .rejects.toThrow('catalog prices')

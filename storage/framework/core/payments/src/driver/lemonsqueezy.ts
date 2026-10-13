@@ -295,6 +295,8 @@ export class LemonSqueezyDriver implements PaymentDriver {
       throw new PaymentUnsupportedError('lemonsqueezy', 'setup checkout', 'Lemon Squeezy saves a payment method while taking a payment, never on its own')
     if (request.lines.length !== 1)
       throw new PaymentUnsupportedError('lemonsqueezy', `a checkout with ${request.lines.length} lines`, 'a Lemon Squeezy checkout sells one variant')
+    if (request.paymentMethods?.length)
+      throw new PaymentUnsupportedError('lemonsqueezy', 'choosing payment methods', 'Lemon Squeezy shows the methods its store settings allow')
     if (request.cancelUrl && request.cancelUrl !== request.successUrl)
       throw new PaymentUnsupportedError('lemonsqueezy', 'a separate cancelUrl', 'the hosted checkout has no cancel page')
     if (request.trialDays)

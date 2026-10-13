@@ -92,6 +92,12 @@ export function adyenStatus(resultCode: string | undefined): PaymentStatus {
   }
 }
 
+/** Stripe's payment method names (CheckoutRequest.paymentMethods) in Adyen's `allowedPaymentMethods` terms. */
+const ADYEN_PAYMENT_METHODS: Readonly<Record<string, string>> = {
+  card: 'scheme',
+  sepa_debit: 'sepadirectdebit',
+}
+
 const EVENT_TYPES: Record<string, [ok: PaymentEventType, failed: PaymentEventType]> = {
   AUTHORISATION: ['payment.succeeded', 'payment.failed'],
   CANCELLATION: ['payment.canceled', 'unknown'],
@@ -310,6 +316,12 @@ export class AdyenDriver implements PaymentDriver {
       throw new PaymentUnsupportedError('adyen', 'automatic tax', 'Adyen does not calculate tax; price each line including it')
     if (!request.currency)
       throw new TypeError('An Adyen checkout needs a currency.')
+    const allowedPaymentMethods = request.paymentMethods?.map((method) => {
+      const adyen = ADYEN_PAYMENT_METHODS[method]
+      if (!adyen)
+        throw new PaymentUnsupportedError('adyen', `the ${method} payment method`, 'name it in Adyen\'s own terms through the Customer Area, or offer card and sepa_debit')
+      return adyen
+    })
     this.assertReturnUrl(request.successUrl, 'successUrl')
 
     const lines = request.lines.map((line) => {
@@ -341,6 +353,7 @@ export class AdyenDriver implements PaymentDriver {
               })),
             }),
         ...(request.metadata ? { metadata: request.metadata } : {}),
+        ...(allowedPaymentMethods?.length ? { allowedPaymentMethods } : {}),
       },
     })
 
