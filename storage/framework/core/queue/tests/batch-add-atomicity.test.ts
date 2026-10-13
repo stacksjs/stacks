@@ -35,7 +35,7 @@ const sql = (strings: TemplateStringsArray, ...values: unknown[]): SqlFragment =
 
 describe('batch counter increments are relative, not computed (#2282 item 3)', () => {
   it('asks the database to add, rather than supplying a total', () => {
-    const set = batchCounterIncrements(sql as any, 2) as { total_jobs: SqlFragment, pending_jobs: SqlFragment }
+    const set = batchCounterIncrements(sql, 2)
 
     // A bare number here is the old read-modify-write, and therefore lossy
     // whenever two adds overlap.
@@ -49,12 +49,12 @@ describe('batch counter increments are relative, not computed (#2282 item 3)', (
   })
 
   it('carries the delta through rather than a resolved total', () => {
-    const set = batchCounterIncrements(sql as any, 7) as { total_jobs: SqlFragment }
+    const set = batchCounterIncrements(sql, 7)
     expect(set.total_jobs.values).toEqual([7])
   })
 
   it('moves both counters together, so pending can still reach zero', () => {
-    const set = batchCounterIncrements(sql as any, 3) as Record<string, SqlFragment>
+    const set = batchCounterIncrements(sql, 3)
     expect(Object.keys(set).sort()).toEqual(['pending_jobs', 'total_jobs'])
     expect(set.total_jobs.values).toEqual(set.pending_jobs.values)
   })

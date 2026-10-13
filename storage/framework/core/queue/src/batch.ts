@@ -718,10 +718,10 @@ async function incrementBatchCounters(id: string, delta: number): Promise<boolea
  * takes out every other test in the package (it dropped the queue suite from
  * 299 passing to 202 when tried).
  */
-export function batchCounterIncrements(
-  sql: (strings: TemplateStringsArray, ...values: unknown[]) => unknown,
+export function batchCounterIncrements<TExpression>(
+  sql: (strings: TemplateStringsArray, ...values: unknown[]) => TExpression,
   delta: number,
-): { total_jobs: unknown, pending_jobs: unknown } {
+): { total_jobs: TExpression, pending_jobs: TExpression } {
   return {
     total_jobs: sql`total_jobs + ${delta}`,
     pending_jobs: sql`pending_jobs + ${delta}`,

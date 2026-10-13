@@ -1,4 +1,4 @@
-import type { CreateCampaignInput, SendCampaignOptions } from './types'
+import type { CampaignStatus, CreateCampaignInput, SendCampaignOptions } from './types'
 import { db, getDatabaseDialect, mutationCount, parseSqlDateTime, sqlDateTime, sqlHelpers } from '@stacksjs/database/runtime'
 import { lists } from './lists'
 
@@ -33,14 +33,16 @@ interface ScheduledCampaignState {
   scheduledAt?: unknown
 }
 
+type StoredCampaignStatus = CampaignStatus | 'active' | 'completed' | 'archived'
+
 interface CampaignDeliverySnapshot {
-  status: string
+  status: StoredCampaignStatus
   scheduledAt: string | null
   updatedAt: string | null
 }
 
 interface CampaignDeliveryTarget {
-  status: string
+  status: CampaignStatus
   scheduledAt: string | null
   updatedAt: string
   attemptId: string
@@ -94,11 +96,19 @@ function snapshotTimestamp(value: unknown): string | null {
 }
 
 export function campaignDeliverySnapshot(campaign: CampaignLike | null | undefined): CampaignDeliverySnapshot {
+  const status = String(campaignValue(campaign, 'status', 'status') || '')
+  if (!isStoredCampaignStatus(status))
+    throw new TypeError(`[newsletter] Invalid campaign status '${status}'`)
   return {
-    status: String(campaignValue(campaign, 'status', 'status') || ''),
+    status,
     scheduledAt: snapshotTimestamp(campaignValue(campaign, 'scheduled_at', 'scheduledAt')),
     updatedAt: snapshotTimestamp(campaignValue(campaign, 'updated_at', 'updatedAt')),
   }
+}
+
+function isStoredCampaignStatus(value: string): value is StoredCampaignStatus {
+  const statuses: readonly StoredCampaignStatus[] = ['draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled', 'failed', 'active', 'completed', 'archived']
+  return statuses.some(status => status === value)
 }
 
 export function campaignDeliveryDispatchKey(

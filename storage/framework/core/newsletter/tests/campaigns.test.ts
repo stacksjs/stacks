@@ -101,6 +101,13 @@ describe('newsletter campaigns', () => {
       .toBe('newsletter:campaign:12:scheduled:2030-01-01T09:00:00.000Z:attempt-b')
   })
 
+  test('preserves legacy stored statuses and rejects malformed delivery snapshots', () => {
+    for (const status of ['active', 'completed', 'archived'])
+      expect(campaignDeliverySnapshot({ status }).status).toBe(status)
+    expect(() => campaignDeliverySnapshot({ status: 'unknown' })).toThrow('Invalid campaign status')
+    expect(() => campaignDeliverySnapshot(null)).toThrow('Invalid campaign status')
+  })
+
   test('queues only recoverable campaign states', () => {
     for (const status of ['draft', 'scheduled', 'paused', 'failed'])
       expect(canQueueCampaignStatus(status)).toBe(true)
