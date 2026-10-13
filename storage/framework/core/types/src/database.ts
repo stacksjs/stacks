@@ -21,6 +21,14 @@ export interface PoolOptions {
   maxLifetimeMs?: number
   /** Reconnect automatically after the server drops a connection. */
   autoReconnect?: boolean
+  /**
+   * Keep each query as a named prepared statement on its connection (Bun
+   * SQL's `prepare`; on by default). `false` plans each query afresh, so a
+   * migration that changes a table under `SELECT *` does not leave the
+   * running process failing that query with "cached plan must not change
+   * result type" until it restarts.
+   */
+  preparedStatements?: boolean
 }
 
 /**

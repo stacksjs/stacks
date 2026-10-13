@@ -648,10 +648,10 @@ export { runInDatabaseRoutingContext, withDatabaseRoutingContext }
  * would be silently ignored anyway. Keeping them out of the mapping makes
  * that deliberate rather than accidental.
  */
-function toBunPoolOptions(pool?: PoolConfig): Record<string, number> {
+function toBunPoolOptions(pool?: PoolConfig): Record<string, number | boolean> {
   if (!pool)
     return {}
-  const options: Record<string, number> = {}
+  const options: Record<string, number | boolean> = {}
   if (pool.max !== undefined)
     options.max = pool.max
   if (pool.idleTimeoutMs !== undefined)
@@ -660,6 +660,8 @@ function toBunPoolOptions(pool?: PoolConfig): Record<string, number> {
     options.connectionTimeout = Math.round(pool.acquireTimeoutMs / 1000)
   if (pool.maxLifetimeMs !== undefined)
     options.maxLifetime = Math.round(pool.maxLifetimeMs / 1000)
+  if (pool.preparedStatements !== undefined)
+    options.prepare = pool.preparedStatements
   return options
 }
 
