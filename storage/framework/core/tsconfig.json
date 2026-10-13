@@ -32,6 +32,8 @@
       // below binds the wildcard to the whole remainder — `@stacksjs/orm/routes`
       // would look for `./orm/routes/src`.
       "@stacksjs/orm/routes": ["./orm/src/routes.ts"],
+      // Same, for the Bun-only mobile testing entrypoint `docs/guide/mobile.md` imports.
+      "@stacksjs/mobile/testing": ["./mobile/src/testing.ts"],
       "@stacksjs/browser/*": ["./browser/src/*"],
       "@stacksjs/composables/*": ["./composables/src/*"],
       // Published name and directory name disagree: `@stacksjs/desktop-build`

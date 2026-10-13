@@ -49,6 +49,8 @@
       "@stacksjs/validation/*": ["./core/validation/src/*"],
       "@stacksjs/desktop-build": ["./core/desktop/src"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
+      // Same, for the Bun-only mobile testing entrypoint `docs/guide/mobile.md` imports.
+      "@stacksjs/mobile/testing": ["./core/mobile/src/testing.ts"],
       "@stacksjs/types/exit-code": ["./core/types/src/exit-code.ts"],
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
