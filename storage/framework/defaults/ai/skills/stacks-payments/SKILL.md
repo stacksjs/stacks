@@ -119,6 +119,38 @@ const changed = await Payment.changeSubscription(user, 'enterprise-monthly')
 
 `cancelSubscription(id, immediately)` is gone: its `false` also cancelled at once, only with a proration. For Stripe's `prorate` / `invoice_now`, call `manageSubscription.cancel(id, params)`. To undo a cancel at period end before the period ends, call `manageSubscription.resume(id)`: Stripe renews again and the stored `ends_at` is cleared. Both use a fresh idempotency key per attempt, so cancel → resume → cancel within Stripe's 24-hour key window still reaches Stripe each time.
 
+### Stripe Connect (marketplaces)
+
+`Payment.connect` (source `src/connect/`) onboards merchants as Express connected accounts and settles sales to them, while the customer, the charge and its refunds and disputes stay on the platform.
+
+```typescript
+import { manageConnectedAccount, manageDestinationCharge, manageDestinationSubscription } from '@stacksjs/payments'
+
+// Onboard: create once (deterministic idempotency key), then a hosted onboarding link
+const account = await manageConnectedAccount.createConnectedAccount(user)
+const link = await manageConnectedAccount.accountOnboardingLink(account.id, { refreshUrl, returnUrl })
+const status = await manageConnectedAccount.accountStatus(account.id) // chargesEnabled, payoutsEnabled, currentlyDue...
+
+// One-off sale: a destination charge (or Checkout with payment_intent_data.transfer_data)
+const fee = manageDestinationCharge.applicationFeeFor(4900, { platformFeePercent: 10 }) // 490, rounded down
+
+// Recurring sale: a destination subscription through Checkout
+const session = await manageDestinationSubscription.checkout(user, {
+  destination: 'acct_xxx',
+  price: { amount: 9900, currency: 'eur', interval: 'month', productName: 'Coaching' }, // or 'price_xxx'
+  trialDays: 14,
+  platformFeePercent: 0,
+  metadata: { product_id: '7' }, // on the session AND the subscription
+  successUrl: 'https://app.example/purchases',
+  cancelUrl: 'https://app.example/store/coaching',
+})
+```
+
+- A destination subscription lives on the platform with `transfer_data.destination`, so renewals (`invoice.paid`), failed payments (`invoice.payment_failed`), status changes and cancellation (`customer.subscription.updated` / `.deleted`) arrive on the platform's normal webhook endpoint, not the Connect one. `destinationOf(subscription)` (also `connect.subscriptionDestination`) tells a merchant's subscription from the platform's own.
+- Its fee is `application_fee_percent` (`feePercentFor`, at most two decimals; 0 sends no fee field), applied to every invoice, unlike a charge's fee amount.
+- Cancel, resume and read it with `manageSubscription` (`cancelAtPeriodEnd`, `resume`, `cancel`); entitlement from `subscriptionGrantsAccess(status)` and dates from `subscriptionPeriod(subscription)`.
+- Events about a connected account itself (`account.updated`, `payout.*`) come to the Connect endpoint with `event.account`; read it with `getConnectedAccountId(event)`.
+
 ### Customers
 
 ```typescript

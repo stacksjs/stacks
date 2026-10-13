@@ -13,12 +13,14 @@
 export * from './account'
 export * from './charge'
 export * from './payout'
+export * from './subscription'
 export * from './transfer'
 export * from './webhook'
 
 import { manageConnectedAccount } from './account'
 import { manageDestinationCharge } from './charge'
 import { managePayout } from './payout'
+import { manageDestinationSubscription } from './subscription'
 import { manageTransfer } from './transfer'
 import { manageConnectWebhook } from './webhook'
 
@@ -36,6 +38,11 @@ export const connect = {
   // Charges
   destinationCharge: manageDestinationCharge.destinationCharge,
   applicationFeeFor: manageDestinationCharge.applicationFeeFor,
+
+  // Subscriptions (billed on the platform, each invoice settled to the merchant)
+  subscriptionCheckout: manageDestinationSubscription.checkout,
+  subscriptionFeePercent: manageDestinationSubscription.feePercentFor,
+  subscriptionDestination: manageDestinationSubscription.destinationOf,
 
   // Transfers
   createTransfer: manageTransfer.createTransfer,
@@ -58,6 +65,7 @@ export const connect = {
   // Low-level access
   account: manageConnectedAccount,
   charge: manageDestinationCharge,
+  subscription: manageDestinationSubscription,
   transfer: manageTransfer,
   payout: managePayout,
 }
