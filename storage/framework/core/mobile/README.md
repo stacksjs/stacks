@@ -285,6 +285,12 @@ installing dependencies. Rebuild metadata and bundles when config or Craft chang
 Existing apps must remove previously tracked Swift with `git rm --cached`; ignore
 rules do not untrack files already committed.
 
+When the app's root `.gitignore` excludes the whole mobile directory, unignore
+`/storage/framework/mobile/`, ignore its children with
+`/storage/framework/mobile/*`, then unignore `/storage/framework/mobile/ios/`.
+Keep build products and `xcuserdata` ignored. This admits cloud metadata while
+the generated iOS `.gitignore` excludes Swift.
+
 ## Bun-only test tooling
 
 ```ts

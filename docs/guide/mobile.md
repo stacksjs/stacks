@@ -54,6 +54,18 @@ Rebuild project metadata when native configuration or Craft changes. Existing
 applications should untrack previously committed Swift with `git rm --cached`
 while keeping generated files locally for Xcode.
 
+If your app ignores the whole mobile build directory, add these rules after
+that ignore before committing the Xcode Cloud metadata. The generated iOS
+`.gitignore` continues to exclude Swift:
+
+```gitignore
+!/storage/framework/mobile/
+/storage/framework/mobile/*
+!/storage/framework/mobile/ios/
+/storage/framework/mobile/ios/build/
+/storage/framework/mobile/ios/**/xcuserdata/
+```
+
 The Bun-only testing tools share the same configuration:
 
 ```ts
