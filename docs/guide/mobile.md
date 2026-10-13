@@ -45,7 +45,8 @@ sharing and deployment targets here instead of editing generated Swift.
 
 For Xcode Cloud, commit project metadata, `craft.config.json`, assets, compiled
 screen bundles and the generated executable `ci_scripts/ci_post_clone.sh`.
-After a clone, the hook installs frozen dependencies and restores Swift from the
+The hook follows [Apple’s custom build script contract](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts).
+After a clone, it installs frozen dependencies and restores Swift from the
 installed package. `ios.shell.bunVersion` pins its Bun bootstrap when Bun is not
 available; otherwise it defaults to the version that generated the project. The
 restore step uses an isolated Bun config and does not boot the application.
