@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.159...v0.75.160)
+
+## ✨ Features
+
+- **payments**: Connect destination subscriptions, billed on the platform and settled to the merchant ([4057b5b](https://github.com/stacksjs/stacks/commit/4057b5b)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **seed**: a disambiguated unique value keeps a separator it can survive ([a8b2c39](https://github.com/stacksjs/stacks/commit/a8b2c39)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2893](https://github.com/stacksjs/stacks/issues/2893))
+- **mobile**: map the testing entrypoint, so its documented import resolves ([e0dfa04](https://github.com/stacksjs/stacks/commit/e0dfa04)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: the ledger reads inside a DO guard, so every pattern sees in ([d78e9ba](https://github.com/stacksjs/stacks/commit/d78e9ba)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2901](https://github.com/stacksjs/stacks/issues/2901), [#2900](https://github.com/stacksjs/stacks/issues/2900))
+- **database**: the ledger sees a guarded DROP TYPE, the mirror of the create ([6f91084](https://github.com/stacksjs/stacks/commit/6f91084)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2901](https://github.com/stacksjs/stacks/issues/2901), [#2900](https://github.com/stacksjs/stacks/issues/2900))
+- **database**: the ledger sees a guarded CREATE TYPE, so a types file is classified ([4f4243b](https://github.com/stacksjs/stacks/commit/4f4243b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2900](https://github.com/stacksjs/stacks/issues/2900))
+- **deps**: pantry.lock carries the Linux toolchain closure it resolves to ([cfd1445](https://github.com/stacksjs/stacks/commit/cfd1445)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2899](https://github.com/stacksjs/stacks/issues/2899))
+- **bench**: typechecking the harness installs the peers it typechecks ([64acf9e](https://github.com/stacksjs/stacks/commit/64acf9e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **email**: the notification template's string filler declares its parameter ([975d07b](https://github.com/stacksjs/stacks/commit/975d07b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.158...v0.75.159)
 
 ## 🐛 Bug Fixes
