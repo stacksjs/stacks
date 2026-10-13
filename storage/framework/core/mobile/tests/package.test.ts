@@ -79,6 +79,21 @@ test('the built mobile package has usable declarations and bundles for browsers'
     const throughPackage = await bundledLength('one-api', "import { secureStorage } from '@stacksjs/mobile'\nconsole.log(secureStorage)\n")
     const direct = await bundledLength('one-api-direct', "import { secureStorage } from 'craft-native/mobile'\nconsole.log(secureStorage)\n")
     expect(throughPackage).toBeLessThanOrEqual(direct + 1536)
+
+    // The Bun-only testing subpath also retains types in an installed package.
+    await writeFile(join(directory, 'testing-consumer.ts'), `
+import { prepareIosSimulatorDriver, serializeSimulatorSteps, createNativeMutationValidator, restoreIosShell } from '@stacksjs/mobile/testing'
+const driver: { output: string, projectName: string } = prepareIosSimulatorDriver({ appName: 'Example', bundleId: 'org.example.app' }, '/tmp/example')
+const script: string = serializeSimulatorSteps([{ command: 'wait', seconds: 1 }])
+// @ts-expect-error root is a path string
+prepareIosSimulatorDriver({ appName: 'Example', bundleId: 'org.example.app' }, 42)
+// @ts-expect-error the duration is numeric
+serializeSimulatorSteps([{ command: 'wait', seconds: 'one' }])
+// @ts-expect-error native restoration takes a directory path
+restoreIosShell(42)
+void [driver, script, createNativeMutationValidator]
+`)
+    await run([process.execPath, compiler, 'testing-consumer.ts', '--noEmit', '--strict', '--skipLibCheck', '--module', 'esnext', '--moduleResolution', 'bundler', '--target', 'esnext', '--types', 'bun', '--ignoreConfig'], directory)
   }
   finally {
     await rm(directory, { recursive: true, force: true })

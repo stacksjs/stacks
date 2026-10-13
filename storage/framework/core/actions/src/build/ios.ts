@@ -8,6 +8,7 @@ import { craftBuilderSpecifier } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 import { compileNativeScreens } from './native-screens'
+import { writeIosShellSupport } from './ios-shell'
 
 // Action runners install a global exception reporter. Start pessimistically so
 // a reported exception can never look like a successful CI build.
@@ -89,6 +90,8 @@ await builder.build({
   devServer: craftConfig.devServerURL as string | undefined,
   generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1',
 })
+
+writeIosShellSupport(output, config)
 
 // Declared after the builder, which rewrites Info.plist from its template on
 // every build, and safe before or after xcodegen, which only references it.
