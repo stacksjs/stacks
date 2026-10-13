@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.162...v0.75.163)
+
+## ✨ Features
+
+- **security**: sign outgoing webhooks with a timestamped HMAC-SHA256 header ([4b992ca](https://github.com/stacksjs/stacks/commit/4b992ca)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.161...v0.75.162)
 
 ## ✨ Features
