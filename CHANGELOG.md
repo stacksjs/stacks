@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.163...v0.75.164)
+
+## ✨ Features
+
+- **security**: an outbound URL guard and API key helpers ([a4b3c45](https://github.com/stacksjs/stacks/commit/a4b3c45)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.162...v0.75.163)
 
 ## ✨ Features
