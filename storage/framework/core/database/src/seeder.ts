@@ -974,6 +974,26 @@ function uniqueColumns(attributes: Record<string, Attribute>): string[] {
 }
 
 /**
+ * `value` with `suffix` appended, separated by something the value can survive.
+ *
+ * A space is invalid in nearly everything a unique string column is used for:
+ * a URL segment, a path segment, a slug, a DNS label, an email local part, a
+ * package name, a git ref. Appending one to `globalsoft-ltd` produced a handle
+ * no owner could be given a path under, and nothing errored - the seed
+ * reported success and the rows looked plausible until something tried to turn
+ * a handle into a path (stacksjs/stacks#2893).
+ *
+ * The column's grammar is the application's business, so the test is what the
+ * value already is rather than what the column means: a value holding a space
+ * is prose, where a space reads best and cannot make anything less legal,
+ * while a value without one is an identifier of some kind and a hyphen is
+ * valid in all of the above.
+ */
+function withSuffix(value: string, suffix: number): string {
+  return /\s/.test(value) ? `${value} ${suffix}` : `${value}-${suffix}`
+}
+
+/**
  * Make `record` distinct from what the earlier rows already used.
  *
  * Regenerating first, and only then disambiguating, so seeded data keeps
@@ -982,7 +1002,7 @@ function uniqueColumns(attributes: Record<string, Attribute>): string[] {
  * A null is never disambiguated - every engine here allows repeated nulls in a
  * unique index, which is what makes a nullable unique column usable at all.
  */
-function claimUniqueValues(
+export function claimUniqueValues(
   record: Record<string, unknown>,
   columns: readonly string[],
   used: Map<string, Set<unknown>>,
@@ -1005,7 +1025,7 @@ function claimUniqueValues(
 
     distinct = false
     if (suffix > 0) {
-      const disambiguated = typeof value === 'number' ? value + suffix : `${String(value)} ${suffix}`
+      const disambiguated = typeof value === 'number' ? value + suffix : withSuffix(String(value), suffix)
       record[column] = disambiguated
       seen.add(disambiguated)
     }
