@@ -14,6 +14,22 @@ Stacks owns application configuration and build orchestration.
 
 ## Key paths
 
+Applications own zero Swift: author STX and TypeScript, configure the shell in
+`config/mobile.ts`, and extend reusable native capabilities in Craft. Swift
+templates ship in `craft-native`; generated sources under `storage/framework/mobile`
+are build output, never application overrides. `buddy build:ios` writes a source
+ignore rule and an Xcode Cloud post-clone hook that restores sources from frozen
+dependencies. Retain Xcode metadata, generated config, assets and compiled bundles
+for cloud discovery. Remove previously tracked Swift with `git rm --cached` when
+migrating an existing app; keep the generated files locally for Xcode.
+
+Use the Bun-only `@stacksjs/mobile/testing` entrypoint for
+`prepareIosSimulatorDriver(config.ios)`, `serializeSimulatorSteps(steps)`,
+`createNativeMutationValidator()` (macOS + swiftc), and `restoreIosShell(output)`.
+Configure the reusable simulator host with `ios.simulator` and Bun bootstrap with
+`ios.shell.bunVersion`. See the mobile package README for the control-server wire
+protocol and Xcode tooling requirements. Browser code must not import `/testing`.
+
 - App configuration: `config/mobile.ts`
 - Mobile runtime: `storage/framework/core/mobile/src/`
 - Platform build actions: `storage/framework/core/actions/src/build/ios.ts` and `build/android.ts`

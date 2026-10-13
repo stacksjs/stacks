@@ -266,3 +266,51 @@ The phone-native behaviour a screen expects, kept out of STX templates:
 
 The framework's `NativeNavBar`, `NativePullToRefresh`, `NativeSegmentedControl`
 and `NativeSheet` components are built on these.
+
+## Native source ownership
+
+Stacks applications author TypeScript and STX. Craft distributes reusable Swift
+shells inside its package, and `buddy build:ios` generates them under
+`storage/framework/mobile/ios`. Generated Swift is ignored by the project's
+generated `.gitignore`, including optional watch and widget sources. Application
+configuration belongs in typed `config/mobile.ts`, rather than generated Swift.
+
+The build also generates executable `ci_scripts/ci_post_clone.sh`. Keep that hook,
+Xcode metadata, `craft.config.json`, assets, compiled native bundles and `bun.lock`
+in Git when using Xcode Cloud. The hook installs frozen dependencies and restores
+Swift from the installed Craft package without changing project metadata. It
+installs Bun when unavailable, using `ios.shell.bunVersion` or the Bun version
+that generated the project. Another CI can call `restoreIosShell(output)` after
+installing dependencies. Rebuild metadata and bundles when config or Craft changes.
+Existing apps must remove previously tracked Swift with `git rm --cached`; ignore
+rules do not untrack files already committed.
+
+## Bun-only test tooling
+
+```ts
+import { prepareIosSimulatorDriver, serializeSimulatorSteps } from '@stacksjs/mobile/testing'
+import mobile from './config/mobile'
+
+const { output, projectName } = prepareIosSimulatorDriver(mobile.ios)
+const script = serializeSimulatorSteps([
+  { command: 'launch' },
+  { command: 'expect', text: 'Today', seconds: 10 },
+])
+```
+
+The generated test host defaults to `storage/framework/mobile/ios-driver`, targets
+`ios.bundleId`, and derives tab labels from `ios.tabs`. Customize its output,
+project name, bundle prefix, iOS deployment target (17+), and control URL through
+`ios.simulator`. Generate with xcodegen and run with xcodebuild against an installed
+app. Serve the serialized journey at `/script` and accept `/note` and `/save` on
+the control server. `TEST_RUNNER_CRAFT_TEST_CONTROL` overrides the URL per run.
+Legacy line-based scripts remain supported; failed checks also fail XCTest.
+
+`createNativeMutationValidator()` validates captured STX messages against the
+package's real Swift mutation host on macOS. It returns a disposable validator
+whose `validate(messages)` reports `exitCode`, `stdout` and `stderr`.
+
+The `/testing` entrypoint is for Bun build/test tools and is excluded from browser
+exports. The ordinary `@stacksjs/mobile` entrypoint stays browser-safe. Extend
+Craft's shared host and typed APIs for new platform features instead of editing
+generated sources.

@@ -35,6 +35,51 @@ buddy build:mobile   # both
 
 ## Configuration
 
+### Zero Swift application source
+
+Write screens and application logic in STX and TypeScript. Craft publishes its
+reusable Swift shells inside `craft-native`; Stacks generates sources in
+`storage/framework/mobile/ios` and ignores them as build output, including watch
+and widget extensions. Configure capabilities, chrome, permissions, storage
+sharing and deployment targets here instead of editing generated Swift.
+
+For Xcode Cloud, commit project metadata, `craft.config.json`, assets, compiled
+screen bundles and the generated executable `ci_scripts/ci_post_clone.sh`.
+After a clone, the hook installs frozen dependencies and restores Swift from the
+installed package. `ios.shell.bunVersion` pins its Bun bootstrap when Bun is not
+available; otherwise it defaults to the version that generated the project. The
+restore step uses an isolated Bun config and does not boot the application.
+Rebuild project metadata when native configuration or Craft changes. Existing
+applications should untrack previously committed Swift with `git rm --cached`
+while keeping generated files locally for Xcode.
+
+The Bun-only testing tools share the same configuration:
+
+```ts
+import { prepareIosSimulatorDriver, serializeSimulatorSteps } from '@stacksjs/mobile/testing'
+import mobile from './config/mobile'
+
+const { output, projectName } = prepareIosSimulatorDriver(mobile.ios)
+const script = serializeSimulatorSteps([
+  { command: 'launch' },
+  { command: 'expect', text: 'Today', seconds: 10 },
+])
+```
+
+`ios.simulator` customizes the test host's output (default
+`storage/framework/mobile/ios-driver`), project name, bundle prefix, iOS target
+(17+), and control URL. Tab labels and the installed app id come from `ios.tabs`
+and `ios.bundleId`. Use xcodegen and xcodebuild to generate and run the host against
+an installed app, serving the journey at `/script` and collecting `/note` and
+`/save` evidence. `TEST_RUNNER_CRAFT_TEST_CONTROL` overrides the control URL per
+run. Existing line-based journeys also work. Failed assertions fail XCTest.
+
+For captured native-screen updates, `createNativeMutationValidator()` compiles
+and runs the actual Swift mutation host on macOS with swiftc. Call
+`validate(messages)` and `dispose()` after testing. `restoreIosShell(output)`
+restores a committed Xcode project's sources in other CI environments.
+These are build/test APIs; browser code imports the ordinary mobile entrypoint.
+
 `config/mobile.ts` describes the app. Only the identity and one content
 source are required:
 
