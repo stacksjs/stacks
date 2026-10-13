@@ -8,7 +8,8 @@ const { startTime } = await intro({
 const result = await Bun.build({
   // `templates` is pure and browser-safe, so it ships as its own entry too:
   // `@stacksjs/notifications/templates` loads no database, config or mail.
-  entrypoints: ['./src/index.ts', './src/templates.ts'],
+  // `sequences` (the timing engine) is pure too.
+  entrypoints: ['./src/index.ts', './src/templates.ts', './src/sequences.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

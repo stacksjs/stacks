@@ -25,6 +25,13 @@ accepted input; fetchSubmissions and exportSubmissionsCsv serve administrative
 reads. Supply the site identity from trusted request context. A null site id is
 the single-site/global context, not a tenant identity from a client.
 
+Public endpoints that are not persisted forms (a lead or contact form an app
+stores itself) use `checkSubmissionSpam({ honeypot, renderedAtMs }, policy)`
+from `@stacksjs/forms/spam`: `honeypot` (answer as if it worked, store nothing),
+`too_fast` (under `minSubmitSeconds`, default 3) or null. submitForm uses the
+same check with `config.forms.spam`. No CAPTCHA, no third-party script; still
+rate-limit per address or IP.
+
 ## Uploads, notifications, and paid forms
 
 Use resolveUploadLimits, checkUpload, fileFieldNamed, formUploadPrefix and

@@ -411,6 +411,8 @@ export { DEFAULT_SMS_OPT_OUT, DEFAULT_UNSUBSCRIBE_NOTICE, emailParagraphs, listU
 export type { EmailBodyPart, NotificationAction, NotificationEmailPayload, NotificationFrameLocale, NotificationUnsubscribe } from './email-body'
 export { NOTIFICATION_FRAME_STRINGS, notificationFrameStrings, notificationLanguageTag } from './frame-strings'
 export type { NotificationFrameStrings } from './frame-strings'
+export { advanceSequence, isQuietTime, nextSendableTime, sequenceTimeline } from './sequences'
+export type { AdvanceSequenceOptions, QuietHours, SequenceAdvance, SequenceStepLike } from './sequences'
 export { notificationUnsubscribeLinks, notificationUnsubscribeToken, parseNotificationUnsubscribeToken, unsubscribeTokenFromRequest, unsubscribeWithToken } from './unsubscribe'
 export type { ParsedUnsubscribeToken, UnsubscribeChannel, UnsubscribeLinkOptions } from './unsubscribe'
 export { accountNotificationTemplates, commerceNotificationTemplates, createNotificationTemplates, defineNotificationTemplates, interpolateNotificationText, notificationTemplateVariables, renderNotificationTemplate, resolveNotificationLocale, subscriptionNotificationTemplates } from './templates'

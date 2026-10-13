@@ -955,6 +955,7 @@
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
+        "@stacksjs/datetime": "workspace:*",
         "@stacksjs/email": "workspace:*",
         "@stacksjs/push": "workspace:*",
         "@stacksjs/realtime": "workspace:*",

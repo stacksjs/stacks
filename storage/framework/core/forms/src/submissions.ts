@@ -2,6 +2,7 @@ import type { FormDefinition, SubmissionErrors } from './types'
 import { randomUUID } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db, sqlDateTime } from '@stacksjs/database/runtime'
+import { checkSubmissionSpam } from './spam'
 import { validateSubmission } from './validate'
 
 export interface SubmitOptions {
@@ -31,13 +32,12 @@ export async function submitForm(form: FormDefinition, payload: Record<string, u
   const spam = (config as { forms?: { spam?: { honeypot?: boolean, minSubmitSeconds?: number } } }).forms?.spam ?? {}
 
   // Honeypot: a hidden field humans never see. Filled = bot. Answer success
-  // so the bot learns nothing, store nothing.
-  if ((spam.honeypot ?? true) && typeof options.honeypot === 'string' && options.honeypot.trim() !== '')
+  // so the bot learns nothing, store nothing. Faster than a human could read
+  // the form = bot too (./spam.ts).
+  const spamSignal = checkSubmissionSpam(options, spam)
+  if (spamSignal === 'honeypot')
     return { ok: true, submissionId: 0, submissionUuid: '', status: 'complete', amountCents: null, confirmation: form.settings.confirmation?.type === 'message' ? form.settings.confirmation.value : null, redirect: null }
-
-  // Faster than a human could read the form = bot.
-  const minSeconds = spam.minSubmitSeconds ?? 3
-  if (minSeconds > 0 && options.renderedAtMs !== undefined && options.renderedAtMs < minSeconds * 1000)
+  if (spamSignal === 'too_fast')
     return { ok: false, status: 429, message: 'That was submitted too quickly. Please try again.' }
 
   const validated = validateSubmission(form, payload)

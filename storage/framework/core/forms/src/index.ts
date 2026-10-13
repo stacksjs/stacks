@@ -3,6 +3,8 @@ export { createForm, loadFormByHandle, toCreateFields } from './create'
 export type { CreatedForm, CreateFormFieldInput, CreateFormInput } from './create'
 export { loadFormByUuid, publicDefinition } from './definition'
 export { dispatchSubmissionNotifications } from './notifications'
+export { checkSubmissionSpam } from './spam'
+export type { SpamPolicy, SpamSignals } from './spam'
 export {
   completeSubmissionPayment,
   exportSubmissionsCsv,

@@ -186,6 +186,34 @@ const { subject, body, action } = templates.render('password_changed', { app: 'H
 - `account_created` carries a credential link: send it directly, not through a
   stored queue that keeps the body.
 
+## Sequences: steps with waits and quiet hours
+
+`@stacksjs/notifications/sequences` (pure; also exported from the root) is the
+timing engine for journeys such as "email now, wait two days, text, then a call
+task for staff". It never sends or stores anything: the app keeps each
+person's next step index and due time, and on each tick asks what to do now.
+
+```ts
+import { advanceSequence, sequenceTimeline } from '@stacksjs/notifications/sequences'
+
+const quietHours = { start: '21:00', end: '08:00', timeZone: 'Europe/Berlin' }
+const { run, next } = advanceSequence(steps, enrollment.step_index, new Date(), {
+  quietHours,
+  respectsQuietHours: step => step.type === 'email' || step.type === 'sms',
+})
+// perform `run` in order, then store next?.index / next?.at (null: finished)
+```
+
+- A step is `{ type, minutes? }` plus whatever the app needs. `type: 'wait'`
+  with `minutes` sets when the sequence continues; a zero wait is skipped.
+- A step that respects quiet hours (default: every non-wait) is held until the
+  window ends in its zone (`nextSendableTime`); `isQuietTime` answers for one
+  instant. Windows may cross midnight; DST comes from the runtime's tz data.
+- `sequenceTimeline(steps, start, options)` lays the steps out in time for a
+  preview.
+- Consent, unsubscribes and STOP are still the sender's checks (`notify()`,
+  preferences); the engine only decides when.
+
 ## Channel factories
 
 - `useEmail(driver?)` returns a sendable transport. Without a driver it uses
@@ -231,7 +259,7 @@ delivery log, not extra columns on the inbox.
 `storage/framework/core/notifications/src/index.ts` defines the real
 signatures. `preferences.ts`, `delivery.ts` and `drivers/database.ts`
 own their persistence; the query builder is bun-query-builder.
-`notifications.test.ts`, `delivery-tracking.test.ts`,
+`notifications.test.ts`, `delivery-tracking.test.ts`, `sequences.test.ts`,
 `broadcast.test.ts`, `email-body.test.ts` and `frame-locale.test.ts` cover
 retained behavior; `frame-strings.ts` holds the frame's languages.
 For provider status, consult `config/src/capabilities.ts` and each channel
