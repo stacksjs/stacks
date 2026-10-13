@@ -122,14 +122,34 @@ function failureFor(status: number): FiskalyFailure {
 
 interface Token { accessToken: string, refreshToken: string | null, expiresAt: number }
 
+/** The calls a till makes to fiskaly SIGN DE with one API key. */
+export interface FiskalySignDe {
+  /** Checks the key and secret: fiskaly answers a token, or 401 (`rejected`). */
+  authenticate: () => Promise<{ organizationId: string | null, environment: string | null }>
+  createTss: (tssId: string, metadata?: Record<string, string>) => Promise<FiskalyTss>
+  retrieveTss: (tssId: string) => Promise<FiskalyTss>
+  setTssState: (tssId: string, state: 'UNINITIALIZED' | 'INITIALIZED' | 'DISABLED') => Promise<FiskalyTss>
+  changeAdminPin: (tssId: string, adminPuk: string, newAdminPin: string) => Promise<Record<string, never>>
+  authenticateAdmin: (tssId: string, adminPin: string) => Promise<Record<string, never>>
+  logoutAdmin: (tssId: string) => Promise<Record<string, never>>
+  upsertClient: (tssId: string, clientId: string, serialNumber: string) => Promise<FiskalyClient>
+  retrieveClient: (tssId: string, clientId: string) => Promise<FiskalyClient>
+  startTransaction: (tssId: string, txId: string, clientId: string) => Promise<FiskalyTransaction>
+  finishTransaction: (tssId: string, txId: string, clientId: string, receipt: FiskalyReceipt, revision?: number) => Promise<FiskalyTransaction>
+  cancelTransaction: (tssId: string, txId: string, clientId: string, revision?: number) => Promise<FiskalyTransaction>
+  retrieveTransaction: (tssId: string, txId: string) => Promise<FiskalyTransaction>
+}
+
+interface SendResult { status: number, json: any }
+
 /** A fiskaly SIGN DE client for one API key. Tokens are cached and refreshed. */
-export function fiskalySignDe(options: FiskalyOptions) {
+export function fiskalySignDe(options: FiskalyOptions): FiskalySignDe {
   const base = (options.baseUrl || FISKALY_SIGN_DE_URL).replace(/\/$/, '')
   const doFetch = options.fetch ?? fetch
   const timeoutMs = options.timeoutMs ?? 15_000
   let token: Token | null = null
 
-  async function send(method: string, path: string, body: unknown, bearer: string | null, timeout = timeoutMs): Promise<{ status: number, json: any }> {
+  async function send(method: string, path: string, body: unknown, bearer: string | null, timeout = timeoutMs): Promise<SendResult> {
     let res: Response
     try {
       res = await doFetch(`${base}${path}`, {
@@ -212,9 +232,9 @@ export function fiskalySignDe(options: FiskalyOptions) {
     retrieveTss: (tssId: string) => call<FiskalyTss>('GET', `/tss/${id(tssId)}`),
     // Personalising a TSS (to UNINITIALIZED) can take tens of seconds; fiskaly asks for a 30s timeout or more.
     setTssState: (tssId: string, state: 'UNINITIALIZED' | 'INITIALIZED' | 'DISABLED') => call<FiskalyTss>('PATCH', `/tss/${id(tssId)}`, { state }, state === 'UNINITIALIZED' ? Math.max(timeoutMs, 60_000) : undefined),
-    changeAdminPin: (tssId: string, adminPuk: string, newAdminPin: string) => call('PATCH', `/tss/${id(tssId)}/admin`, { admin_puk: adminPuk, new_admin_pin: newAdminPin }),
-    authenticateAdmin: (tssId: string, adminPin: string) => call('POST', `/tss/${id(tssId)}/admin/auth`, { admin_pin: adminPin }),
-    logoutAdmin: (tssId: string) => call('POST', `/tss/${id(tssId)}/admin/logout`, {}),
+    changeAdminPin: (tssId: string, adminPuk: string, newAdminPin: string) => call<Record<string, never>>('PATCH', `/tss/${id(tssId)}/admin`, { admin_puk: adminPuk, new_admin_pin: newAdminPin }),
+    authenticateAdmin: (tssId: string, adminPin: string) => call<Record<string, never>>('POST', `/tss/${id(tssId)}/admin/auth`, { admin_pin: adminPin }),
+    logoutAdmin: (tssId: string) => call<Record<string, never>>('POST', `/tss/${id(tssId)}/admin/logout`, {}),
     upsertClient: (tssId: string, clientId: string, serialNumber: string) => call<FiskalyClient>('PUT', `/tss/${id(tssId)}/client/${id(clientId)}`, { serial_number: serialNumber }),
     retrieveClient: (tssId: string, clientId: string) => call<FiskalyClient>('GET', `/tss/${id(tssId)}/client/${id(clientId)}`),
     startTransaction: (tssId: string, txId: string, clientId: string) =>
@@ -226,8 +246,6 @@ export function fiskalySignDe(options: FiskalyOptions) {
     retrieveTransaction: (tssId: string, txId: string) => call<FiskalyTransaction>('GET', `/tss/${id(tssId)}/tx/${id(txId)}`),
   }
 }
-
-export type FiskalySignDe = ReturnType<typeof fiskalySignDe>
 
 export interface ProvisionInput {
   tssId: string

@@ -86,9 +86,16 @@ export function processData(input: { bonTyp?: BonTyp, vat: readonly TseVatAmount
   return `${input.bonTyp ?? 'Beleg'}^${buckets.map(tseAmount).join('_')}^${payments.join('_')}`
 }
 
+/** fiskaly's receipt schema (`schema.standard_v1.receipt`), as `fiskalyReceiptFor` writes it. */
+export interface FiskalyReceiptSchema {
+  receipt_type: 'RECEIPT' | 'TRAINING' | 'TRANSFER' | 'ORDER' | 'CANCELLATION' | 'ABORT' | 'BENEFIT_IN_KIND' | 'INVOICE' | 'OTHER'
+  amounts_per_vat_rate: Array<{ vat_rate: 'NORMAL' | 'REDUCED_1' | 'SPECIAL_RATE_1' | 'SPECIAL_RATE_2' | 'NULL', amount: string }>
+  amounts_per_payment_type: Array<{ payment_type: 'CASH' | 'NON_CASH', amount: string, currency_code?: string }>
+}
+
 /** fiskaly's receipt schema (`schema.standard_v1.receipt`) for the same amounts. */
-export function fiskalyReceiptFor(input: { vat: readonly TseVatAmount[], payments: readonly TsePayment[], receiptType?: 'RECEIPT' | 'TRAINING' | 'TRANSFER' | 'ORDER' | 'CANCELLATION' | 'ABORT' | 'BENEFIT_IN_KIND' | 'INVOICE' | 'OTHER' }) {
-  const byRate = new Map<string, number>()
+export function fiskalyReceiptFor(input: { vat: readonly TseVatAmount[], payments: readonly TsePayment[], receiptType?: FiskalyReceiptSchema['receipt_type'] }): FiskalyReceiptSchema {
+  const byRate = new Map<FiskalyReceiptSchema['amounts_per_vat_rate'][number]['vat_rate'], number>()
   for (const amount of input.vat) {
     if (!isDeVatKey(amount.key)) throw new Error(`Unknown VAT key ${String(amount.key)}`)
     const rate = DE_VAT_KEYS[amount.key].fiskaly
@@ -96,7 +103,7 @@ export function fiskalyReceiptFor(input: { vat: readonly TseVatAmount[], payment
   }
   const byPayment = new Map<string, { payment_type: 'CASH' | 'NON_CASH', currency: string, cents: number }>()
   for (const payment of input.payments) {
-    const type = payment.kind === 'Bar' ? 'CASH' : 'NON_CASH'
+    const type: 'CASH' | 'NON_CASH' = payment.kind === 'Bar' ? 'CASH' : 'NON_CASH'
     const currency = (payment.currency || 'EUR').toUpperCase()
     const entry = byPayment.get(`${type}:${currency}`) ?? { payment_type: type, currency, cents: 0 }
     entry.cents += payment.cents
@@ -110,7 +117,7 @@ export function fiskalyReceiptFor(input: { vat: readonly TseVatAmount[], payment
       amount: tseAmount(entry.cents),
       ...(entry.currency === 'EUR' ? {} : { currency_code: entry.currency }),
     })),
-  } as const
+  }
 }
 
 /** A TSE time as receipts and the export write it: `YYYY-MM-DDThh:mm:ss.fffZ` (UTC). Takes unix seconds, an ISO string or a Date. */
