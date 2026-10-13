@@ -83,7 +83,10 @@ type WidenDefault<TValue> = TValue extends string
 
 type AttributeValue<TAttribute> = TAttribute extends { readonly type: infer TType }
   ? PrimitiveType<TType>
-  : TAttribute extends { readonly factory: (...args: never[]) => infer TValue } ? TValue
+  // A factory often returns string even when validation admits only an enum.
+  // Keep that declared set of values, rather than widening it to the factory.
+  : TAttribute extends { readonly validation: { readonly rule: { readonly name: 'enum' } & Validator<infer TValue> } } ? TValue
+    : TAttribute extends { readonly factory: (...args: never[]) => infer TValue } ? TValue
     : TAttribute extends { readonly validation: { readonly rule: infer TRule } }
       ? TRule extends Validator<infer TValue> ? TValue : unknown
       : TAttribute extends { readonly default: infer TDefault } ? WidenDefault<TDefault>

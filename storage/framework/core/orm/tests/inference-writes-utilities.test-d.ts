@@ -37,6 +37,8 @@ const Account = defineModel({
       fillable: true,
       default: 'member',
       validation: { rule: schema.enum(['member', 'admin']) },
+      // Factory callbacks commonly widen a valid enum value to string.
+      factory: (): string => 'member',
     },
     nickname: {
       fillable: true,
@@ -68,6 +70,8 @@ type NumericColumns = InferNumericColumns<typeof Account>
 
 type RowEmail = Expect<Equal<Row['email'], string>>
 type RowRole = Expect<Equal<Row['role'], 'member' | 'admin'>>
+type QueriedRole = Expect<Equal<NonNullable<Awaited<ReturnType<typeof Account.find>>>['role'], 'member' | 'admin'>>
+void (0 as unknown as QueriedRole)
 type RowNickname = Expect<Equal<Row['nickname'], string | null>>
 type RowTeamFk = Expect<Equal<Row['team_id'], number>>
 type RowCustomFk = Expect<Equal<Row['invited_by'], number>>

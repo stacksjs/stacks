@@ -2279,9 +2279,13 @@ type DefaultTypeToken<TAttribute> = TAttribute extends { default: infer TDefault
           : TDefault extends Record<string, unknown> ? 'json'
             : never
   : never
-type InferenceHint<TAttribute> = TAttribute extends { type: unknown } | { factory: (...args: never[]) => unknown }
+type InferenceHint<TAttribute> = TAttribute extends { type: unknown }
   ? object
-  : [ValidationRuleOf<TAttribute>] extends [never]
+  : TAttribute extends { validation: { rule: { readonly name: 'enum' } } }
+    ? { type: ValidationRuleOf<TAttribute> }
+    : TAttribute extends { factory: (...args: never[]) => unknown }
+      ? object
+      : [ValidationRuleOf<TAttribute>] extends [never]
       ? [DefaultTypeToken<TAttribute>] extends [never]
           ? object
           : { type: DefaultTypeToken<TAttribute> }

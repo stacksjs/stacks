@@ -3,6 +3,16 @@ title: Data Models
 description: Learn how to define and use ORM models in Stacks applications
 ---
 
+# Data Models
+
+Model row, query and write types follow the model declaration. An enum validator
+keeps its literal values even when a seed factory returns `string`, so a status
+validated as `draft` or `published` cannot be written as an arbitrary string.
+Explicit attribute types take precedence; other factory inference is preserved.
+Use `ModelRow<typeof Model>` and `UpdateModelData<typeof Model>` from
+`@stacksjs/orm` when declaring inputs or results rather than widening those
+fields in parallel interfaces.
+
 ```typescript
 attributes: {
   name: {

@@ -26,6 +26,9 @@ type UserUpdate = UpdateModelData<typeof User>
 
 ModelRow derives attributes, trait fields and relationship foreign keys from
 the actual model. It is not a universal row with uuid/timestamps always present.
+Enum validators retain their literal values in both model rows and query/write
+methods even when a seed factory returns a broad `string`. Explicit attribute
+types still take precedence; other factories keep their existing inference.
 Use that inferred row instead of a legacy UserModel interface when custom
 columns matter. NewModelData/UpdateModelData follow their real exported definitions;
 do not assume every field is optional. Global compatibility aliases delegate to
