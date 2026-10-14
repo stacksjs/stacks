@@ -346,7 +346,7 @@ simulator's Music app has nothing to play; launch a simulator build with
 
 ## Crash reporting (bughq)
 
-`crashReporting` in `config/mobile.ts` turns on Craft's native reporter (craft-native >= 0.0.176; the build refuses an older one). It sends crashes, hangs (MetricKit), ANRs and native crashes (ApplicationExitInfo) and uncaught JavaScript errors in native screens and the app script to bughq from an on-disk outbox, with app version and build, OS, device model, session and breadcrumbs (screens shown, failed requests).
+`crashReporting` in `config/mobile.ts` turns on Craft's native reporter (craft-native >= 0.0.179; the build refuses an older one). It sends crashes, hangs (MetricKit), ANRs and native crashes (ApplicationExitInfo) and uncaught JavaScript errors in native screens and the app script to bughq from an on-disk outbox, with app version and build, OS, device model, session and breadcrumbs (screens shown, failed requests).
 
 ```ts
 export default {

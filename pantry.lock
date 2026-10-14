@@ -877,7 +877,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.176"
+        "craft-native": ">=0.0.179"
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1997,12 +1997,12 @@
       "source": "pantry",
       "resolved": "registry:bun.sh@1.4.2"
     },
-    "craft-native@0.0.177": {
+    "craft-native@0.0.179": {
       "name": "craft-native",
-      "version": "0.0.177",
+      "version": "0.0.179",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.177.tgz",
-      "integrity": "sha512-5SOcCz365cbXzwKfGQ+pwJJC5MpJE/A92F3wROTTa4WtbGk20rU6kNEHPxf/aCaP7Axptj1gZFjAZG9Xf28lEQ==",
+      "resolved": "https://registry.npmjs.org/craft-native/-/craft-native-0.0.179.tgz",
+      "integrity": "sha512-wc64qsU61Tqu11kCJbSzkzfrHMbD2TLJkv1wv15IxCzDJWIyUUMrqSx43UPUpEnD1vnV1W5kkncpLr/QEvrJuQ==",
       "bin": {
         "craft-sdk": "./dist/cli.js"
       }

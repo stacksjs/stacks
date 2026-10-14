@@ -66,7 +66,7 @@ export const CRAFT_ANDROID_FLOORS = {
   /** `bundleRelease` (an AAB for Google Play) and release signing from the environment. */
   appBundle: '0.0.169',
   /** CraftCrashReporter.kt: uncaught exceptions, ANRs, JavaScript errors, the outbox. */
-  crashReporting: '0.0.176',
+  crashReporting: '0.0.179',
 } as const
 
 export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS

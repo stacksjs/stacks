@@ -144,7 +144,7 @@ export function assertCraftSupportsCapabilities(capabilities: IosMobileConfig['c
 }
 
 /** The first craft-native whose iOS and Android shells report crashes (CraftCrashReporter). */
-export const CRAFT_CRASH_REPORTING_FLOOR = '0.0.176'
+export const CRAFT_CRASH_REPORTING_FLOOR = '0.0.179'
 
 /**
  * The crash reporting a platform builds with: the shared `crashReporting`,
