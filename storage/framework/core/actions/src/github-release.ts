@@ -18,6 +18,7 @@
  * a tag that already has a release is left as it is.
  */
 
+import { githubHeaders } from '@stacksjs/github'
 import process from 'node:process'
 
 export const GITHUB_API_URL = 'https://api.github.com'
@@ -121,11 +122,10 @@ export async function createGitHubRelease(
 ): Promise<{ url: string, created: boolean }> {
   const fetcher = options.fetch ?? globalThis.fetch
   const base = `${(options.apiUrl ?? GITHUB_API_URL).replace(/\/$/, '')}/repos/${repository.owner}/${repository.repo}/releases`
-  const headers = {
-    'Authorization': `Bearer ${options.token}`,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  }
+  // Through the one builder, so the API version is named once. This was a
+  // second copy of the same three headers, which is how `2022-11-28` came to
+  // be written twice (stacksjs/stacks#2859).
+  const headers = githubHeaders(options.token)
 
   const existing = await fetcher(`${base}/tags/${encodeURIComponent(draft.tag)}`, { headers })
   if (existing.ok)

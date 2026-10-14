@@ -85,6 +85,7 @@
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/github": "workspace:*",
     "@stacksjs/gitit": "^0.2.5",
     "@stacksjs/i18n": "workspace:*",
     "@stacksjs/image": "workspace:*",
