@@ -290,8 +290,50 @@ export interface AndroidMobileConfig {
   appIcon?: string
   /** Path to Firebase's google-services.json, required for production Android push registration. */
   googleServicesFile?: string
+  /** Light or dark with the device (`system`), or pinned. */
+  appearance?: 'light' | 'dark' | 'system'
+  /** The background behind screens in dark mode (`backgroundColor` is light's). */
+  backgroundColorDark?: string
+  /**
+   * `native` draws every screen from the app's `.stx` screens with Android
+   * views and no web view, as the iOS app does (`ios.renderer`). It needs
+   * `nativeScreens`; `url` is then the app's site, where its API answers.
+   */
+  renderer?: 'web' | 'native'
+  /** Paths to the screens that draw them (`/m/workout/:id` → `Workout`), as `ios.nativeScreens`. */
+  nativeScreens?: Record<string, string>
+  /** Where the screens' `.stx` files are (default `resources/native`). */
+  nativeScreensDir?: string
+  /** The script that runs beside the screens for the app's life (`ios.nativeApp`). */
+  nativeApp?: string
+  /** The tab bar: each tab's root path, title and symbol (an SF Symbol name, drawn with Android's glyphs). */
+  tabs?: Array<{ id: string, title: string, symbol?: string }>
+  /**
+   * Wake the app script in the background (`craftBackgroundRefresh`)
+   * through WorkManager, at least this many minutes apart (15 at the least).
+   */
+  backgroundRefresh?: { enabled?: boolean, minimumIntervalMinutes?: number }
+  /**
+   * The Health Connect data the app reads and writes (`capabilities.healthConnect`),
+   * by the shared type names. Play reviews each declared permission, so the
+   * manifest lists only these. `background` reads while the app is closed
+   * (Android 15), `history` reads past the 30 days before the first grant.
+   */
+  healthConnect?: {
+    read?: AndroidHealthConnectType[]
+    write?: AndroidHealthConnectType[]
+    background?: boolean
+    history?: boolean
+  }
+  /** The app's privacy policy, linked from Health Connect's permission screen. */
+  privacyPolicyUrl?: string
   capabilities?: MobileCapabilities
 }
+
+/** Health data types, by the names the iOS build's HealthKit uses. */
+export type AndroidHealthConnectType = 'steps' | 'heartRate' | 'activeEnergy' | 'distance' | 'workouts' | 'restingHeartRate'
+  | 'heartRateVariability' | 'bodyMass' | 'sleep' | 'mindful' | 'dietaryEnergy' | 'dietaryProtein'
+  | 'dietaryCarbohydrates' | 'dietaryFat'
 
 /**
  * One kind of application content a device may index for search.

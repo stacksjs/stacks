@@ -463,6 +463,22 @@ for an app whose pages are not on the router.
 Decide native-only chrome with `await whenNativeMobile()`, not
 `isNativeMobile()` at setup: Craft installs its bridge after the page starts.
 
+## Android native screens
+
+`android.renderer: 'native'` with the iOS app's `nativeScreens`, `tabs` and
+`nativeApp` draws the same `.stx` screens with Android views (Craft >= 0.0.169;
+`CRAFT_ANDROID_FLOORS` in `actions/src/build/android-config.ts` refuses an older
+Craft). The host is JavaScriptSandbox: it cannot answer synchronously, so Craft
+starts each isolate with copies of storage, secure storage and snapshots and keeps
+them current; timers and frames are the host's. `android.healthConnect: { read,
+write, background, history }` declares only the listed Health Connect types,
+`backgroundRefresh` runs the app script from WorkManager, and
+`buddy build:android --bundle` writes a signed AAB (`CRAFT_ANDROID_KEYSTORE`,
+`CRAFT_ANDROID_KEYSTORE_PASSWORD`, `CRAFT_ANDROID_KEY_ALIAS`,
+`CRAFT_ANDROID_KEY_PASSWORD`). On Android, `craft.health.availability()`,
+`grantedTypes()` and `openSettings()` (stx >= 0.2.514) handle Health Connect
+needing an install or update and its own permission screen.
+
 ## Health and watch surfaces
 
 Enable `healthKit` on iOS or `healthConnect` on Android, then use the shared

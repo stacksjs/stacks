@@ -338,9 +338,12 @@ export function build(buddy: CLI): void {
     .command('build:android', descriptions.android)
     .alias('prod:android')
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--bundle', 'Build a signed Android App Bundle (.aab) for Google Play (CRAFT_ANDROID_KEYSTORE and friends)', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
+    .action(async (options: BuildOptions & { bundle?: boolean }) => {
       log.debug('Running `buddy build:android` ...', options)
+      // The action runs as its own process: it reads the choice from the environment.
+      if (options.bundle) process.env.STACKS_ANDROID_BUNDLE = '1'
 
       const perf = await intro('buddy build:android')
       const result = await runAction(Action.BuildAndroid, options)

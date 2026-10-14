@@ -23,25 +23,25 @@ type CompileNativeBundle = (options: {
  * `nativeScreens`, in `nativeScreensDir` (`resources/native` by default).
  * A screen named twice, for two paths, is compiled once.
  */
-export function nativeScreenFiles(config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir'>, root: string): Record<string, string> {
+export function nativeScreenFiles(config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir'>, root: string, section: 'ios' | 'android' = 'ios'): Record<string, string> {
   const dir = resolve(root, config.nativeScreensDir ?? 'resources/native')
   const files: Record<string, string> = {}
   for (const name of Object.values(config.nativeScreens ?? {})) {
     if (files[name]) continue
     const file = join(dir, `${name}.stx`)
     if (!existsSync(file))
-      throw new Error(`ios.nativeScreens names the screen "${name}", but ${file} does not exist.`)
+      throw new Error(`${section}.nativeScreens names the screen "${name}", but ${file} does not exist.`)
     files[name] = file
   }
   return files
 }
 
 /** The app script's file (`nativeApp`), or null when the app has none. */
-export function nativeAppFile(config: Pick<IosMobileConfig, 'nativeApp'>, root: string): string | null {
+export function nativeAppFile(config: Pick<IosMobileConfig, 'nativeApp'>, root: string, section: 'ios' | 'android' = 'ios'): string | null {
   if (!config.nativeApp) return null
   const file = resolve(root, config.nativeApp)
   if (!existsSync(file))
-    throw new Error(`ios.nativeApp names ${config.nativeApp}, but ${file} does not exist.`)
+    throw new Error(`${section}.nativeApp names ${config.nativeApp}, but ${file} does not exist.`)
   return file
 }
 
@@ -56,12 +56,14 @@ export async function compileNativeScreens(
   root: string,
   output: string,
   compile?: CompileNativeBundle,
+  /** Which section of config/mobile.ts the screens came from, for the errors. */
+  section: 'ios' | 'android' = 'ios',
 ): Promise<{ outFile: string, diagnostics: NativeBundleResult['diagnostics'] } | null> {
-  const screens = nativeScreenFiles(config, root)
+  const screens = nativeScreenFiles(config, root, section)
   const names = Object.keys(screens)
-  const app = nativeAppFile(config, root)
+  const app = nativeAppFile(config, root, section)
   if (!names.length) {
-    if (app) throw new Error('ios.nativeApp runs beside native screens: list them in ios.nativeScreens')
+    if (app) throw new Error(`${section}.nativeApp runs beside native screens: list them in ${section}.nativeScreens`)
     return null
   }
 

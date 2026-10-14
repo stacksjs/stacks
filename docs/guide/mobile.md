@@ -113,6 +113,47 @@ export default {
 } satisfies MobileConfig
 ```
 
+### Native screens on Android
+
+`android.renderer: 'native'` draws the same `.stx` screens as
+`ios.renderer: 'native'` with Android views and no web view. List the same `nativeScreens`,
+`tabs` and `nativeApp` (share them as constants in `config/mobile.ts`), and
+`buddy build:android` compiles the screens into the bundle Craft runs, writes
+the app's Lucide icons as vectors (Android has no SF Symbols), and stops when
+the resolved Craft predates the Android shell (`CRAFT_ANDROID_FLOORS` in
+`actions/src/build/android-config.ts`, the sibling of iOS's capability floors).
+
+```ts
+const nativeScreens = { '/m': 'Today', '/m/workout/:id': 'Workout' }
+const tabs = [{ id: '/m', title: 'Today', symbol: 'sun.max' }]
+
+export default {
+  ios: { renderer: 'native', nativeScreens, tabs, nativeApp: 'resources/native/app.ts', /* ... */ },
+  android: {
+    renderer: 'native',
+    nativeScreens,
+    tabs,
+    nativeApp: 'resources/native/app.ts',
+    url: 'https://example.com/m',
+    backgroundRefresh: { enabled: true, minimumIntervalMinutes: 120 },
+    healthConnect: { read: ['workouts', 'sleep', 'heartRate'], write: ['workouts'], background: true },
+    privacyPolicyUrl: 'https://example.com/privacy',
+    capabilities: { healthConnect: true, pushNotifications: true, haptics: true },
+  },
+} satisfies MobileConfig
+```
+
+- `backgroundRefresh` wakes the app script through WorkManager (15 minutes at
+  the least) with `craftBackgroundRefresh`, as iOS's background refresh does.
+- `healthConnect` lists the Health Connect types the manifest declares: Google
+  Play reviews each permission, so list only what the app reads and writes.
+  `background` adds the background-read permission (Android 15), `history`
+  reads past the 30 days before the first grant.
+- `buddy build:android --bundle` builds a signed Android App Bundle for Google
+  Play with the upload key in `CRAFT_ANDROID_KEYSTORE`,
+  `CRAFT_ANDROID_KEYSTORE_PASSWORD`, `CRAFT_ANDROID_KEY_ALIAS` and
+  `CRAFT_ANDROID_KEY_PASSWORD`.
+
 ### Feeling native
 
 These options shape how the shell behaves around the page. Every one has a

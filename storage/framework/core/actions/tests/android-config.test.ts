@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
+import { assertCraftSupportsAndroid, CRAFT_ANDROID_FLOORS, androidCraftFeatures, toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
 
 describe('Android mobile build configuration', () => {
   it('maps Stacks capabilities onto the Craft Android builder', () => {
@@ -68,5 +68,54 @@ describe('Android mobile build configuration', () => {
       webAssets: 'dist',
       urlSchemes: ['not a scheme'],
     })).toThrow('Invalid Android URL scheme')
+  })
+
+  const native = {
+    appName: 'HQ',
+    packageName: 'training.hq.app',
+    url: 'https://hq.training/m',
+    renderer: 'native' as const,
+    nativeScreens: { '/m': 'Today', '/m/workout/:id': 'Workout' },
+    nativeApp: 'resources/native/app.ts',
+    tabs: [{ id: '/m', title: 'Today', symbol: 'sun.max' }],
+    backgroundRefresh: { enabled: true, minimumIntervalMinutes: 120 },
+    healthConnect: { read: ['sleep' as const, 'workouts' as const], write: ['mindful' as const], background: true },
+    privacyPolicyUrl: 'https://hq.training/privacy',
+    capabilities: { healthConnect: true },
+  }
+
+  it('passes the native app shell to Craft, with the app script under its bundle route', () => {
+    const config = toCraftAndroidConfig(native)
+    expect(config.renderer).toBe('native')
+    expect(config.nativeScreens).toEqual(native.nativeScreens)
+    expect(config.nativeApp).toBe('__app')
+    expect(config.tabs).toEqual(native.tabs)
+    expect(config.backgroundRefresh).toEqual(native.backgroundRefresh)
+    expect(config.healthConnect).toEqual(native.healthConnect)
+    expect(config.privacyPolicyURL).toBe('https://hq.training/privacy')
+    // A web-view app keeps none of it.
+    const web = toCraftAndroidConfig({ ...native, renderer: 'web', nativeApp: undefined })
+    expect(web.nativeScreens).toBeUndefined()
+    expect(web.tabs).toBeUndefined()
+    expect('nativeApp' in web).toBe(false)
+  })
+
+  it('validates a native app the way ios.renderer is validated', () => {
+    expect(() => validateAndroidMobileConfig(native)).not.toThrow()
+    expect(() => validateAndroidMobileConfig({ ...native, nativeScreens: {} })).toThrow('list them in android.nativeScreens')
+    expect(() => validateAndroidMobileConfig({ ...native, webAssets: 'dist' })).toThrow('has no web view')
+    expect(() => validateAndroidMobileConfig({ ...native, tabs: [{ id: 'm', title: 'Today' }] })).toThrow('an app path')
+    expect(() => validateAndroidMobileConfig({ ...native, backgroundRefresh: { enabled: true, minimumIntervalMinutes: 5 } })).toThrow('at least 15')
+    expect(() => validateAndroidMobileConfig({ ...native, capabilities: {} })).toThrow('capabilities.healthConnect is off')
+    expect(() => validateAndroidMobileConfig({ appName: 'A', packageName: 'a.b', url: 'a.b', nativeApp: 'app.ts' })).toThrow('runs beside native screens')
+  })
+
+  it('refuses a Craft that would build the app without its shell, Health Connect or background refresh', () => {
+    expect(androidCraftFeatures(native)).toEqual(['nativeShell', 'healthConnect', 'backgroundRefresh'])
+    expect(androidCraftFeatures(native, { appBundle: true })).toContain('appBundle')
+    expect(() => assertCraftSupportsAndroid(native, '0.0.164', '/x/package.json')).toThrow(`needs >= ${CRAFT_ANDROID_FLOORS.nativeShell}`)
+    expect(() => assertCraftSupportsAndroid(native, CRAFT_ANDROID_FLOORS.nativeShell, '/x/package.json')).not.toThrow()
+    // A web-view app has nothing floored.
+    expect(() => assertCraftSupportsAndroid({ appName: 'A', packageName: 'a.b', url: 'a.b' }, '0.0.100', '/x/package.json')).not.toThrow()
   })
 })

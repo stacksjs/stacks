@@ -4,10 +4,12 @@ import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { craftBuilderSpecifier } from './craft-entry'
+import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { toCraftAndroidConfig, validateAndroidMobileConfig } from './android-config'
+import { assertCraftSupportsAndroid, toCraftAndroidConfig, validateAndroidMobileConfig } from './android-config'
 import { resolveMobilePath } from './ios-config'
+import { compileNativeScreens } from './native-screens'
+import { writeAndroidIconTable } from './android-icons'
 
 process.exitCode = 1
 
@@ -21,17 +23,23 @@ interface CraftAndroidBuilder {
   build(options: {
     htmlPath?: string
     devServer?: string
+    nativeBundlePath?: string
+    iconsPath?: string
     output: string
     release?: boolean
+    bundle?: boolean
     compile?: boolean
   }): Promise<void>
 }
 
-async function loadCraftAndroidBuilder(): Promise<CraftAndroidBuilder> {
+function craftAndroidEntry(): string {
   const explicit = process.env.CRAFT_ANDROID_SRC
+  return explicit ? pathToFileURL(explicit).href : craftBuilderSpecifier('android', projectPath())
+}
+
+async function loadCraftAndroidBuilder(): Promise<CraftAndroidBuilder> {
   try {
-    if (explicit) return await import(pathToFileURL(explicit).href) as CraftAndroidBuilder
-    return await import(craftBuilderSpecifier('android', projectPath())) as CraftAndroidBuilder
+    return await import(craftAndroidEntry()) as CraftAndroidBuilder
   }
   catch (error) {
     throw new Error(
@@ -57,16 +65,50 @@ craftConfig.googleServicesFile = resolveMobilePath(projectPath(), config.googleS
 if (process.env.NODE_ENV === 'production' && config.capabilities?.pushNotifications && !craftConfig.googleServicesFile) {
   throw new Error('Production Android push notifications require android.googleServicesFile in config/mobile.ts')
 }
+
+// `buddy build:android --bundle` (STACKS_ANDROID_BUNDLE=1): an Android App
+// Bundle for Google Play, always a release build.
+const appBundle = process.env.STACKS_ANDROID_BUNDLE === '1'
+const release = appBundle || process.env.NODE_ENV === 'production'
+
+// Screens drawn natively, compiled by stx into the bundle Craft copies in:
+// the same screens and app script as the iOS app.
+const native = config.renderer === 'native'
+const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android') : null
+if (nativeBundle) {
+  for (const diagnostic of nativeBundle.diagnostics ?? [])
+    log.warn(`${diagnostic.file ? `${diagnostic.file}: ` : ''}${diagnostic.message}`)
+  log.info(`Compiled ${Object.keys(config.nativeScreens ?? {}).length} native screen path(s) into ${nativeBundle.outFile}`)
+}
+
+// Android has no SF Symbols: the screens' icons go in as the vectors the web
+// draws (the app's Lucide), by Iconify name and by the symbol stx maps them to.
+const { LUCIDE_TO_SF } = native ? await import('@stacksjs/stx/native') as { LUCIDE_TO_SF: Record<string, string> } : { LUCIDE_TO_SF: {} }
+const iconsPath = native ? writeAndroidIconTable(projectPath(), output, LUCIDE_TO_SF) : null
+if (native && !iconsPath)
+  log.warn('No @iconify-json/lucide in the app: Android draws its own glyphs for the screens\' icons.')
+
 const builder = await loadCraftAndroidBuilder()
 
+// An older Craft builds without the shell, Health Connect or background
+// refresh and says nothing, so the build stops here instead.
+const craftVersion = craftBuilderVersion(craftAndroidEntry(), projectPath())
+if (craftVersion)
+  assertCraftSupportsAndroid(config, craftVersion.version, craftVersion.manifest, { appBundle })
+else
+  log.warn(`Could not read the craft-native version behind ${craftAndroidEntry()}, so the build cannot check that it supports what config/mobile.ts asks for.`)
+
 await builder.init({ name: config.appName, packageName: config.packageName, output, config: craftConfig })
-await builder.build({
-  output,
-  htmlPath: webAssets ?? fallbackWebAssets,
-  devServer: craftConfig.devServerURL as string | undefined,
-  release: process.env.NODE_ENV === 'production',
-  compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1',
-})
+await builder.build(native
+  ? { output, nativeBundlePath: nativeBundle!.outFile, iconsPath: iconsPath ?? undefined, release, bundle: appBundle, compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1' }
+  : {
+      output,
+      htmlPath: webAssets ?? fallbackWebAssets,
+      devServer: craftConfig.devServerURL as string | undefined,
+      release,
+      bundle: appBundle,
+      compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1',
+    })
 
 const sourceRevision = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() }).stdout.toString().trim()
 const generatedConfig = JSON.parse(readFileSync(`${output}/craft.config.json`, 'utf8')) as Record<string, unknown>
@@ -74,7 +116,7 @@ writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify({
   schemaVersion: '1.0.0',
   platform: 'android',
   sourceRevision,
-  source: webAssets ? { kind: 'bundled', path: webAssets } : {
+  source: native ? { kind: 'native', site: craftConfig.devServerURL } : webAssets ? { kind: 'bundled', path: webAssets } : {
     kind: 'remote',
     url: craftConfig.devServerURL,
     fallback: fallbackWebAssets ? { kind: 'bundled', path: fallbackWebAssets } : undefined,
