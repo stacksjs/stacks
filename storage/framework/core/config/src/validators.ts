@@ -13,6 +13,7 @@
 
 import type { StacksConfig } from '@stacksjs/types'
 import { capabilityDrivers, findCapability, type CapabilityCategory } from './capabilities'
+import { isCiphertext } from './plain-env'
 
 export interface ConfigValidationIssue {
   path: string
@@ -181,7 +182,21 @@ export function validateConfig(config: Partial<StacksConfig>): ConfigValidationI
     }
     for (const [field, check] of Object.entries(schema.rules)) {
       const v = sectionValue[field]
-      issues.push(...check(v, `${section}.${field}`))
+      const path = `${section}.${field}`
+      // A value that is still ciphertext reached config unread, and no rule
+      // here can say anything true about it: the schema would report a
+      // 300-character base64 blob as a bad port or an unknown driver, which
+      // is how the real cause (a private key the process never found) gets
+      // read as a broken config. `plain-env.ts` keeps this package's own
+      // reads from producing one; a user config file reading `process.env`
+      // directly, rather than the `env` proxy that decrypts, still can.
+      // Still an issue, because the value is unusable either way, but named
+      // for what it is (stacksjs/stacks#2903).
+      if (isCiphertext(v)) {
+        issues.push({ path, message: 'value is still encrypted; no usable private key opened it, so config read the ciphertext. Set the matching DOTENV_PRIVATE_KEY_<ENV> or ship .env.keys, and read it through `env` from @stacksjs/env rather than process.env' })
+        continue
+      }
+      issues.push(...check(v, path))
     }
   }
 

@@ -33,7 +33,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/collections` | [`stacks-collections`](../stacks-collections/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/collections/src/index.ts) | 2 |
 | `@stacksjs/commerce` | [`stacks-commerce`](../stacks-commerce/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/commerce/src/index.ts) | 13 |
 | `@stacksjs/composables` | [`stacks-composables`](../stacks-composables/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/composables/src/index.ts) | 18 |
-| `@stacksjs/config` | [`stacks-config`](../stacks-config/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/index.ts) | 15 |
+| `@stacksjs/config` | [`stacks-config`](../stacks-config/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/index.ts) | 16 |
 | `@stacksjs/cron` | [`stacks-cron`](../stacks-cron/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cron/src/index.ts) | 4 |
 | `@stacksjs/database` | [`stacks-database`](../stacks-database/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/database/src/index.ts) | 121 |
 | `@stacksjs/datetime` | [`stacks-datetime`](../stacks-datetime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/datetime/src/index.ts) | 12 |
@@ -331,7 +331,7 @@ Declared runtime exports: `DEFAULT_VIEWS_ALWAYS`, `DEFAULT_VIEW_ROUTE_BUNDLES`, 
 
 Local source modules: [src/capabilities.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/capabilities.ts), [src/config.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/config.ts), [src/defaults.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/defaults.ts), [src/discovered-resources.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/discovered-resources.ts), [src/features.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/features.ts), [src/request-context.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/request-context.ts), [src/validators.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/validators.ts), [src/views.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/src/views.ts).
 
-Evidence directory: [15 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [16 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/config/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/cron
 

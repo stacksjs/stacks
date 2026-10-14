@@ -11,6 +11,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { defaults } from './defaults'
+import { plainEnv } from './plain-env'
 import { validateConfig } from './validators'
 
 // PRODUCTION BINARY MODE: Skip runtime config loading
@@ -76,8 +77,8 @@ export function defaultsForOverrides(): StacksConfig {
     // where set, preserving the previous behaviour for the two keys that had it.
     app: {
       ...defaults.app,
-      name: process.env.APP_NAME || defaults.app?.name || 'Stacks',
-      env: process.env.APP_ENV || 'production',
+      name: plainEnv('APP_NAME') || defaults.app?.name || 'Stacks',
+      env: plainEnv('APP_ENV') || 'production',
     },
     auth: {},
     cache: {},

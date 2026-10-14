@@ -554,6 +554,7 @@
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
+        "@stacksjs/env": "workspace:*",
         "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.24"
       }
