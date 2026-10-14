@@ -271,6 +271,7 @@ Build the native Android application
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--bundle` | Build a signed Android App Bundle (.aab) for Google Play (CRAFT_ANDROID_KEYSTORE and friends) | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `build:cli`
