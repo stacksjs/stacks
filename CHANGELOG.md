@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.176...v0.75.177)
+
+## 🐛 Bug Fixes
+
+- **mobile**: remove a stripped xcodegen before setup:ios reinstalls it ([87f5e2f](https://github.com/stacksjs/stacks/commit/87f5e2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.175...v0.75.176)
 
 ## 🐛 Bug Fixes
