@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.179...v0.75.180)
+
+## 🐛 Bug Fixes
+
+- **mobile**: crash reporting needs craft-native 0.0.179 ([2ffd83c](https://github.com/stacksjs/stacks/commit/2ffd83c)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 ## v0.75.179
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.177...v0.75.178)
