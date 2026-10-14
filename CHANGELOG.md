@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.173...v0.75.174)
+
+## ✨ Features
+
+- **mobile**: native screens on Android, with Health Connect and an AAB for Google Play ([82a0ad0](https://github.com/stacksjs/stacks/commit/82a0ad0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- buddy build:android --bundle and the native catalog, regenerated ([72974f2](https://github.com/stacksjs/stacks/commit/72974f2)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.172...v0.75.173)
 
 ## ✨ Features
