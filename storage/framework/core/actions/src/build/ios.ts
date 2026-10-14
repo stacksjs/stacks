@@ -6,7 +6,7 @@ import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { assertCraftSupportsCapabilities, portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { assertCraftSupportsCapabilities, assertCraftSupportsCrashReporting, portablePaths, resolveCrashReporting, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
@@ -72,7 +72,10 @@ const generateProject = process.env.STACKS_IOS_SKIP_XCODEGEN !== '1'
 const xcodegen = generateProject ? await resolveXcodegen(projectPath()) : null
 const webAssets = resolveMobilePath(projectPath(), config.webAssets)
 const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAssets)
-const craftConfig = toCraftIosConfig(config)
+// The shared `crashReporting` under iOS's own, so the shell and the dSYM
+// upload below see one answer.
+const crashReporting = resolveCrashReporting(mobile.crashReporting, config.crashReporting)
+const craftConfig = toCraftIosConfig({ ...config, crashReporting })
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
 craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
@@ -91,8 +94,10 @@ const builder = await loadCraftIosBuilder()
 // An older Craft drops a capability it has no template for without a word,
 // so the build fails here rather than ship an app that lacks it.
 const craftVersion = craftBuilderVersion(craftIosEntry(), projectPath())
-if (craftVersion)
+if (craftVersion) {
   assertCraftSupportsCapabilities(config.capabilities, craftVersion.version, craftVersion.manifest)
+  assertCraftSupportsCrashReporting(crashReporting, craftVersion.version, craftVersion.manifest)
+}
 else
   log.warn(`Could not read the craft-native version behind ${craftIosEntry()}, so the build cannot check that it supports every capability config/mobile.ts turns on.`)
 
@@ -125,7 +130,9 @@ if (xcodegen) {
   log.info(`Generated the Xcode project with xcodegen ${xcodegen.version} from Pantry`)
 }
 
-writeIosShellSupport(output, config)
+writeIosShellSupport(output, config, undefined, crashReporting)
+if (crashReporting)
+  log.info(`Crash reporting to ${crashReporting.host ?? 'https://bughq.org'}${crashReporting.uploadSymbols === false ? '' : ': dSYMs upload from Xcode Cloud when BUGHQ_UPLOAD_TOKEN is set in the workflow'}`)
 
 // Declared after the builder, which rewrites Info.plist from its template on
 // every build, and safe before or after xcodegen, which only references it.

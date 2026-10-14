@@ -38,8 +38,9 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@bughq/sdk": "^0.3.0",
     "@stacksjs/types": "workspace:*",
-    "craft-native": ">=0.0.163"
+    "craft-native": ">=0.0.176"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

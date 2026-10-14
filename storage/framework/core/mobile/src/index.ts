@@ -80,6 +80,7 @@ import type {
 
 export * from './bridge'
 export * from './controls'
+export * from './crash-reporting'
 export * from './events'
 export * from './gestures'
 export * from './navigation'

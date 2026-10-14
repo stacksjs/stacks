@@ -269,6 +269,8 @@ export interface IosMobileConfig {
   orientations?: MobileOrientation[]
   deviceFamilies?: IosDeviceFamily[]
   capabilities?: MobileCapabilities
+  /** Crash reporting for iOS, over `MobileConfig.crashReporting`. */
+  crashReporting?: MobileCrashReportingConfig
 }
 
 export interface AndroidMobileConfig {
@@ -328,6 +330,8 @@ export interface AndroidMobileConfig {
   /** The app's privacy policy, linked from Health Connect's permission screen. */
   privacyPolicyUrl?: string
   capabilities?: MobileCapabilities
+  /** Crash reporting for Android, over `MobileConfig.crashReporting`. */
+  crashReporting?: MobileCrashReportingConfig
 }
 
 /** Health data types, by the names the iOS build's HealthKit uses. */
@@ -385,9 +389,39 @@ export interface SpotlightConfig {
   activityTypes?: string[]
 }
 
+/**
+ * Crash and error reporting to bughq (https://bughq.org) from the native app:
+ * crashes, hangs and ANRs, uncaught JavaScript errors in native screens, the
+ * app script and web views, sent from an on-disk outbox so offline events
+ * arrive later. On when a `key` is set. `MobileConfig.crashReporting` applies
+ * to both platforms; `ios.crashReporting` and `android.crashReporting`
+ * override it field by field (a project, and so a key, per platform).
+ */
+export interface MobileCrashReportingConfig {
+  /** The bughq project's public ingest key. It ships in the app, which is safe. Unset turns reporting off. */
+  key?: string
+  /** The bughq host. Default https://bughq.org. */
+  host?: string
+  /** Default `production`. */
+  environment?: string
+  /** Every event and session names it. Default `<version>+<build>`, e.g. `1.0.0+41`. */
+  release?: string
+  /** One session per launch, for crash-free sessions per release. Default true. */
+  sessions?: boolean
+  /**
+   * Upload release builds' symbols so stacks are readable: dSYMs from Xcode
+   * Cloud (`ci_scripts/ci_post_xcodebuild.sh`) and the R8 mapping after
+   * `buddy build:android --bundle`. Needs the secret `BUGHQ_UPLOAD_TOKEN` in
+   * that build's environment, never in the app. Default true.
+   */
+  uploadSymbols?: boolean
+}
+
 export interface MobileConfig {
   ios: IosMobileConfig
   android?: AndroidMobileConfig
+  /** Crash reporting for both platforms (see MobileCrashReportingConfig). */
+  crashReporting?: MobileCrashReportingConfig
   /**
    * Content a device may index for search: iOS Spotlight and Siri today,
    * through the activity types the iOS build declares from this.

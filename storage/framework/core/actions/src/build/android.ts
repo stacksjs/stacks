@@ -6,8 +6,8 @@ import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { assertCraftSupportsAndroid, toCraftAndroidConfig, validateAndroidMobileConfig } from './android-config'
-import { resolveMobilePath } from './ios-config'
+import { androidRelease, assertCraftSupportsAndroid, toCraftAndroidConfig, uploadAndroidMapping, validateAndroidMobileConfig } from './android-config'
+import { resolveCrashReporting, resolveMobilePath } from './ios-config'
 import { compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
 
@@ -52,8 +52,10 @@ async function loadCraftAndroidBuilder(): Promise<CraftAndroidBuilder> {
 const configPath = projectPath('config/mobile.ts')
 if (!existsSync(configPath)) throw new Error('Missing config/mobile.ts. Add an android section before running `buddy build:android`.')
 const configModule = await import(`${pathToFileURL(configPath).href}?t=${Date.now()}`) as { default: MobileConfig }
-const config = configModule.default.android as AndroidMobileConfig | undefined
-if (!config) throw new Error('config/mobile.ts must define an android section')
+const androidSection = configModule.default.android as AndroidMobileConfig | undefined
+if (!androidSection) throw new Error('config/mobile.ts must define an android section')
+// The shared `crashReporting` under Android's own.
+const config: AndroidMobileConfig = { ...androidSection, crashReporting: resolveCrashReporting(configModule.default.crashReporting, androidSection.crashReporting) }
 validateAndroidMobileConfig(config)
 
 const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('framework/mobile/android')
@@ -109,6 +111,19 @@ await builder.build(native
       bundle: appBundle,
       compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1',
     })
+
+// A minified release build's frames are renamed by R8: hand bughq the
+// mapping, keyed by the release the app's events name.
+if (release && config.crashReporting?.key && config.crashReporting.uploadSymbols !== false && process.env.STACKS_ANDROID_SKIP_GRADLE !== '1') {
+  const upload = await uploadAndroidMapping(
+    `${output}/app/build/outputs/mapping/release/mapping.txt`,
+    config.crashReporting.host ?? 'https://bughq.org',
+    androidRelease(config),
+    process.env.BUGHQ_UPLOAD_TOKEN,
+  )
+  if (upload.ok) log.info(upload.message)
+  else log.warn(upload.message)
+}
 
 const sourceRevision = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() }).stdout.toString().trim()
 const generatedConfig = JSON.parse(readFileSync(`${output}/craft.config.json`, 'utf8')) as Record<string, unknown>
