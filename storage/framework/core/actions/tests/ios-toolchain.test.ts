@@ -98,7 +98,7 @@ describe('the iOS toolchain', () => {
     const error = await resolveXcodegen(pinned, { env: { HOME: root, XDG_DATA_HOME: stripped } }).catch(e => e)
     expect(error).toBeInstanceOf(IosToolchainError)
     expect(error.message).toContain('has no setting presets')
-    expect(error.message).toContain(`pantry install --user --force ${XCODEGEN_PACKAGE}@2.46.0`)
+    expect(error.message).toContain(`Remove ${join(stripped, 'pantry', 'global', 'packages', XCODEGEN_PACKAGE, 'v2.46.0')} and run \`buddy setup:ios\``)
   })
 
   it('runs the resolved xcodegen in the project directory', async () => {

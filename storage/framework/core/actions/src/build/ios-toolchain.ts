@@ -156,7 +156,9 @@ export async function resolveXcodegen(projectRoot: string, options: { env?: Env,
   if (!(options.fs ?? realFilesystem).exists(presets)) {
     throw new IosToolchainError(
       `xcodegen ${tool.version} at ${tool.path} has no setting presets (${presets}), so the project it generates would lose its base build settings. `
-      + `Reinstall it: \`pantry install --user --force ${XCODEGEN_PACKAGE}@${tool.version}\` (or \`buddy setup:ios\` after removing ${dirname(dirname(tool.path))}).`,
+      // `pantry install --force` keeps a version directory that already exists,
+      // so the stale copy has to go before Pantry fetches the fixed package.
+      + `Remove ${dirname(dirname(tool.path))} and run \`buddy setup:ios\` to reinstall it.`,
     )
   }
   return tool
