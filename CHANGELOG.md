@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.177...v0.75.178)
+
+## ✨ Features
+
+- **database**: report a framework column Postgres holds with a timezone ([9d57475](https://github.com/stacksjs/stacks/commit/9d57475)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2902](https://github.com/stacksjs/stacks/issues/2902))
+
+## 🐛 Bug Fixes
+
+- **config**: a still-encrypted value reads as absent, not as config ([64ee950](https://github.com/stacksjs/stacks/commit/64ee950)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2903](https://github.com/stacksjs/stacks/issues/2903))
+- **actions**: the release's GitHub headers come from the one builder ([f1dd216](https://github.com/stacksjs/stacks/commit/f1dd216)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2859](https://github.com/stacksjs/stacks/issues/2859))
+- **ci**: the lockfile check reads pantry.lock structurally, not byte for byte ([769ca57](https://github.com/stacksjs/stacks/commit/769ca57)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2899](https://github.com/stacksjs/stacks/issues/2899))
+
+## ♻️ Code Refactoring
+
+- **env**: one definition of isEncryptedValue, and the preloader uses it ([8db4547](https://github.com/stacksjs/stacks/commit/8db4547)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2904](https://github.com/stacksjs/stacks/issues/2904))
+
+## 🔧 Chores
+
+- **deps**: pantry.lock carries actions' @stacksjs/github dependency ([4ede002](https://github.com/stacksjs/stacks/commit/4ede002)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: curl 8.23.0, as an install now resolves it ([534ba48](https://github.com/stacksjs/stacks/commit/534ba48)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## security
+
+- **ci**: pin the Pantry action in the scaffolded deploy workflows ([e9ad661](https://github.com/stacksjs/stacks/commit/e9ad661)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2906](https://github.com/stacksjs/stacks/issues/2906))
+
+## Contributors
+
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.176...v0.75.177)
 
 ## 🐛 Bug Fixes
