@@ -9,7 +9,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { decryptValue, getPrivateKey } from './crypto'
 import { parse } from './parser'
-import { isEncryptedValue, plaintextEnv } from './plaintext-env'
+import { isEncryptedValue } from './plaintext'
+import { plaintextEnv } from './plaintext-env'
 
 export interface EnvPluginOptions {
   /**

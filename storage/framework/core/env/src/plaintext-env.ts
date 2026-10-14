@@ -1,7 +1,4 @@
-/** Ciphertext preloaded by Bun is not a usable environment value. */
-export function isEncryptedValue(value: string | undefined): boolean {
-  return typeof value === 'string' && (value.startsWith('encrypted:') || value.startsWith('enc:'))
-}
+import { isEncryptedValue } from './plaintext'
 
 /**
  * Keep genuine plaintext, excluding copies of known ciphertext that Bun may

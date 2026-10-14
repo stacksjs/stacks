@@ -13,6 +13,8 @@
  * nothing in the repository as it stands.
  */
 
+import { readdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import { isEncryptedValue, plaintextSecrets, SECRET_NAME_PATTERN, trackedEnvFiles } from '../src/plaintext'
 
@@ -174,5 +176,32 @@ describe('trackedEnvFiles', () => {
 
   it('returns nothing for empty input, so a non-git checkout skips the check', () => {
     expect(trackedEnvFiles('')).toEqual([])
+  })
+})
+
+describe('one definition of isEncryptedValue (stacksjs/stacks#2904)', () => {
+  /*
+   * This predicate was written out four separate times before it was given a
+   * home here, and consolidating left two: `plaintext-env.ts` kept a copy, and
+   * `plugin.ts` imported that one, so the preloader's ciphertext scrub ran on
+   * the version that was neither exported nor documented. Identical bodies, so
+   * nothing was broken and nothing could catch it.
+   *
+   * Read from compiled source rather than the file text. A ban that greps raw
+   * source passes or fails on prose: naming the function in a comment would
+   * trip this, and commenting a copy out would hide one.
+   */
+  it('is declared once across the package source', () => {
+    const src = resolve(import.meta.dir, '..', 'src')
+    const transpiler = new Bun.Transpiler({ loader: 'ts' })
+
+    const declaring = readdirSync(src)
+      .filter(file => file.endsWith('.ts'))
+      .filter((file) => {
+        const compiled = transpiler.transformSync(readFileSync(resolve(src, file), 'utf8'))
+        return /(?:function|const|let|var)\s+isEncryptedValue\b/.test(compiled)
+      })
+
+    expect(declaring).toEqual(['plaintext.ts'])
   })
 })
