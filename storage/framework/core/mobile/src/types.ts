@@ -319,6 +319,10 @@ export interface SpeechOptions {
   language?: string
   /** Stop whatever is being said first. Defaults to true. */
   interrupt?: boolean
+  /** 0.5 to 2; 1 is the voice's own pitch, lower sounds calmer. */
+  pitch?: number
+  /** Seconds of quiet before the words (up to 5), after whatever was said before them. */
+  preDelay?: number
 }
 
 export interface SpeechApi {
