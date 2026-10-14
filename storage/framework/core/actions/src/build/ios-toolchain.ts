@@ -16,7 +16,7 @@
 
 import { existsSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
@@ -147,7 +147,24 @@ export async function resolveXcodegen(projectRoot: string, options: { env?: Env,
   const tool = findPantryProgram(XCODEGEN_PACKAGE, constraint, 'xcodegen', pantryPackageRoots(projectRoot, options.env), options.fs)
   if (!tool)
     throw new IosToolchainError(missingToolMessage(XCODEGEN_PACKAGE, constraint, 'xcodegen'))
+
+  // xcodegen reads its default build settings from ../share/xcodegen beside the
+  // binary. Without them it still exits 0, and every project it writes silently
+  // loses ARC, the warnings, the SDK and the optimisation levels; Pantry's
+  // package shipped only the binary until its recipe was fixed (pantry 0cc51d9d1).
+  const presets = xcodegenPresets(tool)
+  if (!(options.fs ?? realFilesystem).exists(presets)) {
+    throw new IosToolchainError(
+      `xcodegen ${tool.version} at ${tool.path} has no setting presets (${presets}), so the project it generates would lose its base build settings. `
+      + `Reinstall it: \`pantry install --user --force ${XCODEGEN_PACKAGE}@${tool.version}\` (or \`buddy setup:ios\` after removing ${dirname(dirname(tool.path))}).`,
+    )
+  }
   return tool
+}
+
+/** The preset file xcodegen needs beside its binary, at `<prefix>/share/xcodegen`. */
+export function xcodegenPresets(tool: PantryTool): string {
+  return join(dirname(dirname(tool.path)), 'share', 'xcodegen', 'SettingPresets', 'base.yml')
 }
 
 /** Generate `<output>/*.xcodeproj` from its project.yml with the given xcodegen. */

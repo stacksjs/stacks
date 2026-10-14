@@ -19,9 +19,14 @@ let root: string
 let project: string
 let data: string
 
-function install(base: string, version: string): string {
+function install(base: string, version: string, presets = true): string {
   const bin = join(base, XCODEGEN_PACKAGE, `v${version}`, 'bin')
   mkdirSync(bin, { recursive: true })
+  if (presets) {
+    const share = join(base, XCODEGEN_PACKAGE, `v${version}`, 'share', 'xcodegen', 'SettingPresets')
+    mkdirSync(share, { recursive: true })
+    writeFileSync(join(share, 'base.yml'), 'ALWAYS_SEARCH_USER_PATHS: NO\n')
+  }
   const program = join(bin, 'xcodegen')
   // Records how it was called, so the generation test can check it.
   writeFileSync(program, `#!/bin/sh\necho "$@" > "$PWD/xcodegen-args"\necho ${version} >> "$PWD/xcodegen-args"\n`)
@@ -82,6 +87,18 @@ describe('the iOS toolchain', () => {
     expect(error.message).toContain('buddy setup:ios')
     expect(error.message).toContain(`pantry install --user ${XCODEGEN_PACKAGE}@9.9.9`)
     expect(error.message).toContain('Xcode itself does not come from Pantry')
+  })
+
+  it('refuses an xcodegen installed without its setting presets', async () => {
+    const stripped = join(root, 'stripped')
+    const pinned = join(root, 'stripped-app')
+    mkdirSync(join(pinned, 'config'), { recursive: true })
+    writeFileSync(join(pinned, 'config', 'deps.ts'), `export const iosDependencies = { '${XCODEGEN_PACKAGE}': '2.46.0' }\n`)
+    install(join(stripped, 'pantry', 'global', 'packages'), '2.46.0', false)
+    const error = await resolveXcodegen(pinned, { env: { HOME: root, XDG_DATA_HOME: stripped } }).catch(e => e)
+    expect(error).toBeInstanceOf(IosToolchainError)
+    expect(error.message).toContain('has no setting presets')
+    expect(error.message).toContain(`pantry install --user --force ${XCODEGEN_PACKAGE}@2.46.0`)
   })
 
   it('runs the resolved xcodegen in the project directory', async () => {
