@@ -2010,11 +2010,11 @@
       "source": "pantry",
       "resolved": "registry:curl.se/ca-certs@2026.3.19"
     },
-    "curl.se@8.22.0": {
+    "curl.se@8.23.0": {
       "name": "curl.se",
-      "version": "8.22.0",
+      "version": "8.23.0",
       "source": "pantry",
-      "resolved": "registry:curl.se@8.22.0"
+      "resolved": "registry:curl.se@8.23.0"
     },
     "cz-git@1.14.0": {
       "name": "cz-git",
