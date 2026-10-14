@@ -1,5 +1,5 @@
 import type { AndroidMobileConfig } from '@stacksjs/types'
-import { NATIVE_APP_ROUTE, normalizeMobileUrl } from './ios-config'
+import { NATIVE_APP_ROUTE, normalizeMobileUrl, toCraftCrashReporting } from './ios-config'
 
 export interface CraftAndroidConfig {
   [key: string]: unknown
@@ -65,6 +65,8 @@ export const CRAFT_ANDROID_FLOORS = {
   backgroundRefresh: '0.0.169',
   /** `bundleRelease` (an AAB for Google Play) and release signing from the environment. */
   appBundle: '0.0.169',
+  /** CraftCrashReporter.kt: uncaught exceptions, ANRs, JavaScript errors, the outbox. */
+  crashReporting: '0.0.176',
 } as const
 
 export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
@@ -77,6 +79,7 @@ export function androidCraftFeatures(config: AndroidMobileConfig, options: { app
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')
+  if (config.crashReporting?.key) features.push('crashReporting')
   return features
 }
 
@@ -122,6 +125,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     backgroundRefresh: native ? config.backgroundRefresh : undefined,
     healthConnect: config.capabilities?.healthConnect ? config.healthConnect : undefined,
     privacyPolicyURL: config.privacyPolicyUrl,
+    crashReporting: toCraftCrashReporting(config.crashReporting),
   }
   for (const [key, nativeKey] of Object.entries(CAPABILITY_KEYS)) {
     const enabled = config.capabilities?.[key as keyof typeof CAPABILITY_KEYS]
@@ -179,3 +183,36 @@ export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
     if (!/^[a-z][a-z0-9+.-]*$/i.test(scheme)) throw new Error(`Invalid Android URL scheme: ${scheme}`)
   }
 }
+
+/** The release an Android build's events name, and so the one its R8 mapping is stored under. */
+export function androidRelease(config: Pick<AndroidMobileConfig, 'version' | 'versionCode' | 'crashReporting'>): string {
+  if (config.crashReporting?.release) return config.crashReporting.release
+  const version = config.version || '1.0.0'
+  return `${version}+${config.versionCode || 1}`
+}
+
+/**
+ * Upload a release build's R8 mapping to bughq, so its obfuscated crash
+ * frames retrace. Needs the secret `BUGHQ_UPLOAD_TOKEN` in the build's
+ * environment. Answers what happened, and never throws: a missing upload must
+ * not fail a release build.
+ */
+export async function uploadAndroidMapping(mappingPath: string, host: string, release: string, token: string | undefined, send: typeof fetch = fetch): Promise<{ ok: boolean, message: string }> {
+  if (!token) return { ok: false, message: 'BUGHQ_UPLOAD_TOKEN is not set, so the R8 mapping was not uploaded and this build\'s Android crashes will show obfuscated names.' }
+  const file = Bun.file(mappingPath)
+  if (!(await file.exists())) return { ok: false, message: `No R8 mapping at ${mappingPath}, so nothing was uploaded.` }
+  try {
+    const body = Bun.gzipSync(new Uint8Array(await file.arrayBuffer()))
+    const response = await send(`${host.replace(/\/$/, '')}/api/debug-files?kind=proguard&release=${encodeURIComponent(release)}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/octet-stream' },
+      body,
+    })
+    if (!response.ok) return { ok: false, message: `bughq refused the R8 mapping (${response.status}): ${(await response.text()).slice(0, 200)}` }
+    return { ok: true, message: `Uploaded the R8 mapping for ${release} to bughq.` }
+  }
+  catch (error) {
+    return { ok: false, message: `Could not upload the R8 mapping: ${error instanceof Error ? error.message : String(error)}` }
+  }
+}
+

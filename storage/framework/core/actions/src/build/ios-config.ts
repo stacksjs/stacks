@@ -1,4 +1,4 @@
-import type { IosMobileConfig, MobileConfig } from '@stacksjs/types'
+import type { IosMobileConfig, MobileConfig, MobileCrashReportingConfig } from '@stacksjs/types'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { spotlightActivityTypes } from '@stacksjs/mobile'
@@ -143,6 +143,50 @@ export function assertCraftSupportsCapabilities(capabilities: IosMobileConfig['c
   )
 }
 
+/** The first craft-native whose iOS and Android shells report crashes (CraftCrashReporter). */
+export const CRAFT_CRASH_REPORTING_FLOOR = '0.0.176'
+
+/**
+ * The crash reporting a platform builds with: the shared `crashReporting`,
+ * overridden field by field by the platform's own. Undefined, and so off,
+ * without a key.
+ */
+export function resolveCrashReporting(shared: MobileCrashReportingConfig | undefined, platform: MobileCrashReportingConfig | undefined): MobileCrashReportingConfig | undefined {
+  // An empty string is unset (an env var left blank), so it never hides the
+  // shared value under it.
+  const set = (config: MobileCrashReportingConfig | undefined) =>
+    Object.fromEntries(Object.entries(config ?? {}).filter(([, value]) => value !== undefined && value !== '')) as MobileCrashReportingConfig
+  const merged: MobileCrashReportingConfig = { ...set(shared), ...set(platform) }
+  if (!merged.key?.trim()) return undefined
+  if (merged.host) {
+    const url = new URL(normalizeMobileUrl(merged.host)!)
+    const local = ['localhost', '127.0.0.1', '::1', '10.0.2.2'].includes(url.hostname)
+    if (url.protocol !== 'https:' && !local) throw new Error('crashReporting.host must use HTTPS outside local development')
+    merged.host = url.origin
+  }
+  return merged
+}
+
+/** What craft.config.json carries: the runtime settings, not the build-only ones. */
+export function toCraftCrashReporting(config: MobileCrashReportingConfig | undefined): Record<string, unknown> | undefined {
+  if (!config?.key) return undefined
+  const craft: Record<string, unknown> = { key: config.key, host: config.host, environment: config.environment, release: config.release, sessions: config.sessions }
+  for (const key of Object.keys(craft)) {
+    if (craft[key] === undefined) delete craft[key]
+  }
+  return craft
+}
+
+/** Refuse a build whose Craft would silently leave crash reporting out. */
+export function assertCraftSupportsCrashReporting(config: MobileCrashReportingConfig | undefined, version: string, source: string): void {
+  if (!config?.key || Bun.semver.satisfies(version, `>=${CRAFT_CRASH_REPORTING_FLOOR}`)) return
+  throw new Error(
+    `The Craft builder is craft-native ${version} (${source}), which would build the app without crash reporting `
+    + `(crashReporting needs >= ${CRAFT_CRASH_REPORTING_FLOOR}). Install craft-native >= ${CRAFT_CRASH_REPORTING_FLOOR}: `
+    + 'look for an older copy nested under @stacksjs/mobile in bun.lock, or raise the app\'s own craft-native pin.',
+  )
+}
+
 export function normalizeMobileUrl(value: string | undefined): string | undefined {
   const input = value?.trim()
   if (!input) return undefined
@@ -241,6 +285,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     usageDescriptions: config.usageDescriptions,
     orientations: config.orientations,
     deviceFamilies: config.deviceFamilies,
+    crashReporting: toCraftCrashReporting(config.crashReporting),
   }
 
   for (const [key, nativeKey] of Object.entries(CAPABILITY_KEYS)) {

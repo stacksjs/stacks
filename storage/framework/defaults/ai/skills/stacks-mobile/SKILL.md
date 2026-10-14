@@ -344,6 +344,24 @@ prompt with `ios.usageDescriptions.NSAppleMusicUsageDescription`. The
 simulator's Music app has nothing to play; launch a simulator build with
 `-CraftFakeMusicPlayer YES` for three made-up songs that play and skip.
 
+## Crash reporting (bughq)
+
+`crashReporting` in `config/mobile.ts` turns on Craft's native reporter (craft-native >= 0.0.176; the build refuses an older one). It sends crashes, hangs (MetricKit), ANRs and native crashes (ApplicationExitInfo) and uncaught JavaScript errors in native screens and the app script to bughq from an on-disk outbox, with app version and build, OS, device model, session and breadcrumbs (screens shown, failed requests).
+
+```ts
+export default {
+  crashReporting: { host: env.BUGHQ_HOST || undefined, environment: 'production' },
+  ios: { /* ... */ crashReporting: { key: env.BUGHQ_IOS_KEY } },
+  android: { /* ... */ crashReporting: { key: env.BUGHQ_ANDROID_KEY } },
+} satisfies MobileConfig
+```
+
+- Platform settings override the shared ones field by field; no key means off.
+- `release` defaults to `<version>+<build>`; one session per launch feeds crash-free sessions.
+- Symbols: `build:ios` writes `ci_scripts/ci_post_xcodebuild.sh`, which uploads Xcode Cloud archive dSYMs (`symbols | gzip | curl`) when the workflow has the secret `BUGHQ_UPLOAD_TOKEN`; `build:android --bundle` uploads the R8 `mapping.txt` the same way. `uploadSymbols: false` turns both off. The token never goes in the app.
+- JavaScript: `crashReporting.start()` from `@stacksjs/mobile` runs `@bughq/sdk` in web views with a transport into the native outbox (no key needed in the app; a no-op in a browser without one). `crashReporting.setUser(id)` names the user by id only. On a native screen or the app script use `craft.crashReporter` (`capture`, `setUser`, `addBreadcrumb`, `flush`, `context`).
+- Test crashes are Debug-only: `xcrun simctl launch <device> <bundle id> -CraftCrashTest swift|signal|exception|js`, or `--es craftCrashTest native|js` on Android.
+
 ## Runtime API
 
 ```ts
