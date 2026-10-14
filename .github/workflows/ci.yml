@@ -415,13 +415,14 @@ jobs:
       # package that does. The lock keys by `name@version`, so both records fit
       # - the earlier reading of this as "one version per package name" was
       # wrong, and led to treating a bug as a property of the format. #2533.
+      # `bun.lock` strictly, `pantry.lock` structurally: its resolved closure is
+      # platform-specific, so a byte comparison can only pass on the platform
+      # that wrote the file, and this job ran red for days on a GCC toolchain
+      # that Linux needs and macOS does not (stacksjs/stacks#2899). The script
+      # tolerates a closure addition nothing declares and fails on everything
+      # else, including a declared dependency the lockfile never recorded.
       - name: Check the lockfiles still describe this workspace
-        run: |
-          if ! git diff --exit-code --stat bun.lock pantry.lock; then
-            echo "::error::Installing changed a lockfile. A committed lockfile must survive an install of the tree it describes. Run './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and 'pantry install', then commit the result."
-            git diff -- bun.lock pantry.lock
-            exit 1
-          fi
+        run: bun .github/scripts/check-lockfiles-current.ts
 
       # Same computed set, and for the same reason, as the step in `typecheck`:
       # these packages resolve only through a gitignored `dist/`, so a job that
