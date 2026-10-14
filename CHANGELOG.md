@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.175...v0.75.176)
+
+## 🐛 Bug Fixes
+
+- **mobile**: refuse an xcodegen without its setting presets ([1192d7d](https://github.com/stacksjs/stacks/commit/1192d7d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.174...v0.75.175)
 
 ## ✨ Features
