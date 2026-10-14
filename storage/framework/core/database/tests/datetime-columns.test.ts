@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { ensureUtcDatetimeColumns, frameworkDatetimeTables, modifyToDatetimeSql } from '../src/datetime-columns'
+import { AWARE_TIMESTAMP_CONVERSION_ENV, convertAwareTimestampsRequested, convertToNaiveSql, ensureUtcDatetimeColumns, formatAwareTimestampWarning, frameworkDatetimeTables, modifyToDatetimeSql } from '../src/datetime-columns'
 import { notificationsTableSql } from '../src/notification-tables'
 import { rolesTableSql } from '../src/rbac-tables'
 import { sqlHelpers } from '../src/sql-helpers'
@@ -179,5 +179,82 @@ describe('the default that fills a timestamp in', () => {
     // cross-driver convention above, and it broke five tests that exist to
     // state it.
     expect(sqlHelpers('postgres').datetime).toBe('TIMESTAMP')
+  })
+})
+
+/**
+ * The Postgres mirror of the same failure (stacksjs/stacks#2902).
+ *
+ * The framework writes a naive UTC literal, and Postgres interprets one
+ * written into a `timestamptz` column in the session timezone, so every value
+ * in such a column is shifted by that offset. Measured: with the session zone
+ * at `Asia/Manila`, `2026-10-14T12:00:00.000` read back as
+ * `2026-10-14T04:00:00.000Z`, and that was enough for token issuance to fail
+ * with `Failed to persist the requested access token` under `TZ=UTC` - the
+ * read-back check compares the stored expiry against the instant it asked for,
+ * and the two genuinely differ.
+ *
+ * Reported rather than altered by default, because the repair is DDL on a
+ * column that may be large and on a table the application is serving.
+ */
+describe('an aware timestamp column on Postgres', () => {
+  const column = { table: 'oauth_access_tokens', column: 'expires_at' }
+
+  describe('the conversion flag', () => {
+    test('is off unless it is set to 1 or true', () => {
+      expect(convertAwareTimestampsRequested({})).toBe(false)
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: '' })).toBe(false)
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: '0' })).toBe(false)
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: 'false' })).toBe(false)
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: 'yes' })).toBe(false)
+    })
+
+    test('is on for either spelling, whatever the case and spacing', () => {
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: '1' })).toBe(true)
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: 'true' })).toBe(true)
+      expect(convertAwareTimestampsRequested({ [AWARE_TIMESTAMP_CONVERSION_ENV]: ' TRUE ' })).toBe(true)
+    })
+  })
+
+  describe('the ALTER it builds', () => {
+    test('casts through the session timezone, recovering what was written', () => {
+      // `::timestamp` from `timestamptz` reads the instant through the session
+      // zone - the same interpretation applied when the naive literal was
+      // written - so the value that lands is the literal the app wrote.
+      expect(convertToNaiveSql(column))
+        .toBe('ALTER TABLE "oauth_access_tokens" ALTER COLUMN "expires_at" TYPE timestamp USING "expires_at"::timestamp')
+    })
+
+    test('refuses an identifier it cannot vouch for', () => {
+      // `information_schema` is the source, but the names are spliced into DDL,
+      // which takes no placeholder.
+      expect(() => convertToNaiveSql({ table: 'users"; DROP TABLE users; --', column: 'expires_at' })).toThrow('unsafe identifier')
+      expect(() => convertToNaiveSql({ table: 'users', column: 'expires_at, x int' })).toThrow('unsafe identifier')
+    })
+  })
+
+  describe('what the operator is told', () => {
+    const report = formatAwareTimestampWarning([column, { table: 'sessions', column: 'created_at' }])
+
+    test('names every column, the cause and the symptom', () => {
+      expect(report).toContain('oauth_access_tokens.expires_at')
+      expect(report).toContain('sessions.created_at')
+      expect(report).toContain('session')
+      expect(report).toContain('#2902')
+    })
+
+    test('gives both ways out: the flag and the statement', () => {
+      expect(report).toContain(`${AWARE_TIMESTAMP_CONVERSION_ENV}=1`)
+      expect(report).toContain(convertToNaiveSql(column))
+    })
+
+    test('does not print a hundred columns at an operator', () => {
+      const many = Array.from({ length: 12 }, (_, index) => ({ table: `t${index}`, column: 'created_at' }))
+      const long = formatAwareTimestampWarning(many)
+
+      expect(long).toContain('t0.created_at')
+      expect(long).toContain('and 7 more')
+      expect(long).not.toContain('t11.created_at')
+    })
   })
 })
