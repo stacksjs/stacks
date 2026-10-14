@@ -4,12 +4,12 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
+import { describeGitHubRelease, publishGitHubRelease, resolveXcodegen, runAction } from '@stacksjs/actions'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 import { AppStoreConnect, appStoreConnectCredentials, buildsToExpire } from '../app-store-connect'
-import { bumpedVersion, iosVersionIn, nextBuildTag, withIosVersion } from '../release-ios'
+import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, withIosVersion } from '../release-ios'
 import { resultFailed } from '../result'
 
 const descriptions = {
@@ -18,6 +18,7 @@ const descriptions = {
   dryRun: 'Run the release without actually releasing',
   bump: 'Non-interactive bump: patch | minor | major | prepatch | preminor | premajor | prerelease | pre | release | build | calendar | x.y.z',
   verbose: 'Enable verbose output',
+  skipGithubRelease: 'Push the tag without creating its GitHub release',
 }
 
 export function release(buddy: CLI): void {
@@ -27,6 +28,7 @@ export function release(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--bump <type>', descriptions.bump)
     .option('--preid <identifier>', 'Prerelease channel, for example beta or rc')
+    .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: ReleaseOptions) => {
       log.debug('Running `buddy release` ...', options)
@@ -61,8 +63,9 @@ export function release(buddy: CLI): void {
     .command('release:ios', 'Ship the iOS app: regenerate its project for production, commit, tag and push')
     .option('--bump <type>', 'build | patch | minor | major | x.y.z (default: a new build of the current marketing version)')
     .option('--keep-builds <n>', 'TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key)', { default: 1 })
+    .option('--skip-github-release', descriptions.skipGithubRelease, { default: false })
     .option('--dry-run', descriptions.dryRun, { default: false })
-    .action(async (options: { bump?: string, dryRun?: boolean, keepBuilds?: number | string }) => {
+    .action(async (options: IosReleaseOptions) => {
       const startTime = await intro('buddy release:ios')
       try {
         const tag = await releaseIos(options)
@@ -76,7 +79,41 @@ export function release(buddy: CLI): void {
       }
     })
 
+  buddy
+    .command('release:github [tag]', 'Create the GitHub release for a pushed tag (default: the newest), with the changes since the tag before it')
+    .option('--dry-run', 'Print the release instead of creating it', { default: false })
+    .action(async (tag: string | undefined, options: { dryRun?: boolean }) => {
+      const startTime = await intro('buddy release:github')
+      try {
+        const target = tag || git('describe', '--tags', '--abbrev=0')
+        if (!git('tag', '--list', target))
+          throw new Error(`there is no tag ${target}`)
+        // An iOS build tag gets the same title and TestFlight line release:ios gives it.
+        const ios = /^v\d+\.\d+\.\d+-build\.\d+$/.test(target)
+          ? iosReleaseSummary(target, { numberedByXcodeCloud: appStoreConnectCredentials() !== null })
+          : null
+        const result = await publishGitHubRelease({ cwd: process.cwd(), tag: target, name: ios?.name, summary: ios?.body, dryRun: options.dryRun })
+        if (result.status === 'failed')
+          throw new Error(describeGitHubRelease(target, result))
+        log.info(options.dryRun && result.draft
+          ? `Would create the GitHub release ${target} (${result.draft.name}):\n\n${result.draft.body}`
+          : describeGitHubRelease(target, result))
+        await outro(options.dryRun ? 'Dry run complete. Nothing was created.' : `GitHub release for ${target}`, { startTime, useSeconds: true })
+      }
+      catch (error) {
+        await log.error('Failed to create the GitHub release', error)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
   onUnknownSubcommand(buddy, 'release')
+}
+
+interface IosReleaseOptions {
+  bump?: string
+  dryRun?: boolean
+  keepBuilds?: number | string
+  skipGithubRelease?: boolean
 }
 
 function git(...args: string[]): string {
@@ -89,11 +126,16 @@ function git(...args: string[]): string {
  * atomic push. The project is built for production: MOBILE_URL and the version
  * env overrides a dev shell may carry are dropped for the build.
  */
-async function releaseIos(options: { bump?: string, dryRun?: boolean, keepBuilds?: number | string }): Promise<string> {
+async function releaseIos(options: IosReleaseOptions): Promise<string> {
   const root = process.cwd()
   const configPath = join(root, 'config/mobile.ts')
   if (!existsSync(configPath))
     throw new Error('config/mobile.ts not found: run this in a Stacks app with a mobile config')
+
+  // The build regenerates the Xcode project with Pantry's xcodegen; a machine
+  // without it stops here, before anything is pulled, bumped or committed.
+  const xcodegen = await resolveXcodegen(root)
+  log.info(`xcodegen ${xcodegen.version} from Pantry (${xcodegen.path})`)
 
   const branch = git('rev-parse', '--abbrev-ref', 'HEAD')
   if (branch !== 'main')
@@ -134,10 +176,16 @@ async function releaseIos(options: { bump?: string, dryRun?: boolean, keepBuilds
 
   log.info(`Releasing ${tag}${version === current ? '' : ` (version ${current} → ${version})`}`)
   const keep = Math.max(0, Number(options.keepBuilds ?? 1) || 0)
+  // With a key, the tag's number is the Xcode Cloud run, so TestFlight's.
+  const summary = iosReleaseSummary(tag, { numberedByXcodeCloud: store !== null })
   if (options.dryRun) {
     if (store) {
       const retiring = buildsToExpire(await store.api.builds(store.appId), keep)
       log.info(retiring.length ? `Would expire TestFlight builds ${retiring.map(b => b.number).join(', ')}` : 'No TestFlight builds to expire')
+    }
+    if (!options.skipGithubRelease) {
+      const preview = await publishGitHubRelease({ cwd: root, tag, ref: 'HEAD', name: summary.name, summary: summary.body, dryRun: true })
+      log.info(preview.draft ? `Would create the GitHub release ${tag} (${preview.draft.name}):\n\n${preview.draft.body}` : describeGitHubRelease(tag, preview))
     }
     return tag
   }
@@ -164,6 +212,17 @@ async function releaseIos(options: { bump?: string, dryRun?: boolean, keepBuilds
     git('commit', '--quiet', '-m', `chore(release): ${tag}`)
   git('tag', '-a', tag, '-m', tag)
   git('push', '--quiet', '--atomic', 'origin', 'main', tag)
+
+  // The tag's GitHub release: the changes since the previous one, and which
+  // TestFlight build it becomes. A failure here is reported, not thrown: the
+  // tag is out and Xcode Cloud is already building it.
+  if (!options.skipGithubRelease) {
+    const published = await publishGitHubRelease({ cwd: root, tag, name: summary.name, summary: summary.body })
+    if (published.status === 'failed')
+      log.warn(describeGitHubRelease(tag, published))
+    else
+      log.info(describeGitHubRelease(tag, published))
+  }
 
   // The builds this one supersedes leave TestFlight, so its list is the
   // newest kept and this one once it has processed.

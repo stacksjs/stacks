@@ -3,7 +3,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
+import { IosToolchainError, loadIosDependencies, pantryExecutable, pantryInstallArgs, resolveXcodegen, runAction, XCODE_NOTE, xcodeDeveloperDir } from '@stacksjs/actions'
 import { log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
@@ -51,6 +51,7 @@ export function setup(buddy: CLI): void {
     skipTrust: 'Skip trusting the certificate',
     skipAws: 'Skip AWS configuration during setup',
     skipKeygen: 'Skip generating an application key during setup',
+    ios: 'Install the iOS build tools (`iosDependencies` in config/deps.ts) through Pantry and check for Xcode',
   }
 
   buddy
@@ -79,6 +80,41 @@ export function setup(buddy: CLI): void {
       // TODO: optimizeAddDir()
 
       await initializeProject(options)
+    })
+
+  buddy
+    .command('setup:ios', descriptions.ios)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async () => {
+      if (process.platform !== 'darwin') {
+        await log.error('The iOS toolchain installs on macOS only: Xcode and xcodegen do not run anywhere else.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      const root = p.projectPath()
+      const dependencies = await loadIosDependencies(root)
+      const pantry = pantryExecutable(root)
+      log.info(`Installing ${Object.entries(dependencies).map(([pkg, version]) => `${pkg}@${version}`).join(', ')} through Pantry`)
+      const install = Bun.spawnSync([pantry, ...pantryInstallArgs(dependencies)], { cwd: root, stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' })
+      if (install.exitCode !== 0) {
+        await log.error(`\`${pantry} install\` failed with exit code ${install.exitCode}. PANTRY_BIN can point at another Pantry.`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      try {
+        const xcodegen = await resolveXcodegen(root)
+        log.success(`xcodegen ${xcodegen.version}: ${xcodegen.path}`)
+      }
+      catch (error) {
+        await log.error(error instanceof IosToolchainError ? error.message : String(error))
+        process.exit(ExitCode.FatalError)
+      }
+
+      const xcode = xcodeDeveloperDir()
+      if (xcode)
+        log.success(`Xcode: ${xcode}`)
+      else
+        log.warn(`No Xcode is selected, so the project can be generated but not built or archived. ${XCODE_NOTE}`)
     })
 
   buddy

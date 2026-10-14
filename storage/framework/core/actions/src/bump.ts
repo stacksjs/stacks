@@ -3,12 +3,13 @@ import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { incrementVersion, isReleaseType, isValidVersion, versionBump } from '@stacksjs/bumpx'
 import { isCalendarBump, nextCalendarVersion } from './calendar-version'
+import { describeGitHubRelease, publishGitHubRelease } from './github-release'
 import { pantryLockViolations } from './pantry-lock'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-const options = parseOptions() as { dryRun?: boolean, bump?: string, preid?: string, verbose?: boolean } | undefined
+const options = parseOptions() as { dryRun?: boolean, bump?: string, preid?: string, verbose?: boolean, skipGithubRelease?: boolean } | undefined
 
 // Accept --bump patch|minor|major|<explicit-version>; without it, bumpx prompts
 // interactively. The `release:patch` / `release:minor` / `release:major` npm
@@ -603,4 +604,18 @@ if (!isDryRun) {
   await git(['tag', `v${nextVersion}`])
   const branch = (await git(['symbolic-ref', '--short', 'HEAD'])).trim()
   await git(['push', '--atomic', 'origin', `HEAD:refs/heads/${branch}`, `refs/tags/v${nextVersion}`])
+}
+
+// An app's release leaves a GitHub release behind, with the changes since the
+// previous tag. The framework's own comes from CI (release.yml attaches the
+// buddy binaries to it), so creating it here would race that workflow.
+if (!isFrameworkRelease && options?.skipGithubRelease !== true) {
+  const tag = `v${nextVersion}`
+  const result = await publishGitHubRelease({ cwd: p.projectPath(), tag, ref: isDryRun ? 'HEAD' : undefined, dryRun: isDryRun })
+  if (isDryRun && result.draft)
+    log.info(`Would create the GitHub release ${tag}:\n\n${result.draft.body}`)
+  else if (result.status === 'failed')
+    log.warn(describeGitHubRelease(tag, result))
+  else
+    log.info(describeGitHubRelease(tag, result))
 }

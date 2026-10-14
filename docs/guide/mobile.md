@@ -12,6 +12,12 @@ Ship another test build with `buddy release:ios` or the explicit
 allocate the next build number with Bumpx, accounting for release tags and
 previous Xcode Cloud runs, including failures and builds still in flight.
 
+Each release also leaves a GitHub release for its tag, with the TestFlight
+build number and the changes since the previous tag; `buddy release:github
+<tag>` creates one a release could not. The iOS build runs Pantry's xcodegen
+(`iosDependencies` in `config/deps.ts`, installed by `buddy setup:ios`); Xcode
+itself comes from the App Store, not Pantry.
+
 Use `--bump patch`, `minor`, `major`, or an explicit stable version only when
 deliberately changing the marketing version. Semantic prerelease identifiers
 and build metadata belong to package versions, not the iOS marketing field.

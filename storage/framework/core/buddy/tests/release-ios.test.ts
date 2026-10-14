@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { bumpedVersion, iosVersionIn, nextBuildTag, withIosVersion } from '../src/release-ios'
+import { bumpedVersion, iosReleaseSummary, iosVersionIn, nextBuildTag, withIosVersion } from '../src/release-ios'
 
 const CONFIG = `export default {
   ios: {
@@ -56,5 +56,15 @@ describe('buddy release:ios', () => {
     expect(nextBuildTag('1.0.0', ['v1.0.0-build.12'], 16)).toBe('v1.0.0-build.17')
     expect(nextBuildTag('1.0.0', ['v1.0.0-build.9007199254740992', 'v1.0.0-build.1.5'], 12)).toBe('v1.0.0-build.13')
     expect(() => nextBuildTag('1.0.0', [], Number.MAX_SAFE_INTEGER)).toThrow()
+  })
+
+  it('titles the GitHub release with the TestFlight build, and only claims the number when Xcode Cloud allocated it', () => {
+    const numbered = iosReleaseSummary('v1.0.0-build.39', { numberedByXcodeCloud: true })
+    expect(numbered.name).toBe('1.0.0 (build 39)')
+    expect(numbered.body).toContain('TestFlight build **39**')
+    const counted = iosReleaseSummary('v1.0.0-build.39', { numberedByXcodeCloud: false })
+    expect(counted.body).not.toContain('TestFlight build **39**')
+    expect(counted.body).toContain('may differ')
+    expect(() => iosReleaseSummary('v1.0.0', { numberedByXcodeCloud: true })).toThrow()
   })
 })

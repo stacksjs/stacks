@@ -54,6 +54,13 @@ selects either a remote application URL or bundled web assets, generates the
 Xcode project with xcodegen, and records source, capability, and Craft builder
 revision provenance in `stacks-mobile.json`.
 
+xcodegen comes from Pantry, never from `PATH`: the version is
+`iosDependencies` in `config/deps.ts` (beside `androidDependencies`; the
+framework default is `github.com/yonaskolb/XcodeGen@^2.46.0`), and
+`buddy setup:ios` installs it with `pantry install --user`. A machine without
+it fails before the build starts, with that command in the error. Xcode is not
+a Pantry package; install it from the App Store or developer.apple.com.
+
 For local Craft development, point Stacks at Craft's builder source:
 
 ```bash
@@ -161,6 +168,11 @@ navigation; compiling a plausible tree alone does not prove it updates.
 While an app is in TestFlight before its first public release, keep the iOS
 marketing version at `1.0.0` and run `buddy release:ios --bump build`. Each
 upload needs a new build number, not a patch to the marketing version.
+
+Each `release:ios` also creates the tag's GitHub release (the TestFlight build
+number and the changes since the previous tag), using `GITHUB_TOKEN`,
+`GH_TOKEN`, the GitHub CLI's token or the git credential. When that fails the
+tag is still out; `buddy release:github <tag>` creates the missing release.
 
 ## Device search index
 

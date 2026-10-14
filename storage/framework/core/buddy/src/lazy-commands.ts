@@ -197,6 +197,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   // setup.ts registers the whole `setup:*` family.
   'setup:ai': { path: './commands/setup.ts', exportName: 'setup' },
   'setup:ssl': { path: './commands/setup.ts', exportName: 'setup' },
+  'setup:ios': { path: './commands/setup.ts', exportName: 'setup' },
   'setup:oh-my-zsh': { path: './commands/setup.ts', exportName: 'setup' },
   'ai:setup': { path: './commands/setup.ts', exportName: 'setup' },
   'share': { path: './commands/share.ts', exportName: 'share' },

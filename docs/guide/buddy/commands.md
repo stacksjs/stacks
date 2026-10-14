@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **358 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **360 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -58,7 +58,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `publish` | 5 |
 | `queue` | 21 |
 | `realtime` | 2 |
-| `release` | 1 |
+| `release` | 2 |
 | `route` | 1 |
 | `scaffold` | 1 |
 | `schedule` | 6 |
@@ -67,7 +67,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `seed` | 1 |
 | `serve` | 1 |
 | `server` | 5 |
-| `setup` | 3 |
+| `setup` | 4 |
 | `simulator` | 2 |
 | `sms` | 6 |
 | `socials` | 2 |
@@ -4729,7 +4729,21 @@ Release a new version of your libraries/packages
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| pre \| release \| build \| calendar \| x.y.z | value, required | - |
 | `--preid` | Prerelease channel, for example beta or rc | value, required | - |
+| `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `release:github`
+
+Create the GitHub release for a pushed tag (default: the newest), with the changes since the tag before it
+
+- Usage: `$ buddy release:github [tag]`
+- Namespace: `release`
+- Aliases: none
+- Arguments: `[tag]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Print the release instead of creating it | boolean, optional | `false` |
 
 ### `release:ios`
 
@@ -4744,6 +4758,7 @@ Ship the iOS app: regenerate its project for production, commit, tag and push
 | --- | --- | --- | --- |
 | `--bump` | build \| patch \| minor \| major \| x.y.z (default: a new build of the current marketing version) | value, required | - |
 | `--keep-builds` | TestFlight builds to keep besides the new one; older ones are expired (needs an App Store Connect API key) | value, required | `1` |
+| `--skip-github-release` | Push the tag without creating its GitHub release | boolean, optional | `false` |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 
 ### `route:list`
@@ -5089,6 +5104,19 @@ Set the project up for an AI coding agent (Claude Code, Codex, Cursor, Copilot, 
 | --- | --- | --- | --- |
 | `--copy` | Copy the agent files instead of symlinking them, so they can be edited per project | boolean, optional | `false` |
 | `--force` | Overwrite files that already exist | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `setup:ios`
+
+Install the iOS build tools (`iosDependencies` in config/deps.ts) through Pantry and check for Xcode
+
+- Usage: `$ buddy setup:ios`
+- Namespace: `setup`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `setup:oh-my-zsh`

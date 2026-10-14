@@ -42,6 +42,12 @@ export * from './library'
 // spawning a deep dist path. Exported from ./lint/lint — the pure module — so
 // importing the barrel never pulls the process-exiting ./lint/index script.
 export { formatProject, lintFix, lintProject } from './lint/lint'
+// Release helpers the release commands call in-process: the GitHub release a
+// pushed tag gets, and the Pantry-managed tools behind `build:ios`.
+export { describeGitHubRelease, parseGitHubRemote, publishGitHubRelease } from './github-release'
+export type { GitHubReleaseResult, PublishGitHubReleaseOptions } from './github-release'
+export { DEFAULT_IOS_DEPENDENCIES, IosToolchainError, loadIosDependencies, pantryExecutable, pantryInstallArgs, resolveXcodegen, XCODE_NOTE, xcodeDeveloperDir } from './build/ios-toolchain'
+export type { PantryTool } from './build/ios-toolchain'
 // stx conformance checks behind `buddy lint --stx`. Pure - returns a report
 // and never exits, so the command owns rendering and the exit code.
 export { DEFAULT_STX_LINT_CONFIG, loadStxLintConfig, runStxLint } from './lint/stx-gate'

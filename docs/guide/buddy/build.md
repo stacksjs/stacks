@@ -133,6 +133,38 @@ buddy prod:ios
 buddy prod:android
 ```
 
+#### The iOS toolchain
+
+`buddy build:ios` generates the Xcode project with
+[xcodegen](https://github.com/yonaskolb/XcodeGen), and it runs the copy Pantry
+installed, at the version `config/deps.ts` pins, never whichever one is first
+on `PATH`. Two machines building one commit then generate the same project.
+Declare the tools beside `androidDependencies`:
+
+```ts
+// config/deps.ts
+export const iosDependencies = {
+  'github.com/yonaskolb/XcodeGen': '2.46.0',
+}
+```
+
+Without the export the framework default (`^2.46.0`) applies. Install them
+once per machine:
+
+```bash
+buddy setup:ios   # pantry install --user github.com/yonaskolb/XcodeGen@2.46.0, then checks for Xcode
+```
+
+A build on a machine without them stops before doing anything, naming the
+command that installs them. The build looks in the project's `pantry/`, the
+user install (`~/.local/share/pantry/global/packages`, or under
+`XDG_DATA_HOME`) and `/usr/local/packages`.
+
+Xcode itself does not come from Pantry: Apple ships it only through the Mac
+App Store and developer.apple.com. Install it there and select it with
+`sudo xcode-select --switch /Applications/Xcode.app`. Generating the project
+needs only xcodegen; building, archiving and running a simulator need Xcode.
+
 #### Native screens
 
 The screens a cold start shows can be drawn natively (UIKit) instead of in the
@@ -167,8 +199,20 @@ one atomic push:
 buddy release:ios                 # v1.0.0-build.1, v1.0.0-build.2, ... (same version, next build)
 buddy release:ios --bump patch    # 1.0.0 → 1.0.1, then v1.0.1-build.1
 buddy release:ios --bump minor    # or major, or an exact version like 2.0.0
-buddy release:ios --dry-run       # print the tag it would push
+buddy release:ios --dry-run       # print the tag and the GitHub release it would create
 ```
+
+Every release also creates the tag's GitHub release: titled with the version
+and build (`1.0.0 (build 39)`), opening with the TestFlight build the tag
+becomes, then the changes since the previous tag, rendered by the same
+changelog generator as `CHANGELOG.md`. The token is the one the push used:
+`GITHUB_TOKEN` or `GH_TOKEN`, else the GitHub CLI's (`gh auth token`), else the
+git credential for github.com. The tag is pushed first, so a release that
+cannot be created (no token, an API error) is a warning, not a failed
+release; `buddy release:github <tag>` finishes it, and leaves a tag that
+already has a release alone. `--skip-github-release` pushes the tag only.
+`buddy release` does the same for an app's own `v<version>` tags (the
+framework's own releases get theirs from CI).
 
 `--bump` raises the iOS `version` in `config/mobile.ts` (the default behind
 an env override, such as `envVars.IOS_APP_VERSION ?? '1.0.0'`) and

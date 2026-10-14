@@ -1,6 +1,15 @@
 import type { PantryConfig } from "ts-pantry";
 
 /**
+ * The iOS build's tools. `buddy setup:ios` installs them through Pantry
+ * (macOS only), and `buddy build:ios` runs only these, never one from PATH.
+ * Xcode itself is not a Pantry package: it comes from the App Store.
+ */
+export const iosDependencies = {
+  'github.com/yonaskolb/XcodeGen': '^2.46.0',
+} satisfies NonNullable<PantryConfig['dependencies']>;
+
+/**
  * Pantry configuration for the Stacks project
  *
  * This file defines system-level dependencies managed by Pantry.

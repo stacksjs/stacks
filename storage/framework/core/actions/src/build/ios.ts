@@ -7,6 +7,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { assertCraftSupportsCapabilities, portablePaths, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
 
@@ -63,6 +64,12 @@ if (config.swipeNavigation === true && config.swipeBack !== 'webview')
   log.warn('ios.swipeNavigation turns on WebKit\'s edge swipe alongside the stx router\'s own. Remove it, or set ios.swipeBack: \'webview\' for an app not on the router.')
 
 const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('framework/mobile/ios')
+
+// The Xcode project comes from Pantry's xcodegen, at the version config/deps.ts
+// pins, never whichever one is first on PATH. Resolved before any work, so a
+// machine without it stops here with the command that installs it.
+const generateProject = process.env.STACKS_IOS_SKIP_XCODEGEN !== '1'
+const xcodegen = generateProject ? await resolveXcodegen(projectPath()) : null
 const webAssets = resolveMobilePath(projectPath(), config.webAssets)
 const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAssets)
 const craftConfig = toCraftIosConfig(config)
@@ -103,13 +110,20 @@ await builder.init({
 const native = config.renderer === 'native'
 if (native && !nativeBundle) throw new Error('ios.renderer \'native\' needs native screens to draw: list them in ios.nativeScreens')
 await builder.build(native
-  ? { output, nativeBundlePath: nativeBundle!.outFile, generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1' }
+  ? { output, nativeBundlePath: nativeBundle!.outFile, generateProject: false }
   : {
       output,
       htmlPath: webAssets ?? fallbackWebAssets,
       devServer: craftConfig.devServerURL as string | undefined,
-      generateProject: process.env.STACKS_IOS_SKIP_XCODEGEN !== '1',
+      generateProject: false,
     })
+
+// Craft would run xcodegen here itself, from PATH; the build runs Pantry's,
+// at the same point, so the project sees exactly the files it did before.
+if (xcodegen) {
+  generateXcodeProject(xcodegen, output)
+  log.info(`Generated the Xcode project with xcodegen ${xcodegen.version} from Pantry`)
+}
 
 writeIosShellSupport(output, config)
 

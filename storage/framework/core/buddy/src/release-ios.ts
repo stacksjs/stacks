@@ -70,3 +70,24 @@ export function nextBuildTag(version: string, tags: string[], latestRun = 0): st
     .filter(Number.isSafeInteger)
   return `${prefix}${nextBuildNumber(latestRun, builds)}`
 }
+
+/**
+ * The GitHub release's title and opening line for an iOS build tag.
+ *
+ * With an App Store Connect key the tag's number is the next Xcode Cloud run,
+ * which is the build number TestFlight shows: the one a tester quotes in
+ * "build 34 crashes", and the hardest thing to reconstruct later. Without a
+ * key it is only a count of tags, and the release says so rather than claim it.
+ */
+export function iosReleaseSummary(tag: string, options: { numberedByXcodeCloud: boolean }): { name: string, body: string } {
+  const match = /^v(\d+\.\d+\.\d+)-build\.(\d+)$/.exec(tag)
+  if (!match)
+    throw new Error(`${tag} is not an iOS build tag (v<version>-build.<n>)`)
+  const [, version, build] = match
+  return {
+    name: `${version} (build ${build})`,
+    body: options.numberedByXcodeCloud
+      ? `Version ${version}, TestFlight build **${build}**: Xcode Cloud builds this tag, and its run number is the build number TestFlight shows.`
+      : `Version ${version}, build tag ${build}. Xcode Cloud builds this tag; it was cut without an App Store Connect key, so the build number TestFlight shows may differ.`,
+  }
+}
