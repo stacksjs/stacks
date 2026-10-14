@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.174...v0.75.175)
+
+## ✨ Features
+
+- **release**: Pantry's xcodegen for iOS builds, and a GitHub release for every tag ([9c380d7](https://github.com/stacksjs/stacks/commit/9c380d7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.173...v0.75.174)
 
 ## ✨ Features
