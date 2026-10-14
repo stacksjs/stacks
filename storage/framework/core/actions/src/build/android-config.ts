@@ -18,6 +18,7 @@ export interface CraftAndroidConfig {
   urlSchemes?: string[]
   appIconPath?: string
   googleServicesFile?: string
+  enableBluetooth?: boolean
   enableHealthConnect?: boolean
   renderer?: AndroidMobileConfig['renderer']
   nativeScreens?: Record<string, string>
@@ -42,6 +43,7 @@ const CAPABILITY_KEYS = {
   keepAwake: 'enableKeepAwake',
   deepLinks: 'enableDeepLinks',
   healthConnect: 'enableHealthConnect',
+  bluetooth: 'enableBluetooth',
   localNetwork: 'enableLocalNetwork',
 } as const
 
@@ -56,6 +58,7 @@ const CAPABILITY_KEYS = {
 export const CRAFT_ANDROID_FLOORS = {
   /** The native app shell: tabs, paths to screens, the app script, synchronous stores. */
   nativeShell: '0.0.169',
+  bluetooth: '0.0.178',
   /** Health Connect for native screens (workouts, sleep, heart rate, mindful, nutrition). */
   healthConnect: '0.0.169',
   /** WorkManager background refresh for the app script. */
@@ -70,6 +73,7 @@ export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
 export function androidCraftFeatures(config: AndroidMobileConfig, options: { appBundle?: boolean } = {}): AndroidCraftFeature[] {
   const features: AndroidCraftFeature[] = []
   if (config.renderer === 'native' && Object.keys(config.nativeScreens ?? {}).length) features.push('nativeShell')
+  if (config.capabilities?.bluetooth) features.push('bluetooth')
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')

@@ -9,7 +9,7 @@ describe('Android mobile build configuration', () => {
       url: 'wildloop.org',
       urlSchemes: ['wildloop'],
       googleServicesFile: 'secrets/google-services.json',
-      capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true, localNetwork: true },
+      capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true, localNetwork: true, bluetooth: true },
     })
     expect(config.devServerURL).toBe('https://wildloop.org')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
@@ -19,6 +19,7 @@ describe('Android mobile build configuration', () => {
     expect(config.enableCamera).toBe(false)
     expect(config.googleServicesFile).toBe('secrets/google-services.json')
     expect(config.enableHealthConnect).toBe(true)
+    expect(config.enableBluetooth).toBe(true)
     expect(config.enableLocalNetwork).toBe(true)
   })
 
@@ -118,4 +119,10 @@ describe('Android mobile build configuration', () => {
     // A web-view app has nothing floored.
     expect(() => assertCraftSupportsAndroid({ appName: 'A', packageName: 'a.b', url: 'a.b' }, '0.0.100', '/x/package.json')).not.toThrow()
   })
+})
+
+it('requires the Android generic Bluetooth transport when requested', () => {
+  const config = { appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', capabilities: { bluetooth: true } }
+  expect(() => assertCraftSupportsAndroid(config, '0.0.177', 'old builder')).toThrow('bluetooth')
+  expect(() => assertCraftSupportsAndroid(config, '0.0.178', 'new builder')).not.toThrow()
 })
