@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.184...v0.75.185)
+
+## 🐛 Bug Fixes
+
+- **auth**: regenerate passkey action resolver ([d4850d7](https://github.com/stacksjs/stacks/commit/d4850d7)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh passkey action registry counts ([a569eda](https://github.com/stacksjs/stacks/commit/a569eda)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.183...v0.75.184)
 
 ## 🐛 Bug Fixes
