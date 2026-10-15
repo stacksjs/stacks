@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import net from 'node:net'
 import { afterEach, describe, expect, test } from 'bun:test'
 import { createServer, getServer, stopServer } from '../src/server-instance'
-import { randomPort } from './fixtures/realtime'
+import { freePort } from './fixtures/realtime'
 
 /**
  * Dead sockets and slow consumers are handled by the broadcast server's own
@@ -50,7 +50,7 @@ async function until(condition: () => boolean, timeoutMs: number): Promise<void>
 
 describe('createServer() websocket options', () => {
   test('idleTimeout reaches the client as activity_timeout', async () => {
-    const port = randomPort()
+    const port = await freePort()
     await createServer({ host: '127.0.0.1', port, websocket: { idleTimeout: 30 } })
 
     const socket = new WebSocket(`ws://127.0.0.1:${port}/ws`)
@@ -62,7 +62,7 @@ describe('createServer() websocket options', () => {
   })
 
   test('closeOnBackpressureLimit drops a consumer that stops reading', async () => {
-    const port = randomPort()
+    const port = await freePort()
     const server = await createServer({
       host: '127.0.0.1',
       port,

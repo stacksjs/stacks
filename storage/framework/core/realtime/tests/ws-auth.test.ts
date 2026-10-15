@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, test } from 'bun:test
 import { Broadcast } from 'ts-broadcasting'
 import { createServer, stopServer } from '../src/server-instance'
 import { getWsAuthenticator, setWsAuthenticator } from '../src/ws'
-import { randomPort, settle, subscriber } from './fixtures/realtime'
+import { freePort, settle, subscriber } from './fixtures/realtime'
 
 // stacksjs/stacks#1877 R-1 - the authenticator installed with
 // `setWsAuthenticator()` gates the WebSocket endpoint Stacks actually
@@ -13,7 +13,7 @@ import { randomPort, settle, subscriber } from './fixtures/realtime'
 // called, while that server upgraded every request it got. These tests run
 // against the started server.
 
-const port = randomPort()
+const port = await freePort()
 let appHook: ((req: Request, user: unknown) => unknown) | null = null
 
 beforeAll(async () => {

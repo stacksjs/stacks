@@ -4,15 +4,31 @@
  * `broadcast()` calls are recorded.
  */
 
+import net from 'node:net'
 import { spyOn } from 'bun:test'
 import { BroadcastServer } from 'ts-broadcasting'
 
 /**
- * ts-broadcasting falls back to 6001 for a missing port, so a test picks a
- * random high one rather than relying on 0.
+ * A port the kernel has just said is free.
+ *
+ * This used to pick at random from a 10,000-wide range and hope. That is a
+ * birthday problem rather than bad luck, and it came due: CI failed on
+ * `EADDRINUSE` for port 50032 while this suite ran beside the rest of the
+ * matrix, in a test about websocket options that has nothing to do with ports.
+ *
+ * Binding to 0 asks the only authority on what is in use, then hands back the
+ * number it assigned. It does not pass 0 through to the server, because
+ * ts-broadcasting reads a falsy port as missing and falls back to 6001.
  */
-export function randomPort(): number {
-  return 46_000 + Math.floor(Math.random() * 10_000)
+export async function freePort(): Promise<number> {
+  const probe = net.createServer()
+  await new Promise<void>((resolve, reject) => {
+    probe.once('error', reject)
+    probe.listen(0, '127.0.0.1', () => resolve())
+  })
+  const { port } = probe.address() as net.AddressInfo
+  await new Promise<void>(resolve => probe.close(() => resolve()))
+  return port
 }
 
 export interface Subscriber {

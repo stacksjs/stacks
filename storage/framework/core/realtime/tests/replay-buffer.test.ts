@@ -13,7 +13,7 @@ import {
   setReplayBuffer,
 } from '../src/replay-buffer'
 import { createServer, getServer, stopServer } from '../src/server-instance'
-import { randomPort, settle, subscriber } from './fixtures/realtime'
+import { freePort, settle, subscriber } from './fixtures/realtime'
 
 // stacksjs/stacks#1877 R-3 — pins the at-least-once replay contract:
 // - opt-in (default off, no buffering)
@@ -151,9 +151,12 @@ describe('Replay buffer (stacksjs/stacks#1877 R-3)', () => {
 // recordBroadcast(), and the seq it returned was never sent anywhere, so a
 // client had nothing to hand back to replaySince().
 describe('replay buffer on a running server', () => {
-  const port = randomPort()
+  // Assigned in beforeAll: a describe callback is not async, and the port is
+  // asked of the kernel.
+  let port = 0
 
   beforeAll(async () => {
+    port = await freePort()
     await createServer({ host: '127.0.0.1', port })
     Broadcast.channel('private-orders.{id}', () => true)
   })

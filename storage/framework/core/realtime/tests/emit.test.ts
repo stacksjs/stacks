@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { emit } from '../src/emit'
 import { createServer, stopServer } from '../src/server-instance'
-import { randomPort, settle, subscriber } from './fixtures/realtime'
+import { freePort, settle, subscriber } from './fixtures/realtime'
 
 /**
  * `emit(..., { exclude })` leaves out sockets by socket ID - every one of
@@ -9,7 +9,7 @@ import { randomPort, settle, subscriber } from './fixtures/realtime'
  * sockets a caller excluded still received the event.
  */
 
-const port = randomPort()
+const port = await freePort()
 
 beforeAll(async () => {
   await createServer({ host: '127.0.0.1', port })
