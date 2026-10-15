@@ -84,7 +84,45 @@ async function verifyRefreshTokenInsert(
 }
 
 /** Use the existing read-back to verify the grant before returning its secret. */
-function verifyAccessTokenInsert(row: AccessTokenRow, expected: {
+/**
+ * The database's answer to `expires_at = <the literal written>`.
+ *
+ * Postgres answers with a boolean, MySQL and SQLite with 1 or 0, and a null
+ * means the comparison had nothing to compare, which is not a match.
+ */
+function storedAsWritten(matches: boolean | number | null | undefined): boolean {
+  return matches === true || matches === 1
+}
+
+/**
+ * The row that came back is the row that was written.
+ *
+ * `expires_at` is checked by the database, through `expires_at_matches`, and
+ * not by comparing a parsed Date against the instant asked for. A zoneless
+ * column carries no offset, so the value a driver hands back is its own
+ * reading of it: the same naive literal came back as a Date eight hours early
+ * in one API process while a standalone script against the same column and the
+ * same `db` export round-tripped exactly, which rejected correctly stored
+ * tokens and 500'd every login and register on that host
+ * (stacksjs/stacks#2902).
+ *
+ * Asking the database compares the stored value against the literal that was
+ * written, in the type system that stored it, which is the question this check
+ * was always asking. Nothing in the path then depends on how a driver chose to
+ * localize a column that names no zone.
+ *
+ * One consequence worth stating: on a column Postgres holds as `timestamptz`
+ * this now passes. The literal is read through the session zone on the way in
+ * and again on the way out, so it equals itself while the instant stored is
+ * not the instant the app asked for. That is a schema fault rather than a
+ * failed insert, and it has its own louder report in
+ * `ensureUtcDatetimeColumns`, which names the column and prints the statement
+ * that converts it. This check used to fail on it by accident, while also
+ * failing on correctly stored rows, which is what took logins down.
+ *
+ * Exported for tests.
+ */
+export function verifyAccessTokenInsert(row: AccessTokenRow, expected: {
   ownerId: number
   ownerType: string
   clientId: number
@@ -96,7 +134,7 @@ function verifyAccessTokenInsert(row: AccessTokenRow, expected: {
     || row.tokenable_type !== expected.ownerType
     || String(row.oauth_client_id) !== String(expected.clientId)
     || (row.revoked !== false && row.revoked !== 0)
-    || parseSqlDateTime(row.expires_at)?.getTime() !== expected.expiresAt.getTime()
+    || !storedAsWritten(row.expires_at_matches)
     || JSON.stringify(parseScopes(row.scopes)) !== JSON.stringify(expected.scopes))
     throw new HttpError(500, 'Failed to persist the requested access token')
 }
@@ -224,6 +262,12 @@ interface AccessTokenRow {
   scopes: string | null
   revoked: number | boolean | null
   expires_at: string | null
+  /**
+   * Whether the stored `expires_at` is exactly the literal that was written,
+   * answered by the database rather than by a parsed Date. See
+   * {@link verifyAccessTokenInsert} (stacksjs/stacks#2902).
+   */
+  expires_at_matches?: boolean | number | null
   created_at: string
   updated_at: string | null
   ip_address: string | null
@@ -738,12 +782,17 @@ export async function createToken(
       `, [tokenableType, userId, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
     }
 
-    // Get the inserted token
+    // Get the inserted token.
+    //
+    // `?` dialects bind by position in the statement, so the placeholder in
+    // the select list comes before the one in WHERE and is param(1).
     const inserted = await trx.unsafe(`
       SELECT id, user_id, tokenable_type, tokenable_id, oauth_client_id,
-        name, scopes, revoked, expires_at, created_at, updated_at
-      FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
-    `, [hashedToken])
+        name, scopes, revoked, expires_at,
+        (expires_at = ${param(1)}) AS expires_at_matches,
+        created_at, updated_at
+      FROM oauth_access_tokens WHERE token = ${param(2)} LIMIT 1
+    `, [sqlDateTime(expiresAt), hashedToken])
 
     const row = (inserted as unknown as AccessTokenRow[])[0]
     if (!row) {
@@ -962,9 +1011,11 @@ export async function refreshToken(
     // Get the new access token
     const inserted = await trx.unsafe(`
       SELECT id, user_id, tokenable_type, tokenable_id, oauth_client_id,
-        name, scopes, revoked, expires_at, created_at, updated_at
-      FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
-    `, [hashedToken])
+        name, scopes, revoked, expires_at,
+        (expires_at = ${param(1)}) AS expires_at_matches,
+        created_at, updated_at
+      FROM oauth_access_tokens WHERE token = ${param(2)} LIMIT 1
+    `, [sqlDateTime(expiresAt), hashedToken])
 
     const row = (inserted as unknown as AccessTokenRow[])[0]
 
