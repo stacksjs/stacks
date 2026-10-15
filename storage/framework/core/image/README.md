@@ -56,6 +56,8 @@ if (!verifyImageTransform(requestPath, expires, signature, secret))
 
 ## STX component and art direction
 
+`<Image>` is supplied by `@stacksjs/components`, automatically loaded by Stacks.
+
 ```stx
 <Image
   src="{{ fallback.url }}"
@@ -72,3 +74,5 @@ if (!verifyImageTransform(requestPath, expires, signature, secret))
 ```
 
 Use `decorative` instead of empty alt text for decorative images. The component renders responsive, layout-stable HTML without requiring client JavaScript.
+
+The library accepts `srcset` / `srcSet`, `fit` / `objectFit`, `position` / `objectPosition`, and `class` / `className`. `loading` sets the native loading hint; `priority` takes precedence and loads eagerly. `placeholder` supports `blur`, `thumbhash`, `color`, `empty`, `none`, or a CSS background; `placeholderColor` supplies the fallback color.

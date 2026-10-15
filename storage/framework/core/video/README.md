@@ -76,10 +76,21 @@ Manifests remain short-lived or private, while content-addressed segments use im
   label="Product demonstration"
   poster="/media/demo/poster.avif"
   :sources="progressiveFallbacks"
+  :drm="licenseEndpoints"
   :tracks="captionAndChapterTracks"
 />
 ```
 
 It plays a file, an HLS or DASH stream, or a YouTube or Vimeo link, with play, seek, live edge, time, mute, volume, speed, quality, captions, AirPlay, Picture in Picture, fullscreen and accessible errors, labelled in the page's language. `src`, `poster`, `aspectRatio` and `label` follow a binding. See the component's README in `@stacksjs/components` for every prop.
 
-`<Video>` takes no `drm` prop yet. To play protected DASH, render ts-video-player's `<video-player>` with a `data-media-config` JSON that carries the `drm` descriptor next to `sources`.
+`drm` accepts Widevine, PlayReady and FairPlay license endpoints for already encrypted media:
+
+```ts
+const licenseEndpoints = {
+  widevine: { url: '/licenses/widevine', headers: { Authorization: token } },
+  playready: { url: '/licenses/playready' },
+  fairplay: { url: '/licenses/fairplay', certificateUrl: '/licenses/certificate' },
+}
+```
+
+The component serializes these descriptors into `data-media-config` and attaches them to DASH sources, detected by MIME type or a `.mpd` URL (including query strings). Progressive fallback sources remain unchanged. License and certificate routes must authorize the viewer.

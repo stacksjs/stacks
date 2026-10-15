@@ -50,7 +50,9 @@ const delivery = await createProtectedAudioPlaylist(segments, {
 
 Native HLS AES-128 uses Web Crypto. Proprietary DRM metadata is accepted only for already encrypted media. Publish immutable audio segments to S3 and protect manifests, keys, waveform data, transcripts, and metadata with the same CloudFront signed URL, signed cookie, or application authorization boundary.
 
-## Default STX player
+## STX player
+
+`<Audio>` is supplied by `@stacksjs/components`, automatically loaded by Stacks.
 
 ```stx
 <Audio
@@ -63,4 +65,6 @@ Native HLS AES-128 uses Web Crypto. Proprietary DRM metadata is accepted only fo
 />
 ```
 
-The default UI includes play, seek, time, mute, volume, speed, settings, waveform seeking, AirPlay, and Remote Playback. Native audio controls remain available before custom elements load and when JavaScript is unavailable.
+The library player includes play, seek, time, mute, volume, speed, settings, waveform seeking, AirPlay, and Remote Playback. Native audio controls remain available before custom elements load and when JavaScript is unavailable.
+
+`drm` accepts the same Widevine, PlayReady and FairPlay descriptors as `<Video>` and applies them to DASH sources. `artwork` supplies a cover image; `crossorigin` controls media CORS.

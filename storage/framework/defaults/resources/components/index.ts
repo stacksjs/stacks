@@ -10,8 +10,6 @@ export { default as DashboardNavbar } from './Dashboard/Navbar.stx'
 
 // Dashboard and UI components
 export * from './Dashboard'
-export { default as Audio } from './Audio.stx'
-export { default as Image } from './Image.stx'
 export { default as NativeActionSheet } from './NativeActionSheet.stx'
 export { default as NativeAppShell } from './NativeAppShell.stx'
 export { default as NativeContextMenu } from './NativeContextMenu.stx'
