@@ -1,6 +1,7 @@
 <script client>
 import type { SheetDetent } from '@stacksjs/mobile'
-import { coverTabBar, liftToBody, lockBackground, observeSheetDrag, presentPageAsCard, trapFocus } from '@stacksjs/mobile'
+import { closeOverlay, openOverlay } from '@stacksjs/components/overlays'
+import { coverTabBar, liftToBody, observeSheetDrag, presentPageAsCard } from '@stacksjs/mobile'
 
 /**
  * A bottom sheet: a task that belongs to this screen, raised over it.
@@ -19,6 +20,15 @@ import { coverTabBar, liftToBody, lockBackground, observeSheetDrag, presentPageA
  * it is up. It belongs to the screen it was opened on, so leaving that screen
  * (a link from outside, a tab switch) closes it rather than carrying it over
  * the next one.
+ *
+ * An open sheet is a layer on the page's overlay stack (stx's
+ * `window.stx.overlays`), shared with Dialog, Drawer, stxConfirm, the web
+ * stand-ins for native alerts and the app's own overlays. The stack holds the
+ * page still from the first layer to the last, makes the rest of the page
+ * inert, gives Escape and Tab to whichever layer is on top, and hands focus
+ * back to whatever opened each one. A confirmation opened from a sheet, or a
+ * sheet opened over a drawer, closes with one Escape and leaves the layer
+ * under it up, locked and in charge of the keyboard.
  */
 const emit = defineEmits()
 const open = useModel('open', { default: false })
@@ -44,9 +54,15 @@ const panel = useRef('nativeSheetPanel')
 const grabber = useRef('nativeSheetGrabber')
 const header = useRef('nativeSheetHeader')
 
-let releaseBackground: (() => void) | null = null
+// This sheet's id on the overlay stack.
+const overlayId = useId('native-sheet')
+// Sheets stack above the page at 70 (the stylesheet's z-index); the stack
+// adds each open sheet's place to it, so a sheet opened over another draws
+// above it wherever the two were lifted into the body.
+const SHEET_LAYER = 70
+
+let presented = false
 let putBack: (() => void) | null = null
-let previousFocus: HTMLElement | null = null
 let carded = false
 let stopDrag: (() => void) | null = null
 let openedOn = ''
@@ -59,35 +75,47 @@ function root(): HTMLElement | null {
   return sheetRoot.current as HTMLElement | null
 }
 
+function sheetPanel(): HTMLElement | null {
+  return panel.current as HTMLElement | null
+}
+
 function present(): void {
   const element = root()
-  if (!element || releaseBackground) return
+  if (!element || presented) return
+  presented = true
   detent.set(detents()[0] ?? 'large')
-  previousFocus = element.ownerDocument.activeElement as HTMLElement | null
   // Out of the page's stacking contexts and transforms (the card below
-  // scales the page), and everything else made inert behind it.
+  // scales the page). A child of the body, it is what the overlay stack keeps
+  // usable while everything else goes inert.
   putBack ??= liftToBody(element)
-  releaseBackground = lockBackground(element)
   openedOn = currentPath()
   coverTabBar(element, true)
   // A node moved in the document starts over with no style to transition
   // from, so a sheet lifted and marked open in one go appears already up.
   // Work its closed style out where it now is, then open it: the panel
   // slides from there.
-  const sheetPanel = panel.current as HTMLElement | null
-  if (sheetPanel) void sheetPanel.getBoundingClientRect()
+  void sheetPanel()?.getBoundingClientRect()
   shown.set(true)
-  void nextTick(() => (panel.current as HTMLElement | null)?.focus())
+  // Focus goes to the panel itself, not its first control: on a phone a
+  // focused field raises the keyboard over the sheet before it is up.
+  openOverlay(overlayId, {
+    panel: sheetPanel,
+    root: element,
+    zIndex: SHEET_LAYER,
+    initialFocus: sheetPanel,
+    onEscape: close,
+  })
 }
 
 function dismissed(): void {
+  if (!presented) return
+  presented = false
   shown.set(false)
   const element = root()
   if (element) coverTabBar(element, false)
-  releaseBackground?.()
-  releaseBackground = null
-  previousFocus?.focus?.()
-  previousFocus = null
+  // Off the stack: the layer underneath (or the page) gets the keyboard back,
+  // and focus returns to whatever opened the sheet.
+  closeOverlay(overlayId)
 }
 
 let wasOpen = false
@@ -98,9 +126,9 @@ effect(() => {
   wasOpen = isOpen
 })
 
-// The page behind becomes a card while a full-height sheet is at large. Only
-// this sheet's own change is applied, so a closed sheet never undoes an open
-// one's card.
+// The page behind becomes a card while a full-height sheet is at large. Each
+// sheet hands back only its own hold, so a sheet closing over another never
+// undoes the card the other still wants.
 effect(() => {
   const element = root()
   const want = open() && hasDetents() && detent() === 'large'
@@ -117,13 +145,15 @@ function close(): void {
 onMount(() => {
   // Give the sheet its permanent presentation parent before its slot loads
   // media. Reparenting an already loading iframe or video interrupts playback.
+  // A closed sheet waits in the body like this, so one nested in another's
+  // content can open over it without leaving the document mid-transition.
   const element = root()
   if (element) putBack ??= liftToBody(element)
-  const sheetPanel = panel.current as HTMLElement | null
-  if (!sheetPanel) return
+  const dragPanel = sheetPanel()
+  if (!dragPanel) return
   const handles = [grabber.current, header.current].filter(Boolean) as HTMLElement[]
   stopDrag = observeSheetDrag({
-    panel: sheetPanel,
+    panel: dragPanel,
     handles,
     detents: () => detents(),
     detent: () => detent(),
@@ -137,10 +167,16 @@ onMount(() => {
 
 onDestroy(() => {
   stopDrag?.()
-  releaseBackground?.()
   const element = root()
-  if (element && open()) coverTabBar(element, false)
-  if (carded && element) presentPageAsCard(element.ownerDocument, false)
+  if (element && presented) coverTabBar(element, false)
+  // Removed while up: off the stack, so the page is not left locked under a
+  // sheet that is gone.
+  presented = false
+  closeOverlay(overlayId)
+  if (carded && element) {
+    carded = false
+    presentPageAsCard(element.ownerDocument, false)
+  }
   putBack?.()
 })
 
@@ -151,12 +187,6 @@ useEventListener('stx:navigate', (event: Event) => {
   const location = root()?.ownerDocument.defaultView?.location
   const to = url ? new URL(url, location?.href).pathname : currentPath()
   if (to !== openedOn) close()
-})
-
-useEventListener('keydown', (event: KeyboardEvent) => {
-  if (!open()) return
-  if (event.key === 'Escape') close()
-  else if (panel.current) trapFocus(panel.current as HTMLElement, event)
 })
 
 const sheetClass = derived(() => `${shown() ? 'is-open' : ''}${hasDetents() ? ' has-detents' : ''}${detent() === 'medium' ? ' is-medium' : ''}`.trim())
@@ -308,9 +338,4 @@ const sheetClass = derived(() => `${shown() ? 'is-open' : ''}${hasDetents() ? ' 
   :root[data-native-reduce-motion] .native-sheet-panel { transition: none; }
   :root[data-native-reduce-motion][data-native-sheet-card] .native-app-content { transform: none; border-radius: 0; }
 
-  /* The router names the page's <main> for view transitions, which makes it a
-     stacking context: a sheet inside it stacked under the tab bar whatever its
-     z-index. While a sheet is open <main> gives the name up. Nothing navigates
-     with a sheet open, so no transition is lost. */
-  main:has(.native-sheet.is-open) { view-transition-name: none; }
 </style>

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { generateSignalsRuntime } from '@stacksjs/stx/signals'
 import { Window } from 'very-happy-dom'
 import {
   auth,
@@ -41,8 +42,20 @@ function install(options: { craft?: Record<string, unknown>, phone?: boolean } =
 
 const tick = (ms = 0): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
 
+const originalDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
+
+/** The stx runtime on the page, for its overlay stack (`win.stx.overlays`). */
+function bootStx(win: any): any {
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: win.document })
+  // eslint-disable-next-line no-new-func
+  new Function(generateSignalsRuntime())()
+  return win.stx.overlays
+}
+
 afterEach(() => {
   symbols.clearCache()
+  if (originalDocument) Object.defineProperty(globalThis, 'document', originalDocument)
+  else Reflect.deleteProperty(globalThis, 'document')
   if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow)
   else Reflect.deleteProperty(globalThis, 'window')
 })
@@ -127,10 +140,55 @@ describe('dialogs', () => {
 
   it('answers false when the HTML confirm is cancelled with Escape', async () => {
     const win = install()
+    bootStx(win)
     const answer = dialog.confirm({ title: 'Leave?' })
     await tick()
-    win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
     expect(await answer).toBe(false)
+  })
+
+  it('is a layer on the page\'s overlay stack while it is up', async () => {
+    const win = install()
+    const overlays = bootStx(win)
+    win.document.body.innerHTML = '<main><button id="opener">Delete</button></main>'
+    const opener = win.document.getElementById('opener')
+    opener.focus()
+    const answer = dialog.confirm({ title: 'Delete it?', confirmLabel: 'Delete' })
+    await tick()
+    expect(overlays.list().length).toBe(1)
+    // The page behind is inert and still, and focus is in the alert.
+    expect(win.document.querySelector('main').inert).toBe(true)
+    expect(win.document.body.style.overflow).toBe('hidden')
+    expect(win.document.querySelector('[data-native-dialog]').contains(win.document.activeElement)).toBe(true)
+    win.document.querySelector('[data-action-id="confirm"]').click()
+    expect(await answer).toBe(true)
+    expect(overlays.list()).toEqual([])
+    expect(!!win.document.querySelector('main').inert).toBe(false)
+    expect(win.document.activeElement).toBe(opener)
+  })
+
+  it('takes one Escape over a sheet, and leaves the sheet up', async () => {
+    const win = install()
+    const overlays = bootStx(win)
+    // A sheet lifted into the body, the way NativeSheet sits on the stack.
+    win.document.body.innerHTML = '<main></main><div id="sheet"><section id="panel" tabindex="-1"><button id="done">Done</button></section></div>'
+    const closed: string[] = []
+    overlays.open('sheet', { panel: win.document.getElementById('panel'), root: win.document.getElementById('sheet'), onEscape: () => { closed.push('sheet'); overlays.close('sheet') } })
+    win.document.getElementById('done').focus()
+
+    const answer = dialog.confirm({ title: 'Discard the set?' })
+    await tick()
+    win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    expect(await answer).toBe(false)
+    // The alert used to listen for Escape itself, and the sheet closed on the
+    // same key.
+    expect(closed).toEqual([])
+    expect(overlays.list()).toEqual(['sheet'])
+    expect(win.document.body.style.overflow).toBe('hidden')
+    expect(win.document.activeElement).toBe(win.document.getElementById('done'))
+
+    win.document.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    expect(closed).toEqual(['sheet'])
   })
 
   it('raises an HTML action sheet with Cancel set apart, and answers null for it', async () => {

@@ -355,6 +355,37 @@ The phone-native behaviour a screen expects, kept out of STX templates:
 The framework's `NativeNavBar`, `NativePullToRefresh`, `NativeSegmentedControl`
 and `NativeSheet` components are built on these.
 
+## Sheets and the overlay stack
+
+A bottom sheet's own behaviour lives here: `observeSheetDrag` (dragged by its
+grabber or header between `medium` and `large` detents, flicked away),
+`liftToBody` (out of the page's stacking contexts, before its content loads
+media), `coverTabBar` and `presentPageAsCard`, which is counted, so the page
+stays a card until the last large sheet lets go.
+
+What every overlay shares is not here. Holding the page still and inert,
+Escape for whichever layer is on top, the Tab trap and handing focus back are
+stx's overlay stack (`openOverlay` / `closeOverlay` from
+`@stacksjs/components/overlays`, the runtime's `window.stx.overlays`).
+`NativeSheet` and the HTML stand-ins for alerts, action sheets and context
+menus are layers on it, alongside `Dialog`, `Drawer` and `stxConfirm`, so a
+confirmation opened from a sheet, or a sheet opened over a drawer, closes with
+one Escape and leaves the layer under it up and locked. `lockBackground` and
+`trapFocus`, which did this per sheet and fought the stack, are gone; an
+overlay of your own joins the stack instead:
+
+```ts
+import { closeOverlay, openOverlay } from '@stacksjs/components/overlays'
+
+openOverlay('route-picker', { panel: () => panelEl, root: sheetEl, zIndex: 70, onEscape: close })
+closeOverlay('route-picker')
+```
+
+`root` is an element lifted into `<body>`: the rest of the page goes inert
+behind it, and stays inert while a dialog opened inside it is on top. With
+`zIndex`, a layer opened later draws above one opened earlier wherever the two
+sit in the document.
+
 ## Native source ownership
 
 Stacks applications author TypeScript and STX. Craft distributes reusable Swift

@@ -452,7 +452,14 @@ option the original metres heuristic remains for unlabelled inputs.
 - `<NativeSheet v-model:open="editing" title="…">` raises a bottom sheet for a
   task that belongs to the screen: dragged down from its grabber or header to
   dismiss, the page behind inert. `detents="medium large"` makes it full
-  height with detents, the page pressed into a card at large.
+  height with detents, the page pressed into a card at large. An open sheet is
+  a layer on stx's overlay stack (`window.stx.overlays`) with Dialog, Drawer,
+  stxConfirm and the HTML alerts: the stack locks the page, makes it inert,
+  gives Escape and Tab to the top layer and returns focus, so a confirm opened
+  from a sheet closes alone. `lockBackground` and `trapFocus` no longer exist;
+  an app's own overlay uses `openOverlay` / `closeOverlay` from
+  `@stacksjs/components/overlays` (in `<script client>`), passing `root` for
+  an element lifted into `<body>` and `zIndex` to stack by opening order.
 - `<NativeContextMenu :items="[...]" @select="…">` opens a menu on a
   half-second press: UIMenu in the shell, an HTML menu elsewhere.
 - `<NativeActionSheet v-model:open="choosing" :actions="[...]" @select="…">`

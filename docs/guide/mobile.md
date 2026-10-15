@@ -254,6 +254,12 @@ behind presses back into a card, as an iOS page sheet does (not under Reduce
 Motion). While it is up the page behind is inert and still, focus stays
 inside, and Escape closes it. Without `detents` it is as tall as its content.
 
+The sheet is a layer on stx's overlay stack, the same one `Dialog`, `Drawer`
+and `stxConfirm` use. A confirmation opened from inside a sheet, or a sheet
+opened over a drawer, takes one Escape and leaves the layer under it open,
+with the page still locked and focus back where it was in that layer. A sheet
+opened over another draws above it, whichever was mounted first.
+
 ### `<NativePullToRefresh>`
 
 ```html

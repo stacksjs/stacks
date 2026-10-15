@@ -118,10 +118,15 @@ describe('Native components', () => {
     expect(bar).toContain("useReactiveProp<boolean>('titleOnScroll', false)")
   })
 
-  it('lifts an open sheet out of the router\'s stacking context', () => {
+  it('lifts a sheet into the body when it mounts, out of the router\'s stacking context', () => {
     const sheet = read('NativeSheet')
-    expect(sheet).toContain('main:has(.native-sheet.is-open) { view-transition-name: none; }')
     expect(sheet).toContain("useModel('open'")
+    // Lifted before it can open, so it never draws inside <main>, which the
+    // router makes a stacking context; <main> no longer has to give up its
+    // view-transition name while a sheet is up.
+    const mounted = sheet.slice(sheet.indexOf('onMount(() => {'))
+    expect(mounted.indexOf('putBack ??= liftToBody(element)')).toBeLessThan(mounted.indexOf('if (open()) present()'))
+    expect(sheet).not.toContain('main:has(')
   })
 
   it('hides the native tab bar under a shell that has none, like a sign-in screen', () => {
@@ -272,12 +277,32 @@ describe('Native components feel native', () => {
     expect(html).toContain('data-stx-ref="nativeSheetHeader"')
   })
 
-  it('opens a sheet without a haptic, holds the page behind it, and keeps focus inside', () => {
+  it('opens a sheet without a haptic, as a layer on the stx overlay stack', () => {
     const sheet = read('NativeSheet')
     expect(sheet).not.toContain('haptics')
-    expect(sheet).toContain('releaseBackground = lockBackground(element)')
-    expect(sheet).toContain('trapFocus(panel.current as HTMLElement, event)')
     expect(sheet).toContain('putBack ??= liftToBody(element)')
+    // The stack holds the page, traps Tab, answers Escape for the top layer
+    // and hands focus back, shared with Dialog, Drawer and stxConfirm. The
+    // sheet's own Escape listener, Tab trap, background lock and focus
+    // restore each fought the stack when one overlay opened over another.
+    expect(sheet).toContain("import { closeOverlay, openOverlay } from '@stacksjs/components/overlays'")
+    expect(sheet).toContain('openOverlay(overlayId, {')
+    expect(sheet).toContain('root: element,')
+    expect(sheet).toContain('zIndex: SHEET_LAYER,')
+    expect(sheet).toContain('onEscape: close,')
+    expect(sheet).toContain('initialFocus: sheetPanel,')
+    for (const gone of ['lockBackground', 'trapFocus', 'previousFocus', "useEventListener('keydown'", 'releaseBackground'])
+      expect(sheet).not.toContain(gone)
+  })
+
+  it('leaves the overlay stack when it closes, and when it is removed while up', () => {
+    const sheet = read('NativeSheet')
+    const dismissed = sheet.slice(sheet.indexOf('function dismissed(): void {'), sheet.indexOf('let wasOpen = false'))
+    expect(dismissed).toContain('closeOverlay(overlayId)')
+    const destroyed = sheet.slice(sheet.indexOf('onDestroy(() => {'), sheet.indexOf("useEventListener('stx:navigate'"))
+    expect(destroyed).toContain('closeOverlay(overlayId)')
+    // Each sheet gives back only its own hold on the card.
+    expect(destroyed).toContain('presentPageAsCard(element.ownerDocument, false)')
   })
 
   it('slides a sheet up from where it was lifted to, rather than appearing up', () => {
@@ -285,8 +310,8 @@ describe('Native components feel native', () => {
     // is-open follows `shown`, which present() sets only after the lifted
     // sheet's closed style is worked out in the body.
     expect(sheet).toContain("const sheetClass = derived(() => `${shown() ? 'is-open' : ''}")
-    expect(sheet).toContain('sheetPanel.getBoundingClientRect()')
-    expect(sheet.indexOf('sheetPanel.getBoundingClientRect()')).toBeLessThan(sheet.indexOf('shown.set(true)'))
+    expect(sheet).toContain('sheetPanel()?.getBoundingClientRect()')
+    expect(sheet.indexOf('sheetPanel()?.getBoundingClientRect()')).toBeLessThan(sheet.indexOf('shown.set(true)'))
     expect(sheet.indexOf('putBack ??= liftToBody(element)')).toBeLessThan(sheet.indexOf('shown.set(true)'))
   })
 

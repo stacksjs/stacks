@@ -1,7 +1,13 @@
 /**
  * What makes a bottom sheet behave like a UISheetPresentationController:
  * dragged by its grabber or header, flicked away, resting at a medium or a
- * large detent, and holding the page behind it still and out of reach.
+ * large detent, lifted out of the page and pressing it back into a card.
+ *
+ * Holding the page behind a sheet still and out of reach, Escape, the Tab
+ * trap and handing focus back are the stx overlay stack's
+ * (`@stacksjs/components/overlays`), which NativeSheet joins, so a sheet
+ * nests with dialogs, drawers and confirmations instead of competing with
+ * them.
  */
 
 export type SheetDetent = 'medium' | 'large'
@@ -150,50 +156,6 @@ export function observeSheetDrag(options: SheetDragOptions): () => void {
   }
 }
 
-let scrollLocks = 0
-let savedOverflow = ''
-
-/**
- * Holds the page still and out of reach behind `keep`: everything outside it
- * becomes inert (no taps, no focus, hidden from VoiceOver) and the document
- * stops scrolling. Returns the release. Nested sheets count, so the page
- * scrolls again only once the last has closed.
- */
-export function lockBackground(keep: HTMLElement): () => void {
-  const doc = keep.ownerDocument
-  const madeInert: Element[] = []
-  let node: HTMLElement = keep
-  while (node.parentElement && node !== doc.body) {
-    for (const sibling of Array.from(node.parentElement.children)) {
-      if (sibling === node || sibling.hasAttribute('inert') || sibling.hasAttribute('data-native-dialog')) continue
-      if (['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK'].includes(sibling.tagName)) continue
-      // Closed sheets are mounted in the body before their media loads. They
-      // are already hidden, and must remain available to open above this one.
-      if (sibling.hasAttribute('data-native-sheet') && sibling.getAttribute('aria-hidden') === 'true') continue
-      sibling.setAttribute('inert', '')
-      madeInert.push(sibling)
-    }
-    node = node.parentElement
-  }
-
-  const root = doc.documentElement
-  if (scrollLocks++ === 0) {
-    savedOverflow = root.style.overflow || ''
-    root.style.overflow = 'hidden'
-  }
-
-  let released = false
-  return () => {
-    if (released) return
-    released = true
-    for (const element of madeInert) element.removeAttribute('inert')
-    if (--scrollLocks === 0) {
-      if (savedOverflow) root.style.overflow = savedOverflow
-      else root.style.removeProperty('overflow')
-    }
-  }
-}
-
 /**
  * Moves `element` to the end of the body, out of every stacking context and
  * transform on the way, and returns the way back: to where it was, or out of
@@ -212,17 +174,28 @@ export function liftToBody(element: HTMLElement): () => void {
   }
 }
 
+/** How many open sheets want the page pressed into a card, per document. */
+const cardHolds = new WeakMap<Document, number>()
+
 /**
  * The iOS card presentation: while a large sheet is up, the page behind it
- * shrinks back from the screen's edges, centred on what was in view. Undone by
- * calling it with `false`.
+ * shrinks back from the screen's edges, centred on what was in view.
+ *
+ * Counted: each call with `true` is let go by one with `false`, and the page
+ * stays a card until the last sheet that asked lets go, so a sheet closing
+ * over another large one does not flatten the page under it.
  */
 export function presentPageAsCard(doc: Document, on: boolean): void {
   const root = doc.documentElement
+  const held = cardHolds.get(doc) ?? 0
   if (!on) {
-    root.removeAttribute('data-native-sheet-card')
+    const left = Math.max(0, held - 1)
+    cardHolds.set(doc, left)
+    if (left === 0) root.removeAttribute('data-native-sheet-card')
     return
   }
+  cardHolds.set(doc, held + 1)
+  if (held > 0) return
   const view = doc.defaultView
   const centre = (view?.scrollY ?? 0) + (view?.innerHeight ?? 800) / 2
   root.style.setProperty('--native-sheet-card-origin', `${Math.round(centre)}px`)

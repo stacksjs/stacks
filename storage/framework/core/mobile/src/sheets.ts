@@ -6,8 +6,9 @@
  * that predates them, a page still gets something that looks and behaves like
  * them rather than `window.confirm()`: an alert centred over a dimmed page, an
  * action sheet raised from the bottom with Cancel set apart, a menu over a
- * blurred page. Each is built on demand, focus-trapped, dismissed with
- * Escape, and gone from the document once answered.
+ * blurred page. Each is built on demand, goes on the page's overlay stack
+ * (focus moved in and back, Tab kept inside, dismissed with Escape while it is
+ * on top), and is gone from the document once answered.
  *
  * Styles are injected once, themed by the same `--native-*` custom properties
  * as the Native components, dark under the `.dark` class.
@@ -137,30 +138,19 @@ function element<K extends keyof HTMLElementTagNameMap>(doc: Document, tag: K, c
   return node
 }
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-
 /**
- * Keeps Tab and Shift+Tab inside `container`: called from a keydown listener,
- * it moves focus from one end to the other instead of out of it.
+ * The page's overlay stack in the stx runtime (`window.stx.overlays`, the one
+ * `@stacksjs/components/overlays` reaches), shared with NativeSheet, Dialog,
+ * Drawer and stxConfirm. Absent off an stx page, where a dialog still answers
+ * taps but has no keyboard handling of its own.
  */
-export function trapFocus(container: HTMLElement, event: KeyboardEvent): void {
-  if (event.key !== 'Tab') return
-  const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE))
-  if (focusable.length === 0) {
-    event.preventDefault()
-    return
-  }
-  const first = focusable[0]!
-  const last = focusable[focusable.length - 1]!
-  const active = container.ownerDocument.activeElement
-  if (event.shiftKey && (active === first || !container.contains(active))) {
-    event.preventDefault()
-    last.focus()
-  }
-  else if (!event.shiftKey && (active === last || !container.contains(active))) {
-    event.preventDefault()
-    first.focus()
-  }
+interface OverlayStack {
+  open: (id: string, options: { panel: Element, root?: Element, onEscape?: () => void }) => void
+  close: (id: string) => void
+}
+
+function overlayStack(): OverlayStack | undefined {
+  return (craftHost() as unknown as { stx?: { overlays?: OverlayStack } } | undefined)?.stx?.overlays
 }
 
 interface Overlay {
@@ -169,14 +159,22 @@ interface Overlay {
   settle: (value: string | null) => void
 }
 
+let nextOverlay = 0
+
 /**
  * Mounts an overlay and resolves with whatever settles it, after taking it out
  * of the document again (once its closing transition has had its time).
+ *
+ * It is a layer on the page's overlay stack: the page behind goes inert and
+ * still, focus moves to its first button and back to whatever had it, Tab
+ * stays inside, and Escape answers it only while it is on top. Over a sheet,
+ * one Escape answers the alert and leaves the sheet up. It used to listen for
+ * Escape and trap Tab itself, so the sheet under it closed on the same key.
  */
 function overlay(doc: Document, variant: string, build: (overlay: Omit<Overlay, 'panel'>) => HTMLElement, onEscape: () => string | null): Promise<string | null> {
   ensureStyles(doc)
   const host = craftHost()
-  const previousFocus = doc.activeElement as HTMLElement | null
+  const id = `native-dialog-layer-${++nextOverlay}`
   const root = element(doc, 'div', `native-dialog native-dialog--${variant}`)
   root.setAttribute('data-native-dialog', variant)
   root.appendChild(element(doc, 'div', 'native-dialog-backdrop'))
@@ -187,27 +185,17 @@ function overlay(doc: Document, variant: string, build: (overlay: Omit<Overlay, 
       if (settled) return
       settled = true
       root.classList.remove('is-open')
-      doc.removeEventListener('keydown', onKey, true)
-      const remove = (): void => {
-        root.remove()
-        if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()
-      }
-      setTimeout(remove, 260)
+      // Off the stack before resolving, so whatever the caller opens next is
+      // not put under a layer that is only fading out.
+      overlayStack()?.close(id)
+      setTimeout(() => root.remove(), 260)
       resolve(value)
-    }
-    const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        settle(onEscape())
-        return
-      }
-      trapFocus(panel, event)
     }
 
     const panel = build({ root, settle })
     root.appendChild(panel)
     doc.body.appendChild(root)
-    doc.addEventListener('keydown', onKey, true)
+    overlayStack()?.open(id, { panel, root, onEscape: () => settle(onEscape()) })
 
     // Two frames: the closed state has to be drawn once for the opening to animate from it.
     const view = host as unknown as Partial<Window> | undefined
@@ -217,8 +205,6 @@ function overlay(doc: Document, variant: string, build: (overlay: Omit<Overlay, 
     frame(() => {
       if (!settled) root.classList.add('is-open')
     })
-    const first = panel.querySelector<HTMLElement>('[data-native-autofocus]') ?? panel.querySelector<HTMLElement>(FOCUSABLE)
-    first?.focus()
   })
 }
 

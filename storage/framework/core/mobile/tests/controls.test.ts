@@ -7,7 +7,6 @@ import {
   installPressables,
   largeTitleMetrics,
   liftToBody,
-  lockBackground,
   mirrorTabBar,
   observeNativeRefresh,
   showContextMenuFor,
@@ -17,6 +16,7 @@ import {
   pageBackground,
   pageScrollTop,
   placeMenu,
+  presentPageAsCard,
   pullDistance,
   rubberBand,
   segmentAt,
@@ -75,26 +75,7 @@ describe('sheet detents', () => {
   })
 })
 
-describe('holding the page behind a sheet', () => {
-  it('makes everything else inert, stops the page scrolling, and gives both back', () => {
-    const win = install()
-    const doc = win.document
-    doc.body.innerHTML = '<header id="top"></header><main><p id="text"></p><div id="sheet"></div></main><nav id="tabs"></nav>'
-    const release = lockBackground(doc.getElementById('sheet'))
-    expect(doc.getElementById('top').hasAttribute('inert')).toBe(true)
-    expect(doc.getElementById('text').hasAttribute('inert')).toBe(true)
-    expect(doc.getElementById('tabs').hasAttribute('inert')).toBe(true)
-    expect(doc.getElementById('sheet').hasAttribute('inert')).toBe(false)
-    expect(doc.documentElement.style.overflow).toBe('hidden')
-    const nested = lockBackground(doc.getElementById('text'))
-    nested()
-    // Still held: the first sheet is open.
-    expect(doc.documentElement.style.overflow).toBe('hidden')
-    release()
-    expect(doc.getElementById('top').hasAttribute('inert')).toBe(false)
-    expect(doc.documentElement.style.overflow || '').toBe('')
-  })
-
+describe('lifting a sheet and pressing the page into a card', () => {
   it('lifts a sheet to the body and puts it back where it was', () => {
     const win = install()
     const doc = win.document
@@ -107,25 +88,24 @@ describe('holding the page behind a sheet', () => {
     expect(sheet.nextElementSibling.id).toBe('after')
   })
 
-  it('keeps a mounted closed sheet available for a nested presentation', () => {
+  it('keeps the page a card until the last large sheet lets go', () => {
     const win = install()
     const doc = win.document
-    doc.body.innerHTML = '<main id="page"></main><section id="first" data-native-sheet aria-hidden="false"></section><section id="second" data-native-sheet aria-hidden="true"></section>'
-    const first = doc.getElementById('first')
-    const second = doc.getElementById('second')
-    const page = doc.getElementById('page')
-    const release = lockBackground(first)
-    expect(page.hasAttribute('inert')).toBe(true)
-    expect(second.hasAttribute('inert')).toBe(false)
-    second.setAttribute('aria-hidden', 'false')
-    const releaseNested = lockBackground(second)
-    expect(first.hasAttribute('inert')).toBe(true)
-    expect(second.hasAttribute('inert')).toBe(false)
-    releaseNested()
-    expect(first.hasAttribute('inert')).toBe(false)
-    expect(page.hasAttribute('inert')).toBe(true)
-    release()
-    expect(page.hasAttribute('inert')).toBe(false)
+    const card = () => doc.documentElement.hasAttribute('data-native-sheet-card')
+    presentPageAsCard(doc, true)
+    presentPageAsCard(doc, true)
+    expect(card()).toBe(true)
+    // The sheet on top closes: the one under it still wants the card.
+    presentPageAsCard(doc, false)
+    expect(card()).toBe(true)
+    presentPageAsCard(doc, false)
+    expect(card()).toBe(false)
+    // An extra let-go does not leave a debt for the next sheet.
+    presentPageAsCard(doc, false)
+    presentPageAsCard(doc, true)
+    expect(card()).toBe(true)
+    presentPageAsCard(doc, false)
+    expect(card()).toBe(false)
   })
 })
 
