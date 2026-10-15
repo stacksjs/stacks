@@ -466,10 +466,12 @@ option the original metres heuristic remains for unlabelled inputs.
 - A screen that is a task of its own (a workout player, a composer) marks an
   element `data-native-hide-tab-bar`, and the tab bar steps away while it is
   shown, its reserved space with it.
-- `<Video :src="current.url">` is the framework's player (ts-video-player):
-  YouTube, Vimeo, HLS, DASH or a file. `src` is reactive, so one player in a
-  sheet can show whichever video is chosen; clearing it pauses the player.
-  Craft lets an https iframe load inside the app, so embeds play inline.
+- `<Video :src="current.url" autoplay>` is the player from
+  `@stacksjs/components` (ts-video-player): YouTube, Vimeo, HLS, DASH or a
+  file, with controls in the page's language. `src`, `poster`, `aspectRatio`
+  and `label` are reactive, so one player in a sheet can show whichever video
+  is chosen, `autoplay` starts each one, and clearing `src` pauses it. Craft
+  lets an https iframe load inside the app, so embeds play inline.
 
 `<NativeTabItem match="/m/workout">` keeps a tab lit on the detail screens
 opened from it. A tab bar is a `<nav>`, where a link is otherwise current only

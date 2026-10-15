@@ -66,17 +66,20 @@ const cookies = signCloudFrontCookies({ resource: 'https://media.example.com/dem
 
 Manifests remain short-lived or private, while content-addressed segments use immutable caching. Key routes must enforce the same application authorization or signed audience boundary.
 
-## Default STX player
+## STX player
+
+`<Video>` is the player from `@stacksjs/components` (ts-video-player), which every Stacks app loads:
 
 ```stx
 <Video
   src="/media/demo/manifest.mpd"
-  title="Product demonstration"
+  label="Product demonstration"
   poster="/media/demo/poster.avif"
   :sources="progressiveFallbacks"
   :tracks="captionAndChapterTracks"
-  :drm="drm"
 />
 ```
 
-The default UI includes play, seek, live edge, time, mute, volume, speed, quality, captions, audio tracks, AirPlay, Remote Playback, Picture in Picture, fullscreen, and accessible errors. Native video controls remain as the no-JavaScript fallback.
+It plays a file, an HLS or DASH stream, or a YouTube or Vimeo link, with play, seek, live edge, time, mute, volume, speed, quality, captions, AirPlay, Picture in Picture, fullscreen and accessible errors, labelled in the page's language. `src`, `poster`, `aspectRatio` and `label` follow a binding. See the component's README in `@stacksjs/components` for every prop.
+
+`<Video>` takes no `drm` prop yet. To play protected DASH, render ts-video-player's `<video-player>` with a `data-media-config` JSON that carries the `drm` descriptor next to `sources`.
