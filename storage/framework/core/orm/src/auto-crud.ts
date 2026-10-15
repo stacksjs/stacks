@@ -10,6 +10,7 @@
 // Lives in @stacksjs/error-handling, where the queue and other packages that
 // cannot depend on the ORM can use it too. Re-exported for existing callers.
 export { isUniqueViolation } from '@stacksjs/error-handling'
+import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { isUniqueViolation } from '@stacksjs/error-handling'
 
 /**
@@ -441,8 +442,10 @@ export const AUTO_CRUD_CASTERS: Record<string, { get: (v: unknown) => unknown, s
   float:    { get: v => v != null ? Number.parseFloat(String(v)) : null,             set: v => v != null ? Number.parseFloat(String(v)) : null },
   boolean:  { get: v => v === 1 || v === '1' || v === true || v === 'true',         set: v => (v === true || v === 1 || v === '1' || v === 'true') ? 1 : 0 },
   json:     { get: v => v == null ? null : (typeof v === 'string' ? safeJSON(v) : v), set: v => v == null ? null : typeof v === 'string' ? v : JSON.stringify(v) },
-  datetime: { get: v => v ? new Date(v as string) : null,                            set: v => v instanceof Date ? v.toISOString() : v },
-  date:     { get: v => v ? new Date(v as string) : null,                            set: v => v instanceof Date ? (v.toISOString().split('T')[0] as string) : v },
+  // The same boundary as define-model.ts's casters, and for the same reason
+  // (stacksjs/stacks#2902): `new Date` on a zoneless literal reads it as local.
+  datetime: { get: v => v == null || v === '' ? null : v instanceof Date ? v : parseSqlDateTime(v as string), set: v => v instanceof Date ? sqlDateTime(v) : v },
+  date:     { get: v => v == null || v === '' ? null : v instanceof Date ? v : parseSqlDateTime(v as string), set: v => v instanceof Date ? (v.toISOString().split('T')[0] as string) : v },
   array:    { get: v => v == null ? [] : Array.isArray(v) ? v : (typeof v === 'string' ? safeJSONOrEmpty(v) : []), set: v => v == null ? null : Array.isArray(v) ? JSON.stringify(v) : v },
 }
 

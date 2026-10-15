@@ -1,66 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 import type { CasterInterface, CastType } from '../src/define-model'
-import { defineModel } from '../src/define-model'
+import { builtInCasters, defineModel } from '../src/define-model'
 
-// Since builtInCasters, castAttributes, and resolveCaster are not exported,
-// we test the casting system through defineModel and its runtime behavior.
-// We create a helper that exercises the same logic as the internal castAttributes.
-
-// To test built-in casters directly, we replicate the internal caster map
-// (these tests verify that the casting logic in define-model.ts is correct).
-const builtInCasters: Record<CastType, CasterInterface> = {
-  string: {
-    get: (v: unknown) => v != null ? String(v) : null,
-    set: (v: unknown) => v != null ? String(v) : null,
-  },
-  number: {
-    get: (v: unknown) => v != null ? Number(v) : null,
-    set: (v: unknown) => v != null ? Number(v) : null,
-  },
-  integer: {
-    get: (v: unknown) => v != null ? Math.trunc(Number(v)) : null,
-    set: (v: unknown) => v != null ? Math.trunc(Number(v)) : null,
-  },
-  float: {
-    get: (v: unknown) => v != null ? Number.parseFloat(String(v)) : null,
-    set: (v: unknown) => v != null ? Number.parseFloat(String(v)) : null,
-  },
-  boolean: {
-    get: (v: unknown) => v === 1 || v === '1' || v === true || v === 'true',
-    set: (v: unknown) => (v === true || v === 1 || v === '1' || v === 'true') ? 1 : 0,
-  },
-  json: {
-    get: (v: unknown) => {
-      if (v == null) return null
-      if (typeof v === 'string') { try { return JSON.parse(v) } catch { return v } }
-      return v
-    },
-    set: (v: unknown) => {
-      if (v == null) return null
-      return typeof v === 'string' ? v : JSON.stringify(v)
-    },
-  },
-  datetime: {
-    get: (v: unknown) => v ? new Date(v as string) : null,
-    set: (v: unknown) => v instanceof Date ? v.toISOString() : v,
-  },
-  date: {
-    get: (v: unknown) => v ? new Date(v as string) : null,
-    set: (v: unknown) => v instanceof Date ? v.toISOString().split('T')[0] : v,
-  },
-  array: {
-    get: (v: unknown) => {
-      if (v == null) return []
-      if (Array.isArray(v)) return v
-      if (typeof v === 'string') { try { return JSON.parse(v) } catch { return [] } }
-      return []
-    },
-    set: (v: unknown) => {
-      if (v == null) return null
-      return Array.isArray(v) ? JSON.stringify(v) : v
-    },
-  },
-}
+// The real casters, imported rather than replicated.
+//
+// This file used to declare its own copy of the map and say that doing so
+// "verifies that the casting logic in define-model.ts is correct". It did not:
+// it verified the copy. The `datetime` caster read a zoneless literal with
+// `new Date`, which parses as local time, so every datetime a driver returned
+// as a string came back shifted by the process offset, and this suite stayed
+// green throughout (stacksjs/stacks#2902).
 
 function resolveCaster(cast: CastType | CasterInterface): CasterInterface {
   return typeof cast === 'string' ? builtInCasters[cast] : cast
@@ -111,9 +60,13 @@ describe('ORM casting system', () => {
       expect(caster.set(null)).toBeNull()
     })
 
-    test('get: returns original string on invalid JSON', () => {
-      const caster = builtInCasters.json
-      expect(caster.get('not-valid-json')).toBe('not-valid-json')
+    test('get: returns null on invalid JSON, not the unparsed string', () => {
+      // The replicated map this file used to carry still returned the string,
+      // which is the behaviour stacksjs/stacks#1876 O-4 removed: callers
+      // checking `typeof row.config === 'object'` type-cast wrong and crashed.
+      // Asserting a copy kept that expectation alive years after the real
+      // caster stopped doing it.
+      expect(builtInCasters.json.get('{invalid}')).toBeNull()
     })
   })
 
@@ -158,9 +111,12 @@ describe('ORM casting system', () => {
       expect((result as Date).toISOString()).toBe('2024-06-15T10:30:00.000Z')
     })
 
-    test('set: converts Date to ISO string', () => {
+    test('set: writes the framework\'s canonical literal, with no Z', () => {
+      // `sqlDateTime`, not `toISOString`. The trailing `Z` this used to assert
+      // is what MySQL rejects in strict mode, and made the ORM the one writer
+      // in the framework disagreeing with the rest (stacksjs/stacks#2902).
       const date = new Date('2024-06-15T10:30:00.000Z')
-      expect(builtInCasters.datetime.set(date)).toBe('2024-06-15T10:30:00.000Z')
+      expect(builtInCasters.datetime.set(date)).toBe('2024-06-15T10:30:00.000')
     })
 
     test('get: returns null for falsy value', () => {

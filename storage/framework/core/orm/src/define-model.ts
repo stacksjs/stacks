@@ -4,6 +4,7 @@ import type { Faker } from '@stacksjs/faker'
 import type { ApiMiddleware, DashboardModelOptions, SearchEngineSearchParams, SearchFilter, SearchOptions } from '@stacksjs/types'
 import type { Validator } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging/runtime'
+import { parseSqlDateTime, sqlDateTime } from '@stacksjs/database/runtime'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { toCursorPaginator, toPaginator, toSimplePaginator } from '@stacksjs/pagination'
@@ -181,7 +182,7 @@ function logJsonParseFailure(raw: unknown, err: unknown): void {
   console.error(`[orm] JSON cast failed to parse value (returning null): ${message} - value preview: ${JSON.stringify(preview)}`)
 }
 
-const builtInCasters: Record<CastType, CasterInterface> = {
+export const builtInCasters: Record<CastType, CasterInterface> = {
   string: {
     get: (v) => v != null ? String(v) : null,
     set: (v) => v != null ? String(v) : null,
@@ -228,12 +229,28 @@ const builtInCasters: Record<CastType, CasterInterface> = {
       return typeof v === 'string' ? v : JSON.stringify(v)
     },
   },
+  /*
+   * `parseSqlDateTime` and `sqlDateTime` own this boundary, rather than
+   * `new Date` and `toISOString`.
+   *
+   * The framework writes a naive UTC literal, and `new Date('2026-10-15T21:22:38.565')`
+   * on a string with no offset is parsed as LOCAL time. Where the driver hands
+   * back a string, which is every datetime on SQLite because the columns are
+   * text, that shifted every read by the process offset: 8 hours in UTC+8,
+   * silently, with no error anywhere. The docstring above claimed a UTC-only
+   * contract the code did not provide (stacksjs/stacks#2902).
+   *
+   * A `Date` is passed through: drivers that decode the column themselves,
+   * Postgres through Bun.SQL among them, already produce the right instant and
+   * re-reading it would be wrong.
+   *
+   * `set` writes the framework's canonical literal too. `toISOString()` appends
+   * a `Z` that `sqlDateTime` deliberately omits, which MySQL rejects in strict
+   * mode, and which made the ORM the one writer disagreeing with the rest.
+   */
   datetime: {
-    // UTC-only by contract (see CastType docstring). The returned
-    // `Date` is timezone-agnostic; convert via `toLocaleString(tz)`
-    // or Intl at render time when local-time display is needed.
-    get: (v) => v ? new Date(v as string) : null,
-    set: (v) => v instanceof Date ? v.toISOString() : v,
+    get: (v) => v == null || v === '' ? null : v instanceof Date ? v : parseSqlDateTime(v as string),
+    set: (v) => v instanceof Date ? sqlDateTime(v) : v,
   },
   date: {
     // Date-only field, persisted as YYYY-MM-DD derived from the UTC
@@ -242,7 +259,8 @@ const builtInCasters: Record<CastType, CasterInterface> = {
     // UTC-only contract. Callers that need local-calendar-day
     // semantics should convert to UTC at the boundary themselves
     // (e.g. `new Date(Date.UTC(y, m, d))` from local Y/M/D parts).
-    get: (v) => v ? new Date(v as string) : null,
+    get: (v) => v == null || v === '' ? null : v instanceof Date ? v : parseSqlDateTime(v as string),
+    // Still the UTC calendar day: a date column stores no time to round-trip.
     set: (v) => v instanceof Date ? v.toISOString().split('T')[0] : v,
   },
   array: {
