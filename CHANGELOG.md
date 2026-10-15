@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.180...v0.75.181)
+
+## ✨ Features
+
+- **mobile**: speech takes a pitch and a pause before the words ([0b5d949](https://github.com/stacksjs/stacks/commit/0b5d949)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **defaults**: remove the Video component @stacksjs/components shadows ([9d5a827](https://github.com/stacksjs/stacks/commit/9d5a827)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.179...v0.75.180)
 
 ## 🐛 Bug Fixes
