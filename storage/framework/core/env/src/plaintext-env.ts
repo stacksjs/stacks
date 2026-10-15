@@ -1,4 +1,4 @@
-import { isEncryptedValue } from './plaintext'
+import { isEncryptedValue } from './encrypted-value'
 
 /**
  * Keep genuine plaintext, excluding copies of known ciphertext that Bun may

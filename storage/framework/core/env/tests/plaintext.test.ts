@@ -187,6 +187,12 @@ describe('one definition of isEncryptedValue (stacksjs/stacks#2904)', () => {
    * the version that was neither exported nor documented. Identical bodies, so
    * nothing was broken and nothing could catch it.
    *
+   * It lives in its own leaf module rather than here: the preloader and the
+   * parser need it, `@stacksjs/database/runtime` reaches them, and importing
+   * this module from there pulled the secret scanner into the database
+   * runtime's static graph. `plaintext.ts` re-exports it so `@stacksjs/env`
+   * is unchanged for callers.
+   *
    * Read from compiled source rather than the file text. A ban that greps raw
    * source passes or fails on prose: naming the function in a comment would
    * trip this, and commenting a copy out would hide one.
@@ -202,6 +208,6 @@ describe('one definition of isEncryptedValue (stacksjs/stacks#2904)', () => {
         return /(?:function|const|let|var)\s+isEncryptedValue\b/.test(compiled)
       })
 
-    expect(declaring).toEqual(['plaintext.ts'])
+    expect(declaring).toEqual(['encrypted-value.ts'])
   })
 })

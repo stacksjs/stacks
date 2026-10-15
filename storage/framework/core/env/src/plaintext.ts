@@ -1,3 +1,8 @@
+import { isEncryptedValue } from './encrypted-value'
+
+// Re-exported so `@stacksjs/env` keeps the same public surface.
+export { isEncryptedValue }
+
 /**
  * Unencrypted secrets in a committed env file.
  *
@@ -45,16 +50,6 @@
  * being prevented.
  */
 
-/**
- * Whether a value has been encrypted in place.
- *
- * `encrypted:` is the current envelope (`encrypted:v2:` with the versioned
- * header); `enc:` is the short alias. The predicate was written out four
- * separate times across this package before it lived here.
- */
-export function isEncryptedValue(value: string | undefined | null): boolean {
-  return typeof value === 'string' && (value.startsWith('encrypted:') || value.startsWith('enc:'))
-}
 
 /**
  * Key names that should never hold readable text in a committed file.
