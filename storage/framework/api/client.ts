@@ -7156,6 +7156,48 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /auth/passkeys
+   */
+  getAuthPasskeys(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/auth/passkeys", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/passkeys/authentication
+   */
+  postAuthPasskeysAuthentication(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/passkeys/authentication", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/passkeys/authentication/options
+   */
+  postAuthPasskeysAuthenticationOptions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/passkeys/authentication/options", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/passkeys/registration
+   */
+  postAuthPasskeysRegistration(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/passkeys/registration", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/passkeys/registration/options
+   */
+  postAuthPasskeysRegistrationOptions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/passkeys/registration/options", {}, [], false, options)
+  },
+
+  /**
+   * DELETE /auth/passkeys/{id}
+   */
+  deleteAuthPasskeysId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/auth/passkeys/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * POST /auth/refresh
    */
   postAuthRefresh(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

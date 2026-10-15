@@ -57495,6 +57495,165 @@
         }
       }
     },
+    "/auth/passkeys": {
+      "get": {
+        "summary": "/auth/passkeys",
+        "operationId": "get__auth_passkeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/passkeys/authentication": {
+      "post": {
+        "summary": "/auth/passkeys/authentication",
+        "operationId": "post__auth_passkeys_authentication",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/passkeys/authentication/options": {
+      "post": {
+        "summary": "/auth/passkeys/authentication/options",
+        "operationId": "post__auth_passkeys_authentication_options",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/passkeys/registration": {
+      "post": {
+        "summary": "/auth/passkeys/registration",
+        "operationId": "post__auth_passkeys_registration",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/passkeys/registration/options": {
+      "post": {
+        "summary": "/auth/passkeys/registration/options",
+        "operationId": "post__auth_passkeys_registration_options",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/passkeys/{id}": {
+      "delete": {
+        "summary": "/auth/passkeys/{id}",
+        "operationId": "delete__auth_passkeys__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/auth/refresh": {
       "post": {
         "summary": "/auth/refresh",
