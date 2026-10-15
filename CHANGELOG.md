@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.181...v0.75.182)
+
+## ✨ Features
+
+- integrate discoverable passkeys into authentication ([0c8cb80](https://github.com/stacksjs/stacks/commit/0c8cb80)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **docs**: regenerate API artifacts and native catalog for passkeys ([6d7a8dd](https://github.com/stacksjs/stacks/commit/6d7a8dd)) _(by Chris Breuer <chris@stacksjs.com>)_
+- integrate current main ([9daab74](https://github.com/stacksjs/stacks/commit/9daab74)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.180...v0.75.181)
 
 ## ✨ Features
