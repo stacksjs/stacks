@@ -275,6 +275,15 @@ export const tsCloud: TsCloudConfig = {
         },
       },
       autoUpdates: true,
+      // Interrupted ClamAV database downloads left over 1 GiB in /tmp on the
+      // shared host. Retain recent downloads so freshclam can finish; remove
+      // only abandoned temp files, never the installed signature database.
+      hostCleanup: {
+        schedule: 'hourly',
+        paths: [
+          { path: '/tmp', pattern: 'clamav-*.tmp', maxAgeDays: 2, type: 'file' },
+        ],
+      },
       monitoring: {
         enabled: true,
         alerts: {
