@@ -1,5 +1,5 @@
 import type { JumpBoxChange } from '@stacksjs/cloud'
-import type { OperationPlan } from '@stacksjs/ts-cloud'
+import type { CloudConfig as NativeCloudConfig, EnvironmentType, OperationPlan } from '@stacksjs/ts-cloud'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -875,6 +875,40 @@ async function runCloudDiff(): Promise<string | undefined> {
 }
 
 export function cloud(buddy: CLI): void {
+  buddy
+    .command('cloud:apply', 'Apply configured server size, persistent volumes and deployment storage')
+    .option('--env [env]', 'Environment to reconcile', { default: 'production' })
+    .option('--dry-run', 'Show the compute plan without changing anything', { default: false })
+    .option('--yes', 'Apply the displayed plan without prompting', { default: false })
+    .option('-J, --json', 'Print the plan as JSON', { default: false })
+    .action(async (options: { env?: string, dryRun?: boolean, yes?: boolean, json?: boolean }) => {
+      try {
+        const { createCloudDriver } = await import('@stacksjs/ts-cloud')
+        const { loadTsCloudConfig } = await import('./deploy')
+        const config = await loadTsCloudConfig(options.env)
+        if (!config?.project?.slug) throw new Error('config/cloud.ts must declare tsCloud.project.slug')
+        const environment = (options.env || 'production') as EnvironmentType
+        const nativeConfig = config as NativeCloudConfig
+        const driver = createCloudDriver({ config: nativeConfig })
+        if (!driver.applyComputeChanges) throw new Error('This cloud provider does not support configured compute changes')
+        const plan = await driver.applyComputeChanges({ config: nativeConfig, environment, dryRun: true })
+        if (options.json) console.log(JSON.stringify(plan, null, 2))
+        else {
+          for (const change of plan.changes) log.info(`${change.resource}: ${change.action} (${change.detail})`)
+          if (plan.waitingForCapacity) log.warn(plan.waitingForCapacity)
+        }
+        if (options.dryRun) return
+        if (!await confirmCloudChange(options, 'buddy cloud:apply --yes', 'Apply these compute changes?', 'apply compute changes')) return
+        const applied = await driver.applyComputeChanges({ config: nativeConfig, environment })
+        if (applied.waitingForCapacity) log.warn(applied.waitingForCapacity)
+        log.success('Configured compute changes applied')
+      }
+      catch (error) {
+        log.error(error instanceof Error ? error.message : String(error))
+        process.exitCode = ExitCode.FatalError
+      }
+    })
+
   const descriptions = {
     cloud: 'Interact with the Stacks Cloud',
     ssh: 'SSH into the Stacks Cloud',
@@ -2014,10 +2048,14 @@ export function cloud(buddy: CLI): void {
  * flag to use, rather than left waiting on a prompt.
  */
 export async function confirmInvalidation(options: { yes?: boolean }, retry: string, question: string): Promise<boolean> {
+  return confirmCloudChange(options, retry, question, 'invalidate the CDN cache')
+}
+
+export async function confirmCloudChange(options: { yes?: boolean }, retry: string, question: string, action: string): Promise<boolean> {
   if (options.yes)
     return true
   if (isCI || !hasTTY || !process.stdin.isTTY) {
-    log.syncError('Refusing to invalidate the CDN cache from a non-interactive shell without confirmation.')
+    log.syncError(`Refusing to ${action} from a non-interactive shell without confirmation.`)
     log.syncError(`   ➡️  Re-run with \`--yes\`: \`${retry}\``)
     await log.flush()
     process.exit(ExitCode.FatalError)

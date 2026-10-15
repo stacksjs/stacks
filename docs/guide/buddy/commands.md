@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **360 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **361 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 2 |
 | `auth` | 4 |
 | `build` | 16 |
-| `cloud` | 12 |
+| `cloud` | 13 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `comments` | 4 |
@@ -579,6 +579,22 @@ Add a resource to the Stacks Cloud
 | --- | --- | --- | --- |
 | `--jump-box` | Check for the jump box, and say how to declare one if the stack has none | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:apply`
+
+Apply configured server size, persistent volumes and deployment storage
+
+- Usage: `$ buddy cloud:apply`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment to reconcile | value, optional | `"production"` |
+| `--dry-run` | Show the compute plan without changing anything | boolean, optional | `false` |
+| `--yes` | Apply the displayed plan without prompting | boolean, optional | `false` |
+| `-J`, `--json` | Print the plan as JSON | boolean, optional | `false` |
 
 ### `cloud:attach`
 

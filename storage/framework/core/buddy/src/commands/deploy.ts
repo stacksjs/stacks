@@ -1,4 +1,4 @@
-import type { DnsConfig } from '@stacksjs/ts-cloud'
+import type { DnsConfig, EnvironmentConfig } from '@stacksjs/ts-cloud'
 import type { CLI, DeploymentPreview, DeploymentSiteKind, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -1993,7 +1993,7 @@ export interface TsCloudConfig {
   infrastructure?: TsCloudInfrastructure
   /** A site entry may be absent; `applyEnvironmentToSites` guards for it. */
   sites?: Record<string, TsCloudSite | null | undefined>
-  environments?: Record<string, { domainPrefix?: string, region?: string } | undefined>
+  environments?: Record<string, Partial<EnvironmentConfig> | undefined>
   mode?: string
   /** Some call sites are handed the outer config, which nests the above. */
   tsCloud?: { infrastructure?: TsCloudInfrastructure }

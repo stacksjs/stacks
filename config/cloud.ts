@@ -63,6 +63,13 @@ export const tsCloud: TsCloudConfig = {
     provider: 'hetzner',
   },
 
+  // Resolve on the host. The webhook stays in its existing protected env file.
+  notifications: {
+    discord: {
+      webhookUrl: { envFile: '/etc/mail/mail.env', variable: 'DISCORD_WEBHOOK_URL' },
+    },
+  },
+
   /**
    * Deployment Mode
    *
@@ -244,11 +251,31 @@ export const tsCloud: TsCloudConfig = {
     compute: {
       instances: 1,
       // This is the owner of a busy shared host with many Bun services,
-      // dashboards, mail, PostgreSQL, and the rpx gateway. Hetzner `medium`
-      // maps to cx33 (4 vCPU / 8 GB), doubling the previous cx23 capacity.
-      size: 'medium',
+      // dashboards, mail, PostgreSQL, and the rpx gateway. Request CX53 while
+      // keeping the current server online when the region has no capacity.
+      size: 'xlarge',
+      resize: { whenUnavailable: 'keep-current', upgradeDisk: true },
+      volumes: {
+        deployments: {
+          size: 250,
+          mountPath: '/var/lib/stacks-deployments',
+          deleteProtection: true,
+        },
+      },
+      deploymentStorage: {
+        volume: 'deployments',
+        migrateExisting: true,
+        includeBackups: true,
+        locks: ['/run/lock/mail-host-maintenance.lock', '/run/lock/host-backup.lock'],
+        dependentUnits: [
+          'host-app-backup.service',
+          'host-app-backup-retry.service',
+          'host-backup-check.service',
+          'mail-host-maintenance.service',
+        ],
+      },
       disk: {
-        size: 80,
+        size: 320,
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
         encrypted: true,
       },
@@ -286,6 +313,11 @@ export const tsCloud: TsCloudConfig = {
       },
       monitoring: {
         enabled: true,
+        filesystems: [
+          '/',
+          { path: '/var/lib/stacks-deployments', requiredMount: true },
+          { path: '/var/lib/mail-storage', requiredMount: true },
+        ],
         alerts: {
           cpuLoadPerCore: 1.5,
           memPercent: 85,

@@ -558,7 +558,7 @@ jobs:
 
       - name: Deployment target resolution
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun test ./.github/scripts/deploy/resolve-target.test.ts
+        run: bun test ./.github/scripts/deploy/*.test.ts
 
       # Of the tests under .github/scripts today, only resolve-target's was
       # run, by name. No workflow had run the tests for the Bun pin, lockfile
@@ -652,6 +652,9 @@ jobs:
         run: bun resolve-target.ts --ref "$GITHUB_REF" --github-output "$GITHUB_OUTPUT"
 
   deploy:
+    concurrency:
+      group: compute-${{ needs.deployment-target.outputs.environment }}
+      cancel-in-progress: false
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main')
