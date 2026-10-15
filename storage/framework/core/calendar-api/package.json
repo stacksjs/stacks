@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/calendar-api",
   "type": "module",
-  "version": "0.75.183",
+  "version": "0.75.184",
   "description": "Easily interact with calendar APIs.",
   "author": "Chris Breuer",
   "contributors": [

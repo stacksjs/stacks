@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.183...v0.75.184)
+
+## 🐛 Bug Fixes
+
+- **orm**: the datetime casters read through the framework's own parser ([de28024](https://github.com/stacksjs/stacks/commit/de28024)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2902](https://github.com/stacksjs/stacks/issues/2902), [stacksjs/stacks#1876](https://github.com/stacksjs/stacks/issues/1876))
+- **auth**: the database answers whether expires_at persisted, not a Date ([003b885](https://github.com/stacksjs/stacks/commit/003b885)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2902](https://github.com/stacksjs/stacks/issues/2902))
+
+## ♻️ Code Refactoring
+
+- **components**: retire shadowed audio and image defaults ([fd5636c](https://github.com/stacksjs/stacks/commit/fd5636c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.182...v0.75.183)
 
 ## ✨ Features
