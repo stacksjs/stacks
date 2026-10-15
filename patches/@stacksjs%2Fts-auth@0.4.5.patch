@@ -1,0 +1,1650 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index e54c9ef4dac46164a5a1a8c66eda6c68caa47389..818dd7f7c9caedb48517357273910c799bef7883 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -220,3 +220,4 @@ export {
+   createConsoleAuditLogger,
+   createCallbackAuditLogger,
+ } from './audit/index';
++export * from './webauthn/json';
+diff --git a/dist/index.js b/dist/index.js
+index d7ba16493a33eeb78fb035571f69250dbaf978d6..350ff57905ad3faec6df69700ad18b2017eaaf13 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1,6 +1,3 @@
+-import { createRequire } from "node:module";
+-var __require = /* @__PURE__ */ createRequire(import.meta.url);
+-
+ // src/jwt/jwt.ts
+ var textEncoder = new TextEncoder;
+ var textDecoder = new TextDecoder;
+@@ -787,11 +784,11 @@ class SessionGuard {
+   currentUser = null;
+   userResolved = false;
+   loggedOut = false;
+-  constructor(name, provider, session, config2) {
++  constructor(name, provider, session, config) {
+     this.name = name;
+     this.provider = provider;
+     this.session = session;
+-    this.config = config2;
++    this.config = config;
+   }
+   async attempt(credentials, remember = false) {
+     const user = await this.provider.retrieveByCredentials(credentials);
+@@ -932,11 +929,11 @@ class TokenGuard {
+   currentUser = null;
+   userResolved = false;
+   request = null;
+-  constructor(name, provider, tokenManager, config2) {
++  constructor(name, provider, tokenManager, config) {
+     this.name = name;
+     this.provider = provider;
+     this.tokenManager = tokenManager;
+-    this.config = config2;
++    this.config = config;
+   }
+   setRequest(request) {
+     this.request = request;
+@@ -1059,11 +1056,11 @@ class JwtGuard {
+   userResolved = false;
+   request = null;
+   currentPayload = null;
+-  constructor(name, provider, tokenManager, config2) {
++  constructor(name, provider, tokenManager, config) {
+     this.name = name;
+     this.provider = provider;
+     this.tokenManager = tokenManager;
+-    this.config = config2;
++    this.config = config;
+   }
+   setRequest(request) {
+     this.request = request;
+@@ -1205,9 +1202,9 @@ class TokenManager {
+   tokens = new Map;
+   secret;
+   config;
+-  constructor(secret, config2) {
++  constructor(secret, config) {
+     this.secret = secret;
+-    this.config = config2;
++    this.config = config;
+   }
+   async createToken(userId, name, abilities = ["*"], expiresAt) {
+     const id = generateJwtId();
+@@ -1322,14 +1319,14 @@ function timingSafeEqual(a, b) {
+   }
+   return result === 0;
+ }
+-function createTokenManager(secret, config2) {
+-  const defaultConfig2 = {
++function createTokenManager(secret, config) {
++  const defaultConfig = {
+     expiry: "1h",
+     refresh: true,
+     refreshExpiry: "7d",
+     algorithm: "HS256"
+   };
+-  return new TokenManager(secret, { ...defaultConfig2, ...config2 });
++  return new TokenManager(secret, { ...defaultConfig, ...config });
+ }
+ 
+ // src/providers/database-provider.ts
+@@ -1379,8 +1376,8 @@ class DatabaseUserProvider {
+   verifyPassword;
+   queryUser;
+   updateUser;
+-  constructor(config2, options) {
+-    this.config = config2;
++  constructor(config, options) {
++    this.config = config;
+     this.hashPassword = options.hashPassword;
+     this.verifyPassword = options.verifyPassword;
+     this.queryUser = options.queryUser;
+@@ -1506,8 +1503,8 @@ class AuthenticationManager {
+   providers = new Map;
+   session = null;
+   tokenManager = null;
+-  constructor(config2) {
+-    this.config = config2;
++  constructor(config) {
++    this.config = config;
+   }
+   setSession(session) {
+     this.session = session;
+@@ -1531,79 +1528,79 @@ class AuthenticationManager {
+     return guard;
+   }
+   resolve(name) {
+-    const config2 = this.config.guards[name];
+-    if (!config2) {
++    const config = this.config.guards[name];
++    if (!config) {
+       throw new Error(`Guard [${name}] is not defined.`);
+     }
+-    if (this.customGuardDrivers.has(config2.driver)) {
+-      const factory = this.customGuardDrivers.get(config2.driver);
+-      return factory(name, config2);
++    if (this.customGuardDrivers.has(config.driver)) {
++      const factory = this.customGuardDrivers.get(config.driver);
++      return factory(name, config);
+     }
+-    switch (config2.driver) {
++    switch (config.driver) {
+       case "session":
+-        return this.createSessionDriver(name, config2);
++        return this.createSessionDriver(name, config);
+       case "token":
+-        return this.createTokenDriver(name, config2);
++        return this.createTokenDriver(name, config);
+       case "jwt":
+-        return this.createJwtDriver(name, config2);
++        return this.createJwtDriver(name, config);
+       default:
+-        throw new Error(`Guard driver [${config2.driver}] is not supported.`);
++        throw new Error(`Guard driver [${config.driver}] is not supported.`);
+     }
+   }
+-  createSessionDriver(name, config2) {
++  createSessionDriver(name, config) {
+     if (!this.session) {
+       throw new Error("Session manager not set. Call setSession() first.");
+     }
+-    const provider = this.createUserProvider(config2.provider);
++    const provider = this.createUserProvider(config.provider);
+     if (!provider) {
+-      throw new Error(`Provider [${config2.provider}] is not defined.`);
++      throw new Error(`Provider [${config.provider}] is not defined.`);
+     }
+-    return new SessionGuard(name, provider, this.session, config2);
++    return new SessionGuard(name, provider, this.session, config);
+   }
+-  createTokenDriver(name, config2) {
++  createTokenDriver(name, config) {
+     if (!this.tokenManager) {
+       const secret = this.config.tokens?.secret ?? this.generateSecret();
+       this.tokenManager = createTokenManager(secret, this.config.tokens);
+     }
+-    const provider = this.createUserProvider(config2.provider);
++    const provider = this.createUserProvider(config.provider);
+     if (!provider) {
+-      throw new Error(`Provider [${config2.provider}] is not defined.`);
++      throw new Error(`Provider [${config.provider}] is not defined.`);
+     }
+-    return new TokenGuard(name, provider, this.tokenManager, config2);
++    return new TokenGuard(name, provider, this.tokenManager, config);
+   }
+-  createJwtDriver(name, config2) {
++  createJwtDriver(name, config) {
+     if (!this.tokenManager) {
+       const secret = this.config.tokens?.secret ?? this.generateSecret();
+       this.tokenManager = createTokenManager(secret, this.config.tokens);
+     }
+-    const provider = this.createUserProvider(config2.provider);
++    const provider = this.createUserProvider(config.provider);
+     if (!provider) {
+-      throw new Error(`Provider [${config2.provider}] is not defined.`);
++      throw new Error(`Provider [${config.provider}] is not defined.`);
+     }
+-    return new JwtGuard(name, provider, this.tokenManager, config2);
++    return new JwtGuard(name, provider, this.tokenManager, config);
+   }
+   createUserProvider(name) {
+     if (this.providers.has(name)) {
+       return this.providers.get(name);
+     }
+-    const config2 = this.config.providers[name];
+-    if (!config2) {
++    const config = this.config.providers[name];
++    if (!config) {
+       return null;
+     }
+-    if (this.customProviders.has(config2.driver)) {
+-      const factory = this.customProviders.get(config2.driver);
+-      const provider2 = factory(config2);
+-      this.providers.set(name, provider2);
+-      return provider2;
++    if (this.customProviders.has(config.driver)) {
++      const factory = this.customProviders.get(config.driver);
++      const provider = factory(config);
++      this.providers.set(name, provider);
++      return provider;
+     }
+     let provider;
+-    switch (config2.driver) {
++    switch (config.driver) {
+       case "database":
+         throw new Error("Database provider requires external configuration. " + "Register a custom provider using auth.provider() or use InMemoryUserProvider for testing.");
+       case "eloquent":
+         throw new Error("Eloquent provider is not available in ts-auth. " + "Use database driver with a custom queryUser function instead.");
+       default:
+-        throw new Error(`Provider driver [${config2.driver}] is not supported.`);
++        throw new Error(`Provider driver [${config.driver}] is not supported.`);
+     }
+   }
+   extend(driver, callback) {
+@@ -1616,8 +1613,8 @@ class AuthenticationManager {
+     const provider = new InMemoryUserProvider(users);
+     this.providers.set(name, provider);
+   }
+-  registerDatabaseProvider(name, config2, options) {
+-    const provider = new DatabaseUserProvider(config2, options);
++  registerDatabaseProvider(name, config, options) {
++    const provider = new DatabaseUserProvider(config, options);
+     this.providers.set(name, provider);
+   }
+   generateSecret() {
+@@ -1632,8 +1629,8 @@ class AuthenticationManager {
+     return this.session;
+   }
+ }
+-function createAuthManager(config2) {
+-  return new AuthenticationManager(config2);
++function createAuthManager(config) {
++  return new AuthenticationManager(config);
+ }
+ var defaultAuthConfig = {
+   verbose: false,
+@@ -2095,12 +2092,12 @@ class SessionManager {
+   handler;
+   config;
+   csrfToken = "";
+-  constructor(config2, handler) {
+-    this.config = config2;
+-    this.handler = handler ?? this.createHandler(config2);
++  constructor(config, handler) {
++    this.config = config;
++    this.handler = handler ?? this.createHandler(config);
+   }
+-  createHandler(config2) {
+-    switch (config2.driver) {
++  createHandler(config) {
++    switch (config.driver) {
+       case "memory":
+       case "array":
+         return new MemorySessionHandler;
+@@ -2237,8 +2234,8 @@ class SessionManager {
+     };
+   }
+ }
+-function createSession(config2) {
+-  const defaultConfig2 = {
++function createSession(config) {
++  const defaultConfig = {
+     driver: "memory",
+     lifetime: 120,
+     expireOnClose: false,
+@@ -2250,11 +2247,11 @@ function createSession(config2) {
+     httpOnly: true,
+     sameSite: "lax"
+   };
+-  return new SessionManager({ ...defaultConfig2, ...config2 });
++  return new SessionManager({ ...defaultConfig, ...config });
+ }
+ // src/session/middleware.ts
+ function sessionMiddleware(options = {}) {
+-  const config2 = {
++  const config = {
+     driver: "memory",
+     lifetime: 120,
+     expireOnClose: false,
+@@ -2268,11 +2265,11 @@ function sessionMiddleware(options = {}) {
+     ...options.config
+   };
+   return async (request, next) => {
+-    const session = new SessionManager(config2);
++    const session = new SessionManager(config);
+     const cookieHeader = request.headers.get("cookie");
+     if (cookieHeader) {
+       const cookies = parseCookies2(cookieHeader);
+-      const sessionId = cookies[config2.cookie];
++      const sessionId = cookies[config.cookie];
+       if (sessionId) {
+         session.setId(sessionId);
+       }
+@@ -2393,9 +2390,9 @@ class BaseOAuthProvider {
+   scopes;
+   state = null;
+   scopeSeparator = " ";
+-  constructor(config2) {
+-    this.config = config2;
+-    this.scopes = config2.scopes ?? this.getDefaultScopes();
++  constructor(config) {
++    this.config = config;
++    this.scopes = config.scopes ?? this.getDefaultScopes();
+   }
+   getAuthorizationUrl(state) {
+     this.state = state ?? this.generateState();
+@@ -2511,8 +2508,8 @@ class GoogleProvider extends BaseOAuthProvider {
+   authorizationUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+   tokenUrl = "https://oauth2.googleapis.com/token";
+   userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["openid", "email", "profile"];
+@@ -2544,8 +2541,8 @@ class GoogleProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createGoogleProvider(config2) {
+-  return new GoogleProvider(config2);
++function createGoogleProvider(config) {
++  return new GoogleProvider(config);
+ }
+ // src/oauth/providers/github.ts
+ class GitHubProvider extends BaseOAuthProvider {
+@@ -2553,8 +2550,8 @@ class GitHubProvider extends BaseOAuthProvider {
+   tokenUrl = "https://github.com/login/oauth/access_token";
+   userInfoUrl = "https://api.github.com/user";
+   scopeSeparator = " ";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["read:user", "user:email"];
+@@ -2608,8 +2605,8 @@ class GitHubProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createGitHubProvider(config2) {
+-  return new GitHubProvider(config2);
++function createGitHubProvider(config) {
++  return new GitHubProvider(config);
+ }
+ // src/oauth/providers/facebook.ts
+ class FacebookProvider extends BaseOAuthProvider {
+@@ -2617,8 +2614,8 @@ class FacebookProvider extends BaseOAuthProvider {
+   tokenUrl = "https://graph.facebook.com/v18.0/oauth/access_token";
+   userInfoUrl = "https://graph.facebook.com/v18.0/me";
+   scopeSeparator = ",";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["email", "public_profile"];
+@@ -2651,8 +2648,8 @@ class FacebookProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createFacebookProvider(config2) {
+-  return new FacebookProvider(config2);
++function createFacebookProvider(config) {
++  return new FacebookProvider(config);
+ }
+ // src/oauth/providers/twitter.ts
+ class TwitterProvider extends BaseOAuthProvider {
+@@ -2661,8 +2658,8 @@ class TwitterProvider extends BaseOAuthProvider {
+   userInfoUrl = "https://api.twitter.com/2/users/me";
+   scopeSeparator = " ";
+   codeVerifier = null;
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["tweet.read", "users.read", "offline.access"];
+@@ -2759,16 +2756,16 @@ class TwitterProvider extends BaseOAuthProvider {
+     return verifier;
+   }
+ }
+-function createTwitterProvider(config2) {
+-  return new TwitterProvider(config2);
++function createTwitterProvider(config) {
++  return new TwitterProvider(config);
+ }
+ // src/oauth/providers/linkedin.ts
+ class LinkedInProvider extends BaseOAuthProvider {
+   authorizationUrl = "https://www.linkedin.com/oauth/v2/authorization";
+   tokenUrl = "https://www.linkedin.com/oauth/v2/accessToken";
+   userInfoUrl = "https://api.linkedin.com/v2/userinfo";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["openid", "profile", "email"];
+@@ -2795,16 +2792,16 @@ class LinkedInProvider extends BaseOAuthProvider {
+     console.warn("LinkedIn does not support programmatic token revocation");
+   }
+ }
+-function createLinkedInProvider(config2) {
+-  return new LinkedInProvider(config2);
++function createLinkedInProvider(config) {
++  return new LinkedInProvider(config);
+ }
+ // src/oauth/providers/apple.ts
+ class AppleProvider extends BaseOAuthProvider {
+   authorizationUrl = "https://appleid.apple.com/auth/authorize";
+   tokenUrl = "https://appleid.apple.com/auth/token";
+   userInfoUrl = "";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["name", "email"];
+@@ -2855,16 +2852,16 @@ class AppleProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createAppleProvider(config2) {
+-  return new AppleProvider(config2);
++function createAppleProvider(config) {
++  return new AppleProvider(config);
+ }
+ // src/oauth/providers/microsoft.ts
+ class MicrosoftProvider extends BaseOAuthProvider {
+   authorizationUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
+   tokenUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+   userInfoUrl = "https://graph.microsoft.com/v1.0/me";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["openid", "email", "profile", "User.Read"];
+@@ -2905,16 +2902,16 @@ class MicrosoftProvider extends BaseOAuthProvider {
+     console.warn("Microsoft consumer accounts do not support programmatic token revocation");
+   }
+ }
+-function createMicrosoftProvider(config2) {
+-  return new MicrosoftProvider(config2);
++function createMicrosoftProvider(config) {
++  return new MicrosoftProvider(config);
+ }
+ // src/oauth/providers/discord.ts
+ class DiscordProvider extends BaseOAuthProvider {
+   authorizationUrl = "https://discord.com/oauth2/authorize";
+   tokenUrl = "https://discord.com/api/oauth2/token";
+   userInfoUrl = "https://discord.com/api/users/@me";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["identify", "email"];
+@@ -2961,8 +2958,8 @@ class DiscordProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createDiscordProvider(config2) {
+-  return new DiscordProvider(config2);
++function createDiscordProvider(config) {
++  return new DiscordProvider(config);
+ }
+ // src/oauth/providers/slack.ts
+ class SlackProvider extends BaseOAuthProvider {
+@@ -2970,8 +2967,8 @@ class SlackProvider extends BaseOAuthProvider {
+   tokenUrl = "https://slack.com/api/oauth.v2.access";
+   userInfoUrl = "https://slack.com/api/users.identity";
+   scopeSeparator = ",";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["users:read", "users:read.email"];
+@@ -3018,8 +3015,8 @@ class SlackProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createSlackProvider(config2) {
+-  return new SlackProvider(config2);
++function createSlackProvider(config) {
++  return new SlackProvider(config);
+ }
+ // src/oauth/providers/gitlab.ts
+ class GitLabProvider extends BaseOAuthProvider {
+@@ -3027,8 +3024,8 @@ class GitLabProvider extends BaseOAuthProvider {
+   tokenUrl = "https://gitlab.com/oauth/token";
+   userInfoUrl = "https://gitlab.com/api/v4/user";
+   baseUrl;
+-  constructor(config2, baseUrl = "https://gitlab.com") {
+-    super(config2);
++  constructor(config, baseUrl = "https://gitlab.com") {
++    super(config);
+     this.baseUrl = baseUrl;
+     this.authorizationUrl = `${baseUrl}/oauth/authorize`;
+     this.tokenUrl = `${baseUrl}/oauth/token`;
+@@ -3074,16 +3071,16 @@ class GitLabProvider extends BaseOAuthProvider {
+     }
+   }
+ }
+-function createGitLabProvider(config2, baseUrl) {
+-  return new GitLabProvider(config2, baseUrl);
++function createGitLabProvider(config, baseUrl) {
++  return new GitLabProvider(config, baseUrl);
+ }
+ // src/oauth/providers/bitbucket.ts
+ class BitbucketProvider extends BaseOAuthProvider {
+   authorizationUrl = "https://bitbucket.org/site/oauth2/authorize";
+   tokenUrl = "https://bitbucket.org/site/oauth2/access_token";
+   userInfoUrl = "https://api.bitbucket.org/2.0/user";
+-  constructor(config2) {
+-    super(config2);
++  constructor(config) {
++    super(config);
+   }
+   getDefaultScopes() {
+     return ["account", "email"];
+@@ -3126,8 +3123,8 @@ class BitbucketProvider extends BaseOAuthProvider {
+     console.warn("Bitbucket does not support programmatic token revocation");
+   }
+ }
+-function createBitbucketProvider(config2) {
+-  return new BitbucketProvider(config2);
++function createBitbucketProvider(config) {
++  return new BitbucketProvider(config);
+ }
+ // src/hash/index.ts
+ var DEFAULT_OPTIONS = {
+@@ -3248,9 +3245,9 @@ class AuthRateLimiter {
+   limiters = new Map;
+   storage;
+   config;
+-  constructor(config2 = {}) {
+-    this.config = config2;
+-    this.storage = config2.storage ?? new MemoryStorage({ enableAutoCleanup: true });
++  constructor(config = {}) {
++    this.config = config;
++    this.storage = config.storage ?? new MemoryStorage({ enableAutoCleanup: true });
+     this.initializeLimiters();
+   }
+   initializeLimiters() {
+@@ -3392,8 +3389,8 @@ class AuthRateLimiter {
+     return this.limiters.get(name);
+   }
+ }
+-function createAuthRateLimiter(config2) {
+-  return new AuthRateLimiter(config2);
++function createAuthRateLimiter(config) {
++  return new AuthRateLimiter(config);
+ }
+ function withRateLimit(limiter, keyExtractor, fn) {
+   return async (...args) => {
+@@ -3871,17 +3868,17 @@ class AuditLogger {
+     }
+     return this.log("twoFactor.failure", { userId, success: false, metadata: { method } });
+   }
+-  async logOAuthSuccess(userId, provider2, request) {
++  async logOAuthSuccess(userId, provider, request) {
+     if (request) {
+-      return this.logFromRequest("oauth.success", request, { userId, success: true, provider: provider2 });
++      return this.logFromRequest("oauth.success", request, { userId, success: true, provider });
+     }
+-    return this.log("oauth.success", { userId, success: true, provider: provider2 });
++    return this.log("oauth.success", { userId, success: true, provider });
+   }
+-  async logOAuthFailure(provider2, error, request) {
++  async logOAuthFailure(provider, error, request) {
+     if (request) {
+-      return this.logFromRequest("oauth.failure", request, { success: false, error, provider: provider2 });
++      return this.logFromRequest("oauth.failure", request, { success: false, error, provider });
+     }
+-    return this.log("oauth.failure", { success: false, error, provider: provider2 });
++    return this.log("oauth.failure", { success: false, error, provider });
+   }
+   async logWebAuthnSuccess(userId, operation, request) {
+     const event = operation === "registration" ? "webauthn.registration_success" : "webauthn.authentication_success";
+@@ -3963,6 +3960,63 @@ function createCallbackAuditLogger(callback, baseStorage, defaultMetadata) {
+ }
+ // src/webauthn/server.ts
+ import { Buffer as Buffer2 } from "node:buffer";
++import { createPublicKey, verify as verifyCryptoSignature } from "node:crypto";
++
++// src/webauthn/cbor.ts
++function decodeCBOR(bytes, start = 0) {
++  let offset = start;
++  function read(depth) {
++    if (depth > 16 || offset >= bytes.length)
++      throw new Error("Invalid CBOR");
++    const head = bytes[offset++];
++    const major = head >> 5;
++    const additional = head & 31;
++    let size = additional;
++    if (additional >= 24) {
++      const width = additional === 24 ? 1 : additional === 25 ? 2 : additional === 26 ? 4 : 0;
++      if (!width || offset + width > bytes.length)
++        throw new Error("Invalid CBOR length");
++      size = 0;
++      for (let i = 0;i < width; i++)
++        size = size * 256 + bytes[offset++];
++    }
++    if (major === 0)
++      return size;
++    if (major === 1)
++      return -1 - size;
++    if (major === 2 || major === 3) {
++      if (size > bytes.length - offset)
++        throw new Error("Truncated CBOR");
++      const part = bytes.slice(offset, offset + size);
++      offset += size;
++      return major === 2 ? part : new TextDecoder("utf-8", { fatal: true }).decode(part);
++    }
++    if (major === 4 || major === 5) {
++      if (size > bytes.length - offset)
++        throw new Error("Oversized CBOR");
++      if (major === 4)
++        return Array.from({ length: size }, () => read(depth + 1));
++      const map = new Map;
++      for (let i = 0;i < size; i++) {
++        const key = read(depth + 1);
++        if (map.has(key))
++          throw new Error("Duplicate CBOR key");
++        map.set(key, read(depth + 1));
++      }
++      return map;
++    }
++    if (major === 7 && additional === 20)
++      return false;
++    if (major === 7 && additional === 21)
++      return true;
++    if (major === 7 && additional === 22)
++      return null;
++    throw new Error("Unsupported CBOR");
++  }
++  return { value: read(0), end: offset };
++}
++
++// src/webauthn/server.ts
+ function generateRegistrationOptions(options) {
+   const challenge = options.challenge || crypto.getRandomValues(new Uint8Array(32));
+   return {
+@@ -4000,20 +4054,29 @@ function generateAuthenticationOptions(options) {
+     timeout: options.timeout || 60000
+   };
+ }
+-async function verifyRegistrationResponse(credential, expectedChallenge, expectedOrigin, expectedRPID) {
++async function verifyRegistrationResponse(credential, expectedChallenge, expectedOrigin, expectedRPID, options = {}) {
+   try {
+     const response = credential.response;
+     const clientDataJSON = JSON.parse(new TextDecoder().decode(response.clientDataJSON));
+     if (!challengeMatches(clientDataJSON.challenge, expectedChallenge)) {
+       return { verified: false };
+     }
+-    if (clientDataJSON.origin !== expectedOrigin) {
++    if (clientDataJSON.origin !== expectedOrigin || clientDataJSON.crossOrigin === true) {
+       return { verified: false };
+     }
+     if (clientDataJSON.type !== "webauthn.create") {
+       return { verified: false };
+     }
++    if (credential.type !== "public-key" || credential.id !== Buffer2.from(credential.rawId).toString("base64url"))
++      return { verified: false };
+     const attestationObject = parseAttestationObject(response.attestationObject);
++    if (!attestationObject.authData.flags.userPresent || options.requireUserVerification && !attestationObject.authData.flags.userVerified)
++      return { verified: false };
++    if (attestationObject.authData.flags.backupState && !attestationObject.authData.flags.backupEligible)
++      return { verified: false };
++    if (!arraysEqual(new Uint8Array(credential.rawId), attestationObject.authData.credentialId))
++      return { verified: false };
++    importCredentialKey(attestationObject.authData.credentialPublicKey);
+     const rpIdHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(expectedRPID));
+     if (!arraysEqual(new Uint8Array(rpIdHash), attestationObject.authData.rpIdHash)) {
+       return { verified: false };
+@@ -4035,25 +4098,31 @@ async function verifyRegistrationResponse(credential, expectedChallenge, expecte
+     return { verified: false };
+   }
+ }
+-async function verifyAuthenticationResponse(credential, expectedChallenge, expectedOrigin, expectedRPID, credentialPublicKey, currentCounter) {
++async function verifyAuthenticationResponse(credential, expectedChallenge, expectedOrigin, expectedRPID, credentialPublicKey, currentCounter, options = {}) {
+   try {
+     const response = credential.response;
+     const clientDataJSON = JSON.parse(new TextDecoder().decode(response.clientDataJSON));
+     if (!challengeMatches(clientDataJSON.challenge, expectedChallenge)) {
+       return { verified: false };
+     }
+-    if (clientDataJSON.origin !== expectedOrigin) {
++    if (clientDataJSON.origin !== expectedOrigin || clientDataJSON.crossOrigin === true) {
+       return { verified: false };
+     }
+     if (clientDataJSON.type !== "webauthn.get") {
+       return { verified: false };
+     }
+     const authData = parseAuthenticatorData(response.authenticatorData);
++    if (credential.type !== "public-key" || credential.id !== Buffer2.from(credential.rawId).toString("base64url"))
++      return { verified: false };
++    if (!authData.flags.userPresent || options.requireUserVerification && !authData.flags.userVerified)
++      return { verified: false };
++    if (authData.flags.backupState && !authData.flags.backupEligible)
++      return { verified: false };
+     const rpIdHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(expectedRPID));
+     if (!arraysEqual(new Uint8Array(rpIdHash), authData.rpIdHash)) {
+       return { verified: false };
+     }
+-    if (authData.signCount > 0 && authData.signCount <= currentCounter) {
++    if ((authData.signCount !== 0 || currentCounter !== 0) && authData.signCount <= currentCounter) {
+       return { verified: false };
+     }
+     const clientDataHash = await crypto.subtle.digest("SHA-256", response.clientDataJSON);
+@@ -4076,15 +4145,19 @@ async function verifyAuthenticationResponse(credential, expectedChallenge, expec
+   }
+ }
+ function parseAttestationObject(attestationObject) {
+-  const view = new DataView(attestationObject);
+-  const authData = parseAuthenticatorData(attestationObject);
+-  return {
+-    fmt: "none",
+-    attStmt: {},
+-    authData
+-  };
++  const bytes = new Uint8Array(attestationObject);
++  const decoded = decodeCBOR(bytes);
++  const object = decoded.value;
++  if (decoded.end !== bytes.length || !(object instanceof Map) || object.get("fmt") !== "none" || !(object.get("attStmt") instanceof Map) || object.get("attStmt").size !== 0 || !(object.get("authData") instanceof Uint8Array))
++    throw new Error("Invalid attestation");
++  const authData = parseAuthenticatorData(object.get("authData").buffer);
++  if (!authData.flags.attestedCredentialData)
++    throw new Error("Missing credential data");
++  return { authData };
+ }
+ function parseAuthenticatorData(authData) {
++  if (authData.byteLength < 37)
++    throw new Error("Truncated authenticator data");
+   const view = new DataView(authData);
+   let offset = 0;
+   const rpIdHash = new Uint8Array(authData.slice(offset, offset + 32));
+@@ -4102,14 +4175,25 @@ function parseAuthenticatorData(authData) {
+   const signCount = view.getUint32(offset, false);
+   offset += 4;
+   let credentialPublicKey = new ArrayBuffer(0);
++  let credentialId = new Uint8Array(0);
+   if (flags.attestedCredentialData) {
+     offset += 16;
+     const credIdLength = view.getUint16(offset, false);
+     offset += 2;
++    if (!credIdLength || offset + credIdLength > authData.byteLength)
++      throw new Error("Invalid credential id");
++    credentialId = new Uint8Array(authData.slice(offset, offset + credIdLength));
+     offset += credIdLength;
+-    credentialPublicKey = authData.slice(offset);
+-  }
++    const key = decodeCBOR(new Uint8Array(authData), offset);
++    credentialPublicKey = authData.slice(offset, key.end);
++    offset = key.end;
++  }
++  if (flags.extensionData)
++    offset = decodeCBOR(new Uint8Array(authData), offset).end;
++  if (offset !== authData.byteLength)
++    throw new Error("Trailing authenticator data");
+   return {
++    credentialId,
+     rpIdHash,
+     flags,
+     signCount,
+@@ -4129,28 +4213,36 @@ function challengeMatches(received, expected) {
+     difference |= bytes[i] ^ expected[i];
+   return difference === 0;
+ }
+-async function importCredentialKey(publicKey) {
++function importCredentialKey(publicKey) {
+   const bytes = new Uint8Array(publicKey);
+-  const looksCose = bytes.length > 0 && (bytes[0] & 224) === 160;
+-  if (!looksCose)
+-    return await crypto.subtle.importKey("spki", publicKey, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+-  const coordinate = (label) => {
+-    for (let i = 0;i < bytes.length - 3; i++) {
+-      if (bytes[i] === label && bytes[i + 1] === 88 && bytes[i + 2] === 32)
+-        return bytes.slice(i + 3, i + 35);
+-    }
+-    throw new Error("the COSE key is missing a coordinate");
+-  };
+-  const base64url = (part) => Buffer2.from(part).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+-  return await crypto.subtle.importKey("jwk", { kty: "EC", crv: "P-256", x: base64url(coordinate(33)), y: base64url(coordinate(34)), ext: true }, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
++  if ((bytes[0] & 224) !== 160)
++    return createPublicKey({ key: Buffer2.from(publicKey), format: "der", type: "spki" });
++  const decoded = decodeCBOR(bytes);
++  const key = decoded.value;
++  if (!(key instanceof Map) || decoded.end !== bytes.length)
++    throw new Error("Invalid COSE key");
++  function part(label, length) {
++    const value = key.get(label);
++    if (!(value instanceof Uint8Array) || !value.length || length && value.length !== length)
++      throw new Error("Invalid key component");
++    return Buffer2.from(value).toString("base64url");
++  }
++  if (key.get(1) === 2 && key.get(3) === -7 && key.get(-1) === 1)
++    return createPublicKey({ format: "jwk", key: { kty: "EC", crv: "P-256", x: part(-2, 32), y: part(-3, 32) } });
++  if (key.get(1) === 3 && key.get(3) === -257) {
++    const modulus = key.get(-1);
++    if (!(modulus instanceof Uint8Array) || modulus.length < 256)
++      throw new Error("Weak RSA key");
++    return createPublicKey({ format: "jwk", key: { kty: "RSA", n: part(-1), e: part(-2) } });
++  }
++  throw new Error("Unsupported credential algorithm");
+ }
+ async function verifySignature2(publicKey, data, signature) {
+   try {
+-    const key = await importCredentialKey(publicKey);
+-    return await crypto.subtle.verify({
+-      name: "ECDSA",
+-      hash: "SHA-256"
+-    }, key, signature, data.buffer);
++    const key = importCredentialKey(publicKey);
++    if (key.asymmetricKeyType !== "ec" && key.asymmetricKeyType !== "rsa")
++      return false;
++    return verifyCryptoSignature("sha256", data, key, Buffer2.from(signature));
+   } catch {
+     return false;
+   }
+@@ -4164,21 +4256,82 @@ function arraysEqual(a, b) {
+   }
+   return true;
+ }
++// src/webauthn/json.ts
++function encodeBase64URL(value) {
++  const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
++  return btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join("")).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
++}
++function decodeBase64URL(value) {
++  if (typeof value !== "string" || !value || value.length > 131072 || !/^[A-Za-z0-9_-]+$/.test(value) || value.length % 4 === 1)
++    throw new Error("Invalid base64url");
++  const raw = atob(value.replace(/-/g, "+").replace(/_/g, "/"));
++  const bytes = Uint8Array.from(raw, (char) => char.charCodeAt(0));
++  if (encodeBase64URL(bytes) !== value)
++    throw new Error("Noncanonical base64url");
++  return bytes.buffer;
++}
++function registrationOptionsToJSON(options) {
++  return {
++    ...options,
++    challenge: encodeBase64URL(options.challenge),
++    user: { ...options.user, id: encodeBase64URL(options.user.id) },
++    excludeCredentials: options.excludeCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? item.id : encodeBase64URL(item.id) }))
++  };
++}
++function authenticationOptionsToJSON(options) {
++  return {
++    ...options,
++    challenge: encodeBase64URL(options.challenge),
++    allowCredentials: options.allowCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? item.id : encodeBase64URL(item.id) }))
++  };
++}
++function registrationCredentialFromJSON(value) {
++  return { id: value.id, type: value.type, rawId: decodeBase64URL(value.rawId), response: {
++    clientDataJSON: decodeBase64URL(value.response.clientDataJSON),
++    attestationObject: decodeBase64URL(value.response.attestationObject)
++  } };
++}
++function authenticationCredentialFromJSON(value) {
++  return { id: value.id, type: value.type, rawId: decodeBase64URL(value.rawId), response: {
++    clientDataJSON: decodeBase64URL(value.response.clientDataJSON),
++    authenticatorData: decodeBase64URL(value.response.authenticatorData),
++    signature: decodeBase64URL(value.response.signature),
++    userHandle: value.response.userHandle == null ? null : decodeBase64URL(value.response.userHandle)
++  } };
++}
++function registrationCredentialToJSON(value) {
++  return { id: value.id, type: value.type, rawId: encodeBase64URL(value.rawId), response: {
++    clientDataJSON: encodeBase64URL(value.response.clientDataJSON),
++    attestationObject: encodeBase64URL(value.response.attestationObject),
++    transports: value.response.transports
++  } };
++}
++function authenticationCredentialToJSON(value) {
++  return { id: value.id, type: value.type, rawId: encodeBase64URL(value.rawId), response: {
++    clientDataJSON: encodeBase64URL(value.response.clientDataJSON),
++    authenticatorData: encodeBase64URL(value.response.authenticatorData),
++    signature: encodeBase64URL(value.response.signature),
++    userHandle: value.response.userHandle == null ? null : encodeBase64URL(value.response.userHandle)
++  } };
++}
++
+ // src/webauthn/browser.ts
+-async function startRegistration(options) {
+-  if (!window.PublicKeyCredential) {
++async function startRegistration(options, control = {}) {
++  if (!browserSupportsWebAuthn()) {
+     throw new Error("WebAuthn is not supported in this browser");
+   }
+   const publicKeyOptions = {
+     ...options,
+-    challenge: options.challenge,
++    challenge: typeof options.challenge === "string" ? new Uint8Array(decodeBase64URL(options.challenge)) : options.challenge,
+     user: {
+       ...options.user,
+-      id: options.user.id
++      id: typeof options.user.id === "string" ? new Uint8Array(decodeBase64URL(options.user.id)) : options.user.id
+     }
+   };
++  publicKeyOptions.excludeCredentials = options.excludeCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? decodeBase64URL(item.id) : item.id }));
+   const credential = await navigator.credentials.create({
+-    publicKey: publicKeyOptions
++    publicKey: publicKeyOptions,
++    signal: control.signal
+   });
+   if (!credential) {
+     throw new Error("Failed to create credential");
+@@ -4188,17 +4341,24 @@ async function startRegistration(options) {
+     rawId: credential.rawId,
+     response: {
+       clientDataJSON: credential.response.clientDataJSON,
+-      attestationObject: credential.response.attestationObject
++      attestationObject: credential.response.attestationObject,
++      transports: credential.response.getTransports?.() || []
+     },
+     type: credential.type
+   };
+ }
+-async function startAuthentication(options) {
+-  if (!window.PublicKeyCredential) {
++async function startAuthentication(options, control = {}) {
++  if (!browserSupportsWebAuthn()) {
+     throw new Error("WebAuthn is not supported in this browser");
+   }
+   const credential = await navigator.credentials.get({
+-    publicKey: options
++    publicKey: {
++      ...options,
++      challenge: typeof options.challenge === "string" ? decodeBase64URL(options.challenge) : options.challenge,
++      allowCredentials: options.allowCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? decodeBase64URL(item.id) : item.id }))
++    },
++    signal: control.signal,
++    mediation: control.mediation
+   });
+   if (!credential) {
+     throw new Error("Failed to get credential");
+@@ -4216,7 +4376,7 @@ async function startAuthentication(options) {
+   };
+ }
+ async function platformAuthenticatorIsAvailable() {
+-  if (!window.PublicKeyCredential) {
++  if (!browserSupportsWebAuthn()) {
+     return false;
+   }
+   try {
+@@ -4226,14 +4386,14 @@ async function platformAuthenticatorIsAvailable() {
+   }
+ }
+ function browserSupportsWebAuthn() {
+-  return !!window.PublicKeyCredential;
++  return typeof globalThis.PublicKeyCredential !== "undefined" && typeof navigator !== "undefined" && !!navigator.credentials;
+ }
+ async function browserSupportsWebAuthnAutofill() {
+-  if (!window.PublicKeyCredential) {
++  if (!browserSupportsWebAuthn()) {
+     return false;
+   }
+   try {
+-    return await PublicKeyCredential.isConditionalMediationAvailable?.();
++    return !!await PublicKeyCredential.isConditionalMediationAvailable?.();
+   } catch {
+     return false;
+   }
+@@ -4301,9 +4461,9 @@ async function generate(options) {
+ }
+ async function verifyWithCounter(token, options) {
+   const step = options.step || 30;
+-  const window2 = options.window ?? 1;
++  const window = options.window ?? 1;
+   const currentCounter = Math.floor(Date.now() / 1000 / step);
+-  for (let i = -window2;i <= window2; i++) {
++  for (let i = -window;i <= window; i++) {
+     const counter = currentCounter + i;
+     const expectedToken = await generateHOTP({
+       secret: options.secret,
+@@ -4393,176 +4553,184 @@ function base64UrlDecode2(input) {
+   return base64Decode(base64);
+ }
+ export {
+-  withRateLimit,
+-  verifyWithCounter,
+-  verifyWithCounter as verifyTOTPWithCounter,
+-  verify3 as verifyTOTP,
+-  verifyRegistrationResponse,
+-  verify as verifyJwt,
+-  verify2 as verifyHash,
+-  verifyAuthenticationResponse,
+-  verify,
+-  validateUsername,
+-  validateUrl,
+-  validateScopes,
+-  validateRpId,
+-  validateRequired,
+-  validateRedirectUri,
+-  validateProviderName,
+-  validatePositiveNumber,
+-  validateOAuthCredentials,
+-  validateLength,
+-  validateJwtAlgorithm,
+-  validateEmail,
+-  validateDuration,
+-  validateBase32,
+-  keyuri as totpKeyUri,
+-  tokenBlacklistMiddleware,
+-  startRegistration,
+-  startAuthentication,
+-  sign as signJwt,
+-  sign,
+-  sessionMiddleware,
+-  sanitizeString,
+-  platformAuthenticatorIsAvailable,
+-  parseDuration,
+-  needsRehash,
+-  keyuri,
+-  hash,
+-  getConfig,
+-  generateToken,
+-  generateSecret as generateTOTPSecret,
+-  generate as generateTOTP,
+-  generateSecret,
+-  generateRegistrationOptions,
+-  generateRandomString,
+-  generateJwtId,
+-  generateAuthenticationOptions,
+-  generate,
+-  defaultConfig,
+-  defaultAuthRateLimits,
+-  defaultAuthConfig,
+-  decode as decodeJwt,
+-  decode,
+-  csrfMiddleware,
+-  createTwitterProvider,
+-  createTokenPair,
+-  createTokenManager,
+-  createTokenBlacklist,
+-  createSlackProvider,
+-  createSession,
+-  createSQLiteSessionHandler,
+-  createRedisTokenBlacklist,
+-  createRedisSessionHandler,
+-  createOAuthManager,
+-  createMicrosoftProvider,
+-  createLinkedInProvider,
+-  createHasher,
+-  createGoogleProvider,
+-  createGitLabProvider,
+-  createGitHubProvider,
+-  createFacebookProvider,
+-  createDiscordProvider,
+-  createDatabaseSessionHandler,
+-  createConsoleAuditLogger,
+-  createCallbackAuditLogger,
+-  createBitbucketProvider,
+-  createAuthRateLimiter,
+-  createAuthManager,
+-  createAuditLogger,
+-  createAppleProvider,
+-  createAccountLockout,
+-  config,
+-  browserSupportsWebAuthnAutofill,
+-  browserSupportsWebAuthn,
+-  base64UrlEncode2 as base64UrlEncode,
+-  base64UrlDecode2 as base64UrlDecode,
+-  base64Encode,
+-  base64Decode,
+-  base32Encode,
+-  base32Decode,
+-  WebAuthnRpIdError,
+-  WebAuthnRegistrationError,
+-  WebAuthnOriginError,
+-  WebAuthnError,
+-  WebAuthnCounterError,
+-  WebAuthnChallengeError,
+-  WebAuthnAuthenticationError,
+-  ValidationError,
+-  UserNotFoundError,
+-  TwitterProvider,
+-  TokenSignatureError,
+-  TokenRevokedError,
+-  TokenNotBeforeError,
+-  TokenManager,
+-  TokenMalformedError,
+-  TokenInvalidError,
+-  TokenGuard,
+-  TokenExpiredError,
+-  TokenError,
+-  TokenBlacklist,
+-  TOTPSecretError,
+-  TOTPInvalidCodeError,
+-  TOTPError,
+-  SlackProvider,
+-  SessionStorageError,
+-  SessionNotStartedError,
+-  SessionManager,
+-  SessionGuard,
+-  SessionExpiredError,
+-  SessionError,
+-  SQLiteSessionAdapter,
+-  RedisTokenBlacklist,
+-  RedisSessionHandler,
+-  RateLimiter,
+-  ProviderNotFoundError,
+-  ProviderError,
+-  OAuthUserInfoError,
+-  OAuthTokenError,
+-  OAuthStateError,
+-  OAuthProviderNotFoundError,
+-  OAuthManager,
+-  OAuthError,
+-  MissingSecretError,
+-  MicrosoftProvider,
+-  MemoryTokenBlacklist,
+-  MemoryStorage,
+-  MemorySessionHandler,
+-  MemoryAuditLogStorage,
+-  LinkedInProvider,
+-  JwtGuard,
+-  InvalidUrlError,
+-  InvalidEmailError,
+-  InvalidCredentialsError,
+-  InvalidConfigurationError,
+-  InMemoryUserProvider,
+-  GuardNotFoundError,
+-  GuardError,
+-  GoogleProvider,
+-  GitLabProvider,
+-  GitHubProvider,
+-  GenericUser,
+-  GenericSqlSessionAdapter,
+-  FileSessionHandler,
+-  FacebookProvider,
+-  DiscordProvider,
+-  DatabaseUserProvider,
+-  DatabaseSessionHandler,
+-  CookieSessionHandler,
+-  ConsoleAuditLogStorage,
+-  ConfigurationError,
+-  CallbackAuditLogStorage,
+-  CSRFTokenMissingError,
+-  CSRFTokenMismatchError,
+-  CSRFError,
+-  BitbucketProvider,
+-  BaseOAuthProvider,
+-  AuthenticationManager,
+-  AuthenticationError,
+-  AuthRateLimiter,
+-  AuthError,
+-  AuditLogger,
+-  AppleProvider,
++  AccountLockedError,
+   AccountLockoutManager,
+-  AccountLockedError
++  AppleProvider,
++  AuditLogger,
++  AuthError,
++  AuthRateLimiter,
++  AuthenticationError,
++  AuthenticationManager,
++  BaseOAuthProvider,
++  BitbucketProvider,
++  CSRFError,
++  CSRFTokenMismatchError,
++  CSRFTokenMissingError,
++  CallbackAuditLogStorage,
++  ConfigurationError,
++  ConsoleAuditLogStorage,
++  CookieSessionHandler,
++  DatabaseSessionHandler,
++  DatabaseUserProvider,
++  DiscordProvider,
++  FacebookProvider,
++  FileSessionHandler,
++  GenericSqlSessionAdapter,
++  GenericUser,
++  GitHubProvider,
++  GitLabProvider,
++  GoogleProvider,
++  GuardError,
++  GuardNotFoundError,
++  InMemoryUserProvider,
++  InvalidConfigurationError,
++  InvalidCredentialsError,
++  InvalidEmailError,
++  InvalidUrlError,
++  JwtGuard,
++  LinkedInProvider,
++  MemoryAuditLogStorage,
++  MemorySessionHandler,
++  MemoryStorage,
++  MemoryTokenBlacklist,
++  MicrosoftProvider,
++  MissingSecretError,
++  OAuthError,
++  OAuthManager,
++  OAuthProviderNotFoundError,
++  OAuthStateError,
++  OAuthTokenError,
++  OAuthUserInfoError,
++  ProviderError,
++  ProviderNotFoundError,
++  RateLimiter,
++  RedisSessionHandler,
++  RedisTokenBlacklist,
++  SQLiteSessionAdapter,
++  SessionError,
++  SessionExpiredError,
++  SessionGuard,
++  SessionManager,
++  SessionNotStartedError,
++  SessionStorageError,
++  SlackProvider,
++  TOTPError,
++  TOTPInvalidCodeError,
++  TOTPSecretError,
++  TokenBlacklist,
++  TokenError,
++  TokenExpiredError,
++  TokenGuard,
++  TokenInvalidError,
++  TokenMalformedError,
++  TokenManager,
++  TokenNotBeforeError,
++  TokenRevokedError,
++  TokenSignatureError,
++  TwitterProvider,
++  UserNotFoundError,
++  ValidationError,
++  WebAuthnAuthenticationError,
++  WebAuthnChallengeError,
++  WebAuthnCounterError,
++  WebAuthnError,
++  WebAuthnOriginError,
++  WebAuthnRegistrationError,
++  WebAuthnRpIdError,
++  authenticationCredentialFromJSON,
++  authenticationCredentialToJSON,
++  authenticationOptionsToJSON,
++  base32Decode,
++  base32Encode,
++  base64Decode,
++  base64Encode,
++  base64UrlDecode2 as base64UrlDecode,
++  base64UrlEncode2 as base64UrlEncode,
++  browserSupportsWebAuthn,
++  browserSupportsWebAuthnAutofill,
++  config,
++  createAccountLockout,
++  createAppleProvider,
++  createAuditLogger,
++  createAuthManager,
++  createAuthRateLimiter,
++  createBitbucketProvider,
++  createCallbackAuditLogger,
++  createConsoleAuditLogger,
++  createDatabaseSessionHandler,
++  createDiscordProvider,
++  createFacebookProvider,
++  createGitHubProvider,
++  createGitLabProvider,
++  createGoogleProvider,
++  createHasher,
++  createLinkedInProvider,
++  createMicrosoftProvider,
++  createOAuthManager,
++  createRedisSessionHandler,
++  createRedisTokenBlacklist,
++  createSQLiteSessionHandler,
++  createSession,
++  createSlackProvider,
++  createTokenBlacklist,
++  createTokenManager,
++  createTokenPair,
++  createTwitterProvider,
++  csrfMiddleware,
++  decode,
++  decodeBase64URL,
++  decode as decodeJwt,
++  defaultAuthConfig,
++  defaultAuthRateLimits,
++  defaultConfig,
++  encodeBase64URL,
++  generate,
++  generateAuthenticationOptions,
++  generateJwtId,
++  generateRandomString,
++  generateRegistrationOptions,
++  generateSecret,
++  generate as generateTOTP,
++  generateSecret as generateTOTPSecret,
++  generateToken,
++  getConfig,
++  hash,
++  keyuri,
++  needsRehash,
++  parseDuration,
++  platformAuthenticatorIsAvailable,
++  registrationCredentialFromJSON,
++  registrationCredentialToJSON,
++  registrationOptionsToJSON,
++  sanitizeString,
++  sessionMiddleware,
++  sign,
++  sign as signJwt,
++  startAuthentication,
++  startRegistration,
++  tokenBlacklistMiddleware,
++  keyuri as totpKeyUri,
++  validateBase32,
++  validateDuration,
++  validateEmail,
++  validateJwtAlgorithm,
++  validateLength,
++  validateOAuthCredentials,
++  validatePositiveNumber,
++  validateProviderName,
++  validateRedirectUri,
++  validateRequired,
++  validateRpId,
++  validateScopes,
++  validateUrl,
++  validateUsername,
++  verify,
++  verifyAuthenticationResponse,
++  verify2 as verifyHash,
++  verify as verifyJwt,
++  verifyRegistrationResponse,
++  verify3 as verifyTOTP,
++  verifyWithCounter as verifyTOTPWithCounter,
++  verifyWithCounter,
++  withRateLimit
+ };
+diff --git a/node_modules/@stacksjs/ts-auth/dist/passkeys-browser.d.ts b/dist/passkeys-browser.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..ab3c693677bcfff9b4e19d1736826c159bb10956
+--- /dev/null
++++ b/dist/passkeys-browser.d.ts
+@@ -0,0 +1,3 @@
++// Browser-safe entry: no server, crypto, database or configuration dependencies.
++export * from './webauthn/browser';
++export * from './webauthn/json';
+diff --git a/node_modules/@stacksjs/ts-auth/dist/passkeys-browser.js b/dist/passkeys-browser.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..ba77dbf3f5b8363ec27bb1cd17ef8e7177a02ca2
+--- /dev/null
++++ b/dist/passkeys-browser.js
+@@ -0,0 +1,157 @@
++// src/webauthn/json.ts
++function encodeBase64URL(value) {
++  const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
++  return btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join("")).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
++}
++function decodeBase64URL(value) {
++  if (typeof value !== "string" || !value || value.length > 131072 || !/^[A-Za-z0-9_-]+$/.test(value) || value.length % 4 === 1)
++    throw new Error("Invalid base64url");
++  const raw = atob(value.replace(/-/g, "+").replace(/_/g, "/"));
++  const bytes = Uint8Array.from(raw, (char) => char.charCodeAt(0));
++  if (encodeBase64URL(bytes) !== value)
++    throw new Error("Noncanonical base64url");
++  return bytes.buffer;
++}
++function registrationOptionsToJSON(options) {
++  return {
++    ...options,
++    challenge: encodeBase64URL(options.challenge),
++    user: { ...options.user, id: encodeBase64URL(options.user.id) },
++    excludeCredentials: options.excludeCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? item.id : encodeBase64URL(item.id) }))
++  };
++}
++function authenticationOptionsToJSON(options) {
++  return {
++    ...options,
++    challenge: encodeBase64URL(options.challenge),
++    allowCredentials: options.allowCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? item.id : encodeBase64URL(item.id) }))
++  };
++}
++function registrationCredentialFromJSON(value) {
++  return { id: value.id, type: value.type, rawId: decodeBase64URL(value.rawId), response: {
++    clientDataJSON: decodeBase64URL(value.response.clientDataJSON),
++    attestationObject: decodeBase64URL(value.response.attestationObject)
++  } };
++}
++function authenticationCredentialFromJSON(value) {
++  return { id: value.id, type: value.type, rawId: decodeBase64URL(value.rawId), response: {
++    clientDataJSON: decodeBase64URL(value.response.clientDataJSON),
++    authenticatorData: decodeBase64URL(value.response.authenticatorData),
++    signature: decodeBase64URL(value.response.signature),
++    userHandle: value.response.userHandle == null ? null : decodeBase64URL(value.response.userHandle)
++  } };
++}
++function registrationCredentialToJSON(value) {
++  return { id: value.id, type: value.type, rawId: encodeBase64URL(value.rawId), response: {
++    clientDataJSON: encodeBase64URL(value.response.clientDataJSON),
++    attestationObject: encodeBase64URL(value.response.attestationObject),
++    transports: value.response.transports
++  } };
++}
++function authenticationCredentialToJSON(value) {
++  return { id: value.id, type: value.type, rawId: encodeBase64URL(value.rawId), response: {
++    clientDataJSON: encodeBase64URL(value.response.clientDataJSON),
++    authenticatorData: encodeBase64URL(value.response.authenticatorData),
++    signature: encodeBase64URL(value.response.signature),
++    userHandle: value.response.userHandle == null ? null : encodeBase64URL(value.response.userHandle)
++  } };
++}
++
++// src/webauthn/browser.ts
++async function startRegistration(options, control = {}) {
++  if (!browserSupportsWebAuthn()) {
++    throw new Error("WebAuthn is not supported in this browser");
++  }
++  const publicKeyOptions = {
++    ...options,
++    challenge: typeof options.challenge === "string" ? new Uint8Array(decodeBase64URL(options.challenge)) : options.challenge,
++    user: {
++      ...options.user,
++      id: typeof options.user.id === "string" ? new Uint8Array(decodeBase64URL(options.user.id)) : options.user.id
++    }
++  };
++  publicKeyOptions.excludeCredentials = options.excludeCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? decodeBase64URL(item.id) : item.id }));
++  const credential = await navigator.credentials.create({
++    publicKey: publicKeyOptions,
++    signal: control.signal
++  });
++  if (!credential) {
++    throw new Error("Failed to create credential");
++  }
++  return {
++    id: credential.id,
++    rawId: credential.rawId,
++    response: {
++      clientDataJSON: credential.response.clientDataJSON,
++      attestationObject: credential.response.attestationObject,
++      transports: credential.response.getTransports?.() || []
++    },
++    type: credential.type
++  };
++}
++async function startAuthentication(options, control = {}) {
++  if (!browserSupportsWebAuthn()) {
++    throw new Error("WebAuthn is not supported in this browser");
++  }
++  const credential = await navigator.credentials.get({
++    publicKey: {
++      ...options,
++      challenge: typeof options.challenge === "string" ? decodeBase64URL(options.challenge) : options.challenge,
++      allowCredentials: options.allowCredentials?.map((item) => ({ ...item, id: typeof item.id === "string" ? decodeBase64URL(item.id) : item.id }))
++    },
++    signal: control.signal,
++    mediation: control.mediation
++  });
++  if (!credential) {
++    throw new Error("Failed to get credential");
++  }
++  return {
++    id: credential.id,
++    rawId: credential.rawId,
++    response: {
++      clientDataJSON: credential.response.clientDataJSON,
++      authenticatorData: credential.response.authenticatorData,
++      signature: credential.response.signature,
++      userHandle: credential.response.userHandle
++    },
++    type: credential.type
++  };
++}
++async function platformAuthenticatorIsAvailable() {
++  if (!browserSupportsWebAuthn()) {
++    return false;
++  }
++  try {
++    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
++  } catch {
++    return false;
++  }
++}
++function browserSupportsWebAuthn() {
++  return typeof globalThis.PublicKeyCredential !== "undefined" && typeof navigator !== "undefined" && !!navigator.credentials;
++}
++async function browserSupportsWebAuthnAutofill() {
++  if (!browserSupportsWebAuthn()) {
++    return false;
++  }
++  try {
++    return !!await PublicKeyCredential.isConditionalMediationAvailable?.();
++  } catch {
++    return false;
++  }
++}
++export {
++  authenticationCredentialFromJSON,
++  authenticationCredentialToJSON,
++  authenticationOptionsToJSON,
++  browserSupportsWebAuthn,
++  browserSupportsWebAuthnAutofill,
++  decodeBase64URL,
++  encodeBase64URL,
++  platformAuthenticatorIsAvailable,
++  registrationCredentialFromJSON,
++  registrationCredentialToJSON,
++  registrationOptionsToJSON,
++  startAuthentication,
++  startRegistration
++};
+diff --git a/dist/webauthn/browser.d.ts b/dist/webauthn/browser.d.ts
+index c2004a6278e661a6c97c6dd9627935545d66f1f0..a1bfe944d9cea114067e207b88b42ac0ca91f22f 100644
+--- a/dist/webauthn/browser.d.ts
++++ b/dist/webauthn/browser.d.ts
+@@ -1,12 +1,13 @@
+ import type { AuthenticationCredential, PublicKeyCredentialCreationOptions, PublicKeyCredentialRequestOptions, RegistrationCredential } from './types';
++import type { RegistrationOptionsJSON, AuthenticationOptionsJSON } from './json';
+ /**
+  * Start registration (credential creation) process
+  */
+-export declare function startRegistration(options: PublicKeyCredentialCreationOptions): Promise<RegistrationCredential>;
++export declare function startRegistration(options: PublicKeyCredentialCreationOptions | RegistrationOptionsJSON, control?: { signal?: AbortSignal }): Promise<RegistrationCredential>;
+ /**
+  * Start authentication (credential verification) process
+  */
+-export declare function startAuthentication(options: PublicKeyCredentialRequestOptions): Promise<AuthenticationCredential>;
++export declare function startAuthentication(options: PublicKeyCredentialRequestOptions | AuthenticationOptionsJSON, control?: { signal?: AbortSignal, mediation?: 'conditional' | 'optional' | 'required' }): Promise<AuthenticationCredential>;
+ /**
+  * Check if platform authenticator is available
+  */
+diff --git a/node_modules/@stacksjs/ts-auth/dist/webauthn/cbor.d.ts b/dist/webauthn/cbor.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..62bc72d558dcbc3065b7e43cdf0ee212213b793d
+--- /dev/null
++++ b/dist/webauthn/cbor.d.ts
+@@ -0,0 +1,2 @@
++/** Bounded CBOR decoder for WebAuthn's definite-length attestation and COSE maps. */
++export declare function decodeCBOR(bytes: Uint8Array, start?: number): { value: any, end: number };
+diff --git a/dist/webauthn/index.d.ts b/dist/webauthn/index.d.ts
+index 6db21909ad011e81ff77b3ac6ff29581251d2e27..ff42cd75ce83d8c8f50aa96c77306552c85992bb 100644
+--- a/dist/webauthn/index.d.ts
++++ b/dist/webauthn/index.d.ts
+@@ -1,3 +1,4 @@
+ export * from './server';
+ export * from './browser';
+ export * from './types';
++export * from './json';
+diff --git a/node_modules/@stacksjs/ts-auth/dist/webauthn/json.d.ts b/dist/webauthn/json.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..426efed1746f831a11cb1af5e0697471ae86fbcb
+--- /dev/null
++++ b/dist/webauthn/json.d.ts
+@@ -0,0 +1,31 @@
++import type { AuthenticationCredential, RegistrationCredential, PublicKeyCredentialCreationOptions, PublicKeyCredentialRequestOptions } from './types';
++/** JSON-safe WebAuthn binary fields, encoded as unpadded base64url. */
++export declare function encodeBase64URL(value: ArrayBuffer | Uint8Array): string;
++export declare function decodeBase64URL(value: unknown): ArrayBuffer;
++export declare function registrationOptionsToJSON(options: PublicKeyCredentialCreationOptions): RegistrationOptionsJSON;
++export declare function authenticationOptionsToJSON(options: PublicKeyCredentialRequestOptions): AuthenticationOptionsJSON;
++export declare function registrationCredentialFromJSON(value: RegistrationCredentialJSON): RegistrationCredential;
++export declare function authenticationCredentialFromJSON(value: AuthenticationCredentialJSON): AuthenticationCredential;
++export declare function registrationCredentialToJSON(value: RegistrationCredential): RegistrationCredentialJSON;
++export declare function authenticationCredentialToJSON(value: AuthenticationCredential): AuthenticationCredentialJSON;
++export declare interface RegistrationCredentialJSON {
++  id: string
++  rawId: string
++  type: string
++  response: { clientDataJSON: string, attestationObject: string, transports?: string[] }
++}
++export declare interface AuthenticationCredentialJSON {
++  id: string
++  rawId: string
++  type: string
++  response: { clientDataJSON: string, authenticatorData: string, signature: string, userHandle: string | null }
++}
++export type RegistrationOptionsJSON = Omit<PublicKeyCredentialCreationOptions, 'challenge' | 'user' | 'excludeCredentials'> & {
++  challenge: string
++  user: { id: string, name: string, displayName: string }
++  excludeCredentials?: { id: string, type: string, transports?: string[] }[]
++}
++export type AuthenticationOptionsJSON = Omit<PublicKeyCredentialRequestOptions, 'challenge' | 'allowCredentials'> & {
++  challenge: string
++  allowCredentials?: { id: string, type: string, transports?: string[] }[]
++}
+diff --git a/dist/webauthn/server.d.ts b/dist/webauthn/server.d.ts
+index d2b3220f9e468c7a615a584004cd74d3362d9b9f..acc86c9f5ecf2152b9a1707e355cf7ec054df05f 100644
+--- a/dist/webauthn/server.d.ts
++++ b/dist/webauthn/server.d.ts
+@@ -11,7 +11,7 @@ export declare function generateAuthenticationOptions(options: AuthenticationOpt
+  * Verify registration response from the client
+  */
+ // eslint-disable-next-line no-unused-vars
+-export declare function verifyRegistrationResponse(credential: RegistrationCredential, expectedChallenge: Uint8Array, expectedOrigin: string, expectedRPID: string): Promise<{
++export declare function verifyRegistrationResponse(credential: RegistrationCredential, expectedChallenge: Uint8Array, expectedOrigin: string, expectedRPID: string, options?: { requireUserVerification?: boolean }): Promise<{
+   verified: boolean
+   registrationInfo?: {
+     credential: {
+@@ -28,7 +28,7 @@ export declare function verifyRegistrationResponse(credential: RegistrationCrede
+  * Verify authentication response from the client
+  */
+ // eslint-disable-next-line no-unused-vars
+-export declare function verifyAuthenticationResponse(credential: AuthenticationCredential, expectedChallenge: Uint8Array, expectedOrigin: string, expectedRPID: string, credentialPublicKey: ArrayBuffer, currentCounter: number): Promise<{
++export declare function verifyAuthenticationResponse(credential: AuthenticationCredential, expectedChallenge: Uint8Array, expectedOrigin: string, expectedRPID: string, credentialPublicKey: ArrayBuffer, currentCounter: number, options?: { requireUserVerification?: boolean }): Promise<{
+   verified: boolean
+   authenticationInfo?: {
+     newCounter: number
+diff --git a/dist/webauthn/types.d.ts b/dist/webauthn/types.d.ts
+index 37c811f919daa478ee19dd70d42eb67b5549f349..615d245772af00fa40a9b751667f1f83e7fc3002 100644
+--- a/dist/webauthn/types.d.ts
++++ b/dist/webauthn/types.d.ts
+@@ -56,6 +56,7 @@ export declare interface AuthenticationCredential {
+ export declare interface AuthenticatorAttestationResponse {
+   clientDataJSON: ArrayBuffer
+   attestationObject: ArrayBuffer
++  transports?: string[]
+ }
+ export declare interface AuthenticatorAssertionResponse {
+   clientDataJSON: ArrayBuffer
+diff --git a/package.json b/package.json
+index ed836ed6da2ae873be26729539b475fe6512a38d..47832ba1a0bc17237d843baa1f7d573b43dd2adc 100644
+--- a/package.json
++++ b/package.json
+@@ -17,6 +17,10 @@
+     },
+     "./*": {
+       "import": "./dist/*"
++    },
++    "./passkeys-browser": {
++      "types": "./dist/passkeys-browser.d.ts",
++      "import": "./dist/passkeys-browser.js"
+     }
+   },
+   "bugs": {

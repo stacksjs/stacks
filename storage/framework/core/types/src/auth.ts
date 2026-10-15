@@ -322,9 +322,10 @@ export interface AuthOptions {
     url?: string
   }
 
-  /**
-   * Magic-link (passwordless) sign-in configuration
-   */
+  /** Opt-in discoverable passkeys. Origin defaults to config.app.url. */
+  passkeys?: { enabled?: boolean, origin?: string, name?: string }
+
+  /** Magic-link (passwordless) sign-in configuration. */
   magicLink?: {
     /**
      * Whether the magic-link endpoints are active.

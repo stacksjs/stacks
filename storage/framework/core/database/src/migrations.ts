@@ -2331,6 +2331,7 @@ const FRAMEWORK_TABLES = [
   'oauth_access_tokens',
   'oauth_clients',
   'passkeys',
+  'passkey_ceremonies',
   'failed_jobs',
   'jobs',
   'notifications',

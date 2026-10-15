@@ -106,13 +106,13 @@ export function passkeyDescriptors(
 /** `transports` is stored as a JSON array string; anything else means unknown. */
 function parseTransports(stored: string | undefined): PublicKeyCredentialDescriptorJSON['transports'] {
   if (!stored)
-    return ['internal']
+    return undefined
   try {
     const parsed = JSON.parse(stored)
-    return Array.isArray(parsed) && parsed.length ? parsed : ['internal']
+    return Array.isArray(parsed) && parsed.length ? parsed.filter(value => ['ble', 'internal', 'nfc', 'usb', 'hybrid'].includes(value)) : undefined
   }
   catch {
-    return ['internal']
+    return undefined
   }
 }
 
@@ -130,7 +130,7 @@ export interface PasskeyAttribute {
   backup_status: boolean
   transports?: string
   created_at?: Date
-  last_used_at: string
+  last_used_at: string | null
 }
 
 export async function getUserPasskeys(userId: number): Promise<PasskeyAttribute[]> {
@@ -166,6 +166,7 @@ export async function updatePasskeyCounter(
   userId: number,
   passkeyId: string,
   newCounter: number,
+  verifiedCredential?: Pick<PasskeyAttribute, 'counter' | 'cred_public_key'>,
 ): Promise<boolean> {
   if (!Number.isSafeInteger(newCounter) || newCounter < 0)
     return false
@@ -174,7 +175,7 @@ export async function updatePasskeyCounter(
   // authenticators) always send 0 — accept those at face value as
   // long as the stored value is also 0. The strictly-greater check
   // applies only when the device claims a non-zero counter.
-  const passkey = await getUserPasskey(userId, passkeyId)
+  const passkey = verifiedCredential ?? await getUserPasskey(userId, passkeyId)
   if (!passkey) return false
 
   const stored = Number(passkey.counter ?? 0)
@@ -238,6 +239,7 @@ export async function setCurrentRegistrationOptions(
   // useless for future authentication — inserting `id: ''` would create
   // a "passkey" that nothing can ever match. Reject up front so the
   // caller sees a clear error instead of a soft-fail at next login.
+  if (!verified.verified) throw new Error('[auth/passkey] Registration is not verified')
   const credentialId = verified.registrationInfo?.credential.id
   const credentialPublicKey = verified.registrationInfo?.credential.publicKey
   if (!credentialId) {
@@ -249,7 +251,7 @@ export async function setCurrentRegistrationOptions(
 
   const passkeyData: PasskeyInsertable = {
     id: credentialId,
-    cred_public_key: JSON.stringify(credentialPublicKey),
+    cred_public_key: JSON.stringify(Array.from(new Uint8Array(credentialPublicKey))),
     user_id: user.id as number,
     webauthn_user_id: user.email || '',
     counter: verified.registrationInfo?.credential.counter || 0,

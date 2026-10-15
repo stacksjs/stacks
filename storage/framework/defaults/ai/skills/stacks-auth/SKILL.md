@@ -337,18 +337,43 @@ const result = await actions.resetPassword(token, newPassword)
 - `logout(): Promise<void>`
 - `refresh(): Promise<void>`
 
-## Passkey/WebAuthn (passkey.ts)
+## Passkey/WebAuthn
 
-- `getUserPasskeys(userId): Promise<PasskeyAttribute[]>`
-- `getUserPasskey(userId, passkeyId): Promise<PasskeyAttribute | undefined>`
-- `setCurrentRegistrationOptions(user, verified): Promise<void>`
+Opt in with `config.auth.passkeys: { enabled: true, origin?: string, name?: string }`.
+The canonical origin defaults to `config.app.url`; production requires HTTPS.
+`buddy migrate` / `buddy auth:setup` create `passkey_ceremonies` and `passkeys`.
 
-### Re-exported from @stacksjs/ts-auth
-- `generateRegistrationOptions`, `generateAuthenticationOptions`
-- `verifyRegistrationResponse`, `verifyAuthenticationResponse`
-- `startRegistration`, `startAuthentication` (browser)
-- `browserSupportsWebAuthn`, `browserSupportsWebAuthnAutofill`
-- `platformAuthenticatorIsAvailable`
+- `beginPasskeyRegistration({ id, email?, name? }, { origin, name })` returns
+  `{ ceremony, options }` as JSON. Call only for the authenticated account.
+- `finishPasskeyRegistration(userId, ceremony, credentialJSON, party)` consumes
+  the account-bound challenge and saves only verified resident credentials.
+- `beginPasskeyAuthentication(party)` returns discoverable options without an
+  email lookup, usable with conditional mediation and `autocomplete="username webauthn"`.
+- `finishPasskeyAuthentication(ceremony, credentialJSON, party)` returns the
+  verified user ID; the application then issues its usual session.
+- `listPasskeys(userId)` returns display-safe metadata, never public-key material.
+- `removePasskey(userId, id, hasAlternativeSignIn?)` serializes removals and
+  refuses to remove the last key without another login method. Supply a callback
+  when password hashes may be unusable placeholders or other factors exist.
+
+Default routes under `/auth/passkeys` expose registration/options, registration,
+authentication/options, authentication (POST), listing (GET) and deletion (DELETE
+`/{id}`). Public authentication endpoints require the canonical Origin header;
+enrollment/removal also require auth and CSRF protection. Deleting the last key
+requires proving the fallback password in the request. All responses are no-store.
+
+Browser code imports **`@stacksjs/auth/passkeys-browser`**, never the server barrel.
+It exports `startRegistration`, `startAuthentication(options, { signal?, mediation? })`,
+`browserSupportsWebAuthn`, `browserSupportsWebAuthnAutofill`, the JSON option/credential
+codecs and types. Abort a pending conditional request before explicit sign-in or
+password submission, and on unmount. Serialize results using
+`registrationCredentialToJSON` / `authenticationCredentialToJSON` before POSTing.
+Native JS contexts require a platform passkey bridge; web support alone does not
+provide one. Keep existing native sign-in available until that bridge exists.
+
+Legacy helpers (`getUserPasskeys`, `getUserPasskey`, `storeWebAuthnChallenge`,
+`consumeWebAuthnChallenge`) remain for existing integrations. New flows should
+use the ceremony API, which supports concurrent anonymous browser attempts.
 
 ## Auth Middleware (middleware.ts)
 

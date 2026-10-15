@@ -28,6 +28,7 @@ export * from './rate-limiter'
 // WebAuthn/Passkey support (now using ts-auth - no external dependencies)
 export * from './magic-link'
 export * from './passkey'
+export * from './passkeys'
 
 export * from './password/reset'
 

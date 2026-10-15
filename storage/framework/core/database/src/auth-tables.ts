@@ -54,6 +54,7 @@ export const AUTH_TABLES: readonly string[] = [
   'email_verifications',
   'passkeys',
   'webauthn_challenges',
+  'passkey_ceremonies',
   'two_factor_challenges',
   'two_factor_pending_secrets',
 ]
@@ -684,6 +685,20 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     catch {
       // Index might already exist
     }
+
+    // Anonymous discoverable sign-in needs its own per-browser ceremony, not a user/email slot.
+    await db.unsafe(`CREATE TABLE IF NOT EXISTS passkey_ceremonies (
+      id VARCHAR(64) PRIMARY KEY,
+      user_id INTEGER,
+      purpose VARCHAR(20) NOT NULL,
+      challenge TEXT NOT NULL,
+      origin VARCHAR(255) NOT NULL,
+      expires_at ${datetime} NOT NULL
+    )`).execute()
+    try {
+      await db.unsafe(indexSqlForDialect('CREATE INDEX IF NOT EXISTS idx_passkey_ceremonies_expiry ON passkey_ceremonies(expires_at)', dbDriver)).execute()
+    }
+    catch (error) { if (!isDuplicateIndexError(error)) throw error }
 
     // `webauthn_challenges` — server-issued nonces for the WebAuthn
     // registration/authentication handshake (stacksjs/stacks#1866).
