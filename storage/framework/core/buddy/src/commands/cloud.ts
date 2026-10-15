@@ -894,17 +894,17 @@ export function cloud(buddy: CLI): void {
         const plan = await driver.applyComputeChanges({ config: nativeConfig, environment, dryRun: true })
         if (options.json) console.log(JSON.stringify(plan, null, 2))
         else {
-          for (const change of plan.changes) log.info(`${change.resource}: ${change.action} (${change.detail})`)
-          if (plan.waitingForCapacity) log.warn(plan.waitingForCapacity)
+          for (const change of plan.changes) await log.info(`${change.resource}: ${change.action} (${change.detail})`)
+          if (plan.waitingForCapacity) await log.warn(plan.waitingForCapacity)
         }
         if (options.dryRun) return
         if (!await confirmCloudChange(options, 'buddy cloud:apply --yes', 'Apply these compute changes?', 'apply compute changes')) return
         const applied = await driver.applyComputeChanges({ config: nativeConfig, environment })
-        if (applied.waitingForCapacity) log.warn(applied.waitingForCapacity)
-        log.success('Configured compute changes applied')
+        if (applied.waitingForCapacity) await log.warn(applied.waitingForCapacity)
+        await log.success('Configured compute changes applied')
       }
       catch (error) {
-        log.error(error instanceof Error ? error.message : String(error))
+        await log.error(error instanceof Error ? error.message : String(error))
         process.exitCode = ExitCode.FatalError
       }
     })
