@@ -78,8 +78,9 @@ describe('database runtime entry', () => {
     const inputs = staticInputs(result)
     expect([...inputs].some(source => source.endsWith('/env/src/runtime.ts'))).toBe(true)
     expect([...inputs].some(source => source.endsWith('/env/src/index.ts'))).toBe(false)
-    for (const module of ['cli.ts', 'deployment.ts', 'plaintext.ts', 'tenants.ts', 'utils.ts']) {
-      expect([...inputs].some(source => source.endsWith(`/env/src/${module}`))).toBe(false)
-    }
+    // Bun includes the lazy decryption require in the bundle inputs. Its
+    // plaintext.ts predicate is runtime support, not an env tooling import.
+    const toolingModules = ['cli.ts', 'deployment.ts', 'tenants.ts', 'utils.ts']
+    expect([...inputs].filter(source => toolingModules.some(module => source.endsWith(`/env/src/${module}`)))).toEqual([])
   })
 })
