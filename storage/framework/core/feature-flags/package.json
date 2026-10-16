@@ -2,7 +2,7 @@
   "name": "@stacksjs/feature-flags",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.189",
+  "version": "0.75.190",
   "description": "Typed, scoped feature flags for Stacks applications.",
   "author": "Chris Breuer",
   "contributors": [

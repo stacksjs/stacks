@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.189...v0.75.190)
+
+## 🐛 Bug Fixes
+
+- require explicit MCP browser origins to prevent DNS rebinding ([1f7cd7d](https://github.com/stacksjs/stacks/commit/1f7cd7d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.188...v0.75.189)
 
 ## ✨ Features
