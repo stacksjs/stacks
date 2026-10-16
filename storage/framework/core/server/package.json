@@ -66,6 +66,7 @@
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/payments": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "bun-plugin-auto-imports": "^0.4.3"

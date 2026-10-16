@@ -99,6 +99,38 @@ export function describeStripeAvailability(available: StripeAvailability): strin
 }
 
 /**
+ * Say so, once, when this process is set up for Stripe but cannot use it.
+ *
+ * Returns the message it reported, or null when there was nothing to say.
+ *
+ * Called from the API entry points so a tree with no SDK is one line at boot
+ * rather than a 500 inside the first webhook (stacksjs/stacks#2911). It warns
+ * rather than refusing to start: a missing SDK breaks billing, but unlike an
+ * unresolvable middleware alias it cannot serve anything it should not, and
+ * refusing would take down an app carrying a `STRIPE_SECRET_KEY` it no longer
+ * uses.
+ *
+ * Only fires when a key is configured and the SDK is not. A key is what says
+ * the app means to use Stripe; the driver name does not, since `stripe` is
+ * the default for every app that never chose one. A missing key alone is
+ * ordinary in development and says nothing.
+ */
+export function reportStripeAvailability(options: {
+  /** Where the line goes. Defaults to `console.warn`. */
+  warn?: (message: string) => void
+  /** What to report on. Defaults to what this process actually has. */
+  available?: StripeAvailability
+} = {}): string | null {
+  const available = options.available ?? stripeAvailability()
+  if (!available.key || available.sdk)
+    return null
+
+  const message = describeStripeAvailability(available) as string
+  ;(options.warn ?? console.warn)(`[stacks] ${message}`)
+  return message
+}
+
+/**
  * Lazy-initialized Stripe instance.
  * Only throws when you actually try to use Stripe, not at module load time.
  * This allows the payments package to be imported without a configured key

@@ -92,6 +92,12 @@ route.use(corsMiddleware.toRouterHandler())
 // and one uninstalled since could abort the boot.
 await ensureDiscoveredPackages()
 
+// The other API entry point does this too (`@stacksjs/server`'s start.ts).
+// Both, because an app served by `buddy serve:api` has the same optional-peer
+// hole and neither entry reaches the other (stacksjs/stacks#2911).
+const { reportStripeAvailability } = await import('@stacksjs/payments')
+reportStripeAvailability()
+
 // Put models, jobs and framework primitives on `globalThis` before any route
 // file is imported.
 //

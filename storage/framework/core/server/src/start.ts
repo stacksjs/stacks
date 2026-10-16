@@ -3,6 +3,7 @@
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
 import { appRouteRegistry, assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
+import { reportStripeAvailability } from '@stacksjs/payments'
 import { log, report } from '@stacksjs/logging/runtime'
 import config from './config-production'
 
@@ -93,6 +94,14 @@ appRouteRegistry()
       console.error('[START] FATAL: unresolvable route middleware - refusing to serve unprotected routes:', middlewareError instanceof Error ? middlewareError.message : String(middlewareError))
       process.exit(1)
     }
+
+    // Say it once here rather than inside the first webhook
+    // (stacksjs/stacks#2911). `stripe` is an optional peer, which Bun does
+    // not install, so an app can hold a good secret key and a tree with no
+    // SDK in it, start clean, pass every health check, and fail on the first
+    // billing request. A warning rather than an exit: unlike an unresolvable
+    // middleware alias above, this cannot serve anything it should not.
+    reportStripeAvailability()
 
     console.log('[START] Calling serve()...')
     try {

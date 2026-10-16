@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { services } from '@stacksjs/config'
-import { describeStripeAvailability, isStripeConfigured, stripeAvailability } from '../src/drivers/stripe'
+import { describeStripeAvailability, isStripeConfigured, reportStripeAvailability, stripeAvailability } from '../src/drivers/stripe'
 
 /**
  * stacksjs/stacks#2911 — `stripe` is an optional peer, which Bun does not
@@ -70,5 +70,40 @@ describe('describeStripeAvailability', () => {
     const reason = describeStripeAvailability({ key: false, sdk: false })!
     expect(reason).toContain('`stripe` package is not installed')
     expect(reason).toContain('STRIPE_SECRET_KEY')
+  })
+})
+
+describe('reportStripeAvailability', () => {
+  /** Collect what it would have warned, instead of printing it. */
+  function reportOn(available: { key: boolean, sdk: boolean }): { reported: string | null, lines: string[] } {
+    const lines: string[] = []
+    const reported = reportStripeAvailability({ available, warn: message => void lines.push(message) })
+    return { reported, lines }
+  }
+
+  it('warns when a key is configured and the SDK is missing', () => {
+    const { reported, lines } = reportOn({ key: true, sdk: false })
+    expect(lines).toHaveLength(1)
+    expect(lines[0]).toContain('[stacks]')
+    expect(lines[0]).toContain('`stripe` package is not installed')
+    // Returned as well as warned, so an entry point can log it its own way.
+    expect(reported).toBe(lines[0]!.replace('[stacks] ', ''))
+  })
+
+  it('says nothing when Stripe is usable', () => {
+    expect(reportOn({ key: true, sdk: true })).toEqual({ reported: null, lines: [] })
+  })
+
+  it('says nothing when no key is configured, because the app is not using Stripe', () => {
+    // A missing key alone is ordinary in development, and on an app that
+    // never chose a payment driver. Warning on it would train people to
+    // ignore the line that matters.
+    expect(reportOn({ key: false, sdk: false })).toEqual({ reported: null, lines: [] })
+    expect(reportOn({ key: false, sdk: true })).toEqual({ reported: null, lines: [] })
+  })
+
+  it('reads this process when given nothing to report on', () => {
+    // The SDK is present here, so a configured key is usable and silent.
+    expect(withKey('sk_test_configured', () => reportStripeAvailability({ warn: () => {} }))).toBeNull()
   })
 })
