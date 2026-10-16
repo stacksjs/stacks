@@ -5,6 +5,7 @@ import { createPrivateKey, sign } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
+import { verifyIdToken } from '../id-token'
 
 /**
  * Apple replaces the static client secret with a signed JWT, so its
@@ -24,6 +25,15 @@ export interface AppleProviderConfig extends ProviderConfig {
   native?: boolean
 }
 
+/** Per-call expectations for {@link AppleProvider.getUserByToken}. */
+export interface AppleIdentityOptions {
+  /**
+   * The nonce the flow started with. When supplied, a token whose `nonce`
+   * claim does not match it is refused.
+   */
+  nonce?: string
+}
+
 /**
  * Sign in with Apple (OAuth2 / OIDC).
  *
@@ -37,11 +47,14 @@ export interface AppleProviderConfig extends ProviderConfig {
  *    builds one per token exchange.
  * 2. There is no userinfo endpoint. Identity comes from the `id_token`
  *    returned by the token endpoint, so `getAccessToken()` returns the
- *    id_token (not the access token — there is nothing to spend it on),
- *    and `getUserByToken()` decodes its claims. The id_token arrives
- *    straight from Apple's token endpoint over TLS, which OIDC Core
- *    3.1.3.7 accepts in place of local signature verification; iss, aud
- *    and exp are still validated.
+ *    id_token (not the access token - there is nothing to spend it on),
+ *    and `getUserByToken()` verifies it against Apple's published keys
+ *    before reading a single claim. OIDC Core 3.1.3.7 would permit
+ *    skipping that for a token this server just redeemed over TLS, and
+ *    this driver does not take the exemption: `getUserByToken()` is a
+ *    public method taking a string, so a token posted up by an app
+ *    reaches it by the same door, and a payload nobody checked is a
+ *    payload anybody can write (stacksjs/stacks#2907).
  * 3. When scopes are requested (they are by default: name + email),
  *    Apple mandates `response_mode=form_post` — the callback arrives as
  *    a cross-site POST, not a GET. Applications must register a POST
@@ -151,21 +164,34 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
   }
 
   /**
-   * Build the SocialUser from an id_token's claims (Apple has no user
-   * API to call). Validates iss/aud/exp before trusting them.
+   * Build the SocialUser from a verified id_token (Apple has no user API
+   * to call).
+   *
+   * The signature is checked against Apple's JWKS first, then iss, aud,
+   * exp, iat/nbf and - when the caller supplies one - nonce.
+   *
+   * Pass `nonce` whenever the flow had one. An app's Sign in with Apple
+   * sheet takes the SHA-256 of a nonce it generated, and Apple echoes the
+   * original into the token; checking it is what stops a token captured
+   * from one sign-in being replayed into another.
    */
-  public async getUserByToken(token: string): Promise<SocialUser> {
+  public async getUserByToken(token: string, options: AppleIdentityOptions = {}): Promise<SocialUser> {
     const { clientId } = this.getConfig()
-    const claims = this.decodeIdToken(token)
 
-    const issOk = claims.iss === this.baseUrl
-    const audOk = Array.isArray(claims.aud) ? claims.aud.includes(clientId) : claims.aud === clientId
-    const expOk = typeof claims.exp === 'number' && claims.exp * 1000 > Date.now()
-    if (!issOk || !audOk || !expOk)
-      throw new Error('Apple OAuth error: id_token claims failed validation (iss/aud/exp)')
-
-    if (!claims.sub)
-      throw new Error('Apple OAuth error: id_token has no subject')
+    let claims: AppleIdTokenClaims
+    try {
+      claims = await verifyIdToken(token, {
+        jwksUrl: `${this.baseUrl}/auth/keys`,
+        issuer: this.baseUrl,
+        audience: clientId,
+        nonce: options.nonce,
+      }) as AppleIdTokenClaims
+    }
+    catch (error) {
+      // Keep the provider-prefixed shape the rest of this driver throws,
+      // without losing which check failed.
+      throw new Error(`Apple OAuth error: ${error instanceof Error ? error.message : String(error)}`)
+    }
 
     const email = typeof claims.email === 'string' ? claims.email : null
 
@@ -221,14 +247,6 @@ export class AppleProvider extends AbstractProvider implements ProviderInterface
     // which is node's default for ECDSA.
     const signature = sign('sha256', Buffer.from(input), { key, dsaEncoding: 'ieee-p1363' })
     return `${input}.${signature.toString('base64url')}`
-  }
-
-  /** Decode a JWT payload without verifying it (see class docblock for why that's acceptable here). */
-  protected decodeIdToken(idToken: string): AppleIdTokenClaims {
-    const parts = idToken.split('.')
-    if (parts.length !== 3)
-      throw new Error('Apple OAuth error: malformed id_token')
-    return JSON.parse(Buffer.from(parts[1] as string, 'base64url').toString('utf8')) as AppleIdTokenClaims
   }
 
   private base64urlJson(value: unknown): string {

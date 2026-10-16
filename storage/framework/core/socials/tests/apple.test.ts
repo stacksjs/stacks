@@ -1,11 +1,38 @@
 import { Buffer } from 'node:buffer'
-import { generateKeyPairSync, verify } from 'node:crypto'
-import { describe, expect, test } from 'bun:test'
+import { generateKeyPairSync, sign, verify } from 'node:crypto'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { AppleProvider } from '../src/drivers/apple'
 import { ConfigException } from '../src/exceptions'
+import { clearSigningKeyCache } from '../src/id-token'
 
 const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' })
 const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+
+// Apple signs id_tokens with RS256 and publishes the public half at
+// /auth/keys. These tests stand in for both halves, so a token this suite
+// builds is a token the driver can actually verify (stacksjs/stacks#2907).
+const apple = generateKeyPairSync('rsa', { modulusLength: 2048 })
+const appleJwk = apple.publicKey.export({ format: 'jwk' }) as { n: string, e: string }
+const APPLE_KID = 'apple-key-1'
+
+const realFetch = globalThis.fetch
+
+beforeEach(() => {
+  clearSigningKeyCache()
+  globalThis.fetch = (async (url: string) => {
+    if (String(url) === 'https://appleid.apple.com/auth/keys') {
+      return new Response(
+        JSON.stringify({ keys: [{ kty: 'RSA', kid: APPLE_KID, use: 'sig', alg: 'RS256', n: appleJwk.n, e: appleJwk.e }] }),
+        { status: 200 },
+      )
+    }
+    throw new Error(`unexpected fetch to ${url}`)
+  }) as unknown as typeof fetch
+})
+
+afterEach(() => {
+  globalThis.fetch = realFetch
+})
 
 function makeProvider(overrides: Record<string, string> = {}) {
   return new AppleProvider({
@@ -25,17 +52,24 @@ class InspectableAppleProvider extends AppleProvider {
     return this.generateClientSecret()
   }
 
-  public decode_(idToken: string) {
-    return this.decodeIdToken(idToken)
-  }
 }
 
 function b64url(value: unknown): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url')
 }
 
-function fakeIdToken(claims: Record<string, unknown>): string {
-  return `${b64url({ alg: 'RS256' })}.${b64url(claims)}.${Buffer.from('sig').toString('base64url')}`
+/** An id_token signed the way Apple signs one. */
+function appleIdToken(claims: Record<string, unknown>): string {
+  const header = b64url({ alg: 'RS256', kid: APPLE_KID, typ: 'JWT' })
+  const payload = b64url(claims)
+  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), apple.privateKey)
+  return `${header}.${payload}.${signature.toString('base64url')}`
+}
+
+/** The same claims with a signature nobody produced. */
+function forgedIdToken(claims: Record<string, unknown>): string {
+  const header = b64url({ alg: 'RS256', kid: APPLE_KID, typ: 'JWT' })
+  return `${header}.${b64url(claims)}.${Buffer.from('NOT_A_REAL_SIGNATURE').toString('base64url')}`
 }
 
 describe('AppleProvider', () => {
@@ -100,7 +134,7 @@ describe('AppleProvider', () => {
 
   test('getUserByToken maps valid id_token claims to a SocialUser', async () => {
     const provider = makeProvider()
-    const idToken = fakeIdToken({
+    const idToken = appleIdToken({
       iss: 'https://appleid.apple.com',
       aud: 'org.example.web',
       exp: Math.floor(Date.now() / 1000) + 300,
@@ -130,21 +164,48 @@ describe('AppleProvider', () => {
       sub: 'apple-sub-001',
     }
 
-    await expect(provider.getUserByToken(fakeIdToken({ ...base, iss: 'https://evil.example' }))).rejects.toThrow('iss/aud/exp')
-    await expect(provider.getUserByToken(fakeIdToken({ ...base, aud: 'someone-else' }))).rejects.toThrow('iss/aud/exp')
-    await expect(provider.getUserByToken(fakeIdToken({ ...base, exp: Math.floor(Date.now() / 1000) - 10 }))).rejects.toThrow('iss/aud/exp')
+    await expect(provider.getUserByToken(appleIdToken({ ...base, iss: 'https://evil.example' }))).rejects.toThrow('issuer is')
+    await expect(provider.getUserByToken(appleIdToken({ ...base, aud: 'someone-else' }))).rejects.toThrow('addressed to a different client')
+    await expect(provider.getUserByToken(appleIdToken({ ...base, exp: Math.floor(Date.now() / 1000) - 120 }))).rejects.toThrow('expired')
   })
 
-  test('decodeIdToken rejects malformed tokens', () => {
-    const provider = new InspectableAppleProvider({
-      clientId: 'a',
-      clientSecret: '',
-      redirectUrl: 'https://example.com/cb',
-      teamId: 't',
-      keyId: 'k',
-      privateKey: privateKeyPem,
+  test('refuses a token Apple did not sign (stacksjs/stacks#2907)', async () => {
+    const provider = makeProvider()
+    // Everything a forger controls is set to something that would pass the
+    // claim checks: the right issuer, our audience, an unexpired window, and
+    // the verified email that makes `resolveSocialSignIn` link to an existing
+    // account. The only thing missing is Apple's signature.
+    const forged = forgedIdToken({
+      iss: 'https://appleid.apple.com',
+      aud: 'org.example.web',
+      exp: Math.floor(Date.now() / 1000) + 600,
+      sub: '001234.victimAppleUserId',
+      email: 'victim@example.com',
+      email_verified: true,
     })
-    expect(() => provider.decode_('not-a-jwt')).toThrow('malformed id_token')
+
+    await expect(provider.getUserByToken(forged)).rejects.toThrow('Apple OAuth error: id_token verification failed')
+    await expect(provider.getUserByToken(forged)).rejects.toThrow('signature does not match')
+  })
+
+  test('checks the nonce when the caller supplies one', async () => {
+    const provider = makeProvider()
+    const claims = {
+      iss: 'https://appleid.apple.com',
+      aud: 'org.example.web',
+      exp: Math.floor(Date.now() / 1000) + 300,
+      sub: 'apple-sub-001',
+      nonce: 'the-real-nonce',
+    }
+
+    expect((await provider.getUserByToken(appleIdToken(claims), { nonce: 'the-real-nonce' })).id).toBe('apple-sub-001')
+    await expect(provider.getUserByToken(appleIdToken(claims), { nonce: 'a-different-nonce' })).rejects.toThrow('nonce does not match')
+    // No expectation supplied, no nonce check: the web flow may not use one.
+    expect((await provider.getUserByToken(appleIdToken(claims))).id).toBe('apple-sub-001')
+  })
+
+  test('getUserByToken rejects malformed tokens', async () => {
+    await expect(makeProvider().getUserByToken('not-a-jwt')).rejects.toThrow('malformed token')
   })
 
   test('validateConfig demands the Apple signing inputs', async () => {
@@ -198,8 +259,8 @@ describe('AppleProvider for an app\'s own sheet', () => {
 
   test('takes only tokens issued to the app', async () => {
     const claims = { iss: 'https://appleid.apple.com', exp: Math.floor(Date.now() / 1000) + 300, sub: 'apple-sub-002' }
-    expect((await nativeProvider().getUserByToken(fakeIdToken({ ...claims, aud: 'org.example.app' }))).id).toBe('apple-sub-002')
-    await expect(nativeProvider().getUserByToken(fakeIdToken({ ...claims, aud: 'org.example.web' }))).rejects.toThrow('iss/aud/exp')
+    expect((await nativeProvider().getUserByToken(appleIdToken({ ...claims, aud: 'org.example.app' }))).id).toBe('apple-sub-002')
+    await expect(nativeProvider().getUserByToken(appleIdToken({ ...claims, aud: 'org.example.web' }))).rejects.toThrow('addressed to a different client')
   })
 
   test('has no web flow', async () => {
