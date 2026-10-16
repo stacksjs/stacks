@@ -160,7 +160,14 @@ describe('the probe registry', () => {
   it('puts nothing credential-shaped in a URL', () => {
     // No probe needs a secret, and a URL is the one place a secret must never
     // go: it reaches logs, proxies and the provider's own access records.
-    const suspicious = all.filter(target => /key|token|secret|password|auth|credential|[?&]sig/i.test(target.url))
+    //
+    // Matched against query parameters rather than the whole URL. The earlier
+    // substring test could not tell a secret from a public path that happens
+    // to be spelled with one of these words, and the OIDC probes are all
+    // spelled that way: `/auth/keys`, `/oauth2/v3/certs`, `/tokeninfo`. Those
+    // are published documents anyone can GET. A secret in a URL is a query
+    // parameter in every shape this registry could take.
+    const suspicious = all.filter(target => /[?&][^=&]*(?:key|token|secret|password|auth|credential|sig)[^=&]*=/i.test(target.url))
 
     expect(suspicious.map(target => target.url)).toEqual([])
   })

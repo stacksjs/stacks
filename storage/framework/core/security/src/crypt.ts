@@ -141,7 +141,10 @@ function randomKeyMaterial(passphrase: string): Uint8Array | null {
  * attacker-supplied ciphertexts would evict the entries that are doing work.
  */
 async function deriveKeyV2(keyMaterial: Uint8Array, salt: Uint8Array): Promise<CryptoKey> {
-  const base = await crypto.subtle.importKey('raw', keyMaterial, 'HKDF', false, ['deriveKey'])
+  // Copied into a fresh ArrayBuffer for the same reason the V1 path does it
+  // with its salt: a plain Uint8Array is backed by ArrayBufferLike, which is
+  // not assignable to BufferSource.
+  const base = await crypto.subtle.importKey('raw', new Uint8Array(keyMaterial), 'HKDF', false, ['deriveKey'])
 
   return await crypto.subtle.deriveKey(
     { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(salt), info: new TextEncoder().encode(HKDF_INFO) },
