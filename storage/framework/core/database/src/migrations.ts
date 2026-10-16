@@ -58,7 +58,7 @@ import type { CorpusGate } from './migration-ledger'
 import { auditMissingTables } from './migration-ledger'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablePreflight } from './notification-tables'
-import { traitTableNames } from './trait-tables'
+import { traitTableNames, traitTablePrerequisiteSql } from './trait-tables'
 import { AUTH_TABLES } from './auth-tables'
 import { enumTypesCreatedBy, guardedBlockStatements, SQL_IDENTIFIER, sqlStatementsOf } from './sql-statements'
 import { indexShape } from './index-shape'
@@ -2031,6 +2031,12 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     }
 
     if (migrationSql) {
+      // A model can reference a framework-owned trait table. Its foreign key
+      // is checked while applying the corpus, before Buddy's post-batch trait
+      // guarantee, so prepare these native dependencies under the same lock.
+      for (const statement of traitTablePrerequisiteSql(migrationSql, sqlHelpers(dialect)))
+        await db.unsafe(statement).execute()
+
       const preflight = notificationTablePreflight(migrationSql)
       if (preflight.length > 0) {
         const prepared = await migrateNotificationTables({ tables: preflight })

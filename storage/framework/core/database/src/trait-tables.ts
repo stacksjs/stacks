@@ -51,6 +51,7 @@ import { db } from './utils'
 import { resolvedDatabaseDriver } from './dialect'
 import { sqlHelpers } from './sql-helpers'
 import { indexSqlForDialect, isDuplicateColumnError, isDuplicateIndexError } from './dialect'
+import { SQL_IDENTIFIER, sqlStatementsOf } from './sql-statements'
 
 export { indexSqlForDialect } from './dialect'
 
@@ -401,6 +402,35 @@ export function messagingTableSql(sql: SqlHelpers): string[] {
       UNIQUE (conversation_id, sender_id, client_key)
     )`,
   ]
+}
+
+/**
+ * Native tables needed by model-owned foreign keys must precede the corpus.
+ * Only the framework's own tables are eligible: an application's CREATE stays
+ * authoritative. Use the same DDL as the post-migration guarantee and include
+ * native parents before their dependents, without creating unrelated tables.
+ */
+export function traitTablePrerequisiteSql(corpus: string, sql: SqlHelpers): string[] {
+  const statements = sqlStatementsOf(corpus).map(statement => statement.replace(/'(?:''|[^'])*'/g, "''"))
+  const create = new RegExp(`\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?${SQL_IDENTIFIER}\\s*\\(`, 'i')
+  const references = (statement: string): string[] => [...statement.matchAll(new RegExp(`\\bREFERENCES\\s+${SQL_IDENTIFIER}\\s*\\(`, 'gi'))].map(match => match[1]!.toLowerCase())
+  const declared = new Set(statements.map(statement => create.exec(statement)?.[1]?.toLowerCase()).filter(Boolean))
+  const native = new Map([
+    ...messagingTableSql(sql), commentablesTableSql(sql), taggablesTableSql(sql),
+    categorizablesTableSql(sql), commentableUpvotesTableSql(sql),
+    taggableModelsTableSql(sql), categorizableModelsTableSql(sql),
+  ].map(statement => [create.exec(statement)![1]!.toLowerCase(), statement]))
+  const plan: string[] = []
+  const visited = new Set<string>()
+  function visit(table: string): void {
+    if (declared.has(table) || visited.has(table) || !native.has(table)) return
+    visited.add(table)
+    const statement = native.get(table)!
+    for (const parent of references(statement)) visit(parent)
+    plan.push(statement)
+  }
+  for (const statement of statements) for (const table of references(statement)) visit(table)
+  return plan
 }
 
 /**
