@@ -1,5 +1,40 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.187...v0.75.188)
+
+## ✨ Features
+
+- **security**: fetchPublicUrl checks every hop, not just the first ([e51c2de](https://github.com/stacksjs/stacks/commit/e51c2de)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2909](https://github.com/stacksjs/stacks/issues/2909))
+- **socials**: verify an id_token against the issuer's published keys ([9f7baae](https://github.com/stacksjs/stacks/commit/9f7baae)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2907](https://github.com/stacksjs/stacks/issues/2907))
+
+## 🐛 Bug Fixes
+
+- **types**: resolve native package subpaths in source checks ([6f0c1fb](https://github.com/stacksjs/stacks/commit/6f0c1fb)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **database**: prepare native trait foreign key prerequisites ([0bc6124](https://github.com/stacksjs/stacks/commit/0bc6124)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **payments**: say at boot when Stripe is configured but unusable ([9b4a840](https://github.com/stacksjs/stacks/commit/9b4a840)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2911](https://github.com/stacksjs/stacks/issues/2911))
+- **security**: HKDF key material is a BufferSource the compiler accepts ([cc6bc49](https://github.com/stacksjs/stacks/commit/cc6bc49)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2907](https://github.com/stacksjs/stacks/issues/2907))
+- **payments**: isStripeConfigured answers the question it is named for ([a2cb458](https://github.com/stacksjs/stacks/commit/a2cb458)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2911](https://github.com/stacksjs/stacks/issues/2911))
+- **socials**: PKCE actually reaches the provider, and the verifier survives ([e5a8e01](https://github.com/stacksjs/stacks/commit/e5a8e01)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2908](https://github.com/stacksjs/stacks/issues/2908))
+- **socials**: Google checks which client a token was issued to ([c275216](https://github.com/stacksjs/stacks/commit/c275216)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2907](https://github.com/stacksjs/stacks/issues/2907), [#2859](https://github.com/stacksjs/stacks/issues/2859))
+- **socials**: Apple verifies the id_token signature before reading a claim ([a06a0d6](https://github.com/stacksjs/stacks/commit/a06a0d6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2907](https://github.com/stacksjs/stacks/issues/2907))
+
+## ⚡ Performance Improvements
+
+- **security**: derive with HKDF when APP_KEY is already random ([97e168a](https://github.com/stacksjs/stacks/commit/97e168a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2910](https://github.com/stacksjs/stacks/issues/2910))
+
+## 📝 Documentation
+
+- refresh native skill package inventory ([a23a575](https://github.com/stacksjs/stacks/commit/a23a575)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **ai**: refresh the native skills catalog for the new test files ([fa5495c](https://github.com/stacksjs/stacks/commit/fa5495c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.186...v0.75.187)
 
 ## ✨ Features
