@@ -70,6 +70,7 @@ const URL_PINS: UrlPin[] = [
   { host: 'postmaster.google.com', versions: ['v2'], kind: 'link', why: "a dashboard URL inside a hint a person reads, not a call" },
   { host: 'stacksjs.com', versions: ['schemas/ai-project-context/v1'], kind: 'ours', why: 'our own schema URL' },
   { host: 'verify.twilio.com', versions: ['v2'], kind: 'api', why: 'current' },
+  { host: 'www.googleapis.com', versions: ['oauth2/v3'], kind: 'api', why: "Google's id_token signing keys; v3 is the current JWKS, v1 served certificates in a format that is not one" },
 ]
 
 interface HeaderPin {

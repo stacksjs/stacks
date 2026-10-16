@@ -3,6 +3,7 @@ import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
 import { ConfigException } from '../exceptions'
+import { verifyIdToken } from '../id-token'
 
 interface GoogleTokenResponse {
   access_token: string
@@ -34,6 +35,12 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
    * `getTokenUrl()` cannot disagree.
    */
   protected tokenUrl = 'https://oauth2.googleapis.com/token'
+  /** Where an access token is traded for the client it was issued to. */
+  protected tokenInfoUrl = 'https://oauth2.googleapis.com/tokeninfo'
+  /** Google's published id_token signing keys. */
+  protected certsUrl = 'https://www.googleapis.com/oauth2/v3/certs'
+  /** Google issues its id_tokens under both spellings. */
+  protected issuers = ['https://accounts.google.com', 'accounts.google.com']
 
   private getConfig() {
     // Instance values (constructor args or set*() calls) win over the
@@ -107,8 +114,20 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
   /**
    * Get the user details from Google using the access token.
    * Maps the Google-specific user data to our normalized SocialUser type.
+   *
+   * The audience is checked first. `/userinfo` answers for an access token
+   * issued to *any* client, so without that check a token minted by the
+   * attacker's own OAuth app resolves to whichever Google account they chose:
+   * the classic confused deputy (stacksjs/stacks#2907). Nothing in the token
+   * itself says who it was for, which is why it takes a round trip.
+   *
+   * Prefer {@link getUserByIdToken} where an id_token is available. It
+   * carries its own audience and its own signature, so it settles the same
+   * question without the extra request.
    */
   public async getUserByToken(token: string): Promise<SocialUser> {
+    await this.assertTokenWasIssuedToUs(token)
+
     const response = await fetcher
       .withHeaders({
         Authorization: `Bearer ${token}`,
@@ -125,6 +144,72 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
       token,
       raw: response.data,
     }
+  }
+
+  /**
+   * Build a SocialUser from an id_token, verified against Google's keys.
+   *
+   * This is the method a native sign-in should reach for: `GoogleSignIn` on a
+   * phone yields an id_token, and unlike an access token it proves both who
+   * the user is and which client it was minted for, without trusting the app
+   * that handed it over.
+   */
+  public async getUserByIdToken(idToken: string, options: { nonce?: string } = {}): Promise<SocialUser> {
+    const { clientId } = this.getConfig()
+
+    let claims: Record<string, unknown>
+    try {
+      claims = await verifyIdToken(idToken, {
+        jwksUrl: this.certsUrl,
+        issuer: this.issuers,
+        audience: clientId,
+        nonce: options.nonce,
+      })
+    }
+    catch (error) {
+      throw new Error(`Google OAuth error: ${error instanceof Error ? error.message : String(error)}`)
+    }
+
+    const email = typeof claims.email === 'string' ? claims.email : ''
+
+    return {
+      id: String(claims.sub),
+      nickname: typeof claims.given_name === 'string' ? claims.given_name : null,
+      name: typeof claims.name === 'string' ? claims.name : '',
+      email,
+      emailVerified: typeof claims.email_verified === 'boolean'
+        ? claims.email_verified
+        : claims.email_verified === 'true' ? true : claims.email_verified === 'false' ? false : null,
+      avatar: typeof claims.picture === 'string' ? claims.picture : null,
+      token: idToken,
+      raw: claims,
+    }
+  }
+
+  /**
+   * Refuse an access token that was not minted for this client.
+   *
+   * `tokeninfo` reports the audience under `aud`; the endpoint this replaced
+   * called it `audience`, and tokens in flight during that change still see
+   * the old name, so both are read.
+   */
+  protected async assertTokenWasIssuedToUs(accessToken: string): Promise<void> {
+    const { clientId } = this.getConfig()
+
+    const response = await fetch(`${this.tokenInfoUrl}?access_token=${encodeURIComponent(accessToken)}`)
+    if (!response.ok)
+      throw new Error(`Google OAuth error: access token was not accepted by tokeninfo (HTTP ${response.status})`)
+
+    const info = await response.json() as { aud?: string, audience?: string, error?: string, error_description?: string }
+    if (info.error)
+      throw new Error(`Google OAuth error: ${info.error_description ?? info.error}`)
+
+    const audience = info.aud ?? info.audience
+    if (!audience)
+      throw new Error('Google OAuth error: tokeninfo did not report an audience for the access token')
+
+    if (audience !== clientId)
+      throw new Error('Google OAuth error: access token was issued to a different client')
   }
 
   /**

@@ -117,6 +117,14 @@ describe('verifyIdToken', () => {
     expect((await verify(signedToken(validClaims({ aud: ['other', AUDIENCE] })))).sub).toBe('subject-001')
   })
 
+  test('accepts any one of several issuers, and still refuses the rest', async () => {
+    // Google publishes the same tokens under two spellings of its issuer.
+    const both = ['accounts.example', ISSUER]
+    expect((await verify(signedToken(validClaims({ iss: 'accounts.example' })), { issuer: both })).sub).toBe('subject-001')
+    expect((await verify(signedToken(validClaims()), { issuer: both })).sub).toBe('subject-001')
+    await expect(verify(signedToken(validClaims({ iss: 'https://evil.example' })), { issuer: both })).rejects.toThrow('issuer is')
+  })
+
   test('checks exp, iat and nbf, allowing for clock skew', async () => {
     const second = 1000
     await expect(verify(signedToken(validClaims({ exp: Math.floor(NOW / 1000) - 120 })))).rejects.toThrow('expired')

@@ -36,8 +36,12 @@ interface SigningKey {
 export interface VerifyIdTokenOptions {
   /** The issuer's JWKS endpoint, e.g. `https://appleid.apple.com/auth/keys`. */
   jwksUrl: string
-  /** The exact `iss` the token must carry. */
-  issuer: string
+  /**
+   * The `iss` the token must carry. An array accepts any one of them, which
+   * Google needs: it issues both `accounts.google.com` and
+   * `https://accounts.google.com` and treats them as the same issuer.
+   */
+  issuer: string | string[]
   /** The client id(s) the token must be addressed to. */
   audience: string | string[]
   /** When supplied, the token's `nonce` must match it exactly. */
@@ -177,8 +181,9 @@ export async function verifyIdToken(token: string, options: VerifyIdTokenOptions
   const claims = decodeSegment(rawPayload, 'payload') as IdTokenClaims
   const skewMs = (options.clockSkewSeconds ?? 60) * 1000
 
-  if (claims.iss !== options.issuer)
-    throw new Error(`id_token verification failed: issuer is ${JSON.stringify(claims.iss)}, expected ${JSON.stringify(options.issuer)}`)
+  const issuers = Array.isArray(options.issuer) ? options.issuer : [options.issuer]
+  if (!issuers.includes(claims.iss))
+    throw new Error(`id_token verification failed: issuer is ${JSON.stringify(claims.iss)}, expected ${issuers.map(one => JSON.stringify(one)).join(' or ')}`)
 
   const accepted = Array.isArray(options.audience) ? options.audience : [options.audience]
   const presented = Array.isArray(claims.aud) ? claims.aud : [claims.aud]

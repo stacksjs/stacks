@@ -54,6 +54,12 @@ export const PROBE_TARGETS: ProbeTarget[] = [
   { name: 'Twilio', url: 'https://api.twilio.com/2010-04-01/Accounts', method: 'GET', observed: 401 },
   { name: 'Twilio Lookups v2', url: 'https://lookups.twilio.com/v2/PhoneNumbers/+15005550006', method: 'GET', observed: 401 },
   { name: 'Twilio Verify v2', url: 'https://verify.twilio.com/v2/Services', method: 'GET', observed: 401 },
+  // The keys social sign-in verifies Apple and Google id_tokens against
+  // (stacksjs/stacks#2907). Both are public, so a healthy answer is the
+  // document itself rather than an auth error.
+  { name: 'Google id_token signing keys', url: 'https://www.googleapis.com/oauth2/v3/certs', method: 'GET', observed: 200 },
+  { name: 'Google tokeninfo', url: 'https://oauth2.googleapis.com/tokeninfo', method: 'GET', observed: 400 },
+  { name: 'Apple id_token signing keys', url: 'https://appleid.apple.com/auth/keys', method: 'GET', observed: 200 },
   { name: 'Discord', url: 'https://discord.com/api/v10/users/@me', method: 'GET', observed: 401 },
   // Not an addon by name: a target that depends on one extension still being
   // listed would read as a sunset the day it is taken down.
