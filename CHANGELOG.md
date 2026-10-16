@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.185...v0.75.186)
+
+## ✨ Features
+
+- **cloud**: apply typed compute storage and resize configuration ([adf29e1](https://github.com/stacksjs/stacks/commit/adf29e1)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **search**: expose model search types and honor custom collection names ([b28da84](https://github.com/stacksjs/stacks/commit/b28da84)) _(by Chris <chris@stacksjs.com>)_
+- **cloud**: use isolated storage cleanup and await command logging ([6b559d9](https://github.com/stacksjs/stacks/commit/6b559d9)) _(by Chris <chris@stacksjs.com>)_
+- **cloud**: keep capacity checks out of deployment history ([7c80b6d](https://github.com/stacksjs/stacks/commit/7c80b6d)) _(by Chris <chris@stacksjs.com>)_
+- **realtime**: tests take a port the kernel assigned, not one they guessed ([d2eca4d](https://github.com/stacksjs/stacks/commit/d2eca4d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **env**: isEncryptedValue moves to a leaf, off the database runtime graph ([1160678](https://github.com/stacksjs/stacks/commit/1160678)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2904](https://github.com/stacksjs/stacks/issues/2904))
+- clean abandoned antivirus downloads on shared host ([67373d5](https://github.com/stacksjs/stacks/commit/67373d5)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **database**: allow lazy env decryption helpers ([eb77139](https://github.com/stacksjs/stacks/commit/eb77139)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/shared-host-disk-retention ([7e55114](https://github.com/stacksjs/stacks/commit/7e55114)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.184...v0.75.185)
 
 ## 🐛 Bug Fixes
