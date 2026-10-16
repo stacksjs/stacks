@@ -1,4 +1,5 @@
 import type { ProviderInterface, SocialUser } from './types'
+import { Buffer } from 'node:buffer'
 
 export interface ProviderConfig {
   clientId: string
@@ -16,6 +17,7 @@ export abstract class AbstractProvider implements ProviderInterface {
   protected scopeSeparator: string = ','
   protected _stateless: boolean = false
   protected _usesPKCE: boolean = false
+  protected _codeVerifier: string | null = null
   protected _state: string | null = null
   protected user: SocialUser | null = null
 
@@ -48,7 +50,7 @@ export abstract class AbstractProvider implements ProviderInterface {
   /**
    * Get the GET parameters for the code request.
    */
-  protected getCodeFields(state: string | null = null): Record<string, any> {
+  protected async getCodeFields(state: string | null = null): Promise<Record<string, any>> {
     const fields: Record<string, any> = {
       client_id: this.clientId,
       redirect_uri: this.redirectUrl,
@@ -60,12 +62,7 @@ export abstract class AbstractProvider implements ProviderInterface {
       fields.state = state
     }
 
-    if (this.usesPKCE()) {
-      fields.code_challenge = this.getCodeChallenge()
-      fields.code_challenge_method = this.getCodeChallengeMethod()
-    }
-
-    return { ...fields, ...this.parameters }
+    return { ...fields, ...await this.pkceFields(), ...this.parameters }
   }
 
   /**
@@ -251,35 +248,109 @@ export abstract class AbstractProvider implements ProviderInterface {
   }
 
   /**
-   * Generates a random string for the PKCE code verifier.
+   * The PKCE verifier for the authorization request being built, generated
+   * once and kept.
+   *
+   * It used to return 48 fresh random bytes on every call and assign them to
+   * nothing, so the value that was hashed into the challenge no longer
+   * existed by the time the exchange needed it (stacksjs/stacks#2908). A
+   * verifier nobody can produce again is not a verifier.
+   *
+   * 32 bytes as base64url is 43 characters, the RFC 7636 minimum and the
+   * same entropy the previous 96 hex characters carried.
    */
   protected getCodeVerifier(): string {
-    const bytes = new Uint8Array(48) // 96 chars = 48 bytes
-    crypto.getRandomValues(bytes)
-    return Array.from(bytes)
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('')
+    if (this._codeVerifier === null) {
+      const bytes = new Uint8Array(32)
+      crypto.getRandomValues(bytes)
+      this._codeVerifier = Buffer.from(bytes).toString('base64url')
+    }
+
+    return this._codeVerifier
   }
 
   /**
-   * Generates the PKCE code challenge based on the code verifier.
+   * The verifier to stash beside `state` before redirecting.
+   *
+   * PKCE spans two requests, and the instance that built the authorization
+   * URL is gone by the time the callback arrives. Put this wherever `state`
+   * goes - session, cache, signed cookie - and give it back with
+   * {@link withCodeVerifier} before exchanging the code.
+   *
+   * Null when PKCE is off, or on before an authorization URL has been built.
+   */
+  public getPkceVerifier(): string | null {
+    return this._codeVerifier
+  }
+
+  /**
+   * Restore the verifier that belongs to an authorization in flight, so the
+   * token request can prove it started this flow.
+   */
+  public withCodeVerifier(verifier: string): this {
+    if (!verifier)
+      throw new Error('A PKCE code verifier must be a non-empty string')
+
+    this._usesPKCE = true
+    this._codeVerifier = verifier
+    return this
+  }
+
+  /**
+   * The PKCE parameters for an authorization request, or nothing when PKCE
+   * is off.
+   *
+   * Drivers build their own authorization URLs, so this is what they merge
+   * in. Returning a whole object rather than a challenge string keeps the
+   * challenge and its method from being added one without the other.
+   */
+  protected async pkceFields(): Promise<Record<string, string>> {
+    if (!this.usesPKCE())
+      return {}
+
+    return {
+      code_challenge: await this.getCodeChallenge(),
+      code_challenge_method: this.getCodeChallengeMethod(),
+    }
+  }
+
+  /**
+   * The PKCE parameter for a token request, or nothing when PKCE is off.
+   *
+   * Throws rather than silently omitting `code_verifier` when PKCE is on and
+   * no verifier is known: a token request missing it either fails at a
+   * provider that enforces PKCE, or succeeds at one that does not and leaves
+   * the developer believing the code was protected.
+   */
+  protected pkceTokenFields(): Record<string, string> {
+    if (!this.usesPKCE())
+      return {}
+
+    if (this._codeVerifier === null)
+      throw new Error('PKCE is enabled but no code verifier is known for this exchange. Pass the one from getPkceVerifier() back with withCodeVerifier().')
+
+    return { code_verifier: this._codeVerifier }
+  }
+
+  /**
+   * The S256 challenge for the current verifier.
    *
    * Uses Buffer's native base64url encoding instead of building it from
    * `btoa(String.fromCharCode(...bytes))`. The latter coerces every
    * byte through `String.fromCharCode`, which is fine for hashes but
-   * produces incorrect output for any input containing bytes ≥ 0x80
+   * produces incorrect output for any input containing bytes >= 0x80
    * because `String.fromCharCode` returns a UTF-16 code unit, not a
-   * raw byte. SHA-256 hashes routinely include such bytes — the old
-   * code happened to work because the manual replace() handled the
-   * artifacts, but the new path is provably correct end-to-end.
+   * raw byte. SHA-256 hashes routinely include such bytes.
+   *
+   * `@stacksjs/auth` has an RFC 7636 validated pair of these, and this
+   * deliberately does not import it: auth pulls in the database and ORM
+   * graph, which is a heavy dependency for a package that needs four lines
+   * of hashing.
    */
   protected async getCodeChallenge(): Promise<string> {
     const encoder = new TextEncoder()
     const data = encoder.encode(this.getCodeVerifier())
     const hash = await crypto.subtle.digest('SHA-256', data)
-    // Buffer is available in Bun and Node; base64url encoding produces
-    // the URL-safe variant directly without manual character substitution.
-    const { Buffer } = await import('node:buffer')
     return Buffer.from(new Uint8Array(hash)).toString('base64url')
   }
 
@@ -301,8 +372,8 @@ export abstract class AbstractProvider implements ProviderInterface {
   /**
    * Build the authentication URL for the provider from the given base URL.
    */
-  protected buildAuthUrlFromBase(url: string, state: string | null): string {
-    const query = new URLSearchParams(this.getCodeFields(state))
+  protected async buildAuthUrlFromBase(url: string, state: string | null): Promise<string> {
+    const query = new URLSearchParams(await this.getCodeFields(state))
     return `${url}?${query.toString()}`
   }
 }

@@ -38,6 +38,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
       scope: scopes.join(' '),
       state,
       response_type: 'code',
+      ...await this.pkceFields(),
       ...this.parameters,
     }).toString()}`
   }
@@ -55,6 +56,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
         client_secret: clientSecret,
         code,
         redirect_uri: redirectUrl,
+        ...this.pkceTokenFields(),
       })
 
     if (response.data.error) {

@@ -84,6 +84,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
       response_type: 'code',
       access_type: 'offline',
       prompt: 'consent',
+      ...await this.pkceFields(),
       ...this.parameters,
     }).toString()}`
   }
@@ -102,6 +103,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
         code,
         redirect_uri: redirectUrl,
         grant_type: 'authorization_code',
+        ...this.pkceTokenFields(),
       })
 
     if (response.data.error) {

@@ -61,6 +61,7 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
       scope: scopes.join(','),
       state,
       response_type: 'code',
+      ...await this.pkceFields(),
     }).toString()}`
   }
 
@@ -77,6 +78,7 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
         client_secret: clientSecret,
         redirect_uri: redirectUrl,
         code,
+        ...this.pkceTokenFields(),
       }).toString()}`)
 
     if (response.data.error) {
