@@ -8,12 +8,14 @@ describe('Android mobile build configuration', () => {
       packageName: 'org.wildloop.app',
       url: 'wildloop.org',
       urlSchemes: ['wildloop'],
+      appLinks: [{ host: 'wildloop.org', paths: [{ pattern: '/privacy', exclude: true }, { pattern: '/*' }] }],
       googleServicesFile: 'secrets/google-services.json',
       capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true, localNetwork: true, bluetooth: true },
     })
     expect(config.devServerURL).toBe('https://wildloop.org')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
     expect(config.urlSchemes).toEqual(['wildloop'])
+    expect(config.appLinks).toEqual([{ host: 'wildloop.org', paths: [{ pattern: '/privacy', exclude: true }, { pattern: '/*' }] }])
     expect(config.enableBackgroundLocation).toBe(true)
     expect(config.enableGeolocation).toBe(true)
     expect(config.enableCamera).toBe(false)
@@ -125,4 +127,11 @@ it('requires the Android generic Bluetooth transport when requested', () => {
   const config = { appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', capabilities: { bluetooth: true } }
   expect(() => assertCraftSupportsAndroid(config, '0.0.177', 'old builder')).toThrow('bluetooth')
   expect(() => assertCraftSupportsAndroid(config, '0.0.178', 'new builder')).not.toThrow()
+})
+
+
+it('refuses a Craft release that cannot verify HTTPS App Links', () => {
+  const config = { appName: 'HQ', packageName: 'training.hq.app', appLinks: [{ host: 'hq.training' }], capabilities: { deepLinks: true } }
+  expect(() => assertCraftSupportsAndroid(config, '0.0.200', 'fixture')).toThrow('appLinks')
+  expect(() => assertCraftSupportsAndroid(config, '0.0.201', 'fixture')).not.toThrow()
 })

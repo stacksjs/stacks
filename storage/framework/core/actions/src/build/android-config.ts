@@ -16,6 +16,7 @@ export interface CraftAndroidConfig {
   devServerURL?: string
   trustedOrigins?: string[]
   urlSchemes?: string[]
+  appLinks?: AndroidMobileConfig['appLinks']
   appIconPath?: string
   googleServicesFile?: string
   enableBluetooth?: boolean
@@ -58,6 +59,8 @@ const CAPABILITY_KEYS = {
 export const CRAFT_ANDROID_FLOORS = {
   /** The native app shell: tabs, paths to screens, the app script, synchronous stores. */
   nativeShell: '0.0.169',
+  /** Verified HTTPS hosts and ordered website path exclusions. */
+  appLinks: '0.0.201',
   bluetooth: '0.0.178',
   /** Health Connect for native screens (workouts, sleep, heart rate, mindful, nutrition). */
   healthConnect: '0.0.169',
@@ -75,6 +78,7 @@ export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
 export function androidCraftFeatures(config: AndroidMobileConfig, options: { appBundle?: boolean } = {}): AndroidCraftFeature[] {
   const features: AndroidCraftFeature[] = []
   if (config.renderer === 'native' && Object.keys(config.nativeScreens ?? {}).length) features.push('nativeShell')
+  if (config.appLinks?.length && config.capabilities?.deepLinks) features.push('appLinks')
   if (config.capabilities?.bluetooth) features.push('bluetooth')
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
@@ -116,6 +120,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     devServerURL,
     trustedOrigins: [...trustedOrigins],
     urlSchemes: config.urlSchemes,
+    appLinks: config.appLinks,
     appIconPath: config.appIcon,
     googleServicesFile: config.googleServicesFile,
     renderer: config.renderer,

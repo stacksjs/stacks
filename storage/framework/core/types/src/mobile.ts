@@ -287,6 +287,8 @@ export interface AndroidMobileConfig {
   darkMode?: boolean
   backgroundColor?: string
   trustedOrigins?: string[]
+  /** Verified HTTPS hosts. Ordered `*` path rules keep excluded website pages in the browser. */
+  appLinks?: Array<{ host: string, paths?: Array<{ pattern: string, exclude?: boolean }> }>
   /** Custom URI schemes handled by the app, for example `wildloop`. */
   urlSchemes?: string[]
   appIcon?: string
