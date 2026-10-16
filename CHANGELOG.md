@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.186...v0.75.187)
+
+## ✨ Features
+
+- **mobile**: configure verified Android App Links through Stacks ([105ca4f](https://github.com/stacksjs/stacks/commit/105ca4f)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.185...v0.75.186)
 
 ## ✨ Features
