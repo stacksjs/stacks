@@ -51,7 +51,7 @@ export interface MCPServerOptions<Principal> {
   authenticate: (request: Request) => MaybePromise<Principal | Response>
   /** Application response metadata, such as the authenticated principal's quota. */
   responseHeaders?: (principal: Principal) => HeadersInit
-  /** Exact browser origins, in addition to the request URL's origin. No wildcard. */
+  /** Exact browser origins. With no allowlist, requests carrying Origin are refused. */
   allowedOrigins?: readonly string[]
   maxBodyBytes?: number
   pageSize?: number
@@ -129,6 +129,10 @@ export function createMCPServer<Principal>(options: MCPServerOptions<Principal>)
       if (!/^[\w.-]{1,128}$/.test(item.name) || names.has(item.name)) throw new TypeError(`Invalid or duplicate MCP name: ${item.name}`)
       names.add(item.name)
     }
+  }
+  for (const origin of options.allowedOrigins ?? []) {
+    if (origin === 'null' || new URL(origin).origin !== origin || !/^https?:/.test(origin))
+      throw new TypeError('MCP allowedOrigins must contain exact HTTP(S) origins')
   }
   if (new Set(resources.map(item => item.uri)).size !== resources.length) throw new TypeError('Duplicate MCP resource URI')
   for (const tool of tools) {
@@ -216,7 +220,7 @@ export function createMCPServer<Principal>(options: MCPServerOptions<Principal>)
   return {
     async handle(request: Request): Promise<Response> {
       const origin = request.headers.get('origin')
-      if (origin && origin !== new URL(request.url).origin && !options.allowedOrigins?.includes(origin))
+      if (origin && !options.allowedOrigins?.includes(origin))
         return failure(null, -32600, 'Origin is not allowed', 403)
       let principal: Principal | Response
       try { principal = await options.authenticate(request) }

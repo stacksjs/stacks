@@ -45,6 +45,19 @@ describe('stateless Streamable HTTP MCP', () => {
     expect((await call(message, {}, 'DELETE')).headers.get('allow')).toBe('POST')
     expect((await call(message)).headers.get('cache-control')).toBe('no-store')
   })
+  test('never trusts Origin just because an attacker-controlled Host matches it', async () => {
+    const { server, call } = fixture()
+    const message = { jsonrpc: '2.0', id: 1, method: 'ping' }
+    expect((await call(message, { origin: 'https://example.com' })).status).toBe(403)
+    const rebound = new Request('http://attacker.example/mcp', { method: 'POST', headers: { Authorization: 'Bearer allowed', Origin: 'http://attacker.example', 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' }, body: JSON.stringify(message) })
+    expect((await server.handle(rebound)).status).toBe(403)
+    const trusted = createMCPServer({ name: 'test', version: '1', allowedOrigins: ['https://trusted.example'], authenticate: () => ({}) })
+    const request = (origin: string) => new Request('http://internal-api/mcp', { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' }, body: JSON.stringify(message) })
+    expect((await trusted.handle(request('https://trusted.example'))).status).toBe(200)
+    expect((await trusted.handle(request('https://trusted.example.attacker.test'))).status).toBe(403)
+    expect(() => createMCPServer({ name: 'test', version: '1', authenticate: () => ({}), allowedOrigins: ['*'] })).toThrow()
+    expect(() => createMCPServer({ name: 'test', version: '1', authenticate: () => ({}), allowedOrigins: ['https://trusted.example/path'] })).toThrow()
+  })
   test('rejects batches, malformed requests and missing ids without executing writes', async () => {
     const { call, writes } = fixture()
     for (const message of [[], null, {}, { jsonrpc: '2.0', id: null, method: 'ping' }, { jsonrpc: '2.0', method: 'tools/call', params: { name: 'write', arguments: { count: 1 } } }, { jsonrpc: '2.0', id: 1, method: 'tools/call', params: [] }])

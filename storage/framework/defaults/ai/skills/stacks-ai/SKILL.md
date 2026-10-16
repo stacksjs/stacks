@@ -442,7 +442,8 @@ serializes the same data in both text and structuredContent. Tool exceptions are
 redacted, with server-side `onError` diagnostics. Expected domain failures may
 return `mcpTextResult(data, true)`. Do not advertise idempotency for a write unless
 the underlying operation guarantees it. `responseHeaders(principal)` can expose
-per-key rate limits. Exact allowedOrigins supplement the request URL's origin.
+per-key rate limits. Browser requests require exact configured allowedOrigins. Requests without an Origin header
+remain eligible for bearer authentication. The request Host is never an origin allowlist.
 
 Tests: `core/ai/tests/mcp-server.test.ts`, `core/router/tests/body.test.ts`,
 `core/router/tests/protocol-body.test.ts` and `core/api/tests/operation.test.ts`.
