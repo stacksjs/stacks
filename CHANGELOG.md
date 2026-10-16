@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.188...v0.75.189)
+
+## ✨ Features
+
+- serve MCP through authorized API operations and protocol routes ([dcfe877](https://github.com/stacksjs/stacks/commit/dcfe877)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.187...v0.75.188)
 
 ## ✨ Features
