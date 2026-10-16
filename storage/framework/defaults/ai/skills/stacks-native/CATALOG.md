@@ -68,7 +68,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/orm` | [`stacks-orm`](../stacks-orm/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/orm/src/index.ts) | 61 |
 | `@stacksjs/pagination` | [`stacks-pagination`](../stacks-pagination/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/pagination/src/index.ts) | 0 |
 | `@stacksjs/path` | [`stacks-path`](../stacks-path/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/path/src/index.ts) | 10 |
-| `@stacksjs/payments` | [`stacks-payments`](../stacks-payments/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/index.ts) | 23 |
+| `@stacksjs/payments` | [`stacks-payments`](../stacks-payments/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/index.ts) | 24 |
 | `@stacksjs/push` | [`stacks-push`](../stacks-push/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/index.ts) | 6 |
 | `@stacksjs/query-builder` | [`stacks-query-builder`](../stacks-query-builder/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/query-builder/src/index.ts) | 6 |
 | `@stacksjs/queue` | [`stacks-queue`](../stacks-queue/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/queue/src/index.ts) | 48 |
@@ -657,7 +657,7 @@ Declared runtime exports: `Payment`, `freshIdempotencyKey`, `stacksIdempotencyKe
 
 Local source modules: [src/billable/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/billable/index.ts), [src/connect/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/connect/index.ts), [src/direct-debit.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/direct-debit.ts), [src/driver/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/driver/index.ts), [src/drivers/stripe.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/drivers/stripe.ts), [src/idempotency.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/idempotency.ts), [src/payment.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/payment.ts), [src/subscription-state.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/subscription-state.ts), [src/terminal.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/src/terminal.ts).
 
-Evidence directory: [23 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [24 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/payments/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/push
 

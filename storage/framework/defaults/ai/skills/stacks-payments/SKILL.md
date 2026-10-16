@@ -8,7 +8,17 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Payments
 
-Full Stripe integration via the Payment facade. Uses Stripe API version `2026-01-28.clover`. The Stripe SDK is initialized from `services.stripe.secretKey` (sourced from `config/payment.ts`).
+Full Stripe integration via the Payment facade. The Stripe SDK is initialized from `services.stripe.secretKey` (sourced from `config/payment.ts`), at the API version the installed SDK declares (`Stripe.API_VERSION`), not a version written down here.
+
+## The Stripe SDK is the app's dependency, not the framework's
+
+`stripe` is an **optional peer** of `@stacksjs/payments`, and Bun does not install optional peers. An app that uses Stripe has to declare it: `bun add stripe`, **pinned to an exact version, not a range**. The driver refuses to start when `services.stripe.apiVersion` does not equal the installed SDK's `Stripe.API_VERSION`, so a range that resolves to a new major on the next `bun install` breaks billing (stacksjs/stacks#2911).
+
+Nothing throws at import, by design, so an app missing the SDK starts clean and every health check passes. Ask before using it rather than finding out inside a webhook handler:
+
+- `isStripeConfigured()` - true only when a secret key is set **and** the SDK resolves. It used to check only the key, and answered true on a tree where every Stripe call would throw.
+- `stripeAvailability()` - `{ key, sdk }`, to tell the two apart. They are fixed in different places: one in the environment, one in the app's package.json.
+- `describeStripeAvailability(available)` - one sentence naming everything missing, or null when Stripe is usable. Suitable for a boot log or a health endpoint.
 
 ## Payment Drivers (provider-neutral)
 
