@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.190...v0.75.191)
+
+## 🐛 Bug Fixes
+
+- ship API subpath JavaScript with isolated consumer coverage ([05f94a5](https://github.com/stacksjs/stacks/commit/05f94a5)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.189...v0.75.190)
 
 ## 🐛 Bug Fixes
