@@ -9,7 +9,7 @@ import { isIP } from 'node:net'
  */
 
 /** Why an outbound URL was refused. */
-export type OutboundUrlReason = 'invalid' | 'scheme' | 'credentials' | 'private' | 'unresolvable'
+export type OutboundUrlReason = 'invalid' | 'scheme' | 'credentials' | 'private' | 'unresolvable' | 'redirects' | 'too-large' | 'unreplayable-body'
 
 /** Thrown by {@link assertPublicOutboundUrl}. */
 export class OutboundUrlError extends Error {
@@ -173,10 +173,21 @@ async function systemResolve(hostname: string): Promise<string[]> {
  * then every address its host resolves to must be public. Throws
  * {@link OutboundUrlError}; returns the parsed URL.
  *
- * The request itself resolves the name again, so a host that answers with a
- * public address here and a private one a moment later (DNS rebinding) is not
- * fully covered; a deployment that needs that also blocks private ranges at
- * its egress.
+ * **Blessing a URL is not the same as making a safe request, and this only
+ * does the first.** A caller that takes the returned URL and fetches it gives
+ * the guarantee straight back (stacksjs/stacks#2909):
+ *
+ * - `fetch` defaults to `redirect: 'follow'`, so a validated public host that
+ *   answers `302 Location: http://169.254.169.254/...` is followed, and
+ *   nothing checks the second request. Pass `redirect: 'manual'` and
+ *   re-validate every hop, or the whole guard is one redirect wide.
+ * - `fetch` resolves the name again, so an address checked here is not the
+ *   address connected to. A host answering public once and private a moment
+ *   later (DNS rebinding) passes.
+ *
+ * Prefer {@link fetchPublicUrl}, which makes the request itself and handles
+ * both. Use this one when the check alone is what you want - validating a
+ * webhook URL at the moment someone saves it, say.
  */
 export async function assertPublicOutboundUrl(url: string, options: OutboundUrlOptions = {}): Promise<URL> {
   const problem = outboundUrlProblem(url, options)
@@ -200,4 +211,170 @@ export async function assertPublicOutboundUrl(url: string, options: OutboundUrlO
   if (addresses.some(isPrivateAddress))
     throw new OutboundUrlError('The URL points at a private or local address', 'private')
   return parsed
+}
+
+/**
+ * Resolve the addresses behind a validated URL, keeping them.
+ *
+ * {@link assertPublicOutboundUrl} throws them away, which is what forces the
+ * caller's `fetch` to resolve a second time and reopens the window a
+ * rebinding answer walks through.
+ */
+async function validatedTarget(url: string, options: OutboundUrlOptions): Promise<{ parsed: URL, addresses: string[] }> {
+  const parsed = await assertPublicOutboundUrl(url, options)
+  const host = parsed.hostname.replace(/^\[|\]$/g, '')
+
+  // An address in the URL is already the address that will be connected to.
+  if (isIP(host.split('%')[0]!) || options.allowPrivate)
+    return { parsed, addresses: [] }
+
+  const addresses = await (options.resolve ?? systemResolve)(host)
+  return { parsed, addresses }
+}
+
+export interface PublicFetchOptions extends OutboundUrlOptions {
+  /** Redirect hops to follow, each re-validated. Default 3; 0 refuses any. */
+  maxRedirects?: number
+  /** Abort the whole chain after this long. Default 10s. */
+  timeoutMs?: number
+  /** Refuse a response body larger than this. Default 5 MiB. */
+  maxBytes?: number
+}
+
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
+
+/** Headers that must not follow a redirect to a different origin. */
+const CROSS_ORIGIN_SENSITIVE = ['authorization', 'cookie', 'proxy-authorization']
+
+/**
+ * Send the request to the address that was checked, not to the name.
+ *
+ * The URL's host is swapped for a resolved address and the original name is
+ * put back in `Host` (and in TLS SNI, so the certificate is still validated
+ * against the name rather than the address). Without this, the guard checks
+ * one answer and the connection uses another.
+ */
+function pinnedRequest(parsed: URL, address: string | undefined, init: RequestInit): [string, RequestInit] {
+  if (!address)
+    return [parsed.href, init]
+
+  const pinned = new URL(parsed.href)
+  pinned.hostname = isIP(address) === 6 ? `[${address}]` : address
+
+  const headers = new Headers(init.headers)
+  headers.set('Host', parsed.host)
+
+  const withSni: RequestInit & { tls?: { serverName: string } } = { ...init, headers }
+  if (parsed.protocol === 'https:')
+    withSni.tls = { serverName: parsed.hostname.replace(/^\[|\]$/g, '') }
+
+  return [pinned.href, withSni]
+}
+
+/** Read at most `maxBytes`, refusing rather than truncating past it. */
+async function readCapped(response: Response, maxBytes: number): Promise<Response> {
+  const declared = Number(response.headers.get('content-length') ?? Number.NaN)
+  if (Number.isFinite(declared) && declared > maxBytes)
+    throw new OutboundUrlError(`The response is ${declared} bytes, over the ${maxBytes} byte limit`, 'too-large')
+
+  if (!response.body)
+    return response
+
+  const chunks: Uint8Array[] = []
+  let total = 0
+  const reader = response.body.getReader()
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done)
+        break
+      total += value.byteLength
+      if (total > maxBytes) {
+        await reader.cancel()
+        throw new OutboundUrlError(`The response is over the ${maxBytes} byte limit`, 'too-large')
+      }
+      chunks.push(value)
+    }
+  }
+  finally {
+    reader.releaseLock()
+  }
+
+  const body = new Uint8Array(total)
+  let at = 0
+  for (const chunk of chunks) {
+    body.set(chunk, at)
+    at += chunk.byteLength
+  }
+
+  return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers })
+}
+
+/**
+ * Fetch a URL somebody else supplied, checking every hop rather than the
+ * first one (stacksjs/stacks#2909).
+ *
+ * {@link assertPublicOutboundUrl} blesses a URL, and the caller's `fetch`
+ * then follows redirects and re-resolves the name, which hands back
+ * everything the check established. This makes the request itself:
+ *
+ * - every hop is validated by the same rules, up to `maxRedirects`
+ * - the connection goes to an address that was checked, with the name in
+ *   `Host` and in TLS SNI, so a rebinding answer cannot be substituted
+ * - `Authorization`, `Cookie` and `Proxy-Authorization` are dropped when a
+ *   redirect crosses to another origin
+ * - the body is capped and the whole chain is bounded by a timeout
+ *
+ * A streaming request body cannot be replayed onto a redirect, so a redirect
+ * is refused rather than silently sent without it.
+ */
+export async function fetchPublicUrl(url: string, init: RequestInit = {}, options: PublicFetchOptions = {}): Promise<Response> {
+  const maxRedirects = options.maxRedirects ?? 3
+  const maxBytes = options.maxBytes ?? 5 * 1024 * 1024
+  const timeoutMs = options.timeoutMs ?? 10_000
+
+  const deadline = AbortSignal.timeout(timeoutMs)
+  const signal = init.signal ? AbortSignal.any([init.signal, deadline]) : deadline
+
+  const replayable = init.body == null || typeof init.body === 'string' || init.body instanceof Uint8Array || init.body instanceof ArrayBuffer
+  let current = url
+  let request: RequestInit = { ...init, signal, redirect: 'manual' }
+  let origin = ''
+
+  for (let hop = 0; ; hop++) {
+    const { parsed, addresses } = await validatedTarget(current, options)
+
+    if (origin && parsed.origin !== origin) {
+      const headers = new Headers(request.headers)
+      for (const name of CROSS_ORIGIN_SENSITIVE)
+        headers.delete(name)
+      request = { ...request, headers }
+    }
+    origin = parsed.origin
+
+    const [target, pinned] = pinnedRequest(parsed, addresses.find(address => !isPrivateAddress(address)), request)
+    const response = await fetch(target, pinned)
+
+    if (!REDIRECT_STATUSES.has(response.status))
+      return await readCapped(response, maxBytes)
+
+    const location = response.headers.get('location')
+    if (!location)
+      return await readCapped(response, maxBytes)
+
+    if (hop >= maxRedirects)
+      throw new OutboundUrlError(`The URL redirected more than ${maxRedirects} times`, 'redirects')
+
+    if (!replayable)
+      throw new OutboundUrlError('The URL redirected, and a streaming request body cannot be sent again', 'unreplayable-body')
+
+    // 303 always becomes GET; 301 and 302 do for anything that is not already
+    // GET or HEAD, which is what every client does in practice. 307 and 308
+    // keep the method and the body, which is the point of them existing.
+    const method = (request.method ?? 'GET').toUpperCase()
+    if (response.status === 303 || ((response.status === 301 || response.status === 302) && method !== 'GET' && method !== 'HEAD'))
+      request = { ...request, method: 'GET', body: undefined }
+
+    current = new URL(location, parsed).href
+  }
 }
