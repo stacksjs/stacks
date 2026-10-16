@@ -14,6 +14,8 @@
 // `./request-augmentation.ts` and stacksjs/stacks#1863 T-3.
 import './request-augmentation'
 
+export { readJsonBody, RequestBodyError } from './body'
+
 // Re-export everything from bun-router (includes response factory)
 export * from '@stacksjs/bun-router'
 

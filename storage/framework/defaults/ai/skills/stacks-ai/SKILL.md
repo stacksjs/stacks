@@ -393,3 +393,56 @@ Tests: `storage/framework/core/ai/tests/usage-and-tokens.test.ts`,
 `tool-calls.test.ts` and `client.test.ts`. Verify chosen model/provider
 capabilities from config and registry rather than assuming a marketing model name
 is usable for every API.
+
+## Serving MCP tools
+
+Use the native server subpath so serving a tool does not load AI provider drivers:
+
+```typescript
+import { createMCPServer, mcpTextResult } from '@stacksjs/ai/mcp-server'
+import { route } from '@stacksjs/router'
+
+const server = createMCPServer({
+  name: 'example', version: '1.0.0',
+  authenticate: async request => authenticateIntegrationKey(request),
+  tools: [{
+    name: 'account', description: 'Read the connected account',
+    inputSchema: { type: 'object', additionalProperties: false },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+    execute: async (args, { principal }) => mcpTextResult({ id: principal.id }),
+  }],
+})
+route.post('/mcp', server.handle).parseBody(false).skipCsrf()
+route.get('/mcp', server.handle)
+route.delete('/mcp', server.handle).skipCsrf()
+```
+
+`authenticateIntegrationKey` is application-owned: return a principal or an HTTP
+401/403 `Response`. Authenticate every request, enforce scopes and quotas, and
+never accept ambient login cookies as integration credentials. Tool `available`
+filters discovery and execution; domain operations must still check authorization.
+`@stacksjs/api/operation` supplies `defineApiOperation({ authorize, handle })` for
+sharing that check across HTTP, MCP and background invocations.
+
+This transport is stateless Streamable HTTP with JSON replies. It supports
+2025-11-25, 2025-06-18 and 2025-03-26; GET/DELETE return 405. Clients send both
+application/json and text/event-stream in Accept. It implements tools, static
+resources, prompts and discovery pagination; it does not claim SSE subscriptions,
+tasks, server requests, session ids, stdio or JSON-RPC batch support. `parseBody(false)`
+is essential: the protocol owns its bounded read and error envelope. The router
+keeps middleware, CSRF policy, CORS, security and request-id headers. JSON-RPC
+error bodies keep their envelope instead of receiving a top-level request_id.
+
+Schemas use an explicitly bounded vocabulary: type, enum, const, properties,
+required, additionalProperties (boolean), items, minimum/maximum, min/maxLength,
+min/maxItems and pattern, plus descriptive metadata. Unsupported keywords fail
+registration; put additional domain validation in the authorized operation.
+Use object schemas for input and optional structured output. `mcpTextResult`
+serializes the same data in both text and structuredContent. Tool exceptions are
+redacted, with server-side `onError` diagnostics. Expected domain failures may
+return `mcpTextResult(data, true)`. Do not advertise idempotency for a write unless
+the underlying operation guarantees it. `responseHeaders(principal)` can expose
+per-key rate limits. Exact allowedOrigins supplement the request URL's origin.
+
+Tests: `core/ai/tests/mcp-server.test.ts`, `core/router/tests/body.test.ts`,
+`core/router/tests/protocol-body.test.ts` and `core/api/tests/operation.test.ts`.

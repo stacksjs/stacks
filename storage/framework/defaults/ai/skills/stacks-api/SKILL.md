@@ -838,3 +838,12 @@ the foreign-key attributes derived from `belongsTo`. For example,
 - CORS headers (`Access-Control-Allow-Origin: http://localhost:5173`) are only added in development mode for error responses
 - Body parsing happens once per request (tracked via `_bodyParsed` flag) -- JSON, URL-encoded, and multipart/form-data are all supported
 - `response.json()` catches circular reference errors and returns `{ error: 'Response data could not be serialized' }` instead of throwing
+
+## Sharing an authorized operation across transports
+
+`defineApiOperation({ authorize, handle })` from `@stacksjs/api/operation` returns
+an immutable operation with `execute(context)`. Every execution awaits authorize
+before invoking handle. Authenticate the context at each transport boundary;
+keep scope and resource-ownership checks in the operation and its domain helpers.
+This lets HTTP routes, native MCP tools and jobs share behavior without an HTTP
+loopback or a second implementation of the same business rules.

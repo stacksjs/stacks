@@ -385,3 +385,14 @@ url('user.show', { id: 42 })             // '/users/42'
 - Query tracking is for debug/profiling — call `clearTrackedQueries()` to free memory
 - The dev server writes a route manifest to `storage/framework/stx/routes.ts` (stx's `stateDir`, set in `config/ui.ts`); it is a build artifact, not a file to edit
 - The health endpoint returns uptime, memory, PID, and Bun version info
+
+## Protocol-owned request bodies
+
+For MCP or another wire protocol with its own validation and error envelope,
+`route.post('/mcp', handler).parseBody(false)` leaves the body unread for the
+handler. This does not disable middleware or CSRF: choose authentication and CSRF
+policy explicitly. Duplicate registrations cannot change the live route's policy.
+Use `readJsonBody(request, maxBytes)` from `@stacksjs/router/body` for a streamed
+byte limit, media-type and strict UTF-8 checks. `RequestBodyError.status` is
+400, 413 or 415. Normal app routes continue using the standard request macros.
+JSON-RPC error envelopes keep their shape; X-Request-ID remains in the headers.

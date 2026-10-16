@@ -33,6 +33,7 @@ export * from './personalization'
 
 // Model Context Protocol (MCP) client
 export * from './mcp'
+export * from './mcp-server'
 
 export * from './models'
 

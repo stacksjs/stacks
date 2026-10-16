@@ -33,6 +33,8 @@ export interface MCPTool {
   name: string
   description: string
   inputSchema: Record<string, unknown>
+  outputSchema?: Record<string, unknown>
+  annotations?: { readOnlyHint?: boolean, destructiveHint?: boolean, idempotentHint?: boolean, openWorldHint?: boolean }
 }
 
 export interface MCPResource {
@@ -53,6 +55,7 @@ export interface MCPPrompt {
 }
 
 export interface MCPToolCallResult {
+  structuredContent?: Record<string, unknown>
   content: Array<{
     type: 'text' | 'image' | 'resource'
     text?: string
@@ -89,6 +92,9 @@ export class MCPClient {
   private prompts: MCPPrompt[] = []
   private initialized = false
   private buffer = ''
+  private protocolVersion = '2025-11-25'
+  private sessionId: string | null = null
+  private serverCapabilities: Record<string, unknown> | null = null
 
   constructor(config: MCPServerConfig) {
     this.config = config
@@ -126,11 +132,15 @@ export class MCPClient {
     this.readStdout()
 
     // Send initialize request
-    await this.sendRequest('initialize', {
-      protocolVersion: '2024-11-05',
+    const initialized = await this.sendRequest('initialize', {
+      protocolVersion: this.protocolVersion,
       capabilities: {},
       clientInfo: { name: 'stacks-ai', version: '1.0.0' },
     })
+
+    this.serverCapabilities = initialized?.capabilities ?? {}
+    if (typeof initialized?.protocolVersion !== 'string') throw new Error('Invalid MCP initialization response')
+    this.protocolVersion = initialized.protocolVersion
 
     // Send initialized notification
     await this.sendNotification('notifications/initialized', {})
@@ -144,17 +154,19 @@ export class MCPClient {
 
     // Send initialize via HTTP
     const response = await fetch(transport.url, {
+      signal: AbortSignal.timeout(30000),
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         ...transport.headers,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
       },
       body: JSON.stringify({
         jsonrpc: '2.0',
         id: this.nextId(),
         method: 'initialize',
         params: {
-          protocolVersion: '2024-11-05',
+          protocolVersion: this.protocolVersion,
           capabilities: {},
           clientInfo: { name: 'stacks-ai', version: '1.0.0' },
         },
@@ -166,6 +178,13 @@ export class MCPClient {
       throw new Error(`MCP HTTP connection error: ${error}`)
     }
 
+    const initialized = await response.json()
+    if (initialized.error || typeof initialized.result?.protocolVersion !== 'string')
+      throw new Error(initialized.error?.message || 'Invalid MCP initialization response')
+    this.serverCapabilities = initialized.result.capabilities ?? {}
+    this.protocolVersion = initialized.result.protocolVersion
+    this.sessionId = response.headers.get('mcp-session-id')
+    await this.sendNotification('notifications/initialized')
     await this.discoverCapabilities()
   }
 
@@ -264,10 +283,14 @@ export class MCPClient {
       const transport = this.config.transport as { url: string; headers?: Record<string, string> }
 
       const response = await fetch(transport.url, {
+        signal: AbortSignal.timeout(30000),
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           ...transport.headers,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, text/event-stream',
+          'MCP-Protocol-Version': this.protocolVersion,
+          ...(this.sessionId ? { 'Mcp-Session-Id': this.sessionId } : {}),
         },
         body: message,
       })
@@ -301,40 +324,47 @@ export class MCPClient {
         writer.releaseLock()
       }
     }
+    else if (this.config.transport.type === 'sse' || this.config.transport.type === 'streamable-http') {
+      const transport = this.config.transport
+      const response = await fetch(transport.url, {
+        method: 'POST',
+        signal: AbortSignal.timeout(30000),
+        headers: {
+          ...transport.headers,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, text/event-stream',
+          'MCP-Protocol-Version': this.protocolVersion,
+          ...(this.sessionId ? { 'Mcp-Session-Id': this.sessionId } : {}),
+        },
+        body: message,
+      })
+      if (!response.ok) throw new Error(`MCP notification failed: ${response.status}`)
+      await response.body?.cancel()
+    }
   }
 
   private async discoverCapabilities(): Promise<void> {
     const capabilities = this.config.capabilities || { tools: true, resources: true, prompts: true }
-
-    if (capabilities.tools !== false) {
-      try {
-        const result = await this.sendRequest('tools/list')
-        this.tools = result?.tools || []
-      }
-      catch {
-        this.tools = []
-      }
+    const collect = async (method: string, key: string): Promise<any[]> => {
+      const items: any[] = []
+      const seen = new Set<string>()
+      let cursor: string | undefined
+      do {
+        const result = await this.sendRequest(method, cursor ? { cursor } : {})
+        if (!Array.isArray(result?.[key])) throw new Error(`Invalid MCP ${key} response`)
+        items.push(...result[key])
+        cursor = result.nextCursor
+        if (cursor !== undefined) {
+          if (typeof cursor !== 'string' || seen.has(cursor) || seen.size >= 1000)
+            throw new Error('Invalid or repeated MCP discovery cursor')
+          seen.add(cursor)
+        }
+      } while (cursor !== undefined)
+      return items
     }
-
-    if (capabilities.resources !== false) {
-      try {
-        const result = await this.sendRequest('resources/list')
-        this.resources = result?.resources || []
-      }
-      catch {
-        this.resources = []
-      }
-    }
-
-    if (capabilities.prompts !== false) {
-      try {
-        const result = await this.sendRequest('prompts/list')
-        this.prompts = result?.prompts || []
-      }
-      catch {
-        this.prompts = []
-      }
-    }
+    if (capabilities.tools !== false && (!this.serverCapabilities || this.serverCapabilities.tools)) this.tools = await collect('tools/list', 'tools')
+    if (capabilities.resources !== false && (!this.serverCapabilities || this.serverCapabilities.resources)) this.resources = await collect('resources/list', 'resources')
+    if (capabilities.prompts !== false && (!this.serverCapabilities || this.serverCapabilities.prompts)) this.prompts = await collect('prompts/list', 'prompts')
   }
 
   // ========================================================================

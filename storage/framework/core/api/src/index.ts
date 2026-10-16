@@ -3,6 +3,7 @@ export * from './generate-client'
 export * from './generate-openapi'
 export * from './generate-types'
 export * from './resource'
+export * from './operation'
 
 
 /*

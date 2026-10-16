@@ -488,6 +488,8 @@ type ResourceBaseCheck<TBase extends string, TActive extends ResourceAction>
  * Chainable route interface for middleware and naming support
  */
 export interface ChainableRoute {
+  /** Let a protocol handler own bounded body parsing and its error envelope. */
+  parseBody: (enabled: boolean) => ChainableRoute
   /**
    * One middleware alias, or an array of them applied in order.
    *
@@ -572,6 +574,7 @@ interface RouteRateLimitConfig {
   windowSeconds: number
 }
 interface RouteRuntimeState {
+  parseBody?: boolean
   middleware?: string[]
   csrfMode: RouteCsrfMode
   rateLimit?: RouteRateLimitConfig
@@ -1957,7 +1960,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
     // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
     // route that to the standard error response path instead of letting
     // it bubble out of the handler as an unhandled rejection.
-    if ((routeFlags & ROUTE_MAY_HAVE_BODY) !== 0) {
+    if ((routeFlags & ROUTE_MAY_HAVE_BODY) !== 0 && routeState?.parseBody !== false) {
       try {
         await parseRequestBody(req)
       }
@@ -2505,7 +2508,8 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
           try {
             const text = await response.clone().text()
             const parsed = JSON.parse(text)
-            if (parsed && typeof parsed === 'object') {
+            // JSON-RPC has its own wire envelope; correlation belongs in headers.
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.jsonrpc !== '2.0') {
               const newHeaders = new Headers(response.headers)
               setHeaders(newHeaders)
               return new Response(JSON.stringify({ ...parsed, request_id: reqId }), {
@@ -2620,6 +2624,7 @@ function createInertRoute(): ChainableRoute {
   // grows a member, rather than letting a new one silently reach the live
   // route from a dead duplicate.
   const inert: ChainableRoute = {
+    parseBody: () => inert,
     middleware: () => inert,
     name: () => inert,
     skipCsrf: () => inert,
@@ -2639,6 +2644,11 @@ function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, route
   const routeState = routeStates.get(routeKey)
 
   const chain: ChainableRoute = {
+    parseBody(enabled: boolean) {
+      if (typeof enabled !== 'boolean') throw new TypeError('parseBody() requires a boolean')
+      if (routeState) routeState.parseBody = enabled
+      return chain
+    },
     /**
      * Attach one middleware alias, or several.
      *
