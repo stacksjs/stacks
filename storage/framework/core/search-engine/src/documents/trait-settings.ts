@@ -32,3 +32,8 @@ export function settingsFromSearchTrait(
 
   return settings
 }
+
+/** All CLI paths must address the same collection as Model.search(). */
+export function searchIndexName(trait: boolean | Partial<SearchOptions> | undefined, tableName: string): string {
+  return typeof trait === 'object' && trait.index ? trait.index : tableName
+}

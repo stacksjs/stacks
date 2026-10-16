@@ -2249,7 +2249,8 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
    * says it exactly. Only that one trait is overridden; everything else still
    * comes from bqb, so its typing stays authoritative.
    */
-  traits?: Omit<NonNullable<BQBModelDefinition['traits']>, 'useApi'> & {
+  traits?: Omit<NonNullable<BQBModelDefinition['traits']>, 'useApi' | 'useSearch'> & {
+    useSearch?: boolean | SearchableTraitConfig
     useApi?: boolean | {
       readonly uri?: string
       readonly prefix?: string
@@ -2413,7 +2414,16 @@ import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } f
 // intersection its signature came first, so `await Model.update(id, data)` was
 // typed as never undefined while the method that actually runs returns
 // undefined for a row that is gone.
-export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete'> & TDef & TraitMethods & {
+/** Search statics exist precisely when the model enables the search trait. */
+export type ModelSearchStatics<TDef> = TDef extends { traits: { useSearch: infer TSearch } }
+  ? TSearch extends false | undefined ? {} : {
+    search: (query: string, params?: SearchEngineSearchParams) => ReturnType<typeof createSearchQueryBuilder>
+    makeAllSearchable: (chunkSize?: number) => Promise<number>
+    removeAllFromSearch: () => Promise<void>
+  }
+  : {}
+
+export type StacksModelStatic<TDef extends ModelDefinition> = Omit<QueryModel<TDef>, 'update' | 'delete'> & TDef & TraitMethods & ModelSearchStatics<TDef> & {
   readonly [MODEL_DEFINITION]: TDef
   update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
   forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
@@ -2951,13 +2961,13 @@ interface SearchableTraitConfig {
    */
 
   /** Fields returned on a hit. Defaults to the whole document. */
-  displayable?: string[]
+  displayable?: readonly string[]
   /** Fields matched against the query. Becomes Typesense's `query_by`. */
-  searchable?: string[]
+  searchable?: readonly string[]
   /** Fields a result set may be ordered by. */
-  sortable?: string[]
+  sortable?: readonly string[]
   /** Fields a result set may be narrowed by. */
-  filterable?: string[]
+  filterable?: readonly string[]
   /**
    * Projection function — what gets indexed. Lets you index a
    * curated subset of fields (or denormalize relations) instead of

@@ -291,6 +291,8 @@ export interface SearchEngineStorage {
 }
 
 export interface SearchOptions {
+  /** Collection name, shared by model search, lifecycle writes and CLI sync. */
+  index?: string
   displayable: string[]
   searchable: string[]
   sortable: string[]

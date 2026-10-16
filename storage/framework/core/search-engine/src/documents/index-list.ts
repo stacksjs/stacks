@@ -1,3 +1,4 @@
+import { searchIndexName } from './trait-settings'
 import type {Result} from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
@@ -14,7 +15,7 @@ export async function listIndexSettings(modelName: string): Promise<Result<strin
 
     const searchable = modelInstance.traits?.useSearch
 
-    const tableName = getTableName(modelInstance, modelFile)
+    const tableName = searchIndexName(searchable, getTableName(modelInstance, modelFile))
 
     if (searchable && typeof searchable === 'object') {
       const displayedAttributes = await getDisplayedAttributes(tableName)

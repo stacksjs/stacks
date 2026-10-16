@@ -1,3 +1,4 @@
+import { searchIndexName } from './trait-settings'
 import type {Result} from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
@@ -16,7 +17,7 @@ export async function flushModelDocuments(modelOption?: string): Promise<Result<
       const modelInstance = (await import(model)).default as Model
       const searchable = modelInstance.traits?.useSearch
 
-      const tableName = getTableName(modelInstance, model)
+      const tableName = searchIndexName(searchable, getTableName(modelInstance, model))
       const modelName = getModelName(modelInstance, model)
 
       if (modelOption && modelName !== modelOption)

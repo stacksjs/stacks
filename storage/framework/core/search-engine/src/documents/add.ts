@@ -6,7 +6,7 @@ import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
-import { settingsFromSearchTrait } from './trait-settings'
+import { searchIndexName, settingsFromSearchTrait } from './trait-settings'
 
 export async function importModelDocuments(modelOption?: string): Promise<Result<string, string>> {
   try {
@@ -17,7 +17,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Result
       const modelInstance = (await import(model)).default as Model
       const searchable = modelInstance.traits?.useSearch
 
-      const tableName = getTableName(modelInstance, model)
+      const tableName = searchIndexName(searchable, getTableName(modelInstance, model))
       const modelName = getModelName(modelInstance, model)
 
       if (modelOption && modelName !== modelOption) continue

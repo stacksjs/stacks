@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { settingsFromSearchTrait } from '../src/documents/trait-settings'
+import { searchIndexName, settingsFromSearchTrait } from '../src/documents/trait-settings'
 
 /**
  * The settings sync sent every list, with `[]` for the ones a model did not
@@ -44,5 +44,14 @@ describe('settingsFromSearchTrait', () => {
     expect(settingsFromSearchTrait({ searchable: ['name'], displayable: ['id'] }, { displayed: false })).toEqual({
       searchableAttributes: ['name'],
     })
+  })
+})
+
+describe('model collection names', () => {
+  test('custom indexes stay consistent for import, settings and flush', () => {
+    expect(searchIndexName({ index: 'hq_public_people' }, 'users')).toBe('hq_public_people')
+    expect(searchIndexName({ searchable: ['name'] }, 'users')).toBe('users')
+    expect(searchIndexName(true, 'users')).toBe('users')
+    expect(searchIndexName(undefined, 'users')).toBe('users')
   })
 })

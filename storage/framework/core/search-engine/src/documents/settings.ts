@@ -6,7 +6,7 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
-import { settingsFromSearchTrait } from './trait-settings'
+import { searchIndexName, settingsFromSearchTrait } from './trait-settings'
 
 export async function updateIndexSettings(): Promise<Result<string, string>> {
   try {
@@ -17,7 +17,7 @@ export async function updateIndexSettings(): Promise<Result<string, string>> {
       const modelInstance = (await import(model)).default as Model
       const searchable = modelInstance.traits?.useSearch
 
-      const tableName = getTableName(modelInstance, model)
+      const tableName = searchIndexName(searchable, getTableName(modelInstance, model))
 
       if (searchable && typeof searchable === 'object') {
         // Displayed attributes are left to the import, as they always were here.
