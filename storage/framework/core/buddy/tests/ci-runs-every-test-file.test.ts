@@ -489,6 +489,11 @@ function visitCommand(command: string, cwd: string, findings: Findings, depth: n
     if (closes)
       segment = segment.slice(0, -1).trim()
 
+    // sudo preserves its child's exit status. Resolve only this explicit
+    // command lookup; an arbitrary executable variable is not evidence.
+    segment = segment.replace(/^sudo (?:--non-interactive|-n)\s+(?:--\s+)?/, '')
+      .replace(/^"\$\(command -v bun\)"(?=\s)/, 'bun')
+
     const cd = /^cd\s+("?)([^"\s]+)\1$/.exec(segment)
     const script = /^bun run ([\w:.-]+)$/.exec(segment)
     const test = /^bun test(?:\s+(.*))?$/.exec(segment)
@@ -702,6 +707,16 @@ describe('reading a workflow', () => {
   const workflow = (jobs: string, on = 'pull_request:\n  branches: [main]'): string => `on:\n${on.replace(/^/gm, '  ')}\njobs:\n${jobs.replace(/^/gm, '  ')}\n`
   const covered = (source: string): string[] => [...readWorkflow(source).covered].sort()
   const undecided = (source: string): string[] => readWorkflow(source).uncredited.filter(entry => entry.undecided).map(entry => entry.step)
+
+  it('credits an explicit privileged Bun lookup only when failure reaches the step', () => {
+    expect(covered(workflow(`
+t:
+  steps:
+    - run: sudo --non-interactive "$(command -v bun)" test ./maintenance
+    - run: sudo -n "$(command -v bun)" test ./ignored || true
+    - run: sudo --non-interactive "$unknown_runtime" test ./unknown
+`))).toEqual(['maintenance'])
+  })
 
   it('credits paths relative to the step, a `cd` and a subshell', () => {
     expect(covered(workflow(`
