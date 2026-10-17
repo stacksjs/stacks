@@ -141,6 +141,50 @@ describe('apiDeploymentProblem: classifying the API site (#2349)', () => {
  * That is what blocked stacksjs.com: `main` was genuinely missing `PORT_API`,
  * and `dashboard-stacksjs-com` was never going to have it.
  */
+describe('apiDeploymentProblem: compiled production API entry', () => {
+  const compiledApi = { start: './scripts/start-production.sh storage/framework/runtime/production/api.js', port: 3033 }
+  const compiledPages = {
+    start: './scripts/start-production.sh storage/framework/runtime/production/main.js',
+    port: 3030,
+    env: { API_URL: 'http://127.0.0.1:3033' },
+  }
+
+  it('accepts the compiled API behind a production wrapper under its actual site name', () => {
+    expect(apiDeploymentProblem({ main: compiledPages, 'training-api': compiledApi }, true)).toBeUndefined()
+  })
+
+  it('recognises relative, absolute and quoted compiled API entry arguments', () => {
+    for (const start of [
+      'bun ./storage/framework/runtime/production/api.js',
+      'bun /srv/training/storage/framework/runtime/production/api.mjs',
+      './scripts/start-production.sh "storage/framework/runtime/production/api.js"',
+      './scripts/start-production.sh "/srv/training app/storage/framework/runtime/production/api.cjs"',
+    ]) {
+      expect(apiDeploymentProblem({ main: compiledPages, backend: { ...compiledApi, start } }, true)).toBeUndefined()
+    }
+  })
+
+  it('still refuses a page without a configured API upstream', () => {
+    const problem = apiDeploymentProblem({ main: pageSite, 'training-api': compiledApi }, true)
+    expect(problem).toContain('`training-api` (api)')
+    expect(problem).toContain('`main` (page, no API_URL or PORT_API)')
+    expect(problem).toContain('3033')
+  })
+
+  it('does not classify neighbouring compiled page paths or asset files as an API', () => {
+    for (const entry of [
+      'storage/framework/runtime/production/main.js',
+      'storage/framework/runtime/productionish/api.js',
+      'storage/framework/runtime/production/api.jsx',
+      'storage/framework/runtime/production/api.js.map',
+      'storage/framework/runtime/production/api.js.backup',
+    ]) {
+      const problem = apiDeploymentProblem({ main: compiledPages, other: { ...compiledApi, start: `bun ${entry}` } }, true)
+      expect(problem).toContain('no site serves them')
+    }
+  })
+})
+
 describe('apiDeploymentProblem and the ts-cloud dashboard', () => {
   const api = { start: 'bun cli.js serve:api', port: 3008 }
 

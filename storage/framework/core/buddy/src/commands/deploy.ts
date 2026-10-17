@@ -1560,16 +1560,20 @@ export function applyScheduledWork(sites: Record<string, any>, schedulerFile: st
 /**
  * How a site's `start` says it is the API.
  *
- * Two spellings, because both are legitimate and only the first was recognised:
+ * Source and compiled spellings describe the same API process:
  *
  *   `buddy serve:api`                                    the script alias
  *   `bun node_modules/@stacksjs/actions/dist/serve/api.js`  the entrypoint itself
+ *   `./scripts/start-production.sh storage/framework/runtime/production/api.js`
+ *                                                       a compiled API bundle
  *
  * The second is what a generated config actually contains once it resolves the
- * package rather than going through a bin shim, and matching only the
- * colon-separated alias classified it as a page server (stacksjs/stacks#2349).
+ * package rather than going through a bin shim (stacksjs/stacks#2349). A
+ * production wrapper can likewise run the compiled bundle under an arbitrary
+ * site name. Match its entry argument without accepting neighbouring page or
+ * asset filenames such as `api.js.map`.
  */
-const apiStartPattern = /\bserve:api\b|(?:^|[\s/])serve\/api\.[cm]?[jt]s\b/
+const apiStartPattern = /\bserve:api\b|(?:^|[\s/"'])(?:serve|storage\/framework\/runtime\/production)\/api\.[cm]?[jt]s(?=$|[\s"';&|<>()])/
 
 /**
  * Whether a site is the API process the page server proxies `/api/**` to.

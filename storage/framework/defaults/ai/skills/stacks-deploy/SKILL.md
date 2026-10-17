@@ -205,6 +205,11 @@ buddy cloud:cleanup           # clean retained resources
 ```
 
 ## Gotchas
+- The API reachability guard recognises `serve:api`, source `serve/api.js`
+  entrypoints and compiled `storage/framework/runtime/production/api.js`
+  bundles, including wrapper commands and custom site names. Page sites still
+  need `API_URL` or `PORT_API` pointing to their API; a compiled API site does
+  not need a proxy back to itself.
 - Check `cloud.provider` before advising anything provider-specific. Half the AWS advice is wrong
   for a Hetzner or SSH box, and vice versa.
 - `buddy deploy --prod` from a non-interactive shell refuses without `--yes`, rather than hanging
