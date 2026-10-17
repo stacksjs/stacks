@@ -75,6 +75,8 @@ is gated by `prefers-reduced-motion`; the card remains readable without it.
   label="Membership card" nameLabel="Member" :detail="planName" />
 ```
 
+Pass `memberId` and a localized `memberIdLabel` to engrave a permanent account identifier. Keep IDs stable across plans and organizations. Increment the optional numeric `replay` prop to remount the reveal through a keyed signal loop; no DOM access or timers are needed. Reduced motion still displays the complete card without confetti.
+
 ## Gotchas
 
 - `config/ui.ts` configures STX topology; `config/css.ts` configures utilities.
