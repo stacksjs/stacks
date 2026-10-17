@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.216...v0.75.217)
+
+## 🐛 Bug Fixes
+
+- bound HTTP retries and preserve caller cancellation ([56ea828](https://github.com/stacksjs/stacks/commit/56ea828)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh native HTTP test evidence ([92cd934](https://github.com/stacksjs/stacks/commit/92cd934)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.215...v0.75.216)
 
 ## 🐛 Bug Fixes
