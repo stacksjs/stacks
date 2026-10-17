@@ -11,6 +11,8 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 
+const coreActionNames = new Set<string>(Object.values(ActionEnum))
+
 /**
  * Augmentation target: the actions this application can run.
  *
@@ -237,9 +239,11 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       matchingFiles.push(file)
     }
 
-    // Second pass: only import files if we didn't find a direct match
-    // This is a fallback for custom action names
-    for (const file of matchingFiles) {
+    // Built-in names already have a core entry. Importing every application
+    // action to rediscover them can execute unrelated worker entry points or
+    // other module-level effects. Keep explicit filename overrides above and
+    // reserve name-based discovery for application actions.
+    for (const file of coreActionNames.has(action) ? [] : matchingFiles) {
       try {
         const a = await import(file)
         if (a.name === action) {
