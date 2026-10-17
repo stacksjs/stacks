@@ -2,6 +2,8 @@
   /** A personalized keepsake. Mount after confirmed completion to play once. */
   const mcName = useReactiveProp<string>('name', '')
   const mcBrand = useReactiveProp<string>('brand', '')
+  const mcLogo = useReactiveProp<string>('logo', '')
+  const mcNameFont = useReactiveProp<string>('nameFont', "'Snell Roundhand', 'Apple Chancery', 'URW Chancery L', cursive")
   const mcDetail = useReactiveProp<string>('detail', '')
   const mcLabel = useReactiveProp<string>('label', '')
   const mcNameLabel = useReactiveProp<string>('nameLabel', '')
@@ -24,14 +26,14 @@
     <div class="absolute inset-0 pointer-events-none mc-grain" aria-hidden="true"></div>
     <div class="absolute inset-0 pointer-events-none mc-shine" aria-hidden="true"></div>
     <div class="flex relative gap-4 items-start justify-between">
-      <span class="font-bold mc-wordmark" :text="mcBrand"></span>
-      <i class="shrink-0 h-6 w-6 i-lucide-sparkles mc-emblem" aria-hidden="true"></i>
+      <img :if="mcLogo" class="mc-logo" :src="mcLogo" :alt="mcBrand" width="96" height="38" />
+      <span :if="!mcLogo" class="font-bold mc-wordmark" :text="mcBrand"></span>
     </div>
     <p class="relative mt-3 text-xs mc-label" :text="mcLabel"></p>
     <div class="relative mc-holder">
       <div class="mc-person">
         <p class="mb-2 text-xs mc-label" :text="mcNameLabel"></p>
-        <p class="font-semibold mc-engraving" :text="mcName" data-membership-name></p>
+        <p class="mc-engraving" :style="{ fontFamily: mcNameFont }" :text="mcName" data-membership-name></p>
       </div>
       <div :if="mcMemberId" class="mc-identity">
         <p class="text-xs mc-label" :text="mcMemberIdLabel"></p>
@@ -59,11 +61,11 @@
   .mc-grain { opacity: 0.35; background: repeating-linear-gradient(0deg, transparent, transparent 1px, #cbd5e114 1px, #cbd5e114 2px); }
   .mc-shine { transform: translateX(-150%) skewX(-20deg); background: linear-gradient(90deg, transparent 25%, #ffffff30 48%, #ffffff66 50%, #ffffff12 54%, transparent 75%); }
   .mc-wordmark { font-size: clamp(1.3rem, 5vw, 1.75rem); letter-spacing: -0.06em; overflow-wrap: anywhere; text-shadow: 0 -1px 1px #020617, 0 1px 0 #ffffff55; }
-  .mc-emblem { color: #99f6e4; }
+  .mc-metal .mc-logo { display: block; width: 6rem; height: 2.375rem; margin: 0; object-fit: contain; object-position: left center; }
   .mc-label { color: #cbd5e1; letter-spacing: 0.12em; }
-  .mc-holder { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1.25rem; align-items: end; margin-top: 3rem; }
+  .mc-holder { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1.25rem; align-items: end; margin-top: 2rem; }
   .mc-person { min-width: 0; }
-  .mc-engraving { font-size: clamp(1.15rem, 4.8vw, 1.6rem); line-height: 1.3; letter-spacing: 0.025em; overflow-wrap: anywhere; color: #e2e8f0; text-shadow: 0 -1px 1px #020617, 0 1px 0 #ffffff80, 0 2px 2px #02061780; }
+  .mc-metal .mc-engraving { padding: 0 0 0.25rem; font-size: clamp(2.25rem, 8vw, 3.25rem); font-weight: 400; line-height: 1.2; letter-spacing: 0; overflow-wrap: anywhere; color: #f1f5f9; text-shadow: 0 -1px 1px #020617, 0 1px 0 #ffffff80, 0 2px 2px #02061780; }
   .mc-identity { padding-left: 1rem; border-left: 1px solid #cbd5e133; }
   .mc-serial { margin-top: 0.4rem; font-family: ui-monospace, monospace; font-size: clamp(1rem, 3.8vw, 1.2rem); letter-spacing: 0.1em; overflow-wrap: anywhere; color: #ccfbf1; text-shadow: 0 -1px 1px #020617, 0 1px 0 #ffffff80; }
   .mc-detail { color: #cbd5e1; overflow-wrap: anywhere; }

@@ -75,6 +75,8 @@ is gated by `prefers-reduced-motion`; the card remains readable without it.
   label="Membership card" nameLabel="Member" :detail="planName" />
 ```
 
+Pass `logo` to use your brand image in place of the text wordmark; `brand` remains its accessible name. The engraved name uses a cursive title treatment. Set `nameFont` to your self-hosted signature font family and load it through your app's fonts config (`font-display: swap`). Long names wrap without covering the Member ID.
+
 Pass `memberId` and a localized `memberIdLabel` to engrave a permanent account identifier. Keep IDs stable across plans and organizations. Increment the optional numeric `replay` prop to remount the reveal through a keyed signal loop; no DOM access or timers are needed. Reduced motion still displays the complete card without confetti.
 
 ## Gotchas
