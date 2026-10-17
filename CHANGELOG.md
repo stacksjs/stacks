@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.205...v0.75.206)
+
+## ✨ Features
+
+- recover owned temporary workspaces with lifecycle authorization ([276498d](https://github.com/stacksjs/stacks/commit/276498d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.204...v0.75.205)
 
 ## 🐛 Bug Fixes
