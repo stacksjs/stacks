@@ -489,9 +489,10 @@ function visitCommand(command: string, cwd: string, findings: Findings, depth: n
     if (closes)
       segment = segment.slice(0, -1).trim()
 
-    // sudo preserves its child's exit status. Resolve only this explicit
-    // command lookup; an arbitrary executable variable is not evidence.
+    // sudo and this native namespace invocation preserve their child's exit
+    // status. An arbitrary executable variable is not evidence.
     segment = segment.replace(/^sudo (?:--non-interactive|-n)\s+(?:--\s+)?/, '')
+      .replace(/^unshare --fork --pid --mount-proc\s+/, '')
       .replace(/^"\$\(command -v bun\)"(?=\s)/, 'bun')
 
     const cd = /^cd\s+("?)([^"\s]+)\1$/.exec(segment)
@@ -713,9 +714,11 @@ describe('reading a workflow', () => {
 t:
   steps:
     - run: sudo --non-interactive "$(command -v bun)" test ./maintenance
+    - run: sudo --non-interactive unshare --fork --pid --mount-proc "$(command -v bun)" test ./namespace
     - run: sudo -n "$(command -v bun)" test ./ignored || true
+    - run: sudo -n unshare --fork --pid --mount-proc "$(command -v bun)" test ./ignored-namespace || true
     - run: sudo --non-interactive "$unknown_runtime" test ./unknown
-`))).toEqual(['maintenance'])
+`))).toEqual(['maintenance', 'namespace'])
   })
 
   it('credits paths relative to the step, a `cd` and a subshell', () => {

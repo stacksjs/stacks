@@ -342,10 +342,11 @@ jobs:
       - name: Workspace recovery process-inspection integration
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
-          # Recovery must inspect protected same-user processes too. Exercise
-          # that permission boundary explicitly, without changing the normal
-          # unprivileged suite or disabling any production guard.
-          sudo --non-interactive "$(command -v bun)" test ./storage/framework/core/storage/integration/temporary-workspaces.test.ts
+          # These positive recovery fixtures need complete process visibility.
+          # Root on a shared CI host can still meet protected host processes.
+          # A native PID namespace gives this fixture its own inspectable peers;
+          # the ordinary suite still verifies protected-peer refusal separately.
+          sudo --non-interactive unshare --fork --pid --mount-proc "$(command -v bun)" test ./storage/framework/core/storage/integration/temporary-workspaces.test.ts
 
       # The framework's default app layer keeps its tests beside the code they
       # test (the dashboard actions, functions and components under

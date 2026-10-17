@@ -10,13 +10,19 @@ import { cleanup, fixture } from '../tests/fixtures/workspace-journal'
 
 afterEach(cleanup)
 
+async function retireUnused(journal: TemporaryWorkspaceJournal, id: string, authorize: (record: { key: string }) => boolean): Promise<void> {
+  const inspection = await journal.inspectRetirement(id, authorize)
+  expect(inspection.ready, JSON.stringify(inspection)).toBe(true)
+  expect(await journal.retire(id, authorize)).toBe(true)
+}
+
 test('a restarted journal recovers and retires an authorized unused workspace', async () => {
   const { journal, options } = fixture()
   const record = journal.create('643')
   writeFileSync(join(record.path, 'output.txt'), 'completed')
   const restarted = new TemporaryWorkspaceJournal(options)
   expect(restarted.list()).toEqual([record])
-  expect(await restarted.retire(record.id, row => row.key === '643')).toBe(true)
+  await retireUnused(restarted, record.id, row => row.key === '643')
   expect(existsSync(record.path)).toBe(false)
   expect(restarted.list()).toEqual([])
 })
@@ -31,7 +37,7 @@ test('a live process using the workspace prevents retirement until it exits', as
     expect(existsSync(record.path)).toBe(true)
   }
   finally { child.kill(); await child.exited }
-  expect(await journal.retire(record.id, () => true)).toBe(true)
+  await retireUnused(journal, record.id, () => true)
 })
 
 test('an open file protects a workspace even when the process works elsewhere', async () => {
@@ -45,7 +51,7 @@ test('an open file protects a workspace even when the process works elsewhere', 
     expect(await journal.retire(record.id, () => true)).toBe(false)
   }
   finally { child.kill(); await child.exited }
-  expect(await journal.retire(record.id, () => true)).toBe(true)
+  await retireUnused(journal, record.id, () => true)
 })
 
 if (process.platform === 'linux') {
@@ -70,8 +76,7 @@ if (process.platform === 'linux') {
     try {
       const maintenance = new TemporaryWorkspaceJournal({ ...foreign.options, ownerUid: Number(foreign.record.uid) })
       expect(() => maintenance.create('other-user')).toThrow('cannot create')
-      expect((await maintenance.inspectRetirement(foreign.record.id, () => true)).ready).toBe(true)
-      expect(await maintenance.retire(foreign.record.id, () => true)).toBe(true)
+      await retireUnused(maintenance, foreign.record.id, () => true)
       expect(existsSync(foreign.record.path)).toBe(false)
     }
     finally { rmSync(foreign.root, { recursive: true, force: true }) }
