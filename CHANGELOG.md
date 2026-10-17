@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.219...v0.75.220)
+
+## 🐛 Bug Fixes
+
+- scope Git credentials and reject incomplete deployment environments ([432c8d5](https://github.com/stacksjs/stacks/commit/432c8d5)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.218...v0.75.219)
 
 ## ✨ Features
