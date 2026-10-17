@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.211...v0.75.212)
+
+## 🐛 Bug Fixes
+
+- retain editable defaults imports in named core apps ([6e8559e](https://github.com/stacksjs/stacks/commit/6e8559e)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.210...v0.75.211)
 
 ## 🐛 Bug Fixes
