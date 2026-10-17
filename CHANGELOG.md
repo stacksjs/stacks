@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.213...v0.75.214)
+
+## 🐛 Bug Fixes
+
+- resolve fullscreen targets lazily and track browser state ([397caf4](https://github.com/stacksjs/stacks/commit/397caf4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.212...v0.75.213)
 
 ## ✨ Features
