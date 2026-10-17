@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.197...v0.75.198)
+
+## ✨ Features
+
+- **mobile**: package native fonts through the platform builders ([6015875](https://github.com/stacksjs/stacks/commit/6015875)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.196...v0.75.197)
 
 ## ✨ Features
