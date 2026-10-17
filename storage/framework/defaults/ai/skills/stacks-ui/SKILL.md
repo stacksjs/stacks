@@ -79,6 +79,8 @@ Pass `logo` to use your brand image in place of the text wordmark; `brand` remai
 
 Pass `memberId` and a localized `memberIdLabel` to engrave a permanent account identifier. Keep IDs stable across plans and organizations. Increment the optional numeric `replay` prop to remount the reveal through a keyed signal loop; no DOM access or timers are needed. Reduced motion still displays the complete card without confetti.
 
+Theme the finish through inherited CSS custom properties on the card's container or the application's root. Every property falls back to the original graphite finish: `--membership-card-background`, `--membership-card-color`, `--membership-card-border`, `--membership-card-shadow`, `--membership-card-inset-border`, `--membership-card-grain`, `--membership-card-label`, `--membership-card-name`, `--membership-card-divider`, `--membership-card-serial`, and `--membership-card-detail`. `--membership-card-confetti-1` through `--membership-card-confetti-4` color the celebration. Keep label and name colors readable against every stop of a custom gradient; the component's layout, stable identifier and reduced-motion behavior remain the same.
+
 ## Gotchas
 
 - `config/ui.ts` configures STX topology; `config/css.ts` configures utilities.
