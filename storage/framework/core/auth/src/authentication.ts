@@ -115,27 +115,19 @@ import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, deleteExpiredTok
 
 
 /**
- * Whether the OAuth client and grant a token was issued under still stand.
- *
- * `findToken` applied these conditions; the two lookups the auth middleware
- * actually uses did not, so a token from a revoked client - or a delegated
- * token whose grant was revoked - went on authenticating its user until it
- * expired. A token with no client row (none recorded, or since deleted) is
- * not affected: only a client or grant that says no can say no.
+ * Ordinary user authentication never accepts resource-bound OAuth delegation.
+ * Protected resources must use authorizeOAuthDelegatedToken with their exact
+ * audience, resource, workspace and scopes instead of promoting the bearer to
+ * a browser session. Legacy user tokens still respect client revocation.
  */
-async function oauthAuthorizationIntact(tokenId: number): Promise<boolean> {
+async function ordinaryAuthorizationIntact(tokenId: number): Promise<boolean> {
   const sql = sqlHelpers(getDatabaseDialect())
   const rows = await db.primary.unsafe(`
     SELECT t.id FROM oauth_access_tokens t
     LEFT JOIN oauth_clients c ON c.id = t.oauth_client_id
-    LEFT JOIN oauth_grants g ON g.id = t.oauth_grant_id
     WHERE t.id = ${sql.param(1)}
+    AND t.oauth_grant_id IS NULL
     AND (c.id IS NULL OR c.revoked = ${sql.boolFalse})
-    AND (t.oauth_grant_id IS NULL OR (
-      g.id IS NOT NULL
-      AND g.revoked_at IS NULL
-      AND g.client_id = t.oauth_client_id
-    ))
     LIMIT 1
   `, [tokenId]) as unknown as unknown[]
   return rows.length > 0
@@ -759,7 +751,7 @@ export class Auth {
     if (accessToken.revoked)
       return false
 
-    if (!(await oauthAuthorizationIntact(Number(accessToken.id))))
+    if (!(await ordinaryAuthorizationIntact(Number(accessToken.id))))
       return false
 
     // Resolve the owner only after the credential's own cheap rejection
@@ -826,7 +818,7 @@ export class Auth {
     if (accessToken.revoked)
       return undefined
 
-    if (!(await oauthAuthorizationIntact(Number(accessToken.id))))
+    if (!(await ordinaryAuthorizationIntact(Number(accessToken.id))))
       return undefined
 
     /*
@@ -920,6 +912,9 @@ export class Auth {
     const idleMs = config.auth?.idleTimeout ?? 0
     const lastSeen = parseSqlDateTime(accessToken.updated_at ?? accessToken.created_at)
     if (idleMs > 0 && lastSeen && Date.now() - lastSeen.getTime() > idleMs)
+      return undefined
+
+    if (!await ordinaryAuthorizationIntact(Number(accessToken.id)))
       return undefined
 
     const owner = await getTokenOwnerCredentialState(accessToken.tokenable_id)
@@ -1113,7 +1108,7 @@ export class Auth {
     // jwt:encryptedId shape resolves via `bearerLookupHash`.
     const { findToken: findRawToken, revokeToken: revokeRawToken } = await import('./tokens')
     const candidate = await findRawToken(oldToken)
-    if (!candidate) return null
+    if (!candidate || candidate.grantId != null) return null
 
     return db.transaction(async () => {
       // Match refresh and logout's access-row lock. Only one caller may
@@ -1132,7 +1127,7 @@ export class Auth {
       if (owner.expires_at != null && (!deadline || deadline.getTime() <= Date.now()))
         return null
       const existing = await findRawToken(oldToken)
-      if (!existing || Number(existing.id) !== Number(owner.id)) return null
+      if (!existing || existing.grantId != null || Number(existing.id) !== Number(owner.id)) return null
 
       const user = await User.find(Number(owner.tokenable_id))
       if (!user) return null

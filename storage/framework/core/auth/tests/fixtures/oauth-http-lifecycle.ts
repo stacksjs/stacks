@@ -30,6 +30,8 @@ const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 
 const {
+  Auth,
+  findToken,
   authorizeOAuthDelegatedToken,
   authenticatedUser,
   authCookieName,
@@ -130,14 +132,18 @@ try {
   router.get('/auth/oauth/connections', OAuthConnectionsAction).middleware('auth')
   router.post('/auth/oauth/connections/{id}/disconnect', OAuthDisconnectAction).middleware('auth')
   router.post('/auth/oauth/clients/{id}/disable', OAuthClientDisableAction).middleware('auth')
+  router.get('/fixture/session', async request => ({ subject: Number((await authenticatedUser(request))?.id) })).middleware('auth')
+  router.get('/fixture/auth-facade', async () => ({ currentToken: Boolean(await Auth.currentAccessToken()), canReadIssues: await Auth.tokenCan('issues:read') }))
   router.get('/fixture/resource', async (request) => {
-    const user = await authenticatedUser(request)
-    return {
-      subject: Number(user?.id),
-      canReadIssues: await request.tokenCan?.('issues:read') ?? false,
-      canWriteIssues: await request.tokenCan?.('issues:write') ?? false,
-    }
-  }).middleware('auth')
+    const url = new URL(request.url)
+    const bearer = /^Bearer ([^\s]+)$/.exec(request.headers.get('authorization') ?? '')?.[1]
+    const authorization = bearer ? await authorizeOAuthDelegatedToken(bearer, {
+      scopes: ['issues:read'], resource: 'bughq', audience: `${url.origin}/fixture/resource`, workspaceId: url.searchParams.get('workspace'),
+      isSubjectEligible: resolveOAuthProviderConfig(config.auth.oauthProvider)!.subjectEligibility!,
+    }) : { ok: false as const, reason: 'invalid_token' as const }
+    if (!authorization.ok) return oauthBearerAuthorizationErrorResponse(authorization)
+    return { subject: authorization.token.subjectId, canReadIssues: true, canWriteIssues: authorization.token.scopes.includes('issues:write') }
+  })
   router.get('/fixture/workspaces/{workspace}/issues', async (request) => {
     const bearer = /^Bearer ([^\s]+)$/.exec(request.headers.get('authorization') ?? '')?.[1]
     const workspaceId = request.params.workspace
@@ -677,7 +683,9 @@ try {
     assert.equal(activeRefreshClaims.iss, issuer)
 
     const readResource = async (token: string, status = 200, canWriteIssues = false) => {
-      const response = await fetch(`${issuer}/fixture/resource`, {
+      // The fixture client explicitly selects a workspace; the HTTP resource checks the binding.
+      const workspace = (await findToken(token))?.workspaceId
+      const response = await fetch(`${issuer}/fixture/resource${workspace ? `?workspace=${encodeURIComponent(workspace)}` : ''}`, {
         headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
       })
       assert.equal(response.status, status)
@@ -690,6 +698,15 @@ try {
       }
       else await response.arrayBuffer()
     }
+    assert.equal(await Auth.validateToken(firstPair.access_token), false)
+    assert.equal(await Auth.getUserFromToken(firstPair.access_token), undefined)
+    assert.equal(await Auth.rotateToken(firstPair.access_token), null)
+    const sessionRejection = await fetch(`${issuer}/fixture/session`, { headers: { authorization: `Bearer ${firstPair.access_token}` } })
+    assert.equal(sessionRejection.status, 401, 'resource-bound delegation must not become an ordinary user session')
+    const managementRejection = await fetch(`${issuer}/auth/oauth/clients`, { headers: { authorization: `Bearer ${firstPair.access_token}`, cookie: browserCookies } })
+    assert.equal(managementRejection.status, 401, 'an explicit delegated bearer cannot fall through to a browser cookie')
+    const facadeRejection = await fetch(`${issuer}/fixture/auth-facade`, { headers: { authorization: `Bearer ${firstPair.access_token}` } })
+    assert.deepEqual(await facadeRejection.json(), { currentToken: false, canReadIssues: false })
     await readResource(firstPair.access_token)
     const readWorkspaceResource = async (workspace: string, status: number) => {
       const response = await fetch(`${issuer}/fixture/workspaces/${workspace}/issues`, {

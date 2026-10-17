@@ -642,3 +642,11 @@ selected permissions, discovery and subject-owned disconnect. Mount protocol
 POST handlers with `parseBody(false)` and `skipCsrf()`; keep router login and CSRF
 protection on consent and connection management. Do not duplicate these HTTP
 boundaries in applications or accept a subject from client input.
+
+Delegated OAuth bearers are not ordinary login credentials. `Auth.validateToken`,
+`Auth.getUserFromToken`, `Auth.currentAccessToken` and `Auth.rotateToken` reject
+them even while their grant is active. Generic `auth` middleware therefore does
+not authenticate them. OAuth resource endpoints must explicitly use
+`authorizeOAuthDelegatedToken` with the exact resource, audience, workspace and
+required scopes. Ordinary refresh also refuses delegated refresh credentials;
+use the OAuth token endpoint and the registered client's protocol authentication.

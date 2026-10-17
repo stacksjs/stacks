@@ -23,6 +23,18 @@ export interface OAuthAuthorizationServerOptions {
   connectionAudience?: string
 }
 
+/** HTTP response contracts remain concrete in published declaration files. */
+export interface OAuthAuthorizationServer {
+  metadata: () => Response
+  register: (request: Request) => Promise<Response>
+  begin: (request: Request) => Promise<Response>
+  consent: (request: Request) => Promise<Response>
+  token: (request: Request) => Promise<Response>
+  revoke: (request: Request) => Promise<Response>
+  connections: (request: Request) => Promise<Response>
+  disconnect: (request: Request, grantId: string) => Promise<Response>
+}
+
 function json(body: unknown, status = 200): Response {
   return Response.json(body, { status, headers: {
     'Cache-Control': 'no-store', 'Pragma': 'no-cache', 'Referrer-Policy': 'no-referrer',
@@ -36,7 +48,7 @@ const invalid = () => json({ error: 'invalid_request' }, 400)
  * Consent and connection handlers require ordinary login and router CSRF protection.
  * The application supplies its domain eligibility policy and authenticated subject.
  */
-export function createOAuthAuthorizationServer(options: OAuthAuthorizationServerOptions) {
+export function createOAuthAuthorizationServer(options: OAuthAuthorizationServerOptions): OAuthAuthorizationServer {
   if (!/^\/(?!\/)[^?#\\]*$/.test(options.consentPage) || /[\u0000-\u0020]/.test(options.consentPage))
     throw new TypeError('OAuth consentPage must be a local absolute path.')
   const provider = () => typeof options.provider === 'function' ? options.provider() : options.provider
