@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -32,8 +32,10 @@ describe('wizard environment helper', () => {
     const realEnvironment = join(scratch, 'real.env')
     const environment = join(scratch, '.env')
     writeFileSync(realEnvironment, 'UNRELATED=keep\nFIXTURE_VALUE=old\n', { mode: 0o640 })
+    // Establish the existing mode explicitly; creation is filtered by umask.
+    chmodSync(realEnvironment, 0o640)
     symlinkSync(realEnvironment, environment)
-    const result = Bun.spawnSync(['bash', '-c', 'source "$1"; ENV_FILE="$2"; write_env FIXTURE_VALUE new >/dev/null; write_env FIXTURE_VALUE final >/dev/null; _existing FIXTURE_VALUE', 'bash', library, environment])
+    const result = Bun.spawnSync(['bash', '-c', 'umask 077; source "$1"; ENV_FILE="$2"; write_env FIXTURE_VALUE new >/dev/null; write_env FIXTURE_VALUE final >/dev/null; _existing FIXTURE_VALUE', 'bash', library, environment])
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout.toString()).toBe('final')
