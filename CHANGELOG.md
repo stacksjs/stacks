@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.192...v0.75.193)
+
+## 🐛 Bug Fixes
+
+- **auth**: isolate delegated OAuth from user sessions ([f17dfa8](https://github.com/stacksjs/stacks/commit/f17dfa8)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.191...v0.75.192)
 
 ## ✨ Features
