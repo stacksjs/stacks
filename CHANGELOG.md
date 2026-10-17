@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.212...v0.75.213)
+
+## ✨ Features
+
+- allow membership card finishes to follow application themes ([26b36f1](https://github.com/stacksjs/stacks/commit/26b36f1)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.211...v0.75.212)
 
 ## 🐛 Bug Fixes

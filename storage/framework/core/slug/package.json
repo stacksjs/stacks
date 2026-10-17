@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/slug",
   "type": "module",
-  "version": "0.75.212",
+  "version": "0.75.213",
   "description": "The Stacks slug functionality.",
   "author": "Chris Breuer",
   "contributors": [
