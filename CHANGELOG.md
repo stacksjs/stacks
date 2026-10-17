@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.193...v0.75.194)
+
+## ✨ Features
+
+- **ui**: add personalized metal membership card reveal ([ccb8a02](https://github.com/stacksjs/stacks/commit/ccb8a02)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.192...v0.75.193)
 
 ## 🐛 Bug Fixes
