@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/forms",
   "type": "module",
-  "version": "0.75.194",
+  "version": "0.75.195",
   "description": "The Stacks form-builder functionality.",
   "author": "Chris Breuer",
   "contributors": [

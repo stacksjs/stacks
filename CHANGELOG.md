@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.194...v0.75.195)
+
+## 🐛 Bug Fixes
+
+- **ide**: sync published STX editor contributions ([5c24740](https://github.com/stacksjs/stacks/commit/5c24740)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh component counts for membership card ([9562edd](https://github.com/stacksjs/stacks/commit/9562edd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.193...v0.75.194)
 
 ## ✨ Features
