@@ -70,6 +70,19 @@ import * as storage from '@stacksjs/storage'
 
 ## Storage Facade (StorageManager)
 
+### Recoverable temporary workspaces
+
+Use `TemporaryWorkspaceJournal` for workers that must recover temporary directories after a process interruption. Keep its private journal outside job-controlled checkouts and separate it by worker and controller identity. `create(key)` records the directory's owner, inode and device. `list()` returns only validated journal entries. `retire(id, mayRetire)` requires an authoritative lifecycle decision from the caller and preserves changed, mounted or in-use directories. Unknown state, missing inspection capabilities and unsupported operating systems never authorize removal. Age alone is not evidence that work has finished. Linux and macOS process inspection never terminates processes.
+
+```ts
+import { TemporaryWorkspaceJournal } from '@stacksjs/storage'
+
+const journal = new TemporaryWorkspaceJournal({ directory: privateJournalDirectory, temporaryRoot, prefix: 'worker-job-' })
+const workspace = journal.create(jobId)
+// After restart, ask the controller about each recorded job before retiring it.
+await journal.retire(workspace.id, record => controllerConfirmsFinished(record.key))
+```
+
 The `Storage` singleton is a pre-instantiated `StorageManager`. It lazily builds its config from `@stacksjs/config` (which reads `config/filesystems.ts` and env vars).
 
 ### Basic Operations
