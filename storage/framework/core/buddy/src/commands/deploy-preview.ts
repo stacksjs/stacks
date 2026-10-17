@@ -146,7 +146,7 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
     || options.fallbackRegion
     || 'us-east-1'
   const siteNames = selectedSites.map(site => site.name)
-  const shippable = selectedSites.filter(site => site.kind !== 'bucket' && site.kind !== 'redirect')
+  const shippable = selectedSites.filter(site => site.kind !== 'bucket' && site.kind !== 'redirect' && site.kind !== 'proxy')
   const staticSites = shippable.filter(site => site.kind === 'server-static' && site.build)
   const runtimeSites = shippable.filter(site => site.kind === 'server-app' || site.kind === 'server-php')
   const publicSites = selectedSites.filter(site => site.domains.length > 0)

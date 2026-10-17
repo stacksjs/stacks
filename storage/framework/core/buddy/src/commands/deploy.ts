@@ -2115,7 +2115,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     }
   }
 
-  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, buildSiteDeployScript } = await loadTsCloudDeployApi()
+  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, buildSiteDeployScript } = await loadTsCloudDeployApi()
 
   // Refuse rather than deploy a release that would place an empty database over
   // the live one. See tsCloudPersistentStateSupport — an older ts-cloud honours
@@ -2139,7 +2139,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
-    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget, envFile })
+    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget, envFile })
   }
   catch (err) {
     log.error(`${deployTargetLabel(provider, sshTarget?.profile)} deploy failed:`)
@@ -2463,30 +2463,33 @@ async function startGithubDeployment(source: { repo: string, ref: string }, envi
   }
 }
 
-/**
- * Record a GitHub Deployment for each server-* site being shipped, against the
- * repo its files come from (deduped by repo+ref so the apex/www pair, or several
- * stacks-served sites, collapse to one). Returns the records to finalize once the
- * release succeeds or fails. See {@link githubDeploymentsEnabled}.
- */
+/** Application releases only; gateway-owned routes never package source. */
+export function deploymentReleaseSites<Site>(
+  sites: Record<string, Site | null | undefined>,
+  onlySite: string | undefined,
+  policy: { shipsARelease: (site: Site) => boolean },
+): Array<[string, Site]> {
+  return Object.entries(sites).filter((entry): entry is [string, Site] => {
+    const [name, site] = entry
+    if (!site || (onlySite && name !== onlySite)) return false
+    return policy.shipsARelease(site)
+  })
+}
+
+/** Record the shipped applications, deduplicated by repository and ref. */
 async function startGithubDeployments(args: {
   sites: Record<string, any>
   onlySite: string | undefined
   environment: string
-  resolveSiteKind: (site: any) => DeploymentSiteKind
+  shipsARelease: typeof import('@stacksjs/ts-cloud').shipsARelease
 }): Promise<GithubDeploymentRecord[]> {
-  const { sites, onlySite, environment, resolveSiteKind } = args
+  const { sites, onlySite, environment, shipsARelease } = args
   const records: GithubDeploymentRecord[] = []
   if (!githubDeploymentsEnabled() || !(await ghCliAvailable()))
     return records
 
   const seen = new Set<string>()
-  for (const [siteName, site] of Object.entries<any>(sites)) {
-    if (!site || (onlySite && siteName !== onlySite))
-      continue
-    const kind = resolveSiteKind(site)
-    if (kind === 'bucket' || kind === 'redirect')
-      continue
+  for (const [siteName, site] of deploymentReleaseSites<any>(sites, onlySite, { shipsARelease })) {
     const source = await resolveSiteGithubSource(site.root || '.')
     if (!source)
       continue
@@ -2514,6 +2517,7 @@ async function runSshDeploy(args: {
   deployAllComputeSites: any
   ensureManagementDashboard?: (config: any, options: any) => any
   resolveSiteKind: (site: any) => DeploymentSiteKind
+  shipsARelease: typeof import('@stacksjs/ts-cloud').shipsARelease
   persistedAttachBox?: AttachedComputeBox | null
   /** Deploy ONLY this site (multi-tenant surgical add). Provisioning still uses
    *  the full config so rpx keeps every existing route; only this site's files
@@ -2524,7 +2528,7 @@ async function runSshDeploy(args: {
   /** Where to connect for the ssh provider; absent for hetzner, which resolves an IP. */
   sshTarget?: SshTarget
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite, persistedAttachBox, provider, sshTarget } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, shipsARelease, onlySite, persistedAttachBox, provider, sshTarget } = args
 
   const startTime = performance.now()
   const targetLabel = deployTargetLabel(provider, sshTarget?.profile)
@@ -2869,29 +2873,10 @@ async function runSshDeploy(args: {
   }
 
   const tarballs = new Map<string, string>()
-  for (const [siteName, site] of Object.entries<any>(sites)) {
-    if (!site)
-      continue
-    // Surgical single-site deploy: build/ship only the requested site (the box
-    // already holds every other site; provisioning above kept their rpx routes).
-    if (onlySite && siteName !== onlySite)
-      continue
-    // ts-cloud's deployAllComputeSites deploys BOTH server-app sites (`start`)
-    // and server-static sites (no `start`, has `root`) — and it calls
-    // tarballForSite() for each. Bucket and redirect sites are NOT shipped (it
-    // filters them out), so we produce a tarball for every server-* site but
-    // skip bucket/redirect below.
+  // The cloud driver's release classification is authoritative for both
+  // packaging and GitHub records. Proxy/redirect routes only change the gateway.
+  for (const [siteName, site] of deploymentReleaseSites<any>(sites, onlySite, { shipsARelease })) {
     const kind = resolveSiteKind(site)
-    if (kind === 'bucket')
-      continue
-
-    // Redirect-only sites (a `redirect` with no `root`/`build`/`start`, e.g.
-    // veryGoodAdblock, wwwStacksjs) ship NOTHING: deployAllComputeSites filters
-    // them out (never calls tarballForSite) and the rpx gateway answers their
-    // domain with a 301. Packaging one would tar the entire repo (~73MB) that is
-    // uploaded but never served — pure wasted bandwidth and deploy time. Skip.
-    if (kind === 'redirect')
-      continue
 
     // server-static: build the site locally first so the tarball contains the
     // FINAL static files (served verbatim by the reverse proxy's file_server at
@@ -3028,7 +3013,7 @@ async function runSshDeploy(args: {
   // — after the static builds ran (so each site's `root` exists to derive its
   // repo/ref) and before shipping — so the deployment shows as `in_progress`
   // while the release is uploaded, then success/failure below.
-  const githubDeployments = await startGithubDeployments({ sites, onlySite, environment, resolveSiteKind })
+  const githubDeployments = await startGithubDeployments({ sites, onlySite, environment, shipsARelease })
 
   log.info(onlySite ? `Shipping site '${onlySite}' to the server...` : 'Shipping release to the server...')
   // For a single-site deploy, hand ts-cloud a config whose sites are narrowed to
