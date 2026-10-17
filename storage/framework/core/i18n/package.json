@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/i18n",
-  "version": "0.75.218",
+  "version": "0.75.219",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
   "sideEffects": false,

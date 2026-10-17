@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.218...v0.75.219)
+
+## ✨ Features
+
+- configure package-owned iOS app shortcuts ([3a86236](https://github.com/stacksjs/stacks/commit/3a86236)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.217...v0.75.218)
 
 ## 🐛 Bug Fixes
