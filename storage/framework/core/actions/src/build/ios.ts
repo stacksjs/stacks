@@ -6,7 +6,7 @@ import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { assertCraftSupportsCapabilities, assertCraftSupportsCrashReporting, portablePaths, resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { assertCraftSupportsAppShortcuts, assertCraftSupportsCapabilities, assertCraftSupportsCrashReporting, portablePaths, resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
@@ -96,6 +96,7 @@ const builder = await loadCraftIosBuilder()
 // so the build fails here rather than ship an app that lacks it.
 const craftVersion = craftBuilderVersion(craftIosEntry(), projectPath())
 assertCraftSupportsNativeFonts(config.nativeFonts, craftVersion?.version)
+assertCraftSupportsAppShortcuts(config.appShortcuts, craftVersion?.version)
 if (craftVersion) {
   assertCraftSupportsCapabilities(config.capabilities, craftVersion.version, craftVersion.manifest)
   assertCraftSupportsCrashReporting(crashReporting, craftVersion.version, craftVersion.manifest)

@@ -74,6 +74,20 @@ with Xcode or Gradle respectively.
 
 ## Configuration
 
+Declare iOS Siri/Spotlight App Intents and home-screen quick actions with
+`ios.appShortcuts` (Craft >= 0.0.237). Each entry has `id`, `title`, optional
+`subtitle`, `symbol`, an app-scheme `url`, and `phrases` containing exactly one
+`{app}` token. Register that scheme in `ios.urlSchemes`. Craft generates and
+restores the Swift; never write an application Swift generator. Intents open
+their URLs through native routing. Home-screen actions deliver `craftShortcut`
+to the app script, which resolves the configured action id to its destination.
+For example:
+
+```ts
+appShortcuts: [{ id: 'saved', title: 'Saved trails', symbol: 'heart.fill',
+  url: 'outdoors://profile?tab=saved', phrases: ['Show my saved trails in {app}'] }],
+```
+
 ```ts
 import type { MobileConfig } from '@stacksjs/types'
 

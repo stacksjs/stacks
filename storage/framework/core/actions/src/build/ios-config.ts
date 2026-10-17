@@ -272,6 +272,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     teamId: config.teamId,
     devServerURL,
     urlSchemes: config.urlSchemes,
+    appShortcuts: config.appShortcuts,
     trustedOrigins: [...trustedOrigins],
     appBoundDomains: config.appBoundDomains,
     limitNavigationsToAppBoundDomains: config.limitNavigationsToAppBoundDomains ?? (declaresAppBoundDomains || undefined),
@@ -408,7 +409,7 @@ function escapeXml(value: string): string {
  * afterwards keeps what this wrote.
  */
 export function writeIosActivityTypes(output: string, config: MobileConfig): string[] | null {
-  const types = spotlightActivityTypes(config.spotlight, config.ios.bundleId)
+  const types = [...new Set([...spotlightActivityTypes(config.spotlight, config.ios.bundleId), ...(config.ios.appShortcuts ?? []).map(shortcut => `${config.ios.bundleId}.${shortcut.id}`)])]
   const path = join(output, 'Info.plist')
   if (types.length === 0 || !existsSync(path))
     return null
@@ -427,6 +428,12 @@ export function resolveNativeFonts(fonts: IosMobileConfig['nativeFonts'], root: 
 }
 
 export const CRAFT_NATIVE_FONTS_FLOOR = '0.0.229'
+
+export function assertCraftSupportsAppShortcuts(shortcuts: IosMobileConfig['appShortcuts'], version?: string): void {
+  if (!shortcuts?.length) return
+  if (version && Bun.semver.satisfies(version, '>=0.0.237')) return
+  throw new Error('appShortcuts needs craft-native >= 0.0.237; install a published version that generates App Intents.')
+}
 
 /** Older builders would silently omit the fonts and draw system text instead. */
 export function assertCraftSupportsNativeFonts(fonts: IosMobileConfig['nativeFonts'], version?: string): void {

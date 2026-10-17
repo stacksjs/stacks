@@ -4,7 +4,18 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { compileNativeScreens, nativeScreenFiles } from '../src/build/native-screens'
-import { assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
+import { assertCraftSupportsAppShortcuts, assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
+
+describe('build-owned iOS shortcuts', () => {
+  it('forwards native App Intents and refuses a builder that would omit them', () => {
+    const shortcuts = [{ id: 'saved', title: 'Saved', symbol: 'heart.fill', url: 'example://saved', phrases: ['Saved in {app}'] }]
+    const config = { ...MOBILE.ios, urlSchemes: ['example'], appShortcuts: shortcuts }
+    expect(toCraftIosConfig(config).appShortcuts).toEqual(shortcuts)
+    expect(() => assertCraftSupportsAppShortcuts(shortcuts, '0.0.236')).toThrow('craft-native >= 0.0.237')
+    expect(() => assertCraftSupportsAppShortcuts(shortcuts, '0.0.237')).not.toThrow()
+    expect(() => assertCraftSupportsAppShortcuts(undefined, '0.0.1')).not.toThrow()
+  })
+})
 
 /** The shape Craft's template emits: nested dicts, the root dict last. */
 const CRAFT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>

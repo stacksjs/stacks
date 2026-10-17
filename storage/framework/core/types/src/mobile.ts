@@ -101,6 +101,8 @@ export interface IosBackgroundRefreshConfig {
 export type NativeFontsConfig = Record<string, { src: string, license?: string }>
 
 export interface IosMobileConfig {
+  /** Build-owned App Intents and home-screen actions, routed into the app. */
+  appShortcuts?: Array<{ id: string, title: string, subtitle?: string, symbol: string, url: string, phrases: string[] }>
   nativeFonts?: NativeFontsConfig
   appName: string
   bundleId: string
