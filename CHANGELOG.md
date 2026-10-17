@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.199...v0.75.200)
+
+## 🐛 Bug Fixes
+
+- **mobile**: keep bundled font metadata portable ([94ac877](https://github.com/stacksjs/stacks/commit/94ac877)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.198...v0.75.199)
 
 ## 🐛 Bug Fixes
