@@ -51,6 +51,12 @@ a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for API and tool consumers.
 
 ## Deployment Prerequisites
 
+Automated production deployments on GitHub Actions and ReviewOS require a full provider
+commit SHA and branch ref. Before prerequisite setup, Buddy verifies the checkout against
+that SHA and reads the current branch head from `origin`. A stale commit, tag/PR ref,
+missing metadata or unavailable remote stops the deployment. Ordinary manual deployments
+and staging deployments keep their existing behavior; dry-run previews remain read-only.
+
 **AWS** (`provider: 'aws'`)
 
 1. **AWS credentials configured**: `buddy configure:aws`

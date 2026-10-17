@@ -16,6 +16,7 @@ import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { withDeployNotification } from '../deploy-notify'
+import { assertCurrentDeploymentRevision, automatedDeploymentRevision } from '../deployment-revision'
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
@@ -5689,6 +5690,9 @@ export function deploy(buddy: CLI): void {
           process.stdout.write(formatDeploymentPreview(plan))
         return
       }
+
+      const automatedRevision = automatedDeploymentRevision(deployEnvName)
+      await assertCurrentDeploymentRevision(automatedRevision, p.projectPath())
 
       // Resolved BEFORE the prerequisites, because which env file has to be in
       // place is the first thing they check.
