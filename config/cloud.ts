@@ -953,6 +953,9 @@ export const tsCloud: TsCloudConfig = {
       domain: 'mta-sts.stacksjs.com',
       start: 'bun storage/framework/scripts/mta-sts-server.ts',
       port: 8461,
+      // Bun also loads this project's normal preloads. Install their declared
+      // dependencies in this release, just as the main and API sites do.
+      preStart: ['bun install --frozen-lockfile'],
       // PORT_API is here to satisfy the deploy's API-reachability preflight,
       // which treats every non-API server app as a page server that must be
       // able to proxy `/api/**`. This one cannot and never will: it answers
