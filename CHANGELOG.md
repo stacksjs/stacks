@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.207...v0.75.208)
+
+## 🐛 Bug Fixes
+
+- publish releases to the configured upstream branch ([3283d65](https://github.com/stacksjs/stacks/commit/3283d65)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.206...v0.75.207)
 
 ## 🐛 Bug Fixes
