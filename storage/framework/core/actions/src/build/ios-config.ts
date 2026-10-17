@@ -5,6 +5,7 @@ import { spotlightActivityTypes } from '@stacksjs/mobile'
 
 export interface CraftIosConfig {
   [key: string]: unknown
+  nativeFonts?: IosMobileConfig['nativeFonts']
   appName: string
   bundleId: string
   version?: string
@@ -250,6 +251,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
   // that asked for it. `appBoundDomains: []` declares none, so it stays off.
   const declaresAppBoundDomains = (config.appBoundDomains?.length ?? 0) > 0
   const craft: CraftIosConfig = {
+    nativeFonts: config.nativeFonts,
     appName: config.appName,
     bundleId: config.bundleId,
     version: config.version,
@@ -413,4 +415,22 @@ export function writeIosActivityTypes(output: string, config: MobileConfig): str
 
   writeFileSync(path, withActivityTypes(readFileSync(path, 'utf8'), types))
   return types
+}
+
+/** Resolve font files against the app, before the builder writes its project. */
+export function resolveNativeFonts(fonts: IosMobileConfig['nativeFonts'], root: string): IosMobileConfig['nativeFonts'] {
+  if (!fonts) return undefined
+  return Object.fromEntries(Object.entries(fonts).map(([family, file]) => [family, {
+    src: resolve(root, file.src),
+    ...(file.license ? { license: resolve(root, file.license) } : {}),
+  }]))
+}
+
+export const CRAFT_NATIVE_FONTS_FLOOR = '0.0.229'
+
+/** Older builders would silently omit the fonts and draw system text instead. */
+export function assertCraftSupportsNativeFonts(fonts: IosMobileConfig['nativeFonts'], version?: string): void {
+  if (!Object.keys(fonts ?? {}).length) return
+  if (version && Bun.semver.satisfies(version, `>=${CRAFT_NATIVE_FONTS_FLOOR}`)) return
+  throw new Error(`nativeFonts needs craft-native >= ${CRAFT_NATIVE_FONTS_FLOOR}; install a published version that bundles native fonts.`)
 }

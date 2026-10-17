@@ -2,6 +2,10 @@ import { describe, expect, it } from 'bun:test'
 import { assertCraftSupportsAndroid, CRAFT_ANDROID_FLOORS, androidCraftFeatures, toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
 
 describe('Android mobile build configuration', () => {
+  it('forwards bundled font declarations to the Android builder', () => {
+    const fonts = { 'Allura-Regular': { src: 'fonts/Allura.ttf', license: 'fonts/OFL.txt' } }
+    expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app', nativeFonts: fonts }).nativeFonts).toEqual(fonts)
+  })
   it('maps Stacks capabilities onto the Craft Android builder', () => {
     const config = toCraftAndroidConfig({
       appName: 'WildLoop',

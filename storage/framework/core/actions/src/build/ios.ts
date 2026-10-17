@@ -6,7 +6,7 @@ import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { assertCraftSupportsCapabilities, assertCraftSupportsCrashReporting, portablePaths, resolveCrashReporting, resolveMobilePath, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
+import { assertCraftSupportsCapabilities, assertCraftSupportsCrashReporting, portablePaths, resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts, toCraftIosConfig, validateIosMobileConfig, writeIosActivityTypes } from './ios-config'
 import { generateXcodeProject, resolveXcodegen } from './ios-toolchain'
 import { compileNativeScreens } from './native-screens'
 import { writeIosShellSupport } from './ios-shell'
@@ -76,6 +76,7 @@ const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAss
 // upload below see one answer.
 const crashReporting = resolveCrashReporting(mobile.crashReporting, config.crashReporting)
 const craftConfig = toCraftIosConfig({ ...config, crashReporting })
+craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
 craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
@@ -94,6 +95,7 @@ const builder = await loadCraftIosBuilder()
 // An older Craft drops a capability it has no template for without a word,
 // so the build fails here rather than ship an app that lacks it.
 const craftVersion = craftBuilderVersion(craftIosEntry(), projectPath())
+assertCraftSupportsNativeFonts(config.nativeFonts, craftVersion?.version)
 if (craftVersion) {
   assertCraftSupportsCapabilities(config.capabilities, craftVersion.version, craftVersion.manifest)
   assertCraftSupportsCrashReporting(crashReporting, craftVersion.version, craftVersion.manifest)

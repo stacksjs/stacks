@@ -592,3 +592,19 @@ observable from the generated project: search a record's name from the home
 screen, confirm the entry appears and opens that record rather than the last
 screen, then make it stop being the person's (leave, unsave, withdraw, sign
 out) and confirm it stops being findable.
+
+## Bundled native fonts
+
+`ios.nativeFonts` and `android.nativeFonts` map a font's PostScript name to local
+`{ src, license? }` paths, resolved against the application root. Use the same
+name in a native Text node's `fontFamily` style. For example:
+
+```ts
+nativeFonts: {
+  'Allura-Regular': { src: 'public/assets/fonts/allura/Allura-Regular.ttf', license: 'public/assets/fonts/allura/OFL.txt' },
+}
+```
+
+Craft >= 0.0.229 packages the files and licenses into both apps. iOS registers
+`UIAppFonts`; Android loads asset typefaces. The build rejects older builders,
+missing font files and invalid names. Fonts work without a network request.

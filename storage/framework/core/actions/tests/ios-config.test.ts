@@ -4,7 +4,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { compileNativeScreens, nativeScreenFiles } from '../src/build/native-screens'
-import { assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
+import { assertCraftSupportsNativeFonts, resolveNativeFonts, assertCraftSupportsCapabilities, normalizeMobileUrl, portablePaths, resolveMobilePath, resolveSwipeNavigation, toCraftIosConfig, unsupportedCraftCapabilities, validateIosMobileConfig, withActivityTypes, writeIosActivityTypes } from '../src/build/ios-config'
 
 /** The shape Craft's template emits: nested dicts, the root dict last. */
 const CRAFT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
@@ -522,5 +522,22 @@ describe('a capability the installed Craft cannot build', () => {
     expect(() => assertCraftSupportsCapabilities({ scheduledWorkouts: true, backgroundAudio: true, heartRate: true }, '0.0.161', source))
       .toThrow('craft-native 0.0.161 (/app/node_modules/@stacksjs/mobile/node_modules/craft-native/package.json), which would build the app without ios.capabilities.backgroundAudio (needs >= 0.0.162), ios.capabilities.scheduledWorkouts (needs >= 0.0.163). Install craft-native >= 0.0.163')
     expect(() => assertCraftSupportsCapabilities({ scheduledWorkouts: true }, '0.0.164', source)).not.toThrow()
+  })
+})
+
+describe('native font packaging configuration', () => {
+  it('forwards font declarations on both platforms and resolves sources against the app root', () => {
+    const fonts = { 'Allura-Regular': { src: 'fonts/Allura.ttf', license: 'fonts/OFL.txt' } }
+    expect(toCraftIosConfig({ appName: 'HQ', bundleId: 'training.hq.app', nativeFonts: fonts }).nativeFonts).toEqual(fonts)
+    expect(resolveNativeFonts(fonts, '/app')).toEqual({ 'Allura-Regular': { src: '/app/fonts/Allura.ttf', license: '/app/fonts/OFL.txt' } })
+    expect(resolveNativeFonts(undefined, '/app')).toBeUndefined()
+  })
+
+  it('refuses builders that would silently omit the requested fonts', () => {
+    const fonts = { 'Allura-Regular': { src: 'fonts/Allura.ttf' } }
+    expect(() => assertCraftSupportsNativeFonts(fonts, '0.0.228')).toThrow('nativeFonts needs craft-native >= 0.0.229')
+    expect(() => assertCraftSupportsNativeFonts(fonts)).toThrow('nativeFonts needs')
+    expect(() => assertCraftSupportsNativeFonts(fonts, '0.0.229')).not.toThrow()
+    expect(() => assertCraftSupportsNativeFonts({}, '0.0.1')).not.toThrow()
   })
 })

@@ -3,6 +3,7 @@ import { NATIVE_APP_ROUTE, normalizeMobileUrl, toCraftCrashReporting } from './i
 
 export interface CraftAndroidConfig {
   [key: string]: unknown
+  nativeFonts?: AndroidMobileConfig['nativeFonts']
   appName: string
   packageName: string
   version?: string
@@ -107,6 +108,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
   if (devServerURL) trustedOrigins.add(new URL(devServerURL).origin)
   const native = config.renderer === 'native'
   const craft: CraftAndroidConfig = {
+    nativeFonts: config.nativeFonts,
     appName: config.appName,
     packageName: config.packageName,
     version: config.version,

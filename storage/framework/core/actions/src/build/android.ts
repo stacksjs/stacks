@@ -7,7 +7,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { androidRelease, assertCraftSupportsAndroid, toCraftAndroidConfig, uploadAndroidMapping, validateAndroidMobileConfig } from './android-config'
-import { resolveCrashReporting, resolveMobilePath } from './ios-config'
+import { resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts } from './ios-config'
 import { compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
 
@@ -62,6 +62,7 @@ const output = resolveMobilePath(projectPath(), config.output) ?? storagePath('f
 const webAssets = resolveMobilePath(projectPath(), config.webAssets)
 const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAssets)
 const craftConfig = toCraftAndroidConfig(config)
+craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.googleServicesFile = resolveMobilePath(projectPath(), config.googleServicesFile)
 if (process.env.NODE_ENV === 'production' && config.capabilities?.pushNotifications && !craftConfig.googleServicesFile) {
@@ -95,6 +96,7 @@ const builder = await loadCraftAndroidBuilder()
 // An older Craft builds without the shell, Health Connect or background
 // refresh and says nothing, so the build stops here instead.
 const craftVersion = craftBuilderVersion(craftAndroidEntry(), projectPath())
+assertCraftSupportsNativeFonts(config.nativeFonts, craftVersion?.version)
 if (craftVersion)
   assertCraftSupportsAndroid(config, craftVersion.version, craftVersion.manifest, { appBundle })
 else

@@ -97,7 +97,11 @@ export interface IosBackgroundRefreshConfig {
   minimumIntervalMinutes?: number
 }
 
+/** Custom native text fonts; the key is the font's PostScript name on both phones. */
+export type NativeFontsConfig = Record<string, { src: string, license?: string }>
+
 export interface IosMobileConfig {
+  nativeFonts?: NativeFontsConfig
   appName: string
   bundleId: string
   version?: string
@@ -274,6 +278,7 @@ export interface IosMobileConfig {
 }
 
 export interface AndroidMobileConfig {
+  nativeFonts?: NativeFontsConfig
   appName: string
   packageName: string
   version?: string
