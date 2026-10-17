@@ -136,6 +136,7 @@ export abstract class BasePolicy<T = any> {
 import type { GateAfterCallback, GateBeforeCallback, GateCallback, PolicyModelName } from './gate'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
+import { existsSync } from 'node:fs'
 import { policy as registerPolicy } from './gate'
 
 /**
@@ -156,21 +157,18 @@ async function loadPolicyRegistry(): Promise<Record<string, string> | null> {
     return policyRegistry
 
   policyRegistry = (async () => {
-    try {
-      const dir = p.storagePath('framework/auto-imports')
-      const module = await import(`${dir}/policies.ts`) as { policies?: Record<string, string> }
-      if (!module.policies)
-        return null
-
-      const { resolve } = await import('node:path')
-
-      return Object.fromEntries(
-        Object.entries(module.policies).map(([name, file]) => [name, resolve(dir, file)]),
-      )
-    }
-    catch {
+    const dir = p.storagePath('framework/auto-imports')
+    const registryPath = `${dir}/policies.ts`
+    if (!existsSync(registryPath))
       return null
-    }
+
+    const module = await import(registryPath) as { policies?: Record<string, string> }
+    if (!module.policies)
+      throw new Error(`Invalid policies registry: ${registryPath}`)
+
+    return Object.fromEntries(
+      Object.entries(module.policies).map(([name, file]) => [name, p.resolveModulePath(file, dir)]),
+    )
   })()
 
   return policyRegistry

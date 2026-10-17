@@ -35,19 +35,8 @@
   ],
   "exports": {
     "./resources/plugins/preloader": "./resources/plugins/preloader.ts",
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "bun": "./dist/*.js",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
-    },
     "./package.json": "./package.json",
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "bun": "./dist/*.js",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
-    }
+    "./*": "./*"
   },
   "scripts": {
     "build": "bun build.ts"

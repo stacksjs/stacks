@@ -31,6 +31,7 @@ import process from 'node:process'
 import { appPath, frameworkPath, projectPath, storagePath } from './project'
 
 export { appPath, frameworkPath, isCompiledBinary, projectPath, storagePath } from './project'
+export { resolveModulePath } from './module-resolution'
 
 // Lazy import logging to avoid circular dependency (logging imports path)
 async function debugLog(message: string) {

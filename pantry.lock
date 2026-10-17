@@ -1170,7 +1170,7 @@
         "@stacksjs/payments": "workspace:*",
         "@stacksjs/router": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "bun-plugin-auto-imports": "^0.4.3"
+        "bun-plugin-auto-imports": "^0.4.4"
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -1944,12 +1944,12 @@
         "typescript": "7.1.0-dev.20261011.1"
       }
     },
-    "bun-plugin-auto-imports@0.4.3": {
+    "bun-plugin-auto-imports@0.4.4": {
       "name": "bun-plugin-auto-imports",
-      "version": "0.4.3",
+      "version": "0.4.4",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-plugin-auto-imports/-/bun-plugin-auto-imports-0.4.3.tgz",
-      "integrity": "sha512-Fh7VFQpT1lm4yt8EC67hISNxilnupgCtGUoRmAJuAjaxxD5xUe0IPGg01XwjgRD2luHI07OUW0F4DSVd334JLg=="
+      "resolved": "https://registry.npmjs.org/bun-plugin-auto-imports/-/bun-plugin-auto-imports-0.4.4.tgz",
+      "integrity": "sha512-j1KXTDBEB/w95UWTvl8qQPjE8U+6jpm8UdCrIm+zDxnZM97ENhUpJjBYVB85oF14NsQpDcDnQYZdgLRckD4pKg=="
     },
     "bun-plugin-dtsx@0.11.19": {
       "name": "bun-plugin-dtsx",

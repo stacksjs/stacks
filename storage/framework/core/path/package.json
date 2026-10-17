@@ -37,6 +37,12 @@
       "bun": "./dist/project.js",
       "import": "./dist/project.js",
       "default": "./dist/project.js"
+    },
+    "./module-resolution": {
+      "types": "./dist/module-resolution.d.ts",
+      "bun": "./dist/module-resolution.js",
+      "import": "./dist/module-resolution.js",
+      "default": "./dist/module-resolution.js"
     }
   },
   "module": "dist/index.js",

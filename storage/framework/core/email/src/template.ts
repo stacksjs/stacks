@@ -2,8 +2,8 @@ import type { EmailTemplateReference } from './mailable'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
-import { defaultsResourcesPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { join, resolve as resolvePath } from 'node:path'
+import { defaultsResourcesPath, resolveModulePath, resourcesPath, storagePath } from '@stacksjs/path'
+import { join } from 'node:path'
 import { inlineCss, shouldInlineByDefault } from './css-inliner'
 
 export interface TemplateResult {
@@ -237,26 +237,28 @@ function loadTemplateRegistry(): Record<string, { path: string, type: 'stx' | 'h
     return templateRegistry
 
   templateRegistry = null
-  templateRegistryLoaded = true
+  templateRegistryLoaded = false
   templateRegistryCwd = cwd
 
-  try {
-    const dir = storagePath('framework/auto-imports')
-    // eslint-disable-next-line ts/no-require-imports
-    const module = require(`${dir}/emails.ts`) as { emails?: Record<string, string> }
-    if (!module.emails)
-      return null
+  const dir = storagePath('framework/auto-imports')
+  const registryPath = `${dir}/emails.ts`
+  if (!fs.existsSync(registryPath)) {
+    templateRegistryLoaded = true
+    return null
+  }
 
-    templateRegistry = Object.fromEntries(
-      Object.entries(module.emails).map(([name, file]) => [
-        name,
-        { path: resolvePath(dir, file), type: file.endsWith('.stx') ? 'stx' as const : 'html' as const },
-      ]),
-    )
-  }
-  catch {
-    templateRegistry = null
-  }
+  // eslint-disable-next-line ts/no-require-imports
+  const module = require(registryPath) as { emails?: Record<string, string> }
+  if (!module.emails)
+    throw new Error(`Invalid emails registry: ${registryPath}`)
+
+  templateRegistry = Object.fromEntries(
+    Object.entries(module.emails).map(([name, file]) => [
+      name,
+      { path: resolveModulePath(file, dir), type: file.endsWith('.stx') ? 'stx' as const : 'html' as const },
+    ]),
+  )
+  templateRegistryLoaded = true
 
   return templateRegistry
 }

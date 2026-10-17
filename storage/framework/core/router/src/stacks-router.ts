@@ -23,6 +23,7 @@ import { Buffer } from 'node:buffer'
 import { existsSync } from 'node:fs'
 import { log, report } from '@stacksjs/logging/runtime'
 import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
+import { resolveModulePath } from '@stacksjs/path/module-resolution'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
 
 type QueryTracker = typeof import('./query-tracking').trackQuery
@@ -1355,21 +1356,18 @@ async function getMiddlewareRegistry(): Promise<Record<string, string> | null> {
     return middlewareRegistryPromise
 
   middlewareRegistryPromise = (async () => {
-    try {
-      const dir = storagePath('framework/auto-imports')
-      const module = await import(`${dir}/middleware.ts`) as { middleware?: Record<string, string> }
-      if (!module.middleware)
-        return null
-
-      const { resolve } = await import('node:path')
-
-      return Object.fromEntries(
-        Object.entries(module.middleware).map(([name, file]) => [name, resolve(dir, file)]),
-      )
-    }
-    catch {
+    const dir = storagePath('framework/auto-imports')
+    const registryPath = `${dir}/middleware.ts`
+    if (!existsSync(registryPath))
       return null
-    }
+
+    const module = await import(registryPath) as { middleware?: Record<string, string> }
+    if (!module.middleware)
+      throw new Error(`Invalid middleware registry: ${registryPath}`)
+
+    return Object.fromEntries(
+      Object.entries(module.middleware).map(([name, file]) => [name, resolveModulePath(file, dir)]),
+    )
   })()
 
   return middlewareRegistryPromise
@@ -2908,21 +2906,18 @@ async function getActionRegistry(): Promise<Record<string, string> | null> {
     return actionRegistryPromise
 
   actionRegistryPromise = (async () => {
-    try {
-      const dir = storagePath('framework/auto-imports')
-      const module = await import(`${dir}/actions.ts`) as { actions?: Record<string, string> }
-      if (!module.actions)
-        return null
-
-      const { resolve } = await import('node:path')
-
-      return Object.fromEntries(
-        Object.entries(module.actions).map(([name, file]) => [name, resolve(dir, file)]),
-      )
-    }
-    catch {
+    const dir = storagePath('framework/auto-imports')
+    const registryPath = `${dir}/actions.ts`
+    if (!existsSync(registryPath))
       return null
-    }
+
+    const module = await import(registryPath) as { actions?: Record<string, string> }
+    if (!module.actions)
+      throw new Error(`Invalid actions registry: ${registryPath}`)
+
+    return Object.fromEntries(
+      Object.entries(module.actions).map(([name, file]) => [name, resolveModulePath(file, dir)]),
+    )
   })()
 
   return actionRegistryPromise

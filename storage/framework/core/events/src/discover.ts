@@ -46,10 +46,11 @@
  */
 
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { extname, join, resolve } from 'node:path'
+import { extname, join } from 'node:path'
 import process from 'node:process'
 import type { EventName, StacksEvents } from './index'
 import { listen } from './index'
+import { resolveModulePath } from '@stacksjs/path'
 
 /**
  * What a listener may subscribe to: an event that exists, or a glob the
@@ -637,20 +638,19 @@ async function loadNameRegistry(base: string, file: string, exportName: string):
     return cached
 
   const loading = (async () => {
-    try {
-      const dir = join(base, 'storage', 'framework', 'auto-imports')
-      const module = await import(join(dir, `${file}.ts`)) as Record<string, unknown>
-      const map = module[exportName] as Record<string, string> | undefined
-      if (!map)
-        return null
-
-      return Object.fromEntries(
-        Object.entries(map).map(([name, relativePath]) => [name, resolve(dir, relativePath)]),
-      )
-    }
-    catch {
+    const dir = join(base, 'storage', 'framework', 'auto-imports')
+    const registryPath = join(dir, `${file}.ts`)
+    if (!existsSync(registryPath))
       return null
-    }
+
+    const module = await import(registryPath) as Record<string, unknown>
+    const map = module[exportName] as Record<string, string> | undefined
+    if (!map)
+      throw new Error(`Invalid ${exportName} registry: ${registryPath}`)
+
+    return Object.fromEntries(
+      Object.entries(map).map(([name, file]) => [name, resolveModulePath(file, dir)]),
+    )
   })()
 
   registryCache.set(key, loading)

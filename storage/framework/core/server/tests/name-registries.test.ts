@@ -16,7 +16,7 @@
 import { describe, expect, it } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { path } from '@stacksjs/path'
+import { path, resolveModulePath } from '@stacksjs/path'
 
 const registryDir = path.storagePath('framework/auto-imports')
 
@@ -48,14 +48,14 @@ describe('the generated name registries', () => {
         const missing: string[] = []
 
         for (const [name, relativePath] of Object.entries(map)) {
-          if (!existsSync(resolve(registryDir, relativePath)))
+          if (!existsSync(resolveModulePath(relativePath, registryDir)))
             missing.push(`${name} -> ${relativePath}`)
         }
 
         expect(missing).toEqual([])
       })
 
-      it('stores paths relative to itself, so the project can move', async () => {
+      it('stores relative files or package exports, so the project can move', async () => {
         const map = await load(file, exportName)
 
         for (const relativePath of Object.values(map))
