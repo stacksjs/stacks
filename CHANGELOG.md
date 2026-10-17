@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.217...v0.75.218)
+
+## 🐛 Bug Fixes
+
+- preserve Android local storage and notification capabilities ([cb5e0bf](https://github.com/stacksjs/stacks/commit/cb5e0bf)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.216...v0.75.217)
 
 ## 🐛 Bug Fixes
