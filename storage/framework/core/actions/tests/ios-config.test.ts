@@ -485,6 +485,21 @@ describe('the activity types a tapped entry needs declared', () => {
 })
 
 describe('the generated project\'s records', () => {
+  it('keeps bundled font sources and licenses portable to another checkout', () => {
+    const records = portablePaths({
+      nativeFonts: {
+        'Allura-Regular': {
+          src: '/Users/a/app/public/assets/fonts/allura/Allura-Regular.ttf',
+          license: '/Users/a/app/public/assets/fonts/allura/OFL.txt',
+        },
+      },
+    }, '/Users/a/app/storage/framework/mobile/ios', '/Users/a/app')
+    expect(records.nativeFonts['Allura-Regular']).toEqual({
+      src: '../../../../public/assets/fonts/allura/Allura-Regular.ttf',
+      license: '../../../../public/assets/fonts/allura/OFL.txt',
+    })
+  })
+
   it('name the app\'s files relative to the project folder, not the machine', () => {
     const records = portablePaths({
       appIconPath: '/Users/a/app/public/icon.png',
