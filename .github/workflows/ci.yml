@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -78,7 +78,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -227,7 +227,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -364,7 +364,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -456,7 +456,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -603,7 +603,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -629,7 +629,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -676,7 +676,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
@@ -767,7 +767,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f # v0.11.75
+        uses: pantry-pm/pantry/packages/action@ac5ec8a436e6a3a998046bc5bd246c2811adecb0 # v0.11.87
         with:
           version: '0.11.75'
           install: 'false'
