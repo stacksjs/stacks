@@ -339,6 +339,15 @@ jobs:
             exit 1
           fi
 
+      - name: Workspace recovery process-inspection integration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          # Recovery must inspect protected same-user processes too. Exercise
+          # that permission boundary explicitly, without changing the normal
+          # unprivileged suite or disabling any production guard.
+          journal_bun_path="$(command -v bun)"
+          sudo --non-interactive "$journal_bun_path" test ./storage/framework/core/storage/integration/temporary-workspaces.test.ts
+
       # The framework's default app layer keeps its tests beside the code they
       # test (the dashboard actions, functions and components under
       # storage/framework/defaults), and the server package keeps its one in

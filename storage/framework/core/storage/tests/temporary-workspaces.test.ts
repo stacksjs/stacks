@@ -1,28 +1,10 @@
 import { afterEach, expect, test } from 'bun:test'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { chmodSync, existsSync, mkdirSync, readFileSync, readlinkSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { TemporaryWorkspaceJournal } from '../src/temporary-workspaces'
+import { inspectTemporaryWorkspace, TemporaryWorkspaceJournal } from '../src/temporary-workspaces'
+import { cleanup, fixture } from './fixtures/workspace-journal'
 
-const roots: string[] = []
-function fixture() {
-  const root = mkdtempSync(join(tmpdir(), 'stacks-workspace-journal-'))
-  roots.push(root)
-  const options = { directory: join(root, 'journal'), temporaryRoot: root, prefix: 'job-' }
-  return { root, options, journal: new TemporaryWorkspaceJournal(options) }
-}
-afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
-
-test('a restarted journal recovers and retires an authorized unused workspace', async () => {
-  const { journal, options } = fixture()
-  const record = journal.create('643')
-  writeFileSync(join(record.path, 'output.txt'), 'completed')
-  const restarted = new TemporaryWorkspaceJournal(options)
-  expect(restarted.list()).toEqual([record])
-  expect(await restarted.retire(record.id, row => row.key === '643')).toBe(true)
-  expect(existsSync(record.path)).toBe(false)
-  expect(restarted.list()).toEqual([])
-})
+afterEach(cleanup)
 
 test('active or unknown lifecycle state retains the workspace and its journal', async () => {
   const { journal } = fixture()
@@ -79,29 +61,35 @@ test('private journal ownership and real directory identity are required', () =>
   expect(() => new TemporaryWorkspaceJournal(options)).toThrow('private directory')
 })
 
-test('a live process using the workspace prevents retirement until it exits', async () => {
-  const { journal } = fixture()
-  const record = journal.create('643')
-  const child = Bun.spawn([process.execPath, '-e', 'console.log("ready");setInterval(()=>{},1000)'], { cwd: record.path, stdout: 'pipe', stderr: 'pipe' })
-  try {
-    await child.stdout.getReader().read()
-    expect(await journal.retire(record.id, () => true)).toBe(false)
-    expect(existsSync(record.path)).toBe(true)
-  }
-  finally { child.kill(); await child.exited }
-  expect(await journal.retire(record.id, () => true)).toBe(true)
+test('normal disposal uses a frozen live handle which a restarted journal cannot forge', () => {
+  const { journal, options } = fixture()
+  const record = journal.create('live')
+  expect(Reflect.set(record, 'path', '/elsewhere')).toBe(false)
+  const restarted = new TemporaryWorkspaceJournal(options)
+  expect(restarted.complete(record)).toBe(false)
+  expect(journal.complete({ ...record })).toBe(false)
+  expect(journal.complete(record)).toBe(true)
+  expect(existsSync(record.path)).toBe(false)
+  expect(journal.list()).toEqual([])
 })
 
-test('an open file protects a workspace even when the process works elsewhere', async () => {
-  const { journal, root } = fixture()
-  const record = journal.create('643')
-  const file = join(record.path, 'held.txt')
-  writeFileSync(file, 'held')
-  const child = Bun.spawn([process.execPath, '-e', 'import {openSync} from "node:fs";openSync(process.argv.at(-1),"r");console.log("ready");setInterval(()=>{},1000)', file], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
-  try {
-    await child.stdout.getReader().read()
-    expect(await journal.retire(record.id, () => true)).toBe(false)
-  }
-  finally { child.kill(); await child.exited }
-  expect(await journal.retire(record.id, () => true)).toBe(true)
-})
+if (process.platform === 'linux' && process.getuid?.() !== 0) {
+  test('unreadable same-user peers are reported and never become deletion permission', async () => {
+    const { journal, root } = fixture()
+    const record = journal.create('643')
+    const code = 'import {dlopen,FFIType} from "bun:ffi"; const c=dlopen("libc.so.6",{prctl:{args:[FFIType.i32,FFIType.u64,FFIType.u64,FFIType.u64,FFIType.u64],returns:FFIType.i32}});if(c.symbols.prctl(4,0,0,0,0)!==0)throw Error("prctl failed");console.log("protected");setInterval(()=>{},1000)'
+    const child = Bun.spawn([process.execPath, '-e', code], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
+    try {
+      const ready = await child.stdout.getReader().read()
+      expect(new TextDecoder().decode(ready.value)).toContain('protected')
+      expect(() => readlinkSync(`/proc/${child.pid}/cwd`)).toThrow()
+      const inspection = inspectTemporaryWorkspace(record.path)
+      expect(inspection.unused).toBe(false)
+      expect(inspection.reason).toBe('inspection-unavailable')
+      expect(await journal.retire(record.id, () => true)).toBe(false)
+      expect(existsSync(record.path)).toBe(true)
+    }
+    finally { child.kill(); await child.exited }
+    expect(journal.complete(record)).toBe(true)
+  })
+}

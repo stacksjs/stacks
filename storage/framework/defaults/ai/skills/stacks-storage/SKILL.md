@@ -72,15 +72,19 @@ import * as storage from '@stacksjs/storage'
 
 ### Recoverable temporary workspaces
 
-Use `TemporaryWorkspaceJournal` for workers that must recover temporary directories after a process interruption. Keep its private journal outside job-controlled checkouts and separate it by worker and controller identity. `create(key)` records the directory's owner, inode and device. `list()` returns only validated journal entries. `retire(id, mayRetire)` requires an authoritative lifecycle decision from the caller and preserves changed, mounted or in-use directories. Unknown state, missing inspection capabilities and unsupported operating systems never authorize removal. Age alone is not evidence that work has finished. Linux and macOS process inspection never terminates processes.
+Use `TemporaryWorkspaceJournal` for workers that recover temporary directories after a process interruption. Keep its private journal outside job-controlled checkouts and separate it by stable worker and controller identity. `create(key)` returns a frozen live ownership handle; stop its resources, then call `complete(handle)` for normal disposal. A restarted instance cannot forge this capability from a listed record.
+
+Crash recovery uses `inspectRetirement(id, mayRetire)` for a read-only preview and `retire(id, mayRetire)` to apply the same checks. Both require an authoritative lifecycle decision and preserve changed, mounted or in-use directories. Age alone never authorizes deletion. `inspectTemporaryWorkspace` reports unavailable process visibility explicitly. Protected same-user peers can require privileged maintenance on Linux; never ignore permission errors. An already-privileged operator may set `ownerUid` to maintain an existing private journal belonging to that user. This does not create another user's workspaces or grant new privileges. Unsupported or incomplete inspection always preserves data.
 
 ```ts
 import { TemporaryWorkspaceJournal } from '@stacksjs/storage'
 
 const journal = new TemporaryWorkspaceJournal({ directory: privateJournalDirectory, temporaryRoot, prefix: 'worker-job-' })
 const workspace = journal.create(jobId)
-// After restart, ask the controller about each recorded job before retiring it.
-await journal.retire(workspace.id, record => controllerConfirmsFinished(record.key))
+// Stop the live workspace's resources before normal disposal.
+journal.complete(workspace)
+// After restart, ask the controller about a recovered record.
+await journal.retire(recovered.id, record => controllerConfirmsFinished(record.key))
 ```
 
 The `Storage` singleton is a pre-instantiated `StorageManager`. It lazily builds its config from `@stacksjs/config` (which reads `config/filesystems.ts` and env vars).
