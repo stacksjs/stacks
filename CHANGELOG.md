@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.195...v0.75.196)
+
+## ✨ Features
+
+- engrave membership IDs and support replaying the card reveal ([3c6156b](https://github.com/stacksjs/stacks/commit/3c6156b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.194...v0.75.195)
 
 ## 🐛 Bug Fixes
