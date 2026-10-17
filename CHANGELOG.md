@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.214...v0.75.215)
+
+## 🐛 Bug Fixes
+
+- recognize compiled API deployment entrypoints ([510f50a](https://github.com/stacksjs/stacks/commit/510f50a)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.213...v0.75.214)
 
 ## 🐛 Bug Fixes
