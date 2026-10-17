@@ -55,7 +55,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/git` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/git/src/index.ts) | 1 |
 | `@stacksjs/github` | [`stacks-git`](../stacks-git/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/github/src/index.ts) | 7 |
 | `@stacksjs/health` | [`stacks-health`](../stacks-health/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/health/src/index.ts) | 2 |
-| `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 1 |
+| `@stacksjs/http` | [`stacks-http`](../stacks-http/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/src/index.ts) | 2 |
 | `@stacksjs/i18n` | [`stacks-i18n`](../stacks-i18n/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/i18n/src/index.ts) | 4 |
 | `@stacksjs/image` | [`stacks-image`](../stacks-image/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/image/src/index.ts) | 2 |
 | `@stacksjs/lint` | [`stacks-lint`](../stacks-lint/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/lint/src/index.ts) | 3 |
@@ -537,7 +537,7 @@ Guidance: [`stacks-http`](../stacks-http/SKILL.md). Source: [storage/framework/c
 
 Declared runtime exports: `Response`, `fetchWithBudget`.
 
-Evidence directory: [1 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [2 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/http/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/i18n
 
