@@ -61,6 +61,20 @@ Full pagination provides counts and page jumps. Simple/cursor results do not
 have a last page; render previous/next controls using their URLs/cursors.
 Outside a request, missing URL context is normal rather than a broken query.
 
+## Membership completion
+
+`<MembershipCard>` renders a metal keepsake with an engraved name, a finite
+entrance and light sweep, and a brief confetti burst. Pass localized `brand`,
+`label`, `nameLabel`, `name` and optional `detail` props. Mount it only after
+the operation succeeds; it does not grant membership or represent a check-in
+credential. Set `:celebrate="false"` when displaying an existing card. Motion
+is gated by `prefers-reduced-motion`; the card remains readable without it.
+
+```stx
+<MembershipCard :if="joined" :name="memberName" brand="My club"
+  label="Membership card" nameLabel="Member" :detail="planName" />
+```
+
 ## Gotchas
 
 - `config/ui.ts` configures STX topology; `config/css.ts` configures utilities.
