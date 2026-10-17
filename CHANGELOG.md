@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.196...v0.75.197)
+
+## ✨ Features
+
+- refine membership cards with signature titles and brand logos ([730af37](https://github.com/stacksjs/stacks/commit/730af37)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.195...v0.75.196)
 
 ## ✨ Features
