@@ -1130,10 +1130,8 @@ export async function resolveDeployEnvValues(
   try {
     const { getEnv } = await import('@stacksjs/env')
     const result = getEnv(undefined, { file: fileName, format: 'json' })
-    if (!result.success || !result.output) {
-      log.debug(`[deploy] Could not read ${fileName} for site env merging: ${result.error ?? 'unknown error'}`)
-      return {}
-    }
+    if (!result.success || !result.output)
+      throw new Error('The environment could not be read completely')
 
     const parsed = JSON.parse(result.output) as Record<string, string>
     const values: Record<string, string> = {}
@@ -1147,19 +1145,10 @@ export async function resolveDeployEnvValues(
         undecrypted.push(key)
     }
 
-    // A value that could not be decrypted comes back as its own ciphertext, and
-    // a ciphertext is a perfectly valid string: it would be written into the
-    // site's .env and the app would boot with `APP_KEY=encrypted:BEd1…`, failing
-    // at whatever first tried to use it, hours later, in a message about that
-    // feature rather than about the key. Almost always a missing `.env.keys`
-    // (a fresh clone, or CI without DOTENV_PRIVATE_KEY_PRODUCTION), and it is
-    // not recoverable here — the private key is the only thing that would help.
-    if (undecrypted.length > 0) {
-      log.error(`${undecrypted.length} value(s) in ${fileName} could not be decrypted: ${undecrypted.join(', ')}`)
-      const keyEnvironment = fileOverride ? fileOverride.replace(/^\.env\.?/, '') || environment : environment
-      log.info(`The private key for this environment lives in .env.keys, which is not committed. Restore it, or set DOTENV_PRIVATE_KEY_${keyEnvironment.toUpperCase()} in the environment running the deploy.`)
-      process.exit(ExitCode.FatalError)
-    }
+    // Also reject ciphertext from alternate parsers rather than shipping an
+    // unusable runtime setting. getEnv itself rejects skipped encrypted keys.
+    if (undecrypted.length > 0)
+      throw new Error('The environment still contains ciphertext')
 
     const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
     const partition = partitionTenantEnv(values, {
@@ -1177,9 +1166,10 @@ export async function resolveDeployEnvValues(
 
     return partition.own
   }
-  catch (error) {
-    log.debug(`[deploy] Failed to resolve ${fileName} for site env merging:`, error)
-    return {}
+  catch {
+    // A partial or unreadable environment is never a valid empty environment.
+    // Parser/crypto errors can carry values, so only report the file here.
+    throw new Error(`Cannot load deployment environment from ${fileName}; restore its decryption key and readable file before deploying.`)
   }
 }
 

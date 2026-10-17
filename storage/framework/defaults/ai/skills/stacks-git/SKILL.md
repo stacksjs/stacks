@@ -83,6 +83,28 @@ Based on `cz-git` UserConfig:
 
 ## Git Utilities
 
+`gitCredentialEnvironment({ url, username, password })` from `@stacksjs/git`
+returns environment variables for a child Git process. Pass the caller's base
+environment as its second argument, then merge the result after that base.
+Existing runtime Git configuration is preserved. The HTTP(S) URL must identify one repository without
+userinfo, query or fragment. The helper supplies credentials only for that
+protocol, host and repository path, refuses redirects for that URL, disables
+interactive prompts, and writes no credential or Git config file. Never log
+the returned environment. Use a credential scoped to the repository and the
+operation; this helper does not grant server permissions.
+
+```typescript
+import { gitCredentialEnvironment } from '@stacksjs/git'
+
+const child = Bun.spawn(['git', 'ls-remote', 'origin'], {
+  cwd: workspace,
+  env: { ...process.env, ...gitCredentialEnvironment({ url: repositoryUrl, username: 'x-access-token', password: jobToken }, process.env) },
+})
+```
+
+The child and its descendants receive the credential. Use this for trusted
+job steps, never to transfer a host credential into an isolated guest.
+
 `buddy release` atomically pushes its commit and version tag to the branch's
 configured upstream remote and branch. A worktree on `codex/example` tracking
 `origin/main` releases to `origin/main`; it does not create a remote feature

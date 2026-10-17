@@ -233,6 +233,12 @@ buddy env:check                            # validate env configuration
 buddy env:check --file .env.production     # check a specific environment's file
 ```
 
+`getEnv()` fails a whole-file read if any encrypted entry cannot be decrypted.
+Restore the environment's matching private key through `.env.keys` or its
+`DOTENV_PRIVATE_KEY_<ENVIRONMENT>` process secret. A request for one plaintext
+key remains readable independently. `buddy deploy` stops on an incomplete or
+unreadable environment instead of deploying a partial map.
+
 ## Tenant isolation on a shared box
 
 When several projects share one server - one owns it, the rest attach with

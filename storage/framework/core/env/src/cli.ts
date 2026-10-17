@@ -705,7 +705,14 @@ export function getEnv(
 
     // Load and parse .env file
     const envContent = readFileSync(envPath, 'utf-8')
-    const { parsed } = parse(envContent, { privateKey })
+    const { parsed, skippedEncrypted } = parse(envContent, { privateKey })
+    const unreadable = key && !options.all ? skippedEncrypted.filter(name => name === key) : skippedEncrypted
+    if (unreadable.length > 0) {
+      return {
+        success: false,
+        error: `Could not decrypt ${unreadable.join(', ')}. Restore ${privateKeyName} before reading this environment.`,
+      }
+    }
 
     // Get specific key
     if (key && !options.all) {

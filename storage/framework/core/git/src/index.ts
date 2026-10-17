@@ -1,3 +1,5 @@
+export * from './credentials'
+
 // export * as changelog from 'changelogen'
 
 // interface UseGitHub {
