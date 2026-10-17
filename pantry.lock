@@ -266,7 +266,7 @@
         "@stacksjs/router": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "@stacksjs/ts-auth": "^0.4.5",
+        "@stacksjs/ts-auth": "^0.4.7",
         "ts-qr-codes": "^0.1.8"
       },
       "devDependencies": {
