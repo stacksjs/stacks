@@ -119,4 +119,80 @@ describe('framework version bump scoping (stacksjs/stacks#2078)', () => {
     expect(pkg.devDependencies['@stacksjs/server']).toBe('0.70.161') // exact pin stays exact
     expect(pkg.devDependencies['@stacksjs/actions']).toBe('^0.70.161')
   })
+
+  it('moves root framework overrides with the declared release instead of retaining an older runtime', () => {
+    const pkg = {
+      dependencies: { stacks: '^0.70.93', '@stacksjs/server': '0.70.93' },
+      overrides: {
+        '@stacksjs/server': '0.70.93',
+        '@stacksjs/actions': '~0.70.93',
+        '@stacksjs/tlsx': '^0.13.11',
+        'better-dx': '^0.2.17',
+      },
+    }
+
+    const changes = applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))
+
+    expect(pkg.dependencies['@stacksjs/server']).toBe(TARGET)
+    expect(pkg.overrides['@stacksjs/server']).toBe(TARGET)
+    expect(pkg.overrides['@stacksjs/actions']).toBe(`~${TARGET}`)
+    expect(pkg.overrides['@stacksjs/tlsx']).toBe('^0.13.11')
+    expect(pkg.overrides['better-dx']).toBe('^0.2.17')
+    expect(changes.filter(change => change.name === '@stacksjs/server')).toHaveLength(2)
+    expect(applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))).toEqual([])
+  })
+
+  it('updates flat Yarn resolutions and preserves explicit aliases, links and dependency references', () => {
+    const pkg = {
+      dependencies: { stacks: '^0.70.93' },
+      resolutions: { '@stacksjs/server': '^0.70.93', '@stacksjs/tlsx': '^0.13.11' },
+      overrides: {
+        'stacks': '$stacks',
+        '@stacksjs/server': 'file:../server',
+        '@stacksjs/actions': 'npm:@my-org/actions@1.0.0',
+      },
+    }
+
+    applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))
+
+    expect(pkg.resolutions['@stacksjs/server']).toBe(`^${TARGET}`)
+    expect(pkg.resolutions['@stacksjs/tlsx']).toBe('^0.13.11')
+    expect(pkg.overrides).toEqual({
+      'stacks': '$stacks',
+      '@stacksjs/server': 'file:../server',
+      '@stacksjs/actions': 'npm:@my-org/actions@1.0.0',
+    })
+  })
+
+  it('reports an override-only repair so an interrupted upgrade still writes and installs', () => {
+    const pkg = {
+      dependencies: { stacks: TARGET, '@stacksjs/server': TARGET },
+      overrides: { '@stacksjs/server': '0.70.93' },
+    }
+
+    expect(applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))).toEqual([
+      { name: '@stacksjs/server', from: '0.70.93', to: TARGET, field: 'overrides' },
+    ])
+    expect(pkg.overrides['@stacksjs/server']).toBe(TARGET)
+  })
+
+  it('preserves nested and parent- or version-scoped override rules verbatim', () => {
+    const overrides = {
+      '@stacksjs/server': { '.': '0.70.93', '@stacksjs/actions': '^0.70.93' },
+      '@stacksjs/actions@<0.70.100': '0.70.93',
+      'stacks>@stacksjs/actions': '0.70.93',
+    }
+    const resolutions = { 'stacks/@stacksjs/server': '0.70.93', '**/@stacksjs/actions': '0.70.93' }
+    const pkg = { dependencies: { stacks: TARGET }, overrides, resolutions }
+    const before = JSON.stringify({ overrides, resolutions })
+
+    expect(applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))).toEqual([])
+    expect(JSON.stringify({ overrides: pkg.overrides, resolutions: pkg.resolutions })).toBe(before)
+  })
+
+  it.each(['workspace:*', 'catalog:', 'catalog:framework', 'canary'])('preserves the explicit %s override', (spec) => {
+    const pkg = { dependencies: { stacks: TARGET }, overrides: { '@stacksjs/server': spec } }
+    expect(applyBumps(pkg, TARGET, lockstepPackages(META_DEPS, TARGET))).toEqual([])
+    expect(pkg.overrides['@stacksjs/server']).toBe(spec)
+  })
 })

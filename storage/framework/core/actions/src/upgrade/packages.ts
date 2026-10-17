@@ -39,6 +39,8 @@ export interface PackageUpgradeOptions {
 export interface PkgJson {
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
+  overrides?: Record<string, unknown>
+  resolutions?: Record<string, unknown>
   [key: string]: unknown
 }
 
@@ -169,8 +171,8 @@ export function lockstepPackages(metaDeps: Record<string, string>, target: strin
  * `lockstep` — including independently-versioned `@stacksjs/*` packages — is left
  * untouched. Returns the set of applied changes.
  */
-export function applyBumps(pkg: PkgJson, target: string, lockstep: Set<string>): Array<{ name: string, from: string, to: string }> {
-  const changes: Array<{ name: string, from: string, to: string }> = []
+export function applyBumps(pkg: PkgJson, target: string, lockstep: Set<string>): Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> {
+  const changes: Array<{ name: string, from: string, to: string, field?: 'overrides' | 'resolutions' }> = []
 
   for (const field of ['dependencies', 'devDependencies'] as const) {
     const deps = pkg[field]
@@ -188,6 +190,26 @@ export function applyBumps(pkg: PkgJson, target: string, lockstep: Set<string>):
         changes.push({ name, from: spec, to: next })
         deps[name] = next
       }
+    }
+  }
+
+  // Root installer rules win over the direct declaration. Leaving a stale
+  // pin here installs the old runtime even after the requested release was
+  // written above. Only plain lockstep version rules follow the upgrade;
+  // scoped/nested rules and explicit links/aliases/references stay app-owned.
+  for (const field of ['overrides', 'resolutions'] as const) {
+    const rules = pkg[field]
+    if (!rules || typeof rules !== 'object' || Array.isArray(rules))
+      continue
+
+    for (const [name, spec] of Object.entries(rules)) {
+      if (!lockstep.has(name) || typeof spec !== 'string' || !/^[\^~]?\d/.test(spec))
+        continue
+      const next = resolveManifestSpec(name, spec, target)
+      if (!next)
+        continue
+      changes.push({ name, from: spec, to: next, field })
+      rules[name] = next
     }
   }
 
@@ -240,9 +262,10 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   if (changes.length > 0) {
     console.log('  The following dependencies will be updated:')
-    const width = Math.max(...changes.map(c => c.name.length))
-    for (const c of changes)
-      console.log(`    ${c.name.padEnd(width)}  ${c.from}  →  ${c.to}`)
+    const reported = changes.map(change => ({ ...change, label: change.field ? `${change.name} (${change.field})` : change.name }))
+    const width = Math.max(...reported.map(c => c.label.length))
+    for (const c of reported)
+      console.log(`    ${c.label.padEnd(width)}  ${c.from}  →  ${c.to}`)
     console.log('')
   }
 

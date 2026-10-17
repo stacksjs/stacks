@@ -48,6 +48,13 @@ Run without a subcommand to upgrade the Stacks framework to the latest version:
 buddy upgrade
 ```
 
+Package-managed upgrades also move flat root `overrides` and `resolutions`
+version pins for packages published in lockstep with the requested framework
+release. The preview labels those changes by field, including when an override
+is the only stale declaration. Independently versioned packages, scoped or
+nested rules, aliases, local links and `$dependency` references keep their
+application-defined values.
+
 ### Why `bun install` is not the whole upgrade
 
 A package-managed app keeps a copy of the framework scaffold in
