@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.203...v0.75.204)
+
+## 🐛 Bug Fixes
+
+- preserve typed search documents and exact input membership ([c814c8d](https://github.com/stacksjs/stacks/commit/c814c8d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.202...v0.75.203)
 
 ## 🐛 Bug Fixes
