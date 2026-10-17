@@ -29,13 +29,19 @@ Response is a status-code enum, not the Fetch API Response constructor. Alias
 it when both are used. fetchWithBudget returns the real Fetch Response;
 non-2xx status is a response, not automatically an exception.
 
-The current helper adds an abort timer per fetch attempt (default 30 seconds),
-and retries 429/503 up to retry (default zero). Numeric Retry-After seconds or
-exponential delay is capped at 30 seconds between attempts. It does not parse
-HTTP-date Retry-After, impose one total deadline including all retries, or keep
-the timer active while the caller later streams the body. It supplies its own
-AbortController signal rather than composing an incoming signal. Check these
-bounds before depending on it for a whole multi-step provider operation.
+The helper applies one timeout (default 30 seconds) across fetch attempts and
+retry waits, composing the deadline with an incoming signal (including a
+Request's signal). It retries 429/503 up to retry (default zero), honoring
+numeric and HTTP-date Retry-After. A server delay that exceeds the remaining
+budget ends in a timeout rather than an early retry. Missing or invalid delays
+use exponential backoff capped at 30 seconds. Discarded response bodies are
+cancelled before retrying. Retry counts must be non-negative safe integers;
+timeouts must be positive, finite and within the platform timer range.
+
+Retries need replayable buffered bodies and an idempotent operation. A streaming
+body or a Request with a body is sent once, returning its original response;
+use a URL plus buffered bytes for retryable uploads. The budget ends when final
+response headers arrive, so the caller still owns subsequent body consumption.
 
 ## Httx client and fluent requests
 

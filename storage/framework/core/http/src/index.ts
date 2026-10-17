@@ -69,10 +69,10 @@ export enum Response {
 }
 
 /**
- * `fetch` wrapper that aborts after `timeoutMs` and honors `Retry-After`
- * on 429/503 responses with exponential backoff.
+ * `fetch` wrapper with one budget for requests and retry waits. Honors
+ * numeric and HTTP-date `Retry-After` on 429/503 responses.
  *
- * Platform `fetch()` has no timeout — a misbehaving upstream that accepts
+ * Platform `fetch()` has no timeout. A misbehaving upstream that accepts
  * the connection but never sends bytes leaves the caller hanging forever.
  * Worse, every driver (Stripe webhooks, Twilio, AI providers) shares the
  * same code path, so one slow upstream cascades into stalled queue
@@ -81,8 +81,13 @@ export enum Response {
  *
  * @param input  URL or Request, exactly like fetch
  * @param init   RequestInit + { timeoutMs?: number, retry?: number }
- *               - timeoutMs (default 30_000) — overall request budget
- *               - retry (default 0)         — retry count on 429/503
+ *               - timeoutMs (default 30_000): overall request budget
+ *               - retry (default 0): retry count on 429/503
+ *
+ * The budget ends when response headers arrive; the caller owns subsequent
+ * body consumption. Streaming request bodies are sent once, because replaying
+ * a consumed stream cannot reproduce the upload. Use buffered bytes for an
+ * idempotent upload that needs retries. A Request with a body is also one-shot.
  *
  * @example
  * ```ts
@@ -99,25 +104,60 @@ export async function fetchWithBudget(
   init: RequestInit & { timeoutMs?: number, retry?: number } = {},
 ): Promise<globalThis.Response> {
   const { timeoutMs = 30_000, retry = 0, ...rest } = init
-  let attempt = 0
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2_147_483_647)
+    throw new RangeError('timeoutMs must be positive and within the platform timer range')
+  if (!Number.isSafeInteger(retry) || retry < 0)
+    throw new RangeError('retry must be a non-negative safe integer')
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const ac = new AbortController()
-    const timeoutHandle = setTimeout(() => ac.abort(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs)
-    try {
-      const response = await fetch(input, { ...rest, signal: ac.signal })
-      if ((response.status === 429 || response.status === 503) && attempt < retry) {
-        const ra = Number(response.headers.get('retry-after'))
-        const delay = (Number.isFinite(ra) && ra > 0 ? ra : 2 ** attempt) * 1000
-        await new Promise(r => setTimeout(r, Math.min(delay, 30_000)))
-        attempt++
-        continue
-      }
-      return response
-    }
-    finally {
-      clearTimeout(timeoutHandle)
+  const ac = new AbortController()
+  const caller = rest.signal ?? (input instanceof Request ? input.signal : undefined)
+  const signal = caller ? AbortSignal.any([caller, ac.signal]) : ac.signal
+  const replayable = !(rest.body instanceof ReadableStream)
+    && !(input instanceof Request && input.body !== null)
+  const timeoutHandle = setTimeout(() => ac.abort(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs)
+  try {
+    for (let attempt = 0; ; attempt++) {
+      signal.throwIfAborted()
+      const response = await fetch(input, { ...rest, signal })
+      if (!replayable || ![429, 503].includes(response.status) || attempt >= retry)
+        return response
+
+      const header = response.headers.get('retry-after')?.trim()
+      const seconds = header && /^\d+(?:\.\d+)?$/.test(header) ? Number(header) : NaN
+      const date = header && /^[a-z]{3}(?:[a-z]*,| )/i.test(header) ? Date.parse(header) : NaN
+      const delay = Number.isFinite(seconds)
+        ? seconds * 1000
+        : Number.isFinite(date) ? Math.max(0, date - Date.now()) : Math.min(2 ** attempt * 1000, 30_000)
+
+      // Release the response before retrying. The same buffered request bytes
+      // can be replayed; an unread response must not hold a connection open.
+      await response.body?.cancel()
+      await waitForRetry(delay, signal)
     }
   }
+  finally {
+    clearTimeout(timeoutHandle)
+  }
+}
+
+function waitForRetry(delay: number, signal: AbortSignal): Promise<void> {
+  signal.throwIfAborted()
+  return new Promise((resolve, reject) => {
+    const finish = () => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', abort)
+    }
+    const abort = () => {
+      finish()
+      reject(signal.reason)
+    }
+    // The deadline aborts this wait if the server asks for longer than the
+    // remaining budget. Never shorten Retry-After and send too early.
+    const timer = setTimeout(() => {
+      finish()
+      resolve()
+    }, Math.min(delay, 2_147_483_647))
+    signal.addEventListener('abort', abort, { once: true })
+    if (signal.aborted) abort()
+  })
 }
