@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.210...v0.75.211)
+
+## 🐛 Bug Fixes
+
+- preserve mounted data during workspace completion ([729e343](https://github.com/stacksjs/stacks/commit/729e343)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- isolate privileged recovery fixtures from CI host processes ([bf1a1f6](https://github.com/stacksjs/stacks/commit/bf1a1f6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.209...v0.75.210)
 
 ## 🐛 Bug Fixes
