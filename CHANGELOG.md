@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.191...v0.75.192)
+
+## ✨ Features
+
+- **auth**: support secure remote MCP OAuth connections ([821743d](https://github.com/stacksjs/stacks/commit/821743d)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **auth**: allow cold OAuth recovery fixture startup ([d01e407](https://github.com/stacksjs/stacks/commit/d01e407)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.190...v0.75.191)
 
 ## 🐛 Bug Fixes
