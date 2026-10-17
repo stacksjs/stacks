@@ -1,8 +1,8 @@
 import './types/dom-vendor'
 import type { Ref } from '@stacksjs/stx'
 import { onUnmounted, ref } from '@stacksjs/stx'
-import type { MaybeRef } from './_shared'
-import { defaultDocument, unref } from './_shared'
+import type { MaybeRefOrGetter } from './_shared'
+import { defaultDocument, toValue } from './_shared'
 
 export interface UseFullscreenReturn {
   /** Whether the target is currently in fullscreen mode. */
@@ -23,19 +23,19 @@ export interface UseFullscreenReturn {
  *
  * @param target - Target element (defaults to documentElement)
  */
-export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscreenReturn {
+export function useFullscreen(target?: MaybeRefOrGetter<HTMLElement | null>): UseFullscreenReturn {
   const doc = defaultDocument()
   const isFullscreen = ref(false)
   const isSupported = ref(
     !!doc && (
-      'fullscreenEnabled' in doc
-      || 'webkitFullscreenEnabled' in doc
+      doc.fullscreenEnabled === true
+      || doc.webkitFullscreenEnabled === true
     ),
   )
 
   function getTarget(): HTMLElement | null {
     if (target) {
-      return unref(target)
+      return toValue(target)
     }
     return doc?.documentElement ?? null
   }
@@ -49,7 +49,7 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
   }
 
   function updateState(): void {
-    isFullscreen.value = getFullscreenElement() !== null
+    isFullscreen.value = getFullscreenElement() === getTarget() && getTarget() !== null
   }
 
   async function enter(): Promise<void> {
@@ -67,7 +67,7 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       else if ((el).webkitRequestFullscreen) {
         await (el).webkitRequestFullscreen()
       }
-      isFullscreen.value = true
+      updateState()
     }
     catch {
       // Fullscreen request failed
@@ -85,7 +85,7 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       else if (doc.webkitExitFullscreen) {
         await doc.webkitExitFullscreen()
       }
-      isFullscreen.value = false
+      updateState()
     }
     catch {
       // Fullscreen exit failed
@@ -100,6 +100,8 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       await enter()
     }
   }
+
+  updateState()
 
   // Listen for fullscreen change events
   if (doc) {

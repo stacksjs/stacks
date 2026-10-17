@@ -959,6 +959,47 @@ describe('useFullscreen', () => {
   })
   afterEach(() => restoreGlobals())
 
+  it('resolves a target getter when entering, after the page mounts', async () => {
+    const doc = setupDocumentMock()
+    let target: any = null
+    const fullscreen = useFullscreen(() => target)
+    await fullscreen.enter()
+    expect(fullscreen.isFullscreen.value).toBe(false)
+    target = createMockElement()
+    target.requestFullscreen = mock(async () => { doc.fullscreenElement = target })
+    await fullscreen.enter()
+    expect(target.requestFullscreen).toHaveBeenCalledTimes(1)
+    expect(fullscreen.isFullscreen.value).toBe(true)
+  })
+
+  it('does not claim fullscreen when the target has no request method', async () => {
+    setupDocumentMock()
+    const fullscreen = useFullscreen(createMockElement())
+    await fullscreen.enter()
+    expect(fullscreen.isFullscreen.value).toBe(false)
+  })
+
+  it('keeps its state scoped to the target when another element is fullscreen', async () => {
+    const doc = setupDocumentMock()
+    const target = createMockElement()
+    const fullscreen = useFullscreen(target)
+    doc.fullscreenElement = createMockElement()
+    for (const listener of doc.__listeners.fullscreenchange ?? []) listener({} as Event)
+    expect(fullscreen.isFullscreen.value).toBe(false)
+    doc.fullscreenElement = target
+    for (const listener of doc.__listeners.fullscreenchange ?? []) listener({} as Event)
+    expect(fullscreen.isFullscreen.value).toBe(true)
+    doc.fullscreenElement = null
+    for (const listener of doc.__listeners.fullscreenchange ?? []) listener({} as Event)
+    expect(fullscreen.isFullscreen.value).toBe(false)
+  })
+
+  it('honors a browser that explicitly disables fullscreen', () => {
+    const doc = setupDocumentMock()
+    doc.fullscreenEnabled = false
+    expect(useFullscreen().isSupported.value).toBe(false)
+  })
+
   it('should return isFullscreen as false initially', () => {
     setupDocumentMock()
     const { isFullscreen } = useFullscreen()

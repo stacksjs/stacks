@@ -30,6 +30,7 @@ export interface NetworkInformationLike {
 
 declare global {
   interface Document {
+    webkitFullscreenEnabled?: boolean
     webkitFullscreenElement?: Element | null
     webkitExitFullscreen?: () => Promise<void> | void
   }
