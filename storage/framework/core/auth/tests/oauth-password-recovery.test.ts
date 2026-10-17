@@ -43,7 +43,8 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         stdout: 'pipe',
         stderr: 'pipe',
       })
-      const watchdog = setTimeout(() => child.kill(), 25_000)
+      // Cold database/bootstrap work is included; this is a bounded subprocess hang guard.
+      const watchdog = setTimeout(() => child.kill(), 90_000)
       try {
         const [code, stdout, stderr] = await Promise.all([
           child.exited,
@@ -72,5 +73,5 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
         }
       }
     }
-  }, 30_000)
+  }, 120_000)
 }
