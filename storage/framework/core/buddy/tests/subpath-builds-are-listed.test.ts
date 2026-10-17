@@ -145,7 +145,16 @@ describe('subpath imports', () => {
     const child = Bun.spawnSync({ cmd: [process.execPath, join(root, '.github/scripts/subpath-packages.ts'), '--runtime'], cwd: root, stdout: 'pipe', stderr: 'pipe' })
     expect(child.exitCode, child.stderr.toString()).toBe(0)
     const built = new Set(child.stdout.toString().trim().split('\n'))
-    for (const name of ['strings', 'model-meta', 'validation', 'cloud', 'orm']) expect(built.has(name)).toBe(true)
+    for (const name of ['strings', 'model-meta', 'validation', 'cloud', 'orm', 'desktop']) expect(built.has(name)).toBe(true)
+  })
+
+  it('builds package roots before bundling standalone commands on a clean runner', () => {
+    const workflow = Bun.YAML.parse(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8'))
+    const steps = workflow.jobs.compile.steps as Array<{ run?: string }>
+    const preparation = steps.findIndex(step => step.run?.includes('bun .github/scripts/subpath-packages.ts --runtime'))
+    const compilation = steps.findIndex(step => step.run?.includes('bun run compile:linux-x64'))
+    expect(preparation).toBeGreaterThanOrEqual(0)
+    expect(compilation).toBeGreaterThan(preparation)
   })
 
   /**

@@ -424,14 +424,14 @@ jobs:
       - name: Check the lockfiles still describe this workspace
         run: bun .github/scripts/check-lockfiles-current.ts
 
-      # Same computed set, and for the same reason, as the step in `typecheck`:
-      # these packages resolve only through a gitignored `dist/`, so a job that
-      # imports one without building it fails to resolve it. This job had no
-      # such step, and went red when the router started importing
-      # `@stacksjs/logging/runtime`.
-      - name: Build packages imported by subpath
+      # Standalone Buddy bundles every command and its package roots. Build the
+      # same complete runtime package set as the published-root probes: a
+      # package name can differ from its directory (desktop-build is in
+      # desktop/), so the source wildcard cannot resolve every root. Preparing
+      # only subpaths left desktop-build/dist absent on clean Linux runners.
+      - name: Build packages bundled by standalone Buddy
         run: |
-          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+          for pkg in $(bun .github/scripts/subpath-packages.ts --runtime); do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
