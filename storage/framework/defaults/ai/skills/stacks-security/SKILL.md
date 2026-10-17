@@ -189,6 +189,19 @@ unless you know you want only the check.
 API keys handed to integrations: `generateApiKey('myapp_live_')` returns
 `{ key, hash, hint }`; show `key` once, store `hash` (`hashApiKey`), list `hint`.
 
+Configured or user-supplied regex patterns: `matchBoundedRegex(source, input, options)`
+accepts optional `flags` and `timeoutMs`, and returns `{ value, index }` for the first complete
+match, or `null`. Every call runs in an isolated Bun process with an OS-enforced
+deadline and `SIGKILL`, including process startup (25ms by default, integer
+1-1000ms). It requires `bun` on PATH. Timeouts throw `RegexTimeoutError`;
+invalid patterns throw `SyntaxError`. Do not treat either as a clean security
+scan. Source is capped at 8Ki UTF-16 code units, input at 64Ki, and flags at 8.
+The helper does not inherit app preloads, environment variables or .env files.
+It matches statelessly and does not return captures. Use ordinary RegExp for
+trusted application constants to avoid process startup for normal matching.
+Timing a synchronous match afterward or vetting one sample input cannot bound
+an untrusted expression on its next input.
+
 Generated model API exposure and ownership live under `config/security.ts`
 api settings. Read `stacks-models`/`stacks-router` before opening generated
 endpoints; a cloud WAF setting does not implement model row authorization.
