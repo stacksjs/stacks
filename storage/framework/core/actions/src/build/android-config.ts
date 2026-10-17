@@ -48,6 +48,8 @@ const CAPABILITY_KEYS = {
   healthConnect: 'enableHealthConnect',
   bluetooth: 'enableBluetooth',
   localNetwork: 'enableLocalNetwork',
+  localDatabase: 'enableLocalDatabase',
+  localNotifications: 'enableLocalNotifications',
 } as const
 
 /**
