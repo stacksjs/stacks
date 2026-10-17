@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.208...v0.75.209)
+
+## 🐛 Bug Fixes
+
+- resolve generated defaults through public package exports ([74dd819](https://github.com/stacksjs/stacks/commit/74dd819)) _(by Chris <chris@stacksjs.com>)_
+- flush cold deployment diagnostics before exiting ([be4aecb](https://github.com/stacksjs/stacks/commit/be4aecb)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.207...v0.75.208)
 
 ## 🐛 Bug Fixes
