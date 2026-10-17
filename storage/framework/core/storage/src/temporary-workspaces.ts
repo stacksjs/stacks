@@ -42,12 +42,39 @@ function mountedWorkspace(table: string, path: string): boolean {
   })
 }
 
+/** A live lease still cannot authorize traversal into a mounted filesystem. */
+function inspectWorkspaceMounts(path: string): TemporaryWorkspaceInspection {
+  try {
+    if (process.platform === 'linux') {
+      const table = readFileSync('/proc/self/mountinfo', 'utf8')
+      if (!table.trim()) return { unused: false, reason: 'inspection-unavailable', operation: 'mounts' }
+      const mounted = mountedWorkspace(table, path)
+      return { unused: !mounted, reason: mounted ? 'mounted' : 'unused' }
+    }
+    if (process.platform === 'darwin') {
+      const mounts = Bun.spawnSync(['mount'], { stdout: 'pipe', stderr: 'pipe' })
+      if (mounts.exitCode !== 0 || mounts.stderr.length > 0 || mounts.stdout.length === 0)
+        return { unused: false, reason: 'inspection-unavailable', operation: 'mounts' }
+      const mounted = mounts.stdout.toString().split('\n').some((line) => {
+        const target = / on (.+) \(/.exec(line)?.[1]
+        return target !== undefined && beneath(target, path)
+      })
+      return { unused: !mounted, reason: mounted ? 'mounted' : 'unused' }
+    }
+  }
+  catch (error) {
+    return { unused: false, reason: 'inspection-unavailable', operation: 'mounts', code: error instanceof Error && 'code' in error ? String(error.code) : undefined }
+  }
+  return { unused: false, reason: 'unsupported-platform' }
+}
+
 /** Report missing inspection permission explicitly; never infer that an unreadable process is idle. */
 export function inspectTemporaryWorkspace(path: string): TemporaryWorkspaceInspection {
   let operation = 'mounts'
   try {
+    const mounts = inspectWorkspaceMounts(path)
+    if (!mounts.unused) return mounts
     if (process.platform === 'linux') {
-      if (mountedWorkspace(readFileSync('/proc/self/mountinfo', 'utf8'), path)) return { unused: false, reason: 'mounted' }
       const uid = process.getuid?.()
       for (const pid of readdirSync('/proc').filter(name => /^\d+$/.test(name))) {
         const directory = `/proc/${pid}`
@@ -81,12 +108,6 @@ export function inspectTemporaryWorkspace(path: string): TemporaryWorkspaceInspe
       return { unused: true, reason: 'unused' }
     }
     if (process.platform === 'darwin') {
-      const mounts = Bun.spawnSync(['mount'], { stdout: 'pipe', stderr: 'pipe' })
-      if (mounts.exitCode !== 0) return { unused: false, reason: 'inspection-unavailable', operation }
-      for (const line of mounts.stdout.toString().split('\n')) {
-        const mount = / on (.+) \(/.exec(line)?.[1]
-        if (mount && beneath(mount, path)) return { unused: false, reason: 'mounted' }
-      }
       const uid = process.getuid?.()
       if (uid === undefined) return { unused: false, reason: 'inspection-unavailable', operation: 'process-owner' }
       operation = 'process-files'
@@ -215,7 +236,12 @@ export class TemporaryWorkspaceJournal {
       if (!this.rootsUnchanged()) return false
       const identity = this.identity(record)
       if (identity === 'changed' || identity === 'unavailable') return false
-      if (identity === 'same') rmSync(record.path, { recursive: true })
+      if (identity === 'same') {
+        // Recheck immediately before both live completion and recovered cleanup.
+        // rmSync can unlink mounted contents before its final rmdir fails EBUSY.
+        if (!inspectWorkspaceMounts(record.path).unused) return false
+        rmSync(record.path, { recursive: true })
+      }
     }
     catch (error) { if (!vanished(error) || this.identity(record) !== 'missing') return false }
     rmSync(join(this.directory, `${record.id}.json`), { force: true })

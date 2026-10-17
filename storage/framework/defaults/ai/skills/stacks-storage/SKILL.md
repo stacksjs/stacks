@@ -74,6 +74,8 @@ import * as storage from '@stacksjs/storage'
 
 Use `TemporaryWorkspaceJournal` for workers that recover temporary directories after a process interruption. Keep its private journal outside job-controlled checkouts and separate it by stable worker and controller identity. `create(key)` returns a frozen live ownership handle; stop its resources, then call `complete(handle)` for normal disposal. A restarted instance cannot forge this capability from a listed record.
 
+Both live completion and recovered retirement recheck the current mount table immediately before deletion. Nested mounts, including bind mounts on the same device, preserve the workspace and journal. Incomplete mount inspection also preserves them: recursive deletion can unlink mounted data before reporting that the mount point is busy.
+
 Crash recovery uses `inspectRetirement(id, mayRetire)` for a read-only preview and `retire(id, mayRetire)` to apply the same checks. Both require an authoritative lifecycle decision and preserve changed, mounted or in-use directories. Age alone never authorizes deletion. `inspectTemporaryWorkspace` reports unavailable process visibility explicitly. Protected same-user peers can require privileged maintenance on Linux; never ignore permission errors. An already-privileged operator may set `ownerUid` to maintain an existing private journal belonging to that user. This does not create another user's workspaces or grant new privileges. Unsupported or incomplete inspection always preserves data.
 
 ```ts

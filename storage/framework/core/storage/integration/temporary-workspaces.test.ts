@@ -2,7 +2,7 @@
 // with read permission for protected peers; the ordinary suite separately
 // verifies non-root refusal. No process or ownership guard is disabled.
 import { afterEach, expect, test } from 'bun:test'
-import { chmodSync, copyFileSync, existsSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { TemporaryWorkspaceJournal } from '../src/temporary-workspaces'
@@ -55,6 +55,30 @@ test('an open file protects a workspace even when the process works elsewhere', 
 })
 
 if (process.platform === 'linux') {
+  test('live completion never traverses a nested bind mount into foreign data', async () => {
+    const { journal, root } = fixture()
+    const record = journal.create('643')
+    const foreign = join(root, 'foreign')
+    const mounted = join(record.path, 'borrowed')
+    mkdirSync(foreign)
+    mkdirSync(mounted)
+    const sentinel = join(foreign, 'important.txt')
+    writeFileSync(sentinel, 'preserve foreign data')
+    const mountedResult = Bun.spawnSync(['mount', '--bind', foreign, mounted], { stdout: 'pipe', stderr: 'pipe' })
+    expect(mountedResult.exitCode, mountedResult.stderr.toString()).toBe(0)
+    try {
+      expect(journal.complete(record)).toBe(false)
+      expect(readFileSync(sentinel, 'utf8')).toBe('preserve foreign data')
+      expect(await journal.retire(record.id, () => true)).toBe(false)
+      expect(journal.list()).toEqual([record])
+    }
+    finally {
+      const unmounted = Bun.spawnSync(['umount', mounted], { stdout: 'pipe', stderr: 'pipe' })
+      expect(unmounted.exitCode, unmounted.stderr.toString()).toBe(0)
+    }
+    expect(journal.complete(record)).toBe(true)
+  })
+
   test('privileged maintenance preserves the declared filesystem owner without granting creation rights', async () => {
     // Stage this exact interpreter and source for the lower-privilege fixture;
     // do not loosen permissions on the operator's home or installed toolchain.
