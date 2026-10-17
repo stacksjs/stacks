@@ -6,6 +6,13 @@ describe('Android mobile build configuration', () => {
     const fonts = { 'Allura-Regular': { src: 'fonts/Allura.ttf', license: 'fonts/OFL.txt' } }
     expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app', nativeFonts: fonts }).nativeFonts).toEqual(fonts)
   })
+  it('passes the native map key through to Craft without changing it', () => {
+    const config = {appName:'Wildloop',packageName:'org.wildloop.app',url:'https://wildloop.org/feed',mapsApiKey:'test-android-maps-key'}
+    expect(toCraftAndroidConfig(config).mapsApiKey).toBe(config.mapsApiKey)
+    expect(toCraftAndroidConfig({...config,mapsApiKey:undefined})).not.toHaveProperty('mapsApiKey')
+    expect(() => validateAndroidMobileConfig({...config,mapsApiKey:'  '})).toThrow('android.mapsApiKey')
+  })
+
   it('maps Stacks capabilities onto the Craft Android builder', () => {
     const config = toCraftAndroidConfig({
       appName: 'WildLoop',

@@ -299,6 +299,8 @@ export interface AndroidMobileConfig {
   appIcon?: string
   /** Path to Firebase's google-services.json, required for production Android push registration. */
   googleServicesFile?: string
+  /** Google Maps Android SDK key for native Map views, restricted to this application. */
+  mapsApiKey?: string
   /** Light or dark with the device (`system`), or pinned. */
   appearance?: 'light' | 'dark' | 'system'
   /** The background behind screens in dark mode (`backgroundColor` is light's). */

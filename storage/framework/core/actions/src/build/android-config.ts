@@ -20,6 +20,7 @@ export interface CraftAndroidConfig {
   appLinks?: AndroidMobileConfig['appLinks']
   appIconPath?: string
   googleServicesFile?: string
+  mapsApiKey?: string
   enableBluetooth?: boolean
   enableHealthConnect?: boolean
   renderer?: AndroidMobileConfig['renderer']
@@ -125,6 +126,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     appLinks: config.appLinks,
     appIconPath: config.appIcon,
     googleServicesFile: config.googleServicesFile,
+    mapsApiKey: config.mapsApiKey,
     renderer: config.renderer,
     nativeScreens: native ? config.nativeScreens : undefined,
     nativeApp: native && config.nativeApp ? NATIVE_APP_ROUTE : undefined,
@@ -151,6 +153,8 @@ export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
   if (!/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$/.test(config.packageName)) {
     throw new Error(`Invalid Android package name: ${config.packageName}`)
   }
+  if (config.mapsApiKey !== undefined && (typeof config.mapsApiKey !== 'string' || !config.mapsApiKey.trim()))
+    throw new Error('android.mapsApiKey must be a non-empty Google Maps Android SDK key')
   if (config.renderer !== undefined && config.renderer !== 'web' && config.renderer !== 'native')
     throw new Error(`android.renderer must be 'web' or 'native', not ${String(config.renderer)}`)
   if (config.renderer === 'native') {
