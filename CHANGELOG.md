@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.201...v0.75.202)
+
+## 🐛 Bug Fixes
+
+- **actions**: avoid unrelated imports for built-in dispatch ([569466c](https://github.com/stacksjs/stacks/commit/569466c)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh action capability source references ([1a481dd](https://github.com/stacksjs/stacks/commit/1a481dd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.200...v0.75.201)
 
 ## 🐛 Bug Fixes
