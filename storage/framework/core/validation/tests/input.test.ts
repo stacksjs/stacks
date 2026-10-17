@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { InputValidationError, parseBooleanInput, parseNumberInput, parsePositiveId, parseTextInput, readJsonObject, validateModelInput } from '../src/input'
+import { InputValidationError, isEnumInput, parseEnumInput, parseBooleanInput, parseNumberInput, parsePositiveId, parseTextInput, readJsonObject, validateModelInput } from '../src/input'
 import { schema } from '../src/runtime'
 
 describe('custom action input', () => {
@@ -42,4 +42,17 @@ describe('custom action input', () => {
     expect(() => validateModelInput(model, { name: 'longer' })).toThrow(InputValidationError)
     expect(() => validateModelInput(model, { count: true })).toThrow(InputValidationError)
   })
+})
+
+
+test('enum membership guards narrow the accepted values without coercion', () => {
+  const roles = ['owner', 'member'] as const
+  const role = (value: unknown): 'owner' | 'member' | null => isEnumInput(value, roles) ? value : null
+  expect(role('owner')).toBe('owner')
+  expect(role('member')).toBe('member')
+  for (const value of ['admin', 'OWNER', 1, true, {}, ['owner'], null, undefined]) {
+    expect(role(value)).toBeNull()
+    expect(() => parseEnumInput(value, 'role', roles)).toThrow(InputValidationError)
+  }
+  expect(parseEnumInput('member', 'role', roles)).toBe('member')
 })

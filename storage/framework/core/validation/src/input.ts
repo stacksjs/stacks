@@ -57,10 +57,15 @@ export function validateModelInput(model: InputValidatableModel, values: Record<
   }
 }
 
+/** Membership guard for boundaries that provide their own protocol error response. */
+export function isEnumInput<const T extends readonly string[]>(value: unknown, choices: T): value is T[number] {
+  return typeof value === 'string' && choices.includes(value)
+}
+
 /** Exact enum membership without turning objects or numbers into text. */
 export function parseEnumInput<const T extends readonly string[]>(value: unknown, field: string, choices: T): T[number] {
-  if (typeof value !== 'string' || !choices.includes(value)) throw new InputValidationError(`${field} must be ${choices.join(', ')}`)
-  return value as T[number]
+  if (!isEnumInput(value, choices)) throw new InputValidationError(`${field} must be ${choices.join(', ')}`)
+  return value
 }
 
 /** Validate a bounded enum list as an ordered set, without silently dropping invalid entries. */

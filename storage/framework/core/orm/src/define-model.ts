@@ -1641,6 +1641,12 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
  * decides for itself how many queries that costs; without it this falls back to
  * projecting each row, which is what a column-rearranging `shape` wants anyway.
  */
+function searchProjectionRecord(document: object): Record<string, unknown> {
+  if (!document || typeof document !== 'object' || Array.isArray(document))
+    throw new TypeError('[orm/search] A search projection must return a document object')
+  return Object.fromEntries(Object.entries(document))
+}
+
 export async function projectDocumentsFromTrait(
   /** Model rows, projected into search documents by the trait's config. */
   models: Record<string, unknown>[],
@@ -1659,7 +1665,7 @@ export async function projectDocumentsFromTrait(
       )
     }
 
-    return docs.filter(Boolean)
+    return docs.filter(Boolean).map(searchProjectionRecord)
   }
 
   const projected = await Promise.all(models.map(model => projectDocumentFromTrait(model, config)))
@@ -1715,8 +1721,8 @@ async function projectDocumentFromTrait(
   config: SearchableTraitConfig,
 ): Promise<Record<string, unknown> | null | undefined> {
   if (typeof config.shape === 'function') {
-    try { return await config.shape(model) }
-    catch { return undefined }
+    const document = await config.shape(model)
+    return document == null ? document : searchProjectionRecord(document)
   }
   const fromHook = (model as { toSearchableObject?: () => Record<string, unknown> | null })?.toSearchableObject?.()
   if (fromHook !== undefined) return fromHook
@@ -2975,7 +2981,7 @@ interface SearchableTraitConfig {
    * if both are absent; if neither exists, the whole row is
    * indexed.
    */
-  shape?: (model: any) => Record<string, unknown> | null | undefined | Promise<Record<string, unknown> | null | undefined>
+  shape?: (model: any) => object | null | undefined | Promise<object | null | undefined>
   /**
    * Batch projection, for a document that needs the database.
    *
@@ -2994,7 +3000,7 @@ interface SearchableTraitConfig {
    * refused loudly rather than silently indexing the wrong document under the
    * wrong id.
    */
-  shapeMany?: (models: any[]) => Record<string, unknown>[] | Promise<Record<string, unknown>[]>
+  shapeMany?: (models: any[]) => object[] | Promise<object[]>
   /**
    * Attribute names the model declared `hidden`, resolved by the trait.
    *
@@ -3066,7 +3072,7 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
     }
 
     if (typeof searchConfig.shape === 'function') {
-      try { return await searchConfig.shape(model) }
+      try { return await projectDocumentFromTrait(model, searchConfig) }
       catch (err) {
         log.warn(`[orm/search] shape() threw for ${definition.name}: ${(err as Error).message}`)
         return undefined

@@ -9,3 +9,12 @@ void hits
 void count
 // @ts-expect-error Search statics are not installed without the trait.
 Plain.search('runner')
+
+interface SearchProjectionDocument { id: string, title: string }
+const projected: SearchProjectionDocument = { id: '1', title: 'Training' }
+const Projected = defineModel({
+  name: 'SearchProjection', table: 'search_projections',
+  traits: { useSearch: { shape: () => projected, shapeMany: async () => [projected] } },
+  attributes: { title: { type: 'string' } },
+} as const)
+void Projected
