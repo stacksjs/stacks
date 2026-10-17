@@ -50,15 +50,23 @@ When you define or modify a model, generate migrations automatically:
 buddy generate:migrations
 ```
 
-This recursively loads both model roots, with `app/Models/` overriding framework
-models that have the same model name:
+This recursively discovers the application and framework model roots:
 
 - `storage/framework/defaults/app/Models/`
 - `app/Models/`
 
-It diffs the merged registry against the committed dialect snapshot and
-generates the necessary SQL. An application does not need an `app/Models/`
-directory for framework model migrations to be discovered.
+Framework defaults are a fallback when the application has no models of its own.
+When `app/Models/` contributes models, the generator uses that application's
+schema and excludes framework demo tables. Set
+`database.models.includeFrameworkDefaults` only when the application deliberately
+wants the merged registry; application models override matching framework names.
+Discovered package model roots also contribute their declared models.
+
+The generator diffs the resolved registry against the committed dialect snapshot.
+An application does not need an `app/Models/` directory for fallback framework
+model migrations to be discovered. Inspect the resolved scope with verbose output
+when a framework table is unexpectedly absent; do not hand-write a duplicate model
+migration or enable every demo table to add a single infrastructure table.
 
 The snapshot is part of the schema history and must be committed with the
 generated migration. It lives under `storage/framework/database/`, not `.qb/`.
