@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.198...v0.75.199)
+
+## 🐛 Bug Fixes
+
+- **security**: enforce deadlines for untrusted regex matching ([ff75c5f](https://github.com/stacksjs/stacks/commit/ff75c5f)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- regenerate native security package evidence ([9ec06c7](https://github.com/stacksjs/stacks/commit/9ec06c7)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/membership-card-reveal ([79666d0](https://github.com/stacksjs/stacks/commit/79666d0)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/membership-card-reveal ([809825d](https://github.com/stacksjs/stacks/commit/809825d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.197...v0.75.198)
 
 ## ✨ Features
