@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.200...v0.75.201)
+
+## 🐛 Bug Fixes
+
+- keep proxy-only deploys out of application releases ([c77360e](https://github.com/stacksjs/stacks/commit/c77360e)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- refresh native capability catalog ([4ac1f7c](https://github.com/stacksjs/stacks/commit/4ac1f7c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.199...v0.75.200)
 
 ## 🐛 Bug Fixes
