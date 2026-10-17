@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.206...v0.75.207)
+
+## 🐛 Bug Fixes
+
+- require published runtime-aware rollback support ([d6139b3](https://github.com/stacksjs/stacks/commit/d6139b3)) _(by Chris <chris@stacksjs.com>)_
+- audit privileged CI test invocations without exemptions ([6782e60](https://github.com/stacksjs/stacks/commit/6782e60)) _(by Chris <chris@stacksjs.com>)_
+- reject stale automated production deployments ([b0497bf](https://github.com/stacksjs/stacks/commit/b0497bf)) _(by Chris <chris@stacksjs.com>)_
+- separate live workspace disposal from guarded recovery ([23ff7ad](https://github.com/stacksjs/stacks/commit/23ff7ad)) _(by Chris <chris@stacksjs.com>)_
+- install declared dependencies before starting the mail policy service ([a71cb41](https://github.com/stacksjs/stacks/commit/a71cb41)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- clarify framework fallback migration model scope ([ac0eb48](https://github.com/stacksjs/stacks/commit/ac0eb48)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- establish environment permissions before preservation checks ([10a25f5](https://github.com/stacksjs/stacks/commit/10a25f5)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.205...v0.75.206)
 
 ## ✨ Features
