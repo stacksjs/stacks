@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.204...v0.75.205)
+
+## 🐛 Bug Fixes
+
+- consume published auth implementation without dependency patches ([14899f7](https://github.com/stacksjs/stacks/commit/14899f7)) _(by Chris <chris@stacksjs.com>)_
+- build complete runtime dependencies before compiling buddy ([100ba3b](https://github.com/stacksjs/stacks/commit/100ba3b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.203...v0.75.204)
 
 ## 🐛 Bug Fixes
