@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.202...v0.75.203)
+
+## 🐛 Bug Fixes
+
+- **buddy**: ship executable lazy commands and project preloads ([6a58013](https://github.com/stacksjs/stacks/commit/6a58013)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.201...v0.75.202)
 
 ## 🐛 Bug Fixes
