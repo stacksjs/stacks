@@ -83,6 +83,13 @@ Based on `cz-git` UserConfig:
 
 ## Git Utilities
 
+`buddy release` atomically pushes its commit and version tag to the branch's
+configured upstream remote and branch. A worktree on `codex/example` tracking
+`origin/main` releases to `origin/main`; it does not create a remote feature
+branch. Without an upstream it uses `origin` and the current branch. Detached
+HEAD, incomplete upstreams, local-only remotes and non-branch or ambiguous
+upstreams are rejected before the version bump.
+
 ```typescript
 import { isGitClean } from '@stacksjs/utils'
 

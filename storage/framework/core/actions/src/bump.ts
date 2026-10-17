@@ -5,6 +5,7 @@ import { incrementVersion, isReleaseType, isValidVersion, versionBump } from '@s
 import { isCalendarBump, nextCalendarVersion } from './calendar-version'
 import { describeGitHubRelease, publishGitHubRelease } from './github-release'
 import { pantryLockViolations } from './pantry-lock'
+import { releasePushTarget } from './release-push-target'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -89,6 +90,8 @@ async function git(args: string[], cwd = p.projectPath(), options: { throwOnErro
     throwOnError: options.throwOnError ?? true,
   })
 }
+
+const pushTarget = isDryRun ? undefined : releasePushTarget(p.projectPath())
 
 /**
  * Whether a .gitignore rule covers this path.
@@ -602,8 +605,8 @@ if (!isDryRun) {
   await stageReleaseArtifacts()
   await git(['commit', '-m', `chore: release v${nextVersion}`])
   await git(['tag', `v${nextVersion}`])
-  const branch = (await git(['symbolic-ref', '--short', 'HEAD'])).trim()
-  await git(['push', '--atomic', 'origin', `HEAD:refs/heads/${branch}`, `refs/tags/v${nextVersion}`])
+  if (!pushTarget) throw new Error('No release push destination was resolved')
+  await git(['push', '--atomic', '--', pushTarget.remote, `HEAD:${pushTarget.ref}`, `refs/tags/v${nextVersion}`])
 }
 
 // An app's release leaves a GitHub release behind, with the changes since the
