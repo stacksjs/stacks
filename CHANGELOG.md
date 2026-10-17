@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.209...v0.75.210)
+
+## 🐛 Bug Fixes
+
+- validate published dependency declarations before release ([d7c21ef](https://github.com/stacksjs/stacks/commit/d7c21ef)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.208...v0.75.209)
 
 ## 🐛 Bug Fixes
