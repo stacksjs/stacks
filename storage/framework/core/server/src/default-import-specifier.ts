@@ -1,11 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 
-/** Framework source imports its editable tree; applications import the defaults package contract. */
+/** Source checkouts and named --with-core apps import their editable defaults tree. */
 export function isFrameworkSourceCheckout(projectRoot: string): boolean {
   try {
-    return JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8')).name === 'stacks'
-      && existsSync(resolve(projectRoot, 'storage/framework/core/package.json'))
+    const core = resolve(projectRoot, 'storage/framework/core')
+    return JSON.parse(readFileSync(resolve(core, 'package.json'), 'utf8')).name === 'stacks'
+      && existsSync(resolve(core, 'defaults/package.json'))
   }
   catch { return false }
 }

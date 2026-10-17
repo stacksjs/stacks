@@ -175,7 +175,10 @@ Outputs:
 async function generateAutoImportFiles(): Promise<void>
 ```
 
+Package-based apps address framework defaults through `@stacksjs/defaults` exports, preserving application overrides. Generated imports never depend on the physical npm or Pantry installation path. An app created with `--with-core` keeps source-relative defaults imports; detection uses the framework source layout, independently of the application's package name.
+
 Generates runtime-importable index files under `storage/framework/auto-imports/`:
+
 - `functions.ts` -- re-exports from `resources/functions/`
 - `models.ts` -- re-exports default exports from model definition files as named exports
 - `jobs.ts` -- re-exports default exports from job definition files
