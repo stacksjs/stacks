@@ -124,7 +124,7 @@ describe('OAuth authorization page boundary', () => {
     })
 
     expect(response.status).toBe(302)
-    expect(response.headers.get('location')).toBe('https://client.example.com/callback?code=ccccccccccccccccccccccccccccccccccccccccccc&state=client-state')
+    expect(response.headers.get('location')).toBe('https://client.example.com/callback?iss=https%3A%2F%2Fid.example.com&code=ccccccccccccccccccccccccccccccccccccccccccc&state=client-state')
     expect(reuseInput).toMatchObject({
       requestId,
       subjectType: 'users',

@@ -26,6 +26,8 @@ export interface ApproveOAuthAuthorizationRequestSessionInput {
   /** Recheck current workspace authority inside the approval transaction. */
   resolveWorkspaceId?: () => Promise<string | null>
   authorizationCodeLifetimeMs: number
+  /** User-selected subset of requested permissions. Never permits expansion. */
+  approvedScopes?: readonly string[]
 }
 
 export interface OAuthAuthorizationConsentResult {
@@ -105,6 +107,7 @@ export interface OAuthAuthorizationConsentView {
 export interface OAuthAuthorizationConsentRequest {
   requestId: string
   decision: 'approve' | 'deny'
+  approvedScopes?: string[]
 }
 
 export class OAuthAuthorizationConsentRequestError extends Error {
@@ -180,7 +183,12 @@ export function parseOAuthAuthorizationConsentRequest(
     throw new OAuthAuthorizationConsentRequestError('OAuth consent request identifier is invalid.')
   if (decision !== 'approve' && decision !== 'deny')
     throw new OAuthAuthorizationConsentRequestError('OAuth consent decision is invalid.')
-  return { requestId, decision }
+  const scopeValues = params.getAll('scope')
+  if (scopeValues.length > 1) throw new OAuthAuthorizationConsentRequestError('Consent scope must appear once.')
+  const approvedScopes = scopeValues.length ? scopeValues[0]!.split(' ') : undefined
+  if (approvedScopes && (!approvedScopes.length || approvedScopes.some(scope => !/^[\x21\x23-\x5B\x5D-\x7E]+$/.test(scope)) || new Set(approvedScopes).size !== approvedScopes.length))
+    throw new OAuthAuthorizationConsentRequestError('Invalid consent scopes.')
+  return { requestId, decision, ...(approvedScopes ? { approvedScopes } : {}) }
 }
 
 /** Build consent-safe display data without returning callback or PKCE fields. */
@@ -386,11 +394,14 @@ export async function approveOAuthAuthorizationRequestSession(
     if (input.provider.consent.resolveWorkspace
       && (!workspace.bound || workspace.id !== (workspaceId ?? null)))
       throw new OAuthAuthorizationRequestError('invalid_request', 'OAuth consent workspace changed after it was displayed.')
+    const approvedScopes = input.approvedScopes ? [...input.approvedScopes] : request.scopes
+    if (!approvedScopes.length || new Set(approvedScopes).size !== approvedScopes.length || approvedScopes.some(scope => !request.scopes.includes(scope)))
+      throw new OAuthAuthorizationRequestError('invalid_scope', 'Consent may only grant a non-empty subset of requested scopes.')
     const grant = await createOAuthGrant({
       clientId: Number(request.clientId),
       subjectType: input.subjectType,
       subjectId: input.subjectId,
-      scopes: request.scopes,
+      scopes: approvedScopes,
       resources: request.resources,
       audiences: request.audiences,
       workspaceId,

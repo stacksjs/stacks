@@ -34,6 +34,7 @@ const {
   authenticatedUser,
   authCookieName,
   createOAuthGrant,
+  createOAuthAuthorizationServer,
   createS256CodeChallenge,
   enableTwoFactor,
   generateTwoFactorSecret,
@@ -154,6 +155,22 @@ try {
     return { subject: authorization.token.subjectId, workspace: workspaceId }
   })
 
+  const spa = createOAuthAuthorizationServer({
+    provider: () => resolveOAuthProviderConfig(config.auth.oauthProvider)!,
+    consentPage: '/connect/app',
+    authenticate: async request => {
+      const user = await authenticatedUser(request)
+      return user ? { type: 'users', id: Number(user.id), label: String(user.name), workspaceId: 'workspace-a' } : null
+    },
+  })
+  router.get('/spa/start', spa.begin)
+  router.post('/spa/register', spa.register).parseBody(false).skipCsrf()
+  router.get('/spa/consent', spa.consent).middleware('auth')
+  router.post('/spa/consent', spa.consent).parseBody(false).middleware('auth')
+  router.get('/spa/connections', spa.connections).middleware('auth')
+  router.delete('/spa/connections/{id}', request => spa.disconnect(request, request.params.id!)).middleware('auth')
+  router.post('/spa/token', spa.token).parseBody(false).skipCsrf()
+
   const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
   try {
     const issuer = `http://127.0.0.1:${server.port}`
@@ -162,6 +179,7 @@ try {
     config.auth.oauthProvider = {
       enabled: true,
       issuer,
+      dynamicRegistration: { endpoint: '/spa/register', allowedRedirectOrigins: ['https://client.example.test'] },
       scopes: {
         'issues:read': { description: 'Read issues', resources: ['bughq'] },
         'issues:write': { description: 'Write issues', resources: ['bughq'] },
@@ -444,6 +462,47 @@ try {
     const authCookie = responseCookie(twoFactorLogin, authCookieName())
     await twoFactorLogin.arrayBuffer()
     const browserCookies = `${csrfCookie}; ${oauthCookie}; ${authCookie}`
+
+    {
+      // Custom SPA adapters use the same native persisted OAuth flow and ordinary 2FA login.
+      const dcr = await fetch(`${issuer}/spa/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'SPA HTTP client', redirect_uris: [redirectUri], token_endpoint_auth_method: 'none', grant_types: ['authorization_code', 'refresh_token'] }) })
+      assert.equal(dcr.status, 201, await dcr.clone().text())
+      const dynamic = await dcr.json() as { client_id: string }
+      const spaParams = new URLSearchParams({ client_id: dynamic.client_id, redirect_uri: redirectUri, response_type: 'code', scope: 'issues:read issues:write', resource: `${issuer}/fixture/resource`, code_challenge: challenge, code_challenge_method: 'S256', state: 'spa-state' })
+      const begun = await fetch(`${issuer}/spa/start?${spaParams}`, { redirect: 'manual', headers: { cookie: browserCookies } })
+      assert.equal(begun.status, 302, await begun.clone().text())
+      const resume = new URL(begun.headers.get('location')!, issuer)
+      assert.equal(resume.pathname, '/connect/app')
+      assert.deepEqual([...resume.searchParams.keys()], ['request_id'])
+      const requestId = resume.searchParams.get('request_id')!
+      const missingBrowser = await fetch(`${issuer}/spa/consent?request_id=${requestId}`, { headers: { cookie: `${csrfCookie}; ${authCookie}` } })
+      assert.equal(missingBrowser.status, 400)
+      const view = await fetch(`${issuer}/spa/consent?request_id=${requestId}`, { headers: { cookie: browserCookies } })
+      assert.equal(view.status, 200, await view.clone().text())
+      const viewBody = await view.text()
+      assert(!viewBody.includes(challenge))
+      assert(!viewBody.includes(redirectUri))
+      const consentResponse = await fetch(`${issuer}/spa/consent`, { method: 'POST', headers: { cookie: browserCookies, 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json', 'x-csrf-token': csrfToken }, body: new URLSearchParams({ request_id: requestId, decision: 'approve', scope: 'issues:read' }) })
+      assert.equal(consentResponse.status, 200, await consentResponse.clone().text())
+      const callback = new URL((await consentResponse.json() as { redirect_uri: string }).redirect_uri)
+      assert.equal(callback.searchParams.get('iss'), issuer)
+      assert.equal(callback.searchParams.get('state'), 'spa-state')
+      const spaCode = callback.searchParams.get('code')!
+      const exchangeBody = { grant_type: 'authorization_code', client_id: dynamic.client_id, code: spaCode, redirect_uri: redirectUri, code_verifier: verifier, resource: `${issuer}/fixture/resource` }
+      const wrongResource = await fetch(`${issuer}/spa/token`, { method: 'POST', body: new URLSearchParams({ ...exchangeBody, resource: `${issuer}/fixture/other` }) })
+      assert.equal(wrongResource.status, 400)
+      const spaTokens = await fetch(`${issuer}/spa/token`, { method: 'POST', body: new URLSearchParams(exchangeBody) })
+      assert.equal(spaTokens.status, 200, await spaTokens.clone().text())
+      const spaToken = await spaTokens.json() as { access_token: string, scope: string }
+      assert.equal(spaToken.scope, 'issues:read')
+      const connections = await fetch(`${issuer}/spa/connections`, { headers: { cookie: browserCookies } })
+      const grantId = (await connections.json() as { connections: { grantId: string, clientId: number }[] }).connections.find(item => item.clientId === Number(dynamic.client_id))!.grantId
+      const disconnected = await fetch(`${issuer}/spa/connections/${grantId}`, { method: 'DELETE', headers: { cookie: browserCookies, 'x-csrf-token': csrfToken } })
+      assert.deepEqual(await disconnected.json(), { disconnected: true })
+      const afterDisconnect = await authorizeOAuthDelegatedToken(spaToken.access_token, { scopes: ['issues:read'], resource: 'bughq', audience: `${issuer}/fixture/resource`, workspaceId: 'workspace-a', isSubjectEligible: () => true })
+      assert.equal(afterDisconnect.ok, false)
+
+    }
 
     const managedClientResponse = await fetch(`${issuer}/auth/oauth/clients`, {
       method: 'POST',

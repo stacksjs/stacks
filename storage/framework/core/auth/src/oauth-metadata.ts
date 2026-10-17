@@ -1,6 +1,8 @@
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
 
 export interface OAuthAuthorizationServerMetadata {
+  registration_endpoint?: string
+  authorization_response_iss_parameter_supported: true
   issuer: string
   authorization_endpoint: string
   token_endpoint: string
@@ -37,6 +39,8 @@ export function oauthAuthorizationServerMetadata(
 
   const metadata: OAuthAuthorizationServerMetadata = {
     issuer: provider.issuer,
+    authorization_response_iss_parameter_supported: true,
+    ...(provider.dynamicRegistration ? { registration_endpoint: provider.dynamicRegistration.endpoint } : {}),
     authorization_endpoint: provider.endpoints.authorization,
     token_endpoint: provider.endpoints.token,
     revocation_endpoint: provider.endpoints.revocation,

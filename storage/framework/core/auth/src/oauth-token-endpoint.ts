@@ -41,6 +41,7 @@ export async function handleOAuthTokenRequest(
     if (request.grantType === 'authorization_code') {
       const result = await exchangeOAuthAuthorizationCode({
         code: request.code,
+        audiences: request.audiences,
         clientId: request.clientId,
         clientSecret: request.clientSecret,
         redirectUri: request.redirectUri,
@@ -55,6 +56,7 @@ export async function handleOAuthTokenRequest(
     if (request.grantType === 'client_credentials') {
       const result = await exchangeOAuthClientCredentials({
         provider,
+        audiences: request.audiences,
         clientId: request.clientId,
         clientSecret: request.clientSecret,
         scopes: request.scopes,
@@ -65,6 +67,7 @@ export async function handleOAuthTokenRequest(
 
     const result = await refreshOAuthDelegatedToken({
       refreshToken: request.refreshToken,
+      audiences: request.audiences,
       clientId: request.clientId,
       clientSecret: request.clientSecret,
       scopes: request.scopes,

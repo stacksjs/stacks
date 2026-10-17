@@ -30,6 +30,7 @@ export interface ExchangeOAuthAuthorizationCodeInput extends ExchangeAuthorizati
 
 export interface RefreshOAuthDelegatedTokenInput {
   refreshToken: string
+  audiences?: readonly string[]
   clientId: number
   clientSecret?: string
   scopes?: readonly string[]
@@ -39,6 +40,7 @@ export interface RefreshOAuthDelegatedTokenInput {
 }
 
 export interface ExchangeOAuthClientCredentialsInput {
+  audiences?: readonly string[]
   provider: ResolvedOAuthProviderConfig
   clientId: number
   clientSecret?: string
@@ -474,6 +476,8 @@ export async function exchangeOAuthClientCredentials(
       return { result: invalidScope as OAuthClientCredentialsExchangeResult, wrote: false }
 
     const machineClientId = Number(client.id)
+    if (input.audiences && (!input.audiences.length || new Set(input.audiences).size !== input.audiences.length || input.audiences.length !== resources.length || input.audiences.some(audience => !resources.some(resource => input.provider.resources[resource]?.audience === audience))))
+      return { result: invalidScope as OAuthClientCredentialsExchangeResult, wrote: false }
     const grant = await createOAuthGrant({
       clientId: machineClientId,
       subjectType: 'oauth_clients',
@@ -588,6 +592,8 @@ export async function refreshOAuthDelegatedToken(
         throw new Error('Inactive OAuth subject authorization state could not be revoked.')
       return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: true }
     }
+    if (input.audiences && (!input.audiences.length || new Set(input.audiences).size !== input.audiences.length || input.audiences.length !== grant.audiences.length || input.audiences.some(audience => !grant.audiences.includes(audience))))
+      return { result: invalidGrant as OAuthRefreshTokenExchangeResult, wrote: false }
     const scopes = input.scopes ? [...input.scopes] : grant.scopes
     if (!scopes.length
       || new Set(scopes).size !== scopes.length

@@ -1,3 +1,4 @@
+import { readTextBody, RequestBodyError } from '@stacksjs/router/body'
 import type { ResolvedOAuthProviderConfig } from './oauth-provider'
 import {
   OAuthAuthorizationRequestError,
@@ -162,7 +163,7 @@ export async function handleOAuthAuthorizationPageRequest(
     catch (error) {
       if (!(error instanceof OAuthAuthorizationRequestError))
         throw error
-      const protocol = oauthAuthorizationRequestErrorResponse(error)
+      const protocol = oauthAuthorizationRequestErrorResponse(error, input.provider.issuer)
       if (!protocol)
         return pageResponse(JSON.stringify({ error: 'invalid_request' }), 400, browser.cookie, { 'Content-Type': 'application/json; charset=utf-8' })
       const headers = new Headers(protocol.headers)
@@ -196,7 +197,7 @@ export async function handleOAuthAuthorizationPageRequest(
       if (reused) {
         if (!reused.ok)
           return pageResponse(JSON.stringify({ error: 'invalid_request' }), 400, browser.cookie, { 'Content-Type': 'application/json; charset=utf-8' })
-        const protocol = oauthAuthorizationConsentResponse(reused.value)
+        const protocol = oauthAuthorizationConsentResponse(reused.value, input.provider.issuer)
         const headers = new Headers(protocol.headers)
         headers.set('Set-Cookie', browser.cookie)
         return new Response(protocol.body, { status: protocol.status, headers })
@@ -205,7 +206,7 @@ export async function handleOAuthAuthorizationPageRequest(
     catch (error) {
       if (!(error instanceof OAuthAuthorizationRequestError))
         throw error
-      const protocol = oauthAuthorizationRequestErrorResponse(error)
+      const protocol = oauthAuthorizationRequestErrorResponse(error, input.provider.issuer)
       if (!protocol)
         return pageResponse(JSON.stringify({ error: 'invalid_request' }), 400, browser.cookie, { 'Content-Type': 'application/json; charset=utf-8' })
       const headers = new Headers(protocol.headers)
@@ -281,19 +282,21 @@ export async function handleOAuthAuthorizationConsentRequest(
 
   let consent
   try {
-    consent = parseOAuthAuthorizationConsentRequest(await input.request.text())
+    consent = parseOAuthAuthorizationConsentRequest(await readTextBody(input.request, 4096))
   }
   catch (error) {
     if (error instanceof OAuthAuthorizationConsentRequestError)
       return localAuthorizationError(400)
+    if (error instanceof RequestBodyError) return localAuthorizationError(error.status)
     throw error
   }
 
+  const json = input.request.headers.get('accept')?.split(',').some(value => value.trim().split(';')[0] === 'application/json') === true
   const browserSessionId = oauthAuthorizationBrowserSession(input.request, input.provider).id
 
   if (consent.decision === 'deny') {
     const denied = await denyOAuthAuthorizationRequestSession(consent.requestId, browserSessionId)
-    return denied.ok ? oauthAuthorizationConsentResponse(denied.value) : localAuthorizationError(400)
+    return denied.ok ? oauthAuthorizationConsentResponse(denied.value, input.provider.issuer, { json }) : localAuthorizationError(400)
   }
 
   let approved
@@ -307,12 +310,13 @@ export async function handleOAuthAuthorizationConsentRequest(
       workspaceId: input.workspaceId,
       resolveWorkspaceId: input.resolveWorkspaceId,
       authorizationCodeLifetimeMs: input.provider.lifetimes.authorizationCode,
+      approvedScopes: consent.approvedScopes,
     })
   }
   catch (error) {
     if (error instanceof OAuthAuthorizationRequestError)
-      return oauthAuthorizationRequestErrorResponse(error) ?? localAuthorizationError(400)
+      return oauthAuthorizationRequestErrorResponse(error, input.provider.issuer) ?? localAuthorizationError(400)
     throw error
   }
-  return approved.ok ? oauthAuthorizationConsentResponse(approved.value) : localAuthorizationError(400)
+  return approved.ok ? oauthAuthorizationConsentResponse(approved.value, input.provider.issuer, { json }) : localAuthorizationError(400)
 }

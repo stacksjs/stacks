@@ -84,3 +84,8 @@ export * from './team'
 
 // Referral codes, signup attribution, and server-verified conversions.
 export * from './referrals'
+
+export * from './oauth-dynamic-registration'
+export * from './oauth-protected-resource'
+
+export * from './oauth-server'

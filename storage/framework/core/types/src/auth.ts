@@ -120,6 +120,8 @@ export interface OAuthProviderConfig {
     revocation?: string
     introspection?: string
   }
+  /** Opt-in RFC 7591 authorization-code client registration, restricted to these redirect origins. */
+  dynamicRegistration?: { endpoint?: string, allowedRedirectOrigins: readonly string[] }
   /** Permissions an authorization request may ask the user to grant. */
   scopes?: Record<string, OAuthProviderScopeConfig>
   /** APIs or workspaces delegated tokens may target. */

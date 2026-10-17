@@ -7,12 +7,14 @@ export type OAuthTokenRequestErrorCode
     | 'unsupported_token_type'
 
 export interface OAuthClientCredentials {
+  audiences?: string[]
   clientId: number
   clientSecret?: string
 }
 
 export interface OAuthAuthorizationCodeTokenRequest {
   grantType: 'authorization_code'
+  audiences?: string[]
   clientId: number
   clientSecret?: string
   code: string
@@ -22,6 +24,7 @@ export interface OAuthAuthorizationCodeTokenRequest {
 
 export interface OAuthRefreshTokenRequest {
   grantType: 'refresh_token'
+  audiences?: string[]
   clientId: number
   clientSecret?: string
   refreshToken: string
@@ -169,6 +172,12 @@ export function parseOAuthTokenRequest(body: string, authorization?: string | nu
   ]) single(params, name)
 
   const credentials = clientCredentials(params, authorization)
+  const audiences = params.getAll('resource')
+  if (audiences.length > 10 || new Set(audiences).size !== audiences.length || audiences.some(value => {
+    try { const url = new URL(value); return !!(url.username || url.password || url.hash) }
+    catch { return true }
+  })) reject('invalid_request', 'OAuth resource must contain unique absolute URIs without credentials or fragments.')
+  if (audiences.length) credentials.audiences = audiences
 
   const grantType = single(params, 'grant_type', true)
   if (grantType === 'authorization_code') {

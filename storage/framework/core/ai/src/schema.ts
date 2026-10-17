@@ -21,11 +21,12 @@ export function validateSchema(value: unknown, schema: Record<string, any>, path
   if (schema.enum && !schema.enum.some((candidate: unknown) => Object.is(candidate, value)))
     errors.push(`${path} must be one of ${schema.enum.join(', ')}`)
   if (typeof value === 'string') {
+    const length = [...value].length
     if (schema.pattern && !new RegExp(schema.pattern).test(value))
       errors.push(`${path} does not match the required pattern`)
-    if (schema.minLength !== undefined && value.length < schema.minLength)
+    if (schema.minLength !== undefined && length < schema.minLength)
       errors.push(`${path} must contain at least ${schema.minLength} characters`)
-    if (schema.maxLength !== undefined && value.length > schema.maxLength)
+    if (schema.maxLength !== undefined && length > schema.maxLength)
       errors.push(`${path} must contain at most ${schema.maxLength} characters`)
   }
   if (typeof value === 'number') {

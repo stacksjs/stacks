@@ -50,7 +50,7 @@ export interface ValidatedOAuthClientRegistration extends OAuthClientRegistratio
 
 export interface RegisteredOAuthClient {
   id: number
-  ownerId: number
+  ownerId: number | null
   name: string
   type: 'confidential' | 'public'
   tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod
@@ -433,6 +433,19 @@ export async function registerOAuthClient(
   if (!Number.isSafeInteger(ownerId) || ownerId <= 0)
     throw new TypeError('OAuth client owner identifier must be a positive safe integer.')
 
+  return persistOAuthClient(provider, ownerId, input)
+}
+
+/** Provider-controlled anonymous clients cannot acquire owner-management authority. */
+export async function registerDynamicOAuthClient(provider: ResolvedOAuthProviderConfig, input: OAuthClientRegistrationInput): Promise<RegisteredOAuthClientResult> {
+  input = validateOAuthClientRegistration(provider, input)
+  if (!provider.dynamicRegistration || input.grantTypes.some(grant => !['authorization_code', 'refresh_token'].includes(grant))
+    || !input.redirectUris.length || input.redirectUris.some(uri => !provider.dynamicRegistration!.allowedRedirectOrigins.includes(new URL(uri).origin)))
+    throw new OAuthClientRegistrationError('Dynamic client registration is not allowed for this client.')
+  return persistOAuthClient(provider, null, input)
+}
+
+async function persistOAuthClient(provider: ResolvedOAuthProviderConfig, ownerId: number | null, input: OAuthClientRegistrationInput): Promise<RegisteredOAuthClientResult> {
   const client = validateOAuthClientRegistration(provider, input)
   const plainTextSecret = client.requiresSecret ? randomBytes(40).toString('hex') : undefined
   const storedSecret = plainTextSecret ? await makeHash(plainTextSecret, { algorithm: 'bcrypt' }) : null

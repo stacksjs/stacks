@@ -29,6 +29,7 @@ describe('OAuth authorization-server metadata', () => {
 
     expect(metadata).toEqual({
       issuer: 'https://id.example.com',
+      authorization_response_iss_parameter_supported: true,
       authorization_endpoint: 'https://id.example.com/oauth/authorize',
       token_endpoint: 'https://id.example.com/oauth/token',
       revocation_endpoint: 'https://id.example.com/oauth/revoke',

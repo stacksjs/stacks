@@ -396,3 +396,11 @@ Use `readJsonBody(request, maxBytes)` from `@stacksjs/router/body` for a streame
 byte limit, media-type and strict UTF-8 checks. `RequestBodyError.status` is
 400, 413 or 415. Normal app routes continue using the standard request macros.
 JSON-RPC error envelopes keep their shape; X-Request-ID remains in the headers.
+
+
+`@stacksjs/router/body` also exposes `readTextBody(request, maxBytes)` for
+bounded UTF-8 form or text protocols. It counts actual streamed bytes, rejects
+invalid UTF-8, cancels oversized streams and grows one buffer geometrically so
+many small chunks do not create an unbounded chunk-object list. Pair it with
+`parseBody(false)` where the handler owns wire parsing. Media-type policy stays
+with the protocol; `readJsonBody` additionally requires application/json.

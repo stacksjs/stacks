@@ -11,6 +11,7 @@ const AUTHORIZATION_REDIRECT_HEADERS = {
 } as const
 
 const RESPONSE_PARAMETERS = [
+  'iss',
   'code',
   'error',
   'error_description',
@@ -22,6 +23,7 @@ function redirectResponse(
   redirectUri: string,
   result: { code: string } | { error: string },
   state: string | null,
+  issuer?: string,
 ): Response {
   if (!isValidOAuthRedirectUri(redirectUri))
     throw new TypeError('OAuth authorization response requires a safe redirect URI.')
@@ -29,6 +31,7 @@ function redirectResponse(
   const target = new URL(redirectUri)
   for (const parameter of RESPONSE_PARAMETERS)
     target.searchParams.delete(parameter)
+  if (issuer) target.searchParams.set('iss', issuer)
   if ('code' in result)
     target.searchParams.set('code', result.code)
   else
@@ -48,17 +51,21 @@ function redirectResponse(
 /** Redirect an approved or denied consent result to its already validated callback. */
 export function oauthAuthorizationConsentResponse(
   result: OAuthAuthorizationConsentResult | OAuthAuthorizationDenialResult,
+  issuer?: string,
+  options: { json?: boolean } = {},
 ): Response {
-  return 'code' in result
-    ? redirectResponse(result.redirectUri, { code: result.code }, result.state)
-    : redirectResponse(result.redirectUri, { error: result.error }, result.state)
+  const redirect = 'code' in result
+    ? redirectResponse(result.redirectUri, { code: result.code }, result.state, issuer)
+    : redirectResponse(result.redirectUri, { error: result.error }, result.state, issuer)
+  return options.json ? Response.json({ redirect_uri: redirect.headers.get('Location') }, { headers: AUTHORIZATION_REDIRECT_HEADERS }) : redirect
 }
 
 /** Redirect a protocol failure only when validation produced a trusted callback. */
 export function oauthAuthorizationRequestErrorResponse(
   error: OAuthAuthorizationRequestError,
+  issuer?: string,
 ): Response | null {
   if (error.redirectUri === null)
     return null
-  return redirectResponse(error.redirectUri, { error: error.code }, error.state)
+  return redirectResponse(error.redirectUri, { error: error.code }, error.state, issuer)
 }

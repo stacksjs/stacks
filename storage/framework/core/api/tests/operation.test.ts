@@ -13,3 +13,11 @@ test('every transport invocation authorizes before it can run the operation', as
   await expect(operation.execute({ allowed: false })).rejects.toThrow('Forbidden')
   expect(writes).toBe(1)
 })
+
+// Mutating a registration object must not disable a registered authorization boundary.
+test('captures operation policy at registration', async () => {
+  const options = { authorize() { throw new Error('Forbidden') }, handle() { return 1 } }
+  const operation = defineApiOperation(options)
+  options.authorize = () => {}
+  await expect(operation.execute(undefined)).rejects.toThrow('Forbidden')
+})

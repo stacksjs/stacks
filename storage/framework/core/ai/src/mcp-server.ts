@@ -16,11 +16,14 @@ export interface MCPServerTool<Principal> {
   description: string
   inputSchema: JsonObject
   outputSchema?: JsonObject
+  securitySchemes?: Array<{ type: 'oauth2', scopes: string[] } | { type: 'noauth' }>
+  _meta?: Record<string, unknown>
   annotations?: { readOnlyHint?: boolean, destructiveHint?: boolean, idempotentHint?: boolean, openWorldHint?: boolean }
   available?: (principal: Principal) => boolean
   execute: (args: JsonObject, context: MCPServerContext<Principal>) => MaybePromise<MCPServerToolResult>
 }
 export interface MCPServerToolResult {
+  _meta?: Record<string, unknown>
   content: Array<{ type: 'text', text: string }>
   structuredContent?: JsonObject
   isError?: boolean
@@ -53,6 +56,8 @@ export interface MCPServerOptions<Principal> {
   responseHeaders?: (principal: Principal) => HeadersInit
   /** Exact browser origins. With no allowlist, requests carrying Origin are refused. */
   allowedOrigins?: readonly string[]
+  /** RFC 9728 URL added to 401 challenges for OAuth clients. */
+  resourceMetadataUrl?: string
   maxBodyBytes?: number
   pageSize?: number
   tools?: readonly MCPServerTool<Principal>[]
@@ -92,6 +97,23 @@ function checkSchema(schema: JsonObject): void {
   for (const key of Object.keys(schema)) {
     if (!supported.has(key)) throw new TypeError(`Unsupported MCP schema keyword: ${key}; use an execute validator for domain rules`)
   }
+  const types = ['object', 'array', 'string', 'number', 'integer', 'boolean', 'null']
+  if (schema.type !== undefined && !(typeof schema.type === 'string' ? types.includes(schema.type) : Array.isArray(schema.type) && schema.type.length > 0 && schema.type.every(type => types.includes(type))))
+    throw new TypeError('Invalid MCP schema type')
+  if (schema.required !== undefined && (!Array.isArray(schema.required) || !schema.required.every(key => typeof key === 'string') || new Set(schema.required).size !== schema.required.length))
+    throw new TypeError('MCP required must contain unique property names')
+  if (schema.properties !== undefined && !record(schema.properties)) throw new TypeError('MCP properties must be an object')
+  const primitive = (value: unknown) => value === null || ['string', 'boolean'].includes(typeof value) || (typeof value === 'number' && Number.isFinite(value))
+  if (Object.hasOwn(schema, 'const') && !primitive(schema.const)) throw new TypeError('MCP const supports primitive values only')
+  if (schema.enum !== undefined && (!Array.isArray(schema.enum) || !schema.enum.length || !schema.enum.every(primitive))) throw new TypeError('MCP enum supports a non-empty array of primitive values')
+  for (const key of ['minimum', 'maximum', 'minLength', 'maxLength', 'minItems', 'maxItems']) {
+    if (schema[key] !== undefined && (typeof schema[key] !== 'number' || !Number.isFinite(schema[key]) || (!['minimum', 'maximum'].includes(key) && (!Number.isSafeInteger(schema[key]) || Number(schema[key]) < 0))))
+      throw new TypeError(`Invalid MCP schema bound: ${key}`)
+  }
+  for (const [min, max] of [['minimum', 'maximum'], ['minLength', 'maxLength'], ['minItems', 'maxItems']]) {
+    if (schema[min!] !== undefined && schema[max!] !== undefined && Number(schema[min!]) > Number(schema[max!])) throw new TypeError('MCP schema bounds are reversed')
+  }
+  if (schema.pattern !== undefined && typeof schema.pattern !== 'string') throw new TypeError('MCP pattern must be a string')
   if (schema.additionalProperties !== undefined && typeof schema.additionalProperties !== 'boolean')
     throw new TypeError('MCP additionalProperties must be a boolean')
   if (schema.pattern !== undefined) new RegExp(String(schema.pattern))
@@ -114,9 +136,10 @@ function checkSchema(schema: JsonObject): void {
  * to the same handler. Bearer authentication is required on every invocation.
  */
 export function createMCPServer<Principal>(options: MCPServerOptions<Principal>): { handle: (request: Request) => Promise<Response> } {
-  const tools = [...(options.tools ?? [])]
-  const resources = [...(options.resources ?? [])]
-  const prompts = [...(options.prompts ?? [])]
+  options = { ...options }
+  const tools = (options.tools ?? []).map(tool => ({ ...tool, inputSchema: structuredClone(tool.inputSchema), ...(tool.outputSchema ? { outputSchema: structuredClone(tool.outputSchema) } : {}), ...(tool.annotations ? { annotations: { ...tool.annotations } } : {}), ...(tool.securitySchemes ? { securitySchemes: structuredClone(tool.securitySchemes) } : {}), ...(tool._meta ? { _meta: structuredClone(tool._meta) } : {}) }))
+  const resources = (options.resources ?? []).map(resource => ({ ...resource }))
+  const prompts = (options.prompts ?? []).map(prompt => ({ ...prompt, arguments: prompt.arguments?.map(arg => ({ ...arg })) }))
   const pageSize = options.pageSize ?? 50
   const maxBodyBytes = options.maxBodyBytes ?? 1_048_576
   if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 1000)
@@ -130,7 +153,17 @@ export function createMCPServer<Principal>(options: MCPServerOptions<Principal>)
       names.add(item.name)
     }
   }
-  for (const origin of options.allowedOrigins ?? []) {
+  const origins = [...(options.allowedOrigins ?? [])]
+  const resourceMetadataUrl = options.resourceMetadataUrl
+  if (resourceMetadataUrl) {
+    const metadata = new URL(resourceMetadataUrl)
+    if ((metadata.protocol !== 'https:' && !(metadata.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(metadata.hostname))) || metadata.username || metadata.password || /[\"\\\r\n]/.test(resourceMetadataUrl)) throw new TypeError('Invalid MCP resourceMetadataUrl')
+  }
+  const reportError = (error: unknown, context: MCPServerContext<Principal>) => {
+    try { void Promise.resolve(options.onError?.(error, context)).catch(() => {}) }
+    catch { /* Diagnostics cannot replace protocol responses. */ }
+  }
+  for (const origin of origins) {
     if (origin === 'null' || new URL(origin).origin !== origin || !/^https?:/.test(origin))
       throw new TypeError('MCP allowedOrigins must contain exact HTTP(S) origins')
   }
@@ -189,7 +222,7 @@ export function createMCPServer<Principal>(options: MCPServerOptions<Principal>)
         return result
       }
       catch (error) {
-        options.onError?.(error, context)
+        reportError(error, context)
         return { content: [{ type: 'text', text: 'The operation failed. Try again or check the application.' }], isError: true }
       }
     }
@@ -220,15 +253,24 @@ export function createMCPServer<Principal>(options: MCPServerOptions<Principal>)
   return {
     async handle(request: Request): Promise<Response> {
       const origin = request.headers.get('origin')
-      if (origin && !options.allowedOrigins?.includes(origin))
+      if (origin && !origins.includes(origin))
         return failure(null, -32600, 'Origin is not allowed', 403)
       let principal: Principal | Response
       try { principal = await options.authenticate(request) }
       catch { return failure(null, -32603, 'Authentication service failed', 500) }
-      if (principal instanceof Response) return principal
+      if (principal instanceof Response) {
+        if ((principal.status === 401 || principal.status === 403) && resourceMetadataUrl && /^Bearer(?:\s|$)/i.test(principal.headers.get('WWW-Authenticate') ?? 'Bearer')) {
+          const headers = new Headers(principal.headers)
+          const challenge = headers.get('WWW-Authenticate') ?? 'Bearer'
+          headers.set('WWW-Authenticate', `${challenge}${/^Bearer$/i.test(challenge.trim()) ? ' ' : ', '}resource_metadata="${resourceMetadataUrl}"`)
+          return new Response(principal.body, { status: principal.status, headers })
+        }
+        return principal
+      }
       const finish = (response: Response): Response => {
         if (options.responseHeaders) {
-          new Headers(options.responseHeaders(principal)).forEach((value, key) => response.headers.set(key, value))
+          try { new Headers(options.responseHeaders(principal)).forEach((value, key) => response.headers.set(key, value)) }
+          catch (error) { reportError(error, { principal, request, signal: request.signal }) }
         }
         return response
       }
@@ -261,7 +303,7 @@ export function createMCPServer<Principal>(options: MCPServerOptions<Principal>)
       }
       catch (error) {
         if (error instanceof ProtocolError) return finish(failure(id as string | number, error.code, error.message))
-        options.onError?.(error, context)
+        reportError(error, context)
         return finish(failure(id as string | number, -32603, 'Internal error'))
       }
     },

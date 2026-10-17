@@ -22,6 +22,8 @@ export interface AuthorizationCodeRedemption {
   clientId: number
   redirectUri: string
   codeVerifier: string
+  /** Optional RFC 8707 audience restriction from the token request. */
+  audiences?: readonly string[]
 }
 
 export interface AuthorizationCodeGrant {
@@ -174,7 +176,8 @@ export async function withAuthorizationCode<T>(
       LIMIT 1${lock}
     `, [hash]) as AuthorizationCodeRow[]
     const row = rows[0]
-    if (!row || row.consumed_at != null
+    if (!row || (expected.audiences && (!expected.audiences.length || new Set(expected.audiences).size !== expected.audiences.length || expected.audiences.length !== storedValues(row.audiences)?.length || expected.audiences.some(audience => !storedValues(row.audiences)?.includes(audience))))
+      || row.consumed_at != null
       || String(row.client_id) !== String(expected.clientId)
       || row.redirect_uri !== expected.redirectUri
       || row.code_challenge_method !== 'S256'

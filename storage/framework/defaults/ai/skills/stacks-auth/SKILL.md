@@ -594,3 +594,51 @@ requests. Revocation-sensitive reads use the primary DB path. Retained evidence:
 `request-token.test.ts`, `session-read-routing.test.ts`,
 `rbac-default-store.test.ts` and `browser-session-policy.test.ts` under
 `storage/framework/core/`.
+
+
+## Remote MCP authorization
+
+Use `oauthProtectedResourceMetadata` and `oauthProtectedResourceMetadataPath`
+for RFC 9728 discovery, with the exact canonical resource URL as the audience.
+The authorization server metadata advertises RFC 9207 issuer identification;
+`handleOAuthAuthorizationPageRequest` and `handleOAuthAuthorizationConsentRequest`
+include the provider issuer in success and error callbacks. Custom adapters using
+`oauthAuthorizationConsentResponse` or `oauthAuthorizationRequestErrorResponse`
+must pass `provider.issuer` too.
+
+Opt in to RFC 7591 registration with `oauthProvider.dynamicRegistration`:
+`{ endpoint?: string, allowedRedirectOrigins: ['https://client.example'] }`.
+Origins must be explicit HTTPS origins. The native auth bundle mounts the endpoint
+with bounded JSON, CSRF exemption for protocol clients and an IP quota. Custom
+route registries can use `handleDynamicOAuthRegistration(provider, metadata)`
+after the same bounded read and quota. Registration accepts only authorization
+code / refresh grants, `none` or `client_secret_basic`, and exact validated
+callback URIs. Anonymous clients have no account owner and no user access until
+consent. It never fetches client-controlled URLs. CIMD and private_key_jwt are
+not advertised.
+
+Consent may include a `scope` form value containing a non-empty subset of the
+requested scopes. `approvedScopes` on the native approval operation enforces
+that subset within the authorization transaction. The native consent handler
+can return `{ redirect_uri }` JSON for an authenticated first-party SPA that
+explicitly sends `Accept: application/json`; ordinary forms still receive a 302.
+The browser-bound opaque request, authenticated subject and CSRF policy still
+apply. Never construct callback URLs or accept an identity from browser input.
+
+Token and refresh requests retain RFC 8707 `resource` parameters. When supplied,
+they must match the complete approved audience set; this provider does not
+silently issue a broader token for a narrower resource request. Scope narrowing
+continues to use the `scope` parameter. MCP resource servers use
+`authorizeOAuthDelegatedToken` with their exact resource, audience, workspace,
+required scopes and current subject eligibility. Delegated grants are not login
+sessions. Real persistence and HTTP evidence lives in the OAuth code-store and
+HTTP lifecycle fixtures, with discovery policy in `oauth-mcp-discovery.test.ts`.
+
+For an application-rendered consent UI, use `createOAuthAuthorizationServer` from
+`@stacksjs/auth`. Supply the resolved provider, local consent page, ordinary
+server-authenticated identity callback and optional exact connection audience.
+It owns bounded registration/token/revocation reads, opaque browser-bound consent,
+selected permissions, discovery and subject-owned disconnect. Mount protocol
+POST handlers with `parseBody(false)` and `skipCsrf()`; keep router login and CSRF
+protection on consent and connection management. Do not duplicate these HTTP
+boundaries in applications or accept a subject from client input.

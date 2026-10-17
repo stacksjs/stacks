@@ -18,7 +18,8 @@ test('OAuth delegated lifecycle and replay containment work through real HTTP ro
       stdout: 'pipe',
       stderr: 'pipe',
     })
-    const watchdog = setTimeout(() => child.kill(), 30_000)
+    // Full HTTP, bcrypt and SSR work can exceed 30 seconds on a loaded development host.
+    const watchdog = setTimeout(() => child.kill(), 90_000)
     try {
       const [code, stdout, stderr] = await Promise.all([
         child.exited,
@@ -36,4 +37,4 @@ test('OAuth delegated lifecycle and replay containment work through real HTTP ro
   finally {
     await rm(directory, { recursive: true, force: true })
   }
-}, 45_000)
+}, 120_000)

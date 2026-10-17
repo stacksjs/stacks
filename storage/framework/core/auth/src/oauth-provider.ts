@@ -48,6 +48,7 @@ export interface ResolvedOAuthProviderConfig {
     revocation: string
     introspection: string
   }
+  dynamicRegistration?: { endpoint: string, allowedRedirectOrigins: readonly string[] }
   responseTypes: readonly ['code']
   grantTypes: readonly ('authorization_code' | 'refresh_token' | 'client_credentials')[]
   clientCredentials: boolean
@@ -279,6 +280,20 @@ export function resolveOAuthProviderConfig(
   if (new URL(endpoints.authorization).pathname === oauthAuthorizationServerMetadataPath(issuer.toString()))
     throw new Error('auth.oauthProvider authorization endpoint must not shadow the metadata route.')
 
+  let dynamicRegistration: ResolvedOAuthProviderConfig['dynamicRegistration']
+  if (options.dynamicRegistration) {
+    const origins = [...options.dynamicRegistration.allowedRedirectOrigins]
+    if (!origins.length || origins.some(origin => new URL(origin).origin !== origin || !origin.startsWith('https://')))
+      throw new Error('OAuth dynamic registration requires exact HTTPS redirect origins.')
+    const registration = endpoint(issuer, options.dynamicRegistration.endpoint, 'oauth/register')
+    if (Object.values(endpoints).includes(registration) || new URL(registration).pathname === oauthAuthorizationServerMetadataPath(issuer.toString()))
+      throw new Error('OAuth registration endpoint must use a unique URL.')
+    assertEndpointRouteAvailable('registration', registration, ['POST'])
+    if (!resolvedClientTypes(options.clientTypes).includes('public'))
+      throw new Error('OAuth dynamic registration requires public clients.')
+    dynamicRegistration = { endpoint: registration, allowedRedirectOrigins: origins }
+  }
+
   const grantTypes = options.clientCredentials
     ? ['authorization_code', 'refresh_token', 'client_credentials'] as const
     : ['authorization_code', 'refresh_token'] as const
@@ -287,6 +302,7 @@ export function resolveOAuthProviderConfig(
     enabled: true,
     issuer: issuer.toString().replace(/\/$/, ''),
     endpoints,
+    ...(dynamicRegistration ? { dynamicRegistration } : {}),
     responseTypes: ['code'],
     grantTypes,
     clientCredentials: options.clientCredentials === true,

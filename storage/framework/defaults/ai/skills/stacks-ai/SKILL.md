@@ -447,3 +447,18 @@ remain eligible for bearer authentication. The request Host is never an origin a
 
 Tests: `core/ai/tests/mcp-server.test.ts`, `core/router/tests/body.test.ts`,
 `core/router/tests/protocol-body.test.ts` and `core/api/tests/operation.test.ts`.
+
+
+For OAuth-backed MCP hosts, set `resourceMetadataUrl` to the canonical RFC 9728
+metadata URL; authentication failures keep their HTTP status and advertise it in
+the Bearer challenge. Use native Stacks auth for registration, consent, PKCE,
+audience checks, token exchange and revocation. Per-tool `securitySchemes` and
+`_meta` are supported for host authentication metadata; they describe policy and
+do not replace runtime authorization. Tool result `_meta` can carry protocol
+extensions such as authentication challenges.
+
+The server snapshots registered tools, schemas, prompt arguments, origins and
+callbacks. Later changes to the supplied objects cannot relax an active server's
+policy. Invalid schema types and bounds fail at registration; enum/const accept
+JSON primitives only. String bounds count Unicode code points. Diagnostics and
+response-metadata callback failures cannot reject the protocol handler.

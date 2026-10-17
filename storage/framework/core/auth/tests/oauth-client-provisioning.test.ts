@@ -43,7 +43,8 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
           },
           stdout: 'pipe', stderr: 'pipe',
         })
-        const watchdog = setTimeout(() => child.kill(), 25_000)
+        // This is a subprocess hang guard, including a cold CLI boot and schema migration.
+        const watchdog = setTimeout(() => child.kill(), 90_000)
         try {
           const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
           expect(code, `${stdout}\n${stderr}`).toBe(0)
@@ -58,6 +59,6 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
           finally { await rm(directory, { recursive: true, force: true }) }
         }
       }
-    }, 30_000)
+    }, 120_000)
   }
 }

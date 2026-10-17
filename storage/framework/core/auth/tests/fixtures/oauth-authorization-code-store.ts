@@ -124,6 +124,15 @@ try {
   }
   config.auth.oauthProvider = providerConfig
   const provider = resolveOAuthProviderConfig(providerConfig)!
+  const { handleDynamicOAuthRegistration } = await import('../../src/oauth-dynamic-registration')
+  const dcrProvider = resolveOAuthProviderConfig({ ...providerConfig, dynamicRegistration: { allowedRedirectOrigins: ['https://client.example.com'] } })!
+  const dcrResponse = await handleDynamicOAuthRegistration(dcrProvider, { client_name: 'Anonymous MCP client', token_endpoint_auth_method: 'none', redirect_uris: ['https://client.example.com/callback'], grant_types: ['authorization_code', 'refresh_token'] })
+  assert.equal(dcrResponse.status, 201)
+  const dcr = await dcrResponse.json() as { client_id: string }
+  const dynamicRow = await db.selectFrom('oauth_clients').where('id', '=', Number(dcr.client_id)).selectAll().executeTakeFirstOrThrow() as Record<string, unknown>
+  assert.equal(dynamicRow.user_id, null, 'DCR clients never acquire an account owner')
+  assert.equal(dynamicRow.secret, null)
+
 
   const OAuthClientDisableAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientDisableAction')).default
   const OAuthClientsAction = (await import('../../../../defaults/app/Actions/Auth/OAuthClientsAction')).default
@@ -856,6 +865,13 @@ try {
     .executeTakeFirst(), undefined)
   assert(await loadOAuthAuthorizationRequestSession(failedWorkspaceResolutionRequestId, browserSession), 'failed workspace resolution must not consume the request')
 
+  const narrowedConsentRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
+  await assert.rejects(approveOAuthAuthorizationRequestSession({ provider, requestId: narrowedConsentRequestId, browserSessionId: browserSession, subjectType: 'users', subjectId: 42, authorizationCodeLifetimeMs: 60_000, approvedScopes: ['admin'] }), /subset/)
+  const narrowedConsent = await approveOAuthAuthorizationRequestSession({ provider, requestId: narrowedConsentRequestId, browserSessionId: browserSession, subjectType: 'users', subjectId: 42, authorizationCodeLifetimeMs: 60_000, approvedScopes: ['issues:read'] })
+  assert(narrowedConsent.ok)
+  const narrowedConsentPair = await exchangeOAuthAuthorizationCode({ code: narrowedConsent.value.code, clientId: publicRegistration.client.id, redirectUri: validatedRequest.redirectUri, codeVerifier: verifier, accessTokenLifetimeMs: 60_000, refreshTokenLifetimeMs: 120_000 })
+  assert(narrowedConsentPair.ok)
+  assert.deepEqual(narrowedConsentPair.value.scopes, ['issues:read'])
   const publicExchangeRequestId = await createOAuthAuthorizationRequestSession(validatedRequest, browserSession, 60_000)
   const publicConsent = await approveOAuthAuthorizationRequestSession({
     provider,
@@ -876,6 +892,11 @@ try {
       accessTokenLifetimeMs: 60_000,
       refreshTokenLifetimeMs: 120_000,
     }), { ok: false, reason: 'invalid_client' })
+    assert.deepEqual(await exchangeOAuthAuthorizationCode({
+      code: publicConsent.value.code, clientId: publicRegistration.client.id,
+      redirectUri: validatedRequest.redirectUri, codeVerifier: verifier,
+      audiences: ['https://unrelated.example'], accessTokenLifetimeMs: 60_000, refreshTokenLifetimeMs: 120_000,
+    }), { ok: false, reason: 'invalid_grant' })
     const publicExchange = await exchangeOAuthAuthorizationCode({
       code: publicConsent.value.code,
       clientId: publicRegistration.client.id,
@@ -900,6 +921,10 @@ try {
         accessTokenLifetimeMs: 60_000,
         refreshTokenLifetimeMs: 120_000,
       }), { ok: false, reason: 'invalid_client' })
+      assert.deepEqual(await refreshOAuthDelegatedToken({
+        refreshToken: originalRefreshToken, clientId: publicRegistration.client.id,
+        audiences: ['https://unrelated.example'], accessTokenLifetimeMs: 60_000, refreshTokenLifetimeMs: 120_000,
+      }), { ok: false, reason: 'invalid_grant' })
       const rotated = await refreshOAuthDelegatedToken({
         refreshToken: originalRefreshToken,
         clientId: publicRegistration.client.id,
