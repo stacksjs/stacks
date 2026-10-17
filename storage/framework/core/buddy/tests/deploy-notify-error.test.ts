@@ -31,6 +31,19 @@ function failureBranch(): string {
 }
 
 describe('a deploy that throws', () => {
+  it('drains the real logger before the failed process exits', async () => {
+    const marker = 'stacks-deploy-cold-logger-fixture'
+    const program = `import {withDeployNotification} from ${JSON.stringify(SOURCE)}; await withDeployNotification(async () => { throw new Error(${JSON.stringify(marker)}) })('production')`
+    const child = Bun.spawn([process.execPath, '-e', program], {
+      cwd: path.resolve(import.meta.dir, '../../../../..'),
+      env: { ...process.env, DEPLOY_WEBHOOK_URL: '' },
+      stdout: 'pipe', stderr: 'pipe',
+    })
+    const [code, out, err] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+    expect(code).not.toBe(0)
+    expect(`${out}${err}`).toContain(marker)
+  })
+
   it('prints the reason before exiting', () => {
     const branch = failureBranch()
 

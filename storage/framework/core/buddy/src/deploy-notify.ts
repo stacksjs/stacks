@@ -271,7 +271,13 @@ export function withDeployNotification<A extends unknown[]>(
       if (stack)
         log.debug(stack)
 
+      // The logger initializes and writes asynchronously on a cold CLI boot.
+      // Drain it before notification delivery or the immediate process exit
+      // can discard the only actionable CI diagnostic.
+      await log.flush()
+
       await notifyDeployOutcome({ ...context, status: 'failed', durationMs: Date.now() - startedAt, error })
+      await log.flush()
       // Preserve the previous behaviour of the inline exits this replaced.
       process.exit(ExitCode.FatalError)
     }
