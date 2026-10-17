@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.215...v0.75.216)
+
+## 🐛 Bug Fixes
+
+- forward Android native maps configuration to Craft ([49b468c](https://github.com/stacksjs/stacks/commit/49b468c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.214...v0.75.215)
 
 ## 🐛 Bug Fixes
