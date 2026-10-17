@@ -50,7 +50,7 @@ import { extname, join } from 'node:path'
 import process from 'node:process'
 import type { EventName, StacksEvents } from './index'
 import { listen } from './index'
-import { resolveModulePath } from '@stacksjs/path'
+import { resolveModulePath } from '@stacksjs/path/module-resolution'
 
 /**
  * What a listener may subscribe to: an event that exists, or a glob the

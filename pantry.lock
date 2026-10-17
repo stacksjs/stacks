@@ -734,6 +734,9 @@
     "storage/framework/core/events": {
       "name": "@stacksjs/events",
       "version": "0.75.209",
+      "dependencies": {
+        "@stacksjs/path": "workspace:*"
+      },
       "devDependencies": {
         "better-dx": "^0.2.24"
       }

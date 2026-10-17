@@ -134,6 +134,11 @@ jobs:
         # cannot block on a lockfile difference the release itself tolerates.
         run: bun install
 
+      # A workspace can resolve undeclared siblings through the umbrella SDK.
+      # Verify each published package's own contract before any registry writes.
+      - name: Verify published dependency declarations
+        run: bun test ./tests/declared-dependencies.test.ts
+
       - name: Verify pinned checks against the tagged commit
         if: vars.RELEASE_GATE_BYPASS != 'true'
         # Every check runs even after one fails, so a release blocked by two
@@ -150,7 +155,7 @@ jobs:
             if timeout 120s bun run "$check"; then
               echo "$check ok"
             else
-              echo "::error title=Release gate::$check failed. Regenerate the artifact and re-tag, or set RELEASE_GATE_BYPASS to ship anyway."
+              echo "::error title=Release gate::$check failed. Regenerate the artifact and create a new patch release."
               status=1
             fi
             echo "::endgroup::"
