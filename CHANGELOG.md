@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.224...v0.75.225)
+
+## ✨ Features
+
+- **storage**: add bounded regular-file UTF-8 reads ([c9138d3](https://github.com/stacksjs/stacks/commit/c9138d3)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: ship verified commits newer than production, never backwards ([52c56c9](https://github.com/stacksjs/stacks/commit/52c56c9)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **mobile**: build native screens as one bundle per route ([4de713c](https://github.com/stacksjs/stacks/commit/4de713c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.223...v0.75.224)
 
 ## ✨ Features
