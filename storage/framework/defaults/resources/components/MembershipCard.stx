@@ -12,40 +12,93 @@
   const mcReplay = useReactiveProp<number>('replay', 0)
   const mcReveals = derived(() => [mcReplay()])
   const mcCelebrate = useReactiveProp<boolean>('celebrate', true)
+  const mcSurface = useRef('membershipSurface')
+  const mcCanHover = useMediaQuery('(hover: hover) and (pointer: fine)')
+  const mcReduceMotion = usePreferredReducedMotion()
+  let mcStopHover: (() => void) | undefined
+
+  onMount(() => {
+    const surface = mcSurface.current as HTMLElement | null
+    if (!surface) return
+
+    // Measure the stationary hit area, never the rotating card, to avoid feedback jitter.
+    const reset = () => {
+      surface.style.setProperty('--mc-rotate-x', '0deg')
+      surface.style.setProperty('--mc-rotate-y', '0deg')
+      surface.style.setProperty('--mc-light-x', '50%')
+      surface.style.setProperty('--mc-light-y', '50%')
+      surface.style.setProperty('--mc-hover', '0')
+    }
+    mcStopHover = effect(() => {
+      reset()
+      if (!mcCanHover() || mcReduceMotion()) return
+      const mouse = useMouse({ target: surface, touch: false, resetOnLeave: true })
+      const unsubscribe = mouse.subscribe(({ clientX, clientY, isInside }) => {
+        if (!isInside) return reset()
+        const bounds = surface.getBoundingClientRect()
+        if (!bounds.width || !bounds.height) return reset()
+        const x = Math.max(0, Math.min(1, (clientX - bounds.left) / bounds.width))
+        const y = Math.max(0, Math.min(1, (clientY - bounds.top) / bounds.height))
+        surface.style.setProperty('--mc-rotate-x', `${(0.5 - y) * 12}deg`)
+        surface.style.setProperty('--mc-rotate-y', `${(x - 0.5) * 16}deg`)
+        surface.style.setProperty('--mc-light-x', `${x * 100}%`)
+        surface.style.setProperty('--mc-light-y', `${y * 100}%`)
+        surface.style.setProperty('--mc-hover', '1')
+      })
+      return () => {
+        unsubscribe()
+        mouse.stop()
+        reset()
+      }
+    })
+  })
+  onDestroy(() => mcStopHover?.())
+
   const mcPieces = [...Array(32).keys()].map(id => ({
     id,
     style: `--mc-x:${(id * 37 + 11) % 100}%;--mc-drift:${(id * 29 % 160) - 80}px;--mc-delay:${id % 8 * 65}ms;--mc-turn:${180 + id * 47}deg;--mc-color:var(--membership-card-confetti-${id % 4 + 1},${['#99f6e4', '#e2e8f0', '#5eead4', '#94a3b8'][id % 4]})`,
   }))
 </script>
 
-<div :for="reveal in mcReveals" :key="reveal" class="relative mx-auto w-full mc-stage" :class="mcCelebrate ? 'mc-celebrate' : ''" data-membership-reveal>
-  <div :if="mcCelebrate" class="absolute inset-0 overflow-hidden pointer-events-none mc-confetti" aria-hidden="true">
-    <span :for="piece in mcPieces" :key="piece.id" class="mc-piece" :style="piece.style"></span>
+<div class="relative mx-auto w-full mc-stage" data-membership-reveal>
+  <div ref="membershipSurface" class="mc-surface">
+    <div :for="reveal in mcReveals" :key="reveal" :class="mcCelebrate ? 'mc-celebrate' : ''">
+      <div :if="mcCelebrate" class="absolute inset-0 overflow-hidden pointer-events-none mc-confetti" aria-hidden="true">
+        <span :for="piece in mcPieces" :key="piece.id" class="mc-piece" :style="piece.style"></span>
+      </div>
+      <div class="mc-tilt">
+        <article class="overflow-hidden relative mx-auto w-full mc-metal" :aria-label="mcLabel" data-membership-card>
+          <div class="absolute inset-0 pointer-events-none mc-grain" aria-hidden="true"></div>
+          <div class="absolute inset-0 pointer-events-none mc-reflection" aria-hidden="true"></div>
+          <div class="absolute inset-0 pointer-events-none mc-shine" aria-hidden="true"></div>
+          <div class="flex relative gap-4 items-start justify-between">
+            <img :if="mcLogo" class="mc-logo" :src="mcLogo" :alt="mcBrand" width="96" height="38" />
+            <span :if="!mcLogo" class="font-bold mc-wordmark" :text="mcBrand"></span>
+          </div>
+          <p class="relative mt-3 text-xs mc-label" :text="mcLabel"></p>
+          <div class="relative mc-holder">
+            <div class="mc-person">
+              <p class="mb-2 text-xs mc-label" :text="mcNameLabel"></p>
+              <p class="mc-engraving" :style="{ fontFamily: mcNameFont }" :text="mcName" data-membership-name></p>
+            </div>
+            <div :if="mcMemberId" class="mc-identity">
+              <p class="text-xs mc-label" :text="mcMemberIdLabel"></p>
+              <p class="font-semibold mc-serial" :text="mcMemberId" data-membership-id></p>
+            </div>
+          </div>
+          <p :if="mcDetail" class="relative mt-5 text-xs mc-detail" :text="mcDetail"></p>
+        </article>
+      </div>
+    </div>
   </div>
-  <article class="overflow-hidden relative mx-auto w-full mc-metal" :aria-label="mcLabel" data-membership-card>
-    <div class="absolute inset-0 pointer-events-none mc-grain" aria-hidden="true"></div>
-    <div class="absolute inset-0 pointer-events-none mc-shine" aria-hidden="true"></div>
-    <div class="flex relative gap-4 items-start justify-between">
-      <img :if="mcLogo" class="mc-logo" :src="mcLogo" :alt="mcBrand" width="96" height="38" />
-      <span :if="!mcLogo" class="font-bold mc-wordmark" :text="mcBrand"></span>
-    </div>
-    <p class="relative mt-3 text-xs mc-label" :text="mcLabel"></p>
-    <div class="relative mc-holder">
-      <div class="mc-person">
-        <p class="mb-2 text-xs mc-label" :text="mcNameLabel"></p>
-        <p class="mc-engraving" :style="{ fontFamily: mcNameFont }" :text="mcName" data-membership-name></p>
-      </div>
-      <div :if="mcMemberId" class="mc-identity">
-        <p class="text-xs mc-label" :text="mcMemberIdLabel"></p>
-        <p class="font-semibold mc-serial" :text="mcMemberId" data-membership-id></p>
-      </div>
-    </div>
-    <p :if="mcDetail" class="relative mt-5 text-xs mc-detail" :text="mcDetail"></p>
-  </article>
 </div>
 
 <style>
   .mc-stage { max-width: 28rem; padding: 2rem 0 2.5rem; perspective: 1000px; }
+  .mc-surface { isolation: isolate; }
+  .mc-tilt { transform: perspective(1000px) rotateX(var(--mc-rotate-x, 0deg)) rotateY(var(--mc-rotate-y, 0deg)) translateY(calc(var(--mc-hover, 0) * -3px)); transition: transform 450ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+  .mc-surface:hover .mc-tilt { transition-duration: 160ms; }
+  .mc-reflection { opacity: calc(var(--mc-hover, 0) * 0.65); background: radial-gradient(ellipse at var(--mc-light-x, 50%) var(--mc-light-y, 50%), #ffffff38, #ffffff0a 42%, transparent 72%); transition: opacity 350ms ease; }
   .mc-metal {
     box-sizing: border-box; min-height: 15.5rem; padding: clamp(1.25rem, 5vw, 2rem); border-radius: 1.25rem;
     color: var(--membership-card-color, #e2e8f0); border: 1px solid var(--membership-card-border, #87939d);
@@ -79,10 +132,14 @@
     .mc-celebrate .mc-metal { animation: mc-arrive 1100ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .mc-celebrate .mc-shine { animation: mc-polish 1700ms ease-in-out 650ms both; }
     .mc-celebrate .mc-piece { animation: mc-fall 2400ms cubic-bezier(0.2, 0.65, 0.45, 1) var(--mc-delay) both; }
-    .mc-metal:hover .mc-shine { transform: translateX(150%) skewX(-20deg); transition: transform 1400ms ease; }
+  }
+  @media (hover: none), (pointer: coarse) {
+    .mc-tilt { transform: none; transition: none; }
+    .mc-reflection { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mc-confetti, .mc-shine { display: none; }
+    .mc-confetti, .mc-shine, .mc-reflection { display: none; }
+    .mc-tilt { transform: none; transition: none; }
   }
   @keyframes mc-arrive { from { opacity: 0; transform: translateY(32px) rotateX(16deg) rotateY(-12deg) scale(0.92); } to { opacity: 1; transform: none; } }
   @keyframes mc-polish { from { transform: translateX(-150%) skewX(-20deg); } to { transform: translateX(150%) skewX(-20deg); } }
