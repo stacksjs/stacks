@@ -57,6 +57,7 @@ try {
     const archivePath = join(scratch, name + '.tgz')
     await run([process.execPath, 'pm', 'pack', '--filename', archivePath], source)
     const bytes = await readFile(archivePath)
+    await writeFile(join(output, name + '.tgz'), bytes)
     const extracted = join(scratch, 'packed-' + name)
     await mkdir(extracted)
     const entries = await new Bun.Archive(bytes).extract(extracted)
