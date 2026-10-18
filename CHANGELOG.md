@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.221...v0.75.222)
+
+## ✨ Features
+
+- **push**: credentials for one send, so a server can push for several apps ([ec59868](https://github.com/stacksjs/stacks/commit/ec59868)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- prepare framework subpaths in dependency lock CI ([25115a2](https://github.com/stacksjs/stacks/commit/25115a2)) _(by Chris <chris@stacksjs.com>)_
+- validate published STX delivery and generate current locks ([d31c924](https://github.com/stacksjs/stacks/commit/d31c924)) _(by Chris <chris@stacksjs.com>)_
+- align styling guidance and tooling with ts-css ([d53cae1](https://github.com/stacksjs/stacks/commit/d53cae1)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- synchronize styling locks from normal CI installers ([44e4089](https://github.com/stacksjs/stacks/commit/44e4089)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.220...v0.75.221)
 
 ## ✨ Features
