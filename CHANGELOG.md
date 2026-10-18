@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.223...v0.75.224)
+
+## ✨ Features
+
+- **payments**: a platform fee on card-present charges, and its refund ([23a0f3d](https://github.com/stacksjs/stacks/commit/23a0f3d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.222...v0.75.223)
 
 ## ✨ Features

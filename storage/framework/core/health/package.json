@@ -2,7 +2,7 @@
   "name": "@stacksjs/health",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.223",
+  "version": "0.75.224",
   "description": "The Stacks Health services.",
   "author": "Chris Breuer",
   "contributors": [
