@@ -229,8 +229,10 @@ PMU, and that absence is recorded rather than fatal. Parity is checked before
 and after, as everywhere else here, and these artifacts are never a ranking.
 
 The [Routing diagnostic workflow](https://github.com/stacksjs/stacks/actions/workflows/routing-benchmark.yml)
-runs it in `machine` mode, which installs `linux-tools-generic` and lowers
-`perf_event_paranoid` so the versioned binaries can attach. Its
+runs it in `machine` mode, which installs `kernel.org/perf@7.2.11` and
+`github.com/hatoo/oha@1.16.0` through the Pantry action. It verifies the managed
+executables and ELF/DWARF support, then lowers `perf_event_paranoid` so native
+sampling can attach. Local runs use the same packages from Pantry's active PATH. Its
 `machine-symbols` mode runs the same thing under Bun's profile build, because
 the released binary is stripped and its own frames otherwise profile as bare
 addresses. That build is slower than the release one, so use it to name

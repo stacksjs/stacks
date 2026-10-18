@@ -109,15 +109,8 @@ async function run(cmd: string[]): Promise<{ code: number, stdout: string, stder
   return { code, stdout, stderr }
 }
 
-/**
- * A `perf` that can actually attach.
- *
- * The `perf` wrapper on Ubuntu refuses to run when no `linux-tools` package
- * matches the running kernel, which on a hosted runner is the normal case. The
- * versioned binaries that `linux-tools-generic` installs work anyway for
- * software events, so they are tried directly before giving up.
- */
-export async function resolvePerfBinary(candidates: readonly string[]): Promise<string | null> {
+/** Resolve the managed native perf executable from PATH. */
+export async function resolvePerfBinary(candidates: readonly string[] = ['perf']): Promise<string | null> {
   for (const candidate of candidates) {
     try {
       const probe = await run([candidate, '--version'])
@@ -130,11 +123,6 @@ export async function resolvePerfBinary(candidates: readonly string[]): Promise<
     }
   }
   return null
-}
-
-async function perfCandidates(): Promise<string[]> {
-  const globbed = await Array.fromAsync(new Bun.Glob('*/perf').scan({ cwd: '/usr/lib/linux-tools', absolute: true, onlyFiles: false }))
-  return ['perf', ...globbed.sort().reverse()]
 }
 
 /** What the kernel will let us read, recorded so an empty profile has a reason. */
@@ -163,9 +151,9 @@ async function main(): Promise<void> {
   const observed = new Map<number, BusyProcess>()
   await checkHostLoad(opts.allowBusyHost, observed)
 
-  const perf = await resolvePerfBinary(await perfCandidates())
+  const perf = await resolvePerfBinary()
   if (!perf)
-    throw new Error('No usable perf binary. Install linux-tools-common and linux-tools-generic.')
+    throw new Error('No usable perf binary. Install kernel.org/perf through Pantry and activate its environment.')
 
   const driver = await pickDriver('oha')
   if (!driver.supportsFixedRate)
