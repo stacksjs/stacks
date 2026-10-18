@@ -421,12 +421,20 @@ settles.
 
 For a run or ride, `createRouteRecorder({ location, onUpdate })` starts, pauses,
 resumes and stops the native recording, re-attaches to one that outlived the
-app (`attach()`), and reports live distance and pace from `routeStats(fixes)`,
+app (`attach({ expectedId })` with the ID saved in the account's draft), and reports live distance and pace from `routeStats(fixes)`,
 which ignores GPS drift, inaccurate fixes and the ground crossed during a pause.
 Recorder operations serialize; repeated `stop()` returns the same recording.
 Call `dispose()` when the owning page is destroyed to stop polling without
 stopping the native recording. Refreshes coalesce and cannot overwrite a final
-recording with a stale read.
+recording with a stale read. Persist `recordingId` (and `heartRateRecordingId`
+when bundled) under the account and workout that started it. Never adopt the
+current native slot without its saved ID. Guarded metadata, reads and stop
+recover that ID's completed archive even if another recording is now active.
+Only after durably checkpointing its result, or committing its discard, call
+`location.acknowledgeRecording({ expectedId })` and the matching heart-rate
+acknowledgement. A storage failure must retain the native copy. Ownership
+operations require support from both the SDK adapter and the native host;
+unsupported hosts reject with `RECORDING_OWNERSHIP_UNSUPPORTED`.
 
 For timestamp-based timers use `startSessionClock(now)`,
 `pauseSessionClock(clock, now)`, `resumeSessionClock(clock, now)` and

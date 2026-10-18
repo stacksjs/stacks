@@ -208,9 +208,11 @@ export interface RouteRecorder {
   start: () => Promise<RouteStats>
   /**
    * Picks up a recording already running natively (one that outlived the page
-   * or the app), without starting another. Resolves null when there is none.
+   * or the app), without starting another. A completed owned recording can
+   * be collected again after a lost stop acknowledgement; it is never resumed.
+   * Resolves null when there is none.
    */
-  attach: () => Promise<LocationRecordingState | null>
+  attach: (options: { expectedId: string, expectedHeartRateId?: string }) => Promise<LocationRecordingState | null>
   pause: () => Promise<void>
   resume: () => Promise<void>
   /** Ends the recording and hands back every fix it made, each with the heart rate near it when one was recorded. */
@@ -220,6 +222,9 @@ export interface RouteRecorder {
   /** Detaches polling from a page without ending its native recording. */
   dispose: () => void
   readonly stats: RouteStats
+  /** The native ID started here or explicitly supplied when recovering a saved recording. */
+  readonly recordingId: string | null
+  readonly heartRateRecordingId: string | null
   /** Every strap reading the last stopped recording kept, oldest first; empty without `heartRate`. */
   readonly heartRate: HeartRateSample[]
 }
@@ -238,6 +243,7 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
   let timer: ReturnType<typeof setInterval> | null = null
   const strap = options.heartRate
   let strapRecording = false
+  let heartRateRecordingId: string | null = null
   let heartRateSamples: HeartRateSample[] = []
 
   const hidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden'
@@ -247,6 +253,21 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
   let commands = Promise.resolve()
   let ending: Promise<RouteFix[]> | null = null
   let disposed = false
+  let recordingId: string | null = null
+
+  function requireOwnership(): void {
+    if (disposed)
+      throw Object.assign(new Error('The recording screen is no longer active'), { code: 'RECORDING_CONFLICT' })
+    if (location.supportsRecordingOwnership?.() !== true)
+      throw Object.assign(new Error('This host cannot protect native recording ownership'), { code: 'RECORDING_OWNERSHIP_UNSUPPORTED' })
+  }
+
+  function ownedId(): string {
+    requireOwnership()
+    if (!recordingId)
+      throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
+    return recordingId
+  }
 
   function serialize<T>(run: () => Promise<T>): Promise<T> {
     const result = commands.then(run)
@@ -257,8 +278,12 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
   function refresh(): Promise<RouteStats> {
     if (read) return read
     const version = generation
+    const expectedId = recordingId
     read = (async () => {
-      const fixes = await location.readRecording() as RouteFix[]
+      requireOwnership()
+      if (!expectedId)
+        throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
+      const fixes = await location.readRecording({ expectedId }) as RouteFix[]
       if (version === generation && !disposed) {
         stats = routeStats(fixes, options)
         options.onUpdate?.(stats)
@@ -285,21 +310,37 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
 
   // The strap's recording follows the route's. A strap that cannot record
   // (no Bluetooth, an older app) never stops the route.
-  async function strapDo(run: (api: HeartRateRecordingApi) => Promise<unknown>): Promise<void> {
-    if (!strap || !strapRecording) return
-    await run(strap).catch(() => {})
+  async function strapDo(run: (api: HeartRateRecordingApi, expectedId: string) => Promise<unknown>): Promise<void> {
+    if (!strap || !strapRecording || !heartRateRecordingId || disposed || strap.supportsRecordingOwnership?.() !== true) return
+    await run(strap, heartRateRecordingId).catch(() => {})
   }
 
   return {
     get stats() { return stats },
+    get recordingId() { return recordingId },
+    get heartRateRecordingId() { return heartRateRecordingId },
     get heartRate() { return heartRateSamples },
     start() {
       ending = null
       return serialize(async () => {
-        await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions })
+        requireOwnership()
+        const started = await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions })
+        if (!started?.active || typeof started.id !== 'string' || !started.id.trim())
+          throw Object.assign(new Error('The native recording did not provide an ID'), { code: 'RECORDING_CONFLICT' })
+        recordingId = started.id
         heartRateSamples = []
-        strapRecording = !!strap?.isAvailable()
-        await strapDo(api => api.startRecording())
+        heartRateRecordingId = null
+        strapRecording = false
+        if (!disposed && strap?.isAvailable() && strap.supportsRecordingOwnership?.() === true) {
+          try {
+            const startedHeart = await strap.startRecording()
+            if (startedHeart.active && typeof startedHeart.id === 'string' && startedHeart.id.trim()) {
+              heartRateRecordingId = startedHeart.id
+              strapRecording = true
+            }
+          }
+          catch { /* Optional heart-rate recording never replaces an existing slot. */ }
+        }
         generation++
         stats = { ...EMPTY_STATS }
         if (!disposed) options.onUpdate?.(stats)
@@ -307,29 +348,51 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
         return stats
       })
     },
-    attach() {
+    attach(ownership) {
       return serialize(async () => {
-        const state = await location.getRecordingState()
-        if (!state?.active) return null
-        // A strap recording that outlived the page with the route is this one's.
-        if (strap?.isAvailable()) strapRecording = !!(await strap.getRecordingState().catch(() => null))?.active
-        await refresh().catch(() => {})
-        if (!state.paused) poll()
+        if (typeof ownership?.expectedId !== 'string' || !ownership.expectedId.trim())
+          throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
+        requireOwnership()
+        const state = await location.getRecordingState({ expectedId: ownership.expectedId })
+        requireOwnership()
+        if (!state?.id) return null
+        if (state.id !== ownership.expectedId)
+          throw Object.assign(new Error('The recording belongs to another session'), { code: 'RECORDING_CONFLICT' })
+        recordingId = ownership.expectedId
+        // A global strap recording is not owned merely because this route is.
+        strapRecording = false
+        if (ownership.expectedHeartRateId !== undefined) {
+          const expectedHeartRateId = ownership.expectedHeartRateId
+          if (typeof expectedHeartRateId !== 'string' || !expectedHeartRateId.trim())
+            throw Object.assign(new Error('A saved heart-rate recording ID is required'), { code: 'RECORDING_CONFLICT' })
+          if (!strap?.isAvailable() || strap.supportsRecordingOwnership?.() !== true)
+            throw Object.assign(new Error('This host cannot protect heart-rate recording ownership'), { code: 'RECORDING_OWNERSHIP_UNSUPPORTED' })
+          const heart = await strap.getRecordingState({ expectedId: expectedHeartRateId })
+          requireOwnership()
+          if (heart.id !== expectedHeartRateId)
+            throw Object.assign(new Error('The heart-rate recording belongs to another session'), { code: 'RECORDING_CONFLICT' })
+          await strap.readRecording({ expectedId: expectedHeartRateId, since: Date.now() })
+          requireOwnership()
+          heartRateRecordingId = expectedHeartRateId
+          strapRecording = true
+        }
+        await refresh()
+        if (state.active && !state.paused) poll()
         return state
       })
     },
     pause() {
       return serialize(async () => {
-        await location.pauseRecording()
-        await strapDo(api => api.pauseRecording())
+        await location.pauseRecording({ expectedId: ownedId() })
+        await strapDo((api, expectedId) => api.pauseRecording({ expectedId }))
         stopPolling()
         await refresh().catch(() => {})
       })
     },
     resume() {
       return serialize(async () => {
-        await location.resumeRecording()
-        await strapDo(api => api.resumeRecording())
+        await location.resumeRecording({ expectedId: ownedId() })
+        await strapDo((api, expectedId) => api.resumeRecording({ expectedId }))
         poll()
       })
     },
@@ -338,18 +401,24 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
       ending = serialize(async () => {
         stopPolling()
         generation++
-        const result = await location.stopRecording()
+        const expectedId = ownedId()
+        const result = await location.stopRecording({ expectedId })
+        if (result.id !== expectedId)
+          throw Object.assign(new Error('The native recording identity changed'), { code: 'RECORDING_CONFLICT' })
         let fixes = (result?.locations ?? []) as RouteFix[]
-        if (strap && strapRecording) {
-          const recorded = await strap.stopRecording().catch(() => null)
+        if (!disposed && strap && strapRecording && heartRateRecordingId && strap.supportsRecordingOwnership?.() === true) {
+          const recorded = await strap.stopRecording({ expectedId: heartRateRecordingId }).catch(() => null)
           strapRecording = false
-          heartRateSamples = recorded?.samples ?? []
+          heartRateSamples = recorded?.id === heartRateRecordingId ? recorded.samples : []
           fixes = attachHeartRate(fixes, heartRateSamples)
         }
         stats = routeStats(fixes, options)
         if (!disposed) options.onUpdate?.(stats)
         return fixes
-      }).catch((error) => { ending = null; throw error })
+      }).catch((error) => {
+        ending = null
+        throw error
+      })
       return ending
     },
     dispose() {

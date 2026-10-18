@@ -121,16 +121,39 @@ export const device: DeviceApi = {
   getTimezone: () => craftDevice.getTimezone(),
 }
 export const lifecycle: LifecycleApi = craftLifecycle
+
+function locationRecordingOwnership(): boolean {
+  return getNativeMobileBridge()?.capabilities.locationRecordingOwnership === true && craftLocation.supportsRecordingOwnership?.() === true
+}
+
+function heartRateRecordingOwnership(): boolean {
+  return getNativeMobileBridge()?.capabilities.heartRateRecordingOwnership === true && craftHeartRate.supportsRecordingOwnership?.() === true
+}
+
+function recordingCall<T>(options: { expectedId?: string } | undefined, supported: () => boolean, call: () => Promise<T>): Promise<T> {
+  return afterBridge(() => {
+    if (options && Object.hasOwn(options, 'expectedId')) {
+      if (!supported())
+        throw Object.assign(new Error('This host or adapter cannot protect recording ownership'), { code: 'RECORDING_OWNERSHIP_UNSUPPORTED' })
+      if (typeof options.expectedId !== 'string' || !options.expectedId.trim())
+        throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
+    }
+    return call()
+  })
+}
+
 export const location: LocationApi = {
+  supportsRecordingOwnership: locationRecordingOwnership,
+  acknowledgeRecording: options => recordingCall({ expectedId: options?.expectedId }, locationRecordingOwnership, () => craftLocation.acknowledgeRecording(options)),
   getCurrentPosition: options => afterBridge(() => craftLocation.getCurrentPosition(options)),
   watchPosition: (callback, options) => craftLocation.watchPosition(callback, options),
   clearWatch: watchId => craftLocation.clearWatch(watchId),
   startRecording: options => afterBridge(() => craftLocation.startRecording(options)),
-  pauseRecording: () => afterBridge(() => craftLocation.pauseRecording()),
-  resumeRecording: () => afterBridge(() => craftLocation.resumeRecording()),
-  stopRecording: () => afterBridge(() => craftLocation.stopRecording()),
-  getRecordingState: () => afterBridge(() => craftLocation.getRecordingState()),
-  readRecording: () => afterBridge(() => craftLocation.readRecording()),
+  pauseRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.pauseRecording(options)),
+  resumeRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.resumeRecording(options)),
+  stopRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.stopRecording(options)),
+  getRecordingState: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.getRecordingState(options)),
+  readRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.readRecording(options)),
 }
 export const notifications: NotificationsApi = {
   show: options => afterBridge(() => craftNotifications.show(options)),
@@ -286,6 +309,8 @@ export const music: MusicApi = {
  * says `available: false` and nothing fires. Bluetooth works offline.
  */
 export const heartRate: HeartRateApi = {
+  supportsRecordingOwnership: heartRateRecordingOwnership,
+  acknowledgeRecording: options => recordingCall({ expectedId: options?.expectedId }, heartRateRecordingOwnership, () => craftHeartRate.acknowledgeRecording(options)),
   isAvailable: () => craftHeartRate.isAvailable(),
   supports: method => craftHeartRate.supports(method),
   getState: () => afterBridge(() => craftHeartRate.getState()),
@@ -297,11 +322,11 @@ export const heartRate: HeartRateApi = {
   reconnect: () => afterBridge(() => craftHeartRate.reconnect()),
   disconnect: options => afterBridge(() => craftHeartRate.disconnect(options)),
   startRecording: () => afterBridge(() => craftHeartRate.startRecording()),
-  pauseRecording: () => afterBridge(() => craftHeartRate.pauseRecording()),
-  resumeRecording: () => afterBridge(() => craftHeartRate.resumeRecording()),
-  stopRecording: () => afterBridge(() => craftHeartRate.stopRecording()),
-  getRecordingState: () => afterBridge(() => craftHeartRate.getRecordingState()),
-  readRecording: options => afterBridge(() => craftHeartRate.readRecording(options)),
+  pauseRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.pauseRecording(options)),
+  resumeRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.resumeRecording(options)),
+  stopRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.stopRecording(options)),
+  getRecordingState: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.getRecordingState(options)),
+  readRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.readRecording(options)),
   // Subscribed once the bridge is there: earlier, craft.heartRate did not
   // exist yet and the subscription would have been the browser's no-op.
   onReading: callback => subscribeWhenReady(() => craftHeartRate.onReading(callback)),

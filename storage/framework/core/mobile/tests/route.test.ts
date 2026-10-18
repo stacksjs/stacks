@@ -80,10 +80,18 @@ describe('createRouteRecorder', () => {
     const calls: string[] = []
     let recording = active
     const api = {
-      startRecording: async () => { calls.push('start'); recording = true; return { id: 'r1', active: true, paused: false, startedAt: 1 } },
-      pauseRecording: async () => { calls.push('pause'); return { id: 'r1', active: true, paused: true, startedAt: 1 } },
-      resumeRecording: async () => { calls.push('resume'); return { id: 'r1', active: true, paused: false, startedAt: 1 } },
-      stopRecording: async () => { calls.push('stop'); recording = false; return { id: 'r1', active: false, paused: false, startedAt: 1, locations: fixes } },
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
+      startRecording: async () => { calls.push('start')
+        recording = true
+        return { id: 'r1', active: true, paused: false, startedAt: 1 } },
+      pauseRecording: async () => { calls.push('pause')
+        return { id: 'r1', active: true, paused: true, startedAt: 1 } },
+      resumeRecording: async () => { calls.push('resume')
+        return { id: 'r1', active: true, paused: false, startedAt: 1 } },
+      stopRecording: async () => { calls.push('stop')
+        recording = false
+        return { id: 'r1', active: false, paused: false, startedAt: 1, locations: fixes } },
       getRecordingState: async () => ({ id: recording ? 'r1' : null, active: recording, paused: false, startedAt: recording ? 1 : null }),
       readRecording: async () => fixes,
     } as unknown as LocationApi
@@ -109,10 +117,10 @@ describe('createRouteRecorder', () => {
   it('picks up a recording that outlived the app, and knows when there is none', async () => {
     const running = fakeLocation(run(30, 3), true)
     const recorder = createRouteRecorder({ location: running.api, intervalMs: 1000 })
-    expect(await recorder.attach()).toMatchObject({ active: true })
+    expect(await recorder.attach({ expectedId: 'r1' })).toMatchObject({ active: true })
     expect(recorder.stats.fixes).toBe(31)
     await recorder.stop()
-    expect(await createRouteRecorder({ location: fakeLocation([]).api }).attach()).toBeNull()
+    expect(await createRouteRecorder({ location: fakeLocation([]).api }).attach({ expectedId: 'r1' })).toBeNull()
   })
 })
 
@@ -122,9 +130,13 @@ describe('recorder lifecycle', () => {
     let reads = 0
     let stops = 0
     const api = {
-      startRecording: async () => ({}),
-      readRecording: () => { reads++; return new Promise<RouteFix[]>(resolve => { release = resolve }) },
-      stopRecording: async () => { stops++; return { locations: run(60, 3) } },
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
+      startRecording: async () => ({ id: 'r1', active: true, paused: false, startedAt: 1 }),
+      readRecording: () => { reads++
+        return new Promise<RouteFix[]>(resolve => { release = resolve }) },
+      stopRecording: async () => { stops++
+        return { id: 'r1', locations: run(60, 3) } },
     } as unknown as LocationApi
     const recorder = createRouteRecorder({ location: api, intervalMs: 10 })
     await recorder.start()
@@ -146,11 +158,16 @@ describe('recorder lifecycle', () => {
   it('orders native commands even when callers overlap', async () => {
     const calls: string[] = []
     const api = {
-      startRecording: async () => { await new Promise(resolve => setTimeout(resolve, 10)); calls.push('start') },
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
+      startRecording: async () => { await new Promise(resolve => setTimeout(resolve, 10))
+        calls.push('start')
+        return { id: 'r1', active: true } },
       pauseRecording: async () => { calls.push('pause') },
       readRecording: async () => [],
       resumeRecording: async () => { calls.push('resume') },
-      stopRecording: async () => { calls.push('stop'); return { locations: [] } },
+      stopRecording: async () => { calls.push('stop')
+        return { id: 'r1', locations: [] } },
     } as unknown as LocationApi
     const recorder = createRouteRecorder({ location: api })
     await Promise.all([recorder.start(), recorder.pause(), recorder.resume(), recorder.stop()])
@@ -159,8 +176,15 @@ describe('recorder lifecycle', () => {
 
   it('retries a failed stop instead of returning an empty route', async () => {
     let calls = 0
-    const api = { stopRecording: async () => { if (++calls === 1) throw new Error('bridge unavailable'); return { locations: run(60, 3) } } } as unknown as LocationApi
+    const api = {
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
+      startRecording: async () => ({ id: 'r1', active: true }),
+      stopRecording: async () => { if (++calls === 1) throw new Error('bridge unavailable')
+        return { id: 'r1', locations: run(60, 3) } },
+    } as unknown as LocationApi
     const recorder = createRouteRecorder({ location: api })
+    await recorder.start()
     await expect(recorder.stop()).rejects.toThrow('bridge unavailable')
     expect(await recorder.stop()).toHaveLength(61)
   })

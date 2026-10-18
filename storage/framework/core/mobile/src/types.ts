@@ -9,6 +9,8 @@ export interface CraftMobileCapabilities {
   secureStorage?: boolean
   geolocation?: boolean
   backgroundLocation?: boolean
+  locationRecordingOwnership?: boolean
+  heartRateRecordingOwnership?: boolean
   healthKit?: boolean
   health?: boolean
   liveActivities?: boolean
@@ -267,16 +269,25 @@ export interface SecureStorageApi {
   clear: () => Promise<void>
 }
 
+/** Native checks this ID before reading or changing a recording. */
+export interface RecordingOwnershipOptions {
+  expectedId: string
+}
+
 export interface LocationApi {
+  /** Whether this host checks recording IDs atomically before reads and mutations. */
+  supportsRecordingOwnership: () => boolean
+  /** Release a completed owned native copy only after the caller's durable checkpoint. */
+  acknowledgeRecording: (options: RecordingOwnershipOptions) => Promise<boolean>
   getCurrentPosition: (options?: LocationOptions) => Promise<Location>
   watchPosition: (callback: (location: Location) => void, options?: LocationOptions) => number
   clearWatch: (watchId: number) => void
   startRecording: (options?: LocationOptions) => Promise<LocationRecordingState>
-  pauseRecording: () => Promise<LocationRecordingState>
-  resumeRecording: () => Promise<LocationRecordingState>
-  stopRecording: () => Promise<LocationRecordingResult>
-  getRecordingState: () => Promise<LocationRecordingState>
-  readRecording: () => Promise<Location[]>
+  pauseRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
+  resumeRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
+  stopRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingResult>
+  getRecordingState: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
+  readRecording: (options?: RecordingOwnershipOptions) => Promise<Location[]>
 }
 
 export interface ShareApi {
@@ -445,12 +456,14 @@ export type HeartRateMethod = 'getState' | 'requestAuthorization' | 'scan' | 'st
 /** The recording half of HeartRateApi: what a route recorder drives. */
 export interface HeartRateRecordingApi {
   isAvailable: () => boolean
+  supportsRecordingOwnership: () => boolean
+  acknowledgeRecording: (options: RecordingOwnershipOptions) => Promise<boolean>
   startRecording: () => Promise<HeartRateRecordingState>
-  pauseRecording: () => Promise<HeartRateRecordingState>
-  resumeRecording: () => Promise<HeartRateRecordingState>
-  stopRecording: () => Promise<HeartRateRecordingState & { samples: HeartRateSample[] }>
-  getRecordingState: () => Promise<HeartRateRecordingState>
-  readRecording: (options?: { since?: number }) => Promise<HeartRateSample[]>
+  pauseRecording: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState>
+  resumeRecording: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState>
+  stopRecording: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState & { samples: HeartRateSample[] }>
+  getRecordingState: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState>
+  readRecording: (options?: { since?: number, expectedId?: string }) => Promise<HeartRateSample[]>
 }
 
 export interface HeartRateApi extends HeartRateRecordingApi {

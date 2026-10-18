@@ -33,13 +33,21 @@ function strapShell(calls: unknown[]) {
     capabilities: { heartRate: true },
     heartRate: {
       getState: async () => state(),
-      requestAuthorization: async () => { calls.push('request'); return 'authorized' },
-      scan: async (options: unknown) => { calls.push(['scan', options]); return { ...state(), scanning: true } },
+      requestAuthorization: async () => { calls.push('request')
+        return 'authorized' },
+      scan: async (options: unknown) => { calls.push(['scan', options])
+        return { ...state(), scanning: true } },
       stopScan: async () => state(),
       getDevices: async () => [strap],
-      connect: async (id: string) => { calls.push(['connect', id]); connection = 'connected'; return state() },
-      reconnect: async () => { calls.push('reconnect'); connection = 'connecting'; return state() },
-      disconnect: async (options: unknown) => { calls.push(['disconnect', options]); connection = 'disconnected'; return state() },
+      connect: async (id: string) => { calls.push(['connect', id])
+        connection = 'connected'
+        return state() },
+      reconnect: async () => { calls.push('reconnect')
+        connection = 'connecting'
+        return state() },
+      disconnect: async (options: unknown) => { calls.push(['disconnect', options])
+        connection = 'disconnected'
+        return state() },
       startRecording: async () => ({ id: 'h1', active: true, paused: false, startedAt: 1 }),
       pauseRecording: async () => ({ id: 'h1', active: true, paused: true, startedAt: 1 }),
       resumeRecording: async () => ({ id: 'h1', active: true, paused: false, startedAt: 1 }),
@@ -116,10 +124,16 @@ describe('createRouteRecorder with a strap', () => {
     const calls: string[] = []
     const state = (active: boolean, paused = false) => ({ id: 'r1', active, paused, startedAt: 1 })
     const api = {
-      startRecording: async () => { calls.push('start'); return state(true) },
-      pauseRecording: async () => { calls.push('pause'); return state(true, true) },
-      resumeRecording: async () => { calls.push('resume'); return state(true) },
-      stopRecording: async () => { calls.push('stop'); return { ...state(false), locations: fixes } },
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
+      startRecording: async () => { calls.push('start')
+        return state(true) },
+      pauseRecording: async () => { calls.push('pause')
+        return state(true, true) },
+      resumeRecording: async () => { calls.push('resume')
+        return state(true) },
+      stopRecording: async () => { calls.push('stop')
+        return { ...state(false), locations: fixes } },
       getRecordingState: async () => state(true),
       readRecording: async () => fixes,
     } as unknown as LocationApi
@@ -130,10 +144,16 @@ describe('createRouteRecorder with a strap', () => {
     const state = (active: boolean, paused = false) => ({ id: 'h1', active, paused, startedAt: 1, sampleCount: null })
     return {
       isAvailable: () => available,
-      startRecording: async () => { calls.push('hr start'); return state(true) },
-      pauseRecording: async () => { calls.push('hr pause'); return state(true, true) },
-      resumeRecording: async () => { calls.push('hr resume'); return state(true) },
-      stopRecording: async () => { calls.push('hr stop'); return { ...state(false), samples: [{ timestamp: 1_000, bpm: 118 }, { timestamp: 2_000, bpm: 121 }] } },
+      supportsRecordingOwnership: () => true,
+      acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
+      startRecording: async () => { calls.push('hr start')
+        return state(true) },
+      pauseRecording: async () => { calls.push('hr pause')
+        return state(true, true) },
+      resumeRecording: async () => { calls.push('hr resume')
+        return state(true) },
+      stopRecording: async () => { calls.push('hr stop')
+        return { ...state(false), samples: [{ timestamp: 1_000, bpm: 118 }, { timestamp: 2_000, bpm: 121 }] } },
       getRecordingState: async () => state(true),
       readRecording: async () => [],
     }
@@ -166,7 +186,7 @@ describe('createRouteRecorder with a strap', () => {
   it('carries on a strap recording that outlived the page with its route', async () => {
     const { api, calls } = fakeLocation([{ latitude: 52, longitude: 13, accuracy: 5, timestamp: 2_000 }])
     const recorder = createRouteRecorder({ location: api, heartRate: fakeStrap(calls), intervalMs: 1_000_000 })
-    await recorder.attach()
+    await recorder.attach({ expectedId: 'r1', expectedHeartRateId: 'h1' })
     const fixes = await recorder.stop()
     recorder.dispose()
     expect(calls).toEqual(['stop', 'hr stop'])

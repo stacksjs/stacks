@@ -283,11 +283,35 @@ const recorder = createRouteRecorder({
   onUpdate: stats => console.log(stats.distanceM, paceLabel(stats.paceSPerKm)),
 })
 
-await recorder.attach() ?? await recorder.start() // pick up a recording that outlived the app
+if (savedRecordingId) await recorder.attach({ expectedId: savedRecordingId })
+else await recorder.start()
 await recorder.pause()
 await recorder.resume()
 const fixes = await recorder.stop() // every fix, for the server to keep
 ```
+
+`savedRecordingId` must come from the signed-in account's workout draft. Save
+`recorder.recordingId` after a successful start and keep it with that draft.
+An unknown ID or another active recording is a conflict, never permission to
+adopt or replace the global recording. The ID remains available after stopping
+so a delayed completion can be kept for its original account. An explicitly
+owned completed recording can also be attached and stopped again after a lost
+acknowledgement; check the attached state's `active` before pausing or resuming.
+Guarded metadata, reads and stop resolve that recording's retained archive even
+when a different athlete has since started a new route.
+
+When the controller also records heart rate, persist
+`recorder.heartRateRecordingId` and recover it with
+`attach({ expectedId, expectedHeartRateId })`. Omitting the heart-rate ID leaves
+the existing heart-rate recording untouched. Both the SDK adapter and native
+host must support recording ownership; guarded operations otherwise reject with
+`RECORDING_OWNERSHIP_UNSUPPORTED`. A changed recording rejects with
+`RECORDING_CONFLICT` before reading or changing its data. The recorder never
+automatically releases native data. After durably keeping the result under its
+original account, call `location.acknowledgeRecording({ expectedId })` (and
+`heartRate.acknowledgeRecording` for a bundled strap). A failed checkpoint must
+leave that native copy available; acknowledge a discarded recording only after
+the account's discard is durable.
 
 `routeStats(fixes)` is the arithmetic on its own: distance counted from an
 anchor so GPS drift while standing still adds nothing, fixes less accurate than
