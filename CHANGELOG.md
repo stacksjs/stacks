@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.227...v0.75.228)
+
+## 🐛 Bug Fixes
+
+- **mobile**: keep the compiled native screens out of the iOS project's git ([41173e7](https://github.com/stacksjs/stacks/commit/41173e7)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.226...v0.75.227)
 
 ## ✨ Features
