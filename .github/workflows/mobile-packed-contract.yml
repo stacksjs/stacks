@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           for check in docs:buddy:check docs:artifacts:check docs:links:check; do
-            bun run "$check" 2>&1 | tee "artifacts/mobile-source-contract/$check.log"
+            bun run "$check" 2>&1 | tee "artifacts/mobile-source-contract/${check//:/-}.log"
           done
       - name: Verify source lockfiles remain unchanged
         if: always()
