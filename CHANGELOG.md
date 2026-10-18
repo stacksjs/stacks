@@ -1,5 +1,63 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.226...v0.75.227)
+
+## ✨ Features
+
+- **mobile**: expose asynchronous system UUID generation ([2f1f34e](https://github.com/stacksjs/stacks/commit/2f1f34e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: expose atomic native storage creation ([5ce105e](https://github.com/stacksjs/stacks/commit/5ce105e)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: expose durable native storage comparisons ([a71191e](https://github.com/stacksjs/stacks/commit/a71191e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: surface stale native documentation before publishing ([57d092d](https://github.com/stacksjs/stacks/commit/57d092d)) _(by Chris <chris@stacksjs.com>)_
+- install packed mobile dependencies through the normal resolver ([750bd4c](https://github.com/stacksjs/stacks/commit/750bd4c)) _(by Chris <chris@stacksjs.com>)_
+- use portable artifact filenames for release contract logs ([54e6054](https://github.com/stacksjs/stacks/commit/54e6054)) _(by Chris <chris@stacksjs.com>)_
+- isolate mobile testing configuration declarations ([b2a5a03](https://github.com/stacksjs/stacks/commit/b2a5a03)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: require the native recording and durable storage SDK ([8346dac](https://github.com/stacksjs/stacks/commit/8346dac)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: isolate reused route recording state ([a57172f](https://github.com/stacksjs/stacks/commit/a57172f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: start recordings with registered caller identities ([4dee7e6](https://github.com/stacksjs/stacks/commit/4dee7e6)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: expose recording acknowledgement in capability types ([c84b0b4](https://github.com/stacksjs/stacks/commit/c84b0b4)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: fence native recordings by saved owner identity ([8d40aae](https://github.com/stacksjs/stacks/commit/8d40aae)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- distinguish the native host bridge from the STX renderer ([78feec4](https://github.com/stacksjs/stacks/commit/78feec4)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: explain native screen updates and capability requirements ([204df46](https://github.com/stacksjs/stacks/commit/204df46)) _(by Chris <chris@stacksjs.com>)_
+- map native routes directly to shared components ([175c7fc](https://github.com/stacksjs/stacks/commit/175c7fc)) _(by Chris <chris@stacksjs.com>)_
+- distinguish shared native screens from web renderer content ([a6b725c](https://github.com/stacksjs/stacks/commit/a6b725c)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- verify ownership APIs from the actual packed mobile package ([dca199b](https://github.com/stacksjs/stacks/commit/dca199b)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: require strict installed ownership and storage declarations ([54cd180](https://github.com/stacksjs/stacks/commit/54cd180)) _(by Chris <chris@stacksjs.com>)_
+- **mobile**: declare secure UUID host capability ([fc48f66](https://github.com/stacksjs/stacks/commit/fc48f66)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: verify current SDK recording ownership forwarding ([a171db0](https://github.com/stacksjs/stacks/commit/a171db0)) _(by Chris <chris@stacksjs.com>)_
+
+## 👷 Build System
+
+- **mobile**: install the verified public native SDK 238 ([f46cdee](https://github.com/stacksjs/stacks/commit/f46cdee)) _(by Chris <chris@stacksjs.com>)_
+- retain the verified Darwin Gettext resolution ([01f8706](https://github.com/stacksjs/stacks/commit/01f8706)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- use verified Pantry tooling for framework publication ([daf27fb](https://github.com/stacksjs/stacks/commit/daf27fb)) _(by Chris <chris@stacksjs.com>)_
+- verify current native build configuration with the mobile contracts ([dad61d3](https://github.com/stacksjs/stacks/commit/dad61d3)) _(by Chris <chris@stacksjs.com>)_
+- verify integrated mobile source and actual packed contracts ([412d04f](https://github.com/stacksjs/stacks/commit/412d04f)) _(by Chris <chris@stacksjs.com>)_
+- provision routing diagnostic tools through Pantry ([790e004](https://github.com/stacksjs/stacks/commit/790e004)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- synchronize the mobile SDK constraint in the Pantry lock ([62fc49c](https://github.com/stacksjs/stacks/commit/62fc49c)) _(by Chris <chris@stacksjs.com>)_
+- integrate the current framework deployment release ([f34bb23](https://github.com/stacksjs/stacks/commit/f34bb23)) _(by Chris <chris@stacksjs.com>)_
+- integrate the current framework release metadata ([928c077](https://github.com/stacksjs/stacks/commit/928c077)) _(by Chris <chris@stacksjs.com>)_
+- integrate current framework release source ([a693dc5](https://github.com/stacksjs/stacks/commit/a693dc5)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.225...v0.75.226)
 
 ## 🐛 Bug Fixes
