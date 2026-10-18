@@ -139,7 +139,11 @@ function systemBlockProblems(root: Record<string, unknown> | undefined, baseline
  * at once. An operator who fixes one pin, re-runs a long release and hits the
  * next one learns to distrust the check.
  */
-export function pantryLockViolations(lock: string, baseline: string | null): string[] {
+export function pantryLockViolations(
+  lock: string,
+  baseline: string | null,
+  declarations?: Record<string, Record<string, unknown>>,
+): string[] {
   let parsed: PantryLock
   try {
     parsed = JSON.parse(lock) as PantryLock
@@ -151,6 +155,37 @@ export function pantryLockViolations(lock: string, baseline: string | null): str
   const problems: string[] = []
   const workspaces = parsed.workspaces ?? {}
   const resolved = resolvedVersions(parsed.packages ?? {})
+
+  if (declarations) {
+    for (const [workspacePath, current] of Object.entries(declarations)) {
+      const recorded = workspaces[workspacePath]
+      const label = workspacePath || 'the workspace root'
+      if (!recorded) {
+        problems.push(`${label}: current workspace is missing from pantry.lock`)
+        continue
+      }
+      for (const field of ['name', 'version'] as const) {
+        if (current[field] !== recorded[field])
+          problems.push(`${label}: ${field} is ${JSON.stringify(current[field])} but pantry.lock records ${JSON.stringify(recorded[field])}`)
+      }
+      for (const field of ['dependencies', 'devDependencies'] as const) {
+        const expected = (current[field] ?? {}) as Record<string, unknown>
+        const locked = (recorded[field] ?? {}) as Record<string, unknown>
+        for (const [name, range] of Object.entries(expected)) {
+          if (range !== locked[name])
+            problems.push(`${label}: ${field}.${name} is ${JSON.stringify(range)} but pantry.lock records ${JSON.stringify(locked[name])}`)
+        }
+        for (const name of Object.keys(locked)) {
+          if (!(name in expected))
+            problems.push(`${label}: pantry.lock records undeclared ${field}.${name}`)
+        }
+      }
+    }
+    for (const workspacePath of Object.keys(workspaces)) {
+      if (!(workspacePath in declarations))
+        problems.push(`${workspacePath || 'the workspace root'}: pantry.lock records a workspace absent from current declarations`)
+    }
+  }
 
   for (const [workspacePath, workspace] of Object.entries(workspaces)) {
     for (const field of DEPENDENCY_FIELDS) {

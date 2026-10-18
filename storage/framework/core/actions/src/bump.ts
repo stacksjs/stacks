@@ -286,6 +286,7 @@ async function refreshPantryLock(): Promise<void> {
     await execSync(['pantry', 'install', '--ignore-scripts', '--quiet'], {
       cwd: p.projectPath(),
       stdin: 'inherit',
+      throwOnError: true,
     })
     if (!existsSync(lockPath))
       throw new Error('Pantry completed without writing pantry.lock')
@@ -307,7 +308,12 @@ async function refreshPantryLock(): Promise<void> {
   //
   // Check it here, where the previous lockfile is still in hand, rather than
   // leaving CI to report it on a commit nobody will connect to the release.
-  const violations = pantryLockViolations(readFileSync(lockPath, 'utf8'), previousLock.toString('utf8'))
+  // The freshly regenerated Bun lock records the current workspace declarations.
+  // A stale Pantry lock can satisfy all its own old ranges after a release bump.
+  const declarations = existsSync(bunLockPath)
+    ? (Bun.JSONC.parse(readFileSync(bunLockPath, 'utf8')) as { workspaces?: Record<string, Record<string, unknown>> }).workspaces
+    : undefined
+  const violations = pantryLockViolations(readFileSync(lockPath, 'utf8'), previousLock.toString('utf8'), declarations)
   if (violations.length > 0) {
     writeFileSync(lockPath, previousLock)
     throw new Error(
