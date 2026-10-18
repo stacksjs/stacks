@@ -159,6 +159,28 @@ describe('iOS mobile build configuration', () => {
     expect(() => nativeScreenFiles({ nativeScreens: { '/m/calendar': 'Calendar' } }, root)).toThrow('Calendar')
   })
 
+  it('compiles a bundle per route for a Craft that runs each screen from its own file', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-native-routes-'))
+    await Bun.write(join(root, 'resources/native/Today.stx'), '<View />')
+    const output = join(root, 'out')
+    await Bun.write(join(output, 'native-screens.js'), 'stale one-file bundle')
+    const calls: Array<Record<string, unknown>> = []
+    const result = await compileNativeScreens({ nativeScreens: { '/m': 'Today' } }, root, output, async (options) => {
+      calls.push(options)
+      return { routes: { Today: join(String(options.routesDir), 'Today.js') } }
+    }, 'ios', { routes: true })
+    expect(calls[0]!.routesDir).toBe(join(output, 'native-screens'))
+    expect(calls[0]!.outFile).toBeUndefined()
+    expect(result?.outFile).toBe(join(output, 'native-screens'))
+    // Craft must not find the last build's one-file bundle beside the routes.
+    expect(await Bun.file(join(output, 'native-screens.js')).exists()).toBe(false)
+
+    // An stx without routesDir answers the one-file code; it is written instead.
+    const fallback = await compileNativeScreens({ nativeScreens: { '/m': 'Today' } }, root, output, async () => ({ code: 'one-file bundle' }), 'ios', { routes: true })
+    expect(fallback?.outFile).toBe(join(output, 'native-screens.js'))
+    expect(await Bun.file(join(output, 'native-screens.js')).text()).toBe('one-file bundle')
+  })
+
   it('builds an all-native app: its renderer, and the app script compiled beside the screens', async () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

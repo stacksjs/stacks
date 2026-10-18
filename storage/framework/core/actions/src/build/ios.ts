@@ -30,6 +30,8 @@ interface CraftIosBuilder {
     output: string
     generateProject?: boolean
   }): Promise<void>
+  /** The builder installs a directory of route bundles (Craft 0.0.242 and later). */
+  nativeRouteBundles?: boolean
 }
 
 /** The Craft iOS builder entry: `CRAFT_IOS_SRC`, else the copy @stacksjs/mobile resolves. */
@@ -81,16 +83,17 @@ craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
 craftConfig.splashImagePath = resolveMobilePath(projectPath(), config.splash?.image)
 craftConfig.splashImagePathDark = resolveMobilePath(projectPath(), config.splash?.imageDark)
 
-// Screens drawn natively, compiled by stx before Craft copies them in.
-const nativeBundle = await compileNativeScreens(config, projectPath(), output)
+const builder = await loadCraftIosBuilder()
+
+// Screens drawn natively, compiled by stx before Craft copies them in: one
+// file per route when this Craft runs each screen from its own.
+const nativeBundle = await compileNativeScreens(config, projectPath(), output, undefined, 'ios', { routes: builder.nativeRouteBundles === true })
 if (nativeBundle) {
   craftConfig.nativeBundle = nativeBundle.outFile
   for (const diagnostic of nativeBundle.diagnostics ?? [])
     log.warn(`${diagnostic.file ? `${diagnostic.file}: ` : ''}${diagnostic.message}`)
   log.info(`Compiled ${Object.keys(config.nativeScreens ?? {}).length} native screen path(s) into ${nativeBundle.outFile}`)
 }
-
-const builder = await loadCraftIosBuilder()
 
 // An older Craft drops a capability it has no template for without a word,
 // so the build fails here rather than ship an app that lacks it.
