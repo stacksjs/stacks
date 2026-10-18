@@ -14,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and managed Bun
-        uses: pantry-pm/pantry/packages/action@v0.11.93
+        uses: pantry-pm/pantry/packages/action@da17bb9317e8f8c247618fb176fe97269f15bfe4 # v0.11.94
         with:
-          version: 0.11.93
+          version: 0.11.94
           install: 'false'
-          packages: bun.com@1.4.2
+          packages: bun.com@1.4.2 git-scm.org@2.53.0
       - name: Install normal frozen workspace dependencies
         run: bun install --frozen-lockfile
       - name: Record the exact source and public dependency cohort
@@ -86,11 +86,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and managed Bun
-        uses: pantry-pm/pantry/packages/action@v0.11.93
+        uses: pantry-pm/pantry/packages/action@da17bb9317e8f8c247618fb176fe97269f15bfe4 # v0.11.94
         with:
-          version: 0.11.93
+          version: 0.11.94
           install: 'false'
-          packages: bun.com@1.4.2
+          packages: bun.com@1.4.2 git-scm.org@2.53.0
       - name: Install normal frozen workspace dependencies
         run: bun install --frozen-lockfile
       - name: Lint the packed consumer contract

@@ -189,8 +189,8 @@ await versionBump({
   tag: false,
   push: false,
   changelog: false,
-  // `buddy release` runs LintFix before this, so the tree is intentionally
-  // dirty; we stage & commit manually below. Don't let bumpx gate on it.
+  // Library-entry generation can stage generated manifests before this step.
+  // The release action handles its own Git checks, staging and commit below.
   noGitCheck: true,
   dryRun: isDryRun,
   yes: Boolean(resolvedBumpArg),
