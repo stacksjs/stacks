@@ -92,7 +92,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/tinker` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tinker/src/index.ts) | 1 |
 | `@stacksjs/tunnel` | [`stacks-tunnel`](../stacks-tunnel/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/tunnel/src/index.ts) | 1 |
 | `@stacksjs/types` | [`stacks-types`](../stacks-types/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/types/src/index.ts) | 2 |
-| `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 5 |
+| `@stacksjs/ui` | [`stacks-ui`](../stacks-ui/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/index.ts) | 6 |
 | `@stacksjs/utils` | [`stacks-utils`](../stacks-utils/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/utils/src/index.ts) | 15 |
 | `@stacksjs/validation` | [`stacks-validation`](../stacks-validation/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/validation/src/index.ts) | 17 |
 | `@stacksjs/video` | [`stacks-video`](../stacks-video/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/video/src/index.ts) | 3 |
@@ -889,7 +889,7 @@ Declared runtime exports: `CssEngine`, `buildPageSequence`, `paginatorVariant`, 
 
 Local source modules: [src/fonts.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/fonts.ts), [src/pagination.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/src/pagination.ts).
 
-Evidence directory: [5 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [6 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/ui/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/utils
 
