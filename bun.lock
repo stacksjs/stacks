@@ -918,7 +918,7 @@
       "dependencies": {
         "@bughq/sdk": "^0.3.0",
         "@stacksjs/types": "workspace:*",
-        "craft-native": ">=0.0.179",
+        "craft-native": ">=0.0.238",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1916,7 +1916,7 @@
 
     "cors": ["cors@2.8.6", "", { "dependencies": { "object-assign": "^4", "vary": "^1" } }, "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw=="],
 
-    "craft-native": ["craft-native@0.0.237", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-TALWq4Zv0FWGgO9rk71ASKHjVoodKFAKeV+FEOPP0qvQ9+PxPK9hikwY2XeTY018O1bVlIbE6AnW5YxevisBog=="],
+    "craft-native": ["craft-native@0.0.238", "", { "bin": { "craft-sdk": "dist/cli.js" } }, "sha512-jjqN0fkZRlponAHQMQ0VDrvMaZDqTv3d39ks6CPEhjaq+ss4BLIObinNcLwkGDBVP/2+cn3oFp2k9rxvISKkQA=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 
