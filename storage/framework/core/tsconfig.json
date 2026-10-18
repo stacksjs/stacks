@@ -44,6 +44,7 @@
       // and misses, which is the remaining pair of typecheck errors.
       "@stacksjs/desktop-build": ["./desktop/src"],
       "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
+      "@stacksjs/types/mobile": ["./types/src/mobile.ts"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
