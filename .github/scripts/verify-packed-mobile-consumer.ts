@@ -11,6 +11,8 @@ const scratch = await mkdtemp(join(process.env.RUNNER_TEMP || tmpdir(), 'stacks-
 const commands: object[] = []
 const packages: object[] = []
 const publicCohort: Record<string, string> = {}
+const registryRequests: string[] = []
+let registry: ReturnType<typeof Bun.serve> | undefined
 let failure: string | undefined
 let sourceCommit: string | undefined
 
@@ -74,7 +76,8 @@ try {
   await writeFile(join(output, 'source-commit.txt'), sourceCommit + '\n')
   const consumer = join(scratch, 'consumer')
   await mkdir(consumer)
-  const candidateArchives: Record<string, string> = {}
+  const candidateVersions: Record<string, string> = {}
+  const candidateArtifacts = new Map<string, { manifest: CandidateManifest, bytes: Buffer }>()
   const packedRoots: Record<string, string> = {}
   for (const name of await candidateClosure()) {
     const source = join(root, 'storage/framework/core', name)
@@ -90,9 +93,47 @@ try {
     assert.equal(packed.name, '@stacksjs/' + name)
     packages.push({ name: packed.name, version: packed.version, entries, sha256: createHash('sha256').update(bytes).digest('hex'), exports: packed.exports, publishConfig: packed.publishConfig, dependencies: packed.dependencies })
     await writeFile(join(output, name + '-packed-manifest.json'), JSON.stringify(packed, null, 2) + '\n')
-    candidateArchives[packed.name] = 'file:' + archivePath
+    candidateVersions[packed.name] = packed.version
+    candidateArtifacts.set(packed.name, { manifest: packed, bytes })
     packedRoots[packed.name] = join(extracted, 'package')
   }
+  // Install with normal registry/semver semantics, including transitive exact
+  // sibling versions. A file: root dependency does not supply those registry
+  // records in Bun. The fixture serves the original archives without edits.
+  registry = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    async fetch(request) {
+      if (request.method !== 'GET') return new Response(null, { status: 405 })
+      const path = new URL(request.url).pathname.slice(1)
+      registryRequests.push(path)
+      for (const [name, artifact] of candidateArtifacts) {
+        if (path === `archives/${encodeURIComponent(name)}.tgz`)
+          return new Response(artifact.bytes, { headers: { 'Content-Type': 'application/octet-stream' } })
+      }
+      const name = decodeURIComponent(path)
+      if (!name.startsWith('@stacksjs/')) return new Response(null, { status: 404 })
+      const candidate = candidateArtifacts.get(name)
+      if (candidate) {
+        return Response.json({
+          name,
+          'dist-tags': { latest: candidate.manifest.version },
+          versions: { [candidate.manifest.version]: {
+            ...candidate.manifest,
+            dist: {
+              tarball: new URL(`archives/${encodeURIComponent(name)}.tgz`, request.url).href,
+              shasum: createHash('sha1').update(candidate.bytes).digest('hex'),
+              integrity: 'sha512-' + createHash('sha512').update(candidate.bytes).digest('base64'),
+            },
+          } },
+        })
+      }
+      // Public peers retain their real registry metadata and tarball URLs.
+      // No incoming headers or credentials are forwarded to the public origin.
+      const upstream = await fetch('https://registry.npmjs.org/' + encodeURIComponent(name), { signal: AbortSignal.timeout(15_000) })
+      return Response.json(await upstream.json(), { status: upstream.status })
+    },
+  })
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
   const lock = Bun.JSONC.parse(await readFile(join(root, 'bun.lock'), 'utf8')) as { packages: Record<string, [string, ...unknown[]]> }
   for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components']) {
@@ -102,10 +143,11 @@ try {
   }
   await writeFile(join(consumer, 'package.json'), JSON.stringify({
     name: 'stacks-packed-mobile-contract', private: true, type: 'module',
-    dependencies: { ...candidateArchives, ...publicCohort },
+    dependencies: { ...candidateVersions, ...publicCohort },
     devDependencies: { 'better-dx': manifest.devDependencies['better-dx'] },
   }, null, 2))
   await writeFile(join(consumer, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n')
+  await writeFile(join(consumer, '.npmrc'), '@stacksjs:registry=' + registry.url.href + '\n')
   await run([process.execPath, 'install'], consumer)
   await run([process.execPath, 'install', '--frozen-lockfile'], consumer)
   const installedVersions: Record<string, string> = {}
@@ -140,7 +182,7 @@ try {
   for (const [name, directory] of Object.entries(packedRoots))
     installedCandidateFiles[name] = await verifyInstalledFiles(name, directory)
   await writeFile(join(output, 'installed-candidate-files.json'), JSON.stringify(installedCandidateFiles, null, 2) + '\n')
-  for (const name of ['package.json', 'bun.lock', 'bunfig.toml'])
+  for (const name of ['package.json', 'bun.lock', 'bunfig.toml', '.npmrc'])
     await writeFile(join(output, 'consumer-' + name), await readFile(join(consumer, name)))
   await writeFile(join(consumer, 'consumer.ts'), [
     "import type { IosMobileConfig } from '@stacksjs/types/mobile'",
@@ -170,6 +212,7 @@ catch (error) {
   throw error
 }
 finally {
-  await writeFile(join(output, 'execution-receipt.json'), JSON.stringify({ sourceCommit, commands, packages, publicCohort, failure, scope: 'Complete actual candidate runtime closure; exact canonical public cohort; strict compiler; no workspace type aliases or package patches' }, null, 2) + '\n')
+  registry?.stop(true)
+  await writeFile(join(output, 'execution-receipt.json'), JSON.stringify({ sourceCommit, commands, packages, publicCohort, registryRequests, failure, scope: 'Complete actual candidate runtime closure through an owned npm fixture; untouched archives; exact canonical public cohort; strict compiler; no workspace type aliases or package patches' }, null, 2) + '\n')
   await rm(scratch, { recursive: true, force: true })
 }
