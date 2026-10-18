@@ -2091,6 +2091,12 @@
       "source": "pantry",
       "resolved": "registry:gnu.org/gettext@0.21.1"
     },
+    "gnu.org/gettext@1.0.0": {
+      "name": "gnu.org/gettext",
+      "version": "1.0.0",
+      "source": "pantry",
+      "resolved": "registry:gnu.org/gettext@1.0.0"
+    },
     "gnu.org/gmp@6.3.0": {
       "name": "gnu.org/gmp",
       "version": "6.3.0",
