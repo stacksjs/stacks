@@ -1,0 +1,13 @@
+{
+  "name": "hq-training-docs",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@stacksjs/bunpress": "0.2.21",
+    "@stacksjs/defaults": "0.75.221",
+    "@stacksjs/stx": "0.2.567"
+  },
+  "devDependencies": {
+    "better-dx": "0.2.38"
+  }
+}
