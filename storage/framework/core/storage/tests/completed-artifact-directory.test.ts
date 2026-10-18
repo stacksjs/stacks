@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { writeCompletedArtifact } from '../src/completed-artifact-directory'
+import { completedArtifactLimits, writeCompletedArtifact } from '../src/completed-artifact-directory'
 
 test('completed artifacts snapshot bytes, publish private complete files and never overwrite another artifact', async () => {
   const root = await mkdtemp(join(tmpdir(), 'completed-artifact-'))
@@ -67,6 +67,53 @@ test('an explicitly empty artifact directory exists before its completion manife
     expect((await stat(join(result.directory, 'images'))).mode & 0o777).toBe(0o700)
     await expect(writeCompletedArtifact(join(root, 'bad'), [{ path: 'a', contents: '' }], '{}', { directories: ['a/b'] })).rejects.toThrow('collision')
     await expect(stat(join(root, 'bad'))).rejects.toThrow('ENOENT')
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
+// Public filesystem seam catches portable path validation before mutation, not hardware durability.
+test('case aliases in implicit and explicit directories fail before creating the artifact', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'artifact-directory-aliases-'))
+  try {
+    const cases = [
+      { files: ['Images/a.bin', 'images/b.bin'], directories: [] },
+      { files: ['Images/a.bin'], directories: ['images'] },
+      { files: [], directories: ['Images', 'images'] },
+      { files: ['images/Nested/a.bin', 'images/nested/b.bin'], directories: [] },
+      { files: [], directories: ['Images/Nested', 'Images/nested'] },
+      { files: ['Images', 'images/a.bin'], directories: [] },
+      { files: ['images/nested'], directories: ['Images/Nested/empty'] },
+      { files: [], directories: ['manifest.json/empty'] },
+    ]
+    for (const [index, fixture] of cases.entries()) {
+      const target = join(root, `bad-${index}`)
+      const entries = fixture.files.map(path => ({ path, contents: '' }))
+      await expect(writeCompletedArtifact(target, entries, '{}', { directories: fixture.directories })).rejects.toThrow()
+      await expect(stat(target)).rejects.toThrow('ENOENT')
+    }
+  }
+  finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('UTF-8 manifest, file count and total byte limits reject before creating the artifact', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'artifact-resource-limits-'))
+  try {
+    // Character count fits, while two-byte UTF-8 characters exceed the byte cap.
+    const manifest = JSON.stringify({ label: 'é'.repeat(completedArtifactLimits.manifestBytes / 2) })
+    expect(manifest.length).toBeLessThan(completedArtifactLimits.manifestBytes)
+    const manifestTarget = join(root, 'manifest-bytes')
+    await expect(writeCompletedArtifact(manifestTarget, [], manifest)).rejects.toThrow('manifest byte limit')
+    await expect(stat(manifestTarget)).rejects.toThrow('ENOENT')
+    const countTarget = join(root, 'file-count')
+    const tooMany = Array.from({ length: completedArtifactLimits.files + 1 }, (_, index) => ({ path: `${index}.bin`, contents: '' }))
+    await expect(writeCompletedArtifact(countTarget, tooMany, '{}')).rejects.toThrow('resource limit')
+    await expect(stat(countTarget)).rejects.toThrow('ENOENT')
+    // Reuse a small buffer: accounting must reject before allocating 128 MiB of snapshots.
+    const bytes = new Uint8Array(completedArtifactLimits.bytes / completedArtifactLimits.files)
+    const tooLarge = Array.from({ length: completedArtifactLimits.files }, (_, index) => ({ path: `${index}.bin`, contents: bytes }))
+    const bytesTarget = join(root, 'total-bytes')
+    await expect(writeCompletedArtifact(bytesTarget, tooLarge, '{}')).rejects.toThrow('Artifact byte limit')
+    await expect(stat(bytesTarget)).rejects.toThrow('ENOENT')
   }
   finally { await rm(root, { recursive: true, force: true }) }
 })

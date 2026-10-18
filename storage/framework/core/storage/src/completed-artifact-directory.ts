@@ -18,8 +18,7 @@ export async function writeCompletedArtifact(directory: string, entries: readonl
   try { manifest = JSON.parse(manifestJson) }
   catch { throw new TypeError('Invalid completion manifest JSON') }
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) throw new TypeError('Completion manifest must be a JSON object')
-  const manifestBytes = new TextEncoder().encode(manifestJson)
-  let total = manifestBytes.length
+  let total = manifestSize
   const paths = new Set(['manifest.json', 'manifest.pending.json'])
   function validatePath(path: unknown): asserts path is string {
     if (typeof path !== 'string' || path.length > 240 || !/^[a-z0-9._/-]+$/i.test(path)) throw new TypeError('Invalid artifact entry path')
@@ -43,27 +42,28 @@ export async function writeCompletedArtifact(directory: string, entries: readonl
     return { path: entry.path, contents: entry.contents }
   })
   if (!options || typeof options !== 'object' || Object.keys(options).some(key => key !== 'directories') || options.directories !== undefined && (!Array.isArray(options.directories) || options.directories.length > completedArtifactLimits.files)) throw new TypeError('Invalid artifact directory options')
-  const directories = new Set<string>()
-  for (const path of options.directories ?? []) {
-    validatePath(path)
+  const directorySpellings = new Map<string, string>()
+  function registerDirectories(path: string, includeLeaf: boolean) {
     const parts = path.split('/')
-    for (let depth = 1; depth <= parts.length; depth++) {
+    for (let depth = 1; depth <= parts.length - (includeLeaf ? 0 : 1); depth++) {
       const parent = parts.slice(0, depth).join('/')
-      if (paths.has(parent.toLowerCase())) throw new TypeError('Artifact directory and file collision')
-      directories.add(parent)
+      const key = parent.toLowerCase()
+      if (paths.has(key)) throw new TypeError('Artifact directory and file collision')
+      const spelling = directorySpellings.get(key)
+      if (spelling !== undefined && spelling !== parent) throw new TypeError('Artifact directory case alias collision')
+      directorySpellings.set(key, parent)
     }
   }
-  for (const path of paths) {
-    const parts = path.split('/')
-    for (let depth = 1; depth < parts.length; depth++) if (paths.has(parts.slice(0, depth).join('/'))) throw new TypeError('Artifact file and directory path collision')
+  for (const path of options.directories ?? []) {
+    validatePath(path)
+    registerDirectories(path, true)
   }
+  for (const file of files) registerDirectories(file.path, false)
   // Validation and size accounting precede all cloning and filesystem mutation.
+  const manifestBytes = new TextEncoder().encode(manifestJson)
   const snapshot = files.map(file => ({ path: file.path, bytes: typeof file.contents === 'string' ? new TextEncoder().encode(file.contents) : new Uint8Array(file.contents) }))
   const target = resolve(directory)
-  for (const file of snapshot) {
-    const parts = file.path.split('/')
-    for (let depth = 1; depth < parts.length; depth++) directories.add(parts.slice(0, depth).join('/'))
-  }
+  const directories = [...directorySpellings.values()]
   async function writeSynced(path: string, data: Uint8Array) {
     const file = await open(path, 'wx', 0o600)
     try { await file.writeFile(data); await file.sync() }
