@@ -9,6 +9,7 @@ export interface CraftMobileCapabilities {
   secureStorage?: boolean
   storageCompareAndSet?: boolean
   storageSetIfAbsent?: boolean
+  crypto?: boolean
   geolocation?: boolean
   backgroundLocation?: boolean
   locationRecordingOwnership?: boolean

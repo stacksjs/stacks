@@ -12,7 +12,7 @@ it('obtains a UUID from the native service through the named SDK adapter', async
   const id = '1735d054-9bd4-4fc0-a251-029265c04b28'
   Object.defineProperty(globalThis, 'window', {
     configurable: true,
-    value: { craft: { platform: 'android', crypto: { randomUUID: async () => {
+    value: { craft: { platform: 'android', capabilities: { crypto: true }, crypto: { randomUUID: async () => {
       calls++
       return id
     } } } },
@@ -29,7 +29,7 @@ it('rejects an older native host without substituting browser randomness', async
 it('preserves a native UUID failure', async () => {
   Object.defineProperty(globalThis, 'window', {
     configurable: true,
-    value: { craft: { platform: 'ios', crypto: { randomUUID: async () => {
+    value: { craft: { platform: 'ios', capabilities: { crypto: true }, crypto: { randomUUID: async () => {
       throw Object.assign(new Error('System UUID unavailable'), { code: 'UUID_FAILED' })
     } } } },
   })
