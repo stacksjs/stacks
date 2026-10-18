@@ -108,7 +108,7 @@ try {
       const path = new URL(request.url).pathname.slice(1)
       registryRequests.push(path)
       for (const [name, artifact] of candidateArtifacts) {
-        if (path === `archives/${encodeURIComponent(name)}.tgz`)
+        if (decodeURIComponent(path) === `archives/${name}.tgz`)
           return new Response(artifact.bytes, { headers: { 'Content-Type': 'application/octet-stream' } })
       }
       const name = decodeURIComponent(path)
@@ -121,7 +121,7 @@ try {
           versions: { [candidate.manifest.version]: {
             ...candidate.manifest,
             dist: {
-              tarball: new URL(`archives/${encodeURIComponent(name)}.tgz`, request.url).href,
+              tarball: new URL(`/archives/${encodeURIComponent(name)}.tgz`, request.url).href,
               shasum: createHash('sha1').update(candidate.bytes).digest('hex'),
               integrity: 'sha512-' + createHash('sha512').update(candidate.bytes).digest('base64'),
             },
