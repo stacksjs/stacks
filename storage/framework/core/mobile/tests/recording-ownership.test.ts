@@ -3,6 +3,11 @@ import { createRouteRecorder } from '../src/route'
 
 const firstFix = { latitude: 52.5, longitude: 13.4, accuracy: 5, timestamp: 1000 }
 
+const secondRoute = [
+  { latitude: 40.7, longitude: -74, accuracy: 5, timestamp: 2000 },
+  { latitude: 40.701, longitude: -74, accuracy: 5, timestamp: 3000 },
+]
+
 /** One native recording slot shared by screens and accounts on a phone. */
 function sharedLocation(initiallyActive = true) {
   const calls: string[] = []
@@ -450,5 +455,113 @@ describe('registered caller recording identities', () => {
       expect(phone.state()).toMatchObject({ id: 'durable-A-route', active: false })
     }
     finally { reopened.dispose() }
+  })
+})
+
+describe('same recorder reuse', () => {
+  it('stops B and returns B fixes after stopping A and attaching B on the same controller', async () => {
+    const phone = sharedLocation()
+    const stoppedIds: Array<string | undefined> = []
+    const nativeStop = phone.api.stopRecording
+    phone.api.stopRecording = async (options) => {
+      stoppedIds.push(options?.expectedId)
+      return nativeStop(options)
+    }
+    const recorder = createRouteRecorder({ location: phone.api })
+    try {
+      await recorder.attach({ expectedId: 'athlete-a-route' })
+      expect(await recorder.stop()).toEqual([firstFix])
+      phone.replace('athlete-b-route', secondRoute)
+      await recorder.attach({ expectedId: 'athlete-b-route' })
+      expect(await recorder.stop()).toEqual(secondRoute)
+      expect(phone.state()).toMatchObject({ id: 'athlete-b-route', active: false })
+      expect(stoppedIds).toEqual(['athlete-a-route', 'athlete-b-route'])
+      expect(phone.calls.filter(call => call === 'stop')).toHaveLength(2)
+    }
+    finally { recorder.dispose() }
+  })
+
+  it('clears A private heart data when the same controller attaches GPS-only B', async () => {
+    const phone = sharedLocation()
+    const heart = sharedHeartRate()
+    const recorder = createRouteRecorder({ location: phone.api, heartRate: heart.api })
+    try {
+      await recorder.attach({ expectedId: 'athlete-a-route', expectedHeartRateId: 'athlete-a-heart' })
+      await recorder.stop()
+      expect(recorder.heartRateRecordingId).toBe('athlete-a-heart')
+      expect(recorder.heartRate).toEqual([{ timestamp: 1000, bpm: 69 }])
+      const before = heart.calls.slice()
+      phone.replace('athlete-b-route', secondRoute)
+      await recorder.attach({ expectedId: 'athlete-b-route' })
+      expect(recorder.heartRateRecordingId).toBeNull()
+      expect(recorder.heartRate).toEqual([])
+      expect(await recorder.stop()).toEqual(secondRoute)
+      expect(heart.calls).toEqual(before)
+    }
+    finally { recorder.dispose() }
+  })
+
+  it('keeps A selected when attaching B rejects its supplied heart recording identity', async () => {
+    const phone = sharedLocation()
+    const heart = sharedHeartRate()
+    const recorder = createRouteRecorder({ location: phone.api, heartRate: heart.api })
+    try {
+      await recorder.attach({ expectedId: 'athlete-a-route', expectedHeartRateId: 'athlete-a-heart' })
+      await recorder.stop()
+      const prior = { stats: recorder.stats, heartId: recorder.heartRateRecordingId, heart: recorder.heartRate.slice() }
+      phone.replace('athlete-b-route', secondRoute)
+      await expect(recorder.attach({ expectedId: 'athlete-b-route', expectedHeartRateId: 'missing-b-heart' })).rejects.toMatchObject({ code: 'RECORDING_CONFLICT' })
+      expect(recorder.recordingId).toBe('athlete-a-route')
+      expect(recorder.stats).toEqual(prior.stats)
+      expect(recorder.heartRateRecordingId).toBe(prior.heartId)
+      expect(recorder.heartRate).toEqual(prior.heart)
+      expect(phone.state()).toMatchObject({ id: 'athlete-b-route', active: true })
+    }
+    finally { recorder.dispose() }
+  })
+
+  it('keeps B stats private from a held A read when the same controller attaches B', async () => {
+    const phone = sharedLocation()
+    const updates: Array<{ id: string | null, fixes: number }> = []
+    const recorder = createRouteRecorder({ location: phone.api, onUpdate: stats => updates.push({ id: recorder.recordingId, fixes: stats.fixes }) })
+    const gate = Promise.withResolvers<void>()
+    const reading = Promise.withResolvers<void>()
+    let held: Promise<unknown> | null = null
+    try {
+      await recorder.attach({ expectedId: 'athlete-a-route' })
+      const nativeRead = phone.api.readRecording
+      phone.api.readRecording = async (options) => {
+        const snapshot = await nativeRead(options)
+        if (options?.expectedId === 'athlete-a-route') {
+          reading.resolve()
+          await gate.promise
+        }
+        return snapshot
+      }
+      held = recorder.refresh()
+      await reading.promise
+      // Another native owner has finished A and started B while its old read
+      // response is in flight. Only the saved B identity is attached here.
+      await phone.api.stopRecording({ expectedId: 'athlete-a-route' })
+      phone.replace('athlete-b-route', secondRoute)
+      updates.length = 0
+      const attaching = recorder.attach({ expectedId: 'athlete-b-route' })
+      // Let B's native promises settle before the delayed A response arrives.
+      await new Promise<void>(resolve => setTimeout(() => {
+        gate.resolve()
+        resolve()
+      }, 0))
+      await attaching
+      expect(await held).toMatchObject({ fixes: 1 })
+      expect(recorder.recordingId).toBe('athlete-b-route')
+      expect(recorder.stats.fixes).toBe(secondRoute.length)
+      expect(updates.filter(update => update.id === 'athlete-b-route')).toEqual([{ id: 'athlete-b-route', fixes: secondRoute.length }])
+      expect(phone.state()).toMatchObject({ id: 'athlete-b-route', active: true })
+    }
+    finally {
+      gate.resolve()
+      if (held) await held
+      recorder.dispose()
+    }
   })
 })

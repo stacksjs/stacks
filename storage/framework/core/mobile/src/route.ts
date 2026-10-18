@@ -279,18 +279,21 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     if (read) return read
     const version = generation
     const expectedId = recordingId
-    read = (async () => {
+    const pending = (async () => {
       requireOwnership()
       if (!expectedId)
         throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
       const fixes = await location.readRecording({ expectedId }) as RouteFix[]
+      const nextStats = routeStats(fixes, options)
       if (version === generation && !disposed) {
-        stats = routeStats(fixes, options)
+        stats = nextStats
         options.onUpdate?.(stats)
       }
-      return stats
-    })().finally(() => { read = null })
-    return read
+      // A held A request receives only A's snapshot, even if B is now selected.
+      return nextStats
+    })().finally(() => { if (read === pending) read = null })
+    read = pending
+    return pending
   }
 
   function poll(): void {
@@ -306,6 +309,19 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     if (timer)
       clearInterval(timer)
     timer = null
+  }
+
+  /** Publish one fully validated selection; no prior recording can update it. */
+  function selectRecording(id: string, heartId: string | null, nextStats: RouteStats): void {
+    stopPolling()
+    generation++
+    read = null
+    recordingId = id
+    heartRateRecordingId = heartId
+    strapRecording = heartId !== null
+    heartRateSamples = []
+    stats = nextStats
+    if (!disposed) options.onUpdate?.(stats)
   }
 
   // The strap's recording follows the route's. A strap that cannot record
@@ -333,30 +349,27 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
           throw Object.assign(new Error('The native recording did not provide an ID'), { code: 'RECORDING_CONFLICT' })
         if (intent && started.id !== intent.recordingId)
           throw Object.assign(new Error('The native route did not start with its registered ID'), { code: 'RECORDING_CONFLICT' })
-        recordingId = started.id
-        heartRateSamples = []
-        heartRateRecordingId = null
-        strapRecording = false
+        let nextHeartId: string | null = null
         if (!disposed && strap?.isAvailable() && strap.supportsRecordingOwnership?.() === true && (!intent || (intent.heartRateRecordingId && strap.supportsRecordingIntentIdentity?.() === true))) {
           try {
             const startedHeart = await strap.startRecording(intent ? { recordingId: intent.heartRateRecordingId } : undefined)
             if (intent && startedHeart.id !== intent.heartRateRecordingId)
               throw Object.assign(new Error('The native heart rate did not start with its registered ID'), { code: 'RECORDING_CONFLICT' })
             if (startedHeart.active && typeof startedHeart.id === 'string' && startedHeart.id.trim()) {
-              heartRateRecordingId = startedHeart.id
-              strapRecording = true
+              nextHeartId = startedHeart.id
             }
           }
           catch { /* Optional heart-rate recording never replaces an existing slot. */ }
         }
-        generation++
-        stats = { ...EMPTY_STATS }
-        if (!disposed) options.onUpdate?.(stats)
+        selectRecording(started.id, nextHeartId, { ...EMPTY_STATS })
         poll()
         return stats
       })
     },
     attach(ownership) {
+      // A stop requested after this attachment belongs behind it in the
+      // command queue, even if the preceding recording already stopped.
+      ending = null
       return serialize(async () => {
         if (typeof ownership?.expectedId !== 'string' || !ownership.expectedId.trim())
           throw Object.assign(new Error('A saved recording ID is required'), { code: 'RECORDING_CONFLICT' })
@@ -366,9 +379,8 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
         if (!state?.id) return null
         if (state.id !== ownership.expectedId)
           throw Object.assign(new Error('The recording belongs to another session'), { code: 'RECORDING_CONFLICT' })
-        recordingId = ownership.expectedId
         // A global strap recording is not owned merely because this route is.
-        strapRecording = false
+        let nextHeartId: string | null = null
         if (ownership.expectedHeartRateId !== undefined) {
           const expectedHeartRateId = ownership.expectedHeartRateId
           if (typeof expectedHeartRateId !== 'string' || !expectedHeartRateId.trim())
@@ -381,10 +393,13 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
             throw Object.assign(new Error('The heart-rate recording belongs to another session'), { code: 'RECORDING_CONFLICT' })
           await strap.readRecording({ expectedId: expectedHeartRateId, since: Date.now() })
           requireOwnership()
-          heartRateRecordingId = expectedHeartRateId
-          strapRecording = true
+          nextHeartId = expectedHeartRateId
         }
-        await refresh()
+        // Stage this route's own fixes without borrowing an in-flight read
+        // from the previous selection. A rejected read changes no public data.
+        const fixes = await location.readRecording({ expectedId: ownership.expectedId }) as RouteFix[]
+        requireOwnership()
+        selectRecording(ownership.expectedId, nextHeartId, routeStats(fixes, options))
         if (state.active && !state.paused) poll()
         return state
       })
@@ -406,7 +421,7 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     },
     stop() {
       if (ending) return ending
-      ending = serialize(async () => {
+      const pending = serialize(async () => {
         stopPolling()
         generation++
         const expectedId = ownedId()
@@ -424,14 +439,16 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
         if (!disposed) options.onUpdate?.(stats)
         return fixes
       }).catch((error) => {
-        ending = null
+        if (ending === pending) ending = null
         throw error
       })
-      return ending
+      ending = pending
+      return pending
     },
     dispose() {
       disposed = true
       generation++
+      read = null
       stopPolling()
     },
     refresh,
