@@ -20,9 +20,15 @@ export interface APNSMessage {
   collapseId?: string
 }
 let configured: APNSConfig = {}
-let cached: { identity: string, token: string, issuedAt: number } | undefined
-export function configure(options: APNSConfig): void { configured = { ...options }; cached = undefined }
-export function resetConfiguration(): void { configured = {}; cached = undefined }
+/**
+ * Provider tokens by signing identity. One server can send for several apps
+ * (each with its own team, key or topic), and Apple refuses a key whose token
+ * is renewed more than about every 20 minutes, so each identity keeps its own
+ * token for its hour rather than taking turns with one slot.
+ */
+const cached = new Map<string, { token: string, issuedAt: number }>()
+export function configure(options: APNSConfig): void { configured = { ...options }; cached.clear() }
+export function resetConfiguration(): void { configured = {}; cached.clear() }
 
 export function buildProviderToken(teamId: string, keyId: string, privateKey: string, now = Math.floor(Date.now() / 1000)): string {
   const header = Buffer.from(JSON.stringify({ alg: 'ES256', kid: keyId })).toString('base64url')
@@ -43,23 +49,36 @@ export function buildPayload(message: APNSMessage): string {
   return payload
 }
 
-/** Apple device tokens come from the native bridge, independently of Firebase. */
-export async function send(to: string | string[], message: APNSMessage): Promise<PushResult> {
+/**
+ * Apple device tokens come from the native bridge, independently of Firebase.
+ *
+ * `credentials` are this send's own, for a server that sends for more than
+ * one app: a white-label app has its own bundle ID as the topic, and one
+ * published on another team signs with that team's key. Each field it sets
+ * wins over `configure()` and `config/services.ts`; what it leaves out comes
+ * from them.
+ */
+export async function send(to: string | string[], message: APNSMessage, credentials: APNSConfig = {}): Promise<PushResult> {
   const tokens = Array.isArray(to) ? to : [to]
   if (!tokens.length || tokens.some(token => !/^[a-f\d]{64}$/i.test(token))) return { success: false, provider: 'apns', message: 'A valid Apple device token is required' }
   const service = (await appServices()).apns
-  const teamId = present(configured.teamId) ?? present(service?.teamId)
-  const keyId = present(configured.keyId) ?? present(service?.keyId)
-  const privateKey = present(configured.privateKey) ?? present(service?.privateKey)
-  const topic = present(configured.topic) ?? present(service?.topic)
+  const teamId = present(credentials.teamId) ?? present(configured.teamId) ?? present(service?.teamId)
+  const keyId = present(credentials.keyId) ?? present(configured.keyId) ?? present(service?.keyId)
+  const privateKey = present(credentials.privateKey) ?? present(configured.privateKey) ?? present(service?.privateKey)
+  const topic = present(credentials.topic) ?? present(configured.topic) ?? present(service?.topic)
+  const sandbox = credentials.sandbox ?? configured.sandbox ?? service?.sandbox
   if (!teamId || !keyId || !privateKey || !topic) return { success: false, provider: 'apns', message: 'APNs requires teamId, keyId, privateKey and topic' }
   try {
     const payload = buildPayload(message)
     const now = Math.floor(Date.now() / 1000)
     const identity = `${teamId}:${keyId}:${privateKey}`
-    if (!cached || cached.identity !== identity || now - cached.issuedAt >= 3000 || now < cached.issuedAt) cached = { identity, token: buildProviderToken(teamId, keyId, privateKey, now), issuedAt: now }
-    const token = cached.token
-    const session = http2.connect(configured.sandbox ?? service?.sandbox ? 'https://api.sandbox.push.apple.com' : 'https://api.push.apple.com')
+    let entry = cached.get(identity)
+    if (!entry || now - entry.issuedAt >= 3000 || now < entry.issuedAt) {
+      entry = { token: buildProviderToken(teamId, keyId, privateKey, now), issuedAt: now }
+      cached.set(identity, entry)
+    }
+    const token = entry.token
+    const session = http2.connect(sandbox ? 'https://api.sandbox.push.apple.com' : 'https://api.push.apple.com')
     session.on('error', () => {})
     try {
       const results = await Promise.all(tokens.map(deviceToken => new Promise<{ success: boolean, status: number, reason?: string, messageId?: string }>((resolve) => {

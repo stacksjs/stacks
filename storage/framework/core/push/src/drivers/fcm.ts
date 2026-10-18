@@ -221,14 +221,33 @@ async function getAccessToken(credentials: FCMConfig): Promise<string> {
 }
 
 /**
- * Send push notification via FCM v1 API (using service account)
+ * The credentials one send uses: its own when it brings a complete set (a
+ * server sending for several apps, each in its own Firebase project), else
+ * `resolveConfig()`'s. A partial set is not mixed with the app's: a project
+ * ID from one Firebase project and a service account from another is never
+ * a working pair.
  */
-export async function send(message: FCMMessage): Promise<PushResult> {
+async function credentialsFor(override?: FCMConfig): Promise<FCMConfig> {
+  const projectId = present(override?.projectId)
+  const clientEmail = present(override?.serviceAccount?.clientEmail)
+  const privateKey = present(override?.serviceAccount?.privateKey)
+  if (projectId && clientEmail && privateKey)
+    return { projectId, serviceAccount: { clientEmail, privateKey: normalizePrivateKey(privateKey) } }
+  return resolveConfig()
+}
+
+/**
+ * Send push notification via FCM v1 API (using service account)
+ *
+ * `credentialsOverride`: this send's own project and service account (see
+ * `credentialsFor`), for an app other than the one `config/services.ts` names.
+ */
+export async function send(message: FCMMessage, credentialsOverride?: FCMConfig): Promise<PushResult> {
   // There is deliberately no legacy fallback. The legacy HTTP protocol was
   // decommissioned on 2024-06-20 and its endpoint now answers 404, so falling
   // back to it could only turn a missing credential into a confusing HTTP
   // error further away from the cause.
-  const credentials = await resolveConfig()
+  const credentials = await credentialsFor(credentialsOverride)
   if (!credentials.serviceAccount || !credentials.projectId) {
     return {
       success: false,
@@ -316,9 +335,10 @@ export async function send(message: FCMMessage): Promise<PushResult> {
 export async function sendMulticast(
   tokens: string[],
   message: Omit<FCMMessage, 'to'>,
+  credentials?: FCMConfig,
 ): Promise<PushResult[]> {
   // The v1 API has no multicast, and the legacy API that did is decommissioned.
-  return Promise.all(tokens.map(token => send({ ...message, to: token })))
+  return Promise.all(tokens.map(token => send({ ...message, to: token }, credentials)))
 }
 
 /**

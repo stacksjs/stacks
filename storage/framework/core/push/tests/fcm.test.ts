@@ -257,3 +257,55 @@ describe('FCM legacy send path', () => {
     expect(/['"`]https:\/\/iid\.googleapis\.com/.test(source)).toBe(false)
   })
 })
+
+describe('FCM credentials for one send', () => {
+  const realFetch = globalThis.fetch
+  afterEach(async () => {
+    globalThis.fetch = realFetch
+    const fcm = await import('../src/drivers/fcm')
+    fcm.resetConfiguration()
+  })
+
+  test('a send with its own project and service account uses them, and the next send without goes back to the configured app', async () => {
+    const urls: string[] = []
+    const assertions: string[] = []
+    globalThis.fetch = (async (input: any, init: any = {}) => {
+      const url = String(input?.url ?? input)
+      urls.push(url)
+      if (url.startsWith('https://oauth2.googleapis.com/token')) {
+        assertions.push(String(init.body))
+        return new Response(JSON.stringify({ access_token: `token-${assertions.length}`, expires_in: 3600 }), { status: 200 })
+      }
+      return new Response(JSON.stringify({ name: 'projects/x/messages/1' }), { status: 200 })
+    }) as typeof fetch
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ projectId: 'hq-app', serviceAccount: { clientEmail: 'push@hq-app.iam.gserviceaccount.com', privateKey: await generateServiceAccountKey() } })
+    const gym = { projectId: 'gym-app', serviceAccount: { clientEmail: 'push@gym-app.iam.gserviceaccount.com', privateKey: await generateServiceAccountKey() } }
+
+    expect((await fcm.send({ to: 'gym-device', notification: { title: 'Class', body: 'Starts at 18:00' } }, gym)).success).toBe(true)
+    expect((await fcm.send({ to: 'hq-device', notification: { title: 'Run', body: 'Today' } })).success).toBe(true)
+
+    const sends = urls.filter(url => url.includes('messages:send'))
+    expect(sends).toEqual([
+      'https://fcm.googleapis.com/v1/projects/gym-app/messages:send',
+      'https://fcm.googleapis.com/v1/projects/hq-app/messages:send',
+    ])
+    // Each project's own service account asked for its own access token.
+    expect(assertions).toHaveLength(2)
+  })
+
+  test('an incomplete set is not mixed with the configured one', async () => {
+    const urls: string[] = []
+    globalThis.fetch = (async (input: any) => {
+      const url = String(input?.url ?? input)
+      urls.push(url)
+      if (url.startsWith('https://oauth2.googleapis.com/token'))
+        return new Response(JSON.stringify({ access_token: 'token' }), { status: 200 })
+      return new Response(JSON.stringify({ name: 'projects/x/messages/1' }), { status: 200 })
+    }) as typeof fetch
+    const fcm = await import('../src/drivers/fcm')
+    fcm.configure({ projectId: 'hq-app', serviceAccount: { clientEmail: 'push@hq-app.iam.gserviceaccount.com', privateKey: await generateServiceAccountKey() } })
+    await fcm.send({ to: 'device', notification: { title: 'A', body: 'B' } }, { projectId: 'gym-app' })
+    expect(urls.filter(url => url.includes('messages:send'))).toEqual(['https://fcm.googleapis.com/v1/projects/hq-app/messages:send'])
+  })
+})
