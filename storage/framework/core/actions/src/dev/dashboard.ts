@@ -28,7 +28,7 @@ const verboseIdx = process.argv.indexOf('--verbose')
 const verbose = verboseIdx !== -1 && process.argv[verboseIdx + 1] !== 'false'
 const startTime = Bun.nanoseconds()
 
-// Buffer all dependency console output (STX serve, Crosswind, bun-router)
+// Buffer all dependency console output (STX serve, ts-css, bun-router)
 // so we can display it cleanly after our banner (verbose) or discard it (normal).
 const originalConsoleLog = console.log
 const originalConsoleWarn = console.warn
@@ -106,18 +106,13 @@ async function startStxServer(): Promise<void> {
   // dashboard's layout resolution stays consistent with the other dev
   // servers.
   let stxModule: any
-  // Local stx checkout first (same convention as the Craft SDK resolution
-  // below) so framework development picks up engine fixes before a release;
-  // STX_SRC overrides the default location.
+  // Published dependencies are the default. Framework maintainers may opt
+  // into a source checkout explicitly; a neighbouring repository must never
+  // silently replace the STX or ts-css package an application installed.
   try {
     const localStx = process.env.STX_SRC
-      || `${process.env.HOME}/Code/Tools/stx/packages/stx/src/index.ts`
-    if (await Bun.file(localStx).exists()) {
-      const localCrosswind = `${process.env.HOME}/Code/Tools/crosswind/packages/crosswind/src/index.ts`
-      if (!process.env.CROSSWIND_SRC && await Bun.file(localCrosswind).exists())
-        process.env.CROSSWIND_SRC = localCrosswind
+    if (localStx && await Bun.file(localStx).exists())
       stxModule = await import(localStx)
-    }
   }
   catch { /* fall through */ }
   if (stxModule && verbose)
@@ -222,9 +217,9 @@ async function startStxServer(): Promise<void> {
     }
   }
 
-  // Dashboard icons render through Crosswind icon classes (`i-hugeicons-*`), but most are
+  // Dashboard icons render through ts-css icon classes (`i-hugeicons-*`), but most are
   // applied via dynamic bindings — `:class="stat.icon"` — whose values live in `<script>`
-  // state. The stx Crosswind extractor only sees static `class="…"` and string literals
+  // state. The stx ts-css extractor only sees static `class="…"` and string literals
   // written inline inside `:class="…"`, so dynamically-bound icons never get CSS generated
   // and render as empty boxes. Generate the CSS for every icon the dashboard references
   // (framework defaults + userland overrides) ONCE and serve it as a browser-cached

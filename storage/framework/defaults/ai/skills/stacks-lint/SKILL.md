@@ -33,13 +33,13 @@ selects that file. Keep the command and CI on the same policy.
 Buddy discovers tracked files plus untracked files allowed by `.gitignore`.
 Its extension and path predicate lives in `@stacksjs/actions/lint/files`;
 Code-style discovery includes ts, js, stx, json, md, yaml and yml, including
-Crosswind checks in tracked and newly created STX templates. Use Pickier directly
+ts-css checks in tracked and newly created STX templates. Use Pickier directly
 to include shell sources. Generated framework
 assets belong to the upstream framework's checks, not application edits.
 
 ## Conventions
 
-Use two spaces, single quotes and no optional semicolons. Use Crosswind classes
+Use two spaces, single quotes and no optional semicolons. Use ts-css classes
 and stx signals/directives in templates. Fix real findings in source, rather than
 turning off rules to obtain a clean report. For intentional unused variables,
 prefer a targeted `// eslint-disable-next-line` over an underscore prefix.

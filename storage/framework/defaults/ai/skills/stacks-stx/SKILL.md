@@ -12,7 +12,7 @@ STX is the full-stack templating and component framework for Stacks. It handles 
 
 ## Design & anti-slop skills
 
-When the task is how a page should *look* (not just how stx renders), pair this skill with the design-taste family: `stacks-design-taste` (flagship), the aesthetic presets `stacks-design-soft` / `stacks-design-minimalist` / `stacks-design-brutalist`, `stacks-redesign`, `stacks-design-output`, and the image-first `stacks-image-to-code` / `stacks-imagegen-web` / `stacks-imagegen-mobile` / `stacks-brandkit`. They translate premium design rules into stx + Crosswind + composables.
+When the task is how a page should *look* (not just how stx renders), pair this skill with the design-taste family: `stacks-design-taste` (flagship), the aesthetic presets `stacks-design-soft` / `stacks-design-minimalist` / `stacks-design-brutalist`, `stacks-redesign`, `stacks-design-output`, and the image-first `stacks-image-to-code` / `stacks-imagegen-web` / `stacks-imagegen-mobile` / `stacks-brandkit`. They translate premium design rules into stx + ts-css + composables.
 
 ## Key Paths
 - STX config: `config/ui.ts`
@@ -82,7 +82,7 @@ function increment(): void {
 </template>
 
 <style>
-/* Use crosswind utility classes or custom CSS */
+/* Use ts-css utility classes or custom CSS */
 .container { max-width: 1200px; margin: 0 auto; }
 </style>
 ```
@@ -329,7 +329,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **Client loop conditions** - `@if` chains that read `:for` or `@for` aliases compile into scoped runtime chains; aliases do not leak outside the loop element
 - **Component tag case is semantic** - `<Input v-model:value="query">` is a paired component, while lowercase `<input v-model="query">` is a native void element. Keep component tags PascalCase, including names that collide with native elements
 - **Structural DOM timing** - use `nextTick()` with `useRef()` after opening reactive markup
-- **Crosswind for styling** - use utility classes, not inline styles
+- **ts-css for styling** - use utility classes, not inline styles
 - **Script block restrictions** - only stx-compatible code (signals, composables, directives), no vanilla DOM APIs
 - **Pre-paint state** - use `@appearanceBootstrap`, never a raw browser script in the template
 - **Components go in `resources/`** - not in `app/` or `storage/`

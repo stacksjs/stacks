@@ -1,6 +1,6 @@
 ---
 name: stacks-design-taste
-description: Use when designing or building a landing page, portfolio, hero, marketing section, or redesign in a Stacks app, or when the ask is anti-slop / premium frontend work. Reads the brief, infers the right direction, and ships stx + Crosswind interfaces that do not look templated, with a strict pre-flight check.
+description: Use when designing or building a landing page, portfolio, hero, marketing section, or redesign in a Stacks app, or when the ask is anti-slop / premium frontend work. Reads the brief, infers the right direction, and ships stx + ts-css interfaces that do not look templated, with a strict pre-flight check.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,11 +8,11 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Design Taste: Anti-Slop Frontend Skill
 
-Related skills: [stacks-stx](../stacks-stx) (templating, directives, signals, SSR/hydration), [stacks-composables](../stacks-composables) (full composable reference), [stacks-crosswind](../stacks-crosswind) (utilities, dark mode, theming), [stacks-ui](../stacks-ui) (Craft native + headless components, Transition). Companions: [stacks-design-soft](../stacks-design-soft), [stacks-design-minimalist](../stacks-design-minimalist), [stacks-design-brutalist](../stacks-design-brutalist), [stacks-redesign](../stacks-redesign), [stacks-design-output](../stacks-design-output).
+Related skills: [stacks-stx](../stacks-stx) (templating, directives, signals, SSR/hydration), [stacks-composables](../stacks-composables) (full composable reference), [stacks-ts-css](../stacks-ts-css) (utilities, dark mode, theming), [stacks-ui](../stacks-ui) (Craft native + headless components, Transition). Companions: [stacks-design-soft](../stacks-design-soft), [stacks-design-minimalist](../stacks-design-minimalist), [stacks-design-brutalist](../stacks-design-brutalist), [stacks-redesign](../stacks-redesign), [stacks-design-output](../stacks-design-output).
 
 > Landing pages, portfolios, and redesigns in Stacks. Not dashboards, not data tables, not multi-step product UI (see Section 13).
 > Every rule below is **contextual**. None of it fires automatically. First read the brief, then pull only what fits.
-> Everything is built with **stx** templates + **Crosswind** utilities + **stx composables**. No JSX, no external motion library.
+> Everything is built with **stx** templates + **ts-css** utilities + **stx composables**. No JSX, no external motion library.
 
 ---
 
@@ -32,8 +32,8 @@ Before touching code or tweaking dials, **infer what the user actually wants**. 
 Before any code, state in one line: **"Reading this as: \<page kind> for \<audience>, with a \<vibe> language, leaning toward \<aesthetic family> built on the Stacks stack."**
 
 Example reads:
-- *"Reading this as: B2B SaaS landing for technical buyers, with a Linear-style minimalist language, leaning toward Crosswind utilities + Geist + restrained CSS motion."*
-- *"Reading this as: solo designer portfolio for hiring managers, with an editorial / kinetic-type language, leaning toward Crosswind + scroll-driven CSS animation + custom typography."*
+- *"Reading this as: B2B SaaS landing for technical buyers, with a Linear-style minimalist language, leaning toward ts-css utilities + Geist + restrained CSS motion."*
+- *"Reading this as: solo designer portfolio for hiring managers, with an editorial / kinetic-type language, leaning toward ts-css + scroll-driven CSS animation + custom typography."*
 - *"Reading this as: redesign of a trust-first service site, leaning toward high-contrast neutral system, accessibility-first, minimal motion."*
 
 ### 0.C If the brief is ambiguous, ask one question, do not guess
@@ -95,18 +95,18 @@ The React skill's "reach for Fluent / Carbon / Material / shadcn" advice does **
 | Layer | What to use | Notes |
 |---|---|---|
 | Components | **Stacks UI** (`@stacksjs/ui/components`) | Typed component exports backed by `@stacksjs/components`; STX tags resolve through the configured component plugin. Native applications use the mobile/desktop bridges and components appropriate to their host. See [stacks-ui](../stacks-ui). |
-| Styling | **Crosswind** utilities | Tailwind-compatible syntax, `dark:` variant, arbitrary values. See [stacks-crosswind](../stacks-crosswind). |
+| Styling | **ts-css** utilities | Tailwind-compatible syntax, `dark:` variant, arbitrary values. See [stacks-ts-css](../stacks-ts-css). |
 | Icons | **Iconify** `i-{collection}-{name}` | hugeicons default. See Section 3.C. |
 | Templating | **stx** SFC | `<script>` / `<template>` / `<style>`. See [stacks-stx](../stacks-stx). |
 
-**Honesty rule (retargeted):** use the real official thing, do not hand-recreate tokens. In Stacks, the real official thing is **Stacks UI + Crosswind + Iconify**. Do NOT tell the user to `npm install` Fluent, Carbon, Material, Radix, or shadcn into a Stacks app. Do NOT hand-recreate a component that already exists in Stacks UI.
+**Honesty rule (retargeted):** use the real official thing, do not hand-recreate tokens. In Stacks, the real official thing is **Stacks UI + ts-css + Iconify**. Do NOT tell the user to `npm install` Fluent, Carbon, Material, Radix, or shadcn into a Stacks app. Do NOT hand-recreate a component that already exists in Stacks UI.
 
 **One system per project = the Stacks stack.** External design systems are out of scope unless the user explicitly runs a separate non-Stacks frontend.
 
 ### 2.B When the brief is an aesthetic, not a system
-Aesthetic directions have no package. Build them with **native CSS + Crosswind**. Be honest in code comments about what is borrowed inspiration vs. real material.
+Aesthetic directions have no package. Build them with **native CSS + ts-css**. Be honest in code comments about what is borrowed inspiration vs. real material.
 
-| Aesthetic | Honest implementation (Crosswind + native CSS) |
+| Aesthetic | Honest implementation (ts-css + native CSS) |
 |---|---|
 | Glassmorphism / "frosted glass" | `backdrop-filter`, layered borders, highlight overlays. Provide solid-fill fallback for `prefers-reduced-transparency`. See Appendix C. |
 | Bento (Apple-style tile grids) | CSS Grid with mixed cell sizes (`grid grid-cols-*` + row/col spans). No library owns this. |
@@ -128,7 +128,7 @@ Unless the design read pulls in an aesthetic-specific companion, these are the d
 * **Templating:** **stx** SFC files (`.stx`) with three optional blocks: `<script>`, `<template>` (or bare markup), `<style>`. Pages/views in `resources/views/*.stx`, components in `resources/components/*.stx`, layouts in `resources/layouts/*.stx`.
   * **SERVER vs CLIENT split (the stx equivalent of RSC):** put data fetching, DB access, and secrets in `<script server>` (stripped from the client bundle). Put browser-only behavior (motion, pointer, scroll observers) in `<script client>`. A plain `<script>` runs on both. There is **no `'use client'`** directive - the block type IS the boundary.
   * **INTERACTIVITY ISOLATION:** any component that observes scroll, tracks the pointer, or runs CSS-driven motion keeps its interactive logic in a `<script client>` block. Server rendering stays static.
-* **Styling:** **Crosswind** (Tailwind-compatible utilities). Scoped rules go in the `.stx` `<style>` block; tokens go in CSS custom properties. See [stacks-crosswind](../stacks-crosswind).
+* **Styling:** **ts-css** (Tailwind-compatible utilities). Scoped rules go in the `.stx` `<style>` block; tokens go in CSS custom properties. See [stacks-ts-css](../stacks-ts-css).
 * **Motion:** CSS + composables ONLY. Stacks ships no animation library (Section 5). Never import `motion/react`, `framer-motion`, or `gsap`.
 * **Fonts:** Stacks `fonts` config plus `<link rel="preconnect">` + stylesheet (or self-hosted `@font-face`) in the layout `.stx` `<head>`, always `font-display: swap`. There is **no `next/font`**. See Section 4.1.
 
@@ -140,7 +140,7 @@ Unless the design read pulls in an aesthetic-specific companion, these are the d
 * **NEVER drive continuous values (mouse position, scroll progress, pointer physics, magnetic hover) through a signal you re-read every frame.** Writing signal state on every pointer or scroll frame re-runs reactive effects and collapses on mobile. Instead drive a **CSS custom property** from in its subscription callback (Section 5.D) or let CSS scroll-driven animations do the work with no script at all.
 
 ### 3.C Icons
-* **Use Iconify utility classes.** stx ships 200K+ Iconify icons as classes: `<i class="i-hugeicons-{name}"></i>`, or any collection `i-{collection}-{name}` (`i-ph-arrow-right`, `i-tabler-check`). Size and color with Crosswind: `class="h-6 w-6 text-gray-500 i-hugeicons-book-open"`.
+* **Use Iconify utility classes.** stx ships 200K+ Iconify icons as classes: `<i class="i-hugeicons-{name}"></i>`, or any collection `i-{collection}-{name}` (`i-ph-arrow-right`, `i-tabler-check`). Size and color with ts-css: `class="h-6 w-6 text-gray-500 i-hugeicons-book-open"`.
 * **Default collection: hugeicons.** Keep **one collection per project**. Standardize stroke weight.
 * **NEVER hand-roll SVG icon paths. NEVER `npm install lucide-react` / `@phosphor-icons/*` / any icon package.** The Iconify classes replace all of that. If a glyph is missing, pull it from another Iconify collection - do not draw paths from scratch.
 
@@ -154,7 +154,7 @@ Discouraged by default in code, markup, and visible text. Replace symbols with I
 * **Grid over Flex-Math:** NEVER use complex flexbox percentage math (`w-[calc(33%-1rem)]`). ALWAYS use CSS Grid (`grid grid-cols-1 md:grid-cols-3 gap-6`).
 
 ### 3.F Dependency Verification (mandatory)
-Before importing ANY 3rd-party library, check `package.json`. Most of what you need is already in the Stacks stack (Stacks UI, Crosswind, Iconify, composables) and needs no install. If you genuinely need a missing package, output the install command first. **Never** assume a library exists.
+Before importing ANY 3rd-party library, check `package.json`. Most of what you need is already in the Stacks stack (Stacks UI, ts-css, Iconify, composables) and needs no install. If you genuinely need a missing package, output the install command first. **Never** assume a library exists.
 
 ---
 
@@ -259,7 +259,7 @@ LLMs default to "static successful state only." Always implement full cycles:
   - **What to do instead of an eyebrow:** drop it entirely. The headline alone is enough. The section's location on the page already categorizes it.
 * **SPLIT-HEADER BAN (mandatory).** The pattern "left big headline + right small explainer paragraph" as a section header (left col-span-7/8, right col-span-4/5 with a small body paragraph floating in the right column) is **banned as default**. Sections should have ONE focused message. If you genuinely need both a headline and an explainer, stack them vertically (headline on top, body below, max-width 65ch). Reach for the split-header pattern only when the right column carries a real visual or interactive element, not just filler text.
 * **Bento Background Diversity (mandatory).** Bento and feature-grid sections cannot be 6 white-on-white cards with text inside. At least 2-3 cells in any multi-cell grid need real visual variation: a real image, a brand-appropriate gradient (not AI-purple), a pattern, a tinted background.
-* **Mobile collapse must be explicit per section.** For every multi-column layout, declare the `< 768px` fallback in the same component. No "it'll work, Crosswind handles it" assumptions.
+* **Mobile collapse must be explicit per section.** For every multi-column layout, declare the `< 768px` fallback in the same component. No "it'll work, ts-css handles it" assumptions.
 
 ### 4.8 Image & Visual Asset Strategy
 
@@ -325,7 +325,7 @@ The page has ONE theme. Sections do not invert.
 * If the page is dark mode, ALL sections are dark mode. No light-mode-warm-paper section sandwiched between dark sections (or vice versa). The user must not feel they walked into a different website mid-scroll.
 * The exception: if the brief explicitly calls for a "Color Block Story" or "Theme Switch on Scroll" device AND that is a deliberate composition (one full theme switch with a strong transition, not random alternation), it is allowed once per page.
 * Default behaviour: pick light, dark, or auto (`prefers-color-scheme`) at the page level and lock it. Section-level background tints within the same theme family are fine (`bg-zinc-950` next to `bg-zinc-900`); flipping to `bg-amber-50` in the middle of a `bg-zinc-950` page is broken.
-* Drive dark mode with the Crosswind `dark:` variant. If you offer a runtime toggle, set it ONCE at the layout/root level via `useColorMode()` / `useDark()` (see [stacks-crosswind](../stacks-crosswind)). Do not let individual sections override the theme.
+* Drive dark mode with the ts-css `dark:` variant. If you offer a runtime toggle, set it ONCE at the layout/root level via `useColorMode()` / `useDark()` (see [stacks-ts-css](../stacks-ts-css)). Do not let individual sections override the theme.
 
 ---
 
@@ -334,8 +334,8 @@ The page has ONE theme. Sections do not invert.
 These are tools, not defaults. Use them when the design read calls for them. **None of these fire automatically.**
 
 **Stacks ships NO motion library.** There is no `motion/react`, no `framer-motion`, no `gsap`. All motion is built from three sources only:
-1. **Crosswind transitions + CSS keyframes** in a `<style>` block (hover, micro-interactions, load-ins). Animate ONLY `transform` and `opacity`.
-2. **stx composables** for observing state (`useIntersectionObserver`, `useElementVisibility`, `useMouse`, `useMediaQuery`, `useResizeObserver`, `useWindowSize`, `useDeviceOrientation`) - toggle a Crosswind class or set a CSS custom property.
+1. **ts-css transitions + CSS keyframes** in a `<style>` block (hover, micro-interactions, load-ins). Animate ONLY `transform` and `opacity`.
+2. **stx composables** for observing state (`useIntersectionObserver`, `useElementVisibility`, `useMouse`, `useMediaQuery`, `useResizeObserver`, `useWindowSize`, `useDeviceOrientation`) - toggle a ts-css class or set a CSS custom property.
 3. **CSS scroll-driven animations** (`animation-timeline: view()` / `scroll()`) for pinned, stacked, and horizontal-pan effects - no script needed.
 
 * **Glassmorphism:** Appropriate for premium consumer, Apple-adjacent, luxury, or media-overlay vibes. Inappropriate for dashboards, public-sector, "boring B2B." When used, go beyond `backdrop-blur`: add a 1px inner border (`border-white/10`) and a subtle inner shadow for physical edge refraction. Provide a solid-fill fallback under `prefers-reduced-transparency` (Appendix C).
@@ -433,9 +433,9 @@ The wrapper reserves tall scroll length; a sticky inner viewport pins at the top
 
 Critical points: pin the sticky viewport (`sticky top-0 h-[100dvh]`), drive the track with a `scroll()` timeline, and size `.pan-wrap` height to the horizontal travel needed. Under reduced motion the section degrades to a plain horizontally-scrollable row.
 
-### 5.C Scroll-Reveal Stagger - Canonical Skeleton (useIntersectionObserver + Crosswind class toggle)
+### 5.C Scroll-Reveal Stagger - Canonical Skeleton (useIntersectionObserver + ts-css class toggle)
 
-For simple "items appear as they enter viewport" (no pinning), use `useIntersectionObserver` to toggle a Crosswind class. Lighter than any timeline; no library.
+For simple "items appear as they enter viewport" (no pinning), use `useIntersectionObserver` to toggle a ts-css class. Lighter than any timeline; no library.
 
 ```html
 <!-- resources/components/reveal-stagger.stx -->
@@ -573,7 +573,7 @@ substituting one. No per-frame template signal writes or global listeners.
 
 ### 6.C Dark Mode (mandatory for any consumer-facing page)
 * Design for **both modes from the start**. Never ship light-only or dark-only without explicit user instruction.
-* Use the Crosswind `dark:` variant (`bg-white dark:bg-zinc-950`, `text-gray-900 dark:text-gray-100`) OR CSS variables for tokens. Pick one strategy per project.
+* Use the ts-css `dark:` variant (`bg-white dark:bg-zinc-950`, `text-gray-900 dark:text-gray-100`) OR CSS variables for tokens. Pick one strategy per project.
 * **Do not prescribe specific dark-mode colors here.** The brief decides. Maintain visual hierarchy, brand identity, and WCAG AA contrast (AAA for body) across both modes.
 * Respect `prefers-color-scheme: dark`. Default to system preference unless the brand insists on one mode. Runtime toggle via `useColorMode()` / `useDark()`.
 
@@ -616,7 +616,7 @@ NEVER spam arbitrary `z-50` or `z-10`. Use z-index strictly for systemic layer c
 Dual-mode by default. Never assume light-only unless the brief is print-emulating editorial.
 
 ### 8.A Token Strategy (pick one, stick to it)
-* **Crosswind `dark:` variant** (default for utility-first projects): every color utility paired with its dark variant (`bg-white dark:bg-zinc-950`, `text-gray-900 dark:text-gray-100`).
+* **ts-css `dark:` variant** (default for utility-first projects): every color utility paired with its dark variant (`bg-white dark:bg-zinc-950`, `text-gray-900 dark:text-gray-100`).
 * **CSS variables** (for token-driven theming): define semantic tokens (`--surface`, `--surface-elevated`, `--text-primary`, `--accent`) in the layout `<style>` and swap values under `[data-theme="dark"]` or `@media (prefers-color-scheme: dark)`.
 
 ### 8.B Do Not Prescribe Specific Colors Here
@@ -747,7 +747,7 @@ This rule is non-negotiable. The agent has historically ignored em-dash limits w
 
 ## 10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)
 
-This is a vocabulary. Know these pattern names to communicate about them and reach for them when the design read calls for them. All implementations are stx + Crosswind + composables / CSS (Section 5), never an external motion library.
+This is a vocabulary. Know these pattern names to communicate about them and reach for them when the design read calls for them. All implementations are stx + ts-css + composables / CSS (Section 5), never an external motion library.
 
 ### Hero Paradigms
 * **Asymmetric Split Hero** - Text on one side, asset on the other, generous white space.
@@ -790,7 +790,7 @@ This is a vocabulary. Know these pattern names to communicate about them and rea
 * **Mesh Gradient Background** - Organic blobs (layered radial gradients).
 
 ### Motion Implementation (Stacks, not a library)
-* **Crosswind transitions + CSS keyframes** - default for hover, micro-interactions, load-ins.
+* **ts-css transitions + CSS keyframes** - default for hover, micro-interactions, load-ins.
 * **`useIntersectionObserver` / `useElementVisibility`** - enter-on-scroll, toggle a class (Section 5.C).
 * **CSS scroll-driven animations** (`animation-timeline: view()` / `scroll()`) - pinned, stacked, horizontal-pan (Sections 5.A, 5.B).
 * **`useMouse()` -> CSS custom property in its subscription callback** - pointer / magnetic / tilt (Section 5.D).
@@ -881,7 +881,7 @@ Run this matrix before outputting code. This is the last filter.
 
 - [ ] **Brief inference** declared (Section 0.B one-liner)?
 - [ ] **Dial values** explicit and reasoned from the brief, not silently using baseline?
-- [ ] **Foundation** is the Stacks stack (Stacks UI + Crosswind + Iconify), no `npm install` of an external design system or icon package?
+- [ ] **Foundation** is the Stacks stack (Stacks UI + ts-css + Iconify), no `npm install` of an external design system or icon package?
 - [ ] **Redesign mode** detected and audit performed (if applicable, Section 11)?
 - [ ] **ZERO em-dashes (`-`) anywhere on the page.** Headlines, eyebrows, pills, body, quotes, attribution, captions, buttons, alt text. Zero. (Section 9.G - non-negotiable.)
 - [ ] **No `var`, no bare `document.*` / `window.*`** in any stx `<script>` block?
@@ -933,7 +933,7 @@ Run this matrix before outputting code. This is the last filter.
 - [ ] **No `window.addEventListener('scroll')`**, no per-frame signal-state scroll math - using `useIntersectionObserver` / CSS scroll-driven animations only (Section 5.E)?
 - [ ] **Pointer / magnetic** effects drive a CSS custom property from `useMouse()` in its subscription callback, never per-frame signal state (Section 5.D)?
 - [ ] **Reduced motion** gated for everything `MOTION_INTENSITY > 3` (CSS media block AND/OR `useMediaQuery('(prefers-reduced-motion: reduce)')`)?
-- [ ] **Dark mode** tokens defined and tested in both modes (Crosswind `dark:` or CSS vars + `useColorMode()`)?
+- [ ] **Dark mode** tokens defined and tested in both modes (ts-css `dark:` or CSS vars + `useColorMode()`)?
 - [ ] **Mobile collapse** explicit (`w-full`, `px-4`, `max-w-7xl mx-auto`) for high-variance layouts?
 - [ ] **Viewport stability**: `min-h-[100dvh]`, never `h-screen`?
 - [ ] **Observer / effect cleanup** relied on (composables handle teardown; do not leave dangling `useEventListener`)?
@@ -956,15 +956,15 @@ If a single checkbox cannot be honestly ticked, the page is not done. Fix it bef
 There is no external-design-system install matrix for a Stacks app. The foundation is already in the project:
 
 * **Components:** `@stacksjs/ui/components` and plugin-resolved STX tags. Check the installed exports and native host capabilities. See [stacks-ui](../stacks-ui).
-* **Styling:** Crosswind utilities + `dark:` variant. See [stacks-crosswind](../stacks-crosswind).
+* **Styling:** ts-css utilities + `dark:` variant. See [stacks-ts-css](../stacks-ts-css).
 * **Icons:** Iconify `i-{collection}-{name}` classes (hugeicons default). No install needed.
 * **Templating / reactivity / motion composables:** stx (see [stacks-stx](../stacks-stx)) and [stacks-composables](../stacks-composables).
 
-Do NOT `npm install` Fluent, Carbon, Material, Radix, or shadcn into a Stacks app. Aesthetic directions (glassmorphism, bento, brutalism, editorial, aurora) are built with native CSS + Crosswind, not a package.
+Do NOT `npm install` Fluent, Carbon, Material, Radix, or shadcn into a Stacks app. Aesthetic directions (glassmorphism, bento, brutalism, editorial, aurora) are built with native CSS + ts-css, not a package.
 
 ## Appendix B - Glassmorphism: honest web approximation (pure CSS)
 
-Web glassmorphism is an approximation, not Apple's native Liquid Glass material (Apple documents that for Apple platforms only; there is no official web CSS package). Label it as an approximation in comments. This is pure CSS and retargeted to Crosswind: use utilities where they exist (`backdrop-blur`, `border-white/10`), and the `<style>` block for the layered highlights.
+Web glassmorphism is an approximation, not Apple's native Liquid Glass material (Apple documents that for Apple platforms only; there is no official web CSS package). Label it as an approximation in comments. This is pure CSS and retargeted to ts-css: use utilities where they exist (`backdrop-blur`, `border-white/10`), and the `<style>` block for the layered highlights.
 
 ```css
 /* web glassmorphism approximation (NOT Apple Liquid Glass) */
@@ -1006,7 +1006,7 @@ Web glassmorphism is an approximation, not Apple's native Liquid Glass material 
   pointer-events: none;
 }
 
-/* dark mode: pair with the Crosswind dark: variant at the call site if you prefer */
+/* dark mode: pair with the ts-css dark: variant at the call site if you prefer */
 @media (prefers-color-scheme: dark) {
   .glass-approx {
     border-color: rgb(255 255 255 / .18);

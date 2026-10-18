@@ -1,6 +1,6 @@
 ---
-name: stacks-crosswind
-description: Use when styling Stacks templates with Crosswind utilities, configuring the ts-css engine, responsive or dark variants, theme tokens, shortcuts, safelists, or debugging generated CSS. Covers config/css.ts and @stacksjs/ts-css/engine.
+name: stacks-ts-css
+description: Use when styling Stacks templates with ts-css utilities, configuring the ts-css engine, responsive or dark variants, theme tokens, shortcuts, safelists, or debugging generated CSS. Covers config/css.ts and @stacksjs/ts-css/engine.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks utility CSS
 
-Use Crosswind utility classes in STX. The current framework implements this
+Use ts-css utility classes in STX. The current framework implements this
 through `@stacksjs/ts-css/engine`, the successor package used by STX and
 `@stacksjs/ui`; do not copy an old `@cwcss/crosswind` import into this checkout.
 Pair visually important work with `stacks-design-taste`.
@@ -50,7 +50,7 @@ const css = generator.toCSS()
 
 Use static complete class names so extraction can find the selected utilities.
 For stateful classes use literal branches, for example
-`:class="active() ? 'bg-blue-600' : 'bg-gray-200'"`, rather than assembling
+`:class="active ? 'bg-blue-600' : 'bg-gray-200'"`, rather than assembling
 `'bg-' + color`. If a class only exists in runtime data, deliberately safelist
 it in the engine config after checking the config's actual type.
 

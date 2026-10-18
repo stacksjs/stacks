@@ -1,6 +1,6 @@
 ---
 title: STX editor setup
-description: Configure an editor for TypeScript, STX templates, Crosswind classes, and Buddy commands.
+description: Configure an editor for TypeScript, STX templates, ts-css classes, and Buddy commands.
 ---
 
 # IDE setup
@@ -78,7 +78,7 @@ Do not configure ESLint or Prettier as a competing formatter. Project rules live
 ## STX conventions
 
 - Put views in `resources/views/` and components in `resources/components/`.
-- Use Crosswind utility classes.
+- Use ts-css utility classes.
 - Use signals and composables in `<script>` blocks.
 - Do not use direct `window` or `document` access in templates.
 - Import standalone APIs from `@stacksjs/stx`; template auto-imports do not need explicit imports.

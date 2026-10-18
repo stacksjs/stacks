@@ -114,7 +114,7 @@ export async function isAppKeySet(): Promise<boolean> {
 /**
  * Determines the utilized reset preset.
  *
- * @url https://github.com/cwcss/crosswind
+ * @url https://github.com/stacksjs/ts-css
  * @param preset
  */
 export function determineResetPreset(preset?: string | null): string[] {
@@ -126,9 +126,9 @@ export function determineResetPreset(preset?: string | null): string[] {
 
   const selectedPreset = preset ?? 'tailwind'
   const resetImports: Record<string, string> = {
-    tailwind: 'import { tailwindPreflight as reset } from \"@cwcss/crosswind\"',
-    preflight: 'import { tailwindPreflight as reset } from \"@cwcss/crosswind\"',
-    forms: 'import { tailwindFormsPreflight as reset } from \"@cwcss/crosswind\"',
+    tailwind: 'import { tailwindPreflight as reset } from \"@stacksjs/ts-css/engine\"',
+    preflight: 'import { tailwindPreflight as reset } from \"@stacksjs/ts-css/engine\"',
+    forms: 'import { tailwindFormsPreflight as reset } from \"@stacksjs/ts-css/engine\"',
   }
 
   const resetImport = resetImports[selectedPreset]

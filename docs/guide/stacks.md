@@ -106,7 +106,7 @@ Use `buddy make:migration` only when a migration cannot be represented by a mode
 
 ## stx frontend
 
-Views and components use stx with Crosswind utility classes. Browser auto-imports include signals and composables such as `state`, `derived`, `effect`, `useFetch`, `useStorage`, and `useDark`.
+Views and components use stx with ts-css utility classes. Browser auto-imports include signals and composables such as `state`, `derived`, `effect`, `useFetch`, `useStorage`, and `useDark`.
 
 ```stx
 <script client>

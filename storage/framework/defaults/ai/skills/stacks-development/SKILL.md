@@ -147,6 +147,7 @@ Uses `bun-plugin-stx` serve function with pattern-based view resolution:
 - Serves on `127.0.0.1` at `config.ports.api` (default 3008)
 
 ### Dashboard Dev Server (dashboard.ts)
+- Uses installed, published STX and ts-css packages by default. `STX_SRC` is an explicit framework-development opt-in; neighbouring source checkouts never override an application automatically. Validate released dependencies without source overrides.
 - Starts the STX server on `config.ports.admin` and optionally opens a native Craft window
 - Mounts the config API on the same dashboard origin under `/api/config/*`
 - Config routes list, read, expose source for, and atomically update `config/*.ts` files

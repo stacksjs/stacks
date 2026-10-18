@@ -641,7 +641,7 @@ or a fake success response.
 
 ## Gotchas
 - Dashboard runs on port 3002 by default (separate from frontend on 3000)
-- Dashboard components use STX templating with crosswind CSS
+- Dashboard components use STX templating with ts-css utilities
 - Dashboard routes are registered from `storage/framework/defaults/routes/`, not from a generated type file
 - Settings panels read/write from the corresponding `config/*.ts` files
 - Models with `useApi` get generated REST actions and routes, not bespoke dashboard views

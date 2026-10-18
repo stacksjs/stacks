@@ -1,13 +1,13 @@
 ---
 title: "Image to code skill"
-description: "Use when the deliverable is a visually important Stacks page (hero, landing page, marketing site, portfolio, product page, editorial brand page, or redesign where visual quality matters) and you want to generate design reference image(s), deeply analyze them, then implement the UI to match. Runs an image-first pipeline (generate, analyze, implement) and retargets the implement phase to stx + Crosswind + composables."
+description: "Use when the deliverable is a visually important Stacks page (hero, landing page, marketing site, portfolio, product page, editorial brand page, or redesign where visual quality matters) and you want to generate design reference image(s), deeply analyze them, then implement the UI to match. Runs an image-first pipeline (generate, analyze, implement) and retargets the implement phase to stx + ts-css + composables."
 ---
 # Image to code
 
 `stacks-image-to-code` · Design · model-invoked
 
 An image-first pipeline for a visually important page: generate design reference
-images, analyse them deeply, then implement to match in stx and Crosswind. Use it
+images, analyse them deeply, then implement to match in stx and ts-css. Use it
 when the visual bar matters more than the speed of the first draft.
 
 ## Inside the skill
@@ -47,7 +47,7 @@ The sections an agent reads once the skill loads.
 ## Related skills
 
 - [Composables](/skills/frontend/composables)
-- [Crosswind](/skills/frontend/crosswind)
+- [ts-css](/skills/frontend/ts-css)
 - [Design taste](/skills/design/design-taste)
 - [Image generation: web](/skills/design/imagegen-web)
 - [stx](/skills/frontend/stx)

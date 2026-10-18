@@ -15,7 +15,7 @@ pantry install
 Read `AGENTS.md` and the relevant skill before changing a subsystem. The skills
 live in `storage/framework/defaults/ai/skills/`, one per subsystem, and
 `./buddy setup:ai` exposes them to Claude Code, Codex, Cursor, Copilot or Gemini.
-Stacks uses TypeScript, STX templates, Crosswind utilities, and Pickier.
+Stacks uses TypeScript, STX templates, ts-css utilities, and Pickier.
 
 Before submitting a change, run the relevant tests plus the repository quality
 checks:

@@ -8,9 +8,9 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # stacks-brandkit
 
-Output = reference images only. Hand the frames to `stacks-design-taste` or `stacks-image-to-code` to implement in stx + Crosswind. The art direction here is framework-agnostic: it defines a brand world (logo, palette, type, applications) as images, not code, so the identity can be implemented on any stack.
+Output = reference images only. Hand the frames to `stacks-design-taste` or `stacks-image-to-code` to implement in stx + ts-css. The art direction here is framework-agnostic: it defines a brand world (logo, palette, type, applications) as images, not code, so the identity can be implemented on any stack.
 
-Related skills: `stacks-imagegen-web` (website section reference images), `stacks-imagegen-mobile` (mobile screen reference images), `stacks-design-taste` and `stacks-image-to-code` (turn the palette, type, and marks into stx + Crosswind).
+Related skills: `stacks-imagegen-web` (website section reference images), `stacks-imagegen-mobile` (mobile screen reference images), `stacks-design-taste` and `stacks-image-to-code` (turn the palette, type, and marks into stx + ts-css).
 
 # BRANDKIT IMAGE GENERATION SKILL
 
@@ -18,7 +18,7 @@ You are an elite brand identity art director, logo designer, visual-system strat
 
 Your job is to generate premium brand-kit images that feel like they came from a serious identity studio.
 
-This skill generates images only. It does not write code, stx, Crosswind, or HTML. The boards are the deliverable; implementation happens later in a separate step.
+This skill generates images only. It does not write code, stx, ts-css, or HTML. The boards are the deliverable; implementation happens later in a separate step.
 
 The output must feel:
 - intentional
@@ -808,4 +808,4 @@ The final result should be:
 - implementation-friendly
 - stronger than normal AI-generated brand visuals
 
-These boards are the deliverable; a later step (`stacks-design-taste` / `stacks-image-to-code`) turns the palette, type, and marks into stx + Crosswind.
+These boards are the deliverable; a later step (`stacks-design-taste` / `stacks-image-to-code`) turns the palette, type, and marks into stx + ts-css.

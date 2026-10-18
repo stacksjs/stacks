@@ -46,7 +46,7 @@ Draft each variant as an stx component under
 to:
 
 - The page's purpose and the data it actually has.
-- Crosswind utilities, Iconify classes for icons, and signals or composables in
+- ts-css utilities, Iconify classes for icons, and signals or composables in
   `<script>` blocks. The project's frontend rules do not relax for a prototype:
   no `var`, no `document.*`, no `window.*`, no animation library, no em-dash in
   any visible copy.

@@ -23,7 +23,7 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 
 ### Frontend
 - Use **stx** for templating, never vanilla JS (`var`, `document._`, `window._`) in stx templates.
-- Use **Crosswind** as the CSS framework (Tailwind-like utility classes).
+- Use **ts-css** as the CSS framework (Tailwind-like utility classes).
 - stx `<script>` tags may only contain stx-compatible code (signals, composables, directives).
 
 ### Dependencies
@@ -469,14 +469,14 @@ disabling a command). See `stacks-cli` for building commands.
   `<style>`; Blade directives `@if` / `@foreach` / `@layout`; `{{ x }}`; filters `{{ x | currency }}`).
 - **Never** use `var`, `document._`, or `window._` in stx `<script>` blocks. Use signals
   (`state` / `derived` / `effect`) and composables. See `stacks-stx`, `stacks-composables`.
-- **CSS:** Crosswind utilities, `dark:` variant, arbitrary values; dark mode via `useColorMode()` /
-  `useDark()`. See `stacks-crosswind`, `stacks-ui`.
+- **CSS:** ts-css utilities, `dark:` variant, arbitrary values; dark mode via `useColorMode()` /
+  `useDark()`. See `stacks-ts-css`, `stacks-ui`.
 - **Icons:** Iconify classes `i-{collection}-{name}` (hugeicons by default). Never hand-roll SVG icon
   paths; never add npm icon packages.
 - **Fonts:** the `fonts` config plus `<link>` / `@font-face` with `font-display: swap`. No `next/font`.
 - **Images:** `<img>` plus the stx asset pipeline / `@stacksjs/storage`. No `next/image`.
 - **Motion:** Stacks ships no animation library. Do NOT import `motion/react`, `framer-motion`, or
-  `gsap`. Use Crosswind transitions, CSS keyframes, CSS scroll-driven animations
+  `gsap`. Use ts-css transitions, CSS keyframes, CSS scroll-driven animations
   (`animation-timeline: view()` / `scroll()`), and composables (`useIntersectionObserver`,
   `useScroll`, `useParallax`, `useMouse`). Gate anything beyond hover with
   `usePreferredReducedMotion()`. Never attach `window.addEventListener('scroll', ...)` in a template.
@@ -486,7 +486,7 @@ disabling a command). See `stacks-cli` for building commands.
 ## Design & anti-slop skills (read the SKILL.md before building UI)
 
 For any visually important page (landing, hero, marketing, portfolio, product, redesign), read the
-matching skill and follow it. These translate premium design discipline into stx + Crosswind.
+matching skill and follow it. These translate premium design discipline into stx + ts-css.
 
 | When the task is | Read |
 |---|---|

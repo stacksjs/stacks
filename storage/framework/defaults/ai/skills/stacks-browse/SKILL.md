@@ -145,7 +145,7 @@ When testing a Stacks app, check:
 - **Auth flow** — `/login`, `/register`
 - **CMS/blog** — `/blog`, post detail pages, `/blog/feed.xml`, `/blog/sitemap.xml`
 - **STX components** — do custom components render server-side?
-- **Crosswind CSS** — utility classes generating styles?
+- **ts-css CSS** — utility classes generating styles?
 - **Links** — run `snapshot` and verify hrefs resolve (no `/blog/index`, no `/api/blog/*` 404s).
 
 ## Rules

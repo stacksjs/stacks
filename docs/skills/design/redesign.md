@@ -36,7 +36,7 @@ The sections an agent reads once the skill loads.
 ## Related skills
 
 - [Composables](/skills/frontend/composables)
-- [Crosswind](/skills/frontend/crosswind)
+- [ts-css](/skills/frontend/ts-css)
 - [Design: brutalist](/skills/design/design-brutalist)
 - [Design: minimalist](/skills/design/design-minimalist)
 - [Design: soft](/skills/design/design-soft)

@@ -8,9 +8,9 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # stacks-imagegen-web
 
-Output = reference images only. Hand the frames to `stacks-design-taste` or `stacks-image-to-code` to implement in stx + Crosswind. The art direction here is framework-agnostic: it describes what the design should look like, not how to build it, so the same frames could be implemented on any stack.
+Output = reference images only. Hand the frames to `stacks-design-taste` or `stacks-image-to-code` to implement in stx + ts-css. The art direction here is framework-agnostic: it describes what the design should look like, not how to build it, so the same frames could be implemented on any stack.
 
-Related skills: `stacks-imagegen-mobile` (mobile screen reference images), `stacks-brandkit` (brand-kit reference images), `stacks-design-taste` and `stacks-image-to-code` (turn these frames into stx + Crosswind).
+Related skills: `stacks-imagegen-mobile` (mobile screen reference images), `stacks-brandkit` (brand-kit reference images), `stacks-design-taste` and `stacks-image-to-code` (turn these frames into stx + ts-css).
 
 # HARD OUTPUT RULE - READ FIRST
 
@@ -82,7 +82,7 @@ The output must feel:
 Do not generate random mood art unless explicitly asked.
 Default to website design comps.
 
-This skill generates images only. It does not write code, stx, Crosswind, or HTML. The frames are the deliverable; implementation happens later in a separate step.
+This skill generates images only. It does not write code, stx, ts-css, or HTML. The frames are the deliverable; implementation happens later in a separate step.
 
 ---
 
@@ -995,4 +995,4 @@ Generate frontend reference images that feel:
 - anti-generic
 - implementation-friendly
 
-The result should look like a top-tier website concept with strong imagery, confident creativity, and generous spacing, not a dense, repetitive AI layout. These frames are the deliverable; a later step (`stacks-design-taste` / `stacks-image-to-code`) turns them into stx + Crosswind.
+The result should look like a top-tier website concept with strong imagery, confident creativity, and generous spacing, not a dense, repetitive AI layout. These frames are the deliverable; a later step (`stacks-design-taste` / `stacks-image-to-code`) turns them into stx + ts-css.

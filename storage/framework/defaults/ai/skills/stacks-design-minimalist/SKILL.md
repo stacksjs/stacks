@@ -1,6 +1,6 @@
 ---
 name: stacks-design-minimalist
-description: Use when a Stacks UI should feel editorial and minimalist (Notion/Linear vibe) - designing a docs site, dashboard, landing page, or content surface that needs restrained warm monochrome, typographic contrast, flat bento grids, muted pastel accents, and no gradients or heavy shadows. Composes with stacks-design-taste as an aesthetic preset built on stx + Crosswind + composables.
+description: Use when a Stacks UI should feel editorial and minimalist (Notion/Linear vibe) - designing a docs site, dashboard, landing page, or content surface that needs restrained warm monochrome, typographic contrast, flat bento grids, muted pastel accents, and no gradients or heavy shadows. Composes with stacks-design-taste as an aesthetic preset built on stx + ts-css + composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,16 +8,16 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Editorial / Minimalist UI (Stacks)
 
-**Related skills:** refines [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) with a restrained editorial preset. Build with [`stacks-stx`](../stacks-stx/SKILL.md) (templating, signals), [`stacks-crosswind`](../stacks-crosswind/SKILL.md) (utilities, dark mode, custom rules), and [`stacks-ui`](../stacks-ui/SKILL.md) (Craft + headless components). Full composable reference: [`stacks-composables`](../stacks-composables/SKILL.md).
+**Related skills:** refines [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) with a restrained editorial preset. Build with [`stacks-stx`](../stacks-stx/SKILL.md) (templating, signals), [`stacks-ts-css`](../stacks-ts-css/SKILL.md) (utilities, dark mode, custom rules), and [`stacks-ui`](../stacks-ui/SKILL.md) (Craft + headless components). Full composable reference: [`stacks-composables`](../stacks-composables/SKILL.md).
 
 ## 1. Protocol Overview
-Premium utilitarian minimalism and editorial UI. A frontend engineering directive for generating highly refined, ultra-minimalist, "document-style" web interfaces analogous to top-tier workspace platforms, built with stx + Crosswind. This protocol strictly enforces a high-contrast warm monochrome palette, bespoke typographic hierarchies, meticulous structural macro-whitespace, bento-grid layouts, and an ultra-flat component architecture with deliberate muted pastel accents. It actively rejects standard generic SaaS design trends.
+Premium utilitarian minimalism and editorial UI. A frontend engineering directive for generating highly refined, ultra-minimalist, "document-style" web interfaces analogous to top-tier workspace platforms, built with stx + ts-css. This protocol strictly enforces a high-contrast warm monochrome palette, bespoke typographic hierarchies, meticulous structural macro-whitespace, bento-grid layouts, and an ultra-flat component architecture with deliberate muted pastel accents. It actively rejects standard generic SaaS design trends.
 
 ## 2. Absolute Negative Constraints (Banned Elements)
 Strictly avoid these generic web development defaults:
 - DO NOT use the "Inter", "Roboto", or "Open Sans" typefaces. (These are font *choices*; load your chosen fonts via the `fonts` config plus `@font-face` / `<link>` with `font-display: swap`, never `next/font`.)
 - DO NOT use generic thin-line icon libraries like "Lucide", "Feather", or standard "Heroicons". Use Iconify `i-*` classes instead, and NEVER hand-roll SVG icon paths or `npm install` an icon package.
-- DO NOT use Crosswind's default heavy drop shadows (for example `shadow-md`, `shadow-lg`, `shadow-xl`). Shadows must be practically non-existent or heavily customized to be ultra-diffuse and low opacity (< 0.05).
+- DO NOT use ts-css's default heavy drop shadows (for example `shadow-md`, `shadow-lg`, `shadow-xl`). Shadows must be practically non-existent or heavily customized to be ultra-diffuse and low opacity (< 0.05).
 - DO NOT use primary colored backgrounds for large elements or sections (no bright blue, green, or red hero sections).
 - DO NOT use gradients, neon colors, or 3D glassmorphism (beyond subtle navbar blurs).
 - DO NOT use `rounded-full` (pill shapes) for large containers, cards, or primary buttons.
@@ -43,7 +43,7 @@ Color is a scarce resource, used only for semantic meaning or subtle accents.
   - Pale Green: `#EDF3EC` (Text: `#346538`)
   - Pale Yellow: `#FBF3DB` (Text: `#956400`)
 
-Expose these as Crosswind theme tokens or CSS custom properties in `config/css.ts` so dark mode (`dark:` + `useColorMode()` / `useDark()`) stays consistent.
+Expose these as ts-css theme tokens or CSS custom properties in `config/css.ts` so dark mode (`dark:` + `useColorMode()` / `useDark()`) stays consistent.
 
 ## 5. Component Specifications
 - Bento Box Feature Grids:
@@ -82,7 +82,7 @@ Expose these as Crosswind theme tokens or CSS custom properties in `config/css.t
 - Hero & Section Backgrounds: Sections should not feel empty and flat. Use subtle full-width background imagery at very low opacity, soft radial light spots (`radial-gradient` with warm tones at `opacity: 0.03`), or minimal geometric line patterns to add depth without breaking the clean aesthetic.
 
 ## 7. Subtle Motion & Micro-Animations
-Motion should feel invisible: present but never distracting. Quiet sophistication, not spectacle. Stacks ships no animation library; build motion with Crosswind transitions, CSS keyframes in the `.stx` `<style>` block, and the allowed composables. Do NOT import `motion`, `gsap`, or `framer-motion`.
+Motion should feel invisible: present but never distracting. Quiet sophistication, not spectacle. Stacks ships no animation library; build motion with ts-css transitions, CSS keyframes in the `.stx` `<style>` block, and the allowed composables. Do NOT import `motion`, `gsap`, or `framer-motion`.
 - Scroll Entry: Elements fade in gently as they enter the viewport. Use `translateY(12px)` + `opacity: 0` resolving over `600ms` with `cubic-bezier(0.16, 1, 0.3, 1)`. Toggle the class with `useIntersectionObserver(target, cb)` or `useElementVisibility(target)`; NEVER `window.addEventListener('scroll', ...)`.
 - Hover States: Cards lift with an ultra-subtle shadow shift (`box-shadow` from `0 0 0` to `0 2px 8px rgba(0,0,0,0.04)` over `200ms`). Buttons respond with `active:scale-[0.98]`.
 - Staggered Reveals: List and grid items enter with a cascade delay (`animation-delay: calc(var(--index) * 80ms)`). Never mount everything at once.
@@ -119,7 +119,7 @@ Motion should feel invisible: present but never distracting. Quiet sophisticatio
 ```
 
 ## 8. Execution Protocol
-When writing stx / Crosswind or designing a layout:
+When writing stx / ts-css or designing a layout:
 1. Establish macro-whitespace first. Use massive vertical padding between sections (`py-24` or `py-32`).
 2. Constrain main typography content width to `max-w-4xl` or `max-w-5xl`.
 3. Apply the custom typographic hierarchy and monochromatic color tokens immediately.

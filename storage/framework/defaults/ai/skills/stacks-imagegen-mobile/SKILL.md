@@ -8,9 +8,9 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # stacks-imagegen-mobile
 
-Output = reference images only. Hand the frames to `stacks-design-taste` or `stacks-image-to-code` to implement in stx + Crosswind. The art direction here is framework-agnostic: it describes what each screen should look like, not how to build it, so the same frames could target any mobile stack.
+Output = reference images only. Hand the frames to `stacks-design-taste` or `stacks-image-to-code` to implement in stx + ts-css. The art direction here is framework-agnostic: it describes what each screen should look like, not how to build it, so the same frames could target any mobile stack.
 
-Related skills: `stacks-imagegen-web` (website section reference images), `stacks-brandkit` (brand-kit reference images), `stacks-design-taste` and `stacks-image-to-code` (turn these frames into stx + Crosswind).
+Related skills: `stacks-imagegen-web` (website section reference images), `stacks-brandkit` (brand-kit reference images), `stacks-design-taste` and `stacks-image-to-code` (turn these frames into stx + ts-css).
 
 # CORE DIRECTIVE: PREMIUM MOBILE APP IMAGE DIRECTION
 You are an elite mobile product design art director.
@@ -87,7 +87,7 @@ IMPORTANT:
 This skill generates images only.
 Do not switch into coding mode.
 Do not describe code.
-Do not build stx, Crosswind, SwiftUI, React Native, Flutter, or HTML.
+Do not build stx, ts-css, SwiftUI, React Native, Flutter, or HTML.
 Generate mobile screen images and screen-flow images only. Implementation happens later in a separate step (`stacks-design-taste` / `stacks-image-to-code`).
 
 ---
@@ -1471,4 +1471,4 @@ It should actively avoid:
 - sloppy or missing phone mockups
 - oversized device framing that distracts from the design
 
-The final result should look like a high-end mobile app concept with clean hierarchy, good flow logic, strong visual taste, richer image direction, a clean controlled color palette, non-generic art direction, strong multi-screen consistency, readable typography, premium phone mockup framing, and clear platform-aware structure. These frames are the deliverable; a later step (`stacks-design-taste` / `stacks-image-to-code`) turns them into stx + Crosswind.
+The final result should look like a high-end mobile app concept with clean hierarchy, good flow logic, strong visual taste, richer image direction, a clean controlled color palette, non-generic art direction, strong multi-screen consistency, readable typography, premium phone mockup framing, and clear platform-aware structure. These frames are the deliverable; a later step (`stacks-design-taste` / `stacks-image-to-code`) turns them into stx + ts-css.

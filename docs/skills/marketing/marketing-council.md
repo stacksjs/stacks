@@ -20,7 +20,7 @@ a draft or recommendation from a change already applied.
 
 Marketing recommendations use the established product brief. Source examples
 and benchmarks are illustrative; verify changing platform facts before using
-them. Implementation uses stx, Crosswind, and the appropriate framework skill.
+them. Implementation uses stx, ts-css, and the appropriate framework skill.
 Upstream CLI tools and MCP servers are optional references, not bundled services.
 
 ## Using it

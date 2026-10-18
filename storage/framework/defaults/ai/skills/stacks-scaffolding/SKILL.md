@@ -42,7 +42,7 @@ import { createProject, addComponent, addPage, addStore, addLayout } from '@stac
 ### Create Project
 
 This is the standalone STX generator contract. For a Stacks application prefer
-Buddy scaffolding and its existing Bun/better-dx/STX/Crosswind setup. The legacy
+Buddy scaffolding and its existing Bun/better-dx/STX/ts-css setup. The legacy
 tailwind option adds a separate Tailwind dependency and is not the Stacks
 styling workflow.
 

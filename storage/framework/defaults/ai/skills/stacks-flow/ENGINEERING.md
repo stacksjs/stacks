@@ -40,7 +40,7 @@ internals. Run focused Bun tests during the loop and the appropriate buddy
 test suite before finishing. Preserve the user-defined test seams and exercise
 real behavior through public interfaces.
 
-UI uses stx and Crosswind, signals and composables, and Iconify classes. Read
+UI uses stx and ts-css, signals and composables, and Iconify classes. Read
 the design skill before visually important work. Reports may use standalone
 HTML with local CSS; do not introduce Tailwind or React into the application.
 Copied example commands for other package managers are conceptual; use Bun and

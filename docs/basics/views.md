@@ -210,7 +210,7 @@ Pass values to a partial when it needs local context:
 
 ## Styling
 
-Use Crosswind utilities in templates. Component styles can be scoped when custom CSS is necessary:
+Use ts-css utilities in templates. Component styles can be scoped when custom CSS is necessary:
 
 ```html
 <template>
@@ -226,7 +226,7 @@ Use Crosswind utilities in templates. Component styles can be scoped when custom
 </style>
 ```
 
-Prefer Crosswind transitions and CSS keyframes for motion. Use `usePreferredReducedMotion()` before enabling non-essential animation.
+Prefer ts-css transitions and CSS keyframes for motion. Use `usePreferredReducedMotion()` before enabling non-essential animation.
 
 ## Configuration
 

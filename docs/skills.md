@@ -52,7 +52,7 @@ package cannot silently lack guidance.
 | [Data layer](/skills/data) | Models, the ORM, queries, migrations, seeding and search. 8 skills. |
 | [Backend and API](/skills/backend) | Routes, actions, auth, jobs, events, caching and storage. 23 skills. |
 | [Messaging](/skills/messaging) | Email, SMS, push, chat, notifications and calendars. 8 skills. |
-| [Frontend](/skills/frontend) | stx templates, Crosswind, composables, desktop and mobile. 9 skills. |
+| [Frontend](/skills/frontend) | stx templates, ts-css, composables, desktop and mobile. 9 skills. |
 | [Design](/skills/design) | Premium UI work, aesthetic presets, image-first pipelines and diagrams. 12 skills. |
 | [Domain packages](/skills/domain) | Commerce, payments, CMS, dashboard and i18n. 7 skills. |
 | [Toolchain](/skills/toolchain) | The buddy CLI, building, serving, deploying, testing and linting. 20 skills. |

@@ -41,7 +41,7 @@ We would especially value feedback on onboarding, framework conventions, and the
 
 1. Product overview using the Stacks social card and the line "One toolkit from idea to production."
 2. Buddy terminal showing `panx buddy new`, `buddy doctor`, and `buddy dev`.
-3. STX editor and browser preview showing reactive state and Crosswind styles.
+3. STX editor and browser preview showing reactive state and ts-css styles.
 4. Model-to-API flow showing a model, generated migration, action, route, and test.
 5. Project-shaped stack installation showing `buddy add calendar` and the files added to the project.
 6. Deployment overview showing application, API, database, DNS, and TLS ownership.

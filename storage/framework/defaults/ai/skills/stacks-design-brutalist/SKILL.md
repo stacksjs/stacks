@@ -1,6 +1,6 @@
 ---
 name: stacks-design-brutalist
-description: Use when a Stacks UI should feel industrial and brutalist - designing a data-heavy dashboard, portfolio, or editorial site that needs Swiss typography, sharp high contrast, rigid modular grids, monospace telemetry, and experimental analog-degradation effects. Composes with stacks-design-taste as an aesthetic preset built on stx + Crosswind + composables.
+description: Use when a Stacks UI should feel industrial and brutalist - designing a data-heavy dashboard, portfolio, or editorial site that needs Swiss typography, sharp high contrast, rigid modular grids, monospace telemetry, and experimental analog-degradation effects. Composes with stacks-design-taste as an aesthetic preset built on stx + ts-css + composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,10 +8,10 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Industrial / Brutalist UI (Stacks)
 
-**Related skills:** refines [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) with an industrial/brutalist preset. Build with [`stacks-stx`](../stacks-stx/SKILL.md) (semantic templating, signals), [`stacks-crosswind`](../stacks-crosswind/SKILL.md) (utilities, custom rules, `gap-px` grids), and [`stacks-ui`](../stacks-ui/SKILL.md) (Craft + headless components). Full composable reference: [`stacks-composables`](../stacks-composables/SKILL.md).
+**Related skills:** refines [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) with an industrial/brutalist preset. Build with [`stacks-stx`](../stacks-stx/SKILL.md) (semantic templating, signals), [`stacks-ts-css`](../stacks-ts-css/SKILL.md) (utilities, custom rules, `gap-px` grids), and [`stacks-ui`](../stacks-ui/SKILL.md) (Craft + headless components). Full composable reference: [`stacks-composables`](../stacks-composables/SKILL.md).
 
 ## 1. Skill Meta
-Industrial brutalism and tactical telemetry interface engineering for Stacks apps. Advanced proficiency in architecting stx + Crosswind interfaces that synthesize mid-century Swiss typographic design, industrial manufacturing manuals, and retro-futuristic aerospace/military terminal interfaces. This discipline requires absolute mastery over rigid modular grids, extreme typographic scale contrast, purely utilitarian color palettes, and the programmatic simulation of analog degradation (halftones, CRT scanlines, bitmap dithering). The objective is digital environments that project raw functionality, mechanical precision, and high data density, deliberately discarding conventional consumer UI patterns.
+Industrial brutalism and tactical telemetry interface engineering for Stacks apps. Advanced proficiency in architecting stx + ts-css interfaces that synthesize mid-century Swiss typographic design, industrial manufacturing manuals, and retro-futuristic aerospace/military terminal interfaces. This discipline requires absolute mastery over rigid modular grids, extreme typographic scale contrast, purely utilitarian color palettes, and the programmatic simulation of analog degradation (halftones, CRT scanlines, bitmap dithering). The objective is digital environments that project raw functionality, mechanical precision, and high data density, deliberately discarding conventional consumer UI patterns.
 
 ## 2. Visual Archetypes
 The system merges two distinct but highly compatible visual paradigms. **Pick ONE per project and commit to it. Do not alternate or mix both modes within the same interface.**
@@ -53,7 +53,7 @@ Typography is the primary structural and decorative infrastructure. Imagery is s
 ## 4. Color System
 The color architecture is uncompromising. Gradients, soft drop shadows, and modern translucency are strictly prohibited. Colors simulate physical media or primitive emissive displays.
 
-**CRITICAL: Choose ONE substrate palette per project and use it consistently. Never mix light and dark substrates within the same interface.** Expose these as Crosswind theme tokens in `config/css.ts`.
+**CRITICAL: Choose ONE substrate palette per project and use it consistently. Never mix light and dark substrates within the same interface.** Expose these as ts-css theme tokens in `config/css.ts`.
 
 ### If Swiss Industrial Print (Light)
 - **Background:** `#F4F4F0` or `#EAE8E3` (matte, unbleached documentation paper).
@@ -106,5 +106,5 @@ To prevent a purely digital look, simulated analog degradation is engineered int
 1. **Grid Determinism:** Use `display: grid; gap: 1px;` (`grid gap-px`) with contrasting parent/child background colors to generate mathematically perfect, razor-thin dividing lines without complex border declarations.
 2. **Semantic Rigidity:** Construct the DOM with precise semantic tags (`<data>`, `<samp>`, `<kbd>`, `<output>`, `<dl>`) to accurately reflect the technical nature of the telemetry. This aligns with stx's div-soup ban; use real semantic elements.
 3. **Typography Clamping:** Use CSS `clamp()` exclusively for macro-typography so massive text scales aggressively while maintaining structural integrity across viewports.
-4. **Motion (if any):** Stacks ships no animation library; do NOT import `motion`, `gsap`, or `framer-motion`. Keep motion mechanical and minimal via Crosswind transitions and CSS keyframes. For any scroll-triggered reveal use `useIntersectionObserver(target, cb)`; NEVER `window.addEventListener('scroll', ...)`. Animate only `transform` and `opacity`. No `var`/`document.*`/`window.*` in stx scripts. Gate motion with `@media (prefers-reduced-motion: reduce)` and/or `useMediaQuery('(prefers-reduced-motion: reduce)')`.
+4. **Motion (if any):** Stacks ships no animation library; do NOT import `motion`, `gsap`, or `framer-motion`. Keep motion mechanical and minimal via ts-css transitions and CSS keyframes. For any scroll-triggered reveal use `useIntersectionObserver(target, cb)`; NEVER `window.addEventListener('scroll', ...)`. Animate only `transform` and `opacity`. No `var`/`document.*`/`window.*` in stx scripts. Gate motion with `@media (prefers-reduced-motion: reduce)` and/or `useMediaQuery('(prefers-reduced-motion: reduce)')`.
 5. **Output:** Ship complete stx files, never a skeleton or placeholder comment.

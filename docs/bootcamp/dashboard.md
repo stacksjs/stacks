@@ -6,7 +6,7 @@ description: Add STX dashboard pages, actions, and navigation without editing fr
 
 Application files override framework defaults by path. To customize a dashboard page or action, create the matching file under your application's `resources/` or `app/` directory and keep the framework copy unchanged.
 
-Use STX components from `resources/components/`, Crosswind utilities for styling, and server actions for data access. Register new navigation destinations in the application dashboard configuration.
+Use STX components from `resources/components/`, ts-css utilities for styling, and server actions for data access. Register new navigation destinations in the application dashboard configuration.
 
 Run the dashboard during development with:
 

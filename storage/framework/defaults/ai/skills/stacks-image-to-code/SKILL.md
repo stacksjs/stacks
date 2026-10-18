@@ -1,6 +1,6 @@
 ---
 name: stacks-image-to-code
-description: Use when the deliverable is a visually important Stacks page (hero, landing page, marketing site, portfolio, product page, editorial brand page, or redesign where visual quality matters) and you want to generate design reference image(s), deeply analyze them, then implement the UI to match. Runs an image-first pipeline (generate, analyze, implement) and retargets the implement phase to stx + Crosswind + composables.
+description: Use when the deliverable is a visually important Stacks page (hero, landing page, marketing site, portfolio, product page, editorial brand page, or redesign where visual quality matters) and you want to generate design reference image(s), deeply analyze them, then implement the UI to match. Runs an image-first pipeline (generate, analyze, implement) and retargets the implement phase to stx + ts-css + composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,9 +8,9 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Image-to-Code for Stacks
 
-**Related skills:** stacks-design-taste, stacks-imagegen-web, stacks-stx, stacks-crosswind, stacks-ui
+**Related skills:** stacks-design-taste, stacks-imagegen-web, stacks-stx, stacks-ts-css, stacks-ui
 
-This skill is an image-first pipeline: (1) generate premium website reference image(s), (2) deeply analyze them, (3) implement the frontend in Stacks to match. The generate and analyze phases are framework-agnostic. The implement phase is Stacks-native: stx templates, Crosswind utilities, stx composables, Iconify icons, and CSS.
+This skill is an image-first pipeline: (1) generate premium website reference image(s), (2) deeply analyze them, (3) implement the frontend in Stacks to match. The generate and analyze phases are framework-agnostic. The implement phase is Stacks-native: stx templates, ts-css utilities, stx composables, Iconify icons, and CSS.
 
 For the underlying design judgment (palette discipline, typography taste, anti-slop rules, spacing systems), defer to **stacks-design-taste**, the flagship taste skill. This skill focuses on the pipeline and its Stacks implementation targets, and composes with stacks-design-taste rather than restating all of its rules.
 
@@ -302,9 +302,9 @@ Auto-available inside stx (no import):
 
 Translation: `useState` → `state`, `useMemo` → `derived`, `useEffect` → `effect`, `useRef` → `useRef`.
 
-### 12.C Styling: Crosswind (Tailwind-compatible)
+### 12.C Styling: ts-css (Tailwind-compatible)
 
-Crosswind utility syntax is identical to Tailwind: `grid grid-cols-1 md:grid-cols-3 gap-6`, `min-h-[100dvh]`, `max-w-7xl mx-auto`, arbitrary values `text-[11px]`, state variants `hover: focus: active: disabled: group-hover:`, responsive `sm: md: lg: xl: 2xl:`. Use the HTML `class` attribute. Scoped CSS goes in the `.stx` `<style>` block. See **stacks-crosswind**.
+ts-css utility syntax is identical to Tailwind: `grid grid-cols-1 md:grid-cols-3 gap-6`, `min-h-[100dvh]`, `max-w-7xl mx-auto`, arbitrary values `text-[11px]`, state variants `hover: focus: active: disabled: group-hover:`, responsive `sm: md: lg: xl: 2xl:`. Use the HTML `class` attribute. Scoped CSS goes in the `.stx` `<style>` block. See **stacks-ts-css**.
 
 ### 12.D Design-system foundation: Stacks UI (not Fluent/shadcn/Carbon)
 
@@ -314,9 +314,9 @@ One system per project = the Stacks stack. Do NOT tell the user to `npm install`
   STX component tags resolve through the configured plugin. Use native mobile
   or desktop components through their host-specific bridge guidance rather than
   assuming a tag proves a native implementation exists.
-- Style with Crosswind, icon with Iconify.
+- Style with ts-css, icon with Iconify.
 
-Keep the honesty principle: use the real official thing, do not hand-recreate tokens. In Stacks the real official thing is Stacks UI + Crosswind. Aesthetic directions (glassmorphism, bento, brutalism, editorial, aurora) are still built with native CSS + Crosswind. See **stacks-ui**.
+Keep the honesty principle: use the real official thing, do not hand-recreate tokens. In Stacks the real official thing is Stacks UI + ts-css. Aesthetic directions (glassmorphism, bento, brutalism, editorial, aurora) are still built with native CSS + ts-css. See **stacks-ui**.
 
 ### 12.E Icons: Iconify `i-*` (not lucide/phosphor npm)
 
@@ -332,7 +332,7 @@ Use standard `<img>` with explicit `width`/`height` to reserve space and avoid C
 
 ### 12.H Dark mode
 
-Crosswind `dark:` variant (`bg-white dark:bg-neutral-900`). Runtime toggle via
+ts-css `dark:` variant (`bg-white dark:bg-neutral-900`). Runtime toggle via
 `useColorMode()` / `useDark()`. Utility theme config lives in `config/css.ts`;
 STX topology lives in `config/ui.ts`.
 
@@ -340,8 +340,8 @@ STX topology lives in `config/ui.ts`.
 
 Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `framer-motion`. Translate motion as follows.
 
-- **Transitions / hover / micro-interactions:** Crosswind `transition`, `duration-*`, `ease-*`, `hover:` / `active:` states, and CSS keyframes in `<style>`. Animate ONLY `transform` and `opacity`.
-- **Scroll-reveal / enter-on-scroll:** composables `useIntersectionObserver(target, cb, opts)`, `useElementVisibility(target)`, `useLazyLoad`, `useInfiniteScroll`. Toggle a Crosswind class when visible. This replaces Motion `whileInView` and simple scroll triggers.
+- **Transitions / hover / micro-interactions:** ts-css `transition`, `duration-*`, `ease-*`, `hover:` / `active:` states, and CSS keyframes in `<style>`. Animate ONLY `transform` and `opacity`.
+- **Scroll-reveal / enter-on-scroll:** composables `useIntersectionObserver(target, cb, opts)`, `useElementVisibility(target)`, `useLazyLoad`, `useInfiniteScroll`. Toggle a ts-css class when visible. This replaces Motion `whileInView` and simple scroll triggers.
 - **Scroll-driven / pinned / horizontal-pan:** prefer CSS scroll-driven animations (`animation-timeline: view()` / `scroll()`). Use `position: sticky` + `top: 0` for sticky-stack layouts. This replaces GSAP ScrollTrigger sticky-stack and horizontal-pan.
 - **Pointer / magnetic / parallax:** `useMouse()`, mouse-in-element style tracking, and `useDeviceOrientation()` for parallax. Drive a CSS custom property (`el.style.setProperty('--x', ...)` in its subscription callback), never signal state per frame.
 - **Reduced motion (mandatory when MOTION_INTENSITY > 3):** gate with CSS `@media (prefers-reduced-motion: reduce)` AND/OR `useMediaQuery('(prefers-reduced-motion: reduce)')`.
@@ -358,10 +358,10 @@ If the design needs something not in this list, use plain CSS or a standard DOM 
 
 ### 12.J Signature component sketches, retargeted to stx
 
-Build the matching stx components with Crosswind utilities. Reference patterns:
+Build the matching stx components with ts-css utilities. Reference patterns:
 
 - **Pristine gapless bento grid:** `<div class="grid gap-px grid-cols-2 md:grid-cols-4 bg-neutral-200 dark:bg-neutral-800">` with cells `class="p-8 bg-white dark:bg-neutral-950"`. One framing move, no nested cards.
-- **Sticky-stack cards:** each card `class="sticky top-0"` inside a tall container; offset with incremental `top` values via inline style or Crosswind arbitrary `top-[...]`. No GSAP pin.
+- **Sticky-stack cards:** each card `class="sticky top-0"` inside a tall container; offset with incremental `top` values via inline style or ts-css arbitrary `top-[...]`. No GSAP pin.
 - **Scroll-reveal float-up:** target starts `class="opacity-0 duration-700 ease-out transition translate-y-6"`; a `useIntersectionObserver` toggles `opacity-100 translate-y-0` when visible.
 - **Horizontal-pan strip:** a track with `class="flex gap-8"` inside `overflow-x-auto`, or CSS scroll-driven `animation-timeline: scroll()` for auto-pan. No GSAP.
 - **Magnetic button / parallax:** in its subscription callback, read `useMouse()` and set `--x` / `--y` custom properties the CSS `transform` consumes. Never per-frame signal writes.
@@ -450,9 +450,9 @@ Prefer cleaner headings, fewer labels, real hierarchy, clearer spacing, simpler 
 
 **Spacing:** inspect distance between headline and subheadline, text and buttons, cards, section top/bottom spacing, side gutters, card padding, image-to-text distance, navbar spacing, and overall cadence across sections. The goal is faithful spacing logic, not pixel OCR. Do not collapse into generic tight spacing if the design is more generous.
 
-**Buttons / components:** inspect button size, shape, radius, fill vs outline, icon usage, hover-implied mood, primary vs secondary hierarchy, card structure, badge usage, dividers, shadows, borders, pill logic, and input styling. If detail is too small, generate a closer image. Map extracted controls onto Craft native components (section 12.D) plus Crosswind styling.
+**Buttons / components:** inspect button size, shape, radius, fill vs outline, icon usage, hover-implied mood, primary vs secondary hierarchy, card structure, badge usage, dividers, shadows, borders, pill logic, and input styling. If detail is too small, generate a closer image. Map extracted controls onto Craft native components (section 12.D) plus ts-css styling.
 
-**Color:** inspect background color, panel colors, accent colors, button fills, text color hierarchy, border color logic, shadow color mood, image tint/grade, and gradient restraint. Preserve the original color logic as closely as reasonably possible. Do not replace a carefully designed palette with generic default web colors; encode it as CSS custom properties / Crosswind theme tokens.
+**Color:** inspect background color, panel colors, accent colors, button fills, text color hierarchy, border color logic, shadow color mood, image tint/grade, and gradient restraint. Preserve the original color logic as closely as reasonably possible. Do not replace a carefully designed palette with generic default web colors; encode it as CSS custom properties / ts-css theme tokens.
 
 ---
 
@@ -577,7 +577,7 @@ Before finalizing, verify internally. These are binding gates, not suggestions.
 7. Is the hero clean enough, with a headline of 1-3 lines?
 8. Is typography analyzed properly, not flattened to a generic hierarchy?
 9. Are spacing relationships understood and preserved (not collapsed to generic tight spacing)?
-10. Are buttons and components extracted and mapped onto Craft/Crosswind, not guessed?
+10. Are buttons and components extracted and mapped onto Craft/ts-css, not guessed?
 11. Are colors analyzed and encoded as tokens, not replaced with default web colors?
 12. Is the design visually distinctive and free of obvious AI tells?
 13. Can someone code from the references faithfully, and does the coded result still feel like the same website?
@@ -586,7 +586,7 @@ Before finalizing, verify internally. These are binding gates, not suggestions.
 16. Has unnecessary nested boxing been removed?
 17. Is the first screen clean and readable on a small laptop?
 18. Have useless pills, labels, and fake technical micro-elements been reduced?
-19. Is the implementation pure stx + Crosswind + composables + CSS, with NO JSX, `motion`, `gsap`, `next/*`, `lucide`/`phosphor` npm, hand-rolled SVG icons, `var`, `document.*`, or `window.*`?
+19. Is the implementation pure stx + ts-css + composables + CSS, with NO JSX, `motion`, `gsap`, `next/*`, `lucide`/`phosphor` npm, hand-rolled SVG icons, `var`, `document.*`, or `window.*`?
 20. Are icons Iconify `i-*` classes (hugeicons default), one collection per project?
 21. Is motion CSS + allowed composables only, with reduced-motion gated when MOTION_INTENSITY > 3, and no `window` scroll listeners or rAF-into-state loops?
 22. Is dark mode `dark:` + `useColorMode()`/`useDark()`, images `<img>` + asset pipeline, fonts config + `<link>`/`@font-face` with `display: swap`?
@@ -614,7 +614,7 @@ When the user asks for a website design in an image-to-code workflow:
 13. keep spacing generous, even, and analyzable
 14. deeply and cleanly analyze all generated images
 15. extract text, typography, spacing, buttons, colors, components, and layout logic
-16. implement the website in stx + Crosswind + composables + CSS to match the references as closely as reasonably possible
+16. implement the website in stx + ts-css + composables + CSS to match the references as closely as reasonably possible
 17. create the final `.stx` files only after the full analysis pass
 
 Do not ask unnecessary follow-up questions if a strong interpretation is possible. Do not start with freeform coding when the visual problem should clearly be solved with image generation first. Do not compress many sections into one unreadable image. Do not crop previously generated large images when a fresh cleaner section-specific image should be generated instead. Do not leave any React/JSX/`motion`/`gsap`/`next` in the implementation.
@@ -625,10 +625,10 @@ Do not ask unnecessary follow-up questions if a strong interpretation is possibl
 
 Generate website reference images that feel premium, art-directed, clear, structured, readable, analyzable, memorable, anti-generic, and implementation-friendly.
 
-For visual website work, first generate the image(s), then deeply and cleanly analyze them, then use them as the primary visual source, then build the frontend in stx + Crosswind + composables to match them closely.
+For visual website work, first generate the image(s), then deeply and cleanly analyze them, then use them as the primary visual source, then build the frontend in stx + ts-css + composables to match them closely.
 
 If the user wants multiple sections, prefer separate large section images instead of one compressed multi-section board. If a section needs more clarity, generate an additional extraction-oriented image. If more images would improve quality, generate more; do not be lazy with image count. Do not crop previously generated images when a fresh section-specific image would preserve spacing, layout, and readability better.
 
 Avoid cards-inside-cards-inside-cards. Avoid giant boxed wrappers around every section. Avoid fake technical pills and decorative micro-labels. Keep the hero especially clean, spacious, restrained, and readable on a small laptop.
 
-The result should be strong as section images, strong as a design system, strong under deep analysis, and strong as implemented Stacks frontend: a top-tier website concept translated faithfully into real stx + Crosswind code, not a tiny unreadable design board and not a generic coded reinterpretation.
+The result should be strong as section images, strong as a design system, strong under deep analysis, and strong as implemented Stacks frontend: a top-tier website concept translated faithfully into real stx + ts-css code, not a tiny unreadable design board and not a generic coded reinterpretation.

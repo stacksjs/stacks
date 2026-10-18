@@ -1,6 +1,6 @@
 ---
 name: stacks-redesign
-description: Use when auditing and upgrading an existing Stacks UI to premium quality - finding AI-slop and generic patterns in stx templates, then fixing layout, spacing, hierarchy, type, color, states, and copy without breaking functionality or migrating the stack. Composes with stacks-design-taste as the audit-first companion, working in stx + Crosswind + composables.
+description: Use when auditing and upgrading an existing Stacks UI to premium quality - finding AI-slop and generic patterns in stx templates, then fixing layout, spacing, hierarchy, type, color, states, and copy without breaking functionality or migrating the stack. Composes with stacks-design-taste as the audit-first companion, working in stx + ts-css + composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,15 +8,15 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Redesign an Existing Stacks UI
 
-**Related skills:** the audit-first companion to [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill). Apply an aesthetic preset with [`stacks-design-soft`](../stacks-design-soft/SKILL.md), [`stacks-design-minimalist`](../stacks-design-minimalist/SKILL.md), or [`stacks-design-brutalist`](../stacks-design-brutalist/SKILL.md). Work in [`stacks-stx`](../stacks-stx/SKILL.md), [`stacks-crosswind`](../stacks-crosswind/SKILL.md), [`stacks-ui`](../stacks-ui/SKILL.md), and [`stacks-composables`](../stacks-composables/SKILL.md).
+**Related skills:** the audit-first companion to [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill). Apply an aesthetic preset with [`stacks-design-soft`](../stacks-design-soft/SKILL.md), [`stacks-design-minimalist`](../stacks-design-minimalist/SKILL.md), or [`stacks-design-brutalist`](../stacks-design-brutalist/SKILL.md). Work in [`stacks-stx`](../stacks-stx/SKILL.md), [`stacks-ts-css`](../stacks-ts-css/SKILL.md), [`stacks-ui`](../stacks-ui/SKILL.md), and [`stacks-composables`](../stacks-composables/SKILL.md).
 
 ## How This Works
 
 When applied to an existing Stacks project, follow this sequence:
 
-1. **Scan** - Read the codebase. Confirm the stack is stx + Crosswind + composables. Locate `resources/views/*.stx`, `resources/components/*.stx`, `resources/layouts/*.stx`, `config/ui.ts`, `config/css.ts`, and the `fonts` config. Note current design patterns.
+1. **Scan** - Read the codebase. Confirm the stack is stx + ts-css + composables. Locate `resources/views/*.stx`, `resources/components/*.stx`, `resources/layouts/*.stx`, `config/ui.ts`, `config/css.ts`, and the `fonts` config. Note current design patterns.
 2. **Diagnose** - Run through the audit below. List every generic pattern, weak point, and missing state you find.
-3. **Fix** - Apply targeted upgrades working with the existing stx + Crosswind stack. Do not rewrite from scratch and do not migrate frameworks. Improve what is there.
+3. **Fix** - Apply targeted upgrades working with the existing stx + ts-css stack. Do not rewrite from scratch and do not migrate frameworks. Improve what is there.
 
 ## Design Audit
 
@@ -116,7 +116,7 @@ Check for these problems and fix them:
 ### Code Quality
 
 - **Div soup.** Use semantic stx markup: `<nav>`, `<main>`, `<article>`, `<aside>`, `<section>`.
-- **Inline styles mixed with utility classes.** Move styling into Crosswind utilities or the `.stx` `<style>` block.
+- **Inline styles mixed with utility classes.** Move styling into ts-css utilities or the `.stx` `<style>` block.
 - **Hardcoded pixel widths.** Use relative units (`%`, `rem`, `em`, `max-w-*`) for flexible layouts.
 - **Missing alt text on images.** Describe image content for screen readers. Never leave `alt=""` or `alt="image"` on meaningful images.
 - **Arbitrary z-index values like `9999`.** Establish a clean z-index scale in the theme/tokens.
@@ -136,7 +136,7 @@ Check for these problems and fix them:
 
 ## Upgrade Techniques
 
-Pull from these high-impact techniques to replace generic patterns. All motion is built with Crosswind transitions, CSS keyframes, and composables; Stacks ships no animation library, so do NOT import `motion`, `gsap`, or `framer-motion`.
+Pull from these high-impact techniques to replace generic patterns. All motion is built with ts-css transitions, CSS keyframes, and composables; Stacks ships no animation library, so do NOT import `motion`, `gsap`, or `framer-motion`.
 
 ### Typography Upgrades
 - **Variable font animation.** Interpolate weight or width on scroll or hover for text that feels alive.
@@ -174,7 +174,7 @@ Apply changes in this order for maximum visual impact with minimum risk:
 
 ## Rules
 
-- Work with the existing stx + Crosswind + composables stack. Do not migrate frameworks or styling libraries.
+- Work with the existing stx + ts-css + composables stack. Do not migrate frameworks or styling libraries.
 - Do not break existing functionality. Test after every change.
 - Before importing any new library, check `package.json` first. Composables are auto-imported; do not invent composable names (defer to [`stacks-composables`](../stacks-composables/SKILL.md) for the real list).
 - Respect CLAUDE.md hard bans: no `var`, no `document.*`, no `window.*` in stx scripts; lint with pickier (`bunx --bun pickier .`), never eslint.

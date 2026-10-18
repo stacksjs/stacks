@@ -101,7 +101,7 @@ cached snapshots cannot represent concurrent users.
 | uploads and disks | filesystems.ts, default local disk |
 | mail, SMS and notifications | email.ts, sms.ts, notification.ts, services.ts |
 | deployment | cloud.ts, its named tsCloud export and default wrapper |
-| frontend | stx.ts, crosswind.ts, ui.ts |
+| frontend | stx.ts, css.ts, ui.ts |
 | agent installation | app/Skills/, defaults/ai/, stacks-skills package |
 
 Use `stacks-env` for validated/coerced environment variables, encrypted files

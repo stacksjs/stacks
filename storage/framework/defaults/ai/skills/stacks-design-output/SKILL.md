@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Full-Output Enforcement (Stacks)
 
-**Related skills:** the completeness enforcement layer for [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) and the aesthetic presets [`stacks-design-soft`](../stacks-design-soft/SKILL.md), [`stacks-design-minimalist`](../stacks-design-minimalist/SKILL.md), [`stacks-design-brutalist`](../stacks-design-brutalist/SKILL.md), and [`stacks-redesign`](../stacks-redesign/SKILL.md). Deliverables are stx built with [`stacks-crosswind`](../stacks-crosswind/SKILL.md) and [`stacks-composables`](../stacks-composables/SKILL.md); see [`stacks-stx`](../stacks-stx/SKILL.md) for templating rules.
+**Related skills:** the completeness enforcement layer for [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) and the aesthetic presets [`stacks-design-soft`](../stacks-design-soft/SKILL.md), [`stacks-design-minimalist`](../stacks-design-minimalist/SKILL.md), [`stacks-design-brutalist`](../stacks-design-brutalist/SKILL.md), and [`stacks-redesign`](../stacks-redesign/SKILL.md). Deliverables are stx built with [`stacks-ts-css`](../stacks-ts-css/SKILL.md) and [`stacks-composables`](../stacks-composables/SKILL.md); see [`stacks-stx`](../stacks-stx/SKILL.md) for templating rules.
 
 ## Baseline
 
@@ -50,6 +50,6 @@ Before finalizing any response, verify:
 - No banned patterns from the list above appear anywhere in the output
 - Every item the user requested is present and finished
 - Every `.stx` block that was asked for is complete: `<script>`, `<template>`/markup, and `<style>` as applicable
-- Code blocks contain actual runnable stx + Crosswind, not descriptions of what the component would do
+- Code blocks contain actual runnable stx + ts-css, not descriptions of what the component would do
 - No stx hard-ban leaked in while rushing: no `var`, no `document.*`, no `window.*` in `<script>` blocks; icons are Iconify `i-*` classes, never hand-rolled SVG
 - Nothing was shortened to save space

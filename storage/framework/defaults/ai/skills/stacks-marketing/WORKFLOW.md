@@ -36,7 +36,7 @@ framework skill before implementing its API:
 
 | Surface | Stacks skills |
 |---|---|
-| Pages, navigation, landing pages, forms | `stacks-stx`, `stacks-composables`, `stacks-crosswind`, `stacks-routes` |
+| Pages, navigation, landing pages, forms | `stacks-stx`, `stacks-composables`, `stacks-ts-css`, `stacks-routes` |
 | Visually important pages or redesigns | `stacks-design-taste`, `stacks-redesign` |
 | Content, metadata, sitemap, translations | `stacks-cms`, `stacks-i18n`, `stacks-router` |
 | Event collection and analytics | `stacks-analytics`, `stacks-events` |
@@ -45,7 +45,7 @@ framework skill before implementing its API:
 | Application automation | `stacks-scheduler`, `stacks-queue`, `stacks-jobs` |
 | Generated image assets | `stacks-imagegen-web`, `stacks-brandkit`, an available image-generation tool |
 
-Use stx and Crosswind for application UI. Browser integration examples in
+Use stx and ts-css for application UI. Browser integration examples in
 references describe concepts; do not paste raw DOM scripts into stx templates.
 Use verified composables and explicit module imports. Keep server credentials
 in server-side actions or jobs. Model changes drive migrations.

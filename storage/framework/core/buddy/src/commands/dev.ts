@@ -1095,16 +1095,15 @@ function printDevReadyBanner(input: {
   console.log()
 }
 
-/** Post-ready notes from frontend tooling (Crosswind, STX routes) in a consistent style. */
+/** Post-ready notes from frontend tooling (ts-css, STX routes) in a consistent style. */
 function printDevEngineNotes(): void {
   const routesFile = stxPath('routes.ts')
   const routesLabel = relative(projectPath(), routesFile)
-  const crosswindConfig = join(projectPath(), 'config/crosswind.ts')
-  const hasCrosswind = existsSync(crosswindConfig)
-    || existsSync(join(projectPath(), 'crosswind.config.ts'))
+  const hasCssEngine = ['config/css.ts', 'css.config.ts', 'config/crosswind.ts', 'crosswind.config.ts']
+    .some(config => existsSync(join(projectPath(), config)))
 
-  if (hasCrosswind)
-    console.log(`  ${green('[Crosswind]')} ${dim('CSS engine loaded')}`)
+  if (hasCssEngine)
+    console.log(`  ${green('[ts-css]')} ${dim('CSS engine loaded')}`)
 
   if (existsSync(routesFile)) {
     try {
@@ -1376,7 +1375,7 @@ async function probeDevServerHttp(port: number): Promise<boolean> {
   for (const path of ['/__health', '/']) {
     const ok = await new Promise<boolean>((resolve) => {
       const ac = new AbortController()
-      // First stx request can block on Crosswind compile — allow several seconds.
+      // First stx request can block on ts-css compile — allow several seconds.
       const t = setTimeout(() => ac.abort(), path === '/' ? 8000 : 800)
       fetch(`http://127.0.0.1:${port}${path}`, { signal: ac.signal, redirect: 'manual' })
         .then(() => { clearTimeout(t); resolve(true) })

@@ -8,7 +8,7 @@ import type { CssOptions } from '@stacksjs/ts-css/engine'
  * in particular is read by the dev server and decides whether generated CSS is
  * whitespace-formatted, which is not something you notice by looking.
  *
- * @see https://github.com/cwcss/crosswind
+ * @see https://github.com/stacksjs/ts-css
  */
 export default {
   content: [

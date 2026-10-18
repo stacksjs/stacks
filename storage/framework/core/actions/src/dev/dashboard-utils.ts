@@ -297,7 +297,7 @@ function connectsWithin(port: number, timeoutMs: number): Promise<boolean> {
  *
  * The probe is a TCP connect, which is the question actually being asked. It
  * used to be `HEAD /`, and on the dashboard that means rendering the index
- * page - roughly eight seconds of STX and Crosswind compilation on a cold
+ * page - roughly eight seconds of STX and ts-css compilation on a cold
  * boot. Worse, the budget was only re-checked between attempts, so one slow
  * response ran unbounded: `maxWait` of 500ms routinely took 11 seconds, all of
  * it before the banner printed, with nothing on screen to explain the wait.

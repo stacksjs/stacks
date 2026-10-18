@@ -249,7 +249,7 @@ _Develop dynamic UIs with helpers for atomic design, and much more._
 - 🖥️ **Desktop** _transforms your web app into a desktop app, plus more_
 - 📝 **Documentation** _markdown-based documentation, auto-generated_
 - 📚 **Library** _auto-builds & manages component & function libraries_
-- ⚡️ Powered by Bun, STX, Tauri, Crosswind, and BunPress
+- ⚡️ Powered by Bun, STX, Tauri, ts-css, and BunPress
 
 ### Backend Development
 

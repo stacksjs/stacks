@@ -1,13 +1,13 @@
 ---
 title: "Design taste skill"
-description: "Use when designing or building a landing page, portfolio, hero, marketing section, or redesign in a Stacks app, or when the ask is anti-slop / premium frontend work. Reads the brief, infers the right direction, and ships stx + Crosswind interfaces that do not look templated, with a strict pre-flight check."
+description: "Use when designing or building a landing page, portfolio, hero, marketing section, or redesign in a Stacks app, or when the ask is anti-slop / premium frontend work. Reads the brief, infers the right direction, and ships stx + ts-css interfaces that do not look templated, with a strict pre-flight check."
 ---
 # Design taste
 
 `stacks-design-taste` · Design · model-invoked
 
 The flagship design skill and the one to start from. It reads the brief, infers a
-direction, and ships stx and Crosswind interfaces that do not look templated,
+direction, and ships stx and ts-css interfaces that do not look templated,
 governed by three dials (variance, motion, density), an explicit list of AI tells
 to avoid, and a pre-flight check that has to be honestly tickable before the work
 is done.
@@ -37,7 +37,7 @@ The sections an agent reads once the skill loads.
 ## Related skills
 
 - [Composables](/skills/frontend/composables)
-- [Crosswind](/skills/frontend/crosswind)
+- [ts-css](/skills/frontend/ts-css)
 - [Dashboard](/skills/domain/dashboard)
 - [Design: brutalist](/skills/design/design-brutalist)
 - [Design: minimalist](/skills/design/design-minimalist)

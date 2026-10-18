@@ -1,7 +1,7 @@
 # HTML Report Format
 
 Render the architectural review as a standalone HTML file in the OS temp
-directory with local CSS or precompiled Crosswind styles. Mermaid is optional
+directory with local CSS or precompiled ts-css styles. Mermaid is optional
 when already available; static diagrams should remain legible without a network
 dependency. Use graph diagrams for dependencies and sequences, and simple
 layout diagrams where that better explains a change.

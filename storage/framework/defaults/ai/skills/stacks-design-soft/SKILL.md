@@ -1,6 +1,6 @@
 ---
 name: stacks-design-soft
-description: Use when a Stacks UI should feel high-end, "expensive", soft, and premium - designing a landing page, hero, marketing section, pricing, or portfolio that needs generous whitespace, premium fonts, soft diffused shadows, and spring-like motion. Composes with stacks-design-taste as an aesthetic preset built on stx + Crosswind + composables.
+description: Use when a Stacks UI should feel high-end, "expensive", soft, and premium - designing a landing page, hero, marketing section, pricing, or portfolio that needs generous whitespace, premium fonts, soft diffused shadows, and spring-like motion. Composes with stacks-design-taste as an aesthetic preset built on stx + ts-css + composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,11 +8,11 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Soft / High-End Visual Design (Stacks)
 
-**Related skills:** refines [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) with a premium/soft aesthetic preset. Build with [`stacks-stx`](../stacks-stx/SKILL.md) (templating, signals), [`stacks-crosswind`](../stacks-crosswind/SKILL.md) (utilities, dark mode), and [`stacks-ui`](../stacks-ui/SKILL.md) (Craft + headless components). Full composable reference: [`stacks-composables`](../stacks-composables/SKILL.md).
+**Related skills:** refines [`stacks-design-taste`](../stacks-design-taste/SKILL.md) (the flagship anti-slop skill) with a premium/soft aesthetic preset. Build with [`stacks-stx`](../stacks-stx/SKILL.md) (templating, signals), [`stacks-ts-css`](../stacks-ts-css/SKILL.md) (utilities, dark mode), and [`stacks-ui`](../stacks-ui/SKILL.md) (Craft + headless components). Full composable reference: [`stacks-composables`](../stacks-composables/SKILL.md).
 
 ## 1. Core Directive
 - **Persona:** Principal UI/UX architect and motion choreographer, Awwwards-tier.
-- **Objective:** You engineer $150k+ agency-level digital experiences in a Stacks app, not just websites. Output must exude haptic depth, cinematic spatial rhythm, obsessive micro-interactions, and flawless fluid motion, all built with stx + Crosswind + composables.
+- **Objective:** You engineer $150k+ agency-level digital experiences in a Stacks app, not just websites. Output must exude haptic depth, cinematic spatial rhythm, obsessive micro-interactions, and flawless fluid motion, all built with stx + ts-css + composables.
 - **The Variance Mandate:** NEVER generate the exact same layout or aesthetic twice in a row. Dynamically combine different premium layout archetypes and texture profiles while strictly adhering to the elite "Apple-esque / Linear-tier" design language.
 
 ## 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS)
@@ -75,7 +75,7 @@ Never place a premium card, image, or container flatly on the background. It mus
 - **Eyebrow Tags:** Precede major H1/H2s with a microscopic pill badge (`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] font-medium`). Use at most one eyebrow per section.
 
 ## 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)
-Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `framer-motion`. All motion is built with Crosswind transitions, CSS keyframes, and the allowed composables. Never use default transitions. All motion must simulate real-world mass and spring physics via custom cubic-beziers (`transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]`).
+Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `framer-motion`. All motion is built with ts-css transitions, CSS keyframes, and the allowed composables. Never use default transitions. All motion must simulate real-world mass and spring physics via custom cubic-beziers (`transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]`).
 
 ### A. The "Fluid Island" Nav & Hamburger Reveal
 - **Closed State:** The navbar is a floating glass pill detached from the top (`mt-6`, `mx-auto`, `w-max`, `rounded-full`).
@@ -107,7 +107,7 @@ Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `fra
 
 ### C. Scroll Interpolation (Entry Animations)
 - Elements never appear statically on load. As they enter the viewport, they execute a gentle heavy fade-up (`translate-y-16 blur-md opacity-0` resolving to `translate-y-0 blur-0 opacity-100` over 800ms+).
-- Use `useIntersectionObserver(target, cb)` or `useElementVisibility(target)` to toggle a Crosswind class when visible. This replaces Motion's `whileInView`. NEVER use `window.addEventListener('scroll', ...)`; it causes continuous reflows and kills mobile performance.
+- Use `useIntersectionObserver(target, cb)` or `useElementVisibility(target)` to toggle a ts-css class when visible. This replaces Motion's `whileInView`. NEVER use `window.addEventListener('scroll', ...)`; it causes continuous reflows and kills mobile performance.
 
 ```html
 <script client>
@@ -149,8 +149,8 @@ When generating stx UI, follow this exact sequence:
 1. **[SILENT THOUGHT]** Roll the Variance Engine (Section 3). Choose Vibe and Layout Archetypes based on context to ensure a unique output.
 2. **[SCAFFOLD]** Establish background texture, macro-whitespace scale, and massive typography sizes.
 3. **[ARCHITECT]** Build the DOM strictly using the "Double-Bezel" technique for all major cards, inputs, and feature grids. Use exaggerated squircle radii (`rounded-[2rem]`).
-4. **[CHOREOGRAPH]** Inject custom `cubic-bezier` transitions, staggered nav reveals, and button-in-button hover physics, all in Crosswind + CSS + composables.
-5. **[OUTPUT]** Deliver flawless, complete stx + Crosswind. Ship the full file, never a skeleton or placeholder comment.
+4. **[CHOREOGRAPH]** Inject custom `cubic-bezier` transitions, staggered nav reveals, and button-in-button hover physics, all in ts-css + CSS + composables.
+5. **[OUTPUT]** Deliver flawless, complete stx + ts-css. Ship the full file, never a skeleton or placeholder comment.
 
 ## 8. PRE-OUTPUT CHECKLIST
 Evaluate your stx against this matrix before delivering. This is the last filter.

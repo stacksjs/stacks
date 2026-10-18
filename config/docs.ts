@@ -381,7 +381,7 @@ const config: BunPressOptions = {
             { text: 'All frontend skills', link: '/skills/frontend' },
             { text: 'Browser', link: '/skills/frontend/browser' },
             { text: 'Composables', link: '/skills/frontend/composables' },
-            { text: 'Crosswind', link: '/skills/frontend/crosswind' },
+            { text: 'ts-css', link: '/skills/frontend/ts-css' },
             { text: 'Desktop', link: '/skills/frontend/desktop' },
             { text: 'Mobile', link: '/skills/frontend/mobile' },
             { text: 'stx', link: '/skills/frontend/stx' },

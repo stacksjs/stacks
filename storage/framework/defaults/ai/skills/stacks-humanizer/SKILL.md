@@ -68,7 +68,7 @@ When asked to edit a file, write only the final prose. Preserve YAML frontmatter
 code blocks, inline code, commands, paths, URLs, link targets, data, and API
 identifiers. In `.stx` files, edit only the requested visible copy or prose
 attributes such as alt text. Preserve directives, bindings, script blocks,
-component APIs, and Crosswind classes.
+component APIs, and ts-css classes.
 
 Check the diff after a file edit. A broader wording pass does not authorize
 changing implementation, installing dependencies, committing, or publishing.

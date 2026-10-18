@@ -8,10 +8,10 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks UI
 
-Start with the package boundary. Templates use STX signals and Crosswind utilities;
+Start with the package boundary. Templates use STX signals and ts-css utilities;
 the CSS implementation in this checkout is `@stacksjs/ts-css/engine`. Read
 `stacks-stx` for template behavior, `stacks-composables` for browser delivery
-and reactive contracts, and `stacks-crosswind` for actual CSS configuration.
+and reactive contracts, and `stacks-ts-css` for actual CSS configuration.
 For visually important work also read `stacks-design-taste` and the matching
 aesthetic skill. Native applications pair with `stacks-mobile` or
 `stacks-desktop`; admin pages pair with `stacks-dashboard`.

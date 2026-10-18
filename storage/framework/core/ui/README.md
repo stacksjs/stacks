@@ -54,7 +54,7 @@ For casual chit-chat with others using this package:
 Many thanks to the following core technologies & people who have contributed to this package:
 
 - [STX](https://github.com/stacksjs/stx)
-- [Crosswind](https://github.com/cwcss/crosswind)
+- [ts-css](https://github.com/stacksjs/ts-css)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

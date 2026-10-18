@@ -20,7 +20,7 @@ editorial typography and gapless bento grids.
 - Deterministic scroll-driven motion
 - Strict AIDA structure
 - Wide editorial typography
-- Gapless bento grids. Ships stx + Crosswind + composables
+- Gapless bento grids. Ships stx + ts-css + composables
 - Tuned for the OpenAI Codex CLI as well as Claude Code
 
 ## Inside the skill
@@ -41,7 +41,7 @@ The sections an agent reads once the skill loads.
 ## Related skills
 
 - [Composables](/skills/frontend/composables)
-- [Crosswind](/skills/frontend/crosswind)
+- [ts-css](/skills/frontend/ts-css)
 - [Design: brutalist](/skills/design/design-brutalist)
 - [Design: minimalist](/skills/design/design-minimalist)
 - [Design: soft](/skills/design/design-soft)
