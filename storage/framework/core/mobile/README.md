@@ -470,8 +470,13 @@ generated sources.
 `storage` uses the named `craft-native/mobile` adapter. Basic calls require the
 host's storage service and reject with `STORAGE_UNSUPPORTED` when unavailable. Check
 `storage.supportsCompareAndSet()` before recording an owned native session.
-`await storage.set(key, value)` registers the initial intent durably before a
-sensor starts. For a later checkpoint, read with `await storage.get(key)`, merge
+`storage.supportsSetIfAbsent()` must also be true before recording. Use
+`await storage.setIfAbsent(key, value)` to register an absent initial intent
+durably before a sensor starts. It creates a new key atomically; any existing
+value, including JSON null, returns `false`. A competing creation requires a
+fresh read and validation of that intent, never an unconditional set. Older
+hosts reject creation with `STORAGE_SET_IF_ABSENT_UNSUPPORTED`.
+For a later checkpoint, read with `await storage.get(key)`, merge
 that fresh value, and call `await storage.compareAndSet(key, expected, next)`.
 The comparison and durable write are one native operation. A missing or changed
 value returns `false` and never creates a key; I/O errors throw. Re-read and

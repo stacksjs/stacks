@@ -10,11 +10,40 @@ afterEach(() => {
 function host(supported: boolean, services: Record<string, unknown>) {
   Object.defineProperty(globalThis, 'window', {
     configurable: true,
-    value: { craft: { platform: 'android', capabilities: { storageCompareAndSet: supported }, storage: services } },
+    value: { craft: { platform: 'android', capabilities: { storageCompareAndSet: supported, storageSetIfAbsent: supported }, storage: services } },
   })
 }
 
 describe('the named SDK durable storage facade', () => {
+  it('requires the atomic creation flag before calling setIfAbsent', async () => {
+    const calls: string[] = []
+    host(false, {
+      setIfAbsent: async () => {
+        calls.push('create')
+        return true
+      },
+    })
+    expect(storage.supportsSetIfAbsent()).toBe(false)
+    await expect(storage.setIfAbsent('draft', {})).rejects.toMatchObject({ code: 'STORAGE_SET_IF_ABSENT_UNSUPPORTED' })
+    expect(calls).toEqual([])
+  })
+
+  it('forwards an atomic creation conflict and a disk error without a fallback', async () => {
+    const calls: Array<[string, unknown]> = []
+    const value = { workoutId: 42 }
+    host(true, {
+      setIfAbsent: async (key: string, draft: unknown) => {
+        calls.push([key, draft])
+        if (key === 'full') throw Object.assign(new Error('Disk full'), { code: 'ENOSPC' })
+        return false
+      },
+    })
+    expect(storage.supportsSetIfAbsent()).toBe(true)
+    expect(await storage.setIfAbsent('existing', value)).toBe(false)
+    await expect(storage.setIfAbsent('full', value)).rejects.toMatchObject({ code: 'ENOSPC' })
+    expect(calls).toEqual([['existing', value], ['full', value]])
+  })
+
   it('rejects an older host without a get/set substitute for CAS', async () => {
     const calls: string[] = []
     host(false, {

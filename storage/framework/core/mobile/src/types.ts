@@ -8,6 +8,7 @@ export interface CraftMobileCapabilities {
   pushNotifications?: boolean
   secureStorage?: boolean
   storageCompareAndSet?: boolean
+  storageSetIfAbsent?: boolean
   geolocation?: boolean
   backgroundLocation?: boolean
   locationRecordingOwnership?: boolean
@@ -267,11 +268,14 @@ export interface BiometricsApi {
 /** Native durable storage. CAS changes an existing value only; false never creates it. */
 export interface StorageApi {
   supportsCompareAndSet: () => boolean
+  supportsSetIfAbsent: () => boolean
   get: <T = unknown>(key: string) => Promise<T | null>
   set: (key: string, value: unknown) => Promise<boolean>
   remove: (key: string) => Promise<boolean>
   clear: () => Promise<boolean>
   keys: () => Promise<string[]>
+  /** Durably creates a new key only. An existing JSON null also returns false. */
+  setIfAbsent: (key: string, value: unknown) => Promise<boolean>
   /** Objects compare without key order; arrays keep order and booleans differ from numbers. */
   compareAndSet: (key: string, expectedValue: unknown, nextValue: unknown) => Promise<boolean>
 }
