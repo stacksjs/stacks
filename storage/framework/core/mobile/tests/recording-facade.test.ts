@@ -102,3 +102,52 @@ describe('recording ownership through the public mobile facade', () => {
   })
 
 })
+
+describe('registered identities through the installed SDK facade', () => {
+  function host(supported: boolean, calls: unknown[], wrong = false) {
+    const service = {
+      startRecording: async (options: { recordingId: string }) => {
+        calls.push(options)
+        return { id: wrong ? 'different-native-id' : options.recordingId, active: true, paused: false, startedAt: 1000 }
+      },
+      pauseRecording: async () => ({}),
+      resumeRecording: async () => ({}),
+      stopRecording: async () => ({}),
+      getRecordingState: async () => ({}),
+      readRecording: async () => [],
+      acknowledgeRecording: async () => true,
+    }
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: { craft: {
+        platform: 'android',
+        capabilities: { locationRecordingOwnership: true, heartRateRecordingOwnership: true, locationRecordingIntentIdentity: supported, heartRateRecordingIntentIdentity: supported },
+        location: service,
+        heartRate: service,
+      } },
+    })
+  }
+
+  it('rejects hosts without the new positive identity flags before either native start', async () => {
+    const calls: unknown[] = []
+    host(false, calls)
+    for (const api of [location, heartRate]) {
+      expect(api.supportsRecordingIntentIdentity()).toBe(false)
+      await expect(api.startRecording({ recordingId: 'saved-A-id' })).rejects.toMatchObject({ code: 'RECORDING_INTENT_IDENTITY_UNSUPPORTED' })
+    }
+    expect(calls).toEqual([])
+  })
+
+  it('forwards each pre-registered ID exactly and rejects a changed native response ID', async () => {
+    const calls: unknown[] = []
+    host(true, calls)
+    for (const api of [location, heartRate]) {
+      expect(api.supportsRecordingIntentIdentity()).toBe(true)
+      expect(await api.startRecording({ recordingId: 'saved-A-id' })).toMatchObject({ id: 'saved-A-id', active: true })
+    }
+    expect(calls).toEqual([{ recordingId: 'saved-A-id' }, { recordingId: 'saved-A-id' }])
+    host(true, calls, true)
+    for (const api of [location, heartRate])
+      await expect(api.startRecording({ recordingId: 'saved-A-id' })).rejects.toMatchObject({ code: 'RECORDING_CONFLICT' })
+  })
+})

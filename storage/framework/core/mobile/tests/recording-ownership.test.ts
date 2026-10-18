@@ -19,15 +19,16 @@ function sharedLocation(initiallyActive = true) {
   }
   const api = {
     supportsRecordingOwnership: () => true,
+    supportsRecordingIntentIdentity: () => true,
       acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
     getCurrentPosition: async () => firstFix,
     watchPosition: () => 1,
     clearWatch: () => {},
-    startRecording: async () => {
+    startRecording: async (options?: { recordingId?: string }) => {
       calls.push('start')
       if (active) throw conflict()
       archive()
-      id = 'new-route'
+      id = options?.recordingId ?? 'new-route'
       active = true
       paused = false
       fixes = []
@@ -100,10 +101,11 @@ function sharedHeartRate(initiallyActive = true) {
   const api = {
     isAvailable: () => true,
     supportsRecordingOwnership: () => true,
+    supportsRecordingIntentIdentity: () => true,
       acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
-    startRecording: async () => { calls.push('start')
+    startRecording: async (options?: { recordingId?: string }) => { calls.push('start')
       if (active) throw new Error('Already recording')
-      id = 'new-heart'
+      id = options?.recordingId ?? 'new-heart'
       active = true
       samples.length = 0
       return state() },
@@ -384,5 +386,69 @@ describe('native route recording ownership', () => {
     finally {
       recorder.dispose()
     }
+  })
+})
+
+describe('registered caller recording identities', () => {
+  it('forwards distinct pre-registered GPS and heart-rate identities', async () => {
+    const phone = sharedLocation(false)
+    const heart = sharedHeartRate(false)
+    const recorder = createRouteRecorder({ location: phone.api, heartRate: heart.api })
+    try {
+      await recorder.start({ recordingId: 'planned-A-route', heartRateRecordingId: 'planned-A-heart' })
+      expect(recorder.recordingId).toBe('planned-A-route')
+      expect(recorder.heartRateRecordingId).toBe('planned-A-heart')
+      expect(phone.state()).toMatchObject({ id: 'planned-A-route', active: true })
+      expect(heart.state()).toMatchObject({ id: 'planned-A-heart', active: true })
+    }
+    finally { recorder.dispose() }
+  })
+
+  it('rejects an adapter without intent identity support before a native start', async () => {
+    const phone = sharedLocation(false)
+    phone.api.supportsRecordingIntentIdentity = () => false
+    const recorder = createRouteRecorder({ location: phone.api })
+    try {
+      await expect(recorder.start({ recordingId: 'saved-A-route' })).rejects.toMatchObject({ code: 'RECORDING_INTENT_IDENTITY_UNSUPPORTED' })
+      expect(phone.calls).toEqual([])
+      expect(phone.state().id).toBe(null)
+    }
+    finally { recorder.dispose() }
+  })
+
+  it('refuses a native start response with a different identity', async () => {
+    const phone = sharedLocation(false)
+    const nativeStart = phone.api.startRecording
+    phone.api.startRecording = async () => nativeStart({ recordingId: 'unexpected-route' })
+    const recorder = createRouteRecorder({ location: phone.api })
+    try {
+      await expect(recorder.start({ recordingId: 'saved-A-route' })).rejects.toMatchObject({ code: 'RECORDING_CONFLICT' })
+      expect(recorder.recordingId).toBe(null)
+      expect(phone.calls).toEqual(['start'])
+    }
+    finally { recorder.dispose() }
+  })
+
+  it('recovers the pre-registered ID after native start succeeds but its response is lost', async () => {
+    const phone = sharedLocation(false)
+    const nativeStart = phone.api.startRecording
+    phone.api.startRecording = async (options) => {
+      await nativeStart(options)
+      throw new Error('Native start response lost')
+    }
+    const first = createRouteRecorder({ location: phone.api })
+    try {
+      await expect(first.start({ recordingId: 'durable-A-route' })).rejects.toThrow('response lost')
+      expect(phone.state()).toMatchObject({ id: 'durable-A-route', active: true })
+    }
+    finally { first.dispose() }
+    const reopened = createRouteRecorder({ location: phone.api })
+    try {
+      expect(await reopened.attach({ expectedId: 'durable-A-route' })).toMatchObject({ id: 'durable-A-route', active: true })
+      await reopened.stop()
+      expect(phone.calls.filter(call => call === 'start')).toHaveLength(1)
+      expect(phone.state()).toMatchObject({ id: 'durable-A-route', active: false })
+    }
+    finally { reopened.dispose() }
   })
 })

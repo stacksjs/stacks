@@ -205,7 +205,7 @@ export interface RouteRecorderOptions extends RouteStatsOptions {
 
 export interface RouteRecorder {
   /** Begins a new recording. */
-  start: () => Promise<RouteStats>
+  start: (intent?: { recordingId: string, heartRateRecordingId?: string }) => Promise<RouteStats>
   /**
    * Picks up a recording already running natively (one that outlived the page
    * or the app), without starting another. A completed owned recording can
@@ -320,20 +320,28 @@ export function createRouteRecorder(options: RouteRecorderOptions): RouteRecorde
     get recordingId() { return recordingId },
     get heartRateRecordingId() { return heartRateRecordingId },
     get heartRate() { return heartRateSamples },
-    start() {
+    start(intent) {
       ending = null
       return serialize(async () => {
         requireOwnership()
-        const started = await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions })
+        if (intent && location.supportsRecordingIntentIdentity?.() !== true)
+          throw Object.assign(new Error('This host cannot start a registered route identity'), { code: 'RECORDING_INTENT_IDENTITY_UNSUPPORTED' })
+        if (intent && (typeof intent.recordingId !== 'string' || !intent.recordingId.trim()))
+          throw Object.assign(new Error('A registered recording ID is required'), { code: 'INVALID_ARGUMENT' })
+        const started = await location.startRecording({ enableHighAccuracy: true, ...options.locationOptions, ...(intent ? { recordingId: intent.recordingId } : {}) })
         if (!started?.active || typeof started.id !== 'string' || !started.id.trim())
           throw Object.assign(new Error('The native recording did not provide an ID'), { code: 'RECORDING_CONFLICT' })
+        if (intent && started.id !== intent.recordingId)
+          throw Object.assign(new Error('The native route did not start with its registered ID'), { code: 'RECORDING_CONFLICT' })
         recordingId = started.id
         heartRateSamples = []
         heartRateRecordingId = null
         strapRecording = false
-        if (!disposed && strap?.isAvailable() && strap.supportsRecordingOwnership?.() === true) {
+        if (!disposed && strap?.isAvailable() && strap.supportsRecordingOwnership?.() === true && (!intent || (intent.heartRateRecordingId && strap.supportsRecordingIntentIdentity?.() === true))) {
           try {
-            const startedHeart = await strap.startRecording()
+            const startedHeart = await strap.startRecording(intent ? { recordingId: intent.heartRateRecordingId } : undefined)
+            if (intent && startedHeart.id !== intent.heartRateRecordingId)
+              throw Object.assign(new Error('The native heart rate did not start with its registered ID'), { code: 'RECORDING_CONFLICT' })
             if (startedHeart.active && typeof startedHeart.id === 'string' && startedHeart.id.trim()) {
               heartRateRecordingId = startedHeart.id
               strapRecording = true

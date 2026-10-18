@@ -132,6 +132,30 @@ function heartRateRecordingOwnership(): boolean {
   return getNativeMobileBridge()?.capabilities.heartRateRecordingOwnership === true && craftHeartRate.supportsRecordingOwnership?.() === true
 }
 
+function locationRecordingIntentIdentity(): boolean {
+  return locationRecordingOwnership() && getNativeMobileBridge()?.capabilities.locationRecordingIntentIdentity === true && craftLocation.supportsRecordingIntentIdentity?.() === true
+}
+
+function heartRateRecordingIntentIdentity(): boolean {
+  return heartRateRecordingOwnership() && getNativeMobileBridge()?.capabilities.heartRateRecordingIntentIdentity === true && craftHeartRate.supportsRecordingIntentIdentity?.() === true
+}
+
+function recordingStartCall<T extends { id: string | null }>(options: { recordingId?: string } | undefined, supported: () => boolean, call: () => Promise<T>): Promise<T> {
+  return afterBridge(async () => {
+    const planned = options && Object.hasOwn(options, 'recordingId')
+    if (planned) {
+      if (!supported())
+        throw Object.assign(new Error('This host or adapter cannot start a registered recording identity'), { code: 'RECORDING_INTENT_IDENTITY_UNSUPPORTED' })
+      if (typeof options.recordingId !== 'string' || !options.recordingId.trim())
+        throw Object.assign(new Error('A registered recording ID is required'), { code: 'INVALID_ARGUMENT' })
+    }
+    const result = await call()
+    if (planned && result.id !== options.recordingId)
+      throw Object.assign(new Error('The native recording identity changed at start'), { code: 'RECORDING_CONFLICT' })
+    return result
+  })
+}
+
 function recordingCall<T>(options: { expectedId?: string } | undefined, supported: () => boolean, call: () => Promise<T>): Promise<T> {
   return afterBridge(() => {
     if (options && Object.hasOwn(options, 'expectedId')) {
@@ -146,11 +170,12 @@ function recordingCall<T>(options: { expectedId?: string } | undefined, supporte
 
 export const location: LocationApi = {
   supportsRecordingOwnership: locationRecordingOwnership,
+  supportsRecordingIntentIdentity: locationRecordingIntentIdentity,
   acknowledgeRecording: options => recordingCall({ expectedId: options?.expectedId }, locationRecordingOwnership, () => craftLocation.acknowledgeRecording(options)),
   getCurrentPosition: options => afterBridge(() => craftLocation.getCurrentPosition(options)),
   watchPosition: (callback, options) => craftLocation.watchPosition(callback, options),
   clearWatch: watchId => craftLocation.clearWatch(watchId),
-  startRecording: options => afterBridge(() => craftLocation.startRecording(options)),
+  startRecording: options => recordingStartCall(options, locationRecordingIntentIdentity, () => craftLocation.startRecording(options)),
   pauseRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.pauseRecording(options)),
   resumeRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.resumeRecording(options)),
   stopRecording: options => recordingCall(options, locationRecordingOwnership, () => craftLocation.stopRecording(options)),
@@ -312,6 +337,7 @@ export const music: MusicApi = {
  */
 export const heartRate: HeartRateApi = {
   supportsRecordingOwnership: heartRateRecordingOwnership,
+  supportsRecordingIntentIdentity: heartRateRecordingIntentIdentity,
   acknowledgeRecording: options => recordingCall({ expectedId: options?.expectedId }, heartRateRecordingOwnership, () => craftHeartRate.acknowledgeRecording(options)),
   isAvailable: () => craftHeartRate.isAvailable(),
   supports: method => craftHeartRate.supports(method),
@@ -323,7 +349,7 @@ export const heartRate: HeartRateApi = {
   connect: id => afterBridge(() => craftHeartRate.connect(id)),
   reconnect: () => afterBridge(() => craftHeartRate.reconnect()),
   disconnect: options => afterBridge(() => craftHeartRate.disconnect(options)),
-  startRecording: () => afterBridge(() => craftHeartRate.startRecording()),
+  startRecording: options => recordingStartCall(options, heartRateRecordingIntentIdentity, () => craftHeartRate.startRecording(options)),
   pauseRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.pauseRecording(options)),
   resumeRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.resumeRecording(options)),
   stopRecording: options => recordingCall(options, heartRateRecordingOwnership, () => craftHeartRate.stopRecording(options)),

@@ -125,6 +125,7 @@ describe('createRouteRecorder with a strap', () => {
     const state = (active: boolean, paused = false) => ({ id: 'r1', active, paused, startedAt: 1 })
     const api = {
       supportsRecordingOwnership: () => true,
+      supportsRecordingIntentIdentity: () => true,
       acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
       startRecording: async () => { calls.push('start')
         return state(true) },
@@ -145,6 +146,7 @@ describe('createRouteRecorder with a strap', () => {
     return {
       isAvailable: () => available,
       supportsRecordingOwnership: () => true,
+      supportsRecordingIntentIdentity: () => true,
       acknowledgeRecording: async () => { throw new Error('Only the app may acknowledge its durable checkpoint') },
       startRecording: async () => { calls.push('hr start')
         return state(true) },

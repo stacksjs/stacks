@@ -12,6 +12,8 @@ export interface CraftMobileCapabilities {
   geolocation?: boolean
   backgroundLocation?: boolean
   locationRecordingOwnership?: boolean
+  locationRecordingIntentIdentity?: boolean
+  heartRateRecordingIntentIdentity?: boolean
   heartRateRecordingOwnership?: boolean
   healthKit?: boolean
   health?: boolean
@@ -201,6 +203,13 @@ export interface LocationRecordingState {
   sampleCount?: number
 }
 
+/** An identity already registered durably by the caller before native start. */
+export interface RecordingStartOptions {
+  recordingId?: string
+}
+
+export interface LocationRecordingOptions extends LocationOptions, RecordingStartOptions {}
+
 export interface LocationRecordingResult extends LocationRecordingState {
   locations: Location[]
 }
@@ -295,12 +304,13 @@ export interface RecordingOwnershipOptions {
 export interface LocationApi {
   /** Whether this host checks recording IDs atomically before reads and mutations. */
   supportsRecordingOwnership: () => boolean
+  supportsRecordingIntentIdentity: () => boolean
   /** Release a completed owned native copy only after the caller's durable checkpoint. */
   acknowledgeRecording: (options: RecordingOwnershipOptions) => Promise<boolean>
   getCurrentPosition: (options?: LocationOptions) => Promise<Location>
   watchPosition: (callback: (location: Location) => void, options?: LocationOptions) => number
   clearWatch: (watchId: number) => void
-  startRecording: (options?: LocationOptions) => Promise<LocationRecordingState>
+  startRecording: (options?: LocationRecordingOptions) => Promise<LocationRecordingState>
   pauseRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
   resumeRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingState>
   stopRecording: (options?: RecordingOwnershipOptions) => Promise<LocationRecordingResult>
@@ -475,8 +485,9 @@ export type HeartRateMethod = 'getState' | 'requestAuthorization' | 'scan' | 'st
 export interface HeartRateRecordingApi {
   isAvailable: () => boolean
   supportsRecordingOwnership: () => boolean
+  supportsRecordingIntentIdentity: () => boolean
   acknowledgeRecording: (options: RecordingOwnershipOptions) => Promise<boolean>
-  startRecording: () => Promise<HeartRateRecordingState>
+  startRecording: (options?: RecordingStartOptions) => Promise<HeartRateRecordingState>
   pauseRecording: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState>
   resumeRecording: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState>
   stopRecording: (options?: RecordingOwnershipOptions) => Promise<HeartRateRecordingState & { samples: HeartRateSample[] }>
