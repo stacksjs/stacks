@@ -11,6 +11,7 @@ const scratch = await mkdtemp(join(process.env.RUNNER_TEMP || tmpdir(), 'stacks-
 const commands: object[] = []
 const packages: object[] = []
 let failure: string | undefined
+let sourceCommit: string | undefined
 
 async function run(args: string[], cwd: string): Promise<string> {
   const started = performance.now()
@@ -32,6 +33,8 @@ async function run(args: string[], cwd: string): Promise<string> {
 }
 
 try {
+  sourceCommit = await run(['git', 'rev-parse', 'HEAD'], root)
+  await writeFile(join(output, 'source-commit.txt'), sourceCommit + '\n')
   const consumer = join(scratch, 'consumer')
   await mkdir(consumer)
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
@@ -82,11 +85,15 @@ try {
     "const invalid: IosMobileConfig = { appName: 42, bundleId: 'org.example.packed' }",
     'void [driver, invalid]',
   ].join('\n'))
+  // Compile the public root ownership/storage/UUID contract from the same
+  // authored fixture as the package test, against these exact packed bytes.
+  const rootConsumer = await readFile(join(root, 'storage/framework/core/mobile/tests/fixtures/consumer.ts'), 'utf8')
+  await writeFile(join(consumer, 'mobile-root-consumer.ts'), rootConsumer)
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({ compilerOptions: {
     target: 'ESNext', module: 'ESNext', moduleResolution: 'bundler', strict: true,
     skipLibCheck: false, noUncheckedIndexedAccess: true, noEmit: true,
     types: ['bun'], lib: ['ESNext', 'DOM'],
-  }, files: ['consumer.ts'] }, null, 2))
+  }, files: ['consumer.ts', 'mobile-root-consumer.ts'] }, null, 2))
   const compiler = resolve(dirname(Bun.resolveSync('typescript', consumer)), '../bin/tsc')
   await run([process.execPath, compiler, '--project', join(consumer, 'tsconfig.json'), '--pretty', 'false'], consumer)
 }
@@ -95,6 +102,6 @@ catch (error) {
   throw error
 }
 finally {
-  await writeFile(join(output, 'execution-receipt.json'), JSON.stringify({ commands, packages, failure, scope: 'Actual candidate packs; exact public SDK241/STX570; strict compiler; no workspace type aliases or package patches' }, null, 2) + '\n')
+  await writeFile(join(output, 'execution-receipt.json'), JSON.stringify({ sourceCommit, commands, packages, failure, scope: 'Actual candidate packs; exact public SDK241/STX570; strict compiler; no workspace type aliases or package patches' }, null, 2) + '\n')
   await rm(scratch, { recursive: true, force: true })
 }
