@@ -15,6 +15,8 @@ process.exitCode = 1
 
 interface CraftAndroidBuilder {
   nativeMapProviders?: readonly string[]
+  /** The builder installs a directory of route bundles (Craft 0.0.242 and later). */
+  nativeRouteBundles?: boolean
   init(options: {
     name: string
     packageName: string
@@ -79,7 +81,9 @@ const release = appBundle || process.env.NODE_ENV === 'production'
 // Screens drawn natively, compiled by stx into the bundle Craft copies in:
 // the same screens and app script as the iOS app.
 const native = config.renderer === 'native'
-const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android') : null
+const builder = await loadCraftAndroidBuilder()
+// One bundle per route when this Craft runs each screen from its own file.
+const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android', { routes: builder.nativeRouteBundles === true }) : null
 if (nativeBundle) {
   for (const diagnostic of nativeBundle.diagnostics ?? [])
     log.warn(`${diagnostic.file ? `${diagnostic.file}: ` : ''}${diagnostic.message}`)
@@ -92,8 +96,6 @@ const { LUCIDE_TO_SF } = native ? await import('@stacksjs/stx/native') as { LUCI
 const iconsPath = native ? writeAndroidIconTable(projectPath(), output, LUCIDE_TO_SF) : null
 if (native && !iconsPath)
   log.warn('No @iconify-json/lucide in the app: Android draws its own glyphs for the screens\' icons.')
-
-const builder = await loadCraftAndroidBuilder()
 
 // An older Craft builds without the shell, Health Connect or background
 // refresh and says nothing, so the build stops here instead.
