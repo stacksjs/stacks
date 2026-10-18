@@ -104,7 +104,7 @@ export default {
   ios: {
     renderer: 'native',
     nativeScreens: { '/m/': 'Home' },
-    nativeScreensDir: 'resources/native',
+    nativeScreensDir: 'resources/components',
     appName: 'My App',
     bundleId: 'com.example.app',
     url: 'https://example.com',
@@ -121,7 +121,7 @@ export default {
   android: {
     renderer: 'native',
     nativeScreens: { '/m/': 'Home' },
-    nativeScreensDir: 'resources/native',
+    nativeScreensDir: 'resources/components',
     appName: 'My App',
     packageName: 'com.example.app',
     url: 'https://example.com',
@@ -137,7 +137,7 @@ export default {
 
 For the native renderer, every app-owned route must map to an STX screen in
 `nativeScreens` on both platforms. The example maps `/m/` to
-`resources/native/Home.stx`; browser routes should render that same shared
+`resources/components/Home.stx`; browser routes should render that same shared
 component rather than duplicate it. Compile and test the actual screen bundle
 for both targets. External authorization or checkout routes may use the system
 browser with an explicit return path.
@@ -166,7 +166,9 @@ the default `deploymentTarget` stays, older systems drawing classic bars.
 
 ## Native screen bindings
 
-Screens under `resources/native/` use the same STX client syntax as web views.
+Screens in `nativeScreensDir` (default `resources/native/`) use the same STX
+client syntax as web views. Point it at the shared component directory when
+those components also serve browser routes.
 Declare reactive data in `<script client>` and bind text with `:text`, props
 with `:prop`, and native presses with `@click`. Pull-to-refresh uses `@refresh`
 and a boolean `:refreshing` signal. Bare signals auto-unwrap in bindings;
