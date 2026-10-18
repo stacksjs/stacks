@@ -451,7 +451,7 @@ export interface HeartRateSample {
 }
 
 export type HeartRateMethod = 'getState' | 'requestAuthorization' | 'scan' | 'stopScan' | 'getDevices' | 'connect' | 'reconnect' | 'disconnect'
-  | 'startRecording' | 'pauseRecording' | 'resumeRecording' | 'stopRecording' | 'getRecordingState' | 'readRecording'
+  | 'startRecording' | 'pauseRecording' | 'resumeRecording' | 'stopRecording' | 'getRecordingState' | 'readRecording' | 'acknowledgeRecording'
 
 /** The recording half of HeartRateApi: what a route recorder drives. */
 export interface HeartRateRecordingApi {
