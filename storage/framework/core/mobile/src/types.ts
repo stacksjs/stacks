@@ -7,6 +7,7 @@ export interface CraftMobileCapabilities {
   biometric?: boolean
   pushNotifications?: boolean
   secureStorage?: boolean
+  storageCompareAndSet?: boolean
   geolocation?: boolean
   backgroundLocation?: boolean
   locationRecordingOwnership?: boolean
@@ -72,6 +73,7 @@ export interface MobileApi {
   notifications: NotificationsApi
   permissions: PermissionsApi
   secureStorage: SecureStorageApi
+  storage: StorageApi
   share: ShareApi
   appReview: AppReviewApi
   deepLinks: DeepLinksApi
@@ -260,6 +262,18 @@ export interface BiometricsApi {
   isAvailable: () => Promise<boolean>
   getBiometricType: () => Promise<BiometricType | null>
   authenticate: (reason: string) => Promise<boolean>
+}
+
+/** Native durable storage. CAS changes an existing value only; false never creates it. */
+export interface StorageApi {
+  supportsCompareAndSet: () => boolean
+  get: <T = unknown>(key: string) => Promise<T | null>
+  set: (key: string, value: unknown) => Promise<boolean>
+  remove: (key: string) => Promise<boolean>
+  clear: () => Promise<boolean>
+  keys: () => Promise<string[]>
+  /** Objects compare without key order; arrays keep order and booleans differ from numbers. */
+  compareAndSet: (key: string, expectedValue: unknown, nextValue: unknown) => Promise<boolean>
 }
 
 export interface SecureStorageApi {

@@ -463,3 +463,23 @@ The `/testing` entrypoint is for Bun build/test tools and is excluded from brows
 exports. The ordinary `@stacksjs/mobile` entrypoint stays browser-safe. Extend
 Craft's shared host and typed APIs for new platform features instead of editing
 generated sources.
+
+
+### Durable conditional storage
+
+`storage` uses the named `craft-native/mobile` adapter. Basic calls require the
+host's storage service and reject with `STORAGE_UNSUPPORTED` when unavailable. Check
+`storage.supportsCompareAndSet()` before recording an owned native session.
+`await storage.set(key, value)` registers the initial intent durably before a
+sensor starts. For a later checkpoint, read with `await storage.get(key)`, merge
+that fresh value, and call `await storage.compareAndSet(key, expected, next)`.
+The comparison and durable write are one native operation. A missing or changed
+value returns `false` and never creates a key; I/O errors throw. Re-read and
+retry a same-owner conflict a bounded number of times. A cached `getSync` value
+and a plain `set` cannot replace CAS for a late recording response.
+
+Older hosts reject conditional writes with
+`STORAGE_COMPARE_AND_SET_UNSUPPORTED`; there is no get-and-set fallback. This
+facade requires the normally published SDK that provides the named `storage`
+export. Recording acknowledgement belongs after a successful checkpoint, or
+an explicitly confirmed discard of that proven recording.
