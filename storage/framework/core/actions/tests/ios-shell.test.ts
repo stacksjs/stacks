@@ -9,6 +9,9 @@ test('a cloud clone restores ignored native sources from the locked package', ()
   try {
     writeIosShellSupport(output, { appName: 'Example', bundleId: 'org.example.app', shell: { bunVersion: '1.3.14' } }, '1.3.0')
     expect(readFileSync(join(output, '.gitignore'), 'utf8')).toContain('*.swift')
+    // The compiled screens ship from dist/; the compiler's own copy is not committed.
+    expect(readFileSync(join(output, '.gitignore'), 'utf8')).toContain('/native-screens/\n')
+    expect(readFileSync(join(output, '.gitignore'), 'utf8')).toContain('/native-screens.js\n')
     const path = join(output, 'ci_scripts/ci_post_clone.sh')
     const script = readFileSync(path, 'utf8')
     expect(script).toContain('bun-v1.3.14')
