@@ -45,6 +45,7 @@ import type { CraftHost } from './bridge'
 import { auth, background, browser, chrome, clipboard, contextMenu, db, dialog, files, orientation, refresh, shortcuts, statusBar, storeKit, symbols, widgets } from './native'
 import { afterBridge, callNative, craftHost, hasNativeMobileHost, nativeFunctionNow, onCraftEvent, subscribeWhenReady, whenBridgeReady } from './bridge'
 import { storage } from './storage'
+import { crypto } from './crypto'
 import { scheduledWorkouts } from './scheduled-workouts'
 import type {
   AppReviewApi,
@@ -98,6 +99,7 @@ export * from './spotlight'
 export * from './tab-bar'
 export * from './types'
 export * from './storage'
+export * from './crypto'
 
 // Each service's async methods wait for a native host's bridge (afterBridge):
 // asked during an older shell's launch, they reached the web fallback, and a
@@ -524,6 +526,7 @@ export const mobile: MobileApi = {
   permissions,
   secureStorage,
   storage,
+  crypto,
   share,
   appReview,
   deepLinks,

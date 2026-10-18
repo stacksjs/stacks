@@ -77,6 +77,7 @@ export interface MobileApi {
   permissions: PermissionsApi
   secureStorage: SecureStorageApi
   storage: StorageApi
+  crypto: CryptoApi
   share: ShareApi
   appReview: AppReviewApi
   deepLinks: DeepLinksApi
@@ -287,6 +288,11 @@ export interface StorageApi {
   setIfAbsent: (key: string, value: unknown) => Promise<boolean>
   /** Objects compare without key order; arrays keep order and booleans differ from numbers. */
   compareAndSet: (key: string, expectedValue: unknown, nextValue: unknown) => Promise<boolean>
+}
+
+/** Secure system UUID generation also works in native asynchronous JS hosts. */
+export interface CryptoApi {
+  randomUUID: () => Promise<string>
 }
 
 export interface SecureStorageApi {

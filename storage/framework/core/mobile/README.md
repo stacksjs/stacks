@@ -493,7 +493,11 @@ an explicitly confirmed discard of that proven recording.
 
 For recovery across a lost start response or a full disk, generate distinct
 UUIDs for GPS and heart rate, and durably register them with the captured
-account's workout intent before starting either sensor. Check each service's
+account's workout intent before starting either sensor. `await crypto.randomUUID()`
+uses the system UUID service through the named SDK adapter; native hosts without
+it reject with `CRYPTO_UNSUPPORTED`. Await ID allocation inside the same shared
+preparation promise as registration, and recheck the captured owner afterward.
+Check each service's
 `supportsRecordingIntentIdentity()` first. Start GPS with
 `location.startRecording({ recordingId })`, a route with
 `recorder.start({ recordingId, heartRateRecordingId })`, or heart rate with
