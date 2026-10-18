@@ -1,0 +1,75 @@
+name: Published documentation consumer
+
+on:
+  push:
+    branches:
+      - codex/published-docs-fixture
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published-consumer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the public consumer fixture
+        uses: actions/checkout@v6
+      - name: Set up Bun 1.4.3
+        uses: pantry-pm/pantry/packages/action@cdb82193cb344c2b881a88ea79f88243f5522e0f
+        with:
+          version: '0.11.75'
+          install: 'false'
+          packages: 'bun@1.4.3'
+      - name: Create an independent published-package consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          consumer_dir=$(mktemp -d "$RUNNER_TEMP/stacks-published-docs-XXXXXX")
+          cp .github/fixtures/published-docs-consumer/* "$consumer_dir/"
+          echo "CONSUMER_DIR=$consumer_dir" >> "$GITHUB_ENV"
+      - name: Install the exact public dependencies normally
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$CONSUMER_DIR"
+          test "$(bun --version)" = "1.4.3"
+          bun install
+          sha256sum bun.lock > generated-lock.sha256
+          bun install --frozen-lockfile
+          sha256sum --check generated-lock.sha256
+          bun --version > bun-version.txt
+          sha256sum "$(command -v bun)" > bun-binary.sha256
+          sha256sum package.json bunfig.toml bun.lock mouse-consumer.ts tsconfig.json > consumer-inputs.sha256
+          printf '%s\n' "$GITHUB_SHA" > fixture-source-commit.txt
+      - name: Retain genuine public installer output
+        uses: actions/upload-artifact@v7
+        with:
+          name: published-docs-consumer-${{ github.sha }}
+          path: |
+            ${{ env.CONSUMER_DIR }}/package.json
+            ${{ env.CONSUMER_DIR }}/bunfig.toml
+            ${{ env.CONSUMER_DIR }}/bun.lock
+            ${{ env.CONSUMER_DIR }}/mouse-consumer.ts
+            ${{ env.CONSUMER_DIR }}/tsconfig.json
+            ${{ env.CONSUMER_DIR }}/*.sha256
+            ${{ env.CONSUMER_DIR }}/bun-version.txt
+            ${{ env.CONSUMER_DIR }}/fixture-source-commit.txt
+          if-no-files-found: error
+      - name: Typecheck the published mouse API with strict indexed access
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$CONSUMER_DIR"
+          bun run tsc --noEmit -p tsconfig.json --pretty false
+      - name: Remove the owned temporary consumer
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${CONSUMER_DIR:-}" in
+            "$RUNNER_TEMP"/stacks-published-docs-*) rm -rf -- "$CONSUMER_DIR" ;;
+            '') ;;
+            *) echo 'Unexpected consumer path'; exit 1 ;;
+          esac
