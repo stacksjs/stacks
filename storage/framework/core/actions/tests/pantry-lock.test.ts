@@ -39,6 +39,34 @@ const committed = lockOf(sound)
 const clone = () => JSON.parse(committed) as typeof sound
 
 describe('pantryLockViolations', () => {
+  it('rejects a self-consistent lock that still records the previous release declarations', () => {
+    const expected = clone().workspaces
+    expected['storage/framework/core/mobile'].dependencies['craft-native'] = '>=0.0.104'
+    const problems = pantryLockViolations(committed, committed, expected)
+    expect(problems).toContain('storage/framework/core/mobile: dependencies.craft-native is ">=0.0.104" but pantry.lock records ">=0.0.103"')
+  })
+
+  it('checks workspace versions and membership even when external packages did not change', () => {
+    const expected = {
+      ...clone().workspaces,
+      'storage/framework/core/mobile': {
+        ...sound.workspaces['storage/framework/core/mobile'],
+        version: '0.75.228',
+      },
+      'storage/framework/core/new': { name: '@stacksjs/new', version: '0.75.228' },
+    }
+    const problems = pantryLockViolations(committed, committed, expected)
+    expect(problems).toContain('storage/framework/core/mobile: version is "0.75.228" but pantry.lock records undefined')
+    expect(problems).toContain('storage/framework/core/new: current workspace is missing from pantry.lock')
+  })
+
+  it('accepts matching current declarations and rejects removed dependency ranges', () => {
+    expect(pantryLockViolations(committed, committed, clone().workspaces)).toEqual([])
+    const expected = clone().workspaces
+    delete (expected['storage/framework/core/mobile'].dependencies as Record<string, string>)['craft-native']
+    expect(pantryLockViolations(committed, committed, expected)).toContain('storage/framework/core/mobile: pantry.lock records undeclared dependencies.craft-native')
+  })
+
   it('passes a lock that satisfies its own ranges', () => {
     expect(pantryLockViolations(committed, committed)).toEqual([])
   })
