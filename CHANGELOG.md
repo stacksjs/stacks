@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.222...v0.75.223)
+
+## ✨ Features
+
+- **mobile**: a notification glyph and tint for Android apps ([bb60f1b](https://github.com/stacksjs/stacks/commit/bb60f1b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.221...v0.75.222)
 
 ## ✨ Features
