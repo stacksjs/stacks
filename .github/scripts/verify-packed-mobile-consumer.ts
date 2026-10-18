@@ -10,8 +10,45 @@ await mkdir(output, { recursive: true })
 const scratch = await mkdtemp(join(process.env.RUNNER_TEMP || tmpdir(), 'stacks-packed-mobile-'))
 const commands: object[] = []
 const packages: object[] = []
+const publicCohort: Record<string, string> = {}
 let failure: string | undefined
 let sourceCommit: string | undefined
+
+interface CandidateManifest {
+  name: string
+  version: string
+  dependencies?: Record<string, string>
+  optionalDependencies?: Record<string, string>
+}
+
+/** Pack the candidate's runtime closure so no unpublished sibling is fetched. */
+async function candidateClosure(): Promise<string[]> {
+  const core = join(root, 'storage/framework/core')
+  const candidates = new Map<string, { directory: string, manifest: CandidateManifest }>()
+  for (const entry of await readdir(core, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const file = Bun.file(join(core, entry.name, 'package.json'))
+    if (await file.exists()) {
+      const manifest = await file.json() as CandidateManifest
+      candidates.set(manifest.name, { directory: entry.name, manifest })
+    }
+  }
+  const seen = new Set<string>()
+  const ordered: string[] = []
+  function visit(name: string): void {
+    if (seen.has(name)) return
+    const candidate = candidates.get(name)
+    assert.ok(candidate, 'Missing candidate source for ' + name)
+    seen.add(name)
+    for (const dependency of Object.keys({ ...candidate.manifest.dependencies, ...candidate.manifest.optionalDependencies })) {
+      if (candidates.has(dependency)) visit(dependency)
+    }
+    ordered.push(candidate.directory)
+  }
+  visit('@stacksjs/types')
+  visit('@stacksjs/mobile')
+  return ordered
+}
 
 async function run(args: string[], cwd: string): Promise<string> {
   const started = performance.now()
@@ -39,7 +76,7 @@ try {
   await mkdir(consumer)
   const candidateArchives: Record<string, string> = {}
   const packedRoots: Record<string, string> = {}
-  for (const name of ['types', 'mobile']) {
+  for (const name of await candidateClosure()) {
     const source = join(root, 'storage/framework/core', name)
     await run([process.execPath, 'run', 'build'], source)
     const archivePath = join(scratch, name + '.tgz')
@@ -57,16 +94,22 @@ try {
     packedRoots[packed.name] = join(extracted, 'package')
   }
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
+  const lock = Bun.JSONC.parse(await readFile(join(root, 'bun.lock'), 'utf8')) as { packages: Record<string, [string, ...unknown[]]> }
+  for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components']) {
+    const locator = lock.packages[name]?.[0]
+    assert.ok(locator?.startsWith(name + '@'), 'Missing exact public dependency in bun.lock: ' + name)
+    publicCohort[name] = locator.slice(name.length + 1)
+  }
   await writeFile(join(consumer, 'package.json'), JSON.stringify({
     name: 'stacks-packed-mobile-contract', private: true, type: 'module',
-    dependencies: { ...candidateArchives, 'craft-native': '0.0.241', '@stacksjs/stx': '0.2.570', '@stacksjs/components': '0.2.570' },
+    dependencies: { ...candidateArchives, ...publicCohort },
     devDependencies: { 'better-dx': manifest.devDependencies['better-dx'] },
   }, null, 2))
   await writeFile(join(consumer, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n')
   await run([process.execPath, 'install'], consumer)
   await run([process.execPath, 'install', '--frozen-lockfile'], consumer)
   const installedVersions: Record<string, string> = {}
-  for (const [name, version] of Object.entries({ 'craft-native': '0.0.241', '@stacksjs/stx': '0.2.570', '@stacksjs/components': '0.2.570' })) {
+  for (const [name, version] of Object.entries(publicCohort)) {
     const installed = JSON.parse(await readFile(join(consumer, 'node_modules', name, 'package.json'), 'utf8'))
     assert.equal(installed.version, version)
     installedVersions[name] = installed.version
@@ -127,6 +170,6 @@ catch (error) {
   throw error
 }
 finally {
-  await writeFile(join(output, 'execution-receipt.json'), JSON.stringify({ sourceCommit, commands, packages, failure, scope: 'Actual candidate packs; exact public SDK241/STX570; strict compiler; no workspace type aliases or package patches' }, null, 2) + '\n')
+  await writeFile(join(output, 'execution-receipt.json'), JSON.stringify({ sourceCommit, commands, packages, publicCohort, failure, scope: 'Complete actual candidate runtime closure; exact canonical public cohort; strict compiler; no workspace type aliases or package patches' }, null, 2) + '\n')
   await rm(scratch, { recursive: true, force: true })
 }
