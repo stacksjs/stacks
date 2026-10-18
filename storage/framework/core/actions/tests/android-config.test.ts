@@ -1,7 +1,25 @@
 import { describe, expect, it } from 'bun:test'
-import { assertCraftSupportsAndroid, CRAFT_ANDROID_FLOORS, androidCraftFeatures, toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
+import { assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, CRAFT_ANDROID_FLOORS, androidCraftFeatures, toCraftAndroidConfig, validateAndroidMobileConfig } from '../src/build/android-config'
 
 describe('Android mobile build configuration', () => {
+  it('preserves the native key-free provider without inventing a Google map key', () => {
+    const config = { appName: 'Wildloop', packageName: 'org.wildloop.app', renderer: 'native' as const, url: 'https://wildloop.org/feed', nativeScreens: { '/': 'Home' }, mapProvider: 'maplibre' as const }
+    const result = toCraftAndroidConfig(config)
+    expect(result.mapProvider).toBe('maplibre')
+    expect(result).not.toHaveProperty('mapsApiKey')
+    expect(() => validateAndroidMobileConfig(config)).not.toThrow()
+    expect(() => assertCraftSupportsAndroidMapProvider(config, ['google', 'maplibre'])).not.toThrow()
+    expect(() => assertCraftSupportsAndroidMapProvider(config, ['google'])).toThrow('does not advertise native map provider')
+    expect(() => assertCraftSupportsAndroidMapProvider(config)).toThrow('published SDK')
+    expect(() => validateAndroidMobileConfig({ ...config, renderer: 'web' })).toThrow('configures native map views')
+    expect(() => validateAndroidMobileConfig({ ...config, mapProvider: 'unknown' as never })).toThrow('android.mapProvider')
+  })
+
+  it('retains the default provider contract for apps without an explicit map choice', () => {
+    const config = { appName: 'Existing app', packageName: 'org.example.app' }
+    expect(toCraftAndroidConfig(config)).not.toHaveProperty('mapProvider')
+    expect(() => assertCraftSupportsAndroidMapProvider(config)).not.toThrow()
+  })
   it('forwards bundled font declarations to the Android builder', () => {
     const fonts = { 'Allura-Regular': { src: 'fonts/Allura.ttf', license: 'fonts/OFL.txt' } }
     expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app', nativeFonts: fonts }).nativeFonts).toEqual(fonts)

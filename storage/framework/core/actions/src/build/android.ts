@@ -6,7 +6,7 @@ import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { craftBuilderSpecifier, craftBuilderVersion } from './craft-entry'
 import { resolveCraftBuilderProvenance } from './craft-provenance'
-import { androidRelease, assertCraftSupportsAndroid, toCraftAndroidConfig, uploadAndroidMapping, validateAndroidMobileConfig } from './android-config'
+import { androidRelease, assertCraftSupportsAndroid, assertCraftSupportsAndroidMapProvider, toCraftAndroidConfig, uploadAndroidMapping, validateAndroidMobileConfig } from './android-config'
 import { resolveCrashReporting, resolveMobilePath, resolveNativeFonts, assertCraftSupportsNativeFonts } from './ios-config'
 import { compileNativeScreens } from './native-screens'
 import { writeAndroidIconTable } from './android-icons'
@@ -14,6 +14,7 @@ import { writeAndroidIconTable } from './android-icons'
 process.exitCode = 1
 
 interface CraftAndroidBuilder {
+  nativeMapProviders?: readonly string[]
   init(options: {
     name: string
     packageName: string
@@ -102,6 +103,7 @@ if (craftVersion)
 else
   log.warn(`Could not read the craft-native version behind ${craftAndroidEntry()}, so the build cannot check that it supports what config/mobile.ts asks for.`)
 
+assertCraftSupportsAndroidMapProvider(config, builder.nativeMapProviders)
 await builder.init({ name: config.appName, packageName: config.packageName, output, config: craftConfig })
 await builder.build(native
   ? { output, nativeBundlePath: nativeBundle!.outFile, iconsPath: iconsPath ?? undefined, release, bundle: appBundle, compile: process.env.STACKS_ANDROID_SKIP_GRADLE !== '1' }

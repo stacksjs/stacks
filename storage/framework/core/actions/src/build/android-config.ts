@@ -5,6 +5,7 @@ export interface CraftAndroidConfig {
   [key: string]: unknown
   nativeFonts?: AndroidMobileConfig['nativeFonts']
   appName: string
+  mapProvider?: AndroidMobileConfig['mapProvider']
   packageName: string
   version?: string
   versionCode?: number
@@ -78,6 +79,13 @@ export const CRAFT_ANDROID_FLOORS = {
 
 export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
 
+/** An explicit provider must be implemented by the resolved published builder. */
+export function assertCraftSupportsAndroidMapProvider(config: AndroidMobileConfig, providers?: readonly string[]): void {
+  if (config.mapProvider && !providers?.includes(config.mapProvider)) {
+    throw new Error(`The resolved Craft Android builder does not advertise native map provider '${config.mapProvider}'. Upgrade craft-native to a published SDK supporting that provider before building this app.`)
+  }
+}
+
 /** Which floored features this android config uses. */
 export function androidCraftFeatures(config: AndroidMobileConfig, options: { appBundle?: boolean } = {}): AndroidCraftFeature[] {
   const features: AndroidCraftFeature[] = []
@@ -111,6 +119,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
   if (devServerURL) trustedOrigins.add(new URL(devServerURL).origin)
   const native = config.renderer === 'native'
   const craft: CraftAndroidConfig = {
+    mapProvider: config.mapProvider,
     nativeFonts: config.nativeFonts,
     appName: config.appName,
     packageName: config.packageName,
@@ -151,6 +160,10 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
 }
 
 export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
+  if (config.mapProvider !== undefined && config.mapProvider !== 'google' && config.mapProvider !== 'maplibre')
+    throw new Error(`android.mapProvider must be 'google' or 'maplibre', not ${String(config.mapProvider)}`)
+  if (config.mapProvider && config.renderer !== 'native')
+    throw new Error('android.mapProvider configures native map views: set android.renderer to \'native\'')
   if (!config.appName?.trim()) throw new Error('config/mobile.ts must define android.appName')
   if (!/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$/.test(config.packageName)) {
     throw new Error(`Invalid Android package name: ${config.packageName}`)
