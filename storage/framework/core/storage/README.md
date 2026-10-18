@@ -76,6 +76,34 @@ platform's final-symlink error. The function and its types are also exported
 from `@stacksjs/storage`. Existing `readTextFile` and disk readers keep their
 current behavior.
 
+## Completed local artifacts
+
+Publish a bounded set of files into a new private directory. The completion
+manifest becomes visible after data and directory sync barriers:
+
+```ts
+import { writeCompletedArtifact } from '@stacksjs/storage/completed-artifact-directory'
+
+const artifact = await writeCompletedArtifact(outputDirectory, [
+  { path: 'data/surface.asc', contents: numericSurface },
+  { path: 'report.json', contents: reportJson },
+], manifestJson)
+```
+
+The manifest must be a JSON object. The function validates relative entry paths,
+case-insensitive duplicates, file/directory collisions, shared buffers and size
+limits before filesystem mutation. It copies byte arrays, including Buffer views,
+before awaiting IO. Files are exclusive 0600, directories 0700, and existing
+destinations are preserved. Limits are 1,024 files, 128 MiB total and a 16 MiB
+manifest. Optional `{ directories: ['images'] }` creates empty directories.
+
+Every file and directory entry receives fsync barriers before a synced pending
+manifest receives the exclusive `manifest.json` hard-link name. A partial output
+is retained for diagnosis. Parents must be operator controlled; callers own
+authorization and domain-schema validation. This is a local-filesystem protocol
+requiring hard links and directory fsync, with no storage hardware power-loss
+guarantee. It is not an S3/disk-adapter transaction or content authentication.
+
 ## 🧪 Testing
 
 ```bash

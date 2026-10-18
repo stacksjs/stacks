@@ -24,6 +24,7 @@ File system abstraction with a Laravel-style Storage facade, local/S3/Azure adap
 - Bun adapter: `storage/framework/core/storage/src/adapters/bun.ts`
 - File utilities: `storage/framework/core/storage/src/files.ts`
 - Bounded local text reads: `storage/framework/core/storage/src/bounded-text-file.ts`
+- Completed local artifacts: `storage/framework/core/storage/src/completed-artifact-directory.ts`
 - Folder utilities: `storage/framework/core/storage/src/folders.ts`
 - Copy: `storage/framework/core/storage/src/copy.ts`
 - Move: `storage/framework/core/storage/src/move.ts`
@@ -70,6 +71,19 @@ import * as storage from '@stacksjs/storage'
 ```
 
 ## Storage Facade (StorageManager)
+
+### Completed local artifacts
+
+Use `writeCompletedArtifact` from `@stacksjs/storage/completed-artifact-directory`
+for a bounded, new local output directory containing data files and a JSON
+completion manifest. Pass `(directory, [{ path, contents }], manifestJson)`;
+optional `{ directories: ['images'] }` creates empty folders. It snapshots bytes,
+validates paths/collisions/budgets, writes private exclusive files, syncs files
+and directories, then hard-links the synced manifest to its completion name.
+Read the package README for exact limits and failure behavior. Callers own
+parent-directory authorization and domain validation. This is a local hard-link
+and directory-fsync protocol, not a cloud-adapter transaction or tested hardware
+power-loss guarantee.
 
 ### Recoverable temporary workspaces
 
