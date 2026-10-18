@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { createHash } from 'node:crypto'
-import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 
@@ -37,23 +37,8 @@ try {
   await writeFile(join(output, 'source-commit.txt'), sourceCommit + '\n')
   const consumer = join(scratch, 'consumer')
   await mkdir(consumer)
-  const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-  await writeFile(join(consumer, 'package.json'), JSON.stringify({
-    name: 'stacks-packed-mobile-contract', private: true, type: 'module',
-    dependencies: { 'craft-native': '0.0.241', '@stacksjs/stx': '0.2.570', '@stacksjs/components': '0.2.570' },
-    devDependencies: { 'better-dx': manifest.devDependencies['better-dx'] },
-  }, null, 2))
-  await writeFile(join(consumer, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n')
-  await run([process.execPath, 'install'], consumer)
-  await run([process.execPath, 'install', '--frozen-lockfile'], consumer)
-  const installedVersions: Record<string, string> = {}
-  for (const [name, version] of Object.entries({ 'craft-native': '0.0.241', '@stacksjs/stx': '0.2.570', '@stacksjs/components': '0.2.570' })) {
-    const installed = JSON.parse(await readFile(join(consumer, 'node_modules', name, 'package.json'), 'utf8'))
-    assert.equal(installed.version, version)
-    installedVersions[name] = installed.version
-  }
-  await writeFile(join(output, 'public-cohort.json'), JSON.stringify(installedVersions, null, 2) + '\n')
-
+  const candidateArchives: Record<string, string> = {}
+  const packedRoots: Record<string, string> = {}
   for (const name of ['types', 'mobile']) {
     const source = join(root, 'storage/framework/core', name)
     await run([process.execPath, 'run', 'build'], source)
@@ -68,12 +53,52 @@ try {
     assert.equal(packed.name, '@stacksjs/' + name)
     packages.push({ name: packed.name, version: packed.version, entries, sha256: createHash('sha256').update(bytes).digest('hex'), exports: packed.exports, publishConfig: packed.publishConfig, dependencies: packed.dependencies })
     await writeFile(join(output, name + '-packed-manifest.json'), JSON.stringify(packed, null, 2) + '\n')
-    const destination = join(consumer, 'node_modules/@stacksjs', name)
-    await mkdir(dirname(destination), { recursive: true })
-    // Consume exact packed bytes in this isolated contract. Never rewrite
-    // exports/declarations or resolve the candidate through workspace aliases.
-    await rename(join(extracted, 'package'), destination)
+    candidateArchives[packed.name] = 'file:' + archivePath
+    packedRoots[packed.name] = join(extracted, 'package')
   }
+  const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
+  await writeFile(join(consumer, 'package.json'), JSON.stringify({
+    name: 'stacks-packed-mobile-contract', private: true, type: 'module',
+    dependencies: { ...candidateArchives, 'craft-native': '0.0.241', '@stacksjs/stx': '0.2.570', '@stacksjs/components': '0.2.570' },
+    devDependencies: { 'better-dx': manifest.devDependencies['better-dx'] },
+  }, null, 2))
+  await writeFile(join(consumer, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n')
+  await run([process.execPath, 'install'], consumer)
+  await run([process.execPath, 'install', '--frozen-lockfile'], consumer)
+  const installedVersions: Record<string, string> = {}
+  for (const [name, version] of Object.entries({ 'craft-native': '0.0.241', '@stacksjs/stx': '0.2.570', '@stacksjs/components': '0.2.570' })) {
+    const installed = JSON.parse(await readFile(join(consumer, 'node_modules', name, 'package.json'), 'utf8'))
+    assert.equal(installed.version, version)
+    installedVersions[name] = installed.version
+  }
+  await writeFile(join(output, 'public-cohort.json'), JSON.stringify(installedVersions, null, 2) + '\n')
+
+  // The ordinary installer owns the complete candidate dependency graph.
+  // Compare every installed candidate file to the untouched archive, including
+  // package.json and declarations; this never modifies an installed package.
+  const installedCandidateFiles: Record<string, number> = {}
+  async function verifyInstalledFiles(name: string, directory: string, relative = ''): Promise<number> {
+    let count = 0
+    for (const entry of await readdir(join(directory, relative), { withFileTypes: true })) {
+      const file = join(relative, entry.name)
+      if (entry.isDirectory()) {
+        count += await verifyInstalledFiles(name, directory, file)
+      }
+      else {
+        assert.equal(entry.isFile(), true, 'Candidate archive contains an unsupported file: ' + file)
+        const expected = await readFile(join(directory, file))
+        const installed = await readFile(join(consumer, 'node_modules', name, file))
+        assert.equal(createHash('sha256').update(installed).digest('hex'), createHash('sha256').update(expected).digest('hex'), name + '/' + file)
+        count++
+      }
+    }
+    return count
+  }
+  for (const [name, directory] of Object.entries(packedRoots))
+    installedCandidateFiles[name] = await verifyInstalledFiles(name, directory)
+  await writeFile(join(output, 'installed-candidate-files.json'), JSON.stringify(installedCandidateFiles, null, 2) + '\n')
+  for (const name of ['package.json', 'bun.lock', 'bunfig.toml'])
+    await writeFile(join(output, 'consumer-' + name), await readFile(join(consumer, name)))
   await writeFile(join(consumer, 'consumer.ts'), [
     "import type { IosMobileConfig } from '@stacksjs/types/mobile'",
     "import { prepareIosSimulatorDriver } from '@stacksjs/mobile/testing'",
