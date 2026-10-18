@@ -301,6 +301,14 @@ export interface AndroidMobileConfig {
   /** Custom URI schemes handled by the app, for example `wildloop`. */
   urlSchemes?: string[]
   appIcon?: string
+  /**
+   * The small icon in the status bar and on every notification: an Android
+   * vector drawable (`.xml`) or a `.png`, white on transparent, since
+   * Android draws only its shape. The launcher icon there is a white square.
+   */
+  notificationIcon?: string
+  /** The `#RRGGBB` Android tints the notification icon and app name with. */
+  notificationColor?: string
   /** Path to Firebase's google-services.json, required for production Android push registration. */
   googleServicesFile?: string
   /** Google Maps Android SDK key for native Map views, restricted to this application. */
