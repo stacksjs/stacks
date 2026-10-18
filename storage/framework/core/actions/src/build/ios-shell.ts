@@ -6,7 +6,10 @@ import { join } from 'node:path'
 export function writeIosShellSupport(output: string, config: IosMobileConfig, bunVersion = Bun.version, crashReporting?: MobileCrashReportingConfig): void {
   const version = config.shell?.bunVersion ?? bunVersion
   if (!/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/.test(version)) throw new Error('ios.shell.bunVersion must be a Bun version such as 1.3.14')
-  writeFileSync(join(output, '.gitignore'), '# Native sources are restored from the locked Craft package.\n*.swift\n')
+  // stx's compiled screens land beside the project and Craft copies them into
+  // dist/, which is what the app ships: the copy outside dist/ is build
+  // output, and was committed as a second copy of every screen.
+  writeFileSync(join(output, '.gitignore'), '# Native sources are restored from the locked Craft package.\n*.swift\n# Compiled screens ship from dist/; this is the compiler\'s copy.\n/native-screens.js\n/native-screens/\n')
   const scripts = join(output, 'ci_scripts')
   mkdirSync(scripts, { recursive: true })
   // Restoring build output does not boot the app or load its runtime preloader.
