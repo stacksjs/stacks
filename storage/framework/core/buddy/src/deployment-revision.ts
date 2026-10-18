@@ -50,8 +50,9 @@ export interface DeploymentRevisionCheck {
  * production already runs one of those.
  *
  * The branch is fetched without updating any ref (FETCH_HEAD only). A shallow
- * CI checkout receives exactly the commits between it and the head, which is
- * all the ancestry question needs.
+ * CI checkout usually receives exactly the commits between it and the head,
+ * which is all the ancestry question needs; one that already held the head
+ * as a separate shallow root is deepened until the two meet.
  */
 export async function assertCurrentDeploymentRevision(revision: AutomatedDeploymentRevision | undefined, cwd = process.cwd()): Promise<DeploymentRevisionCheck | undefined> {
   if (!revision)
@@ -91,8 +92,24 @@ export async function assertCurrentDeploymentRevision(revision: AutomatedDeploym
   await git(['fetch', '--quiet', '--no-tags', 'origin', revision.ref])
   const tip = String(await git(['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])).toLowerCase()
   // Exit status 1 is the answer "no", not a failure to answer.
-  const onBranch = await git(['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })
-  if (onBranch === null)
+  const isAncestor = async () => (await git(['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })) !== null
+  let onBranch = await isAncestor()
+  // A shallow checkout can hold the tip as a shallow root of its own (a clone
+  // of the branch, then the CI commit fetched beside it): the fetch above then
+  // brings nothing, and the history joining them is missing rather than
+  // absent. Deepen until they meet, then take the whole history as a last
+  // resort, before calling the commit off the branch.
+  for (const depth of [64, 512, 4096]) {
+    if (onBranch || (await git(['rev-parse', '--is-shallow-repository'])) !== 'true')
+      break
+    await git(['fetch', '--quiet', '--no-tags', `--deepen=${depth}`, 'origin', revision.ref])
+    onBranch = await isAncestor()
+  }
+  if (!onBranch && (await git(['rev-parse', '--is-shallow-repository'])) === 'true') {
+    await git(['fetch', '--quiet', '--no-tags', '--unshallow', 'origin', revision.ref])
+    onBranch = await isAncestor()
+  }
+  if (!onBranch)
     throw new Error('This CI commit is no longer on the origin branch; production deployment stopped. Deploy the current branch head.')
   const newer = String(await git(['rev-list', `${revision.sha}..${tip}`])).split('\n').map(line => line.trim().toLowerCase()).filter(Boolean)
   return Object.freeze({ revision, newer })

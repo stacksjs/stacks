@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.225...v0.75.226)
+
+## 🐛 Bug Fixes
+
+- **deploy**: deepen a shallow checkout before calling a commit off the branch ([43a8685](https://github.com/stacksjs/stacks/commit/43a8685)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.224...v0.75.225)
 
 ## ✨ Features
