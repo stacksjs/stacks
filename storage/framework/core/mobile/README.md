@@ -5,6 +5,15 @@ native capability detection, readiness, haptics, location, camera, sharing,
 secure storage, lifecycle, health, Live Activities, and watch connectivity
 behind one browser-safe interface.
 
+Native STX screens are bundled into the installed app and rendered as UIKit or
+Android views by Craft. The phone website uses the browser renderer with the
+same STX screen source. Screen and native-code changes arrive in a new app
+build; account and training data refresh through the application's API.
+
+Recording ownership, atomic durable storage and secure system UUIDs require
+`craft-native >=0.0.238` and a native host built with those capabilities. Check
+capabilities and request the permissions each feature needs before starting it.
+
 ```ts
 import { haptics, isNativeMobile, location } from '@stacksjs/mobile'
 
@@ -25,7 +34,8 @@ building blocks, for a bridge API this package does not wrap yet.
 
 ## Beyond the core services
 
-Each with a web fallback, and none throwing for being unsupported:
+Browser behavior varies by service. Check support before a device-only call
+and handle permission and availability errors. Additional services include:
 `dialog` (alert, confirm, actionSheet; HTML stand-ins in a browser),
 `confirmAction`, `useActionSheet`, `contextMenu`, `browser.open` (in-app
 Safari or an auth session), `symbols.image` (SF Symbols, cached), `statusBar`,
