@@ -104,6 +104,24 @@ describe('runPinnedChecks', () => {
 })
 
 describe('formatPreflightFailure', () => {
+  it('shows the stale artifact after multiline environment decryption warnings', () => {
+    const message = formatPreflightFailure([{
+      script: 'docs:native-skills:check',
+      output: [
+        '[env-plugin] Errors: [',
+        ...Array.from({ length: 42 }, (_, index) => `  "Failed to decrypt VALUE_${index}: Environment decryption failed"`),
+        ']',
+        '[env] warning: skipped encrypted values; defaults apply',
+        'Native skill references are stale: storage/framework/defaults/ai/skills/stacks-native/CATALOG.md. Run ./buddy docs:native-skills.',
+      ].join('\n'),
+    }])
+
+    expect(message).toContain('stacks-native/CATALOG.md')
+    expect(message).toContain('Run ./buddy docs:native-skills.')
+    expect(message).not.toContain('[env-plugin]')
+    expect(message).not.toContain('Failed to decrypt')
+  })
+
   it('quotes the informative lines and strips wrapper noise', () => {
     const message = formatPreflightFailure([{
       script: 'docs:artifacts:check',
@@ -122,6 +140,15 @@ describe('formatPreflightFailure', () => {
     expect(message).not.toContain('[env]')
     expect(message).not.toContain('$ ./buddy')
     expect(message).not.toContain('error: script')
+  })
+
+  it('preserves environment diagnostics when no check diagnostic follows', () => {
+    const message = formatPreflightFailure([{
+      script: 'docs:links:check',
+      output: '[env-plugin] Errors: [\n  "Required environment value could not be decrypted"\n]',
+    }])
+
+    expect(message).toContain('Required environment value could not be decrypted')
   })
 
   it('states that nothing was mutated, and how to proceed', () => {

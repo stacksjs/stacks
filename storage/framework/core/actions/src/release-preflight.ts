@@ -104,6 +104,14 @@ export async function runPinnedChecks(options: {
 
 /** The message shown when the pre-flight blocks a release. */
 export function formatPreflightFailure(failures: PreflightResult['failures']): string {
+  const diagnosticLines = (output: string): string[] => output
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line
+      && !line.startsWith('[env]')
+      && !line.startsWith('$ ')
+      && !line.startsWith('error: script'))
+
   const lines = [
     `Release blocked: ${failures.length} pinned check${failures.length === 1 ? '' : 's'} failed.`,
     '',
@@ -116,15 +124,14 @@ export function formatPreflightFailure(failures: PreflightResult['failures']): s
     // noise first: the env plugin's banner, `bun run`'s `$ ./buddy …` echo, and
     // its trailing `error: script … exited` line all crowd out the one or two
     // lines that actually say what is wrong.
-    const informative = failure.output
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line
-        && !line.startsWith('[env]')
-        && !line.startsWith('$ ')
-        && !line.startsWith('error: script'))
+    // The environment loader can print a multiline array before the check's
+    // own diagnostic. Remove that wrapper as one block before truncating.
+    // Keep it when it is the only diagnostic, so an environment failure still
+    // explains why the check failed.
+    const informative = diagnosticLines(failure.output.replace(/^\[env-plugin\] Errors: \[\r?\n[\s\S]*?^\][ \t]*\r?$/gm, ''))
+    const diagnostics = informative.length ? informative : diagnosticLines(failure.output)
 
-    for (const line of informative.slice(0, 4))
+    for (const line of diagnostics.slice(0, 4))
       lines.push(`    ${line}`)
     lines.push('')
   }
