@@ -1,12 +1,12 @@
 /**
  * Native mobile surfaces for Stacks and STX apps, from `craft-native/mobile`.
  *
- * `craft-native/mobile` is the browser-safe half of the SDK: it talks to the
- * `globalThis.craft` bridge when the page runs inside a native WebView, and
- * falls back to web equivalents (or no-ops) everywhere else, so this package
- * imports cleanly from an STX client bundle, a plain web build, and a server
- * render alike. It is a dependency, which the build leaves external, so the
- * app's bundler resolves it.
+ * `craft-native/mobile` exposes the SDK APIs through the available Craft
+ * native host bridge, with web equivalents (or no-ops) when no host provides
+ * them. The API bridge is independent of the renderer: shared STX components
+ * can render native views through Craft or target the web. This package also
+ * imports cleanly during server rendering. The SDK is a dependency that the
+ * build leaves external for the app's bundler to resolve.
  *
  * Each API is imported by name. A bundler keeps what a named import's binding
  * reaches and drops the rest of craft-native's modules; reading the APIs off
