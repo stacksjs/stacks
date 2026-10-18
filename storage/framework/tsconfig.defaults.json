@@ -44,6 +44,7 @@
       // Same, for the Bun-only mobile testing entrypoint `docs/guide/mobile.md` imports.
       "@stacksjs/mobile/testing": ["./core/mobile/src/testing.ts"],
       "@stacksjs/types/exit-code": ["./core/types/src/exit-code.ts"],
+      "@stacksjs/types/mobile": ["./core/types/src/mobile.ts"],
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
       "buddy": ["./core/buddy/src/index.ts"],

@@ -46,6 +46,7 @@
       "@stacksjs/utils/*": ["./utils/src/*"],
       "@stacksjs/validation/*": ["./validation/src/*"],
       "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
+      "@stacksjs/types/mobile": ["./types/src/mobile.ts"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
       // Bun uses these paths while building and running source. Prefer the
