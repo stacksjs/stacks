@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { assertCurrentDeploymentRevision, automatedDeploymentRevision } from '../src/deployment-revision'
+import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../src/deployment-revision'
 
 const directories: string[] = []
 afterEach(() => {
@@ -45,10 +45,81 @@ describe('automated production revision', () => {
     git(['commit', '-am', 'second'], checkout)
     await expect(assertCurrentDeploymentRevision(revision, checkout)).rejects.toThrow('checkout does not match')
     git(['push', 'origin', 'main'], checkout)
+    const second = git(['rev-parse', 'HEAD'], checkout)
     git(['checkout', '--detach', first], checkout)
-    await expect(assertCurrentDeploymentRevision(revision, checkout)).rejects.toThrow('no longer the origin branch head')
+    // Behind the head but on the branch: allowed here, with what came after it.
+    expect((await assertCurrentDeploymentRevision(revision, checkout))?.newer).toEqual([second])
+    // A commit force-pushed off the branch is refused.
+    git(['checkout', '-B', 'rewrite', first], checkout)
+    writeFileSync(join(checkout, 'file'), 'rewritten')
+    git(['commit', '-am', 'rewritten'], checkout)
+    const rewritten = git(['rev-parse', 'HEAD'], checkout)
+    git(['push', '--force', 'origin', `${first}:refs/heads/main`], checkout)
+    git(['push', '--force', 'origin', 'rewrite:refs/heads/main'], checkout)
+    git(['checkout', '--detach', second], checkout)
+    expect(rewritten).not.toBe(second)
+    await expect(assertCurrentDeploymentRevision({ ...revision, sha: second }, checkout)).rejects.toThrow('no longer on the origin branch')
     git(['remote', 'set-url', 'origin', join(root, 'absent.git')], checkout)
-    await expect(assertCurrentDeploymentRevision(revision, checkout)).rejects.toThrow('Cannot verify')
-    await expect(assertCurrentDeploymentRevision({ ...revision, ref: 'refs/heads/invalid ref' }, checkout)).rejects.toThrow('Cannot verify')
+    await expect(assertCurrentDeploymentRevision({ ...revision, sha: second }, checkout)).rejects.toThrow('Cannot verify')
+    await expect(assertCurrentDeploymentRevision({ ...revision, sha: second, ref: 'refs/heads/invalid ref' }, checkout)).rejects.toThrow('Cannot verify')
+  })
+
+  test('a shallow CI checkout learns the commits after it from origin', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-deploy-revision-'))
+    directories.push(root)
+    const remote = join(root, 'origin.git')
+    const author = join(root, 'author')
+    const git = (args: string[], cwd = root): string => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+    git(['init', '--bare', remote])
+    git(['init', '-b', 'main', author])
+    git(['config', 'user.name', 'Revision fixture'], author)
+    git(['config', 'user.email', 'fixture@example.invalid'], author)
+    git(['remote', 'add', 'origin', remote], author)
+    for (const n of ['one', 'two', 'three']) {
+      writeFileSync(join(author, 'file'), n)
+      git(['add', 'file'], author)
+      git(['commit', '-m', n], author)
+    }
+    git(['push', 'origin', 'main'], author)
+    const ci = git(['rev-parse', 'HEAD'], author)
+    // What a CI runner holds: one commit, no history.
+    const checkout = join(root, 'ci')
+    git(['clone', '--depth', '1', '--branch', 'main', `file://${remote}`, checkout])
+    // Two more pushes while CI ran.
+    const later: string[] = []
+    for (const n of ['four', 'five']) {
+      writeFileSync(join(author, 'file'), n)
+      git(['commit', '-am', n], author)
+      later.unshift(git(['rev-parse', 'HEAD'], author))
+    }
+    git(['push', 'origin', 'main'], author)
+    const check = await assertCurrentDeploymentRevision({ ref: 'refs/heads/main', sha: ci }, checkout)
+    expect(check?.newer).toEqual(later)
+    // Still one commit deep where it stood: nothing but the newer commits came in.
+    expect(git(['rev-parse', 'HEAD'], checkout)).toBe(ci)
+  })
+})
+
+describe('never deploying backwards', () => {
+  const sha = (c: string) => c.repeat(40)
+  const check = { revision: { ref: 'refs/heads/main', sha: sha('a') }, newer: [sha('c'), sha('b')] }
+
+  test('refuses when production already runs a commit that came after this one', () => {
+    expect(() => assertNotBehindLiveRelease(check, ['bbbbbbb'])).toThrow('Production already runs bbbbbbb')
+    expect(() => assertNotBehindLiveRelease(check, ['0123456', sha('c')])).toThrow('newer than this CI commit')
+  })
+
+  test('deploys over an older release, a redeploy, an unknown one, or when this is the head', () => {
+    expect(() => assertNotBehindLiveRelease(check, ['0123456'])).not.toThrow()
+    expect(() => assertNotBehindLiveRelease(check, ['aaaaaaa'])).not.toThrow()
+    expect(() => assertNotBehindLiveRelease(check, [])).not.toThrow()
+    expect(() => assertNotBehindLiveRelease(check, ['current', 'staging-1'])).not.toThrow()
+    expect(() => assertNotBehindLiveRelease({ ...check, newer: [] }, ['bbbbbbb'])).not.toThrow()
+    expect(() => assertNotBehindLiveRelease(undefined, ['bbbbbbb'])).not.toThrow()
+  })
+
+  test('reads each site\'s current release, and only for a well-formed project slug', () => {
+    expect(liveReleasesCommand('training')).toContain('/var/www/training-*/current')
+    expect(() => liveReleasesCommand('x; rm -rf /')).toThrow('slug')
   })
 })

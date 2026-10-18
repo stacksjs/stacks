@@ -53,9 +53,15 @@ a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for API and tool consumers.
 
 Automated production deployments on GitHub Actions and ReviewOS require a full provider
 commit SHA and branch ref. Before prerequisite setup, Buddy verifies the checkout against
-that SHA and reads the current branch head from `origin`. A stale commit, tag/PR ref,
-missing metadata or unavailable remote stops the deployment. Ordinary manual deployments
-and staging deployments keep their existing behavior; dry-run previews remain read-only.
+that SHA, fetches the branch from `origin` (FETCH_HEAD only; a shallow checkout receives
+just the newer commits) and requires the commit to be on it. Before shipping over SSH it
+reads the release each site's `current` link serves and stops only when production
+already runs a commit that landed after this one, so a deploy never goes backwards. A
+verified commit newer than production deploys even when the head has moved on: requiring
+the exact head starved production whenever pushes outpaced CI. A commit off the branch
+(force-pushed away), a tag/PR ref, missing metadata, an unavailable remote or an
+unreadable box stops the deployment. Ordinary manual deployments and staging deployments
+keep their existing behavior; dry-run previews remain read-only.
 
 **AWS** (`provider: 'aws'`)
 

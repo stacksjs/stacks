@@ -16,7 +16,8 @@ import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { withDeployNotification } from '../deploy-notify'
-import { assertCurrentDeploymentRevision, automatedDeploymentRevision } from '../deployment-revision'
+import type { DeploymentRevisionCheck } from '../deployment-revision'
+import { assertCurrentDeploymentRevision, assertNotBehindLiveRelease, automatedDeploymentRevision, liveReleasesCommand } from '../deployment-revision'
 import { dnsCredentialFix, envFileForEnvironment, resolveZoneNameservers } from '../dns-credentials'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
@@ -2501,6 +2502,35 @@ async function startGithubDeployments(args: {
   return records
 }
 
+/** The automated production deploy's place on its branch, from `assertCurrentDeploymentRevision`. */
+let automatedRevisionCheck: DeploymentRevisionCheck | undefined
+
+/**
+ * Refuse to ship a CI commit older than what the box already serves: the
+ * release each of the project's sites runs is read from its `current` link.
+ * Skipped when the commit is the branch head (nothing newer exists) and for
+ * manual deploys. Reading the box failing stops the deploy: not knowing what
+ * is live is not permission to roll it back.
+ */
+async function assertNotBehindLiveBox(slug: string | undefined, where: string | SshTarget): Promise<void> {
+  if (!automatedRevisionCheck || automatedRevisionCheck.newer.length === 0)
+    return
+  if (!slug)
+    throw new Error('Cannot tell which releases production serves without a project slug; production deployment stopped.')
+  const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+  const target = toSshTarget(where)
+  let output: string
+  try {
+    output = await sshExecOrThrow(target.host, liveReleasesCommand(slug), remoteExecOptions(target, 15))
+  }
+  catch {
+    throw new Error('Cannot read the release production serves; production deployment stopped.')
+  }
+  const live = output.split('\n').map(line => line.trim()).filter(Boolean)
+  assertNotBehindLiveRelease(automatedRevisionCheck, live)
+  log.info(`Production serves ${live.join(', ') || 'no release yet'}; ${automatedRevisionCheck.revision.sha.slice(0, 7)} is newer, deploying it (${automatedRevisionCheck.newer.length} newer commit${automatedRevisionCheck.newer.length === 1 ? '' : 's'} still in CI).`)
+}
+
 async function runSshDeploy(args: {
   tsCloudConfig: any
   environment: 'production' | 'staging' | 'development'
@@ -3008,6 +3038,9 @@ async function runSshDeploy(args: {
   // — after the static builds ran (so each site's `root` exists to derive its
   // repo/ref) and before shipping — so the deployment shows as `in_progress`
   // while the release is uploaded, then success/failure below.
+  // Never backwards: a CI commit older than the live release stops here.
+  await assertNotBehindLiveBox(tsCloudConfig.project?.slug, sshTarget ? { ...sshTarget, host: ip } : ip)
+
   const githubDeployments = await startGithubDeployments({ sites, onlySite, environment, shipsARelease })
 
   log.info(onlySite ? `Shipping site '${onlySite}' to the server...` : 'Shipping release to the server...')
@@ -5686,7 +5719,9 @@ export function deploy(buddy: CLI): void {
       }
 
       const automatedRevision = automatedDeploymentRevision(deployEnvName)
-      await assertCurrentDeploymentRevision(automatedRevision, p.projectPath())
+      // On the branch, and which commits came after it: the SSH deploy refuses
+      // only when production already runs one of those (runSshDeploy).
+      automatedRevisionCheck = await assertCurrentDeploymentRevision(automatedRevision, p.projectPath())
 
       // Resolved BEFORE the prerequisites, because which env file has to be in
       // place is the first thing they check.
