@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.220...v0.75.221)
+
+## ✨ Features
+
+- **ui**: add realistic membership card pointer tilt ([3ccbf9f](https://github.com/stacksjs/stacks/commit/3ccbf9f)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: select and verify native Android map providers ([46f59f5](https://github.com/stacksjs/stacks/commit/46f59f5)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- upgrade root framework version overrides consistently ([558d0e7](https://github.com/stacksjs/stacks/commit/558d0e7)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh the native skill catalog for the card regression ([25de7fc](https://github.com/stacksjs/stacks/commit/25de7fc)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **ui**: verify membership hover motion and cleanup ([37d8830](https://github.com/stacksjs/stacks/commit/37d8830)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.219...v0.75.220)
 
 ## 🐛 Bug Fixes
