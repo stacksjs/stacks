@@ -46,4 +46,31 @@ describe('native Apple push', () => {
     }
     finally { mock.mockRestore(); await new Promise<void>(resolve => server.close(() => resolve())) }
   })
+  it('signs one send with its own team, key and topic, and keeps each app\'s provider token', async () => {
+    const requests: Record<string, unknown>[] = []
+    const server = http2.createServer()
+    server.on('stream', (stream, headers) => { requests.push(headers); stream.respond({ ':status': 200 }); stream.end() })
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+    const port = (server.address() as { port: number }).port
+    const connect = http2.connect
+    const mock = spyOn(http2, 'connect').mockImplementation(() => connect(`http://127.0.0.1:${port}`))
+    const gymKeys = generateKeyPairSync('ec', { namedCurve: 'prime256v1' })
+    const gymKey = gymKeys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+    configure({ teamId: 'TEAM123456', keyId: 'KEY1234567', privateKey, topic: 'training.hq.app' })
+    try {
+      // HQ's team and key, another app's topic: a gym's app published on HQ's account.
+      expect((await send('a'.repeat(64), { body: 'One' }, { topic: 'training.hq.gym.demo' })).success).toBe(true)
+      // The gym's own team and key.
+      expect((await send('b'.repeat(64), { body: 'Two' }, { teamId: 'GYMTEAM123', keyId: 'GYMKEY1234', privateKey: gymKey, topic: 'com.demogym.app' })).success).toBe(true)
+      // HQ's own app, as configured.
+      expect((await send('c'.repeat(64), { body: 'Three' })).success).toBe(true)
+      expect(requests.map(request => request['apns-topic'])).toEqual(['training.hq.gym.demo', 'com.demogym.app', 'training.hq.app'])
+      const claims = (request: Record<string, unknown>) => JSON.parse(Buffer.from(String(request.authorization).split(' ')[1]!.split('.')[1]!, 'base64url').toString())
+      expect(claims(requests[1]!).iss).toBe('GYMTEAM123')
+      expect(claims(requests[2]!).iss).toBe('TEAM123456')
+      // Back to HQ's identity reuses HQ's token rather than renewing it.
+      expect(requests[2]!.authorization).toBe(requests[0]!.authorization)
+    }
+    finally { mock.mockRestore(); await new Promise<void>(resolve => server.close(() => resolve())) }
+  })
 })

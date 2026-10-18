@@ -23,6 +23,7 @@ File system abstraction with a Laravel-style Storage facade, local/S3/Azure adap
 - Memory adapter: `storage/framework/core/storage/src/adapters/memory.ts`
 - Bun adapter: `storage/framework/core/storage/src/adapters/bun.ts`
 - File utilities: `storage/framework/core/storage/src/files.ts`
+- Bounded local text reads: `storage/framework/core/storage/src/bounded-text-file.ts`
 - Folder utilities: `storage/framework/core/storage/src/folders.ts`
 - Copy: `storage/framework/core/storage/src/copy.ts`
 - Move: `storage/framework/core/storage/src/move.ts`
@@ -349,6 +350,16 @@ const path = await file.move('new/path/file.jpg', 'local')
 ## Low-Level File Operations
 
 ### Read/Write Files
+
+For user-selected local text, use
+`readBoundedTextFile(path, { maxBytes })` from
+`@stacksjs/storage/bounded-text-file`. Its standalone entrypoint avoids the
+facade/config graph. It checks the opened descriptor, caps reads at the byte
+limit plus one, strictly decodes UTF-8, rejects final symlinks and nonregular
+files without waiting for FIFO writers, and closes its descriptor. Parent
+directories are followed, so callers own path authorization. See the storage
+package README for errors, platform requirements and concurrent-write limits.
+`readTextFile`, `get` and disk readers do not provide these guarantees.
 
 ```typescript
 import { readJsonFile, readTextFile, readPackageJson, writeFile, writeJsonFile, writeTextFile, put, get } from '@stacksjs/storage'

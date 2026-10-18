@@ -31,6 +31,20 @@ describe('Android mobile build configuration', () => {
     expect(() => validateAndroidMobileConfig({...config,mapsApiKey:'  '})).toThrow('android.mapsApiKey')
   })
 
+  it('passes a notification glyph and tint to a Craft that draws them', () => {
+    const config = { appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', notificationIcon: 'public/notification.xml', notificationColor: '#2F63FF' }
+    // The path is resolved against the project by the build, like appIcon.
+    expect(toCraftAndroidConfig(config)).toMatchObject({ notificationColor: '#2F63FF' })
+    expect(toCraftAndroidConfig(config)).not.toHaveProperty('notificationIconPath')
+    expect(toCraftAndroidConfig({ appName: 'HQ', packageName: 'training.hq.app' })).not.toHaveProperty('notificationColor')
+    expect(androidCraftFeatures(config)).toContain('notificationIcon')
+    expect(() => assertCraftSupportsAndroid(config, '0.0.240', 'test')).toThrow('notificationIcon (needs >= 0.0.241)')
+    expect(() => assertCraftSupportsAndroid(config, CRAFT_ANDROID_FLOORS.notificationIcon, 'test')).not.toThrow()
+    expect(() => validateAndroidMobileConfig(config)).not.toThrow()
+    expect(() => validateAndroidMobileConfig({ ...config, notificationColor: 'blue' })).toThrow('android.notificationColor')
+    expect(() => validateAndroidMobileConfig({ ...config, notificationIcon: 'public/icon.svg' })).toThrow('android.notificationIcon')
+  })
+
   it('maps Stacks capabilities onto the Craft Android builder', () => {
     const config = toCraftAndroidConfig({
       appName: 'WildLoop',

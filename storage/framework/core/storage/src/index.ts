@@ -1,6 +1,7 @@
 export * from './copy'
 export * from './delete'
 export * from './files'
+export * from './bounded-text-file'
 export * from './folders'
 export * from './fs'
 export * from './temporary-workspaces'

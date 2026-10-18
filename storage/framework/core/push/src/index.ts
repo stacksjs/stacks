@@ -43,6 +43,14 @@ export type PushDriver = 'expo' | 'fcm' | 'apns'
 
 export interface SendOptions {
   driver?: PushDriver
+  /**
+   * APNs credentials for this send alone (team, key, topic, sandbox), for a
+   * server that sends for more than one app. What they leave out comes from
+   * `configureAPNS()` and `config/services.ts`.
+   */
+  apns?: apns.APNSConfig
+  /** A complete FCM project and service account for this send alone; else the configured one. */
+  fcm?: fcm.FCMConfig
 }
 
 /**
@@ -55,7 +63,7 @@ export async function send(
 ): Promise<PushResult> {
   const driver = options.driver ?? 'expo'
 
-  if (driver === 'apns') return apns.send(to, notification)
+  if (driver === 'apns') return apns.send(to, notification, options.apns)
 
   if (driver === 'expo') {
     return expo.send({
@@ -80,7 +88,7 @@ export async function send(
         },
         data: notification.data as Record<string, string>,
         priority: notification.priority === 'default' ? 'normal' : notification.priority,
-      })
+      }, options.fcm)
     }
     const results = await fcm.sendMulticast(tokens, {
       notification: {
@@ -89,7 +97,7 @@ export async function send(
       },
       data: notification.data as Record<string, string>,
       priority: notification.priority === 'default' ? 'normal' : notification.priority,
-    })
+    }, options.fcm)
     // Return combined result
     const success = results.every(r => r.success)
     return {

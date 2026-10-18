@@ -73,10 +73,12 @@ interface PushResult {
 ## Types
 
 ```typescript
-type PushDriver = 'expo' | 'fcm'
+type PushDriver = 'expo' | 'fcm' | 'apns'
 
 interface SendOptions {
   driver?: PushDriver       // default: 'expo'
+  apns?: APNSConfig         // this send's own team/key/topic/sandbox; gaps come from config
+  fcm?: FCMConfig           // this send's own project + service account (complete, or ignored)
 }
 ```
 
@@ -418,8 +420,15 @@ read APNS_TEAM_ID, APNS_KEY_ID, APNS_PRIVATE_KEY, APNS_TOPIC and
 APNS_ENVIRONMENT (`production` or `sandbox`). Use a key enabled for APNs, not
 an App Store Connect or Sign in with Apple key.
 
+One server can send for several apps (a white-label app has its own bundle
+ID, and one published on another team signs with that team's key): pass
+`{ driver: 'apns', apns: { topic, teamId?, keyId?, privateKey? } }` per send.
+Fields it sets win over `configureAPNS()` and `config/services.ts`; FCM takes
+a complete `{ projectId, serviceAccount }` the same way, never mixed with the
+configured project.
+
 The driver uses HTTP/2, ES256 P-256 provider tokens, raw JOSE signatures and a
-50-minute token cache. Payloads are limited to 4096 bytes. A collapseId can
+50-minute token cache per signing identity. Payloads are limited to 4096 bytes. A collapseId can
 coalesce retries of one notification. Structured per-device results include
 Apple's status, reason and request identifier. Success means Apple accepted
 the request; it does not prove an alert appeared on a physical phone.

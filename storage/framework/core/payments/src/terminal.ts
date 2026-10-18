@@ -183,6 +183,8 @@ export interface CardPresentPaymentIntentInput {
   /** Destination charges (Connect): whose charge it is and where the money goes. */
   onBehalfOf?: string
   transferDestination?: string
+  /** The platform's fee on a destination charge, in the minor unit. */
+  applicationFeeAmount?: number
   /** Taken from the card when the reader approves it, unless 'manual'. */
   captureMethod?: 'automatic' | 'manual'
   /** Shown on the cardholder's statement after the business name. */
@@ -207,7 +209,7 @@ export interface StripeTerminal {
   /** Test mode only: a simulated reader "reads" a card (a test card number picks the outcome). */
   presentPaymentMethod: (readerId: string, card?: { number?: string, type?: 'card_present' | 'interac_present' }) => Promise<TerminalReader>
   /** A refund of a card-present charge, back to the card. */
-  refund: (input: { paymentIntent: string, amount?: number, reverseTransfer?: boolean, metadata?: Record<string, string>, reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer' }, idempotencyKey: string) => Promise<any>
+  refund: (input: { paymentIntent: string, amount?: number, reverseTransfer?: boolean, refundApplicationFee?: boolean, metadata?: Record<string, string>, reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer' }, idempotencyKey: string) => Promise<any>
 }
 
 const path = (value: string): string => encodeURIComponent(value)
@@ -244,6 +246,7 @@ export function stripeTerminal(options: StripeRestOptions): StripeTerminal {
       metadata: input.metadata,
       on_behalf_of: input.onBehalfOf,
       transfer_data: input.transferDestination ? { destination: input.transferDestination } : undefined,
+      application_fee_amount: input.applicationFeeAmount && input.applicationFeeAmount > 0 ? input.applicationFeeAmount : undefined,
       statement_descriptor_suffix: input.statementDescriptorSuffix,
     }, { idempotencyKey }),
     retrievePaymentIntent: id => api.request('GET', `/v1/payment_intents/${path(id)}`, { expand: ['latest_charge'] }),
@@ -259,6 +262,7 @@ export function stripeTerminal(options: StripeRestOptions): StripeTerminal {
       payment_intent: input.paymentIntent,
       amount: input.amount,
       reverse_transfer: input.reverseTransfer,
+      refund_application_fee: input.refundApplicationFee,
       reason: input.reason,
       metadata: input.metadata,
     }, { idempotencyKey }),

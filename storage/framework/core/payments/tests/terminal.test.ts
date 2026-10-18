@@ -47,6 +47,18 @@ describe('the Terminal client', () => {
     expect(body.get('on_behalf_of')).toBe('acct_9')
     expect(body.get('transfer_data[destination]')).toBe('acct_9')
     expect(body.get('metadata[sale]')).toBe('9')
+    expect(body.has('application_fee_amount')).toBe(false)
+  })
+
+  it('takes the platform’s fee on a destination charge, and gives it back with a refund', async () => {
+    const { seen, fetch } = recorder(() => ok({ id: 'pi_2' }))
+    const terminal = stripeTerminal({ secretKey: 'sk_test_1', apiBase: 'https://stripe.test', fetch })
+    await terminal.createPaymentIntent({ amount: 2000, currency: 'eur', transferDestination: 'acct_9', applicationFeeAmount: 60 }, 'key-2')
+    await terminal.createPaymentIntent({ amount: 2000, currency: 'eur', transferDestination: 'acct_9', applicationFeeAmount: 0 }, 'key-3')
+    await terminal.refund({ paymentIntent: 'pi_2', reverseTransfer: true, refundApplicationFee: true }, 'refund-2')
+    expect(new URLSearchParams(seen[0]!.body).get('application_fee_amount')).toBe('60')
+    expect(new URLSearchParams(seen[1]!.body).has('application_fee_amount')).toBe(false)
+    expect(seen[2]!.body).toBe('payment_intent=pi_2&reverse_transfer=true&refund_application_fee=true')
   })
 
   it('sends a GET’s parameters in the query and acts on a connected account when asked', async () => {

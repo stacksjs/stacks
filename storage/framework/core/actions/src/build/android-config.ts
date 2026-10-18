@@ -20,6 +20,8 @@ export interface CraftAndroidConfig {
   urlSchemes?: string[]
   appLinks?: AndroidMobileConfig['appLinks']
   appIconPath?: string
+  notificationIconPath?: string
+  notificationColor?: string
   googleServicesFile?: string
   mapsApiKey?: string
   enableBluetooth?: boolean
@@ -75,6 +77,8 @@ export const CRAFT_ANDROID_FLOORS = {
   appBundle: '0.0.169',
   /** CraftCrashReporter.kt: uncaught exceptions, ANRs, JavaScript errors, the outbox. */
   crashReporting: '0.0.179',
+  /** A white notification glyph and tint for push, local and recording notifications. */
+  notificationIcon: '0.0.241',
 } as const
 
 export type AndroidCraftFeature = keyof typeof CRAFT_ANDROID_FLOORS
@@ -96,6 +100,7 @@ export function androidCraftFeatures(config: AndroidMobileConfig, options: { app
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')
   if (config.crashReporting?.key) features.push('crashReporting')
+  if (config.notificationIcon || config.notificationColor) features.push('notificationIcon')
   return features
 }
 
@@ -136,6 +141,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     urlSchemes: config.urlSchemes,
     appLinks: config.appLinks,
     appIconPath: config.appIcon,
+    notificationColor: config.notificationColor,
     googleServicesFile: config.googleServicesFile,
     mapsApiKey: config.mapsApiKey,
     renderer: config.renderer,
@@ -168,6 +174,10 @@ export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
   if (!/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$/.test(config.packageName)) {
     throw new Error(`Invalid Android package name: ${config.packageName}`)
   }
+  if (config.notificationColor !== undefined && !/^#[0-9a-f]{6}$/i.test(config.notificationColor))
+    throw new Error(`android.notificationColor must be #RRGGBB, not ${String(config.notificationColor)}`)
+  if (config.notificationIcon !== undefined && !/\.(png|xml)$/i.test(config.notificationIcon))
+    throw new Error('android.notificationIcon must be an Android vector drawable (.xml) or a white-on-transparent .png')
   if (config.mapsApiKey !== undefined && (typeof config.mapsApiKey !== 'string' || !config.mapsApiKey.trim()))
     throw new Error('android.mapsApiKey must be a non-empty Google Maps Android SDK key')
   if (config.renderer !== undefined && config.renderer !== 'web' && config.renderer !== 'native')

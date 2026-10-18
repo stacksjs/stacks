@@ -65,6 +65,7 @@ const fallbackWebAssets = resolveMobilePath(projectPath(), config.fallbackWebAss
 const craftConfig = toCraftAndroidConfig(config)
 craftConfig.nativeFonts = resolveNativeFonts(config.nativeFonts, projectPath())
 craftConfig.appIconPath = resolveMobilePath(projectPath(), config.appIcon)
+craftConfig.notificationIconPath = resolveMobilePath(projectPath(), config.notificationIcon)
 craftConfig.googleServicesFile = resolveMobilePath(projectPath(), config.googleServicesFile)
 if (process.env.NODE_ENV === 'production' && config.capabilities?.pushNotifications && !craftConfig.googleServicesFile) {
   throw new Error('Production Android push notifications require android.googleServicesFile in config/mobile.ts')
