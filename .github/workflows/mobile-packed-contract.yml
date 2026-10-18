@@ -1,0 +1,101 @@
+name: Mobile source and packed release contracts
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/native-core224-integration
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up published Pantry and managed Bun
+        uses: pantry-pm/pantry/packages/action@v0.11.93
+        with:
+          version: 0.11.93
+          install: 'false'
+          packages: bun.com@1.4.2
+      - name: Install normal frozen workspace dependencies
+        run: bun install --frozen-lockfile
+      - name: Record the exact source and public dependency cohort
+        run: |
+          mkdir -p artifacts/mobile-source-contract
+          git rev-parse HEAD > artifacts/mobile-source-contract/source-commit.txt
+          bun --version > artifacts/mobile-source-contract/bun-version.txt
+          sha256sum bun.lock pantry.lock > artifacts/mobile-source-contract/locks-before.sha256
+          bun -e "for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components']) { const p = await Bun.file('node_modules/' + name + '/package.json').json(); console.log(name, p.version) }" > artifacts/mobile-source-contract/public-cohort.txt
+      - name: Build packages imported by subpath
+        run: |
+          set -euo pipefail
+          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
+      - name: Lint the normal framework
+        run: |
+          set -o pipefail
+          bun run lint 2>&1 | tee artifacts/mobile-source-contract/lint.log
+      - name: Build the mobile package
+        run: |
+          set -o pipefail
+          bun run --cwd storage/framework/core/mobile build 2>&1 | tee artifacts/mobile-source-contract/mobile-build.log
+      - name: Run every mobile test
+        run: |
+          set -o pipefail
+          bun test ./storage/framework/core/mobile/tests 2>&1 | tee artifacts/mobile-source-contract/mobile-tests.log
+      - name: Typecheck the normal mobile package
+        run: |
+          set -o pipefail
+          bun run --cwd storage/framework/core/mobile typecheck 2>&1 | tee artifacts/mobile-source-contract/mobile-typecheck.log
+      - name: Typecheck the normal framework
+        run: |
+          set -o pipefail
+          bun run typecheck 2>&1 | tee artifacts/mobile-source-contract/framework-typecheck.log
+      - name: Verify the normal publication declarations
+        run: |
+          set -o pipefail
+          bun test ./tests/declared-dependencies.test.ts 2>&1 | tee artifacts/mobile-source-contract/declarations.log
+      - name: Verify normal publication documentation contracts
+        run: |
+          set -euo pipefail
+          for check in docs:buddy:check docs:artifacts:check docs:links:check; do
+            bun run "$check" 2>&1 | tee "artifacts/mobile-source-contract/$check.log"
+          done
+      - name: Verify source lockfiles remain unchanged
+        if: always()
+        run: sha256sum --check artifacts/mobile-source-contract/locks-before.sha256
+      - name: Retain exact source gate observations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-source-contract
+          path: artifacts/mobile-source-contract
+          if-no-files-found: error
+  packed-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up published Pantry and managed Bun
+        uses: pantry-pm/pantry/packages/action@v0.11.93
+        with:
+          version: 0.11.93
+          install: 'false'
+          packages: bun.com@1.4.2
+      - name: Install normal frozen workspace dependencies
+        run: bun install --frozen-lockfile
+      - name: Lint the packed consumer contract
+        run: bunx --bun pickier run --mode lint .github/scripts/verify-packed-mobile-consumer.ts
+      - name: Verify actual packed mobile declarations against the public cohort
+        run: bun .github/scripts/verify-packed-mobile-consumer.ts
+      - name: Retain candidate manifests and the exact strict compiler result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-packed-contract
+          path: artifacts/mobile-packed-contract
+          if-no-files-found: error
