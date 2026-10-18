@@ -98,6 +98,36 @@ describe('automated production revision', () => {
     // Still one commit deep where it stood: nothing but the newer commits came in.
     expect(git(['rev-parse', 'HEAD'], checkout)).toBe(ci)
   })
+
+  test('and one that already held the head as a shallow root of its own is deepened until they meet', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-deploy-revision-'))
+    directories.push(root)
+    const remote = join(root, 'origin.git')
+    const author = join(root, 'author')
+    const git = (args: string[], cwd = root): string => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+    git(['init', '--bare', remote])
+    git(['init', '-b', 'main', author])
+    git(['config', 'user.name', 'Revision fixture'], author)
+    git(['config', 'user.email', 'fixture@example.invalid'], author)
+    git(['remote', 'add', 'origin', remote], author)
+    const commits: string[] = []
+    for (const n of ['one', 'two', 'three', 'four', 'five']) {
+      writeFileSync(join(author, 'file'), n)
+      git(['add', 'file'], author)
+      git(['commit', '-m', n], author)
+      commits.push(git(['rev-parse', 'HEAD'], author))
+    }
+    git(['push', 'origin', 'main'], author)
+    git(['config', 'uploadpack.allowReachableSHA1InWant', 'true'], remote)
+    // The branch cloned one deep, then the older CI commit fetched one deep beside it.
+    const checkout = join(root, 'ci')
+    git(['clone', '--depth', '1', '--branch', 'main', `file://${remote}`, checkout])
+    const ci = commits[1]!
+    git(['fetch', '--depth', '1', 'origin', ci], checkout)
+    git(['checkout', '--detach', ci], checkout)
+    const check = await assertCurrentDeploymentRevision({ ref: 'refs/heads/main', sha: ci }, checkout)
+    expect(check?.newer).toEqual([commits[4], commits[3], commits[2]])
+  })
 })
 
 describe('never deploying backwards', () => {
