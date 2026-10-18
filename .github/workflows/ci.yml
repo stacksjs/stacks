@@ -47,6 +47,13 @@ jobs:
             bun.lock
             pantry.lock
           if-no-files-found: error
+      - name: Build packages imported by subpath
+        run: |
+          for pkg in $(bun .github/scripts/subpath-packages.ts); do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
       - name: Check the generated locks still describe the committed workspace
         run: bun .github/scripts/check-lockfiles-current.ts
 
