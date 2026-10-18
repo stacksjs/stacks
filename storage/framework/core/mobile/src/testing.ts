@@ -1,4 +1,4 @@
-import type { IosMobileConfig } from '@stacksjs/types'
+import type { IosMobileConfig } from '@stacksjs/types/mobile'
 import { resolve } from 'node:path'
 import { initSimulatorDriver } from 'craft-native/ios'
 
