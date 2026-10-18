@@ -12,13 +12,16 @@
 // The repository's own Bun does not trip it, so the rule is pinned here rather
 // than a bundle.
 //
-// The second half guards the names AGENTS.md lists as NOT provided in the
-// browser: each is in the typing manifest and absent from the runtime, so a
-// bare call type-checks and then throws during setup, taking the page down.
+// The second half checks actual client delivery. A package export alone does
+// not make a helper available as a bare call; the installed runtime or its
+// normal demand bundle must provide it before a template can rely on it.
 
 import { describe, expect, it } from 'bun:test'
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
+import vm from 'node:vm'
+import { defaultConfig, processDirectives, STX_RUNTIME_GLOBALS } from '@stacksjs/stx'
 
 const FRAMEWORK = join(import.meta.dir, '../../..')
 const CORE = join(FRAMEWORK, 'core')
@@ -109,21 +112,54 @@ describe('packages bundled into the framework\'s browser code', () => {
   })
 })
 
-describe('names the browser runtime does not provide', () => {
-  // AGENTS.md, "Auto-imports": in the manifest and absent from the runtime, or
-  // in neither. Import them explicitly.
-  const NOT_PROVIDED = [
+describe('helpers used by the framework browser code', () => {
+  const CHECKED_HELPERS = [
     'debounce', 'throttle', 'clamp', 'delay', 'dateFormat', 'format',
     'loadCardElement', 'confirmPayment', 'confirmCardPayment',
     'useStorage', 'useNow', 'useDateFormat', 'useForm', 'useAbs',
     'useIntersectionObserver', 'useScroll', 'useMouse', 'useParallax', 'usePreferredReducedMotion',
   ]
 
-  it('are never called bare in the framework\'s browser-side code', () => {
+  let delivered: Promise<Set<string>> | undefined
+  function clientSurface(): Promise<Set<string>> {
+    return delivered ??= (async () => {
+      // Exercise public rendering and the actual installed composable modules.
+      // A static denylist had drifted from STX's documented delivery surface.
+      const calls = CHECKED_HELPERS.map(name => `${name}()`).join('; ')
+      const directory = mkdtempSync(join(tmpdir(), 'stacks-client-delivery-'))
+      try {
+        const html = await processDirectives(
+          `<script client>const probe = state(0); onMount(() => { ${calls} });</script><main></main>`,
+          {}, join(directory, 'probe.stx'),
+          { ...defaultConfig, partialsDir: directory, componentsDir: directory, autoShell: true },
+          new Set<string>(),
+        )
+        const stx: Record<string, unknown> = {}
+        const browser = Object.assign(new EventTarget(), { stx })
+        for (const match of html.matchAll(/<script\b[^>]*\bdata-stx-framework-composables\b[^>]*>([\s\S]*?)<\/script>/g))
+          vm.runInNewContext(match[1]!, { window: browser }, { timeout: 1000 })
+        return new Set([
+          ...STX_RUNTIME_GLOBALS,
+          ...Object.entries(browser.stx).filter(([, value]) => typeof value === 'function').map(([name]) => name),
+        ])
+      }
+      finally { rmSync(directory, { recursive: true, force: true }) }
+    })()
+  }
+
+  it('delivers membership pointer and motion helpers while keeping payment imports explicit', async () => {
+    const names = await clientSurface()
+    expect(names.has('useMouse')).toBe(true)
+    expect(names.has('usePreferredReducedMotion')).toBe(true)
+    expect(names.has('confirmCardPayment')).toBe(false)
+  })
+
+  it('never calls a helper bare unless the installed client actually provides it', async () => {
+    const provided = await clientSurface()
     const bare: string[] = []
     for (const { file, code } of browserSources()) {
       const body = codeOnly(code)
-      const names = new Set([...NOT_PROVIDED, ...(body.match(/\buse[A-Z]\w*Store\b/g) ?? [])])
+      const names = new Set([...CHECKED_HELPERS.filter(name => !provided.has(name)), ...(body.match(/\buse[A-Z]\w*Store\b/g) ?? [])])
       for (const name of names) {
         if (!new RegExp(`(?<![.\\w$])${name}\\s*\\(`).test(body))
           continue
