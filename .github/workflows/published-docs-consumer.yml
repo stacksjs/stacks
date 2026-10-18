@@ -46,7 +46,7 @@ jobs:
       - name: Retain genuine public installer output
         uses: actions/upload-artifact@v7
         with:
-          name: published-docs-consumer-${{ github.sha }}
+          name: published-docs-consumer-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             ${{ env.CONSUMER_DIR }}/package.json
             ${{ env.CONSUMER_DIR }}/bunfig.toml
