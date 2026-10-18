@@ -19,7 +19,8 @@ test('the built mobile package has usable declarations and bundles for browsers'
     await writeFile(join(directory, 'tsconfig.json'), JSON.stringify({
       compilerOptions: {
         target: 'ESNext', module: 'ESNext', moduleResolution: 'bundler',
-        strict: true, noEmit: true, types: [], lib: ['ESNext', 'DOM'],
+        strict: true, noEmit: true, skipLibCheck: false, noUncheckedIndexedAccess: true,
+        types: [], lib: ['ESNext', 'DOM'],
       },
       files: ['consumer.ts'],
     }))
@@ -93,7 +94,7 @@ serializeSimulatorSteps([{ command: 'wait', seconds: 'one' }])
 restoreIosShell(42)
 void [driver, script, createNativeMutationValidator]
 `)
-    await run([process.execPath, compiler, 'testing-consumer.ts', '--noEmit', '--strict', '--skipLibCheck', '--module', 'esnext', '--moduleResolution', 'bundler', '--target', 'esnext', '--types', 'bun', '--ignoreConfig'], directory)
+    await run([process.execPath, compiler, 'testing-consumer.ts', '--noEmit', '--strict', '--skipLibCheck', 'false', '--noUncheckedIndexedAccess', '--module', 'esnext', '--moduleResolution', 'bundler', '--target', 'esnext', '--types', 'bun', '--ignoreConfig'], directory)
   }
   finally {
     await rm(directory, { recursive: true, force: true })
