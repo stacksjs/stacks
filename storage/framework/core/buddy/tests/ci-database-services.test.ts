@@ -15,7 +15,12 @@ for (const [service, version, variable] of [
     expect(services).toBeUndefined()
     const setup = steps.findIndex(step => step.with?.services?.split(' ').includes(`${service}@${version}`))
     expect(setup).toBeGreaterThanOrEqual(0)
-    expect(steps[setup]!.uses).toBe('pantry-pm/pantry/packages/action@b205b3527a03a053f4fade96e1cdc4c1fdf626a9')
+    // Pinned to a full commit, and to the same Pantry as every other setup in
+    // the workflow: a hardcoded SHA here went stale the first time the
+    // workflow's Pantry moved, and failed on a pin nobody meant to keep.
+    const pins = new Set(Object.values(workflow.jobs as Record<string, { steps?: Step[] }>).flatMap(job => job.steps ?? []).map(step => step.uses).filter((uses): uses is string => !!uses?.startsWith('pantry-pm/pantry/packages/action@')))
+    expect(steps[setup]!.uses).toMatch(/^pantry-pm\/pantry\/packages\/action@[0-9a-f]{40}$/)
+    expect([...pins]).toEqual([steps[setup]!.uses!])
     const configure = steps.findIndex(step => step.run?.includes('bun .github/scripts/configure-ci-services.ts'))
     expect(configure).toBeGreaterThan(setup)
     // The mapper rejects remote hosts, default ports and missing credentials.

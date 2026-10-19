@@ -14,9 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and managed Bun
-        uses: pantry-pm/pantry/packages/action@b205b3527a03a053f4fade96e1cdc4c1fdf626a9 # v0.11.97
+        uses: pantry-pm/pantry/packages/action@4388daecea10ba6337a4b29cc2900a99f8b7838e # v0.11.98
         with:
-          version: 0.11.97
+          version: 0.11.98
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0
       - name: Install normal frozen workspace dependencies
@@ -105,9 +105,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and managed Bun
-        uses: pantry-pm/pantry/packages/action@b205b3527a03a053f4fade96e1cdc4c1fdf626a9 # v0.11.97
+        uses: pantry-pm/pantry/packages/action@4388daecea10ba6337a4b29cc2900a99f8b7838e # v0.11.98
         with:
-          version: 0.11.97
+          version: 0.11.98
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0
       - name: Install normal frozen workspace dependencies
@@ -129,9 +129,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Set up published Pantry and isolated native database services
-        uses: pantry-pm/pantry/packages/action@b205b3527a03a053f4fade96e1cdc4c1fdf626a9 # v0.11.97
+        uses: pantry-pm/pantry/packages/action@4388daecea10ba6337a4b29cc2900a99f8b7838e # v0.11.98
         with:
-          version: 0.11.97
+          version: 0.11.98
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4
           services: postgres@17.11 mysql@26.7.0
