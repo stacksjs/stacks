@@ -6,7 +6,7 @@
  * casts and no observers; writing to it from a generic admin screen would
  * bypass every guarantee the ORM makes. Those rows stay read-only.
  */
-import { loadModelIfExists } from '../../../../resources/functions/dashboard/data'
+import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalIssue } from '../dashboard-response'
 import { modelApiConfiguration } from './model-api'
 
@@ -301,10 +301,9 @@ export async function resolveWritableModel(slug: string, operation?: ModelWriteO
     return { error: 'Model slug must be lowercase kebab-case.', status: 400 }
 
   const modelName = slugToPascal(slug)
-  const injected = (globalThis as Record<string, any>)[modelName]
   let Model: any
   try {
-    Model = (injected && typeof injected.where === 'function') ? injected : await loadModelIfExists(modelName)
+    Model = await resolveDashboardModel(modelName)
   }
   catch (error) {
     return {

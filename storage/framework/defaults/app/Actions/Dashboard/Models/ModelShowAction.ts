@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions/runtime'
 import { response as routerResponse } from '@stacksjs/router'
-import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
+import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
@@ -159,15 +160,6 @@ export function parseFilters(raw: string | null): Record<string, string> {
   return out
 }
 
-function resolveOrmModel(modelName: string): any {
-  const injected = (globalThis as Record<string, any>)[modelName]
-  // The ORM injects Proxies that answer `undefined` for every property
-  // until their deferred load lands, so probe for a real query method
-  // rather than trusting the name to be bound.
-  if (injected && typeof injected.where === 'function') return injected
-  return null
-}
-
 export default new Action({
   name: 'Dashboard Model Show',
   description: 'Queries a single model by URL slug with paging, sorting, search and column filters.',
@@ -221,7 +213,7 @@ export default new Action({
 
     let Model: any
     try {
-      Model = resolveOrmModel(modelName) ?? await loadModelIfExists(modelName)
+      Model = await resolveDashboardModel(modelName)
     }
     catch (error) {
       return dashboardOperationalError(error, `${modelName} could not be loaded.`, 'ModelShowAction.resolve')

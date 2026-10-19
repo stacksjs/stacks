@@ -317,7 +317,7 @@ export interface ModelOptions extends Base {
   autoIncrement?: boolean // defaults to true
   indexes?: CompositeIndex[]
   /**
-   * How this model appears in the dashboard sidebar.
+   * Generic dashboard exposure and sidebar presentation for this model.
    *
    * The full shape is {@link DashboardModelOptions}, which model discovery has
    * always read (`m.dashboard?.icon`, `m.dashboard?.label`, `m.dashboard?.roles`

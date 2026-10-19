@@ -2213,7 +2213,7 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
   primaryKey?: string
   autoIncrement?: boolean
   /**
-   * How this model appears in the dashboard sidebar.
+   * Generic dashboard exposure and sidebar presentation for this model.
    *
    * `dashboard` is omitted from the bun-query-builder definition above and
    * restated here because that one carries only `enabled` and `highlight`,

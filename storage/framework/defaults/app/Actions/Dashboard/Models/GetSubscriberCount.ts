@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions/runtime'
-import { Subscriber } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
+import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
@@ -10,7 +11,9 @@ export default new Action({
 
   async handle() {
     try {
-      return await Subscriber.count()
+      const Model = await resolveDashboardModel('Subscriber')
+      if (!Model) return response.json({ message: 'Model not found.' }, 404)
+      return await Model.count()
     }
     catch (error) {
       return dashboardOperationalError(error, 'Subscriber total could not be loaded.', 'GetSubscriberCount')

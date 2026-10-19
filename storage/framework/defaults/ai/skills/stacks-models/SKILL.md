@@ -123,7 +123,12 @@ of forcing a cast. See `orm/tests/inference-attributes.test-d.ts`.
 
 Also at the top level: `indexes: [{ name, columns, unique?, where? }]` for
 composite and partial-unique indexes, and `dashboard: { highlight: true }` to
-feature the model in the admin UI.
+feature the model in the admin UI. Use `dashboard: { access: false }` to
+exclude a model from generic dashboard catalogs/counts/search and the generic
+model-browser CRUD Actions before database work. Its default is `true`;
+`dashboard.enabled: false` still only hides the sidebar row. `access` leaves
+direct ORM calls, named domain Actions and generated `useApi` routes available.
+Those APIs require their own route selection, middleware, ownership and policies.
 
 `useApi` is an API capability, not a dashboard-view generator. Its generated
 routes are registered from the merged model registry. Framework defaults are
