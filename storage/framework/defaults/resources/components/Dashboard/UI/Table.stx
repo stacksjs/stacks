@@ -29,7 +29,32 @@ interface DashboardTableColumn {
    * formatter function because props cross an attribute boundary, where a
    * function does not survive.
    */
-  type?: 'text' | 'number' | 'currency' | 'date' | 'boolean'
+  type?: 'text' | 'number' | 'currency' | 'date' | 'boolean' | 'badge'
+  /**
+   * For a `badge` column: the classes each value wears. A value with no
+   * entry gets a neutral pill, so a new status never renders unstyled.
+   *
+   * A map rather than a function because props cross an attribute boundary,
+   * which a function does not survive - the same reason `type` is a string.
+   */
+  badgeClasses?: Record<string, string>
+  /**
+   * For a `badge` column: what each value reads as, when the stored value is
+   * not the word to show. `active` displaying as "Available" is a real case
+   * and is not derivable from the value.
+   *
+   * Without an entry the value is humanised: `on_delivery` becomes
+   * "On delivery".
+   */
+  badgeLabels?: Record<string, string>
+  /**
+   * What an empty cell reads as. Defaults to `-`.
+   *
+   * Per column because the right word is specific: a shipping table wants
+   * "No minimum" for an absent free-shipping threshold, which is a statement
+   * about the rate rather than missing data.
+   */
+  emptyText?: string
   /**
    * Fixed ISO code for a `currency` column, when every row is the same
    * currency. Defaults to USD, which is what this column did before it
@@ -118,7 +143,7 @@ function rawValue(row: DashboardTableRow, key: string): any {
 function displayValue(row: DashboardTableRow, column: DashboardTableColumn): string {
   const value = rawValue(row, column.key)
   if (value === null || value === undefined || value === '')
-    return '-'
+    return column.emptyText ?? '-'
 
   if (column.type === 'currency') {
     const amount = Number(value)
@@ -183,6 +208,30 @@ const filtered = derived(() => {
 })
 
 /** Nulls sort last in both directions: "missing" is not a small value. */
+const BADGE_BASE = 'inline-flex px-2.5 py-1 font-medium text-xs ring-1 ring-inset rounded-full'
+const BADGE_NEUTRAL = 'bg-stone-100 text-stone-600 ring-stone-500/20 dark:bg-white/5 dark:text-neutral-300 dark:ring-white/10'
+
+/** The pill's classes for this row's value, neutral when the value is unmapped. */
+function badgeClass(row: DashboardTableRow, column: DashboardTableColumn): string {
+  const key = String(rawValue(row, column.key) ?? '')
+  return `${BADGE_BASE} ${column.badgeClasses?.[key] ?? BADGE_NEUTRAL}`
+}
+
+/** The pill's text: the mapped label, else the value with its underscores read as spaces. */
+function badgeLabel(row: DashboardTableRow, column: DashboardTableColumn): string {
+  const value = rawValue(row, column.key)
+  if (value === null || value === undefined || value === '')
+    return column.emptyText ?? '-'
+
+  const key = String(value)
+  const mapped = column.badgeLabels?.[key]
+  if (mapped)
+    return mapped
+
+  const words = key.replaceAll('_', ' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
 function compare(a: any, b: any, type: DashboardTableColumn['type']): number {
   const aMissing = a === null || a === undefined || a === ''
   const bMissing = b === null || b === undefined || b === ''
@@ -593,7 +642,8 @@ function cellClass(column: DashboardTableColumn, index: number): string {
             <template :for="(column, columnIndex) in visibleColumns()">
               <td :class="cellClass(column, columnIndex)">
                 <slot name="cell" :row="row" :column="column" :value="row[column.key]">
-                  {{ displayValue(row, column) }}
+                  <span :if="column.type === 'badge'" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
+                  <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
                 </slot>
               </td>
             </template>

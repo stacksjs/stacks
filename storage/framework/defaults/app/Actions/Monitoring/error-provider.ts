@@ -20,16 +20,72 @@ import { HQ_READ_UNAVAILABLE, readThroughProvider, resolveDashboardDriver } from
  */
 
 /**
- * The record shapes the error store deals in.
+ * The shapes the Errors section renders.
  *
- * Derived from the store's own functions rather than imported, because
- * `@stacksjs/commerce` exposes its errors module as a value and keeps these
- * interfaces inside it. Deriving them means the provider contract follows the
- * store automatically, and it keeps this refactor out of the commerce package.
+ * These used to be derived from the local store:
+ *
+ *     export type DashboardErrorRecord = NonNullable<Awaited<ReturnType<typeof errors.fetchById>>>
+ *
+ * which made the contract whatever `@stacksjs/commerce`'s ORM row happened to
+ * be. That is fine while the only provider IS the commerce store, and wrong
+ * the moment a second one exists: a remote provider has to be told what to
+ * serve, and "whatever a shopping package's table looks like this week" is
+ * not something anyone can be told (stacksjs/stacks#2921).
+ *
+ * Declared here instead, so the section's contract is a decision rather than
+ * a consequence. Field names are deliberately the ones already on the wire -
+ * these actions serialize straight to JSON and the dashboard reads
+ * `first_seen`, `last_seen` and `last_24h` today, so renaming them to
+ * camelCase would be a breaking change to a shipped response rather than the
+ * decoupling this is for.
  */
-export type DashboardErrorRecord = NonNullable<Awaited<ReturnType<typeof errors.fetchById>>>
-export type DashboardGroupedError = Awaited<ReturnType<typeof errors.fetchGrouped>>[number]
-export type DashboardErrorStats = Awaited<ReturnType<typeof errors.fetchStats>>
+
+/** Where a grouped error sits in the triage workflow. */
+export type DashboardErrorStatus = 'unresolved' | 'resolved' | 'ignored'
+
+export interface DashboardErrorRecord {
+  id: number
+  type: string
+  message: string
+  stack: string | null
+  /**
+   * The HTTP status the error reported, and only that.
+   *
+   * It used to be overloaded: `resolveError` and `ignoreError` wrote 1 and 2
+   * into this column to mean resolved and ignored, which destroyed the status
+   * and meant a seeded error could never read as resolved. Split in
+   * stacksjs/stacks#2923; triage is `resolution` below.
+   */
+  status: number | null
+  /** Where this error sits in triage. */
+  resolution: DashboardErrorStatus
+  /** Free text. Nothing in the dashboard reads it; it is carried, not shown. */
+  additional_info: string | null
+  created_at: string
+  updated_at: string | null
+}
+
+export interface DashboardGroupedError {
+  id: number
+  type: string
+  message: string
+  stack: string | null
+  /** The triage state, unlike `status` on a single record. See above. */
+  status: DashboardErrorStatus
+  count: number
+  first_seen: string
+  last_seen: string
+  error_ids: number[]
+}
+
+export interface DashboardErrorStats {
+  total: number
+  unresolved: number
+  resolved: number
+  ignored: number
+  last_24h: number
+  trend: number
+}
 
 export interface DashboardErrorTimelinePoint {
   hour: string
@@ -54,8 +110,47 @@ export type DashboardErrorsEnvelope<T> = { data: T } & Partial<DashboardProvider
  * adding one here would convert today's error response into a misleading empty
  * list, which is a behaviour change rather than the refactor this is meant to be.
  */
+const ERROR_STATUSES: readonly DashboardErrorStatus[] = ['unresolved', 'resolved', 'ignored']
+
+/**
+ * Narrow the store's `status` onto the three states the section renders.
+ *
+ * `fetchGrouped` types this as `string` while deriving it from exactly those
+ * three labels, so the widening is incidental. An unknown value reads as
+ * unresolved, which is the store's own default for a status it cannot
+ * interpret, and is the safe direction: an error wrongly shown as needing
+ * attention is noticed, one wrongly shown as handled is not.
+ */
+function toErrorStatus(value: string): DashboardErrorStatus {
+  return ERROR_STATUSES.includes(value as DashboardErrorStatus)
+    ? value as DashboardErrorStatus
+    : 'unresolved'
+}
+
+/**
+ * The commerce row, as the section's contract.
+ *
+ * Written out rather than passed through. Every field here is currently an
+ * identity, and saying so explicitly is the point: when the store's shape
+ * next moves, this file stops compiling instead of quietly changing what a
+ * remote provider is required to match.
+ */
+function toGroupedError(row: Awaited<ReturnType<typeof errors.fetchGrouped>>[number]): DashboardGroupedError {
+  return {
+    id: row.id,
+    type: row.type,
+    message: row.message,
+    stack: row.stack,
+    status: toErrorStatus(row.status),
+    count: row.count,
+    first_seen: row.first_seen,
+    last_seen: row.last_seen,
+    error_ids: row.error_ids,
+  }
+}
+
 export const localErrorsProvider: DashboardErrorsProvider = {
-  grouped: () => errors.fetchGrouped(),
+  grouped: async () => (await errors.fetchGrouped()).map(toGroupedError),
   stats: () => errors.fetchStats(),
   timeline: () => errors.fetchTimeline(),
   byGroup: (type, message) => errors.fetchByGroup(type, message),

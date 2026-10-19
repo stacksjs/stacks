@@ -678,6 +678,7 @@ declare module '@stacksjs/database' {
       message: string
       stack: string
       status: number
+      resolution: "unresolved" | "resolved" | "ignored"
       additional_info: string
     }
     failed_jobs: {

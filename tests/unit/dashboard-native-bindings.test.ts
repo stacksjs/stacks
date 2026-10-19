@@ -139,6 +139,34 @@ describe('dashboard native STX bindings', () => {
     expect(barrel).not.toMatch(/from '\.\/(?:Card|Table|Chart)\.stx'/)
   })
 
+  test('the shared table renders badges and per-column empty text declaratively', () => {
+    // stacksjs/stacks#2916: 31 of the 70 hand-rolled tables have a status
+    // pill, which was the single most common cell the component could not
+    // express. Per-column SLOTS were the obvious answer and are not
+    // available: stx matches a slot name literally
+    // (`<slot name="..."` / `#name`), so a name computed from column.key
+    // never resolves and the caller's content is dropped silently. Verified
+    // against a static named slot as a control, which does resolve.
+    //
+    // So the pill is a column type with two maps instead. Maps rather than
+    // functions for the same reason `type` is a string: props cross an
+    // attribute boundary that a function does not survive.
+    const table = componentSource('UI/Table.stx')
+    expect(table).toContain("| 'badge'")
+    expect(table).toContain('badgeClasses?: Record<string, string>')
+    expect(table).toContain('badgeLabels?: Record<string, string>')
+    expect(table).toContain("column.type === 'badge'")
+
+    // An unmapped value still renders a pill rather than bare text, so a
+    // status nobody styled does not look like a bug.
+    expect(table).toContain('BADGE_NEUTRAL')
+    expect(table).toContain('?? BADGE_NEUTRAL')
+
+    // Empty text is the column's, because "-" is not always the right word.
+    expect(table).toContain('emptyText?: string')
+    expect(table).toContain("column.emptyText ?? '-'")
+  })
+
   test('the shared table formats money through commerce, not Intl directly', () => {
     // stacksjs/stacks#2916: Table rendered a `currency` column by calling
     // toLocaleString on the stored value. Stacks stores money in MINOR units,

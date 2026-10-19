@@ -7251,6 +7251,20 @@
             "isUnique": false,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "resolution",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "unresolved",
+            "enumValues": [
+              "unresolved",
+              "resolved",
+              "ignored"
+            ]
           }
         ],
         "indexes": [
@@ -12850,6 +12864,60 @@
             "isUnique": false,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
+              "column": "id"
+            }
+          },
+          {
+            "name": "oauth_client_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "oauth_grant_id",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 32
+          },
+          {
+            "name": "resources",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "audiences",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "workspace_id",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
           }
         ],
         "indexes": []
@@ -13732,7 +13800,7 @@
       }
     ]
   },
-  "hash": "2357cfd1b3cdea2dd7cd2d22f594096f4826ea37f8ac01637b7676e77723cea9",
+  "hash": "dafb9e51ad8a2a19c446f44d942764787a1af2d7cc3ded54a446641bc707c9cb",
   "dialect": "sqlite",
-  "updatedAt": "2026-10-07T17:47:14.019Z"
+  "updatedAt": "2026-10-19T17:00:17.106Z"
 }
