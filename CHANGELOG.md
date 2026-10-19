@@ -1,5 +1,73 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.233...v0.75.234)
+
+## ✨ Features
+
+- **router**: reject duplicate JSON object keys on request ([446a724](https://github.com/stacksjs/stacks/commit/446a724)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: Table renders badges and per-column empty text ([cceba65](https://github.com/stacksjs/stacks/commit/cceba65)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2916](https://github.com/stacksjs/stacks/issues/2916))
+
+## 🐛 Bug Fixes
+
+- **monitoring**: an error id is opaque, not an autoincrement ([6c09f16](https://github.com/stacksjs/stacks/commit/6c09f16)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2915](https://github.com/stacksjs/stacks/issues/2915))
+- **orm**: count likes and comment votes through the aggregate API ([bd7aa68](https://github.com/stacksjs/stacks/commit/bd7aa68)) _(by Chris <chris@stacksjs.com>)_
+- **database**: reserve names across every historical migration deletion ([150dfae](https://github.com/stacksjs/stacks/commit/150dfae)) _(by Chris <chris@stacksjs.com>)_
+- **commerce**: split errors.status into an HTTP status and a resolution ([13e916f](https://github.com/stacksjs/stacks/commit/13e916f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2923](https://github.com/stacksjs/stacks/issues/2923))
+- **dashboard**: Table formats money through commerce, not Intl directly ([fe5381d](https://github.com/stacksjs/stacks/commit/fe5381d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2916](https://github.com/stacksjs/stacks/issues/2916))
+- **types**: regenerate shared dashboard list exports ([f9124df](https://github.com/stacksjs/stacks/commit/f9124df)) _(by Chris <chris@stacksjs.com>)_
+- **testing**: retain bounded Chrome startup diagnostics and cleanup ([eca16a7](https://github.com/stacksjs/stacks/commit/eca16a7)) _(by Chris <chris@stacksjs.com>)_
+- complete shallow history before deployment revision checks ([6552d48](https://github.com/stacksjs/stacks/commit/6552d48)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **monitoring**: declare the Errors contract instead of deriving it ([7ac84be](https://github.com/stacksjs/stacks/commit/7ac84be)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2921](https://github.com/stacksjs/stacks/issues/2921), [bughq/bughq#19](https://github.com/bughq/bughq/issues/19))
+- **dashboard**: one PageHeader for the 35 screens that share one ([fac7c67](https://github.com/stacksjs/stacks/commit/fac7c67)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2917](https://github.com/stacksjs/stacks/issues/2917))
+- **dashboard**: one AuthCard, so four auth pages share their shell ([c9069ae](https://github.com/stacksjs/stacks/commit/c9069ae)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2917](https://github.com/stacksjs/stacks/issues/2917))
+- **dashboard**: one MetricCards component, not 22 copies of the markup ([a22848c](https://github.com/stacksjs/stacks/commit/a22848c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2917](https://github.com/stacksjs/stacks/issues/2917))
+
+## 📝 Documentation
+
+- regenerate migration counts after canonical error migrations ([17fde1d](https://github.com/stacksjs/stacks/commit/17fde1d)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: refresh component counts from source ([39f4b82](https://github.com/stacksjs/stacks/commit/39f4b82)) _(by Chris <chris@stacksjs.com>)_
+- **skills**: regenerate native testing catalog ([6c7b2e4](https://github.com/stacksjs/stacks/commit/6c7b2e4)) _(by Chris <chris@stacksjs.com>)_
+- clarify complete deployment ancestry checks ([6b9779a](https://github.com/stacksjs/stacks/commit/6b9779a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **ci**: pin service contracts to the qualified Pantry action ([3952d12](https://github.com/stacksjs/stacks/commit/3952d12)) _(by Chris <chris@stacksjs.com>)_
+- **testing**: pin the intentional startup cause and public diagnostics ([39b58da](https://github.com/stacksjs/stacks/commit/39b58da)) _(by Chris <chris@stacksjs.com>)_
+- **orm**: preserve policy ordering checks with lazy query creation ([dd7ec7f](https://github.com/stacksjs/stacks/commit/dd7ec7f)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- pantry 0.11.98 in every workflow, and fix the stale services pin test ([4abb3ae](https://github.com/stacksjs/stacks/commit/4abb3ae)) _(by Chris <chris@stacksjs.com>)_
+- **release**: publish with pantry 0.11.98, which times each publish phase ([2ae2874](https://github.com/stacksjs/stacks/commit/2ae2874)) _(by Chris <chris@stacksjs.com>)_
+- adopt the qualified Pantry native activation and publication fixes ([c06ef87](https://github.com/stacksjs/stacks/commit/c06ef87)) _(by Chris <chris@stacksjs.com>)_
+- **release**: publish the framework a dependency layer at a time, in parallel ([aab0814](https://github.com/stacksjs/stacks/commit/aab0814)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: ts-pantry ^0.11.98 in config, buddy and browser-extension ([735c219](https://github.com/stacksjs/stacks/commit/735c219)) _(by Chris <chris@stacksjs.com>)_
+- integrate current main for strict JSON parsing ([b3184eb](https://github.com/stacksjs/stacks/commit/b3184eb)) _(by Chris Breuer <chris@stacksjs.com>)_
+- refresh native router capability catalog ([dbb9fd8](https://github.com/stacksjs/stacks/commit/dbb9fd8)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **deps**: adopt published read-only Bumpx release previews ([4e3e59f](https://github.com/stacksjs/stacks/commit/4e3e59f)) _(by Chris <chris@stacksjs.com>)_
+- **auto-imports**: regenerate for dashboard-list ([f000fd0](https://github.com/stacksjs/stacks/commit/f000fd0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2918](https://github.com/stacksjs/stacks/issues/2918))
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([3bc9751](https://github.com/stacksjs/stacks/commit/3bc9751)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([838079b](https://github.com/stacksjs/stacks/commit/838079b)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([8f7ccb7](https://github.com/stacksjs/stacks/commit/8f7ccb7)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([87dc5b9](https://github.com/stacksjs/stacks/commit/87dc5b9)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([50200b2](https://github.com/stacksjs/stacks/commit/50200b2)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([e248f06](https://github.com/stacksjs/stacks/commit/e248f06)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.232...v0.75.233)
 
 ## 🐛 Bug Fixes
