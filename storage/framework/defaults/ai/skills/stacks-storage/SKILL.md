@@ -136,6 +136,19 @@ await journal.retire(recovered.id, record => controllerConfirmsFinished(record.k
 
 The `Storage` singleton is a pre-instantiated `StorageManager`. It lazily builds its config from `@stacksjs/config` (which reads `config/filesystems.ts` and env vars).
 
+### Directory mounts without retirement
+
+Use `inspectDirectoryMounts(canonicalDirectory)` for read-only current-namespace
+mount checks where legitimate readers may stay open. Supply an existing,
+checked canonical directory. An unmounted result means only that the native
+mount table did not reference that directory or a descendant. Unavailable,
+unsupported, aliased or missing paths never return `unmounted: true`.
+
+Keep `inspectTemporaryWorkspace` and journal retirement for deletion: they also
+check process references and inspection permissions. Mount inspection alone
+grants no ownership, quiescence or retirement authority and does not inspect
+other namespaces or prevent later host changes.
+
 ### Basic Operations
 
 ```typescript

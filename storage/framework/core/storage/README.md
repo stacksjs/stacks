@@ -189,6 +189,23 @@ parents; portable Node APIs do not provide a complete descriptor-relative openat
 tree protocol or protection from a hostile administrator, same-user process,
 thread or addon. Callers own authorization, SQL fences and process quiescence.
 
+### Read-only directory mount inspection
+
+`inspectDirectoryMounts(canonicalDirectory)` is exported from the package root
+and `temporary-workspaces` subpath. It inspects the current process namespace's
+mount table without scanning processes or requiring active readers to stop.
+`DirectoryMountInspection` reports `unmounted` and a reason: `unmounted`,
+`mounted`, `inspection-unavailable` or `unsupported-platform`. Invalid, missing,
+non-directory, symlink or noncanonical paths return unavailable; canonicalize a
+previously checked directory with `realpathSync` first. Unavailable observations
+include a bounded operation/code, without copying exception text.
+
+An unmounted observation is a point-in-time namespace check, not ownership,
+process quiescence or permission to delete. It does not inspect other process
+namespaces or prevent later host changes. Keep `inspectTemporaryWorkspace` and
+the journal's retirement protocol for recovery/deletion decisions; those checks
+still require process visibility and have unchanged behavior.
+
 ## 🧪 Testing
 
 ```bash
