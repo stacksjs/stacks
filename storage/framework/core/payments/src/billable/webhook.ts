@@ -5,7 +5,10 @@
  */
 
 import type Stripe from 'stripe'
+import type { WebhookEventStore } from './webhook-events'
+import { log } from '@stacksjs/logging'
 import { stripe } from '../drivers/stripe'
+import { webhookEventStore } from './webhook-events'
 
 export type WebhookEventType =
   | 'payment_intent.succeeded'
@@ -43,9 +46,29 @@ export type WebhookEventType =
 
 export type WebhookHandler = (_event: Stripe.Event) => Promise<void> | void
 
-export interface WebhookConfig {
+export interface WebhookConfig extends HandleWebhookEventOptions {
   secret: string
+  /** Seconds of clock skew a signature may have. Stripe's default is 300. */
   tolerance?: number
+}
+
+export interface HandleWebhookEventOptions {
+  /**
+   * Skip an event whose id already ran its handlers, so a provider retry of a
+   * delivered event does nothing. Default `true`; `false` runs the handlers on
+   * every delivery, for handlers that are idempotent on their own.
+   */
+  dedupe?: boolean
+  /** Where handled event ids are remembered. Defaults to {@link webhookEventStore}. */
+  store?: WebhookEventStore
+}
+
+export interface HandleWebhookEventResult {
+  handled: boolean
+  eventType: string
+  errors?: string[]
+  /** The event id already ran its handlers; nothing ran this time. */
+  duplicate?: boolean
 }
 
 const handlers: Map<WebhookEventType, WebhookHandler[]> = new Map()
@@ -124,16 +147,63 @@ export async function constructEventAsync(
   return await constructEvent(payload, signature, secret, tolerance)
 }
 
+/** Deliveries of one event id being handled in this process right now. */
+const inFlight = new Map<string, Promise<HandleWebhookEventResult>>()
+
 /**
- * Handle an incoming webhook event
+ * Run the handlers registered for an event, once per event id.
+ *
+ * An event whose id already ran its handlers is skipped (`duplicate: true`):
+ * Stripe delivers at least once, and a retry must not grant, refund or email
+ * twice. The id is recorded only when every handler succeeded, so a handler
+ * that throws leaves the event to the provider's retry. A second delivery that
+ * arrives while the first is still running waits for it and answers the same.
+ * Events with no id (built by hand in a test) are never deduplicated.
  */
-export async function handleWebhookEvent(event: Stripe.Event): Promise<{ handled: boolean, eventType: string, errors?: string[] }> {
+export async function handleWebhookEvent(event: Stripe.Event, options: HandleWebhookEventOptions = {}): Promise<HandleWebhookEventResult> {
   const eventHandlers = handlers.get(event.type) || []
 
   if (eventHandlers.length === 0) {
     return { handled: false, eventType: event.type }
   }
 
+  const eventId = typeof event.id === 'string' ? event.id : ''
+  if (options.dedupe === false || !eventId)
+    return await runHandlers(event, eventHandlers)
+
+  const running = inFlight.get(eventId)
+  if (running)
+    return await running
+
+  const store = options.store ?? webhookEventStore()
+  const attempt = (async (): Promise<HandleWebhookEventResult> => {
+    if (await store.has(eventId))
+      return { handled: true, eventType: event.type, duplicate: true }
+
+    const result = await runHandlers(event, eventHandlers)
+    if (!result.errors) {
+      try {
+        await store.add(eventId)
+      }
+      catch (error) {
+        // The handlers ran; answering an error now would make the provider
+        // retry and run them again. Say so and acknowledge.
+        log.warn(`[payments/webhook] ${event.type} ${eventId} was handled but could not be recorded, so a retry may run it again: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+    return result
+  })()
+
+  inFlight.set(eventId, attempt)
+  try {
+    return await attempt
+  }
+  finally {
+    inFlight.delete(eventId)
+  }
+}
+
+async function runHandlers(event: Stripe.Event, eventHandlers: WebhookHandler[]): Promise<HandleWebhookEventResult> {
   const errors: string[] = []
 
   for (const handler of eventHandlers) {
@@ -159,10 +229,10 @@ export async function processWebhook(
   payload: string | Buffer,
   signature: string,
   config: WebhookConfig,
-): Promise<{ success: boolean, eventType?: string, error?: string }> {
+): Promise<{ success: boolean, eventType?: string, error?: string, duplicate?: boolean }> {
   try {
-    const event = await constructEventAsync(payload, signature, config.secret, config.tolerance)
-    const result = await handleWebhookEvent(event)
+    const event = await constructEvent(payload, signature, config.secret, config.tolerance)
+    const result = await handleWebhookEvent(event, { dedupe: config.dedupe, store: config.store })
 
     // A verified event whose handler threw is NOT a success — returning 200
     // here would tell Stripe to stop retrying while the local state never
@@ -178,6 +248,7 @@ export async function processWebhook(
     return {
       success: true,
       eventType: result.eventType,
+      ...(result.duplicate ? { duplicate: true } : {}),
     }
   }
   catch (error) {

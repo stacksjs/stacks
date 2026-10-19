@@ -41,6 +41,17 @@ export interface SocialProviderDescriptor {
    * callback route answers Apple's redirect with a 404.
    */
   postCallback: boolean
+  /**
+   * True when the driver always uses PKCE (X). The verifier must then travel
+   * with the flow state (`issueOAuthFlow({ data })`) and be restored with
+   * `withCodeVerifier()` before the code exchange on the callback.
+   */
+  pkce: boolean
+  /**
+   * True when the flow carries an OIDC `nonce` the callback must find in the
+   * id_token (Apple). Pass it with `with({ nonce })` and to `getUserByToken`.
+   */
+  nonce: boolean
 }
 
 const OAUTH2_REQUIRED = ['clientId', 'clientSecret', 'redirectUrl'] as const
@@ -52,6 +63,8 @@ export const SOCIAL_PROVIDERS: Readonly<Record<SocialProviderName, SocialProvide
     driver: GoogleProvider,
     required: OAUTH2_REQUIRED,
     postCallback: false,
+    pkce: false,
+    nonce: false,
   },
   github: {
     name: 'github',
@@ -59,6 +72,8 @@ export const SOCIAL_PROVIDERS: Readonly<Record<SocialProviderName, SocialProvide
     driver: GitHubProvider,
     required: OAUTH2_REQUIRED,
     postCallback: false,
+    pkce: false,
+    nonce: false,
   },
   facebook: {
     name: 'facebook',
@@ -66,6 +81,8 @@ export const SOCIAL_PROVIDERS: Readonly<Record<SocialProviderName, SocialProvide
     driver: FacebookProvider,
     required: OAUTH2_REQUIRED,
     postCallback: false,
+    pkce: false,
+    nonce: false,
   },
   twitter: {
     name: 'twitter',
@@ -73,6 +90,8 @@ export const SOCIAL_PROVIDERS: Readonly<Record<SocialProviderName, SocialProvide
     driver: TwitterProvider,
     required: OAUTH2_REQUIRED,
     postCallback: false,
+    pkce: true,
+    nonce: false,
   },
   apple: {
     name: 'apple',
@@ -81,6 +100,8 @@ export const SOCIAL_PROVIDERS: Readonly<Record<SocialProviderName, SocialProvide
     // No clientSecret. See generateClientSecret() in the Apple driver.
     required: ['clientId', 'teamId', 'keyId', 'privateKey', 'redirectUrl'],
     postCallback: true,
+    pkce: false,
+    nonce: true,
   },
 })
 

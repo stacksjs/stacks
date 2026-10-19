@@ -66,11 +66,26 @@ global preferences.
 required transactional send. A lookup failure logs and sends the unfiltered
 list, so this is not a fail-closed consent boundary.
 
+Legal opt-outs are a separate gate that `ignorePreferences` never opens. Every
+SMS checks `sms_opt_outs` (a number that replied STOP) and fails with
+"opted out (STOP)" instead of texting it. Only `options.ignoreOptOut: true`
+sends past STOP, and it is for messages the law requires whatever the person's
+consent (a mandated security or safety notice); never for marketing or
+ordinary transactional texts. `ignoreOptOut` does not skip preferences, so pass
+both flags when a legally required message must also ignore preferences.
+Email suppression (bounces, complaints, unsubscribes) is enforced by the mailer
+through `email.suppressionPolicy`, whatever either flag says.
+
+Upgrading: before this split, `ignorePreferences: true` also texted numbers
+that had replied STOP. Those sends now fail. If a caller relied on that, decide
+whether the message is legally required; if it is, add `ignoreOptOut: true`,
+otherwise let it fail.
+
 Use `getNotificationPreferences`, `setNotificationPreference` and
 `bulkSetPreferences` with their exported types. Writes use a transaction and
 lock the user row; a bulk save is atomic across its whole preference matrix.
 SMS also consults persistent
-phone opt-outs unless ignorePreferences is true. Ordinary direct SMS sends have
+phone opt-outs unless `ignoreOptOut` is true. Ordinary direct SMS sends have
 their own contract; see `stacks-sms`.
 
 Every effective channel outcome is recorded through

@@ -114,7 +114,7 @@ reportStripeAvailability()
 // Safe to call unconditionally. It is idempotent, it collects failures and
 // warns rather than throwing, and it puts a per-package timeout on every import
 // so one slow module cannot hold up a boot.
-const { autoImportsAreStale, generateAutoImportFiles, injectGlobalAutoImports } = await import('@stacksjs/server')
+const { autoImportsAreStale, generateAutoImportFiles, injectGlobalAutoImports, warnShadowedSecurityDefaults } = await import('@stacksjs/server')
 
 // Rebuild the barrels when the installed package set moved since they were
 // written (stacksjs/stacks#2445).
@@ -147,6 +147,10 @@ catch (error) {
 }
 
 await injectGlobalAutoImports()
+
+// Say once if app/ shadows a framework security default (a copied Csrf.ts or
+// LoginAction.ts no longer receives fixes). Cheap and never throws.
+warnShadowedSecurityDefaults()
 
 // Import routes
 await route.importRoutes()

@@ -15,6 +15,7 @@ source and retained evidence; driver limits are explicit.
 ## Inside the skill
 
 - Social sign-in
+- Flow state (login CSRF)
 - Session handoff
 - Named publishing identities
 - Authorization and operational limits

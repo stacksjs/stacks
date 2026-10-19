@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
 import { feature } from '@stacksjs/config'
-import { inspectDefaultsProvenance } from '@stacksjs/path'
+import { inspectDefaultsProvenance, path } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { isSupportedBunVersion, isVersionGreaterThanOrEqual, minimumBunVersion } from '@stacksjs/utils'
 import { FEATURE_NAMES, featurePathsPresent } from './features'
@@ -211,6 +211,26 @@ export function doctor(buddy: CLI): void {
           `${describeDanglingRouteActions(dangling).split('\n').join('; ')}. `
           + 'Point each route at an action that exists, or delete it. `buddy upgrade` removes the ones the scaffold wrote.',
         )
+      })
+
+      // An app/ copy of a security default (Csrf.ts, LoginAction.ts, ...) wins
+      // resolution for good, so framework security fixes to it never run.
+      await probe(checks, 'Security overrides', async () => {
+        const { findShadowedSecurityDefaults, frameworkDefaultsDir, SHADOWED_DEFAULT_REVIEW_MARKER } = await import('@stacksjs/server')
+        const defaultsDir = frameworkDefaultsDir('app')
+        if (!defaultsDir)
+          return 'No framework defaults to compare against'
+
+        const shadowed = findShadowedSecurityDefaults(path.appPath(), defaultsDir)
+        if (shadowed.length === 0)
+          return 'No app/ file shadows a framework security default'
+
+        const identical = shadowed.filter(entry => entry.kind === 'identical').map(entry => `app/${entry.path}`)
+        const modified = shadowed.filter(entry => entry.kind === 'modified').map(entry => `app/${entry.path} (${SHADOWED_DEFAULT_REVIEW_MARKER} ${entry.fingerprint})`)
+        throw new ProbeWarning([
+          identical.length ? `Unchanged copies, delete to receive security fixes: ${identical.join(', ')}.` : '',
+          modified.length ? `Differ from the current default, review and mark reviewed: ${modified.join(', ')}.` : '',
+        ].filter(Boolean).join(' '))
       })
 
       // Check Bun version against the framework minimum

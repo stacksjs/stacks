@@ -28,7 +28,7 @@ await ormReady
 const { resolveSocialSignIn, SocialSignInRefusedError } = await import('../../src/socials')
 
 try {
-  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email VARCHAR(255) UNIQUE, password TEXT, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
+  await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email VARCHAR(255) UNIQUE, password TEXT, email_verified_at TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
   await db.unsafe(`
     CREATE TABLE social_accounts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,8 +45,28 @@ try {
     name: 'Legacy User',
     email: 'Legacy@Example.com',
     password: 'unused',
+    email_verified_at: sqlDateTime(),
     created_at: sqlDateTime(),
   }).execute()
+  await db.insertInto('users').values({
+    id: 8,
+    name: 'Never Verified',
+    email: 'pending@example.com',
+    password: 'attacker-known',
+    created_at: sqlDateTime(),
+  }).execute()
+
+  // A local account that never verified its address is not linked onto,
+  // even when the provider vouches for it.
+  await assert.rejects(
+    resolveSocialSignIn('github', {
+      id: 'provider-8',
+      name: 'Victim',
+      email: 'pending@example.com',
+      emailVerified: true,
+    }),
+    (error: unknown) => error instanceof SocialSignInRefusedError && error.reason === 'unverified-local-email',
+  )
 
   await assert.rejects(
     resolveSocialSignIn('github', {
@@ -57,7 +77,7 @@ try {
     }),
     (error: unknown) => error instanceof SocialSignInRefusedError && error.reason === 'unverified-provider-email',
   )
-  assert.equal((await db.selectFrom('users').select('id').execute()).length, 1)
+  assert.equal((await db.selectFrom('users').select('id').execute()).length, 2)
   assert.equal((await db.selectFrom('social_accounts').select('id').execute()).length, 0)
 
   const result = await resolveSocialSignIn('github', {
@@ -68,10 +88,22 @@ try {
   })
 
   assert.deepEqual(result, { userId: 7, createdUser: false, linked: true })
-  assert.equal((await db.selectFrom('users').select('id').execute()).length, 1)
+  assert.equal((await db.selectFrom('users').select('id').execute()).length, 2)
   const link = await db.selectFrom('social_accounts').selectAll().executeTakeFirstOrThrow()
   assert.equal(Number(link.user_id), 7)
   assert.equal(link.provider_email, 'legacy@example.com')
+
+  // A new account from a provider-verified address starts verified, inside
+  // the caller's transaction.
+  const created = await db.transaction(async tx => resolveSocialSignIn('github', {
+    id: 'provider-9',
+    name: 'New Person',
+    email: 'new@example.com',
+    emailVerified: true,
+  }, undefined, { tx }))
+  assert.equal(created.createdUser, true)
+  const fresh = await db.selectFrom('users').selectAll().where('id', '=', created.userId).executeTakeFirstOrThrow()
+  assert.ok(fresh.email_verified_at, 'provider-verified sign-up is stamped email_verified_at')
   console.log('social legacy email linking OK')
 }
 finally {

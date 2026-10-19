@@ -329,7 +329,7 @@ describe('useAuth refresh cycle (#2235)', () => {
     expect(calls).toHaveLength(1)
   })
 
-  test('does not try to refresh without a refresh token', async () => {
+  test('does not try to refresh without a refresh token, and confirms with /me instead', async () => {
     seed('token', 'expired')
     const { authFetch } = await load()
 
@@ -337,7 +337,10 @@ describe('useAuth refresh cycle (#2235)', () => {
 
     await authFetch('/api/sites')
 
-    expect(calls.map(c => c.url)).toEqual(['https://api.test/api/sites'])
+    // No exchange to attempt; the 401 is checked against the identity
+    // endpoint, whose own 401 is what ends the session.
+    expect(calls.map(c => c.url)).toEqual(['https://api.test/api/sites', 'https://api.test/api/me'])
+    expect(persisted('token')).toBe('')
   })
 
   test('defaults the identity endpoint to /api/me, reachable through the views proxy', async () => {
@@ -453,5 +456,369 @@ describe('useAuth refresh cycle (#2235)', () => {
     await flush()
     expect(persisted('token')).toBe('still-valid')
     expect(persisted('refresh_token')).toBe('still-refreshable')
+  })
+})
+
+/**
+ * `/api/me` failures that are not a 401 used to clear the session too: a
+ * network blip set `isAuthenticated` false and `user` null, and `authGuard`
+ * then sent a signed-in user to /login. Only a 401 is the server saying the
+ * credential is no good.
+ */
+describe('useAuth session resilience', () => {
+  const ME = 'https://api.test/api/me'
+
+  /** A responder that answers /me with `me` and everything else with `other`. */
+  function route(me: (call: Call) => Response | Promise<Response>, other: (call: Call) => Response | Promise<Response> = () => json({ ok: true })) {
+    return (call: Call) => call.url === ME ? me(call) : other(call)
+  }
+
+  async function signedIn() {
+    seed('token', 'access-1')
+    const mod = await load()
+    responders = [() => json({ id: 1, email: 'a@b.co', roles: ['coach'] })]
+    const auth = mod.useAuth()
+    await auth.fetchAuthUser()
+    expect(auth.isAuthenticated.value).toBe(true)
+    calls = []
+    return { mod, auth }
+  }
+
+  test('a network failure on /me keeps the token and the user', async () => {
+    const { auth } = await signedIn()
+    const before = auth.user.value
+    responders = [() => { throw new TypeError('Failed to fetch') }]
+
+    const result = await auth.fetchAuthUser()
+
+    expect(result).toBe(before)
+    expect(auth.user.value).toBe(before)
+    expect(auth.isAuthenticated.value).toBe(true)
+    expect(persisted('token')).toBe('access-1')
+  })
+
+  test.each([500, 502, 503, 403, 404])('a %d on /me keeps the session', async (status) => {
+    const { auth } = await signedIn()
+    const before = auth.user.value
+    responders = [() => json({ error: 'nope' }, status)]
+
+    expect(await auth.fetchAuthUser()).toBe(before)
+    expect(auth.isAuthenticated.value).toBe(true)
+    expect(persisted('token')).toBe('access-1')
+  })
+
+  test('a 401 on /me ends the session and tells listeners once', async () => {
+    const { auth } = await signedIn()
+    const events: unknown[] = []
+    auth.onSessionExpired(event => events.push(event))
+    responders = [() => json({ error: 'Unauthorized' }, 401)]
+
+    expect(await auth.fetchAuthUser()).toBeNull()
+    expect(auth.user.value).toBeNull()
+    expect(auth.isAuthenticated.value).toBe(false)
+    expect(persisted('token')).toBe('')
+    expect(events).toEqual([{ reason: 'unauthorized', status: 401, url: ME }])
+  })
+
+  test('concurrent callers share one /me request', async () => {
+    seed('token', 'access-1')
+    const { useAuth } = await load()
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    responders = [async () => {
+      await gate
+      return json({ id: 1, email: 'a@b.co' })
+    }]
+
+    const auth = useAuth()
+    const pending = [auth.fetchAuthUser(), auth.fetchAuthUser(), useAuth().checkAuthentication()]
+    release()
+    const [first, second, checked] = await Promise.all(pending)
+
+    expect(calls.filter(c => c.url === ME)).toHaveLength(1)
+    expect(first).toBe(second as any)
+    expect(checked).toBe(true)
+
+    // Settled requests are not cached: the next call asks again.
+    await auth.fetchAuthUser()
+    expect(calls.filter(c => c.url === ME)).toHaveLength(2)
+  })
+
+  test('an unchanged /me answer keeps the same user object', async () => {
+    const { auth } = await signedIn()
+    const before = auth.user.value
+    responders = [() => json({ id: 1, email: 'a@b.co', roles: ['coach'] })]
+
+    await auth.fetchAuthUser()
+    expect(auth.user.value).toBe(before)
+
+    responders = [() => json({ id: 1, email: 'a@b.co', roles: ['coach', 'admin'] })]
+    await auth.fetchAuthUser()
+    expect(auth.user.value).not.toBe(before)
+    expect(auth.user.value).toEqual({ id: 1, email: 'a@b.co', roles: ['coach', 'admin'] } as any)
+  })
+
+  test('a burst of 401s checks /me once and ends the session once', async () => {
+    const { mod, auth } = await signedIn()
+    let expired = 0
+    auth.onSessionExpired(() => { expired++ })
+    responders = [() => json({ error: 'Unauthorized' }, 401)]
+
+    const results = await Promise.all(['/api/a', '/api/b', '/api/c', '/api/d'].map(path => mod.authFetch(path)))
+
+    expect(results.every(r => r.status === 401)).toBe(true)
+    expect(calls.filter(c => c.url === ME)).toHaveLength(1)
+    expect(expired).toBe(1)
+    expect(persisted('token')).toBe('')
+
+    // Requests after the session ended have nothing to end.
+    await mod.authFetch('/api/e')
+    expect(expired).toBe(1)
+  })
+
+  test('a 401 the identity check contradicts keeps the session', async () => {
+    // A tampered signed URL or a step-up check answers 401 about the request,
+    // not the session.
+    const { mod, auth } = await signedIn()
+    const before = auth.user.value
+    responders = [route(() => json({ id: 1, email: 'a@b.co', roles: ['coach'] }), () => json({ error: 'Invalid signature' }, 401))]
+
+    const res = await mod.authFetch('/api/signed/download')
+
+    expect(res.status).toBe(401)
+    expect(auth.isAuthenticated.value).toBe(true)
+    expect(auth.user.value).toBe(before)
+    expect(persisted('token')).toBe('access-1')
+  })
+
+  test('a 401 from another origin is not taken as a sign-out', async () => {
+    const { mod, auth } = await signedIn()
+    responders = [() => json({}, 401)]
+
+    await mod.authFetch('https://elsewhere.example/api/thing')
+
+    expect(calls.map(c => c.url)).toEqual(['https://elsewhere.example/api/thing'])
+    expect(auth.isAuthenticated.value).toBe(true)
+  })
+
+  test('a 5xx from the refresh endpoint keeps the session', async () => {
+    seed('token', 'expired')
+    seed('refresh_token', 'refresh-1')
+    const { refreshSession } = await load()
+    responders = [() => json({ error: 'Bad Gateway' }, 502)]
+
+    expect(await refreshSession()).toBe(false)
+    expect(persisted('token')).toBe('expired')
+    expect(persisted('refresh_token')).toBe('refresh-1')
+  })
+
+  test('an unreachable refresh during /me keeps the session', async () => {
+    seed('token', 'expired')
+    seed('refresh_token', 'refresh-1')
+    const { useAuth } = await load()
+    responders = [call => call.url.endsWith('/auth/refresh') ? json({}, 503) : json({}, 401)]
+
+    await useAuth().fetchAuthUser()
+
+    expect(persisted('token')).toBe('expired')
+    expect(persisted('refresh_token')).toBe('refresh-1')
+  })
+
+  test('a refused refresh across a burst ends the session once', async () => {
+    seed('token', 'expired')
+    seed('refresh_token', 'revoked')
+    const { authFetch, onSessionExpired } = await load()
+    const events: Array<{ reason: string }> = []
+    onSessionExpired(event => events.push(event))
+    responders = [() => json({ error: 'Unauthorized' }, 401)]
+
+    await Promise.all([authFetch('/api/a'), authFetch('/api/b'), authFetch('/api/c')])
+
+    expect(calls.filter(c => c.url.endsWith('/auth/refresh'))).toHaveLength(1)
+    expect(events.map(e => e.reason)).toEqual(['refresh-refused'])
+    expect(persisted('refresh_token')).toBe('')
+  })
+
+  test('a 401 for a request sent before a new sign-in does not end the new session', async () => {
+    seed('token', 'old-access')
+    const { useAuth, authFetch } = await load()
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    responders = [async (call) => {
+      if (call.url.endsWith('/api/slow')) {
+        await gate
+        return json({}, 401)
+      }
+      if (call.url.endsWith('/login'))
+        return json({ token: 'new-access', user: { id: 2 } })
+      return json({ id: 2, email: 'new@b.co' })
+    }]
+
+    const slow = authFetch('/api/slow')
+    await useAuth().login({ email: 'new@b.co', password: 'pw' })
+    release()
+    await slow
+
+    expect(persisted('token')).toBe('new-access')
+    expect(useAuth().isAuthenticated.value).toBe(true)
+  })
+
+  describe('authGuard', () => {
+    let replaced: string[] = []
+    let savedLocation: unknown
+
+    beforeEach(() => {
+      replaced = []
+      savedLocation = (globalThis as any).location
+      ;(globalThis as any).location = {
+        origin: 'https://api.test',
+        pathname: '/dashboard',
+        hash: '',
+        replace: (to: string) => { replaced.push(to) },
+      }
+    })
+
+    afterEach(() => {
+      ;(globalThis as any).location = savedLocation
+    })
+
+    test('a stored token survives a network failure on page load', async () => {
+      seed('token', 'access-1')
+      const { authGuard, useAuth } = await load()
+      responders = [() => { throw new TypeError('Failed to fetch') }]
+
+      authGuard()
+      await useAuth().fetchAuthUser()
+
+      expect(replaced).toEqual([])
+      expect(persisted('token')).toBe('access-1')
+    })
+
+    test('a stored token the server refuses redirects once', async () => {
+      seed('token', 'revoked')
+      const { authGuard, authFetch, useAuth } = await load()
+      responders = [() => json({}, 401)]
+
+      authGuard()
+      authGuard()
+      await useAuth().fetchAuthUser()
+      await Promise.all([authFetch('/api/a'), authFetch('/api/b')])
+
+      expect(replaced).toEqual(['/login'])
+    })
+
+    test('no credential at all still redirects immediately', async () => {
+      const { authGuard } = await load()
+
+      authGuard()
+
+      expect(replaced).toEqual(['/login'])
+      expect(calls).toHaveLength(0)
+    })
+  })
+})
+
+/**
+ * The default social callback redirects with a one-use code
+ * (`#stx_handoff=<64 hex>`) instead of tokens in the fragment.
+ * `completeSocialLogin()` strips it, redeems it at /auth/handoff and stores the
+ * session the server returns.
+ */
+describe('completeSocialLogin with a one-use code', () => {
+  const CODE = 'a'.repeat(64)
+  let savedLocation: unknown
+  let savedHistory: unknown
+  let replacedUrls: string[] = []
+
+  beforeEach(() => {
+    replacedUrls = []
+    savedLocation = (globalThis as any).location
+    savedHistory = (globalThis as any).history
+    ;(globalThis as any).location = {
+      origin: 'https://api.test',
+      pathname: '/welcome',
+      search: '?from=github',
+      hash: `#stx_handoff=${CODE}&tab=profile`,
+      replace: () => {},
+    }
+    ;(globalThis as any).history = {
+      replaceState: (_state: unknown, _title: string, url: string) => {
+        replacedUrls.push(url)
+        ;(globalThis as any).location.hash = url.includes('#') ? url.slice(url.indexOf('#')) : ''
+      },
+    }
+  })
+
+  afterEach(() => {
+    ;(globalThis as any).location = savedLocation
+    ;(globalThis as any).history = savedHistory
+  })
+
+  test('redeems the code and stores the returned session', async () => {
+    const { useAuth } = await load()
+    responders = [
+      (call) => {
+        // The code is out of the address bar before it is sent anywhere.
+        expect(replacedUrls).toEqual(['/welcome?from=github#tab=profile'])
+        expect(call.url).toBe('https://api.test/auth/handoff')
+        return json({
+          access_token: 'social-access',
+          refresh_token: 'social-refresh',
+          token_type: 'Bearer',
+          expires_in: 3600,
+          token: 'social-access',
+          user: { id: 7, email: 'gh@b.co', name: 'GH' },
+        })
+      },
+      () => json({ id: 7, email: 'gh@b.co', name: 'GH' }),
+    ]
+
+    const auth = useAuth()
+    const user = await auth.completeSocialLogin()
+
+    expect(calls[0]!.init.method).toBe('POST')
+    expect(calls[0]!.init.credentials).toBe('include')
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ code: CODE })
+    expect(requestHeader(calls[0]!, 'Content-Type')).toBe('application/json')
+    expect(requestHeader(calls[0]!, 'Accept')).toBe('application/json')
+    expect(calls[1]!.url).toBe('https://api.test/api/me')
+    expect(requestHeader(calls[1]!, 'Authorization')).toBe('Bearer social-access')
+    expect(user).toEqual({ id: 7, email: 'gh@b.co', name: 'GH' })
+    expect(persisted('token')).toBe('social-access')
+    expect(persisted('refresh_token')).toBe('social-refresh')
+    expect(auth.isAuthenticated.value).toBe(true)
+  })
+
+  test.each([
+    ['a refused code', () => json({ message: 'Invalid or expired code' }, 400)],
+    ['a malformed answer', () => json({ token: '', user: null })],
+    ['a network failure', () => { throw new TypeError('Failed to fetch') }],
+  ])('%s leaves the existing session alone', async (_label, responder) => {
+    seed('token', 'existing-access')
+    seed('refresh_token', 'existing-refresh')
+    const { useAuth } = await load()
+    responders = [responder as (call: Call) => Response]
+
+    const result = await useAuth().completeSocialLogin()
+
+    expect(result).toBeNull()
+    expect(calls).toHaveLength(1)
+    expect(replacedUrls).toEqual(['/welcome?from=github#tab=profile'])
+    expect(persisted('token')).toBe('existing-access')
+    expect(persisted('refresh_token')).toBe('existing-refresh')
+  })
+
+  test('a stx_auth pack from a custom callback still works', async () => {
+    const { encodeSessionHandoff } = await import('@stacksjs/composables')
+    ;(globalThis as any).location.hash = `#stx_auth=${encodeSessionHandoff({ token: 'pack-access', user: { id: 3 } })}`
+    const { useAuth } = await load()
+    responders = [() => json({ id: 3, email: 'p@b.co' })]
+
+    const user = await useAuth().completeSocialLogin()
+
+    expect(calls.map(c => c.url)).toEqual(['https://api.test/api/me'])
+    expect(user).toEqual({ id: 3, email: 'p@b.co' } as any)
+    expect(persisted('token')).toBe('pack-access')
+    expect(replacedUrls).toEqual(['/welcome?from=github'])
   })
 })

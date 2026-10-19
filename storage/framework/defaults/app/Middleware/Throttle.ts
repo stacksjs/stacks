@@ -1,4 +1,4 @@
-import { clientAddress, createRateLimitMiddleware, Middleware, parseThrottleString } from '@stacksjs/router'
+import { clientAddress, createRateLimitMiddleware, Middleware, parseThrottleString, scaledLimit } from '@stacksjs/router'
 
 // Cache for rate limiters to avoid creating new instances for each request
 const limiterCache = new Map<string, ReturnType<typeof createRateLimitMiddleware>>()
@@ -77,14 +77,15 @@ export default new Middleware({
     if (!limiter) {
       try {
         const config = parseThrottleString(params as Parameters<typeof parseThrottleString>[0])
-        limiter = createRateLimitMiddleware({ ...config, keyGenerator: throttleKey }, `throttle:${params}`)
+        // `config.security.rateLimit.scale` multiplies every application limit.
+        limiter = createRateLimitMiddleware({ ...config, maxAttempts: scaledLimit(config.maxAttempts), keyGenerator: throttleKey }, `throttle:${params}`)
         limiterCache.set(params, limiter)
       }
       catch (error) {
         console.error(`[Throttle] Invalid throttle pattern: ${params}`, error)
         // Use default if pattern is invalid
         const defaultConfig = parseThrottleString('60,1')
-        limiter = createRateLimitMiddleware({ ...defaultConfig, keyGenerator: throttleKey }, 'throttle:default')
+        limiter = createRateLimitMiddleware({ ...defaultConfig, maxAttempts: scaledLimit(defaultConfig.maxAttempts), keyGenerator: throttleKey }, 'throttle:default')
         limiterCache.set(params, limiter)
       }
     }

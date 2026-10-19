@@ -127,18 +127,35 @@ Evidence: `tests/rbac-default-store.test.ts`, `rbac-guard-sync.test.ts`,
 
 ## Social identity linking and referrals
 
-`resolveSocialSignIn(provider, identity, store?)` resolves durable provider-id
-links first, then applies `config.auth.socials.matching`: link/create/refuse.
-An email match is subject to the identity verification policy; copying an email
-from a provider payload is not sufficient proof to link an existing account.
-Use SocialSignInRefusedError to distinguish configured refusal from infrastructure
-failure. `stacks-socials` owns provider authorization and callback exchange.
+`resolveSocialSignIn(provider, identity, store?, { tx? })` resolves durable
+provider-id links first, then applies `config.auth.socials.matching`:
+link/create/refuse. An email match links only when the provider vouches for the
+address (`emailVerified === true`, else `'unverified-provider-email'`) AND the
+local account verified it (`users.email_verified_at`, else
+`'unverified-local-email'`). Neither guard is configurable. A user created from
+a provider-verified address starts with `email_verified_at` set (`createUser`
+receives `emailVerified`). Every store method receives the `tx`, so lookup, user
+and link commit together; a store may implement `isUserEmailVerified(userId, tx)`
+and otherwise gets the default that reads `users.email_verified_at`
+(`defaultSocialSignInStore()` is exported). Use SocialSignInRefusedError's
+`reason` to distinguish refusal from infrastructure failure. `stacks-socials`
+owns provider authorization, the flow state and callback exchange.
+
+After resolving the user, a redirect flow hands the browser a one-use code, not
+tokens: `createSessionHandoff(userId, { bindTo: 'cookie' | { challenge } })`
+returns `{ code, cookie, expiresAt }` (60 seconds, single use, bound to the
+HttpOnly cookie or to the SHA-256 hex of a native client's verifier), and
+`redeemSessionHandoff(code, secret)` returns `{ userId, data } | null` once.
+`readSessionHandoffCookie(header, code)` / `clearSessionHandoffCookie(code)` read
+and clear the binding cookie. The default `POST /auth/handoff`
+(SessionHandoffAction) redeems and mints the session; mint nothing before it.
 
 Referrals expose createReferralCode(ownerId), attributeReferral(newUserId, input),
 qualifyReferral(referredUserId) and referralSummary(ownerId), with optional
 database injection. Normalize/attribute at registration and qualify at the
 application's real conversion milestone. Attribution alone is not a paid reward.
 
-Source: `src/socials.ts`, `referrals.ts`. Evidence: `tests/social-linking.test.ts`,
+Source: `src/socials.ts`, `session-handoff.ts`, `referrals.ts`. Evidence:
+`tests/social-linking.test.ts`, `social-callback-flow.test.ts`,
 `referrals.test.ts`. All account features remain subject to model loading,
 selected route bundles, config gates and applied migrations.

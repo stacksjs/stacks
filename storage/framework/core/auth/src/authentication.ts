@@ -1060,18 +1060,24 @@ export class Auth {
   }
 
   /**
-   * Revoke all tokens except the current one
+   * Revoke every token the user holds except one: `options.exceptTokenId`,
+   * or else the token this request authenticated with.
+   *
+   * When neither resolves (a cookie-session request, a CLI job) EVERY token
+   * is revoked and `keptTokenId` is null. It used to do nothing at all in that
+   * case, so "sign out my other devices" from a session-authenticated page
+   * reported success and signed nobody out. Failing closed means the caller
+   * may have to sign in again; failing open meant an attacker's token
+   * survived. `revokeOtherTokens()` from `@stacksjs/auth` behaves the same.
    */
-  public static async revokeOtherTokens(userId?: number): Promise<void> {
+  public static async revokeOtherTokens(userId?: number, options: { exceptTokenId?: number } = {}): Promise<{ keptTokenId: number | null }> {
     const uid = userId ?? (await this.id())
     if (!uid)
-      return
+      return { keptTokenId: null }
 
-    const currentToken = await this.currentAccessToken()
-    if (!currentToken)
-      return
-
-    await revokeTokenPairs(uid, DEFAULT_TOKENABLE_TYPE, currentToken.id)
+    const keep = options.exceptTokenId ?? (await this.currentAccessToken())?.id
+    await revokeTokenPairs(uid, DEFAULT_TOKENABLE_TYPE, keep)
+    return { keptTokenId: keep ?? null }
   }
 
   /**

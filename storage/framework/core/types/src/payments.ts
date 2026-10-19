@@ -101,6 +101,13 @@ export interface StripeConfig {
    * Webhook signing secret
    */
   webhookSecret?: string
+
+  /**
+   * Seconds of clock skew a webhook signature may have before it is
+   * rejected, for the driver path (`paymentDriver().verifyWebhook`). Falls
+   * back to `webhook.tolerance`, then Stripe's default of 300.
+   */
+  webhookTolerance?: number
 }
 
 export interface AdyenConfig {

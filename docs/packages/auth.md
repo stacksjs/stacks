@@ -272,8 +272,10 @@ await Auth.revokeTokenById(tokenId)
 // Revoke all tokens
 await Auth.revokeAllTokens(userId)
 
-// Revoke all except current
-await Auth.revokeOtherTokens(userId)
+// Revoke all except the request's own token (or an explicit one). With no
+// current token (a cookie-session request) every token is revoked.
+const { keptTokenId } = await Auth.revokeOtherTokens(userId)
+await Auth.revokeOtherTokens(userId, { exceptTokenId: 12 })
 
 // Rotate token (refresh)
 const newToken = await Auth.rotateToken(oldToken)
@@ -657,35 +659,131 @@ route.post('/reset-password', async (req) => {
 `verifyToken(token)` checks a token without consuming it, for a reset page that
 wants to show the form only when the link is still valid.
 
+`sendEmail()` takes options for apps with their own templates or a delivery
+ledger, and for accounts someone else created:
+
+```typescript
+await passwordResets(email).sendEmail({
+  purpose: 'setup', // 'reset' (default) or 'setup': a first password for an invited account
+  expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60_000),
+  // Runs after the token commits, instead of the framework mail.
+  deliver: async ({ purpose, userId, email, token, url, expiresAt }) => {
+    await sendLocalizedMail(email, { url, expiresAt, purpose })
+  },
+})
+```
+
+`token` and `url` are the live credential: never log them. An unknown or
+throttled address is still a silent no-op, so the endpoint cannot be used to
+enumerate accounts.
+
+### Changing a password, and the credential sweep
+
+A successful reset stamps `password_changed_at` (every token issued before it
+is refused) and revokes two-factor challenges, magic links, OAuth grants and
+codes, tokens and sessions, in one transaction. That sweep is exported, so
+every other path that changes how an account proves who it is uses the same
+one:
+
+```typescript
+import { changePassword, revokeAccountCredentials } from '@stacksjs/auth'
+
+// Signed-in user changing their password: keep this device, sign out the rest.
+const current = await Auth.currentAccessToken()
+const result = await changePassword(user.id, req.get('current_password'), req.get('password'), {
+  keepTokenId: current?.id,
+})
+if (!result.success)
+  return response.json({ error: result.reason }, { status: 422 })
+
+// An admin forcing a sign-out everywhere, inside your own transaction.
+await db.transaction(async (tx) => {
+  await revokeAccountCredentials(user.id, { tx })
+})
+```
+
+`changePassword` verifies the current password, commits only if that hash is
+still the stored one, runs the sweep and, after commit, sends the
+`password-changed` mail (pass `notify: false` or your own function). Enforce
+your password policy before calling it.
+
 ## Rate Limiting
+
+The login, magic-link and two-factor paths lock an address after five failures
+for fifteen minutes. The same limiter is available directly:
 
 ```typescript
 import { RateLimiter } from '@stacksjs/auth'
 
-// Check rate limit before login
 route.post('/login', async (req) => {
   const { email } = req.all()
 
-  // Check if rate limited
-  if (!RateLimiter.canAttempt(email)) {
-    const waitTime = RateLimiter.getWaitTime(email)
-    return Response.json({
-      error: 'Too many attempts',
-      retryAfter: waitTime
-    }, { status: 429 })
-  }
+  // Throws HttpError(429) while the address is locked.
+  await RateLimiter.validateAttempt(email)
 
   const success = await Auth.attempt(req.all())
-
   if (!success) {
-    RateLimiter.recordFailedAttempt(email)
+    await RateLimiter.recordFailedAttempt(email)
     return Response.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
-  RateLimiter.resetAttempts(email)
+  await RateLimiter.resetAttempts(email)
   // Continue with login...
 })
 ```
+
+When `config/cache.ts` uses the Redis driver, attempts are counted there, so a
+lockout holds across every worker and instance; while Redis is unreachable the
+limiter falls back to process memory and warns once. Without Redis it counts per
+process. `config.security.rateLimit.scale` (or `STACKS_RATE_LIMIT_SCALE`)
+multiplies the threshold, and every route `.rateLimit()`, so a test suite can
+raise it instead of turning limits off.
+
+## Social sign-in
+
+The `social` route bundle mounts three routes when a provider is configured in
+`config/services.ts`:
+
+| Route | What it does |
+|---|---|
+| `GET /auth/{provider}` | Issues a single-use OAuth `state`, bound to this browser by an HttpOnly cookie, and redirects to the provider. `?redirect_to=/path` picks the landing page. |
+| `GET\|POST /auth/{provider}/callback` | Redeems that state (a code from another browser is refused before it is exchanged), resolves the user, and redirects to `redirect_to#stx_handoff=<code>`. |
+| `POST /auth/handoff` | Trades the one-use code (60 seconds, this browser only) for the session: the token pack and the auth cookie. |
+
+`useAuth().completeSocialLogin()` on the landing page does the last step. No
+bearer or refresh token ever appears in a URL.
+
+`resolveSocialSignIn()` decides which local user an identity is. It links to an
+existing account by email only when the provider verified the address and the
+local account verified it too; otherwise it throws `SocialSignInRefusedError`
+with `reason` `'unverified-provider-email'` or `'unverified-local-email'`. A new
+account made from a provider-verified address starts verified.
+
+For a custom flow, use the same primitives:
+
+```typescript
+import { createSessionHandoff, redeemSessionHandoff } from '@stacksjs/auth'
+import { consumeOAuthFlow, issueOAuthFlow, readOAuthFlowCookie, socialHandoffCodeRedirect } from '@stacksjs/socials'
+
+// Start: send `flow.cookie` with the redirect.
+const flow = await issueOAuthFlow({ purpose: 'social:google', ttlMs: 10 * 60_000 })
+driver.withState(flow.state)
+
+// Callback: null for a forged, replayed, expired or foreign-browser state.
+const started = await consumeOAuthFlow(state, {
+  purpose: 'social:google',
+  browserSecret: readOAuthFlowCookie(request.headers.get('cookie'), state),
+})
+
+// Hand over a code, not tokens.
+const handoff = await createSessionHandoff(userId, { bindTo: 'cookie' })
+const redirect = socialHandoffCodeRedirect(handoff.code, { redirectTo: '/account' })
+redirect.headers.append('Set-Cookie', handoff.cookie!)
+```
+
+A native app whose sign-in sheet keeps its own cookies binds the handoff to a
+verifier instead: `createSessionHandoff(userId, { bindTo: { challenge: sha256Hex(verifier) } })`,
+redeemed with `redeemSessionHandoff(code, verifier)`.
 
 ## API Reference
 

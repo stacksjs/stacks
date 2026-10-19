@@ -1,9 +1,19 @@
 import { HttpError } from '@stacksjs/error-handling'
+import { cacheRedisConnection, scaledLimit } from '@stacksjs/router'
 import { RedisClient } from 'bun'
 
 // Rate limiting configuration
 const MAX_ATTEMPTS = 5
 const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes in milliseconds
+
+/**
+ * Failures before a lockout: 5, multiplied by `config.security.rateLimit.scale`
+ * (`STACKS_RATE_LIMIT_SCALE`) so a test suite can sign in often without
+ * turning the lockout off.
+ */
+export function maxFailedAttempts(): number {
+  return scaledLimit(MAX_ATTEMPTS)
+}
 
 export interface RateLimitEntry {
   attempts: number
@@ -14,7 +24,7 @@ function recordFailure(current: RateLimitEntry | undefined, now: number): RateLi
   const expired = current && current.lockedUntil > 0 && current.lockedUntil <= now
   const entry = current && !expired ? current : { attempts: 0, lockedUntil: 0 }
   entry.attempts++
-  if (entry.attempts >= MAX_ATTEMPTS) {
+  if (entry.attempts >= maxFailedAttempts()) {
     entry.lockedUntil = now + LOCKOUT_DURATION
     entry.attempts = 0
   }
@@ -24,12 +34,14 @@ function recordFailure(current: RateLimitEntry | undefined, now: number): RateLi
 /**
  * Pluggable backing store for the auth rate limiter.
  *
- * Methods may be sync or async — the limiter awaits them either way. The
- * default {@link MemoryStore} is process-local (fine for single-instance and
- * dev). On a horizontally-scaled deployment the in-memory store is trivially
- * bypassed by spreading attempts across instances, so production should swap
- * in the atomic Redis store via `RateLimiter.useSharedStore()` or provide a
- * custom store whose `recordFailedAttempt` operation is atomic.
+ * Methods may be sync or async — the limiter awaits them either way. When
+ * `config/cache.ts` uses the Redis driver the limiter counts there (atomic
+ * across workers and instances), falling back to this process's memory only
+ * while Redis is unreachable. Otherwise it uses the process-local
+ * {@link MemoryStore}, which a horizontally-scaled deployment bypasses by
+ * spreading attempts across instances: configure Redis, call
+ * `RateLimiter.useSharedStore()`, or provide a custom store whose
+ * `recordFailedAttempt` operation is atomic.
  */
 export interface RateLimiterStore {
   get: (key: string) => Promise<RateLimitEntry | undefined> | RateLimitEntry | undefined
@@ -129,38 +141,13 @@ redis.call('SET', KEYS[1], cjson.encode({ attempts = attempts, lockedUntil = loc
 return locked_until
 `
 
-function redisUrl(options: RedisRateLimiterStoreOptions, configured: {
-  driver?: string
-  prefix?: string
-  drivers?: { redis?: {
-    url?: string
-    host?: string
-    port?: number
-    username?: string
-    password?: string
-    database?: number
-    tls?: boolean
-  } }
-}): { url: string, prefix: string } {
-  const redis = configured.drivers?.redis
+function redisUrl(options: RedisRateLimiterStoreOptions, configured: Parameters<typeof cacheRedisConnection>[0]): { url: string, prefix: string } {
   if (options.url)
-    return { url: options.url, prefix: options.prefix ?? configured.prefix ?? 'stacks' }
-  if (configured.driver !== 'redis' || !redis)
+    return { url: options.url, prefix: options.prefix ?? configured?.prefix ?? 'stacks' }
+  const connection = cacheRedisConnection(configured)
+  if (!connection)
     throw new Error('Shared auth rate limiting requires the Redis cache driver or an explicit Redis URL.')
-  if (redis.url)
-    return { url: redis.url, prefix: options.prefix ?? configured.prefix ?? 'stacks' }
-
-  const protocol = redis.tls ? 'rediss' : 'redis'
-  const credentials = redis.username
-    ? `${encodeURIComponent(redis.username)}:${encodeURIComponent(redis.password ?? '')}@`
-    : redis.password
-      ? `:${encodeURIComponent(redis.password)}@`
-      : ''
-  const database = redis.database == null ? '' : `/${redis.database}`
-  return {
-    url: `${protocol}://${credentials}${redis.host ?? '127.0.0.1'}:${redis.port ?? 6379}${database}`,
-    prefix: options.prefix ?? configured.prefix ?? 'stacks',
-  }
+  return { url: connection.url, prefix: options.prefix ?? connection.prefix }
 }
 
 /** Redis-backed store whose Lua update is atomic across workers. */
@@ -225,7 +212,7 @@ export class RedisRateLimiterStore implements RateLimiterStore {
       resolved.key,
       String(now),
       String(ttlMs),
-      String(MAX_ATTEMPTS),
+      String(maxFailedAttempts()),
     ])
   }
 
@@ -235,6 +222,49 @@ export class RedisRateLimiterStore implements RateLimiterStore {
     const { client } = await this.clientPromise
     client.close()
     this.clientPromise = undefined
+  }
+}
+
+/**
+ * The configured shared store, with this process's memory standing in while
+ * it errors: a Redis outage weakens the lockout to per-process instead of
+ * failing every sign-in. Warns once per outage.
+ */
+export class FallbackRateLimiterStore implements RateLimiterStore {
+  private warned = false
+
+  constructor(private readonly shared: RateLimiterStore, private readonly local: MemoryStore = new MemoryStore()) {}
+
+  private async attempt<T>(primary: () => Promise<T> | T, secondary: () => Promise<T> | T): Promise<T> {
+    try {
+      const result = await primary()
+      this.warned = false
+      return result
+    }
+    catch (error) {
+      if (!this.warned) {
+        this.warned = true
+        console.warn(`[auth] login lockouts fell back to this process's memory: the shared store is unreachable (${error instanceof Error ? error.message : String(error)}).`)
+      }
+      return secondary()
+    }
+  }
+
+  async get(key: string): Promise<RateLimitEntry | undefined> {
+    return this.attempt(() => this.shared.get(key), () => this.local.get(key))
+  }
+
+  async delete(key: string): Promise<void> {
+    this.local.delete(key)
+    await this.attempt(() => this.shared.delete(key), () => undefined)
+  }
+
+  async recordFailedAttempt(key: string, now: number, ttlMs: number): Promise<void> {
+    await this.attempt(() => this.shared.recordFailedAttempt(key, now, ttlMs), () => this.local.recordFailedAttempt(key, now))
+  }
+
+  async close(): Promise<void> {
+    await this.shared.close?.()
   }
 }
 
@@ -251,7 +281,7 @@ async function configuredStore(): Promise<RateLimiterStore> {
   if (store)
     return store
   const { cache } = await import('@stacksjs/config')
-  store ??= cache.driver === 'redis' ? new RedisRateLimiterStore() : new MemoryStore()
+  store ??= cache.driver === 'redis' ? new FallbackRateLimiterStore(new RedisRateLimiterStore()) : new MemoryStore()
   return store
 }
 

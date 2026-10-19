@@ -42,7 +42,7 @@ export const defaultStripeOperations: StripeOperations = {
     ? manageSubscription.cancelAtPeriodEnd(subscriptionId)
     : manageSubscription.cancel(subscriptionId),
   listSubscriptions: async customerId => (await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 })).data,
-  constructEvent: (payload, signature, secret) => constructEvent(payload, signature, secret),
+  constructEvent: (payload, signature, secret, tolerance) => constructEvent(payload, signature, secret, tolerance),
 }
 
 type DriverFactory = () => PaymentDriver
@@ -63,7 +63,8 @@ export function registerPaymentDriver(name: string, factory: DriverFactory): voi
 
 interface PaymentSettings {
   driver?: string
-  stripe?: { webhookSecret?: string }
+  stripe?: { webhookSecret?: string, webhookTolerance?: number }
+  webhook?: { tolerance?: number }
   adyen?: Partial<AdyenConfig>
   paddle?: Partial<PaddleConfig>
   lemonsqueezy?: Partial<LemonSqueezyConfig>
@@ -135,6 +136,7 @@ export function paymentDriver(name?: string): PaymentDriver {
     return new StripeDriver({
       operations: defaultStripeOperations,
       webhookSecret: settings.stripe?.webhookSecret || (services as { stripe?: { webhookSecret?: string } })?.stripe?.webhookSecret || process.env.STRIPE_WEBHOOK_SECRET || undefined,
+      webhookTolerance: settings.stripe?.webhookTolerance ?? settings.webhook?.tolerance,
     })
   }
   if (chosen === 'adyen') {

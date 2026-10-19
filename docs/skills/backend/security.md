@@ -25,6 +25,8 @@ source and retained evidence; driver limits are explicit.
 - Personal data and GDPR
 - Gotchas
 - Encryption and webhook contracts
+- Shadowed security defaults
+- Credential and sign-in hardening
 
 ## Using it
 

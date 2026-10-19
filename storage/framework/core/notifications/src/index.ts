@@ -16,11 +16,25 @@ export type NotificationChannel = 'email' | 'sms' | 'chat' | 'database' | 'push'
 /** Optional flags accepted by {@link notify}. */
 export interface NotifyOptions {
   /**
-   * Skip the user-preference filter entirely. Use for transactional
-   * notifications that must be delivered regardless of opt-out (password
-   * resets, security alerts, billing failures). Default: `false`.
+   * Skip the user-preference filter (the `notification_preferences` rows,
+   * including category unsubscribes). Use for transactional notifications a
+   * user cannot switch off in the app (password resets, security alerts,
+   * billing failures). It does NOT bypass legal opt-outs: a phone that texted
+   * STOP still gets nothing unless {@link NotifyOptions.ignoreOptOut} is set.
+   * Default: `false`.
    */
   ignorePreferences?: boolean
+  /**
+   * Send to a recipient who has legally opted out (a phone that texted STOP,
+   * recorded in `sms_opt_outs`). Only for messages the law requires you to
+   * send whatever the person's consent, such as a mandated security or
+   * safety notice. Never set it for marketing or ordinary transactional
+   * mail: carriers filter senders that keep texting after STOP. It does not
+   * skip the preference filter; pass `ignorePreferences` as well for that.
+   * Email suppression is enforced by the mailer itself, through
+   * `email.suppressionPolicy`. Default: `false`.
+   */
+  ignoreOptOut?: boolean
   /**
    * Optional preference category — passed to the preferences lookup so
    * users can opt out of, e.g., `marketing` while staying opted in to
@@ -233,7 +247,9 @@ export function useNotification(typeParam?: string, driverParam?: string): Retur
  *
  * For transactional notifications that must always go out (password
  * resets, security alerts, billing failures), pass
- * `{ ignorePreferences: true }`.
+ * `{ ignorePreferences: true }`. That skips preferences only: a phone that
+ * texted STOP is still never texted, unless `{ ignoreOptOut: true }` marks a
+ * message the law requires you to send.
  *
  * @example
  * ```ts
@@ -298,12 +314,13 @@ export async function notify(
           if (!recipient.phone) {
             throw new Error('[notify] sms channel requires recipient.phone')
           }
-          // STOP compliance: a phone that texted STOP gets nothing except
-          // an `ignorePreferences: true` send (emergency alerts - a
-          // wildfire notice outranks marketing consent, and carriers'
-          // rules carve out exactly this). Throws rather than silently
+          // STOP compliance: a phone that texted STOP gets nothing, whatever
+          // `ignorePreferences` says - preferences are the app's own
+          // settings, STOP is a legal opt-out. Only an explicit
+          // `ignoreOptOut: true` (a message the law requires, such as a
+          // mandated safety notice) goes through. Throws rather than silently
           // succeeding so the delivery log records why nothing was sent.
-          if (options.ignorePreferences !== true) {
+          if (options.ignoreOptOut !== true) {
             const { isPhoneOptedOut } = await import('@stacksjs/sms')
             if (await isPhoneOptedOut(recipient.phone)) {
               throw new Error('[notify] sms recipient has opted out (STOP)')

@@ -152,6 +152,21 @@ route.post('/expensive-operation', 'Actions/ExpensiveAction')
 
 ```
 
+Every limit is multiplied by `config.security.rateLimit.scale` (or
+`STACKS_RATE_LIMIT_SCALE`), which stays `1` in production; a test suite can
+raise it instead of turning limits off. The Throttle middleware counts in
+process memory. Route `.rateLimit(max, window)` and the `rateLimit()` helper
+count in the Redis cache when `config/cache.ts` selects it, so their budgets
+hold across every worker and instance, and fall back to memory while Redis is
+unreachable.
+
+An anonymous request spends its client address's budget, as `clientAddress()`
+from `@stacksjs/router` resolves it: the socket peer, or the forwarding headers
+of a trusted proxy. `config.security.trustedProxies` lists those proxies
+(addresses or CIDR ranges). Unset, it trusts loopback and private networks; set
+it to your load balancer's ranges when other hosts share that network, or to
+`[]` when nothing sits in front of the app.
+
 ### Environment Middleware
 
 Restricts routes to specific environments:

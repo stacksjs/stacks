@@ -11,7 +11,7 @@ import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
 import { disableViewRouting, route } from '@stacksjs/router'
-import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
+import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports, warnShadowedSecurityDefaults } from '@stacksjs/server'
 import { resolveApiHost } from '../helpers/api-host'
 import { exitWithParent } from './exit-with-parent'
 
@@ -66,6 +66,10 @@ if (!existsSync(modelsIndex) || autoImportsAreStale())
 // globalThis so user actions can use them without explicit imports, matching
 // the "no imports needed" ergonomics of framework default actions.
 await injectGlobalAutoImports()
+
+// Say once if app/ shadows a framework security default (a copied Csrf.ts or
+// LoginAction.ts no longer receives fixes). Cheap and never throws.
+warnShadowedSecurityDefaults()
 
 // Optional app hook: start Typesense (or other search infra) before the API
 // serves traffic. Projects using SEARCH_ENGINE_DRIVER=typesense can ship

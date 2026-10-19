@@ -222,14 +222,18 @@ export async function sessionLogout(sessionId: string): Promise<void> {
  * does), and without the table `sessionCheck` can never validate a
  * session, so there is no credential left to revoke.
  */
-export async function sessionDestroyAll(userId: number): Promise<void> {
+export async function sessionDestroyAll(userId: number, options: { exceptId?: string } = {}): Promise<void> {
+  const { exceptId } = options
   try {
     // A transaction also rolls back partial deletes when one row is retained.
     // Its nested savepoint isolates the optional-schema failure on Postgres.
     await db.transaction(async () => {
-      await db.deleteFrom('sessions').where('user_id', '=', userId).execute()
-      const remaining = await db.primary.selectFrom('sessions')
-        .where('user_id', '=', userId).select('id').executeTakeFirst()
+      let removal = db.deleteFrom('sessions').where('user_id', '=', userId)
+      if (exceptId !== undefined) removal = removal.where('id', '!=', exceptId)
+      await removal.execute()
+      let check = db.primary.selectFrom('sessions').where('user_id', '=', userId)
+      if (exceptId !== undefined) check = check.where('id', '!=', exceptId)
+      const remaining = await check.select('id').executeTakeFirst()
       if (remaining)
         throw new HttpError(500, 'Sessions could not be destroyed.')
     })

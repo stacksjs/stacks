@@ -1,5 +1,5 @@
 import type { SessionHandoffPack } from '@stacksjs/composables'
-import { buildSessionHandoffUrl } from '@stacksjs/composables'
+import { buildSessionHandoffCodeUrl, buildSessionHandoffUrl } from '@stacksjs/composables'
 
 /**
  * Hand a server-minted session to the browser at the end of a redirect flow
@@ -106,6 +106,40 @@ export function socialHandoffRedirect(
 }
 
 /**
+ * The redirect that completes a social sign-in WITHOUT a credential in the URL.
+ *
+ * `code` comes from `createSessionHandoff()` in `@stacksjs/auth`: a 60-second,
+ * single-use code bound to this browser's cookie (or to a native app's
+ * verifier). `useAuth().completeSocialLogin()` reads it from the fragment and
+ * POSTs it to `/auth/handoff`, which answers with the session. This is what
+ * the framework's default callback sends; prefer it over
+ * {@link socialHandoffRedirect}, whose fragment carries the bearer and
+ * refresh tokens themselves (browser history keeps those).
+ */
+export function socialHandoffCodeRedirect(
+  code: string,
+  options: SocialHandoffOptions = {},
+): Response {
+  const redirectTo = options.redirectTo ?? '/'
+
+  if (!isSafeHandoffTarget(redirectTo, options.allowedHosts ?? [])) {
+    throw new Error(
+      `[socials] refusing to hand a session to ${redirectTo}: `
+      + 'relative paths are always allowed; an absolute URL needs its host in allowedHosts.',
+    )
+  }
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      'Location': buildSessionHandoffCodeUrl(redirectTo, code),
+      'Cache-Control': 'no-store',
+      'Referrer-Policy': 'no-referrer',
+    },
+  })
+}
+
+/**
  * The redirect for a sign-in that did not succeed.
  *
  * Ships alongside the success path because the failure path was the other
@@ -130,6 +164,6 @@ export function socialHandoffFailureRedirect(
 
   return new Response(null, {
     status: 302,
-    headers: { 'Location': location, 'Cache-Control': 'no-store' },
+    headers: { 'Location': location, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' },
   })
 }

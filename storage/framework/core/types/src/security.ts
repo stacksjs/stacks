@@ -64,6 +64,18 @@ export interface ApiSecurityOptions {
   models: ModelApiSelection
 }
 
+/** Application-level rate limits: route `.rateLimit()`, `rateLimit()` and the auth lockout. */
+export interface RateLimitSecurityOptions {
+  /**
+   * Multiplies every application rate limit and the login lockout threshold.
+   * `1` (the default) is production. A test suite that signs in hundreds of
+   * times sets something like `100` in its test env instead of turning limits
+   * off, so the limits stay exercised. Must be a positive number.
+   * `STACKS_RATE_LIMIT_SCALE` overrides it.
+   */
+  scale: number
+}
+
 export interface SecurityOptions {
   driver: 'aws'
 
@@ -71,6 +83,21 @@ export interface SecurityOptions {
 
   /** Security defaults for the routes a model's `useApi` trait generates. */
   api: ApiSecurityOptions
+
+  rateLimit: RateLimitSecurityOptions
+
+  /**
+   * Proxies whose `X-Forwarded-For` / `Forwarded` headers name the client, as
+   * addresses or CIDR ranges. The client address feeds rate limits, lockouts,
+   * session records and the maintenance allow-list.
+   *
+   * Unset (the default) trusts loopback, private and link-local networks: a
+   * gateway on the same box or private network. Set it to your load
+   * balancer's ranges when other hosts share that network (a shared VPC, a
+   * container platform), or to `[]` when nothing sits in front of the app, so
+   * a neighbour cannot pick its own address by writing a header.
+   */
+  trustedProxies?: readonly string[]
 }
 
 export type SecurityConfig = DeepPartial<SecurityOptions>
