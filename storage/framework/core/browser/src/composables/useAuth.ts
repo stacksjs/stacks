@@ -1,10 +1,12 @@
 import type { StacksBrowserConfig } from '../types/globals'
-import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, LoginResult, MeResponse, RegisterError, RegisterResponse, TwoFactorLoginChallenge, UserData } from '../types/dashboard'
+import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, LoginResult, MeResponse, RegisterError, RegisterResponse, SessionExpiredEvent, SessionExpiredListener, TwoFactorLoginChallenge, UserData } from '../types/dashboard'
 import type { SessionHandoffPack } from '@stacksjs/composables'
-import { readSessionHandoff, stripSessionHandoff, useStorage } from '@stacksjs/composables'
+import { readSessionHandoff, readSessionHandoffCode, stripSessionHandoff, useStorage } from '@stacksjs/composables'
 /// <reference lib="dom" />
 import { ref } from '@stacksjs/stx'
 import { CSRF_COOKIE_NAME, readCsrfToken, withCsrfHeader } from './csrf'
+
+export type { SessionExpiredEvent, SessionExpiredListener } from '../types/dashboard'
 
 const token = useStorage('token', '')
 
@@ -32,6 +34,7 @@ const baseUrl = stacksConfig.API_URL || (typeof window !== 'undefined' ? window.
  */
 const ME_PATH: string = stacksConfig.AUTH_ME_PATH || '/api/me'
 const REFRESH_PATH: string = stacksConfig.AUTH_REFRESH_PATH || '/auth/refresh'
+const HANDOFF_PATH: string = stacksConfig.AUTH_HANDOFF_PATH || '/auth/handoff'
 
 // Create singleton state
 const user = ref<UserData | null>(null)
@@ -47,6 +50,42 @@ const isAuthenticated = ref(false)
  * call in the page.
  */
 let inFlightRefresh: Promise<boolean> | null = null
+
+/**
+ * Which session the page is on. Bumped whenever the credential is replaced
+ * (sign-in, social handoff) or dropped (logout, expiry).
+ *
+ * Every request remembers the epoch it was sent under, and an answer only
+ * acts on the session if that is still the current one. That one comparison
+ * covers both halves of the burst problem: the first 401 of a burst ends the
+ * session and bumps the epoch, so the rest of the burst are answers about a
+ * session that no longer exists and do nothing - one clear, one listener call,
+ * one redirect. And a slow request sent before a sign-in cannot end the
+ * session that sign-in started.
+ */
+let sessionEpoch = 0
+
+/** The shared `/api/me` request, tagged with the epoch it belongs to. */
+let inFlightMe: { epoch: number, promise: Promise<UserData | null> } | null = null
+
+const sessionExpiredListeners = new Set<SessionExpiredListener>()
+
+/** The path an `authGuard()` protected, so an expiry there redirects once. */
+let guardedPath: string | null = null
+let guardRedirectInstalled = false
+
+/**
+ * Run `listener` when the client ends a session on its own: a 401 from the
+ * identity endpoint, or a refused refresh. Called once per session however
+ * many requests failed together, and not for `logout()`, which the caller
+ * already knows about. Returns an unsubscribe function.
+ */
+export function onSessionExpired(listener: SessionExpiredListener): () => void {
+  sessionExpiredListeners.add(listener)
+  return () => {
+    sessionExpiredListeners.delete(listener)
+  }
+}
 
 /**
  * Finish a social sign-in that arrived as a redirect (stacksjs/stacks#2236).
@@ -76,6 +115,7 @@ function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
   if (!resolved)
     return false
 
+  sessionEpoch++
   token.value = resolved.token
   // A token-only handoff represents a fixed-lifetime session. Remove a
   // refresh credential left by an older session instead of silently making
@@ -83,7 +123,7 @@ function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
   refreshToken.value = resolved.refreshToken ?? ''
 
   if (resolved.user !== undefined && resolved.user !== null)
-    user.value = resolved.user as UserData
+    applyUser(resolved.user as UserData)
 
   isAuthenticated.value = true
 
@@ -91,19 +131,147 @@ function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
   // out of logs and Referer on the way here, but it is in browser history —
   // and history is shared with anyone who later uses the machine. replaceState
   // so the Back button does not return to a URL still carrying the pack.
-  if (typeof window !== 'undefined' && !pack) {
-    const rest = stripSessionHandoff(window.location.hash)
-    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${rest}`)
-  }
+  if (typeof window !== 'undefined' && !pack)
+    stripHandoffFragment()
 
   return true
 }
 
+/** Remove a handoff pack or code from the address bar and history entry. */
+function stripHandoffFragment(): void {
+  const rest = stripSessionHandoff(window.location.hash)
+  window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${rest}`)
+}
+
+/**
+ * Redeem a one-use social sign-in code for the session it stands for.
+ *
+ * The default social callback no longer puts bearer or refresh tokens in the
+ * URL: it redirects with a code that is useless on its own. An HttpOnly
+ * cookie set by the same callback binds the code to this browser, so the
+ * request carries credentials. Resolves null on any refusal, malformed answer
+ * or network failure; the caller then leaves the existing session alone.
+ */
+async function redeemHandoffCode(code: string): Promise<SessionHandoffPack | null> {
+  try {
+    const response = await fetch(`${baseUrl}${HANDOFF_PATH}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: withCsrfHeader({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }),
+      body: JSON.stringify({ code }),
+    })
+    if (response.status !== 200)
+      return null
+
+    const data = await response.json() as Record<string, unknown> | null
+    if (!data || typeof data !== 'object')
+      return null
+
+    const accessToken = data.access_token ?? data.token
+    const refresh = data.refresh_token
+    if (typeof accessToken !== 'string' || accessToken.length === 0)
+      return null
+    if (typeof data.user !== 'object' || data.user === null)
+      return null
+    if (refresh !== undefined && (typeof refresh !== 'string' || refresh.length === 0))
+      return null
+
+    return {
+      token: accessToken,
+      refreshToken: refresh as string | undefined,
+      user: data.user,
+      expiresIn: typeof data.expires_in === 'number' ? data.expires_in : undefined,
+    }
+  }
+  catch (error) {
+    console.error('Error redeeming sign-in code:', error)
+    return null
+  }
+}
+
 function clearSession(): void {
+  sessionEpoch++
   token.value = ''
   refreshToken.value = ''
   user.value = null
   isAuthenticated.value = false
+}
+
+/** Whether the page holds anything that represents a session. */
+function holdsSession(): boolean {
+  return !!token.value || !!refreshToken.value || user.value !== null || isAuthenticated.value
+}
+
+/**
+ * End the session the client found invalid, once.
+ *
+ * `epoch` is the session the failing request was sent under. When it is no
+ * longer current, an earlier answer already ended that session (or a new one
+ * began), so this answer has nothing to end.
+ */
+function expireSession(epoch: number, event: SessionExpiredEvent): void {
+  if (epoch !== sessionEpoch)
+    return
+
+  const hadSession = holdsSession()
+  clearSession()
+
+  if (!hadSession)
+    return
+
+  for (const listener of [...sessionExpiredListeners]) {
+    try {
+      listener(event)
+    }
+    catch (error) {
+      console.error('Error in session expiry listener:', error)
+    }
+  }
+}
+
+/** Structural equality for JSON-shaped data, so an unchanged `/me` answer is recognisable. */
+function sameJson(a: unknown, b: unknown): boolean {
+  if (a === b)
+    return true
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null)
+    return false
+  if (Array.isArray(a) !== Array.isArray(b))
+    return false
+
+  const left = a as Record<string, unknown>
+  const right = b as Record<string, unknown>
+  const keys = Object.keys(left)
+  if (keys.length !== Object.keys(right).length)
+    return false
+
+  return keys.every(key => Object.prototype.hasOwnProperty.call(right, key) && sameJson(left[key], right[key]))
+}
+
+/**
+ * Store a user without replacing an identical one.
+ *
+ * `/api/me` is asked on most page loads and after every unrenewable 401. When
+ * it answers with what the page already has, assigning the fresh object would
+ * still notify every consumer of `user` - re-rendering the nav, re-running
+ * effects that fetch per-user data - for no change at all.
+ */
+function applyUser(next: UserData): void {
+  if (!sameJson(user.value, next))
+    user.value = next
+  if (!isAuthenticated.value)
+    isAuthenticated.value = true
+}
+
+/**
+ * Statuses that say the refresh endpoint could not answer, rather than that it
+ * refused: a deploy, an overloaded API, a proxy timeout. They keep the session,
+ * like a network error does.
+ */
+function isTransientStatus(status: number): boolean {
+  return status >= 500 || status === 408 || status === 429
 }
 
 /**
@@ -113,8 +281,8 @@ function clearSession(): void {
  * server refused — the refresh token is spent, revoked or expired, and the
  * session is over; state is cleared here.
  *
- * THROWS when the exchange could not be attempted at all (offline, DNS, the
- * API being restarted). That distinction is the whole point: treating an
+ * THROWS when the exchange could not be completed (offline, DNS, the API being
+ * restarted, a 5xx). That distinction is the whole point: treating an
  * unreachable server as a refusal signs out working users on a network blip.
  * Callers catch it and keep the session.
  */
@@ -122,7 +290,9 @@ async function performRefresh(): Promise<boolean> {
   if (!refreshToken.value)
     return false
 
-  const response = await fetch(`${baseUrl}${REFRESH_PATH}`, {
+  const epoch = sessionEpoch
+  const url = `${baseUrl}${REFRESH_PATH}`
+  const response = await fetch(url, {
     method: 'POST',
     credentials: 'same-origin',
     headers: withCsrfHeader({
@@ -132,18 +302,26 @@ async function performRefresh(): Promise<boolean> {
     body: JSON.stringify({ refresh_token: refreshToken.value }),
   })
 
+  if (isTransientStatus(response.status))
+    throw new Error(`Refresh unavailable (status ${response.status})`)
+
   if (!response.ok) {
     // A refusal is authoritative — the token cannot be reused.
-    clearSession()
+    expireSession(epoch, { reason: 'refresh-refused', status: response.status, url })
     return false
   }
 
   const data = await response.json() as { access_token?: string, refresh_token?: string, token?: string }
   const nextAccess = data.access_token ?? data.token
   if (!nextAccess) {
-    clearSession()
+    expireSession(epoch, { reason: 'refresh-refused', status: response.status, url })
     return false
   }
+
+  // A sign-out or a new sign-in landed while the exchange was out: this
+  // token belongs to a session the page has moved on from.
+  if (epoch !== sessionEpoch)
+    return false
 
   token.value = nextAccess
   // Rotation is optional server-side; keep the existing one when none comes back.
@@ -156,7 +334,7 @@ async function performRefresh(): Promise<boolean> {
 /**
  * Refresh the session, collapsing concurrent callers onto one exchange.
  *
- * Never rejects: an exchange that could not be attempted resolves `false`
+ * Never rejects: an exchange that could not be completed resolves `false`
  * without clearing state, so a caller can tell "signed out" from "could not
  * reach the server" by checking whether `token.value` survived.
  */
@@ -177,17 +355,42 @@ export async function refreshSession(): Promise<boolean> {
   return inFlightRefresh
 }
 
+function resolveTarget(input: string): string {
+  return input.startsWith('http') ? input : `${baseUrl}${input}`
+}
+
 /**
- * `fetch` with the access token attached, retrying once through a refresh on a
- * 401.
- *
- * The retry is attempted only when a refresh token exists and the first
- * response was a 401 — a 403 is an authorization decision, not an expiry, and
- * refreshing would not change it.
+ * Whether a 401 from `target` speaks for this page's session. A 401 from some
+ * other origin is that service's business, not a reason to sign anyone out.
  */
-export async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
-  const send = (): Promise<Response> => {
-    const target = input.startsWith('http') ? input : `${baseUrl}${input}`
+function speaksForSession(target: string): boolean {
+  const pageOrigin = typeof window !== 'undefined' ? window.location?.origin : undefined
+  try {
+    const origin = new URL(target, pageOrigin).origin
+    return origin === pageOrigin || (!!baseUrl && origin === new URL(baseUrl, pageOrigin).origin)
+  }
+  catch {
+    return false
+  }
+}
+
+interface SessionRequest {
+  response: globalThis.Response
+  /** The epoch the request was sent under. */
+  epoch: number
+  /**
+   * A final 401 that says the credential is not accepted: either there was no
+   * refresh token to try, or a renewed token was refused too. False for a 401
+   * left standing because the refresh could not reach the server.
+   */
+  unauthenticated: boolean
+}
+
+async function sendWithSession(input: string, init: RequestInit): Promise<SessionRequest> {
+  const epoch = sessionEpoch
+  const target = resolveTarget(input)
+
+  const send = (): Promise<globalThis.Response> => {
     const headers = new Headers(init.headers)
     if (token.value)
       headers.set('Authorization', `Bearer ${token.value}`)
@@ -209,15 +412,148 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
     })
   }
 
+  const sentWith = token.value
   const response = await send()
-  if (response.status !== 401 || !refreshToken.value)
-    return response
+  if (response.status !== 401 || !speaksForSession(target) || epoch !== sessionEpoch)
+    return { response, epoch, unauthenticated: false }
 
-  const renewed = await refreshSession()
-  if (!renewed)
-    return response
+  if (!refreshToken.value)
+    return { response, epoch, unauthenticated: true }
 
-  return await send()
+  // Another request of the same burst already rotated the access token while
+  // this one was out: retry with it rather than spending another exchange.
+  const renewed = (token.value && token.value !== sentWith) ? true : await refreshSession()
+  if (!renewed || epoch !== sessionEpoch) {
+    // Refused: `performRefresh` already ended the session. Unreachable: the
+    // session is kept and this 401 says nothing more about it.
+    return { response, epoch, unauthenticated: false }
+  }
+
+  const retried = await send()
+  return { response: retried, epoch, unauthenticated: retried.status === 401 && epoch === sessionEpoch }
+}
+
+/**
+ * `fetch` with the access token attached, retrying once through a refresh on a
+ * 401.
+ *
+ * The retry is attempted only when a refresh token exists and the first
+ * response was a 401 — a 403 is an authorization decision, not an expiry, and
+ * refreshing would not change it.
+ *
+ * A same-origin 401 that cannot be renewed is not taken as a sign-out on its
+ * own: plenty of 401s are about the request, not the session (a tampered
+ * signed URL, a step-up check). It makes the client ask `/api/me` instead -
+ * one shared request for the whole burst - and only that answer's 401 ends the
+ * session, once.
+ */
+export async function authFetch(input: string, init: RequestInit = {}): Promise<globalThis.Response> {
+  const result = await sendWithSession(input, init)
+
+  if (result.unauthenticated && result.epoch === sessionEpoch && holdsSession()) {
+    try {
+      await loadAuthUser()
+    }
+    catch {
+      // Verification is best effort; the caller still gets its own response.
+    }
+  }
+
+  return result.response
+}
+
+/**
+ * Ask the server who is signed in, sharing one request between every caller
+ * of the same session.
+ *
+ * Only a 401 ends the session. A network failure, a 5xx, a 403 or any other
+ * answer is not the server saying the credential is invalid, so the token and
+ * user are kept and the last known user is returned. A 403 in particular is
+ * an authorization decision about an identity the server did recognise:
+ * signing the user out would only send them through a login that succeeds and
+ * lands them on the same refusal.
+ */
+function loadAuthUser(): Promise<UserData | null> {
+  if (inFlightMe && inFlightMe.epoch === sessionEpoch)
+    return inFlightMe.promise
+
+  const epoch = sessionEpoch
+  const entry = {
+    epoch,
+    promise: requestAuthUser(epoch).finally(() => {
+      if (inFlightMe === entry)
+        inFlightMe = null
+    }),
+  }
+  inFlightMe = entry
+
+  return entry.promise
+}
+
+async function requestAuthUser(epoch: number): Promise<UserData | null> {
+  let result: SessionRequest
+  try {
+    // Current identity and permissions must never come from an offline copy.
+    result = await sendWithSession(ME_PATH, { cache: 'no-store' })
+  }
+  catch (error) {
+    // A thrown fetch means the request never completed — offline, DNS, the
+    // API restarting. That is not a statement about the session, so the token
+    // and user are kept and the next call can succeed. Clearing here signed
+    // users out on a network blip, and authGuard then sent them to /login.
+    console.error('Error fetching user:', error)
+    return user.value
+  }
+
+  const { response } = result
+
+  if (response.status === 401) {
+    if (result.unauthenticated)
+      expireSession(epoch, { reason: 'unauthorized', status: 401, url: resolveTarget(ME_PATH) })
+    // Otherwise the refresh could not be completed or already ended the
+    // session; either way there is nothing more to do here.
+    return epoch === sessionEpoch ? user.value : null
+  }
+
+  if (!response.ok)
+    return user.value
+
+  let data: MeResponse
+  try {
+    data = await response.json() as MeResponse
+  }
+  catch (error) {
+    // A 200 that is not JSON is a proxy or error page, not an identity.
+    console.error('Error reading user:', error)
+    return user.value
+  }
+
+  // The session changed while the request was out; its answer is stale.
+  if (epoch !== sessionEpoch)
+    return user.value
+
+  applyUser(data)
+  return user.value
+}
+
+/** Redirect a guarded page to /login when its session ends, once. */
+function installGuardRedirect(): void {
+  if (typeof window === 'undefined')
+    return
+
+  guardedPath = window.location?.pathname ?? null
+  if (guardRedirectInstalled)
+    return
+  guardRedirectInstalled = true
+
+  onSessionExpired(() => {
+    if (typeof window === 'undefined' || guardedPath === null)
+      return
+    // Only the page that asked for protection: after client-side navigation
+    // to a public page, an expiry is no reason to leave it.
+    if (window.location?.pathname === guardedPath)
+      window.location.replace('/login')
+  })
 }
 
 export function useAuth(): AuthComposable {
@@ -241,6 +577,7 @@ export function useAuth(): AuthComposable {
   }
 
   function storeTokenPack(data: LoginResponse): void {
+    sessionEpoch++
     token.value = data.token
     // A fixed-lifetime browser policy deliberately returns no refresh token.
     // Clear any credential left by an earlier refresh-capable login so it
@@ -249,37 +586,11 @@ export function useAuth(): AuthComposable {
   }
 
   async function fetchAuthUser(): Promise<UserData | null> {
-    try {
-      // `authFetch` turns a 401 into refresh-then-retry, so an expired access
-      // token renews instead of ending the session. Previously any non-ok
-      // response cleared state, which made a one-hour-old token and a revoked
-      // one indistinguishable — every session died at the access token's
-      // lifetime (stacksjs/stacks#2235).
-      // Current identity and permissions must never come from an offline copy.
-      const response = await authFetch(ME_PATH, { cache: 'no-store' })
-
-      if (!response.ok) {
-        clearSession()
-        return null
-      }
-
-      const data = await response.json() as MeResponse
-      user.value = data
-      isAuthenticated.value = true
-
-      return data
-    }
-    catch (error) {
-      // A thrown fetch means the request never completed — offline, DNS, the
-      // API restarting. That is not a statement about the session, so the
-      // token is kept and the next call can succeed. Clearing here signed
-      // users out on a network blip and then, because the token was gone,
-      // made it look like they had never been signed in.
-      console.error('Error fetching user:', error)
-      isAuthenticated.value = false
-      user.value = null
-      return null
-    }
+    // `sendWithSession` turns a 401 into refresh-then-retry, so an expired
+    // access token renews instead of ending the session (stacksjs/stacks#2235),
+    // and only a 401 the refresh could not cure clears state. Every other
+    // failure keeps the session: see `loadAuthUser`.
+    return await loadAuthUser()
   }
 
   async function checkAuthentication(): Promise<boolean> {
@@ -311,6 +622,7 @@ export function useAuth(): AuthComposable {
     }
 
     if (isRegisterResponse(data)) {
+      sessionEpoch++
       token.value = data.token
       // RegisterAction returns the same OAuth2-shaped pack LoginAction does
       // (#2212). Storing the refresh token is what lets the session outlive
@@ -427,15 +739,21 @@ export function useAuth(): AuthComposable {
    * `"abc"` WITH the quotes, and passing the user object straight to
    * `setItem` stored the literal `[object Object]`.
    *
-   * Two shapes, because there are two ways a server can hand a session over:
+   * The shapes a server can hand a session over in:
    *
    *   - **Cookie** (preferred). The callback replies `303` with
    *     `Set-Cookie: authCookie(token)` and no body. Nothing secret ever
    *     touches the URL or the DOM. Call this with no argument; it hydrates
    *     `user` from the cookie-authenticated `/api/me`.
+   *   - **One-use code** (the default social callback). The fragment carries
+   *     `stx_handoff=<code>`, never a token. With no argument this strips it
+   *     from history, POSTs it to `/auth/handoff` (`AUTH_HANDOFF_PATH`) with
+   *     the browser-binding cookie, and stores the returned session. A refused
+   *     or unreachable redemption resolves `null` and changes nothing.
    *   - **Token pack.** When a cookie is not an option — a cross-origin API,
    *     say, where the browser would not send one — hand the pack straight in
-   *     and it is stored through the same path `login()` uses.
+   *     and it is stored through the same path `login()` uses. A `stx_auth`
+   *     pack in the fragment, from a custom callback, still works too.
    *
    * Returns the signed-in user, or `null` when the session did not take.
    *
@@ -447,9 +765,24 @@ export function useAuth(): AuthComposable {
    * ```
    */
   async function completeSocialLogin(pack?: SessionHandoffPack | null): Promise<UserData | null> {
-    // Fragment or explicit pack first: it writes the tokens through the same
-    // refs `login()` uses and strips the fragment out of history.
-    const applied = applySessionHandoff(pack)
+    // A one-use code from the default callback. Strip it from history before
+    // anything else, then redeem it; a refused or unreachable redemption
+    // leaves whatever session the page already had untouched.
+    let applied = false
+    const code = !pack && typeof window !== 'undefined' ? readSessionHandoffCode(window.location.hash) : null
+    if (code) {
+      stripHandoffFragment()
+      const redeemed = await redeemHandoffCode(code)
+      if (!redeemed)
+        return null
+      applied = applySessionHandoff(redeemed)
+    }
+
+    // Fragment or explicit pack (custom callbacks still send one): it writes
+    // the tokens through the same refs `login()` uses and strips the fragment
+    // out of history.
+    if (!applied)
+      applied = applySessionHandoff(pack)
 
     // Then confirm with the server. This is what covers the cookie handoff,
     // where the browser arrives holding no tokens at all and the session lives
@@ -478,6 +811,7 @@ export function useAuth(): AuthComposable {
     verifyTwoFactorLogin,
     logout,
     fetchAuthUser,
+    onSessionExpired,
     completeSocialLogin,
     checkAuthentication,
     refreshToken,
@@ -487,12 +821,23 @@ export function useAuth(): AuthComposable {
   }
 }
 
-// Strict auth guard middleware
-// Usage: call in setup() of page/component, or in router beforeEach
-// Pass { guest: true } for guest-only pages
+/**
+ * Client navigation guard. Call it in a page's setup, or a router hook.
+ * Pass `{ guest: true }` for guest-only pages.
+ *
+ * A protected page redirects to /login when nothing says the visitor is signed
+ * in. When a stored token exists but has not been confirmed yet (a fresh page
+ * load), it asks `/api/me` instead of redirecting: the token is kept through a
+ * network failure or a 5xx, and only a 401 sends the visitor to sign in. A
+ * session that ends later on the same page - many requests failing at once
+ * included - redirects exactly once.
+ *
+ * This only controls client navigation. Guard server pages and actions
+ * independently.
+ */
 export function authGuard(options: { guest?: boolean } = {}): void {
   const guest = options.guest ?? false
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, fetchAuthUser } = useAuth()
 
   if (guest) {
     // Guest-only page: block if authenticated
@@ -502,8 +847,17 @@ export function authGuard(options: { guest?: boolean } = {}): void {
     return
   }
 
-  // Auth-only page: block if not authenticated
-  if (!isAuthenticated.value) {
-    window.location.replace('/login')
+  if (isAuthenticated.value) {
+    installGuardRedirect()
+    return
   }
+
+  if (token.value) {
+    // Unconfirmed, not refused: let the identity check decide.
+    installGuardRedirect()
+    void fetchAuthUser()
+    return
+  }
+
+  window.location.replace('/login')
 }

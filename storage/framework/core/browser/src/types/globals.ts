@@ -18,6 +18,8 @@ export interface StacksBrowserConfig {
   AUTH_ME_PATH?: string
   /** Path the auth composable calls to refresh a token. */
   AUTH_REFRESH_PATH?: string
+  /** Path the auth composable posts a one-use social sign-in code to. */
+  AUTH_HANDOFF_PATH?: string
   /** Publishable Stripe key for the browser billing helpers. */
   FRONTEND_STRIPE_PUBLIC_KEY?: string
   /** An application may inject its own keys alongside these. */

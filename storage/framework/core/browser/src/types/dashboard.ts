@@ -82,13 +82,46 @@ export interface UserData {
 
 export type MeResponse = UserData
 
+/**
+ * Why `useAuth` ended a session on its own, as passed to `onSessionExpired`
+ * listeners.
+ *
+ * - `unauthorized`: the identity endpoint answered 401 for the current
+ *   credential, either directly or when a 401 elsewhere made the client check.
+ * - `refresh-refused`: the server refused to exchange the refresh token.
+ */
+export interface SessionExpiredEvent {
+  reason: 'unauthorized' | 'refresh-refused'
+  /** The HTTP status that ended the session. */
+  status: number
+  /** The request URL that produced it. */
+  url: string
+}
+
+export type SessionExpiredListener = (event: SessionExpiredEvent) => void
+
 export interface AuthComposable {
   isAuthenticated: Ref<boolean>
   user: Ref<UserData | null>
   login: (user: AuthUser) => Promise<LoginResult | LoginError>
   verifyTwoFactorLogin: (challengeToken: string, code: string) => Promise<LoginResponse | LoginError>
   register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
+  /**
+   * Ask `/api/me` who is signed in. Concurrent callers share one request.
+   *
+   * Only a 401 ends the session. A network failure, a 5xx, a 403 or any other
+   * answer keeps the token and user and resolves the last known user (null
+   * when none was loaded yet). An unchanged answer keeps the same `user`
+   * object, so effects watching it do not run again.
+   */
   fetchAuthUser: () => Promise<UserData | null>
+  /**
+   * Run `listener` when the client ends a session itself (a 401 from the
+   * identity endpoint, or a refused refresh). It runs once per session, however
+   * many requests failed together. Not called for `logout()`. Returns an
+   * unsubscribe function.
+   */
+  onSessionExpired: (listener: SessionExpiredListener) => () => void
   /**
    * Finish a sign-in the server completed, typically an OAuth redirect.
    *
@@ -114,13 +147,18 @@ export interface AuthComposable {
   /**
    * Exchange the refresh token for a new access token. Resolves `false` when
    * the server refused (session over, state cleared) or when the exchange
-   * could not be attempted (offline — state kept). Concurrent callers share
+   * could not be completed (offline, 5xx, 408 or 429 — state kept). Concurrent callers share
    * one exchange, which single-use rotation requires.
    */
   refreshSession: () => Promise<boolean>
   /**
    * `fetch` with the access token attached, retrying once through a refresh on
    * a 401. Use this for authenticated requests instead of a bare `fetch`.
+   *
+   * A same-origin 401 that cannot be renewed does not sign anyone out by
+   * itself (a tampered signed URL also answers 401): it makes the client
+   * re-check `/api/me`, shared by every request that failed together, and only
+   * that check's 401 ends the session.
    */
   // `globalThis.Response` explicitly: this module declares its own generic
   // `Response<T>` (an API envelope, not the DOM class), which shadows it.
