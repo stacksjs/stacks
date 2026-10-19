@@ -218,6 +218,45 @@ export function parseSqlDateTime(value: unknown): Date | null {
 }
 
 /**
+ * Read a `DATE` column back out as the `YYYY-MM-DD` it stores.
+ *
+ * A `DATE` is a day on a calendar with no time and no zone, but drivers hand
+ * it back as a JS `Date`, and not all at the same midnight: Bun's Postgres
+ * driver builds UTC midnight, others build the host's LOCAL midnight. Read
+ * the wrong half and every row on a host east of UTC moves to the day before
+ * (`2026-10-18` local midnight in Berlin is `2026-10-17T22:00Z`), which is
+ * what `date.toISOString().slice(0, 10)` does to it.
+ *
+ * A `Date` at local midnight is read from its local fields; any other `Date`
+ * (UTC midnight, or a timestamp that was never a date) from its UTC fields.
+ * On a UTC host the two agree. Strings that start with a calendar date
+ * (`2026-10-18`, `2026-10-18 00:00:00`, `2026-10-18T00:00:00Z`) keep their
+ * date part as written. Returns null for missing, invalid or impossible input
+ * (`2026-02-31`), so a caller fails closed instead of inventing a day.
+ */
+export function parseSqlDate(value: unknown): string | null {
+  if (value === null || value === undefined)
+    return null
+  const pad = (n: number, width = 2) => String(n).padStart(width, '0')
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime()))
+      return null
+    const localMidnight = value.getHours() === 0 && value.getMinutes() === 0 && value.getSeconds() === 0 && value.getMilliseconds() === 0
+    return localMidnight
+      ? `${pad(value.getFullYear(), 4)}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`
+      : value.toISOString().slice(0, 10)
+  }
+  if (typeof value !== 'string')
+    return null
+  const match = /^(\d{4}-\d{2}-\d{2})(?:$|[T ])/.exec(value.trim())
+  if (!match)
+    return null
+  const day = match[1]!
+  const parsed = new Date(`${day}T00:00:00Z`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day ? day : null
+}
+
+/**
  * Create SQL dialect helpers for a given driver.
  *
  * @example

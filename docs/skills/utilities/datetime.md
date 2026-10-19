@@ -1,12 +1,12 @@
 ---
 title: "DateTime skill"
-description: "Use when working with dates and times in Stacks - the DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year), date parsing, format tokens, or timezone handling. Covers @stacksjs/datetime."
+description: "Use when working with dates and times in Stacks - the DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year), date parsing, format tokens, timezone handling, wall-clock times in a named zone across DST, or YYYY-MM-DD calendar dates (today in a zone, day arithmetic, ISO weeks). Covers @stacksjs/datetime."
 ---
 # DateTime
 
 `stacks-datetime` · Native Stacks · model-invoked
 
-Use when working with dates and times in Stacks - the DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year), date parsing, format tokens, or timezone handling. Covers @stacksjs/datetime.
+Use when working with dates and times in Stacks - the DateTime class with Carbon-like API (add/sub, comparison, formatting, start/end of day/month/year), date parsing, format tokens, timezone handling, wall-clock times in a named zone across DST, or YYYY-MM-DD calendar dates (today in a zone, day arithmetic, ISO weeks). Covers @stacksjs/datetime.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to
@@ -20,6 +20,7 @@ source and retained evidence; driver limits are explicit.
 - Standalone `format()` Function (`format.ts`)
 - Standalone `parse()` Function (`parse.ts`)
 - Named-zone instants and calendar months
+- Calendar dates (`YYYY-MM-DD` strings)
 - Current-time helper example
 - Gotchas
 

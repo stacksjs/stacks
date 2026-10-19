@@ -139,6 +139,7 @@ const config: BunPressOptions = {
             { text: 'CLI', link: '/packages/cli' },
             { text: 'Cloud', link: '/packages/cloud' },
             { text: 'Database', link: '/packages/database' },
+            { text: 'DateTime', link: '/packages/datetime' },
             { text: 'ORM', link: '/packages/orm' },
             { text: 'Query Builder', link: '/packages/query-builder' },
             { text: 'Router', link: '/packages/router' },

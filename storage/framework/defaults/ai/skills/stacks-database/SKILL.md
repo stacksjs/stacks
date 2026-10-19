@@ -371,6 +371,10 @@ or dialect-aware raw helpers. sql.as validates an alias; raw text remains a
 trusted-code operation. sqlDateTime/parseSqlDateTime provide the canonical
 application timestamp representation. Mixing SQLite datetime text with
 application ISO text in raw comparisons can give wrong expiry boundaries.
+parseSqlDate(value) reads a DATE column back as the YYYY-MM-DD it stores,
+whether the driver built the Date at UTC midnight (Bun's Postgres driver) or at
+the host's local midnight; toISOString().slice(0, 10) shifts the latter a day
+back east of UTC. Null for missing, invalid or impossible input.
 Source: core/database/src/types.ts and sql-helpers.ts; see stacks-query-builder
 for typed tables, raw binding, transaction handles and replica routing.
 
