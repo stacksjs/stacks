@@ -64,6 +64,14 @@ git diff -- bun.lock pantry.lock
 Commit the normal manifest and lockfile changes together. The framework
 release action uses this metadata-only Pantry invocation.
 
+The framework root pins its development `@stacksjs/stx`,
+`@stacksjs/components` and `bun-plugin-stx` to one validated public release.
+Update those three declarations together through the ordinary installer,
+then verify the frozen install and packed consumer checks. A runtime update
+alone can leave an older component or compiler in the lockfile. Published
+core package ranges describe consumer compatibility separately from this
+exact development test set.
+
 A plain `pantry install` also performs configured project setup. That can
 start services and run `postDatabaseSetup` or `postSetup` commands, including
 migrations and seeding. Use that operation when setting up the project;
