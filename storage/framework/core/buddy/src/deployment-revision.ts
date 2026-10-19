@@ -50,9 +50,9 @@ export interface DeploymentRevisionCheck {
  * production already runs one of those.
  *
  * The branch is fetched without updating any ref (FETCH_HEAD only). A shallow
- * CI checkout usually receives exactly the commits between it and the head,
- * which is all the ancestry question needs; one that already held the head
- * as a separate shallow root is deepened until the two meet.
+ * checkout must complete its history before enumerating the difference: a
+ * newer merge can expose shared ancestors hidden behind the CI boundary,
+ * making an older live release look newer even when CI is a proven ancestor.
  */
 export async function assertCurrentDeploymentRevision(revision: AutomatedDeploymentRevision | undefined, cwd = process.cwd()): Promise<DeploymentRevisionCheck | undefined> {
   if (!revision)
@@ -89,26 +89,13 @@ export async function assertCurrentDeploymentRevision(revision: AutomatedDeploym
   // By ref rather than by SHA, which not every server serves. The branch may
   // have moved again since ls-remote; the fetched tip is then newer still,
   // and the question is the same.
-  await git(['fetch', '--quiet', '--no-tags', 'origin', revision.ref])
+  const shallow = (await git(['rev-parse', '--is-shallow-repository'])) === 'true'
+  await git(['fetch', '--quiet', '--no-tags', ...(shallow ? ['--unshallow'] : []), 'origin', revision.ref])
+  if ((await git(['rev-parse', '--is-shallow-repository'])) === 'true')
+    throw new Error('Cannot verify complete origin history; production deployment stopped.')
   const tip = String(await git(['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])).toLowerCase()
   // Exit status 1 is the answer "no", not a failure to answer.
-  const isAncestor = async () => (await git(['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })) !== null
-  let onBranch = await isAncestor()
-  // A shallow checkout can hold the tip as a shallow root of its own (a clone
-  // of the branch, then the CI commit fetched beside it): the fetch above then
-  // brings nothing, and the history joining them is missing rather than
-  // absent. Deepen until they meet, then take the whole history as a last
-  // resort, before calling the commit off the branch.
-  for (const depth of [64, 512, 4096]) {
-    if (onBranch || (await git(['rev-parse', '--is-shallow-repository'])) !== 'true')
-      break
-    await git(['fetch', '--quiet', '--no-tags', `--deepen=${depth}`, 'origin', revision.ref])
-    onBranch = await isAncestor()
-  }
-  if (!onBranch && (await git(['rev-parse', '--is-shallow-repository'])) === 'true') {
-    await git(['fetch', '--quiet', '--no-tags', '--unshallow', 'origin', revision.ref])
-    onBranch = await isAncestor()
-  }
+  const onBranch = (await git(['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })) !== null
   if (!onBranch)
     throw new Error('This CI commit is no longer on the origin branch; production deployment stopped. Deploy the current branch head.')
   const newer = String(await git(['rev-list', `${revision.sha}..${tip}`])).split('\n').map(line => line.trim().toLowerCase()).filter(Boolean)
