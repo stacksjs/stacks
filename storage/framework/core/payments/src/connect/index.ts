@@ -12,14 +12,18 @@
 
 export * from './account'
 export * from './charge'
+export * from './destination'
 export * from './payout'
+export * from './refund'
 export * from './subscription'
 export * from './transfer'
 export * from './webhook'
 
 import { manageConnectedAccount } from './account'
 import { manageDestinationCharge } from './charge'
+import { checkoutLineItemsTotal, destinationCheckoutPaymentData, destinationCheckoutSubscriptionData, destinationFeeCents, destinationFeePercent, destinationPaymentIntentParams, destinationSubscriptionParams, splitFee } from './destination'
 import { managePayout } from './payout'
+import { connectRefund, connectRefundParams, isDestinationCharge } from './refund'
 import { manageDestinationSubscription } from './subscription'
 import { manageTransfer } from './transfer'
 import { manageConnectWebhook } from './webhook'
@@ -38,6 +42,21 @@ export const connect = {
   // Charges
   destinationCharge: manageDestinationCharge.destinationCharge,
   applicationFeeFor: manageDestinationCharge.applicationFeeFor,
+
+  // Destination-charge params, pure (spread into the Stripe call you build)
+  feeCents: destinationFeeCents,
+  feePercent: destinationFeePercent,
+  paymentIntentParams: destinationPaymentIntentParams,
+  checkoutPaymentData: destinationCheckoutPaymentData,
+  checkoutSubscriptionData: destinationCheckoutSubscriptionData,
+  subscriptionParams: destinationSubscriptionParams,
+  lineItemsTotal: checkoutLineItemsTotal,
+  splitFee,
+
+  // Refunds that reverse the merchant's transfer and the platform's fee
+  refund: connectRefund,
+  refundParams: connectRefundParams,
+  isDestinationCharge,
 
   // Subscriptions (billed on the platform, each invoice settled to the merchant)
   subscriptionCheckout: manageDestinationSubscription.checkout,

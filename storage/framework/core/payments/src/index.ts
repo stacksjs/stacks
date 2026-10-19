@@ -31,6 +31,9 @@ export { freshIdempotencyKey, stacksIdempotencyKey } from './idempotency'
 
 export { subscriptionGrantsAccess, subscriptionPeriod } from './subscription-state'
 
+// What a checkout.session.* webhook means: paid, processing, failed or expired.
+export * from './checkout-outcome'
+
 // Bank debits (SEPA Direct Debit, Bacs, ACH, BECS): methods per currency,
 // debit webhook outcomes and mandates. Pure; also `@stacksjs/payments/direct-debit`.
 export * from './direct-debit'

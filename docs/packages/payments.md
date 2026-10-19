@@ -184,6 +184,157 @@ The Stripe-only half keeps Stripe's types and throws `PaymentUnsupportedError`, 
 
 Amounts are integers in the smallest currency unit. Use `Payment.toCents()`, `Payment.toDollars()`, and `Payment.formatAmount()` for conversion and display.
 
+## Stripe Connect: destination charges
+
+A marketplace sale is charged on the platform and settled by Stripe to the
+merchant's connected account, less the platform's application fee. When you
+build the Stripe call yourself, spread the Connect fields from these builders.
+They are pure (no config, no API call), validate their input, and are typed
+with Stripe's own parameter types.
+
+```ts
+import {
+  checkoutLineItemsTotal,
+  destinationCheckoutPaymentData,
+  destinationCheckoutSubscriptionData,
+  destinationPaymentIntentParams,
+  destinationSubscriptionParams,
+  stripe,
+} from '@stacksjs/payments'
+
+const connect = { destination: gym.stripe_account_id, feePercent: 5, rounding: 'round' as const }
+
+// A one-off Checkout: the fee is an amount, worked out from the line items
+const session = await stripe.checkout.sessions.create({
+  mode: 'payment',
+  customer,
+  line_items: lineItems,
+  payment_intent_data: destinationCheckoutPaymentData(checkoutLineItemsTotal(lineItems), connect, { metadata }),
+  success_url: successUrl,
+  cancel_url: cancelUrl,
+})
+
+// A subscription Checkout: the fee is a percent of every invoice
+await stripe.checkout.sessions.create({
+  mode: 'subscription',
+  customer,
+  line_items: lineItems,
+  subscription_data: destinationCheckoutSubscriptionData(connect, { metadata, trial_period_days: 14 }),
+  success_url: successUrl,
+  cancel_url: cancelUrl,
+})
+
+// Directly, for a customer with a payment method on file
+await stripe.subscriptions.create({ customer, items: [{ price }], ...destinationSubscriptionParams(connect) })
+await stripe.paymentIntents.create({ amount: 4900, currency: 'eur', customer, ...destinationPaymentIntentParams(4900, connect) })
+```
+
+| Builder | Fields it returns |
+| --- | --- |
+| `destinationCheckoutPaymentData(amount, options, extra?)` | `payment_intent_data`: `transfer_data`, `application_fee_amount`, `on_behalf_of`, `transfer_group` |
+| `destinationCheckoutSubscriptionData(options, extra?)` | `subscription_data`: `transfer_data`, `application_fee_percent`, `on_behalf_of` |
+| `destinationSubscriptionParams(options)` | `transfer_data`, `application_fee_percent`, `on_behalf_of` |
+| `destinationPaymentIntentParams(amount, options)` | `transfer_data`, `application_fee_amount`, `on_behalf_of`, `transfer_group` |
+
+Options:
+
+- `destination`: the connected account, `acct_...`; anything else throws.
+- `feePercent`: 0 to 100. A one-off charge turns it into an amount; a
+  subscription sends it as `application_fee_percent`, which Stripe takes to two
+  decimals (float sums such as `0.1 + 0.2` are snapped, finer values throw).
+- `feeCents`: an exact fee in minor units. It wins over `feePercent` on a
+  one-off charge and is refused on a subscription.
+- `rounding`: `'floor'` (the default, as `applicationFeeFor`) or `'round'`.
+  The fee never exceeds the charge.
+- `onBehalfOf`: settle as the merchant, with their statement descriptor.
+- `transferGroup`: one-off charges only.
+
+A zero or missing fee sends no fee field. The Checkout builders' `extra`
+argument carries the session's other fields; the Connect fields win over it.
+`destinationFeeCents(amount, options)` and `destinationFeePercent(options)` are
+the fee arithmetic alone, and `checkoutLineItemsTotal(lineItems)` totals
+`price_data` lines (a catalog `price` throws, since its amount is not known here).
+
+### Splitting a fee
+
+`splitFee(amount, weights, fallback?)` divides minor units into named shares
+that always add up to the amount: each share gets its whole part and the cents
+left over go to the largest fractions, ties to the earlier key.
+
+```ts
+import { splitFee } from '@stacksjs/payments'
+
+splitFee(101, { tip: 2, planet: 1 })    // { tip: 67, planet: 34 }
+splitFee(-101, { tip: 2, planet: 1 })   // { tip: -67, planet: -34 }, a refunded fee
+splitFee(50, { tip: 0, planet: 0 })     // { tip: 50, planet: 0 }: all-zero weights go to the fallback (the first key)
+```
+
+## Stripe Connect: refunds
+
+Refunded like any other charge, a destination charge is paid back out of the
+platform's balance, the merchant keeps the sale and the platform keeps its fee.
+Stripe reverses the transfer and the fee only when the refund asks:
+
+```ts
+import { connectRefund, connectRefundParams, stripe } from '@stacksjs/payments'
+
+// Looks the payment up, then refunds with reverse_transfer and refund_application_fee as needed
+await connectRefund(payment.stripe_payment_intent_id, {
+  amount: 500,
+  reason: 'requested_by_customer',
+  metadata: { refund_id: String(refund.id) },
+  idempotencyKey: `refund:${refund.id}`,
+})
+
+// Or build the params from an object you already hold
+const intent = await stripe.paymentIntents.retrieve(id, { expand: ['latest_charge'] })
+await stripe.refunds.create(connectRefundParams(intent, { amount: 500 }), { idempotencyKey: `refund:${refund.id}` })
+```
+
+`connectRefundParams(source, options)` refunds by `payment_intent` for a
+PaymentIntent and by `charge` otherwise. It sets `reverse_transfer` when the
+money went to a connected account (`transfer_data.destination` on the intent or
+its charge, or a charge's `transfer`) and `refund_application_fee` when that
+charge also took a fee. `reverseTransfer: false` and
+`refundApplicationFee: false` opt out. `isDestinationCharge(source)` and `tookApplicationFee(source)`
+answer the two questions on their own. Pass `connectRefund` a deterministic
+`idempotencyKey`; without one each call is a new refund.
+
+## Checkout outcomes
+
+Four `checkout.session.*` events and a `payment_status` combine into four
+outcomes. `checkoutOutcome(event)` reads them, and returns null for any other
+event:
+
+```ts
+import { checkoutOutcome } from '@stacksjs/payments'
+
+const outcome = checkoutOutcome(event)
+if (!outcome || outcome.metadata.order_id === undefined)
+  return
+
+if (outcome.status === 'paid')
+  await fulfilOrder(Number(outcome.reference), outcome.paymentIntentId)
+else if (outcome.status === 'processing')
+  await markAwaitingDebit(Number(outcome.reference))
+else
+  await cancelOrder(Number(outcome.reference)) // 'failed' or 'expired'
+```
+
+| Event | `payment_status` | `status` |
+| --- | --- | --- |
+| `checkout.session.completed` | `paid` or `no_payment_required` | `paid` |
+| `checkout.session.completed` | `unpaid` | `processing`: a delayed method such as SEPA Direct Debit |
+| `checkout.session.async_payment_succeeded` | `paid` | `paid` |
+| `checkout.session.async_payment_failed` | any | `failed` |
+| `checkout.session.expired` | any | `expired` |
+
+The outcome also has `session`, `sessionId`, `reference` (the session's
+`client_reference_id`), `paymentIntentId`, `subscriptionId` and `customerId`
+(ids whether Stripe expanded them or not), `mode`, `amountTotal`, `currency` and
+`metadata`. It only reads the event: verify the webhook signature and match the
+session to your own record before acting on it.
+
 ## Process signed webhooks
 
 ```ts
