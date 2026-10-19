@@ -144,7 +144,9 @@ jobs:
           STACKS_TEST_POSTGRES_URL: ${{ env.POSTGRES_URL }}
           STACKS_TEST_MYSQL_URL: ${{ env.MYSQL_URL }}
         run: |
-          set -o pipefail
+          set -euo pipefail
+          : "${STACKS_TEST_POSTGRES_URL:?Pantry must export a PostgreSQL URL}"
+          : "${STACKS_TEST_MYSQL_URL:?Pantry must export a MySQL URL}"
           mkdir -p artifacts/native-credentials
           git rev-parse HEAD > artifacts/native-credentials/source-commit.txt
           bun test ./storage/framework/core/auth/tests/password-reset-drivers.test.ts 2>&1 | tee artifacts/native-credentials/password-reset-drivers.log

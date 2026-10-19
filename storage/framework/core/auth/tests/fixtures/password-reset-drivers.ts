@@ -243,50 +243,52 @@ try {
     }
   })
   if (dialect === 'mysql') {
-    for (const precision of [0, 6]) {
-      await db.unsafe(`ALTER TABLE users MODIFY COLUMN password_changed_at DATETIME(${precision}) NULL`).execute()
-      for (const truncate of [false, true]) {
-        await check(`unchanged credential stamp precision ${precision}, truncate ${truncate}`, async () => {
-          await db.transaction(async () => {
-            const modes = await db.primary.unsafe('SELECT @@SESSION.sql_mode AS mode').execute() as Array<{ mode: string }>
-            const original = modes[0]!.mode
-            const flags = original.split(',').filter(flag => flag && flag !== 'TIME_TRUNCATE_FRACTIONAL')
-            if (truncate) flags.push('TIME_TRUNCATE_FRACTIONAL')
-            await db.primary.unsafe('SET SESSION sql_mode = ?', [flags.join(',')]).execute()
-            try {
-              await seed()
-              await db.primary.updateTable('users').set({ password_changed_at: sqlDateTime(now) } as never).where('id', '=', 1).execute()
-              // Both modes exercise a real zero-change write at precision zero.
-              const fraction = precision === 0 ? (truncate ? 900 : 490) : 0
-              setSystemTime(new Date(now.getTime() + fraction))
-              assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'same-stamp-password')).success, true)
-              assert.equal(sent.length, 0, 'the notification still waits for the outer commit')
-            }
-            finally {
-              await db.primary.unsafe('SET SESSION sql_mode = ?', [original]).execute()
-              setSystemTime(now)
-            }
+    for (const temporalType of ['DATETIME', 'TIMESTAMP']) {
+      for (const precision of [0, 6]) {
+        await db.unsafe(`ALTER TABLE users MODIFY COLUMN password_changed_at ${temporalType}(${precision}) NULL`).execute()
+        for (const truncate of [false, true]) {
+          await check(`unchanged ${temporalType} credential stamp precision ${precision}, truncate ${truncate}`, async () => {
+            await db.transaction(async () => {
+              const modes = await db.primary.unsafe('SELECT @@SESSION.sql_mode AS mode').execute() as Array<{ mode: string }>
+              const original = modes[0]!.mode
+              const flags = original.split(',').filter(flag => flag && flag !== 'TIME_TRUNCATE_FRACTIONAL')
+              if (truncate) flags.push('TIME_TRUNCATE_FRACTIONAL')
+              await db.primary.unsafe('SET SESSION sql_mode = ?', [flags.join(',')]).execute()
+              try {
+                await seed()
+                await db.primary.updateTable('users').set({ password_changed_at: sqlDateTime(now) } as never).where('id', '=', 1).execute()
+                // Both modes exercise a real zero-change write at precision zero.
+                const fraction = precision === 0 ? (truncate ? 900 : 490) : 0
+                setSystemTime(new Date(now.getTime() + fraction))
+                assert.equal((await passwordResets('reset@example.invalid').resetPassword(token, 'same-stamp-password')).success, true)
+                assert.equal(sent.length, 0, 'the notification still waits for the outer commit')
+              }
+              finally {
+                await db.primary.unsafe('SET SESSION sql_mode = ?', [original]).execute()
+                setSystemTime(now)
+              }
+            })
+            assert.equal(sent.length, 1)
           })
-          assert.equal(sent.length, 1)
-        })
+        }
       }
+      await check(`${temporalType} microsecond stamp suppression rolls back the password and notification`, async () => {
+        await seed()
+        await db.unsafe("UPDATE users SET password_changed_at = '2030-01-02T03:04:05.123456' WHERE id = 1").execute()
+        await db.unsafe('CREATE TRIGGER freeze_credential_stamp BEFORE UPDATE ON users FOR EACH ROW SET NEW.password_changed_at = OLD.password_changed_at').execute()
+        try {
+          setSystemTime(new Date(now.getTime() + 123))
+          await assert.rejects(() => passwordResets('reset@example.invalid').resetPassword(token, 'must-roll-back'), /could not stamp/)
+          await assertUnchanged()
+          const rows = await db.primary.unsafe("SELECT DATE_FORMAT(password_changed_at, '%f') AS fraction FROM users WHERE id = 1").execute() as Array<{ fraction: string }>
+          assert.equal(rows[0]!.fraction, '123456')
+        }
+        finally {
+          setSystemTime(now)
+          await db.unsafe('DROP TRIGGER freeze_credential_stamp').execute()
+        }
+      })
     }
-    await check('microsecond stamp suppression rolls back the password and notification', async () => {
-      await seed()
-      await db.unsafe("UPDATE users SET password_changed_at = '2030-01-02T03:04:05.123456' WHERE id = 1").execute()
-      await db.unsafe('CREATE TRIGGER freeze_credential_stamp BEFORE UPDATE ON users FOR EACH ROW SET NEW.password_changed_at = OLD.password_changed_at').execute()
-      try {
-        setSystemTime(new Date(now.getTime() + 123))
-        await assert.rejects(() => passwordResets('reset@example.invalid').resetPassword(token, 'must-roll-back'), /could not stamp/)
-        await assertUnchanged()
-        const rows = await db.primary.unsafe("SELECT DATE_FORMAT(password_changed_at, '%f') AS fraction FROM users WHERE id = 1").execute() as Array<{ fraction: string }>
-        assert.equal(rows[0]!.fraction, '123456')
-      }
-      finally {
-        setSystemTime(now)
-        await db.unsafe('DROP TRIGGER freeze_credential_stamp').execute()
-      }
-    })
   }
   assert.deepEqual(failures, [])
   console.log('password reset drivers OK')
