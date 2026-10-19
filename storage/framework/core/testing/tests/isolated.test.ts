@@ -46,6 +46,19 @@ describe('runIsolated', () => {
     expect(read(result.stdout).preloaded).toBe('yes')
   })
 
+  test('runs the child with a bunfig of your choice, resolved against cwd', async () => {
+    const result = await runIsolated('echo.ts', { cwd: fixture(''), bunfig: 'bunfig.toml' })
+    expect(result.code).toBe(0)
+    expect(read(result.stdout).preloaded).toBe('from-bunfig')
+    expect(result.command).toContain(`--config=${fixture('bunfig.toml')}`)
+  })
+
+  test('refuses a missing bunfig, or one alongside preload', async () => {
+    await expect(runIsolated(fixture('echo.ts'), { bunfig: fixture('missing.toml') })).rejects.toThrow(/no bunfig at/)
+    await expect(runIsolated(fixture('echo.ts'), { bunfig: '' })).rejects.toThrow(TypeError)
+    await expect(runIsolated(fixture('echo.ts'), { bunfig: fixture('bunfig.toml'), preload: [] })).rejects.toThrow(/not both/)
+  })
+
   test('runs a test file with bun test, keeping its mock.module out of this process', async () => {
     const result = assertIsolatedOk(await runIsolated(fixture('mocked-module.ts'), { mode: 'test', preload: [] }))
     expect(result.command).toContain('test')

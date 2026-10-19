@@ -1,0 +1,3 @@
+# For tests/isolated.test.ts: runIsolated({ bunfig, cwd: this directory }).
+# Bun resolves the preload against the cwd, not this file.
+preload = ["./bunfig-preload.ts"]
