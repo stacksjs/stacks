@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.235...v0.75.236)
+
+## 🐛 Bug Fixes
+
+- **release**: give each parallel publish its own TMPDIR ([4fe7168](https://github.com/stacksjs/stacks/commit/4fe7168)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.234...v0.75.235)
 
 ## 🐛 Bug Fixes
