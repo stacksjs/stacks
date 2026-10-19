@@ -12,7 +12,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
       throw new Error('Magic link tests require a local disposable database server on a non-default port')
     const directory = await mkdtemp(join(tmpdir(), 'stacks-magic-drivers-'))
     const name = `stacks_magic_drivers_${crypto.randomUUID().replaceAll('-', '')}`
-    const admin = url ? new SQL({ url: url.href, max: 1 }) : undefined
+    const admin = url ? new SQL(url.href, { max: 1 }) : undefined
     const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
     let created = false
     try {

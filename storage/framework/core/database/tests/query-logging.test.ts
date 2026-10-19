@@ -11,7 +11,7 @@ async function runInDisposableDatabase(dialect: 'mysql' | 'postgres', connection
   const name = `stacks_query_log_${crypto.randomUUID().replaceAll('-', '')}`
   const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
   // Two sequential statements need one connection, not a default pool of ten.
-  const admin = new SQL({ url: url.href, max: 1 })
+  const admin = new SQL(url.href, { max: 1 })
   let created = false
   try {
     await admin.unsafe(`CREATE DATABASE ${quoted}`)

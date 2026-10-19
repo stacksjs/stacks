@@ -11,7 +11,7 @@ test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('auth, RBAC and two-factor ch
   const directory = await mkdtemp(join(tmpdir(), 'stacks-session-routing-'))
   const name = `stacks_session_routing_${crypto.randomUUID().replaceAll('-', '')}`
   const password = crypto.randomUUID()
-  const admin = new SQL({ url: url.href, max: 1 })
+  const admin = new SQL(url.href, { max: 1 })
   let databaseCreated = false
   let roleCreated = false
   try {

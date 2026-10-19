@@ -12,7 +12,7 @@ for (const dialect of ['sqlite', 'postgres', 'mysql'] as const) {
       throw new Error('Credential tests require a local disposable database server')
     const directory = await mkdtemp(join(tmpdir(), 'stacks-credential-test-'))
     const name = `stacks_credential_test_${crypto.randomUUID().replaceAll('-', '')}`
-    const admin = url ? new SQL({ url: url.href, max: 1 }) : undefined
+    const admin = url ? new SQL(url.href, { max: 1 }) : undefined
     const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
     let created = false
     try {

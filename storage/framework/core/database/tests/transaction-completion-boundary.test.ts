@@ -9,7 +9,7 @@ async function checkCompletion(dialect: 'sqlite' | 'mysql' | 'postgres', connect
   // Two sequential statements need one connection. A default pool opened ten
   // on Postgres, which with the fixture's own ten let six concurrent runs of
   // this file exhaust a 100-connection server ("too many clients").
-  const admin = url ? new SQL({ url: url.href, max: 1 }) : undefined
+  const admin = url ? new SQL(url.href, { max: 1 }) : undefined
   const quoted = dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
   let created = false
   try {

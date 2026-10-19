@@ -1146,7 +1146,7 @@ function getReplicaDb(replica: ReplicaConfig): ReturnType<typeof createQueryBuil
     : ''
   const url = `${scheme}://${auth}${resolved.host}:${resolved.port}/${resolved.database}`
 
-  const sql = new SQL({ url, ...toBunPoolOptions(getPoolConfig()) })
+  const sql = new SQL(url, { ...toBunPoolOptions(getPoolConfig()), database: resolved.database })
   const instance = detectsBrokenPools()
     ? createQueryBuilder({ sql, hooks: replicaQueryHooks({ driver: getDriver(), host: resolved.host, port: resolved.port, database: resolved.database }) })
     : createQueryBuilder({ sql })

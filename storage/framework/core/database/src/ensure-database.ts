@@ -246,7 +246,9 @@ export function buildConnectionUrl(target: ConnectionTarget, database: string): 
  * single connection is still being opened can still leave its close() pending.
  */
 function defaultConnect(url: string): MaintenanceClient {
-  return new SQL(url, { max: 1 }) as unknown as MaintenanceClient
+  // Bun's PGDATABASE/MYSQL_DATABASE defaults otherwise override the URL path.
+  const database = decodeURIComponent(new URL(url).pathname.slice(1))
+  return new SQL(url, { max: 1, database }) as unknown as MaintenanceClient
 }
 
 /**

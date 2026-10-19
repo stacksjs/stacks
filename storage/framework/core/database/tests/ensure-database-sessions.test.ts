@@ -85,6 +85,9 @@ for (const dialect of ['postgres', 'mysql'] as const satisfies readonly Dialect[
         cwd: join(import.meta.dir, '..'),
         env: {
           ...process.env,
+          // These inherited defaults must not change the explicitly probed database.
+          PGDATABASE: decodeURIComponent(url.pathname.slice(1)),
+          MYSQL_DATABASE: decodeURIComponent(url.pathname.slice(1)),
           DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false',
           DB_PREFLIGHT_TIMEOUT_MS: '',
           STACKS_PROBE_TARGET: JSON.stringify(target),

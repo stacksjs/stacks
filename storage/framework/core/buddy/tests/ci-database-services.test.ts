@@ -1,31 +1,29 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 
-interface Service { ports: string[] }
-interface Step { name: string, env?: Record<string, string> }
+interface Step { name: string, uses?: string, with?: Record<string, string>, run?: string, env?: Record<string, string> }
 const workflow = Bun.YAML.parse(readFileSync(new URL('../../../../../.github/workflows/ci.yml', import.meta.url), 'utf8')) as {
-  jobs: { test: { services: Record<string, Service>, steps: Step[] } }
+  jobs: { test: { services?: unknown, steps: Step[] } }
 }
 
-for (const [service, containerPort, variable] of [
-  ['postgres', '5432', 'STACKS_TEST_POSTGRES_URL'],
-  ['mysql', '3306', 'STACKS_TEST_MYSQL_URL'],
+for (const [service, version, variable] of [
+  ['postgres', '17.11', 'STACKS_TEST_POSTGRES_URL'],
+  ['mysql', '26.7.0', 'STACKS_TEST_MYSQL_URL'],
 ] as const) {
-  test(`CI ${service} URLs use the mapped disposable service port`, () => {
-    const mapping = workflow.jobs.test.services[service]!.ports.find(port => port.endsWith(`:${containerPort}`))
-    expect(mapping).toBeDefined()
-    const hostPort = mapping!.split(':')[0]!
-    // Match fixture safety policy without granting CI a bypass that could
-    // accidentally connect a developer's tests to a normal local database.
-    expect(['3306', '5432']).not.toContain(hostPort)
-    expect(Number(hostPort)).toBeGreaterThan(1024)
-    expect(Number(hostPort)).toBeLessThanOrEqual(65535)
-    const consumers = workflow.jobs.test.steps.filter(step => step.env?.[variable])
-    expect(consumers.length).toBeGreaterThanOrEqual(2)
-    for (const step of consumers) {
-      const url = new URL(step.env![variable]!)
-      expect(url.hostname, step.name).toBe('127.0.0.1')
-      expect(url.port, step.name).toBe(hostPort)
+  test(`CI ${service} consumers use Pantry's validated private service exports`, () => {
+    const { steps, services } = workflow.jobs.test
+    expect(services).toBeUndefined()
+    const setup = steps.findIndex(step => step.with?.services?.split(' ').includes(`${service}@${version}`))
+    expect(setup).toBeGreaterThanOrEqual(0)
+    expect(steps[setup]!.uses).toBe('pantry-pm/pantry/packages/action@2fb25bbdf186db2cd8e096cc4c6f45c93a11267d')
+    const configure = steps.findIndex(step => step.run?.includes('bun .github/scripts/configure-ci-services.ts'))
+    expect(configure).toBeGreaterThan(setup)
+    // The mapper rejects remote hosts, default ports and missing credentials.
+    // Both ordinary suites must inherit it rather than override its endpoints.
+    for (const name of ['Test Suite', 'Core tests (all packages)']) {
+      const consumer = steps.findIndex(step => step.name === name)
+      expect(consumer).toBeGreaterThan(configure)
+      expect(steps[consumer]!.env?.[variable]).toBeUndefined()
     }
   })
 }

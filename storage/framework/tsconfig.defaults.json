@@ -39,6 +39,7 @@
       "@stacksjs/logging/*": ["./core/logging/src/*"],
       "@stacksjs/path/*": ["./core/path/src/*"],
       "@stacksjs/storage/*": ["./core/storage/src/*"],
+      "@stacksjs/testing/*": ["./core/testing/src/*"],
       "@stacksjs/utils/*": ["./core/utils/src/*"],
       "@stacksjs/validation/*": ["./core/validation/src/*"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
