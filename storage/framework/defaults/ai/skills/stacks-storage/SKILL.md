@@ -85,6 +85,36 @@ parent-directory authorization and domain validation. This is a local hard-link
 and directory-fsync protocol, not a cloud-adapter transaction or tested hardware
 power-loss guarantee.
 
+For a durable ownership checkpoint before private bytes, use
+`prepareCompletedArtifactDirectorySync(directory, entries, manifestJson, options)`
+from the same subpath or package root. Its deeply frozen handle contains only
+`receipt` and single-use `publishSync()`. Preparation exclusively creates and
+syncs a private empty tree, then closes every descriptor. Persist the receipt
+before calling the same live handle's publication method. The receipt records
+canonical parent/tree/file identities and planned lengths/SHA-256; observed
+file lengths are zero and `manifest.json` is absent. Planned metadata is not
+completed content or a deletion receipt.
+
+Pass plain data records/lists and unshared Uint8Array/Buffer views. Record/list
+validation refuses proxies, getters, holes and hidden/symbol aliases without
+executing caller code; byte views use intrinsic offsets rather than overrides.
+Publication rechecks the empty tree and identities, writes/syncs
+detached bytes, verifies readback hashes and exclusively links the registered
+pending-manifest inode to completion. Every attempt consumes the handle, even
+on error. Errors preserve state; JSON cannot rehydrate a writer. There is no
+overwrite, arbitrary existing-directory writer or implicit cleanup.
+
+Read the storage README's prepared-artifact section before integrating an
+ownership ledger. It defines decimal-string identities, planned byte semantics,
+birth-time availability, prepublication-only change time and legitimate link
+transitions. Parent paths must already exist, belong to the operator and remain
+controlled. Canonical ancestor aliases are allowed; final targets are exclusive.
+Both calls block the isolate, including while holding any caller transaction.
+Caps bound bytes/files rather than I/O duration; database contention and SQL/FS
+atomicity remain caller concerns. The existing async writer keeps asynchronous
+filesystem execution. Real process-interruption tests do not establish hardware
+power-loss, hostile same-user race, deletion or media-erasure guarantees.
+
 ### Recoverable temporary workspaces
 
 Use `TemporaryWorkspaceJournal` for workers that recover temporary directories after a process interruption. Keep its private journal outside job-controlled checkouts and separate it by stable worker and controller identity. `create(key)` returns a frozen live ownership handle; stop its resources, then call `complete(handle)` for normal disposal. A restarted instance cannot forge this capability from a listed record.

@@ -2,6 +2,9 @@ import { link, mkdir, open, unlink } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { Buffer } from 'node:buffer'
 
+export { prepareCompletedArtifactDirectorySync } from './prepared-completed-artifact-directory'
+export type { CompletedArtifactIdentity, PreparedCompletedArtifactDirectory, PreparedCompletedArtifactFile, PreparedCompletedArtifactReceipt } from './prepared-completed-artifact-directory'
+
 export interface CompletedArtifactEntry { path: string, contents: string | Uint8Array }
 export const completedArtifactLimits = Object.freeze({ files: 1024, bytes: 128 * 1024 * 1024, manifestBytes: 16 * 1024 * 1024, depth: 4 })
 /**
