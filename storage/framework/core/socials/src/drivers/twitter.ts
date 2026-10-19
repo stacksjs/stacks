@@ -14,7 +14,6 @@ import type {
   TwitterUser,
 } from '../types'
 import { Buffer } from 'node:buffer'
-import { createHash, randomBytes } from 'node:crypto'
 import { fetcher } from '@stacksjs/api'
 import { config } from '@stacksjs/config'
 import { AbstractProvider } from '../abstract'
@@ -23,13 +22,16 @@ import { ConfigException } from '../exceptions'
 export class TwitterProvider extends AbstractProvider implements ProviderInterface {
   protected baseUrl = 'https://twitter.com'
   protected apiUrl = 'https://api.twitter.com'
-  private codeVerifier: string | null = null
+  // X requires PKCE on every authorization. The verifier lives in the base
+  // class so a callback on a fresh instance can restore it with
+  // withCodeVerifier(getPkceVerifier()) instead of failing the exchange.
+  protected override _usesPKCE = true
 
   private getConfig() {
     const providerConfig = {
-      clientId: config.services.twitter?.clientId ?? '',
-      clientSecret: config.services.twitter?.clientSecret ?? '',
-      redirectUrl: config.services.twitter?.redirectUrl ?? '',
+      clientId: this.clientId || (config.services.twitter?.clientId ?? ''),
+      clientSecret: this.clientSecret || (config.services.twitter?.clientSecret ?? ''),
+      redirectUrl: this.redirectUrl || (config.services.twitter?.redirectUrl ?? ''),
       scopes: config.services.twitter?.scopes ?? ['users.read', 'tweet.read'],
     }
     this.setScopes(providerConfig.scopes)
@@ -37,47 +39,21 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
   }
 
   /**
-   * Generate a code verifier for PKCE.
-   */
-  private generateCodeVerifier(): string {
-    return randomBytes(32)
-      .toString('base64')
-      .replace(/[^a-z0-9]/gi, '')
-      .substring(0, 128)
-  }
-
-  /**
-   * Generate a code challenge from the code verifier.
-   */
-  private generateCodeChallenge(codeVerifier: string): string {
-    return createHash('sha256')
-      .update(codeVerifier)
-      .digest('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '')
-  }
-
-  /**
    * Get the authentication URL for Twitter.
    */
   public async getAuthUrl(): Promise<string> {
-    const state = this.getState()
+    const state = this.resolveState()
     const { clientId, redirectUrl, scopes } = this.getConfig()
     this.validateConfig()
-
-    // Generate and store PKCE values
-    this.codeVerifier = this.generateCodeVerifier()
-    const codeChallenge = this.generateCodeChallenge(this.codeVerifier)
 
     return `${this.baseUrl}/i/oauth2/authorize?${new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUrl,
       scope: scopes.join(' '),
-      state,
       response_type: 'code',
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
+      ...this.parameters,
+      ...await this.pkceFields(),
+      state,
     }).toString()}`
   }
 
@@ -88,10 +64,8 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
     const { clientId, clientSecret, redirectUrl } = this.getConfig()
     this.validateConfig()
 
-    if (!this.codeVerifier) {
-      throw new Error('Code verifier not found. Please ensure getAuthUrl() is called first.')
-    }
-
+    // Throws when no verifier is known: restore it with withCodeVerifier().
+    const pkce = this.pkceTokenFields()
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
     const response = await fetcher
@@ -103,7 +77,7 @@ export class TwitterProvider extends AbstractProvider implements ProviderInterfa
         code,
         grant_type: 'authorization_code',
         redirect_uri: redirectUrl,
-        code_verifier: this.codeVerifier,
+        ...pkce,
       })
 
     if (response.data.error) {

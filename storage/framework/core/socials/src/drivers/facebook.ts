@@ -38,9 +38,10 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
 
   private getConfig() {
     const providerConfig = {
-      clientId: config.services.facebook?.clientId ?? '',
-      clientSecret: config.services.facebook?.clientSecret ?? '',
-      redirectUrl: config.services.facebook?.redirectUrl ?? '',
+      clientId: this.clientId || (config.services.facebook?.clientId ?? ''),
+      clientSecret: this.clientSecret || (config.services.facebook?.clientSecret ?? ''),
+      // An instance redirect (setRedirectUrl) wins, as it does for Google and GitHub.
+      redirectUrl: this.redirectUrl || (config.services.facebook?.redirectUrl ?? ''),
       scopes: config.services.facebook?.scopes ?? ['email', 'public_profile'],
     }
     this.setScopes(providerConfig.scopes)
@@ -51,7 +52,9 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
    * Get the authentication URL for Facebook.
    */
   public async getAuthUrl(): Promise<string> {
-    const state = this.getState()
+    // withState() is how a caller persists the state it later checks; a
+    // state minted here and dropped could never be validated.
+    const state = this.resolveState()
     const { clientId, redirectUrl, scopes } = this.getConfig()
     this.validateConfig()
 
@@ -59,9 +62,10 @@ export class FacebookProvider extends AbstractProvider implements ProviderInterf
       client_id: clientId,
       redirect_uri: redirectUrl,
       scope: scopes.join(','),
-      state,
       response_type: 'code',
       ...await this.pkceFields(),
+      ...this.parameters,
+      state,
     }).toString()}`
   }
 

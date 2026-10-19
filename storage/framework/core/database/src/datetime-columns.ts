@@ -75,6 +75,7 @@ export function frameworkDatetimeTables(): string[] {
     'two_factor_challenges',
     'two_factor_pending_secrets',
     'webauthn_challenges',
+    'oauth_flows',
     // rbac-tables.ts
     'roles',
     'permissions',

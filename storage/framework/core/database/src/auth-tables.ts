@@ -9,6 +9,7 @@
  * - oauth_refresh_tokens
  * - password_resets
  * - email_verifications
+ * - oauth_flows (social sign-in state and session handoffs)
  *
  * Pre stacksjs/stacks#1915 D-3, every CREATE TABLE was duplicated three
  * times — once per dialect — and ~200 lines of copy-pasted SQL diverged
@@ -57,6 +58,7 @@ export const AUTH_TABLES: readonly string[] = [
   'passkey_ceremonies',
   'two_factor_challenges',
   'two_factor_pending_secrets',
+  'oauth_flows',
 ]
 
 /**
@@ -766,6 +768,29 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
+
+    // `oauth_flows` — single-use, browser-bound OAuth flow state and
+    // session handoffs (@stacksjs/socials issueOAuthFlow/consumeOAuthFlow,
+    // @stacksjs/auth createSessionHandoff). Only SHA-256 digests of the
+    // state and of the browser secret are stored, so a database read cannot
+    // complete anybody's sign-in. Rows live minutes; issuance prunes them.
+    if (options.verbose) log.info('Creating oauth_flows table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS oauth_flows (
+        state_digest VARCHAR(64) PRIMARY KEY,
+        purpose VARCHAR(64) NOT NULL,
+        browser_digest VARCHAR(64),
+        user_id BIGINT,
+        nonce VARCHAR(255),
+        data TEXT,
+        expires_at ${datetime} NOT NULL,
+        created_at ${datetime} DEFAULT ${utcNow}
+      )
+    `).execute()
+    try {
+      await db.unsafe(indexSqlForDialect('CREATE INDEX IF NOT EXISTS idx_oauth_flows_expires_at ON oauth_flows(expires_at)', dbDriver)).execute()
+    }
+    catch (error) { if (!isDuplicateIndexError(error)) throw error }
 
     // users.email_verified_at / password_changed_at / two_factor_* — see
     // {@link ensureUsersAuthColumns}. This first attempt runs before

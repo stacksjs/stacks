@@ -51,7 +51,24 @@ export interface GitHubTokenResponse {
 export interface ProviderInterface {
   getAuthUrl: () => Promise<string>
   getAccessToken: (code: string) => Promise<string>
-  getUserByToken: (token: string) => Promise<SocialUser>
+  /**
+   * `options.nonce` is honoured by OIDC providers that verify an id_token
+   * (Apple): a token whose `nonce` claim differs is refused. Others ignore it.
+   */
+  getUserByToken: (token: string, options?: { nonce?: string }) => Promise<SocialUser>
+  /**
+   * Embed this `state` in the next authorization URL. Issue it with
+   * `issueOAuthFlow()` and check it with `consumeOAuthFlow()` on the callback.
+   */
+  withState: (state: string) => this
+  /** Extra authorization-URL parameters (Apple's `nonce`, Google's `prompt`, ...). */
+  with: (parameters: Record<string, any>) => this
+  /** Override the configured callback URL for this flow (http/https only). */
+  setRedirectUrl: (url: string) => this
+  /** The PKCE verifier to persist with the flow, or null when PKCE is off. */
+  getPkceVerifier: () => string | null
+  /** Restore the persisted PKCE verifier before exchanging the code. */
+  withCodeVerifier: (verifier: string) => this
 }
 
 export interface TwitterTokenResponse {
