@@ -12,6 +12,7 @@ const APP_KEY_OPTIONAL_COMMANDS = [
   'env',
   'build',
   'lint',
+  'docs',
   'lint:fix',
   'test',
   'test:types',

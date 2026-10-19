@@ -11,6 +11,26 @@ afterEach(async () => {
 })
 
 describe('default preloader', () => {
+  it('keeps documentation commands independent of the application runtime', async () => {
+    const tempDir = await mkdtemp(resolve(tmpdir(), 'stacks-preloader-docs-'))
+    tempDirs.push(tempDir)
+    const sourcePath = resolve(import.meta.dir, '../../../defaults/resources/plugins/preloader.ts')
+    const isolatedPreloader = resolve(tempDir, 'preloader.ts')
+    await Bun.write(isolatedPreloader, Bun.file(sourcePath))
+
+    for (const command of ['docs:native-skills', 'docs:native-skills:check', 'docs:artifacts']) {
+      const child = Bun.spawn([process.execPath, '--no-install', isolatedPreloader, command], {
+        cwd: tempDir,
+        env: { PATH: process.env.PATH ?? '', HOME: tempDir },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const stderr = await new Response(child.stderr).text()
+      expect(await child.exited, command).toBe(0)
+      expect(stderr, command).toBe('')
+    }
+  })
+
   it('stays inert while a package postinstall script is running', async () => {
     const tempDir = await mkdtemp(resolve(tmpdir(), 'stacks-preloader-'))
     tempDirs.push(tempDir)
