@@ -11,14 +11,14 @@ afterEach(async () => {
 })
 
 describe('default preloader', () => {
-  it('keeps documentation commands independent of the application runtime', async () => {
+  it('keeps repository documentation and releases independent of the application runtime', async () => {
     const tempDir = await mkdtemp(resolve(tmpdir(), 'stacks-preloader-docs-'))
     tempDirs.push(tempDir)
     const sourcePath = resolve(import.meta.dir, '../../../defaults/resources/plugins/preloader.ts')
     const isolatedPreloader = resolve(tempDir, 'preloader.ts')
     await Bun.write(isolatedPreloader, Bun.file(sourcePath))
 
-    for (const command of ['docs:native-skills', 'docs:native-skills:check', 'docs:artifacts']) {
+    for (const command of ['docs:native-skills', 'docs:native-skills:check', 'docs:artifacts', 'release', 'release:patch']) {
       const child = Bun.spawn([process.execPath, '--no-install', isolatedPreloader, command], {
         cwd: tempDir,
         env: { PATH: process.env.PATH ?? '', HOME: tempDir },

@@ -8,6 +8,11 @@ describe('Buddy project setup guards', () => {
     expect(shouldSkipAppKeyCheck('docs:artifacts')).toBe(true)
   })
 
+  it('releases repository metadata without creating an application key', () => {
+    expect(shouldSkipAppKeyCheck('release')).toBe(true)
+    expect(shouldSkipAppKeyCheck('release:patch')).toBe(true)
+  })
+
   it('allows upgrades in package-only and partially initialized projects', () => {
     expect(shouldSkipAppKeyCheck('upgrade')).toBe(true)
     expect(shouldSkipAppKeyCheck('update')).toBe(true)

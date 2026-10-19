@@ -62,6 +62,7 @@ const fastCommands = [
   'lint',
   // Repository documentation tools inspect source without application globals.
   'docs',
+  'release',
   '--version',
   '-v',
   'version',
