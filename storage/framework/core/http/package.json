@@ -2,7 +2,7 @@
   "name": "@stacksjs/http",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.234",
+  "version": "0.75.235",
   "description": "Stacks HTTP methods.",
   "author": "Chris Breuer",
   "contributors": [

@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.234...v0.75.235)
+
+## 🐛 Bug Fixes
+
+- **realtime**: preserve authorizer method receiver ([ea79602](https://github.com/stacksjs/stacks/commit/ea79602)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **realtime**: retain subscriber context during authorization ([6a05d44](https://github.com/stacksjs/stacks/commit/6a05d44)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- read the sharded CI matrix in the coverage check ([35be10c](https://github.com/stacksjs/stacks/commit/35be10c)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- adopt pantry 0.11.99 and stop reading each publish back ([fcac054](https://github.com/stacksjs/stacks/commit/fcac054)) _(by Chris <chris@stacksjs.com>)_
+- run the core package tests as seven parallel shards ([081e173](https://github.com/stacksjs/stacks/commit/081e173)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate current main for stream authorization ([058eda3](https://github.com/stacksjs/stacks/commit/058eda3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.233...v0.75.234)
 
 ## ✨ Features
