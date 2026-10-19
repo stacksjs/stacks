@@ -10,9 +10,9 @@ test('generic dashboard exposure excludes private models without disabling their
   try {
     const result = await runIsolated(join(import.meta.dir, 'fixtures/dashboard-model-access.ts'), {
       cwd: project, preload: [], envFile: false, timeoutMs: 60000,
-      env: { APP_ENV: 'test', NODE_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(project, 'fixture.sqlite'), STACKS_DASHBOARD_ACCESS_PROJECT: project, STACKS_SKIP_DEFAULT_ROUTES: '1' },
+      env: { APP_ENV: 'test', NODE_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(project, 'fixture.sqlite'), STACKS_DASHBOARD_ACCESS_PROJECT: project, STACKS_SKIP_DEFAULT_ROUTES: '1', STACKS_MODEL_APIS: 'PrivateRecord' },
     })
-    expect(result.code, `${result.stdout}\n${result.stderr}`).toBe(0)
+    expect(result.code, `exit=${result.code} signal=${result.signal}\n${result.stdout}\n${result.stderr}`).toBe(0)
     expect(result.stdout).toContain('dashboard model access OK')
   }
   finally { await rm(project, { recursive: true, force: true }) }

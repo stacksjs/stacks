@@ -128,7 +128,7 @@ export default new Action({
     let userland: Array<Omit<DiscoveredModel, 'source'>>
     let defaults: Array<Omit<DiscoveredModel, 'source'>>
     try {
-      userland = walkModels(userlandDir, false)
+      userland = walkModels(userlandDir, true)
       defaults = walkModels(defaultsDir, true)
     }
     catch (error) {
