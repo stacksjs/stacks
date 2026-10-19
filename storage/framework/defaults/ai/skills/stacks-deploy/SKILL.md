@@ -53,8 +53,9 @@ a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for API and tool consumers.
 
 Automated production deployments on GitHub Actions and ReviewOS require a full provider
 commit SHA and branch ref. Before prerequisite setup, Buddy verifies the checkout against
-that SHA, fetches the branch from `origin` (FETCH_HEAD only; a shallow checkout receives
-just the newer commits) and requires the commit to be on it. Before shipping over SSH it
+that SHA and accepts an unchanged origin head directly. If the head moved, Buddy fetches
+the branch from `origin` (FETCH_HEAD only), completes shallow history and requires the
+commit to be on it. Unavailable or still-shallow history stops deployment. Before shipping over SSH it
 reads the release each site's `current` link serves and stops only when production
 already runs a commit that landed after this one, so a deploy never goes backwards. A
 verified commit newer than production deploys even when the head has moved on: requiring
