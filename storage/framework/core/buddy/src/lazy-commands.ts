@@ -195,6 +195,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'serve': { path: './commands/serve.ts', load: () => import('./commands/serve.ts'), exportName: 'serve' },
   'serve:api': { path: './commands/serve.ts', load: () => import('./commands/serve.ts'), exportName: 'serveApi' },
   'setup': { path: './commands/setup.ts', load: () => import('./commands/setup.ts'), exportName: 'setup' },
+  'ensure': { path: './commands/setup.ts', load: () => import('./commands/setup.ts'), exportName: 'setup' },
   // setup.ts registers the whole `setup:*` family.
   'setup:ai': { path: './commands/setup.ts', load: () => import('./commands/setup.ts'), exportName: 'setup' },
   'setup:ssl': { path: './commands/setup.ts', load: () => import('./commands/setup.ts'), exportName: 'setup' },

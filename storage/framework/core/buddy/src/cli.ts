@@ -127,13 +127,7 @@ async function main() {
     // lstat calls), idempotent, and never throws — see ensureRuntimeDirectories.
     p.ensureRuntimeDirectories()
 
-    const { loadCommands, getCommandsToLoad, markLoaded } = await import('./lazy-commands.ts')
-
-    // Load required commands for setup and key generation, then tell the
-    // registry we've handled them so the bulk loader doesn't double-register.
-    const { setup } = await import('./commands/setup.ts')
-    setup(buddy)
-    markLoaded(buddy, 'setup')
+    const { loadCommands, getCommandsToLoad } = await import('./lazy-commands.ts')
 
     // Before running any commands, ensure the project is already initialized
     // Skip APP_KEY check for commands that don't need it (build, lint, test, etc.)

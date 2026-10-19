@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
@@ -136,6 +136,9 @@ describe('the ORM route generator', () => {
       writeFileSync(security, `export default { api: { models: ${options.config} } }\n`)
 
     const env: Record<string, string | undefined> = { ...process.env }
+    const database = join(project, 'metadata.sqlite')
+    env.DB_CONNECTION = 'sqlite'
+    env.DB_DATABASE_PATH = database
     delete env.STACKS_MODEL_APIS
     if (options.env !== undefined)
       env.STACKS_MODEL_APIS = options.env
@@ -145,8 +148,24 @@ describe('the ORM route generator', () => {
     const line = result.stdout.toString().split('\n').find(candidate => candidate.startsWith('{"paths"'))
     if (!line)
       throw new Error(`the generator printed no routes (exit ${result.exitCode})\n${output}`)
+    expect(result.exitCode, output).toBe(0)
+    expect(existsSync(database), 'Registering model API routes must not create the application database').toBe(false)
     return { paths: JSON.parse(line).paths, output }
   }
+
+  it('opens the configured model connection only on first use, with foreign keys enabled', () => {
+    const database = join(project, 'first-query.sqlite')
+    const result = Bun.spawnSync([process.execPath, join(import.meta.dir, 'fixtures', 'probe-metadata-database.ts')], {
+      cwd: project,
+      env: { ...process.env, DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: database },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    expect(result.exitCode, result.stderr.toString()).toBe(0)
+    const line = result.stdout.toString().split('\n').find(candidate => candidate.startsWith('{"databaseExistedAfterMetadata"'))
+    expect(line).toBeDefined()
+    expect(JSON.parse(line!)).toEqual({ databaseExistedAfterMetadata: false, firstQuery: 1, foreignKeys: 1, databaseExistsAfterQuery: true })
+  }, 60_000)
 
   it('serves every model\'s API when nothing is set', () => {
     expect(boot({}).paths).toEqual(['/api/repos', '/api/repos/{id}', '/api/reviews', '/api/reviews/{id}'])

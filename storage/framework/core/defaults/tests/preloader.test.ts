@@ -47,6 +47,35 @@ describe('default preloader', () => {
       expect(stderr, command).toBe('')
       expect(JSON.parse(stdout), command).toEqual({ envLoaded: 'loaded', appRuntimeLoaded: false })
     }
+
+    // runAction launches a file, not `buddy release`: its argv starts with
+    // flags (or is empty). Exercise those real source and published layouts.
+    for (const entry of [
+      'storage/framework/core/actions/src/release.ts',
+      'storage/framework/core/actions/src/bump.ts',
+      'storage/framework/core/actions/src/generate/lib-entries.ts',
+      'node_modules/@stacksjs/actions/dist/release.js',
+      'node_modules/@stacksjs/actions/dist/src/bump.js',
+      'pantry/@stacksjs/actions/dist/generate/lib-entries.js',
+      // An application script with the same basename still needs its globals.
+      'app/Actions/release.ts',
+    ]) {
+      const entryPath = resolve(tempDir, entry)
+      await mkdir(resolve(entryPath, '..'), { recursive: true })
+      await Bun.write(entryPath, `
+        console.log(JSON.stringify({ envLoaded: process.env.STACKS_REPOSITORY_TOOL_FIXTURE, appRuntimeLoaded: Boolean(globalThis.__stacksAppRuntimeLoaded) }))
+      `)
+      const child = Bun.spawn([process.execPath, '--no-install', '--no-env-file', '--preload', resolve(tempDir, 'storage/framework/defaults/resources/plugins/preloader.ts'), entryPath, '--bump', 'patch'], {
+        cwd: tempDir,
+        env: { PATH: process.env.PATH ?? '', HOME: tempDir, BUN_INSTALL_CACHE_DIR: resolve(tempDir, 'bun-cache') },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const [stderr, stdout] = await Promise.all([new Response(child.stderr).text(), new Response(child.stdout).text()])
+      expect(await child.exited, entry).toBe(0)
+      expect(stderr, entry).toBe('')
+      expect(JSON.parse(stdout), entry).toEqual({ envLoaded: 'loaded', appRuntimeLoaded: entry.startsWith('app/') })
+    }
   })
 
   it('stays inert while a package postinstall script is running', async () => {

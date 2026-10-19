@@ -138,11 +138,14 @@ const registry = await loadModelRegistryWithOrigins({
 })
 const models = registry.models
 
-// Create a query builder instance (uses the config set above)
-const db = createQueryBuilder()
-
-/** @see {@link DynamicQuery} for why this cast is the honest one. */
-const dyn = db as unknown as DynamicDb
+/**
+ * Acquire the configured connection only when a handler queries it. Route
+ * registration is also used by OpenAPI/codegen and needs no live database.
+ * @see {@link DynamicQuery} for why this cast is the honest one.
+ */
+function dynamicDb(): DynamicDb {
+  return createQueryBuilder() as unknown as DynamicDb
+}
 
 const routeShapeIndex = indexRouteShapes<RegisteredRouteLike>(route.routes)
 
@@ -246,7 +249,7 @@ async function applyIncludes(
         for (const r of rows) r[include] = null
         continue
       }
-      const childRows = await dyn.selectFrom(relatedTable).whereIn('id', ids).get()
+      const childRows = await dynamicDb().selectFrom(relatedTable).whereIn('id', ids).get()
       const byId = new Map<string, any>()
       for (const cr of childRows ?? []) byId.set(String(cr.id), relatedAttrs(cr))
       for (const r of rows) r[include] = byId.get(String(r[fkOnParent])) ?? null
@@ -260,7 +263,7 @@ async function applyIncludes(
         for (const r of rows) r[include] = []
         continue
       }
-      const childRows = await dyn.selectFrom(relatedTable).whereIn(fkOnChild, parentIds).get()
+      const childRows = await dynamicDb().selectFrom(relatedTable).whereIn(fkOnChild, parentIds).get()
       const grouped = new Map<string, any[]>()
       for (const cr of childRows ?? []) {
         const key = String(cr[fkOnChild])
@@ -760,7 +763,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const refusedList = await policyRefusal(modelName, 'viewAny', req)
         if (refusedList) return refusedList
 
-        let query = dyn.selectFrom(table)
+        let query = dynamicDb().selectFrom(table)
         query = applySorting(query, sort, readColumns)
 
         // Apply query string filters: ?status=active&name=foo filters by column values.
@@ -871,7 +874,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
             // Scope the count to the caller's rows too — an unscoped COUNT
             // would leak the cross-tenant total even though the page data is
             // team-filtered.
-            let countQuery = dyn.selectFrom(table)
+            let countQuery = dynamicDb().selectFrom(table)
             if (own.enforced && !own.bypass && own.value != null) {
               countQuery = Array.isArray(own.value)
                 ? countQuery.where(own.field, 'in', own.value)
@@ -927,7 +930,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }
 
-        const result = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
+        const result = await dynamicDb().selectFrom(table).where({ id }).executeTakeFirst()
 
         if (!result) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
@@ -1070,14 +1073,14 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const hookedData = await applyDefinedSetters(data, model)
         const writeData = toSnakeCaseKeys(applySetCasts(hookedData, model))
 
-        const result = await dyn.insertInto(table).values(writeData).execute()
+        const result = await dynamicDb().insertInto(table).values(writeData).execute()
 
         // Try to return the full record with database-assigned ID
         let created = writeData
         try {
           const lastId = result?.lastInsertRowid ?? result?.insertId ?? result
           if (lastId) {
-            const fetched = await dyn.selectFrom(table).where({ id: lastId }).executeTakeFirst()
+            const fetched = await dynamicDb().selectFrom(table).where({ id: lastId }).executeTakeFirst()
             if (fetched) created = fetched
           }
         } catch {
@@ -1129,7 +1132,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         // 404 fast if the row doesn't exist — previously the UPDATE silently
         // matched zero rows and we returned the request body as if it had
         // succeeded, which masked legit "deleted between read and write" bugs.
-        const existing = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
+        const existing = await dynamicDb().selectFrom(table).where({ id }).executeTakeFirst()
         if (!existing) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
@@ -1170,12 +1173,12 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const hookedData = await applyDefinedSetters(data, model)
         const writeData = toSnakeCaseKeys(applySetCasts(hookedData, model))
 
-        await dyn.updateTable(table).set(writeData).where({ id }).execute()
+        await dynamicDb().updateTable(table).set(writeData).where({ id }).execute()
 
         // Return the full updated record
         let updated: any = { ...existing, ...writeData }
         try {
-          const fetched = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
+          const fetched = await dynamicDb().selectFrom(table).where({ id }).executeTakeFirst()
           if (fetched) updated = fetched
         } catch {
           // Fall back to merging known existing + diff
@@ -1209,7 +1212,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         }
 
         // Need the row both for the 404 fast-path and the ownership check.
-        const existing = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
+        const existing = await dynamicDb().selectFrom(table).where({ id }).executeTakeFirst()
         if (!existing) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
@@ -1232,13 +1235,13 @@ for (const [modelName, model] of Object.entries(apiModels)) {
           // Reads in the index handler filter `WHERE deleted_at IS NULL` unless
           // the caller passes ?withTrashed=true.
           const now = new Date().toISOString()
-          await dyn.updateTable(table)
+          await dynamicDb().updateTable(table)
             .set({ deleted_at: now, updated_at: now })
             .where({ id })
             .execute()
         }
         else {
-          await dyn.deleteFrom(table).where({ id }).execute()
+          await dynamicDb().deleteFrom(table).where({ id }).execute()
         }
 
         return new Response(null, { status: 204 })
@@ -1293,7 +1296,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         if (own.enforced && !own.bypass) {
           if (!authedUser) return jsonResponse({ error: 'Auth required' }, 401)
           if (own.value == null) return jsonResponse({ error: 'Caller has no ownership identity' }, 403)
-          const rows = await dyn.selectFrom(table).select(['id', own.field]).execute()
+          const rows = await dynamicDb().selectFrom(table).select(['id', own.field]).execute()
           const ownedIds = new Set(
             (rows as Array<Record<string, unknown>>)
               .filter(r => ownsRow(r[own.field], own.value))
@@ -1315,7 +1318,7 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         if (await hasPolicyFor(modelName)) {
           const refusedRows: Array<string | number> = []
           for (const id of validIds) {
-            const row = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
+            const row = await dynamicDb().selectFrom(table).where({ id }).executeTakeFirst()
             if (!row) continue
             if (await policyRefusal(modelName, 'delete', req, row))
               refusedRows.push(id)
@@ -1327,13 +1330,13 @@ for (const [modelName, model] of Object.entries(apiModels)) {
         const now = new Date().toISOString()
         for (const id of validIds) {
           if (usesSoftDeletes) {
-            await dyn.updateTable(table)
+            await dynamicDb().updateTable(table)
               .set({ deleted_at: now, updated_at: now })
               .where({ id })
               .execute()
           }
           else {
-            await dyn.deleteFrom(table).where({ id }).execute()
+            await dynamicDb().deleteFrom(table).where({ id }).execute()
           }
         }
 

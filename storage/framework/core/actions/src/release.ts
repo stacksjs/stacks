@@ -4,7 +4,7 @@ import { app } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
-import { runActions } from '.'
+import { runActions } from './helpers/utils'
 import { BYPASS_ENV, formatPreflightFailure, runPinnedChecks } from './release-preflight'
 
 // Forward any flags passed from `buddy release` (e.g. --bump patch, --dry-run)

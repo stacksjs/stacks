@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
-import { library } from '@stacksjs/config'
+import { awaitConfig, library } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { generateLibraryPackages } from '../library/build'
 
 export async function generateLibEntries(): Promise<void> {
+  await awaitConfig()
   // `releaseable: false` means this project builds no publishable library.
   // Defaulting to true keeps an app whose config predates the flag working.
   if (library?.releaseable === false) {

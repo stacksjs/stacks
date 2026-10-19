@@ -45,6 +45,12 @@ Use the declared tools and finish the required lint, type and test checks.
 In the framework repository, `buddy test` covers the project test tree;
 CI also checks the core packages and actual packed consumers.
 
+Release startup loads environment configuration without booting application
+globals or setup commands. Its documentation checks can register model routes
+and inspect their metadata without opening the application database. The ORM
+acquires its configured connection when a query actually needs it, so running
+these checks does not require starting or migrating the application.
+
 Integrate the current remote history and configure the branch's intended
 upstream. Review `git status` and commit the source changes before releasing.
 The release uses the configured Git identity and pushes its release commit

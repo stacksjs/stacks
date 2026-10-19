@@ -266,9 +266,9 @@ export function bootstrapModelExecutorPragmas(): void {
  * Drop-in replacement for bun-query-builder's `configureOrm` that
  * bootstraps the model-executor connection it (re)creates.
  *
- * This is the exact entry point `@stacksjs/orm` calls at import time
- * (`autoConfigureOrm()`), which in production builds the raw `Database`
- * every model write goes through — pre-fix, with no pragmas at all.
+ * Explicitly configuring an executor opens its raw Database immediately.
+ * Default model configuration instead uses setConfig and acquires the
+ * connection on first use, so metadata imports need no application database.
  */
 export function configureOrm(options: Parameters<typeof bunQueryBuilder.configureOrm>[0]): void {
   bunQueryBuilder.configureOrm(options)

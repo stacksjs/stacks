@@ -88,7 +88,15 @@ const isRepl = !process.argv[1]
 // otherwise valid. Postinstall scripts are bootstrap work and must stay independent
 // of the application runtime preloader.
 const isPostinstall = process.env.npm_lifecycle_event === 'postinstall'
-const skipPreloader = isRepl || isPostinstall || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
+// runAction starts these framework files directly, with flags rather than a
+// Buddy command in argv[2]. They only inspect/release repository metadata.
+// Match the framework's source and published layouts, never an app action
+// which happens to have the same basename and needs its application globals.
+const entrypoint = (process.argv[1] ?? '').replaceAll('\\', '/')
+const repositoryAction = '(?:release|bump|generate/lib-entries)\\.[jt]s'
+const isRepositoryAction = new RegExp(`(?:^|/)storage/framework/core/actions/src/${repositoryAction}$`).test(entrypoint)
+  || new RegExp(`(?:^|/)(?:node_modules|pantry)/@stacksjs/actions/(?:src|dist(?:/src)?)/${repositoryAction}$`).test(entrypoint)
+const skipPreloader = isRepl || isPostinstall || isRepositoryAction || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
 if (!skipPreloader) {
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files

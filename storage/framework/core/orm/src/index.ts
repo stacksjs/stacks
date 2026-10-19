@@ -98,10 +98,11 @@ export {
 } from './paginator-request'
 export type { ResolvedPageArgs } from './paginator-request'
 
-// Auto-configure the ORM database connection from project config.
-// This ensures model queries work without manual configureOrm() calls.
+// Configure the model database without opening it. Importing model metadata
+// for routes/OpenAPI must not acquire an application connection. The model
+// executor opens the configured database and applies its pragmas on first use.
 import type { StacksFeature } from '@stacksjs/config'
-import { configureOrm } from '@stacksjs/query-builder'
+import { setConfig } from '@stacksjs/query-builder'
 
 function autoConfigureOrm(): void {
   try {
@@ -109,7 +110,7 @@ function autoConfigureOrm(): void {
     const dialect = process.env.DB_CONNECTION || 'sqlite'
 
     if (dialect === 'sqlite') {
-      configureOrm({ database: dbPath })
+      setConfig({ dialect: 'sqlite', database: { database: dbPath } })
     }
   }
   catch {
