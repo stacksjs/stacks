@@ -181,6 +181,30 @@ describe('iOS mobile build configuration', () => {
     expect(await Bun.file(join(output, 'native-screens.js')).text()).toBe('one-file bundle')
   })
 
+  it('ships the screens\' messages a language at a time only to a Craft that reads them', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-native-messages-'))
+    await Bun.write(join(root, 'resources/native/Today.stx'), '<View />')
+    const output = join(root, 'out')
+    const calls: Array<Record<string, unknown>> = []
+    const compile = async (options: Record<string, unknown>) => {
+      calls.push(options)
+      return options.routesDir ? { routes: { Today: join(String(options.routesDir), 'Today.js') } } : { outFile: String(options.outFile) }
+    }
+    const config = { nativeScreens: { '/m': 'Today' }, nativeMessages: { dir: 'resources/lang/messages', languages: ['en', 'de'] } }
+    await compileNativeScreens(config, root, output, compile, 'ios', { routes: true, runtime: true, messages: true })
+    expect(calls[0]!.sharedRuntime).toBe(true)
+    expect(calls[0]!.messages).toEqual({ dir: 'resources/lang/messages', languages: ['en', 'de'] })
+    // A Craft that does not read them: every language stays in the code.
+    await compileNativeScreens(config, root, output, compile, 'ios', { routes: true, runtime: true })
+    expect('messages' in calls[1]!).toBe(false)
+    // One that does not evaluate the shared runtime gets self-contained route files.
+    await compileNativeScreens(config, root, output, compile, 'ios', { routes: true, messages: true })
+    expect('sharedRuntime' in calls[2]!).toBe(false)
+    expect('messages' in calls[2]!).toBe(false)
+    await compileNativeScreens(config, root, output, compile, 'ios')
+    expect('messages' in calls[3]!).toBe(false)
+  })
+
   it('builds an all-native app: its renderer, and the app script compiled beside the screens', async () => {
     const config = toCraftIosConfig({
       appName: 'HQ.training',

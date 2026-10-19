@@ -32,6 +32,10 @@ interface CraftIosBuilder {
   }): Promise<void>
   /** The builder installs a directory of route bundles (Craft 0.0.242 and later). */
   nativeRouteBundles?: boolean
+  /** The app evaluates stx's shared runtime before a route's file (stx `sharedRuntime`). */
+  nativeRouteRuntime?: boolean
+  /** The app gives screens their messages a language at a time (stx `messages`). */
+  nativeMessages?: boolean
 }
 
 /** The Craft iOS builder entry: `CRAFT_IOS_SRC`, else the copy @stacksjs/mobile resolves. */
@@ -87,7 +91,7 @@ const builder = await loadCraftIosBuilder()
 
 // Screens drawn natively, compiled by stx before Craft copies them in: one
 // file per route when this Craft runs each screen from its own.
-const nativeBundle = await compileNativeScreens(config, projectPath(), output, undefined, 'ios', { routes: builder.nativeRouteBundles === true })
+const nativeBundle = await compileNativeScreens(config, projectPath(), output, undefined, 'ios', { routes: builder.nativeRouteBundles === true, runtime: builder.nativeRouteRuntime === true, messages: builder.nativeMessages === true })
 if (nativeBundle) {
   craftConfig.nativeBundle = nativeBundle.outFile
   for (const diagnostic of nativeBundle.diagnostics ?? [])

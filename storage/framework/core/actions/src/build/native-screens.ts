@@ -22,6 +22,10 @@ type CompileNativeBundle = (options: {
   root?: string
   /** The app script, run once beside the screens (stx 0.2.504 and later). */
   app?: string
+  /** The runtime as a file of its own beside the route files (stx 0.2.578 and later). */
+  sharedRuntime?: boolean
+  /** Messages a language at a time, beside the route files (stx 0.2.578 and later). */
+  messages?: { dir: string, languages: string[] }
 }) => Promise<NativeBundleResult>
 
 /**
@@ -64,13 +68,19 @@ export function nativeAppFile(config: Pick<IosMobileConfig, 'nativeApp'>, root: 
  * HQ's 17 MB. Otherwise, the one-file bundle.
  */
 export async function compileNativeScreens(
-  config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir' | 'nativeApp'>,
+  config: Pick<IosMobileConfig, 'nativeScreens' | 'nativeScreensDir' | 'nativeApp' | 'nativeMessages'>,
   root: string,
   output: string,
   compile?: CompileNativeBundle,
   /** Which section of config/mobile.ts the screens came from, for the errors. */
   section: 'ios' | 'android' = 'ios',
-  options: { routes?: boolean } = {},
+  /**
+   * What the Craft builder does with route files: install them (`routes`),
+   * evaluate stx's shared runtime before each (`runtime`, its
+   * `nativeRouteRuntime`), and give screens their messages a language at a
+   * time (`messages`, its `nativeMessages`).
+   */
+  options: { routes?: boolean, runtime?: boolean, messages?: boolean } = {},
 ): Promise<{ outFile: string, diagnostics: NativeBundleResult['diagnostics'] } | null> {
   const screens = nativeScreenFiles(config, root, section)
   const names = Object.keys(screens)
@@ -89,7 +99,11 @@ export async function compileNativeScreens(
   rmSync(options.routes ? outFile : routesDir, { recursive: true, force: true })
   if (options.routes) {
     rmSync(routesDir, { recursive: true, force: true })
-    const result = await compileBundle({ screens, initialScreen: names[0], minify: true, routesDir, root, ...(app ? { app } : {}) })
+    const sharedRuntime = options.runtime === true
+    // Only for a Craft that reads them: otherwise every language stays in
+    // the screens' code, as in the one-file bundle.
+    const messages = sharedRuntime && options.messages && config.nativeMessages ? { dir: config.nativeMessages.dir, languages: [...config.nativeMessages.languages] } : undefined
+    const result = await compileBundle({ screens, initialScreen: names[0], minify: true, routesDir, root, ...(sharedRuntime ? { sharedRuntime } : {}), ...(app ? { app } : {}), ...(messages ? { messages } : {}) })
     if (result.routes && Object.keys(result.routes).length)
       return { outFile: routesDir, diagnostics: result.diagnostics ?? [] }
     // An stx without routesDir answered the one-file bundle's code instead.
