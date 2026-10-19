@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.236...v0.75.237)
+
+## ✨ Features
+
+- **realtime**: observe broadcast stream enqueue and cleanup ([3da3b9a](https://github.com/stacksjs/stacks/commit/3da3b9a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: resolve emitted app actions from source registries ([d3ad1f0](https://github.com/stacksjs/stacks/commit/d3ad1f0)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **auth**: share native gates across application bundles ([4b8bca8](https://github.com/stacksjs/stacks/commit/4b8bca8)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **testing**: share one Chrome per process, a browser context per launch ([e83b85a](https://github.com/stacksjs/stacks/commit/e83b85a)) _(by Chris <chris@stacksjs.com>)_
+- **release**: promote latest in parallel and skip the meta readback ([a429f63](https://github.com/stacksjs/stacks/commit/a429f63)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: count the shared-browser test in the native catalog ([08d297c](https://github.com/stacksjs/stacks/commit/08d297c)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- adopt pantry 0.11.100 ([733eb22](https://github.com/stacksjs/stacks/commit/733eb22)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.235...v0.75.236)
 
 ## 🐛 Bug Fixes
