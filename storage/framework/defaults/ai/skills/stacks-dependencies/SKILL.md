@@ -104,10 +104,11 @@ A Stacks project commits two lockfiles, and they describe one tree:
   **and** every npm package, which `pantry/` holds and the framework source
   resolves from.
 
-Since pantry 0.11.65 an npm range resolves to `bun.lock`'s pin whenever that
-pin satisfies it, so the two agree on every package they both name. Since
-0.11.60 the file is platform-independent: `pantry install` on macOS writes what
-CI writes on Linux, foreign-platform records included.
+Pantry follows `bun.lock`'s pin when it satisfies the declared npm range, so
+shared npm records must agree. Native platform records can differ between
+hosts. Review the generated difference and use the repository's lock guards:
+an allowed platform addition does not excuse a missing or changed declared
+dependency, stale workspace ranges, or a lost system-toolchain block.
 
 **Regenerating.** Use the repository's declared, Pantry-managed Bun. Change the
 ranges, run `bun install`, then `pantry install --ignore-scripts --quiet`, and
