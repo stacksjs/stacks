@@ -15,6 +15,7 @@
 #
 # Usage: .github/scripts/publish-npm.sh <pantry publish arguments...>
 set -uo pipefail
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 attempts=${PUBLISH_ATTEMPTS:-16}
 wait_seconds=${PUBLISH_VISIBLE_WAIT_SECONDS:-1200}
@@ -28,40 +29,22 @@ for attempt in $(seq 1 "$attempts"); do
     exit 0
   fi
 
-  # The packages pantry reported as accepted but pending: the
-  # "Publishing name@version..." line before each such error.
-  pending=$(awk '
-    /^Publishing .+@[0-9][^ ]*\.\.\.$/ { current = $2; sub(/\.\.\.$/, "", current) }
-    /publication is pending public metadata/ { if (current != "") print current }
-  ' "$log" | sort -u)
   held=$(grep -c 'held back: it installs' "$log" || true)
-  rm -f "$log"
-
-  if [ -z "$pending" ]; then
-    echo "::error::pantry publish failed (attempt $attempt) for a reason other than npm propagation"
-    exit "$status"
-  fi
   if [ "$attempt" -eq "$attempts" ]; then
+    rm -f "$log"
     break
   fi
 
-  for spec in $pending; do
-    name=${spec%@*}
-    version=${spec##*@}
-    base=${name##*/}
-    url="https://registry.npmjs.org/${name}/-/${base}-${version}.tgz"
-    echo "Waiting for ${spec} to be readable on npm (${url})..."
-    waited=0
-    until [ "$(curl -s -o /dev/null -w '%{http_code}' "$url")" = 200 ]; do
-      if [ "$waited" -ge "$wait_seconds" ]; then
-        echo "::error::${spec} was accepted but is still not readable after ${wait_seconds}s"
-        exit 1
-      fi
-      sleep 15
-      waited=$((waited + 15))
-    done
-    echo "${spec} is readable after ${waited}s"
-  done
+  # A readable tarball alone does not make versionExists true. Read the exact
+  # metadata and compare the full archive to the original accepted SRI before
+  # any invocation that could otherwise send another PUT. The verifier imports
+  # only Node builtins; its own cwd avoids application bunfig preloads.
+  if ! (cd "$script_dir" && bun npm-publication.ts "$log" "$wait_seconds"); then
+    rm -f "$log"
+    echo "::error::Original accepted publication is not verified; no publish resumed"
+    exit "$status"
+  fi
+  rm -f "$log"
   echo "Publishing again (${held} held back): what is already out is skipped (attempt $((attempt + 1)) of ${attempts})"
 done
 

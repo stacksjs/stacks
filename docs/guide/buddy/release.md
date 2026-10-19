@@ -94,6 +94,12 @@ becomes public. Do not upload the same version again or replace its tag to
 address propagation delay. Use a workflow's supported recovery only after
 checking its behavior for versions already on the registry.
 
+The framework's recovery step keeps the original archive checksums from the
+accepted upload. It requires the exact package and version metadata, then
+downloads and verifies the complete original tarball before resuming the
+normal publisher. HTTP requests and the overall verification wait are bounded.
+An incomplete receipt or an unverified archive ends the job.
+
 For other failures, resolve the failing command's cause and keep its evidence.
 Do not repeat a version bump over partially generated release metadata.
 
