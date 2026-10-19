@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.232...v0.75.233)
+
+## 🐛 Bug Fixes
+
+- **database**: a restored migration keeps its own name ([493bbbc](https://github.com/stacksjs/stacks/commit/493bbbc)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.231...v0.75.232)
 
 ## ✨ Features
