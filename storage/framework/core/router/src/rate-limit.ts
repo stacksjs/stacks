@@ -8,6 +8,11 @@
  * process — and `RateLimitError` thrown from the lib is translated
  * into the framework's `HttpError(429)` with `Retry-After` set.
  *
+ * Counts live in the configured Redis cache when there is one
+ * (`config/cache.ts` driver `redis`), so a limit holds across every worker
+ * and instance; otherwise, and while Redis is unreachable, in this process's
+ * memory. Every `max` is multiplied by `config.security.rateLimit.scale`.
+ *
  * Why not just use `bun-router`'s built-in rate-limit middleware?
  * That middleware buckets per-request — fine for blanket "60 reqs
  * per IP per minute" enforcement, but action-specific quotas (e.g.
@@ -15,9 +20,9 @@
  * action handler can invoke conditionally. This module provides that.
  */
 
-import type { RateLimiter } from 'ts-rate-limiter'
-import { clientAddress } from '@stacksjs/bun-router'
+import type { RateLimiter, StorageProvider } from 'ts-rate-limiter'
 import { getCurrentRequest } from './request-context'
+import { clientAddress, scaledLimit, sharedRateLimitStorage } from './security-settings'
 
 type Period = 'second' | 'minute' | 'hour' | 'day'
 
@@ -35,24 +40,41 @@ let limiterCache: Map<string, RateLimiter> | undefined
 let limiterModule: typeof import('ts-rate-limiter') | undefined
 let httpErrorModule: typeof import('@stacksjs/error-handling/http-error') | undefined
 let limiterModulePromise: Promise<typeof import('ts-rate-limiter')> | undefined
+let limiterStorage: StorageProvider | null | undefined
+let limiterStoragePromise: Promise<StorageProvider | null> | undefined
 
 function loadLimiterModule(): Promise<typeof import('ts-rate-limiter')> {
   return limiterModulePromise ??= import('ts-rate-limiter').then(module => limiterModule = module)
 }
 
-function getLimiter(max: number, windowMs: number): RateLimiter | Promise<RateLimiter> {
+function loadLimiterStorage(): Promise<StorageProvider | null> {
+  return limiterStoragePromise ??= sharedRateLimitStorage().then(storage => limiterStorage = storage)
+}
+
+/** Drop cached limiters and the resolved store (tests, or after a config change). */
+export function resetRateLimiters(): void {
+  for (const limiter of limiterCache?.values() ?? [])
+    (limiter as { dispose?: () => void }).dispose?.()
+  limiterCache = undefined
+  limiterStorage = undefined
+  limiterStoragePromise = undefined
+}
+
+function getLimiter(requestedMax: number, windowMs: number): RateLimiter | Promise<RateLimiter> {
+  const max = scaledLimit(requestedMax)
   const cacheKey = `${windowMs}:${max}`
   let limiter = limiterCache?.get(cacheKey)
   if (!limiter) {
-    if (!limiterModule) {
+    if (!limiterModule || limiterStorage === undefined) {
       // Re-enter after loading so concurrent cold callers share the cached instance.
-      return loadLimiterModule().then(() => getLimiter(max, windowMs))
+      return Promise.all([loadLimiterModule(), loadLimiterStorage()]).then(() => getLimiter(requestedMax, windowMs))
     }
     const { RateLimiter } = limiterModule
     limiter = new RateLimiter({
       windowMs,
       maxRequests: max,
       algorithm: 'fixed-window',
+      ...(limiterStorage && { storage: limiterStorage }),
       // Header generation is handled by the framework error path;
       // disable here so we don't pay for unused work.
       standardHeaders: false,

@@ -721,6 +721,10 @@ export const defaults: StacksOptions = {
       models: 'all',
     },
 
+    rateLimit: {
+      scale: 1,
+    },
+
     firewall: {
       enabled: true,
       countryCodes: [],

@@ -27,6 +27,19 @@ export default {
     models: 'all',
   },
 
+  // Application rate limits (route `.rateLimit()`, `rateLimit()`, the login
+  // lockout). `scale` multiplies all of them: keep 1 in production; a test
+  // suite can raise it (or set STACKS_RATE_LIMIT_SCALE) rather than turning
+  // limits off.
+  rateLimit: {
+    scale: 1,
+  },
+
+  // Proxies whose forwarding headers name the client. Unset trusts loopback
+  // and private networks; list your load balancer's ranges instead when other
+  // hosts share that network, or [] when nothing sits in front of the app.
+  // trustedProxies: ['10.0.0.0/8'],
+
   firewall: {
     enabled: true,
     countryCodes: ['RU', 'IR'],

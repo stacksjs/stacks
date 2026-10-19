@@ -101,7 +101,10 @@ export {
 export { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 
 // Export action-level rate limiting helpers
-export { rateLimit, rateLimitStatus, clearRateLimit } from './rate-limit'
+export { rateLimit, rateLimitStatus, clearRateLimit, resetRateLimiters } from './rate-limit'
+// `clientAddress` here shadows bun-router's (re-exported above) with one that
+// reads `config.security.trustedProxies`.
+export { cacheRedisConnection, clientAddress, fallbackStorage, rateLimitScale, resetSharedRateLimitStorage, scaledLimit, sharedRateLimitStorage, trustedProxies, useRateLimitStorage } from './security-settings'
 
 // Export path-param sanitization helper (stacksjs/stacks#1870 R-12).
 // Defense-in-depth for actions that interpolate route params into
