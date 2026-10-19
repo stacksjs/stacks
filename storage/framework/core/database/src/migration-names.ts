@@ -58,27 +58,50 @@ export function migrationNameOrdinal(file: string): number | undefined {
  * Names the corpus directory has had in git history and no longer has.
  *
  * Renames are read as a delete plus an add (`--no-renames`), because a
- * renumbered file's OLD name is the one an older ledger recorded. Outside a
- * git checkout, without git, or in a shallow clone that has no history, this
- * answers with whatever git can see, which may be nothing.
+ * renumbered file's OLD name is the one an older ledger recorded. A file
+ * deleted and later put back exactly as it was (a reverted commit, restored)
+ * is the same migration under its own name, not a reuse of it, so it is not
+ * retired. Outside a git checkout, without git, or in a shallow clone that
+ * has no history, this answers with whatever git can see, which may be
+ * nothing.
  */
 export function retiredMigrationNames(dir: string, options: { timeoutMs?: number } = {}): string[] {
+  const git = (args: string[]) => spawnSync('git', args, {
+    cwd: dir,
+    encoding: 'utf8',
+    timeout: options.timeoutMs ?? 10_000,
+    maxBuffer: 64 * 1024 * 1024,
+  })
   try {
-    const result = spawnSync('git', ['log', '--no-renames', '--diff-filter=D', '--name-only', '--pretty=format:', '--', '.'], {
-      cwd: dir,
-      encoding: 'utf8',
-      timeout: options.timeoutMs ?? 10_000,
-      maxBuffer: 64 * 1024 * 1024,
-    })
+    const result = git(['log', '--no-renames', '--diff-filter=D', '--name-only', '--pretty=format:commit %H', '--', '.'])
     if (result.status !== 0 || typeof result.stdout !== 'string')
       return []
-    const names = new Set<string>()
-    for (const line of result.stdout.split('\n')) {
-      const name = basename(line.trim())
-      if (name.toLowerCase().endsWith('.sql'))
-        names.add(name)
+    // Newest first: the first deletion seen of a name is its latest.
+    const deletedAt = new Map<string, { commit: string, path: string }>()
+    let commit = ''
+    for (const raw of result.stdout.split('\n')) {
+      const line = raw.trim()
+      if (line.startsWith('commit ')) {
+        commit = line.slice(7)
+        continue
+      }
+      const name = basename(line)
+      if (name.toLowerCase().endsWith('.sql') && !deletedAt.has(name))
+        deletedAt.set(name, { commit, path: line })
     }
-    return [...names].sort()
+    const names: string[] = []
+    for (const [name, deletion] of deletedAt) {
+      let current: string | undefined
+      try { current = readFileSync(join(dir, name), 'utf8') }
+      catch { current = undefined }
+      if (current !== undefined && deletion.commit) {
+        const before = git(['show', `${deletion.commit}^:${deletion.path}`])
+        if (before.status === 0 && before.stdout === current)
+          continue
+      }
+      names.push(name)
+    }
+    return names.sort()
   }
   catch {
     return []

@@ -100,6 +100,19 @@ describe('retiredMigrationNames', () => {
       git('rm', '-q', `database/migrations/${pad(2, 'create-b-table')}`, 'unrelated.sql')
       git('commit', '-q', '-m', 'two')
       expect(retiredMigrationNames(dir)).toEqual([pad(1, 'create-a-table'), pad(2, 'create-b-table')])
+
+      // Put back exactly as it was (a reverted commit, restored): the same
+      // migration under its own name, not a reuse.
+      writeFileSync(join(dir, pad(2, 'create-b-table')), 'CREATE TABLE b (id INTEGER);\n')
+      git('add', '-A', '-f')
+      git('commit', '-q', '-m', 'three')
+      expect(retiredMigrationNames(dir)).toEqual([pad(1, 'create-a-table')])
+
+      // A different migration taking a dropped name is a reuse.
+      writeFileSync(join(dir, pad(1, 'create-a-table')), 'CREATE TABLE c (id INTEGER);\n')
+      git('add', '-A', '-f')
+      git('commit', '-q', '-m', 'four')
+      expect(retiredMigrationNames(dir)).toEqual([pad(1, 'create-a-table')])
     }
     finally { rmSync(root, { recursive: true, force: true }) }
   })
