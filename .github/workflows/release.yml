@@ -286,10 +286,12 @@ jobs:
             exit 0
           fi
 
-          # npm can take minutes to show an accepted upload, and pantry holds back
-          # every package that depends on one it cannot read yet: the script
-          # waits for each and publishes again until all 85 are out.
-          .github/scripts/publish-npm.sh --npm --access public --ignore-scripts --tag staging 'storage/framework/core/*'
+          # A dependency layer at a time, each layer in parallel: a package only
+          # waits for the ones it depends on to be readable on npm, not for every
+          # package before it (two hours and more one by one). Each package still
+          # goes through publish-npm.sh, which waits out an accepted upload npm
+          # has not shown yet and resumes it.
+          bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging
 
           # `npm dist-tag` authenticates from .npmrc rather than the env var
           # that pantry reads.
