@@ -223,6 +223,7 @@ export class AuthorizationResponse {
     this.isAllowed = allowed
     this.message = message
     this.code = code
+    WeakSet.prototype.add.call(state.responses, this)
   }
 
   static allow(message?: string): AuthorizationResponse {
@@ -304,12 +305,63 @@ interface GateState {
   afterCallbacks: GateAfterCallback[]
 }
 
-const state: GateState = {
-  gates: new Map(),
-  policies: new Map(),
-  beforeCallbacks: [],
-  afterCallbacks: [],
+interface GateProcessState extends GateState {
+  version: 1
+  responses: WeakSet<object>
 }
+
+// Each independently bundled Action has its own module instance. Registrations
+// and native response identities belong to this JavaScript process, not a request.
+const GATE_PROCESS_STATE = Symbol.for('@stacksjs/auth:gate-process-state')
+
+function ownValue(object: object, key: PropertyKey): unknown {
+  const descriptor = Object.getOwnPropertyDescriptor(object, key)
+  return descriptor && 'value' in descriptor ? descriptor.value : undefined
+}
+
+function callbackArray(value: unknown): boolean {
+  if (!Array.isArray(value))
+    return false
+  for (let index = 0; index < value.length; index++) {
+    if (typeof ownValue(value, String(index)) !== 'function')
+      return false
+  }
+  return true
+}
+
+function processGateState(): GateProcessState {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, GATE_PROCESS_STATE)
+  if (!descriptor) {
+    const created: GateProcessState = {
+      version: 1,
+      gates: new Map(),
+      policies: new Map(),
+      beforeCallbacks: [],
+      afterCallbacks: [],
+      responses: new WeakSet(),
+    }
+    Object.defineProperty(globalThis, GATE_PROCESS_STATE, { value: created })
+    return created
+  }
+
+  const candidate: unknown = 'value' in descriptor ? descriptor.value : undefined
+  if (candidate && typeof candidate === 'object' && ownValue(candidate, 'version') === 1) {
+    const gates = ownValue(candidate, 'gates'), policies = ownValue(candidate, 'policies')
+    const responses = ownValue(candidate, 'responses')
+    try {
+      // Intrinsic brand checks reject duck objects and wrapped collections.
+      Map.prototype.has.call(gates, '')
+      Map.prototype.has.call(policies, '')
+      WeakSet.prototype.has.call(responses, candidate)
+      if (callbackArray(ownValue(candidate, 'beforeCallbacks')) && callbackArray(ownValue(candidate, 'afterCallbacks')))
+        return candidate as GateProcessState
+    }
+    catch { /* An incompatible process owner must fail closed. */ }
+  }
+  throw new TypeError('[gate] Incompatible shared Gate process state')
+}
+
+const state = processGateState()
 
 /**
  * Define a new authorization gate
@@ -663,8 +715,16 @@ async function check(ability: string, user: UserModel | null, ...args: any[]): P
  * not deciding on permission". Failing loudly catches the bug.
  */
 function normalizeResponse(result: boolean | AuthorizationResponse): AuthorizationResponse {
-  if (result instanceof AuthorizationResponse) {
-    return result
+  if (result && typeof result === 'object' && WeakSet.prototype.has.call(state.responses, result)) {
+    // Identity comes only from a native constructor, including another bundle.
+    // Reject altered/accessor fields without reading or invoking their getters.
+    const allowed = Object.getOwnPropertyDescriptor(result, 'isAllowed')
+    const message = Object.getOwnPropertyDescriptor(result, 'message')
+    const code = Object.getOwnPropertyDescriptor(result, 'code')
+    if (allowed && 'value' in allowed && typeof allowed.value === 'boolean'
+      && message && 'value' in message && (message.value === undefined || typeof message.value === 'string')
+      && code && 'value' in code && (code.value === undefined || typeof code.value === 'string'))
+      return result
   }
   if (typeof result !== 'boolean') {
     throw new TypeError(

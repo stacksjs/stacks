@@ -212,6 +212,14 @@ authenticated and CSRF protected.
 
 ## Authorization Gates (gate.ts)
 
+Gate registrations, policies and before/after callbacks are shared by native
+module copies in one JavaScript process, including separately bundled Actions.
+`Gate.flush()` clears those registrations across every copy. This shares no
+request identity, token or authorization decision. Native `AuthorizationResponse`
+objects can cross bundle copies; arbitrary objects, forged prototypes and
+accessor fields are rejected. A conflicting shared-state version/shape refuses
+module initialization. This does not synchronize different processes or Workers.
+
 ### Gate Functions
 - `define<T>(ability: string, callback: GateCallback<T>): void`
 - `policy(model: string | { name }, policyClass: new () => Policy): void`
@@ -225,7 +233,7 @@ authenticated and CSRF protected.
 - `all(abilities[], user, ...args): Promise<boolean>`
 - `none(abilities[], user, ...args): Promise<boolean>`
 - `authorize(ability, user, ...args): Promise<AuthorizationResponse>` - throws on deny
-- `inspect(ability, user, ...args): Promise<AuthorizationResponse>` - never throws
+- `inspect(ability, user, ...args): Promise<AuthorizationResponse>` - detailed result; invalid callback returns throw
 - `has(ability): boolean`
 - `hasPolicy(model): boolean`
 - `abilities(): string[]`

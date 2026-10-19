@@ -312,6 +312,13 @@ await Gate.authorize('edit-settings', user)
 
 Use policies when authorization belongs to a model. Use `Rbac` when access is driven by persistent roles and permissions.
 
+Gate registrations, policies and before/after callbacks are shared across native
+module copies in the same process, including independently bundled Actions.
+`Gate.flush()` clears registrations across those copies. Request identity and
+permission decisions remain with each caller. A native `AuthorizationResponse`
+can cross bundles; arbitrary objects and accessor fields are rejected. This
+sharing does not extend to other processes or Workers.
+
 ## Passkeys and two-factor authentication
 
 Enable passkeys on the user model with `useAuth: { usePasskey: true }`. The package exports WebAuthn registration and authentication helpers plus TOTP secret, URI, token, and verification functions.
