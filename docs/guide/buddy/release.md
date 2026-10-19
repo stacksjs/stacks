@@ -1,336 +1,114 @@
 ---
 title: Release Command
-description: "The  command creates and publishes new versions of your libraries and packages, triggering the CI/CD release workflow."
+description: "Prepare a version, commit release metadata, and push the tag that starts the release workflow."
 ---
 # Release Command
 
-The `buddy release` command creates and publishes new versions of your libraries and packages, triggering the CI/CD release workflow.
+`buddy release` updates the current project's version and pushes its release
+commit and tag. A consumer app releases its own root package. In the Stacks
+framework repository, the command releases the core packages together and
+updates their lockstep dependencies.
 
-## Basic Usage
+Builds and publishing continue in GitHub Actions after the push. Check the
+workflow and the required public artifacts before updating consumers.
 
-```bash
-buddy release
-```
+## Usage
 
-## Command Syntax
-
-```bash
-buddy release [options]
-```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--dry-run` | Run the release without actually releasing |
-| `-p, --project [project]` | Target a specific project |
-| `--verbose` | Enable verbose output |
-
-## Release Process
-
-When you run `buddy release`, Stacks:
-
-1. **Validates** the current git state
-2. **Determines** the next version (based on commits)
-3. **Updates** version numbers in package files
-4. **Generates** changelog entries
-5. **Creates** git tag
-6. **Triggers** GitHub Actions release workflow
-7. **Publishes** packages to npm
-
-## Examples
-
-### Standard Release
+Choose the increment explicitly for a non-interactive release:
 
 ```bash
-buddy release
+./buddy release --dry-run --bump patch
+bun run release:patch
 ```
 
-Output:
+Without `--bump`, the command prompts for the version. Conventional commits
+describe changes and feed the changelog; the command does not automatically
+choose a major or minor increment from those messages.
 
-```
-buddy release
-
-Triggered CI/CD Release via GitHub Actions
-
-Follow along: https://github.com/stacksjs/stacks/actions
-
-Completed in 1.23s
-```
-
-### Dry Run
-
-Preview what would happen without making changes:
+| Option | Purpose |
+| --- | --- |
+| `--bump <type>` | A Bumpx release type, `calendar`, or an explicit semantic version |
+| `--preid <identifier>` | A prerelease channel such as `beta` or `rc` |
+| `--dry-run` | Preview without committing, tagging or pushing |
+| `--skip-github-release` | Push the tag without creating its GitHub release through the command |
+| `--verbose` | Show additional details |
 
 ```bash
-buddy release --dry-run
+./buddy release --bump minor
+./buddy release --bump prerelease --preid beta
+./buddy release --bump 1.2.3
 ```
 
-### Verbose Release
+## Prepare the checkout
+
+Use the declared tools and finish the required lint, type and test checks.
+In the framework repository, `buddy test` covers the project test tree;
+CI also checks the core packages and actual packed consumers.
+
+Integrate the current remote history and configure the branch's intended
+upstream. Review `git status` and commit the source changes before releasing.
+The release uses the configured Git identity and pushes its release commit
+and tag atomically to the resolved destination.
+
+### Refresh locks without starting the project
+
+When dependency declarations change, regenerate both locks with the pinned
+Bun and the published Pantry CLI:
 
 ```bash
-buddy release --verbose
+./pantry/.bin/bun install
+pantry install --ignore-scripts --quiet
+git diff -- bun.lock pantry.lock
 ```
 
-## Version Determination
+Commit the normal manifest and lockfile changes together. The framework
+release action uses this metadata-only Pantry invocation.
 
-Versions are determined automatically based on conventional commits:
+A plain `pantry install` also performs configured project setup. That can
+start services and run `postDatabaseSetup` or `postSetup` commands, including
+migrations and seeding. Use that operation when setting up the project;
+use `--ignore-scripts` for a dependency lock refresh.
 
-| Commit Type | Version Bump |
-|-------------|--------------|
-| `fix:` | Patch (0.0.X) |
-| `feat:` | Minor (0.X.0) |
-| `feat!:` or `BREAKING CHANGE` | Major (X.0.0) |
+## Release and publication
 
-### Examples
+The command validates the release state, resolves the requested version,
+updates the relevant manifests and changelog, and refreshes framework
+lockfiles. It checks those locks before committing the normal release files,
+creating the tag and pushing both together.
 
-```
-fix: resolve login issue       -> 1.0.0 to 1.0.1
-feat: add new dashboard        -> 1.0.1 to 1.1.0
-feat!: redesign API            -> 1.1.0 to 2.0.0
-```
+The [release workflow](https://github.com/stacksjs/stacks/blob/main/.github/workflows/release.yml)
+defines the build, publishing and registry authentication steps. Consumer
+apps use their own workflows; an app tag does not publish the framework.
 
-## Calendar Versioning
+An accepted upload can still be waiting for public metadata and its tarball.
+Preserve that result and verify the original archive's checksum when it
+becomes public. Do not upload the same version again or replace its tag to
+address propagation delay. Use a workflow's supported recovery only after
+checking its behavior for versions already on the registry.
 
-For projects that version by date rather than by change, `--bump calendar`
-(also `calver`, `date`) computes `YYYY.M.N`:
+For other failures, resolve the failing command's cause and keep its evidence.
+Do not repeat a version bump over partially generated release metadata.
+
+## Calendar versioning
+
+`--bump calendar` (also `calver` or `date`) computes `YYYY.M.N`:
 
 ```bash
-buddy release --bump calendar     # 0.74.41 -> 2026.9.0
+./buddy release --bump calendar
 bun run release:calendar
 ```
 
-`N` counts releases within the month and resets when the month changes. It is
-not the day: two releases on one day would collide, and a month with releases
-on the 3rd and the 20th would jump the version by 17 for no reason a reader
-could act on.
-
-The result is valid semver on purpose - npm, Bun and every range operator parse
-`major.minor.patch` and nothing else, so `2026.09.10` (leading zero) and
-`2026.9.10-1` (a prerelease) are both unusable. Switching from semver is
-one-way in practice: `2026.9.0` sorts above `0.74.41`, and there is no going
-back down.
-
-If the machine's clock is behind the last release - a runner in another
-timezone, a drifted VM - the sequence continues within the existing version's
-month rather than emitting something lower, which npm would reject with an
-error naming the registry rather than the clock.
-
-## Pre-release Checklist
-
-Before releasing:
-
-1. **All tests pass**
-
-   ```bash
-   buddy test
-   ```
-
-2. **Code is linted**
-
-   ```bash
-   buddy lint
-   ```
-
-3. **Types are valid**
-
-   ```bash
-   buddy test:types
-   ```
-
-4. **Working directory is clean**
-
-   ```bash
-   git status
-   ```
-
-5. **On the correct branch**
-
-   ```bash
-   git branch
-   ```
-
-## CI/CD Integration
-
-The release command triggers a GitHub Actions workflow that:
-
-1. Runs all tests
-2. Builds all packages
-3. Publishes to npm
-4. Creates GitHub release
-5. Updates documentation
-
-### Workflow Configuration
-
-The release workflow is defined in `.github/workflows/release.yml`:
-
-```yaml
-name: Release
-
-on:
-  push:
-    tags:
-
-      - 'v*'
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun run build
-      - run: bun run test
-      - run: npm publish
-
-```
-
-## npm Publishing
-
-Ensure npm is configured for publishing:
-
-```bash
-# Login to npm
-npm login
-
-# Or use token in CI
-NPM_TOKEN=your-token
-```
-
-## Changelog Generation
-
-Releases automatically update `CHANGELOG.md`:
-
-```markdown
-## [1.2.0] - 2024-01-15
-
-### Features
-
-- Add user dashboard (#123)
-- Implement dark mode (#124)
-
-### Bug Fixes
-
-- Fix login timeout issue (#125)
-
-```
-
-## Troubleshooting
-
-### Dirty Working Directory
-
-```
-Error: Working directory is not clean
-```
-
-**Solution**: Commit or stash changes:
-
-```bash
-git add .
-buddy commit
-# or
-git stash
-```
-
-### Not on Main Branch
-
-```
-Error: Must be on main branch to release
-```
-
-**Solution**: Switch to main:
-
-```bash
-git checkout main
-git pull
-buddy release
-```
-
-### npm Publish Failed
-
-```
-Error: npm publish failed
-```
-
-**Solutions**:
-
-1. Check npm login: `npm whoami`
-2. Verify package name is available
-3. Check npm token permissions
-
-### No Commits to Release
-
-```
-Error: No new commits since last release
-```
-
-**Solution**: Ensure you have conventional commits:
-
-```bash
-buddy commit
-buddy release
-```
-
-### GitHub Actions Failed
-
-Check the Actions tab in GitHub for details:
-
-```
-https://github.com/your-repo/actions
-```
-
-## Best Practices
-
-### Use Dry Run First
-
-```bash
-# Preview the release
-buddy release --dry-run
-
-# If everything looks good
-buddy release
-```
-
-### Keep Main Branch Clean
-
-```bash
-# Always work in feature branches
-git checkout -b feature/my-feature
-
-# Merge to main when ready
-git checkout main
-git merge feature/my-feature
-
-# Then release
-buddy release
-```
-
-### Write Good Commit Messages
-
-Following conventional commits ensures proper versioning:
-
-```bash
-# Good
-feat(auth): add OAuth2 support
-fix(ui): resolve modal z-index issue
-
-# Bad
-update stuff
-fix bug
-```
-
-### Release Frequently
-
-Small, frequent releases are better than large, infrequent ones:
-
-- Easier to debug issues
-- Faster feedback
-- Lower risk
-
-## Related Commands
-
-- [buddy commit](/guide/buddy/commit) - Create conventional commits
-- [buddy changelog](/guide/buddy/changelog) - Generate changelog
-- [buddy build](/guide/buddy/build) - Build packages
+`N` counts releases within the month and resets when the month changes; it is
+not the day. If the clock is behind the last release, numbering continues
+within that release's month instead of producing a lower version.
+
+The result uses semantic-version syntax without leading zeroes. Switching
+from `0.x.y` to a calendar version such as `2026.9.0` moves above the old
+version range; plan consumer ranges accordingly.
+
+## Related commands
+
+- [Commit](/guide/buddy/commit)
+- [Changelog](/guide/buddy/changelog)
+- [Build](/guide/buddy/build)
+- [Upgrade](/guide/buddy/upgrade)

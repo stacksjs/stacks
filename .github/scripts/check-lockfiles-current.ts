@@ -102,7 +102,7 @@ export function driftIsPlatformOnly(drift: LockfileDrift): boolean {
     && !drift.outsidePackages
 }
 
-const REMEDIATION = 'Run `./pantry/.bin/bun install` - the pinned Bun (engines.bun) - and `pantry install`, then commit the result.'
+const REMEDIATION = 'Run `./pantry/.bin/bun install` - the pinned Bun (engines.bun) - and `pantry install --ignore-scripts --quiet`, then commit the result. Lockfile maintenance must not run project setup or database hooks.'
 
 if (import.meta.main) {
   const root = resolve(import.meta.dir, '..', '..')

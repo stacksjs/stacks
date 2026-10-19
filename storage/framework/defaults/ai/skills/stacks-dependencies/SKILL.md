@@ -109,8 +109,13 @@ pin satisfies it, so the two agree on every package they both name. Since
 0.11.60 the file is platform-independent: `pantry install` on macOS writes what
 CI writes on Linux, foreign-platform records included.
 
-**Regenerating.** Change the ranges, run `bun install`, then `pantry install`,
-on any platform, and commit `bun.lock` and `pantry.lock` with the manifests.
+**Regenerating.** Use the repository's declared, Pantry-managed Bun. Change the
+ranges, run `bun install`, then `pantry install --ignore-scripts --quiet`, and
+commit both lockfiles with the manifests. This is the metadata-only mode the
+framework release action uses. A plain `pantry install` can activate project
+services and run `postDatabaseSetup` or `postSetup` hooks, including migrations
+and seeding; those are separate from maintaining dependency locks.
+
 Check `head -2 bun.lock` says `lockfileVersion: 2`; an older Bun on PATH
 downgrades it.
 
