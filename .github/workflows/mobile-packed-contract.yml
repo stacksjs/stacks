@@ -65,6 +65,10 @@ jobs:
         run: |
           set -o pipefail
           bun run --cwd storage/framework/core/mobile typecheck 2>&1 | tee artifacts/mobile-source-contract/mobile-typecheck.log
+      - name: Verify router import boundaries in the normal package directory
+        run: |
+          set -o pipefail
+          (cd storage/framework/core/router && bun test ./tests/import-graph.test.ts) 2>&1 | tee artifacts/mobile-source-contract/router-import-graph.log
       - name: Typecheck the normal framework
         run: |
           set -o pipefail

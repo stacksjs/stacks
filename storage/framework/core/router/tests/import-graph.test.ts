@@ -13,6 +13,12 @@ import { join } from 'node:path'
  */
 let cachedRouterBuild: Promise<BuildOutput> | undefined
 
+function builtWorkspaceEntrypoints(inputs: Iterable<string>): string[] {
+  // A dependency under error-handling/node_modules may have its own dist/.
+  // Match the workspace package's dist directory, not unrelated descendants.
+  return Array.from(inputs).filter(source => /(?:^|\/)(?:storage|error-handling)\/dist\//.test(source))
+}
+
 function routerBuild(): Promise<BuildOutput> {
   cachedRouterBuild ??= Bun.build({
     entrypoints: [join(import.meta.dir, 'fixtures/import-router.ts')],
@@ -33,6 +39,20 @@ function runtimeBuild(): Promise<BuildOutput> {
 }
 
 describe('router import graph', () => {
+  it('recognizes compiled workspace entrypoints inside nested dependency layouts', () => {
+    const forbidden = [
+      '../error-handling/dist/handler.js',
+      'storage/framework/core/storage/dist/uploaded-file.js',
+      'node_modules/@stacksjs/error-handling/dist/http-error.js',
+    ]
+    expect(builtWorkspaceEntrypoints([
+      ...forbidden,
+      '../error-handling/node_modules/@stacksjs/stx/dist/index.js',
+      '../storage/node_modules/ts-cloud/dist/index.js',
+      '../error-handling/src/error-page-renderer.ts',
+    ])).toEqual(forbidden)
+  })
+
   it('keeps root-only helpers out of the server runtime entry', async () => {
     const result = await runtimeBuild()
 
@@ -89,8 +109,7 @@ describe('router import graph', () => {
     const uploadedFileInputs = Object.keys(result.metafile?.inputs ?? {})
       .filter(source => source.endsWith('storage/src/uploaded-file.ts'))
     expect(uploadedFileInputs).toHaveLength(1)
-    const builtDeepEntrypoints = Object.keys(result.metafile?.inputs ?? {})
-      .filter(source => source.includes('/dist/') && (source.includes('/storage/') || source.includes('/error-handling/')))
+    const builtDeepEntrypoints = builtWorkspaceEntrypoints(Object.keys(result.metafile?.inputs ?? {}))
     expect(builtDeepEntrypoints).toEqual([])
 
     const eagerErrorHandlingBarrelImports = Object.entries(result.metafile?.inputs ?? {}).flatMap(([source, meta]) =>
