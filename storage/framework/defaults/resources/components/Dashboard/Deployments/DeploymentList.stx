@@ -200,27 +200,23 @@ onMount(() => {
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Deployments</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Deployment model records through the guarded dashboard API.</p>
-    </div>
-    <div class="flex gap-2 items-center">
-      <Button :disabled="isStarting() || isPreviewing()" variant="outline" @click="openDeploymentDialog('preview')">
-        Preview
-      </Button>
-      <Button :disabled="isStarting() || isPreviewing() || isRollingBack()" variant="secondary" @click="openRollback">
-        Rollback
-      </Button>
-      <Button :disabled="isStarting() || isPreviewing()" @click="openDeploymentDialog('deploy')">
-        Deploy
-      </Button>
-      <Button :loading="isLoading()" variant="secondary" @click="loadDeployments">
-        <span :if="!isLoading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
-        Refresh
-      </Button>
-    </div>
-  </header>
+  <PageHeader title="Deployments" description="Deployment model records through the guarded dashboard API.">
+  <div class="flex gap-2 items-center">
+    <Button :disabled="isStarting() || isPreviewing()" variant="outline" @click="openDeploymentDialog('preview')">
+      Preview
+    </Button>
+    <Button :disabled="isStarting() || isPreviewing() || isRollingBack()" variant="secondary" @click="openRollback">
+      Rollback
+    </Button>
+    <Button :disabled="isStarting() || isPreviewing()" @click="openDeploymentDialog('deploy')">
+      Deploy
+    </Button>
+    <Button :loading="isLoading()" variant="secondary" @click="loadDeployments">
+      <span :if="!isLoading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
+      Refresh
+    </Button>
+  </div>
+  </PageHeader>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
 

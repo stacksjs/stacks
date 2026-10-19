@@ -170,16 +170,12 @@ onMount(() => {
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Payments</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Inspect native Payment records, export the current view, and record confirmed refunds.</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-      <Button variant="secondary" :loading="loading()" @click="loadPayments"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-      <Button tag="a" :href="exportHref()" :download="exportFilename()"><span class="h-4 w-4 i-hugeicons-download-04"></span>Export current view</Button>
-    </div>
-  </header>
+  <PageHeader title="Payments" description="Inspect native Payment records, export the current view, and record confirmed refunds.">
+  <div class="flex flex-wrap gap-2">
+    <Button variant="secondary" :loading="loading()" @click="loadPayments"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+    <Button tag="a" :href="exportHref()" :download="exportFilename()"><span class="h-4 w-4 i-hugeicons-download-04"></span>Export current view</Button>
+  </div>
+  </PageHeader>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
 

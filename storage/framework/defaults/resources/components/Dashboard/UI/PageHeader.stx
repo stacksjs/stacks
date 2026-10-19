@@ -1,69 +1,28 @@
-<script server>
-interface PageHeaderProps {
-  title?: string
-  description?: string
-  backLink?: string
-  backLabel?: string
-}
-
-const { title = '', description = '', backLink = '', backLabel = 'Back' } = defineProps<PageHeaderProps>()
+<script client>
+/**
+ * The title block at the top of a dashboard screen.
+ *
+ * Thirty-five screens carried the same header, the same heading pair and the
+ * same two sets of classes (stacksjs/stacks#2917).
+ *
+ * The actions stay in the caller, inside the slot, and so does their wrapper.
+ * That is deliberate: the wrapper differs six ways across the callers (`flex
+ * gap-2`, `flex flex-wrap gap-2`, `flex gap-2 items-center` and three more),
+ * and a prop for it would be a class string passed through a component,
+ * which is worse than leaving the div where its author put it.
+ *
+ * Twenty-three other screens have a header that looks like this one and is
+ * shaped differently inside. They are deliberately NOT converted; see the
+ * issue for the count and the reason.
+ */
+const title = useReactiveProp('title', '')
+const description = useReactiveProp('description', '')
 </script>
-<div class="mb-6">
-  <!-- Back link -->
-  @if(backLink)
-    <a
-      href="{{ backLink }}"
-      class="inline-flex gap-1.5 items-center mb-3 text-sm text-stone-500 dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-200 transition-colors"
-    >
-      <div class="h-4 w-4 i-hugeicons-arrow-left-01"></div>
-      <span>{{ backLabel }}</span>
-    </a>
-  @endif
 
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div class="flex-1 min-w-0">
-      <!-- Title row -->
-      <div class="flex gap-3 items-center">
-        <slot name="icon" />
-        <div>
-          <h1 class="font-semibold text-2xl text-stone-900 truncate dark:text-white">
-            {{ title }}
-          </h1>
-          @if(description)
-            <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">
-              {{ description }}
-            </p>
-          @endif
-        </div>
-      </div>
-
-      <!-- Tags/badges slot -->
-      @if($slots.tags)
-        <div class="flex flex-wrap gap-2 mt-2">
-          <slot name="tags" />
-        </div>
-      @endif
-    </div>
-
-    <!-- Actions -->
-    @if($slots.actions)
-      <div class="flex flex-shrink-0 gap-2 items-center">
-        <slot name="actions" />
-      </div>
-    @endif
+<header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ title() }}</h1>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>
   </div>
-
-  <!-- Tabs slot -->
-  @if($slots.tabs)
-    <div class="mt-4 border-b border-stone-200 dark:border-neutral-700">
-      <slot name="tabs" />
-    </div>
-  @endif
-
-  <!-- Filters slot -->
-  @if($slots.filters)
-    <div class="mt-4">
-      <slot name="filters" />
-    </div>
-  @endif
-</div>
+  <slot />
+</header>

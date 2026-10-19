@@ -124,16 +124,12 @@ onDestroy(() => {
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Realtime</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Recorded Websocket model events and a native connection inspector.</p>
-    </div>
-    <Button variant="secondary" :loading="isLoading()" @click="loadRealtime">
-      <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
-      Refresh
-    </Button>
-  </header>
+  <PageHeader title="Realtime" description="Recorded Websocket model events and a native connection inspector.">
+  <Button variant="secondary" :loading="isLoading()" @click="loadRealtime">
+    <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
+    Refresh
+  </Button>
+  </PageHeader>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
 

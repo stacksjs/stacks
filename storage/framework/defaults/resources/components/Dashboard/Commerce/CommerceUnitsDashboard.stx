@@ -203,22 +203,18 @@ onMount(() => {
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Units</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native ProductUnit records and their product relationships.</p>
-    </div>
-    <div class="flex gap-2">
-      <Button variant="secondary" :loading="loading()" @click="loadUnits">
-        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
-        Refresh
-      </Button>
-      <Button @click="openAdd()">
-        <span class="h-4 w-4 i-hugeicons-add-01"></span>
-        Add unit
-      </Button>
-    </div>
-  </header>
+  <PageHeader title="Units" description="Manage native ProductUnit records and their product relationships.">
+  <div class="flex gap-2">
+    <Button variant="secondary" :loading="loading()" @click="loadUnits">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
+      Refresh
+    </Button>
+    <Button @click="openAdd()">
+      <span class="h-4 w-4 i-hugeicons-add-01"></span>
+      Add unit
+    </Button>
+  </div>
+  </PageHeader>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
   <div :if="summary().defaultConflicts > 0" class="flex gap-3 items-start p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
