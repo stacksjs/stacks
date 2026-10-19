@@ -6,6 +6,7 @@ import type {
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 import { formatCurrency, minorToInput } from '@stacksjs/commerce/money'
+import { pageControls } from '../../../../functions/dashboard-list'
 
 interface CustomerIndexResponse {
   records: CommerceCustomerRecord[]
@@ -243,13 +244,7 @@ async function deleteCustomer(): Promise<void> {
   }
 }
 
-function previousPage(): void {
-  page.set(Math.max(1, page() - 1))
-}
-
-function nextPage(): void {
-  page.set(Math.min(pageCount(), page() + 1))
-}
+const { previousPage, nextPage } = pageControls(page, pageCount)
 
 onMount(() => {
   void loadCustomers()
