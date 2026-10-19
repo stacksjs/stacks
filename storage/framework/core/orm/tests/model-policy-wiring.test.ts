@@ -73,7 +73,7 @@ describe('policy consultation in the generated handlers', () => {
 
   it('asks viewAny before building the listing', () => {
     expect(indexOfExisting(generator, `policyRefusal(modelName, 'viewAny'`))
-      .toBeLessThan(indexOfExisting(generator, 'let query = dyn.selectFrom(table)'))
+      .toBeLessThan(indexOfExisting(generator, 'let query = dynamicDb().selectFrom(table)'))
   })
 
   it('asks view only about a row the caller could otherwise have seen', () => {
@@ -93,7 +93,7 @@ describe('policy consultation in the generated handlers', () => {
     const destroy = between(`enabledRoutes.includes('destroy') && !routeClaimed('DELETE'`, 'bulk-delete')
 
     expect(indexOfExisting(destroy, `policyRefusal(modelName, 'delete'`))
-      .toBeLessThan(indexOfExisting(destroy, 'dyn.deleteFrom(table)'))
+      .toBeLessThan(indexOfExisting(destroy, 'dynamicDb().deleteFrom(table)'))
   })
 
   it('asks about every row of a bulk delete before deleting any of them', () => {
