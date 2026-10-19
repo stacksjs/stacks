@@ -31,6 +31,20 @@
 /** The fragment key the handoff travels under. */
 export const SESSION_HANDOFF_KEY = 'stx_auth'
 
+/**
+ * The fragment key a one-use handoff CODE travels under.
+ *
+ * This is the stronger design the note above describes, and the one the
+ * framework's own social callback uses: the fragment carries a 60-second,
+ * single-use code bound to the browser's cookie (or to a verifier a native
+ * app holds), never a bearer token. The page POSTs it to `/auth/handoff`,
+ * which answers with the session. A code read from history, a log or a
+ * screenshot is already spent or expired, and useless in any other browser.
+ */
+export const SESSION_HANDOFF_CODE_KEY = 'stx_handoff'
+
+const HANDOFF_CODE_SHAPE = /^[a-f0-9]{64}$/
+
 export interface SessionHandoffPack {
   /** The access token. `access_token` and `token` are both accepted on read. */
   token: string
@@ -133,8 +147,26 @@ export function readSessionHandoff(hash: string | null | undefined): SessionHand
   return decodeSessionHandoff(params.get(SESSION_HANDOFF_KEY))
 }
 
+/** Append a one-use handoff code to a redirect target, preserving any existing fragment. */
+export function buildSessionHandoffCodeUrl(redirectTo: string, code: string): string {
+  if (!HANDOFF_CODE_SHAPE.test(code))
+    throw new TypeError('A session handoff code is 64 lowercase hex characters.')
+  const [base, existingHash] = splitHash(redirectTo)
+  const prefix = existingHash ? `${existingHash}&` : ''
+  return `${base}#${prefix}${SESSION_HANDOFF_CODE_KEY}=${code}`
+}
+
+/** The handoff code in a `location.hash`-shaped string, or null. Never throws. */
+export function readSessionHandoffCode(hash: string | null | undefined): string | null {
+  if (!hash)
+    return null
+
+  const code = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash).get(SESSION_HANDOFF_CODE_KEY)
+  return code && HANDOFF_CODE_SHAPE.test(code) ? code : null
+}
+
 /**
- * The same hash with the handoff removed, ready for `history.replaceState`.
+ * The same hash with the handoff (pack or code) removed, ready for `history.replaceState`.
  *
  * Returns '' when nothing else was in it, so the caller can drop the `#`
  * entirely rather than leaving a bare one in the address bar.
@@ -145,6 +177,7 @@ export function stripSessionHandoff(hash: string | null | undefined): string {
 
   const params = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash)
   params.delete(SESSION_HANDOFF_KEY)
+  params.delete(SESSION_HANDOFF_CODE_KEY)
   const rest = params.toString()
   return rest ? `#${rest}` : ''
 }

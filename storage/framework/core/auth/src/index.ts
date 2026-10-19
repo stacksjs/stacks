@@ -68,6 +68,9 @@ export * from './page-gate'
 // Social sign-in: which local user a provider identity resolves to.
 export * from './socials'
 
+// One-use, browser-bound codes that move a redirect flow's sign-in into a page.
+export * from './session-handoff'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,

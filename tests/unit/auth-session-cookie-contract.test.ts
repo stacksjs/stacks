@@ -31,7 +31,8 @@ const SESSION_ISSUING = [
   'LoginAction',
   'VerifyTwoFactorLoginAction',
   'RegisterAction',
-  'SocialCallbackAction',
+  // The social callback hands over a one-use code; this redeems it.
+  'SessionHandoffAction',
   'MagicLinkConsumeAction',
   'VerifyAuthenticationAction',
 ]
@@ -69,6 +70,16 @@ describe('auth session cookie contract (#2306)', () => {
     expect(action(name)).toMatch(/clearAuthCookie\(/)
   })
 
+  test('the social callback mints no session and puts no token in the URL', () => {
+    // It redirects with a one-use code bound to the browser's cookie; the
+    // session (and the auth cookie) comes from SessionHandoffAction.
+    const callback = action('SocialCallbackAction')
+    expect(callback).toContain('createSessionHandoff(')
+    expect(callback).toContain('socialHandoffCodeRedirect(')
+    expect(callback).not.toContain('loginUsingId(')
+    expect(callback).not.toMatch(/socialHandoffRedirect\(/)
+  })
+
   test('minting an API token does not start a browser session', () => {
     // CreateTokenAction issues a personal access token the caller will send as
     // a bearer header. A cookie there would sign the browser in as a side
@@ -87,7 +98,7 @@ describe('auth session cookie contract (#2306)', () => {
     }
   })
 
-  test.each(['SocialCallbackAction', 'MagicLinkConsumeAction', 'VerifyAuthenticationAction'])('%s uses the baseline browser policy and issued lifetime', (name) => {
+  test.each(['SessionHandoffAction', 'MagicLinkConsumeAction', 'VerifyAuthenticationAction'])('%s uses the baseline browser policy and issued lifetime', (name) => {
     const source = action(name)
     expect(source).toContain('resolveBrowserSessionPolicy(false)')
     expect(source).toContain('expiresInMinutes: policy.expiresInMinutes')

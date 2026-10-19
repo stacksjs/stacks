@@ -321,10 +321,13 @@ export { watchThrottled as throttledWatch } from './watchThrottled'
 // redirect) and @stacksjs/browser (which consumes it), so the storage format
 // is never re-derived by an application.
 export {
+  buildSessionHandoffCodeUrl,
   buildSessionHandoffUrl,
   decodeSessionHandoff,
   encodeSessionHandoff,
   readSessionHandoff,
+  readSessionHandoffCode,
+  SESSION_HANDOFF_CODE_KEY,
   SESSION_HANDOFF_KEY,
   stripSessionHandoff,
   type SessionHandoffPack,
