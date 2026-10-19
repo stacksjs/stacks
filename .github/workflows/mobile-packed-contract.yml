@@ -27,7 +27,7 @@ jobs:
           git rev-parse HEAD > artifacts/mobile-source-contract/source-commit.txt
           bun --version > artifacts/mobile-source-contract/bun-version.txt
           sha256sum bun.lock pantry.lock > artifacts/mobile-source-contract/locks-before.sha256
-          bun -e "for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components']) { const p = await Bun.file('node_modules/' + name + '/package.json').json(); console.log(name, p.version) }" > artifacts/mobile-source-contract/public-cohort.txt
+          bun -e "for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx']) { const p = await Bun.file('node_modules/' + name + '/package.json').json(); console.log(name, p.version) }" > artifacts/mobile-source-contract/public-cohort.txt
       - name: Build packages imported by subpath
         run: |
           set -euo pipefail

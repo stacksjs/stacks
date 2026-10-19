@@ -136,10 +136,13 @@ try {
   })
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
   const lock = Bun.JSONC.parse(await readFile(join(root, 'bun.lock'), 'utf8')) as { packages: Record<string, [string, ...unknown[]]> }
-  for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components']) {
+  for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx']) {
     const locator = lock.packages[name]?.[0]
     assert.ok(locator?.startsWith(name + '@'), 'Missing exact public dependency in bun.lock: ' + name)
     publicCohort[name] = locator.slice(name.length + 1)
+  }
+  for (const name of ['@stacksjs/components', 'bun-plugin-stx']) {
+    assert.equal(publicCohort[name], publicCohort['@stacksjs/stx'], 'The compiler, components and runtime must use the same stx release')
   }
   await writeFile(join(consumer, 'package.json'), JSON.stringify({
     name: 'stacks-packed-mobile-contract', private: true, type: 'module',
