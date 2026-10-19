@@ -1231,19 +1231,23 @@ export async function revokeAllTokens(userId: number, tokenableType: string = DE
 }
 
 /**
- * Revoke all tokens except the current one
+ * Revoke every token except one: `options.exceptTokenId`, or else the token
+ * the current request authenticated with. When neither resolves, every token
+ * is revoked and `keptTokenId` is null (fail closed). `Auth.revokeOtherTokens`
+ * behaves identically.
  *
  * @example
  * import { revokeOtherTokens } from '@stacksjs/auth'
- * await revokeOtherTokens(user.id)
+ * const { keptTokenId } = await revokeOtherTokens(user.id)
  */
-export async function revokeOtherTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
-  const current = await currentAccessToken()
-  if (!current) {
-    return revokeAllTokens(userId, tokenableType)
-  }
-
-  await revokeTokenPairs(userId, tokenableType, current.id)
+export async function revokeOtherTokens(
+  userId: number,
+  tokenableType: string = DEFAULT_TOKENABLE_TYPE,
+  options: { exceptTokenId?: number } = {},
+): Promise<{ keptTokenId: number | null }> {
+  const keep = options.exceptTokenId ?? (await currentAccessToken())?.id
+  await revokeTokenPairs(userId, tokenableType, keep)
+  return { keptTokenId: keep ?? null }
 }
 
 /**
