@@ -205,8 +205,19 @@ jobs:
       - name: Test benchmark harnesses
         run: bun run test:bench
 
+  # Split across jobs: run one after another, the core packages' tests were
+  # 15 of this job's 20 minutes and the longest path to a deploy (auth alone
+  # 8, buddy 2). .github/scripts/core-tests.ts says which shard runs what:
+  # auth by file over four, buddy alone, the rest over two by measured time.
+  # The app-level suites ride with buddy, the lightest. Each shard sets up its
+  # own services, in parallel.
   test:
+    name: test (${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [auth-1, auth-2, auth-3, auth-4, buddy, core-1, core-2]
 
     steps:
       - name: Checkout Code
@@ -245,6 +256,7 @@ jobs:
         run: bun .github/scripts/configure-ci-services.ts
 
       - name: Test Suite
+        if: ${{ matrix.shard == 'buddy' }}
         run: bun run test
 
       # `bun run test` shells out to `buddy test`, which only globs
@@ -284,41 +296,10 @@ jobs:
       # picked up test files across the checkout, with `buddy test`.
       - name: Core tests (all packages)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: |
-          failed=""
-          for dir in storage/framework/core/*/tests; do
-            pkg=$(basename "$(dirname "$dir")")
-            if [ "$pkg" = "router" ]; then
-              for shard in 1/2 2/2; do
-                echo "::group::core/$pkg (shard $shard)"
-                bun test "./$dir" --shard="$shard" || failed="$failed $pkg[$shard]"
-                echo "::endgroup::"
-              done
-              continue
-            fi
-            echo "::group::core/$pkg"
-            bun test "./$dir" || failed="$failed $pkg"
-            echo "::endgroup::"
-          done
-          echo "::group::core/commerce (src/tests)"
-          (cd storage/framework/core/commerce && bun test ./src/tests) || failed="$failed commerce[src/tests]"
-          echo "::endgroup::"
-          echo "::group::core/cms (src/tests)"
-          (cd storage/framework/core/cms && bun test ./src/tests) || failed="$failed cms[src/tests]"
-          echo "::endgroup::"
-          # The very-happy-dom component example the testing docs describe. Its
-          # bunfig preloads the GlobalRegistrator that gives the test a DOM, so
-          # like the two above it only runs from its own directory.
-          echo "::group::core/testing (component-dom fixture)"
-          (cd storage/framework/core/testing/fixtures/component-dom && bun test ./tests) || failed="$failed testing[fixtures/component-dom]"
-          echo "::endgroup::"
-          if [ -n "$failed" ]; then
-            echo "Failing core packages:$failed"
-            exit 1
-          fi
+        run: bun .github/scripts/core-tests.ts "${{ matrix.shard }}"
 
       - name: Workspace recovery process-inspection integration
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && matrix.shard == 'buddy' }}
         run: |
           # These positive recovery fixtures need complete process visibility.
           # Root on a shared CI host can still meet protected host processes.
@@ -335,12 +316,12 @@ jobs:
       # The VS Code extension is a package of its own, outside the workspaces,
       # and its tests build it against @stacksjs/stx-vscode.
       - name: Install VS Code extension dependencies
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && matrix.shard == 'buddy' }}
         working-directory: storage/framework/defaults/ide/vscode
         run: bun install
 
       - name: Defaults and server tests
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && matrix.shard == 'buddy' }}
         run: bun test ./storage/framework/defaults ./storage/framework/server/test
 
   compile:
