@@ -494,11 +494,25 @@ it('bills a membership end to end', async () => {
 | `cwd` | parent's | Working directory |
 | `mode` | `'auto'` | `'test'` runs `bun test`, `'run'` runs a script; `'auto'` picks `'test'` for `*.test.*` and `*.spec.*` |
 | `preload` | project's | Replace the bunfig preloads (an empty list means none) |
+| `bunfig` | project's | Run with this bunfig (`--config=`), resolved against `cwd`; not with `preload` |
 | `envFile` | `true` | `false` passes `--no-env-file` |
 | `stdin` | | Text written to the child's stdin |
 
 It resolves `{ code, signal, stdout, stderr, timedOut, durationMs, command }`;
 `code` is null when a signal ended the child.
+
+A suite that keeps its own config passes it as `bunfig`:
+
+```typescript
+const result = await runIsolated('tests/fixtures/regressions.ts', {
+  bunfig: 'scripts/bunfig.toml', // --config=<cwd>/scripts/bunfig.toml
+  envFile: false,
+})
+```
+
+`bunfig` and `preload` are exclusive, since a child takes one config: list the
+preloads in your bunfig. Bun resolves that file's relative `preload` paths
+against the child's working directory, not the bunfig's.
 
 ## Disposable Databases
 
@@ -568,7 +582,9 @@ By default it also:
 
 - sets a 1440x1000 viewport (`viewport`);
 - answers stx's live-reload stream with one that retries in a day, so a file
-  saved mid-run cannot reload the page under a check (`quietLiveReload`);
+  saved mid-run cannot reload the page under a check (`quietLiveReload`). Only
+  that stream: requests your test pauses itself are left to it (see
+  [Pausing requests](#pausing-requests));
 - accepts JavaScript dialogs, which would otherwise block the page and every
   command, and records each in `cdp.errors` (`acceptDialogs`);
 - removes "HeadlessChrome" from the user agent (`userAgent`);
@@ -587,14 +603,52 @@ The `Cdp` session:
 | `on(method, listener)` | Adds a listener (any number per method) and returns a function that removes it |
 | `off(method, listener)` | Removes one |
 | `once(method, match?, timeoutMs?)` | The next matching event |
+| `intercept(patterns, handler)` | Pauses requests matching `patterns` and hands each to `handler`; resolves with an async remover |
 | `errors` | Uncaught exceptions, `console.error`, error log entries and failed requests |
-| `inFlight` | Requests still loading. Event streams leave as soon as they open, so a page with live updates can settle |
+| `inFlight` | `Map<requestId, 'METHOD url'>` of requests still loading. Event streams leave as soon as they open, so a page with live updates can settle |
 | `closed` | Chrome went away; pending and later commands fail at once |
 
 `settle(cdp, { quietMs, timeoutMs })` waits until the document has loaded and
 no request has been in flight for `quietMs`, and resolves false rather than
 throwing when the page never goes quiet. `waitFor(read, timeoutMs)` polls until
 `read` returns something truthy.
+
+### Pausing requests
+
+Chrome keeps one set of `Fetch.enable` patterns per session: a second
+`Fetch.enable` replaces the first, `Fetch.disable` drops them all, and every
+paused request goes to every `Fetch.requestPaused` listener. The session layers
+them so several handlers coexist with the live-reload one:
+
+```typescript
+// Your own Fetch.enable is one layer; launch()'s live-reload pattern stays on.
+let held: any = null
+cdp.on('Fetch.requestPaused', params => { held = params }) // never sees the live-reload stream
+await cdp.send('Fetch.enable', { patterns: [{ urlPattern: '*/health/metrics*' }] })
+await cdp.evaluate(`document.querySelector('[data-range="7d"]').click()`)
+await waitFor(() => held)
+// ... check the page while the request hangs ...
+await cdp.send('Fetch.continueRequest', { requestId: held.requestId })
+await cdp.send('Fetch.disable') // drops your layer only
+
+// Or a handler that is given only what its own patterns match.
+const stop = await cdp.intercept([{ urlPattern: '*/api/slow*' }], (paused, session) => {
+  setTimeout(() => session.send('Fetch.continueRequest', { requestId: paused.requestId }), 2000)
+})
+await stop()
+```
+
+- `on('Fetch.requestPaused')` listeners get the requests your own patterns
+  match, never one only an `intercept()` handler asked for.
+- The first answer to a paused request wins. A second `continueRequest`,
+  `fulfillRequest`, `failRequest` or `continueResponse` for the same pause
+  resolves without reaching Chrome, which would reject it.
+- A pause nothing could answer is continued; one your own pattern holds, with
+  no listener, stays held, for a test of a request that never returns.
+- `quietLiveReload(cdp, patterns?)` is the handler `launch()` installs, for a
+  session you opened with `connect()`. `matchesUrlPattern(pattern, url)` and
+  `pausedRequestMatches(pattern, paused)` follow Chrome's rules: `*` any run,
+  `?` one character, `\` escapes, plus the stage and resource type.
 
 ### Page audits
 
@@ -612,9 +666,19 @@ console.log(formatPageAudit(report)) // '/dashboard: 9 api | dup 2x GET /api/me'
 expect(pageAuditClean(report)).toBe(true)
 ```
 
-The report has `apiRequests`, `duplicates` (API requests made more than once),
-`failed` (same-origin responses of 400 and above), `errors`, `settled` and
-`durationMs`. `isApiRequest(url, method)` changes what counts as an API request
+The report has `apiRequests`, `duplicates` (API requests made more than once
+in one page load), `failed` (same-origin responses of 400 and above), `errors`,
+`settled`, `durationMs`, `finalUrl` (where the page landed) and `loads`.
+
+A page that sends you on is two page loads: `/today` replacing itself with
+`/home` may ask for `/api/me` in each without that being a duplicate. A load
+starts with each new main-frame document after the first, and with each
+same-document (history API) navigation to a different path; a query or hash
+change stays in the same load. `loads` holds `{ url, apiRequests, duplicates }`
+per load, `duplicates` the highest count any one load reached, and
+`formatPageAudit` prints `/today -> /home: ...`. `pageLoads: 'visit'` counts the
+whole visit as one load. `splitPageLoads(url, events)` is the same split over a
+recorded event list. `isApiRequest(url, method)` changes what counts as an API request
 (default: paths under `/api/`, event streams excluded). Pass `cdp` to audit in
 an open session, or `launch` options for the Chrome it starts. A launch or
 navigation failure is reported in `errors`, never thrown. From the command line:

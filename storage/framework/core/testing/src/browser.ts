@@ -63,7 +63,7 @@ import process from 'node:process'
  * Poll `read` until it returns something truthy, and return that. Throws
  * after `timeoutMs` (default 12 s) with `label` in the message.
  */
-export async function waitFor<T>(read: () => Promise<T> | T, timeoutMs = 12_000, options: { intervalMs?: number, label?: string } = {}): Promise<NonNullable<T>> {
+export async function waitFor<T>(read: () => Promise<T> | T, timeoutMs: number = 12_000, options: { intervalMs?: number, label?: string } = {}): Promise<NonNullable<T>> {
   const started = Date.now()
   let value = await read()
   while (!value && Date.now() - started < timeoutMs) {
@@ -91,6 +91,68 @@ export interface CdpOptions {
   commandTimeoutMs?: number
 }
 
+/** One `Fetch.enable` pattern, as the protocol spells it. */
+export interface FetchPattern {
+  /** Wildcards: `*` is any run of characters, `?` exactly one, `\` escapes. Default `*`. */
+  urlPattern?: string
+  /** `Document`, `XHR`, `Fetch`, `EventSource`, ... Default any. */
+  resourceType?: string
+  /** Pause before the request is sent, or when its response headers arrive. Default `'Request'`. */
+  requestStage?: 'Request' | 'Response'
+}
+
+/** The parts of a `Fetch.requestPaused` event a handler usually reads. */
+export interface PausedRequest {
+  requestId: string
+  request: { url: string, method: string, headers: Record<string, string>, postData?: string }
+  resourceType?: string
+  /** Set (with `responseHeaders`) when paused at the response stage. */
+  responseStatusCode?: number
+  responseErrorReason?: string
+  networkId?: string
+  [key: string]: any
+}
+
+/** Answers a paused request with `cdp.send('Fetch.continueRequest' | 'Fetch.fulfillRequest' | ...)`. */
+export type FetchHandler = (request: PausedRequest, cdp: Cdp) => void | Promise<void>
+
+interface Interceptor {
+  patterns: FetchPattern[]
+  handler: FetchHandler
+}
+
+/** The commands that answer a paused request. */
+const FETCH_ANSWERS = new Set(['Fetch.continueRequest', 'Fetch.fulfillRequest', 'Fetch.failRequest', 'Fetch.continueResponse'])
+
+/**
+ * Whether `url` matches a `Fetch.enable` URL pattern the way Chrome matches
+ * it: the whole URL, `*` any run of characters (none included), `?` exactly
+ * one, a backslash makes the next character literal.
+ */
+export function matchesUrlPattern(pattern: string, url: string): boolean {
+  let source = ''
+  for (let index = 0; index < pattern.length; index++) {
+    const char = pattern[index]!
+    if (char === '\\' && index + 1 < pattern.length) source += escapeRegExp(pattern[++index]!)
+    else if (char === '*') source += '[\\s\\S]*'
+    else if (char === '?') source += '[\\s\\S]'
+    else source += escapeRegExp(char)
+  }
+  return new RegExp(`^${source}$`).test(url)
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+}
+
+/** Whether a `Fetch.requestPaused` event is one `pattern` would have paused. */
+export function pausedRequestMatches(pattern: FetchPattern, paused: Pick<PausedRequest, 'request' | 'resourceType' | 'responseStatusCode' | 'responseErrorReason'>): boolean {
+  const stage = paused.responseStatusCode != null || paused.responseErrorReason != null ? 'Response' : 'Request'
+  if ((pattern.requestStage ?? 'Request') !== stage) return false
+  if (pattern.resourceType && pattern.resourceType !== paused.resourceType) return false
+  return matchesUrlPattern(pattern.urlPattern ?? '*', paused.request?.url ?? '')
+}
+
 /**
  * One DevTools Protocol session.
  *
@@ -106,19 +168,45 @@ export interface CdpOptions {
  *
  * Enable the `Network`, `Runtime` and `Log` domains for those to fill;
  * `launch()` does.
+ *
+ * ## Several Fetch handlers on one session
+ *
+ * Chrome keeps one set of `Fetch.enable` patterns per session: a second
+ * `Fetch.enable` replaces the first, `Fetch.disable` drops them all, and every
+ * paused request goes to every `Fetch.requestPaused` listener. So the session
+ * layers them:
+ *
+ * - `intercept(patterns, handler)` registers a handler that is given only the
+ *   paused requests its own patterns match (`launch()` quiets live reload
+ *   this way);
+ * - `send('Fetch.enable', { patterns })` and `send('Fetch.disable')` set and
+ *   clear one more layer, for code that drives Fetch itself, and the session
+ *   enables the union of every layer. `on('Fetch.requestPaused')` listeners
+ *   are given the requests that layer's patterns match, and not those only an
+ *   `intercept()` handler asked for;
+ * - the first answer to a paused request wins: a second
+ *   `Fetch.continueRequest` / `fulfillRequest` / `failRequest` /
+ *   `continueResponse` for it resolves without reaching Chrome (which would
+ *   reject it), until the same request pauses again at its response stage;
+ * - a paused request nothing would answer is continued.
  */
 export class Cdp {
   private id = 0
   private pending = new Map<number, Pending>()
   private listeners = new Map<string, Set<Listener>>()
   private readonly commandTimeoutMs: number
+  private interceptors: Interceptor[] = []
+  /** What the caller last passed to `Fetch.enable` through `send`, or null after `Fetch.disable`. */
+  private ownFetch: { patterns: FetchPattern[], params: Record<string, unknown> } | null = null
+  /** Paused request ids: true once answered, false while waiting for an answer. */
+  private answered = new Map<string, boolean>()
 
   /** What went wrong on the page, in order. */
   errors: string[] = []
   /** Requests still loading: request id to `METHOD url`. */
-  inFlight = new Map<string, string>()
+  inFlight: Map<string, string> = new Map()
   /** Chrome went away; every later command fails at once. */
-  closed = false
+  closed: boolean = false
 
   constructor(private socket: WebSocket, options: CdpOptions = {}) {
     this.commandTimeoutMs = options.commandTimeoutMs ?? 30_000
@@ -152,13 +240,98 @@ export class Cdp {
       return
     }
     this.track(message.method, message.params ?? {})
-    for (const listener of [...(this.listeners.get(message.method) ?? [])]) {
+    if (message.method === 'Fetch.requestPaused' && !this.routePaused(message.params ?? {})) return
+    this.dispatch(message.method, message.params ?? {})
+  }
+
+  private dispatch(method: string, params: any): void {
+    for (const listener of [...(this.listeners.get(method) ?? [])]) {
       try {
-        listener(message.params ?? {})
+        listener(params)
       }
       catch (error) {
-        this.errors.push(`Listener for ${message.method} threw: ${(error as Error)?.message ?? String(error)}`)
+        this.errors.push(`Listener for ${method} threw: ${(error as Error)?.message ?? String(error)}`)
       }
+    }
+  }
+
+  /**
+   * Give a paused request to the `intercept()` handlers whose patterns match
+   * it. Returns whether the `Fetch.requestPaused` listeners should see it too.
+   */
+  private routePaused(paused: PausedRequest): boolean {
+    this.remember(paused.requestId, false)
+    const claimed = this.interceptors.filter(interceptor => interceptor.patterns.some(pattern => pausedRequestMatches(pattern, paused)))
+    for (const interceptor of claimed) {
+      try {
+        const result = interceptor.handler(paused, this)
+        if (result && typeof (result as Promise<void>).catch === 'function')
+          (result as Promise<void>).catch(error => this.errors.push(`Fetch handler threw: ${(error as Error)?.message ?? String(error)}`))
+      }
+      catch (error) {
+        this.errors.push(`Fetch handler threw: ${(error as Error)?.message ?? String(error)}`)
+      }
+    }
+    const listening = (this.listeners.get('Fetch.requestPaused')?.size ?? 0) > 0
+    // Patterns this matcher reads differently from Chrome still reach the
+    // listeners: only a request an interceptor claimed is kept from them.
+    const own = this.ownFetch ? this.ownFetch.patterns.some(pattern => pausedRequestMatches(pattern, paused)) : false
+    // Nobody asked for this one (a pattern was removed while it was paused):
+    // let it go. A request the caller's own patterns hold with no listener is
+    // left held, which is how a test keeps a request hanging on purpose.
+    if (!claimed.length && !own && !listening)
+      this.send('Fetch.continueRequest', { requestId: paused.requestId }).catch(() => {})
+    return listening && (own || !claimed.length)
+  }
+
+  private remember(requestId: string, answered: boolean): void {
+    this.answered.delete(requestId)
+    this.answered.set(requestId, answered)
+    // Answered ids only matter until a stray second answer arrives.
+    if (this.answered.size > 2000) {
+      for (const [id] of this.answered) {
+        this.answered.delete(id)
+        if (this.answered.size <= 1000) break
+      }
+    }
+  }
+
+  /** The patterns Chrome should pause on: every `intercept()` layer and the caller's own. */
+  private async applyFetch(): Promise<any> {
+    const patterns = [...this.interceptors.flatMap(interceptor => interceptor.patterns), ...(this.ownFetch?.patterns ?? [])]
+    if (!patterns.length) return await this.command('Fetch.disable')
+    return await this.command('Fetch.enable', { ...this.ownFetch?.params, patterns })
+  }
+
+  /**
+   * Pause requests matching `patterns` and hand each to `handler`, which must
+   * answer it (`Fetch.continueRequest`, `fulfillRequest`, `failRequest`).
+   * Other handlers and the caller's own `Fetch.enable` keep working (see the
+   * class docs). Resolves, once Chrome is pausing them, with a function that
+   * removes this handler.
+   *
+   * @example
+   * const stop = await cdp.intercept([{ urlPattern: '*\/api/slow*' }], (paused, cdp) => {
+   *   setTimeout(() => cdp.send('Fetch.continueRequest', { requestId: paused.requestId }), 2000)
+   * })
+   */
+  async intercept(patterns: FetchPattern[], handler: FetchHandler): Promise<() => Promise<void>> {
+    if (!patterns.length) throw new TypeError('intercept needs at least one pattern')
+    const interceptor: Interceptor = { patterns: patterns.map(pattern => ({ ...pattern })), handler }
+    this.interceptors.push(interceptor)
+    try {
+      await this.applyFetch()
+    }
+    catch (error) {
+      this.interceptors = this.interceptors.filter(item => item !== interceptor)
+      throw error
+    }
+    let removed = false
+    return async () => {
+      if (removed) return
+      removed = true
+      this.interceptors = this.interceptors.filter(item => item !== interceptor)
+      if (!this.closed) await this.applyFetch()
     }
   }
 
@@ -199,7 +372,7 @@ export class Cdp {
    * The next `method` event whose params pass `match` (any, by default).
    * Rejects after `timeoutMs`, or when Chrome goes away.
    */
-  once<T = any>(method: string, match: (params: T) => boolean = () => true, timeoutMs = this.commandTimeoutMs): Promise<T> {
+  once<T = any>(method: string, match: (params: T) => boolean = () => true, timeoutMs: number = this.commandTimeoutMs): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       if (this.closed) return reject(new Error('Chrome closed the connection'))
       const timer = setTimeout(() => {
@@ -224,8 +397,31 @@ export class Cdp {
     })
   }
 
-  /** Send a command and resolve with its result. */
+  /**
+   * Send a command and resolve with its result. `Fetch.enable` and
+   * `Fetch.disable` are layered with `intercept()` handlers, and a second
+   * answer to one paused request resolves without being sent (see the class
+   * docs).
+   */
   send<T = any>(method: string, params: Record<string, unknown> = {}): Promise<T> {
+    if (method === 'Fetch.enable') {
+      const { patterns, ...rest } = params as { patterns?: FetchPattern[] }
+      // No patterns means every request at the request stage.
+      this.ownFetch = { patterns: patterns?.length ? patterns.map(pattern => ({ ...pattern })) : [{ urlPattern: '*' }], params: rest }
+      return this.closed ? this.command(method, params) : this.applyFetch()
+    }
+    if (method === 'Fetch.disable') {
+      this.ownFetch = null
+      return this.closed ? this.command(method, params) : this.applyFetch()
+    }
+    if (FETCH_ANSWERS.has(method) && typeof params.requestId === 'string') {
+      if (this.answered.get(params.requestId) === true) return Promise.resolve({} as T)
+      if (this.answered.has(params.requestId)) this.remember(params.requestId, true)
+    }
+    return this.command<T>(method, params)
+  }
+
+  private command<T = any>(method: string, params: Record<string, unknown> = {}): Promise<T> {
     const id = ++this.id
     return new Promise<T>((resolve, reject) => {
       if (this.closed) return reject(new Error('Chrome closed the connection'))
@@ -404,6 +600,8 @@ export interface LaunchOptions extends CdpOptions {
    * URL patterns of live-reload streams to answer with one that asks to retry
    * in a day, so a file saved mid-run cannot reload the page under a check.
    * (Blocking the stream does not work: the client reloads when it closes.)
+   * Only requests these patterns match are answered, so a test can still
+   * pause its own requests with `cdp.intercept()` or `Fetch.enable`.
    * Default `['*\/_stx/hmr*']`; false leaves them alone.
    */
   quietLiveReload?: string[] | false
@@ -432,6 +630,29 @@ export interface LaunchedChrome {
   port: number
   /** The executable that was started. */
   chromePath: string
+}
+
+/** stx's live-reload stream. */
+export const LIVE_RELOAD_PATTERNS: readonly string[] = ['*/_stx/hmr*']
+
+/**
+ * Answer live-reload streams matching `patterns` (default stx's) with one that
+ * asks to retry in a day, so a file saved mid-run cannot reload the page.
+ * Only those requests: every other paused request is left to the session's
+ * other Fetch handlers (`Cdp.intercept`, or your own `Fetch.enable`).
+ * `launch()` calls this unless `quietLiveReload` is false. Resolves with a
+ * function that stops it.
+ */
+export async function quietLiveReload(cdp: Cdp, patterns: readonly string[] = LIVE_RELOAD_PATTERNS): Promise<() => Promise<void>> {
+  if (!patterns.length) return async () => {}
+  return await cdp.intercept(patterns.map(urlPattern => ({ urlPattern })), (paused, session) => {
+    session.send('Fetch.fulfillRequest', {
+      requestId: paused.requestId,
+      responseCode: 200,
+      responseHeaders: [{ name: 'Content-Type', value: 'text/event-stream' }],
+      body: Buffer.from('retry: 86400000\n\n').toString('base64'),
+    }).catch(() => {})
+  })
 }
 
 function resolveChrome(options: LaunchOptions): string {
@@ -515,18 +736,8 @@ export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrom
       if (agent) await session.send('Network.setUserAgentOverride', { userAgent: agent })
     }
 
-    const quiet = options.quietLiveReload === false ? [] : options.quietLiveReload ?? ['*/_stx/hmr*']
-    if (quiet.length) {
-      session.on('Fetch.requestPaused', (params) => {
-        session.send('Fetch.fulfillRequest', {
-          requestId: params.requestId,
-          responseCode: 200,
-          responseHeaders: [{ name: 'Content-Type', value: 'text/event-stream' }],
-          body: Buffer.from('retry: 86400000\n\n').toString('base64'),
-        }).catch(() => {})
-      })
-      await session.send('Fetch.enable', { patterns: quiet.map(urlPattern => ({ urlPattern })) })
-    }
+    if (options.quietLiveReload !== false)
+      await quietLiveReload(session, options.quietLiveReload)
 
     if (options.acceptDialogs !== false) {
       session.on('Page.javascriptDialogOpening', (params) => {
@@ -602,14 +813,47 @@ export interface PageAuditOptions extends SettleOptions {
   isApiRequest?: (url: URL, method: string) => boolean
   /** Run before navigating: sign in, seed storage (`Page.addScriptToEvaluateOnNewDocument`), block a URL. */
   beforeNavigate?: (cdp: Cdp) => Promise<void> | void
+  /**
+   * What counts as one page load when looking for duplicates.
+   *
+   * - `'navigation'` (default): a page that sends you on is two loads. A new
+   *   load starts with each new main-frame document after the first, and with
+   *   each same-document (history API) navigation to a different path, which
+   *   is how a client-side router moves (`/today` replacing itself with
+   *   `/home`). A query or hash change stays in the same load.
+   * - `'visit'`: the whole visit is one load, however often the page moved.
+   */
+  pageLoads?: 'navigation' | 'visit'
+}
+
+/** The requests one page load made. */
+export interface PageLoad {
+  /** Where this load was (its last URL, when it changed only its query or hash). */
+  url: string
+  /** API calls made during this load, as `METHOD /path?query`, in order. */
+  apiRequests: string[]
+  /** The API calls this load made more than once. */
+  duplicates: Record<string, number>
 }
 
 export interface PageAuditReport {
   url: string
-  /** API calls the page made, as `METHOD /path?query`, in order. */
+  /**
+   * Where the page ended up (`location.href` once it settled): differs from
+   * `url` when it redirected, on the server or in the client. Absent only on
+   * reports built before this field existed.
+   */
+  finalUrl?: string
+  /** API calls the page made, as `METHOD /path?query`, in order, over every load. */
   apiRequests: string[]
-  /** The API calls made more than once, with how many times. */
+  /**
+   * The API calls made more than once within one page load, with the highest
+   * count any load reached. A request repeated only because the page moved on
+   * (see `PageAuditOptions.pageLoads`) is not a duplicate.
+   */
   duplicates: Record<string, number>
+  /** Each page load in order: one, unless the page sent you on. */
+  loads?: PageLoad[]
   /** Same-origin responses with status 400 or above, as `STATUS /path`. */
   failed: string[]
   /** `cdp.errors` raised while the page loaded. */
@@ -628,11 +872,61 @@ export function duplicateRequests(requests: readonly string[]): Record<string, n
   return Object.fromEntries(Object.entries(counts).filter(([, count]) => count > 1))
 }
 
+/** What happened during a visit, in order, for `splitPageLoads`. */
+export type PageAuditEvent =
+  | { type: 'request', request: string }
+  /** `sameDocument`: a history API or fragment navigation (`Page.navigatedWithinDocument`), not a new document. */
+  | { type: 'navigated', url: string, sameDocument: boolean }
+
+function pathOf(url: string): string {
+  try {
+    const parsed = new URL(url)
+    return `${parsed.origin}${parsed.pathname}`
+  }
+  catch {
+    return url.replace(/[?#].*$/, '')
+  }
+}
+
+/**
+ * Split a visit's requests into page loads (see `PageAuditOptions.pageLoads`).
+ * The first new document is the page itself; each later one, and each
+ * same-document navigation to another path, starts the next load.
+ */
+export function splitPageLoads(url: string, events: readonly PageAuditEvent[], mode: 'navigation' | 'visit' = 'navigation'): PageLoad[] {
+  const loads: Array<{ url: string, apiRequests: string[] }> = [{ url, apiRequests: [] }]
+  let committed = false
+  for (const event of events) {
+    const current = loads.at(-1)!
+    if (event.type === 'request') {
+      current.apiRequests.push(event.request)
+      continue
+    }
+    const opensLoad = mode === 'navigation' && committed
+      && (event.sameDocument ? pathOf(event.url) !== pathOf(current.url) : true)
+    committed = true
+    if (opensLoad) loads.push({ url: event.url, apiRequests: [] })
+    else current.url = event.url
+  }
+  return loads.map(load => ({ ...load, duplicates: duplicateRequests(load.apiRequests) }))
+}
+
+/** The highest count each request reached in any one load. */
+export function loadDuplicates(loads: readonly PageLoad[]): Record<string, number> {
+  const duplicates: Record<string, number> = {}
+  for (const load of loads) {
+    for (const [request, count] of Object.entries(load.duplicates))
+      duplicates[request] = Math.max(duplicates[request] ?? 0, count)
+  }
+  return duplicates
+}
+
 /**
  * Load `url` once and report what it cost and what went wrong: the same API
- * request made more than once in one load, failed same-origin requests, and
- * console errors. Never throws for a page problem: a launch or navigation
- * failure is reported in `errors`.
+ * request made more than once in one page load, failed same-origin requests,
+ * and console errors, and where the page landed. A page that sends you on
+ * (`/today` to `/home`) is counted as two loads (`pageLoads`). Never throws
+ * for a page problem: a launch or navigation failure is reported in `errors`.
  *
  * @example
  * const report = await auditPage('http://localhost:3000/dashboard', {
@@ -646,11 +940,36 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
   const origin = new URL(url).origin
   const isApi = options.isApiRequest ?? defaultIsApi
   const apiRequests: string[] = []
+  const events: PageAuditEvent[] = []
   const failed: string[] = []
   let launched: LaunchedChrome | null = null
   let cdp = options.cdp
   const removers: Array<() => void> = []
   const errorsBefore = cdp?.errors.length ?? 0
+  let mainFrame: string | undefined
+  let lastUrl = url
+
+  const finish = async (settled: boolean, extraErrors: string[] = []): Promise<PageAuditReport> => {
+    const loads = splitPageLoads(url, events, options.pageLoads)
+    let finalUrl = lastUrl
+    if (cdp && !cdp.closed) {
+      const here = await cdp.evaluate<string>('location.href').catch(() => null)
+      // A failed navigation leaves Chrome's own error page, which is nowhere.
+      if (here && here !== 'about:blank' && !here.startsWith('chrome-error:')) finalUrl = here
+    }
+    return {
+      url,
+      finalUrl,
+      apiRequests,
+      duplicates: loadDuplicates(loads),
+      loads,
+      failed,
+      errors: [...(cdp?.errors.slice(errorsBefore) ?? []), ...extraErrors],
+      settled,
+      durationMs: Date.now() - started,
+    }
+  }
+
   try {
     if (!cdp) {
       launched = await launch(options.launch)
@@ -659,30 +978,40 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
     const session = cdp
     removers.push(session.on('Network.requestWillBeSent', (params) => {
       const request = new URL(params.request.url)
-      if (request.origin === origin && isApi(request, params.request.method))
-        apiRequests.push(`${params.request.method} ${request.pathname}${request.search}`)
+      if (request.origin === origin && isApi(request, params.request.method)) {
+        const entry = `${params.request.method} ${request.pathname}${request.search}`
+        apiRequests.push(entry)
+        events.push({ type: 'request', request: entry })
+      }
     }))
     removers.push(session.on('Network.responseReceived', (params) => {
       const response = new URL(params.response.url)
       if (response.origin === origin && params.response.status >= 400)
         failed.push(`${params.response.status} ${response.pathname}`)
     }))
+    removers.push(session.on('Page.frameNavigated', (params) => {
+      if (params.frame?.parentId) return
+      mainFrame = params.frame?.id ?? mainFrame
+      // A page that failed to load commits Chrome's error page; `unreachableUrl` is the one asked for.
+      lastUrl = params.frame?.unreachableUrl || `${params.frame?.url ?? lastUrl}${params.frame?.urlFragment ?? ''}`
+      events.push({ type: 'navigated', url: lastUrl, sameDocument: false })
+    }))
+    removers.push(session.on('Page.navigatedWithinDocument', (params) => {
+      if (mainFrame && params.frameId !== mainFrame) return
+      lastUrl = params.url
+      events.push({ type: 'navigated', url: params.url, sameDocument: true })
+    }))
+    // For the navigation events (`launch()` has it on; a caller's session may not).
+    await session.send('Page.enable')
+    mainFrame = (await session.send('Page.getFrameTree').catch(() => null))?.frameTree?.frame?.id
     if (options.viewport)
       await session.send('Emulation.setDeviceMetricsOverride', { deviceScaleFactor: 1, mobile: false, ...options.viewport })
     await options.beforeNavigate?.(session)
     const settled = await navigate(session, url, options)
-    return { url, apiRequests, duplicates: duplicateRequests(apiRequests), failed, errors: session.errors.slice(errorsBefore), settled, durationMs: Date.now() - started }
+    return await finish(settled)
   }
   catch (error) {
-    return {
-      url,
-      apiRequests,
-      duplicates: duplicateRequests(apiRequests),
-      failed,
-      errors: [...(cdp?.errors.slice(errorsBefore) ?? []), `audit: ${(error as Error)?.message ?? String(error)}`],
-      settled: false,
-      durationMs: Date.now() - started,
-    }
+    return await finish(false, [`audit: ${(error as Error)?.message ?? String(error)}`])
   }
   finally {
     for (const remove of removers) remove()
@@ -690,16 +1019,23 @@ export async function auditPage(url: string, options: PageAuditOptions = {}): Pr
   }
 }
 
-/** One line per page: `/path: 12 api | dup 2x GET /api/me | failed 404 /api/x | errors ...`. */
-export function formatPageAudit(report: PageAuditReport): string {
-  let path = report.url
+/** The path and query of a URL, or the text itself when it is not one. */
+function shortUrl(url: string): string {
   try {
-    const parsed = new URL(report.url)
-    path = `${parsed.pathname}${parsed.search}`
+    const parsed = new URL(url)
+    return `${parsed.pathname}${parsed.search}`
   }
-  catch {}
+  catch {
+    return url
+  }
+}
+
+/** One line per page: `/today -> /home: 12 api | dup 2x GET /api/me | failed 404 /api/x | errors ...`. */
+export function formatPageAudit(report: PageAuditReport): string {
+  const path = shortUrl(report.url)
+  const landed = report.finalUrl ? shortUrl(report.finalUrl) : path
   const dup = Object.entries(report.duplicates).map(([request, count]) => `${count}x ${request}`)
-  return `${path}: ${report.apiRequests.length} api`
+  return `${path}${landed !== path ? ` -> ${landed}` : ''}: ${report.apiRequests.length} api`
     + `${dup.length ? ` | dup ${dup.join(', ')}` : ''}`
     + `${report.failed.length ? ` | failed ${report.failed.join(', ')}` : ''}`
     + `${report.errors.length ? ` | errors ${report.errors.slice(0, 3).join(' ; ')}` : ''}`
