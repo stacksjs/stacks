@@ -324,15 +324,7 @@ onMount(() => {
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
 
-  <section aria-label="Point of sale metrics" class="grid gap-3 grid-cols-2 xl:grid-cols-4">
-    <template :for="item in metricCards()" :key="item.label">
-      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
-        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
-        <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
-      </article>
-    </template>
-  </section>
+  <MetricCards label="Point of sale metrics" columns="grid-cols-2 xl:grid-cols-4" :items="metricCards()" />
 
   <div class="grid gap-6 grid-cols-1 items-start lg:grid-cols-[minmax(0,1fr)_20rem]">
     <CommercePosCatalog :products="visibleProducts()" :categories="categories()" :search="search()" :category="categoryFilter()" :availability="availabilityFilter()" :currency="defaultCurrency()" :loading="loading()" @search="search.set($event)" @category="categoryFilter.set($event)" @availability="availabilityFilter.set($event)" @add="addProduct" />
