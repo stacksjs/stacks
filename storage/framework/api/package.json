@@ -1,7 +1,7 @@
 {
   "name": "stacks-api",
   "type": "module",
-  "version": "0.75.228",
+  "version": "0.75.229",
   "scripts": {
     "build": "bun build.ts",
     "dev": "bun --hot run dev.ts",
