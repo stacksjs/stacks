@@ -732,6 +732,20 @@ route.post('/form', async (req) => {
 | `user()` | Get authenticated user |
 | `tokenCan(ability)` | Check token ability |
 
+### Bounded JSON protocol bodies
+
+When a handler owns the raw request, disable automatic body parsing and use
+`readJsonBody(request, 8192, { rejectDuplicateKeys: true })` from
+`@stacksjs/router/body`. This opt-in rejects repeated object keys, including
+escaped spellings, at any depth with status400. The reader continues to enforce
+the byte limit, application/json media type and strict UTF-8. Existing callers
+keep the default JSON.parse behavior. Authentication and schema validation remain
+the handler's responsibility.
+
+`parseJsonText(text, options)` from `@stacksjs/router/json` or the root export is
+the matching parser for already-decoded, bounded text. It throws SyntaxError;
+it does not enforce a request size or decode UTF-8 itself.
+
 ### Chainable Route Methods
 
 | Method | Description |

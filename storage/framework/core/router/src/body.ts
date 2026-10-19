@@ -1,3 +1,6 @@
+import type { JsonParseOptions } from './json'
+import { parseJsonText } from './json'
+
 /** Bounded body reads for protocol handlers that need the original wire body. */
 export class RequestBodyError extends Error {
   constructor(message: string, readonly status: 400 | 413 | 415) {
@@ -6,13 +9,13 @@ export class RequestBodyError extends Error {
   }
 }
 
-export async function readJsonBody(request: Request, maxBytes = 1_048_576): Promise<unknown> {
+export async function readJsonBody(request: Request, maxBytes = 1_048_576, options: JsonParseOptions = {}): Promise<unknown> {
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1)
     throw new RangeError('maxBytes must be a positive safe integer')
   if (request.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() !== 'application/json')
     throw new RequestBodyError('Content-Type must be application/json', 415)
   const text = await readTextBody(request, maxBytes)
-  try { return JSON.parse(text) }
+  try { return parseJsonText(text, options) }
   catch { throw new RequestBodyError('Send valid UTF-8 JSON', 400) }
 }
 

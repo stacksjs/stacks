@@ -76,6 +76,28 @@ For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://stacksjs.com/discord)
 
+## Bounded JSON protocols
+
+Routes that own their wire body can opt into rejecting duplicate object keys:
+
+```ts
+import { readJsonBody } from '@stacksjs/router/body'
+
+const input = await readJsonBody(request, 8192, { rejectDuplicateKeys: true })
+```
+
+Keep automatic body parsing disabled for this route. The reader checks the media
+type, counts streamed bytes and validates UTF-8 before parsing. Duplicate keys at
+any depth, including equivalent escaped spellings, produce `RequestBodyError`
+with status400. The default retains normal `JSON.parse` behavior for existing
+callers. Identical names in different objects remain valid, and Unicode keys are
+compared after escape decoding without Unicode normalization.
+
+`parseJsonText(text, options)` is also exported from `@stacksjs/router` and
+`@stacksjs/router/json` for already-decoded JSON. It throws `SyntaxError` for
+invalid JSON or a duplicate key in strict mode. This helper does not read a
+request, limit bytes, authenticate a caller or validate an application schema.
+
 ## 📄 License
 
 The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.

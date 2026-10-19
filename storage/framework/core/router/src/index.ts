@@ -15,6 +15,8 @@
 import './request-augmentation'
 
 export { readJsonBody, readTextBody, RequestBodyError } from './body'
+export { parseJsonText } from './json'
+export type { JsonParseOptions } from './json'
 
 // Re-export everything from bun-router (includes response factory)
 export * from '@stacksjs/bun-router'

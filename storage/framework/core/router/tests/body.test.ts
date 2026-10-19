@@ -23,3 +23,10 @@ test('bounded form reads count bytes without trusting Content-Length', async () 
   expect(await readTextBody(request('grant_type=refresh_token', { 'Content-Type': 'application/x-www-form-urlencoded' }), 100)).toBe('grant_type=refresh_token')
   await expect(readTextBody(request('é'.repeat(10), { 'Content-Length': '1' }), 10)).rejects.toMatchObject({ status: 413 })
 })
+
+test('strict JSON bodies refuse duplicate object keys instead of discarding an earlier value', async () => {
+  await expect(readJsonBody(request('{"decision":"decline","decision":"accept"}'), 8192, { rejectDuplicateKeys: true })).rejects.toMatchObject({ status: 400 })
+  await expect(readJsonBody(request(String.raw`{"packet":[{"recipient":1,"\u0072ecipient":2}]}`), 8192, { rejectDuplicateKeys: true })).rejects.toMatchObject({ status: 400 })
+  expect(await readJsonBody(request('{"decision":"decline","decision":"accept"}'))).toEqual({ decision: 'accept' })
+  expect(await readJsonBody(request('{"decision":"decline","decision":"accept"}'), 8192, { rejectDuplicateKeys: false })).toEqual({ decision: 'accept' })
+})
