@@ -1,5 +1,6 @@
 <script client>
 import { dashboardApi } from '../../../../../functions/dashboard-api'
+import { useRecordsDashboard } from '../../../../../functions/dashboard-list'
 import { pushToast } from '../../../../../functions/toasts'
 
 type CourierStatus = 'active' | 'on_delivery' | 'on_break'
@@ -34,38 +35,8 @@ interface CourierPayload {
   userId: number | null
 }
 
-const records = state<CourierRecord[]>([])
-const users = state<UserOption[]>([])
-const loading = state(true)
-const loadError = state('')
-const search = state('')
-const page = state(1)
-const perPage = state(10)
-const editorOpen = state(false)
-const editorMode = state<'create' | 'edit'>('create')
-const editing = state<CourierRecord | null>(null)
-const saving = state(false)
-const editorError = state('')
-const deleting = state<CourierRecord | null>(null)
-const deleteBusy = state(false)
-const deleteError = state('')
-
-function userFor(id?: number | null): UserOption | undefined {
-  return id ? users().find(user => user.id === id) : undefined
-}
-
-function withUser(record: CourierRecord): CourierRecord {
-  return {
-    ...record,
-    user: userFor(record.user_id) || record.user,
-  }
-}
-
-function filteredRecords(): CourierRecord[] {
-  const query = search().trim().toLowerCase()
-  if (!query)
-    return records()
-  return records().filter(record => [
+function matchesQuery(records: CourierRecord[], query: string): CourierRecord[] {
+  return records.filter(record => [
     record.name,
     record.phone,
     record.vehicle_number,
@@ -76,9 +47,46 @@ function filteredRecords(): CourierRecord[] {
   ].some(value => String(value || '').toLowerCase().includes(query)))
 }
 
-function paginatedRecords(): CourierRecord[] {
-  const start = (page() - 1) * perPage()
-  return filteredRecords().slice(start, start + perPage())
+const {
+  records,
+  loading,
+  loadError,
+  search,
+  page,
+  perPage,
+  editorOpen,
+  editorMode,
+  editing,
+  saving,
+  editorError,
+  deleting,
+  deleteBusy,
+  deleteError,
+  filteredRecords,
+  paginatedRecords,
+  goToPage,
+  handleSearch,
+  openCreate,
+  openEdit,
+  closeEditor,
+  requestDelete,
+  closeDelete,
+  upsert,
+  remove,
+  clampPage,
+} = useRecordsDashboard<CourierRecord>({ filter: matchesQuery })
+
+const users = state<UserOption[]>([])
+
+function userFor(id?: number | null): UserOption | undefined {
+  return id ? users().find(user => user.id === id) : undefined
+}
+
+function withUser(record: CourierRecord): CourierRecord {
+  return {
+    ...record,
+    user: userFor(record.user_id) || record.user,
+  }
 }
 
 function statusCount(status: CourierStatus): number {
@@ -106,9 +114,7 @@ async function loadCouriers(): Promise<void> {
       throw new TypeError('Courier resources were not returned in the expected shape.')
     users.set(userData.users)
     records.set(courierData.map(withUser))
-    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
-    if (page() > lastPage)
-      page.set(lastPage)
+    clampPage()
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -117,33 +123,6 @@ async function loadCouriers(): Promise<void> {
   finally {
     loading.set(false)
   }
-}
-
-function handleSearch(value: string): void {
-  search.set(value)
-  page.set(1)
-}
-
-function openCreate(): void {
-  editing.set(null)
-  editorMode.set('create')
-  editorError.set('')
-  editorOpen.set(true)
-}
-
-function openEdit(record: CourierRecord): void {
-  editing.set(record)
-  editorMode.set('edit')
-  editorError.set('')
-  editorOpen.set(true)
-}
-
-function closeEditor(): void {
-  if (saving())
-    return
-  editorOpen.set(false)
-  editing.set(null)
-  editorError.set('')
 }
 
 function setEditorError(message: string): void {
@@ -165,14 +144,7 @@ async function saveCourier(payload: CourierPayload): Promise<void> {
       },
     )
     const hydrated = withUser(updated)
-    if (current) {
-      records.set(records().map(record => record.id === current.id ? hydrated : record))
-    }
-    else {
-      const nextRecords = [...records(), hydrated]
-      records.set(nextRecords)
-      page.set(Math.max(1, Math.ceil(nextRecords.length / perPage())))
-    }
+    upsert(hydrated, current)
     editorOpen.set(false)
     editing.set(null)
     pushToast('success', current ? 'Courier updated' : 'Courier added', { detail: hydrated.name })
@@ -185,18 +157,6 @@ async function saveCourier(payload: CourierPayload): Promise<void> {
   }
 }
 
-function requestDelete(record: CourierRecord): void {
-  deleting.set(record)
-  deleteError.set('')
-}
-
-function closeDelete(): void {
-  if (deleteBusy())
-    return
-  deleting.set(null)
-  deleteError.set('')
-}
-
 async function confirmDelete(): Promise<void> {
   const current = deleting()
   if (!current)
@@ -207,11 +167,8 @@ async function confirmDelete(): Promise<void> {
     await dashboardApi(`/api/dashboard/commerce/couriers/${current.id}`, {
       method: 'DELETE',
     })
-    records.set(records().filter(record => record.id !== current.id))
+    remove(current)
     deleting.set(null)
-    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
-    if (page() > lastPage)
-      page.set(lastPage)
     pushToast('success', 'Courier deleted', { detail: current.name })
   }
   catch (error) {
@@ -220,10 +177,6 @@ async function confirmDelete(): Promise<void> {
   finally {
     deleteBusy.set(false)
   }
-}
-
-function goToPage(value: number): void {
-  page.set(value)
 }
 
 onMount(() => {
