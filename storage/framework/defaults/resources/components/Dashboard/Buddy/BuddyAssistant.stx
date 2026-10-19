@@ -84,21 +84,17 @@ onMount(() => {
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Buddy</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ask framework questions through your configured Stacks AI provider.</p>
-    </div>
-    <div class="flex gap-2 items-center">
-      <span :class="'inline-flex items-center px-2.5 py-1 font-medium text-xs rounded-full ' + (chatState()?.configured ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-950')">
-        <span :class="'mr-1.5 h-1.5 w-1.5 rounded-full ' + (chatState()?.configured ? 'bg-green-500' : 'bg-amber-500')"></span>
-        {{ providerName() }} {{ chatState()?.configured ? 'ready' : 'needs configuration' }}
-      </span>
-      <Button :if="messages().length > 0" variant="secondary" size="sm" @click="clearHistory">
-        Clear
-      </Button>
-    </div>
-  </header>
+  <PageHeader title="Buddy" description="Ask framework questions through your configured Stacks AI provider.">
+  <div class="flex gap-2 items-center">
+    <span :class="'inline-flex items-center px-2.5 py-1 font-medium text-xs rounded-full ' + (chatState()?.configured ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-950')">
+      <span :class="'mr-1.5 h-1.5 w-1.5 rounded-full ' + (chatState()?.configured ? 'bg-green-500' : 'bg-amber-500')"></span>
+      {{ providerName() }} {{ chatState()?.configured ? 'ready' : 'needs configuration' }}
+    </span>
+    <Button :if="messages().length > 0" variant="secondary" size="sm" @click="clearHistory">
+      Clear
+    </Button>
+  </div>
+  </PageHeader>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
     {{ loadError() }}

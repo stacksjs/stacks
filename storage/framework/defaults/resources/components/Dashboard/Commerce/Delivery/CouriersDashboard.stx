@@ -187,16 +187,12 @@ onMount(() => {
 <div class="space-y-6">
   <TabNavigation model-value="couriers" />
 
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Delivery couriers</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage courier availability, vehicles, licenses, and optional user accounts.</p>
-    </div>
-    <div class="flex gap-2">
-      <Button :loading="loading()" variant="secondary" @click="loadCouriers()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-      <Button :disabled="loading()" @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add courier</Button>
-    </div>
-  </header>
+  <PageHeader title="Delivery couriers" description="Manage courier availability, vehicles, licenses, and optional user accounts.">
+  <div class="flex gap-2">
+    <Button :loading="loading()" variant="secondary" @click="loadCouriers()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+    <Button :disabled="loading()" @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add courier</Button>
+  </div>
+  </PageHeader>
 
   <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadCouriers()">Retry</Button></div>
 
