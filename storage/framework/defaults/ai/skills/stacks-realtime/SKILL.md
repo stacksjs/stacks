@@ -391,6 +391,18 @@ resolve current credentials, grants and expiry on every call; context binding
 does not freeze authorization facts. Pass the request's abort signal. Cancellation, failed authorization and slow consumers remove the hook.
 Streams bound both queued events and pending authorization work (64 by default).
 
+Optional `onEnqueue(chunk, broadcast)` runs after successful native enqueue with
+the exact queued Uint8Array and original `{ channel, event, data }` metadata.
+Connected/heartbeat metadata is null. Do not mutate the chunk. This observes
+local queue admission, not remote receipt or reader demand. Optional `onClose()`
+runs once after removing the subscription, heartbeat and abort listener. These
+callbacks are captured before initial authorization awaits, keep the subscriber's
+async context and preserve their options receiver. They run synchronously;
+enqueue observer throws or accidental promise rejections close the stream.
+Close observer failures are contained. Initial unauthorized responses create no
+subscription and do not notify close. The optional hooks leave wire bytes,
+authorization, capacity and existing callers unchanged.
+
 STX's `useBroadcastStream({ request, endpoint, onMessage, onConnected })` makes
 fresh authenticated requests using the application's injected transport, reconnects
 with backoff, and cancels on `close()`. Re-read durable state in `onConnected`;

@@ -72,7 +72,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/push` | [`stacks-push`](../stacks-push/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/push/src/index.ts) | 6 |
 | `@stacksjs/query-builder` | [`stacks-query-builder`](../stacks-query-builder/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/query-builder/src/index.ts) | 6 |
 | `@stacksjs/queue` | [`stacks-queue`](../stacks-queue/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/queue/src/index.ts) | 48 |
-| `@stacksjs/realtime` | [`stacks-realtime`](../stacks-realtime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/index.ts) | 11 |
+| `@stacksjs/realtime` | [`stacks-realtime`](../stacks-realtime/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/index.ts) | 12 |
 | `@stacksjs/registry` | [`stacks-registry`](../stacks-registry/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/registry/src/index.ts) | 1 |
 | `@stacksjs/repl` | [`stacks-repl`](../stacks-repl/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/repl/src/index.ts) | 2 |
 | `@stacksjs/router` | [`stacks-router`](../stacks-router/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/router/src/index.ts) | 92 |
@@ -697,7 +697,7 @@ Declared runtime exports: `LegacyBroadcast`, `StacksChannel`, `channel`, `create
 
 Local source modules: [src/broadcast.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/broadcast.ts), [src/channel.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/channel.ts), [src/emit.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/emit.ts), [src/replay-buffer.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/replay-buffer.ts), [src/server-instance.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/server-instance.ts), [src/stream.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/stream.ts), [src/ws.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/src/ws.ts).
 
-Evidence directory: [11 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [12 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/realtime/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/registry
 

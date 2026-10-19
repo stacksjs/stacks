@@ -190,6 +190,16 @@ export default {
 
 ## Authenticated HTTP streams
 
+Optional `onEnqueue(chunk, broadcast)` observes a successful local enqueue. The
+chunk is the exact queued `Uint8Array`; broadcast metadata retains the original
+`channel`, `event` and `data` identity. Connected and heartbeat frames pass
+`null` metadata. Do not mutate these bytes. This is local queue admission, not a
+client receipt. Optional `onClose()` runs once after subscription cleanup.
+Both callbacks retain the subscriber's async context and options receiver.
+They run synchronously without delaying delivery. A throwing or rejecting
+enqueue observer closes the stream; close observer failures are contained.
+Neither callback changes framing, authorization checks or queue limits.
+
 `createBroadcastHub()` initializes the native broadcast engine without opening a
 WebSocket listener. `createBroadcastResponse({ channels, authorize, signal })`
 returns an SSE response for server-selected channels. Authorization runs before
