@@ -265,6 +265,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/router": "workspace:*",
         "@stacksjs/security": "workspace:*",
+        "@stacksjs/socials": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/ts-auth": "^0.4.7",
         "ts-qr-codes": "^0.1.8"
@@ -1248,7 +1249,8 @@
       "dependencies": {
         "@stacksjs/api": "workspace:*",
         "@stacksjs/composables": "workspace:*",
-        "@stacksjs/config": "workspace:*"
+        "@stacksjs/config": "workspace:*",
+        "@stacksjs/database": "workspace:*"
       },
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
