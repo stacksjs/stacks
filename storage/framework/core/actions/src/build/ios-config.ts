@@ -35,6 +35,7 @@ export interface CraftIosConfig {
   nativeBundle?: string
   /** The bundle route the app script runs under (stx's `__app`). */
   nativeApp?: string
+  nativeScriptThread?: IosMobileConfig['nativeScriptThread']
   tabs?: IosMobileConfig['tabs']
   shareStorage?: Record<string, string>
   appGroups?: string[]
@@ -280,6 +281,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     renderer: config.renderer,
     nativeScreens: config.nativeScreens,
     nativeApp: config.nativeApp ? NATIVE_APP_ROUTE : undefined,
+    nativeScriptThread: config.nativeScriptThread,
     tabs: config.tabs,
     shareStorage: config.shareStorage,
     appGroups: config.appGroups,
