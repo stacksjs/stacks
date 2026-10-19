@@ -1,6 +1,6 @@
 <script client>
-import type {
 import { formErrorMessages } from '../../../../functions/dashboard-form'
+import type {
   ProductUnitOption,
   ProductUnitRecord,
 } from '../../../../app/Actions/Dashboard/Commerce/product-unit-records'

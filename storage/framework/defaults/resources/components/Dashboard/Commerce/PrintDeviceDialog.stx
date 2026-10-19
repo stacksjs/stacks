@@ -1,6 +1,6 @@
 <script client>
-import type {
 import { formErrorMessages } from '../../../../functions/dashboard-form'
+import type {
   PrintDeviceRecord,
   PrintDeviceStatus,
 } from '../../../../app/Actions/Dashboard/Commerce/print-device-records'
