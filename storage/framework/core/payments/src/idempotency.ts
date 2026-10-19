@@ -91,3 +91,24 @@ export function freshIdempotencyKey(scope: string, ...parts: Array<string | numb
   const random = createHash('sha256').update(`${Date.now()}:${Math.random()}`).digest('hex').slice(0, 16)
   return stacksIdempotencyKey(scope, ...parts, random)
 }
+
+/**
+ * A short, stable digest of a value, for folding request parameters into an
+ * idempotency key. Object keys are sorted first, so `{ a, b }` and `{ b, a }`
+ * give the same digest; `undefined` properties are dropped, as JSON drops them.
+ */
+export function idempotencyFingerprint(value: unknown): string {
+  return createHash('sha256').update(stableJson(value)).digest('hex').slice(0, 24)
+}
+
+function stableJson(value: unknown): string {
+  if (value === null || typeof value !== 'object')
+    return JSON.stringify(value) ?? 'null'
+  if (Array.isArray(value))
+    return `[${value.map(item => stableJson(item === undefined ? null : item)).join(',')}]`
+  const entries = Object.keys(value as Record<string, unknown>)
+    .filter(key => (value as Record<string, unknown>)[key] !== undefined)
+    .sort()
+    .map(key => `${JSON.stringify(key)}:${stableJson((value as Record<string, unknown>)[key])}`)
+  return `{${entries.join(',')}}`
+}

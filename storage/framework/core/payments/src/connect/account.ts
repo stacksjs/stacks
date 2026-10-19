@@ -1,7 +1,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { stripe } from '../drivers/stripe'
-import { stacksIdempotencyKey } from '../idempotency'
+import { idempotencyFingerprint, stacksIdempotencyKey } from '../idempotency'
 
 /**
  * A connected account's readiness, reduced to the questions a marketplace
@@ -26,9 +26,24 @@ export interface ConnectAccountStatus {
   raw: Stripe.Account
 }
 
+/**
+ * Which of a user's connected accounts this is. One user can own several (a
+ * gym and a coach storefront), and each needs its own idempotency key or the
+ * second creation inside Stripe's 24-hour window collides with the first.
+ */
+export interface CreateConnectedAccountOptions {
+  /**
+   * Your stable name for the account, such as `gym:12` or `storefront`. The
+   * idempotency key is built from it, the user and the creation parameters,
+   * so a retry of the same call returns the original account and a different
+   * reference creates a different one.
+   */
+  reference?: string
+}
+
 export interface ManageConnectedAccount {
-  createConnectedAccount: (user: UserModel, params?: Partial<Stripe.AccountCreateParams>) => Promise<Stripe.Response<Stripe.Account>>
-  createTestConnectedAccount: (user: UserModel, params?: Partial<Stripe.AccountCreateParams>) => Promise<Stripe.Response<Stripe.Account>>
+  createConnectedAccount: (user: UserModel, params?: Partial<Stripe.AccountCreateParams>, options?: CreateConnectedAccountOptions) => Promise<Stripe.Response<Stripe.Account>>
+  createTestConnectedAccount: (user: UserModel, params?: Partial<Stripe.AccountCreateParams>, options?: CreateConnectedAccountOptions) => Promise<Stripe.Response<Stripe.Account>>
   accountOnboardingLink: (accountId: string, options: OnboardingLinkOptions) => Promise<Stripe.Response<Stripe.AccountLink>>
   accountStatus: (accountId: string) => Promise<ConnectAccountStatus>
   retrieveConnectedAccount: (accountId: string) => Promise<Stripe.Response<Stripe.Account>>
@@ -43,10 +58,26 @@ export interface OnboardingLinkOptions {
   collect?: Stripe.AccountLinkCreateParams.CollectionOptions.Fields
 }
 
+/**
+ * The idempotency key for creating a connected account: the user, the
+ * caller's reference and a fingerprint of the creation parameters. The same
+ * call retried gives the same key; a different reference or different
+ * parameters give another.
+ */
+export function connectedAccountIdempotencyKey(
+  scope: 'connect.account.create' | 'connect.account.create_test',
+  userId: number | string,
+  params: Stripe.AccountCreateParams,
+  reference?: string,
+): string {
+  return stacksIdempotencyKey(scope, userId, reference, idempotencyFingerprint(params))
+}
+
 export const manageConnectedAccount: ManageConnectedAccount = (() => {
   async function createConnectedAccount(
     user: UserModel,
     params: Partial<Stripe.AccountCreateParams> = {},
+    options: CreateConnectedAccountOptions = {},
   ): Promise<Stripe.Response<Stripe.Account>> {
     const defaults: Stripe.AccountCreateParams = {
       type: 'express',
@@ -56,13 +87,16 @@ export const manageConnectedAccount: ManageConnectedAccount = (() => {
 
     const merged = { ...defaults, ...params } as Stripe.AccountCreateParams
 
-    // Deterministic, unlike the payment-intent keys: creating a second account
-    // for a merchant who already has one is never the intent, and the failure
-    // is expensive - a duplicate account starts its own onboarding and its own
-    // payout schedule, and the merchant cannot tell which one the platform
-    // will pay. A retry after a dropped response returns the original account.
+    // Deterministic, unlike the payment-intent keys: a retry after a dropped
+    // response must return the original account, because a duplicate starts
+    // its own onboarding and payout schedule and the merchant cannot tell
+    // which one the platform will pay. The key covers the reference and the
+    // parameters as well as the user: keyed by user alone, a user's second
+    // account (a gym and a coach storefront) inside Stripe's 24-hour window
+    // reused the first key, and Stripe refused it for differing parameters
+    // or handed back the first account.
     return await stripe.accounts.create(merged, {
-      idempotencyKey: stacksIdempotencyKey('connect.account.create', user.id),
+      idempotencyKey: connectedAccountIdempotencyKey('connect.account.create', user.id, merged, options.reference),
     })
   }
 
@@ -81,6 +115,7 @@ export const manageConnectedAccount: ManageConnectedAccount = (() => {
   async function createTestConnectedAccount(
     user: UserModel,
     params: Partial<Stripe.AccountCreateParams> = {},
+    options: CreateConnectedAccountOptions = {},
   ): Promise<Stripe.Response<Stripe.Account>> {
     const defaults: Stripe.AccountCreateParams = {
       type: 'express',
@@ -97,7 +132,7 @@ export const manageConnectedAccount: ManageConnectedAccount = (() => {
     const merged = { ...defaults, ...params } as Stripe.AccountCreateParams
 
     return await stripe.accounts.create(merged, {
-      idempotencyKey: stacksIdempotencyKey('connect.account.create_test', user.id),
+      idempotencyKey: connectedAccountIdempotencyKey('connect.account.create_test', user.id, merged, options.reference),
     })
   }
 

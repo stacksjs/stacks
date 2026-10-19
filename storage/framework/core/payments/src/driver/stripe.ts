@@ -40,7 +40,8 @@ export interface StripeOperations {
   subscribe: (payer: Payer, type: string, lookupKey: string) => Promise<Stripe.Subscription>
   cancelSubscription: (subscriptionId: string, atPeriodEnd: boolean) => Promise<Stripe.Subscription>
   listSubscriptions: (customerId: string) => Promise<Stripe.Subscription[]>
-  constructEvent: (payload: string, signature: string, secret: string) => Promise<Stripe.Event>
+  /** `tolerance`: seconds of clock skew a signature may have; omitted, Stripe's default (300). */
+  constructEvent: (payload: string, signature: string, secret: string, tolerance?: number) => Promise<Stripe.Event>
 }
 
 const CAPABILITIES: ReadonlySet<PaymentOperation> = new Set<PaymentOperation>([
@@ -192,6 +193,8 @@ export interface StripeDriverOptions {
   operations: StripeOperations
   /** The account webhook's signing secret. */
   webhookSecret?: string
+  /** Seconds of clock skew a webhook signature may have. Defaults to Stripe's 300. */
+  webhookTolerance?: number
 }
 
 export class StripeDriver implements PaymentDriver {
@@ -199,10 +202,12 @@ export class StripeDriver implements PaymentDriver {
   readonly capabilities = CAPABILITIES
   private readonly ops: StripeOperations
   private readonly webhookSecret?: string
+  private readonly webhookTolerance?: number
 
   constructor(options: StripeDriverOptions) {
     this.ops = options.operations
     this.webhookSecret = options.webhookSecret
+    this.webhookTolerance = options.webhookTolerance
   }
 
   async customer(payer: Payer): Promise<Customer> {
@@ -340,7 +345,7 @@ export class StripeDriver implements PaymentDriver {
 
     let event: Stripe.Event
     try {
-      event = await this.ops.constructEvent(request.payload, signature, this.webhookSecret)
+      event = await this.ops.constructEvent(request.payload, signature, this.webhookSecret, this.webhookTolerance)
     }
     catch (error) {
       throw new WebhookSignatureError('stripe', (error as Error).message)
