@@ -13,6 +13,7 @@ type Expect<T extends true> = T
 const Mission = defineModel({
   name: 'Mission',
   table: 'missions',
+  dashboard: { access: false, enabled: true },
   belongsTo: [
     'Farm',
     'TreatmentMap',

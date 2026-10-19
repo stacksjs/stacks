@@ -371,6 +371,17 @@ export type DashboardConfig = Partial<DashboardOptions>
  */
 export interface DashboardModelOptions {
   /**
+   * Expose this model through generic dashboard catalogs, counts, global
+   * search and model-browser reads/writes. Defaults to `true`.
+   *
+   * `false` excludes the model server-side before row queries. It does not
+   * disable the ORM, named domain Actions, or the separate `useApi` routes,
+   * and it does not add row ownership or authorization to exposed models.
+   * Unlike `enabled`, this is a data exposure boundary, not a sidebar toggle.
+   */
+  access?: boolean
+
+  /**
    * Hide this model from the dashboard sidebar entirely. Direct
    * navigation to `/models/<id>` still works — this only suppresses the
    * sidebar row.

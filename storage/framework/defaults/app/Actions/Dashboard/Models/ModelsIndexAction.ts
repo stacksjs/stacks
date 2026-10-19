@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
+import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { modelApiConfiguration } from './model-api'
 
 /**
@@ -127,7 +128,7 @@ export default new Action({
     let userland: Array<Omit<DiscoveredModel, 'source'>>
     let defaults: Array<Omit<DiscoveredModel, 'source'>>
     try {
-      userland = walkModels(userlandDir, false)
+      userland = walkModels(userlandDir, true)
       defaults = walkModels(defaultsDir, true)
     }
     catch (error) {
@@ -144,11 +145,12 @@ export default new Action({
       }
     }
 
-    const enriched = await Promise.all(merged.map(async (m): Promise<ModelRow> => {
+    const candidates = await Promise.all(merged.map(async (m): Promise<ModelRow | null> => {
       let Model: any
       try {
         const module = await import(m.file)
-        Model = module.default ?? module
+        Model = await resolveDashboardModel(m.name, module.default ?? module)
+        if (!Model) return null
       }
       catch (error) {
         return unavailableModelRow(
@@ -190,6 +192,7 @@ export default new Action({
       }
     }))
 
+    const enriched = candidates.filter((model): model is ModelRow => model !== null)
     enriched.sort((a, b) => a.name.localeCompare(b.name))
 
     const totalModels = enriched.length
