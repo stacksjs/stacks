@@ -2,7 +2,7 @@
   "name": "@stacksjs/config",
   "type": "module",
   "sideEffects": false,
-  "version": "0.75.233",
+  "version": "0.75.234",
   "description": "The Stacks config helper methods.",
   "author": "Chris Breuer",
   "contributors": [
@@ -59,7 +59,7 @@
     "@stacksjs/features": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
-    "ts-pantry": "^0.11.69"
+    "ts-pantry": "^0.11.98"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
