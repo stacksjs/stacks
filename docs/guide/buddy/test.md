@@ -103,7 +103,9 @@ buddy test:page-audit --url http://localhost:3000/m --mobile --json > page-audit
 
 It exits 1 when any page has a duplicate, a failure or an error, or never
 settles. An API request is a same-origin path under `/api/` (event streams
-excluded). It drives the installed Chrome or Chromium, or `CHROME_PATH`; on
+excluded). Duplicates are counted per page load, so a page that sends you on
+(`/today` to `/home`) may ask for the same thing once in each; the line shows
+where it landed (`/today -> /home: ...`). It drives the installed Chrome or Chromium, or `CHROME_PATH`; on
 macOS it runs a private clone the Chrome updater leaves alone (see
 [Browser testing](/packages/testing#browser-testing)). To sign in first or audit
 from a test, call `auditPage()` from `@stacksjs/testing/browser`.

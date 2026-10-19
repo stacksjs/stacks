@@ -13,9 +13,9 @@
  * hanging the run. Nothing here depends on the framework, so it is safe to
  * import from any test.
  */
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import process from 'node:process'
 
 export interface RunIsolatedOptions {
@@ -46,9 +46,17 @@ export interface RunIsolatedOptions {
   /**
    * Replace the project's `bunfig.toml` preloads with these (an empty list
    * means none), by pointing the child at a generated config. Leave it out to
-   * keep the project's bunfig as it is.
+   * keep the project's bunfig as it is. Not with `bunfig`: put the preloads
+   * in that file instead.
    */
   preload?: string[]
+
+  /**
+   * Run the child with this bunfig instead of the project's (`--config=`),
+   * for a suite that keeps its own (`tests/isolated/bunfig.toml`). A relative
+   * path is resolved against `cwd`. Leave it out to keep the project's.
+   */
+  bunfig?: string
 
   /** Read `.env` files as Bun normally does. Default true; false passes `--no-env-file`. */
   envFile?: boolean
@@ -111,8 +119,14 @@ export async function runIsolated(file: string, options: RunIsolatedOptions = {}
   const timeoutMs = options.timeoutMs ?? 60_000
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new RangeError('timeoutMs must be a positive number of milliseconds')
 
+  if (options.bunfig != null && options.preload) throw new TypeError('runIsolated takes bunfig or preload, not both: list the preloads in that bunfig')
   let configDir: string | null = null
   let config: string | undefined
+  if (options.bunfig != null) {
+    if (!options.bunfig) throw new TypeError('bunfig must be a path to a bunfig.toml')
+    config = resolve(options.cwd ?? process.cwd(), options.bunfig)
+    if (!existsSync(config)) throw new Error(`runIsolated: no bunfig at ${config}`)
+  }
   if (options.preload) {
     configDir = mkdtempSync(join(tmpdir(), 'stacks-isolated-'))
     // A config with no preload at all falls back to Bun's defaults, so an

@@ -112,15 +112,19 @@ export function connectRefundParams(source: RefundSource, options: ConnectRefund
  */
 export async function connectRefund(
   paymentId: string,
-  options: ConnectRefundOptions & { idempotencyKey?: string } = {},
+  options: ConnectRefundOptions & {
+    idempotencyKey?: string
+    /** The Stripe client to use: the framework's by default; a connected account's or a test double otherwise. */
+    client?: Pick<Stripe, 'paymentIntents' | 'charges' | 'refunds'>
+  } = {},
 ): Promise<Stripe.Response<Stripe.Refund>> {
   if (!paymentId || typeof paymentId !== 'string')
     throw new Error('[payments/connect] connectRefund needs a PaymentIntent or Charge id')
-  const { idempotencyKey, ...refundOptions } = options
+  const { idempotencyKey, client = stripe, ...refundOptions } = options
   const source: RefundSource = paymentId.startsWith('pi_')
-    ? await stripe.paymentIntents.retrieve(paymentId, { expand: ['latest_charge'] }) as unknown as RefundSource
-    : await stripe.charges.retrieve(paymentId) as unknown as RefundSource
-  return await stripe.refunds.create(connectRefundParams(source, refundOptions), {
+    ? await client.paymentIntents.retrieve(paymentId, { expand: ['latest_charge'] }) as unknown as RefundSource
+    : await client.charges.retrieve(paymentId) as unknown as RefundSource
+  return await client.refunds.create(connectRefundParams(source, refundOptions), {
     idempotencyKey: idempotencyKey ?? freshIdempotencyKey('connect.refund', paymentId, refundOptions.amount ?? 'full'),
   })
 }

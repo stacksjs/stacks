@@ -169,7 +169,8 @@ expect(result.exitCode).toBe(0)
 
 Retained implementation evidence lives under `core/testing/tests/`:
 `http-client`, `acting-as`, `database-assertions`, `events`, `mail`, `time`,
-`console`, `isolated`, `disposable-database` and `browser` test files. Fixture mechanics live in `core/testing/src/`;
+`console`, `isolated`, `disposable-database`, `browser` and `declarations` (what dtsx
+publishes for `browser.ts` / `isolated.ts`: no `unknown` fields) test files. Fixture mechanics live in `core/testing/src/`;
 `package.json` declares the root and database/DynamoDB/browser export boundaries.
 
 ## Isolated processes and disposable databases
@@ -191,7 +192,7 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
         env: { APP_ENV: 'test', ...database.env },
         timeoutMs: 45_000,
         envFile: false,      // --no-env-file
-        preload: [],         // replace bunfig preloads (none)
+        preload: [],         // replace bunfig preloads (none); or bunfig: 'tests/isolated/bunfig.toml'
       })
       assertIsolatedOk(result, 'checkout flow OK') // throws with stdout + stderr otherwise
     })
@@ -199,10 +200,14 @@ for (const dialect of ['sqlite', 'postgres'] as const) {
 }
 ```
 
-- `runIsolated(file, { env, timeoutMs = 60_000, args, cwd, mode, preload, envFile, inheritEnv, stdin })`
+- `runIsolated(file, { env, timeoutMs = 60_000, args, cwd, mode, preload, bunfig, envFile, inheritEnv, stdin })`
   resolves `{ code, signal, stdout, stderr, timedOut, durationMs, command }`. `mode: 'auto'` runs
   `*.test.*` / `*.spec.*` with `bun test`, anything else as a script; `env` values of `undefined`
   remove a variable. The watchdog sends SIGTERM at the timeout and SIGKILL 2 s later.
+- `bunfig: 'path/bunfig.toml'` runs the child with that config (`--config=`), resolved against
+  `cwd`; it must exist. `preload` instead generates a config holding only those preloads. They are
+  exclusive (a TypeError): list the preloads in your bunfig. Bun resolves a bunfig's relative
+  `preload` paths against the child's cwd, not the bunfig's directory.
 - `withDisposableDatabase(dialect, fn, { url?, prefix? })`: SQLite is a file in a fresh temp
   directory; Postgres is `CREATE DATABASE` on `url` or `STACKS_TEST_POSTGRES_URL`, dropped with
   `DROP DATABASE ... WITH (FORCE)` after `fn`, even when it throws (the test's error wins over a
@@ -236,18 +241,41 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
 ```
 
 - `Cdp`: `send`, `evaluate`, `on(method, fn)` (any number of listeners per method; returns an
-  unsubscribe), `off`, `once(method, match?, timeoutMs?)`, `errors`, `inFlight` (event streams
-  leave it when their response starts, so a page with live updates can still settle), `closed`
-  (every pending command fails at once when Chrome goes away).
+  unsubscribe), `off`, `once(method, match?, timeoutMs?)`, `intercept(patterns, handler)`,
+  `errors`, `inFlight: Map<requestId, 'METHOD url'>` (event streams leave it when their response
+  starts, so a page with live updates can still settle), `closed` (every pending command fails at
+  once when Chrome goes away).
 - `launch(options)` enables Page/Runtime/Network/Log, sets a 1440x1000 viewport, answers stx's
   live-reload stream (`*/_stx/hmr*`) with a day-long retry so a save mid-run cannot reload the
   page, accepts JavaScript dialogs and records them in `errors`, removes "HeadlessChrome" from the
   user agent, and passes `--use-mock-keychain`. `profile` keeps one profile across relaunches.
+- **Pausing requests next to live reload.** Chrome keeps one `Fetch.enable` pattern set per
+  session (a second call replaces it, `Fetch.disable` drops all) and sends every paused request to
+  every listener, so the session layers them. `await cdp.intercept([{ urlPattern: '*/api/slow*' }],
+  (paused, cdp) => ...)` hands a handler only what its own patterns match and resolves with an
+  async remover; `quietLiveReload(cdp, patterns?)` is one (what `launch()` runs). Your own
+  `cdp.send('Fetch.enable' | 'Fetch.disable')` sets one more layer and the session enables the
+  union, so a journey that holds its own request needs no `quietLiveReload: false`.
+  `on('Fetch.requestPaused')` listeners see the requests your patterns match, not the live-reload
+  stream. The first answer wins: a second `continueRequest`/`fulfillRequest`/`failRequest` for one
+  pause resolves without reaching Chrome. A pause nobody could answer is continued; one your own
+  pattern holds with no listener stays held (a hanging request on purpose).
+  `matchesUrlPattern(pattern, url)` and `pausedRequestMatches(pattern, paused)` are Chrome's
+  matching rules (`*`, `?`, `\` escape; stage and resource type).
 - `settle(cdp, { quietMs, timeoutMs })` resolves false (not throws) when a page never goes quiet.
-- `auditPage(url, { cdp?, launch?, viewport?, isApiRequest?, beforeNavigate?, quietMs, timeoutMs })`
-  returns `{ apiRequests, duplicates, failed, errors, settled, durationMs }` and never throws for a
-  page problem. `beforeNavigate` is where to seed a token (`Page.addScriptToEvaluateOnNewDocument`).
-  `formatPageAudit(report)` prints one line.
+- `auditPage(url, { cdp?, launch?, viewport?, isApiRequest?, beforeNavigate?, pageLoads?, quietMs, timeoutMs })`
+  returns `{ url, finalUrl, apiRequests, duplicates, loads, failed, errors, settled, durationMs }`
+  and never throws for a page problem. `beforeNavigate` is where to seed a token
+  (`Page.addScriptToEvaluateOnNewDocument`). `formatPageAudit(report)` prints one line, with
+  `/today -> /home` when the page landed elsewhere.
+- Duplicates are counted **per page load**: a page that sends you on (`/today` replacing itself with
+  `/home`) is two loads, so `/api/me` once in each is not a duplicate. A load starts with each new
+  main-frame document after the first and each same-document (history API) navigation to a
+  different path; a query or hash change stays in the load. `loads` lists them
+  (`{ url, apiRequests, duplicates }`), `duplicates` is the highest count any one load reached,
+  `finalUrl` is `location.href` once settled. `pageLoads: 'visit'` counts the whole visit as one
+  load (the old behaviour). `splitPageLoads(url, events, mode)` and `loadDuplicates(loads)` are the
+  pure logic. `finalUrl` and `loads` are optional on the type, so hand-built reports still compile.
 - **macOS: the installed Chrome quits about 30 s in.** GoogleUpdater SIGTERMs every process with
   Chrome's bundle id while an update is pending; to a test that looks like a hung page. When
   `CHROME_PATH` is not set, `launch()` runs `prepareMacChrome()`: a `cp -cR` clone in the temp

@@ -11,7 +11,7 @@ import {
   destinationSubscriptionParams,
   splitFee,
 } from '../src/connect/destination'
-import { connectRefundParams, isDestinationCharge, tookApplicationFee } from '../src/connect/refund'
+import { connectRefund, connectRefundParams, isDestinationCharge, tookApplicationFee } from '../src/connect/refund'
 
 const destination = 'acct_gym'
 
@@ -121,6 +121,8 @@ describe('splitFee', () => {
 
   test('all-zero weights give everything to the fallback', () => {
     expect(splitFee(50, { tip: 0, planet: 0 })).toEqual({ tip: 50, planet: 0 })
+    // The fallback names one of the shares; it does not decide which they are.
+    expect(splitFee(50, { planet: 0, tip: 0 }, 'tip')).toEqual({ planet: 0, tip: 50 })
     expect(splitFee(50, { tip: 0, planet: 0 }, 'planet')).toEqual({ tip: 0, planet: 50 })
   })
 
@@ -200,5 +202,22 @@ describe('checkoutOutcome', () => {
     expect(checkoutOutcome({ type: 'checkout.session.completed', data: {} })).toBeNull()
     expect(checkoutOutcome(event('checkout.session.completed', { payment_status: 'something_new' }))).toBeNull()
     expect(checkoutOutcome(null)).toBeNull()
+  })
+})
+
+describe('connectRefund', () => {
+  test('refunds through the client it is given, reading the payment first', async () => {
+    const calls: string[] = []
+    const client = {
+      paymentIntents: { retrieve: async (id: string) => { calls.push(`retrieve ${id}`); return { id, object: 'payment_intent', transfer_data: { destination: 'acct_1' }, application_fee_amount: 30 } } },
+      charges: { retrieve: async (id: string) => { calls.push(`charge ${id}`); return { id, object: 'charge' } } },
+      refunds: { create: async (params: any, options: any) => { calls.push(`refund ${JSON.stringify(params)} ${options.idempotencyKey}`); return { id: 're_1' } } },
+    } as unknown as Pick<Stripe, 'paymentIntents' | 'charges' | 'refunds'>
+    await connectRefund('pi_1', { amount: 500, idempotencyKey: 'key-1', client })
+    expect(calls[0]).toBe('retrieve pi_1')
+    expect(calls[1]).toContain('"payment_intent":"pi_1"')
+    expect(calls[1]).toContain('"reverse_transfer":true')
+    expect(calls[1]).toContain('"refund_application_fee":true')
+    expect(calls[1]).toEndWith('key-1')
   })
 })
