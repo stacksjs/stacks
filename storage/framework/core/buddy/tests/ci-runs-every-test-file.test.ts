@@ -40,8 +40,11 @@
  *   handler (`true`, `:`, `exit 0`, `echo`, ...), piped, or not last inside
  *   its `( ... )`, it counts for nothing.
  *
- * Any other name or function in a condition (`matrix`, `env`, `vars`,
- * `inputs`, `github.event.*`, `hashFiles()` ...) cannot be decided here, and
+ * A job whose `strategy.matrix` lists plain values is read once per
+ * combination, with `matrix.*` known in its conditions and `${{ matrix.* }}`
+ * filled in its scripts; a step counts if it runs in any combination. Any other
+ * name or function in a condition (`matrix` without such a strategy, `env`,
+ * `vars`, `inputs`, `github.event.*`, `hashFiles()` ...) cannot be decided here, and
  * neither can a `shell:` other than bash: such a step credits nothing, and
  * "decides whether each test step runs" below names it. Shell control flow is
  * not evaluated at all: every line of a `run:` script is read as if it runs,
@@ -51,13 +54,15 @@
  * Paths are the arguments bun treats as paths, those with a leading `./`,
  * taken relative to the step's `working-directory` and any `cd` before them.
  * `for` loops over literal and glob words are unrolled, `bun run` is followed
- * into package.json, and a bare `buddy test` is resolved the way the runner
- * resolves it.
+ * into package.json, a bare `buddy test` is resolved the way the runner
+ * resolves it, and `bun .github/scripts/core-tests.ts <shard>` is read as the
+ * units that script assigns to that shard.
  */
 import { describe, expect, it } from 'bun:test'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, normalize } from 'node:path'
+import { assignShards, coreTestUnits } from '../../../../../.github/scripts/core-tests'
 import { resolveTestSuiteFilters } from '../../actions/src/test/runner'
 
 const root = new URL('../../../../../', import.meta.url).pathname
@@ -89,6 +94,7 @@ interface Job {
   'steps'?: Step[]
   'continue-on-error'?: unknown
   'defaults'?: { run?: { shell?: string } }
+  'strategy'?: { matrix?: Record<string, unknown> }
 }
 
 interface Workflow {
@@ -142,7 +148,13 @@ function truth(value: Value): boolean | undefined {
   return value === PULL_REF || Boolean(value)
 }
 
+/** The matrix combination being read; `matrix.*` outside it cannot be decided. */
+let matrix: Record<string, Value> = {}
+
 function contextFor(name: string): Value {
+  const key = /^matrix\.([\w-]+)$/.exec(name)?.[1]
+  if (key !== undefined && Object.hasOwn(matrix, key))
+    return matrix[key]!
   if (name === 'github.event_name')
     return 'pull_request'
   if (name === 'github.ref')
@@ -498,6 +510,7 @@ function visitCommand(command: string, cwd: string, findings: Findings, depth: n
     const cd = /^cd\s+("?)([^"\s]+)\1$/.exec(segment)
     const script = /^bun run ([\w:.-]+)$/.exec(segment)
     const test = /^bun test(?:\s+(.*))?$/.exec(segment)
+    const shard = /^bun (?:\.\/)?\.github\/scripts\/core-tests\.ts\s+["']?([\w-]+)["']?$/.exec(segment)
     const found: Findings = { paths: new Set(), refused: [] }
 
     if (cd) {
@@ -509,6 +522,18 @@ function visitCommand(command: string, cwd: string, findings: Findings, depth: n
       const body = scriptsAt(dir)[script[1]!]
       if (body)
         visit(lines(body), dir, new Map(), found, depth + 1)
+    }
+    else if (shard) {
+      // The shard runner hands each of its units to `bun test` and exits
+      // non-zero when any fails, so its units' paths are what it runs.
+      const units = assignShards(coreTestUnits(join(root, dir)))[shard[1]!]
+      if (!units)
+        found.refused.push(`\`${segment}\` names no shard core-tests.ts knows`)
+      for (const unit of units ?? []) {
+        const from = join(dir, unit.cwd ?? '')
+        for (const arg of unit.args.filter(arg => arg.startsWith('./')))
+          found.paths.add(normalize(join(from, arg)))
+      }
     }
     else if (/^(?:bun )?(?:\.\/)?buddy test$/.test(segment)) {
       for (const file of buddyTestFiles(dir))
@@ -603,42 +628,74 @@ function readWorkflow(source: string): Reading {
   }
 
   for (const [id, job] of Object.entries(jobs)) {
+    const combinations = matrixCombinations(job.strategy?.matrix)
     for (const [index, step] of (job.steps ?? []).entries()) {
       if (!step.run)
         continue
-      const findings: Findings = { paths: new Set(), refused: [] }
-      const script = lines(step.run)
-      visit(script, normalize(step['working-directory'] ?? '.'), new Map(), findings)
-
       const where = `${id} › ${step.name ?? `step ${index + 1}`}`
-      for (const reason of findings.refused)
-        reading.uncredited.push({ step: where, reason, undecided: false })
-      if (findings.paths.size === 0)
-        continue
+      // A step earns its paths from every combination it runs in; it is
+      // reported only when it runs in none.
+      const missed: Uncredited[] = []
+      const refused = new Set<string>()
+      let ran = false
+      for (const combination of combinations) {
+        matrix = combination
+        const findings: Findings = { paths: new Set(), refused: [] }
+        const script = lines(step.run.replace(/\$\{\{\s*matrix\.([\w-]+)\s*\}\}/g, (whole, key: string) =>
+          typeof combination[key] === 'string' || typeof combination[key] === 'number' ? String(combination[key]) : whole))
+        visit(script, normalize(step['working-directory'] ?? '.'), new Map(), findings)
+        for (const reason of findings.refused)
+          refused.add(reason)
+        if (findings.paths.size === 0)
+          continue
 
-      const shell = step.shell ?? job.defaults?.run?.shell ?? workflow.defaults?.run?.shell
-      const decision = first(
-        trigger,
-        decideJob(id),
-        decideIf(step.if, 'step\'s'),
-        decideContinueOnError(step['continue-on-error'], 'step'),
-        script.some(line => /^set\s.*(?:\+\w*e|\+o\s+errexit)/.test(line))
-          ? { runs: false, why: 'its script runs `set +e`' }
-          : { runs: true },
-        shell === undefined || shell === 'bash'
-          ? { runs: true }
-          : { runs: undefined, why: `it runs under \`shell: ${shell}\`, which this does not read` },
-      )
-      if (decision.runs === true) {
-        for (const path of findings.paths)
-          reading.covered.add(path)
+        const shell = step.shell ?? job.defaults?.run?.shell ?? workflow.defaults?.run?.shell
+        const decision = first(
+          trigger,
+          decideJob(id),
+          decideIf(step.if, 'step\'s'),
+          decideContinueOnError(step['continue-on-error'], 'step'),
+          script.some(line => /^set\s.*(?:\+\w*e|\+o\s+errexit)/.test(line))
+            ? { runs: false, why: 'its script runs `set +e`' }
+            : { runs: true },
+          shell === undefined || shell === 'bash'
+            ? { runs: true }
+            : { runs: undefined, why: `it runs under \`shell: ${shell}\`, which this does not read` },
+        )
+        if (decision.runs === true) {
+          ran = true
+          for (const path of findings.paths)
+            reading.covered.add(path)
+        }
+        else {
+          missed.push({ step: where, reason: decision.why!, undecided: decision.runs === undefined })
+        }
       }
-      else {
-        reading.uncredited.push({ step: where, reason: decision.why!, undecided: decision.runs === undefined })
-      }
+      matrix = {}
+      for (const reason of refused)
+        reading.uncredited.push({ step: where, reason, undecided: false })
+      if (!ran && missed.length)
+        reading.uncredited.push(missed.find(entry => entry.undecided) ?? missed[0]!)
     }
   }
   return reading
+}
+
+/**
+ * Each combination a job's `strategy.matrix` runs, when it lists only plain
+ * values (no `include`, `exclude` or expression); otherwise one empty
+ * combination, in which `matrix.*` cannot be decided.
+ */
+function matrixCombinations(spec: Record<string, unknown> | undefined): Record<string, Value>[] {
+  const entries = Object.entries(spec ?? {})
+  const plain = entries.every(([key, values]) => key !== 'include' && key !== 'exclude' && Array.isArray(values)
+    && values.every(value => ['string', 'number', 'boolean'].includes(typeof value)))
+  if (!entries.length || !plain)
+    return [{}]
+  let combinations: Record<string, Value>[] = [{}]
+  for (const [key, values] of entries)
+    combinations = combinations.flatMap(combination => (values as Value[]).map(value => ({ ...combination, [key]: value })))
+  return combinations
 }
 
 function isCovered(file: string, covered: Set<string>): boolean {
@@ -837,5 +894,32 @@ t:
 `)
     expect(covered(source)).toEqual([])
     expect(undecided(source)).toEqual(['matrix › step 1', 't › step 1', 't › step 2', 't › step 3', 't › step 4'])
+  })
+
+  it('reads a plain matrix once per combination', () => {
+    const source = workflow(`
+sharded:
+  strategy:
+    matrix:
+      shard: [a, b]
+      os: [ubuntu-latest]
+  steps:
+    - run: bun test ./per-shard/\${{ matrix.shard }}
+    - if: \${{ matrix.shard == 'b' }}
+      run: bun test ./only-b
+    - if: matrix.shard == 'c'
+      run: bun test ./never
+    - if: matrix.arch == 'arm64'
+      run: bun test ./unlisted-key
+included:
+  strategy:
+    matrix:
+      include: [{ shard: a }]
+  steps:
+    - if: matrix.shard == 'a'
+      run: bun test ./included
+`)
+    expect(covered(source)).toEqual(['only-b', 'per-shard/a', 'per-shard/b'])
+    expect(undecided(source)).toEqual(['sharded › step 4', 'included › step 1'])
   })
 })
