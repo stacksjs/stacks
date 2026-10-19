@@ -119,6 +119,23 @@ export function meaningfulNpmError(stderr: string): string {
   return lines[0] ?? 'no error output'
 }
 
+/** Tag writes in flight at once. */
+export const PROMOTE_CONCURRENCY = 12
+
+/** `task` over `items`, at most `limit` at a time, results in input order. */
+export async function inParallel<T, R>(items: readonly T[], limit: number, task: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let next = 0
+  const worker = async (): Promise<void> => {
+    while (next < items.length) {
+      const at = next++
+      results[at] = await task(items[at]!)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, worker))
+  return results
+}
+
 async function promote(pkg: Publishable): Promise<string | null> {
   /*
    * Five attempts with a widening wait. A dist-tag write can lose to npm's own
@@ -163,17 +180,17 @@ async function main(): Promise<void> {
   // Check the whole set before moving any tag or publishing the meta-package.
   // npm accepted Buddy 0.75.115 and allowed its tag write, but never exposed
   // that version. Advancing stacks first left clean installs impossible.
+  let started = performance.now()
   await confirmPublications(packages)
+  console.log(`  registry confirmed all ${packages.length} in ${Math.round((performance.now() - started) / 1000)}s`)
 
-  const failures: string[] = []
-  let promoted = 0
-  for (const pkg of packages) {
-    const failure = await promote(pkg)
-    if (failure)
-      failures.push(failure)
-    else
-      promoted++
-  }
+  // Several tag writes at once. One at a time took minutes for 85 packages
+  // (v0.75.236: 11 minutes with the confirmation above), and for all of that
+  // time `latest` spanned two releases: the window this script exists to close.
+  started = performance.now()
+  const failures = (await inParallel(packages, PROMOTE_CONCURRENCY, promote)).filter((failure): failure is string => failure !== null)
+  const promoted = packages.length - failures.length
+  console.log(`  moved ${promoted} tag(s) in ${Math.round((performance.now() - started) / 1000)}s`)
 
   if (failures.length > 0) {
     /*

@@ -306,8 +306,11 @@ jobs:
           # the legacy token cannot mutate its dist-tags. Publish it through
           # OIDC only after every scoped package is on latest; this final write
           # is the release commit point for `buddy upgrade` consumers.
+          # --no-readback: the next step asks the registry for this exact
+          # version before it installs, so pantry's own minute-long poll for it
+          # only delayed that.
           rm -f ~/.npmrc
-          pantry publish --npm --access public --ignore-scripts 'storage/framework/core'
+          pantry publish --npm --access public --no-readback --ignore-scripts 'storage/framework/core'
 
       # Publishing succeeded is not enough: registry manifests can still carry
       # monorepo-only protocols that make the package impossible to install.

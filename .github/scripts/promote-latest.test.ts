@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { confirmPublications, meaningfulNpmError, publishables } from './promote-latest'
+import { confirmPublications, inParallel, meaningfulNpmError, publishables } from './promote-latest'
 
 const root = new URL('../../', import.meta.url).pathname
 
@@ -114,5 +114,21 @@ describe('meaningfulNpmError', () => {
   it('says so plainly when npm wrote nothing useful', () => {
     expect(meaningfulNpmError('npm error\nnpm error A complete log of this run can be found in: /tmp/x.log')).toBe('no error output')
     expect(meaningfulNpmError('')).toBe('no error output')
+  })
+})
+
+describe('inParallel', () => {
+  it('moves several tags at once, never more than the limit, and keeps the order', async () => {
+    let running = 0
+    let most = 0
+    const results = await inParallel([30, 5, 20, 10, 15], 3, async (ms) => {
+      running++
+      most = Math.max(most, running)
+      await Bun.sleep(ms)
+      running--
+      return ms === 10 ? `failed ${ms}` : null
+    })
+    expect(most).toBe(3)
+    expect(results).toEqual([null, null, null, 'failed 10', null])
   })
 })
