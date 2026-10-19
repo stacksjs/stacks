@@ -43,6 +43,7 @@
  */
 
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { carriesGeneratedMarker } from './hand-written-migrations'
@@ -60,8 +61,10 @@ export function migrationNameOrdinal(file: string): number | undefined {
  * Renames are read as a delete plus an add (`--no-renames`), because a
  * renumbered file's OLD name is the one an older ledger recorded. A file
  * deleted and later put back exactly as it was (a reverted commit, restored)
- * is the same migration under its own name, not a reuse of it, so it is not
- * retired. Outside a git checkout, without git, or in a shallow clone that
+ * is the same migration only when every historical deletion carried those
+ * exact bytes. An older different migration may still be in a production
+ * ledger, even if the latest deletion was restored identically. Outside a git
+ * checkout, without git, or in a shallow clone that
  * has no history, this answers with whatever git can see, which may be
  * nothing.
  */
@@ -73,31 +76,39 @@ export function retiredMigrationNames(dir: string, options: { timeoutMs?: number
     maxBuffer: 64 * 1024 * 1024,
   })
   try {
-    const result = git(['log', '--no-renames', '--diff-filter=D', '--name-only', '--pretty=format:commit %H', '--', '.'])
+    const result = git(['log', '--no-renames', '--diff-filter=D', '--raw', '--no-abbrev', '-z', '--pretty=format:', '--', '.'])
     if (result.status !== 0 || typeof result.stdout !== 'string')
       return []
-    // Newest first: the first deletion seen of a name is its latest.
-    const deletedAt = new Map<string, { commit: string, path: string }>()
-    let commit = ''
-    for (const raw of result.stdout.split('\n')) {
-      const line = raw.trim()
-      if (line.startsWith('commit ')) {
-        commit = line.slice(7)
-        continue
-      }
-      const name = basename(line)
-      if (name.toLowerCase().endsWith('.sql') && !deletedAt.has(name))
-        deletedAt.set(name, { commit, path: line })
+    // Raw deletion records name the deleted blob itself. Keep every identity
+    // instead of looking up only the newest deletion's parent. NUL-delimited
+    // paths also avoid Git's quoting of spaces and non-ASCII filenames.
+    const deletedObjects = new Map<string, Set<string>>()
+    const records = result.stdout.split('\0')
+    for (let index = 0; index < records.length; index++) {
+      const deletion = /^:[0-7]{6} [0-7]{6} ([a-f0-9]{40}|[a-f0-9]{64}) 0+ D$/.exec(records[index]!.trim())
+      if (!deletion) continue
+      const path = records[++index]
+      if (!path) continue
+      const name = basename(path)
+      if (!name.toLowerCase().endsWith('.sql')) continue
+      const objects = deletedObjects.get(name) ?? new Set<string>()
+      objects.add(deletion[1]!)
+      deletedObjects.set(name, objects)
     }
     const names: string[] = []
-    for (const [name, deletion] of deletedAt) {
-      let current: string | undefined
-      try { current = readFileSync(join(dir, name), 'utf8') }
-      catch { current = undefined }
-      if (current !== undefined && deletion.commit) {
-        const before = git(['show', `${deletion.commit}^:${deletion.path}`])
-        if (before.status === 0 && before.stdout === current)
-          continue
+    for (const [name, objects] of deletedObjects) {
+      if (objects.size === 1) {
+        try {
+          const current = readFileSync(join(dir, name))
+          const previous = objects.values().next().value!
+          // Git hashes the blob header plus raw bytes, with the repository's
+          // SHA1 or SHA256 object format. UTF8 decoding would merge different
+          // invalid byte sequences into the same replacement character.
+          const currentObject = createHash(previous.length === 64 ? 'sha256' : 'sha1')
+            .update(`blob ${current.byteLength}\0`).update(current).digest('hex')
+          if (currentObject === previous) continue
+        }
+        catch { /* Missing or unreadable current files keep the name reserved. */ }
       }
       names.push(name)
     }

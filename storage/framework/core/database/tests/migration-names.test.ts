@@ -124,7 +124,75 @@ describe('retiredMigrationNames', () => {
     }
     finally { rmSync(dir, { recursive: true, force: true }) }
   })
+
+  test('an identical latest restoration never forgets an older different migration under the same name', () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-retired-multiple-deletions-'))
+    const git = (...args: string[]) => {
+      const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' })
+      expect(result.status, result.stderr).toBe(0)
+    }
+    try {
+      const dir = join(root, 'database/migrations')
+      mkdirSync(dir, { recursive: true })
+      git('init', '-q')
+      git('config', 'user.email', 'test@example.com')
+      git('config', 'user.name', 'Test')
+      git('config', 'commit.gpgsign', 'false')
+      const name = pad(1, 'create-a-table')
+      const file = join(dir, name)
+      for (const [index, sql] of ['CREATE TABLE a (id INTEGER);\n', 'CREATE TABLE b (id INTEGER);\n'].entries()) {
+        mkdirSync(dir, { recursive: true })
+        writeFileSync(file, sql)
+        git('add', '-A', '-f')
+        git('commit', '-q', '-m', `corpus ${index}`)
+        git('rm', '-q', `database/migrations/${name}`)
+        git('commit', '-q', '-m', `drop corpus ${index}`)
+      }
+      // This really is identical to the latest deleted file, but a database
+      // can still have recorded the older SQL under this filename.
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(file, 'CREATE TABLE b (id INTEGER);\n')
+      git('add', '-A', '-f')
+      git('commit', '-q', '-m', 'restore latest corpus')
+      expect(retiredMigrationNames(dir)).toEqual([name])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
 })
+
+for (const objectFormat of ['sha1', 'sha256']) {
+  test(`restoration compares raw bytes and unquoted paths in ${objectFormat} repositories`, () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-retired-blob-format-'))
+    const git = (...args: string[]) => {
+      const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' })
+      expect(result.status, result.stderr).toBe(0)
+    }
+    try {
+      const dir = join(root, 'database/migrations')
+      mkdirSync(dir, { recursive: true })
+      git('init', '-q', `--object-format=${objectFormat}`)
+      git('config', 'user.email', 'test@example.com')
+      git('config', 'user.name', 'Test')
+      git('config', 'commit.gpgsign', 'false')
+      const name = pad(1, 'migration with spaces ü')
+      const file = join(dir, name)
+      const original = new Uint8Array([45, 45, 32, 255, 10])
+      writeFileSync(file, original)
+      git('add', '-A', '-f')
+      git('commit', '-q', '-m', 'original bytes')
+      git('rm', '-q', `database/migrations/${name}`)
+      git('commit', '-q', '-m', 'drop original bytes')
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(file, original)
+      expect(retiredMigrationNames(dir)).toEqual([])
+      // Both invalid byte sequences decode to the same UTF8 replacement
+      // character. They must still be different migration artifacts.
+      writeFileSync(file, new Uint8Array([45, 45, 32, 254, 10]))
+      expect(retiredMigrationNames(dir)).toEqual([name])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+}
 
 // Real generation in a disposable app, against a SQLite ledger and a git history.
 test('generate:migrations never writes a name the ledger or the corpus history already holds', async () => {
