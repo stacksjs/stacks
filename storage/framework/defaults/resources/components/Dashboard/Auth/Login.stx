@@ -56,94 +56,85 @@ function handleSubmit(): void {
 }
 </script>
 
-<div class="flex items-center justify-center px-4 py-12 min-h-screen">
-  <div class="max-w-sm w-full">
-    <div class="mb-8 text-center">
-      <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-blue-500/25 shadow-lg">
-        <span class="h-7 w-7 text-white i-hugeicons-cube"></span>
+<AuthCard :title="title()" :subtitle="subtitle()">
+
+  <div class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-xl dark:shadow-black/20">
+    <div :if="error()" role="alert" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
+      <div class="flex gap-2 items-center">
+        <span class="h-4 w-4 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
+        <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
       </div>
-      <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ title() }}</h1>
-      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle() }}</p>
     </div>
 
-    <div class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-xl dark:shadow-black/20">
-      <div :if="error()" role="alert" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
-        <div class="flex gap-2 items-center">
-          <span class="h-4 w-4 text-red-600 dark:text-red-400 i-hugeicons-alert-circle"></span>
-          <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
-        </div>
+    <form @submit.prevent="handleSubmit">
+      <div class="mb-4">
+        <Input
+          type="email"
+          label="Email address"
+          placeholder="you@example.com"
+          v-model:value="email"
+          @blur="validateEmail()"
+          :error="fieldError('email')"
+          required
+          :disabled="isLoading()"
+        />
       </div>
 
-      <form @submit.prevent="handleSubmit">
-        <div class="mb-4">
-          <Input
-            type="email"
-            label="Email address"
-            placeholder="you@example.com"
-            v-model:value="email"
-            @blur="validateEmail()"
-            :error="fieldError('email')"
-            required
+      <div class="mb-4">
+        <Input
+          type="password"
+          label="Password"
+          placeholder="Enter your password"
+          v-model:value="password"
+          @blur="validatePassword()"
+          :error="fieldError('password')"
+          required
+          :disabled="isLoading()"
+        />
+      </div>
+
+      <div class="flex items-center justify-between mb-6">
+        <label :if="showRememberMe()" class="flex gap-2 items-center cursor-pointer">
+          <input
+            type="checkbox"
+            class="h-4 w-4 text-blue-500 bg-white dark:bg-neutral-800 border-neutral-300 rounded dark:border-neutral-600 focus:ring-blue-500/40 focus:ring-offset-0"
+            x-model="rememberMe"
             :disabled="isLoading()"
           />
-        </div>
+          <span class="text-neutral-600 text-sm dark:text-neutral-400">Remember me</span>
+        </label>
 
-        <div class="mb-4">
-          <Input
-            type="password"
-            label="Password"
-            placeholder="Enter your password"
-            v-model:value="password"
-            @blur="validatePassword()"
-            :error="fieldError('password')"
-            required
-            :disabled="isLoading()"
-          />
-        </div>
+        <a :if="showForgotPassword()" href="/forgot-password" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
+          Forgot password?
+        </a>
+      </div>
 
-        <div class="flex items-center justify-between mb-6">
-          <label :if="showRememberMe()" class="flex gap-2 items-center cursor-pointer">
-            <input
-              type="checkbox"
-              class="h-4 w-4 text-blue-500 bg-white dark:bg-neutral-800 border-neutral-300 rounded dark:border-neutral-600 focus:ring-blue-500/40 focus:ring-offset-0"
-              x-model="rememberMe"
-              :disabled="isLoading()"
-            />
-            <span class="text-neutral-600 text-sm dark:text-neutral-400">Remember me</span>
-          </label>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        :loading="isLoading()"
+        :disabled="isLoading() || !email() || !password()"
+      >
+        <span :if="isLoading()">Signing in...</span>
+        <span :if="!isLoading()">Sign in</span>
+      </Button>
+    </form>
 
-          <a :if="showForgotPassword()" href="/forgot-password" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
-            Forgot password?
-          </a>
-        </div>
-
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          :loading="isLoading()"
-          :disabled="isLoading() || !email() || !password()"
-        >
-          <span :if="isLoading()">Signing in...</span>
-          <span :if="!isLoading()">Sign in</span>
-        </Button>
-      </form>
-
-      {{--
-        Anything that belongs with the credentials, inside the same card:
-        the social sign-in buttons the /login page fills this with. It is a
-        slot because the provider list has to be computed server-side by
-        `configuredSocialProviders()`, and this component is client-only.
-      --}}
-      <slot name="social" />
-    </div>
-
-    <p :if="showSignUp()" class="mt-6 text-center text-neutral-500 text-sm dark:text-neutral-400">
-      Don't have an account?
-      <a href="/register" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
-        Sign up
-      </a>
-    </p>
+    {{--
+      Anything that belongs with the credentials, inside the same card:
+      the social sign-in buttons the /login page fills this with. It is a
+      slot because the provider list has to be computed server-side by
+      `configuredSocialProviders()`, and this component is client-only.
+    --}}
+    <slot name="social" />
   </div>
-</div>
+
+  <p :if="showSignUp()" class="mt-6 text-center text-neutral-500 text-sm dark:text-neutral-400">
+    Don't have an account?
+    <a href="/register" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
+      Sign up
+    </a>
+  </p>
+</AuthCard>

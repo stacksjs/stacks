@@ -471,9 +471,19 @@ describe('dashboard native STX bindings', () => {
 
     const forgotPassword = componentSource('Auth/ForgotPassword.stx')
     expect(forgotPassword).toContain("emit('retry')")
-    expect(forgotPassword).toContain('i-hugeicons-cube')
     expect(forgotPassword).not.toContain('<svg')
     expect(forgotPassword).not.toContain('<script server>')
+
+    // The logo moved into the shared card these four pages now sit in
+    // (stacksjs/stacks#2917). Asserted where the markup lives, rather than
+    // dropped: the point was that the mark is an Iconify class and not a
+    // hand-rolled SVG, and that is still worth pinning.
+    const authCard = componentSource('Auth/AuthCard.stx')
+    expect(authCard).toContain('i-hugeicons-cube')
+    expect(authCard).not.toContain('<svg')
+    expect(authCard).toContain('<slot />')
+    for (const page of ['Auth/Login.stx', 'Auth/Register.stx', 'Auth/ForgotPassword.stx', 'Auth/ResetPassword.stx'])
+      expect(componentSource(page), page).toContain('<AuthCard')
 
     const forgotPasswordDashboard = componentSource('Auth/ForgotPasswordDashboard.stx')
     expect(forgotPasswordDashboard).toContain("dashboardApi('/password/forgot', {")

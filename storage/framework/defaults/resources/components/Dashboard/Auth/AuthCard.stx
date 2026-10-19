@@ -1,0 +1,29 @@
+<script client>
+/**
+ * The centred card the signed-out auth pages sit in.
+ *
+ * Login, Register, ForgotPassword and ResetPassword each carried this
+ * markup (stacksjs/stacks#2917): the same full-height centring, the same
+ * 24rem column, the same logo tile, and the same heading pair. They differ
+ * only in what goes below it, which is the slot.
+ *
+ * Four pages the user moves between in one flow is the worst place for a
+ * shell to drift, because the drift is visible as a jump between steps.
+ */
+const title = useReactiveProp('title', '')
+const subtitle = useReactiveProp('subtitle', '')
+</script>
+
+<div class="flex items-center justify-center px-4 py-12 min-h-screen">
+  <div class="max-w-sm w-full">
+    <div class="mb-8 text-center">
+      <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-blue-500/25 shadow-lg">
+        <span class="h-7 w-7 text-white i-hugeicons-cube"></span>
+      </div>
+      <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ title() }}</h1>
+      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle() }}</p>
+    </div>
+
+    <slot />
+  </div>
+</div>
