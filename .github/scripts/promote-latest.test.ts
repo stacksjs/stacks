@@ -81,9 +81,11 @@ describe('publishables', () => {
   it('covers the same globs the release workflow publishes', async () => {
     const workflow = readFileSync(`${root}.github/workflows/release.yml`, 'utf-8')
 
-    // If the publish step's globs change, this enumeration has to change with
-    // them - so fail here rather than stranding whatever the new glob adds.
-    expect(workflow).toContain("--tag staging 'storage/framework/core/*'")
+    // The scoped packages are published by publish-layers.ts, which enumerates
+    // them with this same `publishables()`, so the two sets cannot drift. If the
+    // publish step goes back to a glob, this enumeration has to follow it.
+    expect(workflow).toContain('bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging')
+    expect(readFileSync(`${root}.github/scripts/publish-layers.ts`, 'utf-8')).toContain("import { publishables } from './promote-latest'")
     expect(workflow).toContain("--ignore-scripts 'storage/framework/core'")
   })
 })
