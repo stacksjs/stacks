@@ -27,7 +27,14 @@ export * from './events'
 // Mail fakes (stacksjs/stacks#2581), on top of the email package's capture driver.
 export * from './mail'
 export * from './time'
+// Child-process isolation and throwaway databases. Bun and node only, no
+// framework import, so both are safe at the root.
+export * from './isolated'
+export * from './disposable-database'
 export * from 'bun:test'
 
+// The headless-Chrome kit is a subpath, '@stacksjs/testing/browser': most tests
+// never drive a browser, and it should not be loaded for them.
+//
 // dynamodb utilities are not re-exported here: they talk to a real DynamoDB and
 // most tests do not. Import directly from '@stacksjs/testing/dynamodb'.

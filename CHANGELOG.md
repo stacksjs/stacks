@@ -1,5 +1,48 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.228...v0.75.229)
+
+## ✨ Features
+
+- **buddy**: test:page-audit, the page audit from the command line ([34de7eb](https://github.com/stacksjs/stacks/commit/34de7eb)) _(by Chris <chris@stacksjs.com>)_
+- **testing**: isolated runs, disposable databases, and a headless Chrome kit ([a4e51a7](https://github.com/stacksjs/stacks/commit/a4e51a7)) _(by Chris <chris@stacksjs.com>)_
+- **payments**: Connect destination params, refunds that reverse, checkout outcomes ([6e2f7be](https://github.com/stacksjs/stacks/commit/6e2f7be)) _(by Chris <chris@stacksjs.com>)_
+- **datetime**: YYYY-MM-DD calendar helpers, and parseSqlDate for DATE columns ([cb4a157](https://github.com/stacksjs/stacks/commit/cb4a157)) _(by Chris <chris@stacksjs.com>)_
+- **server**: warn when app/ shadows a framework security default ([a4f4f1b](https://github.com/stacksjs/stacks/commit/a4f4f1b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: share rate limits through the configured cache ([177bdfc](https://github.com/stacksjs/stacks/commit/177bdfc)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: one credential sweep for password changes and resets ([146a672](https://github.com/stacksjs/stacks/commit/146a672)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: hand social sign-ins over with a one-use code ([3cb58a0](https://github.com/stacksjs/stacks/commit/3cb58a0)) _(by Chris <chris@stacksjs.com>)_
+- **socials**: single-use, browser-bound OAuth flow state ([3273ca7](https://github.com/stacksjs/stacks/commit/3273ca7)) _(by Chris <chris@stacksjs.com>)_
+- **storage**: publish synced artifacts with an exclusive completion manifest ([d9a56ed](https://github.com/stacksjs/stacks/commit/d9a56ed)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **datetime**: resolve DST edges the same way in every zone ([3e2293c](https://github.com/stacksjs/stacks/commit/3e2293c)) _(by Chris <chris@stacksjs.com>)_
+- **payments**: dedupe Stripe webhooks, honour tolerance, key Connect accounts ([8e4fc3b](https://github.com/stacksjs/stacks/commit/8e4fc3b)) _(by Chris <chris@stacksjs.com>)_
+- **notifications**: never bypass SMS STOP with ignorePreferences ([6ab8005](https://github.com/stacksjs/stacks/commit/6ab8005)) _(by Chris <chris@stacksjs.com>)_
+- **browser**: keep useAuth sessions through non-401 failures ([a443efc](https://github.com/stacksjs/stacks/commit/a443efc)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: refuse social links onto unverified local accounts ([0d90a36](https://github.com/stacksjs/stacks/commit/0d90a36)) _(by Chris <chris@stacksjs.com>)_
+- **docs**: resolve CLI output from source in clean checkouts ([8a0889c](https://github.com/stacksjs/stacks/commit/8a0889c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **cli**: add awaitable output for backpressured pipes ([210f828](https://github.com/stacksjs/stacks/commit/210f828)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **types**: publish mobile subpath and resolve its source ([009e5b7](https://github.com/stacksjs/stacks/commit/009e5b7)) _(by Chris Breuer <chris@stacksjs.com>)_
+- reject completed artifact directory case aliases before publication ([f61c7bc](https://github.com/stacksjs/stacks/commit/f61c7bc)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- refresh the native package catalog for the new exports ([e3b4fd9](https://github.com/stacksjs/stacks/commit/e3b4fd9)) _(by Chris <chris@stacksjs.com>)_
+- document the sign-in, credential, rate-limit and webhook hardening ([598395e](https://github.com/stacksjs/stacks/commit/598395e)) _(by Chris <chris@stacksjs.com>)_
+- **storage**: refresh native artifact capability references ([8371db3](https://github.com/stacksjs/stacks/commit/8371db3)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate current native artifact implementation ([20b7887](https://github.com/stacksjs/stacks/commit/20b7887)) _(by Chris Breuer <chris@stacksjs.com>)_
+- integrate current origin main ([3bd6aca](https://github.com/stacksjs/stacks/commit/3bd6aca)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.227...v0.75.228)
 
 ## 🐛 Bug Fixes

@@ -44,6 +44,7 @@
       "@stacksjs/path/*": ["./path/src/*"],
       "@stacksjs/router/*": ["./router/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
+      "@stacksjs/testing/*": ["./testing/src/*"],
       "@stacksjs/utils/*": ["./utils/src/*"],
       "@stacksjs/validation/*": ["./validation/src/*"],
       "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],

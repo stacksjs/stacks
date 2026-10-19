@@ -163,6 +163,112 @@ const session = await manageDestinationSubscription.checkout(user, {
 - Cancel, resume and read it with `manageSubscription` (`cancelAtPeriodEnd`, `resume`, `cancel`); entitlement from `subscriptionGrantsAccess(status)` and dates from `subscriptionPeriod(subscription)`.
 - Events about a connected account itself (`account.updated`, `payout.*`) come to the Connect endpoint with `event.account`; read it with `getConnectedAccountId(event)`.
 
+#### Destination-charge params (pure)
+
+When you build the Stripe call yourself (a Checkout with your own line items, a
+subscription for a member who already has a card on file), spread the Connect
+fields from these builders instead of hand-writing them. They validate, read no
+config, call no API, and are typed with Stripe's own params (`src/connect/destination.ts`).
+
+```typescript
+import {
+  checkoutLineItemsTotal,
+  destinationCheckoutPaymentData,
+  destinationCheckoutSubscriptionData,
+  destinationPaymentIntentParams,
+  destinationSubscriptionParams,
+  stripe,
+} from '@stacksjs/payments'
+
+const connect = { destination: 'acct_gym', feePercent: 5, rounding: 'round' as const, onBehalfOf: false }
+
+// Checkout, mode: 'payment': the fee is an amount, worked out from the line items
+await stripe.checkout.sessions.create({
+  mode: 'payment',
+  line_items,
+  payment_intent_data: destinationCheckoutPaymentData(checkoutLineItemsTotal(line_items), connect, { metadata }),
+  success_url, cancel_url,
+})
+
+// Checkout, mode: 'subscription': the fee is a percent of every invoice
+await stripe.checkout.sessions.create({ mode: 'subscription', line_items, subscription_data: destinationCheckoutSubscriptionData(connect, { metadata }), success_url, cancel_url })
+
+// Direct API calls
+await stripe.subscriptions.create({ customer, items: [{ price }], ...destinationSubscriptionParams(connect) })
+await stripe.paymentIntents.create({ amount: 4900, currency: 'eur', customer, ...destinationPaymentIntentParams(4900, { destination: 'acct_gym', feeCents: 250 }) })
+```
+
+| Option | Meaning |
+|---|---|
+| `destination` | `acct_...`; anything else throws (`requireAccountId`) |
+| `feePercent` | 0 to 100. One-off charges turn it into an amount; subscriptions send `application_fee_percent` (at most two decimals; float sums like `0.1 + 0.2` are snapped) |
+| `feeCents` | Exact fee in minor units; wins on one-off charges, refused on subscriptions |
+| `rounding` | `'floor'` (default, as `applicationFeeFor`) or `'round'` (nearest cent). Never exceeds the charge |
+| `onBehalfOf` | Sets `on_behalf_of` to the destination (the merchant's descriptor and settlement country) |
+| `transferGroup` | One-off charges only |
+
+A zero or missing fee sends no fee field. `destinationFeeCents(amount, opts)` and
+`destinationFeePercent(opts)` expose the fee arithmetic alone. The third
+argument of the Checkout builders carries the session's other fields (metadata,
+`trial_period_days`); the Connect fields win over it. `checkoutLineItemsTotal`
+counts `price_data` lines and refuses a catalog `price` (its amount is unknown
+here).
+
+`splitFee(cents, weights, fallback?)` splits a fee into named shares that always
+add up to it (largest remainder, ties to the earlier key; a negative amount, a
+refunded fee, splits the same way negated; all-zero weights give it all to
+`fallback`, default the first key): `splitFee(101, { tip: 2, planet: 1 })` is
+`{ tip: 67, planet: 34 }`.
+
+#### Connect-aware refunds
+
+Refunding a destination charge like any other pays the buyer out of the
+PLATFORM's balance and leaves the merchant the sale and the platform its fee.
+Stripe reverses both only when asked:
+
+```typescript
+import { connectRefund, connectRefundParams, isDestinationCharge } from '@stacksjs/payments'
+
+// Retrieves the PaymentIntent (latest_charge expanded) or Charge, then refunds
+await connectRefund('pi_xxx', { amount: 500, reason: 'requested_by_customer', idempotencyKey: `refund:${row.id}` })
+
+// Pure, when you already hold the object
+const intent = await stripe.paymentIntents.retrieve(id, { expand: ['latest_charge'] })
+await stripe.refunds.create(connectRefundParams(intent, { amount: 500 }), { idempotencyKey })
+```
+
+`reverse_transfer` is set on a destination charge (`transfer_data.destination`
+on the intent or charge, or a charge's `transfer`); `refund_application_fee`
+when it also took a fee. `reverseTransfer: false` / `refundApplicationFee: false`
+opt out (a platform that keeps its fee on refunds). A platform charge refunds
+plainly. Pass a deterministic `idempotencyKey`; without one each call is a new
+refund. Also `Payment.connect.refund` / `.refundParams` / `.isDestinationCharge`.
+
+#### Checkout outcomes: `checkoutOutcome(event)`
+
+```typescript
+import { checkoutOutcome } from '@stacksjs/payments'
+
+const outcome = checkoutOutcome(event) // null for anything but checkout.session.*
+if (outcome?.status === 'paid') await fulfil(outcome.reference, outcome.paymentIntentId)
+else if (outcome?.status === 'processing') await markPending(outcome.reference, outcome.subscriptionId)
+else if (outcome?.status === 'failed' || outcome?.status === 'expired') await release(outcome.reference)
+```
+
+| Event | `payment_status` | `status` |
+|---|---|---|
+| `checkout.session.completed` | `paid` / `no_payment_required` | `paid` |
+| `checkout.session.completed` | `unpaid` (SEPA, Bacs, ACH, bank redirect) | `processing` |
+| `checkout.session.async_payment_succeeded` | `paid` | `paid` |
+| `checkout.session.async_payment_failed` | any | `failed` |
+| `checkout.session.expired` | any | `expired` |
+
+The outcome also carries `session`, `sessionId`, `reference`
+(`client_reference_id`), `paymentIntentId`, `subscriptionId`, `customerId` (ids
+whether expanded or not), `mode`, `amountTotal`, `currency` (lower case) and
+`metadata`. It reads only the event: verify the signature and match the session
+to your own record before acting. Fulfil on `paid` only.
+
 ### Bank debits (SEPA Direct Debit, Bacs, ACH, BECS)
 
 `src/direct-debit.ts` (also `@stacksjs/payments/direct-debit`, pure and browser-safe) holds what a debit needs next to cards:

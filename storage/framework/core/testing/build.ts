@@ -14,7 +14,7 @@ const result = await Bun.build({
    * `src/index.ts` - so both subpaths resolved to nothing, and importing
    * `@stacksjs/testing/database` could not work from an installed package.
    */
-  entrypoints: ['./src/index.ts', './src/database.ts', './src/dynamodb.ts'],
+  entrypoints: ['./src/index.ts', './src/database.ts', './src/dynamodb.ts', './src/browser.ts', './src/isolated.ts', './src/disposable-database.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

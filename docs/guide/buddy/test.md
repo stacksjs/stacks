@@ -25,6 +25,7 @@ buddy test:unit [options]
 buddy test:feature [options]
 buddy test:ui [options]
 buddy test:types [options]
+buddy test:page-audit --url <urls> [options]
 ```
 
 ### Options
@@ -79,6 +80,33 @@ buddy test:types
 # or
 buddy typecheck
 ```
+
+### Page Audit
+
+Load pages in headless Chrome, one after another, and report for each the API
+requests it made more than once, the same-origin requests that failed, and the
+console errors it raised:
+
+```bash
+buddy test:page-audit --url /,/dashboard,/pricing --base http://localhost:3000
+buddy test:page-audit --url http://localhost:3000/m --mobile --json > page-audit.json
+```
+
+| Option | Description |
+|--------|-------------|
+| `--url <urls>` | Pages to audit, comma-separated; paths resolve against `--base` |
+| `--base [base]` | Origin for paths (default `http://localhost:3000`) |
+| `--quiet-ms [ms]` | How long the network must stay quiet before a page counts as loaded (default 1000) |
+| `--timeout [ms]` | Give up waiting for a page to settle after this long (default 15000) |
+| `--mobile` | Audit at a 390px phone viewport |
+| `--json` | Print the reports as JSON |
+
+It exits 1 when any page has a duplicate, a failure or an error, or never
+settles. An API request is a same-origin path under `/api/` (event streams
+excluded). It drives the installed Chrome or Chromium, or `CHROME_PATH`; on
+macOS it runs a private clone the Chrome updater leaves alone (see
+[Browser testing](/packages/testing#browser-testing)). To sign in first or audit
+from a test, call `auditPage()` from `@stacksjs/testing/browser`.
 
 ## Examples
 
