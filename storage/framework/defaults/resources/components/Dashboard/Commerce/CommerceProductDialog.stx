@@ -5,6 +5,7 @@ import type {
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
 import { minorToInput, moneyInputStep } from '@stacksjs/commerce/money'
 import {
+import { formErrorMessages } from '../../../../functions/dashboard-form'
   productPriceInputError,
   productWritePayload,
 } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
@@ -108,10 +109,7 @@ function submit(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const fieldLabel = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${fieldLabel.charAt(0).toUpperCase()}${fieldLabel.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 

@@ -1,5 +1,6 @@
 <script client>
 import type {
+import { formErrorMessages } from '../../../../functions/dashboard-form'
   ProductUnitOption,
   ProductUnitRecord,
 } from '../../../../app/Actions/Dashboard/Commerce/product-unit-records'
@@ -52,10 +53,7 @@ function submit(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 
