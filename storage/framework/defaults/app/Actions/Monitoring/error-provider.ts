@@ -44,7 +44,12 @@ import { HQ_READ_UNAVAILABLE, readThroughProvider, resolveDashboardDriver } from
 export type DashboardErrorStatus = 'unresolved' | 'resolved' | 'ignored'
 
 export interface DashboardErrorRecord {
-  id: number
+  /**
+   * Opaque. A number from the local store's autoincrement, a string from a
+   * hosted one - bughq's issue ids are varchar (stacksjs/stacks#2915).
+   * Compare with `String(a.id) === String(b.id)` rather than `===`.
+   */
+  id: string | number
   type: string
   message: string
   stack: string | null
@@ -66,7 +71,8 @@ export interface DashboardErrorRecord {
 }
 
 export interface DashboardGroupedError {
-  id: number
+  /** Opaque, as on {@link DashboardErrorRecord}. */
+  id: string | number
   type: string
   message: string
   stack: string | null
@@ -97,7 +103,7 @@ export interface DashboardErrorsProvider {
   stats: () => Promise<DashboardErrorStats>
   timeline: () => Promise<DashboardErrorTimelinePoint[]>
   byGroup: (type: string, message: string) => Promise<DashboardErrorRecord[]>
-  byId: (id: number) => Promise<DashboardErrorRecord | undefined>
+  byId: (id: string | number) => Promise<DashboardErrorRecord | undefined>
 }
 
 /** Wraps a payload with the reason its section is empty. */
@@ -149,12 +155,28 @@ function toGroupedError(row: Awaited<ReturnType<typeof errors.fetchGrouped>>[num
   }
 }
 
+/**
+ * The local store's id for a requested one, or undefined when it cannot have it.
+ *
+ * Its ids are an autoincrement, so a non-integer id is not one of its rows
+ * rather than a bad request, and the caller answers 404. Route params arrive
+ * as strings even when the id is a number, which is why a numeric string is
+ * accepted (stacksjs/stacks#2915).
+ */
+export function localErrorId(id: string | number): number | undefined {
+  const numeric = typeof id === 'number' ? id : Number.parseInt(String(id), 10)
+  return Number.isInteger(numeric) ? numeric : undefined
+}
+
 export const localErrorsProvider: DashboardErrorsProvider = {
   grouped: async () => (await errors.fetchGrouped()).map(toGroupedError),
   stats: () => errors.fetchStats(),
   timeline: () => errors.fetchTimeline(),
   byGroup: (type, message) => errors.fetchByGroup(type, message),
-  byId: id => errors.fetchById(id),
+  byId: async (id) => {
+    const numeric = localErrorId(id)
+    return numeric === undefined ? undefined : errors.fetchById(numeric)
+  },
 }
 
 /**
@@ -220,6 +242,6 @@ export function readErrorsByGroup(type: string, message: string): Promise<Dashbo
   return readErrors([], provider => provider.byGroup(type, message), Array.isArray)
 }
 
-export function readErrorById(id: number): Promise<DashboardErrorsEnvelope<DashboardErrorRecord | undefined>> {
+export function readErrorById(id: string | number): Promise<DashboardErrorsEnvelope<DashboardErrorRecord | undefined>> {
   return readErrors<DashboardErrorRecord | undefined>(undefined, provider => provider.byId(id), () => true)
 }

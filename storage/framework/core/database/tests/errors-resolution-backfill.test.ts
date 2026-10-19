@@ -2,6 +2,7 @@ import { Database } from 'bun:sqlite'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'bun:test'
+import { localErrorId } from '../../../defaults/app/Actions/Monitoring/error-provider'
 
 /**
  * stacksjs/stacks#2923 — `errors.status` carried both the HTTP status and the
@@ -100,5 +101,23 @@ describe('errors.resolution backfill', () => {
     const row = db.query('SELECT status, resolution FROM errors WHERE id = 7').get() as { status: number, resolution: string }
     expect(row).toEqual({ status: 503, resolution: 'unresolved' })
     db.close()
+  })
+})
+
+describe('the local errors provider and non-numeric ids', () => {
+  // stacksjs/stacks#2915: DashboardErrorRecord.id widened to string | number,
+  // because a hosted provider's ids are its own - bughq's issue ids are
+  // varchar. The local store's are an autoincrement, so it has to answer
+  // "not mine" for anything else rather than throwing or coercing to NaN.
+  it('looks up a numeric id, however it arrives', () => {
+    expect(localErrorId(42)).toBe(42)
+    // Route params are strings even when the id is a number.
+    expect(localErrorId('42')).toBe(42)
+  })
+
+  it('does not look up an id the local store cannot have', () => {
+    expect(localErrorId('a3f9c2')).toBeUndefined()
+    expect(localErrorId('')).toBeUndefined()
+    expect(localErrorId('not-an-id')).toBeUndefined()
   })
 })
