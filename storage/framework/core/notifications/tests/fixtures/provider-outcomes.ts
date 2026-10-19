@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { configure as configureSms, init as initSms } from '@stacksjs/sms'
 import { configureSlack } from '@stacksjs/chat'
 import { config } from '@stacksjs/config'
+import { db } from '@stacksjs/database/runtime'
 import { ensureSuccessfulNotificationResults, notify, resolveDeliveryRecipient, useSMS } from '../../src/index'
 
 assert.equal(typeof useSMS().send, 'function', 'the default SMS transport must use the native facade')
@@ -9,6 +10,8 @@ await initSms()
 configureSms({ provider: 'twilio', drivers: { twilio: { accountSid: 'ACfixture', authToken: 'fixture', from: '+15555550101' } } })
 configureSlack({ botToken: 'fixture', maxRetries: 0, retryTimeout: 0 })
 ;(config as any).notification.tracking = { enabled: false }
+// Every SMS send checks STOP opt-outs, `ignorePreferences` or not.
+await db.unsafe('CREATE TABLE sms_opt_outs (id INTEGER PRIMARY KEY AUTOINCREMENT, phone VARCHAR(20) NOT NULL UNIQUE, reason VARCHAR(64), opted_out_at TIMESTAMP NOT NULL, created_at TIMESTAMP, updated_at TIMESTAMP)').execute()
 let rejected = false
 const requests: Array<{ url: string, body: string }> = []
 globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {

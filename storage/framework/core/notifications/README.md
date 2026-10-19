@@ -46,8 +46,15 @@ Absent preferences allow a channel. A global opt-out wins over a category
 opt-in. `getNotificationPreferences`, `setNotificationPreference` and
 `bulkSetPreferences` provide persistent preferences; writes serialize on the
 user row, and bulk changes are atomic. `options.ignorePreferences: true`
-explicitly bypasses preferences and SMS opt-outs. Preference lookup failures
-currently log and allow sends, so this filter is not a fail-closed consent gate.
+explicitly bypasses preferences only. Preference lookup failures currently log
+and allow sends, so this filter is not a fail-closed consent gate.
+
+A phone that replied STOP (`sms_opt_outs`) is never texted, `ignorePreferences`
+or not. Only `options.ignoreOptOut: true` sends past STOP, and only for messages
+the law requires (a mandated security or safety notice). It does not skip
+preferences. Before this split `ignorePreferences` also bypassed STOP; callers
+that relied on it must add `ignoreOptOut` for legally required messages, or let
+the send fail.
 
 The database inbox and `notification_deliveries` tracking log are separate.
 Apply their model-driven migrations before relying on persistence. Inspect the
