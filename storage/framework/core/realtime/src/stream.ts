@@ -15,7 +15,7 @@ export interface BroadcastStreamOptions {
 export async function createBroadcastResponse(options: BroadcastStreamOptions): Promise<Response> {
   if (!options.channels.length || typeof options.authorize !== 'function') throw new Error('Broadcast streams require channels and authorization')
   // Broadcast hooks run in the emitter's scope; authorization belongs to the subscriber.
-  const authorize = AsyncResource.bind(options.authorize)
+  const authorize = AsyncResource.bind(options.authorize, undefined, options)
   if (!await authorize()) return new Response('Unauthorized', { status: 401 })
   const server = getServer()
   if (!server) throw new Error('Broadcast server not initialized')

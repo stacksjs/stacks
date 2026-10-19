@@ -56,6 +56,20 @@ describe('native authenticated broadcast streams', () => {
     }
     finally { await Promise.all([firstReader.cancel(), secondReader.cancel()]) }
   })
+  it('preserves the authorizer method receiver while binding its async context', async () => {
+    createBroadcastHub()
+    const response = await createBroadcastResponse({
+      channels: ['private-method'],
+      authorize() { return this.channels.includes('private-method') },
+    })
+    const reader = response.body!.getReader()
+    try {
+      await reader.read()
+      emit('private-method', 'changed', { methodAllowed: true })
+      expect(new TextDecoder().decode((await reader.read()).value)).toContain('methodAllowed')
+    }
+    finally { await reader.cancel() }
+  })
   it('cleans up on abort and bounds a slow subscriber', async () => {
     createBroadcastHub()
     const abort = new AbortController()
