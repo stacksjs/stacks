@@ -1,9 +1,10 @@
+import { AsyncResource } from 'node:async_hooks'
 import { getServer } from './server-instance'
 
 export interface BroadcastStreamOptions {
   /** Server-selected channel names. Never take these directly from a query. */
   channels: readonly string[]
-  /** Checked before subscribing and before every event and heartbeat. */
+  /** Checked in the subscriber's async context before subscription, events and heartbeats. */
   authorize: () => boolean | Promise<boolean>
   signal?: AbortSignal
   heartbeatMs?: number
@@ -13,7 +14,9 @@ export interface BroadcastStreamOptions {
 /** Authenticated SSE transport for the same engine used by emit(), channels and model broadcasts. */
 export async function createBroadcastResponse(options: BroadcastStreamOptions): Promise<Response> {
   if (!options.channels.length || typeof options.authorize !== 'function') throw new Error('Broadcast streams require channels and authorization')
-  if (!await options.authorize()) return new Response('Unauthorized', { status: 401 })
+  // Broadcast hooks run in the emitter's scope; authorization belongs to the subscriber.
+  const authorize = AsyncResource.bind(options.authorize)
+  if (!await authorize()) return new Response('Unauthorized', { status: 401 })
   const server = getServer()
   if (!server) throw new Error('Broadcast server not initialized')
   const channels = new Set(options.channels)
@@ -43,7 +46,7 @@ export async function createBroadcastResponse(options: BroadcastStreamOptions): 
         if (++pending > maxPending) { close(); return }
         chain = chain.then(async () => {
           if (closed) return
-          if (!await options.authorize()) { close(); return }
+          if (!await authorize()) { close(); return }
           enqueue(frame)
         }).catch(close).finally(() => { pending-- })
       }

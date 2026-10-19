@@ -385,8 +385,10 @@ single-process HTTP transport; it does not initialize Redis or a cluster.
 
 `createBroadcastResponse({ channels, authorize, signal })` returns an SSE Response.
 Select channel names on the server. Authorization is mandatory and runs before
-subscription, before each event, and at every heartbeat. Pass the request's abort
-signal. Cancellation, failed authorization and slow consumers remove the hook.
+subscription, before each event, and at every heartbeat. The callback retains the
+subscriber's async context even when another request broadcasts. It must still
+resolve current credentials, grants and expiry on every call; context binding
+does not freeze authorization facts. Pass the request's abort signal. Cancellation, failed authorization and slow consumers remove the hook.
 Streams bound both queued events and pending authorization work (64 by default).
 
 STX's `useBroadcastStream({ request, endpoint, onMessage, onConnected })` makes

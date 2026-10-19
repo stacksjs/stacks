@@ -188,6 +188,21 @@ export default {
 }
 ```
 
+## Authenticated HTTP streams
+
+`createBroadcastHub()` initializes the native broadcast engine without opening a
+WebSocket listener. `createBroadcastResponse({ channels, authorize, signal })`
+returns an SSE response for server-selected channels. Authorization runs before
+subscription, each event and each heartbeat, in the subscriber's async context.
+A broadcast from another request therefore checks the subscriber's identity.
+The broadcaster's context is restored after the callback.
+
+The callback must resolve current credentials, permissions and expiry each time.
+Context binding preserves request identity; it does not cache permission or
+provide a distributed revocation fence. Pass the request's abort signal for
+cleanup. Slow consumers are bounded and disconnected. Re-read durable state after
+reconnecting because this HTTP transport does not promise durable replay.
+
 ## Best Practices
 
 1. **Channel Naming**

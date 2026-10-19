@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { createBroadcastHub, stopServer } from '../src/server-instance'
 import { createBroadcastResponse } from '../src/stream'
 import { emit } from '../src/emit'
@@ -29,6 +30,31 @@ describe('native authenticated broadcast streams', () => {
     allowed = false
     emit('private-user.1', 'message', { secret: true })
     expect((await reader.read()).done).toBe(true)
+  })
+  it('keeps subscriber authorization in its own async context when another request broadcasts', async () => {
+    createBroadcastHub()
+    const identity = new AsyncLocalStorage<string>()
+    const allowed = new Map([['reader-a', true], ['reader-b', true]])
+    const authorize = async () => {
+      await Promise.resolve()
+      return allowed.get(identity.getStore() ?? '') === true
+    }
+    const first = await identity.run('reader-a', () => createBroadcastResponse({ channels: ['private-shared'], authorize }))
+    const second = await identity.run('reader-b', () => createBroadcastResponse({ channels: ['private-shared'], authorize }))
+    const firstReader = first.body!.getReader(), secondReader = second.body!.getReader()
+    try {
+      await Promise.all([firstReader.read(), secondReader.read()])
+      allowed.set('reader-a', false)
+      identity.run('reader-b', () => {
+        emit('private-shared', 'changed', { privateValue: 'authorized-b-only' })
+        expect(identity.getStore()).toBe('reader-b')
+      })
+      const [denied, accepted] = await Promise.all([firstReader.read(), secondReader.read()])
+      expect(denied.done).toBe(true)
+      expect(accepted.done).toBe(false)
+      expect(new TextDecoder().decode(accepted.value)).toContain('authorized-b-only')
+    }
+    finally { await Promise.all([firstReader.cancel(), secondReader.cancel()]) }
   })
   it('cleans up on abort and bounds a slow subscriber', async () => {
     createBroadcastHub()
