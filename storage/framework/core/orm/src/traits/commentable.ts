@@ -242,17 +242,11 @@ export function createCommentableMethods(tableName: string) {
 
     async commentUpvoteCount(commentId: number): Promise<number> {
       assertId(commentId, 'commentUpvoteCount')
-      const result = await db
+      return await db
         .selectFrom(UPVOTES_TABLE)
-        // Plain-string select, not a `sql` fragment — bun-query-builder joins
-        // select arguments with `.join(', ')` and a fragment stringifies to
-        // "[object Object]". Same reasoning as likeable's likeCount().
-        .select('count(*) as count')
         .where('upvoteable_id', '=', commentId)
         .where('upvoteable_type', '=', COMMENT_UPVOTE_TYPE)
-        .executeTakeFirst()
-
-      return Number((result)?.count) || 0
+        .count()
     },
 
     async hasUpvotedComment(commentId: number, userId: number): Promise<boolean> {

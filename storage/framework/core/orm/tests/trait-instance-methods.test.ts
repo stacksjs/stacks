@@ -282,6 +282,24 @@ describe('trait methods are wired onto hydrated instances (not just the static m
   })
 
   describe('commentable', () => {
+    it('counts comment upvotes through the aggregate API, isolated to the selected comment', async () => {
+      const post = await freshPost('Comment upvote counts')
+      const first = await post.addComment({ body: 'First comment' })
+      const second = await post.addComment({ body: 'Second comment' })
+      const comments = (Post as any)._commentable
+      expect(await comments.commentUpvoteCount(first.id)).toBe(0)
+      await comments.upvoteComment(first.id, 42)
+      await comments.upvoteComment(first.id, 43)
+      await comments.upvoteComment(first.id, 42)
+      await comments.upvoteComment(second.id, 44)
+      expect(await comments.commentUpvoteCount(first.id)).toBe(2)
+      expect(await comments.commentUpvoteCount(second.id)).toBe(1)
+      await comments.removeCommentUpvote(first.id, 42)
+      expect(await comments.commentUpvoteCount(first.id)).toBe(1)
+      await comments.removeCommentUpvote(first.id, 43)
+      expect(await comments.commentUpvoteCount(first.id)).toBe(0)
+    })
+
     it('exposes comment methods on a fetched instance and they work end-to-end', async () => {
       const post = await freshPost('Commentable post')
       expect(typeof post.addComment).toBe('function')
@@ -359,6 +377,7 @@ describe('trait methods are wired onto hydrated instances (not just the static m
 
       await post.unlike(42)
       expect(await post.isLiked(42)).toBe(false)
+      expect(await post.likeCount()).toBe(0)
     })
 
     it('does NOT bind likedBy on the instance - reverse cross-row lookup, static-only', async () => {
