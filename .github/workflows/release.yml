@@ -173,7 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     # Publication can wait up to thirty minutes for npm automated review,
     # in addition to package builds, uploads, clean-install checks and binaries.
-    timeout-minutes: 60
+    timeout-minutes: 180  # the publish waits out npm propagation, layer by layer
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -286,7 +286,10 @@ jobs:
             exit 0
           fi
 
-          pantry publish --npm --access public --ignore-scripts --tag staging 'storage/framework/core/*'
+          # npm can take minutes to show an accepted upload, and pantry holds back
+          # every package that depends on one it cannot read yet: the script
+          # waits for each and publishes again until all 85 are out.
+          .github/scripts/publish-npm.sh --npm --access public --ignore-scripts --tag staging 'storage/framework/core/*'
 
           # `npm dist-tag` authenticates from .npmrc rather than the env var
           # that pantry reads.

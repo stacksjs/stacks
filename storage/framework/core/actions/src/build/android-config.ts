@@ -25,6 +25,7 @@ export interface CraftAndroidConfig {
   googleServicesFile?: string
   mapsApiKey?: string
   enableBluetooth?: boolean
+  enableHeartRate?: boolean
   enableHealthConnect?: boolean
   renderer?: AndroidMobileConfig['renderer']
   nativeScreens?: Record<string, string>
@@ -50,6 +51,7 @@ const CAPABILITY_KEYS = {
   deepLinks: 'enableDeepLinks',
   healthConnect: 'enableHealthConnect',
   bluetooth: 'enableBluetooth',
+  heartRate: 'enableHeartRate',
   localNetwork: 'enableLocalNetwork',
   localDatabase: 'enableLocalDatabase',
   localNotifications: 'enableLocalNotifications',
@@ -69,6 +71,8 @@ export const CRAFT_ANDROID_FLOORS = {
   /** Verified HTTPS hosts and ordered website path exclusions. */
   appLinks: '0.0.201',
   bluetooth: '0.0.178',
+  /** CraftHeartRate.kt: Bluetooth heart-rate straps, the same `craft.heartRate` as iOS. */
+  heartRate: '0.0.247',
   /** Health Connect for native screens (workouts, sleep, heart rate, mindful, nutrition). */
   healthConnect: '0.0.169',
   /** WorkManager background refresh for the app script. */
@@ -96,6 +100,7 @@ export function androidCraftFeatures(config: AndroidMobileConfig, options: { app
   if (config.renderer === 'native' && Object.keys(config.nativeScreens ?? {}).length) features.push('nativeShell')
   if (config.appLinks?.length && config.capabilities?.deepLinks) features.push('appLinks')
   if (config.capabilities?.bluetooth) features.push('bluetooth')
+  if (config.capabilities?.heartRate) features.push('heartRate')
   if (config.capabilities?.healthConnect && config.renderer === 'native') features.push('healthConnect')
   if (config.backgroundRefresh?.enabled) features.push('backgroundRefresh')
   if (options.appBundle) features.push('appBundle')

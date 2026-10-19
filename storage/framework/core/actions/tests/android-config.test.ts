@@ -53,7 +53,7 @@ describe('Android mobile build configuration', () => {
       urlSchemes: ['wildloop'],
       appLinks: [{ host: 'wildloop.org', paths: [{ pattern: '/privacy', exclude: true }, { pattern: '/*' }] }],
       googleServicesFile: 'secrets/google-services.json',
-      capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true, localNetwork: true, bluetooth: true, localDatabase: true, localNotifications: true },
+      capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true, localNetwork: true, bluetooth: true, heartRate: true, localDatabase: true, localNotifications: true },
     })
     expect(config.devServerURL).toBe('https://wildloop.org')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
@@ -65,6 +65,7 @@ describe('Android mobile build configuration', () => {
     expect(config.googleServicesFile).toBe('secrets/google-services.json')
     expect(config.enableHealthConnect).toBe(true)
     expect(config.enableBluetooth).toBe(true)
+    expect(config.enableHeartRate).toBe(true)
     expect(config.enableLocalNetwork).toBe(true)
     expect(config.enableLocalDatabase).toBe(true)
     expect(config.enableLocalNotifications).toBe(true)
@@ -172,6 +173,13 @@ it('requires the Android generic Bluetooth transport when requested', () => {
   const config = { appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', capabilities: { bluetooth: true } }
   expect(() => assertCraftSupportsAndroid(config, '0.0.177', 'old builder')).toThrow('bluetooth')
   expect(() => assertCraftSupportsAndroid(config, '0.0.178', 'new builder')).not.toThrow()
+})
+
+it('passes heart-rate straps through and refuses a Craft without them on Android', () => {
+  const config = { appName: 'HQ', packageName: 'training.hq.app', url: 'https://hq.training/m', capabilities: { bluetooth: true, heartRate: true } }
+  expect(androidCraftFeatures(config)).toContain('heartRate')
+  expect(() => assertCraftSupportsAndroid(config, '0.0.246', 'old builder')).toThrow('heartRate (needs >= 0.0.247)')
+  expect(() => assertCraftSupportsAndroid(config, CRAFT_ANDROID_FLOORS.heartRate, 'new builder')).not.toThrow()
 })
 
 

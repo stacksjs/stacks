@@ -1,5 +1,38 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.230...v0.75.231)
+
+## ✨ Features
+
+- **mobile**: Android heart-rate straps through capabilities.heartRate ([f616f14](https://github.com/stacksjs/stacks/commit/f616f14)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: exclude private models from generic data access ([c0a7ae0](https://github.com/stacksjs/stacks/commit/c0a7ae0)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **ci**: install dependency metadata without application setup ([c1f21d3](https://github.com/stacksjs/stacks/commit/c1f21d3)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: validate the framework against a coherent public stx release ([d9a563e](https://github.com/stacksjs/stacks/commit/d9a563e)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: verify idempotent MySQL credential timestamps ([ef70904](https://github.com/stacksjs/stacks/commit/ef70904)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: honor nested private model overrides ([458300e](https://github.com/stacksjs/stacks/commit/458300e)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **native**: refresh actions retained test count ([5b844cc](https://github.com/stacksjs/stacks/commit/5b844cc)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **auth**: cover native timestamp precision and require database URLs ([d1fbc15](https://github.com/stacksjs/stacks/commit/d1fbc15)) _(by Chris <chris@stacksjs.com>)_
+- **release**: exercise real configuration in isolated repository commands ([85161bc](https://github.com/stacksjs/stacks/commit/85161bc)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate current main with native credential coverage ([d7fcdce](https://github.com/stacksjs/stacks/commit/d7fcdce)) _(by Chris <chris@stacksjs.com>)_
+- integrate current main with verified repository command tests ([0f9deef](https://github.com/stacksjs/stacks/commit/0f9deef)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.229...v0.75.230)
 
 ## ✨ Features
