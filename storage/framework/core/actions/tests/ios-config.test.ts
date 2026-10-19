@@ -212,6 +212,13 @@ describe('iOS mobile build configuration', () => {
     await expect(compileNativeScreens({ nativeApp: 'resources/native/app.ts' }, root, join(root, 'out'), async options => ({ outFile: options.outFile }))).rejects.toThrow('nativeScreens')
   })
 
+  it('passes where native screens run their JavaScript through to Craft', () => {
+    const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m', renderer: 'native' as const, nativeScreens: { '/m': 'Today' } }
+    expect(toCraftIosConfig({ ...base, nativeScriptThread: 'background' }).nativeScriptThread).toBe('background')
+    // Unset, Craft keeps screens on the main thread.
+    expect('nativeScriptThread' in toCraftIosConfig(base)).toBe(false)
+  })
+
   it('refuses an all-native app with no screens, or with a web view\'s assets', () => {
     const base = { appName: 'HQ.training', bundleId: 'training.hq.app', url: 'https://hq.training/m', renderer: 'native' as const }
     expect(() => validateIosMobileConfig(base)).toThrow('nativeScreens')

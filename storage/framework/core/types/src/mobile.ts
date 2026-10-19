@@ -240,6 +240,14 @@ export interface IosMobileConfig {
    */
   nativeApp?: string
   /**
+   * Where native screens run their JavaScript: `main` (the default) or
+   * `background`, a thread of the screens' own, so a screen's script, its
+   * timers and its renders never hold the main thread while it scrolls or
+   * animates. UIKit still draws on main; a pushed screen waits for its first
+   * render (at most 0.3 s) so it never slides in empty.
+   */
+  nativeScriptThread?: 'main' | 'background'
+  /**
    * The native tab bar from the first frame, before the page has loaded and
    * described its own: each tab's root path, title and SF Symbol. The page's
    * NativeTabBar replaces it once it mounts. An app with native screens needs
