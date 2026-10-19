@@ -490,9 +490,34 @@ Assertions that depend on layout or pixels belong in real-browser QA. Writing th
 
 ### Real-browser QA
 
-For behaviour that needs a real engine — navigation, layout, geometry-based visibility, screenshots — use the [`stacks-browse`](/skills/craft/browse) skill, which drives Chrome over the DevTools Protocol.
+Use `@stacksjs/testing/browser` for committed tests that need a real engine:
+navigation, layout, screenshots, and console or network checks. Provision Chrome
+through Pantry, then run these tests with Bun:
 
-It is a QA and diagnosis tool rather than a test runner: it has no spec files, fixtures or reporters, and a scenario is expressed as CLI steps rather than as a committed test. Use it to verify a flow in a real browser, capture screenshots, or inspect console and network output. If you need real-browser behaviour gated in CI, reach for a dedicated browser-test runner in its own package, kept out of the application's dependency tree.
+```typescript
+import { expect, test } from 'bun:test'
+import { auditPage, pageAuditClean } from '@stacksjs/testing/browser'
+
+test('the homepage loads cleanly', async () => {
+  const report = await auditPage('http://localhost:3000/')
+  expect(pageAuditClean(report)).toBe(true)
+})
+```
+
+For a longer journey, `launch()` returns a CDP session and an idempotent
+`close()` method. Await `close()` in `finally` so the process exits and its
+temporary profile is removed. A supplied `profile` remains caller-owned.
+
+`startTimeoutMs` bounds process startup, target discovery, and session setup;
+target discovery also keeps its 12-second cap. A `ChromeLaunchError` retains
+the original cause and structured `diagnostics`: executable, PID, profile,
+exit status before and after cleanup, port-file evidence, a capped stderr tail,
+and any cleanup error. Inspect this evidence when a runner cannot start Chrome.
+Cleanup waits for the owned process to exit, escalates to SIGKILL when needed,
+and preserves a profile if process exit cannot be confirmed.
+
+For interactive diagnosis, the [`stacks-browse`](/skills/craft/browse) skill
+drives Chrome through CLI steps and can capture screenshots and inspect a flow.
 
 ## Code Coverage
 

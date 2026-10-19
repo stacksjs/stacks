@@ -50,7 +50,7 @@
  * the updater's keys. `Cdp.closed` is still set if Chrome goes away for
  * another reason, and every pending command fails at once.
  */
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readSync, renameSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -89,6 +89,8 @@ interface Pending {
 export interface CdpOptions {
   /** How long one command may take. Default 30 s: on a loaded machine `Page.navigate` alone has taken over 15. */
   commandTimeoutMs?: number
+  /** How long the DevTools WebSocket may take to open. Default 30 s. */
+  connectTimeoutMs?: number
 }
 
 /**
@@ -123,15 +125,17 @@ export class Cdp {
   constructor(private socket: WebSocket, options: CdpOptions = {}) {
     this.commandTimeoutMs = options.commandTimeoutMs ?? 30_000
     // Fail what is waiting at once rather than after each command's timeout.
-    socket.addEventListener('close', () => {
-      this.closed = true
-      for (const [id, pending] of this.pending) {
-        clearTimeout(pending.timer)
-        pending.reject(new Error('Chrome closed the connection'))
-        this.pending.delete(id)
-      }
-    })
+    socket.addEventListener('close', () => this.markClosed())
     socket.addEventListener('message', event => this.receive(String(event.data)))
+  }
+
+  private markClosed(): void {
+    this.closed = true
+    for (const [id, pending] of this.pending) {
+      clearTimeout(pending.timer)
+      pending.reject(new Error('Chrome closed the connection'))
+      this.pending.delete(id)
+    }
   }
 
   private receive(raw: string): void {
@@ -247,6 +251,7 @@ export class Cdp {
 
   /** Close the socket (Chrome keeps running; `launch()`'s `close` stops it). */
   disconnect(): void {
+    this.markClosed()
     try {
       this.socket.close()
     }
@@ -258,8 +263,24 @@ export class Cdp {
 export async function connect(url: string, options: CdpOptions = {}): Promise<Cdp> {
   const socket = new WebSocket(url)
   await new Promise<void>((resolve, reject) => {
-    socket.addEventListener('open', () => resolve(), { once: true })
-    socket.addEventListener('error', () => reject(new Error(`Could not connect to Chrome at ${url}`)), { once: true })
+    const finish = (error?: Error) => {
+      clearTimeout(timer)
+      socket.removeEventListener('open', opened)
+      socket.removeEventListener('error', failed)
+      socket.removeEventListener('close', failed)
+      if (error) {
+        try { socket.close() }
+        catch {}
+        reject(error)
+      }
+      else resolve()
+    }
+    const opened = () => finish()
+    const failed = () => finish(new Error(`Could not connect to Chrome at ${url}`))
+    const timer = setTimeout(() => finish(new Error(`Timed out connecting to Chrome at ${url}`)), options.connectTimeoutMs ?? 30_000)
+    socket.addEventListener('open', opened, { once: true })
+    socket.addEventListener('error', failed, { once: true })
+    socket.addEventListener('close', failed, { once: true })
   })
   return new Cdp(socket, options)
 }
@@ -418,8 +439,57 @@ export interface LaunchOptions extends CdpOptions {
    * one, never become ready for it), or set your own. Default true.
    */
   userAgent?: boolean | string
-  /** How long to wait for Chrome to start. Default 30 s. */
+  /** Deadline for process startup, target discovery and session setup. Default 30 s. */
   startTimeoutMs?: number
+}
+
+export interface ChromeLaunchDiagnostics {
+  pid: number | null
+  chromePath: string
+  profile: string
+  temporaryProfile: boolean
+  elapsedMs: number
+  exitCodeBeforeCleanup: number | null
+  signalCodeBeforeCleanup: string | number | null
+  exitCode: number | null
+  signalCode: string | number | null
+  portFileExisted: boolean
+  portFileContents: string | null
+  stderrTail: string
+  stderrTruncated: boolean
+  cleanupError: string | null
+}
+
+export class ChromeLaunchError extends Error {
+  constructor(cause: unknown, public readonly diagnostics: ChromeLaunchDiagnostics) {
+    super(`${cause instanceof Error ? cause.message : String(cause)}\nChrome startup: ${JSON.stringify(diagnostics)}`, { cause })
+    this.name = 'ChromeLaunchError'
+  }
+}
+
+async function finishesWithin(promise: Promise<unknown>, timeoutMs: number): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([promise.then(() => true), new Promise<false>(resolve => { timer = setTimeout(() => resolve(false), timeoutMs) })])
+  }
+  finally { clearTimeout(timer) }
+}
+
+/** Only a small prefix belongs in a startup diagnostic, even for a corrupt file. */
+function portEvidence(path: string): string | null {
+  let fd: number | undefined
+  try {
+    fd = openSync(path, 'r')
+    const buffer = Buffer.alloc(1024)
+    return buffer.subarray(0, readSync(fd, buffer, 0, buffer.length, 0)).toString('utf8')
+  }
+  catch { return null }
+  finally {
+    if (fd !== undefined) {
+      try { closeSync(fd) }
+      catch {}
+    }
+  }
 }
 
 export interface LaunchedChrome {
@@ -450,54 +520,123 @@ function resolveChrome(options: LaunchOptions): string {
  * `Page`, `Runtime`, `Network` and `Log` domains enabled.
  */
 export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrome> {
+  const timeoutMs = options.startTimeoutMs ?? 30_000
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new RangeError('startTimeoutMs must be positive and finite')
   const chromePath = resolveChrome(options)
+  const started = Date.now()
   if (!existsSync(chromePath)) throw new Error(`Chrome was not found at ${chromePath}`)
   const profile = options.profile || mkdtempSync(join(tmpdir(), 'stacks-browser-'))
   // A kept profile still names the last launch's port.
   rmSync(join(profile, 'DevToolsActivePort'), { force: true })
-  const chrome = Bun.spawn([
-    chromePath,
-    ...(options.headless === false ? [] : ['--headless=new']),
-    '--remote-debugging-port=0',
-    `--user-data-dir=${profile}`,
-    '--no-first-run',
-    '--no-default-browser-check',
-    '--disable-background-networking',
-    '--disable-component-update',
-    '--disable-extensions',
-    '--hide-scrollbars',
-    // A re-signed clone (prepareMacChrome) is a new app to the Keychain, so
-    // its first cookie read asks the user for "Chrome Safe Storage" and every
-    // http page hangs behind that invisible prompt. A test profile needs no
-    // real Keychain.
-    '--use-mock-keychain',
-    ...(options.args ?? []),
-    'about:blank',
-  ], { stdout: 'ignore', stderr: 'ignore' })
+  const portFile = join(profile, 'DevToolsActivePort')
+  const chrome = (() => {
+    try {
+      return Bun.spawn([
+        chromePath,
+        ...(options.headless === false ? [] : ['--headless=new']),
+        '--remote-debugging-port=0',
+        `--user-data-dir=${profile}`,
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-background-networking',
+        '--disable-component-update',
+        '--disable-extensions',
+        '--hide-scrollbars',
+        // A re-signed clone (prepareMacChrome) is a new app to the Keychain, so
+        // its first cookie read asks the user for "Chrome Safe Storage" and every
+        // http page hangs behind that invisible prompt. A test profile needs no
+        // real Keychain.
+        '--use-mock-keychain',
+        ...(options.args ?? []),
+        'about:blank',
+      ], { stdin: 'ignore', stdout: 'ignore', stderr: 'pipe' })
+    }
+    catch (error) {
+      let cleanupError: string | null = null
+      try { if (!options.profile) rmSync(profile, { recursive: true, force: true }) }
+      catch (failure) { cleanupError = String(failure) }
+      throw new ChromeLaunchError(error, { pid: null, chromePath, profile, temporaryProfile: !options.profile, elapsedMs: Date.now() - started, exitCodeBeforeCleanup: null, signalCodeBeforeCleanup: null, exitCode: null, signalCode: null, portFileExisted: false, portFileContents: null, stderrTail: '', stderrTruncated: false, cleanupError })
+    }
+  })()
+
+  let stderrTail = ''
+  let stderrTruncated = false
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
+  let stderrDone: Promise<void> = Promise.resolve()
 
   let cdp: Cdp | undefined
-  let closed = false
-  const close = async () => {
-    if (closed) return
-    closed = true
+  let closing: Promise<void> | undefined
+  const close = (): Promise<void> => closing ??= (async () => {
     cdp?.disconnect()
-    chrome.kill()
-    await chrome.exited
-    if (!options.profile) rmSync(profile, { recursive: true, force: true })
+    let processOff = false
+    const failures: string[] = []
+    try {
+      if (chrome.exitCode === null && chrome.signalCode === null) {
+        try { chrome.kill('SIGTERM') }
+        catch {} // Exit may race this signal; still require the exit proof below.
+      }
+      if (!await finishesWithin(chrome.exited, 2_000)) {
+        try { chrome.kill('SIGKILL') }
+        catch {} // The following wait also covers a process which just exited.
+        if (!await finishesWithin(chrome.exited, 2_000)) throw new Error(`Chrome process ${chrome.pid} did not exit after SIGKILL`)
+      }
+      processOff = true
+    }
+    catch (error) {
+      failures.push(String(error))
+      processOff = chrome.exitCode !== null || chrome.signalCode !== null
+    }
+    finally {
+      try {
+        if (!await finishesWithin(stderrDone, 100) && reader) {
+          if (!await finishesWithin(reader.cancel(), 100)) throw new Error('Chrome stderr cancellation did not finish')
+        }
+        if (!await finishesWithin(stderrDone, 100)) throw new Error('Chrome stderr reader did not finish')
+      }
+      catch (error) { failures.push(String(error)) }
+      finally {
+        // Never retire a profile while an unconfirmed process may still use it.
+        if (processOff && !options.profile) {
+          try { rmSync(profile, { recursive: true, force: true }) }
+          catch (error) { failures.push(String(error)) }
+        }
+      }
+    }
+    if (failures.length) throw new Error(`Chrome cleanup failed: ${failures.join('; ')}`)
+  })()
+  const remaining = () => {
+    const value = timeoutMs - (Date.now() - started)
+    if (value <= 0) throw new Error(`Timed out after ${timeoutMs}ms starting Chrome`)
+    if (chrome.exitCode !== null || chrome.signalCode !== null) throw new Error('Chrome exited during startup')
+    return value
   }
+  const startupTimer = setTimeout(() => cdp?.disconnect(), Math.max(1, timeoutMs - (Date.now() - started)))
 
   try {
-    const portFile = join(profile, 'DevToolsActivePort')
+    reader = chrome.stderr.getReader()
+    const stderrReader = reader
+    stderrDone = (async () => {
+      const decoder = new TextDecoder()
+      for (;;) {
+        const { value, done } = await stderrReader.read()
+        const text = decoder.decode(value, { stream: !done })
+        stderrTruncated ||= stderrTail.length + text.length > 16_384
+        stderrTail = (stderrTail + text).slice(-16_384)
+        if (done) return
+      }
+    })().catch((error) => { stderrTail = `${stderrTail}\n[stderr read failed: ${String(error)}]`.slice(-16_384) })
     // A loaded machine can take a while to bring Chrome up; 10 s was too tight.
-    await waitFor(() => existsSync(portFile) && readFileSync(portFile, 'utf8').includes('\n'), options.startTimeoutMs ?? 30_000, { label: 'Chrome to start' })
-    const port = Number(readFileSync(portFile, 'utf8').split('\n')[0])
+    await waitFor(() => { remaining(); return portEvidence(portFile)?.includes('\n') }, remaining(), { label: 'Chrome to start' })
+    const port = Number(portEvidence(portFile)?.split('\n')[0])
+    if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Chrome wrote an invalid DevToolsActivePort')
     const targets = await waitFor(async () => {
-      const list: any[] = await fetch(`http://127.0.0.1:${port}/json/list`).then(response => response.json() as Promise<any[]>).catch(() => [])
-      return list.length ? list : null
-    }, 12_000, { label: 'a page target' })
+      const list = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(Math.min(1_000, remaining())) }).then(response => response.json()).catch(() => [])
+      return Array.isArray(list) && list.length ? list : null
+    }, Math.min(12_000, remaining()), { label: 'a page target' })
     const page = targets.find(target => target.type === 'page' && target.url === 'about:blank') || targets.find(target => target.type === 'page')
     if (!page) throw new Error('Chrome did not expose a page target')
-    cdp = await connect(page.webSocketDebuggerUrl, options)
+    cdp = await connect(page.webSocketDebuggerUrl, { ...options, connectTimeoutMs: Math.min(options.connectTimeoutMs ?? 30_000, remaining()) })
+    remaining()
     const session = cdp
 
     await Promise.all([
@@ -535,11 +674,21 @@ export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrom
       })
     }
 
+    remaining()
+    clearTimeout(startupTimer)
     return { cdp: session, close, target: page.webSocketDebuggerUrl, port, chromePath }
   }
   catch (error) {
-    await close()
-    throw error
+    clearTimeout(startupTimer)
+    const elapsedMs = Date.now() - started
+    const exitCodeBeforeCleanup = chrome.exitCode
+    const signalCodeBeforeCleanup = chrome.signalCode
+    const portFileExisted = existsSync(portFile)
+    const portFileContents = portEvidence(portFile)
+    let cleanupError: string | null = null
+    try { await close() }
+    catch (failure) { cleanupError = failure instanceof Error ? failure.message : String(failure) }
+    throw new ChromeLaunchError(error, { pid: chrome.pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: chrome.exitCode, signalCode: chrome.signalCode, portFileExisted, portFileContents, stderrTail, stderrTruncated, cleanupError })
   }
 }
 
