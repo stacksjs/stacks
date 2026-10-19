@@ -298,7 +298,9 @@ its charge, or a charge's `transfer`) and `refund_application_fee` when that
 charge also took a fee. `reverseTransfer: false` and
 `refundApplicationFee: false` opt out. `isDestinationCharge(source)` and `tookApplicationFee(source)`
 answer the two questions on their own. Pass `connectRefund` a deterministic
-`idempotencyKey`; without one each call is a new refund.
+`idempotencyKey`; without one each call is a new refund. `client` swaps the
+Stripe client it reads and refunds through: a test double, or one scoped to a
+connected account.
 
 ## Checkout outcomes
 

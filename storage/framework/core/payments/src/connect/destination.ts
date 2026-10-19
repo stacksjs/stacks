@@ -253,7 +253,7 @@ export function checkoutLineItemsTotal(lineItems: readonly Stripe.Checkout.Sessi
  * splitFee(-101, { tip: 2, planet: 1 })  // { tip: -67, planet: -34 }
  * splitFee(50, { tip: 0, planet: 0 })    // { tip: 50, planet: 0 }
  */
-export function splitFee<K extends string>(amount: number, weights: Readonly<Record<K, number>>, fallback?: K): Record<K, number> {
+export function splitFee<K extends string>(amount: number, weights: Readonly<Record<K, number>>, fallback?: NoInfer<K>): Record<K, number> {
   if (!Number.isSafeInteger(amount)) fail(`splitFee expects a whole number of minor units, got ${amount}`)
   const keys = Object.keys(weights) as K[]
   if (!keys.length) fail('splitFee needs at least one share')
