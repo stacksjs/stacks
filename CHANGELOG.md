@@ -1,5 +1,54 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.231...v0.75.232)
+
+## ✨ Features
+
+- **testing**: runIsolated takes a bunfig of your choice ([44acfd4](https://github.com/stacksjs/stacks/commit/44acfd4)) _(by Chris <chris@stacksjs.com>)_
+- **storage**: inspect directory mounts without retiring readers ([516c587](https://github.com/stacksjs/stacks/commit/516c587)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **storage**: prepare private artifacts before synchronous publication ([627a59a](https://github.com/stacksjs/stacks/commit/627a59a)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **testing**: share Fetch interception and count page audits per load ([a4773dd](https://github.com/stacksjs/stacks/commit/a4773dd)) _(by Chris <chris@stacksjs.com>)_
+- **payments**: connectRefund takes its Stripe client, splitFee its keys from the weights ([ad6fcef](https://github.com/stacksjs/stacks/commit/ad6fcef)) _(by Chris <chris@stacksjs.com>)_
+- **types**: declare stx's demand-inlined useMouse, unbreaking typecheck:views ([2cb194b](https://github.com/stacksjs/stacks/commit/2cb194b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stx#1926](https://github.com/stacksjs/stx/issues/1926))
+- **cli**: release repository metadata without opening application databases ([0154cf8](https://github.com/stacksjs/stacks/commit/0154cf8)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: repair three imports my last commit put inside an import block ([2374495](https://github.com/stacksjs/stacks/commit/2374495)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2918](https://github.com/stacksjs/stacks/issues/2918))
+- **dashboard**: keep shared helpers outside import blocks ([22b2b8c](https://github.com/stacksjs/stacks/commit/22b2b8c)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **ci**: verify original accepted archives before resuming publication ([c28346f](https://github.com/stacksjs/stacks/commit/c28346f)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: useRecordsDashboard, so five list screens share one ([f1ab170](https://github.com/stacksjs/stacks/commit/f1ab170)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2918](https://github.com/stacksjs/stacks/issues/2918))
+- **dashboard**: one definition of formErrorMessages, not fourteen ([6126056](https://github.com/stacksjs/stacks/commit/6126056)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2918](https://github.com/stacksjs/stacks/issues/2918))
+
+## 📝 Documentation
+
+- **native**: refresh storage evidence inventory ([8c16deb](https://github.com/stacksjs/stacks/commit/8c16deb)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **router**: match compiled entrypoints at package boundaries ([524361c](https://github.com/stacksjs/stacks/commit/524361c)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- finish a framework publish npm accepted but has not shown yet ([40713f2](https://github.com/stacksjs/stacks/commit/40713f2)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- integrate current framework release and publication recovery source ([f564a05](https://github.com/stacksjs/stacks/commit/f564a05)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([89b6309](https://github.com/stacksjs/stacks/commit/89b6309)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.230...v0.75.231)
 
 ## ✨ Features
