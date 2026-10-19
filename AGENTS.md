@@ -114,7 +114,7 @@ package coverage and stale references.
 |---|---|
 | E-commerce (products, orders, customers, coupons, payments, shipping, tax, ...) | `stacks-commerce`, `stacks-payments` |
 | CMS (posts, authors, pages, categories, tags, comments, RSS, sitemap) | `stacks-cms` |
-| Admin dashboard pages, model views, widgets (412 components) | `stacks-dashboard` |
+| Admin dashboard pages, model views, widgets (414 components) | `stacks-dashboard` |
 | i18n / translations / formatting | `stacks-i18n` |
 | Utilities: strings, arrays, collections, objects, datetime, slugs | `stacks-strings`, `stacks-arrays`, `stacks-collections`, `stacks-objects`, `stacks-datetime`, `stacks-slug` |
 
