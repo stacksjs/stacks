@@ -15,7 +15,7 @@ for (const [service, version, variable] of [
     expect(services).toBeUndefined()
     const setup = steps.findIndex(step => step.with?.services?.split(' ').includes(`${service}@${version}`))
     expect(setup).toBeGreaterThanOrEqual(0)
-    expect(steps[setup]!.uses).toBe('pantry-pm/pantry/packages/action@2fb25bbdf186db2cd8e096cc4c6f45c93a11267d')
+    expect(steps[setup]!.uses).toBe('pantry-pm/pantry/packages/action@b205b3527a03a053f4fade96e1cdc4c1fdf626a9')
     const configure = steps.findIndex(step => step.run?.includes('bun .github/scripts/configure-ci-services.ts'))
     expect(configure).toBeGreaterThan(setup)
     // The mapper rejects remote hosts, default ports and missing credentials.
