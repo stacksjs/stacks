@@ -1,6 +1,6 @@
 ---
 name: stacks-testing
-description: Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/.
+description: Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), disposable SQLite/Postgres databases, running a test in an isolated child process, headless Chrome browser tests and page audits, DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -168,9 +168,95 @@ expect(result.exitCode).toBe(0)
 ```
 
 Retained implementation evidence lives under `core/testing/tests/`:
-`http-client`, `acting-as`, `database-assertions`, `events`, `mail`, `time`
-and `console` test files. Fixture mechanics live in `core/testing/src/`;
-`package.json` declares the root and database/DynamoDB export boundaries.
+`http-client`, `acting-as`, `database-assertions`, `events`, `mail`, `time`,
+`console`, `isolated`, `disposable-database` and `browser` test files. Fixture mechanics live in `core/testing/src/`;
+`package.json` declares the root and database/DynamoDB/browser export boundaries.
+
+## Isolated processes and disposable databases
+
+`bun test` runs every file in one process, and `mock.module()` replaces a
+module for the rest of that run, so a mock in one file leaks into the next. A
+framework booted against one database also stays booted. When a test needs a
+clean process, run it in a child (`src/isolated.ts`); when it needs real rows,
+give it a database nobody else uses (`src/disposable-database.ts`). Both are on
+the root, with no framework import.
+
+```ts
+import { assertIsolatedOk, disposablePostgresUrl, runIsolated, test, withDisposableDatabase } from '@stacksjs/testing'
+
+for (const dialect of ['sqlite', 'postgres'] as const) {
+  test.skipIf(dialect === 'postgres' && !disposablePostgresUrl())(`${dialect} checkout flow`, async () => {
+    await withDisposableDatabase(dialect, async (database) => {
+      const result = await runIsolated('tests/fixtures/checkout-flow.ts', {
+        env: { APP_ENV: 'test', ...database.env },
+        timeoutMs: 45_000,
+        envFile: false,      // --no-env-file
+        preload: [],         // replace bunfig preloads (none)
+      })
+      assertIsolatedOk(result, 'checkout flow OK') // throws with stdout + stderr otherwise
+    })
+  }, 50_000)
+}
+```
+
+- `runIsolated(file, { env, timeoutMs = 60_000, args, cwd, mode, preload, envFile, inheritEnv, stdin })`
+  resolves `{ code, signal, stdout, stderr, timedOut, durationMs, command }`. `mode: 'auto'` runs
+  `*.test.*` / `*.spec.*` with `bun test`, anything else as a script; `env` values of `undefined`
+  remove a variable. The watchdog sends SIGTERM at the timeout and SIGKILL 2 s later.
+- `withDisposableDatabase(dialect, fn, { url?, prefix? })`: SQLite is a file in a fresh temp
+  directory; Postgres is `CREATE DATABASE` on `url` or `STACKS_TEST_POSTGRES_URL`, dropped with
+  `DROP DATABASE ... WITH (FORCE)` after `fn`, even when it throws (the test's error wins over a
+  cleanup error). Only `localhost`, `127.0.0.1` and `::1` are accepted. `database.env` holds the
+  `DB_*` variables (`DB_CONNECTION`, `DB_DATABASE_PATH` or `DB_HOST`/`DB_PORT`/`DB_DATABASE`/
+  `DB_USERNAME`/`DB_PASSWORD`); `database.directory` is removed with it.
+- `createDisposableDatabase` returns the same with `drop()` and `Symbol.asyncDispose`
+  (`await using`), for setups that span hooks.
+
+## Browser tests: `@stacksjs/testing/browser`
+
+Headless Chrome over the DevTools Protocol with no browser package: the installed
+Chrome and Bun's WebSocket (`src/browser.ts`). A subpath so tests that never drive
+a browser never load it.
+
+```ts
+import { auditPage, launch, navigate, pageAuditClean, settle } from '@stacksjs/testing/browser'
+
+const { cdp, close } = await launch({ viewport: { width: 390, height: 844, mobile: true } })
+try {
+  const off = cdp.on('Network.requestWillBeSent', params => requests.push(params.request.url))
+  await navigate(cdp, 'http://localhost:3000/dashboard')   // settles: loaded + network quiet 1 s
+  expect(await cdp.evaluate('document.title')).toBe('Dashboard')
+  expect(cdp.errors).toEqual([])                          // exceptions, console.error, failed requests, dialogs
+  off()
+}
+finally { await close() }
+
+const report = await auditPage('http://localhost:3000/pricing') // launches its own Chrome, or pass { cdp }
+expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed same-origin requests or errors
+```
+
+- `Cdp`: `send`, `evaluate`, `on(method, fn)` (any number of listeners per method; returns an
+  unsubscribe), `off`, `once(method, match?, timeoutMs?)`, `errors`, `inFlight` (event streams
+  leave it when their response starts, so a page with live updates can still settle), `closed`
+  (every pending command fails at once when Chrome goes away).
+- `launch(options)` enables Page/Runtime/Network/Log, sets a 1440x1000 viewport, answers stx's
+  live-reload stream (`*/_stx/hmr*`) with a day-long retry so a save mid-run cannot reload the
+  page, accepts JavaScript dialogs and records them in `errors`, removes "HeadlessChrome" from the
+  user agent, and passes `--use-mock-keychain`. `profile` keeps one profile across relaunches.
+- `settle(cdp, { quietMs, timeoutMs })` resolves false (not throws) when a page never goes quiet.
+- `auditPage(url, { cdp?, launch?, viewport?, isApiRequest?, beforeNavigate?, quietMs, timeoutMs })`
+  returns `{ apiRequests, duplicates, failed, errors, settled, durationMs }` and never throws for a
+  page problem. `beforeNavigate` is where to seed a token (`Page.addScriptToEvaluateOnNewDocument`).
+  `formatPageAudit(report)` prints one line.
+- **macOS: the installed Chrome quits about 30 s in.** GoogleUpdater SIGTERMs every process with
+  Chrome's bundle id while an update is pending; to a test that looks like a hung page. When
+  `CHROME_PATH` is not set, `launch()` runs `prepareMacChrome()`: a `cp -cR` clone in the temp
+  directory with the `KS*` updater keys deleted from `Info.plist`, its own `CFBundleIdentifier`,
+  and `codesign --force --deep --sign -`, reused per Chrome version. `--use-mock-keychain` is what
+  keeps that clone from hanging on an invisible "Chrome Safe Storage" Keychain prompt at its first
+  http page. Measured: the installed Chrome closed at 32 s, the clone kept navigating past 60 s.
+- The package's own real-Chrome tests (`core/testing/tests/browser.test.ts`) run wherever a Chrome
+  is found, except in CI unless `STACKS_BROWSER_TESTS=1`; `STACKS_BROWSER_TESTS=0` skips them locally.
 
 ## CLI Commands
 
@@ -182,7 +268,12 @@ bun run test                  # via npm script
 bun run test:ui               # UI tests
 bun run test:coverage         # with coverage
 bun run test:types            # type tests
+buddy test:page-audit --url /,/dashboard --base http://localhost:3000  # duplicate API requests, failures, console errors
+buddy test:page-audit --url http://localhost:3000/pricing --mobile --json
 ```
+
+`test:page-audit` exits 1 when any page has duplicates, failed same-origin requests or errors, or
+never settles.
 
 ## Configuration (bunfig.toml)
 

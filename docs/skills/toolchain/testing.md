@@ -1,12 +1,12 @@
 ---
 title: "Testing skill"
-description: "Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/."
+description: "Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), disposable SQLite/Postgres databases, running a test in an isolated child process, headless Chrome browser tests and page audits, DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/."
 ---
 # Testing
 
 `stacks-testing` · Native Stacks · model-invoked
 
-Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/.
+Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), disposable SQLite/Postgres databases, running a test in an isolated child process, headless Chrome browser tests and page audits, DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/.
 
 Read the skill for the implementation workflow and its current signatures. The
 [Native capabilities](/skills/platform/native) catalog maps the package to
@@ -21,6 +21,8 @@ source and retained evidence; driver limits are explicit.
 - Queue Testing
 - HTTP, identity and boundary assertions
 - Fakes, time and CLI tests
+- Isolated processes and disposable databases
+- Browser tests: `@stacksjs/testing/browser`
 - CLI Commands
 - Configuration (bunfig.toml)
 - Test File Conventions

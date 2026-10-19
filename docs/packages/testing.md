@@ -461,6 +461,188 @@ it('should send email', async () => {
 })
 ```
 
+`mock.module()` replaces the module for the rest of the `bun test` process,
+not just this file, so a later file that imports the real module gets the
+mock. Run a file that mocks modules in its own process with `runIsolated`.
+
+## Isolated Processes
+
+`runIsolated(file, options)` runs a test file or script in a child Bun process
+with its own environment, collects what it printed, and kills it if it outlives
+`timeoutMs`:
+
+```typescript
+import { assertIsolatedOk, runIsolated } from '@stacksjs/testing'
+
+it('bills a membership end to end', async () => {
+  const result = await runIsolated('tests/fixtures/billing-flow.ts', {
+    env: { APP_ENV: 'test', STRIPE_SECRET_KEY: undefined }, // undefined removes a variable
+    timeoutMs: 45_000,
+    envFile: false,  // pass --no-env-file
+    preload: [],     // replace the project's bunfig preloads with none
+  })
+  assertIsolatedOk(result, 'billing flow OK') // throws with stdout and stderr unless it exited 0 and printed this
+}, 50_000)
+```
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `env` | | Variables over the parent's environment; `undefined` removes one |
+| `inheritEnv` | `true` | Start from the parent's environment |
+| `timeoutMs` | `60000` | SIGTERM at the timeout, SIGKILL 2 s later |
+| `args` | | Arguments after the file |
+| `cwd` | parent's | Working directory |
+| `mode` | `'auto'` | `'test'` runs `bun test`, `'run'` runs a script; `'auto'` picks `'test'` for `*.test.*` and `*.spec.*` |
+| `preload` | project's | Replace the bunfig preloads (an empty list means none) |
+| `envFile` | `true` | `false` passes `--no-env-file` |
+| `stdin` | | Text written to the child's stdin |
+
+It resolves `{ code, signal, stdout, stderr, timedOut, durationMs, command }`;
+`code` is null when a signal ended the child.
+
+## Disposable Databases
+
+`withDisposableDatabase(dialect, fn)` creates a uniquely named database, passes
+it to `fn`, and drops it afterwards, even when `fn` throws:
+
+```typescript
+import { disposablePostgresUrl, runIsolated, test, withDisposableDatabase } from '@stacksjs/testing'
+
+for (const dialect of ['sqlite', 'postgres'] as const) {
+  test.skipIf(dialect === 'postgres' && !disposablePostgresUrl())(`${dialect}: orders keep their totals`, async () => {
+    await withDisposableDatabase(dialect, async (database) => {
+      const result = await runIsolated('tests/fixtures/orders.ts', { env: { APP_ENV: 'test', ...database.env } })
+      expect(result.code, result.stdout + result.stderr).toBe(0)
+    })
+  }, 60_000)
+}
+```
+
+- **SQLite** is a file in a fresh temporary directory; `database.env` is
+  `{ DB_CONNECTION: 'sqlite', DB_DATABASE_PATH }`.
+- **PostgreSQL** is created on the server named by `options.url` or
+  `STACKS_TEST_POSTGRES_URL` (for example
+  `postgres://postgres@127.0.0.1:5432/postgres`, a user that may `CREATE
+  DATABASE`), and dropped with `DROP DATABASE ... WITH (FORCE)`, which also ends
+  connections a crashed child left open. `database.env` holds `DB_CONNECTION`,
+  `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD`;
+  `database.url` connects to it.
+- Only a server on this machine (`localhost`, `127.0.0.1`, `::1`) is accepted.
+- `database.directory` is a temporary directory removed with the database, for
+  fixtures or a generated bunfig.
+- If `fn` throws, its error is the one you see; a failure to drop is reported
+  only when `fn` succeeded.
+
+`createDisposableDatabase(dialect, options)` returns the same object with
+`drop()` and `Symbol.asyncDispose`, for a database that spans hooks:
+
+```typescript
+await using database = await createDisposableDatabase('sqlite')
+```
+
+## Browser Testing
+
+`@stacksjs/testing/browser` drives headless Chrome over the DevTools Protocol
+with no browser package: the Chrome on the machine and Bun's WebSocket.
+
+```typescript
+import { launch, navigate } from '@stacksjs/testing/browser'
+
+const { cdp, close } = await launch()
+try {
+  const requests: string[] = []
+  const stop = cdp.on('Network.requestWillBeSent', params => requests.push(params.request.url))
+  await navigate(cdp, 'http://localhost:3000/dashboard') // waits for load and 1 s of network quiet
+  expect(await cdp.evaluate('document.title')).toBe('Dashboard')
+  expect(cdp.errors).toEqual([])
+  stop()
+}
+finally {
+  await close()
+}
+```
+
+`launch(options)` starts a private Chrome with a temporary profile and opens a
+session on its page with the `Page`, `Runtime`, `Network` and `Log` domains on.
+By default it also:
+
+- sets a 1440x1000 viewport (`viewport`);
+- answers stx's live-reload stream with one that retries in a day, so a file
+  saved mid-run cannot reload the page under a check (`quietLiveReload`);
+- accepts JavaScript dialogs, which would otherwise block the page and every
+  command, and records each in `cdp.errors` (`acceptDialogs`);
+- removes "HeadlessChrome" from the user agent (`userAgent`);
+- passes `--use-mock-keychain`.
+
+`profile` keeps one profile directory across launches, for a run that must
+start Chrome again part-way. `chromePath` or `CHROME_PATH` picks the binary;
+otherwise `findChrome()` looks for Chrome, Chrome for Testing or Chromium.
+
+The `Cdp` session:
+
+| Member | |
+| --- | --- |
+| `send(method, params)` | A command's result; rejects on a protocol error or after `commandTimeoutMs` (30 s) |
+| `evaluate(expression)` | The expression's value in the page, awaiting a promise |
+| `on(method, listener)` | Adds a listener (any number per method) and returns a function that removes it |
+| `off(method, listener)` | Removes one |
+| `once(method, match?, timeoutMs?)` | The next matching event |
+| `errors` | Uncaught exceptions, `console.error`, error log entries and failed requests |
+| `inFlight` | Requests still loading. Event streams leave as soon as they open, so a page with live updates can settle |
+| `closed` | Chrome went away; pending and later commands fail at once |
+
+`settle(cdp, { quietMs, timeoutMs })` waits until the document has loaded and
+no request has been in flight for `quietMs`, and resolves false rather than
+throwing when the page never goes quiet. `waitFor(read, timeoutMs)` polls until
+`read` returns something truthy.
+
+### Page audits
+
+`auditPage(url, options)` loads a page once and reports what it cost:
+
+```typescript
+import { auditPage, formatPageAudit, pageAuditClean } from '@stacksjs/testing/browser'
+
+const report = await auditPage('http://localhost:3000/dashboard', {
+  beforeNavigate: cdp => cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `localStorage.setItem('auth_token', ${JSON.stringify(token)})`,
+  }),
+})
+console.log(formatPageAudit(report)) // '/dashboard: 9 api | dup 2x GET /api/me'
+expect(pageAuditClean(report)).toBe(true)
+```
+
+The report has `apiRequests`, `duplicates` (API requests made more than once),
+`failed` (same-origin responses of 400 and above), `errors`, `settled` and
+`durationMs`. `isApiRequest(url, method)` changes what counts as an API request
+(default: paths under `/api/`, event streams excluded). Pass `cdp` to audit in
+an open session, or `launch` options for the Chrome it starts. A launch or
+navigation failure is reported in `errors`, never thrown. From the command line:
+`buddy test:page-audit --url /,/dashboard`.
+
+### Chrome on macOS
+
+The installed Google Chrome quits about 30 seconds into a run while an update is
+pending: GoogleUpdater sends SIGTERM to every process with Chrome's bundle id.
+To a test it looks like a hung page. A renamed copy dies too; a clone with the
+updater's keys removed and its own bundle id does not:
+
+```bash
+cp -cR "/Applications/Google Chrome.app" /tmp/chrome/Chrome.app
+for key in KSProductID KSUpdateURL KSChannelID KSVersion; do
+  /usr/libexec/PlistBuddy -c "Delete :$key" /tmp/chrome/Chrome.app/Contents/Info.plist
+done
+/usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier dev.stacks.testing.chrome" /tmp/chrome/Chrome.app/Contents/Info.plist
+codesign --force --deep --sign - /tmp/chrome/Chrome.app
+```
+
+`launch()` does this itself when `CHROME_PATH` is not set and the Chrome it
+found carries the updater's keys (`prepareMacChrome()`, cached per Chrome
+version in the temporary directory; `stableMacChrome: false` turns it off).
+Run the clone with `--use-mock-keychain`, as `launch()` does: to the Keychain it
+is a new app, and its first cookie read raises a "Chrome Safe Storage" prompt
+that nobody sees, behind which every http page hangs.
+
 ## Time Testing
 
 ### Freezing Time
