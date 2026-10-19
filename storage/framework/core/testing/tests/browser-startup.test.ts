@@ -96,7 +96,7 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
     const profile = process.argv.find(value => value.startsWith('--user-data-dir='))!.slice(16)
     const server = Bun.serve({ hostname: '127.0.0.1', port: 0,
       fetch(request, server) {
-        if (new URL(request.url).pathname === '/devtools/page/fixture') {
+        if (new URL(request.url).pathname.startsWith('/devtools/')) {
           if (!${handshake}) return new Promise(() => {})
           if (server.upgrade(request)) return
           return new Response('not upgraded', { status: 400 })
@@ -106,7 +106,8 @@ describe.skipIf(process.platform === 'win32')('browser startup failure evidence'
       websocket: { message(socket, raw) {
         if (!${respond}) return
         const { id, method } = JSON.parse(String(raw))
-        socket.send(JSON.stringify({ id, result: method === 'Browser.getVersion' ? { userAgent: 'HeadlessChrome Fixture' } : {} }))
+        const results = { 'Browser.getVersion': { userAgent: 'HeadlessChrome Fixture' }, 'Target.createBrowserContext': { browserContextId: 'fixture-context' }, 'Target.createTarget': { targetId: 'fixture' } }
+        socket.send(JSON.stringify({ id, result: results[method] ?? {} }))
       } },
     })
     await Bun.write(profile + '/fixture.pid', String(process.pid))

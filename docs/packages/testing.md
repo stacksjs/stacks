@@ -576,8 +576,20 @@ finally {
 }
 ```
 
-`launch(options)` starts a private Chrome with a temporary profile and opens a
-session on its page with the `Page`, `Runtime`, `Network` and `Log` domains on.
+`launch(options)` opens a session on a page of a headless Chrome with the
+`Page`, `Runtime`, `Network` and `Log` domains on.
+
+**One Chrome per process, a browser context per launch.** Starting Chrome is the
+slow part, so launches with the same executable, headless mode and `args` share
+one process, and each gets its own browser context: separate cookies, storage,
+cache and service workers. Two sessions signed in as different people at once
+never see each other's state, and `Network.clearBrowserCookies` clears only its
+own. `close()` disposes the context; the Chrome lingers for 1.5 s for the next
+launch and then stops (`closeSharedBrowsers()` stops it at once). Ten launches
+in a row take about 0.6 s each instead of 1.7 s. A launch with a `profile`, with
+`shared: false`, or with `STACKS_BROWSER_SHARED=0` gets a Chrome of its own,
+stopped by its `close()`.
+
 By default it also:
 
 - sets a 1440x1000 viewport (`viewport`);
@@ -591,7 +603,7 @@ By default it also:
 - passes `--use-mock-keychain`.
 
 `profile` keeps one profile directory across launches, for a run that must
-start Chrome again part-way. `chromePath` or `CHROME_PATH` picks the binary;
+start Chrome again part-way (such a launch never shares a Chrome). `chromePath` or `CHROME_PATH` picks the binary;
 otherwise `findChrome()` looks for Chrome, Chrome for Testing or Chromium.
 
 The `Cdp` session:

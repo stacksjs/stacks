@@ -2,8 +2,8 @@
  * Headless Chrome over the DevTools Protocol, for browser tests and audits.
  *
  * No browser package: the Chrome already on the machine and Bun's own
- * WebSocket client. `launch()` starts a private headless Chrome and returns a
- * `Cdp` session on its page; `auditPage()` loads one URL and reports the
+ * WebSocket client. `launch()` returns a `Cdp` session on a page in its own
+ * browser context of a headless Chrome the process shares; `auditPage()` loads one URL and reports the
  * duplicate API requests, failed same-origin requests and console errors it
  * cost.
  *
@@ -639,6 +639,11 @@ export interface LaunchOptions extends CdpOptions {
   userAgent?: boolean | string
   /** Deadline for process startup, target discovery and session setup. Default 30 s. */
   startTimeoutMs?: number
+  /**
+   * Share one Chrome per process and give this launch its own browser context
+   * (see `launch()`). Default true; a `profile` always gets a Chrome of its own.
+   */
+  shared?: boolean
 }
 
 export interface ChromeLaunchDiagnostics {
@@ -692,7 +697,10 @@ function portEvidence(path: string): string | null {
 
 export interface LaunchedChrome {
   cdp: Cdp
-  /** Stop Chrome and remove a temporary profile. Safe to call twice. */
+  /**
+   * End this session: dispose its browser context on a shared Chrome, or stop
+   * a Chrome of its own and remove a temporary profile. Safe to call twice.
+   */
   close: () => Promise<void>
   /** The page's DevTools WebSocket URL, to connect a second session. */
   target: string
@@ -736,15 +744,25 @@ function resolveChrome(options: LaunchOptions): string {
   return found
 }
 
-/**
- * Start a private headless Chrome and open a session on its page, with the
- * `Page`, `Runtime`, `Network` and `Log` domains enabled.
- */
-export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrome> {
-  const timeoutMs = options.startTimeoutMs ?? 30_000
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new RangeError('startTimeoutMs must be positive and finite')
-  const chromePath = resolveChrome(options)
-  const started = Date.now()
+/** A Chrome process this module started, up to the point a DevTools port is known. */
+interface StartedChrome {
+  readonly pid: number | null
+  readonly chromePath: string
+  readonly profile: string
+  readonly port: number
+  /** The browser-wide DevTools endpoint, from DevToolsActivePort's second line. */
+  readonly browserPath: string
+  /** Throws once the startup deadline has passed or the process has exited. */
+  remaining: () => number
+  /** Stop the process and remove a temporary profile. Safe to call twice. */
+  close: () => Promise<void>
+  /** The evidence for a failed launch; `cleanup` stops the process first. */
+  failure: (error: unknown, cleanup: boolean) => Promise<ChromeLaunchError>
+  readonly exited: () => boolean
+}
+
+/** Spawn Chrome and wait for its DevTools port. Throws a `ChromeLaunchError` with the startup evidence. */
+async function startChrome(options: LaunchOptions, chromePath: string, started: number, timeoutMs: number): Promise<StartedChrome> {
   if (!existsSync(chromePath)) throw new Error(`Chrome was not found at ${chromePath}`)
   const profile = options.profile || mkdtempSync(join(tmpdir(), 'stacks-browser-'))
   // A kept profile still names the last launch's port.
@@ -785,10 +803,8 @@ export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrom
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
   let stderrDone: Promise<void> = Promise.resolve()
 
-  let cdp: Cdp | undefined
   let closing: Promise<void> | undefined
   const close = (): Promise<void> => closing ??= (async () => {
-    cdp?.disconnect()
     let processOff = false
     const failures: string[] = []
     try {
@@ -825,13 +841,26 @@ export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrom
     }
     if (failures.length) throw new Error(`Chrome cleanup failed: ${failures.join('; ')}`)
   })()
+  const exited = () => chrome.exitCode !== null || chrome.signalCode !== null
   const remaining = () => {
     const value = timeoutMs - (Date.now() - started)
     if (value <= 0) throw new Error(`Timed out after ${timeoutMs}ms starting Chrome`)
-    if (chrome.exitCode !== null || chrome.signalCode !== null) throw new Error('Chrome exited during startup')
+    if (exited()) throw new Error('Chrome exited during startup')
     return value
   }
-  const startupTimer = setTimeout(() => cdp?.disconnect(), Math.max(1, timeoutMs - (Date.now() - started)))
+  const failure = async (error: unknown, cleanup: boolean): Promise<ChromeLaunchError> => {
+    const elapsedMs = Date.now() - started
+    const exitCodeBeforeCleanup = chrome.exitCode
+    const signalCodeBeforeCleanup = chrome.signalCode
+    const portFileExisted = existsSync(portFile)
+    const portFileContents = portEvidence(portFile)
+    let cleanupError: string | null = null
+    if (cleanup) {
+      try { await close() }
+      catch (failed) { cleanupError = failed instanceof Error ? failed.message : String(failed) }
+    }
+    return new ChromeLaunchError(error, { pid: chrome.pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: chrome.exitCode, signalCode: chrome.signalCode, portFileExisted, portFileContents, stderrTail, stderrTruncated, cleanupError })
+  }
 
   try {
     reader = chrome.stderr.getReader()
@@ -848,59 +877,259 @@ export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrom
     })().catch((error) => { stderrTail = `${stderrTail}\n[stderr read failed: ${String(error)}]`.slice(-16_384) })
     // A loaded machine can take a while to bring Chrome up; 10 s was too tight.
     await waitFor(() => { remaining(); return portEvidence(portFile)?.includes('\n') }, remaining(), { label: 'Chrome to start' })
-    const port = Number(portEvidence(portFile)?.split('\n')[0])
+    const [portLine, browserPath = ''] = (portEvidence(portFile) ?? '').split('\n')
+    const port = Number(portLine)
     if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Chrome wrote an invalid DevToolsActivePort')
+    return { pid: chrome.pid, chromePath, profile, port, browserPath: browserPath.trim(), remaining, close, failure, exited }
+  }
+  catch (error) {
+    throw await failure(error, true)
+  }
+}
+
+/** Reject with `label` unless `promise` settles within `ms`. */
+async function within<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([promise, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`Timed out after ${ms}ms ${label}`)), ms) })])
+  }
+  finally { clearTimeout(timer) }
+}
+
+/** The domains, viewport, user agent and handlers every launched page starts with. */
+async function prepareSession(session: Cdp, options: LaunchOptions): Promise<void> {
+  await Promise.all([
+    session.send('Page.enable'),
+    session.send('Runtime.enable'),
+    session.send('Network.enable'),
+    session.send('Log.enable'),
+    ...(options.viewport === false ? [] : [session.send('Emulation.setDeviceMetricsOverride', { deviceScaleFactor: 1, mobile: false, width: 1440, height: 1000, ...options.viewport })]),
+  ])
+
+  if (options.userAgent !== false) {
+    const agent = typeof options.userAgent === 'string'
+      ? options.userAgent
+      : String((await session.send('Browser.getVersion')).userAgent || '').replace('HeadlessChrome', 'Chrome')
+    if (agent) await session.send('Network.setUserAgentOverride', { userAgent: agent })
+  }
+
+  if (options.quietLiveReload !== false)
+    await quietLiveReload(session, options.quietLiveReload)
+
+  if (options.acceptDialogs !== false) {
+    session.on('Page.javascriptDialogOpening', (params) => {
+      session.errors.push(`Dialog (${params.type}) on ${params.url}: ${params.message || '(no message)'}`)
+      session.send('Page.handleJavaScriptDialog', { accept: true }).catch(() => {})
+    })
+  }
+}
+
+/**
+ * How long a shared Chrome outlives its last session, for the next `launch()`
+ * to reuse. Long enough for a suite that closes one journey and opens the
+ * next; short enough that a finished script exits promptly.
+ */
+export const SHARED_CHROME_LINGER_MS: number = 1_500
+
+interface SharedChrome {
+  chrome: StartedChrome
+  browser: Cdp
+  sessions: number
+  linger?: ReturnType<typeof setTimeout>
+}
+
+const sharedChromes = new Map<string, Promise<SharedChrome>>()
+/** Shared Chromes still running, by pid, with the temporary profile to remove. */
+const sharedProcesses = new Map<number, string>()
+let exitHookInstalled = false
+
+/**
+ * A process that exits while sharing a Chrome takes it along. Synchronous,
+ * because nothing asynchronous runs once a process has started to exit (a
+ * script ending in `process.exit()` included).
+ */
+function installExitHook(): void {
+  if (exitHookInstalled) return
+  exitHookInstalled = true
+  process.once('exit', () => {
+    for (const [pid, profile] of sharedProcesses) {
+      try { process.kill(pid, 'SIGKILL') }
+      catch {}
+      try { if (profile) rmSync(profile, { recursive: true, force: true }) }
+      catch {}
+    }
+  })
+}
+
+/** Stop every shared Chrome now, instead of after it lingers. */
+export async function closeSharedBrowsers(): Promise<void> {
+  const entries = [...sharedChromes.values()]
+  sharedChromes.clear()
+  await Promise.allSettled(entries.map(async (pending) => {
+    const shared = await pending
+    clearTimeout(shared.linger)
+    shared.browser.disconnect()
+    await shared.chrome.close()
+    if (shared.chrome.pid !== null) sharedProcesses.delete(shared.chrome.pid)
+  }))
+}
+
+async function acquireShared(key: string, options: LaunchOptions, chromePath: string, started: number, timeoutMs: number): Promise<SharedChrome> {
+  const existing = sharedChromes.get(key)
+  if (existing) {
+    const shared = await existing.catch(() => null)
+    if (shared && !shared.browser.closed && !shared.chrome.exited()) {
+      clearTimeout(shared.linger)
+      shared.sessions++
+      return shared
+    }
+    if (sharedChromes.get(key) === existing) sharedChromes.delete(key)
+  }
+  const starting = (async (): Promise<SharedChrome> => {
+    const chrome = await startChrome(options, chromePath, started, timeoutMs)
+    if (chrome.pid !== null) sharedProcesses.set(chrome.pid, chrome.profile)
+    try {
+      if (!chrome.browserPath.startsWith('/devtools/browser/')) throw new Error('Chrome wrote no browser endpoint in DevToolsActivePort')
+      const browser = await connect(`ws://127.0.0.1:${chrome.port}${chrome.browserPath}`, { ...options, connectTimeoutMs: Math.min(options.connectTimeoutMs ?? 30_000, chrome.remaining()) })
+      return { chrome, browser, sessions: 0 }
+    }
+    catch (error) {
+      if (chrome.pid !== null) sharedProcesses.delete(chrome.pid)
+      throw await chrome.failure(error, true)
+    }
+  })()
+  sharedChromes.set(key, starting)
+  installExitHook()
+  try {
+    const shared = await starting
+    shared.sessions++
+    return shared
+  }
+  catch (error) {
+    if (sharedChromes.get(key) === starting) sharedChromes.delete(key)
+    throw error
+  }
+}
+
+/** One session fewer; the last one lets Chrome linger, then stops it. */
+function releaseShared(key: string, shared: SharedChrome, immediately = false): Promise<void> {
+  shared.sessions = Math.max(0, shared.sessions - 1)
+  if (shared.sessions > 0) return Promise.resolve()
+  const stop = async () => {
+    if (shared.sessions > 0) return
+    const entry = sharedChromes.get(key)
+    if (entry && await entry.catch(() => null) === shared) sharedChromes.delete(key)
+    shared.browser.disconnect()
+    await shared.chrome.close()
+    if (shared.chrome.pid !== null) sharedProcesses.delete(shared.chrome.pid)
+  }
+  if (immediately) return stop()
+  clearTimeout(shared.linger)
+  shared.linger = setTimeout(() => { stop().catch(() => {}) }, SHARED_CHROME_LINGER_MS)
+  return Promise.resolve()
+}
+
+/** A page in its own browser context on the shared Chrome for these options. */
+async function launchShared(options: LaunchOptions, chromePath: string, started: number, timeoutMs: number): Promise<LaunchedChrome> {
+  const key = JSON.stringify([chromePath, options.headless !== false, options.args ?? []])
+  const shared = await acquireShared(key, options, chromePath, started, timeoutMs)
+  const left = () => {
+    const value = timeoutMs - (Date.now() - started)
+    if (value <= 0) throw new Error(`Timed out after ${timeoutMs}ms starting Chrome`)
+    return value
+  }
+  let contextId: string | undefined
+  let cdp: Cdp | undefined
+  const dispose = async () => {
+    if (contextId && !shared.browser.closed)
+      await shared.browser.send('Target.disposeBrowserContext', { browserContextId: contextId }).catch(() => {})
+  }
+  try {
+    // Its own cookies, storage, cache and service workers: nothing a journey
+    // signs in to or stores reaches the next one, or one running beside it.
+    contextId = (await within(shared.browser.send('Target.createBrowserContext', { disposeOnDetach: false }), left(), 'creating a browser context')).browserContextId
+    const { targetId } = await within(shared.browser.send('Target.createTarget', { url: 'about:blank', browserContextId: contextId }), left(), 'opening a page')
+    const target = `ws://127.0.0.1:${shared.chrome.port}/devtools/page/${targetId}`
+    const session = cdp = await connect(target, { ...options, connectTimeoutMs: Math.min(options.connectTimeoutMs ?? 30_000, left()) })
+    await within(prepareSession(session, options), left(), 'preparing the page')
+    left()
+    let closing: Promise<void> | undefined
+    const close = (): Promise<void> => closing ??= (async () => {
+      session.disconnect()
+      await dispose()
+      await releaseShared(key, shared)
+    })()
+    return { cdp: session, close, target, port: shared.chrome.port, chromePath }
+  }
+  catch (error) {
+    cdp?.disconnect()
+    await dispose()
+    const alone = shared.sessions <= 1
+    const failure = await shared.chrome.failure(error, false)
+    // The Chrome this launch started for itself goes with it; one others are
+    // using stays up for them.
+    await releaseShared(key, shared, alone).catch((failed) => { failure.diagnostics.cleanupError = failed instanceof Error ? failed.message : String(failed) })
+    throw failure
+  }
+}
+
+/** A Chrome of its own, for a launch that keeps a profile or asked not to share. */
+async function launchDedicated(options: LaunchOptions, chromePath: string, started: number, timeoutMs: number): Promise<LaunchedChrome> {
+  const chrome = await startChrome(options, chromePath, started, timeoutMs)
+  let cdp: Cdp | undefined
+  let closing: Promise<void> | undefined
+  const close = (): Promise<void> => closing ??= (async () => {
+    cdp?.disconnect()
+    await chrome.close()
+  })()
+  const startupTimer = setTimeout(() => cdp?.disconnect(), Math.max(1, timeoutMs - (Date.now() - started)))
+  try {
+    const port = chrome.port
     const targets = await waitFor(async () => {
-      const list = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(Math.min(1_000, remaining())) }).then(response => response.json()).catch(() => [])
+      const list = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(Math.min(1_000, chrome.remaining())) }).then(response => response.json()).catch(() => [])
       return Array.isArray(list) && list.length ? list : null
-    }, Math.min(12_000, remaining()), { label: 'a page target' })
+    }, Math.min(12_000, chrome.remaining()), { label: 'a page target' })
     const page = targets.find(target => target.type === 'page' && target.url === 'about:blank') || targets.find(target => target.type === 'page')
     if (!page) throw new Error('Chrome did not expose a page target')
-    cdp = await connect(page.webSocketDebuggerUrl, { ...options, connectTimeoutMs: Math.min(options.connectTimeoutMs ?? 30_000, remaining()) })
-    remaining()
-    const session = cdp
-
-    await Promise.all([
-      session.send('Page.enable'),
-      session.send('Runtime.enable'),
-      session.send('Network.enable'),
-      session.send('Log.enable'),
-      ...(options.viewport === false ? [] : [session.send('Emulation.setDeviceMetricsOverride', { deviceScaleFactor: 1, mobile: false, width: 1440, height: 1000, ...options.viewport })]),
-    ])
-
-    if (options.userAgent !== false) {
-      const agent = typeof options.userAgent === 'string'
-        ? options.userAgent
-        : String((await session.send('Browser.getVersion')).userAgent || '').replace('HeadlessChrome', 'Chrome')
-      if (agent) await session.send('Network.setUserAgentOverride', { userAgent: agent })
-    }
-
-    if (options.quietLiveReload !== false)
-      await quietLiveReload(session, options.quietLiveReload)
-
-    if (options.acceptDialogs !== false) {
-      session.on('Page.javascriptDialogOpening', (params) => {
-        session.errors.push(`Dialog (${params.type}) on ${params.url}: ${params.message || '(no message)'}`)
-        session.send('Page.handleJavaScriptDialog', { accept: true }).catch(() => {})
-      })
-    }
-
-    remaining()
+    cdp = await connect(page.webSocketDebuggerUrl, { ...options, connectTimeoutMs: Math.min(options.connectTimeoutMs ?? 30_000, chrome.remaining()) })
+    chrome.remaining()
+    await prepareSession(cdp, options)
+    chrome.remaining()
     clearTimeout(startupTimer)
-    return { cdp: session, close, target: page.webSocketDebuggerUrl, port, chromePath }
+    return { cdp, close, target: page.webSocketDebuggerUrl, port, chromePath }
   }
   catch (error) {
     clearTimeout(startupTimer)
-    const elapsedMs = Date.now() - started
-    const exitCodeBeforeCleanup = chrome.exitCode
-    const signalCodeBeforeCleanup = chrome.signalCode
-    const portFileExisted = existsSync(portFile)
-    const portFileContents = portEvidence(portFile)
-    let cleanupError: string | null = null
-    try { await close() }
-    catch (failure) { cleanupError = failure instanceof Error ? failure.message : String(failure) }
-    throw new ChromeLaunchError(error, { pid: chrome.pid, chromePath, profile, temporaryProfile: !options.profile, elapsedMs, exitCodeBeforeCleanup, signalCodeBeforeCleanup, exitCode: chrome.exitCode, signalCode: chrome.signalCode, portFileExisted, portFileContents, stderrTail, stderrTruncated, cleanupError })
+    cdp?.disconnect()
+    throw await chrome.failure(error, true)
   }
+}
+
+/**
+ * Open a session on a page of a headless Chrome, with the `Page`, `Runtime`,
+ * `Network` and `Log` domains enabled.
+ *
+ * **One Chrome per process, a fresh browser context per launch.** Starting
+ * Chrome is the slow part (seconds, more on a loaded machine), so launches
+ * with the same executable, headless mode and flags share one process, and
+ * each gets its own browser context: separate cookies, storage, cache and
+ * service workers, so a journey signed in as one person and another signed in
+ * beside it never see each other's session. `close()` disposes the context; the
+ * Chrome lingers briefly ({@link SHARED_CHROME_LINGER_MS}) for the next launch,
+ * then stops, and `closeSharedBrowsers()` stops it at once.
+ *
+ * A launch that keeps a `profile`, passes `shared: false`, or runs with
+ * `STACKS_BROWSER_SHARED=0` gets a Chrome of its own, stopped by `close()`.
+ */
+export async function launch(options: LaunchOptions = {}): Promise<LaunchedChrome> {
+  const timeoutMs = options.startTimeoutMs ?? 30_000
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new RangeError('startTimeoutMs must be positive and finite')
+  const chromePath = resolveChrome(options)
+  const started = Date.now()
+  const shared = !options.profile && options.shared !== false && process.env.STACKS_BROWSER_SHARED !== '0'
+  return shared
+    ? await launchShared(options, chromePath, started, timeoutMs)
+    : await launchDedicated(options, chromePath, started, timeoutMs)
 }
 
 // ---------------------------------------------------------------------------

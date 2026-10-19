@@ -505,8 +505,11 @@ test('the homepage loads cleanly', async () => {
 ```
 
 For a longer journey, `launch()` returns a CDP session and an idempotent
-`close()` method. Await `close()` in `finally` so the process exits and its
-temporary profile is removed. A supplied `profile` remains caller-owned.
+`close()` method. Launches in one process share a Chrome, each in its own
+browser context (separate cookies and storage), so a suite of journeys pays for
+starting Chrome once. Await `close()` in `finally`: it disposes the context, and
+the Chrome stops shortly after the last one. A launch with a `profile` (which
+remains caller-owned) or `shared: false` gets a Chrome of its own.
 
 `startTimeoutMs` bounds process startup, target discovery, and session setup;
 target discovery also keeps its 12-second cap. A `ChromeLaunchError` retains

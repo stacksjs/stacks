@@ -249,6 +249,11 @@ expect(pageAuditClean(report)).toBe(true) // no duplicate /api/ requests, failed
   live-reload stream (`*/_stx/hmr*`) with a day-long retry so a save mid-run cannot reload the
   page, accepts JavaScript dialogs and records them in `errors`, removes "HeadlessChrome" from the
   user agent, and passes `--use-mock-keychain`. `profile` keeps one profile across relaunches.
+- **One Chrome per process, a browser context per `launch()`**: same executable, headless mode
+  and `args` share the process; each launch gets its own cookies, storage, cache and service
+  workers (`Network.clearBrowserCookies` clears only its own). `close()` disposes the context and
+  the Chrome lingers 1.5 s for the next launch; `closeSharedBrowsers()` stops it now. `profile`,
+  `shared: false` or `STACKS_BROWSER_SHARED=0` get a Chrome of their own.
 - **Pausing requests next to live reload.** Chrome keeps one `Fetch.enable` pattern set per
   session (a second call replaces it, `Fetch.disable` drops all) and sends every paused request to
   every listener, so the session layers them. `await cdp.intercept([{ urlPattern: '*/api/slow*' }],
