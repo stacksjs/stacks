@@ -212,5 +212,40 @@ export function test(buddy: CLI): void {
       })
     })
 
+  buddy
+    .command('test:page-audit', 'Loads pages in headless Chrome and reports duplicate API requests, failed requests and console errors')
+    .option('--url <urls>', 'Page URLs to audit, comma-separated (paths resolve against --base)')
+    .option('--base [base]', 'Origin that paths in --url resolve against', { default: 'http://localhost:3000' })
+    .option('--quiet-ms [ms]', 'How long the network must stay quiet before a page counts as loaded', { default: 1000 })
+    .option('--timeout [ms]', 'Give up waiting for a page to settle after this long', { default: 15000 })
+    .option('--mobile', 'Audit at a 390px phone viewport instead of 1440px', { default: false })
+    .option('--json', 'Print the reports as JSON', { default: false })
+    .example('buddy test:page-audit --url /,/dashboard --base http://localhost:3000')
+    .example('buddy test:page-audit --url http://localhost:3000/pricing --json')
+    .action(async (options: { url?: string, base?: string, quietMs?: number | string, timeout?: number | string, mobile?: boolean, json?: boolean }) => {
+      const targets = String(options.url ?? '').split(',').map(url => url.trim()).filter(Boolean)
+      if (!targets.length) {
+        await log.error('Pass the pages to audit with --url (comma-separated URLs or paths)')
+        process.exit(ExitCode.InvalidArgument)
+      }
+      const { auditPage, formatPageAudit, launch, pageAuditClean } = await import('@stacksjs/testing/browser')
+      const viewport = options.mobile ? { width: 390, height: 844, mobile: true, deviceScaleFactor: 2 } : { width: 1440, height: 900 }
+      const { cdp, close } = await launch({ viewport })
+      const reports = []
+      try {
+        for (const target of targets) {
+          const url = new URL(target, options.base || 'http://localhost:3000').href
+          const report = await auditPage(url, { cdp, quietMs: Number(options.quietMs) || 1000, timeoutMs: Number(options.timeout) || 15000 })
+          reports.push(report)
+          if (!options.json) await log.info(formatPageAudit(report))
+        }
+      }
+      finally {
+        await close()
+      }
+      if (options.json) process.stdout.write(`${JSON.stringify(reports, null, 2)}\n`)
+      process.exit(reports.every(pageAuditClean) ? ExitCode.Success : ExitCode.FatalError)
+    })
+
   onUnknownSubcommand(buddy, "test")
 }

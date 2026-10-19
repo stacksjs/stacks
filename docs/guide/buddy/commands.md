@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **361 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **362 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -74,7 +74,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `stack` | 3 |
 | `storage` | 3 |
 | `stripe` | 1 |
-| `test` | 4 |
+| `test` | 5 |
 | `types` | 2 |
 | `unlink` | 1 |
 | `unpublish` | 1 |
@@ -5516,6 +5516,31 @@ Runs your feature tests
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `test:page-audit`
+
+Loads pages in headless Chrome and reports duplicate API requests, failed requests and console errors
+
+- Usage: `$ buddy test:page-audit`
+- Namespace: `test`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--url` | Page URLs to audit, comma-separated (paths resolve against --base) | value, required | - |
+| `--base` | Origin that paths in --url resolve against | value, optional | `"http://localhost:3000"` |
+| `--quiet-ms` | How long the network must stay quiet before a page counts as loaded | value, optional | `1000` |
+| `--timeout` | Give up waiting for a page to settle after this long | value, optional | `15000` |
+| `--mobile` | Audit at a 390px phone viewport instead of 1440px | boolean, optional | `false` |
+| `--json` | Print the reports as JSON | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy test:page-audit --url /,/dashboard --base http://localhost:3000
+buddy test:page-audit --url http://localhost:3000/pricing --json
+```
 
 ### `test:types`
 
