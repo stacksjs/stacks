@@ -139,6 +139,28 @@ describe('dashboard native STX bindings', () => {
     expect(barrel).not.toMatch(/from '\.\/(?:Card|Table|Chart)\.stx'/)
   })
 
+  test('the shared table formats money through commerce, not Intl directly', () => {
+    // stacksjs/stacks#2916: Table rendered a `currency` column by calling
+    // toLocaleString on the stored value. Stacks stores money in MINOR units,
+    // so a 1200 cent rate rendered as $1,200.00 rather than $12.00 - silent,
+    // and wrong by the currency's exponent.
+    //
+    // Pinned on the source because the fix is a delegation: the arithmetic
+    // lives in @stacksjs/commerce/money, where currencyExponent knows that
+    // JPY has no decimals and KWD has three. A future simplification back to
+    // Intl would look tidier and reintroduce both bugs at once.
+    const table = componentSource('UI/Table.stx')
+    expect(table).toContain("import { formatCurrency } from '@stacksjs/commerce/money'")
+    expect(table).toContain('return formatCurrency(amount, code)')
+    expect(table).not.toContain("style: 'currency'")
+    expect(table).not.toContain("currency: 'USD'")
+
+    // The code comes from the row when it varies, else the column, else the
+    // helper's own default.
+    expect(table).toContain('currencyKey')
+    expect(table).toContain('column.currency')
+  })
+
   test('routes primary action links through the shared Button component', () => {
     const paths = readdirSync(dashboardComponents, { recursive: true })
       .map(path => String(path))

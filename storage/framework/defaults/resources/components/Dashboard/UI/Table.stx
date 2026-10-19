@@ -1,4 +1,5 @@
 <script client>
+import { formatCurrency } from '@stacksjs/commerce/money'
 /**
  * The data table.
  *
@@ -29,6 +30,17 @@ interface DashboardTableColumn {
    * function does not survive.
    */
   type?: 'text' | 'number' | 'currency' | 'date' | 'boolean'
+  /**
+   * Fixed ISO code for a `currency` column, when every row is the same
+   * currency. Defaults to USD, which is what this column did before it
+   * could be told otherwise.
+   */
+  currency?: string
+  /**
+   * Row field holding the ISO code, when currency varies per row. Wins over
+   * `currency` when both are given and the row actually carries one.
+   */
+  currencyKey?: string
   width?: string
   class?: string
   /** Hidden until switched on in the column menu. */
@@ -110,9 +122,20 @@ function displayValue(row: DashboardTableRow, column: DashboardTableColumn): str
 
   if (column.type === 'currency') {
     const amount = Number(value)
-    return Number.isFinite(amount)
-      ? amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
-      : String(value)
+    if (!Number.isFinite(amount))
+      return String(value)
+
+    // Through @stacksjs/commerce/money, not Intl directly. Stacks stores
+    // money in MINOR units, so formatting the stored number as if it were
+    // major multiplies every amount by the currency's exponent: a 1200 cent
+    // base rate rendered as $1,200.00 instead of $12.00 (stacksjs/stacks#2916).
+    //
+    // And the exponent is per currency, not always 100 - JPY and KRW have
+    // none - so dividing here rather than delegating would be a second bug
+    // behind the first. `currencyExponent` is the only thing that knows.
+    const perRow = column.currencyKey ? rawValue(row, column.currencyKey) : undefined
+    const code = typeof perRow === 'string' && perRow ? perRow : column.currency
+    return formatCurrency(amount, code)
   }
   if (column.type === 'number') {
     const amount = Number(value)
