@@ -52,6 +52,11 @@ jobs:
         run: |
           set -o pipefail
           bun test ./storage/framework/core/actions/tests/ios-config.test.ts ./storage/framework/core/actions/tests/android-config.test.ts ./storage/framework/core/actions/tests/release-preflight.test.ts ./storage/framework/core/actions/tests/pantry-lock.test.ts 2>&1 | tee artifacts/mobile-source-contract/native-build-configuration.log
+      - name: Verify repository tooling loads configuration without application initialization
+        run: |
+          set -o pipefail
+          bun test ./storage/framework/core/defaults/tests/preloader.test.ts --test-name-pattern 'keeps repository' 2>&1 | tee artifacts/mobile-source-contract/repository-preloader.log
+          bun test ./storage/framework/core/buddy/tests/project-setup.test.ts 2>&1 | tee artifacts/mobile-source-contract/repository-key-guards.log
       - name: Verify every published subpath and current workspace lock declaration
         run: |
           set -o pipefail

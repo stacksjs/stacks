@@ -14,20 +14,38 @@ describe('default preloader', () => {
   it('keeps repository documentation and releases independent of the application runtime', async () => {
     const tempDir = await mkdtemp(resolve(tmpdir(), 'stacks-preloader-docs-'))
     tempDirs.push(tempDir)
-    const sourcePath = resolve(import.meta.dir, '../../../defaults/resources/plugins/preloader.ts')
-    const isolatedPreloader = resolve(tempDir, 'preloader.ts')
-    await Bun.write(isolatedPreloader, Bun.file(sourcePath))
+    // Fast commands still load encrypted configuration and runtime paths.
+    // Supply those real source graphs while leaving application packages absent.
+    for (const [source, destination] of [
+      ['../../../defaults/resources/plugins', 'storage/framework/defaults/resources/plugins'],
+      ['../../env/src', 'storage/framework/core/env/src'],
+      ['../../path/src', 'storage/framework/core/path/src'],
+    ]) {
+      await mkdir(resolve(tempDir, destination!), { recursive: true })
+      for (const file of (await readdir(resolve(import.meta.dir, source!))).filter(file => file.endsWith('.ts')))
+        await Bun.write(resolve(tempDir, destination!, file), Bun.file(resolve(import.meta.dir, source!, file)))
+    }
+    await mkdir(resolve(tempDir, 'resources/functions'), { recursive: true })
+    await Bun.write(resolve(tempDir, 'resources/functions/app-only.ts'), 'globalThis.__stacksAppRuntimeLoaded = true; export function appOnly() {}')
+    await Bun.write(resolve(tempDir, '.env'), 'STACKS_REPOSITORY_TOOL_FIXTURE=loaded\n')
+    const runner = resolve(tempDir, 'run.ts')
+    await Bun.write(runner, `
+      await import('./storage/framework/defaults/resources/plugins/preloader.ts')
+      console.log(JSON.stringify({ envLoaded: process.env.STACKS_REPOSITORY_TOOL_FIXTURE, appRuntimeLoaded: Boolean(globalThis.__stacksAppRuntimeLoaded) }))
+    `)
 
     for (const command of ['docs:native-skills', 'docs:native-skills:check', 'docs:artifacts', 'release', 'release:patch']) {
-      const child = Bun.spawn([process.execPath, '--no-install', isolatedPreloader, command], {
+      const child = Bun.spawn([process.execPath, '--no-install', '--no-env-file', runner, command], {
         cwd: tempDir,
-        env: { PATH: process.env.PATH ?? '', HOME: tempDir },
+        env: { PATH: process.env.PATH ?? '', HOME: tempDir, BUN_INSTALL_CACHE_DIR: resolve(tempDir, 'bun-cache') },
         stdout: 'pipe',
         stderr: 'pipe',
       })
       const stderr = await new Response(child.stderr).text()
+      const stdout = await new Response(child.stdout).text()
       expect(await child.exited, command).toBe(0)
       expect(stderr, command).toBe('')
+      expect(JSON.parse(stdout), command).toEqual({ envLoaded: 'loaded', appRuntimeLoaded: false })
     }
   })
 
