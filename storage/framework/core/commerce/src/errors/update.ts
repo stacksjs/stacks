@@ -29,7 +29,11 @@ export async function update(id: number, data: UpdateErrorData): Promise<boolean
 }
 
 /**
- * Update multiple errors by IDs (for bulk status updates on grouped errors)
+ * Set the HTTP status on several errors at once.
+ *
+ * This is the HTTP status and nothing else. Triage goes through
+ * `resolveGroup`, `ignoreGroup` and `unresolveGroup`, which write
+ * `resolution` (stacksjs/stacks#2923).
  */
 export async function bulkUpdateStatus(ids: number[], status: number): Promise<boolean> {
   try {
@@ -50,14 +54,18 @@ export async function bulkUpdateStatus(ids: number[], status: number): Promise<b
 }
 
 /**
- * Resolve a grouped error (sets status = 1 for all errors in the group)
+ * Resolve a grouped error.
+ *
+ * Writes `resolution`, not `status`. It used to set `status = 1`, which
+ * overwrote the HTTP status the error reported and could never be read back
+ * as resolved on a seeded row (stacksjs/stacks#2923).
  */
 export async function resolveGroup(type: string, message: string): Promise<boolean> {
   try {
     await db
       .updateTable('errors')
       .set({
-        status: 1,
+        resolution: 'resolved',
         updated_at: sql.raw('CURRENT_TIMESTAMP'),
       })
       .where('type', '=', type)
@@ -71,15 +79,13 @@ export async function resolveGroup(type: string, message: string): Promise<boole
   }
 }
 
-/**
- * Ignore a grouped error (sets status = 2 for all errors in the group)
- */
+/** Ignore a grouped error. Writes `resolution`; see `resolveGroup`. */
 export async function ignoreGroup(type: string, message: string): Promise<boolean> {
   try {
     await db
       .updateTable('errors')
       .set({
-        status: 2,
+        resolution: 'ignored',
         updated_at: sql.raw('CURRENT_TIMESTAMP'),
       })
       .where('type', '=', type)
@@ -93,15 +99,13 @@ export async function ignoreGroup(type: string, message: string): Promise<boolea
   }
 }
 
-/**
- * Unresolve a grouped error (sets status = 0 for all errors in the group)
- */
+/** Return a grouped error to the queue. Writes `resolution`; see `resolveGroup`. */
 export async function unresolveGroup(type: string, message: string): Promise<boolean> {
   try {
     await db
       .updateTable('errors')
       .set({
-        status: 0,
+        resolution: 'unresolved',
         updated_at: sql.raw('CURRENT_TIMESTAMP'),
       })
       .where('type', '=', type)

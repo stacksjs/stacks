@@ -49,16 +49,16 @@ export interface DashboardErrorRecord {
   message: string
   stack: string | null
   /**
-   * Overloaded in the store, and typed here as what it is rather than as
-   * what it should be.
+   * The HTTP status the error reported, and only that.
    *
-   * The `Error` model generates this as an HTTP status (its factory emits
-   * 400-500), while `resolveError` and `ignoreError` write 1 and 2 into the
-   * same column to mean resolved and ignored. So resolving an error destroys
-   * its HTTP status, and a seeded error can never read as resolved. Reported
-   * separately; a remote provider should not try to reproduce it.
+   * It used to be overloaded: `resolveError` and `ignoreError` wrote 1 and 2
+   * into this column to mean resolved and ignored, which destroyed the status
+   * and meant a seeded error could never read as resolved. Split in
+   * stacksjs/stacks#2923; triage is `resolution` below.
    */
   status: number | null
+  /** Where this error sits in triage. */
+  resolution: DashboardErrorStatus
   /** Free text. Nothing in the dashboard reads it; it is carried, not shown. */
   additional_info: string | null
   created_at: string

@@ -1,11 +1,16 @@
 import { db } from '@stacksjs/database/runtime'
 
+export type ErrorResolution = 'unresolved' | 'resolved' | 'ignored'
+
 export interface ErrorRecord {
   id: number
   type: string
   message: string
   stack: string | null
+  /** The HTTP status the error reported, and only that (stacksjs/stacks#2923). */
   status: number | null
+  /** Where this error sits in triage. Was encoded into `status` until #2923. */
+  resolution: ErrorResolution
   additional_info: string | null
   created_at: string
   updated_at: string | null
@@ -16,7 +21,8 @@ export interface GroupedError {
   type: string
   message: string
   stack: string | null
-  status: string
+  /** The group's triage state, read from `resolution` rather than decoded. */
+  status: ErrorResolution
   count: number
   first_seen: string
   last_seen: string
@@ -100,13 +106,10 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
     const representative = group.errors[0]
     if (!representative)
       continue
-    // Determine status - use latest non-null status or default to 'unresolved'
-    const latestStatus = group.errors.find(e => e.status !== null)?.status
-    let statusLabel = 'unresolved'
-    if (latestStatus === 1)
-      statusLabel = 'resolved'
-    else if (latestStatus === 2)
-      statusLabel = 'ignored'
+    // The group's state is the representative's. Every error in a group is
+    // triaged together by resolveGroup/ignoreGroup, so they cannot disagree;
+    // reading the representative rather than scanning keeps it that way.
+    const statusLabel: ErrorResolution = representative.resolution ?? 'unresolved'
 
     groupedErrors.push({
       id: representative.id,
@@ -162,9 +165,9 @@ export async function fetchStats(): Promise<ErrorStats> {
 
   return {
     total: errors.length,
-    unresolved: errors.filter(e => e.status === null || e.status === 0).length,
-    resolved: errors.filter(e => e.status === 1).length,
-    ignored: errors.filter(e => e.status === 2).length,
+    unresolved: errors.filter(e => (e.resolution ?? 'unresolved') === 'unresolved').length,
+    resolved: errors.filter(e => e.resolution === 'resolved').length,
+    ignored: errors.filter(e => e.resolution === 'ignored').length,
     last_24h: last24h,
     trend,
   }
