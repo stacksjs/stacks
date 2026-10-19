@@ -26,8 +26,13 @@ describe('published declarations', () => {
     const declarations = await emit('browser.ts')
     expect(declarations).toContain('inFlight: Map<string, string>;')
     expect(declarations).toContain('closed: boolean;')
+    expect(declarations).toContain('readonly diagnostics: ChromeLaunchDiagnostics;')
     expect(declarations).toContain('intercept(patterns: FetchPattern[], handler: FetchHandler): Promise<() => Promise<void>>;')
-    expect(unknowns(declarations)).toEqual([])
+    // JavaScript can throw any value. That explicitly typed cause is the only
+    // intended unknown; inferred CDP fields/defaults must remain concrete.
+    expect(unknowns(declarations)).toEqual([
+      '  constructor(cause: unknown, diagnostics: ChromeLaunchDiagnostics);',
+    ])
   })
 
   test('isolated.d.ts carries the bunfig option', async () => {
