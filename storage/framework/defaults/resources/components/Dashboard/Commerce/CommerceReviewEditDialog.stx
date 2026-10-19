@@ -1,5 +1,6 @@
 <script client>
 import type { ReviewRecord } from '../../../../app/Actions/Dashboard/Commerce/review-records'
+import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 const open = useReactiveProp('open', false)
 const review = useReactiveProp('review', null as ReviewRecord | null)
@@ -42,10 +43,7 @@ function submit(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 

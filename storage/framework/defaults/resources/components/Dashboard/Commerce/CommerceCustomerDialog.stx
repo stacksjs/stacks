@@ -1,6 +1,7 @@
 <script client>
 import type { CommerceCustomerRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-customer-records'
 import { minorToInput, moneyInputError, moneyInputStep, parseMoneyInput } from '@stacksjs/commerce/money'
+import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'add')
@@ -72,10 +73,7 @@ function submit(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 

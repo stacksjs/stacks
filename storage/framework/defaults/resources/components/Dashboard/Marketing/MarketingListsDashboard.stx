@@ -5,6 +5,7 @@ import type {
 } from '../../../../app/Actions/Dashboard/Marketing/marketing-list-records'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import { pageControls } from '../../../../functions/dashboard-list'
 
 interface MarketingListIndexResponse {
   records: MarketingListRecord[]
@@ -193,15 +194,7 @@ async function deleteList(): Promise<void> {
   }
 }
 
-function previousPage(): void {
-  if (page() > 1)
-    page.set(page() - 1)
-}
-
-function nextPage(): void {
-  if (page() < totalPages())
-    page.set(page() + 1)
-}
+const { previousPage, nextPage } = pageControls(page, totalPages)
 
 onMount(() => {
   void loadLists()

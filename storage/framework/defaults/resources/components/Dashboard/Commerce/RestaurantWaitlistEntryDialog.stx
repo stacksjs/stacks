@@ -1,6 +1,7 @@
 <script client>
 import type { RestaurantWaitlistOptions, RestaurantWaitlistRecord, RestaurantWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/restaurant-waitlist-records'
 import { restaurantWaitlistDateTimeLocal, restaurantWaitlistTimestamp } from '../../../../app/Actions/Dashboard/Commerce/restaurant-waitlist-records'
+import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 type DialogMode = 'add' | 'edit'
 
@@ -104,10 +105,7 @@ function submitForm(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 

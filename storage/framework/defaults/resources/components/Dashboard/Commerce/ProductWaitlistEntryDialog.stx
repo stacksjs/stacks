@@ -1,5 +1,6 @@
 <script client>
 import type { ProductWaitlistOptions, ProductWaitlistRecord, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
+import { formErrorMessages } from '../../../../functions/dashboard-form'
 
 type DialogMode = 'add' | 'edit'
 
@@ -94,10 +95,7 @@ function submitForm(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 

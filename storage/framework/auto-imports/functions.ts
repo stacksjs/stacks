@@ -48,6 +48,7 @@ export { isCraftNative, ensureCraftNativeSidebarMarker, useCraft, useCraftSideba
 export type { CraftSidebarSelectEvent } from '../defaults/functions/craft'
 export { dashboardApi, dashboardStream, dashboardDownload, DashboardApiError } from '../defaults/functions/dashboard-api'
 export type { ApiRequestOptions } from '../defaults/functions/dashboard-api'
+export { formErrorMessages } from '../defaults/functions/dashboard-form'
 export { fetchDashboardHome, useDashboard } from '../defaults/functions/dashboard'
 export type { DashboardStats, ActivityItem, SystemHealthItem, DashboardHttpMetric, DashboardIssue } from '../defaults/functions/dashboard'
 export { fetchDashboardData } from '../defaults/functions/data'

@@ -68,6 +68,30 @@ function inspectWorkspaceMounts(path: string): TemporaryWorkspaceInspection {
   return { unused: false, reason: 'unsupported-platform' }
 }
 
+/** Own-namespace mount observations only. This does not inspect readers or authorize retirement. */
+export interface DirectoryMountInspection {
+  unmounted: boolean
+  reason: 'unmounted' | 'mounted' | 'inspection-unavailable' | 'unsupported-platform'
+  operation?: 'path' | 'mounts'
+  code?: string
+}
+
+/** Inspect an existing canonical directory without requiring process quiescence. */
+export function inspectDirectoryMounts(path: string): DirectoryMountInspection {
+  try {
+    if (typeof path !== 'string' || path.length === 0 || path.length > 4096 || path.includes('\0') || realpathSync(path) !== path || !lstatSync(path).isDirectory())
+      return { unmounted: false, reason: 'inspection-unavailable', operation: 'path', code: 'INVALID_DIRECTORY' }
+  }
+  catch (error) {
+    return { unmounted: false, reason: 'inspection-unavailable', operation: 'path', code: error instanceof Error && 'code' in error ? String(error.code) : undefined }
+  }
+  const result = inspectWorkspaceMounts(path)
+  if (result.reason === 'unused') return { unmounted: true, reason: 'unmounted' }
+  if (result.reason === 'mounted') return { unmounted: false, reason: 'mounted' }
+  if (result.reason === 'unsupported-platform') return { unmounted: false, reason: 'unsupported-platform' }
+  return { unmounted: false, reason: 'inspection-unavailable', operation: 'mounts', code: result.code }
+}
+
 /** Report missing inspection permission explicitly; never infer that an unreadable process is idle. */
 export function inspectTemporaryWorkspace(path: string): TemporaryWorkspaceInspection {
   let operation = 'mounts'

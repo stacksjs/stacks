@@ -1,4 +1,5 @@
 <script client>
+import { formErrorMessages } from '../../../../functions/dashboard-form'
 import type {
   PrintDeviceRecord,
   PrintDeviceStatus,
@@ -51,10 +52,7 @@ function submit(): void {
 }
 
 function errorMessages(): string[] {
-  return Object.entries(errors()).map(([field, message]) => {
-    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
-    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
-  })
+  return formErrorMessages(errors())
 }
 </script>
 
