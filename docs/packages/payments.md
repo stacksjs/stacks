@@ -201,4 +201,20 @@ const result = await Payment.processWebhook(rawPayload, signature, {
 
 Use the unmodified request body for signature verification. Register webhook handlers during application startup and make every handler idempotent.
 
+Stripe delivers each event at least once, so `processWebhook` runs an event's handlers once per event id. A replay of an event that already ran answers `{ success: true, duplicate: true }` without calling them. The id is recorded only after every handler succeeded: when one throws, `processWebhook` answers `success: false`, nothing is recorded, and Stripe's retry runs the handlers again. Ids are kept in `payment_webhook_events` (provider `stripe:handlers`, apart from the rows commerce writes for `POST /webhooks/payments`), and in memory until that table is migrated. Pass `dedupe: false` to run handlers on every delivery, or `store` to keep the ids somewhere else (`setWebhookEventStore()` changes the default).
+
+`tolerance` is the clock skew, in seconds, a signature may have. For the driver path (`paymentDriver().verifyWebhook`), set `payment.stripe.webhookTolerance` in `config/payment.ts`; it falls back to `payment.webhook.tolerance`, then Stripe's 300.
+
+### Connected accounts
+
+One user can own several connected accounts, such as a gym and a coach storefront. Name each one with a stable `reference`:
+
+```ts
+import { manageConnectedAccount } from '@stacksjs/payments'
+
+const account = await manageConnectedAccount.createConnectedAccount(user, { country: 'DE' }, { reference: `gym:${gym.id}` })
+```
+
+The idempotency key is built from the user, the reference and the creation parameters, so a retry of the same call returns the original account, and another reference or other parameters create another account. Without a reference, two accounts with identical parameters for one user inside Stripe's 24-hour window are treated as one.
+
 The local billing tables track subscriptions, payment methods, products, and transactions. Stripe remains the payment processor and source for provider state.

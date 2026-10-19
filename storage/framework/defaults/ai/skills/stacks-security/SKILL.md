@@ -101,6 +101,12 @@ interface HashMakeOptions {
 ## config/security.ts
 ```typescript
 {
+  // Application rate limits and the login lockout are multiplied by this.
+  // Keep 1 in production; tests raise it (or STACKS_RATE_LIMIT_SCALE).
+  rateLimit: { scale: 1 },
+  // Proxies whose forwarding headers name the client (clientAddress()).
+  // Unset = loopback/private/link-local; [] = trust none.
+  trustedProxies: ['10.0.0.0/8'],
   firewall: {
     enabled: true,
     countryCodes: [],                // block by country
@@ -151,7 +157,8 @@ import { eraseSubject, exportSubjectData, pruneRetainedData } from '@stacksjs/or
 - Base64 is encoding, not hashing. Never use `base64Encode()` for credentials.
 - MD5 and base64 password verification are intentionally absent from the main security API.
 - The firewall config is used by cloud deployment for WAF rules
-- Rate limiting is per-minute per-IP (500 default)
+- The firewall rate limit is per-minute per-IP at the WAF (`firewall.rateLimitPerMinute`)
+- Application rate limits (`.rateLimit()`, `rateLimit()`, the login lockout) share the Redis cache when it is configured and count per process otherwise; see `stacks-router`
 
 
 ## Encryption and webhook contracts
@@ -208,3 +215,39 @@ endpoints; a cloud WAF setting does not implement model row authorization.
 Capability/config validation and credential recovery have separate tests and
 failure contracts; propagate their real errors rather than interpreting an
 awaited call as proof that a security state transition persisted.
+
+## Shadowed security defaults
+
+`app/` wins resolution over `storage/framework/defaults/app/`, so an app copy of
+a security default freezes that code: framework security fixes to it never run.
+The API server (`buddy dev` and `serve`) warns once at boot, and `buddy doctor`
+reports a "Security overrides" warning, for every file in
+`SECURITY_DEFAULT_FILES` (`@stacksjs/server`) that the app shadows. That list
+covers the Auth, Guest, Csrf, Cors, Throttle, Signed, Abilities, Can,
+Permission, Role and EnsureEmailIsVerified middleware; the sign-in, session,
+token, OAuth, passkey, magic-link, social and session-handoff actions with their
+helpers; and the password-reset actions.
+
+- `identical`: a byte-for-byte copy. Delete it, since it does nothing except
+  block fixes.
+- `modified`: diff it against the current default and port any fixes. Once
+  reviewed, add `// stacks-reviewed-default: <fingerprint>` (the warning prints
+  the value). The fingerprint is a hash of the default, so the warning comes
+  back when the framework changes that default.
+
+Set `STACKS_SHADOWED_DEFAULTS_WARN=false` to silence it. To check
+programmatically, call `findShadowedSecurityDefaults(appDir, defaultsDir)`,
+which returns `{ path, kind, appFile, defaultFile, fingerprint }[]`. Keep app
+hooks in events or app-owned actions rather than copying these files.
+
+## Credential and sign-in hardening
+
+- Social sign-in state is single use, browser bound and stored as a digest
+  (`issueOAuthFlow` / `consumeOAuthFlow`, `stacks-socials`); the callback hands
+  over a one-use code, never tokens in a URL (`createSessionHandoff`,
+  `stacks-auth`).
+- Any change to how an account proves who it is runs
+  `revokeAccountCredentials()` (`stacks-auth`): stamp, then revoke challenges,
+  magic links, OAuth grants, tokens and sessions in one transaction.
+- SMS STOP is never bypassed by `ignorePreferences`; only an explicit
+  `ignoreOptOut` for legally required messages (`stacks-notifications`).

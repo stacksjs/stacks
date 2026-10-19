@@ -27,29 +27,64 @@ provider test before handling one-time Apple name data or ID-token verification.
 Meta API version is centralized in meta-graph.ts rather than an obsolete v18
 copied into every example.
 
-Scopes/setScopes/with/setRedirectUrl belong to AbstractProvider. Providers read
-their actual services config and impose provider-specific scope and credential
-rules. withState supplies the flow's state and validateState checks the expected
-and returned values; persist expected state in the native callback session.
-Twitter sign-in keeps a PKCE verifier on its instance; getAuthUrl must
-precede its exchange on the same stateful flow. Persist and validate state/PKCE
-through the native callback path before minting an app credential; low-level
-getUserByToken alone does not prove the browser initiated a login.
+Scopes/setScopes/with/setRedirectUrl/withState belong to AbstractProvider and
+are on ProviderInterface, so the registry's `socialProvider()` result can be
+driven without casts. Every OAuth2 driver honours withState, with() and an
+instance redirect. X always uses PKCE; its verifier lives in the base class
+(getPkceVerifier/withCodeVerifier), so a callback on a fresh instance can
+restore it. Registry descriptors say `pkce` (X) and `nonce` (Apple).
+
+## Flow state (login CSRF)
+
+A callback that exchanges any `code` signs the victim into the attacker's
+account. Start every flow with
+`issueOAuthFlow({ purpose, userId?, data?, ttlMs, bindBrowser?, challenge?, nonce?, cookie? })`,
+which returns `{ state, cookie, secret, nonce?, expiresAt }`: a random state for
+`withState()`, and a `Set-Cookie` (HttpOnly, per-flow `stacks_oauth_*` name,
+`SameSite=Lax`, or `None; Secure` for Apple's cross-site form_post) binding it
+to the browser. Only SHA-256 digests are stored, in the auth-owned
+`oauth_flows` table (`buddy migrate`). On the callback,
+`consumeOAuthFlow(state, { purpose, browserSecret })` returns
+`{ purpose, userId, nonce, data, expiresAt }` once, or null for an unknown,
+spent, expired, foreign-purpose or other-browser state; a mismatch does not burn
+the real flow. Read the secret with `readOAuthFlowCookie(cookieHeader, state)`
+and clear it on every outcome with `clearOAuthFlowCookie(state, cookieOptions)`.
+`challenge` binds to the SHA-256 hex of a native client's verifier instead of a
+cookie. `nonce: true` mints an OIDC nonce: pass it with `with({ nonce })` and
+to `getUserByToken(token, { nonce })`, which refuses a mismatched id_token.
+`useOAuthFlowStore(memoryOAuthFlowStore())` swaps storage in tests;
+`validateState()` remains for callers holding their own expected value.
+
+The default routes do all of this: `GET /auth/{provider}` (optional
+`?redirect_to=/path`, same-origin only) and `GET|POST /auth/{provider}/callback`
+(POST skips CSRF, since the bound state is the defence). Read
+`defaults/app/Actions/Auth/SocialRedirectAction.ts` and
+`SocialCallbackAction.ts` before writing a custom callback.
 
 SocialUser includes emailVerified. Respect the provider's verification signal
 and the configured account-linking policy, using auth's resolveSocialSignIn
-instead of attaching any equal email address to an existing account. Provider
-errors and ConfigException/InvalidStateException are different from successful
-profile retrieval. Never log raw credential fields.
+instead of attaching any equal email address to an existing account; it also
+refuses to link onto a local account that never verified its address
+(`'unverified-local-email'`). Provider errors and
+ConfigException/InvalidStateException are different from successful profile
+retrieval. Never log raw credential fields.
 
 ## Session handoff
 
-socialHandoffRedirect(pack, { redirectTo?, allowedHosts? }) emits a no-store
-redirect with the native encoded session handoff. Browser useAuth's
-completeSocialLogin consumes it and removes the fragment. isSafeHandoffTarget
-checks permitted redirect shape; choose a server-owned landing path. The helper
-also supplies a failed-sign-in redirect. These are separate from provider token
-exchange and the auth cookie/session issuance policy.
+The default callback mints no session and puts no token in the URL. It calls
+`createSessionHandoff(userId, { bindTo: 'cookie' })` (`@stacksjs/auth`) and
+returns `socialHandoffCodeRedirect(code, { redirectTo?, allowedHosts? })`, a
+no-store 302 to `redirectTo#stx_handoff=<code>` plus the binding cookie.
+Browser `useAuth().completeSocialLogin()` strips the fragment and POSTs the code
+to `POST /auth/handoff`, which redeems it once (60 seconds, this browser only)
+and answers with the token pack and auth cookie. Native apps bind with
+`{ challenge }` and redeem with `{ code, verifier }`.
+
+socialHandoffRedirect(pack, ...) still emits the older fragment carrying the
+bearer and refresh tokens (`stx_auth`); avoid it for new flows, since browser
+history keeps the fragment. isSafeHandoffTarget checks permitted redirect
+shape; choose a server-owned landing path. socialHandoffFailureRedirect supplies
+the failed-sign-in redirect (`?social_error=`).
 
 ## Named publishing identities
 
@@ -83,8 +118,9 @@ conformance or successful publication for arbitrary accounts.
 
 ## Source and evidence
 
-`storage/framework/core/socials/src/index.ts`, registry.ts, abstract.ts,
+`storage/framework/core/socials/src/index.ts`, registry.ts, abstract.ts, flows.ts,
 handoff.ts, identities.ts, publish.ts, authorize.ts, meta-graph.ts and drivers/.
-Tests: registry.test.ts, apple.test.ts, session-handoff.test.ts,
+Tests: registry.test.ts, apple.test.ts, session-handoff.test.ts, oauth-flows.test.ts,
+provider-flow-state.test.ts, auth/tests/social-callback-flow.test.ts,
 identities.test.ts, publish.test.ts, authorize.test.ts,
 credentials-stay-out-of-output.test.ts and meta-graph.test.ts.

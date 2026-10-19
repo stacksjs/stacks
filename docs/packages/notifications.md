@@ -381,6 +381,37 @@ import { notification } from '@stacksjs/notifications'
 const notifier = notification()
 ```
 
+### Preferences and legal opt-outs
+
+`notify()` fans one payload out to several channels. When the recipient has a
+`userId`, channels the user switched off in `notification_preferences` are
+skipped. Two flags change that, and they are deliberately separate:
+
+| Option | Skips | Use it for |
+|---|---|---|
+| `ignorePreferences: true` | The user's notification preferences, including category unsubscribes | Transactional messages a user cannot switch off: password resets, security alerts, billing failures |
+| `ignoreOptOut: true` | Legal opt-outs: a phone that replied STOP (`sms_opt_outs`) | Only messages the law requires you to send whatever the person's consent, such as a mandated security or safety notice |
+
+`ignorePreferences` never texts a number that replied STOP. That send fails with
+"opted out (STOP)" so the delivery log records why nothing went out.
+`ignoreOptOut` does not skip preferences; pass both when a legally required
+message must ignore both. Email suppression (bounces, complaints, unsubscribes)
+is enforced by the mailer through `email.suppressionPolicy`, not by either flag.
+
+```typescript
+import { notify } from '@stacksjs/notifications'
+
+// Transactional: ignores preferences, still honours STOP
+await notify({ userId: 7, phone: '+15555550100' }, { body: 'Your password was changed' }, ['sms'], { ignorePreferences: true })
+
+// Legally required: sends past STOP as well
+await notify({ userId: 7, phone: '+15555550100' }, { body: 'Mandatory safety notice' }, ['sms'], { ignorePreferences: true, ignoreOptOut: true })
+```
+
+**Upgrading:** before this split, `ignorePreferences: true` also texted numbers
+that had replied STOP. Those sends now fail. Callers that relied on it must add
+`ignoreOptOut: true`, and only for messages the law requires.
+
 ## Creating Notification Classes
 
 Create reusable notification classes:

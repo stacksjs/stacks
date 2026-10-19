@@ -336,6 +336,187 @@ the instance. Copy them off the box on a schedule, and restore one into a
 scratch database at least once. See
 [Database Backups](/guide/buddy/db).
 
+## `ignorePreferences` no longer texts numbers that replied STOP
+
+### What changed
+
+`notify(..., { ignorePreferences: true })` used to skip both the user's
+notification preferences and the SMS STOP check. STOP is a legal opt-out, not a
+preference, so the two are now separate: `ignorePreferences` skips preferences
+only, and a new `ignoreOptOut: true` is the one way past STOP.
+
+### Who is affected
+
+Apps that send SMS through `notify()` with `ignorePreferences: true` to numbers
+that may have replied STOP. Those sends now fail with
+`[notify] sms recipient has opted out (STOP)` and the delivery log records it.
+
+### Detect
+
+```bash
+grep -rn "ignorePreferences" app/
+```
+
+Look at each hit that includes the `'sms'` channel.
+
+### Remediate
+
+For a message the law requires you to send whatever the person's consent (a
+mandated security or safety notice), add `ignoreOptOut: true`. For everything
+else, including marketing and ordinary transactional texts, leave it failing:
+carriers filter senders that keep texting after STOP. `ignoreOptOut` does not
+skip preferences; keep `ignorePreferences` as well if you need both.
+
+## Stripe webhook handlers run once per event id
+
+### What changed
+
+`processWebhook` and `handleWebhookEvent` now skip an event whose id already
+ran its handlers, and answer `duplicate: true`. The id is recorded in
+`payment_webhook_events` (provider `stripe:handlers`) only after every handler
+succeeded, so a failed handler still gets Stripe's retry. The driver path
+(`paymentDriver().verifyWebhook`) now honours `payment.stripe.webhookTolerance`
+(or `payment.webhook.tolerance`); it used to verify with Stripe's default.
+
+Connected-account creation keys its idempotency on the user, an optional
+`reference` and the creation parameters instead of the user alone, so one user
+can create a second account (a gym and a coach storefront) the same day.
+
+### Who is affected
+
+Apps that register Stripe handlers with `onWebhookEvent` / `Payment.on*` and
+relied on a replayed event running them again, and apps whose users own more
+than one connected account.
+
+### Remediate
+
+Run `./buddy migrate` so `payment_webhook_events` exists; until it does, ids
+are remembered in memory only, with a warning. Pass `{ dedupe: false }` to
+`processWebhook` to keep the old behaviour. Pass
+`{ reference: 'gym:12' }` as the third argument of `createConnectedAccount`
+wherever one user can own several accounts.
+
+## Social sign-in checks OAuth `state` and hands over a one-use code
+
+### What changed
+
+The default social routes (`/auth/{provider}`, `/auth/{provider}/callback`)
+now protect against login CSRF and keep tokens out of URLs:
+
+- `GET /auth/{provider}` issues the OAuth `state` with `issueOAuthFlow()`
+  (`@stacksjs/socials`): single use, ten minutes, stored as a SHA-256 digest
+  in the auth-owned `oauth_flows` table, and bound to the browser with an
+  HttpOnly `stacks_oauth_*` cookie. Apple's flow carries a nonce that must
+  come back in the id_token; X's carries its PKCE verifier.
+- The callback redeems that state with `consumeOAuthFlow()` before it
+  exchanges the code. A callback whose state is unknown, spent, expired or
+  from another browser lands on `/login?social_error=...` without contacting
+  the provider.
+- The callback no longer mints a session or puts `stx_auth` (bearer and
+  refresh tokens) in the URL fragment. It redirects with
+  `#stx_handoff=<code>`: a 60-second, single-use code from
+  `createSessionHandoff()` (`@stacksjs/auth`), bound to a second HttpOnly
+  cookie. `useAuth().completeSocialLogin()` POSTs the code to the new
+  `POST /auth/handoff` route (`SessionHandoffAction`), which answers with the
+  session and the auth cookie.
+- `?redirect_to=/path` on `/auth/{provider}` picks the landing page (a
+  same-origin path only).
+- The POST callback (Apple's `form_post`) skips CSRF: the browser-bound
+  state is the CSRF defence there.
+
+### Who is affected
+
+- Apps on the default routes: run `./buddy migrate` so `oauth_flows`
+  exists, and make sure the landing page calls
+  `useAuth().completeSocialLogin()` (it already had to). A sign-in that
+  started before the deploy fails once with "expired" and works on retry.
+- Apps that read the `stx_auth` fragment themselves after the default
+  callback: read `stx_handoff` and redeem it at `/auth/handoff` instead, or
+  call `completeSocialLogin()`.
+- Apps with their own callback actions: nothing changes, but use the same
+  primitives (`issueOAuthFlow`, `consumeOAuthFlow`, `createSessionHandoff`,
+  `redeemSessionHandoff`, `socialHandoffCodeRedirect`) rather than
+  exchanging any code you are given.
+
+### Detect
+
+```bash
+grep -rn "stx_auth\|socialHandoffRedirect\|readSessionHandoff" app/ resources/
+```
+
+## Social sign-in no longer links onto an unverified local account
+
+### What changed
+
+`resolveSocialSignIn()` already refused to link a provider identity whose
+email the provider did not verify. It now also refuses when the matching
+local account never verified its own address (`users.email_verified_at` is
+null), with the new reason `'unverified-local-email'`. Otherwise an attacker
+could register the victim's address locally with a password they know and
+inherit the victim's first "Sign in with Google".
+
+A user created from a provider-verified address now starts with
+`email_verified_at` set. Store methods receive the `tx` passed as
+`resolveSocialSignIn(provider, identity, store, { tx })`, and a store may
+implement `isUserEmailVerified(userId, tx)`; one that does not gets the
+default, which reads `users.email_verified_at`.
+
+### Who is affected
+
+Apps whose users registered with a password, never verified, and now sign in
+with a provider using the same address. They see the refusal message and
+must sign in with their password and verify first (or connect the provider
+from their settings). Apps rendering `SocialSignInRefusedError.reason`
+should handle `'unverified-local-email'`.
+
+Custom stores: `createUser` receives `emailVerified`; stamp
+`email_verified_at` from it if your store writes users itself.
+
+## One credential sweep for password changes, and `revokeOtherTokens` fails closed
+
+### What changed
+
+- `revokeAccountCredentials(userId, { exceptTokenId?, exceptSessionId?, tx? })`
+  is the sweep a password reset always ran, exported: it stamps
+  `password_changed_at` and revokes two-factor challenges, magic links, OAuth
+  grants and codes, tokens and sessions in one transaction.
+  `changePassword(userId, current, next, { keepTokenId?, keepSessionId?, notify? })`
+  verifies the current password and runs it.
+- `Auth.revokeOtherTokens()` did nothing when no current token resolved (a
+  cookie-session request). It now revokes every token, like the
+  `revokeOtherTokens()` function export, and both return
+  `{ keptTokenId }`. Pass `{ exceptTokenId }` to name the token to keep.
+- `passwordResets(email).sendEmail()` takes `{ purpose: 'reset' | 'setup',
+  expiresAt, deliver }`.
+
+### Who is affected
+
+Apps that call `Auth.revokeOtherTokens()` from a session-authenticated
+request: the caller's own tokens are now revoked too. Pass `exceptTokenId`
+if you know which one to keep. Apps with their own change-password actions
+should call `changePassword()` (or `revokeAccountCredentials()` after their
+own update) so the change signs out other devices.
+
+## Rate limits are shared across processes when Redis is configured
+
+### What changed
+
+Route `.rateLimit()`, the `rateLimit()` helper and the login lockout count in
+the configured Redis cache (`config/cache.ts` driver `redis`) and fall back
+to process memory only while Redis is unreachable. They previously counted
+per process. `config.security.rateLimit.scale` (or
+`STACKS_RATE_LIMIT_SCALE`) multiplies every application limit and the
+lockout threshold, for test suites. `config.security.trustedProxies` sets the
+proxies whose forwarding headers `clientAddress()` from `@stacksjs/router`
+believes; unset keeps the default of loopback and private networks.
+
+### Who is affected
+
+Apps running several workers or instances on Redis: limits now hold across
+them, so a limit tuned to "N per worker" is effectively N per app. Test
+suites that hit limits can set `STACKS_RATE_LIMIT_SCALE=100` instead of
+disabling them.
+
 ## Verifying the upgrade
 
 Run through this checklist after upgrading:

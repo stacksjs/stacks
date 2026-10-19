@@ -66,8 +66,8 @@ declaring `useAuth` can hold tokens - not only `User`.
 - `tokenCan(scope)` / `tokenCanAll` / `tokenCanAny` / `tokenAbilities` - check
   the current request's token.
 - `revokeToken`, `revokeTokenById`, `revokeAllTokens(id, type?)`,
-  `revokeOtherTokens(id, type?)` - revocation also revokes the paired refresh
-  token, which a raw row delete does not.
+  `revokeOtherTokens(id, type?, { exceptTokenId? })` - revocation also revokes
+  the paired refresh token, which a raw row delete does not.
 - `setTrailActor(id)` - attribute writes in a queue job or CLI run that has no
   request to read a user from.
 
@@ -106,7 +106,7 @@ routes: minting and revoking both carry semantics a generic route does not.
 - `Auth.revokeToken(token: string): Promise<void>`
 - `Auth.revokeTokenById(tokenId: number): Promise<void>`
 - `Auth.revokeAllTokens(userId?: number): Promise<void>`
-- `Auth.revokeOtherTokens(userId?: number): Promise<void>`
+- `Auth.revokeOtherTokens(userId?: number, { exceptTokenId? }): Promise<{ keptTokenId: number | null }>` - keeps `exceptTokenId`, else the request's own token; when neither resolves it revokes every token (fail closed)
 - `Auth.pruneExpiredTokens(): Promise<number>`
 - `Auth.pruneRevokedTokens(): Promise<number>`
 - `Auth.rotateToken(oldToken: string): Promise<AuthToken | null>`
@@ -138,7 +138,7 @@ routes: minting and revoking both carry semantics a generic route does not.
 - `revokeToken(plainTextToken): Promise<void>`
 - `revokeTokenById(tokenId): Promise<void>`
 - `revokeAllTokens(userId): Promise<void>`
-- `revokeOtherTokens(userId): Promise<void>`
+- `revokeOtherTokens(userId, type?, { exceptTokenId? }): Promise<{ keptTokenId: number | null }>` - same rule as `Auth.revokeOtherTokens`
 - `deleteExpiredTokens(): Promise<number>`
 - `deleteRevokedTokens(daysOld?): Promise<number>`
 
@@ -318,9 +318,36 @@ Internal: database-backed `sessions` rows with expiry, optional IP/User-Agent fi
 ```typescript
 const actions = passwordResets(email)
 await actions.sendEmail()
+// or: an invitation's first password, a custom expiry, your own delivery
+await actions.sendEmail({
+  purpose: 'setup',                       // 'reset' (default) | 'setup'
+  expiresAt: new Date(Date.now() + 3 * 864e5),
+  deliver: async ({ purpose, userId, email, token, url, expiresAt }) => { /* localized mail, ledger */ },
+})
 const valid = await actions.verifyToken(token)
 const result = await actions.resetPassword(token, newPassword)
 ```
+
+`deliver` runs after the token commits, instead of the framework mail; the
+`token`/`url` are the live credential, never log them. `sendEmail` stays a
+silent no-op for unknown or throttled addresses (anti-enumeration).
+
+### One credential sweep (password/credentials.ts)
+
+- `revokeAccountCredentials(userId, { exceptTokenId?, exceptSessionId?, tx? })`
+  stamps `password_changed_at` and revokes two-factor challenges, magic links,
+  OAuth grants and codes, access/refresh tokens and sessions, in one transaction
+  (joins the caller's when `tx` is given; a `tx` outside its transaction
+  throws). The kept token and its refresh token are re-bound to the stamp.
+  Returns `{ passwordChangedAt, keptTokenId }`. `resetPassword` runs it.
+- `changePassword(userId, current, next, { keepTokenId?, keepSessionId?, notify? })`
+  verifies `current`, commits only if that hash is still stored, runs the sweep,
+  then notifies after commit (`notify`: `true` = the `password-changed` mail, a
+  function = yours, `false` = nothing). Returns `{ success: true, keptTokenId }`
+  or `{ success: false, reason: 'invalid-current-password' | 'user-not-found' | 'invalid-new-password' }`.
+  Enforce the new password's policy first.
+- Any other path that changes how an account proves who it is (recovery, an
+  admin forcing a sign-out, an email change) should call the sweep too.
 
 ## Registration (register.ts)
 
@@ -398,9 +425,12 @@ const locked = await RateLimiter.isRateLimited(email)
 await RateLimiter.resetAttempts(email)
 ~~~
 
-Five failed attempts lock an email for fifteen minutes. The configured store
-selects atomic Redis when the cache config selects Redis, otherwise process-local
-memory. `useSharedStore(options?)` explicitly chooses Redis;
+Five failed attempts (`maxFailedAttempts()`, times
+`config.security.rateLimit.scale` / `STACKS_RATE_LIMIT_SCALE`) lock an email for
+fifteen minutes. The configured store selects atomic Redis when the cache config
+selects Redis, wrapped in `FallbackRateLimiterStore` so a Redis outage degrades
+to process memory (warned once) instead of failing every sign-in; otherwise
+process-local memory. `useSharedStore(options?)` explicitly chooses Redis;
 `useStore(custom)` installs a store with atomic recordFailedAttempt;
 `useMemoryStore()` and `useConfiguredStore()` reset that choice.
 Shared deployments need a shared atomic store. Partial counters expire, and
@@ -528,6 +558,10 @@ is the declarative form and the one the ability-name completions come from.
 - `DELETE /auth/tokens/{id}` → RevokeTokenAction (auth middleware)
 - `GET /me` → GetMeAction (auth middleware)
 - `POST /logout` → LogoutAction (auth middleware)
+- Social bundle: `GET /auth/{provider}` → SocialRedirectAction (issues the
+  browser-bound OAuth state), `GET|POST /auth/{provider}/callback` →
+  SocialCallbackAction (redeems it, redirects with `#stx_handoff=<code>`),
+  `POST /auth/handoff` → SessionHandoffAction (redeems the code for the session)
 
 ## User Model Traits
 
@@ -545,7 +579,7 @@ traits: {
 
 - Auth depends on `@stacksjs/ts-auth` for TOTP and passkey functions
 - Password hashing defaults to bcrypt with 12 rounds (config/hashing.ts)
-- Rate limiting uses a process-local memory store by default. Production deployments with multiple workers should configure the atomic Redis store or provide a custom atomic store.
+- Rate limiting uses a process-local memory store unless `config/cache.ts` selects Redis, which the lockout and route limits then share. Production deployments with multiple workers should configure Redis or provide a custom atomic store. Test suites raise `config.security.rateLimit.scale` rather than disabling limits.
 - Session auth is database-backed through the `sessions` table, so it survives server restarts and is shared across workers.
 - New personal and delegated access tokens are opaque 40-byte hex bearers hashed at rest. Legacy `jwt:encryptedId` bearers remain readable during migration.
 - Token validation hashes the bearer directly. Do not parse or expose token contents, and never log plaintext bearer values.

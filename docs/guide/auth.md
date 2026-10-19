@@ -240,9 +240,25 @@ Without overrides it uses Path `/`, SameSite `Lax`, an app-URL-derived Secure
 flag, and unconditional HttpOnly. Framework browser sessions always override a
 configured `maxAge` with the lifetime of the token that was actually issued.
 
+On the client, `useAuth()` from `@stacksjs/browser` ends a session only when the
+server answers 401. If `/api/me` fails because of the network, a 5xx, or a 403,
+the token and user are kept. A 403 means the user is known but not allowed, so
+show a forbidden state instead of sending them back to log in. Concurrent
+`fetchAuthUser()` calls share one request. If `/api/me` returns the same user,
+the `user` object is not replaced. A 401 on another same-origin `authFetch`
+request that the refresh token cannot fix triggers one `/api/me` check. When
+many requests fail together, that means one sign-out, one `onSessionExpired`
+callback, and one `authGuard` redirect to `/login`, not one per request.
+
+```ts
+const { onSessionExpired } = useAuth()
+onSessionExpired(({ reason }) => toast(`Signed out (${reason})`))
+```
+
 After upgrading an app that copied the default login, registration, two-factor,
 logout actions, or cookie serializer, remove only those framework-equivalent
-overrides. Keep application hooks such as onboarding, team creation, mailing
+overrides. The API server warns at boot when an `app/` file shadows a framework
+security default, and `buddy doctor` lists them. Keep application hooks such as onboarding, team creation, mailing
 list subscriptions, and notifications in app events or app-owned actions.
 
 ## The pages that come with it
