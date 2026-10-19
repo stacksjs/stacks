@@ -97,6 +97,12 @@ route.put('/users/:id', 'Controllers/UserController@update')
 route.delete('/users/:id', 'Controllers/UserController@destroy')
 ```
 
+Generated Action registries retain their source `.ts` paths. When an exact
+source target under the current `app/Actions/` is absent, the loader can use
+its colocated regular `.js` output. Existing source always wins, including a
+source import that fails. This also applies to nested Actions and app overrides.
+Packaged defaults, controllers and middleware keep their existing resolution.
+
 ## Actions
 
 Create actions in `app/Actions/`:

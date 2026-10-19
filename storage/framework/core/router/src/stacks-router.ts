@@ -20,7 +20,8 @@ import type { Middleware } from './middleware'
 import './request-augmentation'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
-import { existsSync } from 'node:fs'
+import { existsSync, lstatSync, statSync } from 'node:fs'
+import { isAbsolute, relative, sep } from 'node:path'
 import { log, report } from '@stacksjs/logging/runtime'
 import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
 import { resolveModulePath } from '@stacksjs/path/module-resolution'
@@ -2923,6 +2924,19 @@ async function getActionRegistry(): Promise<Record<string, string> | null> {
   return actionRegistryPromise
 }
 
+/** Preserve source precedence; native app builds emit colocated .js Actions. */
+function appActionModulePath(sourcePath: string): string {
+  if (!sourcePath.endsWith('.ts') || lstatSync(sourcePath, { throwIfNoEntry: false }))
+    return sourcePath
+
+  const local = relative(appPath('Actions'), sourcePath)
+  if (!local || local === '..' || local.startsWith(`..${sep}`) || isAbsolute(local))
+    return sourcePath
+
+  const emitted = `${sourcePath.slice(0, -3)}.js`
+  return statSync(emitted, { throwIfNoEntry: false })?.isFile() ? emitted : sourcePath
+}
+
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
@@ -2980,11 +2994,11 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     const registered = (await getActionRegistry())?.[modulePath]
 
     if (registered) {
-      fullPath = registered
+      fullPath = appActionModulePath(registered)
     }
     else {
       // Try user path first, then fall back to defaults
-      const userPath = projectPath(`app/${modulePath}.ts`)
+      const userPath = appActionModulePath(projectPath(`app/${modulePath}.ts`))
       const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
       fullPath = await fileExists(userPath) ? userPath : defaultPath
     }

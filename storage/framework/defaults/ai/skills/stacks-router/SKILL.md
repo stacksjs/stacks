@@ -98,6 +98,14 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 - Action object: an imported action, passed directly — see typed routes below
 - Controller: `'Controllers/UserController@index'` — calls controller method
 
+Generated Action registries keep their source `.ts` targets. For current
+`app/Actions/` files, the loader uses a colocated regular `.js` file only when
+the exact source target is absent. An existing source always wins, including
+when its import fails. Nested Actions and app overrides follow the same rule.
+Packaged defaults, controllers and middleware keep their own resolution.
+This supports native app-build output; it does not qualify a complete server
+image or Docker deployment.
+
 ## The strings are typed
 
 Action paths, middleware aliases and route names are all checked at compile
