@@ -17,6 +17,10 @@ interface CraftAndroidBuilder {
   nativeMapProviders?: readonly string[]
   /** The builder installs a directory of route bundles (Craft 0.0.242 and later). */
   nativeRouteBundles?: boolean
+  /** The app evaluates stx's shared runtime before a route's file (stx `sharedRuntime`). */
+  nativeRouteRuntime?: boolean
+  /** The app gives screens their messages a language at a time (stx `messages`). */
+  nativeMessages?: boolean
   init(options: {
     name: string
     packageName: string
@@ -83,7 +87,7 @@ const release = appBundle || process.env.NODE_ENV === 'production'
 const native = config.renderer === 'native'
 const builder = await loadCraftAndroidBuilder()
 // One bundle per route when this Craft runs each screen from its own file.
-const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android', { routes: builder.nativeRouteBundles === true }) : null
+const nativeBundle = native ? await compileNativeScreens(config, projectPath(), output, undefined, 'android', { routes: builder.nativeRouteBundles === true, runtime: builder.nativeRouteRuntime === true, messages: builder.nativeMessages === true }) : null
 if (nativeBundle) {
   for (const diagnostic of nativeBundle.diagnostics ?? [])
     log.warn(`${diagnostic.file ? `${diagnostic.file}: ` : ''}${diagnostic.message}`)

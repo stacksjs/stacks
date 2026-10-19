@@ -1,5 +1,49 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.229...v0.75.230)
+
+## ✨ Features
+
+- **mobile**: ship native screens' messages a language at a time ([09b27c5](https://github.com/stacksjs/stacks/commit/09b27c5)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **mobile**: pass ios.nativeScriptThread through to Craft ([2a91b86](https://github.com/stacksjs/stacks/commit/2a91b86)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: keep metadata publishing independent of app startup ([bb05125](https://github.com/stacksjs/stacks/commit/bb05125)) _(by Chris <chris@stacksjs.com>)_
+- **database**: preserve explicit native SQL dialects and database targets ([9408642](https://github.com/stacksjs/stacks/commit/9408642)) _(by Chris <chris@stacksjs.com>)_
+- **docs**: keep repository tooling independent of app initialization ([a6390a7](https://github.com/stacksjs/stacks/commit/a6390a7)) _(by Chris <chris@stacksjs.com>)_
+- **ci**: run framework services and system tools through Pantry ([0faa38f](https://github.com/stacksjs/stacks/commit/0faa38f)) _(by Chris <chris@stacksjs.com>)_
+- qualify the shared mobile compiler and runtime release ([f6154c2](https://github.com/stacksjs/stacks/commit/f6154c2)) _(by Chris <chris@stacksjs.com>)_
+- resolve mobile type subpaths from every source compiler configuration ([bc770a9](https://github.com/stacksjs/stacks/commit/bc770a9)) _(by Chris <chris@stacksjs.com>)_
+- register mobile type subpaths and reject stale release locks ([3c7d4cf](https://github.com/stacksjs/stacks/commit/3c7d4cf)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- clarify metadata-only dependency and release preparation ([a3cc795](https://github.com/stacksjs/stacks/commit/a3cc795)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- keep candidate tarball paths independent of scope encoding ([9f18e66](https://github.com/stacksjs/stacks/commit/9f18e66)) _(by Chris <chris@stacksjs.com>)_
+- resolve packed candidates through normal registry semantics ([d8eb2c6](https://github.com/stacksjs/stacks/commit/d8eb2c6)) _(by Chris <chris@stacksjs.com>)_
+- install the complete packed mobile candidate dependency graph ([66b444d](https://github.com/stacksjs/stacks/commit/66b444d)) _(by Chris <chris@stacksjs.com>)_
+- reject stale release declarations and verify native subpath registration ([ddbff6a](https://github.com/stacksjs/stacks/commit/ddbff6a)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: refresh Pantry declarations after current main integration ([04dbca1](https://github.com/stacksjs/stacks/commit/04dbca1)) _(by Chris <chris@stacksjs.com>)_
+- integrate current CLI and mobile type declarations ([1c6358c](https://github.com/stacksjs/stacks/commit/1c6358c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([0ec74ba](https://github.com/stacksjs/stacks/commit/0ec74ba)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([caef86d](https://github.com/stacksjs/stacks/commit/caef86d)) _(by Chris <chris@stacksjs.com>)_
+- Merge remote-tracking branch 'origin/main' into codex/native-core225-integration ([15aada0](https://github.com/stacksjs/stacks/commit/15aada0)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.228...v0.75.229)
 
 ## ✨ Features

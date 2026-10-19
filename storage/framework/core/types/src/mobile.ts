@@ -89,6 +89,22 @@ export interface MobilePrivacyManifest {
 }
 
 /** iOS waking the app now and then to refresh its content (BGAppRefreshTask). */
+/**
+ * Native screens' messages, a language at a time (stx's `messages`): each
+ * language's message modules in a directory of their own,
+ * `<dir>/<language>/<area>.ts`, each exporting its messages (plain data) as
+ * default and nothing else. The screens' code carries none of them; a
+ * screen reads the language it is shown in, and only the areas it uses,
+ * when it first looks inside them. Needs a Craft that runs each screen from
+ * its own file; with one that does not, the messages stay in the bundle.
+ */
+export interface NativeMessagesConfig {
+  /** The directory (relative to the project) holding a directory per language, e.g. `resources/lang/messages`. */
+  dir: string
+  /** The languages, each a directory of `dir`, e.g. `['en', 'de']`. */
+  languages: string[]
+}
+
 export interface IosBackgroundRefreshConfig {
   enabled: boolean
   /** The task's identifier, reverse-DNS. Craft derives one from the bundle id when left out. */
@@ -220,6 +236,8 @@ export interface IosMobileConfig {
   nativeScreens?: Record<string, string>
   /** Where the native screens' `.stx` files live. Default `resources/native`. */
   nativeScreensDir?: string
+  /** The screens' messages, shipped a language at a time (`NativeMessagesConfig`). */
+  nativeMessages?: NativeMessagesConfig
   /**
    * What draws the app. `web` (the default) is a web view, with the paths in
    * `nativeScreens` drawn natively over it. `native` is no web view at all:
@@ -335,6 +353,8 @@ export interface AndroidMobileConfig {
   nativeScreens?: Record<string, string>
   /** Where the screens' `.stx` files are (default `resources/native`). */
   nativeScreensDir?: string
+  /** The screens' messages, as `ios.nativeMessages`. */
+  nativeMessages?: NativeMessagesConfig
   /** The script that runs beside the screens for the app's life (`ios.nativeApp`). */
   nativeApp?: string
   /** The tab bar: each tab's root path, title and symbol (an SF Symbol name, drawn with Android's glyphs). */
