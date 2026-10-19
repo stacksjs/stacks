@@ -117,9 +117,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4388daecea10ba6337a4b29cc2900a99f8b7838e # v0.11.98
+        uses: pantry-pm/pantry/packages/action@3436eff9cc46cad165a564f30d458963e148294c # v0.11.99
         with:
-          version: '0.11.98'
+          version: '0.11.99'
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0
 
@@ -183,9 +183,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4388daecea10ba6337a4b29cc2900a99f8b7838e # v0.11.98
+        uses: pantry-pm/pantry/packages/action@3436eff9cc46cad165a564f30d458963e148294c # v0.11.99
         with:
-          version: '0.11.98'
+          version: '0.11.99'
           install: 'false'
           packages: bun.com@1.4.2 git-scm.org@2.53.0
 
@@ -290,8 +290,12 @@ jobs:
           # waits for the ones it depends on to be readable on npm, not for every
           # package before it (two hours and more one by one). Each package still
           # goes through publish-npm.sh, which waits out an accepted upload npm
-          # has not shown yet and resumes it.
-          bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging
+          # has not shown yet and resumes it. --no-readback: pantry stops at
+          # npm's acceptance instead of polling each package until it is
+          # readable (most of a minute each, often the full timeout); the
+          # staging tag keeps them off latest, and promote-latest.ts confirms
+          # every package is readable before it moves latest.
+          bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback
 
           # `npm dist-tag` authenticates from .npmrc rather than the env var
           # that pantry reads.
@@ -468,9 +472,9 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@4388daecea10ba6337a4b29cc2900a99f8b7838e # v0.11.98
+        uses: pantry-pm/pantry/packages/action@3436eff9cc46cad165a564f30d458963e148294c # v0.11.99
         with:
-          version: '0.11.98'
+          version: '0.11.99'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.get_version.outputs.version }}
