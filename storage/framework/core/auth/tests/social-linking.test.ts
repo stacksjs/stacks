@@ -16,25 +16,34 @@ import { resolveSocialSignIn, SocialSignInRefusedError } from '../src/socials'
 
 interface FakeState {
   links: Array<{ userId: number, provider: string, providerUserId: string, providerEmail: string | null }>
-  users: Array<{ id: number, email: string }>
+  /** `verified` defaults to true: a local account that confirmed its address. */
+  users: Array<{ id: number, email: string, verified?: boolean }>
 }
 
-function storeWith(state: FakeState): SocialSignInStore {
+function storeWith(state: FakeState, seen: unknown[] = []): SocialSignInStore {
   let nextId = Math.max(0, ...state.users.map(user => user.id)) + 1
   return {
-    async findLink(provider, providerUserId) {
+    async findLink(provider, providerUserId, tx) {
+      seen.push(tx)
       const link = state.links.find(l => l.provider === provider && l.providerUserId === providerUserId)
       return link ? { userId: link.userId } : undefined
     },
-    async createLink(link) {
+    async createLink(link, tx) {
+      seen.push(tx)
       state.links.push(link)
     },
-    async findUserIdByEmail(email) {
+    async findUserIdByEmail(email, tx) {
+      seen.push(tx)
       return state.users.find(user => user.email === email)?.id
     },
-    async createUser(attrs) {
+    async isUserEmailVerified(userId, tx) {
+      seen.push(tx)
+      return state.users.find(user => user.id === userId)?.verified !== false
+    },
+    async createUser(attrs, tx) {
+      seen.push(tx)
       const id = nextId++
-      state.users.push({ id, email: attrs.email })
+      state.users.push({ id, email: attrs.email, verified: attrs.emailVerified })
       return id
     },
   }
@@ -83,6 +92,37 @@ describe('resolveSocialSignIn', () => {
       await expect(attempt).rejects.toMatchObject({ reason: 'unverified-provider-email' })
     }
     expect(state.links).toHaveLength(0)
+  })
+
+  it('REFUSES to link onto a local account that never verified its address', async () => {
+    // The mirror image: the attacker registers the victim's address locally
+    // with a password they know and never verifies it. The victim's first
+    // "Sign in with GitHub" must not hand them that account.
+    const state: FakeState = { links: [], users: [{ id: 3, email: 'ada@example.com', verified: false }] }
+
+    const attempt = resolveSocialSignIn('github', githubIdentity, storeWith(state))
+    await expect(attempt).rejects.toThrow(SocialSignInRefusedError)
+    await expect(attempt).rejects.toMatchObject({ reason: 'unverified-local-email' })
+    expect(state.links).toHaveLength(0)
+  })
+
+  it('tells createUser whether the provider vouched for the address', async () => {
+    const verified: FakeState = { links: [], users: [] }
+    await resolveSocialSignIn('github', githubIdentity, storeWith(verified))
+    expect(verified.users[0]?.verified).toBe(true)
+
+    const unverified: FakeState = { links: [], users: [] }
+    await resolveSocialSignIn('github', { ...githubIdentity, emailVerified: null }, storeWith(unverified))
+    expect(unverified.users[0]?.verified).toBe(false)
+  })
+
+  it('threads the caller\'s transaction through every store call', async () => {
+    const tx = { id: 'tx-1' }
+    const seen: unknown[] = []
+    await resolveSocialSignIn('github', githubIdentity, storeWith({ links: [], users: [{ id: 3, email: 'ada@example.com' }] }, seen), { tx })
+
+    expect(seen.length).toBeGreaterThanOrEqual(4)
+    expect(seen.every(value => value === tx)).toBe(true)
   })
 
   it('creates a user when no account matches, then links it', async () => {
