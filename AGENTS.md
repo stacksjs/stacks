@@ -240,8 +240,9 @@ delivery. Inspect the installed stx runtime, compiler and demand registry;
   `useQuery`, `useRef`, `useRoute`, `useSearchParams`, `useSeoMeta`,
   `useSessionStorage`, `useStore`, `useThrottle`, `useTimeout`, `useToggle`,
   `useWebSocket`.
-- Signals and lifecycle: `state`, `derived`, `effect`, `batch`, `nextTick`,
+- Signals and lifecycle: `state`, `derived`, `effect`, `batch`, `memo`, `nextTick`,
   `onMount`, `onDestroy`, `provide`, `defineStore`, `stx`.
+- Shared asynchronous work: `sharedRequest`.
 - Kept values: `keptState` is a state kept in localStorage between visits
   (name, initial value, and a scope option), so a phone tab draws last launch's
   data at once. Scope it to the signed-in account; a scope of false keeps

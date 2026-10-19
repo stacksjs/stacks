@@ -56,6 +56,28 @@ export interface RevokeAccountCredentialsResult {
   keptTokenId: number | null
 }
 
+/** Verify an unchanged MySQL stamp using its real column precision, inside the owner lock. */
+async function mysqlPasswordStampMatches(userId: number, stamp: string): Promise<boolean> {
+  const columns = await db.primary.unsafe(`
+    SELECT DATA_TYPE AS kind, DATETIME_PRECISION AS stamp_precision
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'password_changed_at'
+  `).execute() as Array<{ kind: unknown, stamp_precision: unknown }>
+  const column = columns[0]
+  if (columns.length !== 1 || !column || !['datetime', 'timestamp'].includes(String(column.kind))
+    || !/^[0-6]$/.test(String(column.stamp_precision)))
+    throw new Error('[auth] Cannot verify password_changed_at temporal precision.')
+
+  // Let MySQL perform the same precision conversion as the assignment. Parsing
+  // Dates in JavaScript loses microseconds and could accept a suppressed write.
+  const precision = Number(column.stamp_precision)
+  const rows = await db.primary.unsafe(`
+    SELECT (password_changed_at = CAST(? AS DATETIME(${precision}))) AS stamp_matches
+    FROM users WHERE id = ?
+  `, [stamp, userId]).execute() as Array<{ stamp_matches: unknown }>
+  return rows.length === 1 && (rows[0]?.stamp_matches === true || rows[0]?.stamp_matches === 1)
+}
+
 
 export async function revokeAccountCredentials(userId: number, options: RevokeAccountCredentialsOptions = {}): Promise<RevokeAccountCredentialsResult> {
   if (!Number.isSafeInteger(userId) || userId <= 0)
@@ -84,7 +106,9 @@ export async function revokeAccountCredentials(userId: number, options: RevokeAc
         .set({ password_changed_at: stampValue } as never)
         .where('id', '=', userId)
         .execute()
-      if (mutationCount(stamped) !== 1)
+      const changed = mutationCount(stamped)
+      if (changed !== 1 && !(changed === 0 && getDatabaseDialect() === 'mysql'
+        && await mysqlPasswordStampMatches(userId, stampValue)))
         throw new Error('[auth] revokeAccountCredentials could not stamp password_changed_at.')
       passwordChangedAt = parseSqlDateTime(stampValue)
     }
