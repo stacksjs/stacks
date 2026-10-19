@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import process from 'node:process'
 import { publishables } from './promote-latest'
-import { inBatches, publishLayers } from './publish-layers'
+import { inBatches, publishLayers, publishOne } from './publish-layers'
 
 const root = new URL('../../', import.meta.url).pathname
 const pkg = (name: string, dependencies: string[] = []) => ({ name, dir: `storage/framework/core/${name}`, dependencies })
@@ -33,7 +36,32 @@ describe('publish layers', () => {
 
   it('is what the release workflow publishes with', () => {
     const workflow = readFileSync(`${root}.github/workflows/release.yml`, 'utf8')
-    expect(workflow).toContain('bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging')
+    expect(workflow).toContain('bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback')
+  })
+})
+
+describe('publishing one package', () => {
+  it('gives each parallel publish its own temporary directory, and removes it', async () => {
+    // pantry staged every tarball in one $TMPDIR/pantry-staging, so parallel
+    // publishes deleted each other's files (v0.75.235).
+    const fake = mkdtempSync(join(tmpdir(), 'publish-layers-test-'))
+    try {
+      mkdirSync(join(fake, '.github/scripts'), { recursive: true })
+      const script = join(fake, '.github/scripts/publish-npm.sh')
+      writeFileSync(script, '#!/bin/sh\ntest -d "$TMPDIR" && echo "$TMPDIR" >> "$TRACE"\n')
+      chmodSync(script, 0o755)
+      const trace = join(fake, 'trace')
+      process.env.TRACE = trace
+      const results = await Promise.all(['a', 'b', 'c'].map(name => publishOne(fake, [], { name, dir: name, dependencies: [] })))
+      expect(results.every(result => result.ok)).toBe(true)
+      const dirs = readFileSync(trace, 'utf8').trim().split('\n')
+      expect(new Set(dirs).size).toBe(3)
+      expect(dirs.some(dir => existsSync(dir))).toBe(false)
+    }
+    finally {
+      delete process.env.TRACE
+      rmSync(fake, { recursive: true, force: true })
+    }
   })
 })
 

@@ -22,9 +22,16 @@
  * package. A package already on the registry is skipped by pantry, so a rerun
  * after a failure continues where it stopped.
  *
+ * Each publish gets its own TMPDIR. pantry before 0.11.100 staged every
+ * tarball in one fixed $TMPDIR/pantry-staging and deleted it first, so
+ * parallel publishes deleted each other's files: v0.75.235 failed five
+ * packages and uploaded @stacksjs/arrays without its dist.
+ *
  * Usage: bun .github/scripts/publish-layers.ts <pantry publish arguments...>
  *   PUBLISH_CONCURRENCY  packages published at once within a layer (default 8)
  */
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { publishables } from './promote-latest'
@@ -75,10 +82,12 @@ export async function inBatches<T, R>(items: readonly T[], limit: number, task: 
   return results
 }
 
-async function publishOne(root: string, args: string[], pkg: LayeredPackage): Promise<{ pkg: LayeredPackage, ok: boolean, seconds: number }> {
+export async function publishOne(root: string, args: string[], pkg: LayeredPackage): Promise<{ pkg: LayeredPackage, ok: boolean, seconds: number }> {
   const started = performance.now()
-  const child = Bun.spawn([join(root, '.github/scripts/publish-npm.sh'), ...args, pkg.dir], { cwd: root, stdout: 'pipe', stderr: 'pipe', env: process.env })
+  const scratch = mkdtempSync(join(tmpdir(), 'publish-'))
+  const child = Bun.spawn([join(root, '.github/scripts/publish-npm.sh'), ...args, pkg.dir], { cwd: root, stdout: 'pipe', stderr: 'pipe', env: { ...process.env, TMPDIR: scratch } })
   const [stdout, stderr, code] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
+  rmSync(scratch, { recursive: true, force: true })
   const seconds = Math.round((performance.now() - started) / 1000)
   // Printed whole when it finishes, so parallel packages don't interleave.
   console.log(`::group::${pkg.name} (${code === 0 ? 'ok' : `exit ${code}`}, ${seconds}s)`)
