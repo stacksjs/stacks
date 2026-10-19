@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 // Build the real package in isolation. Source aliases alone cannot establish
 // that the advertised public subpath has executable JavaScript in a release.
-test('the built types root and exit-code entrypoint share the same enum', async () => {
+test('built types subpaths resolve and the root shares the exit-code enum', async () => {
   const source = join(import.meta.dir, '..')
   const runtime = join(import.meta.dir, '../../../runtime')
   await mkdir(runtime, { recursive: true })
@@ -49,6 +49,8 @@ import assert from 'node:assert/strict'
 assert.equal(Bun.resolveSync('@stacksjs/strings', import.meta.dir), import.meta.dir + '/node_modules/@stacksjs/strings/dist/index.js')
 assert.equal(Bun.resolveSync('@stacksjs/types', import.meta.dir), import.meta.dir + '/node_modules/@stacksjs/types/dist/index.js')
 assert.equal(Bun.resolveSync('@stacksjs/types/exit-code', import.meta.dir), import.meta.dir + '/node_modules/@stacksjs/types/dist/exit-code.js')
+assert.equal(Bun.resolveSync('@stacksjs/types/mobile', import.meta.dir), import.meta.dir + '/node_modules/@stacksjs/types/dist/mobile.js')
+await import('@stacksjs/types/mobile')
 const narrow = await import('@stacksjs/types/exit-code')
 const root = await import('@stacksjs/types')
 assert.equal(root.ExitCode, narrow.ExitCode)
@@ -71,6 +73,33 @@ console.log('PASS shipped enum values, identity, and existing root exports')
     }
     finally {
       clearTimeout(consumerWatchdog)
+    }
+    // Exercise the manifest that publishing ships, without workspace paths or
+    // source aliases answering for a missing mobile runtime/declaration file.
+    const installedManifest = join(directory, 'node_modules/@stacksjs/types/package.json')
+    const manifest = await Bun.file(installedManifest).json()
+    await writeFile(installedManifest, JSON.stringify({ ...manifest, ...manifest.publishConfig }))
+    await writeFile(join(directory, 'mobile-consumer.ts'), `
+import type { MobileConfig } from '@stacksjs/types/mobile'
+export const config = { ios: { appName: 'Mobile consumer', bundleId: 'org.stacks.consumer' } } satisfies MobileConfig
+// @ts-expect-error A published declaration must still reject invalid configuration.
+export const invalid: MobileConfig = { ios: { appName: 123 } }
+await import('@stacksjs/types/mobile')
+`)
+    await writeFile(join(directory, 'tsconfig.json'), JSON.stringify({
+      compilerOptions: { target: 'ESNext', module: 'ESNext', moduleResolution: 'bundler', strict: true, skipLibCheck: true, noEmit: true },
+      files: ['mobile-consumer.ts'],
+    }))
+    for (const command of [[process.execPath, 'mobile-consumer.ts'], [join(source, '../../../../node_modules/.bin/tsc'), '-p', 'tsconfig.json']]) {
+      const probe = Bun.spawn(command, { cwd: directory, stdout: 'pipe', stderr: 'pipe' })
+      const timeout = setTimeout(() => probe.kill(), 10_000)
+      try {
+        const [code, out, error] = await Promise.all([probe.exited, new Response(probe.stdout).text(), new Response(probe.stderr).text()])
+        expect(code, out + error).toBe(0)
+      }
+      finally {
+        clearTimeout(timeout)
+      }
     }
   }
   finally {

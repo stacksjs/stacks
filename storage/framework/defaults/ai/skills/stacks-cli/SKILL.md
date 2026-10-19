@@ -129,6 +129,14 @@ inspection, append a newline, and complete before an immediate `process.exit()`.
 The narrow import needs no application configuration. Use `log` for application
 logging with levels, context and transports.
 
+For large results or piped output, use `await printAsync(...args)` and
+`await printErrorAsync(...args)` from the same entrypoint. Their signatures are
+`(...args: unknown[]) => Promise<void>`. They append a newline, preserve Node
+formatting, wait for stream writes under backpressure, and reject write errors
+such as `EPIPE`. Await them before `process.exit()`. The synchronous helpers
+remain for small, bounded immediate-exit messages and may throw `EAGAIN` when
+a nonblocking pipe is full. These helpers are also exported by `@stacksjs/cli`.
+
 ## Output Formatting
 
 Via `@stacksjs/utils` color functions (available in CLI context):

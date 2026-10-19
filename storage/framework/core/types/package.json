@@ -31,6 +31,12 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./mobile": {
+      "types": "./dist/mobile.d.ts",
+      "bun": "./dist/mobile.js",
+      "import": "./dist/mobile.js",
+      "default": "./dist/mobile.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "bun": "./dist/*.js",
@@ -85,6 +91,12 @@
         "bun": "./dist/index.js",
         "import": "./dist/index.js",
         "default": "./dist/index.js"
+      },
+      "./mobile": {
+        "types": "./dist/mobile.d.ts",
+        "bun": "./dist/mobile.js",
+        "import": "./dist/mobile.js",
+        "default": "./dist/mobile.js"
       },
       "./*": {
         "bun": "./dist/*",

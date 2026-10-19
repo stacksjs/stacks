@@ -27,7 +27,7 @@ Browser runtime bindings are documented separately in `stacks-auto-imports`.
 | `@stacksjs/calendar-api` | [`stacks-calendar`](../stacks-calendar/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/calendar-api/src/index.ts) | 2 |
 | `@stacksjs/charts` | [`stacks-charts`](../stacks-charts/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/charts/src/index.ts) | 3 |
 | `@stacksjs/chat` | [`stacks-chat`](../stacks-chat/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/chat/src/index.ts) | 5 |
-| `@stacksjs/cli` | [`stacks-cli`](../stacks-cli/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/index.ts) | 10 |
+| `@stacksjs/cli` | [`stacks-cli`](../stacks-cli/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/index.ts) | 11 |
 | `@stacksjs/cloud` | [`stacks-cloud`](../stacks-cloud/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cloud/src/index.ts) | 10 |
 | `@stacksjs/cms` | [`stacks-cms`](../stacks-cms/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cms/src/index.ts) | 5 |
 | `@stacksjs/collections` | [`stacks-collections`](../stacks-collections/SKILL.md) | [entrypoint](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/collections/src/index.ts) | 2 |
@@ -273,7 +273,7 @@ Read the entrypoint and package export map for re-exported or type-only surfaces
 
 Local source modules: [src/actions/index.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/actions/index.ts), [src/cli.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/cli.ts), [src/commands.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/commands.ts), [src/exec.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/exec.ts), [src/helpers.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/helpers.ts), [src/output.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/output.ts), [src/parse.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/parse.ts), [src/prompts.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/prompts.ts), [src/run.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/run.ts), [src/signals.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/signals.ts), [src/spinner.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/spinner.ts), [src/terminal.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/terminal.ts), [src/utils.ts](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/src/utils.ts).
 
-Evidence directory: [10 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
+Evidence directory: [11 retained tests](https://github.com/stacksjs/stacks/blob/main/storage/framework/core/cli/tests). These files are evidence pointers, not a claim that all tests were run for this catalog.
 
 ### @stacksjs/cloud
 

@@ -231,6 +231,32 @@ const directory = await prompt.path({
 
 ## Output and Logging
 
+### Plain command results
+
+Import from `@stacksjs/cli/output` when output must remain visible regardless of
+the application's log level. The same helpers are exported by `@stacksjs/cli`.
+They preserve Node formatting and inspection and append one newline.
+
+Use `await printAsync(...args)` for large results and piped output, and
+`await printErrorAsync(...args)` for diagnostics on stderr. Both return
+`Promise<void>` and wait for the stream's write callback, allowing a slow pipe
+to drain without a synchronous `EAGAIN` failure. Await completion before
+calling `process.exit()`. Write failures, including a closed pipe (`EPIPE`),
+reject the promise; the caller chooses the exit policy.
+
+```typescript
+import { printAsync, printErrorAsync } from '@stacksjs/cli/output'
+
+await printAsync('Processed %d items', 100000)
+await printErrorAsync('Warning: %s', 'Some items were skipped')
+process.exit(0)
+```
+
+The synchronous `print(...args): void` and `printError(...args): void` helpers
+remain suitable for small, bounded messages before an immediate exit. They
+write directly to the file descriptor and can throw when a nonblocking pipe
+is full. Neither diagnostic helper changes the process exit code.
+
 ### Log Levels
 
 ```typescript
