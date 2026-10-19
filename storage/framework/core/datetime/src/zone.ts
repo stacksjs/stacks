@@ -12,6 +12,7 @@
  * with nothing but `Intl`, so DST rules come from the runtime's tz database.
  */
 
+const DAY_MS = 86_400_000
 const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/
 
 /** Offset of `timeZone` from UTC at `instant`, in minutes (New York in July: -240). */
@@ -28,7 +29,10 @@ export function zoneOffsetMinutes(instant: Date, timeZone: string): number {
   }).formatToParts(instant)
   const get = (type: string) => Number(parts.find(p => p.type === type)?.value ?? 0)
 
-  const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+  // setUTCFullYear keeps years below 100 literal; Date.UTC would remap 0050 to 1950.
+  const reading = new Date(Date.UTC(2000, get('month') - 1, get('day'), get('hour'), get('minute'), get('second')))
+  reading.setUTCFullYear(get('year'))
+  const asUtc = reading.getTime()
   // Drop sub-second precision so the difference is whole minutes.
   const whole = Math.floor(instant.getTime() / 1000) * 1000
   return Math.round((asUtc - whole) / 60_000)
@@ -41,9 +45,16 @@ export function zoneOffsetMinutes(instant: Date, timeZone: string): number {
  * with no offset. A string that carries its own offset is already an instant,
  * so it is rejected rather than silently reinterpreted.
  *
- * A time that does not exist (skipped by a spring-forward) resolves to the
- * instant just after the gap; a time that happens twice (the fall-back hour)
- * resolves to the first of them, which is what a box office means by it.
+ * Around a DST change the rule is the same in every zone (it is RFC 5545's and
+ * Temporal's `'compatible'` disambiguation):
+ *
+ * - A time that happens twice (the fall-back hour) resolves to the EARLIER of
+ *   the two instants, which is what a box office means by it. Berlin's
+ *   `2026-10-25T02:30` is `00:30Z` (`+02:00`), not `01:30Z` (`+01:00`).
+ * - A time that never happens (skipped by a spring-forward) is read with the
+ *   offset in force before the gap, so it lands as far past the gap as it was
+ *   into it. Berlin's `2026-03-29T02:30` is `01:30Z`, which clocks there show
+ *   as `03:30`; New York's `2026-03-08T02:30` likewise shows as `03:30`.
  *
  * @example
  * zonedTimeToUtc('2026-10-01T20:00:00', 'America/New_York').toISOString()
@@ -55,22 +66,29 @@ export function zonedTimeToUtc(wallClock: string, timeZone: string): Date {
     throw new TypeError(`zonedTimeToUtc expects a wall-clock time like 2026-10-01T20:00:00, got "${wallClock}"`)
 
   const [, y, mo, d, h = '0', mi = '0', s = '0'] = match
-  const guess = Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s))
+  // The wall-clock reading as if it were UTC. setUTCFullYear keeps years below
+  // 100 literal, where Date.UTC would remap 0050 to 1950.
+  const reading = new Date(Date.UTC(2000, Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s)))
+  reading.setUTCFullYear(Number(y))
+  const local = reading.getTime()
 
-  // Two passes: the offset at the naive guess can differ from the offset at
-  // the answer when a DST change falls between them.
-  const first = guess - zoneOffsetMinutes(new Date(guess), timeZone) * 60_000
-  const second = guess - zoneOffsetMinutes(new Date(first), timeZone) * 60_000
-  if (second === first)
-    return new Date(second)
+  // A zone's offset changes at most once in any day, so the offsets a day
+  // either side are the only two the answer can carry.
+  const before = zoneOffsetMinutes(new Date(local - DAY_MS), timeZone)
+  const after = zoneOffsetMinutes(new Date(local + DAY_MS), timeZone)
 
-  // The passes disagree only around a transition. Prefer the earlier reading
-  // that actually shows the requested wall-clock time (the first of a
-  // repeated hour); if neither does, the time fell in a gap.
-  const [early, late] = first < second ? [first, second] : [second, first]
-  if (early + zoneOffsetMinutes(new Date(early), timeZone) * 60_000 === guess)
-    return new Date(early)
-  return new Date(late)
+  // Each candidate offset gives an instant; keep the ones at which the zone
+  // really shows the requested reading. Two survivors mean a repeated hour.
+  const shows = (offset: number): number | null => {
+    const instant = local - offset * 60_000
+    return zoneOffsetMinutes(new Date(instant), timeZone) === offset ? instant : null
+  }
+  const valid = [shows(before), shows(after)].filter((instant): instant is number => instant !== null)
+  if (valid.length)
+    return new Date(Math.min(...valid))
+
+  // Neither offset shows it: the reading fell in a spring-forward gap.
+  return new Date(local - before * 60_000)
 }
 
 /**
