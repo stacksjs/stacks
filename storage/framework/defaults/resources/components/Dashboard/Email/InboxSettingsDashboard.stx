@@ -262,9 +262,9 @@ import type {
   MailTheme,
   NotificationSound,
   ReplyBehavior,
-} from '@stacksjs/defaults/functions/mail-preferences.ts'
-import { fetchInboxActivity } from '@stacksjs/defaults/functions/inbox.ts'
-import { fetchMailPreference, saveMailPreference } from '@stacksjs/defaults/functions/mail-preferences.ts'
+} from '@stacksjs/defaults/functions/mail-preferences'
+import { fetchInboxActivity } from '@stacksjs/defaults/functions/inbox'
+import { fetchMailPreference, saveMailPreference } from '@stacksjs/defaults/functions/mail-preferences'
 
 interface SettingsSection {
   id: string

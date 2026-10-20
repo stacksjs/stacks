@@ -30,7 +30,7 @@ import {
 import process from 'node:process'
 import { appPath, frameworkDefaultsRoot, frameworkPath, projectPath, storagePath, usesVendoredDefaults } from './project'
 
-export { appPath, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, linkPackagedDefaults, packagedDefaultsRoot, projectPath, storagePath, usesVendoredDefaults } from './project'
+export { appPath, frameworkDefaultsRoot, frameworkPath, isCompiledBinary, isInstalledDefaultsRoot, linkPackagedDefaults, packagedDefaultsRoot, projectPath, storagePath, usesVendoredDefaults } from './project'
 export { resolveModulePath } from './module-resolution'
 
 // Lazy import logging to avoid circular dependency (logging imports path)

@@ -122,3 +122,14 @@ it('links the installed package into storage/framework/defaults, and leaves a ve
     rmSync(vendoredRoot, { recursive: true, force: true })
   }
 })
+
+it('never takes Bun\'s auto-install cache for an installed package', async () => {
+  const { isInstalledDefaultsRoot } = await import('../src/project')
+
+  expect(isInstalledDefaultsRoot('/app/node_modules/@stacksjs/defaults')).toBe(true)
+  expect(isInstalledDefaultsRoot('/app/pantry/@stacksjs/defaults')).toBe(true)
+  expect(isInstalledDefaultsRoot('/Users/me/.bun/install/cache/@stacksjs/defaults@0.75.244@@@1')).toBe(false)
+  // CI keeps Bun's cache inside the checkout's pantry directory.
+  expect(isInstalledDefaultsRoot('/home/runner/work/stacks/stacks/pantry/install/cache/@stacksjs/defaults@0.75.244@@@1')).toBe(false)
+  expect(isInstalledDefaultsRoot('/x/pantry/install/cache/@stacksjs/defaults')).toBe(false)
+})

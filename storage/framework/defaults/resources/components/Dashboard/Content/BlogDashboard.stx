@@ -202,8 +202,8 @@ defineClientPayload({ blogUrl })
 <script client>
 // Plain async transport for /api/dashboard/blog, which reads and writes the
 // markdown files in content/blog. It owns no state; the signals below do.
-import type { BlogPost, BlogPostDraft } from '@stacksjs/defaults/functions/blog.ts'
-import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '@stacksjs/defaults/functions/blog.ts'
+import type { BlogPost, BlogPostDraft } from '@stacksjs/defaults/functions/blog'
+import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '@stacksjs/defaults/functions/blog'
 
 const publicBlogBaseUrl = {{ blogUrl }}
 

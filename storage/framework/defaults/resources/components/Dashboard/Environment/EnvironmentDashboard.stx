@@ -1,5 +1,5 @@
 <script client>
-import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api.ts'
+import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api'
 
 interface EnvironmentFileIssue {
   line: number

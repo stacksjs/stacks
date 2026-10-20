@@ -208,11 +208,11 @@ import type {
   PageData,
   ReferrerData,
   TrafficDataPoint,
-} from '@stacksjs/defaults/functions/analytics.ts'
-import { fetchWebAnalytics } from '@stacksjs/defaults/functions/analytics.ts'
-import { pushToast } from '@stacksjs/defaults/functions/toasts.ts'
-import type { ChartCtor, ChartLike } from '@stacksjs/defaults/views/dashboard/composables/useChart.ts'
-import { useChart } from '@stacksjs/defaults/views/dashboard/composables/useChart.ts'
+} from '@stacksjs/defaults/functions/analytics'
+import { fetchWebAnalytics } from '@stacksjs/defaults/functions/analytics'
+import { pushToast } from '@stacksjs/defaults/functions/toasts'
+import type { ChartCtor, ChartLike } from '@stacksjs/defaults/views/dashboard/composables/useChart'
+import { useChart } from '@stacksjs/defaults/views/dashboard/composables/useChart'
 
 const analyticsOverview = state<AnalyticsOverview>({
   realtimeVisitors: 0,

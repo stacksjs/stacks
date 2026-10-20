@@ -16,7 +16,7 @@
 // vendored or linked. `@stacksjs/defaults/*` is mapped onto the vendored tree in
 // `storage/framework/tsconfig.app.json` and falls back to the installed
 // package when there is none, so it resolves in both layouts.
-import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar.ts'
+import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar'
 
 export const sidebarSections = buildWebSidebarSections()
 
@@ -403,14 +403,14 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
 // fixed-position container below the <main> slot. Mounted in the
 // layout so every dashboard page picks it up without opting in.
 // A package specifier for the same reason as the sidebar import above.
-import type { ToastType } from '@stacksjs/defaults/functions/toasts.ts'
-import type { CraftSidebarSelectEvent } from '@stacksjs/defaults/functions/craft.ts'
-import { useToasts, dismissToast } from '@stacksjs/defaults/functions/toasts.ts'
-import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '@stacksjs/defaults/functions/craft.ts'
-import { readStoredAppearance, useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance.ts'
-import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth.ts'
-import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban.ts'
-import { rbacStore } from '@stacksjs/defaults/views/dashboard/stores/rbac.ts'
+import type { ToastType } from '@stacksjs/defaults/functions/toasts'
+import type { CraftSidebarSelectEvent } from '@stacksjs/defaults/functions/craft'
+import { useToasts, dismissToast } from '@stacksjs/defaults/functions/toasts'
+import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '@stacksjs/defaults/functions/craft'
+import { readStoredAppearance, useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance'
+import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth'
+import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban'
+import { rbacStore } from '@stacksjs/defaults/views/dashboard/stores/rbac'
 const { toasts } = useToasts()
 registerStoresClient({ authStore, kanbanStore, rbacStore })
 

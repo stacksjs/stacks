@@ -102,6 +102,18 @@ const VENDORED_DEFAULTS = 'framework/defaults'
 const packagedDefaultsRoots = new Map<string, string | null>()
 
 /**
+ * Whether a resolved `@stacksjs/defaults` is a copy the project installed.
+ *
+ * With none installed, Bun answers from its own auto-install cache
+ * (`~/.bun/install/cache/@stacksjs/defaults@x@@@1`, or
+ * `<repo>/pantry/install/cache/...` on CI): a release nobody declared. A test
+ * running in a temp directory then loaded that release's models.
+ */
+export function isInstalledDefaultsRoot(path: string): boolean {
+  return /[/\\]@stacksjs[/\\]defaults$/.test(path) && !/[/\\]install[/\\]cache[/\\]/.test(path)
+}
+
+/**
  * Where the installed `@stacksjs/defaults` lives for a project, or null when
  * it is not installed. Resolved through `package.json` because the package
  * publishes no `.` export, and memoised per project root: it cannot move
@@ -116,10 +128,7 @@ export function packagedDefaultsRoot(projectRoot: string = projectPath()): strin
   let root: string | null = null
   try {
     const resolved = dirname(Bun.resolveSync('@stacksjs/defaults/package.json', projectRoot))
-    // Only a copy the project installed. With none, Bun answers from its own
-    // auto-install cache (`~/.bun/install/cache/@stacksjs/defaults@x`), a
-    // release nobody declared and a directory nothing should link to.
-    if (/[/\\](?:node_modules|pantry)[/\\]/.test(resolved))
+    if (isInstalledDefaultsRoot(resolved))
       root = resolved
   }
   catch {

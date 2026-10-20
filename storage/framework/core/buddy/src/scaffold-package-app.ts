@@ -242,8 +242,11 @@ export function rewriteDefaultsImports(root: string, hasFile: (path: string) => 
     if (!raw.includes('storage/framework/defaults/'))
       continue
 
+    // A template's script is checked by `stx typecheck`, which rejects a `.ts`
+    // extension; Bun resolves the bare path through the package's exports.
+    const fileExists = file.endsWith('.stx') ? () => false : hasFile
     const next = raw.replace(DEFAULTS_IMPORT, (_match, lead: string, quote: string, rest: string) =>
-      `${lead}${quote}${defaultsSpecifier(rest, hasFile)}${quote}`)
+      `${lead}${quote}${defaultsSpecifier(rest, fileExists)}${quote}`)
 
     if (next !== raw) {
       writeFileSync(file, next)

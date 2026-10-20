@@ -108,8 +108,9 @@ directory (the framework checkout, an app made with `--vendor-defaults` or
 framework code resolves the package itself: a module loaded through a link
 created after the process started fails in Bun.
 
-In code and templates, import a default by package name,
-`@stacksjs/defaults/<path>.ts`. `storage/framework/tsconfig.app.json` maps that
+In code and templates, import a default by package name:
+`@stacksjs/defaults/<path>.ts` in TypeScript, `@stacksjs/defaults/<path>` with
+no extension in a `.stx` script (`stx typecheck` rejects `.ts` there). `storage/framework/tsconfig.app.json` maps that
 onto a vendored tree when there is one and falls back to the package, so it
 resolves in every layout; `~/storage/framework/defaults/...` does not.
 

@@ -150,3 +150,11 @@ describe('the framework defaults', () => {
     expect(offenders).toEqual([])
   })
 })
+
+test('a template import gets no .ts extension, which stx typecheck rejects', () => {
+  write('resources/views/index.stx', '<script client>\nimport { useToasts } from \'~/storage/framework/defaults/functions/toasts\'\n</script>\n')
+
+  rewriteDefaultsImports(app, () => true)
+
+  expect(readFileSync(join(app, 'resources/views/index.stx'), 'utf8')).toContain('from \'@stacksjs/defaults/functions/toasts\'')
+})

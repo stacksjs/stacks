@@ -12,9 +12,9 @@
   // Both column reorder (drag the column header) and card reorder
   // (drag the card body) share the same /cards/reorder + /columns/reorder
   // mutations on the store.
-  import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation.ts'
-  import { useRole } from '@stacksjs/defaults/views/dashboard/composables/useRole.ts'
-  import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban.ts'
+  import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation'
+  import { useRole } from '@stacksjs/defaults/views/dashboard/composables/useRole'
+  import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban'
 
   // The component owns its store dependency. Importing the definition creates
   // and registers the singleton before this component controller executes,
