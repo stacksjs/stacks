@@ -261,6 +261,58 @@ async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): P
 
 const _loaded: Record<string, any> = {}
 
+/**
+ * Whether the deferred model load has finished.
+ *
+ * Before it has, a missing entry in `_loaded` means "not yet", and the proxy
+ * below keeps answering `undefined` as it always did. After it has, a missing
+ * entry means the model is genuinely unavailable in this process, and saying
+ * so is worth a throw: the alternative is what shipped, where every property
+ * came back `undefined` and the first call failed as
+ * `Manufacturer.orderByDesc is not a function` several frames away from the
+ * actual cause. That cost a real debugging session on the dashboard, where
+ * commerce pages 503'd with that TypeError because `config/commerce.ts` had
+ * `enabled: false`. See stacksjs/stacks#2928.
+ */
+let _modelsSettled = false
+
+/**
+ * The methods that mean "use this model now", and so are worth a real error
+ * rather than `undefined`.
+ *
+ * Deliberately a narrow allowlist rather than "everything except a few": an
+ * unavailable model answering `undefined` is a load-bearing contract
+ * elsewhere, and two existing tests depend on it. `Referral.getDefinition?.()`
+ * is how feature availability is detected, and `Post`'s eager-load path reads
+ * off a gated commerce `Category` and expects nothing back. Throwing on every
+ * property broke both. Reading a property stays silent; trying to query does
+ * not.
+ */
+const QUERY_ENTRYPOINTS = new Set([
+  'where', 'orWhere', 'whereIn', 'whereNotIn', 'whereNull', 'whereNotNull',
+  'whereLike', 'whereBetween', 'whereNotBetween', 'orderBy', 'orderByDesc',
+  'latest', 'oldest', 'limit', 'take', 'skip', 'select',
+  'find', 'findOrFail', 'findMany', 'first', 'firstOrFail', 'all', 'get', 'paginate',
+  'count', 'sum', 'avg', 'min', 'max',
+  'create', 'createMany', 'firstOrCreate', 'updateOrCreate', 'save',
+  'update', 'updateMany', 'delete', 'destroy', 'remove', 'truncate',
+])
+
+/** Which feature flag, if any, decides whether this model loads. */
+function featureGateFor(name: string): string | undefined {
+  return FRAMEWORK_MODEL_MANIFEST.find(([model]) => model === name)?.[2]
+}
+
+/** The error a call on an unavailable model raises, instead of `undefined`. */
+function unavailableModel(name: string): Error {
+  const gate = featureGateFor(name)
+  const because = gate
+    ? `The '${gate}' feature is off, so this model was never loaded - set \`enabled: true\` in config/${gate}.ts to use it.`
+    : `No model file for it was found under app/Models or the framework defaults.`
+
+  return new Error(`Model "${name}" is not available in this process. ${because}`)
+}
+
 let _readyResolve: () => void = () => {}
 /**
  * Resolves once all framework-default models have been loaded into the
@@ -289,8 +341,11 @@ function lazyModel<T>(name: string): T {
       if (prop === 'then')
         return undefined
       const m = _loaded[name]
-      if (m == null)
+      if (m == null) {
+        if (_modelsSettled && typeof prop === 'string' && QUERY_ENTRYPOINTS.has(prop))
+          throw unavailableModel(name)
         return undefined
+      }
       const value = (m)[prop]
       // Bind methods to the underlying model so `this` is correct
       // when the Proxy is the receiver.
@@ -516,6 +571,7 @@ queueMicrotask(async () => {
     console.error('[orm] deferred model load failed:', err)
   }
   finally {
+    _modelsSettled = true
     _readyResolve()
   }
 })
