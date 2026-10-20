@@ -63,12 +63,12 @@
 
   const activeTab = state('roles')
 
-  function tabClass(id: string) {
-    const base = 'px-4 py-2 font-medium text-sm whitespace-nowrap bg-transparent border-b-2 transition-colors cursor-pointer '
-    return activeTab() === id
-      ? base + 'border-violet-400 text-violet-600 dark:text-violet-400'
-      : base + 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-  }
+  const PERMISSION_TABS = [
+    { id: 'roles', label: 'Roles' },
+    { id: 'permissions', label: 'Permissions' },
+    { id: 'users', label: 'Users' },
+    { id: 'matrix', label: 'Role × Permission' },
+  ]
 
   function selectTab(id: string) {
     activeTab.set(id)
@@ -356,13 +356,10 @@
     </div>
 
     <div :if="!loading">
-      <!-- Tabs -->
-      <div class="flex mb-6 border-b border-zinc-200 dark:border-zinc-800">
-        <button type="button" @click="selectTab('roles')" :class="tabClass('roles')">Roles</button>
-        <button type="button" @click="selectTab('permissions')" :class="tabClass('permissions')">Permissions</button>
-        <button type="button" @click="selectTab('users')" :class="tabClass('users')">Users</button>
-        <button type="button" @click="selectTab('matrix')" :class="tabClass('matrix')">Role × Permission</button>
-      </div>
+      {{-- `UI/Tabs` rather than four buttons: it carries the `role="tab"` /
+           `aria-selected` semantics this strip had none of, so the tab row is
+           navigable by assistive tech. See stacksjs/stacks#2924. --}}
+      <Tabs class="mb-6" :tabs="PERMISSION_TABS" :active-tab="activeTab()" @update:activeTab="selectTab($event)" />
 
       <!-- ─── Roles tab ─────────────────────────────────────── -->
       <div :if="activeTab() === 'roles'" class="space-y-6">

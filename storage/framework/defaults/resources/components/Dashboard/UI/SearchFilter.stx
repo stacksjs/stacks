@@ -1,0 +1,46 @@
+<script client>
+/**
+ * The dashboard's search input.
+ *
+ * Promoted here from `Commerce/Delivery/` because it is the shape that won.
+ * `UI/FilterBar` offered the same input plus a slot for sibling filters and an
+ * items-per-page select, and had no callers at all after all this time, while
+ * this had seven - callers lay out their own filter grid and want one input to
+ * drop into it, not a bar that owns the row. FilterBar is deleted rather than
+ * kept unused. See stacksjs/stacks#2924.
+ *
+ * `searchValue` is the one thing FilterBar had right and this did not: the
+ * parent can seed the box, so a filter restored from the URL or from storage
+ * shows up in it instead of being invisible.
+ */
+const placeholder = useReactiveProp('placeholder', 'Search...')
+const requested = useReactiveProp('searchValue', '')
+const query = state(requested())
+const emit = defineEmits()
+
+effect(() => {
+  query.set(requested())
+})
+
+effect(() => {
+  emit('update:searchValue', query())
+  emit('search', query())
+})
+</script>
+
+<div>
+  <div class="relative rounded-md shadow-sm">
+    <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+      <span class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></span>
+    </div>
+    <input
+      type="search"
+      name="search"
+      :placeholder="placeholder()"
+      :aria-label="placeholder()"
+      x-model="query"
+      autocomplete="off"
+      class="block pl-10 pr-3 py-2.5 w-full leading-6 text-gray-900 text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+    >
+  </div>
+</div>

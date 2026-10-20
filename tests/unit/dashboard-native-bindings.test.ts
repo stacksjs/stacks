@@ -717,18 +717,17 @@ describe('dashboard native STX bindings', () => {
     expect(tabs).toContain('@click="selectTab(tab)"')
     expect(tabs).not.toContain('data-tab-id')
 
-    const filterBar = componentSource('UI/FilterBar.stx')
-    expect(filterBar).toContain('x-model="searchValue"')
-    expect(filterBar).toContain('x-model.number="itemsPerPage"')
-    expect(filterBar).toContain("emit('update:searchValue', value)")
-    expect(filterBar).toContain("emit('update:itemsPerPage', value)")
-    expect(filterBar).toContain(':aria-label="searchPlaceholder()"')
-    expect(filterBar).not.toContain('data-filter-search')
-    expect(filterBar).not.toContain('data-items-per-page')
-
-    const deliverySearch = componentSource('Commerce/Delivery/SearchFilter.stx')
-    expect(deliverySearch).toContain(':placeholder="placeholder()"')
-    expect(deliverySearch).toContain(':aria-label="placeholder()"')
+    // `UI/FilterBar.stx` is gone. It offered this input plus a slot for sibling
+    // filters and an items-per-page select, and had no callers at all, while
+    // the plainer `SearchFilter` had seven - callers lay out their own filter
+    // grid and want one input to drop into it. Promoted to `UI/` and kept as
+    // the single search input. See stacksjs/stacks#2924.
+    const search = componentSource('UI/SearchFilter.stx')
+    expect(search).toContain('x-model="query"')
+    expect(search).toContain(':placeholder="placeholder()"')
+    expect(search).toContain(':aria-label="placeholder()"')
+    expect(search).toContain("emit('update:searchValue', query())")
+    expect(search).not.toContain('data-filter-search')
 
     const quickLinks = componentSource('UI/QuickLinks.stx')
     expect(quickLinks).toContain('const validLinks = derived(() => links().filter')
