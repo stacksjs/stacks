@@ -18,6 +18,9 @@ jobs:
       ORIGINAL_CACHE_KEY: pantry-v4-0.11.102-linux-x64-09a569664183d05f82f901d7a85c94084e80aa354d5f60a0c45dd910dd3caf25-d3612d2ed19d55d4c101ec057bf4ef3edac03ff1738b9a45eeb487d9fd01206a-d84f3e4a02ef7d90ac189d4b192e828fdab1844b68e6576c965cc82954008016-bun.com@1.4.2 git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4 postgresql.org@17.11 mysql.com@26.7.0 redis@8.8.0 aws.amazon.com/dynamodb-local@3.3.0
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Preserve this fixture's original lock hashes as Main dependencies advance.
+          ref: 5e7ecd713bf194e2ee54f5b8f2d28861f2f1040c
       - name: Replay the original published action and complete native tool/service inputs
         id: pantry
         uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102

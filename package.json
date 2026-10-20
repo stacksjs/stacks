@@ -121,9 +121,9 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "@stacksjs/components": "0.2.590",
-    "@stacksjs/stx": "0.2.590",
+    "@stacksjs/components": "0.2.604",
+    "@stacksjs/stx": "0.2.604",
     "better-dx": "^0.2.37",
-    "bun-plugin-stx": "0.2.590"
+    "bun-plugin-stx": "0.2.604"
   }
 }
