@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.241...v0.75.242)
+
+## 🐛 Bug Fixes
+
+- honor registry cooldowns during release promotion ([2b1f9a5](https://github.com/stacksjs/stacks/commit/2b1f9a5)) _(by Chris <chris@stacksjs.com>)_
+- preserve published CLI package boundaries ([ad1807f](https://github.com/stacksjs/stacks/commit/ad1807f)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.240...v0.75.241)
 
 ## 🐛 Bug Fixes
