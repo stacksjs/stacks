@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import {
   restaurantWaitlistTimestamp,
@@ -9,9 +11,38 @@ const loading = useReactiveProp('loading', false)
 const busyId = useReactiveProp('busyId', '')
 const emit = defineEmits()
 
+const STATUS_CLASSES = {
+  seated: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30',
+  waiting: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30',
+  no_show: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30',
+}
+
+const COLUMNS = [
+  { key: 'name', label: 'Party', sortable: true, emptyText: 'Unnamed party', subtitleKey: 'contact', class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'partySize', label: 'Size', type: 'number' as const, sortable: true, align: 'right' as const, class: 'font-mono' },
+  // `no_show` renders as "No show" from the badge's own humanising, so no
+  // label map is needed for it.
+  { key: 'status', label: 'Status', type: 'badge' as const, sortable: true, badgeClasses: STATUS_CLASSES },
+  { key: 'quotedWait', label: 'Quoted wait', sortable: true, align: 'right' as const, class: 'font-mono' },
+  { key: 'preference', label: 'Preference', sortable: true, class: 'capitalize' },
+  { key: 'checkIn', label: 'Check in', sortable: true, emptyText: 'Not recorded', class: 'whitespace-nowrap' },
+]
+
+/**
+ * Seating and marking a no-show only apply while the party is still waiting,
+ * which is what `when` expresses. All four are disabled on the row whose write
+ * is in flight, via `busy-key`/`busy-value`.
+ */
+const ROW_ACTIONS = [
+  { action: 'seat', label: 'Seat party for', icon: 'i-hugeicons-checkmark-circle-02', class: 'text-green-600 dark:text-green-300', when: { key: 'status', equals: 'waiting' } },
+  { action: 'no-show', label: 'Mark no show for', icon: 'i-hugeicons-user-remove-01', class: 'text-red-600 dark:text-red-300', when: { key: 'status', equals: 'waiting' } },
+  { action: 'edit', label: 'Edit restaurant waitlist entry for', icon: 'i-hugeicons-edit-01' },
+  { action: 'delete', label: 'Delete restaurant waitlist entry for', icon: 'i-hugeicons-waste', class: 'text-red-600 dark:text-red-300' },
+]
+
 function formatDateTime(value: string): string {
   if (!value)
-    return 'Not recorded'
+    return ''
   const timestamp = restaurantWaitlistTimestamp(value)
   if (!timestamp)
     return value
@@ -22,79 +53,43 @@ function formatDateTime(value: string): string {
 }
 
 function preferenceLabel(value: string): string {
-  return value === 'no_preference'
-    ? 'No preference'
-    : value.replaceAll('_', ' ')
+  return value === 'no_preference' ? 'No preference' : value.replaceAll('_', ' ')
 }
 
-function statusLabel(value: string): string {
-  return value.replaceAll('_', ' ')
-}
+/**
+ * Computed per row because a column reads a field. `checkIn` keeps this
+ * component's own parser - a restaurant check-in is stored as a unix
+ * timestamp, which `UI/Table`'s `datetime` type does not read - and the
+ * quoted wait carries its unit.
+ */
+const rows = derived(() => records().map(entry => ({
+  ...entry,
+  contact: entry.phone || entry.email || 'No contact recorded',
+  quotedWait: `${entry.quotedWaitTime} min`,
+  preference: preferenceLabel(entry.tablePreference),
+  checkIn: formatDateTime(entry.checkInTime),
+})))
 
-function statusClass(value: string): string {
-  if (value === 'seated')
-    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30'
-  if (value === 'waiting')
-    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30'
-  if (value === 'no_show')
-    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30'
-  return 'text-gray-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700'
+function handleRowAction(payload: { action: string, row: RestaurantWaitlistRecord }): void {
+  emit(payload.action, payload.row)
 }
 </script>
 
-<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-  <div :if="loading()" class="flex items-center justify-center p-8 text-gray-500 text-sm dark:text-neutral-400">
-    <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-    Loading restaurant waitlist
-  </div>
-  <div :else-if="records().length === 0" class="p-8 text-center">
-    <p class="font-medium text-gray-900 text-sm dark:text-white">No restaurant waitlist records found</p>
-    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Add a party or adjust the current filters.</p>
-  </div>
-  <div :else class="overflow-x-auto">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-900/50">
-        <tr>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Party</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Size</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Status</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Quoted wait</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Preference</th>
-          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Check in</th>
-          <th scope="col" class="relative px-4 py-3"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-        <template :for="entry in records()" :key="entry.id">
-          <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/50">
-            <td class="px-4 py-3">
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ entry.name || 'Unnamed party' }}</p>
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ entry.phone || entry.email || 'No contact recorded' }}</p>
-            </td>
-            <td class="px-4 py-3 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ entry.partySize }}</td>
-            <td class="px-4 py-3">
-              <span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(entry.status)">{{ statusLabel(entry.status) }}</span>
-            </td>
-            <td class="px-4 py-3 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ entry.quotedWaitTime }} min</td>
-            <td class="px-4 py-3 capitalize text-gray-600 text-sm dark:text-neutral-300">{{ preferenceLabel(entry.tablePreference) }}</td>
-            <td class="px-4 py-3 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDateTime(entry.checkInTime) }}</td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <Button :if="entry.status === 'waiting'" variant="ghost" size="md" iconOnly :disabled="busyId() === entry.id" :ariaLabel="'Seat party for ' + (entry.name || 'customer')" @click="emit('seat', entry)">
-                <span class="block h-5 w-5 text-green-600 dark:text-green-300 i-hugeicons-checkmark-circle-02"></span>
-              </Button>
-              <Button :if="entry.status === 'waiting'" variant="ghost" size="md" iconOnly :disabled="busyId() === entry.id" :ariaLabel="'Mark no show for ' + (entry.name || 'customer')" @click="emit('no-show', entry)">
-                <span class="block h-5 w-5 text-red-600 dark:text-red-300 i-hugeicons-user-remove-01"></span>
-              </Button>
-              <Button variant="ghost" size="md" iconOnly :disabled="busyId() === entry.id" :ariaLabel="'Edit restaurant waitlist entry for ' + (entry.name || 'customer')" @click="emit('edit', entry)">
-                <span class="block h-5 w-5 text-blue-600 dark:text-blue-300 i-hugeicons-edit-01"></span>
-              </Button>
-              <Button variant="ghost" size="md" iconOnly :disabled="busyId() === entry.id" :ariaLabel="'Delete restaurant waitlist entry for ' + (entry.name || 'customer')" @click="emit('delete', entry)">
-                <span class="block h-5 w-5 text-red-600 dark:text-red-300 i-hugeicons-waste"></span>
-              </Button>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-  </div>
-</div>
+{{--
+  No `searchable` or `filterable`: the parent dashboard owns the search box and
+  the filter selects. Paging is what was missing.
+--}}
+<Table
+  :columns="COLUMNS"
+  :data="rows()"
+  :loading="loading()"
+  :row-actions="ROW_ACTIONS"
+  action-label-key="name"
+  busy-key="id"
+  :busy-value="busyId()"
+  paginated
+  :page-size="25"
+  empty-title="No restaurant waitlist records found"
+  empty-description="Add a party or adjust the current filters."
+  @row-action="handleRowAction"
+/>

@@ -137,6 +137,15 @@ interface DashboardTableRowAction {
   icon: string
   /** Colour class for the icon. Defaults to the usual blue. */
   class?: string
+  /**
+   * Show this action only on rows where `row[key]` equals `equals`.
+   *
+   * Approving, seating or cancelling is usually only offered on the rows it
+   * applies to - a restaurant party can be seated while it is still waiting,
+   * and not afterwards. Without this the whole actions column had to be a
+   * slot, which is the thing that could not be migrated.
+   */
+  when?: { key: string, equals: unknown }
 }
 
 type DashboardTableRow = Record<string, any>
@@ -169,6 +178,15 @@ const exportFilename = useReactiveProp('exportFilename', 'table')
 const stickyFirstColumn = useReactiveProp('stickyFirstColumn', false)
 const rowActions = useReactiveProp<DashboardTableRowAction[]>('rowActions', [])
 const actionLabelKey = useReactiveProp('actionLabelKey', '')
+/**
+ * Disable every action on the row currently being written.
+ *
+ * `busyValue` is whatever the parent is tracking - usually the id of the row
+ * whose request is in flight - and `busyKey` is the field it compares against,
+ * defaulting to the row key. Empty means nothing is busy.
+ */
+const busyKey = useReactiveProp('busyKey', '')
+const busyValue = useReactiveProp<unknown>('busyValue', '')
 
 const selectedKeys = state<TableKey[]>([])
 const sortKey = state('')
@@ -594,6 +612,19 @@ function rowActionLabel(row: DashboardTableRow, action: DashboardTableRowAction)
   return name === null || name === undefined || name === '' ? action.label : `${action.label} ${String(name)}`
 }
 
+/** Whether this action applies to this row. */
+function showsRowAction(row: DashboardTableRow, action: DashboardTableRowAction): boolean {
+  return !action.when || rawValue(row, action.when.key) === action.when.equals
+}
+
+/** Whether this row has a write in flight, so its actions are inert. */
+function rowIsBusy(row: DashboardTableRow): boolean {
+  const value = busyValue()
+  if (value === '' || value === null || value === undefined)
+    return false
+  return rawValue(row, busyKey() || rowKey()) === value
+}
+
 function rowActionIconClass(action: DashboardTableRowAction): string {
   return `block h-4 w-4 ${action.class || 'text-blue-500'} ${action.icon}`
 }
@@ -799,9 +830,11 @@ function cellClass(column: DashboardTableColumn, index: number): string {
               <div :if="!$slots.actions && hasRowActions()" class="flex gap-1 justify-end">
                 <template :for="action in rowActions()">
                   <Button
+                    :if="showsRowAction(row, action)"
                     variant="ghost"
                     size="sm"
                     iconOnly
+                    :disabled="rowIsBusy(row)"
                     :ariaLabel="rowActionLabel(row, action)"
                     @click="emit('row-action', { action: action.action, row })"
                   >
