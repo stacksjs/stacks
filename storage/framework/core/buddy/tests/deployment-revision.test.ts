@@ -60,8 +60,13 @@ describe('automated production revision', () => {
     expect(rewritten).not.toBe(second)
     await expect(assertCurrentDeploymentRevision({ ...revision, sha: second }, checkout)).rejects.toThrow('no longer on the origin branch')
     git(['remote', 'set-url', 'origin', join(root, 'absent.git')], checkout)
-    await expect(assertCurrentDeploymentRevision({ ...revision, sha: second }, checkout)).rejects.toThrow('Cannot verify')
-    await expect(assertCurrentDeploymentRevision({ ...revision, sha: second, ref: 'refs/heads/invalid ref' }, checkout)).rejects.toThrow('Cannot verify')
+    const failure = await assertCurrentDeploymentRevision({ ...revision, sha: second }, checkout).catch(error => error)
+    expect(failure).toBeInstanceOf(Error)
+    expect(failure.message).toContain('reading the origin branch head')
+    expect(failure.message).toContain('Git exited with status 128')
+    expect(failure.message).not.toContain(root)
+    expect(failure.cause).toBeUndefined()
+    await expect(assertCurrentDeploymentRevision({ ...revision, sha: second, ref: 'refs/heads/invalid ref' }, checkout)).rejects.toThrow('validating the branch ref')
   })
 
   test('a shallow CI checkout learns the commits after it from origin', async () => {

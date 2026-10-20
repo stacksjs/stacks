@@ -57,7 +57,7 @@ export interface DeploymentRevisionCheck {
 export async function assertCurrentDeploymentRevision(revision: AutomatedDeploymentRevision | undefined, cwd = process.cwd()): Promise<DeploymentRevisionCheck | undefined> {
   if (!revision)
     return undefined
-  const git = async (args: string[], options: { allowFailure?: boolean } = {}): Promise<string | null> => {
+  const git = async (operation: string, args: string[], options: { allowFailure?: boolean } = {}): Promise<string | null> => {
     try {
       const result = await execute('git', args, {
         cwd,
@@ -67,18 +67,28 @@ export async function assertCurrentDeploymentRevision(revision: AutomatedDeploym
       })
       return result.stdout.trim()
     }
-    catch {
+    catch (error) {
       if (options.allowFailure)
         return null
-      // Git diagnostics can contain remote credentials. Never forward them.
-      throw new Error('Cannot verify the automated deployment revision against origin; production deployment stopped.')
+      // Only fixed operation names and numeric status are safe to report.
+      // Git messages, arguments, stderr and causes can contain credentials.
+      let status = 'Git failed to execute'
+      if (error instanceof Error) {
+        if ('code' in error && error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER')
+          status = 'Git exceeded its output limit'
+        else if ('killed' in error && error.killed === true)
+          status = 'Git exceeded its 60-second limit'
+        else if ('code' in error && typeof error.code === 'number' && Number.isSafeInteger(error.code) && error.code >= 0)
+          status = `Git exited with status ${error.code}`
+      }
+      throw new Error(`Cannot verify the automated deployment revision against origin while ${operation}: ${status}; production deployment stopped.`)
     }
   }
-  await git(['check-ref-format', revision.ref])
-  const checkout = await git(['rev-parse', '--verify', 'HEAD'])
+  await git('validating the branch ref', ['check-ref-format', revision.ref])
+  const checkout = await git('reading the checkout revision', ['rev-parse', '--verify', 'HEAD'])
   if (checkout?.toLowerCase() !== revision.sha)
     throw new Error('The deployment checkout does not match the CI commit; production deployment stopped.')
-  const remote = await git(['ls-remote', '--exit-code', '--refs', 'origin', revision.ref])
+  const remote = await git('reading the origin branch head', ['ls-remote', '--exit-code', '--refs', 'origin', revision.ref])
   const lines = String(remote).split('\n').map(line => line.split(/\s+/))
   if (lines.length !== 1 || lines[0]?.[1] !== revision.ref || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i.test(lines[0]?.[0] ?? ''))
     throw new Error('Origin did not return one authoritative branch head; production deployment stopped.')
@@ -89,16 +99,16 @@ export async function assertCurrentDeploymentRevision(revision: AutomatedDeploym
   // By ref rather than by SHA, which not every server serves. The branch may
   // have moved again since ls-remote; the fetched tip is then newer still,
   // and the question is the same.
-  const shallow = (await git(['rev-parse', '--is-shallow-repository'])) === 'true'
-  await git(['fetch', '--quiet', '--no-tags', ...(shallow ? ['--unshallow'] : []), 'origin', revision.ref])
-  if ((await git(['rev-parse', '--is-shallow-repository'])) === 'true')
+  const shallow = (await git('checking repository history depth', ['rev-parse', '--is-shallow-repository'])) === 'true'
+  await git('fetching the origin branch history', ['fetch', '--quiet', '--no-tags', ...(shallow ? ['--unshallow'] : []), 'origin', revision.ref])
+  if ((await git('checking repository history depth', ['rev-parse', '--is-shallow-repository'])) === 'true')
     throw new Error('Cannot verify complete origin history; production deployment stopped.')
-  const tip = String(await git(['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])).toLowerCase()
+  const tip = String(await git('reading the fetched branch head', ['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])).toLowerCase()
   // Exit status 1 is the answer "no", not a failure to answer.
-  const onBranch = (await git(['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })) !== null
+  const onBranch = (await git('checking revision ancestry', ['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })) !== null
   if (!onBranch)
     throw new Error('This CI commit is no longer on the origin branch; production deployment stopped. Deploy the current branch head.')
-  const newer = String(await git(['rev-list', `${revision.sha}..${tip}`])).split('\n').map(line => line.trim().toLowerCase()).filter(Boolean)
+  const newer = String(await git('listing newer branch revisions', ['rev-list', `${revision.sha}..${tip}`])).split('\n').map(line => line.trim().toLowerCase()).filter(Boolean)
   return Object.freeze({ revision, newer })
 }
 
