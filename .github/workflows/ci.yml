@@ -30,9 +30,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Set up the pinned dependency tools
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
       - name: Generate the candidate Bun lock with the normal installer
@@ -67,9 +67,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -113,9 +113,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -224,9 +224,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
           services: postgres@17.11 mysql@26.7.0 redis@8.8.0 dynamodb@3.3.0
@@ -332,9 +332,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -435,9 +435,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -582,9 +582,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -608,9 +608,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -655,9 +655,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 
@@ -746,9 +746,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4e06764f8d87f22e5bc3ee2d78780415809d4055 # v0.11.100
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
         with:
-          version: '0.11.100'
+          version: '0.11.102'
           install: 'false'
           packages: 'bun.com@${{ env.BUN_VERSION }} git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4'
 

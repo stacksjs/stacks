@@ -97,25 +97,37 @@ bun run build:reset        # Full reset: rm deps → reinstall → generate → 
 
 ## Lockfiles
 
-A Stacks project commits two lockfiles, and they describe one tree:
+A Stacks workspace commits two lockfiles with separate ownership:
 
-- `bun.lock` resolves `node_modules/`, which the app root reads.
-- `pantry.lock` records the system toolchain (Bun itself, SQLite, curl, git)
-  **and** every npm package, which `pantry/` holds and the framework source
-  resolves from.
+- `bun.lock` owns the complete JavaScript graph in `node_modules/`.
+- `pantry.lock` owns the system toolchain and explicitly declared Pantry
+  packages in `pantry/`. It also records workspace declarations, but Pantry
+  0.11.102 and later delegates workspace JavaScript installs to the selected
+  package manager instead of installing a second npm graph.
 
-Pantry follows `bun.lock`'s pin when it satisfies the declared npm range, so
-shared npm records must agree. Native platform records can differ between
-hosts. Review the generated difference and use the repository's lock guards:
-an allowed platform addition does not excuse a missing or changed declared
-dependency, stale workspace ranges, or a lost system-toolchain block.
+Use the published Pantry version pinned by the repository's CI. A normal
+install migrates legacy Pantry npm shadows after checking their recorded and
+installed identities. Do not remove those entries or directories by hand.
+Native platform records can differ between hosts. Review the generated
+changes and use the repository's lock guards: an allowed platform addition
+does not excuse stale workspace declarations or a lost system-toolchain block.
 
 **Regenerating.** Use the repository's declared, Pantry-managed Bun. Change the
 ranges, run `bun install`, then `pantry install --ignore-scripts --quiet`, and
-commit both lockfiles with the manifests. This is the metadata-only mode the
-framework release action uses. A plain `pantry install` can activate project
-services and run `postDatabaseSetup` or `postSetup` hooks, including migrations
-and seeding; those are separate from maintaining dependency locks.
+commit both lockfiles with the manifests. These are real dependency installs,
+which can download native packages and invoke the JavaScript package manager;
+they are not metadata-only operations. The native CLI has no supported
+`install --lockfile-only` mode. On Pantry 0.11.102, `--ignore-scripts` suppresses
+Pantry project hooks but is not forwarded to the JavaScript package manager.
+Do not promise that this version suppresses JavaScript lifecycle scripts.
+A plain `pantry install` can also activate project services and run
+`postDatabaseSetup` or `postSetup` hooks, including migrations and seeding.
+
+After migration, run `bun install --frozen-lockfile` and
+`pantry install --frozen-lockfile --ignore-scripts --quiet`, and verify that
+neither committed lockfile changes. Frozen mode rejects a legacy JavaScript
+shadow graph that still needs migration; resolve it through the normal install
+before checking the frozen graph.
 
 Check `head -2 bun.lock` says `lockfileVersion: 2`; an older Bun on PATH
 downgrades it.
