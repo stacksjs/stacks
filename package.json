@@ -122,8 +122,8 @@
   },
   "devDependencies": {
     "@stacksjs/components": "0.2.604",
-    "@stacksjs/stx": "0.2.604",
+    "@stacksjs/stx": "0.2.607",
     "better-dx": "^0.2.37",
-    "bun-plugin-stx": "0.2.604"
+    "bun-plugin-stx": "0.2.607"
   }
 }
