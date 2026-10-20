@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.242...v0.75.243)
+
+## ✨ Features
+
+- **dashboard**: a hosted-read client, and the deadline the seam was missing ([b87577a](https://github.com/stacksjs/stacks/commit/b87577a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([stacksjs/stacks#2915](https://github.com/stacksjs/stacks/issues/2915))
+- **dashboard**: conditional and busy-aware row actions, two waitlists migrated ([920dce0](https://github.com/stacksjs/stacks/commit/920dce0)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2924](https://github.com/stacksjs/stacks/issues/2924), [#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: declarative row actions, subtitles, and two more tables migrated ([2d95732](https://github.com/stacksjs/stacks/commit/2d95732)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2924](https://github.com/stacksjs/stacks/issues/2924), [stacksjs/stx#2096](https://github.com/stacksjs/stx/issues/2096), [stacksjs/stx#2095](https://github.com/stacksjs/stx/issues/2095), [#2926](https://github.com/stacksjs/stacks/issues/2926), [#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: per-column cell slots, a datetime column, realtime on UI/Table ([43212bb](https://github.com/stacksjs/stacks/commit/43212bb)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2924](https://github.com/stacksjs/stacks/issues/2924), [#2539](https://github.com/stacksjs/stacks/issues/2539), [#2489](https://github.com/stacksjs/stacks/issues/2489), [stacksjs/stx#2095](https://github.com/stacksjs/stx/issues/2095), [stacksjs/stx#2096](https://github.com/stacksjs/stx/issues/2096))
+- **features**: activating a feature no longer vendors it ([7577b38](https://github.com/stacksjs/stacks/commit/7577b38)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2920](https://github.com/stacksjs/stacks/issues/2920))
+
+## 🐛 Bug Fixes
+
+- **ci**: initialize feature fixtures and refresh generated references ([e931755](https://github.com/stacksjs/stacks/commit/e931755)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **testing**: retire replaced document requests when their frame commits ([ad8121b](https://github.com/stacksjs/stacks/commit/ad8121b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **orm**: a model gated off by a feature flag says so ([d80fa4c](https://github.com/stacksjs/stacks/commit/d80fa4c)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2928](https://github.com/stacksjs/stacks/issues/2928))
+- **dashboard**: stop the component library shadowing the framework defaults ([9e1603d](https://github.com/stacksjs/stacks/commit/9e1603d)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2927](https://github.com/stacksjs/stacks/issues/2927), [stacksjs/stx#2098](https://github.com/stacksjs/stx/issues/2098), [#2924](https://github.com/stacksjs/stacks/issues/2924))
+
+## ♻️ Code Refactoring
+
+- **dashboard**: put the dependencies list on UI/Table ([dae71ae](https://github.com/stacksjs/stacks/commit/dae71ae)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2924](https://github.com/stacksjs/stacks/issues/2924))
+
+## 📝 Documentation
+
+- refresh generated framework action counts ([6ba929d](https://github.com/stacksjs/stacks/commit/6ba929d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.241...v0.75.242)
 
 ## 🐛 Bug Fixes
