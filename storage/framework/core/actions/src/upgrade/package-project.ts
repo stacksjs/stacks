@@ -205,6 +205,26 @@ function syncDirectory(
 }
 
 /**
+ * Copy the installed package into `storage/framework/defaults` and stamp it,
+ * touching nothing else: `buddy publish:defaults`, which must not also run the
+ * rest of an upgrade (support files, Bun pins, removing `pantry.lock`).
+ */
+export function vendorDefaultsTree(
+  projectRoot: string,
+  defaultsPackageRoot: string,
+  options: PackageProjectOptions = {},
+): ProjectStructureChange[] {
+  const changes: ProjectStructureChange[] = []
+  const targetDefaults = join(projectRoot, 'storage/framework/defaults')
+
+  syncDirectory(defaultsPackageRoot, targetDefaults, projectRoot, changes, options, true)
+  if (!options.dryRun)
+    stampDefaultsSync(targetDefaults, defaultsPackageRoot)
+
+  return changes
+}
+
+/**
  * Refresh the package-managed app scaffold from the installed
  * `@stacksjs/defaults` package.
  */

@@ -5,7 +5,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
-import { syncPackageProjectFiles } from '@stacksjs/actions/upgrade/package-project'
+import { syncPackageProjectFiles, vendorDefaultsTree } from '@stacksjs/actions/upgrade/package-project'
 import { installedDefaultsVersion, linkPackagedDefaults, packagedDefaultsRoot, path, usesVendoredDefaults } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
@@ -857,7 +857,7 @@ async function vendorDefaults(): Promise<void> {
   }
 
   mkdirSync(tree, { recursive: true })
-  const changes = syncPackageProjectFiles(root, packageRoot, { vendorDefaults: true })
+  const changes = vendorDefaultsTree(root, packageRoot)
   unignoreDefaults(root)
 
   log.success(`Copied @stacksjs/defaults ${installedDefaultsVersion(root) ?? ''} into ${VENDORED_DEFAULTS} (${changes.length} files). Commit it; \`buddy upgrade\` keeps it current.`)

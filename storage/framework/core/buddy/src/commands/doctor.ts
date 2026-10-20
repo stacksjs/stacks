@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
 import { feature } from '@stacksjs/config'
-import { inspectDefaultsProvenance, path } from '@stacksjs/path'
+import { inspectDefaultsProvenance, installedDefaultsVersion, path, usesVendoredDefaults } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { isSupportedBunVersion, isVersionGreaterThanOrEqual, minimumBunVersion } from '@stacksjs/utils'
 import { FEATURE_NAMES, featurePathsPresent } from './features'
@@ -163,16 +163,23 @@ export function doctor(buddy: CLI): void {
         const root = resolve(process.cwd())
         const skew = inspectDefaultsProvenance(root)
 
-        if (skew.status === 'not-applicable')
+        if (skew.status === 'not-applicable') {
+          // A link to the package, the layout `buddy new` sets up: there is no
+          // copy to compare, which is the point of it.
+          if (!usesVendoredDefaults(root) && installedDefaultsVersion(root))
+            return `Runs @stacksjs/defaults ${installedDefaultsVersion(root)} from node_modules (not vendored)`
           return 'Not a package-managed project (nothing to compare)'
+        }
 
         // Exact counts here. `doctor` is the command you run to get a number,
         // and a full comparison of the tree costs well under a second.
         const drift = measureDefaultsDrift(root) ?? []
         const synced = skew.syncedAt ? `, synced ${skew.syncedAt.slice(0, 10)}` : ''
 
+        // Identical to the package, so the copy is only weight in the
+        // repository: say how to stop carrying it.
         if (drift.length === 0)
-          return `Vendored tree matches @stacksjs/defaults ${skew.installed}${synced}`
+          return `Vendored tree matches @stacksjs/defaults ${skew.installed}${synced}. \`buddy unpublish:defaults\` drops the copy from the repository and runs the package instead`
 
         const counts = summarizeStructureChanges(drift)
 

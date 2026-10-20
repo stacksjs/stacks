@@ -12,6 +12,7 @@ import {
   raiseBunPins,
   summarizeStructureChanges,
   syncPackageProjectFiles,
+  vendorDefaultsTree,
 } from '../src/upgrade/package-project'
 
 let root: string
@@ -363,5 +364,20 @@ describe('Bun pins in CI and containers', () => {
     write('Dockerfile', 'FROM oven/bun:1.3.14\n')
     expect(alignBunPins(root, '1.4.2', [], { dryRun: true })).toEqual([{ path: 'Dockerfile', action: 'update' }])
     expect(readFileSync(join(root, 'Dockerfile'), 'utf8')).toBe('FROM oven/bun:1.3.14\n')
+  })
+})
+
+describe('vendoring the defaults alone', () => {
+  it('copies and stamps the tree, and touches nothing an upgrade would', () => {
+    rmSync(join(root, 'storage/framework/defaults'), { recursive: true })
+    write('pantry.lock', 'the app\'s lock')
+
+    const changes = vendorDefaultsTree(root, defaultsRoot)
+
+    expect(readFileSync(join(root, 'storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md'), 'utf8')).toBe('current skill')
+    expect(existsSync(join(root, 'storage/framework/defaults', DEFAULTS_SYNC_MARKER))).toBe(true)
+    expect(changes.every(change => change.path.startsWith('storage/framework/defaults/'))).toBe(true)
+    expect(readFileSync(join(root, 'pantry.lock'), 'utf8')).toBe('the app\'s lock')
+    expect(existsSync(join(root, 'buddy'))).toBe(false)
   })
 })
