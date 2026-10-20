@@ -104,6 +104,35 @@ describe('automated production revision', () => {
     expect(git(['rev-parse', 'HEAD'], checkout)).toBe(ci)
   })
 
+  test('a shallow CI checkout of a long history deepens just enough instead of unshallowing', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-deploy-revision-'))
+    directories.push(root)
+    const remote = join(root, 'origin.git'), author = join(root, 'author'), checkout = join(root, 'ci')
+    const git = (args: string[], cwd = root): string => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+    git(['init', '--bare', remote])
+    git(['init', '-b', 'main', author])
+    git(['config', 'user.name', 'Revision fixture'], author)
+    git(['config', 'user.email', 'fixture@example.invalid'], author)
+    git(['remote', 'add', 'origin', remote], author)
+    // Longer than the first deepening step, so a complete fetch would show.
+    for (let n = 0; n < 120; n++)
+      git(['commit', '--allow-empty', '-m', `commit ${n}`], author)
+    const ci = git(['rev-parse', 'HEAD'], author)
+    git(['push', 'origin', 'main'], author)
+    git(['clone', '--depth', '1', '--branch', 'main', `file://${remote}`, checkout])
+    const later: string[] = []
+    for (const n of ['after one', 'after two']) {
+      git(['commit', '--allow-empty', '-m', n], author)
+      later.unshift(git(['rev-parse', 'HEAD'], author))
+    }
+    git(['push', 'origin', 'main'], author)
+    const check = await assertCurrentDeploymentRevision({ ref: 'refs/heads/main', sha: ci }, checkout)
+    expect(check?.newer).toEqual(later)
+    expect(git(['rev-parse', '--is-shallow-repository'], checkout)).toBe('true')
+    expect(Number(git(['rev-list', '--count', 'FETCH_HEAD'], checkout))).toBeLessThan(123)
+    expect(git(['rev-parse', 'HEAD'], checkout)).toBe(ci)
+  })
+
   // Real Git ancestry and the public guard catch shallow negative-history errors, not live provider/SSH behavior.
   test('a shallow merge excludes an older shared live ancestor and still refuses the newly merged side release', async () => {
     const root = mkdtempSync(join(tmpdir(), 'stacks-deploy-revision-'))

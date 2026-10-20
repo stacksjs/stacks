@@ -1,4 +1,6 @@
 import { execFile } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import process from 'node:process'
 import { promisify } from 'node:util'
 
@@ -50,18 +52,32 @@ export interface DeploymentRevisionCheck {
  * production already runs one of those.
  *
  * The branch is fetched without updating any ref (FETCH_HEAD only). A shallow
- * checkout must complete its history before enumerating the difference: a
- * newer merge can expose shared ancestors hidden behind the CI boundary,
- * making an older live release look newer even when CI is a proven ancestor.
+ * checkout cannot simply enumerate the difference: a newer merge can expose
+ * shared ancestors hidden behind the CI boundary, making an older live release
+ * look newer even when CI is a proven ancestor. It used to `--unshallow` for
+ * that, and on a large repository (hq.training: a 277 MiB pack, ~2,600
+ * commits) that outran its 60-second limit on the runner, so every deploy that
+ * raced a push failed and production stopped updating (2026-10-20). Full
+ * history is not what the question needs. `rev-list <ci>..<tip>` is exact once
+ * CI is an ancestor of the tip and every shallow boundary the tip reaches is a
+ * proper ancestor of CI: nothing that came after CI can hide below a boundary
+ * CI already descends from, and CI's own parents are present to exclude the
+ * history it shares with a merged side branch. So the branch is deepened in
+ * steps (64, 512, 4096 commits) until that holds, and only a history that
+ * still does not satisfy it falls back to `--unshallow`, with a far longer
+ * limit. Depth cuts can still hide a path from CI to an older commit a merge
+ * reaches more directly; that only lists the older commit as newer, which
+ * refuses a deploy rather than shipping backwards.
  */
 export async function assertCurrentDeploymentRevision(revision: AutomatedDeploymentRevision | undefined, cwd = process.cwd()): Promise<DeploymentRevisionCheck | undefined> {
   if (!revision)
     return undefined
-  const git = async (operation: string, args: string[], options: { allowFailure?: boolean } = {}): Promise<string | null> => {
+  const git = async (operation: string, args: string[], options: { allowFailure?: boolean, timeoutSeconds?: number } = {}): Promise<string | null> => {
+    const timeoutSeconds = options.timeoutSeconds ?? 60
     try {
       const result = await execute('git', args, {
         cwd,
-        timeout: 60_000,
+        timeout: timeoutSeconds * 1000,
         maxBuffer: 16 * 1024 * 1024,
         env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never' },
       })
@@ -77,13 +93,21 @@ export async function assertCurrentDeploymentRevision(revision: AutomatedDeploym
         if ('code' in error && error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER')
           status = 'Git exceeded its output limit'
         else if ('killed' in error && error.killed === true)
-          status = 'Git exceeded its 60-second limit'
+          status = `Git exceeded its ${timeoutSeconds}-second limit`
         else if ('code' in error && typeof error.code === 'number' && Number.isSafeInteger(error.code) && error.code >= 0)
           status = `Git exited with status ${error.code}`
       }
       throw new Error(`Cannot verify the automated deployment revision against origin while ${operation}: ${status}; production deployment stopped.`)
     }
   }
+  // Exit status 1 is the answer "no", not a failure to answer.
+  const isAncestor = async (ancestor: string, descendant: string): Promise<boolean> =>
+    (await git('checking revision ancestry', ['merge-base', '--is-ancestor', ancestor, descendant], { allowFailure: true })) !== null
+  const isShallow = async (): Promise<boolean> =>
+    (await git('checking repository history depth', ['rev-parse', '--is-shallow-repository'])) === 'true'
+  const fetchedTip = async (): Promise<string> =>
+    String(await git('reading the fetched branch head', ['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])).toLowerCase()
+
   await git('validating the branch ref', ['check-ref-format', revision.ref])
   const checkout = await git('reading the checkout revision', ['rev-parse', '--verify', 'HEAD'])
   if (checkout?.toLowerCase() !== revision.sha)
@@ -96,17 +120,56 @@ export async function assertCurrentDeploymentRevision(revision: AutomatedDeploym
   if (head === revision.sha)
     return Object.freeze({ revision, newer: [] })
 
+  // Whether the history fetched so far answers the question exactly: CI is
+  // on the fetched branch, and every shallow boundary the tip reaches lies
+  // strictly below CI.
+  const historySuffices = async (tip: string): Promise<boolean> => {
+    if (!(await isAncestor(revision.sha, tip)))
+      return false
+    if (!(await isShallow()))
+      return true
+    const shallowFile = resolve(cwd, String(await git('locating the shallow boundary list', ['rev-parse', '--git-path', 'shallow'])))
+    const boundaries = await readFile(shallowFile, 'utf8').then(
+      text => text.split('\n').map(line => line.trim().toLowerCase()).filter(Boolean),
+      () => [] as string[],
+    )
+    for (const boundary of boundaries) {
+      if (!(await isAncestor(boundary, tip)))
+        continue
+      if (boundary === revision.sha || !(await isAncestor(boundary, revision.sha)))
+        return false
+    }
+    return true
+  }
+
   // By ref rather than by SHA, which not every server serves. The branch may
   // have moved again since ls-remote; the fetched tip is then newer still,
   // and the question is the same.
-  const shallow = (await git('checking repository history depth', ['rev-parse', '--is-shallow-repository'])) === 'true'
-  await git('fetching the origin branch history', ['fetch', '--quiet', '--no-tags', ...(shallow ? ['--unshallow'] : []), 'origin', revision.ref])
-  if ((await git('checking repository history depth', ['rev-parse', '--is-shallow-repository'])) === 'true')
-    throw new Error('Cannot verify complete origin history; production deployment stopped.')
-  const tip = String(await git('reading the fetched branch head', ['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])).toLowerCase()
-  // Exit status 1 is the answer "no", not a failure to answer.
-  const onBranch = (await git('checking revision ancestry', ['merge-base', '--is-ancestor', revision.sha, tip], { allowFailure: true })) !== null
-  if (!onBranch)
+  let tip: string
+  if (!(await isShallow())) {
+    await git('fetching the origin branch history', ['fetch', '--quiet', '--no-tags', 'origin', revision.ref], { timeoutSeconds: 180 })
+    tip = await fetchedTip()
+  }
+  else {
+    let enough = false
+    tip = ''
+    for (const depth of [64, 512, 4096]) {
+      await git('deepening the origin branch history', ['fetch', '--quiet', '--no-tags', `--depth=${depth}`, 'origin', revision.ref], { timeoutSeconds: 180 })
+      tip = await fetchedTip()
+      if ((enough = await historySuffices(tip)))
+        break
+      // A complete history that still lacks CI has answered "not on the branch".
+      if (!(await isShallow()))
+        break
+    }
+    if (!enough && (await isShallow())) {
+      await git('fetching the origin branch history', ['fetch', '--quiet', '--no-tags', '--unshallow', 'origin', revision.ref], { timeoutSeconds: 600 })
+      if (await isShallow())
+        throw new Error('Cannot verify complete origin history; production deployment stopped.')
+      tip = await fetchedTip()
+    }
+  }
+  if (!(await isAncestor(revision.sha, tip)))
     throw new Error('This CI commit is no longer on the origin branch; production deployment stopped. Deploy the current branch head.')
   const newer = String(await git('listing newer branch revisions', ['rev-list', `${revision.sha}..${tip}`])).split('\n').map(line => line.trim().toLowerCase()).filter(Boolean)
   return Object.freeze({ revision, newer })
