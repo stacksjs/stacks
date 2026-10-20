@@ -1,4 +1,5 @@
 @import('../UI/Button')
+@import('../UI/Table')
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
@@ -11,13 +12,31 @@ interface DependencyRow {
   isScoped?: boolean
 }
 
+type DependencyKind = 'workspace' | 'transitive' | 'third-party'
+
+const COLUMNS = [
+  { key: 'name', label: 'Package', sortable: true, class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'version', label: 'Version', sortable: true, class: 'font-mono text-gray-500 dark:text-neutral-400' },
+  {
+    key: 'kind',
+    label: 'Source',
+    type: 'badge' as const,
+    sortable: true,
+    badgeClasses: {
+      'workspace': 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
+      'transitive': 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700',
+      'third-party': 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700',
+    },
+    badgeLabels: { 'workspace': 'Workspace', 'transitive': 'Transitive', 'third-party': 'Third-party' },
+  },
+]
+
 const declared = state<DependencyRow[]>([])
 const transitive = state<DependencyRow[]>([])
 const available = state(true)
 const source = state('bun.lock')
 const loading = state(true)
 const loadError = state('')
-const search = state('')
 const dataset = state('declared')
 const scope = state('all')
 
@@ -25,12 +44,22 @@ function activeRows(): DependencyRow[] {
   return dataset() === 'transitive' ? transitive() : declared()
 }
 
-function visibleRows(): DependencyRow[] {
-  const query = search().trim().toLowerCase()
-  return activeRows().filter(dependency =>
-    (dataset() === 'transitive' || scope() === 'all' || (scope() === 'workspace' ? dependency.isWorkspace : !dependency.isWorkspace))
-    && (!query || [dependency.name, dependency.version].some(value => value.toLowerCase().includes(query))),
-  )
+/**
+ * `UI/Table` owns search, sort and paging, so this only applies the two
+ * filters that are specific to dependencies: which dataset is being read and,
+ * for the declared set, whether workspace packages are in scope.
+ *
+ * `kind` is computed here rather than in the cell because a badge column maps
+ * a row value to a label, and the right label for a non-workspace package
+ * depends on the dataset rather than the row.
+ */
+function visibleRows(): Array<DependencyRow & { kind: DependencyKind }> {
+  return activeRows()
+    .filter(dependency => dataset() === 'transitive' || scope() === 'all' || (scope() === 'workspace' ? dependency.isWorkspace : !dependency.isWorkspace))
+    .map(dependency => ({
+      ...dependency,
+      kind: dependency.isWorkspace ? 'workspace' : dataset() === 'transitive' ? 'transitive' : 'third-party',
+    }))
 }
 
 function workspaceCount(): number {
@@ -81,12 +110,37 @@ onMount(() => { void loadDependencies() })
     <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Transitive</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ transitive().length }}</p></article>
   </section>
 
-  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search dependencies</span><input x-model="search" type="search" placeholder="Search package or version" class="px-3 py-2 max-w-xl w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="sr-only">Choose dependency dataset</span><select x-model="dataset" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="declared">Declared</option><option value="transitive">Transitive</option></select></label><label><span class="sr-only">Filter dependency scope</span><select x-model="scope" :disabled="dataset() === 'transitive'" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50"><option value="all">All scopes</option><option value="workspace">Workspace</option><option value="third-party">Third-party</option></select></label></div>
-    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Package</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Version</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Source</th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :if="loading()"><tr><td colspan="3" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Reading dependency graph</td></tr></template>
-      <template :else-if="visibleRows().length === 0"><tr><td colspan="3" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-package"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No dependencies found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the dataset, scope, or search.</p></td></tr></template>
-      <template :else><template :for="dependency in visibleRows()"><tr><td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ dependency.name }}</td><td class="px-4 py-3 font-mono text-gray-500 text-sm dark:text-neutral-400">{{ dependency.version }}</td><td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (dependency.isWorkspace ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40' : 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700')">{{ dependency.isWorkspace ? 'Workspace' : (dataset() === 'transitive' ? 'Transitive' : 'Third-party') }}</span></td></tr></template></template>
-    </tbody></table></div>
+  <section aria-label="Dependencies">
+    <Table
+      :columns="COLUMNS"
+      :data="visibleRows()"
+      :loading="loading()"
+      row-key="name"
+      searchable
+      search-placeholder="Search package or version"
+      paginated
+      :page-size="50"
+      striped
+      empty-title="No dependencies found"
+      empty-description="Adjust the dataset, scope, or search."
+    >
+      <template #toolbar>
+        <label>
+          <span class="sr-only">Choose dependency dataset</span>
+          <select x-model="dataset" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600">
+            <option value="declared">Declared</option>
+            <option value="transitive">Transitive</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only">Filter dependency scope</span>
+          <select x-model="scope" :disabled="dataset() === 'transitive'" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600 disabled:opacity-50">
+            <option value="all">All scopes</option>
+            <option value="workspace">Workspace</option>
+            <option value="third-party">Third-party</option>
+          </select>
+        </label>
+      </template>
+    </Table>
   </section>
 </div>
