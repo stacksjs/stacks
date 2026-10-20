@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script server>
 import { publicApplicationUrl } from '../../../../functions/public-application-url'
 
@@ -43,7 +45,6 @@ const tags = state<OptionRecord[]>([])
 const authors = state<AuthorRecord[]>([])
 const loading = state(true)
 const loadError = state('')
-const search = state('')
 const statusFilter = state('all')
 
 const formOpen = state(false)
@@ -88,12 +89,55 @@ function normalizeAuthor(record: any): AuthorRecord {
   return { id: String(record?.id || ''), name: String(record?.name || ''), email: String(record?.email || '') }
 }
 
+const COLUMNS = [
+  // Two slotted columns, so the single `cell` slot dispatches on `column.key`:
+  // the title carries a featured star and two quieter lines, and taxonomy
+  // labels its two lines "Categories:" and "Tags:".
+  { key: 'title', label: 'Post', sortable: true, slotted: true, class: 'max-w-md' },
+  { key: 'categoriesLabel', label: 'Taxonomy', slotted: true, class: 'max-w-xs' },
+  {
+    key: 'status',
+    label: 'Publishing',
+    type: 'badge' as const,
+    sortable: true,
+    subtitleKey: 'publishedLabel',
+    badgeClasses: {
+      published: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+      draft: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/40',
+      archived: 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700',
+    },
+  },
+  { key: 'views', label: 'Views', type: 'number' as const, sortable: true, class: 'text-gray-500 dark:text-neutral-400' },
+]
+
+const ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit post', icon: 'i-hugeicons-edit-02' },
+  { action: 'delete', label: 'Delete post', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+/**
+ * `UI/Table` owns the search, so this applies only the status filter. The
+ * labels are derived onto the row because a slot body reads fields rather than
+ * calling back into the component.
+ */
 function visiblePosts(): PostRecord[] {
-  const query = search().trim().toLowerCase()
-  return posts().filter(post =>
-    (statusFilter() === 'all' || post.status === statusFilter())
-    && (!query || [post.title, post.excerpt, post.content].some(value => value.toLowerCase().includes(query))),
-  )
+  return posts()
+    .filter(post => statusFilter() === 'all' || post.status === statusFilter())
+    .map(post => ({
+      ...post,
+      summaryLabel: post.excerpt || post.content,
+      authorLabel: authorName(post),
+      categoriesLabel: optionNames(post.categoryIds, categories()),
+      tagsLabel: optionNames(post.tagIds, tags()),
+      publishedLabel: formatDate(post.publishedAt),
+    })) as PostRecord[]
+}
+
+function handleRowAction(payload: { action: string, row: PostRecord }): void {
+  if (payload.action === 'edit')
+    openEdit(payload.row)
+  else
+    openDelete(payload.row)
 }
 
 function postCount(value: PostStatus): number {
@@ -113,14 +157,6 @@ function formatDate(value: string): string {
     return 'Not published'
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
-}
-
-function statusClass(value: PostStatus): string {
-  return `inline-flex px-2 py-1 font-medium text-xs rounded-full ${({
-    published: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
-    draft: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/40',
-    archived: 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700',
-  }[value])}`
 }
 
 function authorName(post: PostRecord): string {
@@ -224,12 +260,47 @@ onMount(() => { void loadPosts() })
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="flex flex-col gap-3 sm:flex-row p-4 border-b border-gray-200 dark:border-neutral-700"><label class="flex-1"><span class="sr-only">Search posts</span><input x-model="search" type="search" placeholder="Search title, excerpt, or content" class="px-3 py-2 max-w-xl w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="sr-only">Filter by status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="published">Published</option><option value="draft">Draft</option><option value="archived">Archived</option></select></label></div>
-    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Post</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Taxonomy</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Publishing</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Views</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :if="loading()"><tr><td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading posts</td></tr></template>
-      <template :else-if="visiblePosts().length === 0"><tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-quill-write-02"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No posts found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or create a post.</p></td></tr></template>
-      <template :else><template :for="post in visiblePosts()"><tr><td class="px-4 py-3 max-w-md"><div class="flex gap-2 items-center"><p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ post.title }}</p><span :if="post.featured" x-tooltip="Featured" title="Featured" class="flex-shrink-0 h-4 w-4 text-amber-500 i-hugeicons-star"></span></div><p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ post.excerpt || post.content }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ authorName(post) }}</p></td><td class="px-4 py-3 max-w-xs text-gray-500 text-xs dark:text-neutral-400"><p class="truncate"><span class="font-medium text-gray-700 dark:text-neutral-200">Categories:</span> {{ optionNames(post.categoryIds, categories()) }}</p><p class="mt-1 truncate"><span class="font-medium text-gray-700 dark:text-neutral-200">Tags:</span> {{ optionNames(post.tagIds, tags()) }}</p></td><td class="px-4 py-3"><span :class="statusClass(post.status)">{{ post.status }}</span><p class="mt-2 text-gray-400 text-xs dark:text-neutral-500">{{ formatDate(post.publishedAt) }}</p></td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatNumber(post.views) }}</td><td class="px-4 py-3"><div class="flex justify-end"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit post ' + post.title" @click="openEdit(post)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-02"></span></Button><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete post ' + post.title" @click="openDelete(post)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></div></td></tr></template></template>
-    </tbody></table></div>
+    <Table
+      :columns="COLUMNS"
+      :data="visiblePosts()"
+      :loading="loading()"
+      :row-actions="ROW_ACTIONS"
+      action-label-key="title"
+      searchable
+      search-placeholder="Search title, excerpt, or content"
+      paginated
+      :page-size="25"
+      empty-title="No posts found"
+      empty-description="Adjust the search or status filter."
+      @row-action="handleRowAction"
+    >
+      <template #toolbar>
+        <label>
+          <span class="sr-only">Filter by status</span>
+          <select x-model="statusFilter" class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600">
+            <option value="all">All statuses</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
+      </template>
+
+      <template #cell="{ row, column }">
+        <template :if="column.key === 'title'">
+          <div class="flex gap-2 items-center">
+            <p class="font-medium text-gray-900 text-sm truncate dark:text-white" x-text="row.title"></p>
+            <span :if="row.featured" x-tooltip="Featured" title="Featured" class="flex-shrink-0 h-4 w-4 text-amber-500 i-hugeicons-star"></span>
+          </div>
+          <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400" x-text="row.summaryLabel"></p>
+          <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500" x-text="row.authorLabel"></p>
+        </template>
+        <template :else>
+          <p class="text-gray-500 text-xs truncate dark:text-neutral-400"><span class="font-medium text-gray-700 dark:text-neutral-200">Categories:</span> <span x-text="row.categoriesLabel"></span></p>
+          <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400"><span class="font-medium text-gray-700 dark:text-neutral-200">Tags:</span> <span x-text="row.tagsLabel"></span></p>
+        </template>
+      </template>
+    </Table>
   </section>
 </div>
 
