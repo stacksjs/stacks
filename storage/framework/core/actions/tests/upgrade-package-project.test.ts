@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DEFAULTS_SYNC_MARKER, installedDefaultsVersion } from '@stacksjs/path'
@@ -39,6 +39,9 @@ beforeEach(() => {
   writeDefault('project/storage/framework/tsconfig.app.json', '{"app":true}\n')
   writeDefault('project/storage/framework/tsconfig.base.json', '{"base":true}\n')
   writeDefault('project/storage/framework/server/tsconfig.docker.json', '{"docker":true}\n')
+  // A vendored app, which is what every sync test below describes. The
+  // package-based layout, with no tree or a link to the package, has its own.
+  mkdirSync(join(root, 'storage/framework/defaults'), { recursive: true })
 })
 
 afterEach(() => {
@@ -121,8 +124,32 @@ describe('package project file sync', () => {
     const changes = syncPackageProjectFiles(root, defaultsRoot, { dryRun: true })
 
     expect(changes.length).toBeGreaterThan(0)
-    expect(existsSync(join(root, 'storage/framework/defaults'))).toBe(false)
+    expect(readdirSync(join(root, 'storage/framework/defaults'))).toEqual([])
     expect(existsSync(join(root, 'buddy'))).toBe(false)
+  })
+})
+
+describe('package project file sync without a vendored tree', () => {
+  it('does not create storage/framework/defaults, but still installs support files', () => {
+    rmSync(join(root, 'storage/framework/defaults'), { recursive: true })
+
+    const changes = syncPackageProjectFiles(root, defaultsRoot)
+
+    expect(existsSync(join(root, 'storage/framework/defaults'))).toBe(false)
+    expect(changes.some(change => change.path.startsWith('storage/framework/defaults'))).toBe(false)
+    expect(readFileSync(join(root, 'storage/framework/tsconfig.app.json'), 'utf8')).toContain('"app"')
+    expect(measureDefaultsDrift(root)?.some(change => change.path.startsWith('storage/framework/defaults'))).toBe(false)
+  })
+
+  it('never writes through the link into the installed package', () => {
+    rmSync(join(root, 'storage/framework/defaults'), { recursive: true })
+    symlinkSync('../../node_modules/@stacksjs/defaults', join(root, 'storage/framework/defaults'), 'dir')
+
+    const changes = syncPackageProjectFiles(root, defaultsRoot)
+
+    expect(changes.some(change => change.path.startsWith('storage/framework/defaults'))).toBe(false)
+    expect(existsSync(join(defaultsRoot, DEFAULTS_SYNC_MARKER))).toBe(false)
+    expect(readdirSync(defaultsRoot).sort()).toEqual(['ai', 'package.json', 'project'])
   })
 })
 

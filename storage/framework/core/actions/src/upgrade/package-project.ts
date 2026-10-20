@@ -1,7 +1,7 @@
 import type { DefaultsSyncMarker } from '@stacksjs/path'
 import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
-import { DEFAULTS_SYNC_MARKER, defaultsPackagePath } from '@stacksjs/path'
+import { DEFAULTS_SYNC_MARKER, defaultsPackagePath, usesVendoredDefaults } from '@stacksjs/path'
 
 export interface ProjectStructureChange {
   path: string
@@ -22,6 +22,13 @@ interface PackageProjectOptions {
    * strength of a size match.
    */
   shallow?: boolean
+  /**
+   * Whether to refresh `storage/framework/defaults` itself. Defaults to whether
+   * the project vendors it (a real directory there). A new app does not: it
+   * runs the installed package through a gitignored link, and syncing that
+   * would copy the package onto itself through the link.
+   */
+  vendorDefaults?: boolean
 }
 
 interface ProjectPackageJson {
@@ -208,8 +215,10 @@ export function syncPackageProjectFiles(
 ): ProjectStructureChange[] {
   const changes: ProjectStructureChange[] = []
   const targetDefaults = join(projectRoot, 'storage/framework/defaults')
+  const vendorDefaults = options.vendorDefaults ?? usesVendoredDefaults(projectRoot)
 
-  syncDirectory(defaultsPackageRoot, targetDefaults, projectRoot, changes, options, true)
+  if (vendorDefaults)
+    syncDirectory(defaultsPackageRoot, targetDefaults, projectRoot, changes, options, true)
 
   for (const file of SUPPORT_FILES) {
     const source = join(defaultsPackageRoot, file.source)
@@ -252,7 +261,7 @@ export function syncPackageProjectFiles(
       rmSync(target, { force: true })
   }
 
-  if (!options.dryRun)
+  if (!options.dryRun && vendorDefaults)
     stampDefaultsSync(targetDefaults, defaultsPackageRoot)
 
   return changes
