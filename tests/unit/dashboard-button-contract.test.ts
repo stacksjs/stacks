@@ -214,9 +214,9 @@ describe('dashboard button contract', () => {
 
       // `<Table` counts: a component that declares its row actions through
       // `UI/Table`'s `rowActions` prop has no controls of its own, and Table
-      // renders those through `<Button>`. Table is NOT in the shared-controls
-      // list below, because its own sort headers, column menu and pagination
-      // are still raw `<button>` elements - tracked separately, see
+      // renders those through `<Button>`. Table is itself held to this
+      // contract, in the shared-controls list below - its sort headers, column
+      // menu and pagination were four raw `<button>` elements until
       // stacksjs/stacks#2926. See also stacksjs/stacks#2924.
       expect(source).toMatch(/<(?:Button|ConfirmDialog|Table)\b/)
       expect(nativeButtons.every(button => button.includes('absolute inset-0 bg-black/45'))).toBe(true)
@@ -226,6 +226,7 @@ describe('dashboard button contract', () => {
   test('routes shared dashboard controls through the canonical component', () => {
     const files = [
       'UI/Pagination.stx',
+      'UI/Table.stx',
       'CreateRecordModal.stx',
       'UI/Modal.stx',
       'UI/Drawer.stx',

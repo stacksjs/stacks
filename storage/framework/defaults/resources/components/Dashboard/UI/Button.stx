@@ -1,6 +1,6 @@
 <script server>
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'bare'
   size?: 'xs' | 'sm' | 'md' | 'lg'
   disabled?: boolean
   loading?: boolean
@@ -40,7 +40,19 @@ const variantClasses = {
   ghost: 'bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 active:bg-black/10 dark:active:bg-white/12',
   danger: 'bg-gradient-to-b from-red-500 to-red-600 text-white shadow-sm shadow-red-600/25 hover:from-red-400 hover:to-red-500 active:from-red-600 active:to-red-700',
   success: 'bg-gradient-to-b from-green-500 to-green-600 text-white shadow-sm shadow-green-600/25 hover:from-green-400 hover:to-green-500 active:from-green-600 active:to-green-700',
-  warning: 'bg-gradient-to-b from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-600/25 hover:from-orange-400 hover:to-orange-500 active:from-orange-600 active:to-orange-700'
+  warning: 'bg-gradient-to-b from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-600/25 hover:from-orange-400 hover:to-orange-500 active:from-orange-600 active:to-orange-700',
+  /**
+   * No chrome at all: the caller supplies every visual through `class`.
+   *
+   * For an affordance that has to sit inside someone else's layout and carry
+   * no box of its own - a sortable table header fills its `<th>`, and the
+   * padding and fixed height the sizes impose would change the header row.
+   * What it still gets, and the reason to come through this component rather
+   * than write a raw `<button>`, is the shared focus-visible ring, the
+   * disabled and aria-disabled handling, and the press feedback.
+   * See stacksjs/stacks#2926.
+   */
+  bare: ''
 }
 
 // Size classes
@@ -71,7 +83,8 @@ const buttonClass = [
     : '',
   customClass,
   fullWidth ? 'w-full' : '',
-  iconOnly ? iconOnlySizes[size] : sizeClasses[size],
+  // `bare` takes neither: its whole point is to impose no box.
+  variant === 'bare' ? '' : (iconOnly ? iconOnlySizes[size] : sizeClasses[size]),
   variantClasses[variant]
 ].filter(Boolean).join(' ')
 </script>
@@ -86,6 +99,17 @@ const liveRel = useReactiveProp('rel', '')
 const liveType = useReactiveProp('type', 'button')
 const liveForm = useReactiveProp('form', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
+/**
+ * For a button that opens a menu or a disclosure.
+ *
+ * An arbitrary `aria-*` attribute written on `<Button>` is not forwarded, so a
+ * caller that needs these has to be given them. The column-visibility toggle
+ * in `UI/Table` lost both when it moved off a raw `<button>` - the menu still
+ * worked and a screen reader no longer knew it was a popup, or whether it was
+ * open. See stacksjs/stacks#2926.
+ */
+const liveAriaHasPopup = useReactiveProp('ariaHasPopup', '')
+const liveAriaExpanded = useReactiveProp('ariaExpanded', '')
 </script>
 @if(tag === 'a' || (href && href.length > 0))
     <a
@@ -126,6 +150,8 @@ const liveAriaLabel = useReactiveProp('ariaLabel', '')
         :form="liveForm() || undefined"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
+        :aria-haspopup="liveAriaHasPopup() || undefined"
+        :aria-expanded="liveAriaExpanded() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"
         :disabled="liveDisabled() || liveLoading()"
       >

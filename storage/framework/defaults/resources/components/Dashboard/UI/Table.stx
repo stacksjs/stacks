@@ -696,16 +696,16 @@ function cellClass(column: DashboardTableColumn, index: number): string {
 
     <div class="flex gap-2 items-center">
       <div :if="columnToggle()" class="relative">
-        <button
-          type="button"
-          aria-haspopup="true"
-          :aria-expanded="columnMenuOpen() ? 'true' : 'false'"
+        <Button
+          variant="outline"
+          size="sm"
+          ariaHasPopup="true"
+          :ariaExpanded="columnMenuOpen() ? 'true' : 'false'"
           @click="columnMenuOpen.set(!columnMenuOpen())"
-          class="inline-flex gap-1.5 items-center px-2.5 py-1.5 text-neutral-600 text-xs dark:text-neutral-300 hover:bg-stone-50 dark:hover:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600"
         >
           <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-layout-table-01"></span>
           Columns
-        </button>
+        </Button>
 
         <div
           :if="columnMenuOpen()"
@@ -774,10 +774,14 @@ function cellClass(column: DashboardTableColumn, index: number): string {
               :style="column.width ? 'width: ' + column.width : undefined"
               :aria-sort="ariaSort(column)"
             >
-              <button
+              {{-- `bare`: a header button fills its `<th>` and carries no box
+                   of its own, so none of the sizes fit. It still comes through
+                   `UI/Button` for the shared focus ring and disabled handling.
+                   See stacksjs/stacks#2926. --}}
+              <Button
                 :if="column.sortable"
-                type="button"
-                :aria-label="sortLabel(column)"
+                variant="bare"
+                :ariaLabel="sortLabel(column)"
                 class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200"
                 @click="sort(column)"
               >
@@ -786,7 +790,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
                   aria-hidden="true"
                   :class="'h-3.5 w-3.5 ' + (sortKey() === column.key ? (sortDirection() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'opacity-30 i-hugeicons-arrow-up-down')"
                 ></span>
-              </button>
+              </Button>
               <span :else>{{ column.label }}</span>
             </th>
           </template>
@@ -936,25 +940,27 @@ function cellClass(column: DashboardTableColumn, index: number): string {
     </div>
 
     <nav class="flex gap-1 items-center" aria-label="Pagination">
-      <button
-        type="button"
-        aria-label="Previous page"
+      <Button
+        variant="outline"
+        size="sm"
+        iconOnly
+        ariaLabel="Previous page"
         :disabled="page() <= 1"
         @click="goToPage(page() - 1)"
-        class="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-left-01"></span>
-      </button>
+      </Button>
       <span class="px-2 tabular-nums text-neutral-600 text-sm dark:text-neutral-300">{{ page() }} / {{ pageCount() }}</span>
-      <button
-        type="button"
-        aria-label="Next page"
+      <Button
+        variant="outline"
+        size="sm"
+        iconOnly
+        ariaLabel="Next page"
         :disabled="page() >= pageCount()"
         @click="goToPage(page() + 1)"
-        class="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
-      </button>
+      </Button>
     </nav>
   </div>
 
