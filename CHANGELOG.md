@@ -1,5 +1,43 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.244...v0.75.245)
+
+## ✨ Features
+
+- **buddy**: new apps commit their app, not the framework ([5ae85c1](https://github.com/stacksjs/stacks/commit/5ae85c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **path**: resolve the framework defaults from node_modules when an app does not vendor them ([74d7b84](https://github.com/stacksjs/stacks/commit/74d7b84)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: automated updates on every comparison ([cc85499](https://github.com/stacksjs/stacks/commit/cc85499)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **upgrade**: leave a linked or absent defaults tree alone ([d09c286](https://github.com/stacksjs/stacks/commit/d09c286)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: run from the defaults package as well as a vendored tree ([7cf1712](https://github.com/stacksjs/stacks/commit/7cf1712)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **testing**: restore the absolute /bin/cp in browser preparation ([fd3f807](https://github.com/stacksjs/stacks/commit/fd3f807)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **testing**: use native macOS copy for browser preparation ([fb7f6fb](https://github.com/stacksjs/stacks/commit/fb7f6fb)) _(by Chris Breuer <chris@stacksjs.com>)_
+- **dashboard**: UI/Table's own controls go through UI/Button ([8cce6c6](https://github.com/stacksjs/stacks/commit/8cce6c6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2926](https://github.com/stacksjs/stacks/issues/2926))
+
+## ♻️ Code Refactoring
+
+- **dashboard**: ContentTaxonomy and Seo onto UI/Table ([c05488b](https://github.com/stacksjs/stacks/commit/c05488b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925), [stacksjs/stx#2101](https://github.com/stacksjs/stx/issues/2101))
+- **dashboard**: Posts onto UI/Table, with a cell slot serving two columns ([bbeb547](https://github.com/stacksjs/stacks/commit/bbeb547)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: Authors and Pages onto UI/Table, and a badge that reads a field ([a4ae978](https://github.com/stacksjs/stacks/commit/a4ae978)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925))
+- **dashboard**: the Library cluster moves onto UI/Table ([b293179](https://github.com/stacksjs/stacks/commit/b293179)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925), [stacksjs/stx#2095](https://github.com/stacksjs/stx/issues/2095))
+- **dashboard**: adopt Tabs, and delete the FilterBar nobody wanted ([464d124](https://github.com/stacksjs/stacks/commit/464d124)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2924](https://github.com/stacksjs/stacks/issues/2924), [stacksjs/stx#2095](https://github.com/stacksjs/stx/issues/2095))
+
+## 📝 Documentation
+
+- refresh generated native capability references ([17b67c4](https://github.com/stacksjs/stacks/commit/17b67c4)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.604 -> 0.2.607, for the scoped-slot fixes ([a671aa7](https://github.com/stacksjs/stacks/commit/a671aa7)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2925](https://github.com/stacksjs/stacks/issues/2925), [stacksjs/stx#2096](https://github.com/stacksjs/stx/issues/2096), [stacksjs/stx#2095](https://github.com/stacksjs/stx/issues/2095))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.243...v0.75.244)
 
 ## ✨ Features
