@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.245...v0.75.246)
+
+## 🐛 Bug Fixes
+
+- **buddy**: link the defaults in a real `buddy new`, found scaffolding 0.75.245 ([250377d](https://github.com/stacksjs/stacks/commit/250377d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: ignore Bun's install cache, and import defaults without .ts in templates ([a170aae](https://github.com/stacksjs/stacks/commit/a170aae)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.244...v0.75.245)
 
 ## ✨ Features
