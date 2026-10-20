@@ -169,6 +169,31 @@ export function removeFrameworkLicense(root: string): boolean {
 }
 
 /**
+ * The framework repository's AGENTS.md tells agents to publish "to
+ * `origin/main` as Chris (`chris@stacksjs.com`), without coauthor trailers".
+ * Right for the framework, and every app inherited it: an agent working on
+ * somebody else's app committed under the framework author's name. Replaced
+ * with the rule the `buddy setup:ai` starter already gives; the rest of the
+ * file is the same guidance in both. Returns whether it changed the file.
+ */
+const FRAMEWORK_PUBLISH_RULE = /^- Publish completed work to [\s\S]*?(?=\n\n|\n- |\n#)/m
+export const APP_PUBLISH_RULE = '- Only commit or push when asked.'
+
+export function applyAppAgentsTemplate(root: string): boolean {
+  const file = join(root, 'AGENTS.md')
+  if (!existsSync(file))
+    return false
+
+  const raw = readFileSync(file, 'utf8')
+  const next = raw.replace(FRAMEWORK_PUBLISH_RULE, APP_PUBLISH_RULE)
+  if (next === raw)
+    return false
+
+  writeFileSync(file, next)
+  return true
+}
+
+/**
  * Replace the framework's CHANGELOG.md with an empty one for the app.
  *
  * The download carried "# Stacks Changelog": about a megabyte of the

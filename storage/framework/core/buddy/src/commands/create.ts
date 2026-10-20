@@ -10,7 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled, optimizePantryDeps } from './setup'
 import { resultFailed } from '../result'
-import { appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
+import { appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../scaffold-app'
 import { applyAppSiteTemplate } from '../scaffold-site'
 import { adoptPackagedDefaults, applyAppPackageScripts, applyPackageAppTsconfig, pruneFrameworkOnlyFiles, rewriteCoreContentPaths, stripFrameworkManifestCredits } from '../scaffold-package-app'
 import { fetchPublishedVersions } from '../registry'
@@ -89,6 +89,7 @@ export function create(buddy: CLI): void {
   applyAppEnv(path)
   applyAppPackage(path)
   applyAppReadme(path)
+  applyAppAgents(path)
   replaceFrameworkSite(path)
   removeFrameworkTests(path)
   await generatePantryDeps(path)
@@ -405,6 +406,20 @@ function applyAppPackage(path: string) {
   }
   catch (error) {
     log.warn(`Could not name the app in package.json: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Take the framework maintainers' publishing rule out of the app's AGENTS.md.
+ * See `applyAppAgentsTemplate` in `../scaffold-app`.
+ */
+function applyAppAgents(path: string) {
+  try {
+    if (applyAppAgentsTemplate(path))
+      log.success('AGENTS.md no longer tells agents to publish as the framework\'s author')
+  }
+  catch (error) {
+    log.warn(`Could not update AGENTS.md: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 

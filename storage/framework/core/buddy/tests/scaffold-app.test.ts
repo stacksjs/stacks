@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { appEnvValues, appIdentity, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../src/scaffold-app'
+import { APP_PUBLISH_RULE, appEnvValues, appIdentity, applyAppAgentsTemplate, applyAppChangelogTemplate, applyAppEnvTemplate, applyAppPackageTemplate, removeFrameworkLicense, renderTemplate } from '../src/scaffold-app'
 
 const REPO = join(import.meta.dir, '../../../../..')
 const CREATE_COMMAND = join(import.meta.dir, '../src/commands/create.ts')
@@ -174,6 +174,31 @@ describe('the app licence', () => {
       writeFileSync(join(app, 'LICENSE.md'), 'Copyright (c) 2026 Someone Else\n')
       expect(removeFrameworkLicense(app)).toBe(false)
       expect(existsSync(join(app, 'LICENSE.md'))).toBe(true)
+    }
+    finally {
+      rmSync(app, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('the app AGENTS.md', () => {
+  // The framework's own tells agents to publish as its author. Run over the
+  // real file, so a reworded rule fails here instead of shipping again.
+  test('does not tell an agent to publish as the framework\'s author', () => {
+    const app = mkdtempSync(join(tmpdir(), 'stacks-app-agents-'))
+    try {
+      copyFileSync(join(REPO, 'AGENTS.md'), join(app, 'AGENTS.md'))
+      const original = readFileSync(join(app, 'AGENTS.md'), 'utf8')
+
+      expect(applyAppAgentsTemplate(app)).toBe(true)
+      const agents = readFileSync(join(app, 'AGENTS.md'), 'utf8')
+      expect(agents).not.toContain('chris@stacksjs.com')
+      expect(agents).not.toMatch(/\bas Chris\b/)
+      expect(agents).toContain(APP_PUBLISH_RULE)
+      // Only that rule: the rest of the guidance is the app's too.
+      expect(original.length - agents.length).toBeLessThan(400)
+      expect(agents).toContain('### Requirements')
+      expect(applyAppAgentsTemplate(app)).toBe(false)
     }
     finally {
       rmSync(app, { recursive: true, force: true })
