@@ -21,15 +21,36 @@ import { basename, dirname, resolve } from 'node:path'
 
 let projectRootCache: string | null = null
 
+const VENDORED_DEFAULTS_PREFIX = 'storage/framework/defaults/'
+let defaultsRootCache: string | null = null
+
+/**
+ * The framework defaults tree: `storage/framework/defaults` in a project that
+ * vendors it, `node_modules/@stacksjs/defaults` in one that does not. Counted
+ * from this file first, which is inside that tree in both layouts; the project
+ * root is the fallback for a copy that was bundled somewhere else.
+ */
+function defaultsRoot(): string {
+  if (defaultsRootCache) return defaultsRootCache
+  const own = resolve(dirname(new URL(import.meta.url).pathname), '../../..')
+  const candidates = [
+    own,
+    resolve(projectRoot(), 'storage/framework/defaults'),
+    resolve(projectRoot(), 'node_modules/@stacksjs/defaults'),
+  ]
+  defaultsRootCache = candidates.find(candidate => existsSync(resolve(candidate, 'app/Models'))) ?? candidates[1]!
+  return defaultsRootCache
+}
+
 function projectRoot(): string {
   if (projectRootCache) return projectRootCache
   // Walk up from this file location to find the project root (the dir
-  // that contains `storage/framework/defaults`). This mirrors what
+  // that contains `storage/framework`). This mirrors what
   // `@stacksjs/path` does, but without pulling in the path package
   // (which has its own evaluation graph and would slow page renders).
   let dir = dirname(new URL(import.meta.url).pathname)
   for (let i = 0; i < 12; i++) {
-    if (existsSync(resolve(dir, 'storage/framework/defaults'))) {
+    if (existsSync(resolve(dir, 'storage/framework'))) {
       projectRootCache = dir
       return dir
     }
@@ -132,7 +153,7 @@ async function discoverModelPaths(): Promise<Map<string, string[]>> {
     const paths = new Map<string, string[]>()
     const modelRoots = [
       resolve(root, 'app/Models'),
-      resolve(root, 'storage/framework/defaults/app/Models'),
+      resolve(defaultsRoot(), 'app/Models'),
     ]
 
     for (const modelsRoot of modelRoots) {
@@ -159,7 +180,9 @@ async function discoverModelPaths(): Promise<Map<string, string[]>> {
 async function modelCandidatePaths(name: string): Promise<string[]> {
   const root = projectRoot()
   const discovered = (await discoverModelPaths()).get(name) ?? []
-  const explicit = (MODEL_PATHS[name] ?? []).map(path => resolve(root, path))
+  const explicit = (MODEL_PATHS[name] ?? []).map(path => path.startsWith(VENDORED_DEFAULTS_PREFIX)
+    ? resolve(defaultsRoot(), path.slice(VENDORED_DEFAULTS_PREFIX.length))
+    : resolve(root, path))
   return [...new Set([...discovered, ...explicit])]
 }
 

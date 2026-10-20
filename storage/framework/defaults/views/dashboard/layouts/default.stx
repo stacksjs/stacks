@@ -9,10 +9,14 @@
 // now publishes its .stx sources, so the real component resolves and the
 // duplicate markup is gone.
 //
-// Project-root-anchored (`~/`), not relative: the stx client bundler resolves
-// a relative import against the PAGE that extends this layout, not against
-// this file, so `../../..` pointed somewhere different for every page depth.
-import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
+// A package specifier, not relative: the stx client bundler resolves a
+// relative import against the PAGE that extends this layout, not against this
+// file, so `../../..` pointed somewhere different for every page depth. Nor
+// a path from the project root (`~/`), where the tree exists only while it is
+// vendored or linked. `@stacksjs/defaults/*` is mapped onto the vendored tree in
+// `storage/framework/tsconfig.app.json` and falls back to the installed
+// package when there is none, so it resolves in both layouts.
+import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar.ts'
 
 export const sidebarSections = buildWebSidebarSections()
 
@@ -398,15 +402,15 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
 // network requests fail or succeed; that signal is rendered in the
 // fixed-position container below the <main> slot. Mounted in the
 // layout so every dashboard page picks it up without opting in.
-// `~/`-anchored for the same reason as the sidebar import above.
-import type { ToastType } from '~/storage/framework/defaults/functions/toasts'
-import type { CraftSidebarSelectEvent } from '~/storage/framework/defaults/functions/craft'
-import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
-import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
-import { readStoredAppearance, useAppearance } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
-import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
-import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
-import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
+// A package specifier for the same reason as the sidebar import above.
+import type { ToastType } from '@stacksjs/defaults/functions/toasts.ts'
+import type { CraftSidebarSelectEvent } from '@stacksjs/defaults/functions/craft.ts'
+import { useToasts, dismissToast } from '@stacksjs/defaults/functions/toasts.ts'
+import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '@stacksjs/defaults/functions/craft.ts'
+import { readStoredAppearance, useAppearance } from '@stacksjs/defaults/views/dashboard/composables/useAppearance.ts'
+import { authStore } from '@stacksjs/defaults/views/dashboard/stores/auth.ts'
+import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban.ts'
+import { rbacStore } from '@stacksjs/defaults/views/dashboard/stores/rbac.ts'
 const { toasts } = useToasts()
 registerStoresClient({ authStore, kanbanStore, rbacStore })
 

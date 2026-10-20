@@ -1,5 +1,5 @@
 <script client>
-import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
+import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api.ts'
 
 interface ConfigFile {
   name: string

@@ -1,5 +1,5 @@
 <script client>
-import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
+import { kanbanStore } from '@stacksjs/defaults/views/dashboard/stores/kanban.ts'
 import { useTimeoutFn } from '@stacksjs/composables'
 
 const kanban = kanbanStore

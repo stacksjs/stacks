@@ -7,8 +7,8 @@
   //
   // No <script server>, no window./document. reads - per #1838 the page
   // is pure presentation against the store.
-  import { useRole } from '~/storage/framework/defaults/views/dashboard/composables/useRole'
-  import { ciStore } from '~/storage/framework/defaults/views/dashboard/stores/ci'
+  import { useRole } from '@stacksjs/defaults/views/dashboard/composables/useRole.ts'
+  import { ciStore } from '@stacksjs/defaults/views/dashboard/stores/ci.ts'
 
   // Import the store definition directly so its typed setup and persistence
   // are part of this page's client bundle. A name-only useStore('ci') lookup

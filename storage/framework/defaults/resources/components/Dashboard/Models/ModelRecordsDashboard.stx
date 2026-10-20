@@ -6,9 +6,9 @@
 // All querying is server-side (`GET /api/dashboard/models/{slug}`), so this
 // works the same on a table with 10 rows and one with a million. Rows and
 // writes go through the model, so scopes, casts and observers apply.
-import { useNavigation } from '~/storage/framework/defaults/views/dashboard/composables/useNavigation'
-import { DashboardApiError, dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
-import { pushToast } from '~/storage/framework/defaults/functions/toasts'
+import { useNavigation } from '@stacksjs/defaults/views/dashboard/composables/useNavigation.ts'
+import { DashboardApiError, dashboardApi } from '@stacksjs/defaults/functions/dashboard-api.ts'
+import { pushToast } from '@stacksjs/defaults/functions/toasts.ts'
 
 interface ColumnMeta {
   name: string

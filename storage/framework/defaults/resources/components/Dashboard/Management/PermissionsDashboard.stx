@@ -13,8 +13,8 @@
   //   - All state in the rbacStore; the page is pure presentation.
   //   - Mutations are optimistic with rollback on failure (store handles
   //     the snapshot/rollback dance).
-  import { useRole } from '~/storage/framework/defaults/views/dashboard/composables/useRole'
-  import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
+  import { useRole } from '@stacksjs/defaults/views/dashboard/composables/useRole.ts'
+  import { rbacStore } from '@stacksjs/defaults/views/dashboard/stores/rbac.ts'
 
   const rbac = rbacStore
   // Admin-only surface. Per `useRole.ts`, `isAdmin()` returns true for

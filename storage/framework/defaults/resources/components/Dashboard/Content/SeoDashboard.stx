@@ -1,8 +1,8 @@
 @import('../UI/Table')
 
 <script client>
-import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
-import { pushToast } from '~/storage/framework/defaults/functions/toasts'
+import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api.ts'
+import { pushToast } from '@stacksjs/defaults/functions/toasts.ts'
 
 interface PostRow {
   id: number

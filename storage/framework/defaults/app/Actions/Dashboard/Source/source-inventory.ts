@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { basename, join, relative } from 'node:path'
+import { frameworkDefaultsRoot } from '@stacksjs/path'
 
 export interface SourceInventoryItem {
   name: string
@@ -71,7 +72,7 @@ export function parseCommandSource(
 export async function discoverActionSources(projectRoot: string): Promise<SourceInventoryItem[]> {
   const roots: SourceRoot[] = [
     {
-      directory: join(projectRoot, 'storage/framework/defaults/app/Actions'),
+      directory: join(frameworkDefaultsRoot(projectRoot), 'app/Actions'),
       origin: 'Framework',
     },
     {

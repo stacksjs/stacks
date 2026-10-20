@@ -4,6 +4,7 @@ import { env } from '@stacksjs/env'
 import { readdirSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import process from 'node:process'
+import { frameworkDefaultsRoot } from '@stacksjs/path'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
 import { dashboardOperationalError } from '../dashboard-response'
 
@@ -114,7 +115,7 @@ function iconForModel(name: string): string {
 }
 
 async function loadSearchableModels(): Promise<SearchableModel[]> {
-  const defaultsRoot = join(process.cwd(), 'storage/framework/defaults/app/Models')
+  const defaultsRoot = join(frameworkDefaultsRoot(), 'app/Models')
   const userRoot = join(process.cwd(), 'app/Models')
   const merged = new Map<string, string>()
 

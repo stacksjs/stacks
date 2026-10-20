@@ -86,15 +86,19 @@ export async function generateComponentMeta(): Promise<void> {
   // STX is the only template format we ship. Globbing both directories covers project layouts
   // that put components at `src/components/` AND framework defaults at
   // `storage/framework/defaults/resources/components/`.
-  const components = globSync(
-    [
-      'components/*.stx',
-      'components/**/*.stx',
-      'resources/components/**/*.stx',
-      'storage/framework/defaults/resources/components/**/*.stx',
-    ],
-    { cwd: projectPath(), absolute: true },
-  )
+  const components = [
+    ...globSync(
+      [
+        'components/*.stx',
+        'components/**/*.stx',
+        'resources/components/**/*.stx',
+      ],
+      { cwd: projectPath(), absolute: true },
+    ),
+    // Its own glob, rooted at the tree: an app that does not vendor the
+    // defaults has them in node_modules/@stacksjs/defaults.
+    ...globSync(['resources/components/**/*.stx'], { cwd: frameworkPath('defaults'), absolute: true }),
+  ]
 
   const metaDirPath = frameworkPath('component-meta')
   if (!existsSync(metaDirPath)) {

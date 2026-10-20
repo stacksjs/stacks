@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions/runtime'
 import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
+import { frameworkDefaultsRoot } from '@stacksjs/path'
 import { countRows } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 import { resolveDashboardModel } from '../../../../resources/functions/dashboard/model-access'
@@ -123,7 +124,7 @@ export default new Action({
   async handle() {
     const cwd = process.cwd()
     const userlandDir = join(cwd, 'app', 'Models')
-    const defaultsDir = join(cwd, 'storage/framework/defaults/app/Models')
+    const defaultsDir = join(frameworkDefaultsRoot(), 'app/Models')
 
     let userland: Array<Omit<DiscoveredModel, 'source'>>
     let defaults: Array<Omit<DiscoveredModel, 'source'>>

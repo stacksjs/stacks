@@ -1,6 +1,6 @@
 <script client>
-import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
-import { useAuth } from '~/storage/framework/defaults/functions/auth'
+import { dashboardApi } from '@stacksjs/defaults/functions/dashboard-api.ts'
+import { useAuth } from '@stacksjs/defaults/functions/auth.ts'
 
 interface Invitation {
   teamId: number

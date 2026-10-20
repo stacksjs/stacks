@@ -1,6 +1,7 @@
 import process from 'node:process'
 import { randomUUID } from 'node:crypto'
-import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { connect } from 'node:net'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, publicPath, storagePath } from '@stacksjs/path'
@@ -590,7 +591,13 @@ const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConf
 // server-script context and can't easily do async config loading) can read
 // them synchronously alongside the model list. Older readers that expect a
 // bare array are handled in the loader.
-const manifestPath = storagePath('framework/defaults/views/dashboard/.discovered-models.json')
+//
+// Written under `storage/framework/runtime`, the project's own gitignored
+// state, and never into the defaults tree: an app that does not vendor that
+// tree resolves it to `node_modules/@stacksjs/defaults`, which is not the
+// app's to write.
+const manifestPath = storagePath('framework/runtime/dashboard/discovered-models.json')
+mkdirSync(dirname(manifestPath), { recursive: true })
 const manifestPayload = {
   models: buildManifest(discoveredModels),
   sections: dashboardToggles,

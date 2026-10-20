@@ -111,12 +111,13 @@ interface NavItem {
 }
 
 /**
- * Pull the discovered-models manifest from the framework defaults dir.
+ * Pull the discovered-models manifest `buddy dev:dashboard` writes into the
+ * project's runtime state.
  * Returns the default empty payload when the file is absent (fresh project
  * before the first dashboard run regenerates it).
  */
 export function loadDiscoveredManifest(
-  manifestPath = resolve(process.cwd(), 'storage/framework/defaults/views/dashboard/.discovered-models.json'),
+  manifestPath = resolve(process.cwd(), 'storage/framework/runtime/dashboard/discovered-models.json'),
 ): DiscoveredManifest {
   if (!existsSync(manifestPath))
     return { models: [], sections: defaultToggles(), nav: [] }

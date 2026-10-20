@@ -3,6 +3,7 @@ import type { PublishedPage } from './resolve'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
+import { storagePath } from '@stacksjs/path'
 import { getBlock } from '../blocks/registry'
 import { sanitizeRichText } from './sanitize'
 
@@ -29,7 +30,9 @@ async function getRenderTemplate(): Promise<typeof import('@stacksjs/stx').rende
 function resolveViewFile(relative: string): string | null {
   const candidates = [
     join(process.cwd(), 'resources/views', relative),
-    join(process.cwd(), 'storage/framework/defaults/resources/views', relative),
+    // The vendored tree, or the installed @stacksjs/defaults when the app
+    // does not vendor it.
+    join(storagePath('framework/defaults/resources/views'), relative),
   ]
   for (const candidate of candidates) {
     if (existsSync(candidate))

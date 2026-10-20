@@ -3,7 +3,7 @@
 // layout uses, so the list can never drift from what the sidebar renders -
 // including sections a project has switched off in config/dashboard.ts, which
 // simply are not here to toggle.
-import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
+import { buildWebSidebarSections } from '@stacksjs/defaults/resources/functions/dashboard/sidebar.ts'
 
 export const navSections = buildWebSidebarSections()
   .filter(section => section.label && section.items.length > 0)
@@ -19,12 +19,12 @@ defineClientPayload({ navSections })
 </script>
 
 <script client>
-import type { ColorMode, SidebarStyle } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
+import type { ColorMode, SidebarStyle } from '@stacksjs/defaults/views/dashboard/composables/useAppearance.ts'
 import {
   COLOR_MODE_OPTIONS,
   SIDEBAR_STYLE_OPTIONS,
   useAppearance,
-} from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
+} from '@stacksjs/defaults/views/dashboard/composables/useAppearance.ts'
 
 const appearance = useAppearance()
 

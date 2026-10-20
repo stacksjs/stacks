@@ -1,5 +1,5 @@
 <script client>
-import { ciStore } from '~/storage/framework/defaults/views/dashboard/stores/ci'
+import { ciStore } from '@stacksjs/defaults/views/dashboard/stores/ci.ts'
 
 const ci = ciStore
 const target = derived(() => ci.drilldown())

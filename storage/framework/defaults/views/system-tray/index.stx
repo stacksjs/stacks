@@ -1,5 +1,5 @@
 <script client>
-import { installTrayMenu } from '~/storage/framework/defaults/resources/functions/system-tray'
+import { installTrayMenu } from '@stacksjs/defaults/resources/functions/system-tray.ts'
 
 const projects = state<string[]>([])
 const selected = state('')
