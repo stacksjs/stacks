@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { delimiter, join } from 'node:path'
 import { diffSnapshots, diffSnapshotsDetailed, snapshotTree } from '../src/upgrade/framework-utils'
 
 // Regression coverage for stacksjs/stacks#1988: `buddy upgrade --dry-run`
@@ -42,6 +42,17 @@ beforeEach(() => {
   write('storage/framework/core/new-file.ts', 'brand new', checkoutDir)
   write('buddy', 'new buddy', checkoutDir)
   write('bootstrap', 'new bootstrap', checkoutDir)
+
+  // Local upgrades must not depend on the remote Git service. Keep actual
+  // local Git operations while making an attempted remote read fail promptly.
+  write('bin/git', `#!/bin/sh
+if [ "$1" = "ls-remote" ]; then
+  printf '%s\\n' remote-read >> "$UPGRADE_REMOTE_LOG"
+  exit 1
+fi
+exec "$UPGRADE_REAL_GIT" "$@"
+`, baseDir)
+  chmodSync(join(baseDir, 'bin/git'), 0o755)
 })
 
 afterEach(() => {
@@ -62,6 +73,12 @@ async function runUpgradeScript(args: string[]): Promise<{ code: number, stdout:
   // the disposable fixture directory after each test.
   const proc = Bun.spawn([process.execPath, script, ...args], {
     cwd: appDir,
+    env: {
+      ...process.env,
+      PATH: `${join(baseDir, 'bin')}${delimiter}${process.env.PATH ?? ''}`,
+      UPGRADE_REAL_GIT: Bun.which('git') ?? '',
+      UPGRADE_REMOTE_LOG: join(baseDir, 'remote-read.log'),
+    },
     stdout: Bun.file(stdoutPath),
     stderr: Bun.file(stderrPath),
   })
@@ -103,6 +120,7 @@ describe('buddy upgrade --dry-run (framework sync)', () => {
 
     expect(stderr).toBe('')
     expect(code).toBe(0)
+    expect(existsSync(join(baseDir, 'remote-read.log'))).toBe(false)
 
     // The preview lists the changes...
     expect(stdout).toContain('DRY RUN')
@@ -134,6 +152,7 @@ describe('buddy upgrade --dry-run (framework sync)', () => {
     const { code, stdout } = await runUpgradeScript(['--from', checkoutDir, '--force', '--noPostinstall'])
 
     expect(code).toBe(0)
+    expect(existsSync(join(baseDir, 'remote-read.log'))).toBe(false)
     expect(stdout).toContain('Upgraded Stacks from v0.70.112 to v0.70.113')
 
     expect(readFileSync(join(appDir, 'storage/framework/core/new-file.ts'), 'utf-8')).toBe('brand new')
@@ -143,4 +162,55 @@ describe('buddy upgrade --dry-run (framework sync)', () => {
     expect(JSON.parse(readFileSync(join(appDir, 'storage/framework/core/buddy/package.json'), 'utf-8')).version).toBe('0.70.113')
     expect(readFileSync(join(appDir, '.stacks-channel'), 'utf-8')).toBe('stable')
   }, 15000)
+})
+
+
+describe('local checkout freshness', () => {
+  for (const dryRun of [false, true]) {
+    it(`uses the selected checkout HEAD beyond the installed tag${dryRun ? ' in a preview' : ''}`, async () => {
+      const git = (...args: string[]) => {
+        const child = Bun.spawnSync(['git', ...args], {
+          cwd: checkoutDir,
+          env: {
+            ...process.env,
+            GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1',
+            GIT_AUTHOR_NAME: 'Upgrade fixture', GIT_AUTHOR_EMAIL: 'upgrade@example.test',
+            GIT_COMMITTER_NAME: 'Upgrade fixture', GIT_COMMITTER_EMAIL: 'upgrade@example.test',
+          },
+          stdout: 'pipe', stderr: 'pipe',
+        })
+        expect(child.exitCode, child.stderr.toString()).toBe(0)
+        return child.stdout.toString().trim()
+      }
+      write('storage/framework/core/buddy/package.json', JSON.stringify({ name: '@stacksjs/buddy', version: '0.70.112' }), checkoutDir)
+      write('storage/framework/core/old-file.ts', 'old content', checkoutDir)
+      rmSync(join(checkoutDir, 'storage/framework/core/new-file.ts'))
+      git('init', '--quiet', '--initial-branch=main')
+      git('add', '.')
+      git('commit', '--quiet', '-m', 'installed source')
+      const installed = git('rev-parse', 'HEAD')
+      git('tag', 'v0.70.112')
+      write('.stacks-version', `stable ${installed}`, appDir)
+      write('storage/framework/core/buddy/package.json', JSON.stringify({ name: '@stacksjs/buddy', version: '0.70.113' }), checkoutDir)
+      write('storage/framework/core/old-file.ts', 'new content', checkoutDir)
+      write('storage/framework/core/new-file.ts', 'brand new', checkoutDir)
+      git('add', '.')
+      git('commit', '--quiet', '-m', 'new checkout source')
+      const head = git('rev-parse', 'HEAD')
+      const before = await snapshotTree(appDir)
+      const args = ['--from', checkoutDir, '--noPostinstall', ...(dryRun ? ['--dryRun'] : [])]
+      const { code, stdout, stderr } = await runUpgradeScript(args)
+      expect(code, stderr).toBe(0)
+      expect(stdout).not.toContain('Already on the latest')
+      expect(existsSync(join(baseDir, 'remote-read.log'))).toBe(false)
+      if (dryRun) {
+        expect(stdout).toContain('+ new-file.ts')
+        expect(diffSnapshots(before, await snapshotTree(appDir))).toEqual({ added: 0, changed: 0, removed: 0, unchanged: before.size })
+      }
+      else {
+        expect(readFileSync(join(appDir, 'storage/framework/core/new-file.ts'), 'utf8')).toBe('brand new')
+        expect(readFileSync(join(appDir, '.stacks-version'), 'utf8')).toBe(`stable ${head}`)
+      }
+    }, 15000)
+  }
 })

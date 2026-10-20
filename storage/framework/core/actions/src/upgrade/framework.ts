@@ -89,27 +89,27 @@ const currentChannel = readChannel(channelFile)
 const corePkgPath = p.projectPath('storage/framework/core/buddy/package.json')
 const currentVersion = readVersion(corePkgPath)
 
-// The stable channel installs the latest published `vX.Y.Z` tag (there is no
-// `stable` branch — releases are cut as tags). Only resolve it when the run
-// will actually land on stable: a pinned `--version` and the canary channel
-// don't need it, so we skip the network call. If the remote tags can't be
-// listed (offline / no git), fall back to the currently-installed version tag
-// so we never target a non-existent ref.
-const willResolveStable = !options.version && !options.canary && (!!options.stable || currentChannel !== 'canary')
-let latestStableRef = ''
-if (willResolveStable) {
-  latestStableRef = (await resolveLatestStableTag())
-    ?? (currentVersion ? `v${currentVersion}` : 'main')
-}
-
-const ctx = resolveUpgradeContext(options, currentChannel, latestStableRef)
-
 // Source resolution. Explicit `--from` wins. Otherwise auto-detect a sibling
 // stacks checkout for instant offline updates. If neither is available,
 // fall back to gitit (GitHub).
 const explicitLocal = options.from ? p.projectPath(options.from) : null
 const detectedLocal = explicitLocal ?? (shouldAutoDetectLocalStacks(options) ? detectLocalStacks(projectRoot) : null)
 const usingLocal = !!detectedLocal
+
+// The stable channel installs the latest published `vX.Y.Z` tag (there is no
+// `stable` branch — releases are cut as tags). Only resolve it when the run
+// will actually land on stable: a pinned `--version` and the canary channel
+// don't need it. A selected local source also needs no remote tag lookup.
+// If the remote tags can't be
+// listed (offline / no git), fall back to the currently-installed version tag
+// so we never target a non-existent ref.
+const willResolveStable = !usingLocal && !options.version && !options.canary && (!!options.stable || currentChannel !== 'canary')
+let latestStableRef = currentVersion ? `v${currentVersion}` : 'main'
+if (willResolveStable) {
+  latestStableRef = (await resolveLatestStableTag()) ?? latestStableRef
+}
+
+const ctx = resolveUpgradeContext(options, currentChannel, latestStableRef)
 
 // User-facing status output. We use `console.log` directly (not the
 // `@stacksjs/logging` facade) because the facade's writes are async — and
@@ -547,16 +547,8 @@ async function getRemoteSha(context: UpgradeContext, fromLocal: boolean, stacksR
   const SHA_RE = /^[0-9a-f]{40}$/i
   try {
     if (fromLocal && stacksRoot) {
-      const proc = Bun.spawn({
-        cmd: ['git', '-C', stacksRoot, 'rev-parse', context.ref],
-        stdout: 'pipe',
-        stderr: 'pipe',
-      })
-      const out = (await new Response(proc.stdout).text()).trim()
-      if ((await proc.exited) === 0 && SHA_RE.test(out))
-        return out.toLowerCase()
-
-      // Named ref absent in the checkout — fall back to its current HEAD.
+      // syncFromLocal copies the selected working checkout, so freshness
+      // follows its HEAD rather than an older installed tag it may contain.
       const head = Bun.spawn({
         cmd: ['git', '-C', stacksRoot, 'rev-parse', 'HEAD'],
         stdout: 'pipe',
