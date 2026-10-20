@@ -5,6 +5,7 @@ import { incrementVersion, isReleaseType, isValidVersion, versionBump } from '@s
 import { isCalendarBump, nextCalendarVersion } from './calendar-version'
 import { describeGitHubRelease, publishGitHubRelease } from './github-release'
 import { pantryLockViolations } from './pantry-lock'
+import { resolvePantryToolchain } from './pantry-toolchain'
 import { releasePushTarget } from './release-push-target'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -171,6 +172,15 @@ async function frameworkBumpFiles(): Promise<string[]> {
 
 const bumpFiles = isFrameworkRelease ? await frameworkBumpFiles() : ['./package.json']
 
+// Settle which Pantry regenerates pantry.lock before any manifest moves, and
+// refuse one the workspace does not declare (see pantry-toolchain.ts). Same
+// check release.ts runs first; repeated here so a standalone bump is covered.
+const pantryToolchain = !isDryRun && existsSync(p.projectPath('pantry.lock'))
+  ? resolvePantryToolchain({ cwd: p.projectPath() })
+  : undefined
+if (pantryToolchain && !pantryToolchain.ok)
+  throw new Error(pantryToolchain.message)
+
 log.debug(`Release mode: ${isFrameworkRelease ? 'framework monorepo' : 'consumer app'} (${rootPkg?.name ?? 'unknown'})`)
 log.debug(`Bumping ${bumpFiles.length} package manifest(s) in ${bumpCwd}`)
 
@@ -283,7 +293,7 @@ async function refreshPantryLock(): Promise<void> {
 
   const previousLock = readFileSync(lockPath)
   try {
-    await execSync(['pantry', 'install', '--ignore-scripts', '--quiet'], {
+    await execSync([pantryToolchain?.ok ? pantryToolchain.bin : 'pantry', 'install', '--ignore-scripts', '--quiet'], {
       cwd: p.projectPath(),
       stdin: 'inherit',
       throwOnError: true,

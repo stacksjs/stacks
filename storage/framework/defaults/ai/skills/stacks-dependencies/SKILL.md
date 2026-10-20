@@ -124,6 +124,12 @@ lifecycle scripts; use the qualified 0.11.103 or later when that policy matters.
 A plain `pantry install` can also activate project services and run
 `postDatabaseSetup` or `postSetup` hooks, including migrations and seeding.
 
+The Pantry that writes `pantry.lock` must satisfy the declared `ts-pantry`
+range (`@stacksjs/buddy`'s in the framework, the root manifest's in an app),
+the version CI installs: another version writes a different lock. A release
+checks this before it bumps anything and refuses otherwise; point `PANTRY_BIN`
+at a qualified Pantry when the one on PATH is older.
+
 After migration, run `bun install --frozen-lockfile` and
 `pantry install --frozen-lockfile --ignore-scripts --quiet`, and verify that
 neither committed lockfile changes. Frozen mode rejects a legacy JavaScript

@@ -5,6 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { runActions } from './helpers/utils'
+import { resolvePantryToolchain } from './pantry-toolchain'
 import { BYPASS_ENV, formatPreflightFailure, runPinnedChecks } from './release-preflight'
 
 // Forward any flags passed from `buddy release` (e.g. --bump patch, --dry-run)
@@ -62,6 +63,18 @@ else if (preflight.failures.length > 0) {
   // release stopped was dropped on the way out. `bun run release:patch` printed
   // nothing at all and exited 1 — a blocked release that looked like a broken one.
   await log.exit(formatPreflightFailure(preflight.failures), 1)
+}
+
+// The Pantry that regenerates pantry.lock must be the one the workspace
+// declares, or the release commit carries a lock CI rejects. Not bypassable:
+// unlike a stale artifact, a lock written by another Pantry is never correct.
+const pantryToolchain = resolvePantryToolchain({ cwd: projectPath() })
+if (!pantryToolchain.ok) {
+  await log.flush()
+  await log.exit(pantryToolchain.message, 1)
+}
+else {
+  log.info(`Pantry ${pantryToolchain.version} (${pantryToolchain.bin})${pantryToolchain.declared ? ` satisfies ts-pantry ${pantryToolchain.declared}` : ''}`)
 }
 
 const result = await runActions(
