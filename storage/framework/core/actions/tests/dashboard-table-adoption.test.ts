@@ -137,3 +137,27 @@ describe('UI/Table timestamp parsing', () => {
     expect(helper![0]).toContain('Z')
   })
 })
+
+describe('UI/Table $slots usage', () => {
+  const TABLE = join(ROOT, 'UI/Table.stx')
+
+  /**
+   * `$slots` only resolves as a standalone reference in an stx template.
+   * Inside a compound expression - `:if="$slots.actions || hasRowActions()"` -
+   * the whole condition evaluates falsy, so the element silently never
+   * renders. That shipped the declarative `rowActions` column as a no-op: the
+   * compiled output contained every guard and binding, `stx typecheck` was
+   * clean, and the actions column simply was not there in the browser. Only
+   * driving the real page found it. See stacksjs/stx#2098.
+   */
+  it('never puts $slots inside a compound condition', () => {
+    const source = readFileSync(TABLE, 'utf8')
+    const conditions = [...source.matchAll(/:(?:if|else-if)="([^"]*\$slots[^"]*)"/g)].map(match => match[1])
+
+    // The guard is worthless if the file stopped using $slots at all.
+    expect(conditions.length).toBeGreaterThan(0)
+
+    const compound = conditions.filter(condition => /\|\||&&|[!?]/.test(condition))
+    expect(compound).toEqual([])
+  })
+})

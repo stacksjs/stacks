@@ -58,9 +58,16 @@ export default {
    * defines `<Button />`, and cannot quietly replace the framework's.
    */
   components: [
-    library,
     // Relative to this file, which is what stx resolves plugin entries against.
     'resources/components',
+    // `library` is a package root too, and it used to sit above the line
+    // before this one - so for 16 names present in both trees the package
+    // answered, which is the exact thing the paragraph above says cannot
+    // happen. `<EmptyState>` was the visible one: the framework's takes an
+    // Iconify class, the package's takes raw SVG and prints it through
+    // `{!! icon !!}`, so ten dashboard components rendered the class name as
+    // text inside a grey circle. See stacksjs/stacks#2927.
+    library,
     ...packageDirs(),
   ],
 }

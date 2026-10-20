@@ -24,6 +24,7 @@ describe('the stx components plugin', () => {
 
   test('puts the framework defaults ahead of any package', () => {
     const source = readFileSync(pluginFile, 'utf8')
+    const list = source.slice(source.indexOf('components: ['), source.indexOf('...packageDirs()'))
 
     const defaults = source.indexOf(`'resources/components'`)
     const packages = source.indexOf('...packageDirs()')
@@ -35,6 +36,18 @@ describe('the stx components plugin', () => {
     // ADDITIVE: it answers for tags nothing else defines, and cannot replace
     // a framework component that templates already render.
     expect(defaults).toBeLessThan(packages)
+
+    // `library` is a package root as well - the installed
+    // `@stacksjs/components` ui directory - and comparing only against
+    // `packageDirs()` left it unchecked. It sat FIRST for a long time, so for
+    // the 16 names present in both trees the package answered, and this test
+    // passed the whole time. `<EmptyState>` was the visible one: the
+    // framework's takes an Iconify class, the package's takes raw SVG, so ten
+    // dashboard components printed the class name as text.
+    // See stacksjs/stacks#2927.
+    const libraryEntry = list.search(/^\s*library,\s*$/m)
+    expect(libraryEntry).toBeGreaterThan(-1)
+    expect(list.indexOf(`'resources/components'`)).toBeLessThan(libraryEntry)
   })
 
   test('survives package resolution failing', () => {

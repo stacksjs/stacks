@@ -13,24 +13,35 @@ import { formatCurrency } from '@stacksjs/commerce/money'
  * nothing. It now sorts what it was given. A parent that sorts server-side
  * sets `manual-sort` and keeps the event.
  *
- * ## The `cell`, `actions` and `footer` slots are not usable yet
+ * ## The slots, and what to use instead
  *
- * Two upstream stx limitations, and they are the reason this component had no
- * callers at all while 69 dashboard components hand-rolled a `<table>`:
+ * Three upstream stx limitations, and together they are why this component
+ * had no callers at all while 69 dashboard components hand-rolled a `<table>`:
  *
  * - `{{ … }}` in slot content is evaluated at slot-expansion time against an
  *   empty context and written out as an empty string, so the expression is
- *   gone before the client loop runs. Attribute bindings (`x-text`,
- *   `:attr`, `@click`) survive intact, so half of a slot works and the text
- *   silently vanishes. stacksjs/stx#2095.
+ *   gone before the client loop runs. Attribute bindings (`x-text`, `:attr`,
+ *   `@click`) survive intact, so half of a slot works and the text silently
+ *   vanishes. stacksjs/stx#2095.
  * - `stx typecheck` does not bind scoped slot props, so every reference to
  *   `row` in `<template #cell="{ row }">` is a TS2304, in every binding form.
  *   It is a required CI step, so correct usage cannot land. stacksjs/stx#2096.
+ * - `$slots.name` evaluates falsy inside a compound condition, so every
+ *   `$slots` reference below stands alone and the branches are split rather
+ *   than combined. stacksjs/stx#2098.
  *
- * Until both are fixed, a caller can use `#toolbar` (outside the row loop,
- * static markup plus `x-model`), and columns whose cells come entirely from a
- * column `type`. The `Library/DependenciesDashboard` migration is the worked
- * example. See stacksjs/stacks#2924.
+ * So prefer the props over the slots until those are fixed:
+ *
+ * - action buttons: `rowActions` + the `row-action` event, with `when` for
+ *   per-row availability and `busy-key`/`busy-value` to disable a row that is
+ *   being written
+ * - a second line under a value: the column's `subtitleKey`
+ * - a pill that only marks some rows: a `badge` column with `emptyText: ''`
+ * - page-level filters that belong beside the table: `#toolbar`, which sits
+ *   outside the row loop and so is unaffected by #2095
+ *
+ * `Library/DependenciesDashboard` and the Commerce `*Table.stx` migrations are
+ * the worked examples. See stacksjs/stacks#2924 and stacksjs/stacks#2925.
  */
 interface DashboardTableColumn {
   key: string
@@ -649,8 +660,13 @@ function cellClass(column: DashboardTableColumn, index: number): string {
   </div>
 
   <!-- Toolbar: only rendered when something asked for it. -->
+  {{-- `$slots.toolbar` used to be the last arm of this `||`, which only ever
+       worked because one of the calls before it was usually true: `$slots`
+       does not resolve inside a compound expression, so a table whose ONLY
+       toolbar content came from the slot rendered no toolbar at all. The
+       slot-only case gets its own branch below. See stacksjs/stx#2098. --}}
   <div
-    :if="searchable() || columnToggle() || exportable() || $slots.toolbar"
+    :if="searchable() || columnToggle() || exportable()"
     class="flex flex-wrap gap-3 items-center justify-between px-4 py-3 border-b border-stone-200/80 dark:border-neutral-700"
   >
     <div class="flex flex-wrap gap-2 items-center">
@@ -725,6 +741,17 @@ function cellClass(column: DashboardTableColumn, index: number): string {
     </div>
   </div>
 
+  {{-- A table that only contributes toolbar content through the slot, with
+       none of the built-in controls switched on. --}}
+  <div
+    :else-if="$slots.toolbar"
+    class="flex flex-wrap gap-3 items-center justify-between px-4 py-3 border-b border-stone-200/80 dark:border-neutral-700"
+  >
+    <div class="flex flex-wrap gap-2 items-center">
+      <slot name="toolbar" />
+    </div>
+  </div>
+
   <div class="overflow-x-auto">
     <table class="w-full">
       <thead :class="'bg-stone-50/80 dark:bg-neutral-800/50 ' + (stickyHeader() ? 'sticky top-0 z-20' : '')">
@@ -764,7 +791,12 @@ function cellClass(column: DashboardTableColumn, index: number): string {
             </th>
           </template>
 
-          <th :if="$slots.actions || hasRowActions()" scope="col" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
+          {{-- `$slots` only resolves as a standalone reference: inside a
+               compound expression like `$slots.actions || hasRowActions()` the
+               whole condition comes out falsy, so the column silently vanished.
+               Hence the pair. See stacksjs/stx#2098. --}}
+          <th :if="$slots.actions" scope="col" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
+          <th :else-if="hasRowActions()" scope="col" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
         </tr>
 
         <!-- Per-column filter row. -->
@@ -795,7 +827,8 @@ function cellClass(column: DashboardTableColumn, index: number): string {
               />
             </td>
           </template>
-          <td :if="$slots.actions || hasRowActions()" class="px-4 py-2"></td>
+          <td :if="$slots.actions" class="px-4 py-2"></td>
+          <td :else-if="hasRowActions()" class="px-4 py-2"></td>
         </tr>
       </thead>
 
@@ -814,8 +847,16 @@ function cellClass(column: DashboardTableColumn, index: number): string {
 
             <template :for="(column, columnIndex) in visibleColumns()">
               <td :class="cellClass(column, columnIndex)">
-                <template :if="$slots.cell && (!hasSlottedColumns() || column.slotted)">
-                  <slot name="cell" :row="row" :column="column" :value="row[column.key]" />
+                {{-- No `$slots` here: it only resolves standalone, so the
+                     compound condition this used to carry made every slotted
+                     cell render nothing. The slot's own fallback covers the
+                     "caller gave no slot" case instead. See stacksjs/stx#2098. --}}
+                <template :if="column.slotted || !hasSlottedColumns()">
+                  <slot name="cell" :row="row" :column="column" :value="row[column.key]">
+                    <span :if="column.type === 'badge' && hasBadge(row, column)" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
+                    <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
+                    <p :if="subtitleValue(row, column)" class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ subtitleValue(row, column) }}</p>
+                  </slot>
                 </template>
                 <template :else>
                   <span :if="column.type === 'badge' && hasBadge(row, column)" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
@@ -825,9 +866,11 @@ function cellClass(column: DashboardTableColumn, index: number): string {
               </td>
             </template>
 
-            <td :if="$slots.actions || hasRowActions()" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
-              <slot :if="$slots.actions" name="actions" :row="row" />
-              <div :if="!$slots.actions && hasRowActions()" class="flex gap-1 justify-end">
+            <td :if="$slots.actions" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
+              <slot name="actions" :row="row" />
+            </td>
+            <td :else-if="hasRowActions()" class="px-4 w-12" :class="compact() ? 'py-2' : 'py-3'">
+              <div class="flex gap-1 justify-end">
                 <template :for="action in rowActions()">
                   <Button
                     :if="showsRowAction(row, action)"
