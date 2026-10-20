@@ -725,9 +725,10 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
 
   buddy
     .command(`${feature}:install`, `Activate the ${feature} feature bundle. ${desc}`)
-    .option('--force', `Overwrite any existing ${feature} files in the project (default skips existing paths so the install is idempotent).`)
+    .option('--publish-all', `Also copy every ${feature} file into the project so you can edit it in place. Not needed to run the feature - see \`publish:action\`/\`publish:model\` to take ownership of one file at a time.`)
+    .option('--force', `With --publish-all, overwrite existing ${feature} files (default skips existing paths so the copy is idempotent).`)
     .option('--dry-run', `Say what ${feature}:install would change, and change nothing.`, { default: false })
-    .action(async (options: { force?: boolean, dryRun?: boolean }) => {
+    .action(async (options: { publishAll?: boolean, force?: boolean, dryRun?: boolean }) => {
       try {
         const dryRun = isDryRun(options)
         const mark = dryRun ? '·' : '✓'
@@ -744,15 +745,34 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
             break
         }
 
-        const { copied } = await copyFeatureFiles(feature, { force: options.force === true, dryRun })
-        if (copied.length > 0) {
-          console.log(dryRun
-            ? `${mark} Would copy ${copied.length} stamped path(s) from framework defaults:`
-            : `${mark} Copied ${copied.length} stamped path(s) from framework defaults:`)
-          for (const path of copied) console.log(`    - ${path}`)
+        // Enabling is the whole install. Every layer the feature uses already
+        // resolves from `storage/framework/defaults/` - actions and models
+        // through the documented `app/` override chain, components through the
+        // resolved component root, routes through `bootstrap.ts`, which
+        // registers them with `frameworkPath()` when `mounts(feature)`. Copying
+        // the files is what lets you EDIT them, not what lets them run, and a
+        // copy shadows the defaults tree that `buddy upgrade` syncs, so
+        // upstream fixes stop arriving with nothing to indicate it.
+        // See stacksjs/stacks#2920.
+        if (options.publishAll === true) {
+          const { copied } = await copyFeatureFiles(feature, { force: options.force === true, dryRun })
+          if (copied.length > 0) {
+            console.log(dryRun
+              ? `${mark} Would copy ${copied.length} stamped path(s) from framework defaults:`
+              : `${mark} Copied ${copied.length} stamped path(s) from framework defaults:`)
+            for (const path of copied) console.log(`    - ${path}`)
+            console.log(`  → These now shadow storage/framework/defaults/; \`buddy upgrade\` will not update them.`)
+          }
+          else if (featurePathsPresent(feature).length > 0) {
+            console.log(`  → ${feature} files already in the project - use --force to overwrite.`)
+          }
         }
-        else if (featurePathsPresent(feature).length > 0) {
-          console.log(`  → ${feature} scaffolding already in place - use --force to overwrite.`)
+        else {
+          const present = featurePathsPresent(feature).length
+          if (present > 0)
+            console.log(`  → ${present} ${feature} path(s) already in the project; those shadow the framework defaults.`)
+          else
+            console.log(`  → Runs from the framework defaults. \`publish:action\`/\`publish:model\` copies one file into app/ when you want to change it.`)
         }
 
         if (dryRun) {
