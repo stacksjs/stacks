@@ -614,6 +614,7 @@ export const actions = {
   'Actions/Dashboard/dashboard-provider': '../defaults/app/Actions/Dashboard/dashboard-provider.ts',
   'Actions/Dashboard/dashboard-request': '../defaults/app/Actions/Dashboard/dashboard-request.ts',
   'Actions/Dashboard/dashboard-response': '../defaults/app/Actions/Dashboard/dashboard-response.ts',
+  'Actions/Dashboard/hq-read': '../defaults/app/Actions/Dashboard/hq-read.ts',
   'Actions/HealthAction': '../defaults/app/Actions/HealthAction.ts',
   'Actions/InstallAction': '../defaults/app/Actions/InstallAction.ts',
   'Actions/Locale/SetLocaleAction': '../defaults/app/Actions/Locale/SetLocaleAction.ts',

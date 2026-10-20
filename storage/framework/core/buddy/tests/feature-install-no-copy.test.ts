@@ -49,7 +49,16 @@ describe('<feature>:install does not copy the feature into userland', () => {
       cwd: dir,
       // Every value passed explicitly, empty ones included: the env preload
       // refills deleted variables from the checkout's own .env.
-      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: join(dir, 'db.sqlite'), CI: '1' },
+      env: {
+        ...process.env,
+        APP_ENV: 'test',
+        // This fixture tests feature installation in an initialized app. Do
+        // not inherit a real key or invoke key generation without an env file.
+        APP_KEY: 'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+        DB_CONNECTION: 'sqlite',
+        DB_DATABASE_PATH: join(dir, 'db.sqlite'),
+        CI: '1',
+      },
       stdout: 'pipe',
       stderr: 'pipe',
     })
@@ -69,7 +78,7 @@ describe('<feature>:install does not copy the feature into userland', () => {
     expect(landed('dashboard')).toEqual([])
 
     const { exitCode, output } = run('dashboard:install')
-    expect(exitCode).toBe(0)
+    expect(exitCode, output).toBe(0)
     expect(flag()).toContain('enabled: true')
 
     // The whole point: 14 manifest paths, none of them copied.
@@ -78,8 +87,8 @@ describe('<feature>:install does not copy the feature into userland', () => {
   }, 120_000)
 
   it('still copies them when --publish-all is asked for', () => {
-    const { exitCode } = run('dashboard:install', '--publish-all')
-    expect(exitCode).toBe(0)
+    const { exitCode, output } = run('dashboard:install', '--publish-all')
+    expect(exitCode, output).toBe(0)
     expect(flag()).toContain('enabled: true')
 
     // The escape hatch has to actually work, or this change just removes a
@@ -93,7 +102,7 @@ describe('<feature>:install does not copy the feature into userland', () => {
 
   it('a dry run writes neither the flag nor any file', () => {
     const { exitCode, output } = run('dashboard:install', '--publish-all', '--dry-run')
-    expect(exitCode).toBe(0)
+    expect(exitCode, output).toBe(0)
     expect(output).toContain('Dry run')
     expect(flag()).toContain('enabled: false')
     expect(landed('dashboard')).toEqual([])

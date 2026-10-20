@@ -781,7 +781,8 @@ Activate the cms feature bundle. Post/Page/Author/Comment/Tag models + content e
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing cms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every cms file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing cms files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what cms:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `cms:uninstall`
@@ -945,7 +946,8 @@ Activate the commerce feature bundle. Order/Cart/Product/Customer/Coupon/GiftCar
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing commerce files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every commerce file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing commerce files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what commerce:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `commerce:uninstall`
@@ -1078,7 +1080,8 @@ Activate the dashboard feature bundle. Admin SPA shell + Activity/Log/Request/De
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing dashboard files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every dashboard file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing dashboard files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what dashboard:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `dashboard:uninstall`
@@ -2444,7 +2447,8 @@ Activate the forms feature bundle. User-defined forms: builder models, condition
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing forms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every forms file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing forms files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what forms:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `forms:uninstall`
@@ -3909,7 +3913,8 @@ Activate the marketing feature bundle. /api/email/subscribe, /api/contact, Campa
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing marketing files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every marketing file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing marketing files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what marketing:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `marketing:uninstall`
@@ -4059,7 +4064,8 @@ Activate the monitoring feature bundle. Error model + error-tracking views and a
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing monitoring files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every monitoring file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing monitoring files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what monitoring:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `monitoring:uninstall`
@@ -4503,7 +4509,8 @@ Activate the queue feature bundle. Job + FailedJob models + queue dashboard page
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing queue files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every queue file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing queue files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what queue:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `queue:list`
@@ -4712,7 +4719,8 @@ Activate the realtime feature bundle. WebSocket broadcaster + Websocket model + 
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing realtime files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
+| `--publish-all` | Also copy every realtime file into the project so you can edit it in place. Not needed to run the feature - see `publish:action`/`publish:model` to take ownership of one file at a time. | boolean, optional | - |
+| `--force` | With --publish-all, overwrite existing realtime files (default skips existing paths so the copy is idempotent). | boolean, optional | - |
 | `--dry-run` | Say what realtime:install would change, and change nothing. | boolean, optional | `false` |
 
 ### `realtime:uninstall`
