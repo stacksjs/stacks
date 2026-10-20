@@ -13,3 +13,8 @@ export const routeNames = {
   'email.unsubscribe.oneclick': '/api/email/unsubscribe',
   'feedback.store': '/api/feedback/{token}',
 } as const
+
+// Every `route.redirect()` and `route.permanentRedirect()` on a page path. The
+// views server answers these before it looks for a page: it never loads the
+// route files, which belong to the API process.
+export const routeRedirects = {} as const
