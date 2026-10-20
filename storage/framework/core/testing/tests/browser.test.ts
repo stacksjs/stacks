@@ -88,6 +88,78 @@ describe('Cdp', () => {
     expect(cdp.inFlight.size).toBe(0)
   })
 
+  test('a committed frame navigation retires its old loader without hiding other work', () => {
+    const { socket, cdp } = session()
+    const request = (requestId: string, frameId: string, loaderId: string, url = requestId) => socket.emit({
+      method: 'Network.requestWillBeSent',
+      params: { requestId, frameId, loaderId, request: { method: 'GET', url: `https://hq.training/${url}` } },
+    })
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'main', loaderId: 'old' } } })
+    // The live trace left old /m/* prefetches without either terminal event.
+    request('old-prefetch', 'main', 'old', 'm/calendar')
+    request('iframe', 'child', 'child-loader')
+    request('worker', 'main', '')
+    // The incoming document starts before its frame navigation commits.
+    request('document', 'main', 'new')
+    request('competing', 'main', 'another-provisional')
+    expect(cdp.inFlight.size).toBe(5)
+    socket.emit({ method: 'Page.frameStartedLoading', params: { frameId: 'main' } })
+    expect(cdp.inFlight.has('old-prefetch')).toBe(true)
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'main', loaderId: 'new' } } })
+    expect([...cdp.inFlight.keys()]).toEqual(['iframe', 'worker', 'document', 'competing'])
+    // Conservatively track late events until their own terminal event.
+    request('late-old', 'main', 'old')
+    request('current', 'main', 'new')
+    expect([...cdp.inFlight.keys()]).toEqual(['iframe', 'worker', 'document', 'competing', 'late-old', 'current'])
+    socket.emit({ method: 'Network.loadingFailed', params: { requestId: 'old-prefetch', canceled: true } })
+    socket.emit({ method: 'Network.loadingFinished', params: { requestId: 'document' } })
+    socket.emit({ method: 'Network.loadingFinished', params: { requestId: 'late-old' } })
+    socket.emit({ method: 'Network.loadingFailed', params: { requestId: 'competing', canceled: true } })
+    expect([...cdp.inFlight.keys()]).toEqual(['iframe', 'worker', 'current'])
+    // A history restore can make a formerly retired loader current again.
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'main', loaderId: 'old' } } })
+    request('restored', 'main', 'old')
+    expect([...cdp.inFlight.keys()]).toEqual(['iframe', 'worker', 'restored'])
+    expect(cdp.errors).toEqual([])
+  })
+
+  test('a failed provisional or same-document navigation keeps the live document busy', () => {
+    const { socket, cdp } = session()
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'main', loaderId: 'live' } } })
+    socket.emit({ method: 'Network.requestWillBeSent', params: { requestId: 'live', frameId: 'main', loaderId: 'live', request: { method: 'GET', url: 'https://hq.training/slow' } } })
+    socket.emit({ method: 'Network.requestWillBeSent', params: { requestId: 'provisional', frameId: 'main', loaderId: 'incoming', request: { method: 'GET', url: 'https://hq.training/next' } } })
+    socket.emit({ method: 'Network.loadingFailed', params: { requestId: 'provisional', canceled: true } })
+    socket.emit({ method: 'Page.navigatedWithinDocument', params: { frameId: 'main', url: 'https://hq.training/#features' } })
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'main' } } })
+    expect([...cdp.inFlight.keys()]).toEqual(['live'])
+    expect(cdp.errors).toEqual([])
+  })
+
+  test('redirect request reuse follows the incoming loader and a removed frame retires only its work', () => {
+    const { socket, cdp } = session()
+    const request = (requestId: string, frameId: string, loaderId: string) => socket.emit({
+      method: 'Network.requestWillBeSent',
+      params: { requestId, frameId, loaderId, request: { method: 'GET', url: 'https://hq.training/' } },
+    })
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'child', loaderId: 'first' } } })
+    request('redirect', 'child', 'first')
+    request('redirect', 'child', 'second')
+    request('main', 'main', 'main-loader')
+    socket.emit({ method: 'Page.frameNavigated', params: { frame: { id: 'child', parentId: 'main', loaderId: 'second' } } })
+    expect([...cdp.inFlight.keys()]).toEqual(['redirect', 'main'])
+    socket.emit({ method: 'Page.frameDetached', params: { frameId: 'child', reason: 'swap' } })
+    expect(cdp.inFlight.has('redirect')).toBe(true)
+    socket.emit({ method: 'Page.frameDetached', params: { frameId: 'child', reason: 'remove' } })
+    expect([...cdp.inFlight.keys()]).toEqual(['main'])
+    request('late-child', 'child', 'second')
+    expect([...cdp.inFlight.keys()]).toEqual(['main', 'late-child'])
+    socket.emit({ method: 'Network.loadingFailed', params: { requestId: 'late-child', canceled: true } })
+    expect([...cdp.inFlight.keys()]).toEqual(['main'])
+    socket.emit({ method: 'Network.loadingFailed', params: { requestId: 'main', errorText: 'net::ERR_CONNECTION_REFUSED' } })
+    expect(cdp.inFlight.size).toBe(0)
+    expect(cdp.errors).toEqual(['Network: net::ERR_CONNECTION_REFUSED'])
+  })
+
   test('collects page errors', () => {
     const { socket, cdp } = session()
     socket.emit({ method: 'Runtime.exceptionThrown', params: { exceptionDetails: { exception: { description: 'TypeError: x is undefined' } } } })

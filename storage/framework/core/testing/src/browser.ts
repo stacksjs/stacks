@@ -167,8 +167,11 @@ export function pausedRequestMatches(pattern: FetchPattern, paused: Pick<PausedR
  *   notifications, live reload) stays open for the life of the page, so it
  *   leaves `inFlight` as soon as its response starts; counting it would keep
  *   every wait for a quiet network running to its timeout.
+ *   A committed frame navigation also retires that frame's previous document
+ *   requests, whose terminal events Chrome may omit. Requests of the incoming
+ *   document, other frames and workers continue to count.
  *
- * Enable the `Network`, `Runtime` and `Log` domains for those to fill;
+ * Enable the `Page`, `Network`, `Runtime` and `Log` domains for those to fill;
  * `launch()` does.
  *
  * ## Several Fetch handlers on one session
@@ -202,6 +205,8 @@ export class Cdp {
   private ownFetch: { patterns: FetchPattern[], params: Record<string, unknown> } | null = null
   /** Paused request ids: true once answered, false while waiting for an answer. */
   private answered = new Map<string, boolean>()
+  private frameLoaders = new Map<string, string>()
+  private requestLoaders = new Map<string, { frameId: string, loaderId: string }>()
 
   /** What went wrong on the page, in order. */
   errors: string[] = []
@@ -219,6 +224,8 @@ export class Cdp {
 
   private markClosed(): void {
     this.closed = true
+    this.frameLoaders.clear()
+    this.requestLoaders.clear()
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer)
       pending.reject(new Error('Chrome closed the connection'))
@@ -339,13 +346,42 @@ export class Cdp {
     }
   }
 
+  private finishRequest(requestId: string): void {
+    this.inFlight.delete(requestId)
+    this.requestLoaders.delete(requestId)
+  }
+
+  private retireFrameRequests(frameId: string, previousLoader?: string): void {
+    for (const [requestId, document] of this.requestLoaders) {
+      if (document.frameId === frameId && (previousLoader === undefined || document.loaderId === previousLoader)) {
+        this.finishRequest(requestId)
+      }
+    }
+  }
+
   private track(method: string, params: any): void {
-    if (method === 'Network.requestWillBeSent')
+    if (method === 'Network.requestWillBeSent') {
+      const { requestId, frameId, loaderId } = params
+      // Chrome can omit terminal events for requests of a replaced document.
+      // A started navigation is insufficient: retire only on a frame commit.
+      this.requestLoaders.delete(requestId)
+      if (frameId && loaderId) this.requestLoaders.set(requestId, { frameId, loaderId })
       this.inFlight.set(params.requestId, `${params.request?.method} ${params.request?.url}`)
+    }
     else if (method === 'Network.loadingFinished' || method === 'Network.loadingFailed')
-      this.inFlight.delete(params.requestId)
+      this.finishRequest(params.requestId)
     else if (method === 'Network.responseReceived' && params.response?.mimeType === 'text/event-stream')
-      this.inFlight.delete(params.requestId)
+      this.finishRequest(params.requestId)
+    else if (method === 'Page.frameNavigated' && params.frame?.id && params.frame?.loaderId) {
+      const { id, loaderId } = params.frame
+      const previous = this.frameLoaders.get(id)
+      if (previous && previous !== loaderId) this.retireFrameRequests(id, previous)
+      this.frameLoaders.set(id, loaderId)
+    }
+    else if (method === 'Page.frameDetached' && params.reason === 'remove') {
+      this.frameLoaders.delete(params.frameId)
+      this.retireFrameRequests(params.frameId)
+    }
 
     if (method === 'Runtime.exceptionThrown')
       this.errors.push(params.exceptionDetails?.exception?.description || params.exceptionDetails?.text || 'Runtime exception')
