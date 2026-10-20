@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.243...v0.75.244)
+
+## ✨ Features
+
+- **dashboard**: a section follows its own feature ([7b3ab4b](https://github.com/stacksjs/stacks/commit/7b3ab4b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2928](https://github.com/stacksjs/stacks/issues/2928))
+
+## 🐛 Bug Fixes
+
+- **database**: store the query log's analysis as text, not varchar(255) ([c3cc9ee](https://github.com/stacksjs/stacks/commit/c3cc9ee)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.242...v0.75.243)
 
 ## ✨ Features
