@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.239...v0.75.240)
+
+## 🐛 Bug Fixes
+
+- **mobile**: require the qualified Craft native runtime ([96d2f13](https://github.com/stacksjs/stacks/commit/96d2f13)) _(by Chris <chris@stacksjs.com>)_
+- **core**: adopt qualified transaction and runtime dependencies ([c2d9294](https://github.com/stacksjs/stacks/commit/c2d9294)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: report safe revision verification failures ([8526dcb](https://github.com/stacksjs/stacks/commit/8526dcb)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.238...v0.75.239)
 
 ## 🐛 Bug Fixes
