@@ -1,5 +1,29 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.237...v0.75.238)
+
+## ✨ Features
+
+- **router**: route.redirect() and route.permanentRedirect(), answered for pages too ([457866b](https://github.com/stacksjs/stacks/commit/457866b)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: adopt published Pantry script policy ([eb0332c](https://github.com/stacksjs/stacks/commit/eb0332c)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: adopt the qualified image renderer ([dbe555a](https://github.com/stacksjs/stacks/commit/dbe555a)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: adopt the qualified Pantry workspace installer ([b08d073](https://github.com/stacksjs/stacks/commit/b08d073)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- retain diagnostics for the original native cache failure ([5e7ecd7](https://github.com/stacksjs/stacks/commit/5e7ecd7)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: require qualified compiler and guarded release tooling ([0bd65d7](https://github.com/stacksjs/stacks/commit/0bd65d7)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.236...v0.75.237)
 
 ## ✨ Features
