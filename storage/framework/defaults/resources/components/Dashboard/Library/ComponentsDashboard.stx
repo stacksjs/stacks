@@ -1,4 +1,5 @@
 @import('../UI/Button')
+@import('../UI/Table')
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
@@ -25,31 +26,34 @@ const totalBytes = state(0)
 const sourceRoot = state('resources/components')
 const loading = state(true)
 const loadError = state('')
-const search = state('')
 const selectedCategory = state('All')
 const dialogOpen = state(false)
 const saving = state(false)
 const saveError = state('')
 
-function visibleComponents(): ComponentRow[] {
-  const query = search().trim().toLowerCase()
-  return components().filter(component => (
-    (selectedCategory() === 'All' || component.category === selectedCategory())
-    && (!query || [component.name, component.path, component.category].some(value => value.toLowerCase().includes(query)))
-  ))
+const COLUMNS = [
+  { key: 'name', label: 'Component', sortable: true, class: 'font-medium text-gray-900 dark:text-white' },
+  // A neutral pill with no per-value styling, which is what a badge column
+  // renders when it is given no `badgeClasses`.
+  { key: 'category', label: 'Category', type: 'badge' as const, sortable: true },
+  { key: 'path', label: 'Path', sortable: true, class: 'font-mono text-xs text-gray-500 dark:text-neutral-400' },
+  // `sizeLabel` is what the cell shows; `bytes` stays on the row so a future
+  // numeric sort has something to read.
+  { key: 'sizeLabel', label: 'Size', sortable: true, class: 'text-gray-500 dark:text-neutral-400' },
+  { key: 'updatedAt', label: 'Updated', type: 'datetime' as const, sortable: true, class: 'text-gray-500 dark:text-neutral-400' },
+]
+
+/** `UI/Table` owns the search, so this applies only the category filter. */
+function visibleComponents(): Array<ComponentRow & { sizeLabel: string }> {
+  return components()
+    .filter(component => selectedCategory() === 'All' || component.category === selectedCategory())
+    .map(component => ({ ...component, sizeLabel: formatBytes(component.bytes) }))
 }
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024)
     return `${bytes} B`
   return `${(bytes / 1024).toFixed(1)} kB`
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
 
 async function loadComponents(): Promise<void> {
@@ -167,73 +171,35 @@ onMount(() => {
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="flex flex-col gap-3 sm:flex-row p-4 border-b border-gray-200 dark:border-neutral-700">
-      <label class="flex-1 min-w-0">
-        <span class="sr-only">Search components</span>
-        <input
-          x-model="search"
-          type="search"
-          placeholder="Search name, category, or path"
-          class="px-3 py-2 max-w-lg w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
-        >
-      </label>
-      <label>
-        <span class="sr-only">Filter by category</span>
-        <select
-          x-model="selectedCategory"
-          aria-label="Filter by category"
-          class="px-3 py-2 w-full sm:w-48 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
-        >
-          <option :for="category in categories()" :value="category">{{ category }}</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-        <thead class="bg-gray-50 dark:bg-neutral-900/50">
-          <tr>
-            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Component</th>
-            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Category</th>
-            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Path</th>
-            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Size</th>
-            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Updated</th>
-          </tr>
-        </thead>
-        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :if="loading()">
-            <tr>
-              <td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">
-                <span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-                Scanning component sources
-              </td>
-            </tr>
-          </template>
-          <template :else-if="visibleComponents().length === 0">
-            <tr>
-              <td colspan="5" class="px-4 py-14 text-center">
-                <span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-layout-table-01"></span>
-                <p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No components found</p>
-                <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create a component or adjust the filters.</p>
-              </td>
-            </tr>
-          </template>
-          <template :else>
-            <template :for="component in visibleComponents()">
-              <tr>
-                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ component.name }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">
-                  <span class="px-2 py-1 text-xs bg-gray-100 dark:bg-neutral-700 rounded-full" :text="component.category"></span>
-                </td>
-                <td class="px-4 py-3 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ component.path }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatBytes(component.bytes) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(component.updatedAt) }}</td>
-              </tr>
-            </template>
-          </template>
-        </tbody>
-      </table>
-    </div>
+    <Table
+      :columns="COLUMNS"
+      :data="visibleComponents()"
+      :loading="loading()"
+      row-key="path"
+      searchable
+      search-placeholder="Search name, category, or path"
+      paginated
+      :page-size="25"
+      empty-title="No components found"
+      empty-description="Adjust the search or category filter."
+    >
+      <template #toolbar>
+        <label>
+          <span class="sr-only">Filter by category</span>
+          {{-- `x-text` rather than `{{ category }}`: an interpolation inside
+               slot content is preserved but never evaluated on the installed
+               stx, while the attribute forms read the loop variable fine.
+               See stacksjs/stx#2095. --}}
+          <select
+            x-model="selectedCategory"
+            aria-label="Filter by category"
+            class="px-2.5 py-1.5 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600"
+          >
+            <option :for="category in categories()" :value="category" x-text="category"></option>
+          </select>
+        </label>
+      </template>
+    </Table>
   </section>
 </div>
 

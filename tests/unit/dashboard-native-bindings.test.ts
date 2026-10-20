@@ -1159,7 +1159,11 @@ describe('dashboard native STX bindings', () => {
     expect(view).not.toContain('<script client>')
     expect(component).toContain("dashboardApi<ComponentsResponse>('/api/dashboard/library/components')")
     expect(component).toContain("await dashboardApi('/api/dashboard/library/components'")
-    expect(component).toContain('x-model="search"')
+    // The search box moved into `UI/Table` (`searchable`), so this component
+    // no longer owns one - what stays its own is the category filter, which is
+    // specific to components. See stacksjs/stacks#2925.
+    expect(component).toContain('x-model="selectedCategory"')
+    expect(component).toContain('searchable')
     expect(component).toContain('x-model="selectedCategory"')
     expect(component).toContain('<SourceScaffoldDialog')
     expect(component).not.toContain('fixed inset-y-0')

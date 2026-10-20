@@ -31,7 +31,7 @@
  * ad hoc:
  *
  * ```sh
- * /bin/cp -cR "/Applications/Google Chrome.app" /tmp/chrome/Chrome.app
+ * cp -cR "/Applications/Google Chrome.app" /tmp/chrome/Chrome.app
  * for key in KSProductID KSUpdateURL KSChannelID KSVersion; do
  *   /usr/libexec/PlistBuddy -c "Delete :$key" /tmp/chrome/Chrome.app/Contents/Info.plist
  * done
@@ -607,7 +607,7 @@ export function prepareMacChrome(options: { source?: string, directory?: string 
     if (result.exitCode !== 0) throw new Error(`${what} failed: ${result.stderr.toString().trim()}`)
   }
   try {
-    run(['/bin/cp', '-cR', sourceApp, staged], 'Cloning Chrome')
+    run(['cp', '-cR', sourceApp, staged], 'Cloning Chrome')
     const stagedInfo = join(staged, 'Contents/Info.plist')
     for (const key of UPDATER_KEYS) plist(stagedInfo, `Delete :${key}`)
     run(['/usr/libexec/PlistBuddy', '-c', `Set :CFBundleIdentifier ${PRIVATE_BUNDLE_ID}`, stagedInfo], 'Renaming the Chrome bundle')

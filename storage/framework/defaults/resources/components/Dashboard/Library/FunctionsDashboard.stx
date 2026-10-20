@@ -1,4 +1,5 @@
 @import('../UI/Button')
+@import('../UI/Table')
 
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
@@ -18,25 +19,27 @@ const totalBytes = state(0)
 const sourceRoot = state('resources/functions')
 const loading = state(true)
 const loadError = state('')
-const search = state('')
 const dialogOpen = state(false)
 const saving = state(false)
 const saveError = state('')
 
-function visibleFunctions(): FunctionRow[] {
-  const query = search().trim().toLowerCase()
-  return functions().filter(fn => !query || [fn.name, fn.path, fn.extension].some(value => value.toLowerCase().includes(query)))
+const COLUMNS = [
+  { key: 'name', label: 'Function', sortable: true, class: 'font-medium text-gray-900 dark:text-white' },
+  { key: 'path', label: 'Path', sortable: true, class: 'font-mono text-xs text-gray-500 dark:text-neutral-400' },
+  // `bytes` so it sorts numerically; `sizeLabel` is what the cell shows.
+  { key: 'sizeLabel', label: 'Size', sortable: true, class: 'text-gray-500 dark:text-neutral-400' },
+  { key: 'updatedAt', label: 'Updated', type: 'datetime' as const, sortable: true, class: 'text-gray-500 dark:text-neutral-400' },
+]
+
+/** `UI/Table` owns the search, so this only shapes the rows it reads. */
+function visibleFunctions(): Array<FunctionRow & { sizeLabel: string }> {
+  return functions().map(fn => ({ ...fn, sizeLabel: formatBytes(fn.bytes) }))
 }
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024)
     return `${bytes} B`
   return `${(bytes / 1024).toFixed(1)} kB`
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
 
 async function loadFunctions(): Promise<void> {
@@ -107,12 +110,18 @@ onMount(() => { void loadFunctions() })
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search functions</span><input x-model="search" type="search" placeholder="Search name or path" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div>
-    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Function</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Path</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Size</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Updated</th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-      <template :if="loading()"><tr><td colspan="4" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Scanning function sources</td></tr></template>
-      <template :else-if="visibleFunctions().length === 0"><tr><td colspan="4" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-function"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No functions found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create a function or adjust the search.</p></td></tr></template>
-      <template :else><template :for="fn in visibleFunctions()"><tr><td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ fn.name }}</td><td class="px-4 py-3 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ fn.path }}</td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatBytes(fn.bytes) }}</td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(fn.updatedAt) }}</td></tr></template></template>
-    </tbody></table></div>
+    <Table
+      :columns="COLUMNS"
+      :data="visibleFunctions()"
+      :loading="loading()"
+      row-key="path"
+      searchable
+      search-placeholder="Search name or path"
+      paginated
+      :page-size="25"
+      empty-title="No functions found"
+      empty-description="Create a function or adjust the search."
+    />
   </section>
 </div>
 
