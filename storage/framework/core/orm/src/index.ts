@@ -98,27 +98,14 @@ export {
 } from './paginator-request'
 export type { ResolvedPageArgs } from './paginator-request'
 
-// Configure the model database without opening it. Importing model metadata
-// for routes/OpenAPI must not acquire an application connection. The model
-// executor opens the configured database and applies its pragmas on first use.
+// The model database is configured by `@stacksjs/database/runtime`, which
+// `./db` and `./define-model` import above: it resolves the connection from
+// config/database.ts and hands it to the query builder without opening it, and
+// the model executor opens it on first use. This file used to set it a second
+// time from `DB_*` alone, after that, which could only ever disagree: a path
+// named in config/database.ts lost to `database/stacks.sqlite`.
+// See ./project-query-builder-config.
 import type { StacksFeature } from '@stacksjs/config'
-import { setConfig } from '@stacksjs/query-builder'
-
-function autoConfigureOrm(): void {
-  try {
-    const dbPath = process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
-    const dialect = process.env.DB_CONNECTION || 'sqlite'
-
-    if (dialect === 'sqlite') {
-      setConfig({ dialect: 'sqlite', database: { database: dbPath } })
-    }
-  }
-  catch {
-    // Config not available yet — will be configured on first query via @stacksjs/database
-  }
-}
-
-autoConfigureOrm()
 
 // `@stacksjs/auth` (and other framework packages) statically imports
 // `User from '@stacksjs/orm'`, so we have to provide it here. Loading via

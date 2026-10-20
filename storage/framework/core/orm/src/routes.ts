@@ -21,15 +21,16 @@ import process from 'node:process'
 import type { DbWriteResult } from '@stacksjs/database/runtime'
 import type { EnhancedRequest } from '@stacksjs/router'
 import { parseBearerToken, route } from '@stacksjs/router'
-import { env } from '@stacksjs/env'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
+import type { QueryBuilderOptions } from '@stacksjs/query-builder'
+import { createQueryBuilder, config as queryBuilderConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging/runtime'
 import { API_ABILITIES, apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, dashboardRoleMiddleware, describeContradictoryRoleGates, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, getWritableFields, indexRouteShapes, mapWriteError, ownershipDeclaredUnscoped, policyDecision, resolveAbilityMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShapeKey, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import type { PolicyGate, RegisteredRouteLike } from './auto-crud'
 import { loadModelRegistryWithOrigins, resolveModelApiSelection, selectApiModels } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
+import { connectionConflictWarning, splitProjectQueryBuilderConfig } from './project-query-builder-config'
 
 /**
  * The query handle, as these auto-generated routes have to use it.
@@ -78,53 +79,32 @@ interface DynamicDb {
 
 
 
-// Initialize the query builder config from the project's optional
-// `config/qb.ts` override (stacksjs/stacks#1930).
+// Apply the project's optional `config/qb.ts` (stacksjs/stacks#1930), but
+// not its connection.
 //
-// This file is NOT scaffolded by the framework — it's a per-project
-// escape hatch. On a fresh clone / clean container build it's absent,
-// and a hard `await import(...)` here used to throw `Cannot find
-// module config/qb.ts` and abort the entire ORM-route bootstrap (so
-// every model-backed Action 404'd in production while `buddy dev`
-// masked it against stale local state).
+// The file is NOT scaffolded - it's a per-project escape hatch, absent on a
+// fresh clone or clean container build, where a hard `await import(...)`
+// used to abort the whole ORM-route bootstrap. So a missing file is normal.
 //
-// The fallback used to be bun-query-builder's own `defaultConfig`, whose
-// doc comment claims it's "env-driven" but is actually a hardcoded
-// `dialect: 'postgres'` literal — every project running the framework's
-// own zero-config SQLite default (any fresh `buddy new`, since no
-// config/qb.ts is ever scaffolded) got every useApi-generated REST route
-// silently pointed at Postgres, failing with "role \"postgres\" does not
-// exist" the moment anything hit GET /api/{resource}. Derive the fallback
-// from the same DB_CONNECTION / DB_DATABASE_PATH env vars every other
-// data-layer entry point (migrations, the ORM itself) already reads,
-// instead of a package-level default that has never matched this
-// framework's own default database.
+// The connection is already configured when this runs: `./auto-crud` imports
+// `@stacksjs/database/runtime`, which resolves it from config/database.ts and
+// hands it to the query builder. This file used to set it again - from qb.ts
+// whole, or from `DB_*` when there was no qb.ts - and the last writer won,
+// so a scaffold leftover `database: 'database/stacks.sqlite'` in qb.ts sent
+// every model query there. See ./project-query-builder-config.
 const qbConfigPath = projectPath('config/qb.ts')
+let projectQbConfig: QueryBuilderOptions | undefined
 try {
-  const projectQbConfig = (await import(qbConfigPath)).default
-  setConfig(projectQbConfig ?? defaultConfig)
+  projectQbConfig = (await import(qbConfigPath)).default
 }
 catch {
-  log.debug(`[orm] No config/qb.ts override found - deriving config from DB_CONNECTION`)
-  const connection = env.DB_CONNECTION || 'sqlite'
-  // Turso / libSQL renders SQLite SQL; its URL selects the network transport.
-  const libsql = connection === 'turso' || connection === 'libsql'
-  const dialect = (libsql ? 'sqlite' : connection) as 'sqlite' | 'mysql' | 'postgres'
-  setConfig({
-    ...defaultConfig,
-    dialect,
-    database: libsql
-      ? { database: env.TURSO_DATABASE_URL || '', url: env.TURSO_DATABASE_URL || '', authToken: env.TURSO_AUTH_TOKEN || undefined }
-      : dialect === 'sqlite'
-      ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
-      : {
-          database: env.DB_DATABASE || 'stacks',
-          host: env.DB_HOST || '127.0.0.1',
-          port: env.DB_PORT || (dialect === 'postgres' ? 5432 : 3306),
-          username: env.DB_USERNAME || (dialect === 'postgres' ? 'postgres' : 'root'),
-          password: env.DB_PASSWORD || '',
-        },
-  } as Parameters<typeof setConfig>[0])
+  log.debug('[orm] No config/qb.ts override found - using the connection from config/database.ts')
+}
+if (projectQbConfig) {
+  const { behaviour, conflicts } = splitProjectQueryBuilderConfig(projectQbConfig, queryBuilderConfig)
+  if (conflicts.length)
+    log.warn(connectionConflictWarning(conflicts))
+  setConfig(behaviour as Parameters<typeof setConfig>[0])
 }
 
 // Load defaults first, recursively, then let app/Models override by model name.
