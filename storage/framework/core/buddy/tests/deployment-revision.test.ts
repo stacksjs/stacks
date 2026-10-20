@@ -131,7 +131,9 @@ describe('automated production revision', () => {
     expect(git(['rev-parse', '--is-shallow-repository'], checkout)).toBe('true')
     expect(Number(git(['rev-list', '--count', 'FETCH_HEAD'], checkout))).toBeLessThan(123)
     expect(git(['rev-parse', 'HEAD'], checkout)).toBe(ci)
-  })
+  // 120 `git commit` processes: well under a second here, past bun's default
+  // 5s on a loaded Linux runner, which failed every CI run since it landed.
+  }, 60_000)
 
   // Real Git ancestry and the public guard catch shallow negative-history errors, not live provider/SSH behavior.
   test('a shallow merge excludes an older shared live ancestor and still refuses the newly merged side release', async () => {
