@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.240...v0.75.241)
+
+## 🐛 Bug Fixes
+
+- qualify installer and local framework upgrades ([56ebd15](https://github.com/stacksjs/stacks/commit/56ebd15)) _(by Chris <chris@stacksjs.com>)_
+- publish resolvable framework umbrella exports ([44cc82d](https://github.com/stacksjs/stacks/commit/44cc82d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.239...v0.75.240)
 
 ## 🐛 Bug Fixes
