@@ -161,9 +161,9 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
     if (stored.length !== 1 || stored[0]?.token !== token || String(stored[0]?.user_id) !== String(userId))
       throw new Error('[auth] Magic-link credential could not be stored.')
     return { raw, ttl }
-  // SQLite promotes a read transaction optimistically. Retry the whole claim
-  // from fresh state, with all external delivery outside the retry boundary.
-  }, getDatabaseDialect() === 'sqlite' ? { retries: 3 } : undefined)
+  // Reserve SQLite's writer before reading the claim. External delivery
+  // remains outside the transaction and its retry boundary.
+  }, getDatabaseDialect() === 'sqlite' ? { sqliteMode: 'immediate', retries: 3 } : undefined)
   if (!issued) return
 
   const deliver = () => deliverMagicLink(normalized, issued.raw, issued.ttl, options.siteId)

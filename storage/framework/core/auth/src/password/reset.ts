@@ -160,9 +160,9 @@ export function passwordResets(value: string): PasswordResetActions {
       if (stored.length !== 1 || stored[0]?.token !== hashedToken)
         throw new Error('Password reset could not replace its token')
       return true
-    // SQLite read-to-write conflicts require retrying the complete claim.
-    // Hashing and external delivery are outside that retry boundary.
-    }, getDatabaseDialect() === 'sqlite' ? { retries: 3 } : undefined)
+    // Reserve SQLite's writer before reading the claim. Hashing and external
+    // delivery remain outside the transaction and its retry boundary.
+    }, getDatabaseDialect() === 'sqlite' ? { sqliteMode: 'immediate', retries: 3 } : undefined)
 
     if (!issued) return undefined
     // Return the unhashed token for delivery.

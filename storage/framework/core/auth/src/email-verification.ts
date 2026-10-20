@@ -313,10 +313,9 @@ export async function resendVerificationEmail(user: { id: number, email: string,
 
     const deliver = await prepareVerificationEmail(user)
     return { result: { success: true, message: 'Verification email sent.' }, deliver }
-  // SQLite uses optimistic read-to-write promotion instead of row locks.
-  // Restart a conflicted claim from fresh state, never just its final write.
-  // Delivery happens below, outside every retry attempt.
-  }, getDatabaseDialect() === 'sqlite' ? { retries: 3 } : undefined)
+  // Reserve SQLite's writer before reading ownership and cooldown state.
+  // Delivery happens below, outside the transaction and every retry attempt.
+  }, getDatabaseDialect() === 'sqlite' ? { sqliteMode: 'immediate', retries: 3 } : undefined)
   if (outcome.deliver) await deliverAfterCommit(outcome.deliver)
   return outcome.result
 }
