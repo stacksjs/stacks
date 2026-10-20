@@ -37,7 +37,9 @@ describe('framework release artifact staging', () => {
   })
 
   test('refreshes and stages the Pantry lockfile without lifecycle scripts', () => {
-    expect(source()).toContain("['pantry', 'install', '--ignore-scripts', '--quiet']")
+    // With the Pantry the workspace declares (pantry-toolchain.ts), never whatever is on PATH.
+    expect(source()).toContain("[pantryToolchain?.ok ? pantryToolchain.bin : 'pantry', 'install', '--ignore-scripts', '--quiet']")
+    expect(source()).toContain('resolvePantryToolchain({ cwd: p.projectPath() })')
     expect(source()).toContain("for (const file of ['CHANGELOG.md', 'bun.lock', 'pantry.lock'])")
   })
 
