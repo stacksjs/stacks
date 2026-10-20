@@ -65,6 +65,14 @@
       "Middleware/*": ["../../app/Middleware/*"],
       "Models/*": ["../../app/Models/*"],
       "Notifications/*": ["../../app/Notifications/*"],
+      // The framework defaults by package name. Lands on this project's
+      // `storage/framework/defaults` when there is one (a framework checkout, a
+      // vendored app, or the link to node_modules), and falls back to the
+      // installed `@stacksjs/defaults` when the mapped file does not exist -
+      // Bun and tsc both try the package after a `paths` miss. So one
+      // specifier resolves in every layout, which `~/storage/framework/
+      // defaults/...` does not.
+      "@stacksjs/defaults/*": ["./defaults/*"],
       "~/*": ["../../*"],
       "@/*": ["../../resources/*"],
       "ts-pantry": ["../../node_modules/ts-pantry"],

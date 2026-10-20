@@ -166,13 +166,21 @@ if (!isRepl && !isPostinstall) {
   // `upgrade` that would fix it. Falling through leaves stx and ts-cloud on
   // their own defaults, which is degraded but recoverable.
   const pathPkg = '@stacksjs/' + 'path'
-  const { applyRuntimeDirectoryEnv } = await import('../../../core/path/src/index.ts')
+  const { applyRuntimeDirectoryEnv, linkPackagedDefaults } = await import('../../../core/path/src/index.ts')
     .catch(() => import(pathPkg))
 
   if (typeof applyRuntimeDirectoryEnv === 'function')
     applyRuntimeDirectoryEnv()
   else
     console.warn('[stacks] installed @stacksjs/path has no applyRuntimeDirectoryEnv; stx and ts-cloud will use their default state directories. Run `buddy upgrade` to refresh the framework packages.')
+
+  // An app that does not vendor the framework defaults gets a gitignored
+  // `storage/framework/defaults` link to the installed package. A fresh clone
+  // has no link until something makes one, so boot does: one lstat when it is
+  // already there, and a no-op for a vendored tree. Guarded for the same
+  // published-version reason as the helper above.
+  if (typeof linkPackagedDefaults === 'function')
+    linkPackagedDefaults()
 }
 
 // stx template engine plugin

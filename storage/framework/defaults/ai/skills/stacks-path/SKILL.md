@@ -91,10 +91,27 @@ buildEnginePath()
 libsEntriesPath()
 frameworkPath()                    // ~/storage/framework
 corePath()                         // ~/storage/framework/core
-frameworkPath('defaults')          // ~/storage/framework/defaults
+frameworkPath('defaults')          // the defaults tree (see below)
 defaultsAppPath()
 defaultsResourcesPath()
+frameworkDefaultsRoot()            // where that tree actually is
+usesVendoredDefaults()             // true when it is a real directory
+linkPackagedDefaults()             // (re)create the link; boot calls it
 ```
+
+`storagePath('framework/defaults/...')` and `frameworkPath('defaults/...')`
+resolve to `storage/framework/defaults` only when that is a real, vendored
+directory (the framework checkout, an app made with `--vendor-defaults` or
+`buddy publish:defaults`). Otherwise they resolve to the installed
+`node_modules/@stacksjs/defaults`. A new app keeps a gitignored
+`storage/framework/defaults` link to the package for people and tools, but
+framework code resolves the package itself: a module loaded through a link
+created after the process started fails in Bun.
+
+In code and templates, import a default by package name,
+`@stacksjs/defaults/<path>.ts`. `storage/framework/tsconfig.app.json` maps that
+onto a vendored tree when there is one and falls back to the package, so it
+resolves in every layout; `~/storage/framework/defaults/...` does not.
 
 ### Relative Path Variants
 Only some helpers have relative modes. Inspect the selected signature rather
