@@ -21,12 +21,12 @@
  * Usage: `bun storage/framework/core/buddy/src/commands/docs/capabilities.ts [--check|--write]`
  */
 
-import type { CapabilityCategory, CapabilityDriver } from '../../../../config/src/capabilities'
+import type { CapabilityCategory, CapabilityDriver } from '@stacksjs/config/capabilities'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { capabilityRegistry } from '../../../../config/src/capabilities'
-import { INTERACTIVE_BEGIN, INTERACTIVE_END, loadProbeRecords, renderInteractiveCapabilities } from '../../../../desktop/src/probe'
+import { capabilityRegistry } from '@stacksjs/config/capabilities'
+import { INTERACTIVE_BEGIN, INTERACTIVE_END, loadProbeRecords, renderInteractiveCapabilities } from '@stacksjs/desktop-build/probe'
 import { assertFrameworkRepo } from './framework-repo'
 
 const root = new URL('../../../../../../../', import.meta.url).pathname

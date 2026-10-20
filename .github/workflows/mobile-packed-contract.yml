@@ -116,6 +116,8 @@ jobs:
         run: bunx --bun pickier run --mode lint .github/scripts/verify-packed-mobile-consumer.ts
       - name: Verify actual packed mobile declarations against the public cohort
         run: bun .github/scripts/verify-packed-mobile-consumer.ts
+      - name: Verify actual packed framework root and CLI imports
+        run: bun .github/scripts/verify-packed-mobile-consumer.ts --framework-root
       - name: Retain candidate manifests and the exact strict compiler result
         if: always()
         uses: actions/upload-artifact@v4

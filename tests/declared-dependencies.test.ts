@@ -18,7 +18,7 @@ import { describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { isBuiltin } from 'node:module'
-import { join } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 
 const coreDir = join(import.meta.dir, '../storage/framework/core')
 const transpiler = new Bun.Transpiler({ loader: 'ts' })
@@ -161,6 +161,25 @@ describe('published package dependencies', () => {
       expect(await Bun.file(join(scratch, 'dist', 'arrays.js')).exists()).toBe(false)
     }
     finally { rmSync(scratch, { recursive: true, force: true }) }
+  })
+
+  it('keeps CLI static runtime imports inside its published package boundary', async () => {
+    const escaped: string[] = []
+    const cli = packages.find(pkg => pkg.name === '@stacksjs/buddy')
+    expect(cli).toBeDefined()
+    for (const pkg of [cli!]) {
+      for (const file of sourceFiles(join(pkg.dir, 'src'))) {
+        const imports = transpiler.scanImports(await Bun.file(file).text())
+        for (const imported of imports) {
+          if (imported.kind !== 'import-statement' || !imported.path.startsWith('.'))
+            continue
+          const target = resolve(dirname(file), imported.path)
+          if (target !== pkg.dir && !target.startsWith(`${pkg.dir}${sep}`))
+            escaped.push(`${pkg.name}: ${file.slice(pkg.dir.length + 1)} imports ${imported.path}`)
+        }
+      }
+    }
+    expect(escaped.sort()).toEqual([])
   })
 
   it('does not declare the same package as both a dependency and a devDependency', () => {

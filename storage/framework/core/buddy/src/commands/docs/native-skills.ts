@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import process from 'node:process'
-import { capabilityRegistry } from '../../../../config/src/capabilities'
-import { FEATURE_NAMES } from '../../../../features/src/names'
+import { capabilityRegistry } from '@stacksjs/config/capabilities'
+import { FEATURE_NAMES } from '@stacksjs/features/names'
 import { assertFrameworkRepo } from './framework-repo'
 
 const root = new URL('../../../../../../../', import.meta.url).pathname

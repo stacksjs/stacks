@@ -16,11 +16,11 @@
  * Usage: `bun storage/framework/core/buddy/src/commands/docs/desktop-matrix.ts [--check|--write]`
  */
 
-import type { DesktopSupportRow } from '../../../../desktop/src/support'
+import type { DesktopSupportRow } from '@stacksjs/desktop-build/support'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { desktopSupportMatrix } from '../../../../desktop/src/support'
+import { desktopSupportMatrix } from '@stacksjs/desktop-build/support'
 import { assertFrameworkRepo } from './framework-repo'
 
 const root = new URL('../../../../../../../', import.meta.url).pathname

@@ -5,7 +5,8 @@ import { dirname, join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 
 const root = resolve(import.meta.dir, '../..')
-const output = join(root, 'artifacts/mobile-packed-contract')
+const frameworkRoot = process.argv.includes('--framework-root')
+const output = join(root, 'artifacts/mobile-packed-contract', ...(frameworkRoot ? ['framework-root'] : []))
 await mkdir(output, { recursive: true })
 const scratch = await mkdtemp(join(process.env.RUNNER_TEMP || tmpdir(), 'stacks-packed-mobile-'))
 const commands: object[] = []
@@ -35,6 +36,10 @@ async function candidateClosure(): Promise<string[]> {
       candidates.set(manifest.name, { directory: entry.name, manifest })
     }
   }
+  if (frameworkRoot) {
+    const manifest = await Bun.file(join(core, 'package.json')).json() as CandidateManifest
+    candidates.set(manifest.name, { directory: '', manifest })
+  }
   const seen = new Set<string>()
   const ordered: string[] = []
   function visit(name: string): void {
@@ -47,8 +52,11 @@ async function candidateClosure(): Promise<string[]> {
     }
     ordered.push(candidate.directory)
   }
-  visit('@stacksjs/types')
-  visit('@stacksjs/mobile')
+  if (frameworkRoot) visit('stacks')
+  else {
+    visit('@stacksjs/types')
+    visit('@stacksjs/mobile')
+  }
   return ordered
 }
 
@@ -81,18 +89,19 @@ try {
   const packedRoots: Record<string, string> = {}
   for (const name of await candidateClosure()) {
     const source = join(root, 'storage/framework/core', name)
-    await run([process.execPath, 'run', 'build'], source)
-    const archivePath = join(scratch, name + '.tgz')
+    await run([process.execPath, 'run', name ? 'build' : 'build:exports'], source)
+    const artifactName = name || 'stacks'
+    const archivePath = join(scratch, artifactName + '.tgz')
     await run([process.execPath, 'pm', 'pack', '--filename', archivePath], source)
     const bytes = await readFile(archivePath)
-    await writeFile(join(output, name + '.tgz'), bytes)
-    const extracted = join(scratch, 'packed-' + name)
+    await writeFile(join(output, artifactName + '.tgz'), bytes)
+    const extracted = join(scratch, 'packed-' + artifactName)
     await mkdir(extracted)
     const entries = await new Bun.Archive(bytes).extract(extracted)
     const packed = JSON.parse(await readFile(join(extracted, 'package/package.json'), 'utf8'))
-    assert.equal(packed.name, '@stacksjs/' + name)
+    assert.equal(packed.name, (await Bun.file(join(source, 'package.json')).json()).name)
     packages.push({ name: packed.name, version: packed.version, entries, sha256: createHash('sha256').update(bytes).digest('hex'), exports: packed.exports, publishConfig: packed.publishConfig, dependencies: packed.dependencies })
-    await writeFile(join(output, name + '-packed-manifest.json'), JSON.stringify(packed, null, 2) + '\n')
+    await writeFile(join(output, artifactName + '-packed-manifest.json'), JSON.stringify(packed, null, 2) + '\n')
     candidateVersions[packed.name] = packed.version
     candidateArtifacts.set(packed.name, { manifest: packed, bytes })
     packedRoots[packed.name] = join(extracted, 'package')
@@ -112,7 +121,6 @@ try {
           return new Response(artifact.bytes, { headers: { 'Content-Type': 'application/octet-stream' } })
       }
       const name = decodeURIComponent(path)
-      if (!name.startsWith('@stacksjs/')) return new Response(null, { status: 404 })
       const candidate = candidateArtifacts.get(name)
       if (candidate) {
         return Response.json({
@@ -136,7 +144,7 @@ try {
   })
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
   const lock = Bun.JSONC.parse(await readFile(join(root, 'bun.lock'), 'utf8')) as { packages: Record<string, [string, ...unknown[]]> }
-  for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx']) {
+  for (const name of ['craft-native', '@stacksjs/stx', '@stacksjs/components', 'bun-plugin-stx', 'bun-query-builder', 'ts-pantry']) {
     const locator = lock.packages[name]?.[0]
     assert.ok(locator?.startsWith(name + '@'), 'Missing exact public dependency in bun.lock: ' + name)
     publicCohort[name] = locator.slice(name.length + 1)
@@ -149,10 +157,10 @@ try {
     dependencies: { ...candidateVersions, ...publicCohort },
     devDependencies: { 'better-dx': manifest.devDependencies['better-dx'] },
   }, null, 2))
-  await writeFile(join(consumer, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n')
-  await writeFile(join(consumer, '.npmrc'), '@stacksjs:registry=' + registry.url.href + '\n')
-  await run([process.execPath, 'install'], consumer)
-  await run([process.execPath, 'install', '--frozen-lockfile'], consumer)
+  await writeFile(join(consumer, 'bunfig.toml'), '[install]\nlinker = "hoisted"\n' + (frameworkRoot ? 'registry = ' + JSON.stringify(registry.url.href) + '\n' : '') + '[install.scopes]\n"@stacksjs" = ' + JSON.stringify(registry.url.href) + '\n')
+  await writeFile(join(consumer, '.npmrc'), (frameworkRoot ? 'registry=' + registry.url.href + '\n' : '') + '@stacksjs:registry=' + registry.url.href + '\n')
+  await run([process.execPath, 'install', '--cache-dir', join(scratch, 'install-cache')], consumer)
+  await run([process.execPath, 'install', '--frozen-lockfile', '--cache-dir', join(scratch, 'install-cache')], consumer)
   const installedVersions: Record<string, string> = {}
   for (const [name, version] of Object.entries(publicCohort)) {
     const installed = JSON.parse(await readFile(join(consumer, 'node_modules', name, 'package.json'), 'utf8'))
@@ -176,6 +184,12 @@ try {
         assert.equal(entry.isFile(), true, 'Candidate archive contains an unsupported file: ' + file)
         const expected = await readFile(join(directory, file))
         const installed = await readFile(join(consumer, 'node_modules', name, file))
+        if (!installed.equals(expected)) {
+          const retained = join(output, 'mismatch', name, file)
+          await mkdir(dirname(retained), { recursive: true })
+          await writeFile(retained + '.archive', expected)
+          await writeFile(retained + '.installed', installed)
+        }
         assert.equal(createHash('sha256').update(installed).digest('hex'), createHash('sha256').update(expected).digest('hex'), name + '/' + file)
         count++
       }
@@ -187,6 +201,21 @@ try {
   await writeFile(join(output, 'installed-candidate-files.json'), JSON.stringify(installedCandidateFiles, null, 2) + '\n')
   for (const name of ['package.json', 'bun.lock', 'bunfig.toml', '.npmrc'])
     await writeFile(join(output, 'consumer-' + name), await readFile(join(consumer, name)))
+  if (frameworkRoot) {
+    await writeFile(join(consumer, 'framework-root-consumer.js'), [
+      "import * as framework from 'stacks'",
+      "import * as buddy from '@stacksjs/buddy'",
+      "import { capabilityRegistry } from '@stacksjs/config/capabilities'",
+      "import { loadProbeRecords } from '@stacksjs/desktop-build/probe'",
+      "import * as runner from '@stacksjs/desktop-build/probe/runner'",
+      "import { FEATURE_NAMES } from '@stacksjs/features/names'",
+      "if (Object.keys(framework).length !== Object.keys(buddy).length) throw new Error('Root export count mismatch')",
+      "for (const name of Object.keys(buddy)) if (framework[name] !== buddy[name]) throw new Error('Root export identity mismatch: ' + name)",
+      "void [capabilityRegistry, loadProbeRecords, runner, FEATURE_NAMES]",
+      "console.log('PASS actual packed framework root, CLI namespace identity and public documentation dependencies')",
+    ].join('\n'))
+    await run([process.execPath, 'framework-root-consumer.js'], consumer)
+  }
   await writeFile(join(consumer, 'consumer.ts'), [
     "import type { IosMobileConfig } from '@stacksjs/types/mobile'",
     "import { prepareIosSimulatorDriver } from '@stacksjs/mobile/testing'",

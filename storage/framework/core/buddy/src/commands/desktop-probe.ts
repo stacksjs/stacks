@@ -74,7 +74,7 @@ export function desktopProbe(buddy: CLI): void {
     .example('buddy desktop:probe --browser=Safari --record')
     .action(async (options: DesktopProbeOptions) => {
       try {
-        const { run } = await import('../../../desktop/src/probe/runner')
+        const { run } = await import('@stacksjs/desktop-build/probe/runner')
         await runTool(run, ...desktopProbeFlags(options))
       }
       catch (error) {

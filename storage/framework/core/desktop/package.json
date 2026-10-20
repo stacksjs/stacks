@@ -39,6 +39,12 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./probe": {
+      "types": "./dist/probe/index.d.ts",
+      "bun": "./dist/probe/index.js",
+      "import": "./dist/probe/index.js",
+      "default": "./dist/probe/index.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "bun": "./dist/*.js",
