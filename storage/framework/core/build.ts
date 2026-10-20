@@ -124,6 +124,10 @@ for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as
 if (updated)
   writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 
+// The umbrella ships its own public entrypoints, delegating to the declared
+// packages instead of referring to sibling directories excluded by npm.
+await import('./build-exports')
+
 const endTime = Date.now()
 const timeTaken = endTime - startTime
 

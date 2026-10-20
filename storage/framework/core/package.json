@@ -41,271 +41,271 @@
   ],
   "exports": {
     ".": {
-      "types": "./buddy/dist/index.d.ts",
-      "import": "./buddy/dist/index.js"
+      "types": "./dist/buddy.d.ts",
+      "import": "./dist/buddy.js"
     },
     "./actions": {
-      "types": "./actions/dist/index.d.ts",
-      "import": "./actions/dist/index.js"
+      "types": "./dist/actions.d.ts",
+      "import": "./dist/actions.js"
     },
     "./ai": {
-      "types": "./ai/dist/index.d.ts",
-      "import": "./ai/dist/index.js"
+      "types": "./dist/ai.d.ts",
+      "import": "./dist/ai.js"
     },
     "./api": {
-      "types": "./api/dist/index.d.ts",
-      "import": "./api/dist/index.js"
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
     },
     "./alias": {
-      "types": "./alias/dist/index.d.ts",
-      "import": "./alias/dist/index.js"
+      "types": "./dist/alias.d.ts",
+      "import": "./dist/alias.js"
     },
     "./analytics": {
-      "types": "./analytics/dist/index.d.ts",
-      "import": "./analytics/dist/index.js"
+      "types": "./dist/analytics.d.ts",
+      "import": "./dist/analytics.js"
     },
     "./arrays": {
-      "types": "./arrays/dist/index.d.ts",
-      "import": "./arrays/dist/index.js"
+      "types": "./dist/arrays.d.ts",
+      "import": "./dist/arrays.js"
     },
     "./auth": {
-      "types": "./auth/dist/index.d.ts",
-      "import": "./auth/dist/index.js"
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
     },
     "./audio": {
-      "types": "./audio/dist/index.d.ts",
-      "import": "./audio/dist/index.js"
+      "types": "./dist/audio.d.ts",
+      "import": "./dist/audio.js"
     },
     "./buddy": {
-      "types": "./buddy/dist/index.d.ts",
-      "import": "./buddy/dist/index.js"
+      "types": "./dist/buddy.d.ts",
+      "import": "./dist/buddy.js"
     },
     "./build": {
-      "types": "./build/dist/index.d.ts",
-      "import": "./build/dist/index.js"
+      "types": "./dist/build.d.ts",
+      "import": "./dist/build.js"
     },
     "./browser-extension": {
-      "types": "./browser-extension/dist/index.d.ts",
-      "import": "./browser-extension/dist/index.js"
+      "types": "./dist/browser-extension.d.ts",
+      "import": "./dist/browser-extension.js"
     },
     "./cache": {
-      "types": "./cache/dist/index.d.ts",
-      "import": "./cache/dist/index.js"
+      "types": "./dist/cache.d.ts",
+      "import": "./dist/cache.js"
     },
     "./chat": {
-      "types": "./chat/dist/index.d.ts",
-      "import": "./chat/dist/index.js"
+      "types": "./dist/chat.d.ts",
+      "import": "./dist/chat.js"
     },
     "./cli": {
-      "types": "./cli/dist/index.d.ts",
-      "import": "./cli/dist/index.js"
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
     },
     "./cloud": {
-      "types": "./cloud/dist/index.d.ts",
-      "import": "./cloud/dist/index.js"
+      "types": "./dist/cloud.d.ts",
+      "import": "./dist/cloud.js"
     },
     "./collections": {
-      "types": "./collections/dist/index.d.ts",
-      "import": "./collections/dist/index.js"
+      "types": "./dist/collections.d.ts",
+      "import": "./dist/collections.js"
     },
     "./cms": {
-      "types": "./cms/dist/index.d.ts",
-      "import": "./cms/dist/index.js"
+      "types": "./dist/cms.d.ts",
+      "import": "./dist/cms.js"
     },
     "./commerce": {
-      "types": "./commerce/dist/index.d.ts",
-      "import": "./commerce/dist/index.js"
+      "types": "./dist/commerce.d.ts",
+      "import": "./dist/commerce.js"
     },
     "./config": {
-      "types": "./config/dist/index.d.ts",
-      "import": "./config/dist/index.js"
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js"
     },
     "./database": {
-      "types": "./database/dist/index.d.ts",
-      "import": "./database/dist/index.js"
+      "types": "./dist/database.d.ts",
+      "import": "./dist/database.js"
     },
     "./datetime": {
-      "types": "./datetime/dist/index.d.ts",
-      "import": "./datetime/dist/index.js"
+      "types": "./dist/datetime.d.ts",
+      "import": "./dist/datetime.js"
     },
     "./desktop": {
-      "types": "./desktop/dist/index.d.ts",
-      "import": "./desktop/dist/index.js"
+      "types": "./dist/desktop.d.ts",
+      "import": "./dist/desktop.js"
     },
     "./development": {
-      "types": "./development/dist/index.d.ts",
-      "import": "./development/dist/index.js"
+      "types": "./dist/development.d.ts",
+      "import": "./dist/development.js"
     },
     "./dns": {
-      "types": "./dns/dist/index.d.ts",
-      "import": "./dns/dist/index.js"
+      "types": "./dist/dns.d.ts",
+      "import": "./dist/dns.js"
     },
     "./docs": {
-      "types": "./docs/dist/index.d.ts",
-      "import": "./docs/dist/index.js"
+      "types": "./dist/docs.d.ts",
+      "import": "./dist/docs.js"
     },
     "./email": {
-      "types": "./email/dist/index.d.ts",
-      "import": "./email/dist/index.js"
+      "types": "./dist/email.d.ts",
+      "import": "./dist/email.js"
     },
     "./enums": {
-      "types": "./enums/dist/index.d.ts",
-      "import": "./enums/dist/index.js"
+      "types": "./dist/enums.d.ts",
+      "import": "./dist/enums.js"
     },
     "./error-handling": {
-      "types": "./error-handling/dist/index.d.ts",
-      "import": "./error-handling/dist/index.js"
+      "types": "./dist/error-handling.d.ts",
+      "import": "./dist/error-handling.js"
     },
     "./events": {
-      "types": "./events/dist/index.d.ts",
-      "import": "./events/dist/index.js"
+      "types": "./dist/events.d.ts",
+      "import": "./dist/events.js"
     },
     "./faker": {
-      "types": "./faker/dist/index.d.ts",
-      "import": "./faker/dist/index.js"
+      "types": "./dist/faker.d.ts",
+      "import": "./dist/faker.js"
     },
     "./feature-flags": {
-      "types": "./feature-flags/dist/index.d.ts",
-      "import": "./feature-flags/dist/index.js"
+      "types": "./dist/feature-flags.d.ts",
+      "import": "./dist/feature-flags.js"
     },
     "./git": {
-      "types": "./git/dist/index.d.ts",
-      "import": "./git/dist/index.js"
+      "types": "./dist/git.d.ts",
+      "import": "./dist/git.js"
     },
     "./health": {
-      "types": "./health/dist/index.d.ts",
-      "import": "./health/dist/index.js"
+      "types": "./dist/health.d.ts",
+      "import": "./dist/health.js"
     },
     "./image": {
-      "types": "./image/dist/index.d.ts",
-      "import": "./image/dist/index.js"
+      "types": "./dist/image.d.ts",
+      "import": "./dist/image.js"
     },
     "./lint": {
-      "types": "./lint/dist/index.d.ts",
-      "import": "./lint/dist/index.js"
+      "types": "./dist/lint.d.ts",
+      "import": "./dist/lint.js"
     },
     "./logging": {
-      "types": "./logging/dist/index.d.ts",
-      "import": "./logging/dist/index.js"
+      "types": "./dist/logging.d.ts",
+      "import": "./dist/logging.js"
     },
     "./mobile": {
-      "types": "./mobile/dist/index.d.ts",
-      "import": "./mobile/dist/index.js"
+      "types": "./dist/mobile.d.ts",
+      "import": "./dist/mobile.js"
     },
     "./notifications": {
-      "types": "./notifications/dist/index.d.ts",
-      "import": "./notifications/dist/index.js"
+      "types": "./dist/notifications.d.ts",
+      "import": "./dist/notifications.js"
     },
     "./objects": {
-      "types": "./objects/dist/index.d.ts",
-      "import": "./objects/dist/index.js"
+      "types": "./dist/objects.d.ts",
+      "import": "./dist/objects.js"
     },
     "./orm": {
-      "types": "./orm/dist/index.d.ts",
-      "import": "./orm/dist/index.js"
+      "types": "./dist/orm.d.ts",
+      "import": "./dist/orm.js"
     },
     "./path": {
-      "types": "./path/dist/index.d.ts",
-      "import": "./path/dist/index.js"
+      "types": "./dist/path.d.ts",
+      "import": "./dist/path.js"
     },
     "./payments": {
-      "types": "./payments/dist/index.d.ts",
-      "import": "./payments/dist/index.js"
+      "types": "./dist/payments.d.ts",
+      "import": "./dist/payments.js"
     },
     "./push": {
-      "types": "./push/dist/index.d.ts",
-      "import": "./push/dist/index.js"
+      "types": "./dist/push.d.ts",
+      "import": "./dist/push.js"
     },
     "./query-builder": {
-      "types": "./query-builder/dist/index.d.ts",
-      "import": "./query-builder/dist/index.js"
+      "types": "./dist/query-builder.d.ts",
+      "import": "./dist/query-builder.js"
     },
     "./queue": {
-      "types": "./queue/dist/index.d.ts",
-      "import": "./queue/dist/index.js"
+      "types": "./dist/queue.d.ts",
+      "import": "./dist/queue.js"
     },
     "./realtime": {
-      "types": "./realtime/dist/index.d.ts",
-      "import": "./realtime/dist/index.js"
+      "types": "./dist/realtime.d.ts",
+      "import": "./dist/realtime.js"
     },
     "./repl": {
-      "types": "./repl/dist/index.d.ts",
-      "import": "./repl/dist/index.js"
+      "types": "./dist/repl.d.ts",
+      "import": "./dist/repl.js"
     },
     "./router": {
-      "types": "./router/dist/index.d.ts",
-      "import": "./router/dist/index.js"
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.js"
     },
     "./scheduler": {
-      "types": "./scheduler/dist/index.d.ts",
-      "import": "./scheduler/dist/index.js"
+      "types": "./dist/scheduler.d.ts",
+      "import": "./dist/scheduler.js"
     },
     "./search-engine": {
-      "types": "./search-engine/dist/index.d.ts",
-      "import": "./search-engine/dist/index.js"
+      "types": "./dist/search-engine.d.ts",
+      "import": "./dist/search-engine.js"
     },
     "./security": {
-      "types": "./security/dist/index.d.ts",
-      "import": "./security/dist/index.js"
+      "types": "./dist/security.d.ts",
+      "import": "./dist/security.js"
     },
     "./server": {
-      "types": "./server/dist/index.d.ts",
-      "import": "./server/dist/index.js"
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
     },
     "./slug": {
-      "types": "./slug/dist/index.d.ts",
-      "import": "./slug/dist/index.js"
+      "types": "./dist/slug.d.ts",
+      "import": "./dist/slug.js"
     },
     "./sms": {
-      "types": "./sms/dist/index.d.ts",
-      "import": "./sms/dist/index.js"
+      "types": "./dist/sms.d.ts",
+      "import": "./dist/sms.js"
     },
     "./storage": {
-      "types": "./storage/dist/index.d.ts",
-      "import": "./storage/dist/index.js"
+      "types": "./dist/storage.d.ts",
+      "import": "./dist/storage.js"
     },
     "./strings": {
-      "types": "./strings/dist/index.d.ts",
-      "import": "./strings/dist/index.js"
+      "types": "./dist/strings.d.ts",
+      "import": "./dist/strings.js"
     },
     "./testing": {
-      "types": "./testing/dist/index.d.ts",
-      "import": "./testing/dist/index.js"
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
     },
     "./tinker": {
-      "types": "./tinker/dist/index.d.ts",
-      "import": "./tinker/dist/index.js"
+      "types": "./dist/tinker.d.ts",
+      "import": "./dist/tinker.js"
     },
     "./tunnel": {
-      "types": "./tunnel/dist/index.d.ts",
-      "import": "./tunnel/dist/index.js"
+      "types": "./dist/tunnel.d.ts",
+      "import": "./dist/tunnel.js"
     },
     "./types": {
-      "types": "./types/dist/index.d.ts",
-      "import": "./types/dist/index.js"
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
     },
     "./ui": {
-      "types": "./ui/dist/index.d.ts",
-      "import": "./ui/dist/index.js"
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.js"
     },
     "./utils": {
-      "types": "./utils/dist/index.d.ts",
-      "import": "./utils/dist/index.js"
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.js"
     },
     "./validation": {
-      "types": "./validation/dist/index.d.ts",
-      "import": "./validation/dist/index.js"
+      "types": "./dist/validation.d.ts",
+      "import": "./dist/validation.js"
     },
     "./video": {
-      "types": "./video/dist/index.d.ts",
-      "import": "./video/dist/index.js"
+      "types": "./dist/video.d.ts",
+      "import": "./dist/video.js"
     },
     "./skills": {
-      "types": "./skills/dist/index.d.ts",
-      "import": "./skills/dist/index.js"
+      "types": "./dist/skills.d.ts",
+      "import": "./dist/skills.js"
     }
   },
-  "types": "./types/dist/index.d.ts",
+  "types": "./dist/buddy.d.ts",
   "files": [
     "README.md",
     "dist"
@@ -314,7 +314,8 @@
     "buddy": "bun run ./buddy/src/cli.ts",
     "build": "bun ./build.ts",
     "up": "bun update",
-    "up:latest": "bun update --latest"
+    "up:latest": "bun update --latest",
+    "build:exports": "bun ./build-exports.ts"
   },
   "web-types": "./web-types.json",
   "dependencies": {
@@ -401,7 +402,8 @@
     "@stacksjs/i18n": "0.75.240",
     "@stacksjs/cron": "0.75.240",
     "@stacksjs/sites": "0.75.240",
-    "bun-query-builder": "^0.3.8"
+    "bun-query-builder": "^0.3.8",
+    "@stacksjs/desktop-build": "0.75.240"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

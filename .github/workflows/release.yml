@@ -224,7 +224,7 @@ jobs:
           fi
 
       # Belt-and-suspenders against a dist-less publish: every publishable
-      # package must have a non-empty dist/ (at least one .js) before we publish
+      # package, including the umbrella, must have a non-empty dist/ before we publish
       # with --ignore-scripts. A build that "succeeds" but emits nothing is
       # caught here instead of shipping an empty tarball to npm.
       - name: Verify built dist
@@ -235,11 +235,10 @@ jobs:
             [ -f "$pkg" ] || continue
             grep -q '"private": *true' "$pkg" && continue
             grep -q '"build"' "$pkg" || continue
-            # Packages that intentionally ship no JS dist: the `stacks` meta
-            # (its exports point at sibling packages' dist), `defaults` (ships
-            # resources/app, not dist), and `lint` (config only, no-op build).
+            # Defaults ships resources/app instead of a JS dist. Other
+            # packages, including the umbrella and lint, must ship JS.
             case "${dir%/}" in
-              storage/framework/core|storage/framework/core/defaults|storage/framework/core/lint) continue ;;
+              storage/framework/core/defaults) continue ;;
             esac
             if [ -z "$(find "${dir%/}/dist" -name '*.js' -type f 2>/dev/null | head -1)" ]; then
               echo "::error::no built dist/*.js for ${dir%/}"

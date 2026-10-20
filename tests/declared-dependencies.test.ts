@@ -15,7 +15,8 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { isBuiltin } from 'node:module'
 import { join } from 'node:path'
 
@@ -105,6 +106,61 @@ describe('published package dependencies', () => {
     }
 
     expect([...new Set(undeclared)].sort()).toEqual([])
+  })
+
+  it('includes every umbrella export in its published files', async () => {
+    const manifest = await Bun.file(join(coreDir, 'package.json')).json()
+    const missing: string[] = []
+    const targets = Object.values(manifest.exports).flatMap(value => Object.values(value as Record<string, string>)) as string[]
+    targets.push(manifest.types)
+    for (const target of targets) {
+      const relative = target.replace(/^\.\//, '')
+      if (!manifest.files.some((file: string) => relative === file || relative.startsWith(`${file}/`)))
+        missing.push(target)
+    }
+    expect([...new Set(missing)]).toEqual([])
+    const scratch = mkdtempSync(join(tmpdir(), 'stacks-umbrella-contract-'))
+    const run = (args: string[]) => {
+      const child = Bun.spawnSync(args, { cwd: coreDir, stdout: 'pipe', stderr: 'pipe' })
+      expect(child.exitCode, child.stderr.toString()).toBe(0)
+      return child.stdout.toString()
+    }
+    try {
+      run([process.execPath, 'run', 'build:exports'])
+      const archive = join(scratch, 'stacks.tgz')
+      run([process.execPath, 'pm', 'pack', '--filename', archive])
+      const entries = run(['tar', '-tzf', archive]).trim().split('\n')
+      for (const target of new Set(targets))
+        expect(entries).toContain(`package/${target.replace(/^\.\//, '')}`)
+      const development = await import(join(coreDir, manifest.exports['./development'].import))
+      expect(Object.keys(development)).toEqual([])
+
+    }
+    finally { rmSync(scratch, { recursive: true, force: true }) }
+  })
+
+  it('fails umbrella generation without replacing a prior build when a dependency is missing', async () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'stacks-umbrella-invalid-'))
+    try {
+      mkdirSync(join(scratch, 'dist'))
+      mkdirSync(join(scratch, 'arrays', 'src'), { recursive: true })
+      await Bun.write(join(scratch, 'dist', 'prior.js'), 'export const prior = true\n')
+      await Bun.write(join(scratch, 'build-exports.ts'), await Bun.file(join(coreDir, 'build-exports.ts')).text())
+      await Bun.write(join(scratch, 'package.json'), JSON.stringify({
+        exports: { './arrays': { types: './dist/arrays.d.ts', import: './dist/arrays.js' } },
+        dependencies: {},
+      }))
+      await Bun.write(join(scratch, 'arrays', 'package.json'), JSON.stringify({ name: '@stacksjs/arrays' }))
+      await Bun.write(join(scratch, 'arrays', 'src', 'index.ts'), 'export const array = []\n')
+      const child = Bun.spawnSync([process.execPath, join(scratch, 'build-exports.ts')], {
+        cwd: scratch, stdout: 'pipe', stderr: 'pipe',
+      })
+      expect(child.exitCode).not.toBe(0)
+      expect(child.stderr.toString()).toContain('Umbrella export requires a declared dependency: @stacksjs/arrays')
+      expect(await Bun.file(join(scratch, 'dist', 'prior.js')).text()).toBe('export const prior = true\n')
+      expect(await Bun.file(join(scratch, 'dist', 'arrays.js')).exists()).toBe(false)
+    }
+    finally { rmSync(scratch, { recursive: true, force: true }) }
   })
 
   it('does not declare the same package as both a dependency and a devDependency', () => {

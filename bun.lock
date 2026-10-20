@@ -51,6 +51,7 @@
         "@stacksjs/datetime": "0.75.240",
         "@stacksjs/defaults": "0.75.240",
         "@stacksjs/desktop": "^0.2.534",
+        "@stacksjs/desktop-build": "0.75.240",
         "@stacksjs/dns": "0.75.240",
         "@stacksjs/docs": "0.75.240",
         "@stacksjs/email": "0.75.240",
