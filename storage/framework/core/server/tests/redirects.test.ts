@@ -13,10 +13,14 @@
  * whether an inbound campaign keeps its attribution across the hop.
  */
 
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
 import {
   DEFAULT_REDIRECT_STATUS,
   describeRedirectRules,
+  loadRouteRedirects,
   resolveRedirect,
   resolveRedirectRules,
 } from '../src/redirects'
@@ -244,5 +248,51 @@ describe('subtree redirects', () => {
     const trailing = resolveRedirectRules({ '/dashboard/*': 'https://dashboard.example.com/' })
     expect(resolveRedirect(at('/dashboard/messages'), trailing)?.headers.get('location'))
       .toBe('https://dashboard.example.com/messages')
+  })
+})
+
+describe('loadRouteRedirects', () => {
+  function generated(source: string): { file: string, done: () => void } {
+    const directory = mkdtempSync(join(tmpdir(), 'route-redirects-'))
+    const file = join(directory, 'routes.ts')
+    writeFileSync(file, source)
+    return { file, done: () => rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  test('reads the redirects routes/ declared, as rules the views server answers', async () => {
+    const { file, done } = generated(`export const routeNames = {} as const
+export const routeRedirects = {
+  '/before': { to: '/', status: 301 },
+  '/posts/{id}': { to: '/blog', status: 302 },
+} as const
+`)
+    try {
+      const redirects = await loadRouteRedirects(file)
+      // A {parameter} path is left to the API: rules here match exact paths.
+      expect(redirects).toEqual({ '/before': { to: '/', status: 301 } })
+
+      const response = resolveRedirect(at('/before?locale=de'), resolveRedirectRules(redirects))
+      expect(response?.status).toBe(301)
+      expect(response?.headers.get('location')).toBe('/?locale=de')
+
+      // config/server.ts is spread last, so a rule written there wins a clash.
+      const merged = resolveRedirectRules({ ...redirects, '/before': '/pricing' })
+      expect(resolveRedirect(at('/before'), merged)?.headers.get('location')).toBe('/pricing')
+    }
+    finally {
+      done()
+    }
+  })
+
+  test('is empty when nothing was generated, or the map predates redirects', async () => {
+    expect(await loadRouteRedirects(join(tmpdir(), 'no-such-route-map.ts'))).toEqual({})
+
+    const { file, done } = generated('export const routeNames = {} as const\n')
+    try {
+      expect(await loadRouteRedirects(file)).toEqual({})
+    }
+    finally {
+      done()
+    }
   })
 })

@@ -163,9 +163,12 @@ await route.importRoutes()
 // (stacksjs/stacks#2326). Best-effort: a diagnostic must never stop a boot.
 try {
   const { describeUnforwardableRoutes, resolveApiProxyRules, unforwardableRoutes } = await import('@stacksjs/server')
-  const { listRootMountedAppRoutes } = await import('@stacksjs/router')
+  const { listRedirectRoutes, listRootMountedAppRoutes } = await import('@stacksjs/router')
+  // A root `route.redirect()` is answered by the views server itself, from
+  // the map `generate:types` writes, so it needs no proxy rule.
+  const redirected = new Set(listRedirectRoutes().map(entry => entry.path))
   const unreachable = unforwardableRoutes(
-    listRootMountedAppRoutes().filter(entry => entry.method === 'GET' || entry.method === 'HEAD'),
+    listRootMountedAppRoutes().filter(entry => (entry.method === 'GET' || entry.method === 'HEAD') && !redirected.has(entry.path)),
     resolveApiProxyRules((config as { server?: { proxy?: any } }).server?.proxy),
   )
   if (unreachable.length > 0)

@@ -59,7 +59,7 @@ catch {
 async function startDefaultServer() {
   await overridesReady
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, loadRouteRedirects, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -103,7 +103,8 @@ async function startDefaultServer() {
   // populates `overrides` asynchronously — a per-request read would answer
   // differently depending on how far boot had progressed.
   const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
-  const redirectRules = resolveRedirectRules(config.server?.redirects)
+  // `route.redirect()` page paths from routes/, then config/server.ts, which wins a clash.
+  const redirectRules = resolveRedirectRules({ ...await loadRouteRedirects(), ...config.server?.redirects })
   const rewriteRules = resolveRewriteRules(config.server?.rewrites)
   const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
 

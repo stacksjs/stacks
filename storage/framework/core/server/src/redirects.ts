@@ -28,6 +28,9 @@
  * never the intent behind a redirect written for a browser.
  */
 
+import { existsSync } from 'node:fs'
+import { path as p } from '@stacksjs/path'
+
 /** The prefix redirects refuse to touch, whatever the app declares. */
 const PROTECTED_PREFIX = '/api/'
 
@@ -134,6 +137,40 @@ export function resolveRedirectRules(input: RedirectConfig = {}): RedirectRules 
   }
 
   return rules
+}
+
+/**
+ * The page redirects the route files declare, as a {@link RedirectConfig}.
+ *
+ * `route.redirect('/old', '/new')` and `route.permanentRedirect()` register in
+ * the API process, but a page path is answered here, and this process never
+ * loads the route files. `generate:types` writes their page-path redirects to
+ * `storage/framework/auto-imports/routes.ts` (`routeRedirects`), and this reads
+ * that map, so a redirect declared in `routes/` needs no proxy rule and no hop
+ * to the API.
+ *
+ * A path with a `{parameter}` is skipped: rules here match exact paths. Merge
+ * with `config/server.ts` as `{ ...routeRedirects, ...config.server.redirects }`,
+ * so a rule written in config wins a clash. Missing or unreadable, it is empty:
+ * a redirect must never stop a site from booting.
+ */
+export async function loadRouteRedirects(file: string = p.storagePath('framework/auto-imports/routes.ts')): Promise<RedirectConfig> {
+  if (!existsSync(file))
+    return {}
+
+  try {
+    const generated = await import(file) as { routeRedirects?: Record<string, { to: string, status?: number }> }
+    const redirects: RedirectConfig = {}
+    for (const [from, target] of Object.entries(generated.routeRedirects ?? {})) {
+      if (from.includes('{') || !target?.to)
+        continue
+      redirects[from] = { to: target.to, status: target.status }
+    }
+    return redirects
+  }
+  catch {
+    return {}
+  }
 }
 
 /**

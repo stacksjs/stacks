@@ -193,7 +193,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
   await ensureDiscoveredPackages()
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, loadRouteRedirects, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules, viewClientAddress } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -327,7 +327,8 @@ export async function startProductionServer(options?: { port?: string | number, 
       if (apiProxyRules.paths.length > 0 || apiProxyRules.prefixes.length > 1)
         log.info(`API proxy: ${describeApiProxyRules(apiProxyRules)}`)
 
-      const redirectRules = resolveRedirectRules(config.server?.redirects)
+      // `route.redirect()` page paths from routes/, then config/server.ts, which wins a clash.
+      const redirectRules = resolveRedirectRules({ ...await loadRouteRedirects(), ...config.server?.redirects })
       if (redirectRules.size > 0)
         log.info(`Redirects: ${describeRedirectRules(redirectRules)}`)
 

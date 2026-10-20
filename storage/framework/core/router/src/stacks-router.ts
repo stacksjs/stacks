@@ -836,6 +836,28 @@ interface NamedRoute {
 }
 let namedRouteRegistry: Map<string, NamedRoute> | undefined
 
+/** The statuses `route.redirect()` answers with, as Laravel's `Route::redirect` takes them. */
+export type RedirectStatus = 301 | 302 | 303 | 307 | 308
+const REDIRECT_STATUSES = new Set<number>([301, 302, 303, 307, 308])
+
+/** One `route.redirect()` / `route.permanentRedirect()` declaration, by its full path. */
+export interface RedirectRoute {
+  /** The incoming path, group prefix included. */
+  path: string
+  /** Where it sends the request: a path, or an absolute URL. */
+  to: string
+  status: RedirectStatus
+}
+
+/**
+ * Every redirect the route files declared, so a process that does not serve
+ * them can still answer them. The views server answers page paths and only
+ * forwards `/api` to this router, so a root-mounted `route.redirect('/old', '/')`
+ * reaches it through `storage/framework/auto-imports/routes.ts`, which
+ * `generate:types` writes from this registry.
+ */
+let redirectRouteRegistry: Map<string, RedirectRoute> | undefined
+
 function compileNamedRoute(path: string): NamedRoute {
   const paramNames = extractRouteParamNames(path)
   const colonRegex = new Map<string, RegExp>()
@@ -1041,6 +1063,15 @@ export function listNamedRoutes(): Record<string, string> {
       out[name] = named.path
   }
   return out
+}
+
+/**
+ * Every `route.redirect()` and `route.permanentRedirect()`, in registration
+ * order, with group prefixes applied. Read by the type generator, which writes
+ * the page-path ones for the views server.
+ */
+export function listRedirectRoutes(): RedirectRoute[] {
+  return redirectRouteRegistry ? [...redirectRouteRegistry.values()] : []
 }
 
 /**
@@ -5021,6 +5052,31 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
+    // Laravel's Route::redirect. The query string travels with the request,
+    // as it does for `config/server.ts` redirects, so a moved page keeps the
+    // attribution on the link that reached it.
+    redirect(from: string, to: string, status: RedirectStatus = 302) {
+      if (!REDIRECT_STATUSES.has(status))
+        throw new TypeError(`[Router] redirect(): ${status} is not a redirect status (use 301, 302, 303, 307 or 308)`)
+      if (!to)
+        throw new TypeError(`[Router] redirect(): '${from}' needs somewhere to go`)
+      const handler = (request: Request) => {
+        const search = new URL(request.url).search
+        const location = search && !to.includes('?') ? `${to}${search}` : to
+        return new Response(null, { status, headers: { Location: location } })
+      }
+      const { fullPath, routeKey, shadowed } = registerRoute('GET', from, handler)
+      bunRouter.get(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
+      if (!shadowed)
+        (redirectRouteRegistry ??= new Map()).set(fullPath, { path: fullPath, to, status })
+      return createChainableRoute(routeStates, routeKey, shadowed)
+    },
+
+    // Laravel's Route::permanentRedirect: a 301, for a page that has moved for good.
+    permanentRedirect(from: string, to: string) {
+      return stacksRouter.redirect(from, to, 301)
+    },
+
     // Route grouping with prefix and middleware support
     group(options: GroupOptions, callback: () => void | Promise<void>): StacksRouterInstance | Promise<StacksRouterInstance> {
       const previousPrefix = currentPrefix
@@ -5878,6 +5934,15 @@ export interface StacksRouterInstance {
     <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
     (path: string, handler: StacksHandler): ChainableRoute
   }
+  /**
+   * Send `from` to `to` (Laravel's `Route::redirect`), 302 unless a status is
+   * given. In a root-mounted route file (`app/Routes.ts` `web`, or `prefix: ''`)
+   * this redirects a page path: `generate:types` records it and the views
+   * server answers it, with no proxy rule.
+   */
+  redirect: (from: string, to: string, status?: RedirectStatus) => ChainableRoute
+  /** `redirect(from, to, 301)`: Laravel's `Route::permanentRedirect`. */
+  permanentRedirect: (from: string, to: string) => ChainableRoute
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
   /*
    * Generic in the base AND in `only`/`except`, so the check can ask about the

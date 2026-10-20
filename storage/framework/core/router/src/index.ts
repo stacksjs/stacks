@@ -59,7 +59,7 @@ export {
 } from './error-handler'
 
 // Export route introspection helpers
-export { listNamedRoutes, listRegisteredRoutes, routeParams } from './stacks-router'
+export { listNamedRoutes, listRedirectRoutes, listRegisteredRoutes, routeParams } from './stacks-router'
 export { DASHBOARD_ROUTE_GROUPS, dashboardGroupMiddleware, describeUnknownDashboardGroups, resolveDashboardAccess } from './dashboard-access'
 export type { DashboardAccess, DashboardRouteGroupPrefix } from './dashboard-access'
 export type { UrlParams } from './stacks-router'
@@ -70,7 +70,7 @@ export type { UrlParams } from './stacks-router'
 // it, which is how the OpenAPI generator reads such a route's schema without a
 // file path to import.
 export { isRouterAction, wrapAction } from './stacks-router'
-export type { ChainableRoute, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
+export type { ChainableRoute, RedirectRoute, RedirectStatus, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
 
 /*
  * Typed routes, bound to this application's router.

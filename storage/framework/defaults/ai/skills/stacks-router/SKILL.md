@@ -32,6 +32,29 @@ route.options('/users', handler)
 route.health()  // GET /health endpoint
 ```
 
+### Redirects
+
+Laravel's `Route::redirect` and `Route::permanentRedirect`:
+
+```typescript
+route.redirect('/here', '/there')            // 302
+route.redirect('/here', '/there', 307)       // any of 301, 302, 303, 307, 308
+route.permanentRedirect('/old', '/new')      // 301
+```
+
+The incoming query string is carried onto the target unless the target names
+its own. Group prefixes apply, and the call returns a chainable route.
+
+A redirect for a page path goes in a root-mounted route file (`'web'` in
+`app/Routes.ts`, or any entry with `prefix: ''`). The views server answers
+page paths and never loads route files, so `buddy generate:types` writes those
+redirects to `storage/framework/auto-imports/routes.ts` (`routeRedirects`) and
+both `buddy dev` and `buddy serve` answer them before looking for a page: no
+`config/server.ts` proxy rule and no hop to the API. Re-run
+`generate:types` after adding one (CI's barrel check catches a stale map).
+Exact paths only; a `{param}` redirect stays an API route. A rule in
+`config/server.ts` `redirects` wins a clash.
+
 ### Zero-allocation static responses
 
 Use `staticResponse()` only when the response is final at registration time and
