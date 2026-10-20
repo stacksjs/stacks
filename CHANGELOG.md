@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.248...v0.75.249)
+
+## 🐛 Bug Fixes
+
+- **buddy**: deepen instead of unshallowing to verify a deploy revision ([c61a5a7](https://github.com/stacksjs/stacks/commit/c61a5a7)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.247...v0.75.248)
 
 ## 🐛 Bug Fixes
