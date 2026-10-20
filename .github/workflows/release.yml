@@ -266,9 +266,8 @@ jobs:
       # that window, not just for CI (stacksjs/stacks#2056).
       #
       # Promotion is a metadata write per package, so the disagreement window
-      # shrinks from minutes to about a second. If promotion cannot finish,
-      # `latest` still points at the previous release and consumers stay on a
-      # complete set - which is why this is safe to fail.
+      # is limited to the tag writes. A failed promotion may leave a partial
+      # set: fail honestly and resume it before declaring the release complete.
       #
       # Without NPM_TOKEN there is no way to run `npm dist-tag`, and a release
       # stuck on the holding tag would be worse than the tearing. So that case
@@ -296,9 +295,7 @@ jobs:
           # every package is readable before it moves latest.
           bun .github/scripts/publish-layers.ts --npm --access public --ignore-scripts --tag staging --no-readback
 
-          # `npm dist-tag` authenticates from .npmrc rather than the env var
-          # that pantry reads.
-          printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > ~/.npmrc
+          # Promotion uses the same scoped token and honors registry cooldowns.
           bun .github/scripts/promote-latest.ts
 
           # The unscoped meta-package has trusted publishing configured, but

@@ -13,9 +13,9 @@
  * milliseconds, so the window where the registry disagrees with itself goes
  * from minutes to about a second.
  *
- * The failure mode is the point: if promotion cannot finish, `latest` still
- * points at the previous release. Consumers keep resolving a complete set
- * rather than half of two.
+ * All versions are confirmed before any tag moves. A partial promotion fails
+ * loudly with the exact remaining set, so the release can resume without
+ * uploading an accepted package again.
  *
  * Run: `bun .github/scripts/promote-latest.ts [--dry-run] [--tag <holding>]`
  */
@@ -136,32 +136,68 @@ export async function inParallel<T, R>(items: readonly T[], limit: number, task:
   return results
 }
 
-async function promote(pkg: Publishable): Promise<string | null> {
-  /*
-   * Five attempts with a widening wait. A dist-tag write can lose to npm's own
-   * replication for a few seconds after a publish, and the first version of
-   * this gave up after 2s + 4s. Promoting `stacks` failed on the release that
-   * shipped this; that particular package turned out to need OIDC rather than
-   * the legacy token and is published directly now (6241eb6c52), but the
-   * timing it exposed is real and applies to every package here.
-   *
-   * Retrying is much cheaper than a half-promoted release.
-   */
-  let last = 'no error output'
-  for (let attempt = 1; attempt <= 5; attempt++) {
-    const proc = Bun.spawn(['npm', 'dist-tag', 'add', `${pkg.name}@${pkg.version}`, 'latest'], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    })
-    if (await proc.exited === 0)
-      return null
+/** Promote exact versions with one shared cooldown for the registry. */
+export async function promoteTags(packages: Publishable[], options: {
+  token: string
+  registry?: string
+  attempts?: number
+  concurrency?: number
+  budgetMs?: number
+}): Promise<string[]> {
+  if (!options.token.trim()) throw new Error('Tag promotion requires NPM_TOKEN')
+  const registry = new URL(options.registry ?? 'https://registry.npmjs.org')
+  const loopback = registry.protocol === 'http:' && registry.hostname === '127.0.0.1'
+  if ((!loopback && registry.origin !== 'https://registry.npmjs.org') || registry.username || registry.password || registry.pathname !== '/' || registry.search || registry.hash)
+    throw new Error('Tag promotion requires the public registry or an owned loopback fixture')
+  const attempts = options.attempts ?? 5
+  const concurrency = options.concurrency ?? PROMOTE_CONCURRENCY
+  const budgetMs = options.budgetMs ?? 600_000
+  if (!Number.isSafeInteger(attempts) || attempts < 1 || !Number.isSafeInteger(concurrency) || concurrency < 1 || !Number.isSafeInteger(budgetMs) || budgetMs < 1)
+    throw new Error('Tag promotion requires positive integer limits')
+  const deadline = performance.now() + budgetMs
+  let resumeAt = 0
+  const results = await inParallel(packages, concurrency, async (pkg) => {
+    let last = 'registry request failed'
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      while (resumeAt > performance.now() && resumeAt < deadline)
+        await Bun.sleep(resumeAt - performance.now())
+      const remaining = Math.floor(deadline - performance.now())
+      if (remaining <= 0) return `${pkg.name}@${pkg.version}: promotion deadline exceeded`
+      if (resumeAt >= deadline) return `${pkg.name}@${pkg.version}: registry cooldown exceeds promotion deadline`
+      let delay = attempt * 3000
+      try {
+        // npm's dist-tag CLI first reads every tag. A release already knows
+        // the exact desired version: write that single tag through the same
+        // registry endpoint without doubling the registry request count.
+        const response = await fetch(new URL(`/-/package/${encodeURIComponent(pkg.name)}/dist-tags/latest`, registry), {
+          method: 'PUT', redirect: 'error',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.token}` },
+          body: JSON.stringify(pkg.version), signal: AbortSignal.timeout(Math.min(20_000, remaining)),
+        })
+        await response.body?.cancel()
+        if (response.ok) return null
+        last = `registry HTTP ${response.status}`
+        if (response.status !== 429 && response.status !== 408 && response.status < 500) break
+        const retryAfter = response.headers.get('retry-after')
+        const seconds = retryAfter !== null && /^\d+$/.test(retryAfter) ? Number(retryAfter) : Number.NaN
+        const date = retryAfter === null ? Number.NaN : Date.parse(retryAfter)
+        delay = Number.isFinite(seconds) ? seconds * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : response.status === 429 ? 60_000 : delay
+      }
+      catch {
+        // Registry errors can contain credentials or response bodies. Keep
+        // diagnostics fixed, and never follow a credential-bearing redirect.
+        last = 'registry request failed'
+      }
+      resumeAt = Math.max(resumeAt, performance.now() + delay)
+    }
+    return `${pkg.name}@${pkg.version}: ${last}`
+  })
+  return results.filter((failure): failure is string => failure !== null)
+}
 
-    last = meaningfulNpmError((await new Response(proc.stderr).text()).trim())
-    if (attempt < 5)
-      await Bun.sleep(attempt * 3000)
-  }
-
-  return `${pkg.name}@${pkg.version}: ${last}`
+/** A failed response cannot prove whether that write reached the registry. */
+export function promotionFailureSummary(acknowledged: number, total: number): string {
+  return `${acknowledged} of ${total} tag writes were acknowledged. Remaining tag states are unconfirmed; the registry may contain a partial release. Resume promotion before declaring this release complete.`
 }
 
 async function main(): Promise<void> {
@@ -188,31 +224,16 @@ async function main(): Promise<void> {
   // (v0.75.236: 11 minutes with the confirmation above), and for all of that
   // time `latest` spanned two releases: the window this script exists to close.
   started = performance.now()
-  const failures = (await inParallel(packages, PROMOTE_CONCURRENCY, promote)).filter((failure): failure is string => failure !== null)
+  const failures = await promoteTags(packages, { token: process.env.NPM_TOKEN ?? '' })
   const promoted = packages.length - failures.length
-  console.log(`  moved ${promoted} tag(s) in ${Math.round((performance.now() - started) / 1000)}s`)
+  console.log(`  acknowledged ${promoted} tag write(s) in ${Math.round((performance.now() - started) / 1000)}s`)
 
   if (failures.length > 0) {
-    /*
-     * Say which state the registry is actually in.
-     *
-     * This used to claim "`latest` still points at the previous release, so
-     * consumers are on a complete set", which is only true when nothing moved.
-     * The release that shipped this promoted 85 of 86 and printed that line
-     * anyway - the one reassuring sentence in the output was the false one.
-     *
-     * Every failure is listed rather than the first, because finishing by hand
-     * needs the whole list.
-     */
     console.error(`\n${failures.length} of ${packages.length} package(s) could not be promoted to latest:\n`)
     for (const failure of failures)
       console.error(`  ✗ ${failure}`)
 
-    console.error(
-      promoted === 0
-        ? '\n`latest` still points at the previous release everywhere, so consumers are on a complete set.'
-        : `\n${promoted} package(s) DID move, so \`latest\` now spans two releases. Finish the rest before that matters.`,
-    )
+    console.error('\n' + promotionFailureSummary(promoted, packages.length))
     console.error('Re-run this job, or finish by hand with `npm dist-tag add <pkg>@<version> latest`.\n')
     process.exit(1)
   }

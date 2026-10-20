@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { confirmPublications, inParallel, meaningfulNpmError, publishables } from './promote-latest'
+import { confirmPublications, inParallel, meaningfulNpmError, promotionFailureSummary, promoteTags, publishables } from './promote-latest'
 
 const root = new URL('../../', import.meta.url).pathname
 
@@ -130,5 +130,70 @@ describe('inParallel', () => {
     })
     expect(most).toBe(3)
     expect(results).toEqual([null, null, null, 'failed 10', null])
+  })
+})
+
+describe('registry tag promotion', () => {
+  it('shares a registry cooldown with queued packages and sends only exact tag writes', async () => {
+    const requests: { at: number, path: string, method: string, body: string, auth: string | null }[] = []
+    let rateLimited = false
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) {
+      requests.push({ at: performance.now(), path: new URL(request.url).pathname, method: request.method, body: await request.text(), auth: request.headers.get('authorization') })
+      if (request.url.includes('buddy') && !rateLimited) {
+        rateLimited = true
+        return new Response('rate limited', { status: 429, headers: { 'Retry-After': '1' } })
+      }
+      if (request.url.includes('mobile')) await Bun.sleep(30)
+      return new Response(null, { status: 204 })
+    } })
+    try {
+      const failures = await promoteTags([{ name: '@stacksjs/buddy', version: '0.75.242', dir: '' }, { name: '@stacksjs/mobile', version: '0.75.242', dir: '' }, { name: '@stacksjs/features', version: '0.75.242', dir: '' }], { registry: server.url.href, token: 'fixture-token', concurrency: 2 })
+      expect(failures).toEqual([])
+      expect(requests).toHaveLength(4)
+      expect(requests.find(r => r.path.includes('features'))!.at - requests[0]!.at).toBeGreaterThanOrEqual(950)
+      expect(requests.map(r => [r.path, r.method, r.body, r.auth]).sort()).toEqual([
+        ['/-/package/%40stacksjs%2Fbuddy/dist-tags/latest', 'PUT', '"0.75.242"', 'Bearer fixture-token'],
+        ['/-/package/%40stacksjs%2Fbuddy/dist-tags/latest', 'PUT', '"0.75.242"', 'Bearer fixture-token'],
+        ['/-/package/%40stacksjs%2Fmobile/dist-tags/latest', 'PUT', '"0.75.242"', 'Bearer fixture-token'],
+        ['/-/package/%40stacksjs%2Ffeatures/dist-tags/latest', 'PUT', '"0.75.242"', 'Bearer fixture-token'],
+      ].sort())
+    }
+    finally { server.stop(true) }
+  })
+
+  it('fails authentication once without exposing registry bodies or credentials', async () => {
+    let calls = 0
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { calls++; return new Response('private-token-and-response', { status: 403 }) } })
+    try {
+      expect(await promoteTags([{ name: '@stacksjs/buddy', version: '0.75.242', dir: '' }], { registry: server.url.href, token: 'private-token' })).toEqual(['@stacksjs/buddy@0.75.242: registry HTTP 403'])
+      expect(calls).toBe(1)
+      // A prior attempt may already have promoted other packages. Zero new
+      // acknowledgements cannot establish a complete previous cohort.
+      expect(promotionFailureSummary(0, 85)).toContain('Remaining tag states are unconfirmed; the registry may contain a partial release.')
+    }
+    finally { server.stop(true) }
+  })
+
+  it('bounds a registry cooldown by the complete operation deadline', async () => {
+    let calls = 0
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { calls++; return new Response(null, { status: 429, headers: { 'Retry-After': '3600' } }) } })
+    try {
+      expect(await promoteTags([{ name: '@stacksjs/buddy', version: '0.75.242', dir: '' }], { registry: server.url.href, token: 'fixture-token', budgetMs: 100 })).toEqual(['@stacksjs/buddy@0.75.242: registry cooldown exceeds promotion deadline'])
+      expect(calls).toBe(1)
+    }
+    finally { server.stop(true) }
+  })
+
+  it('never forwards the token through a registry redirect', async () => {
+    let forwarded = 0
+    const destination = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { forwarded++; return new Response(null, { status: 204 }) } })
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch() { return new Response(null, { status: 307, headers: { Location: destination.url.href } }) } })
+    try {
+      const failures = await promoteTags([{ name: '@stacksjs/buddy', version: '0.75.242', dir: '' }], { registry: server.url.href, token: 'fixture-token', attempts: 1 })
+      expect(failures).toHaveLength(1)
+      expect(forwarded).toBe(0)
+      expect(failures[0]).not.toContain('fixture-token')
+    }
+    finally { server.stop(true); destination.stop(true) }
   })
 })
