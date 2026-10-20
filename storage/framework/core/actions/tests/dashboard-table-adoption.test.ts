@@ -20,7 +20,7 @@ import { describe, expect, it } from 'bun:test'
 const ROOT = join(import.meta.dir, '../../../defaults/resources/components/Dashboard')
 
 /** Lower this when a migration lands. Never raise it. */
-const CEILING = 68
+const CEILING = 67
 
 function components(): string[] {
   return [...new Glob('**/*.stx').scanSync(ROOT)].map(rel => join(ROOT, rel)).sort()
@@ -58,5 +58,47 @@ describe('dashboard table adoption', () => {
     expect(source).not.toContain('<table')
     expect(source).toMatch(/<Table(?=[\s/>])/)
     expect(source).toContain('paginated')
+  })
+})
+
+describe('UI/Table column types', () => {
+  const TABLE = join(ROOT, 'UI/Table.stx')
+
+  /** The component's script block, with comments stripped so prose cannot satisfy a match. */
+  function script(): string {
+    const source = readFileSync(TABLE, 'utf8')
+    const open = source.indexOf('<script client>')
+    const body = source.slice(open + '<script client>'.length, source.indexOf('</script>', open))
+    return new Bun.Transpiler({ loader: 'ts' }).transformSync(body)
+  }
+
+  /** Every member of the `type?:` union on the column interface. */
+  function declaredTypes(): string[] {
+    const union = readFileSync(TABLE, 'utf8').match(/type\?:\s*((?:'[a-z]+'\s*\|\s*)*'[a-z]+')/)
+    expect(union).not.toBeNull()
+    return [...union![1].matchAll(/'([a-z]+)'/g)].map(match => match[1])
+  }
+
+  it('reads a non-empty union', () => {
+    // Without this the assertions below pass on a regex that matched nothing.
+    expect(declaredTypes().length).toBeGreaterThan(4)
+    expect(declaredTypes()).toContain('currency')
+  })
+
+  /**
+   * A type added to the renderer but not to the sort comparator falls through
+   * to the string compare, which is wrong for everything but a coincidentally
+   * ordered format - `datetime` sorted by string and was only accidentally
+   * right for ISO timestamps. Types that genuinely sort as strings are listed
+   * here on purpose, so adding one is a decision rather than an omission.
+   */
+  const STRING_SORTED = new Set(['text', 'badge'])
+
+  it('sorts every column type it can render', () => {
+    const body = script()
+    const comparator = body.slice(body.indexOf('aMissing'))
+    // The transpiler normalises string quoting, so match either style.
+    const unsorted = declaredTypes().filter(type => !STRING_SORTED.has(type) && !new RegExp(`(['"])${type}\\1`).test(comparator))
+    expect(unsorted).toEqual([])
   })
 })

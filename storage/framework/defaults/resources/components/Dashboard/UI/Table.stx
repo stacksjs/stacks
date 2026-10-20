@@ -12,6 +12,25 @@ import { formatCurrency } from '@stacksjs/commerce/money'
  * meant a table whose parent ignored the event had sort arrows that did
  * nothing. It now sorts what it was given. A parent that sorts server-side
  * sets `manual-sort` and keeps the event.
+ *
+ * ## The `cell`, `actions` and `footer` slots are not usable yet
+ *
+ * Two upstream stx limitations, and they are the reason this component had no
+ * callers at all while 69 dashboard components hand-rolled a `<table>`:
+ *
+ * - `{{ … }}` in slot content is evaluated at slot-expansion time against an
+ *   empty context and written out as an empty string, so the expression is
+ *   gone before the client loop runs. Attribute bindings (`x-text`,
+ *   `:attr`, `@click`) survive intact, so half of a slot works and the text
+ *   silently vanishes. stacksjs/stx#2095.
+ * - `stx typecheck` does not bind scoped slot props, so every reference to
+ *   `row` in `<template #cell="{ row }">` is a TS2304, in every binding form.
+ *   It is a required CI step, so correct usage cannot land. stacksjs/stx#2096.
+ *
+ * Until both are fixed, a caller can use `#toolbar` (outside the row loop,
+ * static markup plus `x-model`), and columns whose cells come entirely from a
+ * column `type`. The `Library/DependenciesDashboard` migration is the worked
+ * example. See stacksjs/stacks#2924.
  */
 interface DashboardTableColumn {
   key: string
@@ -29,7 +48,7 @@ interface DashboardTableColumn {
    * formatter function because props cross an attribute boundary, where a
    * function does not survive.
    */
-  type?: 'text' | 'number' | 'currency' | 'date' | 'boolean' | 'badge'
+  type?: 'text' | 'number' | 'currency' | 'date' | 'datetime' | 'boolean' | 'badge'
   /**
    * For a `badge` column: the classes each value wears. A value with no
    * entry gets a neutral pill, so a new status never renders unstyled.
@@ -70,6 +89,21 @@ interface DashboardTableColumn {
   class?: string
   /** Hidden until switched on in the column menu. */
   hidden?: boolean
+  /**
+   * Route this column through the `cell` slot and leave every other column on
+   * the built-in rendering.
+   *
+   * Without this, a caller that needs custom markup in one column has to
+   * re-implement all of them, because the slot replaces the default content
+   * wholesale. Per-column slots would be the obvious answer and are not
+   * reachable: stx matches slot names literally, so `:name="'cell-' + key"`
+   * never resolves and its content is dropped silently.
+   *
+   * A table where no column sets this keeps the old behaviour and sends every
+   * cell through the slot, so existing callers are unaffected.
+   * See stacksjs/stacks#2924.
+   */
+  slotted?: boolean
 }
 
 type DashboardTableRow = Record<string, any>
@@ -170,6 +204,15 @@ function displayValue(row: DashboardTableRow, column: DashboardTableColumn): str
     const at = new Date(value)
     return Number.isNaN(at.getTime()) ? String(value) : at.toLocaleDateString()
   }
+  // An event or log row is ordered by when it happened, and to the minute, so
+  // the date alone is not enough to read it. Separate from `date` rather than
+  // a flag on it because the two render differently everywhere they appear.
+  if (column.type === 'datetime') {
+    const at = new Date(value)
+    return Number.isNaN(at.getTime())
+      ? String(value)
+      : at.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+  }
   if (column.type === 'boolean')
     return value ? 'Yes' : 'No'
 
@@ -244,7 +287,10 @@ function compare(a: any, b: any, type: DashboardTableColumn['type']): number {
 
   if (type === 'number' || type === 'currency')
     return Number(a) - Number(b)
-  if (type === 'date')
+  // `datetime` sorts as a date too. Left out, it fell through to the string
+  // comparison below, which is only accidentally right for ISO timestamps and
+  // wrong for every other format.
+  if (type === 'date' || type === 'datetime')
     return new Date(a).getTime() - new Date(b).getTime()
   if (type === 'boolean')
     return (a ? 1 : 0) - (b ? 1 : 0)
@@ -456,6 +502,18 @@ function rowClass(index: number): string {
   ].filter(Boolean).join(' ')
 }
 
+/**
+ * Whether any column opted into the `cell` slot.
+ *
+ * Once one does, only those columns route through the slot and the rest keep
+ * the built-in rendering. A table that marks none of them behaves as it always
+ * did: the slot, when given, takes every cell. `$slots` is template-only, so
+ * the presence of the slot is checked alongside this in the markup.
+ */
+function hasSlottedColumns(): boolean {
+  return columns().some(column => column.slotted)
+}
+
 function cellClass(column: DashboardTableColumn, index: number): string {
   return [
     index === 0 && !selectable() ? 'pl-6' : 'pl-4',
@@ -641,10 +699,13 @@ function cellClass(column: DashboardTableColumn, index: number): string {
 
             <template :for="(column, columnIndex) in visibleColumns()">
               <td :class="cellClass(column, columnIndex)">
-                <slot name="cell" :row="row" :column="column" :value="row[column.key]">
+                <template :if="$slots.cell && (!hasSlottedColumns() || column.slotted)">
+                  <slot name="cell" :row="row" :column="column" :value="row[column.key]" />
+                </template>
+                <template :else>
                   <span :if="column.type === 'badge'" :class="badgeClass(row, column)">{{ badgeLabel(row, column) }}</span>
                   <span :if="column.type !== 'badge'">{{ displayValue(row, column) }}</span>
-                </slot>
+                </template>
               </td>
             </template>
 
