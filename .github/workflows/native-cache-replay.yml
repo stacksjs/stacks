@@ -1,0 +1,45 @@
+name: Original native cache replay
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-cache-replay-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ORIGINAL_CACHE_KEY: pantry-v4-0.11.102-linux-x64-09a569664183d05f82f901d7a85c94084e80aa354d5f60a0c45dd910dd3caf25-d3612d2ed19d55d4c101ec057bf4ef3edac03ff1738b9a45eeb487d9fd01206a-d84f3e4a02ef7d90ac189d4b192e828fdab1844b68e6576c965cc82954008016-bun.com@1.4.2 git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4 postgresql.org@17.11 mysql.com@26.7.0 redis@8.8.0 aws.amazon.com/dynamodb-local@3.3.0
+    steps:
+      - uses: actions/checkout@v6
+      - name: Replay the original published action and complete native tool/service inputs
+        id: pantry
+        uses: pantry-pm/pantry/packages/action@b03b029482c11bc0ad32998c90a8be2eb7b5cd13 # v0.11.102
+        with:
+          version: 0.11.102
+          install: 'false'
+          packages: bun.com@1.4.2 git-scm.org@2.53.0 curl.se@8.22.0 sqlite.org@3.53.4
+          services: postgres@17.11 mysql@26.7.0 redis@8.8.0 dynamodb@3.3.0
+      - name: Retain cached path state and replay native commands with verbose output
+        if: always()
+        # Preserve the real action's environment, including native library lookup.
+        # Its failure remains a failure even if a diagnostic command later passes.
+        run: ./pantry/.bin/bun --no-env-file --config=/dev/null .github/scripts/replay-native-cache.ts
+        env:
+          PANTRY_CLI: ${{ steps.pantry.outputs.pantry-path }}
+          EXPECTED_PANTRY_VERSION: 0.11.102
+          ORIGINAL_ACTION_OUTCOME: ${{ steps.pantry.outcome }}
+      - name: Retain original cache metadata and every native command result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-native-cache-replay
+          path: artifacts/native-cache-replay
+          if-no-files-found: warn
+          retention-days: 14
