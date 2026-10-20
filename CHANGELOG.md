@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.247...v0.75.248)
+
+## 🐛 Bug Fixes
+
+- **orm**: config/qb.ts no longer repoints the model database ([6d20141](https://github.com/stacksjs/stacks/commit/6d20141)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: count the ORM's connection test in the native catalog ([f7e2c1c](https://github.com/stacksjs/stacks/commit/f7e2c1c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.75.246...v0.75.247)
 
 ## ✨ Features
