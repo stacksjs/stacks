@@ -307,7 +307,10 @@ describe('dashboard native STX bindings', () => {
     expect(taxonomy).toContain('<ConfirmDialog')
     expect(taxonomy).not.toContain('fixed inset-y-0')
     expect(staticClassLists(taxonomy)).toContainEqual(expect.arrayContaining(['min-w-0', 'max-w-full', 'space-y-6']))
-    expect(staticClassLists(taxonomy)).toContainEqual(expect.arrayContaining(['overflow-x-auto', 'max-w-full', 'w-full']))
+    // The horizontal scroll container moved into `UI/Table`, which owns its
+    // own overflow wrapper, so the taxonomy view no longer has one of its own.
+    // See stacksjs/stacks#2925.
+    expect(taxonomy).toMatch(/<Table\b/)
     expect(taxonomyEditor).toContain(".normalize('NFKD')")
     expect(taxonomyEditor).toContain('@input="markSlugTouched"')
     expect(taxonomyEditor).toContain('@blur="normalizeSlug"')

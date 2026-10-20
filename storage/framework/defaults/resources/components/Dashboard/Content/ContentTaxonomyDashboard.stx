@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
@@ -23,7 +25,6 @@ const description = useReactiveProp('description', '')
 const records = state<TaxonomyRecord[]>([])
 const loading = state(true)
 const loadError = state('')
-const search = state('')
 const dialogOpen = state(false)
 const saving = state(false)
 const saveError = state('')
@@ -46,13 +47,41 @@ function normalize(record: any): TaxonomyRecord {
   }
 }
 
+/**
+ * Derived rather than constant: this component serves both categories and
+ * tags, and the fourth column is the post count for tags and the active state
+ * for categories - a different heading and a different value.
+ */
+function columns() {
+  return [
+    { key: 'name', label: 'Name', sortable: true, class: 'font-medium text-gray-900 dark:text-white' },
+    { key: 'slug', label: 'Slug', sortable: true, class: 'font-mono text-gray-500 dark:text-neutral-400' },
+    { key: 'description', label: 'Description', emptyText: 'No description', class: 'max-w-md truncate text-gray-500 dark:text-neutral-400' },
+    {
+      key: 'stateLabel',
+      label: resource() === 'tags' ? 'Posts' : 'Status',
+      sortable: true,
+      class: 'text-gray-500 dark:text-neutral-400',
+    },
+  ]
+}
+
+const ROW_ACTIONS = [
+  { action: 'delete', label: 'Delete', icon: 'i-hugeicons-delete-02', class: 'text-red-500' },
+]
+
+/** `UI/Table` owns the search; the fourth cell is derived onto the row. */
 function visibleRecords(): TaxonomyRecord[] {
-  const query = search().trim().toLowerCase()
-  return records().filter(record => !query || [
-    record.name,
-    record.slug,
-    record.description,
-  ].some(value => value.toLowerCase().includes(query)))
+  return records().map(record => ({
+    ...record,
+    stateLabel: resource() === 'tags'
+      ? String(record.postCount)
+      : record.active ? 'Active' : 'Inactive',
+  })) as TaxonomyRecord[]
+}
+
+function handleRowAction(payload: { action: string, row: TaxonomyRecord }): void {
+  openDelete(payload.row)
 }
 
 function secondaryMetricLabel(): string {
@@ -184,17 +213,20 @@ onMount(() => {
   </section>
 
   <section class="overflow-hidden max-w-full min-w-0 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search {{ resource() }}</span><input x-model="search" type="search" :placeholder="'Search ' + resource()" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div>
-    <div class="overflow-x-auto max-w-full w-full">
-      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-        <thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Name</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Slug</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Description</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">{{ resource() === 'tags' ? 'Posts' : 'Status' }}</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead>
-        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :if="loading()"><tr><td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading {{ resource() }}</td></tr></template>
-          <template :else-if="visibleRecords().length === 0"><tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-tags"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No {{ resource() }} found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or create a {{ singular() }}.</p></td></tr></template>
-          <template :else><template :for="record in visibleRecords()"><tr><td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</td><td class="px-4 py-3 font-mono text-gray-500 text-sm dark:text-neutral-400">{{ record.slug }}</td><td class="px-4 py-3 max-w-md text-gray-500 text-sm truncate dark:text-neutral-400">{{ record.description || 'No description' }}</td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ resource() === 'tags' ? record.postCount : record.active ? 'Active' : 'Inactive' }}</td><td class="px-4 py-3 text-right"><Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + singular() + ' ' + record.name" @click="openDelete(record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button></td></tr></template></template>
-        </tbody>
-      </table>
-    </div>
+    <Table
+      :columns="columns()"
+      :data="visibleRecords()"
+      :loading="loading()"
+      :row-actions="ROW_ACTIONS"
+      action-label-key="name"
+      searchable
+      :search-placeholder="'Search ' + resource()"
+      paginated
+      :page-size="25"
+      :empty-title="'No ' + resource() + ' found'"
+      :empty-description="'Adjust the search or create a ' + singular() + '.'"
+      @row-action="handleRowAction"
+    />
   </section>
 </div>
 

@@ -1,3 +1,5 @@
+@import('../UI/Table')
+
 <script client>
 import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
 import { pushToast } from '~/storage/framework/defaults/functions/toasts'
@@ -117,6 +119,42 @@ const filteredEntries = derived(() => {
   })
 })
 
+/**
+ * The score pill is banded by range, not by value, so `badgeClasses` is keyed
+ * on a derived band and `badgeLabelKey` puts the number itself in the pill.
+ */
+const SEO_ROW_ACTIONS = [
+  { action: 'edit', label: 'Edit SEO for', icon: 'i-hugeicons-edit-02' },
+]
+
+const SEO_COLUMNS = [
+  { key: 'title', label: 'Post', sortable: true, subtitleKey: 'postMetaLabel', class: 'font-medium text-neutral-900 dark:text-white' },
+  { key: 'focus_keyword', label: 'Focus keyword', sortable: true, emptyText: 'Not set', class: 'text-neutral-600 dark:text-neutral-300' },
+  { key: 'meta_description', label: 'Meta description', emptyText: 'Not set', class: 'max-w-md truncate text-neutral-600 dark:text-neutral-300' },
+  {
+    key: 'scoreBand',
+    label: 'Score',
+    type: 'badge' as const,
+    align: 'right' as const,
+    sortable: true,
+    badgeLabelKey: 'score',
+    badgeClasses: {
+      good: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+      medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200',
+      poor: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+    },
+  },
+  { key: 'updatedLabel', label: 'Updated', sortable: true, class: 'whitespace-nowrap text-neutral-500 dark:text-neutral-400' },
+]
+
+/** The page's own filter bar still owns search and the score filter. */
+const seoRows = derived(() => filteredEntries().map(entry => ({
+  ...entry,
+  postMetaLabel: `Post #${entry.id} \u00B7 ${entry.status || 'unknown'}`,
+  scoreBand: entry.score >= 80 ? 'good' : entry.score >= 50 ? 'medium' : 'poor',
+  updatedLabel: formatDate(entry.updated_at || entry.created_at),
+})))
+
 const totalPosts = derived(() => entries().length)
 const optimizedCount = derived(() => entries().filter(entry => entry.score >= 80).length)
 const needsWorkCount = derived(() => entries().filter(entry => entry.score < 50).length)
@@ -125,15 +163,6 @@ const avgScore = derived(() => {
     return 0
   return Math.round(entries().reduce((total, entry) => total + entry.score, 0) / entries().length)
 })
-
-function scoreBadgeClass(score: number): string {
-  const base = 'inline-flex items-center px-2 py-0.5 font-semibold text-xs rounded-full'
-  if (score >= 80)
-    return `${base} bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200`
-  if (score >= 50)
-    return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200`
-  return `${base} bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200`
-}
 
 function formatDate(value?: string | null): string {
   if (!value)
@@ -261,54 +290,27 @@ void loadEntries()
   @endif
 
   <Card variant="default" padding="none">
-    @if(loading())
-      <div class="flex items-center justify-center min-h-64 text-neutral-500 text-sm dark:text-neutral-400">
-        <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
-        Loading post metadata
-      </div>
-    @elseif(filteredEntries().length === 0)
-      <div class="px-6 py-14 text-center">
-        <span class="inline-block h-8 w-8 text-neutral-400 i-hugeicons-search-remove"></span>
-        <h2 class="mt-3 font-semibold text-neutral-900 dark:text-white">No matching posts</h2>
-        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Adjust the search or score filter, or create a CMS post first.</p>
-      </div>
-    @else
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-neutral-200/60 divide-y dark:divide-white/5">
-          <thead class="bg-neutral-50 dark:bg-white/[0.03]">
-            <tr>
-              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Post</th>
-              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Focus keyword</th>
-              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Meta description</th>
-              <th class="px-4 py-3 font-semibold text-neutral-700 text-right text-xs dark:text-neutral-300">Score</th>
-              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Updated</th>
-              <th class="px-4 py-3"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
-            <template :for="entry in filteredEntries">
-              <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.03]">
-                <td class="px-4 py-4">
-                  <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ entry.title }}</div>
-                  <div class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Post #{{ entry.id }} · {{ entry.status || 'unknown' }}</div>
-                </td>
-                <td class="px-4 py-4 text-neutral-600 text-sm dark:text-neutral-300">{{ entry.focus_keyword || 'Not set' }}</td>
-                <td class="px-4 py-4">
-                  <div class="max-w-md text-neutral-600 text-sm truncate dark:text-neutral-300">{{ entry.meta_description || 'Not set' }}</div>
-                </td>
-                <td class="px-4 py-4 text-right">
-                  <span :class="scoreBadgeClass(entry.score)">{{ entry.score }}</span>
-                </td>
-                <td class="px-4 py-4 text-neutral-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(entry.updated_at || entry.created_at) }}</td>
-                <td class="px-4 py-4 text-right">
-                  <Button variant="ghost" size="sm" @click="openEdit(entry)">Edit</Button>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
-    @endif
+    {{-- `UI/Table` renders its own loading and empty states, so the three-way
+         block this replaced is gone.
+
+         The edit control is a declarative `rowActions` icon rather than the
+         `actions` slot, which would have kept the "Edit" wording. The slot
+         hangs the page render outright on the installed stx - verified by
+         adding one to a working table, watching `/dependencies` stop
+         responding, and removing it again. See stacksjs/stx#2101. --}}
+    <Table
+      :columns="SEO_COLUMNS"
+      :data="seoRows()"
+      :loading="loading()"
+      row-key="id"
+      paginated
+      :page-size="25"
+      empty-title="No matching posts"
+      empty-description="Adjust the search or score filter, or create a CMS post first."
+      :row-actions="SEO_ROW_ACTIONS"
+      action-label-key="title"
+      @row-action="openEdit($event.row)"
+    />
   </Card>
 
   <SeoEditorDialog

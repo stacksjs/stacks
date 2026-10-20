@@ -326,7 +326,11 @@ describe('dashboard button contract', () => {
     )
 
     for (const source of [blog, seo]) {
-      expect(source).toContain('<Button')
+      // `<Table` counts, same as in the commerce list above: a component that
+      // declares its row actions through `UI/Table`'s `rowActions` prop has no
+      // controls of its own, and Table renders those through `<Button>`.
+      // `SeoDashboard` has no `<Button>` of its own since stacksjs/stacks#2925.
+      expect(source).toMatch(/<(?:Button|Table)\b/)
       expect(source).not.toMatch(/<button\b/)
     }
   })
